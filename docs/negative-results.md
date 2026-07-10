@@ -33,3 +33,10 @@ TEST look:
    (the narrowest committer: exact-unit spans, lone-entity rates) → look;
 3. conversion spans → look; 4. rate × population → look.
 The reverted code is intact in git history at `2d7b90c`.
+
+**Update (look #5, 2026-07-11):** re-landing step 1 (ask-specificity
+ordering alone, DEV-diff-neutral) held TEST at exactly look #3's numbers —
+5 correct / 1 wrong / 83.3%. The ordering is EXONERATED and shipped.
+Suspicion now rests entirely on the rate-span consumer's commits.
+Next: step 2, the narrowest committer (exact-unit spans, lone-entity
+rates, no conversion, no population) behind its own look.
