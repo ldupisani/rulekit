@@ -314,4 +314,34 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "ArrowUp" || e.key === "k") { e.preventDefault(); selectDecision(state.cursor - 1); }
 });
 
+/* ---------- resizable sidebar ---------- */
+
+(function initResize() {
+  const sidebar = $("sidebar");
+  const handle = $("drag-handle");
+  const saved = localStorage.getItem("rulekit.sidebarWidth");
+  if (saved) sidebar.style.width = `${saved}px`;
+  handle.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    handle.classList.add("dragging");
+    document.body.classList.add("resizing");
+    try { handle.setPointerCapture(e.pointerId); } catch { /* synthetic pointer */ }
+    const move = (ev) => {
+      const width = Math.min(window.innerWidth * 0.75, Math.max(240, ev.clientX));
+      sidebar.style.width = `${width}px`;
+    };
+    const up = () => {
+      handle.classList.remove("dragging");
+      document.body.classList.remove("resizing");
+      localStorage.setItem("rulekit.sidebarWidth", parseInt(sidebar.style.width, 10));
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+    };
+    // window-level listeners: no dependence on pointer capture, and the
+    // drag keeps tracking even when the cursor leaves the 5px handle
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+  });
+})();
+
 loadProject();

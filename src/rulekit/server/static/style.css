@@ -52,10 +52,17 @@ button.primary { background: #274867; border-color: #35608a; }
 
 main { flex: 1; display: flex; min-height: 0; }
 #sidebar {
-  width: 340px; min-width: 340px; border-right: 1px solid var(--border);
+  width: var(--sidebar-width, 340px); min-width: 240px; max-width: 75vw;
   display: flex; flex-direction: column; background: var(--panel); padding: 8px;
-  gap: 6px; overflow: hidden;
+  gap: 6px; overflow: hidden; flex-shrink: 0;
 }
+#drag-handle {
+  width: 5px; cursor: col-resize; flex-shrink: 0;
+  background: var(--border); transition: background .15s;
+}
+#drag-handle:hover, #drag-handle.dragging { background: var(--accent); }
+body.resizing { cursor: col-resize; user-select: none; }
+body.resizing iframe, body.resizing textarea { pointer-events: none; }
 .pane-title {
   font-size: 10.5px; text-transform: uppercase; letter-spacing: .08em;
   color: var(--dim); margin: 4px 2px 2px;
