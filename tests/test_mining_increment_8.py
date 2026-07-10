@@ -49,14 +49,14 @@ def test_rate_without_span_declines(full_registry):
     assert r.answer.kind == "decline"
 
 
-def test_per_individual_rate_with_population_declines(full_registry):
-    # 7/day is per BIRD and Samuel has 5 birds — rate × population unbuilt
+def test_per_individual_rate_times_population(full_registry):
+    # 7/day per bird × 5 birds × 4 days
     r = solve(
         "A bird eats 7 berries a day. Samuel has 5 birds. "
         "How many berries does the bird eat in 4 days?",
         full_registry,
     )
-    assert r.answer.kind == "decline"
+    assert r.answer.value == 140
 
 
 def test_subtype_qualified_ask_declines(full_registry):
