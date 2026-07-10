@@ -40,3 +40,16 @@ ordering alone, DEV-diff-neutral) held TEST at exactly look #3's numbers —
 Suspicion now rests entirely on the rate-span consumer's commits.
 Next: step 2, the narrowest committer (exact-unit spans, lone-entity
 rates, no conversion, no population) behind its own look.
+
+**RESOLVED (look #7, 2026-07-11):** the culprit was neither suspect. The
+narrow rate-span committer re-landed with LEAKY accounting (look #6:
+5/2/71.4% — the second wrong returned) and then with TIGHT accounting
+(look #7: 5/1/83.3% — baseline restored, committer live). The regression
+was the SIDE-EFFECT: a Rate fact's number satisfied value accounting by
+mere existence, unlocking other consumers (the wage+bonus fold class:
+"makes $18 an hour, got a $50 bonus" committed the bonus while ignoring
+the wage). Fix: a rate's value counts as read only when the arithmetic
+log consumed it. LESSON: a new FACT KIND changes what value accounting
+considers "read" — every future fact kind must decide explicitly whether
+existence or use constitutes reading. Remaining re-landing (conversion
+spans, rate × population, entity slots) proceeds behind per-piece looks.
