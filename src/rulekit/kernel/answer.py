@@ -206,6 +206,15 @@ def answer(
                 "the span ask needs exactly one",
             )
         rate = rates[0]
+        population = [
+            q for q in store.by_kind(Quantity) if q.measure == rate.entity
+        ]
+        if population:
+            return Answer(
+                "decline", None,
+                f"the rate is per-{rate.entity} and a {rate.entity} "
+                "population is known — rate × population is unbuilt",
+            )
         if span_unit == rate.per:
             k = span_value
         elif (span_unit, rate.per) in reg.conversions:
@@ -215,32 +224,6 @@ def answer(
                 "decline", None,
                 f"no conversion from {span_unit!r} to the rate's "
                 f"{rate.per!r} — cannot span",
-            )
-        # a PER-INDIVIDUAL rate ("a bird eats 7 berries a day") multiplies
-        # by the population when every holder's total resolves
-        holders = sorted(
-            {q.entity for q in store.by_kind(Quantity) if q.measure == rate.entity}
-        )
-        if holders:
-            pop_totals = [
-                _entity_total(store, reg, h, rate.entity, log) for h in holders
-            ]
-            if any(t is None for t in pop_totals):
-                return Answer(
-                    "decline", None,
-                    f"the rate is per-{rate.entity} but the population "
-                    "does not resolve",
-                )
-            population = evaluate(
-                " + ".join(str(t) for t in pop_totals), {}, log, source="rate-population"
-            )
-            total = evaluate(
-                f"{rate.value} * {population} * {k}", {}, log, source="rate-span"
-            )
-            return Answer(
-                "number", total,
-                f"{rate.value}/{rate.per} × {population} {rate.entity} × "
-                f"{k} {rate.per}",
             )
         total = evaluate(f"{rate.value} * {k}", {}, log, source="rate-span")
         return Answer(
