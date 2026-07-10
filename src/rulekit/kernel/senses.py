@@ -38,13 +38,17 @@ def annotate_senses(reading: Reading, reg: Registry) -> Reading:
             reading.record("annotate-sense", unit, {"senses": [sense]}, f"value token ({kind})")
             continue
 
+        # A noun's number-forms share ONE identity (difg's _noun_lemma): the
+        # plural mapping canonicalizes the lemma even when the plural surface
+        # has its own lexicon entry.
         entry = reg.lexicon.get(fold)
         number = "singular"
         singular = fold
-        if entry is None and fold in reg.plural_to_singular:
+        if fold in reg.plural_to_singular:
             singular = reg.plural_to_singular[fold]
-            entry = reg.lexicon.get(singular)
             number = "plural"
+            if entry is None:
+                entry = reg.lexicon.get(singular)
 
         # A capitalized mid-sentence word WITHOUT a preceding article is a
         # name even when the lowercase word is known ("Is Rose a teacher?"
@@ -67,12 +71,12 @@ def annotate_senses(reading: Reading, reg: Registry) -> Reading:
 
         if entry is not None:
             changes: dict = {"senses": list(entry.senses), "number": number}
-            if singular != fold:
+            if singular != fold and "noun" in entry.senses:
                 changes["lemma"] = singular
             elif "verb" in entry.senses:
                 changes["lemma"] = reg.verb_lemmas.get(fold, fold)
             else:
-                changes["lemma"] = fold
+                changes["lemma"] = singular if singular != fold else fold
             reading.record("annotate-sense", unit, changes, f"lexicon entry {fold!r}")
             continue
 

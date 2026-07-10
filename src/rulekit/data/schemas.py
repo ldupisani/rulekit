@@ -28,9 +28,14 @@ class VerbInfo(StrictModel):
 
 class LexiconEntry(StrictModel):
     senses: list[str]
-    plural: str | None = None  # for noun senses: the plural surface
+    plural: str | list[str] | None = None  # noun senses: plural surface(s)
     verb: VerbInfo | None = None  # for verb senses: irregular lemma etc.
     notes: str | None = None
+
+    def plurals(self) -> list[str]:
+        if self.plural is None:
+            return []
+        return [self.plural] if isinstance(self.plural, str) else list(self.plural)
 
     @model_validator(mode="after")
     def _sense_scoped(self) -> "LexiconEntry":
@@ -244,6 +249,33 @@ class RequirementsDoc(StrictModel):
 # ---------------------------------------------------------------------------
 
 
+class ConversionDef(StrictModel):
+    from_: str = Field(alias="from")
+    to: str
+    factor: float
+
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+
+class ConversionsDoc(StrictModel):
+    format: Literal["rulekit/conversions@1"]
+    conversions: list[ConversionDef]
+
+
+class QuarantineEntry(StrictModel):
+    tags: list[str] = Field(default_factory=list)
+    reason: str
+
+
+class QuarantineDoc(StrictModel):
+    """Words deliberately withheld from the lexicon (difg's poison list).
+    Loaded as documentation + lint data, never as vocabulary — re-admission
+    is a deliberate, firewalled act."""
+
+    format: Literal["rulekit/quarantine@1"]
+    words: dict[str, QuarantineEntry]
+
+
 class GuardSetting(StrictModel):
     enabled: bool = True
     model_config = ConfigDict(extra="allow")
@@ -289,6 +321,8 @@ class ProjectDoc(StrictModel):
 KIND_MODELS: dict[str, type[BaseModel]] = {
     "rulekit/lexicon@1": LexiconDoc,
     "rulekit/categories@1": CategoriesDoc,
+    "rulekit/conversions@1": ConversionsDoc,
+    "rulekit/quarantine@1": QuarantineDoc,
     "rulekit/numbers@1": NumbersDoc,
     "rulekit/obligations@1": ObligationsDoc,
     "rulekit/rules@1": RulesDoc,

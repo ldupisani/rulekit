@@ -1,0 +1,649 @@
+format: rulekit/categories@1
+categories:
+  accompany:
+    parent: verb
+  attach:
+    parent: verb
+  building:
+    parent: noun
+  cashtoken:
+    parent: noun
+  charge:
+    parent: noun
+  clothing:
+    parent: noun
+  coin:
+    parent: noun
+  contribute:
+    parent: verb
+  currency:
+    parent: noun
+  discount:
+    parent: noun
+  divide:
+    parent: verb
+  higher:
+    parent: comparative
+    antonym: lower
+    polarity: 1
+  journey:
+    parent: noun
+  lower:
+    parent: comparative
+    antonym: higher
+    polarity: -1
+  motion:
+    parent: verb
+  person:
+    parent: noun
+  persongroup:
+    parent: noun
+  produce:
+    parent: verb
+  purchase:
+    parent: acquire
+  receive:
+    parent: verb
+  retain:
+    parent: verb
+  timeperiod:
+    parent: noun
+  vehicle:
+    parent: noun
+members:
+  accompany:
+  - bring
+  - brings
+  - brought
+  - had
+  - has
+  - have
+  - invite
+  - invited
+  - invites
+  - take
+  - takes
+  - took
+  acquire:
+  - add
+  - added
+  - adds
+  - bought
+  - buy
+  - buys
+  - collect
+  - collected
+  - collects
+  - earn
+  - earned
+  - earns
+  - find
+  - finds
+  - found
+  - gathered
+  - get
+  - gets
+  - getting
+  - got
+  - order
+  - ordered
+  - orders
+  - purchase
+  - purchased
+  - purchases
+  - receive
+  - received
+  - receives
+  - win
+  - wins
+  - won
+  animal:
+  - bear
+  - bears
+  - bird
+  - birds
+  - camel
+  - camels
+  - cat
+  - cats
+  - chicken
+  - chickens
+  - cow
+  - cows
+  - dog
+  - dogs
+  - duck
+  - ducks
+  - elephant
+  - elephants
+  - fish
+  - fox
+  - frog
+  - frogs
+  - giraffes
+  - goat
+  - goats
+  - hens
+  - horse
+  - horses
+  - kangaroo
+  - kangaroos
+  - koala
+  - koalas
+  - lions
+  - monkey
+  - monkeys
+  - pig
+  - pigs
+  - rabbit
+  - rabbits
+  - rooster
+  - roosters
+  - snail
+  - snails
+  - snake
+  - snakes
+  attach:
+  - add
+  - added
+  - adds
+  - put
+  - puts
+  building:
+  - apartment
+  - apartments
+  - building
+  - buildings
+  - hotel
+  - hotels
+  - house
+  - houses
+  - tower
+  - towers
+  cashtoken:
+  - bill
+  - coin
+  charge:
+  - bill
+  - bills
+  - cost
+  - costs
+  - expense
+  - expenses
+  - fee
+  - fees
+  - price
+  - prices
+  clothing:
+  - clothes
+  - coat
+  - coats
+  - dress
+  - dresses
+  - jacket
+  - jackets
+  - pants
+  - shirt
+  - shirts
+  - shorts
+  - skirt
+  - skirts
+  - sweater
+  - sweaters
+  coin:
+  - dime
+  - nickel
+  - penny
+  - quarter
+  contribute:
+  - contribute
+  - contributed
+  - paid
+  - pay
+  - pays
+  currency:
+  - dollar
+  - dollars
+  - pound
+  - pounds
+  discount:
+  - coupon
+  - discount
+  - discounts
+  divide:
+  - cut
+  - cuts
+  - divide
+  - divides
+  - share
+  - shared
+  - shares
+  - split
+  - splits
+  higher:
+  - bigger
+  - faster
+  - heavier
+  - higher
+  - larger
+  - longer
+  - more
+  - older
+  - richer
+  - taller
+  journey:
+  - flight
+  - journey
+  - trip
+  lose:
+  - ate
+  - broke
+  - drank
+  - drink
+  - drinks
+  - drop
+  - dropped
+  - drops
+  - eat
+  - eats
+  - gave
+  - give
+  - gives
+  - lose
+  - loses
+  - lost
+  - paid
+  - pay
+  - pays
+  - sell
+  - sells
+  - sold
+  - spend
+  - spends
+  - spent
+  - threw
+  - throws
+  - use
+  - used
+  - uses
+  lower:
+  - cheaper
+  - fewer
+  - less
+  - lighter
+  - lower
+  - poorer
+  - shorter
+  - slower
+  - smaller
+  - younger
+  motion:
+  - bike
+  - biked
+  - bikes
+  - drive
+  - drives
+  - drove
+  - flew
+  - fly
+  - go
+  - goes
+  - gone
+  - jog
+  - jogged
+  - jogs
+  - ran
+  - ride
+  - rides
+  - rode
+  - run
+  - runs
+  - swam
+  - swim
+  - swims
+  - travel
+  - traveled
+  - travels
+  - walk
+  - walked
+  - walks
+  - went
+  person:
+  - adult
+  - adults
+  - attendee
+  - attendees
+  - boy
+  - boys
+  - camper
+  - campers
+  - child
+  - children
+  - friend
+  - friends
+  - girl
+  - girls
+  - guest
+  - guests
+  - kid
+  - kids
+  - man
+  - member
+  - members
+  - men
+  - partner
+  - partners
+  - passenger
+  - passengers
+  - people
+  - person
+  - player
+  - players
+  - sibling
+  - siblings
+  - student
+  - students
+  - teammate
+  - visitor
+  - visitors
+  - woman
+  - women
+  - worker
+  - workers
+  persongroup:
+  - couple
+  - couples
+  - crew
+  - families
+  - family
+  - group
+  - groups
+  - household
+  - parties
+  - party
+  - team
+  - teams
+  pet:
+  - bird
+  - birds
+  - cat
+  - cats
+  - dog
+  - dogs
+  - fish
+  - frog
+  - frogs
+  - goldfish
+  - rabbit
+  - rabbits
+  - snail
+  - snails
+  produce:
+  - bake
+  - baked
+  - bakes
+  - brew
+  - build
+  - builds
+  - built
+  - cook
+  - cooks
+  - create
+  - created
+  - creates
+  - draw
+  - made
+  - make
+  - makes
+  - paint
+  - painted
+  - paints
+  - sew
+  - sews
+  purchase:
+  - bought
+  - buy
+  - buying
+  - buys
+  - order
+  - ordered
+  - orders
+  - purchase
+  - purchased
+  - purchases
+  receive:
+  - get
+  - gets
+  - given
+  - got
+  - had
+  - has
+  - have
+  - need
+  - needed
+  - needs
+  - receive
+  - received
+  - receives
+  retain:
+  - keep
+  - keeping
+  - keeps
+  - kept
+  timeperiod:
+  - afternoon
+  - day
+  - decade
+  - evening
+  - month
+  - morning
+  - night
+  - season
+  - semester
+  - week
+  - weekend
+  - year
+  vehicle:
+  - bicycle
+  - bicycles
+  - boat
+  - boats
+  - bus
+  - buses
+  - car
+  - cars
+  - jeep
+  - jeeps
+  - minivan
+  - minivans
+  - scooter
+  - scooters
+  - sedan
+  - sedans
+  - suv
+  - suvs
+  - taxi
+  - taxis
+  - tractor
+  - tractors
+  - tricycle
+  - tricycles
+  - truck
+  - trucks
+  - van
+  - vans
+  - wagon
+  - wagons
+context_synonyms:
+  contains:
+    gate: building
+    forms:
+    - contain
+    - contains
+    - has
+    - have
+    - hold
+    - holds
+    - house
+    - houses
+  distance:
+    gate: motion
+    forms:
+    - block
+    - blocks
+    - kilometer
+    - kilometers
+    - km
+    - lap
+    - laps
+    - meter
+    - meters
+    - mile
+    - miles
+    - yard
+    - yards
+  pedestrian:
+    gate: motion
+    forms:
+    - block
+    - blocks
+    - lap
+    - laps
+  storey:
+    gate: building
+    forms:
+    - floor
+    - floors
+    - level
+    - levels
+    - storey
+    - storeys
+    - stories
+    - story
+  wheels:
+    gate: vehicle
+    forms:
+    - tire
+    - tires
+    - tyre
+    - tyres
+    - wheel
+    - wheels
+attrs:
+  ant:
+    legs: 6
+  bear:
+    legs: 4
+  bee:
+    legs: 6
+  bicycle:
+    wheels: 2
+  bike:
+    wheels: 2
+  bird:
+    legs: 2
+  boat:
+    wheels: 0
+  bus:
+    wheels: 4
+  camel:
+    legs: 4
+  car:
+    wheels: 4
+  cat:
+    legs: 4
+  chicken:
+    legs: 2
+  cow:
+    legs: 4
+  deer:
+    legs: 4
+  dime:
+    cents: 10
+  dog:
+    legs: 4
+  donkey:
+    legs: 4
+  duck:
+    legs: 2
+  elephant:
+    legs: 4
+  fish:
+    legs: 0
+  fox:
+    legs: 4
+  frog:
+    legs: 0
+  goat:
+    legs: 4
+  goose:
+    legs: 2
+  grasshopper:
+    legs: 6
+  hen:
+    legs: 2
+  horse:
+    legs: 4
+  insect:
+    legs: 6
+  jeep:
+    wheels: 4
+  koala:
+    legs: 4
+  lamb:
+    legs: 4
+  lion:
+    legs: 4
+  minivan:
+    wheels: 4
+  motorcycle:
+    wheels: 2
+  nickel:
+    cents: 5
+  owl:
+    legs: 2
+  penny:
+    cents: 1
+  pig:
+    legs: 4
+  quarter:
+    cents: 25
+  rabbit:
+    legs: 4
+  rooster:
+    legs: 2
+  scooter:
+    wheels: 2
+  sedan:
+    wheels: 4
+  sheep:
+    legs: 4
+  snail:
+    legs: 0
+  snake:
+    legs: 0
+  spider:
+    legs: 8
+  suv:
+    wheels: 4
+  taxi:
+    wheels: 4
+  tiger:
+    legs: 4
+  tricycle:
+    wheels: 3
+  truck:
+    wheels: 4
+  unicycle:
+    wheels: 1
+  van:
+    wheels: 4
+  wagon:
+    wheels: 4
+  wolf:
+    legs: 4
+  zebra:
+    legs: 4
+part_counts:
+  appendage: legs
+  wheels: wheels

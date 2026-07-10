@@ -1,0 +1,2705 @@
+format: rulekit/lexicon@1
+entries:
+  nachos:
+    senses:
+    - noun
+  nail:
+    senses:
+    - noun
+    plural: nails
+  name:
+    senses:
+    - noun
+  named:
+    senses:
+    - verb
+  nap:
+    senses:
+    - noun
+    plural: naps
+  national:
+    senses:
+    - noun
+  near:
+    senses:
+    - preposition
+  nearby:
+    senses:
+    - adjective
+  neater:
+    senses:
+    - adjective
+  necklace:
+    senses:
+    - noun
+    plural: necklaces
+  need:
+    senses:
+    - verb
+  needed:
+    senses:
+    - verb
+    verb:
+      lemma: need
+  needing:
+    senses:
+    - verb
+    verb:
+      lemma: need
+  needs:
+    senses:
+    - verb
+    verb:
+      lemma: need
+  neighbor:
+    senses:
+    - noun
+    plural: neighbors
+  neighborhood:
+    senses:
+    - noun
+  neither:
+    senses:
+    - adjective
+  nephews:
+    senses:
+    - noun
+  nerds:
+    senses:
+    - noun
+  netbook:
+    senses:
+    - noun
+    plural: netbooks
+  never:
+    senses:
+    - negator
+  new:
+    senses:
+    - adjective
+  newspaper:
+    senses:
+    - noun
+  next:
+    senses:
+    - adjective
+  nice:
+    senses:
+    - adjective
+  nickel:
+    senses:
+    - noun
+    plural: nickels
+  night:
+    senses:
+    - noun
+    plural: nights
+  nine:
+    senses:
+    - value
+  nineteen:
+    senses:
+    - value
+  ninety:
+    senses:
+    - value
+  non-vegan:
+    senses:
+    - adjective
+  noon:
+    senses:
+    - noun
+  nor:
+    senses:
+    - conjunction
+  normal:
+    senses:
+    - adjective
+  normally:
+    senses:
+    - adverb
+  nose:
+    senses:
+    - noun
+  notebook:
+    senses:
+    - noun
+    plural: notebooks
+  notepad:
+    senses:
+    - noun
+    plural: notepads
+  nothing:
+    senses:
+    - noun
+  notices:
+    senses:
+    - verb
+  novel:
+    senses:
+    - noun
+    plural: novels
+  november:
+    senses:
+    - time
+  now:
+    senses:
+    - time
+  number:
+    senses:
+    - noun
+    plural: numbers
+  nurse:
+    senses:
+    - noun
+    plural: nurses
+  nut:
+    senses:
+    - noun
+    plural: nuts
+  oasis:
+    senses:
+    - noun
+  oatmeal:
+    senses:
+    - noun
+  object:
+    senses:
+    - noun
+    plural: objects
+  occasions:
+    senses:
+    - noun
+  occupied:
+    senses:
+    - adjective
+  ocean:
+    senses:
+    - noun
+  october:
+    senses:
+    - time
+  off:
+    senses:
+    - adverb
+  offer:
+    senses:
+    - verb
+  offered:
+    senses:
+    - verb
+    verb:
+      lemma: offer
+  offering:
+    senses:
+    - verb
+    verb:
+      lemma: offer
+  offers:
+    senses:
+    - verb
+    verb:
+      lemma: offer
+  office:
+    senses:
+    - noun
+    plural: offices
+  oil:
+    senses:
+    - noun
+  old:
+    senses:
+    - adjective
+  older:
+    senses:
+    - comparative
+  oldest:
+    senses:
+    - adjective
+  olive:
+    senses:
+    - noun
+    plural: olives
+  once:
+    senses:
+    - multiplier
+  one:
+    senses:
+    - value
+  one-eighth:
+    senses:
+    - adjective
+    - multiplier
+  one-fifth:
+    senses:
+    - adjective
+    - multiplier
+  one-fourth:
+    senses:
+    - adjective
+    - multiplier
+  one-half:
+    senses:
+    - adjective
+    - multiplier
+  one-quarter:
+    senses:
+    - adjective
+    - multiplier
+  one-sixth:
+    senses:
+    - adjective
+    - multiplier
+  one-tenth:
+    senses:
+    - noun
+  one-third:
+    senses:
+    - adjective
+    - multiplier
+  one-thousandth:
+    senses:
+    - noun
+  one-way:
+    senses:
+    - adjective
+  ones:
+    senses:
+    - pronoun
+  online:
+    senses:
+    - adjective
+  only:
+    senses:
+    - adverb
+  onto:
+    senses:
+    - preposition
+  open:
+    senses:
+    - adjective
+    - verb
+  opened:
+    senses:
+    - adjective
+  opening:
+    senses:
+    - adjective
+  opens:
+    senses:
+    - verb
+  opera:
+    senses:
+    - noun
+  operate:
+    senses:
+    - verb
+  operates:
+    senses:
+    - verb
+  optical:
+    senses:
+    - adjective
+  optimally:
+    senses:
+    - manner
+  option:
+    senses:
+    - noun
+  or:
+    senses:
+    - conjunction
+  orange:
+    senses:
+    - noun
+    plural: oranges
+  orchard:
+    senses:
+    - noun
+  order:
+    senses:
+    - verb
+  ordered:
+    senses:
+    - verb
+    verb:
+      lemma: order
+  ordering:
+    senses:
+    - verb
+    verb:
+      lemma: order
+  orders:
+    senses:
+    - verb
+    verb:
+      lemma: order
+  oregano:
+    senses:
+    - noun
+  organic:
+    senses:
+    - adjective
+  organism:
+    senses:
+    - noun
+    plural: organisms
+  original:
+    senses:
+    - adjective
+  originally:
+    senses:
+    - adverb
+  other:
+    senses:
+    - article
+  others:
+    senses:
+    - noun
+  ounce:
+    senses:
+    - noun
+    plural: ounces
+  out:
+    senses:
+    - adverb
+  out-of-pocket:
+    senses:
+    - adjective
+  outdoor:
+    senses:
+    - adjective
+  outfit:
+    senses:
+    - noun
+  outlining:
+    senses:
+    - verb
+  outside:
+    senses:
+    - adverb
+  over:
+    senses:
+    - preposition
+  oversized:
+    senses:
+    - adjective
+  overtime:
+    senses:
+    - noun
+  owe:
+    senses:
+    - verb
+  owes:
+    senses:
+    - verb
+  owned:
+    senses:
+    - verb
+    verb:
+      lemma: own
+  oyster:
+    senses:
+    - noun
+  oysters:
+    senses:
+    - noun
+  oz:
+    senses:
+    - noun
+  pace:
+    senses:
+    - noun
+  pack:
+    senses:
+    - noun
+    plural: packs
+  packet:
+    senses:
+    - noun
+    plural: packets
+  pad:
+    senses:
+    - noun
+    plural: pads
+  page:
+    senses:
+    - noun
+    plural: pages
+  paid:
+    senses:
+    - verb
+    verb:
+      lemma: pay
+  pail:
+    senses:
+    - noun
+  paint:
+    senses:
+    - verb
+  paintball:
+    senses:
+    - noun
+  paintballs:
+    senses:
+    - noun
+  paintbrush:
+    senses:
+    - noun
+    plural: paintbrushes
+  painted:
+    senses:
+    - verb
+    verb:
+      lemma: paint
+  painter:
+    senses:
+    - noun
+  painting:
+    senses:
+    - noun
+    plural: paintings
+  paints:
+    senses:
+    - verb
+    verb:
+      lemma: paint
+  pair:
+    senses:
+    - noun
+    plural: pairs
+  pakora:
+    senses:
+    - noun
+    plural: pakoras
+  pal:
+    senses:
+    - noun
+    plural: pals
+  palm:
+    senses:
+    - noun
+  pan:
+    senses:
+    - noun
+    plural: pans
+  pancake:
+    senses:
+    - noun
+  pancakes:
+    senses:
+    - noun
+  panda:
+    senses:
+    - noun
+    plural: pandas
+  panels:
+    senses:
+    - noun
+  pants:
+    senses:
+    - noun
+  parent:
+    senses:
+    - noun
+    plural: parents
+  park:
+    senses:
+    - noun
+    plural: parks
+  parking:
+    senses:
+    - noun
+  parrot:
+    senses:
+    - noun
+  part:
+    senses:
+    - noun
+    plural: parts
+  participate:
+    senses:
+    - verb
+  participated:
+    senses:
+    - verb
+  particular:
+    senses:
+    - adjective
+  partner:
+    senses:
+    - noun
+    plural: partners
+  party:
+    senses:
+    - noun
+    plural: parties
+  pass:
+    senses:
+    - verb
+  passed:
+    senses:
+    - verb
+    verb:
+      lemma: pass
+  passenger:
+    senses:
+    - noun
+    plural: passengers
+  past:
+    senses:
+    - preposition
+  pastry:
+    senses:
+    - noun
+    plural: pastries
+  patio:
+    senses:
+    - noun
+  patisserie:
+    senses:
+    - noun
+  pay:
+    senses:
+    - verb
+  payday:
+    senses:
+    - noun
+  paying:
+    senses:
+    - verb
+    verb:
+      lemma: pay
+  payment:
+    senses:
+    - noun
+    plural: payments
+  pays:
+    senses:
+    - verb
+    verb:
+      lemma: pay
+  peach:
+    senses:
+    - noun
+    plural: peaches
+  peanut:
+    senses:
+    - noun
+    plural: peanuts
+  peas:
+    senses:
+    - noun
+  pebble:
+    senses:
+    - noun
+    plural: pebbles
+  pelican:
+    senses:
+    - noun
+  pen:
+    senses:
+    - noun
+    plural: pens
+  penguin:
+    senses:
+    - noun
+    plural: penguins
+  penny:
+    senses:
+    - noun
+    plural: pennies
+  pepper:
+    senses:
+    - noun
+    plural: peppers
+  per:
+    senses:
+    - per
+  percent:
+    senses:
+    - noun
+  percentage:
+    senses:
+    - noun
+  perform:
+    senses:
+    - verb
+  performance:
+    senses:
+    - noun
+    plural: performances
+  performing:
+    senses:
+    - verb
+  perimeter:
+    senses:
+    - noun
+  period:
+    senses:
+    - noun
+    plural: periods
+  person:
+    senses:
+    - noun
+    plural:
+    - people
+    - persons
+  personal:
+    senses:
+    - adjective
+  personalized:
+    senses:
+    - adjective
+  pet:
+    senses:
+    - noun
+    plural: pets
+  pharmacy:
+    senses:
+    - noun
+  phone:
+    senses:
+    - noun
+    plural: phones
+  photo:
+    senses:
+    - noun
+    plural: photos
+  phrase:
+    senses:
+    - noun
+    plural: phrases
+  piano:
+    senses:
+    - noun
+    plural: pianos
+  pick:
+    senses:
+    - verb
+  picked:
+    senses:
+    - verb
+    verb:
+      lemma: pick
+  picking:
+    senses:
+    - noun
+  picks:
+    senses:
+    - verb
+    verb:
+      lemma: pick
+  picnic:
+    senses:
+    - noun
+    plural: picnics
+  picture:
+    senses:
+    - noun
+    plural: pictures
+  pie:
+    senses:
+    - noun
+    plural: pies
+  piece:
+    senses:
+    - noun
+    plural: pieces
+  pig:
+    senses:
+    - noun
+    plural: pigs
+  pigeon:
+    senses:
+    - noun
+    plural: pigeons
+  piggy:
+    senses:
+    - adjective
+  piggy bank:
+    senses:
+    - noun
+  pile:
+    senses:
+    - noun
+    plural: piles
+  pill:
+    senses:
+    - noun
+    plural: pills
+  pillowcase:
+    senses:
+    - noun
+  pillowcases:
+    senses:
+    - noun
+  pin:
+    senses:
+    - noun
+    plural: pins
+  pineapple:
+    senses:
+    - noun
+    plural: pineapples
+  pines:
+    senses:
+    - noun
+  ping:
+    senses:
+    - noun
+  pink:
+    senses:
+    - adjective
+  pint:
+    senses:
+    - noun
+    plural: pints
+  pipe:
+    senses:
+    - noun
+    plural: pipes
+  pistachio:
+    senses:
+    - noun
+    plural: pistachios
+  pit:
+    senses:
+    - noun
+  pixels:
+    senses:
+    - noun
+  pizza:
+    senses:
+    - noun
+    plural: pizzas
+  plan:
+    senses:
+    - noun
+    plural: plans
+  plane:
+    senses:
+    - noun
+  planks:
+    senses:
+    - noun
+  planned:
+    senses:
+    - verb
+  plant:
+    senses:
+    - noun
+    - verb
+    plural: plants
+  plantation:
+    senses:
+    - noun
+  planted:
+    senses:
+    - verb
+    verb:
+      lemma: plant
+  planting:
+    senses:
+    - verb
+    verb:
+      lemma: plant
+  plants:
+    senses:
+    - verb
+  plate:
+    senses:
+    - noun
+    plural: plates
+  play:
+    senses:
+    - verb
+  played:
+    senses:
+    - verb
+    verb:
+      lemma: play
+  player:
+    senses:
+    - noun
+    plural: players
+  playground:
+    senses:
+    - noun
+  playing:
+    senses:
+    - verb
+    verb:
+      lemma: play
+  playlist:
+    senses:
+    - noun
+    plural: playlists
+  plays:
+    senses:
+    - verb
+    verb:
+      lemma: play
+  plot:
+    senses:
+    - noun
+    plural: plots
+  plug:
+    senses:
+    - noun
+  plugs:
+    senses:
+    - noun
+  plus:
+    senses:
+    - operator
+  pocket:
+    senses:
+    - noun
+    plural: pockets
+  pogo:
+    senses:
+    - noun
+  point:
+    senses:
+    - noun
+    plural: points
+  pointy:
+    senses:
+    - adjective
+  polar:
+    senses:
+    - adjective
+  polish:
+    senses:
+    - noun
+    plural: polishes
+  polka:
+    senses:
+    - noun
+  polka-dot:
+    senses:
+    - adjective
+  polka-dots:
+    senses:
+    - noun
+  pong:
+    senses:
+    - noun
+  pool:
+    senses:
+    - noun
+    plural: pools
+  poorer:
+    senses:
+    - comparative
+  popcorn:
+    senses:
+    - noun
+  porcelain:
+    senses:
+    - adjective
+  pork:
+    senses:
+    - noun
+  portion:
+    senses:
+    - noun
+    plural: portions
+  portraits:
+    senses:
+    - noun
+  possible:
+    senses:
+    - adjective
+  post:
+    senses:
+    - noun
+  pot:
+    senses:
+    - noun
+    plural: pots
+  potato:
+    senses:
+    - noun
+    plural: potatoes
+  pound:
+    senses:
+    - noun
+    plural: pounds
+  pour:
+    senses:
+    - verb
+  poured:
+    senses:
+    - verb
+    verb:
+      lemma: pour
+  pouring:
+    senses:
+    - verb
+    verb:
+      lemma: pour
+  pours:
+    senses:
+    - verb
+    verb:
+      lemma: pour
+  practice:
+    senses:
+    - noun
+    plural: practices
+  practicing:
+    senses:
+    - verb
+    verb:
+      lemma: practice
+  pray:
+    senses:
+    - verb
+  prays:
+    senses:
+    - verb
+  pre-printed:
+    senses:
+    - noun
+  pre-sliced:
+    senses:
+    - adjective
+  pregnant:
+    senses:
+    - adjective
+  premiere:
+    senses:
+    - noun
+  prep:
+    senses:
+    - noun
+  prepare:
+    senses:
+    - verb
+  prepared:
+    senses:
+    - verb
+  preparing:
+    senses:
+    - verb
+  prescription:
+    senses:
+    - noun
+  present:
+    senses:
+    - noun
+    plural: presents
+  pretzel:
+    senses:
+    - noun
+    plural: pretzels
+  previous:
+    senses:
+    - adjective
+  price:
+    senses:
+    - noun
+    plural: prices
+  priced:
+    senses:
+    - verb
+  primary:
+    senses:
+    - adjective
+  print:
+    senses:
+    - noun
+  printer:
+    senses:
+    - noun
+  private:
+    senses:
+    - adjective
+  prize:
+    senses:
+    - noun
+    plural: prizes
+  proceeds:
+    senses:
+    - noun
+  processing:
+    senses:
+    - verb
+    verb:
+      lemma: process
+  produce:
+    senses:
+    - verb
+  produced:
+    senses:
+    - verb
+    verb:
+      lemma: produce
+  produces:
+    senses:
+    - verb
+    verb:
+      lemma: produce
+  producing:
+    senses:
+    - verb
+    verb:
+      lemma: produce
+  production:
+    senses:
+    - adjective
+  productivity:
+    senses:
+    - noun
+  products:
+    senses:
+    - noun
+  prof:
+    senses:
+    - title
+  professional:
+    senses:
+    - adjective
+  professor:
+    senses:
+    - title
+  profit:
+    senses:
+    - noun
+  profits:
+    senses:
+    - noun
+  program:
+    senses:
+    - noun
+  project:
+    senses:
+    - noun
+    plural: projects
+  promotion:
+    senses:
+    - noun
+  proportional:
+    senses:
+    - adjective
+  proportionally:
+    senses:
+    - manner
+  protest:
+    senses:
+    - noun
+  protesting:
+    senses:
+    - verb
+  provides:
+    senses:
+    - verb
+  providing:
+    senses:
+    - verb
+  provisions:
+    senses:
+    - noun
+  puff:
+    senses:
+    - noun
+  pufferfish:
+    senses:
+    - noun
+  pumpkin:
+    senses:
+    - noun
+  pupil:
+    senses:
+    - noun
+    plural: pupils
+  puppy:
+    senses:
+    - noun
+    plural: puppies
+  purchase:
+    senses:
+    - verb
+  purchased:
+    senses:
+    - verb
+    verb:
+      lemma: purchase
+  purchases:
+    senses:
+    - verb
+    verb:
+      lemma: purchase
+  purchasing:
+    senses:
+    - verb
+    verb:
+      lemma: purchase
+  purple:
+    senses:
+    - adjective
+  purpose:
+    senses:
+    - noun
+    plural: purposes
+  purse:
+    senses:
+    - noun
+    plural: purses
+  pushups:
+    senses:
+    - noun
+  put:
+    senses:
+    - verb
+  puts:
+    senses:
+    - verb
+    verb:
+      lemma: put
+  pyramid:
+    senses:
+    - noun
+  quadruple:
+    senses:
+    - multiplier
+  quart:
+    senses:
+    - noun
+    plural: quarts
+  quarter:
+    senses:
+    - noun
+  quarters:
+    senses:
+    - noun
+  question:
+    senses:
+    - noun
+    plural: questions
+  quicker:
+    senses:
+    - adjective
+  quickly:
+    senses:
+    - adverb
+  quilt:
+    senses:
+    - noun
+    plural: quilts
+  quit:
+    senses:
+    - verb
+  quiz:
+    senses:
+    - noun
+    plural: quizzes
+  quota:
+    senses:
+    - noun
+    plural: quotas
+  race:
+    senses:
+    - noun
+    plural: races
+  racing:
+    senses:
+    - noun
+  raffle:
+    senses:
+    - adjective
+  rain:
+    senses:
+    - noun
+  rainbow:
+    senses:
+    - noun
+  rained:
+    senses:
+    - verb
+  rainfall:
+    senses:
+    - noun
+  raise:
+    senses:
+    - verb
+  raised:
+    senses:
+    - verb
+    verb:
+      lemma: raise
+  raises:
+    senses:
+    - verb
+    verb:
+      lemma: raise
+  raisin:
+    senses:
+    - noun
+  raising:
+    senses:
+    - verb
+    verb:
+      lemma: raise
+  ranch:
+    senses:
+    - noun
+    plural: ranches
+  randomly:
+    senses:
+    - manner
+  raspberry:
+    senses:
+    - noun
+    plural: raspberries
+  rat:
+    senses:
+    - noun
+    plural: rats
+  rate:
+    senses:
+    - noun
+    plural: rates
+  ratio:
+    senses:
+    - noun
+    plural: ratios
+  reach:
+    senses:
+    - verb
+  reached:
+    senses:
+    - verb
+  reaches:
+    senses:
+    - verb
+  read:
+    senses:
+    - verb
+  reader:
+    senses:
+    - noun
+    plural: readers
+  reading:
+    senses:
+    - verb
+    - noun
+    verb:
+      lemma: read
+  reads:
+    senses:
+    - verb
+    verb:
+      lemma: read
+  ready:
+    senses:
+    - adjective
+  reality:
+    senses:
+    - noun
+  realize:
+    senses:
+    - verb
+  realized:
+    senses:
+    - verb
+    verb:
+      lemma: realize
+  realizes:
+    senses:
+    - verb
+    verb:
+      lemma: realize
+  receiving:
+    senses:
+    - verb
+    verb:
+      lemma: receive
+  recently:
+    senses:
+    - adverb
+  recharges:
+    senses:
+    - verb
+  recipe:
+    senses:
+    - noun
+    plural: recipes
+  recommend:
+    senses:
+    - verb
+  recommended:
+    senses:
+    - verb
+  record:
+    senses:
+    - noun
+    - verb
+    plural: records
+  recorded:
+    senses:
+    - verb
+    verb:
+      lemma: record
+  records:
+    senses:
+    - noun
+    - verb
+  rectangle:
+    senses:
+    - noun
+    plural: rectangles
+  rectangular:
+    senses:
+    - adjective
+  redistributed:
+    senses:
+    - verb
+  reduce:
+    senses:
+    - verb
+  reduced:
+    senses:
+    - adjective
+  redwoods:
+    senses:
+    - noun
+  reels:
+    senses:
+    - verb
+  refill:
+    senses:
+    - verb
+  refuel:
+    senses:
+    - verb
+  regional:
+    senses:
+    - adjective
+  register:
+    senses:
+    - noun
+  regular:
+    senses:
+    - adjective
+  relatives:
+    senses:
+    - noun
+  release:
+    senses:
+    - verb
+  released:
+    senses:
+    - verb
+  remain:
+    senses:
+    - verb
+  remainder:
+    senses:
+    - noun
+  remained:
+    senses:
+    - verb
+  remaining:
+    senses:
+    - adjective
+  remains:
+    senses:
+    - verb
+  remember:
+    senses:
+    - verb
+  remove:
+    senses:
+    - verb
+  removed:
+    senses:
+    - verb
+    verb:
+      lemma: remove
+  removes:
+    senses:
+    - verb
+    verb:
+      lemma: remove
+  removing:
+    senses:
+    - verb
+    verb:
+      lemma: remove
+  rent:
+    senses:
+    - noun
+  rental:
+    senses:
+    - noun
+    plural: rentals
+  rented:
+    senses:
+    - verb
+    verb:
+      lemma: rent
+  rents:
+    senses:
+    - verb
+    verb:
+      lemma: rent
+  repainting:
+    senses:
+    - verb
+  repair:
+    senses:
+    - verb
+  repaired:
+    senses:
+    - verb
+    verb:
+      lemma: repair
+  repairs:
+    senses:
+    - verb
+    verb:
+      lemma: repair
+  repeat:
+    senses:
+    - noun
+  repertoire:
+    senses:
+    - noun
+  replace:
+    senses:
+    - verb
+  replayed:
+    senses:
+    - verb
+  report:
+    senses:
+    - noun
+  represent:
+    senses:
+    - verb
+  represented:
+    senses:
+    - verb
+    verb:
+      lemma: represent
+  represents:
+    senses:
+    - verb
+    verb:
+      lemma: represent
+  require:
+    senses:
+    - verb
+  required:
+    senses:
+    - verb
+    verb:
+      lemma: require
+  requires:
+    senses:
+    - verb
+    verb:
+      lemma: require
+  rescue:
+    senses:
+    - noun
+  respective:
+    senses:
+    - adjective
+  respectively:
+    senses:
+    - adverb
+  responds:
+    senses:
+    - verb
+  rest:
+    senses:
+    - noun
+  restaurant:
+    senses:
+    - noun
+    plural: restaurants
+  rests:
+    senses:
+    - verb
+  retailer:
+    senses:
+    - noun
+  return:
+    senses:
+    - verb
+  returns:
+    senses:
+    - verb
+  reunion:
+    senses:
+    - noun
+  review:
+    senses:
+    - noun
+  reviews:
+    senses:
+    - noun
+  ribbon:
+    senses:
+    - noun
+    plural: ribbons
+  rice:
+    senses:
+    - noun
+  richer:
+    senses:
+    - comparative
+  rid:
+    senses:
+    - verb
+  ride:
+    senses:
+    - verb
+  rides:
+    senses:
+    - verb
+    verb:
+      lemma: ride
+  riding:
+    senses:
+    - noun
+  right:
+    senses:
+    - adjective
+  right-angle:
+    senses:
+    - adjective
+  ring:
+    senses:
+    - noun
+  ripe:
+    senses:
+    - adjective
+  rise:
+    senses:
+    - verb
+  river:
+    senses:
+    - noun
+  road:
+    senses:
+    - noun
+    plural: roads
+  robin:
+    senses:
+    - noun
+    plural: robins
+  robot:
+    senses:
+    - noun
+    plural: robots
+  rock:
+    senses:
+    - noun
+    plural: rocks
+  rocket:
+    senses:
+    - noun
+    plural: rockets
+  rode:
+    senses:
+    - verb
+    verb:
+      lemma: ride
+  roll:
+    senses:
+    - verb
+  rolls:
+    senses:
+    - noun
+  roof:
+    senses:
+    - noun
+    plural: roofs
+  room:
+    senses:
+    - noun
+    plural: rooms
+  roommate:
+    senses:
+    - noun
+    plural: roommates
+  rooster:
+    senses:
+    - noun
+    plural: roosters
+  rope:
+    senses:
+    - noun
+    plural: ropes
+  rotten:
+    senses:
+    - adjective
+  roulette:
+    senses:
+    - noun
+  round:
+    senses:
+    - noun
+    plural: rounds
+  route:
+    senses:
+    - noun
+    plural: routes
+  row:
+    senses:
+    - noun
+    plural: rows
+  rubber:
+    senses:
+    - noun
+  rule:
+    senses:
+    - noun
+    plural: rules
+  run:
+    senses:
+    - verb
+  runner:
+    senses:
+    - noun
+    plural: runners
+  running:
+    senses:
+    - verb
+    verb:
+      lemma: run
+  runs:
+    senses:
+    - verb
+    verb:
+      lemma: run
+  runt:
+    senses:
+    - noun
+  s:
+    senses:
+    - possessive
+  sack:
+    senses:
+    - noun
+    plural: sacks
+  safely:
+    senses:
+    - adverb
+  said:
+    senses:
+    - verb
+  salad:
+    senses:
+    - noun
+  salary:
+    senses:
+    - noun
+    plural: salaries
+  sale:
+    senses:
+    - noun
+    plural: sales
+  salesman:
+    senses:
+    - noun
+  salmon:
+    senses:
+    - noun
+  salt:
+    senses:
+    - noun
+  same:
+    senses:
+    - adjective
+  samosa:
+    senses:
+    - noun
+    plural: samosas
+  samples:
+    senses:
+    - noun
+  sandbox:
+    senses:
+    - noun
+  sandwich:
+    senses:
+    - noun
+    plural: sandwiches
+  sang:
+    senses:
+    - verb
+    verb:
+      lemma: sing
+  sat:
+    senses:
+    - verb
+  saturday:
+    senses:
+    - time
+  sauce:
+    senses:
+    - noun
+  save:
+    senses:
+    - verb
+  saved:
+    senses:
+    - verb
+    verb:
+      lemma: save
+  saves:
+    senses:
+    - verb
+    verb:
+      lemma: save
+  saving:
+    senses:
+    - verb
+    verb:
+      lemma: save
+  savings:
+    senses:
+    - noun
+  saw:
+    senses:
+    - verb
+    verb:
+      lemma: see
+  saw-mill:
+    senses:
+    - noun
+  scare:
+    senses:
+    - verb
+  scarf:
+    senses:
+    - noun
+  scavenger:
+    senses:
+    - adjective
+  school:
+    senses:
+    - noun
+    plural: schools
+  schoolyard:
+    senses:
+    - noun
+  science:
+    senses:
+    - noun
+  scientist:
+    senses:
+    - noun
+    plural: scientists
+  scoop:
+    senses:
+    - noun
+    plural: scoops
+  scooter:
+    senses:
+    - noun
+    plural: scooters
+  score:
+    senses:
+    - noun
+    - verb
+    plural: scores
+  scored:
+    senses:
+    - verb
+    verb:
+      lemma: score
+  scores:
+    senses:
+    - verb
+    verb:
+      lemma: score
+  scoring:
+    senses:
+    - verb
+    verb:
+      lemma: score
+  scout:
+    senses:
+    - noun
+    plural: scouts
+  scrapbook:
+    senses:
+    - noun
+    plural: scrapbooks
+  seagull:
+    senses:
+    - noun
+    plural: seagulls
+  seals:
+    senses:
+    - noun
+  seashell:
+    senses:
+    - noun
+    plural: seashells
+  season:
+    senses:
+    - noun
+    plural: seasons
+  seat:
+    senses:
+    - noun
+    plural: seats
+  seated:
+    senses:
+    - verb
+  second:
+    senses:
+    - adjective
+  seconds:
+    senses:
+    - noun
+  section:
+    senses:
+    - noun
+    plural: sections
+  sedan:
+    senses:
+    - noun
+    plural: sedans
+  see:
+    senses:
+    - verb
+  seed:
+    senses:
+    - noun
+    plural: seeds
+  sees:
+    senses:
+    - verb
+    verb:
+      lemma: see
+  seller:
+    senses:
+    - noun
+  selling:
+    senses:
+    - verb
+    verb:
+      lemma: sell
+  semester:
+    senses:
+    - noun
+    plural: semesters
+  semi:
+    senses:
+    - noun
+  send:
+    senses:
+    - verb
+  sending:
+    senses:
+    - verb
+    verb:
+      lemma: send
+  sends:
+    senses:
+    - verb
+    verb:
+      lemma: send
+  senior:
+    senses:
+    - noun
+    plural: seniors
+  sent:
+    senses:
+    - verb
+    verb:
+      lemma: send
+  separate:
+    senses:
+    - adjective
+  separately:
+    senses:
+    - adverb
+  separates:
+    senses:
+    - verb
+  september:
+    senses:
+    - time
+  series:
+    senses:
+    - noun
+  serve:
+    senses:
+    - verb
+  served:
+    senses:
+    - verb
+    verb:
+      lemma: serve
+  serves:
+    senses:
+    - verb
+    verb:
+      lemma: serve
+  service:
+    senses:
+    - adjective
+  serving:
+    senses:
+    - noun
+    plural: servings
+  session:
+    senses:
+    - noun
+    plural: sessions
+  set:
+    senses:
+    - noun
+    plural: sets
+  settle:
+    senses:
+    - verb
+  seven:
+    senses:
+    - value
+  seventeen:
+    senses:
+    - value
+  seventy:
+    senses:
+    - value
+  several:
+    senses:
+    - quantifier
+  sew:
+    senses:
+    - verb
+  sewer:
+    senses:
+    - noun
+  sews:
+    senses:
+    - verb
+  shade:
+    senses:
+    - noun
+  shape:
+    senses:
+    - noun
+  shapes:
+    senses:
+    - noun
+  share:
+    senses:
+    - verb
+  shared:
+    senses:
+    - verb
+    verb:
+      lemma: share
+  shares:
+    senses:
+    - verb
+    verb:
+      lemma: share
+  sharing:
+    senses:
+    - verb
+    verb:
+      lemma: share
+  shark:
+    senses:
+    - noun
+    plural: sharks
+  sharpen:
+    senses:
+    - verb
+  sharpened:
+    senses:
+    - verb
+  sharpener:
+    senses:
+    - noun
+  sheet:
+    senses:
+    - noun
+    plural: sheets
+  shelf:
+    senses:
+    - noun
+    plural: shelves
+  shell:
+    senses:
+    - noun
+    plural: shells
+  shelter:
+    senses:
+    - noun
+  shepherd:
+    senses:
+    - noun
+  shift:
+    senses:
+    - noun
+  shifts:
+    senses:
+    - noun
+  ship:
+    senses:
+    - verb
+  shirt:
+    senses:
+    - noun
+    plural: shirts
+  shoe:
+    senses:
+    - noun
+    plural: shoes
+  shoebox:
+    senses:
+    - noun
+  shooting:
+    senses:
+    - noun
+  shoots:
+    senses:
+    - verb
+  shop:
+    senses:
+    - noun
+    plural: shops
+  shopkeeper:
+    senses:
+    - noun
+  shopping:
+    senses:
+    - verb
+    verb:
+      lemma: shop
+  short:
+    senses:
+    - adjective
+  shorter:
+    senses:
+    - comparative
+  shorts:
+    senses:
+    - noun
+  should:
+    senses:
+    - auxiliary
+  show:
+    senses:
+    - noun
+    plural: shows
+  shower:
+    senses:
+    - noun
+    plural: showers
+  showing:
+    senses:
+    - noun
+    plural: showings
+  shuck:
+    senses:
+    - verb
+  sibling:
+    senses:
+    - noun
+    plural: siblings
+  sick:
+    senses:
+    - adjective
+  side:
+    senses:
+    - noun
+    plural: sides
+  sided:
+    senses:
+    - adjective
+  sidewalk:
+    senses:
+    - noun
+  signed:
+    senses:
+    - verb
+  silk:
+    senses:
+    - noun
+  silver:
+    senses:
+    - adjective
+  simple:
+    senses:
+    - adjective
+  since:
+    senses:
+    - conjunction
+  sing:
+    senses:
+    - verb
+  singing:
+    senses:
+    - adjective
+  single:
+    senses:
+    - adjective
+  sir:
+    senses:
+    - title
+  sister:
+    senses:
+    - noun
+    plural: sisters
+  sit:
+    senses:
+    - verb
+  sit-ups:
+    senses:
+    - noun
+  site:
+    senses:
+    - noun
+  sitting:
+    senses:
+    - verb
+  situp:
+    senses:
+    - noun
+  situps:
+    senses:
+    - noun
+  six:
+    senses:
+    - value
+  six-sided:
+    senses:
+    - adjective
+  sixteen:
+    senses:
+    - value
+  sixth:
+    senses:
+    - adjective
+  sixth-grade:
+    senses:
+    - adjective
+  sixths:
+    senses:
+    - noun
+  sixty:
+    senses:
+    - value
+  size:
+    senses:
+    - noun
+    plural: sizes
+  skateboard:
+    senses:
+    - noun
+  skiing:
+    senses:
+    - noun
+  skip:
+    senses:
+    - noun
+    plural: skips
+  skipped:
+    senses:
+    - verb
+    verb:
+      lemma: skip
+  skirt:
+    senses:
+    - noun
+    plural: skirts
+  sleep:
+    senses:
+    - verb
+  sleeping:
+    senses:
+    - verb
+  sleeps:
+    senses:
+    - verb
+  slept:
+    senses:
+    - verb
+    verb:
+      lemma: sleep
+  slice:
+    senses:
+    - noun
+    plural: slices
+  slower:
+    senses:
+    - comparative
+  smaller:
+    senses:
+    - comparative
+  smallest:
+    senses:
+    - adjective
+  smart:
+    senses:
+    - adjective
+  smartphone:
+    senses:
+    - noun
+  smell:
+    senses:
+    - verb
+  smelled:
+    senses:
+    - verb
+  smoothie:
+    senses:
+    - noun
+    plural: smoothies
+  snack:
+    senses:
+    - noun
+    plural: snacks
+  snail:
+    senses:
+    - noun
+  snails:
+    senses:
+    - noun
+  snake:
+    senses:
+    - noun
+    plural: snakes
+  snow:
+    senses:
+    - noun
+  snowball:
+    senses:
+    - noun
+    plural: snowballs
+  so:
+    senses:
+    - conjunction
+  soccer:
+    senses:
+    - noun
+  soda:
+    senses:
+    - noun
+    plural: sodas
+  sofa:
+    senses:
+    - noun
+    plural: sofas
+  softball:
+    senses:
+    - noun
+    plural: softballs
+  soldier:
+    senses:
+    - noun
+    plural: soldiers
+  something:
+    senses:
+    - noun
+  son:
+    senses:
+    - noun
+    plural: sons
+  song:
+    senses:
+    - noun
+    plural: songs
+  sorts:
+    senses:
+    - verb
+  soup:
+    senses:
+    - noun
+  sour:
+    senses:
+    - adjective
+  space:
+    senses:
+    - noun
+    plural: spaces
+  spaghetti:
+    senses:
+    - noun
+  sparrow:
+    senses:
+    - noun
+    plural: sparrows
+  spay:
+    senses:
+    - verb
+  speak:
+    senses:
+    - verb
+  special:
+    senses:
+    - adjective
+  species:
+    senses:
+    - noun
+  spectator:
+    senses:
+    - noun
+  spectators:
+    senses:
+    - noun
+  speech:
+    senses:
+    - noun
+  speed:
+    senses:
+    - noun
+    plural: speeds
+  spelling:
+    senses:
+    - noun
+  spending:
+    senses:
+    - verb
+    verb:
+      lemma: spend
+  spinning:
+    senses:
+    - noun
+  spit:
+    senses:
+    - verb
+  split:
+    senses:
+    - verb
+  splits:
+    senses:
+    - verb
+    verb:
+      lemma: split
+  splitting:
+    senses:
+    - verb
+    verb:
+      lemma: split
+  spoke:
+    senses:
+    - noun
+    plural: spokes
+  spool:
+    senses:
+    - noun
+  spools:
+    senses:
+    - noun
+  spoon:
+    senses:
+    - noun
+    plural: spoons
+  spot:
+    senses:
+    - noun
+  spots:
+    senses:
+    - noun
+  spray:
+    senses:
+    - noun
+  spread:
+    senses:
+    - verb
+  spreading:
+    senses:
+    - verb
+    verb:
+      lemma: spread
+  spreads:
+    senses:
+    - verb
+    verb:
+      lemma: spread
+  spring:
+    senses:
+    - adjective
+  square:
+    senses:
+    - adjective
+  stack:
+    senses:
+    - noun
+    plural: stacks
+  stacking:
+    senses:
+    - verb
+  stadium:
+    senses:
+    - noun
+  stairs:
+    senses:
+    - noun
+  stall:
+    senses:
+    - noun
+    plural: stalls
+  stamp:
+    senses:
+    - noun
+    plural: stamps
+  stand:
+    senses:
+    - noun
+  standard:
+    senses:
+    - adjective
+  standing:
+    senses:
+    - verb
+  stands:
+    senses:
+    - verb
+  star:
+    senses:
+    - noun
+    plural: stars
+  start:
+    senses:
+    - verb
+  started:
+    senses:
+    - verb
+    verb:
+      lemma: start
+  starting:
+    senses:
+    - verb
+    verb:
+      lemma: start
+  starts:
+    senses:
+    - verb
+    verb:
+      lemma: start
+  state:
+    senses:
+    - noun
+    plural: states
+  station:
+    senses:
+    - noun
+  statistics:
+    senses:
+    - noun
+  statue:
+    senses:
+    - noun
+    plural: statues
+  stay:
+    senses:
+    - verb
+  stayed:
+    senses:
+    - verb
+    verb:
+      lemma: stay
+  stays:
+    senses:
+    - verb
+    verb:
+      lemma: stay
+  steak:
+    senses:
+    - noun
+    plural: steaks
+  steals:
+    senses:
+    - verb
+  step:
+    senses:
+    - noun
+    plural: steps
+  stick:
+    senses:
+    - noun
+    plural: sticks
+  still:
+    senses:
+    - adverb
+  stone:
+    senses:
+    - noun
+    plural: stones
+  stop:
+    senses:
+    - noun
+    plural: stops
+  stopover:
+    senses:
+    - noun
+  stopped:
+    senses:
+    - verb
+  stopping:
+    senses:
+    - verb
+  storage:
+    senses:
+    - noun
+  store:
+    senses:
+    - noun
+    plural: stores
+  story:
+    senses:
+    - noun
+    plural: stories
+  strawberry:
+    senses:
+    - noun
+    plural: strawberries
+  street:
+    senses:
+    - noun
+    plural: streets
+  strictly:
+    senses:
+    - adverb
+  string:
+    senses:
+    - noun
+  strip:
+    senses:
+    - noun
+    plural: strips
+  stripe:
+    senses:
+    - noun
+    plural: stripes
+  studied:
+    senses:
+    - verb
+    verb:
+      lemma: study
+  studies:
+    senses:
+    - verb
+    verb:
+      lemma: study
+  studio:
+    senses:
+    - noun
+  study:
+    senses:
+    - verb
+  studying:
+    senses:
+    - noun
+  stuffed:
+    senses:
+    - adjective
+  subdivides:
+    senses:
+    - verb
+  subsequent:
+    senses:
+    - adjective
+  subway:
+    senses:
+    - noun
+  successive:
+    senses:
+    - adjective
+  such:
+    senses:
+    - adjective
+  suck:
+    senses:
+    - verb
+  sucks:
+    senses:
+    - verb
+    verb:
+      lemma: suck
+  sufficient:
+    senses:
+    - adjective
+  sugar:
+    senses:
+    - noun
+  sum:
+    senses:
+    - noun
+  summer:
+    senses:
+    - noun
+  sunday:
+    senses:
+    - time
+  sunflower:
+    senses:
+    - noun
+    plural: sunflowers
+  sunglass:
+    senses:
+    - noun
+  sunglasses:
+    senses:
+    - noun
+  supermarket:
+    senses:
+    - noun
+  supplier:
+    senses:
+    - noun
+  supply:
+    senses:
+    - noun
+    plural: supplies
+  support:
+    senses:
+    - verb
+  supposed:
+    senses:
+    - verb
+  sure:
+    senses:
+    - adjective
+  survive:
+    senses:
+    - verb
+  suv:
+    senses:
+    - noun
+    plural: suvs
+  swam:
+    senses:
+    - verb
+    verb:
+      lemma: swim
+  sweater:
+    senses:
+    - noun
+    plural: sweaters
+  sweets:
+    senses:
+    - noun
+  swim:
+    senses:
+    - verb
+  swimming:
+    senses:
+    - adjective
+  swims:
+    senses:
+    - verb
+  sword:
+    senses:
+    - noun
+    plural: swords
+  swordfish:
+    senses:
+    - noun

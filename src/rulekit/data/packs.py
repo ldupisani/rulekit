@@ -18,11 +18,13 @@ from ruamel.yaml import YAML
 from .schemas import (
     KIND_MODELS,
     CategoriesDoc,
+    ConversionsDoc,
     GuardsDoc,
     LexiconDoc,
     NumbersDoc,
     ObligationsDoc,
     PackDoc,
+    QuarantineDoc,
     RequirementsDoc,
     RulesDoc,
     SynthDoc,
@@ -49,6 +51,8 @@ class LoadedPack:
     synth: list[SynthDoc] = field(default_factory=list)
     requirements: list[RequirementsDoc] = field(default_factory=list)
     guards: list[GuardsDoc] = field(default_factory=list)
+    conversions: list[ConversionsDoc] = field(default_factory=list)
+    quarantine: list[QuarantineDoc] = field(default_factory=list)
     fingerprint: str = ""
 
 
@@ -106,6 +110,10 @@ def load_pack(root: Path) -> LoadedPack:
             pack.requirements.append(doc)
         elif isinstance(doc, GuardsDoc):
             pack.guards.append(doc)
+        elif isinstance(doc, ConversionsDoc):
+            pack.conversions.append(doc)
+        elif isinstance(doc, QuarantineDoc):
+            pack.quarantine.append(doc)
 
     pack.fingerprint = hasher.hexdigest()
     return pack

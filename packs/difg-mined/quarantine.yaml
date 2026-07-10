@@ -1,0 +1,542 @@
+format: rulekit/quarantine@1
+words:
+  attach:
+    tags:
+    - attach
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  attached:
+    tags:
+    - attach
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  attaches:
+    tags:
+    - attach
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  banknote:
+    tags:
+    - cashtoken
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  bat:
+    tags:
+    - animal
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  bats:
+    tags:
+    - animal
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  blouse:
+    tags:
+    - clothing
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  blouses:
+    tags:
+    - clothing
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  brewed:
+    tags:
+    - produce
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  brews:
+    tags:
+    - produce
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  buck:
+    tags:
+    - currency
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  bucks:
+    tags:
+    - currency
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  clothing:
+    tags:
+    - clothing
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  commute:
+    tags:
+    - journey
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  companion:
+    tags:
+    - person
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  companions:
+    tags:
+    - person
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  condo:
+    tags:
+    - building
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  condos:
+    tags:
+    - building
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  contributes:
+    tags:
+    - contribute
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  cooked:
+    tags:
+    - produce
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  costlier:
+    tags:
+    - higher
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  coupons:
+    tags:
+    - discount
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  crafted:
+    tags:
+    - produce
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  crews:
+    tags:
+    - persongroup
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  deer:
+    tags:
+    - animal
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  donate:
+    tags:
+    - lose
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  donated:
+    tags:
+    - lose
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  donates:
+    tags:
+    - lose
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  donkey:
+    tags:
+    - animal
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  donkeys:
+    tags:
+    - animal
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  draws:
+    tags:
+    - produce
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  drew:
+    tags:
+    - produce
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  euro:
+    tags:
+    - currency
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  euros:
+    tags:
+    - currency
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  fare:
+    tags:
+    - charge
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  fares:
+    tags:
+    - charge
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  flies:
+    tags:
+    - motion
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  fortnight:
+    tags:
+    - timeperiod
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  foxes:
+    tags:
+    - animal
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  garment:
+    tags:
+    - clothing
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  garments:
+    tags:
+    - clothing
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  gather:
+    tags:
+    - acquire
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  gathers:
+    tags:
+    - acquire
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  geese:
+    tags:
+    - animal
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  giraffe:
+    tags:
+    - animal
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  goose:
+    tags:
+    - animal
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  gorilla:
+    tags:
+    - animal
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  gorillas:
+    tags:
+    - animal
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  grab:
+    tags:
+    - acquire
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  grabbed:
+    tags:
+    - acquire
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  grabs:
+    tags:
+    - acquire
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  hamsters:
+    tags:
+    - pet
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  hen:
+    tags:
+    - animal
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  hike:
+    tags:
+    - motion
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  hiked:
+    tags:
+    - motion
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  hikes:
+    tags:
+    - motion
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  households:
+    tags:
+    - persongroup
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  knit:
+    tags:
+    - produce
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  knits:
+    tags:
+    - produce
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  knitted:
+    tags:
+    - produce
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  lamb:
+    tags:
+    - animal
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  lambs:
+    tags:
+    - animal
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  lion:
+    tags:
+    - animal
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  mansion:
+    tags:
+    - building
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  mansions:
+    tags:
+    - building
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  motorcycle:
+    tags:
+    - vehicle
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  motorcycles:
+    tags:
+    - vehicle
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  note:
+    tags:
+    - cashtoken
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  owl:
+    tags:
+    - animal
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  owls:
+    tags:
+    - animal
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  pant:
+    tags:
+    - clothing
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  pinned:
+    tags:
+    - attach
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  place:
+    tags:
+    - attach
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  placed:
+    tags:
+    - attach
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  places:
+    tags:
+    - attach
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  rebate:
+    tags:
+    - discount
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  rebates:
+    tags:
+    - discount
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  resident:
+    tags:
+    - person
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  residents:
+    tags:
+    - person
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  retain:
+    tags:
+    - retain
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  retained:
+    tags:
+    - retain
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  retains:
+    tags:
+    - retain
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  rowed:
+    tags:
+    - motion
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  sail:
+    tags:
+    - motion
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  sailed:
+    tags:
+    - motion
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  sails:
+    tags:
+    - motion
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  sewed:
+    tags:
+    - produce
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  sheep:
+    tags:
+    - animal
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  skyscraper:
+    tags:
+    - building
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  skyscrapers:
+    tags:
+    - building
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  sock:
+    tags:
+    - clothing
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  socks:
+    tags:
+    - clothing
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  spouse:
+    tags:
+    - person
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  spouses:
+    tags:
+    - person
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  sprint:
+    tags:
+    - motion
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  sprinted:
+    tags:
+    - motion
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  sprints:
+    tags:
+    - motion
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  stuck:
+    tags:
+    - attach
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  teammates:
+    tags:
+    - person
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  term:
+    tags:
+    - timeperiod
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  tiger:
+    tags:
+    - animal
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  tigers:
+    tags:
+    - animal
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  voucher:
+    tags:
+    - discount
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  vouchers:
+    tags:
+    - discount
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  wolf:
+    tags:
+    - animal
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  wolves:
+    tags:
+    - animal
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  zebra:
+    tags:
+    - animal
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'
+  zebras:
+    tags:
+    - animal
+    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
+      Re-admit only through the firewall.'

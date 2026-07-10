@@ -56,6 +56,8 @@ class Registry:
     context_synonyms: Mapping[str, tuple[str, tuple[str, ...]]]  # concept -> (gate, forms)
     attrs: Mapping[str, Mapping[str, float]]
     part_counts: Mapping[str, str]
+    conversions: Mapping[tuple[str, str], float]
+    quarantine: Mapping[str, str]  # word -> reason (never vocabulary)
     rules: tuple[PatternRule, ...]
     asks: tuple[AskRule, ...]
     synth_rules: tuple[SynthRule, ...]
@@ -128,10 +130,10 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
     plural_to_singular: dict[str, str] = {}
     verb_lemmas: dict[str, str] = {}
     for word, entry in sorted(lexicon.items()):
-        if entry.plural:
-            if entry.plural in plural_to_singular and plural_to_singular[entry.plural] != word:
-                raise CompileError(f"plural {entry.plural!r} claimed by two singulars")
-            plural_to_singular[entry.plural] = word
+        for plural in entry.plurals():
+            if plural in plural_to_singular and plural_to_singular[plural] != word:
+                raise CompileError(f"plural {plural!r} claimed by two singulars")
+            plural_to_singular[plural] = word
         if entry.verb and entry.verb.lemma:
             verb_lemmas[word] = entry.verb.lemma
 
@@ -235,6 +237,33 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
         if gate not in category_parents:
             raise CompileError(f"context synonym {concept!r} gates on unknown category {gate!r}")
 
+    # conversions: store both directions; conflicting factors error
+    conversions: dict[tuple[str, str], float] = {}
+    for pack in packs:
+        for doc in pack.conversions:
+            for c in doc.conversions:
+                for pair, factor in (
+                    ((c.from_, c.to), c.factor),
+                    ((c.to, c.from_), 1.0 / c.factor),
+                ):
+                    if pair in conversions and abs(conversions[pair] - factor) > 1e-9:
+                        raise CompileError(
+                            f"conversion {pair} declared twice with different factors"
+                        )
+                    conversions[pair] = factor
+
+    # quarantine: documentation only, and it must not contradict the lexicon
+    quarantine: dict[str, str] = {}
+    for pack in packs:
+        for doc in pack.quarantine:
+            for word, q in doc.words.items():
+                if word in lexicon:
+                    raise CompileError(
+                        f"quarantined word {word!r} is also in the lexicon — "
+                        "re-admission must remove it from quarantine"
+                    )
+                quarantine[word] = q.reason
+
     rules: list[PatternRule] = []
     asks: list[AskRule] = []
     synth_rules: list[SynthRule] = []
@@ -286,13 +315,15 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
         operators=_freeze(operators),
         role_obligations=_freeze(role_obligations),
         category_parents=_freeze(category_parents),
-        category_members=_freeze({k: tuple(sorted(v)) for k, v in category_members.items()}),
-        word_categories=_freeze({k: tuple(sorted(v)) for k, v in word_categories.items()}),
+        category_members=_freeze({k: tuple(sorted(set(v))) for k, v in category_members.items()}),
+        word_categories=_freeze({k: tuple(sorted(set(v))) for k, v in word_categories.items()}),
         category_antonyms=_freeze(category_antonyms),
         category_polarity=_freeze(category_polarity),
         context_synonyms=_freeze(context_synonyms),
         attrs=_freeze({k: _freeze(v) for k, v in attrs.items()}),
         part_counts=_freeze(part_counts),
+        conversions=_freeze(conversions),
+        quarantine=_freeze(quarantine),
         rules=tuple(sorted(rules, key=lambda r: r.id)),
         asks=tuple(sorted(asks, key=lambda a: a.id)),
         synth_rules=tuple(sorted(synth_rules, key=lambda s: s.id)),
