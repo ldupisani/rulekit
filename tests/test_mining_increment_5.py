@@ -52,10 +52,21 @@ def test_fraction_of_pool(registry):
 def test_fraction_chain_sequences(registry):
     r = solve(
         "Tom found 12 eggs. Tom ate half of the eggs. Tom gave 2 eggs to Mary. "
-        "How many eggs are left?",
+        "How many eggs does Tom have?",
         registry,
     )
     assert r.answer.value == 4
+
+
+def test_transfer_makes_entityless_left_ambiguous(registry):
+    # after a transfer the recipient HOLDS the goods — "are left" now has
+    # two honest readings (giver's remainder vs undestroyed pool): decline
+    r = solve(
+        "Tom found 12 eggs. Tom ate half of the eggs. Tom gave 2 eggs to Mary. "
+        "How many eggs are left?",
+        registry,
+    )
+    assert r.answer.kind == "decline"
 
 
 def test_percent_of_money(full_registry):

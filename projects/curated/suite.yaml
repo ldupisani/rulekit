@@ -116,8 +116,11 @@ items:
     text: Tom found 12 eggs. Tom ate half of the eggs. How many eggs are left?
     expect: 6
   - id: fraction-chain-sequences
-    text: Tom found 12 eggs. Tom ate half of the eggs. Tom gave 2 eggs to Mary. How many eggs are left?
+    text: Tom found 12 eggs. Tom ate half of the eggs. Tom gave 2 eggs to Mary. How many eggs does Tom have?
     expect: 4
+  - id: decline-transfer-makes-left-ambiguous
+    text: Tom found 12 eggs. Tom ate half of the eggs. Tom gave 2 eggs to Mary. How many eggs are left?
+    expect: decline
   - id: fraction-of-pronoun
     text: Mary found 28 coins. She lost one fourth of it. How many coins are left?
     expect: 21
@@ -139,9 +142,7 @@ items:
     text: Tom has 3 apples. Mary has 4 apples. He ate 2 apples. How many apples does Tom have?
     expect: decline
 
-  # ---- transfer (awaiting packs/arithmetic/rules/transfer.yaml) --------------
-  # These DECLINE until the transfer rule exists — safely: the unbound value
-  # trips the value-accounting guard. Writing the rule flips them to correct.
+  # ---- transfer effects (giver loses, recipient gains — category-signed) -----
   - id: transfer-recipient
     text: Tom has 10 apples. Mary has 2 apples. Tom gave Mary 3 apples. How many apples does Mary have?
     expect: 5

@@ -1,30 +1,56 @@
 format: rulekit/rules@1
-# YOUR FIRST RULE — the ditransitive transfer: "Tom gave Mary 3 apples."
-#
-# Currently both transfer items in projects/curated/suite.yaml DECLINE
-# (safely — the unbound "3 apples" trips the value-accounting guard).
-# Design decision for you: what FACTS should a transfer emit?
-#
-# The idiomatic move (and the interesting insight): emit TWO quantity facts
-# and let the CATEGORY DATA do the signing — no arithmetic in the rule:
-#   - {fact: quantity, entity: "{giver}",     measure: "{item}", value: "item", verb: give}
-#   - {fact: quantity, entity: "{recipient}", measure: "{item}", value: "item", verb: receive}
-# The answer fold subtracts the first (give ∈ lose, polarity -1) and adds the
-# second (receive ∈ acquire, polarity +1). Alternative: emit signed values
-# yourself (value: "-item") with verb: have — works, but bypasses the
-# polarity system and won't generalize to "took"/"handed"/"donated".
-#
-# Matching notes:
-# - "3 apples" condenses into ONE counted-noun unit before rules run, so
-#   match it as a single slot: {slot: item, type: plural}. In emit
-#   expressions the slot name is its numeric value (item = 3.0).
-# - Only `gave`-class verbs should trigger: gate the verb slot with
-#   cat: lose (give/gave are members) — or register a dedicated `transfer`
-#   verb category in packs/core-english/categories/core.yaml if you want
-#   tighter scoping (the narrow/broaden lever).
-# - Keep giver ≠ recipient: where: [{distinct: [giver, recipient]}]
-# - Declare consumes: [item] so value accounting knows the number was used.
-#
-# Test with:  uv run rulekit --project projects/curated bench
-rules: []
-# TODO(louis): replace `rules: []` with your transfer rule (~10 lines).
+# The ditransitive transfer: "Tom gave Mary 3 apples" / "Tom gave 3 apples
+# to Mary". The rule emits TWO quantity facts and the CATEGORY DATA does the
+# signing: the giver's side carries the sentence's own verb (give/sold/… ∈
+# lose → −), the recipient's side carries `receive` (∈ acquire → +). No
+# arithmetic lives in the rule; tagging a new transfer verb in the lose
+# category is the only change "handed"/"donated" would ever need.
+rules:
+  - id: arithmetic/transfer-ditransitive
+    phase: read
+    description: '"Tom gave Mary 3 apples" — giver loses, recipient gains.'
+    match:
+      sentence:
+        - {slot: giver, type: name}
+        - {slot: verb, cat: lose}
+        - {slot: recipient, type: name}
+        - {slot: item, type: counted}
+    where:
+      - distinct: [giver, recipient]
+    consumes: [item]
+    emits:
+      - fact: quantity
+        entity: "{giver}"
+        measure: "{item}"
+        value: "item"
+        verb: "{verb}"
+      - fact: quantity
+        entity: "{recipient}"
+        measure: "{item}"
+        value: "item"
+        verb: receive
+
+  - id: arithmetic/transfer-prepositional
+    phase: read
+    description: '"Tom gave 3 apples to Mary" — same transfer, object first.'
+    match:
+      sentence:
+        - {slot: giver, type: name}
+        - {slot: verb, cat: lose}
+        - {slot: item, type: counted}
+        - {lit: to}
+        - {slot: recipient, type: name}
+    where:
+      - distinct: [giver, recipient]
+    consumes: [item]
+    emits:
+      - fact: quantity
+        entity: "{giver}"
+        measure: "{item}"
+        value: "item"
+        verb: "{verb}"
+      - fact: quantity
+        entity: "{recipient}"
+        measure: "{item}"
+        value: "item"
+        verb: receive
