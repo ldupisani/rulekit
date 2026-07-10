@@ -78,6 +78,14 @@ def _conjoined_sibling(reading: Reading, unit: Unit) -> Unit | None:
     return _linked(i, +1) or _linked(i, -1)
 
 
+def _crosses_clause_boundary(reading: Reading, a: Unit, b: Unit) -> bool:
+    lo, hi = sorted((a.span[0], b.span[0]))
+    return any(
+        u.sense() == "complementizer" and lo < u.span[0] < hi
+        for u in reading.units
+    )
+
+
 def attach_obligations(reading: Reading, reg: Registry) -> Reading:
     for unit in reading.units:
         sense = unit.sense()
@@ -128,6 +136,12 @@ def _candidates(reading: Reading, holder: Unit, ob: Obligation, reg: Registry) -
             continue
         if direction == "right" and unit.span[0] < holder.span[0]:
             continue
+        # arguments are CLAUSE-LOCAL: a complementizer ("found out THAT
+        # 7 caps weigh…") is a boundary no subject/dobj binding may cross
+        if ob.need in ("subject", "dobj", "object") and _crosses_clause_boundary(
+            reading, holder, unit
+        ):
+            continue
         out.append(unit)
     # A conjoined name ("Frankie AND Carla played…") is not a lone subject —
     # the subject is the GROUP. Keep both conjuncts in play and FORBID
@@ -146,6 +160,12 @@ def _candidates(reading: Reading, holder: Unit, ob: Obligation, reg: Registry) -
         nominal = [u for u in out if _unit_sense_class(u) != "value"]
         if nominal:
             out = nominal
+    # A counted noun is rarely an AGENT: "he made $100,000 and got a bonus"
+    # must not give 'got' the subject '$100,000'. Prefer uncounted nominals.
+    if ob.need == "subject":
+        uncounted = [u for u in out if u.features.get("value_kind") != "count"]
+        if uncounted:
+            out = uncounted
     if len(out) > 1:
         # Adjacency arbitration: the nearest candidate wins ONLY if strictly
         # nearer than all others; equal distance stays ambiguous.

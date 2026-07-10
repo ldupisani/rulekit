@@ -25,11 +25,19 @@ entries:
   # pronouns
   he: {senses: [pronoun]}
   she: {senses: [pronoun]}
-  they: {senses: [pronoun]}
+  they: {senses: [pronoun], number: plural}
   it: {senses: [pronoun]}
 
   # negation
   not: {senses: [negator]}
+
+  # the possessive clitic — tokenized as its own unit ("Tom's" -> Tom + 's)
+  "'s":
+    senses: [possessive]
+    notes: >
+      owner (left) + owned (right) bind and condense into an owner-attributed
+      noun. The copula reading ("he's got") leaves `owned` unmet and the
+      sentence declines — never a wrong fact.
 
   # auxiliaries / question words (structure)
   does: {senses: [auxiliary]}

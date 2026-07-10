@@ -84,6 +84,8 @@ def _entity_total(
         (state if q.is_state else events).append(q)
     if not state and not events:
         return None
+    if len({q.time for q in state + events}) > 1:
+        return None  # facts from DIFFERENT times — time arithmetic is unbuilt
     total = 0.0
     parts: list[str] = []
     for q in state:
@@ -149,6 +151,12 @@ def answer(
                 return Answer(
                     "decline", None,
                     f"no {ask_verb!r} events known for {entity!r}/{singular!r}",
+                )
+            if len({q.time for q in events}) > 1:
+                return Answer(
+                    "decline", None,
+                    f"{ask_verb!r} events span different times — time "
+                    "arithmetic is unbuilt",
                 )
             total = evaluate(
                 " + ".join(str(q.value) for q in events), {}, log, source="event-fold"

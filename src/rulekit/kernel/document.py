@@ -88,6 +88,10 @@ def _bind_discourse(readings: list[Reading]) -> set[int]:
         for unit in reading.units:
             if unit.sense() != "pronoun":
                 continue
+            # number agreement: a PLURAL pronoun ("they") never binds a lone
+            # name — group referents are unbuilt, so it honestly stays unmet
+            if unit.features.get("number") == "plural":
+                continue
             obligations = unit.obligations()
             for i, ob in enumerate(obligations):
                 if ob.need != "refers" or ob.met:

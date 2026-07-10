@@ -33,6 +33,10 @@ roles:
     needs: [standard]
     direction: {standard: right}
     notes: "more/fewer … THAN <standard>"
+  possessive:
+    needs: [owner, owned]
+    direction: {owner: left, owned: right}
+    notes: "\"Tom's apples\" — the clitic demands both sides"
   pronoun:
     needs: [refers]
     notes: >

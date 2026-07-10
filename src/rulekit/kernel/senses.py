@@ -84,6 +84,8 @@ def annotate_senses(reading: Reading, reg: Registry) -> Reading:
                 continue
 
         if entry is not None:
+            if entry.number is not None:
+                number = entry.number
             changes: dict = {"senses": list(entry.senses), "number": number}
             if singular != fold and "noun" in entry.senses:
                 changes["lemma"] = singular

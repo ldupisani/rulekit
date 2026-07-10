@@ -27,6 +27,26 @@ def _merge(reading: Reading, i: int, head_features_from: Unit, kind: str, reason
 
 def _nominal_pass(reading: Reading, reg: Registry) -> bool:
     units = reading.units
+    # owner + 's + owned -> one owner-attributed noun ("Tom's apples")
+    for i in range(len(units) - 2):
+        a, b, c = units[i], units[i + 1], units[i + 2]
+        if (
+            a.sense() in ("name", "noun")
+            and b.sense() == "possessive"
+            and c.sense() == "noun"
+        ):
+            owner = a.features.get("lemma", a.features.get("fold", a.surface.lower()))
+            merged = reading.new_unit(a.words + b.words + c.words, dict(c.features))
+            merged.features["fold"] = f"{a.features['fold']} 's {c.features['fold']}"
+            attrs = list(c.features.get("attributes", []))
+            attrs.append(owner)
+            units[i : i + 3] = [merged]
+            reading.record(
+                "merge-possessive", merged,
+                {"attributes": attrs},
+                f"{a.surface!r} owns {c.surface!r} — one owner-attributed noun",
+            )
+            return True
     for i in range(len(units) - 1):
         a, b = units[i], units[i + 1]
         # adjective + noun -> restricted noun ("red apple")
@@ -88,8 +108,11 @@ def _count_pass(reading: Reading, reg: Registry) -> bool:
 
 
 def condense(reading: Reading, reg: Registry) -> Reading:
-    while _nominal_pass(reading, reg):
-        pass
-    while _count_pass(reading, reg):
-        pass
-    return reading
+    # joint fixpoint with nominal priority: a count merge can expose a new
+    # nominal merge ("Tom's [3 apples]"), so alternate until neither fires
+    while True:
+        if _nominal_pass(reading, reg):
+            continue
+        if _count_pass(reading, reg):
+            continue
+        return reading

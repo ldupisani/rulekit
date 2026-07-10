@@ -29,6 +29,7 @@ class VerbInfo(StrictModel):
 class LexiconEntry(StrictModel):
     senses: list[str]
     plural: str | list[str] | None = None  # noun senses: plural surface(s)
+    number: Literal["singular", "plural"] | None = None  # grammatical number (pronouns)
     verb: VerbInfo | None = None  # for verb senses: irregular lemma etc.
     notes: str | None = None
 

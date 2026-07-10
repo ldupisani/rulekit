@@ -67,12 +67,46 @@ def _is_rate(reading: Reading, counted: Unit) -> bool:
         k = j + 1
         if k < len(units) and units[k].sense() == "noun":
             return True
+    # DISTRIBUTIVE: "2 notebooks for EACH of his children" — a quantifier
+    # after the counted noun (within this clause) makes the count
+    # per-recipient, i.e. a rate. Scan right until a clause boundary.
+    for unit in units[j:]:
+        if unit.sense() in ("complementizer",) or unit.surface in (".", "?", "!"):
+            break
+        if unit.sense() == "quantifier":
+            return True
     return False
+
+
+def _sentence_time(reading: Reading, reg: Registry) -> str | None:
+    """A sentence-initial time adjunct ('Last year he made…', 'This year…')
+    scopes every fact the sentence yields. The time words are the
+    `timeperiod` category — data. Returns the adjunct's fold, or None."""
+    for unit in reading.units:
+        sense = unit.sense()
+        if sense == "verb":
+            return None  # reached the predicate: no leading adjunct
+        if (
+            sense == "noun"
+            and "value" not in unit.features
+            and reg.word_in_category(
+                unit.features.get("lemma", unit.features.get("fold", "")), "timeperiod"
+            )
+        ):
+            idx = reading.units.index(unit)
+            words = [
+                u.features.get("fold", "")
+                for u in reading.units[max(0, idx - 1) : idx + 1]
+                if u.sense() not in ("punct",)
+            ]
+            return " ".join(words)
+    return None
 
 
 def learn(reading: Reading, reg: Registry) -> list[Fact]:
     facts: list[Fact] = []
     prov = Provenance(source="fold", sentence=reading.sentence_index)
+    time_label = _sentence_time(reading, reg)
 
     # value units that found what they quantify: value -> noun. Units a
     # pattern rule consumed are masked (their facts were already emitted with
@@ -121,6 +155,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                     value=float(dobj.features["value"]),
                     verb=verb_lemma,
                     occurrence=occurrence,
+                    time=time_label,
                 )
             )
         elif dobj is not None and dobj.uid in quantifies:
@@ -133,6 +168,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                     value=float(value_unit.features["value"]),
                     verb=verb_lemma,
                     occurrence=occurrence,
+                    time=time_label,
                 )
             )
         elif verb_lemma == "be" and dobj is not None and dobj.sense() == "noun":
