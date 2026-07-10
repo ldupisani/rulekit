@@ -54,6 +54,10 @@ entries:
   # imperative sense in difg-mined where their verb entries live
   compute: {senses: [imperative]}
 
+  # question/remainder skeleton (moved from difg-mined)
+  left: {senses: [adjective], notes: "'are left' / 'have left' — the remainder frame"}
+  there: {senses: [existential]}
+
   # comparatives
   more: {senses: [comparative]}
   fewer: {senses: [comparative]}

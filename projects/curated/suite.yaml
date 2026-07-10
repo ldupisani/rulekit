@@ -97,6 +97,14 @@ items:
     text: Tom finds 3 coins a day. How many coins does Tom have?
     expect: decline
 
+  # ---- entity-less asks (unique-entity consumer) ------------------------------
+  - id: entityless-left
+    text: Tom has 10 marbles. Tom lost 3 marbles. How many marbles are left?
+    expect: 7
+  - id: decline-entityless-two-holders
+    text: Tom has 10 marbles. Mary has 5 marbles. How many marbles are left?
+    expect: decline
+
   # ---- discourse: the document re-parse loop ---------------------------------
   - id: pronoun-unique-antecedent
     text: Tom has 10 apples. He ate 4 apples. How many apples does Tom have?

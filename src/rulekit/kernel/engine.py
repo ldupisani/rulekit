@@ -105,6 +105,11 @@ def split_question(text: str, reg: Registry | None = None) -> tuple[list[str], s
     is_question = last.endswith("?") or (
         reg is not None and _has_ask_cue_sense(first_word, reg)
     )
+    # "If she worked 50 hours, calculate her total income." — no question
+    # mark, no leading cue, but the post-comma part leads with one
+    if not is_question and reg is not None and last.lower().startswith("if "):
+        clause, rest = _split_leading_clause(last, reg)
+        is_question = clause is not None
     if not is_question:
         return sentences, None
     premises = sentences[:-1]

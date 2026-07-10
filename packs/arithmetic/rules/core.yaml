@@ -131,6 +131,30 @@ asks:
       measure: "{item}"
       verb: "{verb}"
 
+  - id: ask/how-many-left-entityless
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {slot: verb, type: verb}
+        - {lit: left}
+    resolves:
+      consumer: unique-entity
+      measure: "{item}"
+
+  - id: ask/how-many-there
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {slot: verb, type: verb}
+        - {lit: there}
+    resolves:
+      consumer: unique-entity
+      measure: "{item}"
+
   - id: ask/how-much-bare-entity
     match:
       question:

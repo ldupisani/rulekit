@@ -170,6 +170,28 @@ def answer(
             )
         return Answer("number", total, f"fold over {entity!r}/{singular!r}")
 
+    if consumer == "unique-entity":
+        # an ENTITY-LESS ask ("how many balloons are left?") resolves iff
+        # exactly one entity holds the measure — definitive-or-decline
+        measure = query["measure"]
+        singular = _resolve_measure(measure, store, reg)
+        if singular is None:
+            return Answer("decline", None,
+                          f"measure {measure!r} is ambiguous across the facts")
+        entities = sorted(
+            {q.entity for q in store.by_kind(Quantity) if q.measure == singular}
+        )
+        if len(entities) != 1:
+            return Answer(
+                "decline", None,
+                f"{len(entities)} entities hold {singular!r} — an entity-less "
+                "ask needs exactly one",
+            )
+        total = _entity_total(store, reg, entities[0], singular, log)
+        if total is None:
+            return Answer("decline", None, f"{entities[0]!r} has no resolvable total")
+        return Answer("number", total, f"unique-entity fold over {entities[0]!r}/{singular!r}")
+
     if consumer == "combined":
         measure = query["measure"]
         singular = _resolve_measure(measure, store, reg)
