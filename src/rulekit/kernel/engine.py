@@ -99,7 +99,9 @@ def solve(text: str, reg: Registry) -> Result:
 
     question = analyze(question_text, reg, sentence_index=len(premise_texts))
     proposed = run_answer(question, doc.store, reg, doc.log)
-    veto = run_guards(premises, doc.consumed_uids, doc.log, reg, proposed, doc.store)
+    veto = run_guards(
+        premises, doc.consumed_uids, doc.log, reg, proposed, doc.store, question
+    )
     if veto is not None:
         proposed = Answer("decline", None, f"[{veto.guard}] {veto.reason}")
     result = Result(proposed, premises, question, doc.store, doc.log, veto)

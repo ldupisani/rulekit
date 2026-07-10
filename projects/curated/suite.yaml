@@ -129,3 +129,15 @@ items:
   - id: repeat-events-accumulate
     text: Tom finds 3 coins. Tom finds 3 coins. How many coins does Tom have?
     expect: 6
+  - id: event-verb-ask
+    text: Tom bought 6 eggs. Tom ate 2 eggs. How many eggs did Tom eat?
+    expect: 2
+  - id: decline-event-ask-without-event
+    text: Tom bought 6 eggs. How many eggs did Tom sell?
+    expect: decline
+  - id: decline-conjoined-subject
+    text: Tom and Mary have 10 apples. How many apples does Tom have?
+    expect: decline
+  - id: decline-question-carries-unread-number
+    text: Lisa walks 10 meters each minute. How many meters will Lisa walk in two days?
+    expect: decline

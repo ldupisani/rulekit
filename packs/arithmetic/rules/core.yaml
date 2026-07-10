@@ -103,6 +103,7 @@ asks:
       consumer: single-entity
       entity: "{who}"
       measure: "{item}"
+      verb: "{verb}"
 
   - id: ask/is-membership
     match:

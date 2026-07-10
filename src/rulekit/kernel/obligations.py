@@ -47,6 +47,28 @@ def _unit_sense_class(unit: Unit) -> str | None:
     return sense
 
 
+def _conjoined_sibling(reading: Reading, unit: Unit) -> Unit | None:
+    """The other name in an '<name> and <name>' pair containing `unit`."""
+    units = reading.units
+    try:
+        i = units.index(unit)
+    except ValueError:
+        return None
+    if (
+        i + 2 < len(units)
+        and units[i + 1].sense() == "conjunction"
+        and units[i + 2].sense() == "name"
+    ):
+        return units[i + 2]
+    if (
+        i - 2 >= 0
+        and units[i - 1].sense() == "conjunction"
+        and units[i - 2].sense() == "name"
+    ):
+        return units[i - 2]
+    return None
+
+
 def attach_obligations(reading: Reading, reg: Registry) -> Reading:
     for unit in reading.units:
         sense = unit.sense()
@@ -71,6 +93,22 @@ def _candidates(reading: Reading, holder: Unit, ob: Obligation, reg: Registry) -
     wanted = NEED_CANDIDATES.get(ob.need, frozenset())
     role = reg.role_obligations.get(ob.role)
     direction = role.direction.get(ob.need, "either") if role else "either"
+
+    # `quantifies` is strictly LOCAL: a count quantifies the noun it can
+    # reach crossing only nominal material (articles, adjectives, punct-free
+    # nouns). Any other sense in between ("5 LESS THAN half as many coconut
+    # trees") means the value does NOT count that noun — leave it unmet and
+    # let the deficiency/guard machinery decline, never mis-bind.
+    if ob.need == "quantifies":
+        idx = reading.units.index(holder)
+        for unit in reading.units[idx + 1 :]:
+            sense = unit.sense()
+            if sense in ("article", "adjective"):
+                continue
+            if sense == "noun":
+                return [unit]
+            return []
+        return []
     out = []
     for unit in reading.units:
         if unit.uid == holder.uid:
@@ -82,6 +120,17 @@ def _candidates(reading: Reading, holder: Unit, ob: Obligation, reg: Registry) -
         if direction == "right" and unit.span[0] < holder.span[0]:
             continue
         out.append(unit)
+    # A conjoined name ("Frankie AND Carla played…") is not a lone subject —
+    # the subject is the GROUP. Keep both conjuncts in play and FORBID
+    # adjacency from arbitrating between them: the binding stays non-unique
+    # (unmet) rather than attributing the fact to the nearer name.
+    if ob.need == "subject":
+        for candidate in list(out):
+            sibling = _conjoined_sibling(reading, candidate)
+            if sibling is not None:
+                if sibling not in out:
+                    out.append(sibling)
+                return out
     # A bare value competes for an argument slot only when nothing nominal
     # does ("Tom ate 3" is elliptical; "Tom ate 3 apples" condensed anyway).
     if ob.need in ("dobj", "object", "standard"):

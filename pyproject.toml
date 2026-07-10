@@ -9,7 +9,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-bench = ["pyarrow>=16"]
+bench = [
+    "pyarrow>=16",
+]
 server = ["fastapi>=0.111", "uvicorn>=0.30"]
 
 [project.scripts]

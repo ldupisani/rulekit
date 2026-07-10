@@ -1,0 +1,7 @@
+format: rulekit/project@1
+name: gsm8k
+packs: [core-english, arithmetic, difg-mined]
+datasets:
+  gsm8k:
+    train: {parquet: data/gsm8k_train.parquet, question: question, answer: answer}
+    test: {parquet: data/gsm8k_test.parquet, question: question, answer: answer}

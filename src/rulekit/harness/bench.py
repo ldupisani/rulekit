@@ -32,6 +32,11 @@ class ItemResult:
     reason: str = ""
     rules: list[str] = field(default_factory=list)
     collisions: int = 0
+    unknown_words: list[str] = field(default_factory=list)
+
+    @property
+    def fully_read(self) -> bool:
+        return not self.unknown_words
 
 
 @dataclass
@@ -49,35 +54,64 @@ class BenchReport:
 
     @property
     def committed(self) -> int:
-        c = self.counts
-        return c["correct"] + c["wrong"]
+        # an expected-decline item answered honestly is correct but committed
+        # NOTHING — only actual answers count toward coverage/precision
+        return sum(
+            1 for r in self.results
+            if r.outcome == "wrong" or (r.outcome == "correct" and r.got is not None)
+        )
 
     @property
     def precision(self) -> float | None:
-        return self.counts["correct"] / self.committed if self.committed else None
+        if not self.committed:
+            return None
+        committed_correct = sum(
+            1 for r in self.results if r.outcome == "correct" and r.got is not None
+        )
+        return committed_correct / self.committed
 
     @property
     def coverage(self) -> float:
         return self.committed / len(self.results) if self.results else 0.0
 
-    def summary(self) -> str:
+    @property
+    def fully_read_count(self) -> int:
+        return sum(1 for r in self.results if r.fully_read)
+
+    def aggregates(self) -> dict:
+        c = self.counts
+        return {
+            "items": len(self.results),
+            **c,
+            "precision": self.precision,
+            "coverage": self.coverage,
+            "fully_read": self.fully_read_count,
+        }
+
+    def summary(self, items_visible: bool = True) -> str:
         c = self.counts
         precision = f"{self.precision:.1%}" if self.precision is not None else "n/a"
+        n = len(self.results)
+        ceiling = self.fully_read_count / n if n else 0.0
+        hit_rate = self.committed / self.fully_read_count if self.fully_read_count else 0.0
         lines = [
-            f"items     {len(self.results)}",
-            f"correct   {c['correct']}",
-            f"wrong     {c['wrong']}   <- must trend to 0 (precision failures)",
-            f"declined  {c['declined']}  (safe coverage gaps)",
-            f"errored   {c['errored']}",
-            f"precision {precision}  (correct/committed — THE safety metric)",
-            f"coverage  {self.coverage:.1%}  (committed/total)",
-            f"elapsed   {self.elapsed:.2f}s",
+            f"items      {n}",
+            f"correct    {c['correct']}",
+            f"wrong      {c['wrong']}   <- must trend to 0 (precision failures)",
+            f"declined   {c['declined']}  (safe coverage gaps)",
+            f"errored    {c['errored']}",
+            f"precision  {precision}  (correct/committed — THE safety metric)",
+            f"coverage   {self.coverage:.1%}  (committed/total)",
+            f"fully-read {ceiling:.1%}  × hit-rate {hit_rate:.1%}  (coverage factorization)",
+            f"elapsed    {self.elapsed:.2f}s",
         ]
         wrongs = [r for r in self.results if r.outcome == "wrong"]
-        if wrongs:
+        if wrongs and items_visible:
             lines.append("confident-wrongs (the worklist):")
-            for r in wrongs:
+            for r in wrongs[:25]:
                 lines.append(f"  {r.id}: expected {r.expected!r}, got {r.got!r}")
+        elif wrongs:
+            lines.append(f"confident-wrongs: {len(wrongs)} (aggregate-only slice — items withheld)")
         return "\n".join(lines)
 
     def to_snapshot(self) -> dict:
@@ -136,12 +170,17 @@ def run_suite(items: list[dict], reg: Registry) -> BenchReport:
                     if f.provenance.source not in ("fold",)
                 }
             )
+            unknown = sorted(
+                {w.lower() for r in result.premises for w in r.unknown_words()}
+                | {w.lower() for w in (result.question.unknown_words() if result.question else [])}
+            )
             results.append(
                 ItemResult(
                     item_id, outcome, expected, got,
                     reason=result.answer.reason,
                     rules=rules,
                     collisions=len(result.store.collisions),
+                    unknown_words=unknown,
                 )
             )
         except Exception as exc:  # noqa: BLE001 — errored is a taxonomy bucket

@@ -43,15 +43,63 @@ def cmd_diagnose(args) -> int:
     return 0
 
 
+def _dataset_items(project, slice_name: str):
+    from .harness.firewall import load_dataset, slice_items
+
+    name, splits = next(iter(sorted(project.doc.datasets.items())))
+    train = load_dataset(
+        project.root / splits["train"].parquet,
+        splits["train"].question, splits["train"].answer,
+    )
+    test = load_dataset(
+        project.root / splits["test"].parquet,
+        splits["test"].question, splits["test"].answer,
+    )
+    return [
+        {"id": i.id, "text": i.text, "expect": i.expect}
+        for i in slice_items(train, test, slice_name)
+    ]
+
+
 def cmd_bench(args) -> int:
+    from .harness.firewall import INSPECTABLE_SLICES, record_test_look
+
     project, reg = _registry(args)
-    items = project.suite_items()
-    if not items:
-        print("project has no suite", file=sys.stderr)
-        return 2
+    if project.doc.datasets:
+        if not args.slice:
+            print("dataset project: --slice dev|dev-train|dev-holdout|test required", file=sys.stderr)
+            return 2
+        if args.slice == "test" and not args.spend_test_look:
+            print(
+                "TEST is one-look and aggregate-only: add --spend-test-look to "
+                "spend it (recorded in the ledger)",
+                file=sys.stderr,
+            )
+            return 2
+        items = _dataset_items(project, args.slice)
+    else:
+        items = project.suite_items()
+        if not items:
+            print("project has no suite or datasets", file=sys.stderr)
+            return 2
+    if args.limit:
+        print(f"⚠ PARTIAL FIREWALL: --limit {args.limit} — a prefix number is "
+              "not the slice number; never ship on it")
+        items = items[: args.limit]
+
     report = run_suite(items, reg)
-    print(report.summary())
+    inspectable = not project.doc.datasets or args.slice in INSPECTABLE_SLICES
+    print(report.summary(items_visible=inspectable))
+    if project.doc.datasets and args.slice == "test":
+        record_test_look(
+            project.snapshots_dir / "test-ledger.jsonl", reg.fingerprint, report.aggregates()
+        )
+        print("test look SPENT -> snapshots/test-ledger.jsonl")
+        return 0
     if args.snapshot:
+        if not inspectable:
+            print("refusing to snapshot an aggregate-only slice", file=sys.stderr)
+            return 2
         path = project.snapshots_dir / args.snapshot
         write_snapshot(report, path)
         print(f"snapshot -> {path}")
@@ -62,6 +110,46 @@ def cmd_bench(args) -> int:
             return 3
         print("determinism: two in-process runs identical")
     return 0 if report.counts["wrong"] == 0 else 1
+
+
+def cmd_stats(args) -> int:
+    from collections import Counter
+
+    from .harness.firewall import INSPECTABLE_SLICES
+
+    project, reg = _registry(args)
+    slice_name = args.slice or "dev-train"
+    if project.doc.datasets:
+        if slice_name not in INSPECTABLE_SLICES:
+            print("stats runs on inspectable slices only (the firewall)", file=sys.stderr)
+            return 2
+        items = _dataset_items(project, slice_name)
+    else:
+        items = project.suite_items()
+    report = run_suite(items, reg)
+
+    unknown = Counter()
+    reasons = Counter()
+    rules = Counter()
+    for r in report.results:
+        for w in r.unknown_words:
+            unknown[w] += 1
+        if r.outcome in ("declined", "errored"):
+            reasons[r.reason.split("(")[0].split(" for ")[0].strip()[:60]] += 1
+        if r.outcome == "correct":
+            for rule in r.rules or ["fold-only"]:
+                rules[rule] += 1
+    print(report.summary())
+    print("\nmost frequent unknown words (the vocabulary worklist):")
+    for w, n in unknown.most_common(args.top):
+        print(f"  {n:5d}  {w}")
+    print("\ndecline reasons (the structure worklist):")
+    for reason, n in reasons.most_common(args.top):
+        print(f"  {n:5d}  {reason}")
+    print("\nrule attribution (where correct answers come from):")
+    for rule, n in rules.most_common():
+        print(f"  {n:5d}  {rule}")
+    return 0
 
 
 def cmd_lint(args) -> int:
@@ -113,10 +201,19 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("text")
     p.set_defaults(fn=cmd_diagnose)
 
-    p = sub.add_parser("bench", help="run the project suite")
+    p = sub.add_parser("bench", help="run the project suite or a dataset slice")
+    p.add_argument("--slice", help="dev|dev-train|dev-holdout|test (dataset projects)")
+    p.add_argument("--limit", type=int, help="prefix only — prints a PARTIAL FIREWALL warning")
+    p.add_argument("--spend-test-look", action="store_true",
+                   help="required for --slice test; the look is recorded in the ledger")
     p.add_argument("--snapshot", help="write snapshot JSON under snapshots/")
     p.add_argument("--twice", action="store_true", help="determinism self-check")
     p.set_defaults(fn=cmd_bench)
+
+    p = sub.add_parser("stats", help="unknown-word worklist, decline taxonomy, rule attribution")
+    p.add_argument("--slice", help="inspectable slice (default dev-train)")
+    p.add_argument("--top", type=int, default=25)
+    p.set_defaults(fn=cmd_stats)
 
     p = sub.add_parser("lint", help="static checks: overlaps, overrides, blast radius")
     p.add_argument("--category", help="print the blast-radius report for a category")

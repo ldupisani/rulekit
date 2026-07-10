@@ -29,13 +29,17 @@ def _enabled(reg: Registry, name: str) -> bool:
     return bool(cfg.get("enabled", True)) if cfg is not None else True
 
 
-def _fact_values(store: FactStore) -> set[float]:
-    out: set[float] = set()
+def _fact_values_by_sentence(store: FactStore) -> dict[int, set[float]]:
+    """Numeric fields of admitted facts, keyed by originating sentence —
+    a value is only accounted by facts its OWN sentence produced (a same
+    number appearing in another sentence's fact must not mask an unread)."""
+    out: dict[int, set[float]] = {}
     for fact in store.facts:
+        values = out.setdefault(fact.provenance.sentence, set())
         for field_name in _NUMERIC_FACT_FIELDS:
             v = getattr(fact, field_name, None)
             if isinstance(v, (int, float)):
-                out.add(float(v))
+                values.add(float(v))
     return out
 
 
@@ -46,15 +50,17 @@ def check(
     reg: Registry,
     proposed: Answer,
     store: FactStore | None = None,
+    question: Reading | None = None,
 ) -> GuardVeto | None:
     """Run all enabled guards against a proposed committed answer.
     Returns the first veto, or None. Only 'number' answers are guarded —
     a decline is already safe."""
     if not proposed.committed:
         return None
+    readings = premises + ([question] if question is not None else [])
 
     if _enabled(reg, "unknown-word"):
-        for reading in premises:
+        for reading in readings:
             unknown = reading.unknown_words()
             if unknown:
                 return GuardVeto(
@@ -64,30 +70,45 @@ def check(
                 )
 
     if _enabled(reg, "value-accounting"):
-        # A stated value is accounted iff it reached the reading's OUTPUT: a
-        # rule consumed it, a fact carries it, or the arithmetic used it.
-        # Merely being syntactically bound is NOT enough — an ambiguous
-        # pronoun's sentence parses fine yet yields no fact, and committing
-        # an answer that ignores its value is the confident-wrong this
-        # guard exists to prevent.
-        fact_values = _fact_values(store) if store is not None else set()
-        for reading in premises:
+        # EVERY stated value — count, multiplier, fraction, percent, in a
+        # premise OR the question — must reach the reading's OUTPUT: a rule
+        # consumed it, a fact from its OWN sentence carries it, or the
+        # arithmetic used it. A committed answer that silently ignored
+        # "half as many", "twice", "40% more" or the question's "in 10
+        # years" is exactly the confident-wrong this guard exists to stop.
+        fact_values = _fact_values_by_sentence(store) if store is not None else {}
+        for reading in readings:
             used = consumed_uids.get(reading.sentence_index, set())
+            own_values = fact_values.get(reading.sentence_index, set())
             for unit in reading.units:
-                if unit.features.get("value_kind") != "count":
+                kind = unit.features.get("value_kind")
+                if kind not in ("count", "multiplier", "fraction"):
                     continue
                 value = float(unit.features["value"])
-                if unit.uid in used or value in fact_values or log.uses_value(value):
+                # NO global arithmetic-log fallback here: the fold's own sum
+                # would mask a same-number unread from another sentence.
+                # Facts-from-own-sentence and explicit consumption are the
+                # only honest evidence.
+                if (
+                    unit.uid in used
+                    or unit.features.get("pattern_consumed")
+                    or value in own_values
+                ):
                     continue
+                where = (
+                    "the question"
+                    if question is not None and reading is question
+                    else f"sentence {reading.sentence_index}"
+                )
                 return GuardVeto(
                     "value-accounting",
-                    f"stated value {unit.surface!r} (sentence "
-                    f"{reading.sentence_index}) reached no fact and no "
-                    "arithmetic — declining rather than risk a wrong commit",
+                    f"stated {kind} {unit.surface!r} ({where}) reached no "
+                    "fact and no arithmetic — declining rather than risk a "
+                    "wrong commit",
                 )
 
     if _enabled(reg, "ambiguity"):
-        for reading in premises:
+        for reading in readings:
             for unit in reading.units:
                 if unit.features.get("ambiguous"):
                     return GuardVeto(

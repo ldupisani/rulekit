@@ -98,6 +98,27 @@ def answer(
     if consumer == "single-entity":
         entity, measure = query["entity"], query["measure"]
         singular = reg.plural_to_singular.get(measure, measure)
+        ask_verb = query.get("verb", "have")
+        is_state_ask = ask_verb in ("have", "be") or reg.word_in_category(ask_verb, "state")
+        if not is_state_ask:
+            # An EVENT ask ("how many apples did Mary EAT?") sums only that
+            # verb's own event quantities — a holdings fold answering an
+            # eat-question with a buy-total is a category error (the
+            # question's verb is part of the query, difg playbook lesson).
+            events = [
+                q for q in store.by_kind(Quantity)
+                if q.entity == entity and q.measure == singular
+                and q.verb == ask_verb and not q.is_state
+            ]
+            if not events:
+                return Answer(
+                    "decline", None,
+                    f"no {ask_verb!r} events known for {entity!r}/{singular!r}",
+                )
+            total = evaluate(
+                " + ".join(str(q.value) for q in events), {}, log, source="event-fold"
+            )
+            return Answer("number", total, f"Σ {ask_verb!r} events of {entity!r}/{singular!r}")
         total = _entity_total(store, reg, entity, singular, log)
         if total is None:
             return Answer(
