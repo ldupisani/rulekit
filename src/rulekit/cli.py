@@ -44,21 +44,7 @@ def cmd_diagnose(args) -> int:
 
 
 def _dataset_items(project, slice_name: str):
-    from .harness.firewall import load_dataset, slice_items
-
-    name, splits = next(iter(sorted(project.doc.datasets.items())))
-    train = load_dataset(
-        project.root / splits["train"].parquet,
-        splits["train"].question, splits["train"].answer,
-    )
-    test = load_dataset(
-        project.root / splits["test"].parquet,
-        splits["test"].question, splits["test"].answer,
-    )
-    return [
-        {"id": i.id, "text": i.text, "expect": i.expect}
-        for i in slice_items(train, test, slice_name)
-    ]
+    return project.dataset_items(slice_name)
 
 
 def cmd_bench(args) -> int:

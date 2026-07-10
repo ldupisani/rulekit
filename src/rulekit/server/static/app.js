@@ -38,6 +38,17 @@ async function loadProject() {
   const p = await api("GET", "/api/project");
   $("project-name").textContent = p.name;
   $("fingerprint").textContent = p.fingerprint;
+  const target = $("impact-target");
+  target.replaceChildren();
+  for (const t of p.impact_targets) {
+    const opt = el("option", "", t);
+    opt.value = t;
+    target.append(opt);
+  }
+  target.onchange = () => {
+    $("spend-look").classList.toggle("hidden", target.value !== "test");
+    $("spend-look-cb").checked = false;
+  };
   const tree = $("file-tree");
   tree.replaceChildren();
   let pack = null;
@@ -266,17 +277,28 @@ function renderGaps(t) {
 
 /* ---------- impact ---------- */
 
+function impactBody() {
+  return {
+    target: $("impact-target").value || "suite",
+    spend_test_look: $("spend-look-cb").checked,
+  };
+}
+
 async function runImpact() {
-  setStatus("running suite…");
-  const r = await api("POST", "/api/impact");
+  const body = impactBody();
+  setStatus(`running ${body.target}… (full slices take ~10s)`);
+  const started = performance.now();
+  const r = await api("POST", "/api/impact", body);
   if (r.error) { setStatus(r.error, "err"); return; }
   const s = $("impact-summary");
   s.replaceChildren();
   const a = r.aggregates;
+  s.append(el("span", "bucket", `[${r.target}]`));
   s.append(el("span", "bucket", `✓ ${a.correct}`));
   s.append(el("span", "bucket", `✗ ${a.wrong} wrong`));
   s.append(el("span", "bucket", `− ${a.declined} declined`));
   s.append(el("span", "bucket", `precision ${a.precision === null ? "n/a" : (a.precision * 100).toFixed(1) + "%"}`));
+  s.append(el("span", "bucket", `coverage ${(a.coverage * 100).toFixed(1)}%`));
   if (r.diff) {
     s.append(el("span", "bucket", `SOLVED ${r.diff.solved.length}`));
     s.append(el("span", "bucket", `BROKE ${r.diff.broke.length}`));
@@ -285,17 +307,28 @@ async function runImpact() {
     const names = [...r.diff.solved.map((x) => `SOLVED ${x}`), ...r.diff.broke.map((x) => `BROKE ${x}`),
                    ...r.diff.decl_to_wrong.map((x) => `DECL→WRONG ${x}`)];
     if (names.length) s.append(el("span", "dim", "· " + names.slice(0, 6).join(", ")));
-  } else {
-    s.append(el("span", "dim", "· no baseline set — Set baseline first, then edit rules"));
+  } else if (r.target !== "test") {
+    s.append(el("span", "dim", "· no baseline for this target yet"));
   }
-  setStatus(`impact: ${a.items} items`, a.wrong ? "err" : "ok");
+  if (r.note) s.append(el("span", "dim", `· ${r.note}`));
+  if (r.items) {
+    const wrongs = Object.entries(r.items).filter(([, v]) => v.outcome === "wrong");
+    if (wrongs.length) {
+      s.append(el("span", "dim",
+        "· wrongs: " + wrongs.slice(0, 5).map(([id, v]) => `${id} (${v.expected}→${v.got})`).join(", ")));
+    }
+  }
+  const secs = ((performance.now() - started) / 1000).toFixed(1);
+  setStatus(`${r.target}: ${a.items} items in ${secs}s`, a.wrong ? "err" : "ok");
+  $("spend-look-cb").checked = false;
 }
 
 async function setBaseline() {
-  setStatus("snapshotting baseline…");
-  const r = await api("POST", "/api/baseline");
+  const body = impactBody();
+  setStatus(`snapshotting ${body.target} baseline…`);
+  const r = await api("POST", "/api/baseline", body);
   if (r.error) { setStatus(r.error, "err"); return; }
-  setStatus(`baseline set: ${r.aggregates.correct}/${r.aggregates.items} correct`, "ok");
+  setStatus(`baseline [${r.target}]: ${r.aggregates.correct}/${r.aggregates.items} correct`, "ok");
 }
 
 /* ---------- wiring ---------- */

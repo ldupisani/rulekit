@@ -39,11 +39,16 @@ class TraceBody(BaseModel):
     text: str
 
 
+class ImpactBody(BaseModel):
+    target: str = "suite"  # suite | dev-train | dev-holdout | test
+    spend_test_look: bool = False
+
+
 class ServerState:
     def __init__(self, project_root: Path):
         self.project_root = project_root
         self.project: Project = load_project(project_root)
-        self.baseline: dict | None = None
+        self.baselines: dict[str, dict] = {}  # target -> snapshot
 
     @property
     def registry(self) -> Registry:
@@ -123,6 +128,11 @@ def build_router(state: ServerState) -> APIRouter:
             "docs": docs,
             "has_suite": bool(state.project.doc.suite),
             "has_datasets": bool(state.project.doc.datasets),
+            "impact_targets": (
+                (["suite"] if state.project.doc.suite else [])
+                + (["dev-train", "dev-holdout", "test"]
+                   if state.project.doc.datasets else [])
+            ),
             "rules": [r.id for r in state.registry.rules],
             "asks": [a.id for a in state.registry.asks],
         }
@@ -211,16 +221,54 @@ def build_router(state: ServerState) -> APIRouter:
             "deficiencies": result.deficiencies(),
         }
 
+    def _target_items(target: str) -> list[dict] | None:
+        if target == "suite":
+            return state.project.suite_items() or None
+        if state.project.doc.datasets:
+            return state.project.dataset_items(target)
+        return None
+
     @router.post("/impact")
-    def impact():
-        items = state.project.suite_items()
+    def impact(body: ImpactBody):
+        """The firewall, enforced in the tool itself:
+        - suite / dev-train: fully inspectable (per-item outcomes returned)
+        - dev-holdout: a DELTA GATE — bucket counts + opaque item ids only
+        - test: aggregates only, requires spend_test_look, lands in the ledger
+        """
+        target = body.target
+        if target == "test" and not body.spend_test_look:
+            return {"error": "TEST is one-look and aggregate-only — tick "
+                             "'spend the TEST look' to spend it (ledgered)"}
+        try:
+            items = _target_items(target)
+        except ValueError as exc:
+            return {"error": str(exc)}
         if not items:
-            return {"error": "project has no curated suite (impact runs the suite)"}
+            return {"error": f"no items for target {target!r}"}
+
         report = run_suite(items, state.registry)
         snapshot = report.to_snapshot()
+        inspectable = target in ("suite", "dev-train")
+
+        if target == "test":
+            from ..harness.firewall import record_test_look
+
+            record_test_look(
+                state.project.snapshots_dir / "test-ledger.jsonl",
+                state.registry.fingerprint, report.aggregates(),
+            )
+            return {
+                "error": None, "target": target,
+                "aggregates": report.aggregates(),
+                "items": None, "diff": None,
+                "note": "TEST look SPENT and recorded in snapshots/test-ledger.jsonl "
+                        "— a precision drop vs your last look means REVERT",
+            }
+
         d = None
-        if state.baseline is not None:
-            dd = snapshot_diff(state.baseline, snapshot)
+        baseline = state.baselines.get(target)
+        if baseline is not None:
+            dd = snapshot_diff(baseline, snapshot)
             d = {
                 "solved": dd.solved, "broke": dd.broke,
                 "decl_to_wrong": dd.decl_to_wrong, "wrong_to_decl": dd.wrong_to_decl,
@@ -228,24 +276,37 @@ def build_router(state: ServerState) -> APIRouter:
             }
         return {
             "error": None,
+            "target": target,
             "aggregates": report.aggregates(),
-            "items": {
-                r.id: {"outcome": r.outcome, "expected": _jsonable(r.expected),
-                       "got": _jsonable(r.got), "reason": r.reason[:120]}
-                for r in report.results
-            },
+            "items": (
+                {
+                    r.id: {"outcome": r.outcome, "expected": _jsonable(r.expected),
+                           "got": _jsonable(r.got), "reason": r.reason[:120]}
+                    for r in report.results
+                    if r.outcome in ("wrong", "errored") or target == "suite"
+                }
+                if inspectable else None
+            ),
             "diff": d,
-            "has_baseline": state.baseline is not None,
+            "has_baseline": baseline is not None,
+            "note": None if inspectable else
+                    "dev-holdout is a delta gate: buckets only, ids are opaque "
+                    "— diagnose classes on dev-train, never tune to these items",
         }
 
     @router.post("/baseline")
-    def set_baseline():
-        items = state.project.suite_items()
+    def set_baseline(body: ImpactBody):
+        if body.target == "test":
+            return {"error": "TEST has no baseline — the ledger is its history"}
+        try:
+            items = _target_items(body.target)
+        except ValueError as exc:
+            return {"error": str(exc)}
         if not items:
-            return {"error": "no suite"}
+            return {"error": f"no items for target {body.target!r}"}
         report = run_suite(items, state.registry)
-        state.baseline = report.to_snapshot()
-        return {"error": None, "aggregates": report.aggregates()}
+        state.baselines[body.target] = report.to_snapshot()
+        return {"error": None, "target": body.target, "aggregates": report.aggregates()}
 
     @router.get("/lint")
     def lint():

@@ -56,9 +56,13 @@
 </main>
 
 <footer id="impact-bar">
+  <select id="impact-target" title="what to run against"></select>
+  <label id="spend-look" class="hidden" title="TEST is one-look and aggregate-only; every look is recorded in the ledger">
+    <input type="checkbox" id="spend-look-cb"> spend the TEST look
+  </label>
   <button id="baseline-btn">Set baseline</button>
   <button id="impact-btn" class="primary">Run impact</button>
-  <span id="impact-summary" class="dim">impact runs the project suite and diffs against the baseline</span>
+  <span id="impact-summary" class="dim">pick a target, set a baseline, then edit rules and re-run</span>
 </footer>
 
 <script src="/static/app.js"></script>

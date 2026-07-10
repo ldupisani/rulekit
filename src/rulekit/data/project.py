@@ -40,6 +40,27 @@ class Project:
     def snapshots_dir(self) -> Path:
         return self.root / "snapshots"
 
+    def dataset_items(self, slice_name: str) -> list[dict]:
+        """Bench items for a dataset slice (dev|dev-train|dev-holdout|test).
+        The md5 split and slice semantics live in harness.firewall."""
+        from ..harness.firewall import load_dataset, slice_items
+
+        if not self.doc.datasets:
+            raise ValueError("project has no datasets")
+        _name, splits = next(iter(sorted(self.doc.datasets.items())))
+        train = load_dataset(
+            self.root / splits["train"].parquet,
+            splits["train"].question, splits["train"].answer,
+        )
+        test = load_dataset(
+            self.root / splits["test"].parquet,
+            splits["test"].question, splits["test"].answer,
+        )
+        return [
+            {"id": i.id, "text": i.text, "expect": i.expect}
+            for i in slice_items(train, test, slice_name)
+        ]
+
 
 def _resolve_pack_path(name: str, project_root: Path) -> Path:
     if name.startswith("./") or name.startswith("../"):
