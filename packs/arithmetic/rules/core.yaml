@@ -135,6 +135,90 @@ rules:
         offset: 0.0
         verb: "{verb}"
 
+  - id: arithmetic/affine-frame-relation
+    phase: read
+    description: >
+      "Greg has read 9 more than twice the number of books that Kelcie has
+      read" — the AFFINE frame: subject = k·standard + n·sign(dir).
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: verb, type: verb}
+        - {slot: n, type: number}
+        - {slot: dir, cat: delta}
+        - {lit: than}
+        - {slot: k, type: multiplier}
+        - {slot: frame, cat: aggregate_noun}
+        - {lit: of}
+        - {slot: item, type: noun}
+        - {slot: c, cat: complementizer}
+        - {slot: std, type: name}
+    where:
+      - distinct: [who, std]
+    consumes: [n]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: "{item}"
+        factor: "k"
+        offset: "n * sign(dir)"
+        verb: "{verb}"
+
+  - id: arithmetic/fraction-frame-relation
+    phase: read
+    description: >
+      "Kelcie has read 1/4 the amount of books that Megan has read" — a
+      pure-fraction ratio in the frame form.
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: verb, type: verb}
+        - {slot: f, type: fraction}
+        - {slot: frame, cat: aggregate_noun}
+        - {lit: of}
+        - {slot: item, type: noun}
+        - {slot: c, cat: complementizer}
+        - {slot: std, type: name}
+    where:
+      - distinct: [who, std]
+    consumes: [f]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: "{item}"
+        factor: "f"
+        offset: 0.0
+        verb: "{verb}"
+
+  - id: arithmetic/fraction-as-many
+    phase: read
+    description: >
+      "Kelcie read half as many books as Megan" — the times-as-many shape
+      with a FRACTION ratio.
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: verb, type: verb}
+        - {slot: f, type: fraction}
+        - {lit: as}
+        - {lit: many}
+        - {slot: item, type: plural}
+        - {lit: as}
+        - {slot: std, type: name}
+    where:
+      - distinct: [who, std]
+    consumes: [f]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: "{item}"
+        factor: "f"
+        offset: 0.0
+        verb: "{verb}"
+
   - id: arithmetic/existential-premise
     phase: read
     description: >
@@ -287,10 +371,13 @@ asks:
             - {slot: aux, type: auxiliary}
             - {slot: who, type: pronoun}
             - {slot: verb, type: verb}
+        - opt:
+            - {slot: p, cat: preposition}
         - {slot: agg, cat: aggregate}
     resolves:
       consumer: combined
       measure: "{item}"
+      verb: "{verb}"
 
   - id: ask/how-many-more
     match:

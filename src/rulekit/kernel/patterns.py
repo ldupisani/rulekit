@@ -359,15 +359,15 @@ def match_ask(reading: Reading, reg: Registry) -> tuple[AskRule, dict[str, str]]
         if m is None:
             continue
         resolved = {}
-        ok = True
         for key, raw in ask.resolves.items():
             try:
                 resolved[key] = _TEMPLATE.sub(
                     lambda mm: _slot_value(m.slots[mm.group(1)], mm.group(2)), raw
                 )
             except KeyError:
-                ok = False
-                break
-        if ok:
-            return ask, resolved
+                # the template references an OPTIONAL slot that didn't bind
+                # ("verb: {verb}" with the opt-group absent) — omit the key
+                # and let the consumer's default apply
+                continue
+        return ask, resolved
     return None

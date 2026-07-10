@@ -27,6 +27,24 @@ def _merge(reading: Reading, i: int, head_features_from: Unit, kind: str, reason
 
 def _nominal_pass(reading: Reading, reg: Registry) -> bool:
     units = reading.units
+    # perfect tense: have-lemma verb + verb -> ONE verb ("has read 32 books"
+    # is a reading event, not a having plus a mystery participle)
+    for i in range(len(units) - 1):
+        a, b = units[i], units[i + 1]
+        if (
+            a.sense() == "verb"
+            and a.features.get("lemma") == "have"
+            and b.sense() == "verb"
+        ):
+            merged = reading.new_unit(a.words + b.words, dict(b.features))
+            merged.features["fold"] = f"{a.features['fold']} {b.features['fold']}"
+            units[i : i + 2] = [merged]
+            reading.record(
+                "merge-perfect", merged, {},
+                f"perfect tense {merged.surface!r} — one verb, lemma "
+                f"{b.features.get('lemma', b.features['fold'])!r}",
+            )
+            return True
     # owner + 's + owned -> one owner-attributed noun ("Tom's apples")
     for i in range(len(units) - 2):
         a, b, c = units[i], units[i + 1], units[i + 2]

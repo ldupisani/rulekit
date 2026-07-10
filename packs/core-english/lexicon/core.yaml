@@ -58,6 +58,9 @@ entries:
   left: {senses: [adjective], notes: "'are left' / 'have left' — the remainder frame"}
   there: {senses: [existential]}
 
+  # clause boundary — argument binding never crosses it
+  that: {senses: [complementizer], notes: "moved from difg-mined (was mis-lexiconed as article there)"}
+
   # comparatives
   more: {senses: [comparative]}
   fewer: {senses: [comparative]}

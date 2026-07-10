@@ -223,12 +223,32 @@ def answer(
                 f"a combined ask needs at least two holders of {singular!r}; "
                 f"found {entities}",
             )
+        ask_verb = query.get("verb", "have")
+        state_ask = ask_verb in ("have", "be") or reg.word_in_category(ask_verb, "state")
         totals = []
         for entity in entities:
-            t = _entity_total(store, reg, entity, singular, log)
-            if t is None:
-                return Answer("decline", None, f"{entity!r} has no resolvable total")
+            t = (
+                _entity_total(store, reg, entity, singular, log)
+                if state_ask
+                else _verb_total(store, entity, singular, ask_verb, log)
+            )
             totals.append(t)
+        if any(t is None for t in totals) and state_ask:
+            # the ask's verb trails out of pattern reach ("did X, Y and Z
+            # READ?") — when every quantity of the measure shares exactly ONE
+            # event verb, that activity is what the question sums
+            verbs = {
+                q.verb for q in store.by_kind(Quantity) if q.measure == singular
+            } - {"have", "be"}
+            if len(verbs) == 1:
+                (only_verb,) = verbs
+                totals = [
+                    _verb_total(store, entity, singular, only_verb, log)
+                    for entity in entities
+                ]
+        if any(t is None for t in totals):
+            missing = entities[totals.index(None)]
+            return Answer("decline", None, f"{missing!r} has no resolvable total")
         combined = evaluate(" + ".join(str(t) for t in totals), {}, log, source="combined")
         return Answer("number", combined, f"Σ over {entities}")
 

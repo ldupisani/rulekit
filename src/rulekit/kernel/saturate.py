@@ -118,11 +118,18 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
     # a relation anchors on ANY known quantity of the standard, but only an
     # existing STATE for the subject blocks resolution — the subject's own
     # EVENTS ("John lost 3") accumulate on top of the derived state
+    def verb_key(verb: str) -> str:
+        # ALL state verbs describe the same holding ("owns 15x as many" +
+        # "has 300" must not derive two Loris) — they share one key
+        if verb in ("have", "be") or reg.word_in_category(verb, "state"):
+            return "have"
+        return verb
+
     quantities: dict[tuple[str, str], Quantity] = {}
     by_verb: set[tuple[str, str, str]] = set()
     for q in store.by_kind(Quantity):
         quantities.setdefault((q.entity, q.measure), q)
-        by_verb.add((q.entity, q.measure, q.verb))
+        by_verb.add((q.entity, q.measure, verb_key(q.verb)))
         if q.is_state:
             quantities[(q.entity, q.measure)] = q
     for rel in store.by_kind(Relation):
@@ -131,7 +138,7 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
         # 60" describe the SAME writing (re-deriving doubles it); a lose
         # event on top of a have-relation is a CHANGE and stays allowed
         known = quantities.get((rel.standard, rel.measure))
-        if known is not None and (rel.subject, rel.measure, rel.verb) not in by_verb:
+        if known is not None and (rel.subject, rel.measure, verb_key(rel.verb)) not in by_verb:
             value = evaluate(
                 f"{rel.factor} * {known.value} + {rel.offset}", {}, log,
                 source=f"relation:{rel.provenance.source}",
@@ -149,7 +156,7 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
         known = quantities.get((rel.subject, rel.measure))
         if (
             known is not None
-            and (rel.standard, rel.measure, rel.verb) not in by_verb
+            and (rel.standard, rel.measure, verb_key(rel.verb)) not in by_verb
             and rel.factor != 0
         ):
             value = evaluate(
