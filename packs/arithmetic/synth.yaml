@@ -1,0 +1,12 @@
+format: rulekit/synth@1
+# Derivation rules: close the fact store under these to a fixpoint.
+# Generality lives in derivation; extraction stays tight (the #312 lesson).
+rules:
+  - id: synth/transitive-before
+    when:
+      - {fact: before, earlier: A, later: B}
+      - {fact: before, earlier: B, later: C}
+    unless:
+      - {fact: before, earlier: A, later: C}
+    emit:
+      - {fact: before, earlier: A, later: C}

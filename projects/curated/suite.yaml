@@ -1,0 +1,101 @@
+# The curated validation suite — synthetic strings only, NEVER benchmark
+# items (the firewall). Each item: text + expect (number | yes/no verdict |
+# "decline"). A decline expectation asserts the engine's honesty: committing
+# anything there is a precision failure.
+items:
+  # ---- single-entity quantities -------------------------------------------
+  - id: qty-single
+    text: Tom has 3 apples. How many apples does Tom have?
+    expect: 3
+  - id: qty-single-worded
+    text: Tom has seven apples. How many apples does Tom have?
+    expect: 7
+  - id: qty-single-compound-number
+    text: Tom has twenty five marbles. How many marbles does Tom have?
+    expect: 25
+  - id: qty-single-comma-number
+    text: Mary has 1,200 stickers. How many stickers does Mary have?
+    expect: 1200
+  - id: qty-two-entities-ask-one
+    text: Tom has 3 apples. Mary has 4 apples. How many apples does Tom have?
+    expect: 3
+  - id: qty-two-measures-ask-one
+    text: Tom has 3 apples. Tom has 5 books. How many books does Tom have?
+    expect: 5
+
+  # ---- accumulation with signed verbs -------------------------------------
+  - id: acc-gain
+    text: Tom has 10 marbles. Tom finds 5 marbles. How many marbles does Tom have?
+    expect: 15
+  - id: acc-loss
+    text: Tom has 10 apples. Tom ate 4 apples. How many apples does Tom have?
+    expect: 6
+  - id: acc-gain-loss-chain
+    text: Tom has 10 coins. Tom finds 3 coins. Tom lost 2 coins. How many coins does Tom have?
+    expect: 11
+  - id: acc-events-only
+    text: Tom bought 6 eggs. Tom ate 2 eggs. How many eggs does Tom have?
+    expect: 4
+
+  # ---- combined / aggregation ----------------------------------------------
+  - id: sum-two
+    text: Tom has 3 apples. Mary has 4 apples. How many apples do they have altogether?
+    expect: 7
+  - id: sum-three
+    text: Tom has 3 balls. Mary has 4 balls. Sue has 5 balls. How many balls do they have altogether?
+    expect: 12
+
+  # ---- relational quantities -----------------------------------------------
+  - id: rel-more
+    text: Tom has 3 apples. Mary has 2 more apples than Tom. How many apples does Mary have?
+    expect: 5
+  - id: rel-fewer
+    text: Tom has 8 books. Mary has 3 fewer books than Tom. How many books does Mary have?
+    expect: 5
+  - id: rel-twice
+    text: Tom has 3 apples. Mary has twice as many apples as Tom. How many apples does Mary have?
+    expect: 6
+  - id: rel-then-sum
+    text: Tom has 4 toys. Mary has twice as many toys as Tom. How many toys do they have altogether?
+    expect: 12
+  - id: rel-chain
+    text: Tom has 2 cards. Mary has 3 more cards than Tom. Sue has twice as many cards as Mary. How many cards does Sue have?
+    expect: 10
+
+  # ---- difference ------------------------------------------------------------
+  - id: diff-more-than
+    text: Tom has 3 apples. Mary has 7 apples. How many more apples does Mary have than Tom?
+    expect: 4
+
+  # ---- membership & the epistemic square ------------------------------------
+  - id: member-yes
+    text: Bob is a student. Is Bob a student?
+    expect: "yes"
+  - id: member-no
+    text: Bob is not a student. Is Bob a student?
+    expect: "no"
+  - id: member-undetermined
+    text: The rose wilted. Is Bob a student?
+    expect: "undetermined"
+
+  # ---- sense ambiguity (coverage arbitration) --------------------------------
+  - id: ambig-rose-noun
+    text: The rose wilted. Is Rose a teacher?
+    expect: "undetermined"
+
+  # ---- declines: the honesty checks (each would be a precision failure) ------
+  - id: decline-unknown-word
+    text: Tom has 3 wugs. How many wugs does Tom have?
+    expect: decline
+  - id: decline-unknown-entity
+    text: Tom has 3 apples. How many apples does Sue have?
+    expect: decline
+  - id: decline-wrong-measure
+    text: Tom has 3 apples. How many books does Tom have?
+    expect: decline
+  - id: decline-no-relation-anchor
+    text: Mary has 2 more apples than Tom. How many apples does Mary have?
+    expect: decline
+  - id: decline-unused-value
+    text: Tom has 3 apples and 4 unknownthings. How many apples does Tom have?
+    expect: decline

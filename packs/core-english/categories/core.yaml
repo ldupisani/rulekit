@@ -1,0 +1,27 @@
+format: rulekit/categories@1
+# The semantic layer: hierarchy, polarity pairs, context synonyms, attrs.
+# Polarity is declared HERE and only here — every consumer (signed folds,
+# sign() in rule expressions) derives from it (the difg LOSS_VERBS lesson).
+categories:
+  animal: {parent: noun}
+  pet: {parent: animal}
+  acquire: {parent: verb, antonym: lose, polarity: 1}
+  lose: {parent: verb, antonym: acquire, polarity: -1}
+  delta: {parent: comparative, notes: "direction words in 'N more/fewer X than Y'"}
+  more_dir: {parent: delta, antonym: less_dir, polarity: 1}
+  less_dir: {parent: delta, antonym: more_dir, polarity: -1}
+members:
+  animal: [dog, cat, fish, bird, rabbit, hamster]
+  pet: [dog, cat, hamster]
+  acquire: [get, gets, got, find, finds, found, buy, buys, bought, receive, receives, received, win, wins, won]
+  lose: [lose, loses, lost, eat, eats, ate, give, gives, gave, sell, sells, sold, spend, spends, spent, dropped, drops]
+  more_dir: [more]
+  less_dir: [fewer, less]
+context_synonyms:
+  appendage:
+    gate: animal
+    forms: [leg, legs, foot, feet]
+attrs:
+  dog: {legs: 4}
+  cat: {legs: 4}
+  bird: {legs: 2}

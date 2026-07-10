@@ -1,0 +1,7 @@
+format: rulekit/pack@1
+name: core-english
+version: 0.1.0
+description: >
+  Starter English grammar: core lexicon, role obligations, number words,
+  base semantic categories. Hand-written seed; difg's mined vocabulary will
+  extend it (phase 2).

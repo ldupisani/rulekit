@@ -1,0 +1,39 @@
+format: rulekit/obligations@1
+# The grammar's structural core: each ROLE (sense) demands what it must find.
+# A word gets its obligations from its role — never per-word special cases.
+roles:
+  quantifier:
+    needs: [collection]
+    direction: {collection: right}
+    notes: a quantifier ranges over a collection ("each STUDENT")
+  preposition:
+    needs: [anchor, object]
+    optional: [anchor]
+    direction: {anchor: left, object: right}
+    notes: relates an anchor (left) to an object (right)
+  verb:
+    needs: [subject, dobj]
+    optional: [dobj]
+    direction: {subject: left, dobj: right}
+    notes: dobj optional (intransitives are well-formed)
+  negator:
+    needs: [negates]
+    direction: {negates: left}
+    notes: "'not' scopes the verb to its LEFT ('is not') — the #26 lesson: an obligation, never a global flag"
+  value:
+    needs: [quantifies]
+    direction: {quantifies: right}
+    notes: a stated count quantifies the noun to its right ("3 APPLES")
+  multiplier:
+    needs: [scales]
+    optional: [scales]
+    direction: {scales: either}
+    notes: twice/triple scale a referent quantity; often discharged by pattern
+  comparative:
+    needs: [standard]
+    direction: {standard: right}
+    notes: "more/fewer … THAN <standard>"
+  pronoun:
+    needs: [refers]
+    optional: [refers]
+    notes: antecedent resolution is cross-sentence (document loop, phase 3)

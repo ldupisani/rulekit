@@ -1,0 +1,124 @@
+"""Learn: read facts off the saturated obligation graph of one sentence.
+
+This is the general fold's extraction side — no patterns, no vocabulary:
+purely the bindings. A declarative sentence whose verb found its subject
+(and object, and whose values found what they quantify) yields facts; what
+didn't bind yields nothing (definitive-or-decline, localized).
+"""
+
+from __future__ import annotations
+
+from ..data.registry import Registry
+from .model import (
+    Fact,
+    Membership,
+    Predication,
+    Provenance,
+    Quantity,
+    Reading,
+    Unit,
+)
+
+
+def _bound(unit: Unit, need: str) -> Unit | None:
+    for ob in unit.obligations():
+        if ob.need == need and ob.met and isinstance(ob.target, Unit):
+            return ob.target
+    return None
+
+
+def _negated(reading: Reading, verb: Unit) -> bool:
+    for unit in reading.units:
+        for ob in unit.obligations():
+            if ob.need == "negates" and ob.met and ob.target is verb:
+                return True
+    return False
+
+
+def _lemma(unit: Unit) -> str:
+    return unit.features.get("lemma", unit.features.get("fold", unit.surface.lower()))
+
+
+def learn(reading: Reading, reg: Registry) -> list[Fact]:
+    facts: list[Fact] = []
+    prov = Provenance(source="fold", sentence=reading.sentence_index)
+
+    # value units that found what they quantify: value -> noun. Units a
+    # pattern rule consumed are masked (their facts were already emitted with
+    # the rule's own semantics — re-extracting duplicates them, the
+    # SystemResult double-count bug).
+    quantifies: dict[int, Unit] = {}  # noun uid -> value unit
+    for unit in reading.units:
+        if unit.features.get("pattern_consumed"):
+            continue
+        if unit.features.get("value_kind") == "count" and unit.sense() != "noun":
+            target = _bound(unit, "quantifies")
+            if target is not None:
+                quantifies[target.uid] = unit
+
+    for verb in reading.units:
+        if verb.sense() != "verb":
+            continue
+        subject = _bound(verb, "subject")
+        dobj = _bound(verb, "dobj")
+        if subject is None:
+            continue
+        polarity = not _negated(reading, verb)
+        verb_lemma = _lemma(verb)
+
+        consumed = verb.features.get("pattern_consumed") or (
+            dobj is not None and dobj.features.get("pattern_consumed")
+        )
+        if consumed:
+            continue
+        if dobj is not None and dobj.features.get("value_kind") == "count" and dobj.sense() == "noun":
+            # condensed counted noun ("3 apples")
+            facts.append(
+                Quantity(
+                    provenance=prov,
+                    entity=_lemma(subject),
+                    measure=_lemma(dobj),
+                    value=float(dobj.features["value"]),
+                    verb=verb_lemma,
+                )
+            )
+        elif dobj is not None and dobj.uid in quantifies:
+            value_unit = quantifies[dobj.uid]
+            facts.append(
+                Quantity(
+                    provenance=prov,
+                    entity=_lemma(subject),
+                    measure=_lemma(dobj),
+                    value=float(value_unit.features["value"]),
+                    verb=verb_lemma,
+                )
+            )
+        elif verb_lemma == "be" and dobj is not None and dobj.sense() == "noun":
+            facts.append(
+                Membership(
+                    provenance=prov,
+                    member=_lemma(subject),
+                    collection=_lemma(dobj),
+                    polarity=polarity,
+                )
+            )
+        elif dobj is not None:
+            facts.append(
+                Predication(
+                    provenance=prov,
+                    subject=_lemma(subject),
+                    verb=verb_lemma,
+                    dobj=_lemma(dobj),
+                    polarity=polarity,
+                )
+            )
+        else:
+            facts.append(
+                Predication(
+                    provenance=prov,
+                    subject=_lemma(subject),
+                    verb=verb_lemma,
+                    polarity=polarity,
+                )
+            )
+    return facts

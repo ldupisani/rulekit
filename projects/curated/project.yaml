@@ -1,0 +1,4 @@
+format: rulekit/project@1
+name: curated
+packs: [core-english, arithmetic]
+suite: suite.yaml

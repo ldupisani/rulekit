@@ -1,0 +1,11 @@
+# benchmark data never enters version control (the firewall)
+projects/*/data/
+projects/*/snapshots/
+.rulekit-cache/
+
+__pycache__/
+*.pyc
+.venv/
+dist/
+.pytest_cache/
+node_modules/

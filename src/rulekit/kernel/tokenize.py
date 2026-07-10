@@ -1,0 +1,48 @@
+"""Tokenization: text -> sentences -> Reading with one Unit per token.
+
+Keeps every surface exactly as written (annotate, don't transform); the only
+normalizations are case-folding for lookup (stored as feature "fold") and
+digit-comma stripping handled later by numbers.py reading the raw surface.
+"""
+
+from __future__ import annotations
+
+import re
+
+from .model import Reading, Word
+
+_SENT_SPLIT = re.compile(r"(?<=[.!?])\s+")
+_TOKEN = re.compile(r"\$?\d[\d,]*(?:\.\d+)?%?|[A-Za-z]+(?:'[A-Za-z]+)?|[.,!?;:]")
+
+_CONTRACTIONS = {
+    "n't": "not",
+    "'s": "'s",  # kept as its own token (possessive/copula resolved later)
+    "'re": "are",
+    "'ll": "will",
+    "'ve": "have",
+}
+
+
+def split_sentences(text: str) -> list[str]:
+    parts = [p.strip() for p in _SENT_SPLIT.split(text.strip())]
+    return [p for p in parts if p]
+
+
+def tokenize(sentence: str, sentence_index: int = 0) -> Reading:
+    reading = Reading(sentence, sentence_index)
+    index = 0
+    for match in _TOKEN.finditer(sentence):
+        surface = match.group()
+        # split contractions ("isn't" -> "is" + "not")
+        pieces = [surface]
+        for suffix, expansion in _CONTRACTIONS.items():
+            if surface.lower().endswith(suffix) and len(surface) > len(suffix):
+                stem = surface[: -len(suffix)]
+                pieces = [stem, expansion]
+                break
+        for piece in pieces:
+            unit = reading.new_unit((Word(piece, index),))
+            unit.features["fold"] = piece.lower()
+            reading.units.append(unit)
+            index += 1
+    return reading

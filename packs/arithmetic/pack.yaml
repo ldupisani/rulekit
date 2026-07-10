@@ -1,0 +1,8 @@
+format: rulekit/pack@1
+name: arithmetic
+version: 0.1.0
+requires: [core-english]
+description: >
+  Word-problem arithmetic: pattern rules that EMIT FACTS (never answers),
+  ask shapes naming the generic consumers, and synthesizer rules. The
+  successor of difg's general solver families.

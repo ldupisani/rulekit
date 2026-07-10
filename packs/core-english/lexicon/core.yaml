@@ -1,0 +1,146 @@
+format: rulekit/lexicon@1
+# Definitive dictionary, never heuristics: absent = unknown = reportable.
+entries:
+  # articles (skippable structure words)
+  the: {senses: [article]}
+  a: {senses: [article]}
+  an: {senses: [article]}
+
+  # quantifiers
+  each: {senses: [quantifier], notes: "distributive; singular agreement"}
+  every: {senses: [quantifier]}
+  some: {senses: [quantifier]}
+  all: {senses: [quantifier]}
+  no: {senses: [quantifier]}
+
+  # prepositions
+  of: {senses: [preposition]}
+  in: {senses: [preposition]}
+  on: {senses: [preposition]}
+  with: {senses: [preposition]}
+  from: {senses: [preposition]}
+  to: {senses: [preposition]}
+  at: {senses: [preposition]}
+
+  # pronouns
+  he: {senses: [pronoun]}
+  she: {senses: [pronoun]}
+  they: {senses: [pronoun]}
+  it: {senses: [pronoun]}
+
+  # negation
+  not: {senses: [negator]}
+
+  # auxiliaries / question words (structure)
+  does: {senses: [auxiliary]}
+  do: {senses: [auxiliary]}
+  did: {senses: [auxiliary]}
+  how: {senses: [interrogative]}
+  many: {senses: [interrogative]}
+  what: {senses: [interrogative]}
+  who: {senses: [interrogative]}
+
+  # comparatives
+  more: {senses: [comparative]}
+  fewer: {senses: [comparative]}
+  less: {senses: [comparative]}
+  than: {senses: [particle]}
+  as: {senses: [particle]}
+  altogether: {senses: [aggregate]}
+  total: {senses: [aggregate]}
+  combined: {senses: [aggregate]}
+  together: {senses: [aggregate]}
+  and: {senses: [conjunction]}
+
+  # copula / possession verbs (state)
+  is: {senses: [verb], verb: {lemma: be}}
+  are: {senses: [verb], verb: {lemma: be}}
+  was: {senses: [verb], verb: {lemma: be}}
+  were: {senses: [verb], verb: {lemma: be}}
+  has: {senses: [verb], verb: {lemma: have}}
+  have: {senses: [verb], verb: {lemma: have}}
+  had: {senses: [verb], verb: {lemma: have}}
+  owns: {senses: [verb], verb: {lemma: own}}
+  own: {senses: [verb], verb: {lemma: own}}
+
+  # event verbs — gains
+  gets: {senses: [verb], verb: {lemma: get}}
+  get: {senses: [verb], verb: {lemma: get}}
+  got: {senses: [verb], verb: {lemma: get}}
+  finds: {senses: [verb], verb: {lemma: find}}
+  find: {senses: [verb], verb: {lemma: find}}
+  found: {senses: [verb], verb: {lemma: find}}
+  buys: {senses: [verb], verb: {lemma: buy}}
+  buy: {senses: [verb], verb: {lemma: buy}}
+  bought: {senses: [verb], verb: {lemma: buy}}
+  receives: {senses: [verb], verb: {lemma: receive}}
+  receive: {senses: [verb], verb: {lemma: receive}}
+  received: {senses: [verb], verb: {lemma: receive}}
+  wins: {senses: [verb], verb: {lemma: win}}
+  win: {senses: [verb], verb: {lemma: win}}
+  won: {senses: [verb], verb: {lemma: win}}
+
+  # event verbs — losses
+  loses: {senses: [verb], verb: {lemma: lose}}
+  lose: {senses: [verb], verb: {lemma: lose}}
+  lost: {senses: [verb], verb: {lemma: lose}}
+  eats: {senses: [verb], verb: {lemma: eat}}
+  eat: {senses: [verb], verb: {lemma: eat}}
+  ate: {senses: [verb], verb: {lemma: eat}}
+  gives: {senses: [verb], verb: {lemma: give}}
+  give: {senses: [verb], verb: {lemma: give}}
+  gave: {senses: [verb], verb: {lemma: give}}
+  sells: {senses: [verb], verb: {lemma: sell}}
+  sell: {senses: [verb], verb: {lemma: sell}}
+  sold: {senses: [verb], verb: {lemma: sell}}
+  spends: {senses: [verb], verb: {lemma: spend}}
+  spend: {senses: [verb], verb: {lemma: spend}}
+  spent: {senses: [verb], verb: {lemma: spend}}
+  drops: {senses: [verb], verb: {lemma: drop}}
+  dropped: {senses: [verb], verb: {lemma: drop}}
+
+  # other verbs
+  wilted: {senses: [verb], verb: {lemma: wilt}}
+  jumped: {senses: [verb], verb: {lemma: jump}}
+  walked: {senses: [verb], verb: {lemma: walk}}
+  ran: {senses: [verb], verb: {lemma: run}}
+
+  # the classic multi-sense demonstrator
+  rose:
+    senses: [noun, verb]
+    plural: roses
+    verb: {lemma: rise}
+    notes: "flower (noun) or past of rise (verb) — coverage arbitrates"
+
+  # common nouns
+  apple: {senses: [noun], plural: apples}
+  marble: {senses: [noun], plural: marbles}
+  book: {senses: [noun], plural: books}
+  cookie: {senses: [noun], plural: cookies}
+  ball: {senses: [noun], plural: balls}
+  toy: {senses: [noun], plural: toys}
+  pencil: {senses: [noun], plural: pencils}
+  sticker: {senses: [noun], plural: stickers}
+  card: {senses: [noun], plural: cards}
+  coin: {senses: [noun], plural: coins}
+  dollar: {senses: [noun], plural: dollars}
+  egg: {senses: [noun], plural: eggs}
+  flower: {senses: [noun], plural: flowers}
+  garden: {senses: [noun], plural: gardens}
+  teacher: {senses: [noun], plural: teachers}
+  student: {senses: [noun], plural: students}
+  child: {senses: [noun], plural: children}
+  friend: {senses: [noun], plural: friends}
+  dog: {senses: [noun], plural: dogs}
+  cat: {senses: [noun], plural: cats}
+  fish: {senses: [noun], plural: fish}
+  bird: {senses: [noun], plural: birds}
+  rabbit: {senses: [noun], plural: rabbits}
+  hamster: {senses: [noun], plural: hamsters}
+
+  # adjectives
+  red: {senses: [adjective]}
+  green: {senses: [adjective]}
+  blue: {senses: [adjective]}
+  small: {senses: [adjective]}
+  large: {senses: [adjective]}

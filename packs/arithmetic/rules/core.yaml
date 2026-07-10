@@ -1,0 +1,116 @@
+format: rulekit/rules@1
+# Minimum-structure rule: only the grammatical skeleton is literal; every
+# content word is a captured, gated slot. Rules emit FACTS — the shared
+# saturate/answer pipeline finishes. There is no priority field anywhere.
+rules:
+  - id: arithmetic/anchored-relation
+    phase: read
+    description: >
+      "X has N more/fewer ITEM than Y" — a Relation fact; the relation
+      synthesizer resolves it against Y's known quantity.
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: verb, type: verb}
+        - {slot: n, type: number}
+        - {slot: dir, cat: delta}
+        - {slot: item, type: plural}
+        - {lit: than}
+        - {slot: std, type: name}
+    where:
+      - distinct: [who, std]
+    consumes: [n]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: "{item}"
+        factor: 1.0
+        offset: "n * sign(dir)"
+        verb: have
+
+  - id: arithmetic/times-as-many
+    phase: read
+    description: >
+      "X has twice as many ITEM as Y" — a pure-ratio Relation fact
+      (the rarer, more specific trigger; the offset case needs the
+      anchored-relation shape).
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: verb, type: verb}
+        - {slot: k, type: multiplier}
+        - {lit: as}
+        - {lit: many}
+        - {slot: item, type: plural}
+        - {lit: as}
+        - {slot: std, type: name}
+    where:
+      - distinct: [who, std]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: "{item}"
+        factor: "k"
+        offset: 0.0
+        verb: have
+
+asks:
+  - id: ask/how-many-combined
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - opt:
+            - {slot: aux, type: auxiliary}
+            - {slot: who, type: pronoun}
+            - {slot: verb, type: verb}
+        - {slot: agg, cat: aggregate}
+    resolves:
+      consumer: combined
+      measure: "{item}"
+
+  - id: ask/how-many-more
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: dir, cat: delta}
+        - {slot: item, type: noun}
+        - {slot: aux, type: auxiliary}
+        - {slot: a, type: name}
+        - {slot: verb, type: verb}
+        - {lit: than}
+        - {slot: b, type: name}
+    resolves:
+      consumer: difference
+      a: "{a}"
+      b: "{b}"
+      measure: "{item}"
+
+  - id: ask/how-many-entity
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {slot: aux, type: auxiliary}
+        - {slot: who, type: name}
+        - {slot: verb, type: verb}
+    resolves:
+      consumer: single-entity
+      entity: "{who}"
+      measure: "{item}"
+
+  - id: ask/is-membership
+    match:
+      question:
+        - {lit: is}
+        - {slot: member, type: name}
+        - {slot: coll, type: noun}
+    resolves:
+      consumer: membership-verdict
+      member: "{member}"
+      collection: "{coll}"
