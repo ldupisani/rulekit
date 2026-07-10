@@ -176,6 +176,17 @@ footer {
   color: var(--red); border: 1px solid var(--red); border-radius: 6px;
   padding: 4px 8px;
 }
+button:disabled, select:disabled {
+  opacity: .45; cursor: wait; border-color: var(--border);
+}
+body.impact-busy #impact-btn {
+  position: relative; color: var(--accent);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: .5; }
+  50% { opacity: 1; }
+}
 #impact-summary { font-size: 12px; }
 #impact-summary .bucket { margin-right: 12px; font-family: var(--mono); }
 #impact-summary .ship { color: var(--green); font-weight: 700; }

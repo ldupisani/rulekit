@@ -18,6 +18,16 @@ def create_app(project_root: Path) -> FastAPI:
     app = FastAPI(title="rulekit designer", docs_url="/api/docs-ui")
     app.include_router(build_router(state))
 
+    @app.middleware("http")
+    async def no_stale_ui(request, call_next):
+        # a live-edit dev tool must never serve yesterday's app.js: without
+        # Cache-Control the browser heuristically caches static files and a
+        # UI fix silently doesn't arrive until a hard reload
+        response = await call_next(request)
+        if request.url.path == "/" or request.url.path.startswith("/static"):
+            response.headers["Cache-Control"] = "no-cache"
+        return response
+
     @app.get("/")
     def index():
         return FileResponse(STATIC / "index.html")

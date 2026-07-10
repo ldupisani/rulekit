@@ -284,11 +284,33 @@ function impactBody() {
   };
 }
 
+let impactRunning = false;
+
+function setImpactBusy(busy, label) {
+  impactRunning = busy;
+  for (const id of ["impact-btn", "baseline-btn", "impact-target", "spend-look-cb"]) {
+    $(id).disabled = busy;
+  }
+  $("impact-btn").textContent = busy && label === "impact" ? "Running…" : "Run impact";
+  $("baseline-btn").textContent = busy && label === "baseline" ? "Snapshotting…" : "Set baseline";
+  document.body.classList.toggle("impact-busy", busy);
+}
+
 async function runImpact() {
+  if (impactRunning) return;
   const body = impactBody();
+  setImpactBusy(true, "impact");
   setStatus(`running ${body.target}… (full slices take ~10s)`);
   const started = performance.now();
-  const r = await api("POST", "/api/impact", body);
+  let r;
+  try {
+    r = await api("POST", "/api/impact", body);
+  } catch (exc) {
+    setStatus(`impact failed: ${exc}`, "err");
+    return;
+  } finally {
+    setImpactBusy(false);
+  }
   if (r.error) { setStatus(r.error, "err"); return; }
   const s = $("impact-summary");
   s.replaceChildren();
@@ -324,9 +346,19 @@ async function runImpact() {
 }
 
 async function setBaseline() {
+  if (impactRunning) return;
   const body = impactBody();
+  setImpactBusy(true, "baseline");
   setStatus(`snapshotting ${body.target} baseline…`);
-  const r = await api("POST", "/api/baseline", body);
+  let r;
+  try {
+    r = await api("POST", "/api/baseline", body);
+  } catch (exc) {
+    setStatus(`baseline failed: ${exc}`, "err");
+    return;
+  } finally {
+    setImpactBusy(false);
+  }
   if (r.error) { setStatus(r.error, "err"); return; }
   setStatus(`baseline [${r.target}]: ${r.aggregates.correct}/${r.aggregates.items} correct`, "ok");
 }

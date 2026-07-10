@@ -49,6 +49,11 @@ class ServerState:
         self.project_root = project_root
         self.project: Project = load_project(project_root)
         self.baselines: dict[str, dict] = {}  # target -> snapshot
+        import threading
+
+        # one bench run at a time — a second tab must not race the first
+        # (and two concurrent TEST looks would double-spend the ledger)
+        self.run_lock = threading.Lock()
 
     @property
     def registry(self) -> Registry:
@@ -246,7 +251,12 @@ def build_router(state: ServerState) -> APIRouter:
         if not items:
             return {"error": f"no items for target {target!r}"}
 
-        report = run_suite(items, state.registry)
+        if not state.run_lock.acquire(blocking=False):
+            return {"error": "a bench run is already in progress — wait for it to finish"}
+        try:
+            report = run_suite(items, state.registry)
+        finally:
+            state.run_lock.release()
         snapshot = report.to_snapshot()
         inspectable = target in ("suite", "dev-train")
 
@@ -304,7 +314,12 @@ def build_router(state: ServerState) -> APIRouter:
             return {"error": str(exc)}
         if not items:
             return {"error": f"no items for target {body.target!r}"}
-        report = run_suite(items, state.registry)
+        if not state.run_lock.acquire(blocking=False):
+            return {"error": "a bench run is already in progress — wait for it to finish"}
+        try:
+            report = run_suite(items, state.registry)
+        finally:
+            state.run_lock.release()
         state.baselines[body.target] = report.to_snapshot()
         return {"error": None, "target": body.target, "aggregates": report.aggregates()}
 
