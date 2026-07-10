@@ -65,3 +65,14 @@ def test_subtype_qualified_ask_declines(full_registry):
         full_registry,
     )
     assert r.answer.kind == "decline"
+
+
+def test_unused_rate_never_unlocks_other_commits(full_registry):
+    # a rate that merely EXISTS is not read: the fold must not commit the
+    # bonus while ignoring the wage
+    r = solve(
+        "Tina makes $18 an hour. Tina got a $50 bonus. "
+        "How much does Tina have?",
+        full_registry,
+    )
+    assert r.answer.kind == "decline"

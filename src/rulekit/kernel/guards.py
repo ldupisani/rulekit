@@ -32,9 +32,18 @@ def _enabled(reg: Registry, name: str) -> bool:
 def _fact_values_by_sentence(store: FactStore) -> dict[int, set[float]]:
     """Numeric fields of admitted facts, keyed by originating sentence —
     a value is only accounted by facts its OWN sentence produced (a same
-    number appearing in another sentence's fact must not mask an unread)."""
+    number appearing in another sentence's fact must not mask an unread).
+
+    RATE facts are excluded: a rate that merely EXISTS has not been used —
+    "makes $18 an hour" must not unlock a fold that ignores the wage. A
+    rate's value counts as read only when the arithmetic consumed it
+    (the caller checks the log for rate values)."""
+    from .model import Rate
+
     out: dict[int, set[float]] = {}
     for fact in store.facts:
+        if isinstance(fact, Rate):
+            continue
         values = out.setdefault(fact.provenance.sentence, set())
         for field_name in _NUMERIC_FACT_FIELDS:
             v = getattr(fact, field_name, None)
@@ -77,6 +86,12 @@ def check(
         # "half as many", "twice", "40% more" or the question's "in 10
         # years" is exactly the confident-wrong this guard exists to stop.
         fact_values = _fact_values_by_sentence(store) if store is not None else {}
+        from .model import Rate
+
+        rate_values = (
+            {float(r.value) for r in store.by_kind(Rate)}
+            if store is not None else set()
+        )
         for reading in readings:
             used = consumed_uids.get(reading.sentence_index, set())
             own_values = fact_values.get(reading.sentence_index, set())
@@ -93,6 +108,7 @@ def check(
                     unit.uid in used
                     or unit.features.get("pattern_consumed")
                     or value in own_values
+                    or (value in rate_values and log.uses_value(value))
                 ):
                     continue
                 where = (
