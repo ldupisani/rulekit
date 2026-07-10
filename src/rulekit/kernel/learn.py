@@ -15,6 +15,7 @@ from .model import (
     Predication,
     Provenance,
     Quantity,
+    Rate,
     Reading,
     Unit,
 )
@@ -43,6 +44,27 @@ def _lemma(unit: Unit) -> str:
         if antecedent is not None:
             return antecedent.features.get("lemma", antecedent.features.get("fold", ""))
     return unit.features.get("lemma", unit.features.get("fold", unit.surface.lower()))
+
+
+def _rate_unit(reading: Reading, counted: Unit) -> Unit | None:
+    """For the article rate form 'N X a/an/per U', the unit noun U."""
+    units = reading.units
+    try:
+        i = units.index(counted)
+    except ValueError:
+        return None
+    j = i + 1
+    while j < len(units) and units[j].sense() == "punct":
+        j += 1
+    if j >= len(units):
+        return None
+    if units[j].sense() == "rate" and j + 1 < len(units) and units[j + 1].sense() == "noun":
+        return units[j + 1]
+    if units[j].sense() == "article":
+        k = j + 1
+        if k < len(units) and units[k].sense() == "noun":
+            return units[k]
+    return None
 
 
 def _is_rate(reading: Reading, counted: Unit) -> bool:
@@ -144,7 +166,27 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
         is_state = reg.word_in_category(verb.features.get("fold", ""), "state")
         occurrence = None if is_state else reading.sentence_index
         if dobj is not None and _is_rate(reading, dobj):
-            continue  # a rate, not a holding — no fact, value stays unaccounted
+            unit_noun = _rate_unit(reading, dobj)
+            if (
+                unit_noun is not None
+                and dobj.features.get("value_kind") == "count"
+                and dobj.sense() == "noun"
+            ):
+                # the article/per form is a RATE FACT ("$18 an hour"); it
+                # never folds into holdings, but the rate-span consumer can
+                # multiply it. The for-each distributive still just skips.
+                facts.append(
+                    Rate(
+                        provenance=prov,
+                        entity=_lemma(subject),
+                        measure=_lemma(dobj),
+                        per=_lemma(unit_noun),
+                        value=float(dobj.features["value"]),
+                        verb=verb_lemma,
+                        occurrence=occurrence,
+                    )
+                )
+            continue  # never a holding — no plain quantity from a rate
         if dobj is not None and dobj.features.get("value_kind") == "count" and dobj.sense() == "noun":
             # condensed counted noun ("3 apples")
             facts.append(

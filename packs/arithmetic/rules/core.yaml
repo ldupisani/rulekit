@@ -487,6 +487,41 @@ asks:
       measure: "{item}"
       verb: "{verb}"
 
+  - id: ask/how-many-rate-span
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {slot: aux, type: auxiliary}
+        - {slot: who, type: entity}
+        - {slot: verb, type: verb}
+        - {lit: in}
+        - {slot: span, type: counted}
+    resolves:
+      consumer: rate-span
+      entity: "{who}"
+      measure: "{item}"
+      span_unit: "{span}"
+      span_value: "{span.value}"
+
+  - id: ask/how-much-rate-span
+    match:
+      question:
+        - {lit: how}
+        - {lit: much}
+        - {slot: aux, type: auxiliary}
+        - {slot: who, type: entity}
+        - {slot: verb, type: verb}
+        - {lit: in}
+        - {slot: span, type: counted}
+    resolves:
+      consumer: rate-span
+      entity: "{who}"
+      measure: currency
+      span_unit: "{span}"
+      span_value: "{span.value}"
+
   - id: ask/is-membership
     match:
       question:

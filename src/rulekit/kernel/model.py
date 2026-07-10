@@ -282,6 +282,26 @@ class RestQuantity(Fact):
 
 
 @dataclass(frozen=True)
+class Rate(Fact):
+    """'makes $18 an hour' / '4 cars a day' — value of measure PER unit.
+    Informative on its own (never folds into holdings); the rate-span
+    consumer multiplies it against an asked span."""
+
+    entity: str
+    measure: str
+    per: str  # the unit noun's lemma ("hour", "day")
+    value: float
+    verb: str = "make"
+    occurrence: int | None = None
+
+    def key(self) -> tuple:
+        return ("rate", self.entity, self.measure, self.per, self.verb, self.occurrence)
+
+    def value_part(self) -> Any:
+        return self.value
+
+
+@dataclass(frozen=True)
 class Before(Fact):
     earlier: str
     later: str
