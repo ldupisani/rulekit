@@ -351,9 +351,12 @@ def run_rules(
 
 
 def match_ask(reading: Reading, reg: Registry) -> tuple[AskRule, dict[str, str]] | None:
-    """Match question shapes; returns the resolved query dict of the FIRST
-    matching ask by id order, with template slots substituted."""
-    for ask in reg.asks:
+    """Match question shapes; the MOST SPECIFIC matching ask wins (max
+    consumed units — a longer match read more of the question), with id
+    order as the deterministic tie-break. Re-landed alone from the reverted
+    increment 8 per docs/negative-results.md."""
+    best: tuple[AskRule, dict[str, str], int] | None = None
+    for ask in reg.asks:  # sorted by id — deterministic tie-break
         seq = ask.match["question"]
         m = match_sequence(reading, seq, reg)
         if m is None:
@@ -369,5 +372,6 @@ def match_ask(reading: Reading, reg: Registry) -> tuple[AskRule, dict[str, str]]
                 # ("verb: {verb}" with the opt-group absent) — omit the key
                 # and let the consumer's default apply
                 continue
-        return ask, resolved
-    return None
+        if best is None or len(m.consumed) > best[2]:
+            best = (ask, resolved, len(m.consumed))
+    return (best[0], best[1]) if best is not None else None
