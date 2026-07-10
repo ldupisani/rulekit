@@ -234,24 +234,33 @@ def _build_fact(
     return cls(provenance=provenance, **kwargs)
 
 
-def specificity(match: Match) -> tuple[int, int, int]:
-    """(consumed span, Σ category gate depths, where-count). Computed, never
-    authored — used only for subsumption, never as a priority list."""
-    rule = match.rule
+def rule_specificity(rule: PatternRule, reg: Registry) -> tuple[int, int, int]:
+    """(required tokens, Σ category gate DEPTHS, where-count). Computed,
+    never authored — a narrower category (pet ⊂ animal) scores strictly
+    higher, which is what makes narrowing the conflict lever."""
     gate_depth = 0
-    seqs = rule.match.values()
-    for seq in seqs:
+    required = 0
+    for seq in rule.match.values():
         flat = seq if seq and not isinstance(seq[0], list) else [t for s in seq for t in s]
         for tok in flat:
-            if getattr(tok, "cat", None):
-                gate_depth += 1
-    return (len(match.consumed), gate_depth, len(rule.where))
+            if getattr(tok, "opt", None) is not None:
+                continue
+            required += 1
+            cat = getattr(tok, "cat", None)
+            if cat:
+                gate_depth += len(reg.cat_ancestors(cat)) if cat in reg.category_parents else 1
+    return (required, gate_depth, len(rule.where))
+
+
+def specificity(match: Match, reg: Registry) -> tuple[int, int, int]:
+    key = rule_specificity(match.rule, reg)
+    return (len(match.consumed), key[1], key[2])
 
 
 def subsumes(a: Match, b: Match, reg: Registry) -> bool:
     """a strictly subsumes b: a consumed a superset of b's units and is
     strictly more specific — the narrow rule silently wins."""
-    return set(a.consumed) >= set(b.consumed) and specificity(a) > specificity(b)
+    return set(a.consumed) >= set(b.consumed) and specificity(a, reg) > specificity(b, reg)
 
 
 def run_rules(
@@ -279,7 +288,7 @@ def run_rules(
         if m is None:
             continue
         m.rule = rule
-        m.specificity = specificity(m)
+        m.specificity = specificity(m, reg)
         if not _check_where(rule, m.slots, reading):
             continue
         provenance = Provenance(source=rule.id, sentence=reading.sentence_index)

@@ -64,6 +64,31 @@ def cmd_bench(args) -> int:
     return 0 if report.counts["wrong"] == 0 else 1
 
 
+def cmd_lint(args) -> int:
+    from .lint.blast_radius import blast_radius
+    from .lint.checks import lint_checks
+    from .lint.overlap import lint_overlaps
+
+    _project, reg = _registry(args)
+    if args.category:
+        if args.category not in reg.category_parents:
+            print(f"unknown category {args.category!r}", file=sys.stderr)
+            return 2
+        print(blast_radius(reg, args.category).summary())
+        return 0
+    findings = lint_overlaps(reg) + lint_checks(reg)
+    errors = 0
+    for f in findings:
+        if f.level == "info" and not args.verbose:
+            continue
+        print(f)
+        errors += f.level == "error"
+    print(f"lint: {sum(f.level == 'error' for f in findings)} errors, "
+          f"{sum(f.level == 'warning' for f in findings)} warnings, "
+          f"{sum(f.level == 'info' for f in findings)} info")
+    return 1 if errors else 0
+
+
 def cmd_diff(args) -> int:
     project, _reg = _registry(args)
     before = load_snapshot(project.snapshots_dir / args.before)
@@ -92,6 +117,11 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--snapshot", help="write snapshot JSON under snapshots/")
     p.add_argument("--twice", action="store_true", help="determinism self-check")
     p.set_defaults(fn=cmd_bench)
+
+    p = sub.add_parser("lint", help="static checks: overlaps, overrides, blast radius")
+    p.add_argument("--category", help="print the blast-radius report for a category")
+    p.add_argument("--verbose", action="store_true", help="include info findings")
+    p.set_defaults(fn=cmd_lint)
 
     p = sub.add_parser("diff", help="diff two snapshots (ship gate)")
     p.add_argument("before")
