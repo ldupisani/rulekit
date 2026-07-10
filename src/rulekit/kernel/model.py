@@ -91,7 +91,9 @@ class Decision:
     """One reversible change: a feature diff on a target unit.
 
     `before`/`after` are deep-copied snapshots of the changed feature keys, so
-    restoring `before` undoes the decision exactly.
+    restoring `before` undoes the decision exactly. `target_surface` is the
+    unit's surface AT RECORD TIME — merges retire uids, so the trace keeps
+    its own name for the target.
     """
 
     seq: int
@@ -101,12 +103,14 @@ class Decision:
     after: dict[str, Any]
     reason: str
     rule_id: str | None = None  # pattern/synth rule provenance, if any
+    target_surface: str = ""
 
     def to_json(self) -> dict[str, Any]:
         return {
             "seq": self.seq,
             "kind": self.kind,
             "target": self.target_uid,
+            "target_surface": self.target_surface,
             "before": _jsonable(self.before),
             "after": _jsonable(self.after),
             "reason": self.reason,
@@ -295,6 +299,7 @@ class Reading:
             after=after,
             reason=reason,
             rule_id=rule_id,
+            target_surface=target.surface,
         )
         self.decisions.append(decision)
         return decision

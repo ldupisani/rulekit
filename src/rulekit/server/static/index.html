@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>rulekit designer</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header>
+  <span class="logo">rulekit</span><span class="sub">designer</span>
+  <span id="project-name" class="pill"></span>
+  <span id="fingerprint" class="pill mono"></span>
+  <span id="status" class="status"></span>
+</header>
+
+<div class="tracebar">
+  <input id="trace-input" type="text" spellcheck="false"
+         placeholder="Tom has 3 apples. Mary has 2 more apples than Tom. How many apples does Mary have?">
+  <button id="trace-btn" class="primary">Read</button>
+</div>
+
+<main>
+  <aside id="sidebar">
+    <div class="pane-title">Pack documents</div>
+    <div id="file-tree"></div>
+    <div class="pane-title" id="editor-title">editor</div>
+    <textarea id="editor" spellcheck="false" placeholder="select a document…"></textarea>
+    <div class="editor-actions">
+      <button id="save-btn">Save + validate</button>
+      <span id="save-result"></span>
+    </div>
+    <div id="lint-box"></div>
+  </aside>
+
+  <section id="trace-view">
+    <div id="answer-banner" class="banner hidden"></div>
+    <div id="sentences"></div>
+    <div class="cols">
+      <div class="col">
+        <div class="pane-title">Decisions <span id="decision-count" class="dim"></span></div>
+        <div id="decisions" tabindex="0"></div>
+      </div>
+      <div class="col">
+        <div class="pane-title">Decision detail</div>
+        <div id="decision-detail" class="detail dim">step through the reading with ↑/↓ or click a decision</div>
+        <div class="pane-title">Facts <span id="fact-count" class="dim"></span></div>
+        <div id="facts"></div>
+        <div class="pane-title">Gaps &amp; deficiencies</div>
+        <div id="gaps"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer id="impact-bar">
+  <button id="baseline-btn">Set baseline</button>
+  <button id="impact-btn" class="primary">Run impact</button>
+  <span id="impact-summary" class="dim">impact runs the project suite and diffs against the baseline</span>
+</footer>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

@@ -177,6 +177,16 @@ def cmd_lint(args) -> int:
     return 1 if errors else 0
 
 
+def cmd_serve(args) -> int:
+    from pathlib import Path
+
+    from .server.app import serve
+
+    print(f"rulekit designer → http://{args.host}:{args.port}")
+    serve(Path(args.project).resolve(), host=args.host, port=args.port)
+    return 0
+
+
 def cmd_diff(args) -> int:
     project, _reg = _registry(args)
     before = load_snapshot(project.snapshots_dir / args.before)
@@ -224,6 +234,11 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("before")
     p.add_argument("after")
     p.set_defaults(fn=cmd_diff)
+
+    p = sub.add_parser("serve", help="the visual designer (local web UI)")
+    p.add_argument("--host", default="127.0.0.1")
+    p.add_argument("--port", type=int, default=8321)
+    p.set_defaults(fn=cmd_serve)
 
     args = parser.parse_args(argv)
     return args.fn(args)
