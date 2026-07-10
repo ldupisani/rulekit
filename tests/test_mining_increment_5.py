@@ -117,3 +117,13 @@ def test_rest_after_fraction(full_registry):
         full_registry,
     )
     assert r.answer.value == 6
+
+
+def test_combined_ask_requires_plurality(registry):
+    # the permissive scan's Σ-over-one artifact: "do they have altogether"
+    # asserts plurality, so a single holder declines
+    r = solve(
+        "Tom has 7 coins. How many coins do they have altogether?", registry
+    )
+    assert r.answer.kind == "decline"
+    assert "at least two holders" in r.answer.reason

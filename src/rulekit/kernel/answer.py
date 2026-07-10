@@ -201,8 +201,15 @@ def answer(
         entities = sorted(
             {q.entity for q in store.by_kind(Quantity) if q.measure == singular}
         )
-        if not entities:
-            return Answer("decline", None, f"no quantities of {singular!r} known")
+        if len(entities) < 2:
+            # "how many do THEY have ALTOGETHER" asserts plurality — a
+            # one-entity sum usually means a mangled parse (the permissive
+            # scan's Σ-over-one artifact), and declining costs no real coverage
+            return Answer(
+                "decline", None,
+                f"a combined ask needs at least two holders of {singular!r}; "
+                f"found {entities}",
+            )
         totals = []
         for entity in entities:
             t = _entity_total(store, reg, entity, singular, log)
