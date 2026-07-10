@@ -127,3 +127,33 @@ def test_combined_ask_requires_plurality(registry):
     )
     assert r.answer.kind == "decline"
     assert "at least two holders" in r.answer.reason
+
+
+def test_fraction_of_rest_chain(full_registry):
+    # sequential remainder chain: 28 - 4 = 24, then half of the rest = 12
+    r = solve(
+        "Leah earned 28 dollars. She spent a seventh of it. She lost half "
+        "of the rest. How much does she have left?",
+        full_registry,
+    )
+    assert r.answer.value == 12
+
+
+def test_fraction_of_remaining_noun(full_registry):
+    r = solve(
+        "Tom found 12 eggs. Tom ate half of the eggs. Tom ate a third of "
+        "the remaining eggs. How many eggs are left?",
+        full_registry,
+    )
+    assert r.answer.value == 4
+
+
+def test_unknown_polarity_verb_declines(full_registry):
+    # 'put half of the rest in the basket' — put has no polarity tag; the
+    # fold must never default it to +1 (a deposit is not income)
+    r = solve(
+        "Tom found 12 eggs. Tom put half of the rest in the basket. "
+        "How many eggs are left?",
+        full_registry,
+    )
+    assert r.answer.kind == "decline"

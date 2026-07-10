@@ -132,9 +132,10 @@ rules:
     description: >
       "Tom ate half of the sandwiches" / "spent 40% of the money" — a
       fraction of the DEFINITE pool. Emits a FractionQuantity the synthesizer
-      resolves against the unique state quantity of the measure; unresolved
-      ones veto commits. Remainder-anchored fractions ("of the remaining
-      pages") are a different mechanism and must not match here.
+      resolves against the DEFINITE POOL — the signed sum of the measure's
+      prior-sentence facts, which prior fractions deplete. That makes
+      "of the remaining pages" correct here too: the current pool IS the
+      remainder. Unresolved ones veto commits.
     match:
       sentence:
         - {slot: who, type: name}
@@ -142,9 +143,6 @@ rules:
         - {slot: f, type: fraction}
         - {lit: of}
         - {slot: item, type: noun}
-    where:
-      - absent: {cat: remnant}
-      - absent: {cat: remnant_adj}
     consumes: [f]
     emits:
       - fact: fraction_quantity
@@ -171,6 +169,26 @@ rules:
       - fact: fraction_quantity
         entity: "{who}"
         measure: "{ref}"
+        fraction: "f"
+        verb: "{verb}"
+
+  - id: arithmetic/fraction-of-remnant
+    phase: read
+    description: >
+      "put half of THE REST in savings" — the remnant word names no measure;
+      the synthesizer's unique-measure principle supplies the pool.
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: verb, type: verb}
+        - {slot: f, type: fraction}
+        - {lit: of}
+        - {slot: r, cat: remnant}
+    consumes: [f]
+    emits:
+      - fact: fraction_quantity
+        entity: "{who}"
+        measure: "{r}"
         fraction: "f"
         verb: "{verb}"
 

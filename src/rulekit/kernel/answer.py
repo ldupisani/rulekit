@@ -62,13 +62,17 @@ def _resolve_measure(measure: str, store: FactStore, reg: Registry) -> str | Non
     return singular
 
 
-def _sign(verb: str, reg: Registry) -> int:
+def _sign(verb: str, reg: Registry, strict: bool = False) -> int | None:
+    """The verb's accumulation direction from its polarity category. In
+    strict mode an UNTAGGED verb returns None — defaulting 'put half in
+    savings' to +1 is how a deposit inflates a balance. Sign facts are
+    DATA (acquire/lose members); code never defaults them silently."""
     for tag in reg.word_categories.get(verb, ()):
         chain = reg.cat_ancestors(tag)
         for cat in chain:
             if cat in reg.category_polarity:
                 return reg.category_polarity[cat]
-    return 1
+    return None if strict else 1
 
 
 def _entity_total(
@@ -86,6 +90,8 @@ def _entity_total(
         return None
     if len({q.time for q in state + events}) > 1:
         return None  # facts from DIFFERENT times — time arithmetic is unbuilt
+    if any(_sign(q.verb, reg, strict=True) is None for q in events):
+        return None  # an event with UNKNOWN polarity cannot be signed — decline
     total = 0.0
     parts: list[str] = []
     for q in state:

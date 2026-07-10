@@ -181,7 +181,21 @@ def _fraction_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> list
     from .answer import _resolve_measure
 
     out: list[Fact] = []
+    resolved = {
+        (q.entity, q.verb, q.occurrence)
+        for q in store.by_kind(Quantity)
+        if q.provenance.source == "synth/fraction"
+    }
     for fq in store.by_kind(FractionQuantity):
+        # sequential chains: an earlier unresolved fraction still owes the
+        # pool a depletion — resolving out of order would recompute next
+        # round and collide with itself
+        if any(
+            other.provenance.sentence < fq.provenance.sentence
+            and (other.entity, other.verb, other.occurrence) not in resolved
+            for other in store.by_kind(FractionQuantity)
+        ):
+            continue
         # "40% of the MONEY" — the pool's measure resolves through the same
         # category machinery as the asks (money → the unique currency in play)
         measure = _resolve_measure(fq.measure, store, reg)
