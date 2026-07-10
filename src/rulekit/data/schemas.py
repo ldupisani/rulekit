@@ -94,6 +94,7 @@ class NumbersDoc(StrictModel):
     fractions: dict[str, float] = Field(default_factory=dict)  # "half" -> 0.5
     operators: dict[str, str] = Field(default_factory=dict)  # "plus" -> "+"
     currencies: dict[str, str] = Field(default_factory=dict)  # "$" -> dollar
+    percents: dict[str, float] = Field(default_factory=dict)  # "percent" -> 0.01
 
 
 # ---------------------------------------------------------------------------

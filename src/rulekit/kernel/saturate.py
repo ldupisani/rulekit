@@ -119,26 +119,49 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
     # existing STATE for the subject blocks resolution — the subject's own
     # EVENTS ("John lost 3") accumulate on top of the derived state
     quantities: dict[tuple[str, str], Quantity] = {}
-    states: set[tuple[str, str]] = set()
+    by_verb: set[tuple[str, str, str]] = set()
     for q in store.by_kind(Quantity):
         quantities.setdefault((q.entity, q.measure), q)
+        by_verb.add((q.entity, q.measure, q.verb))
         if q.is_state:
-            states.add((q.entity, q.measure))
             quantities[(q.entity, q.measure)] = q
     for rel in store.by_kind(Relation):
+        # resolution is blocked when the target already has a quantity UNDER
+        # THE RELATION'S OWN VERB — "Zig wrote 4× as many" plus "Zig wrote
+        # 60" describe the SAME writing (re-deriving doubles it); a lose
+        # event on top of a have-relation is a CHANGE and stays allowed
         known = quantities.get((rel.standard, rel.measure))
-        if known is None or (rel.subject, rel.measure) in states:
-            continue
-        value = evaluate(
-            f"{rel.factor} * {known.value} + {rel.offset}", {}, log,
-            source=f"relation:{rel.provenance.source}",
-        )
-        out.append(
-            Quantity(
-                provenance=Provenance(source="synth/relation", sentence=rel.provenance.sentence),
-                entity=rel.subject, measure=rel.measure, value=value, verb=rel.verb,
+        if known is not None and (rel.subject, rel.measure, rel.verb) not in by_verb:
+            value = evaluate(
+                f"{rel.factor} * {known.value} + {rel.offset}", {}, log,
+                source=f"relation:{rel.provenance.source}",
             )
-        )
+            out.append(
+                Quantity(
+                    provenance=Provenance(source="synth/relation", sentence=rel.provenance.sentence),
+                    entity=rel.subject, measure=rel.measure, value=value, verb=rel.verb,
+                )
+            )
+            continue
+        # INVERSE: the subject is known, the standard is not — solve
+        # standard = (subject − offset) / factor ("If Zig wrote 60, and Zig
+        # wrote four times as many as Flo…")
+        known = quantities.get((rel.subject, rel.measure))
+        if (
+            known is not None
+            and (rel.standard, rel.measure, rel.verb) not in by_verb
+            and rel.factor != 0
+        ):
+            value = evaluate(
+                f"({known.value} - {rel.offset}) / {rel.factor}", {}, log,
+                source=f"relation-inverse:{rel.provenance.source}",
+            )
+            out.append(
+                Quantity(
+                    provenance=Provenance(source="synth/relation", sentence=rel.provenance.sentence),
+                    entity=rel.standard, measure=rel.measure, value=value, verb=rel.verb,
+                )
+            )
     return out
 
 

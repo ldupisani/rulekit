@@ -68,11 +68,15 @@ def _nominal_pass(reading: Reading, reg: Registry) -> bool:
                    f"compound noun: {a.surface!r} modifies head {b.surface!r}",
                    {"attributes": attrs})
             return True
-        # CAPITALIZED adjective + name -> one name ("Tall Tuna"): the
-        # capitalization, not the part of speech, is the naming signal
+        # CAPITALIZED known word + name -> one name ("Tall Tuna", "Cat Cafe
+        # Meow"): the capitalization, not the part of speech, is the naming
+        # signal — sentence-initial known nouns otherwise split the name
+        # ('cafe meow' vs 'cat cafe paw') and relation chains never connect
         if (
-            a.sense() == "adjective"
+            a.sense() in ("adjective", "noun")
+            and len(a.words) == 1  # a MERGED unit ("Last year") is not a name part
             and a.surface[:1].isupper()
+            and "value" not in a.features
             and b.sense() == "name"
         ):
             merged = _merge(reading, i, b, "merge-name",

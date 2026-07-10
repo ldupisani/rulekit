@@ -12,7 +12,13 @@ import re
 from .model import Reading, Word
 
 _SENT_SPLIT = re.compile(r"(?<=[.!?])\s+")
-_TOKEN = re.compile(r"\$?\d[\d,]*(?:\.\d+)?%?|[A-Za-z]+(?:'[A-Za-z]+)?|[.,!?;:]")
+_TOKEN = re.compile(
+    r"\d+/\d+"                                  # slash fraction ("1/4")
+    r"|\$?\d[\d,]*(?:\.\d+)?%?"                 # numbers/currency/percent
+    r"|[A-Za-z]+(?:'[A-Za-z]+)?"                 # words (with contractions)
+    r"|'s"                                       # bare possessive clitic
+    r"|[.,!?;:]"
+)
 
 _CONTRACTIONS = {
     "n't": "not",

@@ -75,6 +75,26 @@ def _sign(verb: str, reg: Registry, strict: bool = False) -> int | None:
     return None if strict else 1
 
 
+def _verb_total(
+    store: FactStore, entity: str, measure: str, verb: str, log: ArithmeticLog
+) -> float | None:
+    """Σ of an entity's quantities UNDER ONE VERB — the activity total
+    ("how many did X sell"). Derived relation facts carry the verb too, so
+    they participate; the by-verb resolution block prevents an event and
+    its own re-derivation from both existing."""
+    matching = [
+        q for q in store.by_kind(Quantity)
+        if q.entity == entity and q.measure == measure and q.verb == verb
+    ]
+    if not matching:
+        return None
+    if len({q.time for q in matching}) > 1:
+        return None
+    return evaluate(
+        " + ".join(str(q.value) for q in matching), {}, log, source="verb-fold"
+    )
+
+
 def _entity_total(
     store: FactStore, reg: Registry, entity: str, measure: str, log: ArithmeticLog
 ) -> float | None:
@@ -148,25 +168,12 @@ def answer(
             # verb's own event quantities — a holdings fold answering an
             # eat-question with a buy-total is a category error (the
             # question's verb is part of the query, difg playbook lesson).
-            events = [
-                q for q in store.by_kind(Quantity)
-                if q.entity == entity and q.measure == singular
-                and q.verb == ask_verb and not q.is_state
-            ]
-            if not events:
+            total = _verb_total(store, entity, singular, ask_verb, log)
+            if total is None:
                 return Answer(
                     "decline", None,
                     f"no {ask_verb!r} events known for {entity!r}/{singular!r}",
                 )
-            if len({q.time for q in events}) > 1:
-                return Answer(
-                    "decline", None,
-                    f"{ask_verb!r} events span different times — time "
-                    "arithmetic is unbuilt",
-                )
-            total = evaluate(
-                " + ".join(str(q.value) for q in events), {}, log, source="event-fold"
-            )
             return Answer("number", total, f"Σ {ask_verb!r} events of {entity!r}/{singular!r}")
         total = _entity_total(store, reg, entity, singular, log)
         if total is None:
@@ -231,8 +238,15 @@ def answer(
         if singular is None:
             return Answer("decline", None,
                           f"measure {measure!r} is ambiguous across the facts")
-        ta = _entity_total(store, reg, a, singular, log)
-        tb = _entity_total(store, reg, b, singular, log)
+        ask_verb = query.get("verb", "have")
+        if ask_verb in ("have", "be") or reg.word_in_category(ask_verb, "state"):
+            ta = _entity_total(store, reg, a, singular, log)
+            tb = _entity_total(store, reg, b, singular, log)
+        else:
+            # "how many more did Quincy SELL than Jake" — activity totals,
+            # never the signed holdings fold (selling is not owning)
+            ta = _verb_total(store, a, singular, ask_verb, log)
+            tb = _verb_total(store, b, singular, ask_verb, log)
         if ta is None or tb is None:
             return Answer("decline", None, f"missing a total for {a!r} or {b!r}")
         return Answer(

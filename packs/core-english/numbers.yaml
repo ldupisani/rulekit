@@ -58,3 +58,6 @@ operators:
 
 currencies:
   "$": dollar
+
+percents:
+  percent: 0.01

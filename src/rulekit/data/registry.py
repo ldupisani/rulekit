@@ -48,6 +48,7 @@ class Registry:
     fractions: Mapping[str, float]
     operators: Mapping[str, str]
     currencies: Mapping[str, str]
+    percents: Mapping[str, float]
     role_obligations: Mapping[str, RoleObligation]
     category_parents: Mapping[str, str]
     category_members: Mapping[str, tuple[str, ...]]  # direct members, sorted
@@ -144,6 +145,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
     fractions: dict[str, float] = {}
     operators: dict[str, str] = {}
     currencies: dict[str, str] = {}
+    percents: dict[str, float] = {}
     for pack in packs:
         for doc in pack.numbers:
             numbers.update(doc.numbers)
@@ -152,6 +154,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
             fractions.update(doc.fractions)
             operators.update(doc.operators)
             currencies.update(doc.currencies)
+            percents.update(doc.percents)
 
     role_obligations: dict[str, RoleObligation] = {}
     for pack in packs:
@@ -317,6 +320,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
         fractions=_freeze(fractions),
         operators=_freeze(operators),
         currencies=_freeze(currencies),
+        percents=_freeze(percents),
         role_obligations=_freeze(role_obligations),
         category_parents=_freeze(category_parents),
         category_members=_freeze({k: tuple(sorted(set(v))) for k, v in category_members.items()}),

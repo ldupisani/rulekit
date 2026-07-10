@@ -19,6 +19,9 @@ categories:
     notes: >
       money words. A bare how-much ask resolves `measure: currency` to the
       UNIQUE currency measure in the facts; mixed currencies decline.
+  aggregate_noun:
+    parent: noun
+    notes: "'the NUMBER of X' / 'the AMOUNT of X' — frame nouns for ratio rules"
   remnant:
     parent: noun
     notes: "'the REST' / 'the REMAINDER' — remainder-of-pool referents"

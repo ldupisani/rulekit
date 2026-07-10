@@ -38,10 +38,12 @@ categories:
     parent: noun
   produce:
     parent: verb
+    polarity: 1
   purchase:
     parent: acquire
   receive:
     parent: verb
+    polarity: 1
   retain:
     parent: verb
   timeperiod:
@@ -388,6 +390,9 @@ members:
   - snails
   produce:
   - bake
+  - write
+  - writes
+  - wrote
   - baked
   - bakes
   - brew
@@ -438,6 +443,9 @@ members:
   - keeping
   - keeps
   - kept
+  aggregate_noun:
+  - amount
+  - number
   remnant:
   - remainder
   - rest

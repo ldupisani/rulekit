@@ -27,7 +27,7 @@ rules:
         measure: "{item}"
         factor: 1.0
         offset: "n * sign(dir)"
-        verb: have
+        verb: "{verb}"
 
   - id: arithmetic/anchored-relation-postfix
     phase: read
@@ -53,7 +53,7 @@ rules:
         measure: "{item}"
         factor: 1.0
         offset: "item * sign(dir)"
-        verb: have
+        verb: "{verb}"
 
   - id: arithmetic/times-as-many
     phase: read
@@ -80,7 +80,60 @@ rules:
         measure: "{item}"
         factor: "k"
         offset: 0.0
-        verb: have
+        verb: "{verb}"
+
+  - id: arithmetic/fraction-delta-relation
+    phase: read
+    description: >
+      "twenty percent FEWER frogs than Lassie Lake" / "50% MORE X than Y" —
+      a proportional delta: subject = (1 + f·sign(dir)) × standard.
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: verb, type: verb}
+        - {slot: f, type: fraction}
+        - {slot: dir, cat: delta}
+        - {slot: item, type: noun}
+        - {lit: than}
+        - {slot: std, type: name}
+    where:
+      - distinct: [who, std]
+    consumes: [f]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: "{item}"
+        factor: "1 + f * sign(dir)"
+        offset: 0.0
+        verb: "{verb}"
+
+  - id: arithmetic/times-the-number-of
+    phase: read
+    description: >
+      "has four times the number of sharks as Newport" — the times-as-many
+      ratio in its 'the number of' frame ('number'/'amount' are the frame's
+      skeleton, like 'total of').
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: verb, type: verb}
+        - {slot: k, type: multiplier}
+        - {slot: frame, cat: aggregate_noun}
+        - {lit: of}
+        - {slot: item, type: noun}
+        - {lit: as}
+        - {slot: std, type: name}
+    where:
+      - distinct: [who, std]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: "{item}"
+        factor: "k"
+        offset: 0.0
+        verb: "{verb}"
 
   - id: arithmetic/existential-premise
     phase: read
@@ -256,6 +309,7 @@ asks:
       a: "{a}"
       b: "{b}"
       measure: "{item}"
+      verb: "{verb}"
 
   - id: ask/how-many-entity
     match:
@@ -344,6 +398,7 @@ asks:
       a: "{a}"
       b: "{b}"
       measure: "{item}"
+      verb: "{verb}"
 
   - id: ask/is-membership
     match:

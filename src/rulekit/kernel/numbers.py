@@ -16,6 +16,7 @@ from ..data.registry import Registry
 from .model import Reading, Word
 
 _DIGIT = re.compile(r"^\$?(\d[\d,]*(?:\.\d+)?)(%?)$")
+_SLASH_FRACTION = re.compile(r"^(\d+)/(\d+)$")
 
 
 def annotate_numbers(reading: Reading, reg: Registry) -> Reading:
@@ -24,6 +25,15 @@ def annotate_numbers(reading: Reading, reg: Registry) -> Reading:
     while i < len(units):
         unit = units[i]
         fold = unit.features.get("fold", "")
+        sf = _SLASH_FRACTION.match(fold)
+        if sf and int(sf.group(2)) != 0:
+            reading.record(
+                "annotate-number", unit,
+                {"value": int(sf.group(1)) / int(sf.group(2)), "value_kind": "fraction"},
+                f"slash fraction {unit.surface!r}",
+            )
+            i += 1
+            continue
         m = _DIGIT.match(fold)
         if m:
             value = float(m.group(1).replace(",", ""))
@@ -136,16 +146,39 @@ def annotate_numbers(reading: Reading, reg: Registry) -> Reading:
             )
             break
 
-    # "N times" -> multiplier ("3 times" scales like "triple")
-    for j, unit in enumerate(reading.units[:-1]):
-        nxt = reading.units[j + 1]
+    # "N times" -> ONE multiplier unit ("four times as many" must present
+    # [multiplier][as][many] to the patterns, not [multiplier][times][as]…)
+    units = reading.units
+    for j in range(len(units) - 1):
+        a, b = units[j], units[j + 1]
         if (
-            unit.features.get("value_kind") == "count"
-            and nxt.features.get("fold") == "times"
+            a.features.get("value_kind") == "count"
+            and b.features.get("fold") == "times"
         ):
+            merged = reading.new_unit(a.words + b.words, dict(a.features))
+            merged.features["fold"] = f"{a.features['fold']} times"
+            units[j : j + 2] = [merged]
             reading.record(
-                "annotate-number", unit,
-                {"value_kind": "multiplier"},
-                f"'{unit.surface} times' reads as a multiplier",
+                "merge-number", merged,
+                {"value": a.features["value"], "value_kind": "multiplier"},
+                f"{merged.surface!r} reads as one multiplier",
             )
+            break
+
+    # "N percent" (the word) -> fraction, factor from the percents data
+    units = reading.units
+    for j in range(len(units) - 1):
+        a, b = units[j], units[j + 1]
+        factor = reg.percents.get(b.features.get("fold", ""))
+        if a.features.get("value_kind") == "count" and factor is not None:
+            merged = reading.new_unit(a.words + b.words, dict(a.features))
+            merged.features["fold"] = f"{a.features['fold']} {b.features['fold']}"
+            units[j : j + 2] = [merged]
+            reading.record(
+                "merge-number", merged,
+                {"value": a.features["value"] * factor,
+                 "value_kind": "fraction", "percent": True},
+                f"{merged.surface!r} reads as a fraction",
+            )
+            break
     return reading

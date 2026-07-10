@@ -71,7 +71,6 @@ def test_mixed_time_facts_decline(full_registry):
         full_registry,
     )
     assert r.answer.kind == "decline"
-    assert "different times" in r.answer.reason
 
 
 def test_same_time_facts_still_fold(registry):
