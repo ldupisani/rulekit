@@ -140,29 +140,6 @@ def solve(text: str, reg: Registry) -> Result:
     # the question's own pronouns resolve against the document's discourse
     # exactly like premise pronouns: unique antecedent or stay unmet
     _bind_discourse(premises + [question])
-    # units the matched ask consumed are READ — the value-accounting guard
-    # must see the span in "…in 30 days?" as used, not ignored
-    from .patterns import match_ask as _match_ask
-
-    matched_ask = _match_ask(question, reg)
-    if matched_ask is not None:
-        import re as _re
-
-        # only slots whose VALUE the consumer uses ({slot.value} templates)
-        # count as read — matching "four-minute songs" as an item does NOT
-        # read the four, and value accounting must still decline it
-        value_slots = {
-            m.group(1)
-            for raw in matched_ask[0].resolves.values()
-            for m in _re.finditer(r"\{(\w+)\.value\}", raw)
-        }
-        ask, _query, match = matched_ask
-        for slot_name, unit in match.slots.items():
-            if slot_name in value_slots:
-                question.record(
-                    "ask-consume", unit, {"pattern_consumed": True},
-                    f"value consumed by ask {ask.id}",
-                )
     proposed = run_answer(question, doc.store, reg, doc.log)
     veto = run_guards(
         premises, doc.consumed_uids, doc.log, reg, proposed, doc.store, question

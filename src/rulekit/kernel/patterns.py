@@ -81,12 +81,6 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
             return sense == "name"
         if t == "noun":
             return sense == "noun"
-        if t == "entity":
-            # anything that can HOLD a quantity: a name, a common noun
-            # ("the factory"), or a resolved pronoun
-            if sense == "pronoun":
-                return any(ob.need == "refers" and ob.met for ob in unit.obligations())
-            return sense in ("name", "noun")
         if t == "plural":
             return sense == "noun" and unit.features.get("number") == "plural"
         if t == "counted":
@@ -225,9 +219,6 @@ _SIGN = re.compile(r"sign\((\w+)\)")
 def _slot_value(unit: Unit, attr: str | None) -> str:
     if attr == "surface":
         return unit.surface
-    if attr == "value":
-        v = unit.features.get("value")
-        return str(v) if v is not None else ""
     return _lemma_of(unit)
 
 
@@ -359,13 +350,10 @@ def run_rules(
     return results
 
 
-def match_ask(
-    reading: Reading, reg: Registry
-) -> tuple[AskRule, dict[str, str], Match] | None:
+def match_ask(reading: Reading, reg: Registry) -> tuple[AskRule, dict[str, str]] | None:
     """Match question shapes; returns the resolved query dict of the FIRST
     matching ask by id order, with template slots substituted."""
-    best: tuple[AskRule, dict[str, str], Match] | None = None
-    for ask in reg.asks:  # sorted by id — deterministic tie-break
+    for ask in reg.asks:
         seq = ask.match["question"]
         m = match_sequence(reading, seq, reg)
         if m is None:
@@ -381,10 +369,5 @@ def match_ask(
                 # ("verb: {verb}" with the opt-group absent) — omit the key
                 # and let the consumer's default apply
                 continue
-        m.rule = None  # asks are not pattern rules; keep the match for consumption
-        # the MOST SPECIFIC ask wins (max consumed units): "…make in 40
-        # hours?" must reach the rate-span ask, not the shorter bare ask
-        # that ignores its span
-        if best is None or len(m.consumed) > len(best[2].consumed):
-            best = (ask, resolved, m)
-    return best
+        return ask, resolved
+    return None
