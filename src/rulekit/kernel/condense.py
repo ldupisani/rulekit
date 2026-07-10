@@ -48,6 +48,17 @@ def _nominal_pass(reading: Reading, reg: Registry) -> bool:
                    f"compound noun: {a.surface!r} modifies head {b.surface!r}",
                    {"attributes": attrs})
             return True
+        # CAPITALIZED adjective + name -> one name ("Tall Tuna"): the
+        # capitalization, not the part of speech, is the naming signal
+        if (
+            a.sense() == "adjective"
+            and a.surface[:1].isupper()
+            and b.sense() == "name"
+        ):
+            merged = _merge(reading, i, b, "merge-name",
+                            f"capitalized {a.surface!r} is part of the name {b.surface!r}")
+            merged.features["lemma"] = merged.features["fold"]
+            return True
         # name + name -> one name ("New York")
         if a.sense() == "name" and b.sense() == "name":
             merged = _merge(reading, i, a, "merge-name",

@@ -123,8 +123,8 @@ class ObligationsDoc(StrictModel):
 # ---------------------------------------------------------------------------
 
 SLOT_TYPES = (
-    "number", "fraction", "multiplier", "name", "noun", "plural", "verb",
-    "auxiliary", "pronoun", "word",
+    "number", "fraction", "multiplier", "name", "noun", "plural", "counted",
+    "verb", "auxiliary", "pronoun", "word",
 )
 
 

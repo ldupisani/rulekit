@@ -29,6 +29,32 @@ rules:
         offset: "n * sign(dir)"
         verb: have
 
+  - id: arithmetic/anchored-relation-postfix
+    phase: read
+    description: >
+      "X picked 12 apples more than Y" — the POSTFIX comparative order: the
+      count has already condensed into the noun, and the direction word
+      follows it. Same Relation fact as the prefix form.
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: verb, type: verb}
+        - {slot: item, type: counted}
+        - {slot: dir, cat: delta}
+        - {lit: than}
+        - {slot: std, type: name}
+    where:
+      - distinct: [who, std]
+    consumes: [item]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: "{item}"
+        factor: 1.0
+        offset: "item * sign(dir)"
+        verb: have
+
   - id: arithmetic/times-as-many
     phase: read
     description: >

@@ -85,6 +85,34 @@ def annotate_numbers(reading: Reading, reg: Registry) -> Reading:
         # "a" as the count 1 before a scale/fraction handled in senses stage
         i += 1
 
+    # word-number cascade: "one hundred" + "forty four" -> 144. Merge an
+    # adjacent pair of WORD-derived counts when the right side is a smaller
+    # magnitude than the left's scale (digits never cascade).
+    changed = True
+    while changed:
+        changed = False
+        units = reading.units
+        for j in range(len(units) - 1):
+            a, b = units[j], units[j + 1]
+            if (
+                a.features.get("value_kind") == "count"
+                and b.features.get("value_kind") == "count"
+                and not any(ch.isdigit() for ch in a.features.get("fold", ""))
+                and not any(ch.isdigit() for ch in b.features.get("fold", ""))
+                and a.features["value"] >= 100
+                and b.features["value"] < 100
+            ):
+                merged = reading.new_unit(a.words + b.words, dict(a.features))
+                merged.features["fold"] = f"{a.features['fold']} {b.features['fold']}"
+                units[j : j + 2] = [merged]
+                reading.record(
+                    "merge-number", merged,
+                    {"value": a.features["value"] + b.features["value"], "value_kind": "count"},
+                    f"word-number cascade {merged.surface!r}",
+                )
+                changed = True
+                break
+
     # "N times" -> multiplier ("3 times" scales like "triple")
     for j, unit in enumerate(reading.units[:-1]):
         nxt = reading.units[j + 1]

@@ -21,6 +21,7 @@ _TYPE_EXAMPLES = {
     "name": "Alex",
     "noun": "apple",
     "plural": "apples",
+    "counted": "3 apples",
     "verb": "has",
     "auxiliary": "does",
     "pronoun": "they",
@@ -32,6 +33,7 @@ _TYPE_SENSES = {
     "name": frozenset(),  # structural, no lexicon sense
     "noun": frozenset({"noun"}),
     "plural": frozenset({"noun"}),
+    "counted": frozenset({"noun"}),
     "verb": frozenset({"verb"}),
     "auxiliary": frozenset({"auxiliary"}),
     "pronoun": frozenset({"pronoun"}),

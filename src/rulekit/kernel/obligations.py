@@ -48,25 +48,34 @@ def _unit_sense_class(unit: Unit) -> str | None:
 
 
 def _conjoined_sibling(reading: Reading, unit: Unit) -> Unit | None:
-    """The other name in an '<name> and <name>' pair containing `unit`."""
+    """Another name conjoined to `unit`: '<name> and <name>' or a comma
+    list '<name>, <name>, and <name>' — a comma between names IS the list
+    marker. Returns any one sibling (non-uniqueness is all the caller needs)."""
     units = reading.units
     try:
         i = units.index(unit)
     except ValueError:
         return None
-    if (
-        i + 2 < len(units)
-        and units[i + 1].sense() == "conjunction"
-        and units[i + 2].sense() == "name"
-    ):
-        return units[i + 2]
-    if (
-        i - 2 >= 0
-        and units[i - 1].sense() == "conjunction"
-        and units[i - 2].sense() == "name"
-    ):
-        return units[i - 2]
-    return None
+
+    def _linked(j: int, step: int) -> Unit | None:
+        k = j + step
+        # one linker: a conjunction, or a comma directly between names
+        if not (0 <= k < len(units)):
+            return None
+        linker = units[k]
+        if linker.sense() == "conjunction" or linker.surface == ",":
+            k += step
+            if 0 <= k < len(units):
+                nxt = units[k]
+                # ", and Donna" — comma followed by conjunction
+                if linker.surface == "," and nxt.sense() == "conjunction":
+                    k += step
+                    nxt = units[k] if 0 <= k < len(units) else None
+                if nxt is not None and nxt.sense() == "name":
+                    return nxt
+        return None
+
+    return _linked(i, +1) or _linked(i, -1)
 
 
 def attach_obligations(reading: Reading, reg: Registry) -> Reading:

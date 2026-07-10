@@ -40,6 +40,11 @@ entries:
   what: {senses: [interrogative]}
   who: {senses: [interrogative]}
 
+  # imperative task cue ("Compute the total…") — a task sentence is a
+  # question even without a question mark; calculate/determine gain the
+  # imperative sense in difg-mined where their verb entries live
+  compute: {senses: [imperative]}
+
   # comparatives
   more: {senses: [comparative]}
   fewer: {senses: [comparative]}

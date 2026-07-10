@@ -115,10 +115,19 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
     """Resolve Relation facts against known Quantities:
     subject = factor*standard + offset, hop by hop (raw factors visible)."""
     out: list[Fact] = []
-    quantities = {(q.entity, q.measure): q for q in store.by_kind(Quantity)}
+    # a relation anchors on ANY known quantity of the standard, but only an
+    # existing STATE for the subject blocks resolution — the subject's own
+    # EVENTS ("John lost 3") accumulate on top of the derived state
+    quantities: dict[tuple[str, str], Quantity] = {}
+    states: set[tuple[str, str]] = set()
+    for q in store.by_kind(Quantity):
+        quantities.setdefault((q.entity, q.measure), q)
+        if q.is_state:
+            states.add((q.entity, q.measure))
+            quantities[(q.entity, q.measure)] = q
     for rel in store.by_kind(Relation):
         known = quantities.get((rel.standard, rel.measure))
-        if known is None or (rel.subject, rel.measure) in quantities:
+        if known is None or (rel.subject, rel.measure) in states:
             continue
         value = evaluate(
             f"{rel.factor} * {known.value} + {rel.offset}", {}, log,

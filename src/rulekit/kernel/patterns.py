@@ -68,11 +68,19 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
         if t == "multiplier":
             return kind == "multiplier"
         if t == "name":
+            # a RESOLVED pronoun satisfies a name slot (it denotes its
+            # antecedent); an unresolved one never does (definitive-or-decline)
+            if sense == "pronoun":
+                return any(
+                    ob.need == "refers" and ob.met for ob in unit.obligations()
+                )
             return sense == "name"
         if t == "noun":
             return sense == "noun"
         if t == "plural":
             return sense == "noun" and unit.features.get("number") == "plural"
+        if t == "counted":
+            return sense == "noun" and kind == "count"
         if t == "verb":
             return sense == "verb"
         if t == "auxiliary":
@@ -90,6 +98,13 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
 
 
 def _lemma_of(unit: Unit) -> str:
+    # a pronoun whose `refers` bound cross-sentence speaks AS its antecedent
+    if unit.sense() == "pronoun":
+        for ob in unit.obligations():
+            if ob.need == "refers" and ob.met and isinstance(ob.target, Unit):
+                return ob.target.features.get(
+                    "lemma", ob.target.features.get("fold", "")
+                )
     return unit.features.get("lemma", unit.features.get("fold", unit.surface.lower()))
 
 
@@ -138,13 +153,33 @@ def match_sequence(
     reading: Reading, tokens: list[MatchToken], reg: Registry
 ) -> Match | None:
     """First (leftmost) match of a token sequence anywhere in the sentence."""
+    matches = match_all(reading, tokens, reg, limit=1)
+    return matches[0] if matches else None
+
+
+def match_all(
+    reading: Reading, tokens: list[MatchToken], reg: Registry, limit: int = 8
+) -> list[Match]:
+    """ALL non-overlapping leftmost matches — a compound sentence ("X picked
+    12 more than Y, and Y picked 5 less than Z") yields one match per
+    clause; taking only the first would leave the rest to the naive fold."""
     units = reading.units
-    for start in range(len(units)):
-        slots: dict[str, Unit] = {}
-        consumed: list[int] = []
-        if _try_match_at(units, start, tokens, reg, slots, consumed) is not None:
-            return Match(rule=None, slots=slots, consumed=tuple(consumed))  # type: ignore[arg-type]
-    return None
+    out: list[Match] = []
+    start = 0
+    while start < len(units) and len(out) < limit:
+        matched_here = None
+        for begin in range(start, len(units)):
+            slots: dict[str, Unit] = {}
+            consumed: list[int] = []
+            end = _try_match_at(units, begin, tokens, reg, slots, consumed)
+            if end is not None:
+                matched_here = (Match(rule=None, slots=slots, consumed=tuple(consumed)), end)  # type: ignore[arg-type]
+                break
+        if matched_here is None:
+            break
+        out.append(matched_here[0])
+        start = matched_here[1]
+    return out
 
 
 def _check_where(rule: PatternRule, slots: dict[str, Unit], reading: Reading) -> bool:
@@ -289,19 +324,17 @@ def run_rules(
         lits = {t.lit for t in seq if t.lit is not None}
         if not lits <= sentence_folds:
             continue
-        m = match_sequence(reading, seq, reg)
-        if m is None:
-            continue
-        m.rule = rule
-        m.specificity = specificity(m, reg)
-        if not _check_where(rule, m.slots, reading):
-            continue
-        provenance = Provenance(source=rule.id, sentence=reading.sentence_index)
-        facts = [
-            _build_fact(e.fields, e.fact, m.slots, reg, provenance, log, rule.id)
-            for e in rule.emits
-        ]
-        results.append(RuleMatchResult(match=m, facts=facts))
+        for m in match_all(reading, seq, reg):
+            m.rule = rule
+            m.specificity = specificity(m, reg)
+            if not _check_where(rule, m.slots, reading):
+                continue
+            provenance = Provenance(source=rule.id, sentence=reading.sentence_index)
+            facts = [
+                _build_fact(e.fields, e.fact, m.slots, reg, provenance, log, rule.id)
+                for e in rule.emits
+            ]
+            results.append(RuleMatchResult(match=m, facts=facts))
     return results
 
 

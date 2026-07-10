@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 from ..data.registry import Registry
 from .answer import Answer, answer as run_answer
 from .condense import condense
-from .document import Document, run_document
+from .document import Document, _bind_discourse, run_document
 from .evaluate import ArithmeticLog
 from .facts import FactStore
 from .guards import GuardVeto, check as run_guards
@@ -23,7 +23,15 @@ from .obligations import attach_obligations, bind, disambiguate
 from .senses import annotate_senses
 from .tokenize import split_sentences, tokenize
 
-QUESTION_WORDS = {"how", "what", "who", "which", "is", "are", "does", "do", "did"}
+# senses that mark a sentence as a question/task when they LEAD it, and that
+# mark the wh-part inside an "If <clause>, <wh…>" sentence. Sense names are
+# structure; the WORDS carrying them live in the packs (the constitution).
+ASK_CUE_SENSES = frozenset({"interrogative", "auxiliary", "imperative"})
+
+
+def _has_ask_cue_sense(word: str, reg: Registry) -> bool:
+    entry = reg.lexicon.get(word.lower().rstrip(",?"))
+    return entry is not None and bool(set(entry.senses) & ASK_CUE_SENSES)
 
 
 def analyze(sentence: str, reg: Registry, sentence_index: int = 0) -> Reading:
@@ -70,19 +78,45 @@ class Result:
         return events
 
 
-def split_question(text: str) -> tuple[list[str], str | None]:
+def _split_leading_clause(question: str, reg: Registry) -> tuple[str | None, str]:
+    """'If <clause>, <wh…>?' → the clause is a PREMISE, the wh-part the
+    question. Split at the first comma whose next word carries an ask-cue
+    sense. 'If'/',' are grammatical skeleton; the cues are lexicon data."""
+    lowered = question.lower()
+    if not lowered.startswith("if "):
+        return None, question
+    parts = question.split(",")
+    for i in range(len(parts) - 1):
+        rest = ",".join(parts[i + 1 :]).strip()
+        first = rest.split()[0] if rest.split() else ""
+        if _has_ask_cue_sense(first, reg):
+            clause = ",".join(parts[: i + 1])[2:].strip().lstrip()
+            return clause.rstrip(".") + ".", rest
+    return None, question
+
+
+def split_question(text: str, reg: Registry | None = None) -> tuple[list[str], str | None]:
     sentences = split_sentences(text)
     if not sentences:
         return [], None
     last = sentences[-1]
-    first_word = last.split()[0].lower().rstrip(",") if last.split() else ""
-    if last.endswith("?") or first_word in QUESTION_WORDS:
-        return sentences[:-1], last
-    return sentences, None
+    words = last.split()
+    first_word = words[0] if words else ""
+    is_question = last.endswith("?") or (
+        reg is not None and _has_ask_cue_sense(first_word, reg)
+    )
+    if not is_question:
+        return sentences, None
+    premises = sentences[:-1]
+    if reg is not None:
+        clause, last = _split_leading_clause(last, reg)
+        if clause is not None:
+            premises = premises + [clause]
+    return premises, last
 
 
 def solve(text: str, reg: Registry) -> Result:
-    premise_texts, question_text = split_question(text)
+    premise_texts, question_text = split_question(text, reg)
     premises = [
         analyze(sentence, reg, sentence_index=i)
         for i, sentence in enumerate(premise_texts)
@@ -98,6 +132,9 @@ def solve(text: str, reg: Registry) -> Result:
         return result
 
     question = analyze(question_text, reg, sentence_index=len(premise_texts))
+    # the question's own pronouns resolve against the document's discourse
+    # exactly like premise pronouns: unique antecedent or stay unmet
+    _bind_discourse(premises + [question])
     proposed = run_answer(question, doc.store, reg, doc.log)
     veto = run_guards(
         premises, doc.consumed_uids, doc.log, reg, proposed, doc.store, question
