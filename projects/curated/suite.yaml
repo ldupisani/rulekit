@@ -83,6 +83,16 @@ items:
     text: The rose wilted. Is Rose a teacher?
     expect: "undetermined"
 
+  # ---- transfer (awaiting packs/arithmetic/rules/transfer.yaml) --------------
+  # These DECLINE until the transfer rule exists — safely: the unbound value
+  # trips the value-accounting guard. Writing the rule flips them to correct.
+  - id: transfer-recipient
+    text: Tom has 10 apples. Mary has 2 apples. Tom gave Mary 3 apples. How many apples does Mary have?
+    expect: 5
+  - id: transfer-giver
+    text: Tom has 10 apples. Mary has 2 apples. Tom gave Mary 3 apples. How many apples does Tom have?
+    expect: 7
+
   # ---- declines: the honesty checks (each would be a precision failure) ------
   - id: decline-unknown-word
     text: Tom has 3 wugs. How many wugs does Tom have?
