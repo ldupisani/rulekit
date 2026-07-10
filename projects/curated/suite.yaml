@@ -83,6 +83,20 @@ items:
     text: The rose wilted. Is Rose a teacher?
     expect: "undetermined"
 
+  # ---- money: currency amounts are counted nouns -----------------------------
+  - id: money-holdings
+    text: Tom has $20. Tom spent $8. How much does Tom have?
+    expect: 12
+  - id: money-event-ask
+    text: Tom spent $8. How much did Tom spend?
+    expect: 8
+  - id: money-dollars-word
+    text: Tom has $20. How many dollars does Tom have?
+    expect: 20
+  - id: decline-rate
+    text: Tom finds 3 coins a day. How many coins does Tom have?
+    expect: decline
+
   # ---- discourse: the document re-parse loop ---------------------------------
   - id: pronoun-unique-antecedent
     text: Tom has 10 apples. He ate 4 apples. How many apples does Tom have?

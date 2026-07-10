@@ -45,6 +45,31 @@ def _lemma(unit: Unit) -> str:
     return unit.features.get("lemma", unit.features.get("fold", unit.surface.lower()))
 
 
+def _is_rate(reading: Reading, counted: Unit) -> bool:
+    """'$10 an hour' / '20 hours a month' / '$2 per pound' — a counted noun
+    followed by a rate marker (the `rate` sense) or by article+noun is a
+    PER-UNIT RATE, not a holding. Rate machinery is unbuilt: emitting a
+    plain quantity here is how a wage becomes a balance. Skip the fact and
+    let value accounting decline."""
+    units = reading.units
+    try:
+        i = units.index(counted)
+    except ValueError:
+        return False
+    j = i + 1
+    while j < len(units) and units[j].sense() == "punct":
+        j += 1
+    if j >= len(units):
+        return False
+    if units[j].sense() == "rate":
+        return True
+    if units[j].sense() == "article":
+        k = j + 1
+        if k < len(units) and units[k].sense() == "noun":
+            return True
+    return False
+
+
 def learn(reading: Reading, reg: Registry) -> list[Fact]:
     facts: list[Fact] = []
     prov = Provenance(source="fold", sentence=reading.sentence_index)
@@ -84,6 +109,8 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
             continue
         is_state = reg.word_in_category(verb.features.get("fold", ""), "state")
         occurrence = None if is_state else reading.sentence_index
+        if dobj is not None and _is_rate(reading, dobj):
+            continue  # a rate, not a holding — no fact, value stays unaccounted
         if dobj is not None and dobj.features.get("value_kind") == "count" and dobj.sense() == "noun":
             # condensed counted noun ("3 apples")
             facts.append(

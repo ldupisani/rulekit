@@ -30,6 +30,38 @@ class Answer:
         return self.kind == "number"
 
 
+def _resolve_measure(measure: str, store: FactStore, reg: Registry) -> str | None:
+    """Resolve the ask's measure word against the FACTS.
+
+    - a word with its own facts resolves to itself ('pounds' in a pounds
+      problem — never collapsed onto some canonical currency);
+    - a CATEGORY name ('currency' in a bare how-much ask) or a category
+      member with no facts of its own ('money') resolves to the UNIQUE
+      in-store measure of that category — one currency in play uses it,
+      mixed currencies are genuinely ambiguous and return None (decline);
+    - anything else passes through to the normal not-known decline.
+    """
+    singular = reg.plural_to_singular.get(measure, measure)
+    in_store = {q.measure for q in store.by_kind(Quantity)}
+    if singular in in_store:
+        return singular
+    categories = (
+        [singular] if singular in reg.category_parents
+        else list(reg.word_categories.get(singular, ()))
+    )
+    if not categories:
+        return singular
+    present = sorted(
+        m for m in in_store
+        if any(reg.word_in_category(m, c) for c in categories)
+    )
+    if len(present) == 1:
+        return present[0]
+    if present:
+        return None  # mixed measures of the category — ambiguous
+    return singular
+
+
 def _sign(verb: str, reg: Registry) -> int:
     for tag in reg.word_categories.get(verb, ()):
         chain = reg.cat_ancestors(tag)
@@ -97,7 +129,10 @@ def answer(
 
     if consumer == "single-entity":
         entity, measure = query["entity"], query["measure"]
-        singular = reg.plural_to_singular.get(measure, measure)
+        singular = _resolve_measure(measure, store, reg)
+        if singular is None:
+            return Answer("decline", None,
+                          f"measure {measure!r} is ambiguous across the facts")
         ask_verb = query.get("verb", "have")
         is_state_ask = ask_verb in ("have", "be") or reg.word_in_category(ask_verb, "state")
         if not is_state_ask:
@@ -129,7 +164,10 @@ def answer(
 
     if consumer == "combined":
         measure = query["measure"]
-        singular = reg.plural_to_singular.get(measure, measure)
+        singular = _resolve_measure(measure, store, reg)
+        if singular is None:
+            return Answer("decline", None,
+                          f"measure {measure!r} is ambiguous across the facts")
         entities = sorted(
             {q.entity for q in store.by_kind(Quantity) if q.measure == singular}
         )
@@ -146,7 +184,10 @@ def answer(
 
     if consumer == "difference":
         a, b, measure = query["a"], query["b"], query["measure"]
-        singular = reg.plural_to_singular.get(measure, measure)
+        singular = _resolve_measure(measure, store, reg)
+        if singular is None:
+            return Answer("decline", None,
+                          f"measure {measure!r} is ambiguous across the facts")
         ta = _entity_total(store, reg, a, singular, log)
         tb = _entity_total(store, reg, b, singular, log)
         if ta is None or tb is None:

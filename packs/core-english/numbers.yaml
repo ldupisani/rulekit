@@ -48,3 +48,6 @@ operators:
   minus: "-"
   times: "*"
   divided: "/"
+
+currencies:
+  "$": dollar

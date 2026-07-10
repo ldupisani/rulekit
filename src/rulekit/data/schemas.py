@@ -92,6 +92,7 @@ class NumbersDoc(StrictModel):
     multipliers: dict[str, float] = Field(default_factory=dict)  # "twice" -> 2
     fractions: dict[str, float] = Field(default_factory=dict)  # "half" -> 0.5
     operators: dict[str, str] = Field(default_factory=dict)  # "plus" -> "+"
+    currencies: dict[str, str] = Field(default_factory=dict)  # "$" -> dollar
 
 
 # ---------------------------------------------------------------------------

@@ -131,6 +131,55 @@ asks:
       measure: "{item}"
       verb: "{verb}"
 
+  - id: ask/how-much-bare-entity
+    match:
+      question:
+        - {lit: how}
+        - {lit: much}
+        - {slot: aux, type: auxiliary}
+        - {slot: who, type: name}
+        - {slot: verb, type: verb}
+    resolves:
+      consumer: single-entity
+      entity: "{who}"
+      # the CATEGORY, not a currency: resolved to the unique currency
+      # measure present in the facts (mixed currencies decline)
+      measure: currency
+      verb: "{verb}"
+
+  - id: ask/how-much-noun-entity
+    match:
+      question:
+        - {lit: how}
+        - {lit: much}
+        - {slot: item, type: noun}
+        - {slot: aux, type: auxiliary}
+        - {slot: who, type: name}
+        - {slot: verb, type: verb}
+    resolves:
+      consumer: single-entity
+      entity: "{who}"
+      measure: "{item}"
+      verb: "{verb}"
+
+  - id: ask/how-much-noun-more-than
+    match:
+      question:
+        - {lit: how}
+        - {lit: much}
+        - {slot: dir, cat: delta}
+        - {slot: item, type: noun}
+        - {slot: aux, type: auxiliary}
+        - {slot: a, type: name}
+        - {slot: verb, type: verb}
+        - {lit: than}
+        - {slot: b, type: name}
+    resolves:
+      consumer: difference
+      a: "{a}"
+      b: "{b}"
+      measure: "{item}"
+
   - id: ask/is-membership
     match:
       question:

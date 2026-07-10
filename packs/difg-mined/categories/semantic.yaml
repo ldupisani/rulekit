@@ -16,8 +16,6 @@ categories:
     parent: noun
   contribute:
     parent: verb
-  currency:
-    parent: noun
   discount:
     parent: noun
   divide:
@@ -204,6 +202,7 @@ members:
   currency:
   - dollar
   - dollars
+  - money
   - pound
   - pounds
   discount:

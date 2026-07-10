@@ -36,6 +36,7 @@ entries:
   do: {senses: [auxiliary]}
   did: {senses: [auxiliary]}
   how: {senses: [interrogative]}
+  much: {senses: [interrogative, quantifier], notes: "moved from difg-mined; also the how-MUCH ask cue"}
   many: {senses: [interrogative]}
   what: {senses: [interrogative]}
   who: {senses: [interrogative]}

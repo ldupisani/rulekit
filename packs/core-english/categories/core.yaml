@@ -14,9 +14,15 @@ categories:
   acquire: {parent: verb, antonym: lose, polarity: 1}
   lose: {parent: verb, antonym: acquire, polarity: -1}
   delta: {parent: comparative, notes: "direction words in 'N more/fewer X than Y'"}
+  currency:
+    parent: noun
+    notes: >
+      money words. A bare how-much ask resolves `measure: currency` to the
+      UNIQUE currency measure in the facts; mixed currencies decline.
   more_dir: {parent: delta, antonym: less_dir, polarity: 1}
   less_dir: {parent: delta, antonym: more_dir, polarity: -1}
 members:
+  currency: [dollar]
   animal: [dog, cat, fish, bird, rabbit, hamster]
   pet: [dog, cat, hamster]
   state: [has, have, had, is, are, was, were, own, owns]
