@@ -19,10 +19,17 @@ categories:
     notes: >
       money words. A bare how-much ask resolves `measure: currency` to the
       UNIQUE currency measure in the facts; mixed currencies decline.
+  remnant:
+    parent: noun
+    notes: "'the REST' / 'the REMAINDER' — remainder-of-pool referents"
+  remnant_adj:
+    parent: adjective
+    notes: "'the REMAINING pages' / 'pages LEFT' — remainder-anchored fractions defer to the rest machinery"
   more_dir: {parent: delta, antonym: less_dir, polarity: 1}
   less_dir: {parent: delta, antonym: more_dir, polarity: -1}
 members:
   currency: [dollar]
+  remnant_adj: [left]
   animal: [dog, cat, fish, bird, rabbit, hamster]
   pet: [dog, cat, hamster]
   state: [has, have, had, is, are, was, were, own, owns]

@@ -246,6 +246,42 @@ class Relation(Fact):
 
 
 @dataclass(frozen=True)
+class FractionQuantity(Fact):
+    """'ate HALF of the sandwiches' — a fraction of the definite pool (the
+    unique STATE quantity of the measure). Resolved to an event Quantity by
+    the fraction synthesizer; UNRESOLVED ones veto any commit (a silently
+    dropped 'half' is a confident-wrong factory)."""
+
+    entity: str
+    measure: str
+    fraction: float
+    verb: str = "have"
+    occurrence: int | None = None
+    time: str | None = None
+
+    def key(self) -> tuple:
+        return ("fraction_quantity", self.entity, self.measure, self.verb,
+                self.occurrence, self.time)
+
+    def value_part(self) -> Any:
+        return self.fraction
+
+
+@dataclass(frozen=True)
+class RestQuantity(Fact):
+    """'He picked THE REST' — the remainder of the unique pool after its
+    events. Resolved by the rest synthesizer; unresolved ones veto."""
+
+    entity: str
+    verb: str
+    occurrence: int | None = None
+    time: str | None = None
+
+    def key(self) -> tuple:
+        return ("rest_quantity", self.entity, self.verb, self.occurrence, self.time)
+
+
+@dataclass(frozen=True)
 class Before(Fact):
     earlier: str
     later: str

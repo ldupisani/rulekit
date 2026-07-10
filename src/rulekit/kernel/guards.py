@@ -107,6 +107,32 @@ def check(
                     "wrong commit",
                 )
 
+    if _enabled(reg, "unresolved-derivation") and store is not None:
+        # a FractionQuantity/RestQuantity the synthesizers could NOT resolve
+        # means part of the text was read but not computed — committing
+        # around it is how "ate half the sandwiches" silently vanishes
+        from .model import FractionQuantity, Quantity, RestQuantity
+
+        derived = {
+            (q.entity, q.verb, q.occurrence)
+            for q in store.by_kind(Quantity)
+            if q.provenance.source.startswith("synth/")
+        }
+        for f in store.by_kind(FractionQuantity):
+            if (f.entity, f.verb, f.occurrence) not in derived:
+                return GuardVeto(
+                    "unresolved-derivation",
+                    f"the fraction of {f.measure!r} ({f.entity!r}, {f.verb!r}) "
+                    "never resolved against a unique pool",
+                )
+        for r in store.by_kind(RestQuantity):
+            if (r.entity, r.verb, r.occurrence) not in derived:
+                return GuardVeto(
+                    "unresolved-derivation",
+                    f"'the rest' ({r.entity!r}, {r.verb!r}) never resolved "
+                    "against a unique pool",
+                )
+
     if _enabled(reg, "ambiguity"):
         for reading in readings:
             for unit in reading.units:

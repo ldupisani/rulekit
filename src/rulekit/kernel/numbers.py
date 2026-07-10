@@ -113,6 +113,29 @@ def annotate_numbers(reading: Reading, reg: Registry) -> Reading:
                 changed = True
                 break
 
+    # word-count + word-fraction -> one fraction ("one half" = 0.5,
+    # "three fourths" = 0.75; hyphens tokenize apart, so "one-fifth" lands
+    # here too). Word-derived counts only — digits never merge.
+    units = reading.units
+    for j in range(len(units) - 1):
+        a, b = units[j], units[j + 1]
+        if (
+            a.features.get("value_kind") == "count"
+            and b.features.get("value_kind") == "fraction"
+            and not any(ch.isdigit() for ch in a.features.get("fold", ""))
+            and not b.features.get("percent")
+        ):
+            merged = reading.new_unit(a.words + b.words, dict(b.features))
+            merged.features["fold"] = f"{a.features['fold']} {b.features['fold']}"
+            units[j : j + 2] = [merged]
+            reading.record(
+                "merge-number", merged,
+                {"value": a.features["value"] * b.features["value"],
+                 "value_kind": "fraction"},
+                f"word fraction {merged.surface!r}",
+            )
+            break
+
     # "N times" -> multiplier ("3 times" scales like "triple")
     for j, unit in enumerate(reading.units[:-1]):
         nxt = reading.units[j + 1]

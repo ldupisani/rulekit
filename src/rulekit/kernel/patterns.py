@@ -20,12 +20,14 @@ from .evaluate import ArithmeticLog, EvaluationError, evaluate
 from .model import (
     Before,
     Fact,
+    FractionQuantity,
     Membership,
     Predication,
     Provenance,
     Quantity,
     Reading,
     Relation,
+    RestQuantity,
     Subset,
     Unit,
 )
@@ -39,6 +41,8 @@ _FACT_CLASSES = {
     "subset": Subset,
     "predication": Predication,
     "before": Before,
+    "fraction_quantity": FractionQuantity,
+    "rest_quantity": RestQuantity,
 }
 
 
@@ -182,7 +186,9 @@ def match_all(
     return out
 
 
-def _check_where(rule: PatternRule, slots: dict[str, Unit], reading: Reading) -> bool:
+def _check_where(
+    rule: PatternRule, slots: dict[str, Unit], reading: Reading, reg: Registry
+) -> bool:
     for pred in rule.where:
         if pred.same_lemma is not None:
             lemmas = {_lemma_of(slots[s]) for s in pred.same_lemma if s in slots}
@@ -192,6 +198,12 @@ def _check_where(rule: PatternRule, slots: dict[str, Unit], reading: Reading) ->
             values = [_lemma_of(slots[s]) for s in pred.distinct if s in slots]
             if len(values) != len(set(values)):
                 return False
+        if pred.absent is not None:
+            cat = pred.absent["cat"]
+            for u in reading.units:
+                word = u.features.get("lemma", u.features.get("fold", ""))
+                if reg.word_in_category(word, cat):
+                    return False
         if pred.name_count is not None:
             exactly = pred.name_count.get("exactly")
             names = {u.features["fold"] for u in reading.units if u.sense() == "name"}
@@ -266,7 +278,7 @@ def _build_fact(
     kwargs = {}
     for key, raw in emit_fields.items():
         kwargs[key] = _resolve_field(raw, slots, reg, key in _NUMERIC_FIELDS, log, rule_id)
-    if cls is Quantity and "occurrence" not in kwargs:
+    if cls in (Quantity, FractionQuantity, RestQuantity) and "occurrence" not in kwargs:
         # a rule-emitted quantity is an event unless its verb is stative
         verb = kwargs.get("verb", "have")
         if not reg.word_in_category(verb, "state") and verb not in ("have", "be"):
@@ -327,7 +339,7 @@ def run_rules(
         for m in match_all(reading, seq, reg):
             m.rule = rule
             m.specificity = specificity(m, reg)
-            if not _check_where(rule, m.slots, reading):
+            if not _check_where(rule, m.slots, reading, reg):
                 continue
             provenance = Provenance(source=rule.id, sentence=reading.sentence_index)
             facts = [

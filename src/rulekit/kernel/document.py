@@ -139,12 +139,34 @@ def run_document(premises: list[Reading], reg: Registry) -> Document:
         saturate(store, reg, log)
         return store
 
+    def rerun_rules(sentence_indexes: set[int]) -> None:
+        """Discourse binding changed these sentences — their pattern rules
+        get a fresh look (a resolved pronoun now satisfies name slots)."""
+        for reading in premises:
+            if reading.sentence_index not in sentence_indexes:
+                continue
+            results = run_rules(reading, reg, phase="read", log=log)
+            doc.rule_results[reading.sentence_index] = results
+            consumed = doc.consumed_uids.setdefault(reading.sentence_index, set())
+            for r in results:
+                for uid in r.match.consumed:
+                    if uid in consumed:
+                        continue
+                    consumed.add(uid)
+                    reading.record(
+                        "pattern-consume", reading.unit(uid),
+                        {"pattern_consumed": True},
+                        f"consumed by rule {r.match.rule.id}",
+                        rule_id=r.match.rule.id,
+                    )
+
     doc.store = rebuild_store()
     for round_no in range(1, MAX_ROUNDS + 1):
         doc.rounds = round_no
         changed = _bind_discourse(premises)
         if not changed:
             break
+        rerun_rules(changed)
         doc.store = rebuild_store()
     else:
         raise RuntimeError(

@@ -82,7 +82,130 @@ rules:
         offset: 0.0
         verb: have
 
+  - id: arithmetic/existential-premise
+    phase: read
+    description: >
+      "There are 15 trees in the grove" — a located existential: the place
+      holds the counted noun as a state quantity.
+    match:
+      sentence:
+        - {lit: there}
+        - {slot: verb, type: verb}
+        - {slot: item, type: counted}
+        - {slot: prep, cat: preposition}
+        - {slot: place, type: noun}
+    where:
+      - absent: {cat: aggregate}
+    consumes: [item]
+    emits:
+      - fact: quantity
+        entity: "{place}"
+        measure: "{item}"
+        value: "item"
+        verb: have
+
+  - id: arithmetic/existential-premise-bare
+    phase: read
+    description: >
+      "There are 12 chairs." — an unlocated existential; the holder is the
+      scene itself (the `world` entity, a data constant this pack owns).
+      The located form strictly subsumes this one on shared matches.
+    match:
+      sentence:
+        - {lit: there}
+        - {slot: verb, type: verb}
+        - {slot: item, type: counted}
+    where:
+      # "There are 160 toys ALTOGETHER" is a group TOTAL (a sum constraint
+      # over the entities), never an independent holding
+      - absent: {cat: aggregate}
+    consumes: [item]
+    emits:
+      - fact: quantity
+        entity: world
+        measure: "{item}"
+        value: "item"
+        verb: have
+
+  - id: arithmetic/fraction-of-pool
+    phase: read
+    description: >
+      "Tom ate half of the sandwiches" / "spent 40% of the money" — a
+      fraction of the DEFINITE pool. Emits a FractionQuantity the synthesizer
+      resolves against the unique state quantity of the measure; unresolved
+      ones veto commits. Remainder-anchored fractions ("of the remaining
+      pages") are a different mechanism and must not match here.
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: verb, type: verb}
+        - {slot: f, type: fraction}
+        - {lit: of}
+        - {slot: item, type: noun}
+    where:
+      - absent: {cat: remnant}
+      - absent: {cat: remnant_adj}
+    consumes: [f]
+    emits:
+      - fact: fraction_quantity
+        entity: "{who}"
+        measure: "{item}"
+        fraction: "f"
+        verb: "{verb}"
+
+  - id: arithmetic/fraction-of-pronoun
+    phase: read
+    description: >
+      "She spent one-half OF IT" — the pronoun denotes the pool itself; the
+      synthesizer resolves it by the unique-measure principle (one measure
+      in play, else unresolved and the guard declines).
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: verb, type: verb}
+        - {slot: f, type: fraction}
+        - {lit: of}
+        - {slot: ref, type: pronoun}
+    consumes: [f]
+    emits:
+      - fact: fraction_quantity
+        entity: "{who}"
+        measure: "{ref}"
+        fraction: "f"
+        verb: "{verb}"
+
+  - id: arithmetic/rest-of-pool
+    phase: read
+    description: >
+      "He picked THE REST" — the remainder of the unique pool after its
+      events. Emits a RestQuantity; the synthesizer supplies the value or
+      the unresolved-derivation guard declines.
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: verb, type: verb}
+        - {slot: r, cat: remnant}
+    emits:
+      - fact: rest_quantity
+        entity: "{who}"
+        verb: "{verb}"
+
 asks:
+  - id: ask/how-many-in-place
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {slot: verb, type: verb}
+        - {slot: prep, cat: preposition}
+        - {slot: place, type: noun}
+    resolves:
+      consumer: single-entity
+      entity: "{place}"
+      measure: "{item}"
+      verb: have
+
   - id: ask/how-many-combined
     match:
       question:

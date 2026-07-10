@@ -429,6 +429,11 @@ members:
   - keeping
   - keeps
   - kept
+  remnant:
+  - remainder
+  - rest
+  remnant_adj:
+  - remaining
   timeperiod:
   - afternoon
   - day

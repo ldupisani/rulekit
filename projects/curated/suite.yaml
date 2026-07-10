@@ -105,6 +105,26 @@ items:
     text: Tom has 10 marbles. Mary has 5 marbles. How many marbles are left?
     expect: decline
 
+  # ---- premise machinery: existentials, fractions, rest ----------------------
+  - id: existential-located
+    text: There are 15 flowers in the garden. How many flowers are in the garden?
+    expect: 15
+  - id: existential-bare
+    text: There are 12 books. How many books are there?
+    expect: 12
+  - id: fraction-of-pool
+    text: Tom found 12 eggs. Tom ate half of the eggs. How many eggs are left?
+    expect: 6
+  - id: fraction-chain-sequences
+    text: Tom found 12 eggs. Tom ate half of the eggs. Tom gave 2 eggs to Mary. How many eggs are left?
+    expect: 4
+  - id: fraction-of-pronoun
+    text: Mary found 28 coins. She lost one fourth of it. How many coins are left?
+    expect: 21
+  - id: decline-fraction-without-pool
+    text: Tom ate half of the eggs. How many eggs did Tom eat?
+    expect: decline
+
   # ---- discourse: the document re-parse loop ---------------------------------
   - id: pronoun-unique-antecedent
     text: Tom has 10 apples. He ate 4 apples. How many apples does Tom have?

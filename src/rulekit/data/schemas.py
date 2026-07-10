@@ -157,17 +157,24 @@ class WherePredicate(StrictModel):
     same_lemma: list[str] | None = None
     distinct: list[str] | None = None
     name_count: dict[str, int] | None = None  # {"exactly": 2}
+    absent: dict[str, str] | None = None  # {"cat": name} — no such word in sentence
 
     @model_validator(mode="after")
     def _one(self) -> "WherePredicate":
-        set_ = [v for v in (self.same_lemma, self.distinct, self.name_count) if v is not None]
+        set_ = [
+            v for v in (self.same_lemma, self.distinct, self.name_count, self.absent)
+            if v is not None
+        ]
         if len(set_) != 1:
             raise ValueError("exactly one predicate per where item")
         return self
 
 
 class FactEmit(StrictModel):
-    fact: Literal["quantity", "relation", "membership", "subset", "predication", "before"]
+    fact: Literal[
+        "quantity", "relation", "membership", "subset", "predication",
+        "before", "fraction_quantity", "rest_quantity",
+    ]
     # remaining fields are fact-kind specific; templated strings "{slot}" or
     # expressions evaluated by the safe evaluator.
     fields: dict[str, str | float | bool] = Field(default_factory=dict)

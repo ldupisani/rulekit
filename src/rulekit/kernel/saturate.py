@@ -142,8 +142,123 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
     return out
 
 
+def _pool_before(
+    store: FactStore, reg: Registry, sentence: int, measure: str,
+    log: ArithmeticLog, source: str,
+) -> float | None:
+    """The definite pool ('the sandwiches') as of a sentence: the signed sum
+    of the measure's quantities from EARLIER sentences — states anchor,
+    events add/subtract by verb polarity, previously-derived fraction events
+    included (so chains sequence). Rest-derived facts are excluded (they'd
+    make the rest's own fixpoint unstable). None when nothing is known."""
+    from ..kernel.answer import _sign
+
+    prior = [
+        q for q in store.by_kind(Quantity)
+        if q.measure == measure
+        and q.provenance.sentence < sentence
+        and q.provenance.source != "synth/rest"
+    ]
+    if not prior:
+        return None
+    if len({q.time for q in prior}) > 1:
+        return None  # mixed times — time arithmetic is unbuilt
+    expr = " ".join(
+        f"{'+' if q.is_state or _sign(q.verb, reg) > 0 else '-'} {q.value}"
+        for q in prior
+    ).lstrip("+ ")
+    if expr.startswith("- "):
+        expr = "0 " + expr
+    return evaluate(expr, {}, log, source=source)
+
+
+def _fraction_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> list[Fact]:
+    """'ate half of THE SANDWICHES' — the fraction becomes an event sized
+    against the pool as of its sentence. An unknown or non-positive pool
+    leaves it unresolved (the guard declines)."""
+    from .model import FractionQuantity
+
+    from .answer import _resolve_measure
+
+    out: list[Fact] = []
+    for fq in store.by_kind(FractionQuantity):
+        # "40% of the MONEY" — the pool's measure resolves through the same
+        # category machinery as the asks (money → the unique currency in play)
+        measure = _resolve_measure(fq.measure, store, reg)
+        if measure is None:
+            continue
+        base = _pool_before(store, reg, fq.provenance.sentence, measure, log, "synth/fraction")
+        if base is None:
+            # "half OF IT": the measure word has no facts of its own — the
+            # unique-measure principle resolves it when ONE pool is in play
+            in_play = {
+                q.measure for q in store.by_kind(Quantity)
+                if q.provenance.sentence < fq.provenance.sentence
+                and q.provenance.source != "synth/rest"
+            }
+            if len(in_play) == 1:
+                (measure,) = in_play
+                base = _pool_before(
+                    store, reg, fq.provenance.sentence, measure, log, "synth/fraction"
+                )
+        if base is None or base <= 0:
+            continue
+        value = evaluate(f"{fq.fraction} * {base}", {}, log, source="synth/fraction")
+        out.append(
+            Quantity(
+                provenance=Provenance(source="synth/fraction", sentence=fq.provenance.sentence),
+                entity=fq.entity, measure=measure, value=value,
+                verb=fq.verb, occurrence=fq.occurrence, time=fq.time,
+            )
+        )
+    return out
+
+
+def _rest_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> list[Fact]:
+    """'He picked THE REST' — the pool remainder as of its sentence. Only
+    resolves once every earlier FractionQuantity has resolved (a premature
+    rest would recompute next round and collide with itself), and only for
+    a document with exactly ONE measure in play."""
+    from .model import FractionQuantity, RestQuantity
+
+    out: list[Fact] = []
+    measures = {
+        q.measure for q in store.by_kind(Quantity)
+        if q.provenance.source != "synth/rest"
+    }
+    if len(measures) != 1:
+        return out
+    (measure,) = measures
+    resolved_fractions = {
+        (q.entity, q.verb, q.occurrence)
+        for q in store.by_kind(Quantity)
+        if q.provenance.source == "synth/fraction"
+    }
+    for rq in store.by_kind(RestQuantity):
+        pending = any(
+            fq.provenance.sentence < rq.provenance.sentence
+            and (fq.entity, fq.verb, fq.occurrence) not in resolved_fractions
+            for fq in store.by_kind(FractionQuantity)
+        )
+        if pending:
+            continue
+        value = _pool_before(store, reg, rq.provenance.sentence, measure, log, "synth/rest")
+        if value is None or value < 0:
+            continue
+        out.append(
+            Quantity(
+                provenance=Provenance(source="synth/rest", sentence=rq.provenance.sentence),
+                entity=rq.entity, measure=measure, value=value,
+                verb=rq.verb, occurrence=rq.occurrence, time=rq.time,
+            )
+        )
+    return out
+
+
 PLUGINS: dict[str, Synthesizer] = {
     "synth/relation-to-quantity": _relations_synth,
+    "synth/fraction-of-pool": _fraction_synth,
+    "synth/rest-of-pool": _rest_synth,
 }
 
 
