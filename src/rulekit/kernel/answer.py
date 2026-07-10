@@ -49,7 +49,7 @@ def _entity_total(
     for q in store.by_kind(Quantity):
         if q.entity != entity or q.measure != measure:
             continue
-        (state if q.verb in ("have", "be") else events).append(q)
+        (state if q.is_state else events).append(q)
     if not state and not events:
         return None
     total = 0.0

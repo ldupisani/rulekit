@@ -207,9 +207,17 @@ class Quantity(Fact):
     value: float
     verb: str = "have"  # the stating verb's lemma (state vs event matters)
     time: str | None = None  # a time node's label, when timestamped
+    # None for a STATE quantity (a holding — same-key disagreement is a
+    # conflict); the sentence index for an EVENT (each occurrence is its own
+    # fact: "finds 3 … finds 5" accumulates, never collides)
+    occurrence: int | None = None
+
+    @property
+    def is_state(self) -> bool:
+        return self.occurrence is None
 
     def key(self) -> tuple:
-        return ("quantity", self.entity, self.measure, self.verb, self.time)
+        return ("quantity", self.entity, self.measure, self.verb, self.time, self.occurrence)
 
     def value_part(self) -> Any:
         return self.value

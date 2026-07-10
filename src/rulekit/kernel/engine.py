@@ -13,15 +13,13 @@ from dataclasses import dataclass, field
 from ..data.registry import Registry
 from .answer import Answer, answer as run_answer
 from .condense import condense
+from .document import Document, run_document
 from .evaluate import ArithmeticLog
 from .facts import FactStore
 from .guards import GuardVeto, check as run_guards
-from .learn import learn
 from .model import Fact, Reading
 from .numbers import annotate_numbers
 from .obligations import attach_obligations, bind, disambiguate
-from .patterns import run_rules
-from .saturate import saturate
 from .senses import annotate_senses
 from .tokenize import split_sentences, tokenize
 
@@ -47,6 +45,7 @@ class Result:
     store: FactStore = field(default_factory=FactStore)
     log: ArithmeticLog = field(default_factory=ArithmeticLog)
     veto: GuardVeto | None = None
+    document: Document | None = None
 
     @property
     def value(self) -> float | str | None:
@@ -84,43 +83,28 @@ def split_question(text: str) -> tuple[list[str], str | None]:
 
 def solve(text: str, reg: Registry) -> Result:
     premise_texts, question_text = split_question(text)
-    log = ArithmeticLog()
-    store = FactStore()
-    premises: list[Reading] = []
-    consumed_uids: dict[int, set[int]] = {}
-
-    for i, sentence in enumerate(premise_texts):
-        reading = analyze(sentence, reg, sentence_index=i)
-        premises.append(reading)
-        results = run_rules(reading, reg, phase="read", log=log)
-        store.admit_rule_results(results, reg)
-        consumed = consumed_uids.setdefault(i, set())
-        for r in results:
-            consumed.update(r.match.consumed)
-            for uid in r.match.consumed:
-                reading.record(
-                    "pattern-consume", reading.unit(uid),
-                    {"pattern_consumed": True},
-                    f"consumed by rule {r.match.rule.id}",
-                    rule_id=r.match.rule.id,
-                )
-        for fact in learn(reading, reg):
-            store.admit(fact)
-
-    saturate(store, reg, log)
+    premises = [
+        analyze(sentence, reg, sentence_index=i)
+        for i, sentence in enumerate(premise_texts)
+    ]
+    doc = run_document(premises, reg)
 
     if question_text is None:
         result = Result(
-            Answer("decline", None, "no question found"), premises, None, store, log
+            Answer("decline", None, "no question found"),
+            premises, None, doc.store, doc.log,
         )
+        result.document = doc
         return result
 
     question = analyze(question_text, reg, sentence_index=len(premise_texts))
-    proposed = run_answer(question, store, reg, log)
-    veto = run_guards(premises, consumed_uids, log, reg, proposed)
+    proposed = run_answer(question, doc.store, reg, doc.log)
+    veto = run_guards(premises, doc.consumed_uids, doc.log, reg, proposed, doc.store)
     if veto is not None:
         proposed = Answer("decline", None, f"[{veto.guard}] {veto.reason}")
-    return Result(proposed, premises, question, store, log, veto)
+    result = Result(proposed, premises, question, doc.store, doc.log, veto)
+    result.document = doc
+    return result
 
 
 def diagnose(result: Result) -> dict:

@@ -83,6 +83,20 @@ items:
     text: The rose wilted. Is Rose a teacher?
     expect: "undetermined"
 
+  # ---- discourse: the document re-parse loop ---------------------------------
+  - id: pronoun-unique-antecedent
+    text: Tom has 10 apples. He ate 4 apples. How many apples does Tom have?
+    expect: 6
+  - id: pronoun-she
+    text: Mary has 5 books. She finds 2 books. How many books does Mary have?
+    expect: 7
+  - id: pronoun-chain
+    text: Tom has 2 coins. He finds 3 coins. He finds 5 coins. How many coins does Tom have?
+    expect: 10
+  - id: decline-ambiguous-pronoun
+    text: Tom has 3 apples. Mary has 4 apples. He ate 2 apples. How many apples does Tom have?
+    expect: decline
+
   # ---- transfer (awaiting packs/arithmetic/rules/transfer.yaml) --------------
   # These DECLINE until the transfer rule exists — safely: the unbound value
   # trips the value-accounting guard. Writing the rule flips them to correct.
@@ -109,3 +123,9 @@ items:
   - id: decline-unused-value
     text: Tom has 3 apples and 4 unknownthings. How many apples does Tom have?
     expect: decline
+  - id: decline-conflicting-states
+    text: Tom has 3 apples. Tom has 5 apples. How many apples does Tom have?
+    expect: decline
+  - id: repeat-events-accumulate
+    text: Tom finds 3 coins. Tom finds 3 coins. How many coins does Tom have?
+    expect: 6

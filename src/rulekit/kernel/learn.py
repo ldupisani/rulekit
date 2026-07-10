@@ -36,6 +36,12 @@ def _negated(reading: Reading, verb: Unit) -> bool:
 
 
 def _lemma(unit: Unit) -> str:
+    # a pronoun whose `refers` obligation bound cross-sentence speaks AS its
+    # antecedent — the document loop's whole point
+    if unit.sense() == "pronoun":
+        antecedent = _bound(unit, "refers")
+        if antecedent is not None:
+            return antecedent.features.get("lemma", antecedent.features.get("fold", ""))
     return unit.features.get("lemma", unit.features.get("fold", unit.surface.lower()))
 
 
@@ -63,6 +69,11 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
         dobj = _bound(verb, "dobj")
         if subject is None:
             continue
+        # an UNRESOLVED pronoun subject must not become a fact entity —
+        # Quantity(entity='he') would silently poison combined sums; the
+        # unmet refers obligation stays a reportable gap instead
+        if subject.sense() == "pronoun" and _bound(subject, "refers") is None:
+            continue
         polarity = not _negated(reading, verb)
         verb_lemma = _lemma(verb)
 
@@ -71,6 +82,8 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
         )
         if consumed:
             continue
+        is_state = reg.word_in_category(verb.features.get("fold", ""), "state")
+        occurrence = None if is_state else reading.sentence_index
         if dobj is not None and dobj.features.get("value_kind") == "count" and dobj.sense() == "noun":
             # condensed counted noun ("3 apples")
             facts.append(
@@ -80,6 +93,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                     measure=_lemma(dobj),
                     value=float(dobj.features["value"]),
                     verb=verb_lemma,
+                    occurrence=occurrence,
                 )
             )
         elif dobj is not None and dobj.uid in quantifies:
@@ -91,6 +105,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                     measure=_lemma(dobj),
                     value=float(value_unit.features["value"]),
                     verb=verb_lemma,
+                    occurrence=occurrence,
                 )
             )
         elif verb_lemma == "be" and dobj is not None and dobj.sense() == "noun":

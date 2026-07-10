@@ -35,5 +35,8 @@ roles:
     notes: "more/fewer … THAN <standard>"
   pronoun:
     needs: [refers]
-    optional: [refers]
-    notes: antecedent resolution is cross-sentence (document loop, phase 3)
+    notes: >
+      antecedent resolution is cross-sentence (the document loop binds it to
+      a UNIQUE prior name); an unresolved pronoun is a reportable gap, and
+      learn() never emits facts for one
+

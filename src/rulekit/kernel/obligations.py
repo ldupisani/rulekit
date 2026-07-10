@@ -29,7 +29,9 @@ NEED_CANDIDATES: dict[str, frozenset[str]] = {
     "standard": frozenset({"noun", "name", "value"}),
     "modifies": frozenset({"noun"}),
     "scales": frozenset({"noun", "value"}),
-    "refers": frozenset({"name", "noun"}),  # pronoun antecedent (cross-sentence)
+    # "refers" is deliberately ABSENT: a pronoun's antecedent is bound by the
+    # DOCUMENT loop against prior sentences, never within its own sentence
+    # (a same-sentence noun is an object, not an antecedent)
     "left": frozenset({"value"}),
     "right": frozenset({"value"}),
 }

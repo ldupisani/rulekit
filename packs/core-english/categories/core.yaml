@@ -5,6 +5,12 @@ format: rulekit/categories@1
 categories:
   animal: {parent: noun}
   pet: {parent: animal}
+  state:
+    parent: verb
+    notes: >
+      stative verbs — a quantity they state is a HOLDING (same-key
+      disagreement is a conflict); any other verb is an EVENT (each
+      occurrence is a distinct fact that accumulates, signed by polarity)
   acquire: {parent: verb, antonym: lose, polarity: 1}
   lose: {parent: verb, antonym: acquire, polarity: -1}
   delta: {parent: comparative, notes: "direction words in 'N more/fewer X than Y'"}
@@ -13,6 +19,7 @@ categories:
 members:
   animal: [dog, cat, fish, bird, rabbit, hamster]
   pet: [dog, cat, hamster]
+  state: [has, have, had, is, are, was, were, own, owns]
   acquire: [get, gets, got, find, finds, found, buy, buys, bought, receive, receives, received, win, wins, won]
   lose: [lose, loses, lost, eat, eats, ate, give, gives, gave, sell, sells, sold, spend, spends, spent, dropped, drops]
   more_dir: [more]

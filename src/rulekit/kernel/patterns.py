@@ -231,6 +231,11 @@ def _build_fact(
     kwargs = {}
     for key, raw in emit_fields.items():
         kwargs[key] = _resolve_field(raw, slots, reg, key in _NUMERIC_FIELDS, log, rule_id)
+    if cls is Quantity and "occurrence" not in kwargs:
+        # a rule-emitted quantity is an event unless its verb is stative
+        verb = kwargs.get("verb", "have")
+        if not reg.word_in_category(verb, "state") and verb not in ("have", "be"):
+            kwargs["occurrence"] = provenance.sentence
     return cls(provenance=provenance, **kwargs)
 
 
