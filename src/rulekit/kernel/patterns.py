@@ -219,6 +219,9 @@ _SIGN = re.compile(r"sign\((\w+)\)")
 def _slot_value(unit: Unit, attr: str | None) -> str:
     if attr == "surface":
         return unit.surface
+    if attr == "value":
+        v = unit.features.get("value")
+        return str(v) if v is not None else ""
     return _lemma_of(unit)
 
 
@@ -350,12 +353,14 @@ def run_rules(
     return results
 
 
-def match_ask(reading: Reading, reg: Registry) -> tuple[AskRule, dict[str, str]] | None:
+def match_ask(
+    reading: Reading, reg: Registry
+) -> tuple[AskRule, dict[str, str], Match] | None:
     """Match question shapes; the MOST SPECIFIC matching ask wins (max
     consumed units — a longer match read more of the question), with id
     order as the deterministic tie-break. Re-landed alone from the reverted
     increment 8 per docs/negative-results.md."""
-    best: tuple[AskRule, dict[str, str], int] | None = None
+    best: tuple[AskRule, dict[str, str], Match] | None = None
     for ask in reg.asks:  # sorted by id — deterministic tie-break
         seq = ask.match["question"]
         m = match_sequence(reading, seq, reg)
@@ -372,6 +377,6 @@ def match_ask(reading: Reading, reg: Registry) -> tuple[AskRule, dict[str, str]]
                 # ("verb: {verb}" with the opt-group absent) — omit the key
                 # and let the consumer's default apply
                 continue
-        if best is None or len(m.consumed) > best[2]:
-            best = (ask, resolved, len(m.consumed))
-    return (best[0], best[1]) if best is not None else None
+        if best is None or len(m.consumed) > len(best[2].consumed):
+            best = (ask, resolved, m)
+    return best

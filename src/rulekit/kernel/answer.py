@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from ..data.registry import Registry
 from .evaluate import ArithmeticLog, evaluate
 from .facts import FactStore
-from .model import Membership, Quantity, Reading
+from .model import Membership, Quantity, Rate, Reading
 from .patterns import match_ask
 
 
@@ -152,7 +152,7 @@ def answer(
     matched = match_ask(question, reg)
     if matched is None:
         return Answer("decline", None, "no ask shape recognizes this question")
-    ask, query = matched
+    ask, query, _match = matched
     consumer = query.get("consumer")
 
     if consumer == "single-entity":
@@ -182,6 +182,51 @@ def answer(
                 f"no quantity known for {entity!r} of {singular!r} (ask {ask.id})",
             )
         return Answer("number", total, f"fold over {entity!r}/{singular!r}")
+
+    if consumer == "rate-span":
+        # THE NARROW COMMITTER (re-landing step 2, docs/negative-results.md):
+        # exact span units only (no conversion), exactly one rate, and any
+        # known population of the rate's entity-kind declines. Each
+        # restriction lifts later behind its own TEST look.
+        entity = query["entity"]
+        measure = reg.plural_to_singular.get(query["measure"], query["measure"])
+        span_unit = reg.plural_to_singular.get(query["span_unit"], query["span_unit"])
+        span_value = float(query["span_value"])
+        rates = [
+            r for r in store.by_kind(Rate)
+            if r.entity == entity
+            and (
+                r.measure == measure
+                or (
+                    measure in reg.category_parents
+                    and reg.word_in_category(r.measure, measure)
+                )
+            )
+        ]
+        if len(rates) != 1:
+            return Answer(
+                "decline", None,
+                f"{len(rates)} rates known for {entity!r}/{measure!r} — "
+                "the span ask needs exactly one",
+            )
+        rate = rates[0]
+        if span_unit != rate.per:
+            return Answer(
+                "decline", None,
+                f"span unit {span_unit!r} differs from the rate's "
+                f"{rate.per!r} — conversion spans not yet re-landed",
+            )
+        if any(q.measure == rate.entity for q in store.by_kind(Quantity)):
+            return Answer(
+                "decline", None,
+                f"the rate is per-{rate.entity} and a {rate.entity} "
+                "population is known — rate × population not yet re-landed",
+            )
+        total = evaluate(f"{rate.value} * {span_value}", {}, log, source="rate-span")
+        return Answer(
+            "number", total,
+            f"{rate.value}/{rate.per} × {span_value} {rate.per} for {entity!r}",
+        )
 
     if consumer == "unique-entity":
         # an ENTITY-LESS ask ("how many balloons are left?") resolves iff
