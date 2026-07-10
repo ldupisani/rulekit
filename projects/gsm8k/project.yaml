@@ -1,6 +1,9 @@
 format: rulekit/project@1
 name: gsm8k
 packs: [core-english, arithmetic, difg-mined]
+# the curated suite doubles as this project's fast regression check —
+# impact target "suite" (seconds) before the full dev slices (~12s)
+suite: ../curated/suite.yaml
 datasets:
   gsm8k:
     train: {parquet: data/gsm8k_train.parquet, question: question, answer: answer}

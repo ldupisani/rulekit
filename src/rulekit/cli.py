@@ -51,9 +51,17 @@ def cmd_bench(args) -> int:
     from .harness.firewall import INSPECTABLE_SLICES, record_test_look
 
     project, reg = _registry(args)
-    if project.doc.datasets:
+    if args.slice == "suite" or (not args.slice and not project.doc.datasets):
+        items = project.suite_items()
+        if not items:
+            print("project has no suite", file=sys.stderr)
+            return 2
+    elif project.doc.datasets:
         if not args.slice:
-            print("dataset project: --slice dev|dev-train|dev-holdout|test required", file=sys.stderr)
+            print(
+                "dataset project: --slice suite|dev|dev-train|dev-holdout|test required",
+                file=sys.stderr,
+            )
             return 2
         if args.slice == "test" and not args.spend_test_look:
             print(
@@ -74,7 +82,11 @@ def cmd_bench(args) -> int:
         items = items[: args.limit]
 
     report = run_suite(items, reg)
-    inspectable = not project.doc.datasets or args.slice in INSPECTABLE_SLICES
+    inspectable = (
+        not project.doc.datasets
+        or args.slice in INSPECTABLE_SLICES
+        or args.slice == "suite"
+    )
     print(report.summary(items_visible=inspectable))
     if project.doc.datasets and args.slice == "test":
         record_test_look(
