@@ -1,7 +1,7 @@
 # Session handoff — 2026-07-11
 
 Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
-State below is committed through `8fa68fc` on `main` (github.com/ldupisani/rulekit;
+State below is committed through `05b0822` on `main` (github.com/ldupisani/rulekit;
 check `git status`/`git log origin/main..HEAD` before assuming push parity).
 
 ## Where the project is
@@ -16,8 +16,8 @@ every increment through the gates).
 **Current numbers (all verified at head):**
 - dev-train: 14 correct / 0 wrong (3,772 items, 100% precision)
 - dev-holdout: 15 correct / 0 wrong (3,701 items — increment 33 was a real holdout SOLVE)
-- curated suite: 52/52 · pytest: 318 · lint: 0 errors, 1 intended warning
-- TEST ledger (41 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- curated suite: 52/52 · pytest: 337 · lint: 0 errors, 1 intended warning
+- TEST ledger (44 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -32,9 +32,11 @@ every increment through the gates).
   look #20 culprit thereby IDENTIFIED; fruit is now quarantined, see
   docs/negative-results.md) → 6/1 (#33) → 6/1 (#34) → 6/1 (#35) →
   6/1 (85.7%, look #36) → 6/1 (#37) → 6/1 (#38) → 6/1 (#39) → 6/1 (#40) →
-  **6/1 (85.7%, look #41) ← live at increment 39** — #33–#36 batch 6
-  (the parked briefs: increments 31–34), #37–#41 batch 7 (increments
-  35–39, incl. state-verb-conjunction on attempt 4 with clean tests) —
+  6/1 (85.7%, look #41) → 6/1 (#42) → 6/1 (#43) →
+  **6/1 (85.7%, look #44) ← live at increment 42** — #33–#36 batch 6,
+  #37–#41 batch 7 (increments 35–39), #42–#44 batch 8 (increments 40–42,
+  the first ask-shape batch: all dev-NEUTRAL — recognized questions now
+  decline downstream instead of at "no ask shape") —
   #12–#13 batch 1, #14 the modal split, #15–#16 batch 2, #17–#19 batch 3,
   #20 vocab revert, #21–#27 batch-4 re-land, #28–#32 batch 5 (increments
   27–30 held; 31 reverted); precision held on every surviving increment
@@ -1357,7 +1359,7 @@ increment, correctly scoped to the wh-copular ask-shape class only, 0 net
 DEV gain, 0 harm. The mechanism is fully general and may still pick up
 dev-holdout/test items with a simpler 2-holder-total shape outside this
 half of dev-train.
-TEST look: pending — spent manually.
+TEST look #42: 6/1 (85.7%) — precision HELD, increment kept.
 
 ## Increment 41: combined how-much totals (`1b287b2`)
 
@@ -1391,7 +1393,7 @@ increment, correctly scoped to the "how much combined" ask-shape class
 only, 0 net DEV gain, 0 harm. The mechanism is fully general and may still
 pick up dev-holdout/test items with a simpler shape outside this half of
 dev-train.
-TEST look: pending — spent manually.
+TEST look #43: 6/1 (85.7%) — precision HELD, increment kept.
 
 ## Increment 42: wh-difference asks (`141e2a0`)
 
@@ -1420,7 +1422,7 @@ known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) / 22
 info. SOLVED is 0 on both dev slices — the class is verified via a direct
 probe (Mia/Leo apples) and the suite, not by a dev-train/holdout hit;
 groundwork only, 0 net DEV gain, 0 harm.
-TEST look: pending — spent manually.
+TEST look #44: 6/1 (85.7%) — precision HELD, increment kept.
 
 ## The next mining worklist (from the last close-miss scan)
 
@@ -1435,11 +1437,20 @@ directives while goal mode holds:
    unrecognized questions by surface shape (scratchpad script over
    dev-train declines with that reason) and propose general ask shapes
    for the largest sub-buckets.
-2. Every brief must cite VERIFIED matching dev-train evidence: trace 2–3
-   paraphrased examples end-to-end and state the expected SOLVED count.
-   A junior's dev-train diff should normally show SOLVED ≥ 1;
-   dev-NEUTRAL infrastructure is only acceptable when the brief names
-   the specific follow-up class it unblocks.
+2. Every brief must cite VERIFIED matching dev-train evidence, and
+   "verified" means the FULL CHAIN: the scout's traced paraphrase must
+   show ask recognized AND premises read AND the fold producing the gold
+   number under the proposed mechanism — not merely the ask matching
+   (batch 8 landed three ask shapes that all re-gated 0 SOLVED because
+   the items decline downstream). While goal mode holds, a coverage
+   brief whose junior dev-train diff shows SOLVED = 0 is a FAILED gate:
+   the junior returns status failed with the downstream decline reasons
+   as its lesson, instead of landing dev-NEUTRAL machinery. Explicitly
+   declared infrastructure briefs are exempt but must name the follow-up
+   class and the batch that will cash it in.
+2b. Juniors: the brief's evidence items are the reviewer's FIRST grep —
+   never reuse ANY sentence, name, or number tuple from them in tests
+   (four candidates have now been blocked for exactly this).
 3. Precision rules are unchanged — never trade a wrong for coverage.
    Remaining buckets after ask shapes: "no quantity known" 191,
    "0 price facts known" 143 (the pricing stack is live — find why price
