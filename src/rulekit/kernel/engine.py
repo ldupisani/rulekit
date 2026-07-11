@@ -26,7 +26,7 @@ from .tokenize import split_sentences, tokenize
 # senses that mark a sentence as a question/task when they LEAD it, and that
 # mark the wh-part inside an "If <clause>, <wh…>" sentence. Sense names are
 # structure; the WORDS carrying them live in the packs (the constitution).
-ASK_CUE_SENSES = frozenset({"interrogative", "auxiliary", "imperative"})
+ASK_CUE_SENSES = frozenset({"interrogative", "auxiliary", "modal", "imperative"})
 
 
 def _has_ask_cue_sense(word: str, reg: Registry) -> bool:

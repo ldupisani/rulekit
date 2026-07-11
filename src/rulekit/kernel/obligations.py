@@ -200,7 +200,15 @@ def bind(reading: Reading, reg: Registry) -> Reading:
 
 
 def _coverage_score(reading: Reading, reg: Registry) -> tuple[int, int]:
-    """(unmet non-optional obligations, orphan units) — lower is better."""
+    """(unmet non-optional obligations, disconnected units) — lower is better.
+
+    A unit is DISCONNECTED when it neither serves as any binding's target nor
+    discharges an obligation of its own: it contributes nothing to the parse.
+    Auxiliaries and modals are exempt — they are function words licensed by
+    the verb complex / ask cues ('does Tom read', 'he CAN read'), not content
+    words competing for argument slots; penalizing them made arbitration
+    prefer a content sense ('can' the noun) that steals a verb's subject from
+    the pronoun the sentence actually integrates."""
     trial = copy.deepcopy(reading)
     attach_obligations(trial, reg)
     bind(trial, reg)
@@ -211,14 +219,28 @@ def _coverage_score(reading: Reading, reg: Registry) -> tuple[int, int]:
         for ob in u.obligations()
         if ob.met and isinstance(ob.target, Unit)
     }
-    orphans = sum(
+    disconnected = sum(
         1
         for u in trial.units
-        if u.sense() not in (None, "punct")
-        and not u.obligations()
+        if u.sense() not in (None, "punct", "auxiliary", "modal")
         and u.uid not in bound_targets
+        and not any(ob.met for ob in u.obligations())
     )
-    return (unmet, orphans)
+    return (unmet, disconnected)
+
+
+def _article_licenses_noun(reading: Reading, unit: Unit) -> bool:
+    """An article immediately to the left (crossing only adjectives) DETERMINES
+    this unit: 'A can…'/'the can…' is a nominal, never an auxiliary or modal.
+    Pure grammatical skeleton — articles introduce noun phrases; no auxiliary
+    or modal can head one."""
+    idx = reading.units.index(unit)
+    for prev in reversed(reading.units[:idx]):
+        sense = prev.sense()
+        if sense == "adjective":
+            continue
+        return sense == "article"
+    return False
 
 
 def disambiguate(reading: Reading, reg: Registry) -> Reading:
@@ -235,7 +257,15 @@ def disambiguate(reading: Reading, reg: Registry) -> Reading:
             )
         return reading
 
-    options = [u.senses() for u in ambiguous]
+    options = [
+        [
+            s
+            for s in u.senses()
+            if not (s in ("auxiliary", "modal") and _article_licenses_noun(reading, u))
+        ]
+        or u.senses()
+        for u in ambiguous
+    ]
     scored: list[tuple[tuple[int, int], tuple[str, ...]]] = []
     for assignment in itertools.product(*options):
         trial = copy.deepcopy(reading)
