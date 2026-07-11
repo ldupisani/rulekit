@@ -106,6 +106,37 @@ rules:
         offset: 0.0
         verb: "{verb}"
 
+  - id: arithmetic/times-as-much
+    phase: read
+    description: >
+      "Catherine has twice as much money as Cecil" — times-as-many's
+      MASS-NOUN counterpart: 'much' in place of 'many', and the item slot
+      is `type: noun` (any common noun) rather than `type: plural`, since a
+      mass noun (money, water, sand...) never carries plural morphology.
+      Same Relation fact and downstream resolution as times-as-many; the
+      anchor-measure resolver (saturate.py) is what lets a 'money'-measured
+      relation resolve against an anchor's own currency holding ('dollar').
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: verb, type: verb}
+        - {slot: k, type: multiplier}
+        - {lit: as}
+        - {lit: much}
+        - {slot: item, type: noun}
+        - {lit: as}
+        - {slot: std, type: name}
+    where:
+      - distinct: [who, std]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: "{item}"
+        factor: "k"
+        offset: 0.0
+        verb: "{verb}"
+
   - id: arithmetic/fraction-delta-relation
     phase: read
     description: >
@@ -229,6 +260,35 @@ rules:
         - {lit: as}
         - {lit: many}
         - {slot: item, type: plural}
+        - {lit: as}
+        - {slot: std, type: name}
+    where:
+      - distinct: [who, std]
+    consumes: [f]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: "{item}"
+        factor: "f"
+        offset: 0.0
+        verb: "{verb}"
+
+  - id: arithmetic/fraction-as-much
+    phase: read
+    description: >
+      "Ian has half as much money as Jessica" — fraction-as-many's
+      MASS-NOUN counterpart, exactly mirroring how times-as-much relates
+      to times-as-many: 'much' in place of 'many', item slot `type: noun`
+      in place of `type: plural`.
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: verb, type: verb}
+        - {slot: f, type: fraction}
+        - {lit: as}
+        - {lit: much}
+        - {slot: item, type: noun}
         - {lit: as}
         - {slot: std, type: name}
     where:

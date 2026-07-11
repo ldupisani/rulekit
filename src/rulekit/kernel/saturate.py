@@ -114,6 +114,8 @@ def _apply_synth_rule(
 def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> list[Fact]:
     """Resolve Relation facts against known Quantities:
     subject = factor*standard + offset, hop by hop (raw factors visible)."""
+    from .answer import _resolve_measure_against
+
     out: list[Fact] = []
     # a relation anchors on ANY known quantity of the standard, but only an
     # existing STATE for the subject blocks resolution — the subject's own
@@ -127,48 +129,72 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
 
     quantities: dict[tuple[str, str], Quantity] = {}
     by_verb: set[tuple[str, str, str]] = set()
+    measures_by_entity: dict[str, set[str]] = {}
     for q in store.by_kind(Quantity):
         quantities.setdefault((q.entity, q.measure), q)
         by_verb.add((q.entity, q.measure, verb_key(q.verb)))
+        measures_by_entity.setdefault(q.entity, set()).add(q.measure)
         if q.is_state:
             quantities[(q.entity, q.measure)] = q
+
+    def anchor_measure(entity: str, measure: str) -> tuple[str, Quantity] | None:
+        """The relation's stated measure resolved against ONE entity's own
+        holdings — an EXACT match first, else (only for `interchangeable`
+        categories, e.g. currency) the entity's unique same-category
+        measure ('money' resolves to the anchor's own stated 'dollar').
+        Ambiguous (two different currencies on the same entity) or
+        unresolvable declines this relation, never guesses."""
+        exact = quantities.get((entity, measure))
+        if exact is not None:
+            return measure, exact
+        candidate = _resolve_measure_against(measure, measures_by_entity.get(entity, set()), reg)
+        if candidate is None or candidate == measure:
+            return None
+        candidate_known = quantities.get((entity, candidate))
+        if candidate_known is None:
+            return None
+        return candidate, candidate_known
+
     for rel in store.by_kind(Relation):
         # resolution is blocked when the target already has a quantity UNDER
         # THE RELATION'S OWN VERB — "Zig wrote 4× as many" plus "Zig wrote
         # 60" describe the SAME writing (re-deriving doubles it); a lose
         # event on top of a have-relation is a CHANGE and stays allowed
-        known = quantities.get((rel.standard, rel.measure))
-        if known is not None and (rel.subject, rel.measure, verb_key(rel.verb)) not in by_verb:
-            value = evaluate(
-                f"{rel.factor} * {known.value} + {rel.offset}", {}, log,
-                source=f"relation:{rel.provenance.source}",
-            )
-            out.append(
-                Quantity(
-                    provenance=Provenance(source="synth/relation", sentence=rel.provenance.sentence),
-                    entity=rel.subject, measure=rel.measure, value=value, verb=rel.verb,
+        resolved = anchor_measure(rel.standard, rel.measure)
+        if resolved is not None:
+            measure, known = resolved
+            if (rel.subject, measure, verb_key(rel.verb)) not in by_verb:
+                value = evaluate(
+                    f"{rel.factor} * {known.value} + {rel.offset}", {}, log,
+                    source=f"relation:{rel.provenance.source}",
                 )
-            )
-            continue
+                out.append(
+                    Quantity(
+                        provenance=Provenance(source="synth/relation", sentence=rel.provenance.sentence),
+                        entity=rel.subject, measure=measure, value=value, verb=rel.verb,
+                    )
+                )
+                continue
         # INVERSE: the subject is known, the standard is not — solve
         # standard = (subject − offset) / factor ("If Zig wrote 60, and Zig
         # wrote four times as many as Flo…")
-        known = quantities.get((rel.subject, rel.measure))
+        resolved = anchor_measure(rel.subject, rel.measure)
         if (
-            known is not None
-            and (rel.standard, rel.measure, verb_key(rel.verb)) not in by_verb
+            resolved is not None
             and rel.factor != 0
         ):
-            value = evaluate(
-                f"({known.value} - {rel.offset}) / {rel.factor}", {}, log,
-                source=f"relation-inverse:{rel.provenance.source}",
-            )
-            out.append(
-                Quantity(
-                    provenance=Provenance(source="synth/relation", sentence=rel.provenance.sentence),
-                    entity=rel.standard, measure=rel.measure, value=value, verb=rel.verb,
+            measure, known = resolved
+            if (rel.standard, measure, verb_key(rel.verb)) not in by_verb:
+                value = evaluate(
+                    f"({known.value} - {rel.offset}) / {rel.factor}", {}, log,
+                    source=f"relation-inverse:{rel.provenance.source}",
                 )
-            )
+                out.append(
+                    Quantity(
+                        provenance=Provenance(source="synth/relation", sentence=rel.provenance.sentence),
+                        entity=rel.standard, measure=measure, value=value, verb=rel.verb,
+                    )
+                )
     return out
 
 

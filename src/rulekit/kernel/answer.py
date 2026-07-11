@@ -30,25 +30,24 @@ class Answer:
         return self.kind == "number"
 
 
-def _resolve_measure(measure: str, store: FactStore, reg: Registry) -> str | None:
-    """Resolve the ask's measure word against the FACTS.
+def _resolve_measure_against(measure: str, candidates: set[str], reg: Registry) -> str | None:
+    """Resolve a measure word against a CANDIDATE set of in-play measures.
 
-    - a word with its own facts resolves to itself ('pounds' in a pounds
+    - a word matching a candidate resolves to itself ('pounds' in a pounds
       problem — never collapsed onto some canonical currency);
     - a CATEGORY name ('currency' in a bare how-much ask) or a category
-      member with no facts of its own ('money') resolves to the UNIQUE
-      in-store measure of that category — one currency in play uses it,
+      member with no candidate of its own ('money') resolves to the UNIQUE
+      candidate measure of that category — one currency in play uses it,
       mixed currencies are genuinely ambiguous and return None (decline).
       ONLY categories marked `interchangeable` in the packs resolve this
       way: currency denominations stand in for each other; sibling count
       nouns never do (a 'cats' ask must not answer from 'dog' facts — a
       real confident-wrong: "20 pets. 8 of them are dogs. How many cats?"
       answered 8 via the unique in-store 'animal' member);
-    - anything else passes through to the normal not-known decline.
+    - anything else passes through unresolved (the singular form, unchanged).
     """
     singular = reg.plural_to_singular.get(measure, measure)
-    in_store = {q.measure for q in store.by_kind(Quantity)}
-    if singular in in_store:
+    if singular in candidates:
         return singular
     categories = (
         [singular] if singular in reg.category_parents
@@ -58,7 +57,7 @@ def _resolve_measure(measure: str, store: FactStore, reg: Registry) -> str | Non
     if not categories:
         return singular
     present = sorted(
-        m for m in in_store
+        m for m in candidates
         if any(reg.word_in_category(m, c) for c in categories)
     )
     if len(present) == 1:
@@ -66,6 +65,13 @@ def _resolve_measure(measure: str, store: FactStore, reg: Registry) -> str | Non
     if present:
         return None  # mixed measures of the category — ambiguous
     return singular
+
+
+def _resolve_measure(measure: str, store: FactStore, reg: Registry) -> str | None:
+    """Resolve the ask's measure word against the FACTS (see
+    `_resolve_measure_against` for the category-fallback rules)."""
+    in_store = {q.measure for q in store.by_kind(Quantity)}
+    return _resolve_measure_against(measure, in_store, reg)
 
 
 def _sign(verb: str, reg: Registry, strict: bool = False) -> int | None:

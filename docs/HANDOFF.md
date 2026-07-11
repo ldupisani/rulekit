@@ -1424,6 +1424,37 @@ probe (Mia/Leo apples) and the suite, not by a dev-train/holdout hit;
 groundwork only, 0 net DEV gain, 0 harm.
 TEST look #44: 6/1 (85.7%) — precision HELD, increment kept.
 
+## Increment 43: currency-interchangeable relation measures (`df1146f`)
+
+Adds two coordinated, general, kernel-structural pieces (no new vocabulary)
+so "twice as much money as Cecil" resolves when the anchor states dollars:
+
+1. `packs/arithmetic/rules/core.yaml` gains `arithmetic/times-as-much` and
+   `arithmetic/fraction-as-much` — MASS-NOUN counterparts of the existing
+   `times-as-many`/`fraction-as-many` Relation rules. The item slot swaps
+   the literal 'many' for 'much' and `type: plural` for `type: noun` (the
+   same slot type `times-the-number-of`/`affine-frame-relation` already
+   use for their item slot) — mass nouns like 'money' carry no plural
+   morphology, so the plural-gated rules never matched them before.
+2. `src/rulekit/kernel/saturate.py`'s `_relations_synth` (`synth/relation`)
+   now resolves a Relation's stated measure against its ANCHOR entity's own
+   holdings the same way `answer.py`'s `_resolve_measure` has resolved ask
+   nouns since increment 26: an EXACT measure match first, else — ONLY for
+   categories marked `interchangeable` in the packs (today: currency
+   alone) — the anchor's own UNIQUE same-category measure. An anchor
+   holding two DIFFERENT currencies is genuinely ambiguous and declines,
+   never guesses; a non-interchangeable category never resolves this way
+   either (increment 26's sibling-borrow discipline, generalized to
+   relations).
+
+Gates (integrated on staging, full re-proof): dev-train diff SHIP +2 (0
+BROKE, 0 DECL→WRONG; 3772 items, 14→16 correct, 0 wrong), dev-holdout diff
+SHIP +1 (0 BROKE, 0 DECL→WRONG; 3701 items, 15→16 correct, 0 wrong), pytest
+344 passed (was 337 + 7 new, now `tests/test_mining_increment_43.py`),
+suite 52/52, lint 0 errors / 1 known-good warning (fraction-of-remnant /
+fraction-of-pool, unchanged) / 22 info.
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 **GOAL MODE (set 2026-07-11): the campaign target is 100 dev-train
