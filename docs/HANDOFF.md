@@ -450,6 +450,50 @@ remaining-budget capacity asks), matching the pattern of several prior
 NEUTRAL-on-dev increments in this campaign.
 TEST look #19: 6/1 (85.7%) — precision HELD vs look #18, increment kept.
 
+## Increment 20: fused ordinal number tokens (5th, 3rd, 21st) (`d18b9ba`)
+
+A pure unknown-word ceiling raise, not a new solver: the tokenizer
+previously split a fused ordinal ("5th", "21st", "3rd") into a digit token
+plus an orphan letter-token ("th"/"st"/"nd"/"rd"), which never resolves in
+the lexicon and declines the whole reading as unknown-word (32 hits + 2
+decline-reason mentions in the unknown-word worklist). Three general,
+structural changes:
+
+1. `tokenize.py`'s token regex gains a `\d[\d,]*(?:st|nd|rd|th)(?![A-Za-z])`
+   alternative ahead of the plain-number pattern, recognizing digit+suffix
+   as ONE token — productive grammatical morphology, like digit parsing
+   itself, not a lexicon fact.
+2. `numbers.py` gives the fused token its own `value_kind` ("ordinal"),
+   distinct from count/multiplier/fraction.
+3. `senses.py` maps `value_kind` "ordinal" to its own sense "ordinal" (not
+   "value"). Because `guards.py`'s value-accounting only requires kinds in
+   (count, multiplier, fraction), and `obligations.py`'s
+   `NEED_CANDIDATES`/`_unit_sense_class` never grant "value" class to sense
+   "ordinal", the ordinal token cannot feed the arithmetic fold or satisfy
+   any dobj/object/count slot — it only stops being an unknown word,
+   matching the decline-safety requirement that an ordinal is an
+   index/modifier, never an operative count.
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(14/0 unchanged), dev-holdout diff NEUTRAL 0/0/0 (14/0 unchanged), pytest
+193 passed (was 184 + 9 new, now `tests/test_mining_increment_20.py`),
+suite 52/52, lint 0 errors / 1 known-good warning (fraction-of-remnant /
+fraction-of-pool, same as increments 16-19). Shipped NEUTRAL on dev: no
+dev-train/dev-holdout item moves solved<->declined on this slice (the fix
+raises the unknown-word ceiling generally rather than closing a specific
+dev gap). The mechanism is exercised and verified via the synthetic suite
+(fused-token recognition across 5th/21st/3rd/2nd/100th, a previously
+unknown-word-blocked sentence now solving, decline-safety against the
+ordinal feeding the fold as a count, decline-safety against the ordinal
+satisfying a dobj slot, and a regression check that plain "5 dogs"
+tokenization is unaffected) and confirmed against pre-fix behavior via git
+stash (same input previously declined with "[unknown-word] cannot commit
+while ['th'] are unknown"). This is a re-land: the candidate previously
+passed constitution review and re-gated cleanly on a staging base that
+included a since-reverted vocabulary increment; re-proven clean here on
+`mining/batch-2026-07-11e`.
+TEST look #21: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 Numbers below predate this session's work and need a fresh `rulekit

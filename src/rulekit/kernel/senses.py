@@ -48,7 +48,10 @@ def annotate_senses(reading: Reading, reg: Registry) -> Reading:
                 )
                 continue
             kind = unit.features["value_kind"]
-            sense = {"count": "value", "multiplier": "multiplier", "fraction": "fraction"}[kind]
+            sense = {
+                "count": "value", "multiplier": "multiplier", "fraction": "fraction",
+                "ordinal": "ordinal",
+            }[kind]
             reading.record("annotate-sense", unit, {"senses": [sense]}, f"value token ({kind})")
             continue
 

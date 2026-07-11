@@ -14,6 +14,7 @@ from .model import Reading, Word
 _SENT_SPLIT = re.compile(r"(?<=[.!?])\s+")
 _TOKEN = re.compile(
     r"\d+/\d+"                                  # slash fraction ("1/4")
+    r"|\d[\d,]*(?:st|nd|rd|th)(?![A-Za-z])"     # fused ordinal ("5th", "21st")
     r"|\$?\d[\d,]*(?:\.\d+)?%?"                 # numbers/currency/percent
     r"|[A-Za-z]+(?:'[A-Za-z]+)?"                 # words (with contractions)
     r"|'s"                                       # bare possessive clitic

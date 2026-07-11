@@ -17,6 +17,13 @@ from .model import Reading, Word
 
 _DIGIT = re.compile(r"^\$?(\d[\d,]*(?:\.\d+)?)(%?)$")
 _SLASH_FRACTION = re.compile(r"^(\d+)/(\d+)$")
+# Fused ordinal ("5th", "21st", "3rd") — productive digit+suffix morphology,
+# structural like digit parsing itself, not a lexicon fact. An ordinal is an
+# INDEX/MODIFIER, never an operative count: it gets its own value_kind so
+# senses.py gives it a distinct sense and guards.py's value-accounting never
+# demands it be consumed as a quantity (kind not in count/multiplier/
+# fraction) — the only effect is that it stops being an unknown word.
+_ORDINAL = re.compile(r"^(\d[\d,]*)(?:st|nd|rd|th)$")
 
 
 def annotate_numbers(reading: Reading, reg: Registry) -> Reading:
@@ -31,6 +38,15 @@ def annotate_numbers(reading: Reading, reg: Registry) -> Reading:
                 "annotate-number", unit,
                 {"value": int(sf.group(1)) / int(sf.group(2)), "value_kind": "fraction"},
                 f"slash fraction {unit.surface!r}",
+            )
+            i += 1
+            continue
+        om = _ORDINAL.match(fold)
+        if om:
+            reading.record(
+                "annotate-number", unit,
+                {"value": float(om.group(1).replace(",", "")), "value_kind": "ordinal"},
+                f"fused ordinal {unit.surface!r}",
             )
             i += 1
             continue
