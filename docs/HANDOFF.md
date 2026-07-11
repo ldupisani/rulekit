@@ -1160,6 +1160,51 @@ this shape without also hitting an unrelated, already-open gap (matches the
 prior parked attempt's own finding).
 TEST look: pending — spent manually.
 
+## Increment 36: copular-priced items (`<pending>`)
+
+Re-land of `mining/parked/copular-priced-items` (bfa484a), rebased onto
+current main (`learn.py` drifted through increments 20-34, especially
+increment 29's subject-side determiner-each for `price_verb`). Reimplemented
+directly against the drifted `price_verb` branch rather than cherry-picked
+from the parked commit.
+
+Closes: "Tickets are $5 each. Ben buys 4 tickets. How much does Ben spend?"
+used to decline entirely — the purchase Quantity folds, but the copular
+price sentence (`be` is not a `price_verb`) emitted no Price fact at all:
+`be` + a currency dobj followed by `each` fell into the `dobj_is_rate`
+branch, computed a rate/each-price against the wrong counted unit (the
+currency noun itself, not the subject), got `None` back, and silently
+dropped the sentence with zero facts.
+
+`learn.py` extends increment 15's subject-keyed Price emission (currently
+gated on the `price_verb` category, i.e. cost/costs) to the `state`
+category's `be`, structurally gated — no YAML change, no widening of
+`price_verb`'s other consumers. The new branch fires only when
+`verb_lemma == "be"`, the dobj is a currency-valued count noun, the SUBJECT
+is a plural common noun (`sense == noun`, `number == plural` — the same
+structural check `patterns.py` already uses for the `plural` slot type),
+and the existing distributive-`each` structure holds (`_is_rate`/
+`_rate_unit` reused UNWIDENED, exactly as increment 15 calls them).
+Increment 29's `_has_distributive_determiner` alternative ("Each ITEM costs
+$PRICE") is deliberately NOT extended to this branch: that shape requires a
+SINGULAR subject ("each ticket"), which conflicts with this branch's
+plural-subject gate — the two forms are structurally exclusive, not
+overlapping. Any `be`+currency-dobj sentence missing a piece of this gate
+(no `each`, singular subject, a "per NOUN" rate marker) falls through
+untouched to the existing state-verb Quantity/Membership/Predication fold.
+No `answer.py` change: the increment-10 purchase-total consumer already
+matches Price facts to purchase quantities by item noun regardless of
+emission site (increment 15 precedent).
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(3772 items, 14/0 unchanged), dev-holdout diff NEUTRAL 0/0/0 (3701 items,
+15/0 unchanged) — dev slices carry no copular-priced items themselves,
+consistent with the parked branch's original result; pytest 296 passed (was
+288 + 8 new, now `tests/test_mining_increment_36.py`), suite 52/52, lint 0
+errors / 1 known-good warning (fraction-of-remnant / fraction-of-pool,
+unchanged) / 21 info.
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 Numbers below predate this session's work and need a fresh `rulekit

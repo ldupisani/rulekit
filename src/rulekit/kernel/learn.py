@@ -501,6 +501,38 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                     )
                 )
             continue
+        is_copular_price = (
+            verb_lemma == "be"
+            and dobj_is_currency
+            and subject.sense() == "noun"
+            and subject.features.get("number") == "plural"
+        )
+        if (
+            is_copular_price
+            and _is_rate(reading, dobj)
+            and _rate_unit(reading, dobj) is None
+        ):
+            # "ITEM(s) are $PRICE each" — the copular twin of the price_verb
+            # branch above: 'be' (the state category) with a PLURAL common
+            # noun subject and a currency dobj, followed by the same
+            # distributive 'each' structure (_is_rate/_rate_unit UNWIDENED,
+            # _rate_unit None ruling out a 'per NOUN' rate reading instead).
+            # Emit the Price fact keyed on the subject and skip the fold
+            # entirely for THIS shape only. Any 'be'+currency-dobj sentence
+            # missing a piece of this gate (no 'each', singular subject, a
+            # 'per NOUN' rate marker) is untouched — it falls through to the
+            # existing state-verb Quantity/Membership/Predication path below,
+            # exactly as before this change.
+            facts.append(
+                Price(
+                    provenance=prov,
+                    item=_lemma(subject),
+                    value=float(dobj.features["value"]),
+                    verb=verb_lemma,
+                    occurrence=occurrence,
+                )
+            )
+            continue
         dobj_is_rate = dobj is not None and _is_rate(
             reading, dobj, stop_at_list_boundary=is_purchase_verb
         )
