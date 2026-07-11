@@ -13,6 +13,7 @@ from .model import (
     Fact,
     Membership,
     Predication,
+    Price,
     Provenance,
     Quantity,
     Rate,
@@ -64,6 +65,32 @@ def _rate_unit(reading: Reading, counted: Unit) -> Unit | None:
         k = j + 1
         if k < len(units) and units[k].sense() == "noun":
             return units[k]
+    return None
+
+
+def _price_each_value(reading: Reading, counted: Unit, reg: Registry) -> float | None:
+    """'N ITEM at/for $PRICE each' — the PER-UNIT price, when a
+    currency-valued noun sits between the counted item and a trailing
+    'each' quantifier. Returns None for the plain distributive form ('2
+    notebooks for EACH of his children'), which stays a silent skip."""
+    units = reading.units
+    try:
+        i = units.index(counted)
+    except ValueError:
+        return None
+    price: Unit | None = None
+    for unit in units[i + 1 :]:
+        if unit.sense() == "complementizer" or unit.surface in (".", "?", "!"):
+            break
+        if unit.sense() == "quantifier":
+            return float(price.features["value"]) if price is not None else None
+        if (
+            price is None
+            and unit.sense() == "noun"
+            and unit.features.get("value_kind") == "count"
+            and reg.word_in_category(unit.features.get("lemma", ""), "currency")
+        ):
+            price = unit
     return None
 
 
@@ -174,7 +201,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
             ):
                 # the article/per form is a RATE FACT ("$18 an hour"); it
                 # never folds into holdings, but the rate-span consumer can
-                # multiply it. The for-each distributive still just skips.
+                # multiply it.
                 facts.append(
                     Rate(
                         provenance=prov,
@@ -186,7 +213,29 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                         occurrence=occurrence,
                     )
                 )
-            continue  # never a holding — no plain quantity from a rate
+                continue  # never a holding — no plain quantity from a rate
+            price_value = (
+                _price_each_value(reading, dobj, reg)
+                if dobj.features.get("value_kind") == "count" and dobj.sense() == "noun"
+                else None
+            )
+            if price_value is None:
+                continue  # the for-each distributive ("for EACH of his
+                # children") still just skips — no fact, value unaccounted
+            # "N ITEM at/for $PRICE each" — the ITEM is a genuine purchased
+            # COUNT (unlike the day-rate case), so it falls through to the
+            # normal condensed-count Quantity emission below; the price is
+            # its own fact, read only when the purchase-total consumer
+            # actually multiplies it (guards._fact_values_by_sentence).
+            facts.append(
+                Price(
+                    provenance=prov,
+                    item=_lemma(dobj),
+                    value=price_value,
+                    verb=verb_lemma,
+                    occurrence=occurrence,
+                )
+            )
         if dobj is not None and dobj.features.get("value_kind") == "count" and dobj.sense() == "noun":
             # condensed counted noun ("3 apples")
             facts.append(

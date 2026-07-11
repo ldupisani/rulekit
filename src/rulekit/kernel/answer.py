@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from ..data.registry import Registry
 from .evaluate import ArithmeticLog, evaluate
 from .facts import FactStore
-from .model import Membership, Quantity, Rate, Reading
+from .model import Membership, Predication, Price, Quantity, Rate, Reading
 from .patterns import match_ask
 
 
@@ -95,6 +95,37 @@ def _verb_total(
     )
 
 
+def _purchase_total(
+    store: FactStore, reg: Registry, entity: str, log: ArithmeticLog
+) -> float | None:
+    """'3 toys at $10 each' priced purchases: Σ qty × unit price over every
+    PURCHASE-verb quantity this entity holds. Any purchase whose item has
+    no matching Price fact declines the WHOLE total rather than risk
+    silently dropping a term (definitive-or-decline). A 'splits/shares the
+    cost' predicate on the same buyer means the raw total isn't what they
+    actually paid — the split factor is unbuilt, so decline rather than
+    risk the pre-split number."""
+    buys = [
+        q for q in store.by_kind(Quantity)
+        if q.entity == entity and reg.word_in_category(q.verb, "purchase")
+    ]
+    if not buys:
+        return None
+    if any(
+        p.subject == entity and reg.word_in_category(p.verb, "divide")
+        for p in store.by_kind(Predication)
+    ):
+        return None
+    prices = {p.item: p for p in store.by_kind(Price)}
+    parts: list[str] = []
+    for q in buys:
+        price = prices.get(q.measure)
+        if price is None:
+            return None
+        parts.append(f"{q.value} * {price.value}")
+    return evaluate(" + ".join(parts), {}, log, source="purchase-total")
+
+
 def _entity_total(
     store: FactStore, reg: Registry, entity: str, measure: str, log: ArithmeticLog
 ) -> float | None:
@@ -169,12 +200,22 @@ def answer(
             # eat-question with a buy-total is a category error (the
             # question's verb is part of the query, difg playbook lesson).
             total = _verb_total(store, entity, singular, ask_verb, log)
-            if total is None:
-                return Answer(
-                    "decline", None,
-                    f"no {ask_verb!r} events known for {entity!r}/{singular!r}",
-                )
-            return Answer("number", total, f"Σ {ask_verb!r} events of {entity!r}/{singular!r}")
+            if total is not None:
+                return Answer("number", total, f"Σ {ask_verb!r} events of {entity!r}/{singular!r}")
+            # "how much did X pay/spend?" over priced purchases ("3 toys at
+            # $10 each") is a DERIVED total, not a literal 'pay'/'spend'
+            # event — gated to money asks over spend-family verbs only.
+            is_currency_ask = singular == "currency" or reg.word_in_category(singular, "currency")
+            if is_currency_ask and reg.word_in_category(ask_verb, "spend_verb"):
+                total = _purchase_total(store, reg, entity, log)
+                if total is not None:
+                    return Answer(
+                        "number", total, f"Σ price × qty over {entity!r}'s purchases"
+                    )
+            return Answer(
+                "decline", None,
+                f"no {ask_verb!r} events known for {entity!r}/{singular!r}",
+            )
         total = _entity_total(store, reg, entity, singular, log)
         if total is None:
             return Answer(

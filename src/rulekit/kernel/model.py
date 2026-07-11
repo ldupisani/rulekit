@@ -297,6 +297,24 @@ class Rate(Fact):
     def key(self) -> tuple:
         return ("rate", self.entity, self.measure, self.per, self.verb, self.occurrence)
 
+
+@dataclass(frozen=True)
+class Price(Fact):
+    """'3 toys at $10 each' — the per-unit PRICE of an item. Distinct from
+    Rate: the quantity purchased is its own ordinary Quantity fact (not a
+    rate over time); the purchase-total consumer multiplies the two."""
+
+    item: str
+    value: float
+    verb: str = "buy"
+    occurrence: int | None = None
+
+    def key(self) -> tuple:
+        return ("price", self.item, self.verb, self.occurrence)
+
+    def value_part(self) -> Any:
+        return self.value
+
     def value_part(self) -> Any:
         return self.value
 

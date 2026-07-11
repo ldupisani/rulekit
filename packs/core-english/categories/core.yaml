@@ -13,6 +13,13 @@ categories:
       occurrence is a distinct fact that accumulates, signed by polarity)
   acquire: {parent: verb, antonym: lose, polarity: 1}
   lose: {parent: verb, antonym: acquire, polarity: -1}
+  spend_verb:
+    parent: verb
+    notes: >
+      'pay'/'spend' asks over priced purchases ("3 toys at $10 each") are a
+      DERIVED total, not a literal event verb — the purchase-total
+      consumer's gate, kept narrower than the general 'lose' category so
+      an unrelated 'sell' ask never answers from purchase data.
   delta: {parent: comparative, notes: "direction words in 'N more/fewer X than Y'"}
   currency:
     parent: noun
@@ -38,6 +45,7 @@ members:
   state: [has, have, had, is, are, was, were, own, owns]
   acquire: [get, gets, got, find, finds, found, buy, buys, bought, receive, receives, received, win, wins, won]
   lose: [lose, loses, lost, eat, eats, ate, give, gives, gave, sell, sells, sold, spend, spends, spent, dropped, drops]
+  spend_verb: [spend, spends, spent]
   more_dir: [more]
   less_dir: [fewer, less]
 context_synonyms:
