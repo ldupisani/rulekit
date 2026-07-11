@@ -1322,6 +1322,43 @@ remain..."), but each still declines for an unrelated missing capability
 correctly scoped to the clause-split class only, 0 net DEV gain, 0 harm.
 TEST look #41: 6/1 (85.7%) — precision HELD, increment kept.
 
+## Increment 40: wh-copular total asks (`33c66f7`)
+
+Adds two additive ask ids to `packs/arithmetic/rules/core.yaml`:
+`ask/what-total-combined` — "What is/was the total (number/amount of) ITEM
+((that) they VERB)?", the wh-copula (`what` + `{cat: state}`: is/was/are/
+were) FRONTING the aggregate word 'total' instead of trailing it the way
+the existing `ask/how-many-combined` does ("how many X ... in total") —
+and `ask/what-total-combined-contracted` for the "what's" clitic, kept
+separate because `tokenize.py` never expands `'s` into a verb token (its
+lexicon sense is possessive, not state), so widening the shared `state`
+category to admit it would touch `ask/how-old-is` and every other
+state-gated rule. Both route to the EXISTING `combined` consumer in
+`answer.py`, byte-for-byte unchanged — same Sigma-over-holders fold
+`ask/how-many-combined` already uses. No kernel edit, no new vocabulary
+(`total`/`number`/`amount` already carry the aggregate/aggregate_noun
+senses). The trailing subject clause is scoped to a bare pronoun ('they')
+or omitted; a counted/named subject ("the two have") is out of scope by
+brief and verified to decline safely (fails the `{type: pronoun}` slot,
+then the pre-existing value-accounting guard vetoes the commit because
+'two' is an unaccounted stated count) rather than falling through to a
+new fallback path.
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(3772 items, 14/0 unchanged), dev-holdout diff NEUTRAL 0/0/0 (3701 items,
+15/0 unchanged), pytest 325 passed (was 318 + 7 new, now
+`tests/test_mining_increment_40.py`), suite 52/52, lint 0 errors / 1
+known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) / 22
+info. SOLVED is 0: the junior's own scan of the 91 dev-train items matching
+the brief's cue found every match is either a genuinely-derived total
+(needs multi-step arithmetic the `combined` consumer intentionally doesn't
+do) or a premise-side gap unrelated to this ask — pure groundwork this
+increment, correctly scoped to the wh-copular ask-shape class only, 0 net
+DEV gain, 0 harm. The mechanism is fully general and may still pick up
+dev-holdout/test items with a simpler 2-holder-total shape outside this
+half of dev-train.
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 **GOAL MODE (set 2026-07-11): the campaign target is 100 dev-train

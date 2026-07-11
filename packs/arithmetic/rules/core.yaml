@@ -1003,3 +1003,78 @@ asks:
     resolves:
       consumer: item-cost
       item: "{item}"
+
+  - id: ask/what-total-combined
+    # "What is/was the total (number/amount) of ITEM (that) they VERB?" —
+    # the wh-copular total ask (mining candidate wh-total-asks): 'what'
+    # plus a copula ({cat: state}: is/was/are/were) FRONTS the aggregate
+    # word instead of ask/how-many-combined's item-first "how many X ...
+    # in total" phrasing; both route to the same unchanged 'combined'
+    # consumer (Σ over every holder of the resolved measure). The
+    # 'number'/'amount' frame noun and the trailing "(that) WHO VERB"
+    # clause are both optional — a bare "what is the total of X?" needs
+    # neither. The trailing clause is scoped to a bare pronoun ('they'),
+    # never a counted/named subject ("the two have", "Mia and Leo have"):
+    # those need holder-count or multi-name binding logic this candidate
+    # does not add, so a counted/named subject simply fails the
+    # {type: pronoun} slot and that optional clause goes unconsumed —
+    # the ask still resolves via the SAME default verb ('have') the
+    # combined consumer already falls back to for how-many-combined's own
+    # unbound {verb} (answer.py's `query.get("verb", "have")`), so no new
+    # fallback path is introduced.
+    match:
+      question:
+        # no literal 'the': article is a globally-skippable sense
+        # (patterns.SKIPPABLE_SENSES), so a required 'the' token could
+        # never match anyway — skip advances past it before any literal
+        # comparison runs, same as every other ask in this file (none of
+        # them spell 'the' out either).
+        - {lit: what}
+        - {slot: be, cat: state}
+        - {lit: total}
+        - opt:
+            - {slot: agg_noun, cat: aggregate_noun}
+            - {lit: of}
+        - {slot: item, type: noun}
+        - opt:
+            - opt:
+                - {lit: that}
+            - {slot: who, type: pronoun}
+            - {slot: verb, type: verb}
+    resolves:
+      consumer: combined
+      measure: "{item}"
+      verb: "{verb}"
+
+  - id: ask/what-total-combined-contracted
+    # Same class as ask/what-total-combined, for the "what's" contraction.
+    # tokenize.py's _CONTRACTIONS table never expands "'s" (unlike n't/
+    # 're/'ll/'ve — see tokenize.py's comment: "kept as its own token,
+    # possessive/copula resolved later"), so "what's" always splits into
+    # the literal units 'what' + "'s" and the copula slot there can never
+    # be a {cat: state} verb. A literal "'s" token plays the skeletal role
+    # {slot: be, cat: state} plays in the is/was form above. Kept as a
+    # SEPARATE ask id rather than widening the shared 'state' category to
+    # admit "'s": "'s" is lexiconed as sense=possessive, not verb, and
+    # admitting it into 'state' would change every other state-gated rule
+    # and ask (ask/how-old-is, ask/how-much-money-entity-left, the
+    # goal/state sentence rules, ...), not just this one — the HANDOFF
+    # invariant against widening a shared gate for one caller.
+    match:
+      question:
+        - {lit: what}
+        - {lit: "'s"}
+        - {lit: total}
+        - opt:
+            - {slot: agg_noun, cat: aggregate_noun}
+            - {lit: of}
+        - {slot: item, type: noun}
+        - opt:
+            - opt:
+                - {lit: that}
+            - {slot: who, type: pronoun}
+            - {slot: verb, type: verb}
+    resolves:
+      consumer: combined
+      measure: "{item}"
+      verb: "{verb}"
