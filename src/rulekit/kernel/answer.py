@@ -252,14 +252,37 @@ def answer(
         rate = rates[0]
         if span_unit == rate.per:
             k = span_value
-        elif (span_unit, rate.per) in reg.conversions:
-            k = span_value * reg.conversions[(span_unit, rate.per)]
         else:
-            return Answer(
-                "decline", None,
-                f"no conversion from {span_unit!r} to the rate's "
-                f"{rate.per!r} — cannot span",
-            )
+            # CHAINED RATES ("30 pages an hour" x "4 hours a day" x "3
+            # days"): a SECOND Rate fact for the same entity, stated in the
+            # text, bridges span_unit to the first rate's per-unit — e.g.
+            # Rate(entity='machine', measure='hour', per='day', value=4)
+            # bridges a 'day' span to the 'hour' the first rate is per.
+            # A text-stated bridge takes priority over the generic
+            # reg.conversions table (a day is 24 HOURS in general, but
+            # THIS machine only runs 4 of them) — checked first, and only
+            # a UNIQUE bridge is trusted; anything else falls through to
+            # the untouched single-rate path below, byte-for-byte.
+            bridges = [
+                r2 for r2 in store.by_kind(Rate)
+                if r2 is not rate
+                and r2.entity == entity
+                and r2.measure == rate.per
+                and r2.per == span_unit
+            ]
+            if len(bridges) == 1:
+                bridge = bridges[0]
+                k = evaluate(
+                    f"{span_value} * {bridge.value}", {}, log, source="rate-span-bridge"
+                )
+            elif (span_unit, rate.per) in reg.conversions:
+                k = span_value * reg.conversions[(span_unit, rate.per)]
+            else:
+                return Answer(
+                    "decline", None,
+                    f"no conversion from {span_unit!r} to the rate's "
+                    f"{rate.per!r} — cannot span",
+                )
         # a PER-INDIVIDUAL rate ("a bird eats 7 berries a day") multiplies
         # by the population when every holder's total resolves
         holders = sorted(

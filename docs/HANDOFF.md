@@ -154,6 +154,51 @@ targeted synthetic tests are the coverage evidence; a dev/TEST item
 using this phrasing would show as a future SOLVED.
 TEST look: pending — spent manually, one look after the batch lands.
 
+## Increment 13: chained rates (rate x rate spans) (`mining/batch-2026-07-11`)
+
+Extends the rate-span consumer (`kernel/answer.py`, `consumer ==
+"rate-span"`) for the observed 2-rate chained case only: pages/hour x
+hours/day x days. When the asked span's unit does not match the
+committing rate's `per` unit and no static `reg.conversions` entry
+applies, a SECOND Rate fact for the same entity is checked — if it
+UNIQUELY bridges the units (its measure equals the first rate's `per`,
+its `per` equals the span's unit), its value multiplies through instead
+of a generic physical conversion. A text-stated bridge deliberately
+outranks the generic conversions table for the same units (a day is 24
+hours in general, but the text may state the entity only runs some of
+them) — this is what keeps "pages/hour x hours/day" from silently
+picking the wrong factor via the pack's day->hour=24 conversion. Any
+case without a unique bridge (zero or ambiguous — e.g. two candidate
+bridge rates for the same entity) falls through byte-for-byte to the
+untouched single-rate path, so existing single-rate and rate x
+population behavior is unchanged.
+
+Motivated by the "Rate chaining (14 '0 rates known' items)" worklist
+bullet below. Manual inspection during implementation (dev-train only)
+found none of those 14 items are actually a 2-rate chain in this exact
+shape — most are unrelated decline reasons under similar text
+(population growth, doubling, percentage raises), and the one item
+structurally closest ("Tom reads 10 hours over 5 days. He can read 50
+pages per hour...") is blocked by a separate modal-verb subject-binding
+bug ("He can read" binds subject to 'can', not 'he'/'Tom'), out of scope
+here and left on the worklist. The mechanism is implemented and gated as
+a general class per the brief (kernel-structural, no new vocabulary, no
+new ask shapes — the existing rate-span asks in
+`packs/arithmetic/rules/core.yaml:490,508` already match); it is expected
+to fire on real chained-rate-span text once encountered, and the
+synthetic tests are the coverage evidence in the meantime.
+
+Gates (integrated on staging, full re-proof): dev-train diff SOLVED 0 /
+BROKE 0 / DECL→WRONG 0 (NEUTRAL, 14/0 unchanged), dev-holdout diff
+identical (NEUTRAL, 14/0 unchanged), pytest 141 passed (was 135 + 6 new
+synthetic in `tests/test_mining_increment_13.py`), suite 52/52, lint 0
+errors / 1 known-good warning. Shipped NEUTRAL on dev — no dev-train/
+dev-holdout item happens to hit this exact chained-rate shape; the
+targeted synthetic tests (including the ambiguous-bridge decline case
+and the stated-bridge-overrides-generic-conversion case) are the
+coverage evidence.
+TEST look: pending — spent manually, one look after the batch lands.
+
 ## The next mining worklist (from the last close-miss scan)
 
 Numbers below predate this session's work and need a fresh `rulekit
@@ -176,13 +221,17 @@ stats` pass before trusting them.
   broken noun unit with no subject/verb/dobj structure. A grammar gap,
   not a fold-logic gap; needs investigation in the tokenizer/POS layer,
   not learn.py.
-- **Rate chaining (14 "0 rates known" items)**: "Tom reads 10 hours over 5
-  days. He reads 50 pages an hour... how many pages in 7 days?" needs TWO
-  rates multiplied together (pages/hour × hours/day × days), not just one
-  rate against a span. A genuinely NEW synthesizer class (rate × rate),
-  not an extension of the existing single-rate-span consumer. Scope
-  before touching: does it need a general N-rate chain, or just the
-  2-rate case actually observed?
+- **Rate chaining (14 "0 rates known" items) — MECHANISM LANDED (increment
+  13), bucket did not move.** The 2-rate bridge (pages/hour × hours/day ×
+  days) is implemented in the rate-span consumer and gated clean, but
+  none of the 14 dev "0 rates known" items are actually this exact shape
+  on inspection. The one structurally-close item ("Tom reads 10 hours
+  over 5 days. He can read 50 pages an hour...") is blocked by a modal-
+  verb subject-binding bug ("He can read" binds subject to 'can', not
+  'he'/'Tom') — a grammar/obligation-attachment gap, not a synthesizer
+  gap. Fixing that binding bug is the next step toward actually moving
+  this bucket; re-run `rulekit stats` after to see if other items in the
+  bucket are similarly blocked rather than genuinely rate-chain-shaped.
 - **Passive voice (blocks some of the 9 "missing a total" items,
   confirmed by tracing one example)**: "half of the $60 **was earned by**
   Lisa" garbles into nonsense Predication facts (subject='dollar',
