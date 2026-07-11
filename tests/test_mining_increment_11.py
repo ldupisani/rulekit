@@ -72,13 +72,15 @@ def test_unpriced_first_item_does_not_borrow_a_later_price(full_registry):
 
 
 def test_plain_multi_dobj_conjunction_still_declines(full_registry):
-    # EVENT verbs (neither purchase nor state) are UNCHANGED — the general
-    # conjunction gap remains open outside this scoped fix. (State verbs
-    # gained conjunct recovery in the state-verb-conjunction candidate; this
-    # test now exercises an event verb instead, to keep documenting the
-    # still-open gap accurately.)
+    # A verb with NO polarity category (neither purchase, state, nor
+    # acquire/lose) is UNCHANGED — the general conjunction gap remains open
+    # for untagged event verbs. ('eat'/'ate' is 'lose'-tagged and gained
+    # conjunct recovery in the event-conjunct-recovery candidate, so this
+    # test now exercises 'keep' — the 'retain' category, deliberately
+    # untagged for polarity — to keep documenting the still-open gap
+    # accurately.)
     r = solve(
-        "Priya ate 5 apples and 3 eggs. How many apples did Priya eat?",
+        "Priya keeps 5 apples and 3 eggs. How many apples does Priya keep?",
         full_registry,
     )
     assert r.answer.kind == "decline"

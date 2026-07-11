@@ -1492,6 +1492,54 @@ known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) / 22
 info.
 TEST look: pending — spent manually.
 
+## Increment 45: conjoined event-verb objects (`98d782a`)
+
+Declared infrastructure per the brief: extends increment 11's conjunct-
+recovery walker (`_conjoined_purchase_items` in `learn.py`, previously gated
+to `purchase` and `state` verbs) to any verb tagged with a polarity category
+(acquire/lose and their subcategories: produce, receive, sell, ...). A new
+`_has_event_polarity(verb_lemma, reg)` helper mirrors `answer.py`'s
+`_sign(strict=True)` test at the fold layer: each comma/conjunction segment
+in "found A and B" / "lost A, B, and C" now yields an ordinary signed event
+Quantity for the same subject and verb, exactly like a purchase list's or a
+state verb's siblings already did. An event verb with NO polarity tag
+(`keep`/`retain`, `want`/`desire` — deliberately untagged) is unchanged: the
+walker still never fires for it, so a stated sibling count stays unaccounted
+and the value-accounting guard declines the whole sentence (the polarity
+invariant). Only a purchase verb's own siblings ever emit a Price fact
+(increment 11's discipline, untouched); a polarity-tagged non-purchase verb
+never prices its siblings even when a segment carries a distributive "each"
+plus a currency noun — that segment is left unaccounted and the sentence
+declines rather than invent a price. The stop-on-verb + discard-segment-
+on-verb-break discipline (increment 35) is preserved byte-for-byte since the
+shared walker itself is untouched — only its callers' gating condition
+widened.
+
+Caught mid-development (increment 11 precedent): two existing decline-safety
+tests (`test_mining_increment_11.py`, `test_mining_increment_35.py`) asserted
+decline for an "eat"-verb ("lose" category) conjunction — that case now
+correctly resolves to a number since `eat` IS polarity-tagged. Both were
+updated to exercise `keep` ("retain" category, deliberately untagged)
+instead, which still declines, so they keep documenting the real remaining
+gap (untagged event verbs) rather than one this candidate now closes.
+
+Recognition-only in the sense that matters for the campaign target: a
+scripted conjunct-split rewrite over 64 dev-train conflict items found 0
+immediate gold flips (their asks hit the pronoun-subject-entity gap closed by
+increment 44) — this is pure infrastructure converting fold-conflict
+DECLINEs into folded sums a future pronoun-entity-ask candidate can cash in.
+Follow-up: re-mine the 113-item fold-conflict bucket next batch now that both
+increment 44 (pronoun/common-noun asks) and this one (event-verb conjuncts)
+have landed.
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(3772 items, 16/0 unchanged), dev-holdout diff NEUTRAL 0/0/0 (3701 items,
+16/0 unchanged), pytest 357 passed (was 350 + 7 new, now
+`tests/test_mining_increment_45.py`), suite 52/52, lint 0 errors / 1
+known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) / 22
+info.
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 **GOAL MODE (set 2026-07-11): the campaign target is 100 dev-train

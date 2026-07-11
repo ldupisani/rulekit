@@ -138,10 +138,14 @@ def test_purchase_conjunction_unaffected(full_registry):
 
 
 def test_event_verb_conjunction_still_declines(full_registry):
-    # event verbs (neither `state` nor `purchase`) are UNCHANGED — the
-    # general conjunction gap remains open outside this scoped fix.
+    # an event verb with NO polarity category (neither `state`, `purchase`,
+    # nor acquire/lose) is UNCHANGED — the general conjunction gap remains
+    # open for untagged event verbs. ('eat'/'ate' is 'lose'-tagged and
+    # gained conjunct recovery in the event-conjunct-recovery candidate, so
+    # this test now exercises 'keep' — the 'retain' category, deliberately
+    # untagged for polarity — to keep documenting the still-open gap.)
     r = solve(
-        "Jordan ate 4 apples and 2 oranges. How many apples did Jordan eat?",
+        "Jordan keeps 4 apples and 2 oranges. How many apples does Jordan keep?",
         full_registry,
     )
     assert r.answer.kind == "decline"

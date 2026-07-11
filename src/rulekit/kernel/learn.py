@@ -314,6 +314,27 @@ def _conjoined_purchase_items(
     return conjuncts
 
 
+def _has_event_polarity(verb_lemma: str, reg: Registry) -> bool:
+    """True when `verb_lemma` carries a polarity-tagged category (acquire/
+    lose and their subcategories: purchase, produce, receive, sell, ...) —
+    the SAME strict-mode test answer.py's `_sign(strict=True)` applies
+    downstream to decide whether an event Quantity can ever be signed.
+    Mirrored here rather than imported (answer.py is the consumer layer,
+    learn.py the fold) so the conjunct walker's gate can ask the identical
+    question the fold will ask later: an UNTAGGED verb ('want', 'need' —
+    deliberately unsignable per packs/core-english/categories/core.yaml)
+    must keep declining exactly as it already does. Recovering conjunct
+    siblings for a verb the fold can never sign would manufacture Quantity
+    facts that only ever sit inert — harmless by construction, but exactly
+    the kind of scope creep the polarity invariant exists to forbid, so the
+    gate withholds them at the source instead."""
+    for tag in reg.word_categories.get(verb_lemma, ()):
+        for cat in reg.cat_ancestors(tag):
+            if cat in reg.category_polarity:
+                return True
+    return False
+
+
 def _is_rate(
     reading: Reading, counted: Unit, stop_at_list_boundary: bool = False
 ) -> bool:
@@ -629,15 +650,25 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                             occurrence=occurrence,
                         )
                     )
-                if is_purchase_verb or is_state:
-                    # "buys A at $X each, B, and C at $Z each" (purchase verbs)
-                    # or "has A and B" / "owns X, Y, and Z" (state verbs) — the
-                    # dobj obligation only bound the FIRST item; recover the
-                    # conjoined siblings via the SAME segmentation increment 11
-                    # built for purchase lists and fold each as its own
-                    # Quantity. A state verb's siblings are ordinary holdings,
-                    # never purchases — a stated 'each' there is not a price —
-                    # so only a purchase verb's siblings ever emit a Price.
+                if (
+                    is_purchase_verb
+                    or is_state
+                    or (not is_state and _has_event_polarity(verb_lemma, reg))
+                ):
+                    # "buys A at $X each, B, and C at $Z each" (purchase
+                    # verbs), "has A and B" / "owns X, Y, and Z" (state
+                    # verbs), or "found 7 apples and 6 oranges" / "lost 3
+                    # pens, 2 pencils, and a ruler" (any OTHER polarity-
+                    # tagged event verb, acquire/lose and their
+                    # subcategories) — the dobj obligation only bound the
+                    # FIRST item; recover the conjoined siblings via the
+                    # SAME segmentation increment 11 built for purchase
+                    # lists and fold each as its own Quantity, signed
+                    # downstream by the verb's own category polarity
+                    # exactly like the first item already is. An event verb
+                    # with NO polarity category ('want'/'need' — see
+                    # _has_event_polarity) still declines: only a
+                    # purchase verb's siblings ever emit a Price.
                     for item, item_qty, price_value in _conjoined_purchase_items(reading, reg, dobj):
                         facts.append(
                             Quantity(
