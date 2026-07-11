@@ -1359,6 +1359,40 @@ dev-holdout/test items with a simpler 2-holder-total shape outside this
 half of dev-train.
 TEST look: pending — spent manually.
 
+## Increment 41: combined how-much totals (`1b287b2`)
+
+Adds the how-much sibling of `ask/how-many-combined` to
+`packs/arithmetic/rules/core.yaml`: "How much {item, e.g. money} [aux]
+{who: pronoun} {verb} [prep] {agg: cat aggregate}?" — same shape as the
+existing "how many X do they have altogether?" ask, with 'much' in place
+of 'many', routed to the SAME unchanged `combined` consumer in
+`answer.py` (Sigma over every entity holding the resolved measure).
+Measure resolution for 'money' reuses the currency interchangeability
+introduced by increment 26; no new vocabulary ('altogether'/'total'
+already carry the aggregate sense in the core-english lexicon). The
+who-slot is gated to a bare PRONOUN, which keeps this ask disjoint from
+the crowded "how much" family with a NAME subject
+(`ask/how-much-noun-entity`, `ask/how-much-bare-entity`,
+`ask/how-much-money-entity-left`, earn-span, rate-span): a named subject
+with a trailing 'in total' still routes to the single-entity ask, verified
+directly in the test file, and a single-holder or mixed-currency combined
+question declines via the combined consumer's own pre-existing guards
+rather than guessing.
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(3772 items, 14/0 unchanged), dev-holdout diff NEUTRAL 0/0/0 (3701 items,
+15/0 unchanged), pytest 331 passed (was 325 + 6 new, now
+`tests/test_mining_increment_41.py`), suite 52/52, lint 0 errors / 1
+known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) / 22
+info. SOLVED is 0: the ask-shape gap this closes exists on dev-train, but
+no dev-train item's earlier read stage reaches this ask on the actual
+corpus (an upstream premise gap intervenes first) — pure groundwork this
+increment, correctly scoped to the "how much combined" ask-shape class
+only, 0 net DEV gain, 0 harm. The mechanism is fully general and may still
+pick up dev-holdout/test items with a simpler shape outside this half of
+dev-train.
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 **GOAL MODE (set 2026-07-11): the campaign target is 100 dev-train

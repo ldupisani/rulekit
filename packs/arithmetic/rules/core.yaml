@@ -783,6 +783,37 @@ asks:
       measure: "{item}"
       verb: "{verb}"
 
+  - id: ask/how-much-combined
+    # "how much money do they have in total/altogether?" — the how-much
+    # sibling of ask/how-many-combined (mining candidate how-much-combined):
+    # identical shape, 'much' in place of 'many', routed to the SAME
+    # 'combined' consumer (answer.py) that already sums N entities' totals
+    # for a measure. 'item' is a required noun right after 'how much'
+    # ('money', or any counted noun) — this can never collide with
+    # ask/how-much-noun-entity or ask/how-much-bare-entity because those
+    # require {who, type: name}, a proper name, while this ask's who slot
+    # is {type: pronoun} ('they'/'we') — a name-subject question never
+    # matches here and a pronoun-subject question never matches those.
+    # measure: currency resolution for the bare 'money' item is the
+    # existing interchangeable-category machinery (_resolve_measure,
+    # increment 26 precedent) — no new vocabulary needed.
+    match:
+      question:
+        - {lit: how}
+        - {lit: much}
+        - {slot: item, type: noun}
+        - opt:
+            - {slot: aux, type: auxiliary}
+            - {slot: who, type: pronoun}
+            - {slot: verb, type: verb}
+        - opt:
+            - {slot: p, cat: preposition}
+        - {slot: agg, cat: aggregate}
+    resolves:
+      consumer: combined
+      measure: "{item}"
+      verb: "{verb}"
+
   - id: ask/how-much-noun-more-than
     match:
       question:
