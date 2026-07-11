@@ -72,3 +72,29 @@ dev-holdout +1 SOLVED / 0 BROKE / 0 DECL→WRONG (the same item the
 original increment 9 predicted). Re-landing plan is now COMPLETE — all
 four original pieces (ask ordering, narrow rate-span, conversion,
 population/entity) are live.
+
+## The 12-word vocabulary batch (staged as increment 20, REVERTED at look #20, 2026-07-11)
+
+The /mine batch-4 candidate `vocab-ceiling-batch` admitted 12 quarantine-
+clean words (fruit/fruits, complete, paper, planning, cream/creams, math,
+fit, told, package/packages, carry, carton/cartons, stock) as pure YAML
+lexicon additions. Every dev gate was clean (train and holdout diffs
+NEUTRAL, fully-read ceiling +2.0pp train / +1.6pp holdout, 189 tests,
+suite 52/52) — and TEST look #20 came back 6/2 (75.0%, was 6/1 85.7%):
+one NEW confident-wrong unlocked on unseen text. Full revert of the
+increment; main reset to the pre-batch state and dev verified
+item-identical to the look #19 fingerprint (deterministic engine ⇒ TEST
+restored without spending a confirmation look). The candidate branch
+`mining/cand-vocab-ceiling-batch` preserves the exact word list.
+
+Which of the 12 words unlocked the wrong is UNKNOWN (TEST is aggregate-
+only; bisection would cost ~log2(12) ≈ 4 looks). Do not re-attempt as a
+batch. LESSON (the difg vocab_singles lesson, now measured on rulekit):
+vocabulary raises the fully-read ceiling for WRONGS as much as for
+corrects, and dev/holdout cannot see the unseen-structure interactions
+(§3a). Any future vocabulary admission must (a) run the methodology §4
+permissive scan and ship only words whose unlocked problems are verified
+decline→correct with zero new wrongs on dev, (b) admit ONE word (or one
+tight family) per increment so a TEST drop identifies its culprit, and
+(c) expect the TEST look to be the real gate. The implementer protocol
+now requires the permissive scan for any vocabulary-admitting increment.

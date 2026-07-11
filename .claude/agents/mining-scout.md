@@ -47,6 +47,11 @@ ship time), never a single item. Per candidate:
 - `mechanism` — YAML-first: which pack (categories / rules / conversions /
   lexicon) carries the fix; kernel files only if the gap is structural. If the
   honest mechanism is a word list in Python, the candidate is invalid — drop it.
+  Never propose a multi-word vocabulary batch: vocabulary unlocks wrongs on
+  unseen text that no dev gate can see (docs/negative-results.md, look #20 —
+  a 12-word batch reverted at 75% TEST precision). Vocabulary briefs are ONE
+  word (or one tight family) with permissive-scan evidence, at most one per
+  batch.
 - `yaml_only` — true if no kernel edit is expected.
 - `files_expected` — the concrete files the junior will likely touch.
 - `risks` — blast radius (low/medium/high + why), shared scan paths touched

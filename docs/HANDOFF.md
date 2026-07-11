@@ -17,14 +17,17 @@ every increment through the gates).
 - dev-train: 14 correct / 0 wrong (3,772 items, 100% precision)
 - dev-holdout: 14 correct / 0 wrong (3,701 items)
 - curated suite: 52/52 · pytest: 184 · lint: 0 errors, 1 intended warning
-- TEST ledger (19 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- TEST ledger (20 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
   6/1 (#14) → 6/1 (#15) → 6/1 (#16) → 6/1 (#17) → 6/1 (#18) →
-  **6/1 (85.7%, look #19) ← live** — #12–#13 /mine batch 1, #14 the modal
-  split, #15–#16 /mine batch 2, #17–#19 /mine batch 3 (5 candidates:
-  3 landed, 1 review-deferred, 1 gate-failed); precision held every time
+  **6/1 (85.7%, look #19) ← live** → 6/2 (75.0%, look #20: the 12-word
+  vocab batch, REVERTED — the firewall's second kill, see
+  docs/negative-results.md; main reset to the look-#19 state and dev
+  verified item-identical, so 6/1 is restored without a confirmation
+  look) — #12–#13 /mine batch 1, #14 the modal split, #15–#16 /mine
+  batch 2, #17–#19 /mine batch 3
 - The looks #12–#13 walk was the first spent from a /mine staging branch:
   fast-forward main to each increment's commit, one look each, from the
   main checkout (the ledger lives in its gitignored snapshots dir).

@@ -77,6 +77,14 @@ uv run rulekit --project projects/gsm8k lint
 - Both diffs must exit 0 with verdict SHIP or NEUTRAL (0 BROKE, 0 DECL→WRONG).
   The DIFF is the gate — `bench` exits 1 whenever the slice has any wrong,
   which is not your failure signal. `diff` takes snapshot basenames, not paths.
+- **Vocabulary-admitting increments additionally require the methodology §4
+  permissive scan** (a scratchpad script; recreate from `docs/methodology.md`):
+  for each admitted word, the dev problems it newly unlocks must be verified
+  decline→correct with ZERO new wrongs. Dev diffs CANNOT see what vocabulary
+  unlocks on unseen text — a 12-word batch passed every dev gate and dropped
+  TEST precision 85.7%→75.0% (docs/negative-results.md, look #20). Admit ONE
+  word (or one tight family) per increment so a TEST drop identifies its
+  culprit; a "vocab batch" brief should be deferred, not implemented.
 - pytest: all pass, and the test count must be ≥ your step-2 baseline count.
 - suite: `correct 52`, `wrong 0`.
 - lint: 0 errors (exactly one intended warning is known-good).
