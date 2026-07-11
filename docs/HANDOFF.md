@@ -767,6 +767,42 @@ run re-proves the gate on `mining/batch-2026-07-11e`, the corrected
 staging lineage, from scratch.
 TEST look #27: 6/1 (85.7%) — precision HELD, increment kept.
 
+## Increment 27: negated-clause quantities (negation-blind fold) (`<pending-commit>`)
+
+Live confident-wrong invisible to the decline-bucket stats: "Tom does not
+have 5 apples. How many apples does Tom have?" committed 5.0 — the fold
+over tom/apple ignored the negation entirely (the existing `negates`
+obligation only covers the copula shape "is not", never the auxiliary
+shape "does not VERB", nor "never", "no longer"). 146/3772 dev-train
+questions contain not/never/no longer/n't (scratchpad cue scan); this is
+priority 1 under precision-before-coverage (constitution rule 4) even
+though it isn't a stats decline bucket.
+
+Mechanism (kernel-structural, no lexicon): a new `negation` category
+declared in `packs/core-english/categories/core.yaml` with members
+not/never/no longer (already-known words, none quarantined, tagged with
+the existing `negator` sense). `learn.py`'s Quantity fold/emission path
+structurally checks — via `guards.py` — whether a negation-category token
+attaches to the verb whose Quantity is about to be folded, scoped to that
+verb's OWN clause (the existing complementizer clause boundary, not the
+whole sentence, so an unrelated negation elsewhere in the sentence cannot
+blank an otherwise-fine fold on a different clause's verb). A hit
+DECLINES that fact's contribution entirely — decline-only, no attempt to
+compute negated semantics.
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(3772 items, 14/0 unchanged), dev-holdout diff NEUTRAL 0/0/0 (3701 items,
+14/0 unchanged), pytest 233 passed (was 227 + 6 new, now
+`tests/test_mining_increment_27.py`), suite 52/52, lint 0 errors / 1
+known-good warning (fraction-of-remnant / fraction-of-pool, unchanged).
+Shipped NEUTRAL on dev: no dev-train/dev-holdout item's current
+correct/wrong classification changes on this slice (decline-only guard,
+0 BROKE, 0 DECL→WRONG); the synthetic suite (auxiliary "does not VERB",
+"never", "no longer", clause-scoped so an unrelated negation elsewhere in
+the sentence doesn't blank an unrelated fold, and the pre-existing copula
+"is not" shape still declines as before) is the coverage evidence.
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 Numbers below predate this session's work and need a fresh `rulekit

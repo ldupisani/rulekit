@@ -29,7 +29,10 @@ from .schemas import (
 )
 
 # Senses that can root a category hierarchy.
-ROOT_SENSES = ("noun", "verb", "adjective", "quantifier", "preposition", "comparative")
+ROOT_SENSES = (
+    "noun", "verb", "adjective", "quantifier", "preposition", "comparative",
+    "negator",
+)
 
 
 class CompileError(Exception):

@@ -20,6 +20,7 @@ from .model import (
     Reading,
     Unit,
 )
+from .obligations import _crosses_clause_boundary
 
 
 def _bound(unit: Unit, need: str) -> Unit | None:
@@ -34,6 +35,29 @@ def _negated(reading: Reading, verb: Unit) -> bool:
         for ob in unit.obligations():
             if ob.need == "negates" and ob.met and ob.target is verb:
                 return True
+    return False
+
+
+def _clause_negated(reading: Reading, verb: Unit, reg: Registry) -> bool:
+    """A negation-category token ('not', 'never', ...) in the SAME CLAUSE as
+    `verb` means the verb's event/holding did not happen as the sentence's
+    surface count states it — the Quantity fold declines this verb's
+    contribution rather than fold a negated number as a real holding
+    ("Tom does NOT have 5 apples" must not commit 5.0; the `negates`
+    obligation above only covers the copula shape 'is not', not 'does not
+    VERB', so this is a SEPARATE, clause-scoped check reusing the existing
+    complementizer clause-boundary — never the whole sentence, so an
+    unrelated negation in a different clause doesn't blank an otherwise
+    fine fold on this verb).
+
+    Decline-only: this never computes negated semantics, it only withholds
+    the ordinary (positive) fold's contribution."""
+    for unit in reading.units:
+        lemma = unit.features.get("lemma", unit.features.get("fold", ""))
+        if reg.word_in_category(lemma, "negation") and not _crosses_clause_boundary(
+            reading, unit, verb
+        ):
+            return True
     return False
 
 
@@ -384,6 +408,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
         if subject.sense() == "pronoun" and _bound(subject, "refers") is None:
             continue
         polarity = not _negated(reading, verb)
+        negated_clause = _clause_negated(reading, verb, reg)
         verb_lemma = _lemma(verb)
 
         consumed = verb.features.get("pattern_consumed") or (
@@ -491,20 +516,82 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
             # genuinely ambiguous there).
             flat_price_value = _flat_purchase_price(reading, dobj, reg)
         if dobj_is_count:
-            # condensed counted noun ("3 apples")
-            facts.append(
-                Quantity(
-                    provenance=prov,
-                    entity=_lemma(subject),
-                    owner=_owner(subject),
-                    measure=_lemma(dobj),
-                    value=float(dobj.features["value"]),
-                    verb=verb_lemma,
-                    occurrence=occurrence,
-                    time=time_label,
+            # condensed counted noun ("3 apples") — a negated clause ("Tom
+            # does NOT have 5 apples") declines this contribution entirely
+            # rather than fold the stated count as a real holding.
+            if not negated_clause:
+                facts.append(
+                    Quantity(
+                        provenance=prov,
+                        entity=_lemma(subject),
+                        owner=_owner(subject),
+                        measure=_lemma(dobj),
+                        value=float(dobj.features["value"]),
+                        verb=verb_lemma,
+                        occurrence=occurrence,
+                        time=time_label,
+                    )
                 )
-            )
-            if flat_price_value is not None:
+                if flat_price_value is not None:
+                    facts.append(
+                        Price(
+                            provenance=prov,
+                            item=_lemma(dobj),
+                            value=flat_price_value,
+                            verb=verb_lemma,
+                            occurrence=occurrence,
+                        )
+                    )
+                if is_purchase_verb:
+                    # "buys A at $X each, B, and C at $Z each" — the dobj
+                    # obligation only bound A; recover the conjoined siblings
+                    # and fold each as its own purchase (Quantity + Price
+                    # when that sibling has its own 'each', or a flat 'for
+                    # $N' price on a bare singular sibling).
+                    for item, item_qty, price_value in _conjoined_purchase_items(reading, reg, dobj):
+                        facts.append(
+                            Quantity(
+                                provenance=prov,
+                                entity=_lemma(subject),
+                                owner=_owner(subject),
+                                measure=_lemma(item),
+                                value=item_qty,
+                                verb=verb_lemma,
+                                occurrence=occurrence,
+                                time=time_label,
+                            )
+                        )
+                        if price_value is not None:
+                            facts.append(
+                                Price(
+                                    provenance=prov,
+                                    item=_lemma(item),
+                                    value=price_value,
+                                    verb=verb_lemma,
+                                    occurrence=occurrence,
+                                )
+                            )
+        elif flat_price_value is not None:
+            # "a hat for $10" — a FLAT-priced purchase item with no
+            # explicit count and no distributive 'each': a single unit at
+            # the stated total price, so the purchase-total consumer's
+            # sum-over-priced-quantities (qty=1 × price) covers it
+            # unchanged. Order-independent: recover any conjoined siblings
+            # exactly as the counted-dobj branch above does. A negated
+            # clause declines this contribution, same as the counted case.
+            if not negated_clause:
+                facts.append(
+                    Quantity(
+                        provenance=prov,
+                        entity=_lemma(subject),
+                        owner=_owner(subject),
+                        measure=_lemma(dobj),
+                        value=1.0,
+                        verb=verb_lemma,
+                        occurrence=occurrence,
+                        time=time_label,
+                    )
+                )
                 facts.append(
                     Price(
                         provenance=prov,
@@ -514,12 +601,6 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                         occurrence=occurrence,
                     )
                 )
-            if is_purchase_verb:
-                # "buys A at $X each, B, and C at $Z each" — the dobj
-                # obligation only bound A; recover the conjoined siblings
-                # and fold each as its own purchase (Quantity + Price
-                # when that sibling has its own 'each', or a flat 'for
-                # $N' price on a bare singular sibling).
                 for item, item_qty, price_value in _conjoined_purchase_items(reading, reg, dobj):
                     facts.append(
                         Quantity(
@@ -543,71 +624,23 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                                 occurrence=occurrence,
                             )
                         )
-        elif flat_price_value is not None:
-            # "a hat for $10" — a FLAT-priced purchase item with no
-            # explicit count and no distributive 'each': a single unit at
-            # the stated total price, so the purchase-total consumer's
-            # sum-over-priced-quantities (qty=1 × price) covers it
-            # unchanged. Order-independent: recover any conjoined siblings
-            # exactly as the counted-dobj branch above does.
-            facts.append(
-                Quantity(
-                    provenance=prov,
-                    entity=_lemma(subject),
-                    owner=_owner(subject),
-                    measure=_lemma(dobj),
-                    value=1.0,
-                    verb=verb_lemma,
-                    occurrence=occurrence,
-                    time=time_label,
-                )
-            )
-            facts.append(
-                Price(
-                    provenance=prov,
-                    item=_lemma(dobj),
-                    value=flat_price_value,
-                    verb=verb_lemma,
-                    occurrence=occurrence,
-                )
-            )
-            for item, item_qty, price_value in _conjoined_purchase_items(reading, reg, dobj):
+        elif dobj is not None and dobj.uid in quantifies:
+            # a value bound to dobj via a separate value unit ("has 5 of
+            # them") — same negated-clause decline as the two branches above.
+            if not negated_clause:
+                value_unit = quantifies[dobj.uid]
                 facts.append(
                     Quantity(
                         provenance=prov,
                         entity=_lemma(subject),
                         owner=_owner(subject),
-                        measure=_lemma(item),
-                        value=item_qty,
+                        measure=_lemma(dobj),
+                        value=float(value_unit.features["value"]),
                         verb=verb_lemma,
                         occurrence=occurrence,
                         time=time_label,
                     )
                 )
-                if price_value is not None:
-                    facts.append(
-                        Price(
-                            provenance=prov,
-                            item=_lemma(item),
-                            value=price_value,
-                            verb=verb_lemma,
-                            occurrence=occurrence,
-                        )
-                    )
-        elif dobj is not None and dobj.uid in quantifies:
-            value_unit = quantifies[dobj.uid]
-            facts.append(
-                Quantity(
-                    provenance=prov,
-                    entity=_lemma(subject),
-                    owner=_owner(subject),
-                    measure=_lemma(dobj),
-                    value=float(value_unit.features["value"]),
-                    verb=verb_lemma,
-                    occurrence=occurrence,
-                    time=time_label,
-                )
-            )
         elif verb_lemma == "be" and dobj is not None and dobj.sense() == "noun":
             facts.append(
                 Membership(

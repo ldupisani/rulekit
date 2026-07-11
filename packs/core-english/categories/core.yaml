@@ -58,6 +58,17 @@ categories:
       these forms, so the ask stays specific to the deficit phrasing and
       never widens via 'receive's broader membership (get/has/have/...).
       Members live in difg-mined.
+  negation:
+    parent: negator
+    notes: >
+      clause-level negation markers. learn.py's Quantity fold declines a
+      verb's numeric contribution whenever a negation-category token sits
+      in the SAME CLAUSE as that verb ("Tom does NOT have 5 apples" / "Tom
+      NEVER eats 5 apples") — decline-only, never computing negated
+      semantics (constitution rule 4). Scoped to single-token markers only;
+      multi-word negation ("no longer") is deliberately NOT a member here —
+      it needs its own phrase-level structural check, out of scope for this
+      increment.
 members:
   currency: [dollar]
   remnant_adj: [left]
@@ -69,6 +80,7 @@ members:
   spend_verb: [spend, spends, spent]
   more_dir: [more]
   less_dir: [fewer, less]
+  negation: [not]  # 'never' extends this from packs/difg-mined (its own lexicon)
 context_synonyms:
   appendage:
     gate: animal

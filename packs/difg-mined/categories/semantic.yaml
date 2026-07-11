@@ -331,6 +331,13 @@ members:
   - walked
   - walks
   - went
+  # 'never' lives in the difg-mined lexicon (not core-english); the
+  # 'negation' category itself is declared in core-english/categories/
+  # core.yaml — this pack only extends its membership with the mined word,
+  # so core-english-only registries (no difg-mined) still validate with
+  # just 'not'.
+  negation:
+  - never
   need_ask_verb:
   - need
   - needed
