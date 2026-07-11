@@ -572,6 +572,38 @@ asks:
       span_unit: "{span}"
       span_value: "{span.value}"
 
+  - id: ask/earn-span
+    # 'how much does WHO earn/make (in SPAN)?' — wage-earnings asks (rate
+    # x worked span). The verb is gated to the narrow wage_verb category
+    # (packs/arithmetic/categories/wage.yaml), not the general 'acquire'/
+    # 'produce' categories, so an unrelated 'how much did Mary buy' never
+    # matches here. The 'in SPAN' clause is OPTIONAL: a span may instead
+    # be stated in an earlier sentence ("Rob works 8 hours") and read off
+    # a plain quantity fact by the rate-span consumer itself. This id is
+    # sorted (alphabetically) before ask/how-much-bare-entity on purpose —
+    # both shapes consume the same units when no span clause is present,
+    # and the earlier id wins the deterministic tie (patterns.match_ask),
+    # so a wage-verb question is routed to rate-span instead of the
+    # event-fold, which never had a matching event to fold in the first
+    # place (dev-train probe: 0 correct answers from event-fold on any
+    # earn/make question — see mining candidate wage-span-earnings).
+    match:
+      question:
+        - {lit: how}
+        - {lit: much}
+        - {slot: aux, type: auxiliary}
+        - {slot: who, type: entity}
+        - {slot: verb, cat: wage_verb}
+        - opt:
+            - {lit: in}
+            - {slot: span, type: counted}
+    resolves:
+      consumer: rate-span
+      entity: "{who}"
+      measure: currency
+      span_unit: "{span}"
+      span_value: "{span.value}"
+
   - id: ask/is-membership
     match:
       question:

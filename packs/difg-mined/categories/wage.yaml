@@ -1,0 +1,18 @@
+format: rulekit/categories@1
+# Hand-curated (not auto-mined): a narrow gate for the wage-earnings ask
+# (packs/arithmetic/rules/core.yaml, ask/earn-span). 'earn'/'make' already
+# belong to the broader acquire/produce event categories in semantic.yaml
+# for the general event-fold — this category exists ONLY so the ask can
+# name them specifically without widening to every acquire/produce verb
+# (buy, bake, build, ...), mirroring the spend_verb pattern
+# (packs/core-english/categories/core.yaml): a narrow consumer gate living
+# alongside a broader semantic category, same lexeme tagged with both.
+categories:
+  wage_verb:
+    parent: verb
+    notes: >
+      'how much does WHO earn/make (in SPAN)?' — the rate x worked-span
+      ask (consumer rate-span). Multi-membership with acquire/produce is
+      intentional: those categories still drive the general event fold.
+members:
+  wage_verb: [earn, earns, earned, make, makes, made]

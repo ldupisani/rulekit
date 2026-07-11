@@ -494,6 +494,50 @@ included a since-reverted vocabulary increment; re-proven clean here on
 `mining/batch-2026-07-11e`.
 TEST look #21: pending — spent manually.
 
+## Increment 21: wage earnings asks (rate x worked span) (`83cc4cc`)
+
+'How much does WHO earn/make (in SPAN)?' previously routed unconditionally
+to the general event-fold ask (single-entity/bare-entity), which only
+sums literal earn/make EVENTS — it never reached the rate-span consumer
+even when a Rate fact ("$10 an hour") and a worked span ("Rob works 8
+hours") were both known and read from the text. A new ask
+(`packs/arithmetic/rules/core.yaml`, `ask/earn-span`) gates the verb slot
+on a new narrow `wage_verb` category (`packs/difg-mined/categories/wage.yaml`:
+earn/earns/earned/make/makes/made — multi-membership alongside the
+existing acquire/produce categories, mirroring the `spend_verb` pattern in
+`core-english/categories/core.yaml`) and routes to the SAME rate-span
+consumer used since increments 8-9, untouched in its unique-rate/bridging/
+conversion discipline. The 'in SPAN' clause is optional; its id sorts
+(alphabetically) before `ask/how-much-bare-entity` on purpose so the
+deterministic tie-break in `match_ask` sends a wage-verb question to
+rate-span instead of an event-fold that never had a matching event to
+fold. When the question names no span clause, a small, general extension
+in `answer.py`'s rate-span consumer (not earn/make-specific) reads the
+span off a standalone quantity fact for the entity in the rate's own
+per-unit, on the same unique-fact-or-decline discipline as the existing
+bridge lookup.
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(3772 items, 14/0 unchanged), dev-holdout diff NEUTRAL 0/0/0 (3701 items,
+14/0 unchanged), pytest 199 passed (was 193 + 6 new, now
+`tests/test_mining_increment_21.py`), suite 52/52, lint 0 errors / 1
+known-good warning (fraction-of-remnant / fraction-of-pool, same as
+increments 16-20). Shipped NEUTRAL on dev: no dev-train/dev-holdout item
+happened to be simple enough (a lone rate + a lone matching quantity
+fact, uncompounded by multi-day/multi-rate summation) to flip
+solved<->declined on this split. The mechanism is exercised and verified
+via the synthetic suite (span stated in its own separate sentence — the
+gap the event-fold ask could never close; span named directly in the
+question; the reused consumer's unit-conversion discipline firing
+unchanged through the new ask; decline-safety with no span fact at all;
+decline-safety with an ambiguous multi-span case; decline-safety against
+an unrelated acquire verb like 'buy' being pulled into the wage gate). This
+is a re-land: the candidate previously passed constitution review and
+(except for the interchangeable-measure increment) already re-gated
+cleanly on a staging base that included a since-reverted vocabulary
+increment; re-proven clean here on `mining/batch-2026-07-11e`.
+TEST look #22: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 Numbers below predate this session's work and need a fresh `rulekit

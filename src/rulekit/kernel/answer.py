@@ -230,8 +230,6 @@ def answer(
         # the one remaining parked piece.
         entity = query["entity"]
         measure = reg.plural_to_singular.get(query["measure"], query["measure"])
-        span_unit = reg.plural_to_singular.get(query["span_unit"], query["span_unit"])
-        span_value = float(query["span_value"])
         rates = [
             r for r in store.by_kind(Rate)
             if r.entity == entity
@@ -250,6 +248,27 @@ def answer(
                 "the span ask needs exactly one",
             )
         rate = rates[0]
+        if "span_unit" in query:
+            span_unit = reg.plural_to_singular.get(query["span_unit"], query["span_unit"])
+            span_value = float(query["span_value"])
+        else:
+            # the ask named no span in the QUESTION ("how much does Rob
+            # earn?") — a standalone quantity fact stated for the entity
+            # in the rate's OWN per-unit ("Rob works 8 hours") stands in
+            # for it, on the same unique-fact-or-decline discipline as
+            # the bridge lookup below: exactly one such fact, else decline.
+            spans = [
+                q for q in store.by_kind(Quantity)
+                if q.entity == entity and q.measure == rate.per
+            ]
+            if len(spans) != 1:
+                return Answer(
+                    "decline", None,
+                    f"no unique {rate.per!r} span known for {entity!r} to "
+                    "pair with the rate",
+                )
+            span_unit = rate.per
+            span_value = spans[0].value
         if span_unit == rate.per:
             k = span_value
         else:
