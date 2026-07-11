@@ -931,20 +931,68 @@ much money does Tom make?" -> 15) plus the ambiguity/decline probes in the
 synthetic suite.
 TEST look: pending — spent manually.
 
+## Increment 31: age asks (how old is WHO, over stated ages and older/younger relations) (`<pending-commit>`)
+
+Re-land of the batch-5 parked branch (`mining/parked/age-asks`), rebased onto
+current main via cherry-pick (clean — no conflicts this time; the earlier
+parking was against increments that have since landed and settled). Fresh
+stats: "no ask shape recognizes this question" = 2668 (largest bucket); cue
+scan over dev-train (3772 items) found 108 items with age cues (how old /
+years old), 65 with an explicit "how old is/was" ask. Probe "How old is his
+sister?" previously mis-routed to "no membership fact either way" — no age
+ask shape existed.
+
+Mechanism, three rules in `packs/arithmetic/rules/core.yaml`, no kernel
+change:
+1. `arithmetic/stated-age`: "WHO is N years old" (copula + counted noun +
+   literal 'old') emits a Quantity(measure='year') — no new consumer needed.
+2. `ask/how-old-is`: "how old is WHO" resolves via the EXISTING
+   single-entity consumer, exactly like the sibling how-much/how-many entity
+   asks. It outranks `ask/is-membership` on consumed-units specificity alone
+   (4 tokens vs 3), never by reordering (increment 21's alphabetical
+   ask-id tie-break lesson — watched, not triggered here).
+3. `arithmetic/dangling-comparative-relation`: a decline-safety rule with NO
+   emits. "X is N years older" with no "than Y" anchor was falling through
+   to the general SVO fold, which reads "is [N years]" as a bare stated
+   Quantity(N) — a confident-wrong once 'year' became an askable measure.
+   This rule only consumes the clause (suppressing the fold's misread); an
+   implicit-anchor comparative stays declined, not guessed.
+
+Also tags 'older'/'younger' into the existing `more_dir`/`less_dir` (delta)
+categories in `packs/difg-mined/categories/semantic.yaml` — both words were
+already members of the unrelated 'higher'/'lower' magnitude-comparative
+category but never of 'delta', so `arithmetic/anchored-relation-postfix`
+("X is N years older/younger than Y") never actually fired for age
+relations before this. Scoped to exactly these two words (quarantine-grepped
+clean).
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(3772 items, 14/0 unchanged), dev-holdout diff NEUTRAL 0/0/0 (3701 items,
+14/0 unchanged), pytest 258 passed (was 252 + 6 new, now
+`tests/test_mining_increment_31.py`), suite 52/52, lint 0 errors / 1
+known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) / 21
+info. Shipped NEUTRAL on dev: no dev-train/dev-holdout item alone exercises
+the full stated-age + relation chain end to end (typical for this pack) —
+the mechanism is proven directly by the synthetic suite (stated-age lookup,
+older/younger relation chaining in either narration order, dangling-
+comparative decline, future-age decline) plus the frequency estimate above.
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 Numbers below predate this session's work and need a fresh `rulekit
 stats` pass before trusting them.
 
 - **Parked, near-ready briefs from batch 5** (branches under
-  `mining/parked/`; all four passed constitution review and deferred only
+  `mining/parked/`; all passed constitution review and deferred only
   on cherry-pick conflicts against increments that have since landed — a
   fresh junior rebasing on current main should land them cheaply):
-  `need-as-goal`, `age-asks`, `attr-qualified-entities`,
+  `need-as-goal`, `attr-qualified-entities`,
   `state-verb-conjunction` (use `mining/parked/state-verb-conjunction-2`,
   the post-increment-24 attempt). Also `money-left-asks` — the MECHANISM
   passed gates; it was blocked ONLY for a lightly-edited GSM8K test item
-  (needs its tests reinvented from scratch, nothing else).
+  (needs its tests reinvented from scratch, nothing else). (`age-asks`
+  landed as increment 31.)
 
 - **Event-then-restate state disambiguation in `_entity_total`
   (answer.py)** — surfaced by /mine batch 3's failed `state-conjunction`

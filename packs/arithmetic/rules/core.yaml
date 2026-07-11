@@ -55,6 +55,30 @@ rules:
         offset: "item * sign(dir)"
         verb: "{verb}"
 
+  - id: arithmetic/dangling-comparative-relation
+    phase: read
+    description: >
+      "Emma is 2 years older" — a POSTFIX comparative with NO "than Y"
+      anchor at all. Resolving an IMPLICIT anchor (the previous sentence's
+      subject, say) is a different, unbuilt mechanism — declined on
+      purpose (precision before coverage). This rule emits NOTHING; it
+      exists only to CONSUME the clause so the general SVO fold does not
+      independently misread "is [N ITEM]" as a bare stated Quantity of N,
+      silently discarding the dangling comparative — a genuine
+      confident-wrong once anything queries that measure (mining candidate
+      age-asks, dev-holdout look: "is 2 years older" read as a stated
+      Quantity(2) once 'year' became an askable measure). Overlaps
+      anchored-relation-postfix's own span when "than Y" IS present; that
+      rule's Relation fact still emits normally — this one just adds a
+      harmless second (empty) consumption of the same tokens.
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: verb, cat: state}
+        - {slot: n, type: counted}
+        - {slot: dir, cat: delta}
+    emits: []
+
   - id: arithmetic/times-as-many
     phase: read
     description: >
@@ -450,6 +474,31 @@ rules:
         kind: membership
         is_fraction: true
 
+  - id: arithmetic/stated-age
+    phase: read
+    description: >
+      "Sara is 4 years old" — the copula age predicate: a stated Quantity
+      fact scoped to the DATA measure 'year' (the copula + a counted noun +
+      the literal 'old' is the grammatical skeleton; the counted noun's own
+      word is not restricted in Python — only in this pack's data). This
+      lets the general single-entity consumer answer "how old is WHO"
+      directly, and the already-shipped anchored-relation-postfix
+      synthesizer ("X is N years older/younger than Y") chain through it —
+      no new consumer, no date arithmetic, no 'in N years' futures.
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: verb, cat: state}
+        - {slot: n, type: counted}
+        - {lit: old}
+    consumes: [n]
+    emits:
+      - fact: quantity
+        entity: "{who}"
+        measure: year
+        value: n
+        verb: "{verb}"
+
   - id: arithmetic/goal-desire-quantity
     phase: read
     description: >
@@ -710,6 +759,21 @@ asks:
       measure: currency
       span_unit: "{span}"
       span_value: "{span.value}"
+
+  - id: ask/how-old-is
+    match:
+      question:
+        - {lit: how}
+        - {lit: old}
+        - {slot: verb, cat: state}
+        - {slot: who, type: name}
+    resolves:
+      consumer: single-entity
+      entity: "{who}"
+      # the DATA measure the stated-age rule commits to — matches its
+      # emitted Quantity's measure exactly, no category resolution needed
+      measure: year
+      verb: "{verb}"
 
   - id: ask/is-membership
     match:

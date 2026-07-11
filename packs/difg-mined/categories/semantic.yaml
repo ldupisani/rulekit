@@ -269,6 +269,18 @@ members:
   - flight
   - journey
   - trip
+  # 'older'/'younger' already tag 'higher'/'lower' (general magnitude
+  # comparatives) but NOT the arithmetic pack's 'delta' family (more_dir/
+  # less_dir) — a genuinely separate sibling category under 'comparative'.
+  # Without this, "X is N years older/younger than Y" never satisfies any
+  # `cat: delta` gate, so arithmetic/anchored-relation-postfix never
+  # consumes the sentence and it falls through to the general SVO fold,
+  # which reads "is [N years]" as a bare stated Quantity of N — a
+  # confident-wrong once anything queries measure 'year' (mining
+  # candidate age-asks, dev-holdout look). Scoped to exactly these two
+  # age-comparative words, not the rest of 'higher'/'lower'.
+  less_dir:
+  - younger
   lose:
   - ate
   - broke
@@ -342,6 +354,8 @@ members:
   - walked
   - walks
   - went
+  more_dir:
+  - older
   # 'never' lives in the difg-mined lexicon (not core-english); the
   # 'negation' category itself is declared in core-english/categories/
   # core.yaml — this pack only extends its membership with the mined word,
