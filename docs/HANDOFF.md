@@ -350,6 +350,54 @@ dev-holdout items matching the premise shape) is the coverage evidence
 in the meantime.
 TEST look: pending — spent manually.
 
+## Increment 18: flat-priced purchase items (`2545a7f`)
+
+"a hat for $10" mixed with "each"-priced items in the same purchase list
+("Tom buys 3 shirts at 5 dollars each and a hat for 10 dollars"). The
+purchase-total consumer already sums qty × price over every purchase-verb
+Quantity that has a matching Price; the gap was that a SINGULAR purchased
+item (no explicit count, or an explicit count of exactly 1) stated with a
+flat 'for $N'/'at $N' total and no distributive 'each' never got a Price
+fact at all. Two general causes, both fixed in `learn.py` only, gated on
+the existing purchase category:
+
+1. A shared clause-boundary scan (`_is_rate`'s DISTRIBUTIVE quantifier
+   lookahead) let a LATER conjunct's 'each' leak backward across a
+   comma/conjunction and misclassify an EARLIER flat-priced item as a
+   rate, aborting its whole fact extraction. `_is_rate` and
+   `_price_each_value` gained an opt-in `stop_at_list_boundary` flag —
+   off by default, set only by the purchase-verb call site (increment 11
+   invariant: shared clause-boundary/rate-marker scans are never widened
+   globally).
+2. `_conjoined_purchase_items`' item-picker preferred the currency noun
+   over the purchased item itself when the item carried no explicit
+   digit ("a hat for 10 dollars" picked 'dollars'). A new
+   `_flat_purchase_price` helper resolves a flat total via the 'for'/'at'
+   preposition's own resolved ANCHOR obligation (structural binding, not
+   position) — a beneficiary/duration/exchange 'for' that anchors
+   elsewhere, or whose object isn't a currency noun, returns None and the
+   item declines exactly as before. Only fires at quantity exactly 1
+   (explicit '1 hat' or implicit 'a hat') — qty > 1 with a flat 'for $N'
+   stays genuinely ambiguous (total vs. each) and unbuilt, matching the
+   class named at ship time. `answer.py` untouched (increment 15
+   precedent: Price stays excluded from `_fact_values_by_sentence`, read
+   only on arithmetic-log use).
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(14/0 unchanged), dev-holdout diff NEUTRAL 0/0/0 (14/0 unchanged), pytest
+175 passed (was 167 + 8 new, now `tests/test_mining_increment_18.py`),
+suite 52/52, lint 0 errors / 1 known-good warning (fraction-of-remnant /
+fraction-of-pool, same as increments 16-17). Shipped NEUTRAL on dev, same
+situation as increments 16-17: no dev-train/dev-holdout item happens to
+hit this exact flat-price/each-price mixed-list pairing on this slice;
+the mechanism is exercised and verified via the synthetic suite (flat
+item first, flat item second, qty>1 flat-total decline-safety,
+beneficiary/duration 'for'-PP decline-safety, non-currency 'for'-object
+decline-safety) and the frequency estimate (101 dev-train / 108
+dev-holdout items matching the premise shape) is the coverage evidence in
+the meantime.
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 Numbers below predate this session's work and need a fresh `rulekit
