@@ -306,6 +306,16 @@ class PartitionQuantity(Fact):
     saturate.py) so the general entity-less "how many NOUN are there" ask
     answers it directly, with no bespoke consumer.
 
+    `is_fraction` marks a FRACTIONAL partition ("25%"/"half" OF THEM are
+    ADJ|NOUN, the pattern's PREMISE-side counterpart to `is_fraction=False`'s
+    stated cardinal): `value` starts as the raw fraction (0-1), and the
+    collection synthesizer — once it resolves the pronoun to the real prior
+    collection, exactly as the cardinal form does — additionally multiplies
+    that fraction against the collection's own total before re-emitting, at
+    which point the resolved fact carries a real count and `is_fraction`
+    goes back to False. An unresolvable total (ambiguous or absent pool)
+    leaves it unresolved, same decline discipline as fraction-of-pool.
+
     EXISTENCE, not use, counts as "read" for value accounting (like Quantity/
     FractionQuantity, unlike Rate/Price): this fact IS the captured stated
     count, not a dormant multiplier that arithmetic must actively consult —
@@ -318,6 +328,7 @@ class PartitionQuantity(Fact):
     verb: str = "be"
     polarity: bool = True
     kind: str = "adjective"
+    is_fraction: bool = False
 
     def key(self) -> tuple:
         return ("partition_quantity", self.collection, self.attribute, self.verb)

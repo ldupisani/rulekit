@@ -157,16 +157,35 @@ def check(
                 )
         # a PartitionQuantity resolves into ANOTHER PartitionQuantity (its
         # collection replaced by the real measure), never a Quantity — the
-        # 'derived' set above doesn't cover it, so check separately.
-        resolved_partitions = {
+        # 'derived' set above doesn't cover it, so check separately. A
+        # CARDINAL partition's value never changes across resolution, so it
+        # matches on (attribute, value, verb, sentence) exactly as before.
+        # A FRACTIONAL partition's value legitimately changes (the raw
+        # fraction becomes a real count once sized against the collection's
+        # total) — it matches on shape alone (attribute, verb, sentence);
+        # dropping value from that key is strictly weaker and only ever
+        # consulted for is_fraction=True facts, so cardinal matching is
+        # untouched.
+        resolved_by_value = {
             (p.attribute, p.value, p.verb, p.provenance.sentence)
+            for p in store.by_kind(PartitionQuantity)
+            if p.provenance.source == "synth/partition"
+        }
+        resolved_by_shape = {
+            (p.attribute, p.verb, p.provenance.sentence)
             for p in store.by_kind(PartitionQuantity)
             if p.provenance.source == "synth/partition"
         }
         for p in store.by_kind(PartitionQuantity):
             if p.provenance.source == "synth/partition":
                 continue
-            if (p.attribute, p.value, p.verb, p.provenance.sentence) not in resolved_partitions:
+            if p.is_fraction:
+                resolved = (p.attribute, p.verb, p.provenance.sentence) in resolved_by_shape
+            else:
+                resolved = (
+                    p.attribute, p.value, p.verb, p.provenance.sentence
+                ) in resolved_by_value
+            if not resolved:
                 return GuardVeto(
                     "unresolved-derivation",
                     f"'{p.value} of them are {p.attribute}' never resolved "

@@ -803,6 +803,55 @@ the sentence doesn't blank an unrelated fold, and the pre-existing copula
 "is not" shape still declines as before) is the coverage evidence.
 TEST look: pending — spent manually.
 
+## Increment 28: fraction/percent partitions (N% / half of them are ADJ|NOUN) (`<pending-commit>`)
+
+The PREMISE-side counterpart of increments 16/17's count-valued partition
+machinery ("N of them are ADJ/NOUN"): "25% of them are red" / "Half of the
+10 apples are red" both declined `0 partition facts known` even though the
+ask shape already matched — only the fact was missing. Scratchpad cue scan:
+223 dev-train items contain "N% of", 61 contain "half/third/quarter/% of
+them/the ... are"; feeds the ~171 "no quantity known: partitions" and part
+of the 2669 "no ask shape" buckets on the worklist.
+
+Mechanism (YAML-first): two new pattern rules in
+`packs/arithmetic/rules/core.yaml` (partition-attribute-fraction,
+partition-membership-fraction) mirror the existing partition-attribute/
+partition-membership rules but gate on `{type: fraction}` instead of
+`{type: number}`, emitting `PartitionQuantity` with the raw fraction (0-1)
+as value and a new `is_fraction: bool = False` marker (default preserves
+every existing cardinal-form fact unchanged — model.py). In
+`saturate.py`'s `_partition_synth` (the increment-16/17
+`synth/partition-of-collection`, extended not widened): once the
+plural-pronoun collection resolves to the real prior measure exactly as
+before, a fractional partition is additionally sized against that
+collection's own total-as-of-this-sentence (`_pool_before`, the same
+helper `synth/fraction-of-pool` already uses) before being re-emitted as a
+real count (`is_fraction` reset to False); an unresolvable total declines
+exactly like fraction-of-pool's own discipline. `guards.py`'s
+unresolved-derivation check drops `value` from its identity key only for
+`is_fraction=True` facts (a fractional partition's value legitimately
+changes across resolution, fraction -> count); the cardinal form's guard
+match is untouched, still exact-value. Reuses the increment-16/17 consumer
+(`partition-complement` in answer.py) and the membership-count companion
+synth completely unchanged — the resolved fact's `collection` field is
+always the real measure name, never the raw pronoun, so
+`partition-complement`'s `p.collection == item` filter naturally excludes
+the still-pronoun-collection original.
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(3772 items, 14/0 unchanged), dev-holdout diff NEUTRAL 0/0/0 (3701 items,
+14/0 unchanged), pytest 239 passed (was 233 + 6 new, now
+`tests/test_mining_increment_28.py`), suite 52/52, lint 0 errors / 1
+known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) /
+22 info. Shipped NEUTRAL on dev: 0 SOLVED because no sampled dev-train/
+dev-holdout item's grammatical shape is a full-commit fix on this slice
+(other declines in those documents remain) — the mechanism is proven via
+`rulekit solve` on synthetic probes matching the brief's own evidence
+sentences ("25% of them are red", "Half of the 10 apples are red"), with
+the decline discipline (ambiguous collection, no prior collection,
+unresolved total) holding throughout.
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 Numbers below predate this session's work and need a fresh `rulekit

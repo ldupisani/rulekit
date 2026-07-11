@@ -305,7 +305,15 @@ def _partition_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
     fraction-of-pronoun uses (never document-level pronoun binding, which
     deliberately excludes plural pronouns). Ambiguous or absent context
     (zero or more than one distinct measure known before this sentence)
-    leaves it unresolved — the guard declines rather than guess."""
+    leaves it unresolved — the guard declines rather than guess.
+
+    A FRACTIONAL partition ('25% of THEM are red', `is_fraction=True`) is
+    resolved the same way, then additionally sized against the resolved
+    collection's own total-as-of-this-sentence — exactly the pool
+    `synth/fraction-of-pool` uses — before being re-emitted as a real count
+    (`is_fraction=False`). An unresolvable total (no or ambiguous prior
+    quantity for the measure) leaves it unresolved this round, same as an
+    unresolved collection."""
     from .model import PartitionQuantity
 
     out: list[Fact] = []
@@ -320,13 +328,22 @@ def _partition_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
         if len(candidates) != 1:
             continue
         (measure,) = candidates
+        value = pq.value
+        if pq.is_fraction:
+            total = _pool_before(
+                store, reg, pq.provenance.sentence, measure, log, "synth/partition"
+            )
+            if total is None or total <= 0:
+                continue
+            value = evaluate(f"{pq.value} * {total}", {}, log, source="synth/partition")
         out.append(
             PartitionQuantity(
                 provenance=Provenance(
                     source="synth/partition", sentence=pq.provenance.sentence
                 ),
-                collection=measure, attribute=pq.attribute, value=pq.value,
+                collection=measure, attribute=pq.attribute, value=value,
                 verb=pq.verb, polarity=pq.polarity, kind=pq.kind,
+                is_fraction=False,
             )
         )
     return out

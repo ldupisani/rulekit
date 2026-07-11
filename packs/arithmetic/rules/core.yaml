@@ -395,6 +395,61 @@ rules:
         verb: "{verb}"
         kind: membership
 
+  - id: arithmetic/partition-attribute-fraction
+    phase: read
+    description: >
+      "25% of THEM are red" / "Half of THEM are red" — the FRACTIONAL
+      counterpart of partition-attribute: a stated PROPORTION (not a
+      cardinal) of a prior collection shares an attribute. Resolved
+      identically to partition-attribute (the plural pronoun resolves
+      against the unique prior collection); the synthesizer additionally
+      sizes the fraction against that collection's own total before
+      committing, so an unresolvable total (ambiguous or absent pool)
+      leaves it unresolved exactly like fraction-of-pool.
+    match:
+      sentence:
+        - {slot: f, type: fraction}
+        - {lit: of}
+        - {slot: coll, type: pronoun}
+        - {slot: verb, type: verb}
+        - {slot: attr, type: adjective}
+    consumes: [f]
+    emits:
+      - fact: partition_quantity
+        collection: "{coll}"
+        attribute: "{attr}"
+        value: "f"
+        verb: "{verb}"
+        is_fraction: true
+
+  - id: arithmetic/partition-membership-fraction
+    phase: read
+    description: >
+      "25% of THEM are dogs" — the FRACTIONAL counterpart of
+      partition-membership: a stated PROPORTION of a prior collection ARE a
+      plural common noun, not an adjective. Resolved identically to
+      partition-membership once the fraction sizes against the collection's
+      total (see partition-attribute-fraction); the same companion
+      membership synth then emits a Quantity for the named subset noun, so
+      the general entity-less "how many NOUN are there" ask answers it
+      directly — no bespoke consumer needed.
+    match:
+      sentence:
+        - {slot: f, type: fraction}
+        - {lit: of}
+        - {slot: coll, type: pronoun}
+        - {slot: verb, type: verb}
+        - {slot: attr, type: noun}
+    consumes: [f]
+    emits:
+      - fact: partition_quantity
+        collection: "{coll}"
+        attribute: "{attr}"
+        value: "f"
+        verb: "{verb}"
+        kind: membership
+        is_fraction: true
+
   - id: arithmetic/goal-desire-quantity
     phase: read
     description: >
