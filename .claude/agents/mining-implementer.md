@@ -99,6 +99,12 @@ One commit on your branch containing everything:
 the gate numbers. Do NOT edit `docs/HANDOFF.md` or `docs/methodology.md` —
 the integrator owns HANDOFF (merge-conflict avoidance). Do not push.
 
+Stage by NAMED PATH only (`git add src/... packs/... tests/...`) — never
+`git add -A`/`git add .`: your worktree contains untracked infrastructure
+(the `projects/gsm8k/data` symlink) that must never enter a commit. Before
+committing, check `git status --porcelain` and confirm every staged path is
+one you intended.
+
 ## FORBIDDEN — no exceptions
 
 - `--slice test`, `--spend-test-look`, anything touching `test-ledger.jsonl`.

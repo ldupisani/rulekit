@@ -67,7 +67,11 @@ increment number to assign is NOT an input — you derive it in step 4.
    mechanism, files, gate numbers, "TEST look: pending — spent manually").
 5. **Squash.** Collapse the pick + finalization into ONE commit:
    `git reset --soft $PRE && git commit -m "Mining increment <N>: <class_name>"`
-   with a body carrying mechanism + gate numbers.
+   with a body carrying mechanism + gate numbers. Stage finalization edits by
+   NAMED PATH only — never `git add -A`/`git add .` (the staging worktree
+   contains the untracked `projects/gsm8k/data` symlink and snapshot files
+   that must never enter a commit). Before committing, check
+   `git status --porcelain` and confirm every staged path is intended.
 6. **Advance baselines** so the next candidate measures only its own delta:
    re-snapshot `staging-base-train.json` / `staging-base-holdout.json` at the
    new HEAD, and record the new pytest count.
