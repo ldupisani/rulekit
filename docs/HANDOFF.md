@@ -16,13 +16,14 @@ every increment through the gates).
 **Current numbers (all verified at head):**
 - dev-train: 14 correct / 0 wrong (3,772 items, 100% precision)
 - dev-holdout: 14 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 141 · lint: 0 errors, 1 intended warning
-- TEST ledger (13 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- curated suite: 52/52 · pytest: 146 · lint: 0 errors, 1 intended warning
+- TEST ledger (14 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (look #12) →
-  **6/1 (85.7%, look #13) ← live** — looks #12–#13 covered the first
-  /mine batch (increments 12–13, both dev-NEUTRAL); precision held both times
+  6/1 (look #13) → **6/1 (85.7%, look #14) ← live** — looks #12–#13
+  covered the first /mine batch (increments 12–13), #14 the modal split
+  (increment 14); precision held every time
 - The looks #12–#13 walk was the first spent from a /mine staging branch:
   fast-forward main to each increment's commit, one look each, from the
   main checkout (the ledger lives in its gitignored snapshots dir).
@@ -203,6 +204,35 @@ and the stated-bridge-overrides-generic-conversion case) are the
 coverage evidence.
 TEST look #13: 6/1 (85.7%) — precision HELD vs look #12, increment kept.
 
+## Increment 14: modal-verb subject binding (`0eeaa76`)
+
+"He can read 50 pages an hour" bound `read`.subject to 'can': coverage
+arbitration preferred noun-'can' because the auxiliary reading left the
+unit orphaned, and adjacency then made it the unique subject candidate.
+Three coordinated structural pieces (no word list entered Python):
+
+1. **`modal` sense split from `auxiliary`** (packs change: the 8
+   difg-mined modals can/could/will/would/should/may/might/must; do/does/
+   did stay `auxiliary` in core-english). Modals carry meaning: the
+   pattern layer's `auxiliary` token no longer matches them, so factual
+   ask shapes can't answer capacity questions — caught live by the dev
+   gate as a DECL→WRONG ("How many models CAN she buy now?" answered by
+   summing a hypothetical 'buy 30' event; expected 27 got 30).
+2. **Disconnected-unit scoring** (`obligations._coverage_score`): orphan
+   counting generalized to units with no MET obligation that are nobody's
+   binding target; auxiliary/modal function words exempt (they are
+   licensed by the verb complex / ask cues, not competing content words).
+3. **Article licensing** (`obligations._article_licenses_noun`): an
+   article immediately left (crossing only adjectives) rules out the
+   auxiliary/modal sense — "A can costs $3" stays a nominal.
+
+Gates: dev-train diff NEUTRAL 0/0/0 (14/0), dev-holdout diff NEUTRAL
+0/0/0 (14/0), pytest 146 (5 new synthetic in
+`tests/test_mining_increment_14.py`), suite 52/52, lint 0 errors.
+Modal-stated rates now solve end to end ("Machines can produce 5 toys an
+hour. How many toys do machines produce in 2 hours?" → 10).
+TEST look #14: 6/1 (85.7%) — precision HELD vs look #13, increment kept.
+
 ## The next mining worklist (from the last close-miss scan)
 
 Numbers below predate this session's work and need a fresh `rulekit
@@ -229,13 +259,17 @@ stats` pass before trusting them.
   13), bucket did not move.** The 2-rate bridge (pages/hour × hours/day ×
   days) is implemented in the rate-span consumer and gated clean, but
   none of the 14 dev "0 rates known" items are actually this exact shape
-  on inspection. The one structurally-close item ("Tom reads 10 hours
-  over 5 days. He can read 50 pages an hour...") is blocked by a modal-
-  verb subject-binding bug ("He can read" binds subject to 'can', not
-  'he'/'Tom') — a grammar/obligation-attachment gap, not a synthesizer
-  gap. Fixing that binding bug is the next step toward actually moving
-  this bucket; re-run `rulekit stats` after to see if other items in the
-  bucket are similarly blocked rather than genuinely rate-chain-shaped.
+  on inspection. The modal-verb subject-binding bug that blocked the
+  structurally-closest item is FIXED (increment 14, `0eeaa76`: `modal`
+  sense split from `auxiliary`; "He can read 50 pages an hour" now binds
+  subject through the pronoun, and modal-stated rates solve end to end) —
+  but that item still declines on its remaining shape (10 hours over 5
+  days needs an hours-per-day division the bridge doesn't synthesize).
+  Re-run `rulekit stats` to see what the bucket looks like post-fix.
+  NOTE for future capacity asks: "how many X can she buy" is deliberately
+  NOT a factual ask — the pattern layer's `auxiliary` token no longer
+  matches modals (the kirsty DECL→WRONG the dev gate caught). A capacity
+  ask shape (budget ÷ unit price) is a separate future class.
 - **Passive voice (blocks some of the 9 "missing a total" items,
   confirmed by tracing one example)**: "half of the $60 **was earned by**
   Lisa" garbles into nonsense Predication facts (subject='dollar',
