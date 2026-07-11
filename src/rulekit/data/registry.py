@@ -55,6 +55,7 @@ class Registry:
     word_categories: Mapping[str, tuple[str, ...]]
     category_antonyms: Mapping[str, str]
     category_polarity: Mapping[str, int]
+    interchangeable_categories: frozenset[str]
     context_synonyms: Mapping[str, tuple[str, tuple[str, ...]]]  # concept -> (gate, forms)
     attrs: Mapping[str, Mapping[str, float]]
     part_counts: Mapping[str, str]
@@ -168,6 +169,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
     category_parents: dict[str, str] = {}
     category_antonyms: dict[str, str] = {}
     category_polarity: dict[str, int] = {}
+    interchangeable_categories: set[str] = set()
     category_members: dict[str, list[str]] = {}
     context_synonyms: dict[str, tuple[str, tuple[str, ...]]] = {}
     attrs: dict[str, dict[str, float]] = {}
@@ -182,6 +184,8 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                     category_antonyms[name] = cdef.antonym
                 if cdef.polarity is not None:
                     category_polarity[name] = cdef.polarity
+                if cdef.interchangeable:
+                    interchangeable_categories.add(name)
             for cat, words in doc.members.items():
                 category_members.setdefault(cat, []).extend(words)
             for concept, syn in doc.context_synonyms.items():
@@ -327,6 +331,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
         word_categories=_freeze({k: tuple(sorted(set(v))) for k, v in word_categories.items()}),
         category_antonyms=_freeze(category_antonyms),
         category_polarity=_freeze(category_polarity),
+        interchangeable_categories=frozenset(interchangeable_categories),
         context_synonyms=_freeze(context_synonyms),
         attrs=_freeze({k: _freeze(v) for k, v in attrs.items()}),
         part_counts=_freeze(part_counts),

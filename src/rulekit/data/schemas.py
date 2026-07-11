@@ -64,6 +64,11 @@ class CategoryDef(StrictModel):
     # more=+1). Consumed by sign(<slot>) in rule emit expressions — the
     # polarity is DATA, derived nowhere else (the difg LOSS_VERBS lesson).
     polarity: Literal[1, -1] | None = None
+    # Members denominate the SAME underlying stuff (currency: money/dollars/
+    # pounds). Only such categories let an ask noun with no facts of its own
+    # resolve to the unique in-store member — sibling count nouns (cat/dog in
+    # 'animal') never stand in for each other.
+    interchangeable: bool = False
     notes: str | None = None
 
 

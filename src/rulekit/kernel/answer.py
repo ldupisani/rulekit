@@ -38,7 +38,12 @@ def _resolve_measure(measure: str, store: FactStore, reg: Registry) -> str | Non
     - a CATEGORY name ('currency' in a bare how-much ask) or a category
       member with no facts of its own ('money') resolves to the UNIQUE
       in-store measure of that category — one currency in play uses it,
-      mixed currencies are genuinely ambiguous and return None (decline);
+      mixed currencies are genuinely ambiguous and return None (decline).
+      ONLY categories marked `interchangeable` in the packs resolve this
+      way: currency denominations stand in for each other; sibling count
+      nouns never do (a 'cats' ask must not answer from 'dog' facts — a
+      real confident-wrong: "20 pets. 8 of them are dogs. How many cats?"
+      answered 8 via the unique in-store 'animal' member);
     - anything else passes through to the normal not-known decline.
     """
     singular = reg.plural_to_singular.get(measure, measure)
@@ -49,6 +54,7 @@ def _resolve_measure(measure: str, store: FactStore, reg: Registry) -> str | Non
         [singular] if singular in reg.category_parents
         else list(reg.word_categories.get(singular, ()))
     )
+    categories = [c for c in categories if c in reg.interchangeable_categories]
     if not categories:
         return singular
     present = sorted(

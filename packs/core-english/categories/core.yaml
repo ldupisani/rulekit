@@ -23,9 +23,13 @@ categories:
   delta: {parent: comparative, notes: "direction words in 'N more/fewer X than Y'"}
   currency:
     parent: noun
+    interchangeable: true
     notes: >
       money words. A bare how-much ask resolves `measure: currency` to the
       UNIQUE currency measure in the facts; mixed currencies decline.
+      `interchangeable` because denominations name the same stuff — the ONLY
+      category allowed to resolve a factless ask noun to its in-store
+      sibling (cat/dog in 'animal' must never stand in for each other).
   aggregate_noun:
     parent: noun
     notes: "'the NUMBER of X' / 'the AMOUNT of X' — frame nouns for ratio rules"

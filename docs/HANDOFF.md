@@ -724,6 +724,46 @@ re-gated cleanly on a staging base that included a since-reverted
 vocabulary increment; re-proven clean here on `mining/batch-2026-07-11e`.
 TEST look #26: pending — spent manually.
 
+## Increment 26: category-sibling measure resolution is opt-in (interchangeable categories) (`<pending>`)
+
+User-reported confident-wrong: "Tom has 20 pets. 8 of them are dogs. How
+many cats are there?" answered 8 — `_resolve_measure` let an ask noun with
+no facts of its own resolve to the UNIQUE in-store member of its semantic
+category (here 'animal'), so the factless 'cat' ask silently borrowed the
+'dog' fact. That sibling-resolution behavior was built for currency
+("money" → the one currency actually in play) and over-applied to
+concrete count nouns generally, turning any two-sibling-noun item into a
+confident wrong rather than a decline.
+
+Mechanism (kernel-structural, no lexicon): categories now declare an
+`interchangeable: bool` field (`schemas.py`'s `CategoryDef`); only
+`currency` sets it `true` in `packs/core-english/categories/core.yaml`.
+Both category-sibling resolution paths (`registry.py`'s category-member
+lookup and `answer.py`'s `_resolve_measure` fallback) require
+`interchangeable` before letting an ask noun stand in for a same-category
+sibling with its own facts. A category that doesn't opt in now declines
+instead of borrowing a sibling's number — the ask noun still resolves
+normally from its OWN facts when it has any (the fix only removes the
+borrow-from-sibling fallback for non-interchangeable categories).
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(3772 items, 14/0 unchanged), dev-holdout diff NEUTRAL 0/0/0 (3701 items,
+14/0 unchanged), pytest 227 passed (was 222 + 5 new, now
+`tests/test_mining_increment_26.py`), suite 52/52, lint 0 errors / 1
+known-good warning (fraction-of-remnant / fraction-of-pool, unchanged).
+Shipped NEUTRAL on dev: no dev-train/dev-holdout item currently exercises
+two same-category sibling count nouns on this slice; the synthetic suite
+(sibling noun never stands in, with and without partition machinery;
+currency still interchangeable; an ask noun's own facts still resolve;
+both siblings with facts each answer from their own measure) is the
+coverage evidence. This is a re-land: the candidate previously passed
+constitution review and had already re-gated cleanly on a staging base
+that included a since-reverted vocabulary increment (unlike its
+batch-mates, its own gate outcome was also clean on that prior base); this
+run re-proves the gate on `mining/batch-2026-07-11e`, the corrected
+staging lineage, from scratch.
+TEST look #27: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 Numbers below predate this session's work and need a fresh `rulekit
