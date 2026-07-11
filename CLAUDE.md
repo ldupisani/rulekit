@@ -1,5 +1,8 @@
 # rulekit
 
+**Continuing a session? Read `docs/HANDOFF.md` first** — current numbers,
+baselines, the re-landing plan, and the hard-won invariants.
+
 Grammar-driven reading & reasoning engine. Small deterministic kernel, declarative YAML rule
 packs, no LLM at runtime. Architecture: `docs/architecture.md`. Measurement discipline:
 `docs/methodology.md` (DEV/TEST firewall, precision before coverage — read before any GSM8K work).
