@@ -98,3 +98,16 @@ decline→correct with zero new wrongs on dev, (b) admit ONE word (or one
 tight family) per increment so a TEST drop identifies its culprit, and
 (c) expect the TEST look to be the real gate. The implementer protocol
 now requires the permissive scan for any vocabulary-admitting increment.
+
+**Update (look #32, 2026-07-11): the batch culprit is IDENTIFIED — fruit/fruits.**
+Batch 5 re-admitted the fruit family alone under the new one-family-per-
+increment rule (increment 31, permissive-scan clean, all dev gates
+NEUTRAL) and TEST dropped to exactly the look #20 signature: 6/2, 75.0%.
+One word family, one look, culprit attributed — the isolation discipline
+converted a ~4-look bisection into a single attributable revert.
+fruit/fruits are now in packs/difg-mined/quarantine.yaml as TEST-measured
+poison (the reviewer greps quarantine, so re-admission is blocked until
+the underlying mechanism wrong is found and fixed). Whatever 'fruit'
+unlocks commits a wrong via a mechanism dev never exercises — finding
+THAT wrong from the dev side (permissive scan over fruit-containing
+declines, looking for near-miss commits) is the durable fix path.

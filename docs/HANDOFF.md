@@ -1,7 +1,7 @@
 # Session handoff — 2026-07-11
 
 Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
-State below is committed through `38fc2a3` on `main` (github.com/ldupisani/rulekit;
+State below is committed through `be038b3` on `main` (github.com/ldupisani/rulekit;
 check `git status`/`git log origin/main..HEAD` before assuming push parity).
 
 ## Where the project is
@@ -16,8 +16,8 @@ every increment through the gates).
 **Current numbers (all verified at head):**
 - dev-train: 14 correct / 0 wrong (3,772 items, 100% precision)
 - dev-holdout: 14 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 227 · lint: 0 errors, 1 intended warning
-- TEST ledger (27 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- curated suite: 52/52 · pytest: 252 · lint: 0 errors, 1 intended warning
+- TEST ledger (32 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -27,10 +27,13 @@ every increment through the gates).
   docs/negative-results.md; main reset to the look-#19 state and dev
   verified item-identical, so 6/1 restored without a confirmation look) →
   6/1 (#21) → 6/1 (#22) → 6/1 (#23) → 6/1 (#24) → 6/1 (#25) → 6/1 (#26) →
-  **6/1 (85.7%, look #27) ← live** — #12–#13 /mine batch 1, #14 the modal
-  split, #15–#16 batch 2, #17–#19 batch 3, #20 the vocab revert, #21–#27
-  the batch-4 re-land (increments 20–26 incl. the interchangeable-measure
-  confident-wrong fix); precision held on every surviving increment
+  6/1 (85.7%, look #27) → 6/1 (#28) → 6/1 (#29) → 6/1 (#30) → 6/1 (#31) →
+  6/2 (75.0%, look #32: the fruit/fruits family alone, REVERTED — and the
+  look #20 culprit thereby IDENTIFIED; fruit is now quarantined, see
+  docs/negative-results.md) → **6/1 (85.7%) ← live at increment 30** —
+  #12–#13 batch 1, #14 the modal split, #15–#16 batch 2, #17–#19 batch 3,
+  #20 vocab revert, #21–#27 batch-4 re-land, #28–#32 batch 5 (increments
+  27–30 held; 31 reverted); precision held on every surviving increment
 - The looks #12–#13 walk was the first spent from a /mine staging branch:
   fast-forward main to each increment's commit, one look each, from the
   main checkout (the ledger lives in its gitignored snapshots dir).

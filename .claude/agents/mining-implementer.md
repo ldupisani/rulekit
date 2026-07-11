@@ -96,9 +96,14 @@ Write `tests/test_mining_<slug>.py` — slug-named; the integrator assigns the
 final increment number and renames it. NEVER a GSM8K string: invent synthetic
 problems in the style of `tests/test_mining_increment_11.py` (module-scoped
 `full_registry` fixture compiling the three packs, `pytest.skip` when
-`packs/difg-mined` is absent). The module docstring names the class and the
-mechanism, and states "Synthetic only." Include at least one decline-safety
-test (an input your mechanism must NOT answer).
+`packs/difg-mined` is absent). "Invent" means FROM SCRATCH: if your scenario
+started from a dev item you inspected, change EVERY proper noun, number, and
+object before it may appear in a test — a "lightly edited" corpus item is a
+DEV leak and the reviewer greps the parquet for it (this has blocked three
+candidates already: same names, same numbers, same items). The module
+docstring names the class and the mechanism, and states "Synthetic only."
+Include at least one decline-safety test (an input your mechanism must NOT
+answer).
 
 ## 6. Commit
 

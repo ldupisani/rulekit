@@ -195,6 +195,18 @@ words:
     - animal
     reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
       Re-admit only through the firewall.'
+  fruit:
+    tags:
+    - fruit
+    reason: 'TEST-measured poison: admitting fruit/fruits unlocked a NEW confident-wrong
+      on TEST twice (look #20 in a 12-word batch at 75.0%, look #32 as a lone family at
+      75.0% — the isolation identified it as the batch culprit). See
+      docs/negative-results.md. Do not re-admit without a mechanism fix for whatever it
+      unlocks, proven by permissive scan AND a fresh TEST look.'
+  fruits:
+    tags:
+    - fruit
+    reason: 'TEST-measured poison: plural of fruit — see the fruit entry.'
   garment:
     tags:
     - clothing
