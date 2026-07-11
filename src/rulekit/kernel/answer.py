@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from ..data.registry import Registry
 from .evaluate import ArithmeticLog, evaluate
 from .facts import FactStore
-from .model import Membership, Predication, Price, Quantity, Rate, Reading
+from .model import Membership, PartitionQuantity, Predication, Price, Quantity, Rate, Reading
 from .patterns import match_ask
 
 
@@ -405,6 +405,51 @@ def answer(
             "number",
             evaluate(f"abs({ta} - {tb})", {}, log, source="difference"),
             f"|{a} - {b}| of {singular!r}",
+        )
+
+    if consumer == "partition-complement":
+        # "N of them are ADJ" premises name a subset of a collection; the
+        # ask ("how many X are ADJ" / "how many X are not ADJ") either
+        # reads the named subset directly or takes its EXACT complement
+        # (total minus that one subset — always correct regardless of how
+        # many OTHER subsets the collection has, since it is the
+        # complement of THIS attribute specifically, never an
+        # exhaustive-enumeration assumption).
+        item = reg.plural_to_singular.get(query["item"], query["item"])
+        attribute = query["attribute"]
+        negated = query.get("negated") == "true"
+        parts = [
+            p for p in store.by_kind(PartitionQuantity)
+            if p.collection == item and p.attribute == attribute and p.polarity
+        ]
+        if len(parts) != 1:
+            return Answer(
+                "decline", None,
+                f"{len(parts)} partition facts known for {item!r}/{attribute!r}",
+            )
+        part = parts[0]
+        if not negated:
+            return Answer(
+                "number", part.value, f"{part.value} of {item!r} are {attribute!r}"
+            )
+        entities = sorted(
+            {q.entity for q in store.by_kind(Quantity) if q.measure == item}
+        )
+        if len(entities) != 1:
+            return Answer(
+                "decline", None,
+                f"{len(entities)} entities hold {item!r} — the partition "
+                "total needs exactly one",
+            )
+        total = _entity_total(store, reg, entities[0], item, log)
+        if total is None:
+            return Answer(
+                "decline", None, f"{entities[0]!r} has no resolvable total for {item!r}"
+            )
+        return Answer(
+            "number",
+            evaluate(f"{total} - {part.value}", {}, log, source="partition-complement"),
+            f"{total} total {item!r} minus {part.value} {attribute!r}",
         )
 
     if consumer == "membership-verdict":

@@ -299,10 +299,44 @@ def _rest_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> list[Fac
     return out
 
 
+def _partition_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> list[Fact]:
+    """'Ten of THEM are yellow' — the plural pronoun denotes the unique
+    prior collection; resolved by the same unique-pool-in-play principle
+    fraction-of-pronoun uses (never document-level pronoun binding, which
+    deliberately excludes plural pronouns). Ambiguous or absent context
+    (zero or more than one distinct measure known before this sentence)
+    leaves it unresolved — the guard declines rather than guess."""
+    from .model import PartitionQuantity
+
+    out: list[Fact] = []
+    known_measures = {q.measure for q in store.by_kind(Quantity)}
+    for pq in store.by_kind(PartitionQuantity):
+        if pq.collection in known_measures:
+            continue  # already names a real measure — nothing to resolve
+        candidates = {
+            q.measure for q in store.by_kind(Quantity)
+            if q.provenance.sentence < pq.provenance.sentence
+        }
+        if len(candidates) != 1:
+            continue
+        (measure,) = candidates
+        out.append(
+            PartitionQuantity(
+                provenance=Provenance(
+                    source="synth/partition", sentence=pq.provenance.sentence
+                ),
+                collection=measure, attribute=pq.attribute, value=pq.value,
+                verb=pq.verb, polarity=pq.polarity,
+            )
+        )
+    return out
+
+
 PLUGINS: dict[str, Synthesizer] = {
     "synth/relation-to-quantity": _relations_synth,
     "synth/fraction-of-pool": _fraction_synth,
     "synth/rest-of-pool": _rest_synth,
+    "synth/partition-of-collection": _partition_synth,
 }
 
 

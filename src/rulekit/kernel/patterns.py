@@ -22,6 +22,7 @@ from .model import (
     Fact,
     FractionQuantity,
     Membership,
+    PartitionQuantity,
     Predication,
     Provenance,
     Quantity,
@@ -43,6 +44,7 @@ _FACT_CLASSES = {
     "before": Before,
     "fraction_quantity": FractionQuantity,
     "rest_quantity": RestQuantity,
+    "partition_quantity": PartitionQuantity,
 }
 
 
@@ -99,6 +101,8 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
             return sense == "pronoun"
         if t == "word":
             return sense not in (None, "punct")
+        if t == "adjective":
+            return sense == "adjective"
         return False
     assert token.cat is not None
     word = unit.features.get("lemma", unit.features.get("fold", ""))

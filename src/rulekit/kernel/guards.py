@@ -132,7 +132,7 @@ def check(
         # a FractionQuantity/RestQuantity the synthesizers could NOT resolve
         # means part of the text was read but not computed — committing
         # around it is how "ate half the sandwiches" silently vanishes
-        from .model import FractionQuantity, Quantity, RestQuantity
+        from .model import FractionQuantity, PartitionQuantity, Quantity, RestQuantity
 
         derived = {
             (q.entity, q.verb, q.occurrence)
@@ -152,6 +152,23 @@ def check(
                     "unresolved-derivation",
                     f"'the rest' ({r.entity!r}, {r.verb!r}) never resolved "
                     "against a unique pool",
+                )
+        # a PartitionQuantity resolves into ANOTHER PartitionQuantity (its
+        # collection replaced by the real measure), never a Quantity — the
+        # 'derived' set above doesn't cover it, so check separately.
+        resolved_partitions = {
+            (p.attribute, p.value, p.verb, p.provenance.sentence)
+            for p in store.by_kind(PartitionQuantity)
+            if p.provenance.source == "synth/partition"
+        }
+        for p in store.by_kind(PartitionQuantity):
+            if p.provenance.source == "synth/partition":
+                continue
+            if (p.attribute, p.value, p.verb, p.provenance.sentence) not in resolved_partitions:
+                return GuardVeto(
+                    "unresolved-derivation",
+                    f"'{p.value} of them are {p.attribute}' never resolved "
+                    "against a unique prior collection",
                 )
 
     if _enabled(reg, "ambiguity"):

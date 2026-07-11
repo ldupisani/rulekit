@@ -282,6 +282,34 @@ class RestQuantity(Fact):
 
 
 @dataclass(frozen=True)
+class PartitionQuantity(Fact):
+    """'Ten of THEM are yellow' — N members of a prior collection share an
+    attribute. `collection` starts as the plural pronoun's raw word ('them'/
+    'these'/'those') and the partition synthesizer resolves it to the
+    collection's actual measure via the same unique-pool-in-play principle
+    FractionQuantity's pronoun form uses; an unresolved one (ambiguous or
+    absent prior collection) vetoes any commit.
+
+    EXISTENCE, not use, counts as "read" for value accounting (like Quantity/
+    FractionQuantity, unlike Rate/Price): this fact IS the captured stated
+    count, not a dormant multiplier that arithmetic must actively consult —
+    a partition mentioned but irrelevant to the asked attribute is exactly
+    like an entity's quantity irrelevant to a different entity's question."""
+
+    collection: str
+    attribute: str
+    value: float
+    verb: str = "be"
+    polarity: bool = True
+
+    def key(self) -> tuple:
+        return ("partition_quantity", self.collection, self.attribute, self.verb)
+
+    def value_part(self) -> Any:
+        return (self.value, self.polarity)
+
+
+@dataclass(frozen=True)
 class Rate(Fact):
     """'makes $18 an hour' / '4 cars a day' — value of measure PER unit.
     Informative on its own (never folds into holdings); the rate-span

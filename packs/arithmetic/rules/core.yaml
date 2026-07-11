@@ -345,6 +345,29 @@ rules:
         entity: "{who}"
         verb: "{verb}"
 
+  - id: arithmetic/partition-attribute
+    phase: read
+    description: >
+      "Ten of THEM are yellow" — N members of a prior collection share an
+      attribute (a PartitionQuantity). The plural pronoun denotes the
+      collection; the partition synthesizer resolves it against the unique
+      prior collection fact (ambiguous or absent context leaves it
+      unresolved, and the unresolved-derivation guard declines).
+    match:
+      sentence:
+        - {slot: n, type: number}
+        - {lit: of}
+        - {slot: coll, type: pronoun}
+        - {slot: verb, type: verb}
+        - {slot: attr, type: adjective}
+    consumes: [n]
+    emits:
+      - fact: partition_quantity
+        collection: "{coll}"
+        attribute: "{attr}"
+        value: "n"
+        verb: "{verb}"
+
 asks:
   - id: ask/how-many-in-place
     match:
@@ -532,3 +555,32 @@ asks:
       consumer: membership-verdict
       member: "{member}"
       collection: "{coll}"
+
+  - id: ask/how-many-partition
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {slot: verb, type: verb}
+        - {slot: attr, type: adjective}
+    resolves:
+      consumer: partition-complement
+      item: "{item}"
+      attribute: "{attr}"
+      negated: "false"
+
+  - id: ask/how-many-partition-negated
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {slot: verb, type: verb}
+        - {lit: not}
+        - {slot: attr, type: adjective}
+    resolves:
+      consumer: partition-complement
+      item: "{item}"
+      attribute: "{attr}"
+      negated: "true"

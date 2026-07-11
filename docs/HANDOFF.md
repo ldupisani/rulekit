@@ -269,6 +269,47 @@ with a companion purchase sentence linking the same item noun; the
 targeted synthetic tests are the coverage evidence in the meantime.
 TEST look: pending — spent manually.
 
+## Increment 16: partitioned collections (`7a0037f`)
+
+"N of them are ADJ" premises ("4 of them are red") + adjective-qualified
+count asks ("How many marbles are red?" / "...are not red?") previously
+folded no usable fact and matched no ask shape at all — the two halves of
+the ~164 "no quantity known" decline bucket HANDOFF attributed to
+partitions and goal shapes. Fix, YAML-first:
+
+1. **A new `PartitionQuantity` fact** (`packs/arithmetic/rules/core.yaml`,
+   `model.py`) captures "N of them are ADJ" as a stated subset of a prior
+   collection. The plural pronoun starts as a raw placeholder ('them'); a
+   new `synth/partition-of-collection` plugin (`saturate.py`) resolves it
+   against the unique prior Quantity measure in play — mirroring the
+   unique-pool-in-play principle `fraction-of-pronoun` already uses, never
+   document-level pronoun binding (which deliberately excludes plural
+   pronouns; decline on ambiguous collection).
+2. **A new "adjective" slot type** (`schemas.py`, `patterns.py`,
+   `guards.py`) backs two new ask shapes: "how many NOUN are ADJ" (direct
+   subset lookup) and "how many NOUN are not ADJ" (exact complement).
+3. **`answer.py`** gains a `partition-complement` consumer: answers the
+   named subset directly, or its EXACT complement (total minus that one
+   named subset — never an exhaustive-enumeration assumption over other,
+   unstated subsets) computed only when the collection's total resolves to
+   a single holder; declines on an ambiguous total (mirrors the
+   increment-10 whole-total-decline discipline).
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(14/0 unchanged), dev-holdout diff NEUTRAL 0/0/0 (14/0 unchanged), pytest
+161 passed (was 155 + 6 new, now `tests/test_mining_increment_16.py`),
+suite 52/52, lint 0 errors / 1 known-good warning (fraction-of-remnant /
+fraction-of-pool). Shipped NEUTRAL on dev — no dev-train/dev-holdout item
+happens to hit this exact "N of them are ADJ" + adjective-count-ask
+pairing; the mechanism is exercised and verified via the synthetic suite
+(direct lookup, exact complement, ambiguous-collection decline,
+ambiguous-total decline) and the frequency estimate (31 dev-train items
+matching the premise shape) is the coverage evidence in the meantime.
+Scoped to the brief's literal ADJ predicate — "N of them are NOUN" (a
+membership-style partition, the dominant real-world phrasing) is a
+natural next candidate, not folded in here.
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 Numbers below predate this session's work and need a fresh `rulekit
