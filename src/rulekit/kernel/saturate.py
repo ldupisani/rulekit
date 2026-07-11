@@ -326,7 +326,39 @@ def _partition_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
                     source="synth/partition", sentence=pq.provenance.sentence
                 ),
                 collection=measure, attribute=pq.attribute, value=pq.value,
-                verb=pq.verb, polarity=pq.polarity,
+                verb=pq.verb, polarity=pq.polarity, kind=pq.kind,
+            )
+        )
+    return out
+
+
+def _partition_membership_synth(
+    store: FactStore, reg: Registry, log: ArithmeticLog
+) -> list[Fact]:
+    """'8 of THEM are dogs' — once a MEMBERSHIP-kind partition's collection
+    pronoun resolves (see `_partition_synth`), its `attribute` names a count
+    of a plural common noun, not a modifier. Synthesize a Quantity for that
+    noun so the general entity-less "how many NOUN are there" ask answers
+    it, with no bespoke consumer. Fires only when the resolved collection's
+    measure has EXACTLY one holding entity — an ambiguous holder (e.g. two
+    entities both stated to have the collection) declines downstream
+    exactly like partition-complement's whole-total check, never guesses."""
+    from .model import PartitionQuantity
+
+    out: list[Fact] = []
+    for p in store.by_kind(PartitionQuantity):
+        if p.kind != "membership" or p.provenance.source != "synth/partition":
+            continue
+        holders = {q.entity for q in store.by_kind(Quantity) if q.measure == p.collection}
+        if len(holders) != 1:
+            continue
+        (holder,) = holders
+        out.append(
+            Quantity(
+                provenance=Provenance(
+                    source="synth/partition-membership", sentence=p.provenance.sentence
+                ),
+                entity=holder, measure=p.attribute, value=p.value, verb="have",
             )
         )
     return out
@@ -337,6 +369,7 @@ PLUGINS: dict[str, Synthesizer] = {
     "synth/fraction-of-pool": _fraction_synth,
     "synth/rest-of-pool": _rest_synth,
     "synth/partition-of-collection": _partition_synth,
+    "synth/partition-membership-quantity": _partition_membership_synth,
 }
 
 

@@ -310,6 +310,46 @@ membership-style partition, the dominant real-world phrasing) is a
 natural next candidate, not folded in here.
 TEST look #16: 6/1 (85.7%) — precision HELD vs look #15, increment kept.
 
+## Increment 17: membership partitions (`060c314`)
+
+"N of them are NOUN" premises ("8 of them are dogs") — the dominant
+real-world phrasing of the partition class increment 16 scoped away
+("membership-style partition ... a natural next candidate, not folded in
+here"). Extends increment 16's machinery to a noun predicate, YAML-first:
+
+1. **A membership-kind partition** (`packs/arithmetic/rules/core.yaml`)
+   matches "N of them are NOUN" where the subset label is a plural common
+   noun rather than an adjective — reusing the same `PartitionQuantity`
+   fact and the same `synth/partition-of-collection` plugin (`saturate.py`)
+   to resolve 'them' against the unique prior collection, unchanged
+   (same ambiguous-collection decline discipline).
+2. **A companion synth step** (`saturate.py`): once the collection
+   resolves, a membership-kind partition ALSO synthesizes a Quantity for
+   the named subset noun — but only when the resolved collection's measure
+   has exactly one holding entity, so an ambiguous holder (two entities
+   each holding a measure of the same collection noun) declines rather
+   than guessing which one the subset attaches to. This lets the EXISTING
+   general entity-less "how many NOUN are there" ask answer it directly,
+   with no bespoke consumer (`answer.py` untouched for this increment).
+3. The adjective form from increment 16 is unaffected — the two pattern
+   rules gate on mutually exclusive word senses (adjective vs. plural
+   common noun) and never double-fire on the same text.
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(14/0 unchanged), dev-holdout diff NEUTRAL 0/0/0 (14/0 unchanged), pytest
+167 passed (was 161 + 6 new, now `tests/test_mining_increment_17.py`),
+suite 52/52, lint 0 errors / 1 known-good warning (fraction-of-remnant /
+fraction-of-pool, same as increment 16). Shipped NEUTRAL on dev, same
+situation as increment 16: no dev-train/dev-holdout item happens to hit
+this exact "N of them are NOUN" + entity-less-ask pairing on this slice;
+the mechanism is exercised and verified via the synthetic suite (direct
+lookup, named-holder resolution, no-partition-fact decline, ambiguous-
+collection decline, ambiguous-holder decline, adjective-form
+non-interference) and the frequency estimate (29 dev-train / 31
+dev-holdout items matching the premise shape) is the coverage evidence
+in the meantime.
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 Numbers below predate this session's work and need a fresh `rulekit

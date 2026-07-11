@@ -368,6 +368,33 @@ rules:
         value: "n"
         verb: "{verb}"
 
+  - id: arithmetic/partition-membership
+    phase: read
+    description: >
+      "8 of THEM are dogs" — a MEMBERSHIP-style partition: N members of a
+      prior collection ARE a plural common noun, not an adjective (the
+      dominant real-world phrasing of a partition). Resolved identically to
+      partition-attribute (the same synthesizer resolves the plural pronoun
+      against the unique prior collection); a companion synth step then
+      emits a Quantity for the named subset noun, so the general
+      entity-less "how many NOUN are there" ask answers it directly — no
+      bespoke consumer needed.
+    match:
+      sentence:
+        - {slot: n, type: number}
+        - {lit: of}
+        - {slot: coll, type: pronoun}
+        - {slot: verb, type: verb}
+        - {slot: attr, type: noun}
+    consumes: [n]
+    emits:
+      - fact: partition_quantity
+        collection: "{coll}"
+        attribute: "{attr}"
+        value: "n"
+        verb: "{verb}"
+        kind: membership
+
 asks:
   - id: ask/how-many-in-place
     match:

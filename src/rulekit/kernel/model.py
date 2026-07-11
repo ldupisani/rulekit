@@ -290,6 +290,13 @@ class PartitionQuantity(Fact):
     FractionQuantity's pronoun form uses; an unresolved one (ambiguous or
     absent prior collection) vetoes any commit.
 
+    `kind` distinguishes the ADJECTIVE form ("...are yellow", the default)
+    from the MEMBERSHIP form ("8 of them are dogs" — `attribute` is a plural
+    common noun naming a subset of the collection, not a modifier of it).
+    The membership form additionally drives a companion Quantity synth (see
+    saturate.py) so the general entity-less "how many NOUN are there" ask
+    answers it directly, with no bespoke consumer.
+
     EXISTENCE, not use, counts as "read" for value accounting (like Quantity/
     FractionQuantity, unlike Rate/Price): this fact IS the captured stated
     count, not a dormant multiplier that arithmetic must actively consult —
@@ -301,6 +308,7 @@ class PartitionQuantity(Fact):
     value: float
     verb: str = "be"
     polarity: bool = True
+    kind: str = "adjective"
 
     def key(self) -> tuple:
         return ("partition_quantity", self.collection, self.attribute, self.verb)
