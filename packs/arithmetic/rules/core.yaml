@@ -982,3 +982,24 @@ asks:
       consumer: money-left
       entity: "{who}"
       measure: currency
+
+  - id: ask/how-much-item-cost
+    # "how much do/does/did ITEM cost" — the item-SUBJECT cost ask (mining
+    # candidate item-cost-asks): the item is the grammatical subject of
+    # 'cost' itself, never a name (there is no `who` slot at all), so this
+    # can never collide with the how-much-noun-entity family ("how much
+    # money does Tom have"), which needs item, THEN aux, THEN a name, THEN
+    # a general verb — a different token order entirely. The verb is
+    # gated to the EXISTING `price_verb` category (cost/costs, increment
+    # 15) rather than the general `verb` type, so an unrelated "how much
+    # do the shirts weigh" never reaches the item-cost consumer.
+    match:
+      question:
+        - {lit: how}
+        - {lit: much}
+        - {slot: aux, type: auxiliary}
+        - {slot: item, type: noun}
+        - {slot: verb, cat: price_verb}
+    resolves:
+      consumer: item-cost
+      item: "{item}"

@@ -1257,6 +1257,37 @@ constitution (a definite-NP sibling of an already-shipped pronoun-form
 class).
 TEST look: pending — spent manually.
 
+## Increment 38: item-subject cost asks (`<pending>`)
+
+Adds `ask/how-much-item-cost` (`packs/arithmetic/rules/core.yaml`): "how
+much do/does/did ITEM cost", extending the increment 10/15/29 price-fact
+family to the ask side. The item is the grammatical subject of `cost`
+itself, with no `who`/name slot at all, so the token order (aux, item,
+price_verb) never collides with the how-much-noun-entity family, which
+needs item-then-aux-then-name-then-verb. The verb slot is gated on the
+EXISTING `price_verb` category (cost/costs, increment 15) rather than the
+general `verb` type — no category widening.
+
+Pairs with a new "item-cost" consumer in `answer.py`: the asked item's
+unique Price fact times its unique purchased/held Quantity ("Priya buys 4
+jackets at $6 each. How much do the jackets cost?" -> 24), or the bare unit
+price when no such Quantity is in play ("Each hat costs $12. How much does
+a hat cost?" -> 12, routed through `evaluate()` so the value-accounting
+guard sees the price value as read). More than one Price fact or more than
+one Quantity fact for the item is a genuine ambiguity and declines outright
+— the increment 19/30 exactly-one-fact-or-decline discipline.
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(3772 items, 14/0 unchanged), dev-holdout diff NEUTRAL 0/0/0 (3701 items,
+15/0 unchanged), pytest 309 passed (was 303 + 6 new, now
+`tests/test_mining_increment_38.py`), suite 52/52, lint 0 errors / 1
+known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) / 20
+info. The ask matches "how much ... cost" questions in both dev slices but
+every matching item needs a derived multi-step total rather than a stated
+Price fact, so all decline safely — 0 net DEV gain, 0 harm; the mechanism
+is verified directly via synthetic probes in the test file.
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 Numbers below predate this session's work and need a fresh `rulekit
