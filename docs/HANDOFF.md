@@ -147,14 +147,34 @@ stats` pass before trusting them.
   traced; the rest may be chained-fraction cases instead (Trey/Kris/
   Kristen: "7 times as many... 1/4 as many...", which might just need
   the EXISTING fraction/relation synthesizers to chain through an extra
-  hop rather than any new grammar).
+  hop rather than any new grammar — TRACED, see next bullet: for THIS
+  item specifically it's not the synthesizer, it's a trailing-if split.
+- **Trailing "if" clause split — CONFIRMED, exact fix scoped, not yet
+  built.** Traced the Trey/Kris/Kristen "missing a total" item precisely:
+  "How many more turtles does Trey have than Kristen, if Kristen has
+  12?" — both Relation facts parse fine (Trey=7×Kris, Kris=0.25×Kristen),
+  but "if Kristen has 12" is a TRAILING clause inside the QUESTION
+  sentence itself, and `_split_leading_clause` (`src/rulekit/kernel/
+  engine.py:81`) only handles the LEADING form ("If X, question?"), not
+  "question, if X?" — so "Kristen has 12" never becomes a premise; only a
+  bare valueless Predication is folded from it. This is exactly the
+  "153-ish embedded when/after clauses" bucket below. Fix: a
+  `_split_trailing_clause` counterpart — split at the LAST comma whose
+  following text starts with "if", strip the trailing "?", turn it into
+  a premise sentence, keep the wh-part as the question. Pure
+  sentence-splitting, before any grammar/obligation processing — low
+  blast radius (only fires on text it doesn't already split), but still
+  needs the full dev-train/holdout gate per the blast-radius invariant
+  before trusting it (this session's lesson: "low blast radius" was
+  wrong twice already about things that touch shared code paths).
 - ~210 "no quantity known": partitions ("Ten OF THEM are yellow"), goal/
   deficit shapes ("goal is 30 situps … make up the rest")
 - ~70 fold-vs-fold conflicts: possessed-noun entity identity (Kennedy's
   house vs Benedict's house both lemma 'house' — needs attr-qualified
   entities; also blocks "coconut trees vs mango trees" noun-standard
   relations, attr-blind measure matching generally)
-- 153-ish questions with embedded when/after clauses (only "If…," splits)
+- 153-ish questions with embedded when/after clauses (only "If…," splits
+  today — see the trailing-if bullet above, likely the same root cause)
 - noun-antecedent pronouns ("it" → the bear; needs animacy data in packs)
 
 ## Hard-won invariants (do not relearn these)
