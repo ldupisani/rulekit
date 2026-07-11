@@ -1,7 +1,7 @@
 # Session handoff — 2026-07-11
 
 Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
-State below is committed through `75f8ec4` on `main` (github.com/ldupisani/rulekit;
+State below is committed through `ea47e3e` on `main` (github.com/ldupisani/rulekit;
 check `git status`/`git log origin/main..HEAD` before assuming push parity).
 
 ## Where the project is
@@ -16,14 +16,14 @@ every increment through the gates).
 **Current numbers (all verified at head):**
 - dev-train: 14 correct / 0 wrong (3,772 items, 100% precision)
 - dev-holdout: 14 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 146 · lint: 0 errors, 1 intended warning
-- TEST ledger (14 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- curated suite: 52/52 · pytest: 161 · lint: 0 errors, 1 intended warning
+- TEST ledger (16 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
-  6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (look #12) →
-  6/1 (look #13) → **6/1 (85.7%, look #14) ← live** — looks #12–#13
-  covered the first /mine batch (increments 12–13), #14 the modal split
-  (increment 14); precision held every time
+  6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
+  6/1 (#14) → 6/1 (#15) → **6/1 (85.7%, look #16) ← live** — #12–#13 the
+  first /mine batch, #14 the modal split, #15–#16 the second /mine batch;
+  precision held every time
 - The looks #12–#13 walk was the first spent from a /mine staging branch:
   fast-forward main to each increment's commit, one look each, from the
   main checkout (the ledger lives in its gitignored snapshots dir).
@@ -233,7 +233,7 @@ Modal-stated rates now solve end to end ("Machines can produce 5 toys an
 hour. How many toys do machines produce in 2 hours?" → 10).
 TEST look #14: 6/1 (85.7%) — precision HELD vs look #13, increment kept.
 
-## Increment 15: subject-priced items (`5e91461`)
+## Increment 15: subject-priced items (`592e8f3`)
 
 "ITEM cost(s) $X each" — the price stated with the ITEM as grammatical
 SUBJECT, not the object of `buy` — used to fail to parse at all: 'cost'
@@ -267,9 +267,9 @@ Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
 dev-train/dev-holdout item happens to hit this exact subject-priced shape
 with a companion purchase sentence linking the same item noun; the
 targeted synthetic tests are the coverage evidence in the meantime.
-TEST look: pending — spent manually.
+TEST look #15: 6/1 (85.7%) — precision HELD vs look #14, increment kept.
 
-## Increment 16: partitioned collections (`7a0037f`)
+## Increment 16: partitioned collections (`ea47e3e`)
 
 "N of them are ADJ" premises ("4 of them are red") + adjective-qualified
 count asks ("How many marbles are red?" / "...are not red?") previously
@@ -308,7 +308,7 @@ matching the premise shape) is the coverage evidence in the meantime.
 Scoped to the brief's literal ADJ predicate — "N of them are NOUN" (a
 membership-style partition, the dominant real-world phrasing) is a
 natural next candidate, not folded in here.
-TEST look: pending — spent manually.
+TEST look #16: 6/1 (85.7%) — precision HELD vs look #15, increment kept.
 
 ## The next mining worklist (from the last close-miss scan)
 
