@@ -27,6 +27,15 @@ packs, no LLM at runtime. Architecture: `docs/architecture.md`. Measurement disc
 4. **Precision before coverage.** A confident-wrong is worse than a decline. New capability may
    only move an item declined → {correct | declined}, never → wrong.
 
+## Batch mining (`/mine`)
+
+`/mine [count]` runs the mining loop as a multi-agent batch (`.claude/skills/mine/SKILL.md`):
+scout → parallel Sonnet implementers in isolated worktrees (full dev gate each) → constitution
+review of every diff → sequential landing onto `mining/batch-<date>` with a full re-gate per
+increment. The batch STOPS at the staging branch: TEST looks stay manual (one per landed
+increment, walked in commit order; a precision drop reverts that commit), and only surviving
+commits are fast-forwarded to `main` by hand. `/mine --smoke` self-tests the pipeline.
+
 ## Commands
 
 ```

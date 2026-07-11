@@ -41,6 +41,13 @@ every increment through the gates).
    increment REVERTS (this happened once — see docs/negative-results.md;
    the protocol works).
 
+Batch alternative: `/mine [count]` (added 2026-07-11) runs steps 2–4 as a
+multi-agent pipeline — scout → parallel Sonnet juniors in isolated worktrees →
+constitution review → sequential landing onto `mining/batch-<date>` with a
+full re-gate per increment. It never touches TEST or main: step 5 stays
+manual, one look per landed increment walking the staging commits in order;
+fast-forward main past survivors only. See `.claude/skills/mine/SKILL.md`.
+
 ## Re-landing plan: COMPLETE
 
 The rate-machinery revert is fully RESOLVED and re-landed, look by look
