@@ -887,6 +887,47 @@ Tom pay?" -> 6) and via the 47-item cue scan (0 new correct, 0 new wrong;
 every match still declines on a separate, unrelated gap).
 TEST look: pending — spent manually.
 
+## Increment 30: sales revenue asks (how much does WHO make/earn from selling N ITEM at $P each) (`<pending-commit>`)
+
+The sell-side mirror of increment 10's purchase-total. Fresh stats: "no
+'make' events" = 33, "no 'sell'" = 7, "no 'earn'" = 7; probe "Tom sells 5
+cakes at 3 dollars each. How much money does Tom make?" declined `no make
+events known`. Cue scan: 137 dev-train items have a `$` near sell/sold; 112
+ask "how much ... make/earn".
+
+Mechanism: `learn.py` already emits Price/Quantity facts generically for
+any "N ITEM at $PRICE each" dobj shape (not gated to the `purchase`
+category), so sell-verb sentences already carry the same facts
+purchase-total consumes — no `learn.py` change needed. Adds a new narrow
+`sell` category (parent: `lose`) in
+`packs/difg-mined/categories/semantic.yaml` tagging sell/sells/sold,
+multi-membership alongside the existing broad `lose` tag (too wide to gate
+a revenue consumer on) — same pattern as `purchase` (parent: `acquire`).
+`answer.py` gets `_revenue_total`, summing qty x unit price over every
+sell-category Quantity an entity holds, wired into the single-entity
+event-ask branch alongside the existing spend_verb/purchase-total branch,
+gated on the `wage_verb` category (make/earn) so an unrelated "how much did
+Mary buy" is untouched. Any sold item missing its own Price fact declines
+the WHOLE total (increment-10 discipline, unchanged). A Rate fact on the
+same entity (increment 21's ask/earn-span territory) makes 'make'/'earn'
+ambiguous between a wage rate and sale revenue for the same person —
+declines rather than guessing which one the question means.
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(3772 items, 14/0 unchanged), dev-holdout diff NEUTRAL 0/0/0 (3701 items,
+14/0 unchanged), pytest 252 passed (was 246 + 6 new, now
+`tests/test_mining_increment_30.py`), suite 52/52, lint 0 errors / 1
+known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) / 22
+info. Shipped NEUTRAL on dev: all real dev-train "sells ... how much does X
+make" items involve multi-item conjunctions, wage-rate compositions, or
+profit (revenue - cost) that this narrow single-conjunct mechanism
+correctly leaves declined (matches the open conjunction-handling gap noted
+above for verbs outside `purchase`; profit is out of this brief's scope) —
+the mechanism is proven directly ("Tom sells 5 cakes at 3 dollars each. How
+much money does Tom make?" -> 15) plus the ambiguity/decline probes in the
+synthetic suite.
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 Numbers below predate this session's work and need a fresh `rulekit

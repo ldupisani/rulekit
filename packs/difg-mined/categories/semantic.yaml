@@ -54,6 +54,17 @@ categories:
     polarity: 1
   retain:
     parent: verb
+  sell:
+    parent: lose
+    notes: >
+      narrow gate for the sales-revenue consumer (answer.py's
+      _revenue_total, the sell-side mirror of increment 10's
+      purchase-total) — same multi-membership pattern as 'purchase'/
+      'acquire': 'sell'/'sold' stays tagged 'lose' too for the general
+      event fold (an item sold is an item no longer held), while this
+      narrower tag lets the revenue consumer name sell-events
+      specifically without picking up 'ate'/'gave'/'threw'/etc, which
+      also live under 'lose'.
   timeperiod:
     parent: noun
   vehicle:
@@ -478,6 +489,10 @@ members:
   - rest
   remnant_adj:
   - remaining
+  sell:
+  - sell
+  - sells
+  - sold
   timeperiod:
   - afternoon
   - day

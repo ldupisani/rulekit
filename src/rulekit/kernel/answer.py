@@ -143,6 +143,38 @@ def _purchase_total(
     return evaluate(" + ".join(parts), {}, log, source="purchase-total")
 
 
+def _revenue_total(
+    store: FactStore, reg: Registry, entity: str, log: ArithmeticLog
+) -> float | None:
+    """'sells 5 cakes at $3 each' priced sales: Σ qty × unit price over
+    every SELL-verb quantity this entity holds — the sell-side mirror of
+    _purchase_total (increment 10's discipline, unchanged): any sold item
+    with no matching Price fact declines the WHOLE total rather than risk
+    dropping a term (definitive-or-decline).
+
+    A Rate fact for the same entity means a wage-earnings reading (rate ×
+    worked span, increment 21's ask/earn-span/rate-span consumer) is ALSO
+    live for this 'make'/'earn' verb — that's a genuine ambiguity between
+    two different sources of money for the same person, so this declines
+    rather than silently picking the sale-revenue interpretation."""
+    sales = [
+        q for q in store.by_kind(Quantity)
+        if q.entity == entity and reg.word_in_category(q.verb, "sell")
+    ]
+    if not sales:
+        return None
+    if any(r.entity == entity for r in store.by_kind(Rate)):
+        return None
+    prices = {p.item: p for p in store.by_kind(Price)}
+    parts: list[str] = []
+    for q in sales:
+        price = prices.get(q.measure)
+        if price is None:
+            return None
+        parts.append(f"{q.value} * {price.value}")
+    return evaluate(" + ".join(parts), {}, log, source="revenue-total")
+
+
 def _entity_total(
     store: FactStore, reg: Registry, entity: str, measure: str, log: ArithmeticLog
 ) -> float | None:
@@ -263,6 +295,18 @@ def answer(
                 if total is not None:
                     return Answer(
                         "number", total, f"Σ price × qty over {entity!r}'s purchases"
+                    )
+            # "how much money does WHO make/earn?" over priced sales ("5
+            # cakes at $3 each") is likewise a DERIVED total — gated to the
+            # narrow wage_verb category (packs/difg-mined/categories/wage.yaml)
+            # so an unrelated 'how much did Mary buy' never reaches here;
+            # sell-side mirror of the spend_verb branch above (increment
+            # 10's purchase-total, sales-revenue-asks candidate).
+            if is_currency_ask and reg.word_in_category(ask_verb, "wage_verb"):
+                total = _revenue_total(store, reg, entity, log)
+                if total is not None:
+                    return Answer(
+                        "number", total, f"Σ price × qty over {entity!r}'s sales"
                     )
             return Answer(
                 "decline", None,
