@@ -367,6 +367,10 @@ members:
   - need
   - needed
   - needs
+  need_premise:
+  - need
+  - needed
+  - needs
   person:
   - adult
   - adults
@@ -484,9 +488,6 @@ members:
   - had
   - has
   - have
-  - need
-  - needed
-  - needs
   - receive
   - received
   - receives

@@ -978,6 +978,51 @@ older/younger relation chaining in either narration order, dangling-
 comparative decline, future-age decline) plus the frequency estimate above.
 TEST look: pending — spent manually.
 
+## Increment 32: stated-need premises as goals (WHO needs N ITEM) (`<pending-commit>`)
+
+Re-land of the batch-5 parked branch (`mining/parked/need-as-goal`), reapplied
+by hand (the stored patch no longer applied cleanly due to context drift in
+`core.yaml` from increments 27/28/30 landing since parking) and re-gated from
+scratch. Fresh stats: "no 'need' events known" = 39, "0 goal facts known" = 9;
+cue scan found 63 dev-train items with a "needs N" premise. Probe "Tom needs
+30 apples. He has 12 apples. How many more apples does Tom need?" declined
+"0 goal facts known" — the increment-23 deficit ask matched, but no Goal fact
+was ever emitted from a needs-premise.
+
+Mechanism, one new rule in `packs/arithmetic/rules/core.yaml`, no kernel
+change:
+- `arithmetic/goal-need-quantity`: "WHO needs N ITEM" (direct-object form,
+  no infinitive — the counterpart to `goal-desire-quantity`'s "wants to VERB
+  N X") emits a Goal fact. No new consumer needed: the existing increment-23
+  goal-deficit ask already resolves any Goal fact against the entity's
+  single current STATE holding of the same measure, reused unchanged.
+
+Category surgery makes the emission safe rather than double-counting: 'need'/
+'needed'/'needs' are removed from the `receive` event category (polarity +1)
+in `packs/difg-mined/categories/semantic.yaml` and reassigned to a new
+`need_premise` category declared in `packs/core-english/categories/core.yaml`
+— untagged for polarity, mirroring how 'desire' sits outside any event
+category. This simultaneously kills a latent confident-wrong flagged at
+increment 23's landing: "Tom needs 30 apples. He has 12 apples." used to fold
+to 42 via the generic SVO event sum because 'need' carried receive's +1
+polarity; it now declines that fold (untagged verb, pattern-consumed) while
+"how many more apples does Tom need" correctly answers 18 via the deficit
+consumer. `need_premise` is kept as its own category (not merged into
+'desire') so the direct-object phrasing never widens 'want's own rule
+family — a distinct blast-radius boundary.
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(3772 items, 14/0 unchanged), dev-holdout diff NEUTRAL 0/0/0 (3701 items,
+14/0 unchanged), pytest 265 passed (was 258 + 7 new, now
+`tests/test_mining_increment_32.py`), suite 52/52, lint 0 errors / 1
+known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) / 21
+info. Shipped NEUTRAL on dev: no dev-train/dev-holdout item alone exercises
+the full needs-premise + deficit-ask chain end to end (typical for this
+pack) — the mechanism is proven directly by the synthetic suite (goal
+emission, deficit resolution, the killed SVO-fold confident-wrong, and the
+`need_premise`/`receive` category split) plus the frequency estimate above.
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 Numbers below predate this session's work and need a fresh `rulekit
@@ -987,12 +1032,12 @@ stats` pass before trusting them.
   `mining/parked/`; all passed constitution review and deferred only
   on cherry-pick conflicts against increments that have since landed — a
   fresh junior rebasing on current main should land them cheaply):
-  `need-as-goal`, `attr-qualified-entities`,
+  `attr-qualified-entities`,
   `state-verb-conjunction` (use `mining/parked/state-verb-conjunction-2`,
   the post-increment-24 attempt). Also `money-left-asks` — the MECHANISM
   passed gates; it was blocked ONLY for a lightly-edited GSM8K test item
   (needs its tests reinvented from scratch, nothing else). (`age-asks`
-  landed as increment 31.)
+  landed as increment 31; `need-as-goal` landed as increment 32.)
 
 - **Event-then-restate state disambiguation in `_entity_total`
   (answer.py)** — surfaced by /mine batch 3's failed `state-conjunction`

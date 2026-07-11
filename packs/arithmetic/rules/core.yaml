@@ -523,6 +523,30 @@ rules:
         value: "item"
         verb: "{want}"
 
+  - id: arithmetic/goal-need-quantity
+    phase: read
+    description: >
+      "Tom needs 30 apples" — a stated NEED ('need_premise', a category
+      untagged for polarity like 'desire' — a needed quantity is not a
+      receipt) directly followed by a counted item is a stated GOAL,
+      never a holding/event: the direct-object counterpart to
+      goal-desire-quantity's "wants to VERB N X" infinitive form (no
+      infinitive here — 'need' takes the item directly). Emits the same
+      Goal fact the existing goal-deficit consumer already resolves against
+      the entity's single current holding of the measure.
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: need, cat: need_premise}
+        - {slot: item, type: counted}
+    consumes: [item]
+    emits:
+      - fact: goal
+        entity: "{who}"
+        measure: "{item}"
+        value: "item"
+        verb: "{need}"
+
 asks:
   - id: ask/how-many-in-place
     match:

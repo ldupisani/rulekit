@@ -50,14 +50,27 @@ categories:
       purchase (the increment-14 kirsty lesson generalized): the generic
       SVO fold's own Quantity(verb='want', ...) stays unsignable and keeps
       declining the ordinary holdings fold. Members live in difg-mined.
+  need_premise:
+    parent: verb
+    notes: >
+      'WHO needs N X' — a stated NEED marks the quantity as a GOAL, never
+      a received event (mirrors 'desire's want/wishes rationale, but for
+      the direct-object form with no infinitive). Deliberately UNTAGGED
+      for polarity — a needed quantity is not a receipt: the generic SVO
+      fold's own Quantity(verb='need', ...) stays unsignable and declines
+      the ordinary holdings/event fold instead of silently folding +1 (the
+      increment-23 'a wanted purchase is not a purchase' lesson, same
+      invariant, applied to 'need'). Kept SEPARATE from 'desire' rather
+      than merged into it, so 'need's direct-object phrasing never widens
+      'want's own rule family. Members live in difg-mined.
   need_ask_verb:
     parent: verb
     notes: >
       the deficit ask's own verb gate ('how many more X does WHO need') —
-      kept SEPARATE from the (mined) 'receive' category that also lists
-      these forms, so the ask stays specific to the deficit phrasing and
-      never widens via 'receive's broader membership (get/has/have/...).
-      Members live in difg-mined.
+      kept SEPARATE from 'need_premise' (the stated-need goal gate) and
+      from the (mined) 'receive' category, so the ask stays specific to
+      the deficit phrasing and never widens via a premise/event verb's
+      own broader membership. Members live in difg-mined.
   negation:
     parent: negator
     notes: >
