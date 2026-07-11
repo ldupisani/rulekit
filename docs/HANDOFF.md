@@ -1,7 +1,7 @@
 # Session handoff — 2026-07-11
 
 Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
-State below is committed through `ea47e3e` on `main` (github.com/ldupisani/rulekit;
+State below is committed through `691c14f` on `main` (github.com/ldupisani/rulekit;
 check `git status`/`git log origin/main..HEAD` before assuming push parity).
 
 ## Where the project is
@@ -16,14 +16,15 @@ every increment through the gates).
 **Current numbers (all verified at head):**
 - dev-train: 14 correct / 0 wrong (3,772 items, 100% precision)
 - dev-holdout: 14 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 161 · lint: 0 errors, 1 intended warning
-- TEST ledger (16 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- curated suite: 52/52 · pytest: 184 · lint: 0 errors, 1 intended warning
+- TEST ledger (19 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
-  6/1 (#14) → 6/1 (#15) → **6/1 (85.7%, look #16) ← live** — #12–#13 the
-  first /mine batch, #14 the modal split, #15–#16 the second /mine batch;
-  precision held every time
+  6/1 (#14) → 6/1 (#15) → 6/1 (#16) → 6/1 (#17) → 6/1 (#18) →
+  **6/1 (85.7%, look #19) ← live** — #12–#13 /mine batch 1, #14 the modal
+  split, #15–#16 /mine batch 2, #17–#19 /mine batch 3 (5 candidates:
+  3 landed, 1 review-deferred, 1 gate-failed); precision held every time
 - The looks #12–#13 walk was the first spent from a /mine staging branch:
   fast-forward main to each increment's commit, one look each, from the
   main checkout (the ledger lives in its gitignored snapshots dir).
@@ -310,7 +311,7 @@ membership-style partition, the dominant real-world phrasing) is a
 natural next candidate, not folded in here.
 TEST look #16: 6/1 (85.7%) — precision HELD vs look #15, increment kept.
 
-## Increment 17: membership partitions (`060c314`)
+## Increment 17: membership partitions (`d49bf50`)
 
 "N of them are NOUN" premises ("8 of them are dogs") — the dominant
 real-world phrasing of the partition class increment 16 scoped away
@@ -348,9 +349,9 @@ collection decline, ambiguous-holder decline, adjective-form
 non-interference) and the frequency estimate (29 dev-train / 31
 dev-holdout items matching the premise shape) is the coverage evidence
 in the meantime.
-TEST look: pending — spent manually.
+TEST look #17: 6/1 (85.7%) — precision HELD vs look #16, increment kept.
 
-## Increment 18: flat-priced purchase items (`2545a7f`)
+## Increment 18: flat-priced purchase items (`eb0fe78`)
 
 "a hat for $10" mixed with "each"-priced items in the same purchase list
 ("Tom buys 3 shirts at 5 dollars each and a hat for 10 dollars"). The
@@ -396,9 +397,9 @@ beneficiary/duration 'for'-PP decline-safety, non-currency 'for'-object
 decline-safety) and the frequency estimate (101 dev-train / 108
 dev-holdout items matching the premise shape) is the coverage evidence in
 the meantime.
-TEST look: pending — spent manually.
+TEST look #18: 6/1 (85.7%) — precision HELD vs look #17, increment kept.
 
-## Increment 19: capacity asks (budget / unit price) (`<pending>`)
+## Increment 19: capacity asks (budget / unit price) (`691c14f`)
 
 "How many X can/could/... WHO buy/purchase/afford (with $B)?" — a genuinely
 NEW ask shape and a new committer (§3a unseen-structure risk family), kept
@@ -444,13 +445,33 @@ second-priced-item → decline, floor-vs-round regression) — shipped as
 tested, safe infrastructure for a future combined increment (e.g.
 remaining-budget capacity asks), matching the pattern of several prior
 NEUTRAL-on-dev increments in this campaign.
-TEST look: pending — spent manually.
+TEST look #19: 6/1 (85.7%) — precision HELD vs look #18, increment kept.
 
 ## The next mining worklist (from the last close-miss scan)
 
 Numbers below predate this session's work and need a fresh `rulekit
 stats` pass before trusting them.
 
+- **Event-then-restate state disambiguation in `_entity_total`
+  (answer.py)** — surfaced by /mine batch 3's failed `state-conjunction`
+  candidate (`[FAILED-GATE]` WIP preserved on
+  `mining/cand-state-conjunction`): when a `state` Quantity for
+  entity/measure X appears in a LATER sentence than a prior EVENT
+  Quantity for the same entity/measure, the state sentence may be a
+  RESTATEMENT of the running total (should anchor/replace), not an
+  independent additional holding (current behavior: sum). Corpus-wide and
+  orthogonal to conjunctions — must be scouted and gated on its own
+  BEFORE any conjunct-recovery widening can safely ship. The candidate's
+  two structural `_conjoined_purchase_items` fixes (stop-on-verb,
+  discard-segment-on-verb-break) are real, general, and preserved in the
+  WIP commit — a future attempt should keep them.
+- **vocab-ceiling-batch: deferred TWICE at constitution review for the
+  same violation** — both juniors "synthesized" tests by trimming the
+  GSM8K train item "Elysse can carry 3 bags of groceries…" (distinctive
+  name verbatim; a DEV item leaking into the permanent test suite). The
+  mechanism may be fine; do NOT re-propose this brief without instructing
+  the junior to invent test text from scratch (new names, new nouns, new
+  numbers — never paraphrase a corpus item).
 - **General conjunction/multi-dobj handling** (beyond purchase verbs) —
   increment 11 scoped the fix to `purchase`-category verbs only; the SAME
   gap exists for 'has'/'contains'/event verbs generally ("Mary has 5
