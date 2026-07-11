@@ -1324,6 +1324,27 @@ TEST look #41: 6/1 (85.7%) — precision HELD, increment kept.
 
 ## The next mining worklist (from the last close-miss scan)
 
+**GOAL MODE (set 2026-07-11): the campaign target is 100 dev-train
+corrects (currently 14).** Fresh stats after increment 39: the structure
+worklist is dominated by **"no ask shape recognizes this question" —
+2,604 of 3,758 declines**. Ask shapes are THE coverage lever; premise
+machinery is now largely ahead of the questions it can serve. Scout
+directives while goal mode holds:
+
+1. Prefer candidates that MINE THE ASK-SHAPE BUCKET: bucket the
+   unrecognized questions by surface shape (scratchpad script over
+   dev-train declines with that reason) and propose general ask shapes
+   for the largest sub-buckets.
+2. Every brief must cite VERIFIED matching dev-train evidence: trace 2–3
+   paraphrased examples end-to-end and state the expected SOLVED count.
+   A junior's dev-train diff should normally show SOLVED ≥ 1;
+   dev-NEUTRAL infrastructure is only acceptable when the brief names
+   the specific follow-up class it unblocks.
+3. Precision rules are unchanged — never trade a wrong for coverage.
+   Remaining buckets after ask shapes: "no quantity known" 191,
+   "0 price facts known" 143 (the pricing stack is live — find why price
+   facts don't emit), fold-conflicts 113, spend/pay event asks 66+44.
+
 Numbers below predate this session's work and need a fresh `rulekit
 stats` pass before trusting them.
 
