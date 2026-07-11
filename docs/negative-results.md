@@ -53,3 +53,9 @@ log consumed it. LESSON: a new FACT KIND changes what value accounting
 considers "read" — every future fact kind must decide explicitly whether
 existence or use constitutes reading. Remaining re-landing (conversion
 spans, rate × population, entity slots) proceeds behind per-piece looks.
+
+**Update (look #8, 2026-07-11):** re-landing step 3, conversion spans
+(the `span_unit != rate.per` decline lifted, converting through the mined
+`reg.conversions` table), held TEST at the exact look #7 fingerprint —
+5/1/83.3%, zero TEST items touched at all. DEV both NEUTRAL. Shipped at
+`4836b01`. Remaining: rate × population, the `entity` slot type.

@@ -1,7 +1,8 @@
 # Session handoff — 2026-07-11
 
 Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
-State below is committed and pushed through `1c6453f` on `main` (github.com/ldupisani/rulekit).
+State below is committed through `4836b01` on `main` (github.com/ldupisani/rulekit;
+not yet pushed — check `git status`/`git log origin/main..HEAD` before assuming parity).
 
 ## Where the project is
 
@@ -15,15 +16,17 @@ every increment through the gates).
 **Current numbers (all verified at head):**
 - dev-train: 13 correct / 0 wrong (3,772 items, 100% precision)
 - dev-holdout: 12 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 112 · lint: 0 errors, 1 intended warning
-- TEST ledger (7 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
-  0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect → **5/1 (83.3%) ← live**
+- curated suite: 52/52 · pytest: 113 · lint: 0 errors, 1 intended warning
+- TEST ledger (8 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+  0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
+  5/1 (83.3%) → **5/1 (83.3%, look #8, zero TEST items touched) ← live**
 - The 1 persistent TEST wrong is a stable §3a unseen shape, present since look #1.
 
 ## The mining loop (how work ships)
 
 1. Baselines live in `projects/gsm8k/snapshots/` — the CURRENT baselines are
-   `narrow2-train.json` / `narrow2-holdout.json` (identical to head behavior).
+   `conv-train.json` / `conv-holdout.json` (identical to head behavior;
+   supersede `narrow2-*`, which predate the conversion-span re-land).
 2. Mine with throwaway scripts in the session scratchpad (never the repo):
    bucket `solve()` decline reasons over dev-train; `rulekit stats` also works.
 3. Build the tightest GENERAL mechanism (YAML rules/categories first; kernel
@@ -39,19 +42,18 @@ every increment through the gates).
 
 The rate-machinery revert is RESOLVED — culprit was accounting-by-existence,
 now fixed (a Rate's value counts as read only when the arithmetic log used
-it). Ask-specificity ordering and the narrow rate-span committer are LIVE.
-Still parked in git history at `2d7b90c`, each needing its own look:
-1. conversion spans ("10 meters a minute … in 2 hours" — lift the
-   span_unit != rate.per decline in answer.py's rate-span consumer)
-2. rate × population ("a bird eats 7 berries a day, Samuel has 5 birds" —
+it). Ask-specificity ordering, the narrow rate-span committer, and
+conversion spans (look #8, `4836b01`) are all LIVE. Still parked in git
+history at `2d7b90c`, each needing its own look:
+1. rate × population ("a bird eats 7 berries a day, Samuel has 5 birds" —
    lift the population decline; the reverted implementation summed
    _entity_total per holder of the rate's entity-kind)
-3. the `entity` slot type (factory-style common-noun ask subjects)
+2. the `entity` slot type (factory-style common-noun ask subjects)
 
 ## The next mining worklist (from the last close-miss scan)
 
 - ~500 rate/price compositions (many now decline WITH the rate read — the
-  remaining blockers are the three parked pieces above plus price-per-item
+  remaining blockers are the two parked pieces above plus price-per-item
   "2 quiches for $15.00 each" forms)
 - ~210 "no quantity known": partitions ("Ten OF THEM are yellow"), goal/
   deficit shapes ("goal is 30 situps … make up the rest")
@@ -88,7 +90,7 @@ Still parked in git history at `2d7b90c`, each needing its own look:
 ```
 uv run pytest -q
 uv run rulekit --project projects/gsm8k bench --slice suite|dev-train|dev-holdout [--snapshot F]
-uv run rulekit --project projects/gsm8k diff narrow2-train.json <new>.json
+uv run rulekit --project projects/gsm8k diff conv-train.json <new>.json
 uv run rulekit --project projects/gsm8k stats
 uv run rulekit --project projects/gsm8k serve         # designer :8321
 uv run rulekit --project projects/gsm8k bench --slice test --spend-test-look   # DELIBERATE
