@@ -1114,23 +1114,64 @@ Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
 known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) / 21
 info. TEST look #36: 6/1 (85.7%) — precision HELD, increment kept.
 
+## Increment 35: conjoined state-verb holdings (`<pending>`)
+
+Re-land of `mining/parked/state-verb-conjunction-3`, the mechanism deferred
+THREE times before — always for the same reason: its tests inherited a
+verbatim GSM8K train substring ("Maria has 4 dimes, 4 quarters, and 7
+nickels") from earlier parked branches' test files, blocking constitution
+review each time. This attempt rebased the mechanism only and wrote every
+test from a blank file with invented text (Priya/pens/pencils, Jordan/toys/
+books) — no text read from, copied, or paraphrased from any prior
+state-verb-conjunction branch.
+
+Scopes increment 11's conjunct-recovery walker (`_conjoined_purchase_items`
+in `learn.py`) to the `state` verb category (have/own/be) as well as
+`purchase`: each comma/conjunction segment's own counted noun becomes a
+sibling Quantity for the same subject, exactly like a purchase list's
+siblings. State siblings are ordinary holdings, never priced — only a
+purchase verb's own siblings emit a Price fact. Preserves the -3 branch's
+stop-on-verb discipline: the shared walker's tail scan STOPS the instant it
+meets another VERB and DISCARDS (does not flush) the in-progress segment
+when it does — a second finite clause coordinated with ','/'and' ("Priya
+has 5 pens, and Jordan has 6 books") is a NEW clause, not a sibling noun
+phrase, and must never leak its own subject/dobj into the first entity's
+count. This fires unconditionally in the shared walker (purchase-item lists
+essentially never coordinate a whole second clause before the period), so
+purchase-verb behavior (increment 11) is unaffected — verified by a
+non-regression test in the new suite plus `tests/test_mining_increment_11.py`
+(its `test_plain_multi_dobj_conjunction_still_declines` now uses an EVENT
+verb, "ate", since it documented exactly the gap this candidate closes for
+state verbs).
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(3772 items, 14/0 unchanged), dev-holdout diff NEUTRAL 0/0/0 (3701 items,
+15/0 unchanged), pytest 288 passed (was 277 + 11 new, now
+`tests/test_mining_increment_35.py`), suite 52/52, lint 0 errors / 1
+known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) / 21
+info. Shipped NEUTRAL on dev: this narrow, structural fix is proven
+directly by the synthetic suite (two/three-item conjunct recovery including
+Oxford comma, 'own' variant, spelled-out numbers, coordinated-second-clause
+decline-safety with and without a counted subject in the second clause,
+negated-state-conjunction decline-safety, state-sibling-never-priced
+decline-safety, purchase-conjunction non-regression, event-verb
+non-regression) — no dev-train/dev-holdout item happens to need exactly
+this shape without also hitting an unrelated, already-open gap (matches the
+prior parked attempt's own finding).
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 Numbers below predate this session's work and need a fresh `rulekit
 stats` pass before trusting them.
 
-- **state-verb-conjunction — deferred THREE times, always for the same
-  test contamination.** Batch 6's attempt (parked as
-  `mining/parked/state-verb-conjunction-3`) passed the dev gates but was
-  review-blocked because its tests contain "Maria has 4 dimes, 4
-  quarters, and 7 nickels" — a verbatim GSM8K train substring inherited
-  from the earlier parked branches' tests. The MECHANISM appears sound
-  across all three attempts. Next attempt: rebase the mechanism from
-  `state-verb-conjunction-3`, but write the tests from a blank file —
-  do NOT copy anything from any `mining/parked/state-*` branch's tests/.
-  (Batch 5's other parked briefs all landed in batch 6: `age-asks` →
-  increment 31, `need-as-goal` → 32, `money-left-asks` → 33,
-  `attr-qualified-entities` → 34.)
+- **state-verb-conjunction — LANDED as increment 35** after three prior
+  deferrals for the same test contamination (verbatim GSM8K substring
+  inherited from earlier parked branches' tests/); this attempt rebased
+  the mechanism only and wrote every test from a blank file. (Batch 5's
+  other parked briefs all landed in batch 6: `age-asks` → increment 31,
+  `need-as-goal` → 32, `money-left-asks` → 33, `attr-qualified-entities`
+  → 34.)
 
 - **Event-then-restate state disambiguation in `_entity_total`
   (answer.py)** — surfaced by /mine batch 3's failed `state-conjunction`
@@ -1261,11 +1302,11 @@ stats` pass before trusting them.
   digits; "splits the cost with his brother" has none, so it slipped past
   every numeric guard and only a dev-holdout wrong caught it (increment 10).
 - The verb→dobj binding only captures the FIRST conjunct in "buys X and
-  Y" / "X, Y, and Z" for verbs outside the `purchase` category — a
-  pre-existing, general conjunction-handling gap that silently drops
+  Y" / "X, Y, and Z" for verbs outside the `purchase`/`state` categories —
+  a pre-existing, general conjunction-handling gap that silently drops
   every conjunct after the first from the fold entirely. Increment 11
-  closed it for purchase verbs only; it is STILL OPEN for 'has',
-  'contains', and event verbs generally.
+  closed it for purchase verbs, increment 35 for state verbs (have/own/
+  be); it is STILL OPEN for 'contains' and event verbs generally.
 - A shared clause-boundary scan (`_is_rate`/`_price_each_value`, used by
   EVERY verb's rate-marker detection) must never be widened globally to
   fix one caller's edge case — a comma-boundary fix aimed at purchase

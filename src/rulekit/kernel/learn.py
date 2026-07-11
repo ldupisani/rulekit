@@ -287,6 +287,19 @@ def _conjoined_purchase_items(
     for unit in units[i + 1 :]:
         if unit.sense() == "complementizer" or unit.surface in (".", "?", "!"):
             break
+        if unit.sense() == "verb":
+            # a second finite clause starts here (its own subject/verb, not
+            # a sibling noun phrase in first_item's list) — stop WITHOUT
+            # flushing the in-progress segment. Purchase-item lists almost
+            # never coordinate a whole second clause before the period, but
+            # state-verb sentences commonly do ("Sam has 3 apples, and
+            # Kendall has 6 dimes"); walking into the second clause would
+            # read ITS subject/dobj as a sibling of first_item, and
+            # flushing an in-progress segment here would misattribute that
+            # clause's own subject noun phrase ("...and her 6 dimes are on
+            # the table") to first_item's entity instead of declining.
+            segment = []
+            break
         if unit.surface == "," or unit.sense() == "conjunction":
             if seen_delimiter and segment:
                 _flush(segment)
@@ -584,12 +597,15 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                             occurrence=occurrence,
                         )
                     )
-                if is_purchase_verb:
-                    # "buys A at $X each, B, and C at $Z each" — the dobj
-                    # obligation only bound A; recover the conjoined siblings
-                    # and fold each as its own purchase (Quantity + Price
-                    # when that sibling has its own 'each', or a flat 'for
-                    # $N' price on a bare singular sibling).
+                if is_purchase_verb or is_state:
+                    # "buys A at $X each, B, and C at $Z each" (purchase verbs)
+                    # or "has A and B" / "owns X, Y, and Z" (state verbs) — the
+                    # dobj obligation only bound the FIRST item; recover the
+                    # conjoined siblings via the SAME segmentation increment 11
+                    # built for purchase lists and fold each as its own
+                    # Quantity. A state verb's siblings are ordinary holdings,
+                    # never purchases — a stated 'each' there is not a price —
+                    # so only a purchase verb's siblings ever emit a Price.
                     for item, item_qty, price_value in _conjoined_purchase_items(reading, reg, dobj):
                         facts.append(
                             Quantity(
@@ -604,7 +620,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                                 time=time_label,
                             )
                         )
-                        if price_value is not None:
+                        if is_purchase_verb and price_value is not None:
                             facts.append(
                                 Price(
                                     provenance=prov,
