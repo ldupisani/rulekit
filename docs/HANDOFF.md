@@ -538,6 +538,53 @@ cleanly on a staging base that included a since-reverted vocabulary
 increment; re-proven clean here on `mining/batch-2026-07-11e`.
 TEST look #22: pending — spent manually.
 
+## Increment 22: remaining-budget capacity asks (budget minus other purchases, div unit price) (`e9af27c`)
+
+Extends increment 19's 'capacity' consumer (budget / unit price) to a budget
+entangled with OTHER purchases the same entity already made ("Pens cost $2
+each. Nora has $20. She buys a notebook for $8. How many pens can Nora
+buy?"). Increment 19 declined any such entanglement outright ("the budget
+would need splitting across items"). Now: when every entangled other-priced
+item is itself a fully-priced, unambiguous PURCHASE (qty and price both
+known, no cost-splitting predicate on the entity), remaining = budget -
+Σ(qty x price over those other purchases) is computed and the existing
+floor division runs on the remainder instead of declining.
+
+Mechanism (`src/rulekit/kernel/answer.py`): `_purchase_total` gains an
+opt-in `exclude_item` parameter (default `None`, every existing caller
+unaffected) so the capacity consumer can total the entity's OTHER priced
+purchases without double-counting the asked item. This reuses
+`_purchase_total`'s own increment-10 invariant (an unpriced purchase, or a
+'splits/shares the cost' predicate on the entity, declines the WHOLE
+total) unscoped, so it automatically extends to the subtraction path. A
+negative remainder declines. Any other-priced item held via a NON-purchase
+verb ("has"/"owns") is not spending and stays the original increment-19
+decline (ambiguous). `tests/test_mining_increment_19.py` is updated in
+step: its "entangled other priced item declines" case (Mary's 3 erasers
+alongside a priced pen ask) is exactly the class this increment now
+converts to a commit ((10 - 3) / 2 = 3 floor); the stale assertion and
+comment are replaced, and a new decline case (an entangled purchase with a
+FURTHER unpriced purchase) preserves coverage of the still-open
+increment-10 invariant.
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(3772 items, 14/0 unchanged — no dev-train item currently reaches this
+exact entangled-other-purchase structure), dev-holdout diff NEUTRAL 0/0/0
+(3701 items, 14/0 unchanged), pytest 206 passed (was 199 + 7 new, now
+`tests/test_mining_increment_22.py`), suite 52/52, lint 0 errors / 1
+known-good warning (fraction-of-remnant / fraction-of-pool, same as
+increments 16-21). Shipped NEUTRAL on dev: the mechanism is exercised and
+verified via the synthetic suite (direct entangled-purchase subtraction
+computing the correct remaining budget, decline-safety when a further
+purchase is unpriced, decline-safety when the remainder would go negative,
+and a regression check that a non-purchase "has/owns" entanglement still
+declines as increment 19 originally specified). This is a re-land: the
+candidate previously passed constitution review and (except for the
+interchangeable-measure increment) already re-gated cleanly on a staging
+base that included a since-reverted vocabulary increment; re-proven clean
+here on `mining/batch-2026-07-11e`.
+TEST look #23: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 Numbers below predate this session's work and need a fresh `rulekit

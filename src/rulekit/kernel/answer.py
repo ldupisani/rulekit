@@ -96,7 +96,11 @@ def _verb_total(
 
 
 def _purchase_total(
-    store: FactStore, reg: Registry, entity: str, log: ArithmeticLog
+    store: FactStore,
+    reg: Registry,
+    entity: str,
+    log: ArithmeticLog,
+    exclude_item: str | None = None,
 ) -> float | None:
     """'3 toys at $10 each' priced purchases: Σ qty × unit price over every
     PURCHASE-verb quantity this entity holds. Any purchase whose item has
@@ -104,10 +108,17 @@ def _purchase_total(
     silently dropping a term (definitive-or-decline). A 'splits/shares the
     cost' predicate on the same buyer means the raw total isn't what they
     actually paid — the split factor is unbuilt, so decline rather than
-    risk the pre-split number."""
+    risk the pre-split number.
+
+    `exclude_item` (opt-in, default None — every other caller is
+    unaffected) omits one item's own purchase-verb quantities from the
+    sum; the remaining-budget capacity path uses it to total the entity's
+    OTHER priced purchases without double-counting the asked item."""
     buys = [
         q for q in store.by_kind(Quantity)
-        if q.entity == entity and reg.word_in_category(q.verb, "purchase")
+        if q.entity == entity
+        and reg.word_in_category(q.verb, "purchase")
+        and q.measure != exclude_item
     ]
     if not buys:
         return None
@@ -513,8 +524,11 @@ def answer(
         # a budget shared across SEVERAL priced purchases needs splitting —
         # this mechanism only ever does a single floor division, so any
         # OTHER priced item this entity also has a quantity of (bought,
-        # wants, holds) makes the budget ambiguous and must decline rather
-        # than silently spend the whole budget on the asked item alone.
+        # wants, holds) makes the budget ambiguous UNLESS every one of
+        # those other items is itself a fully-priced, unambiguous PURCHASE
+        # (a genuine "buys X for $Y" the entity already made) — in that
+        # one case the remaining budget after those purchases is exactly
+        # computable, so subtract it instead of declining outright.
         all_priced_items = {p2.item for p2 in store.by_kind(Price)}
         other_priced = sorted(
             {
@@ -526,11 +540,46 @@ def answer(
             }
         )
         if other_priced:
-            return Answer(
-                "decline", None,
-                f"{entity!r} also has priced {other_priced} — the budget "
-                "would need splitting across items",
+            # any other-priced item held via a NON-purchase verb ("wants"/
+            # "has") is not spending at all — the remaining-budget
+            # subtraction below only accounts for purchase-verb quantities,
+            # so such an item stays a genuine ambiguity (increment 19's
+            # original decline, unchanged).
+            non_purchase_other = {
+                q.measure
+                for q in store.by_kind(Quantity)
+                if q.entity == entity
+                and q.measure in other_priced
+                and not reg.word_in_category(q.verb, "purchase")
+            }
+            if non_purchase_other:
+                return Answer(
+                    "decline", None,
+                    f"{entity!r} also has priced {other_priced} — the budget "
+                    "would need splitting across items",
+                )
+            # _purchase_total already carries the increment-10 invariant
+            # (any unpriced purchase, or a 'splits/shares the cost'
+            # predicate on this entity, declines the WHOLE total) — reused
+            # here unscoped by item, so it extends unchanged to this
+            # subtraction path.
+            other_total = _purchase_total(store, reg, entity, log, exclude_item=item)
+            if other_total is None:
+                return Answer(
+                    "decline", None,
+                    f"{entity!r} also has priced {other_priced} — the budget "
+                    "would need splitting across items",
+                )
+            remaining = evaluate(
+                f"{budget} - {other_total}", {}, log, source="capacity-remaining"
             )
+            if remaining < 0:
+                return Answer(
+                    "decline", None,
+                    f"{entity!r}'s other purchases ({other_total}) exceed the "
+                    f"stated budget ({budget}) — remaining budget is negative",
+                )
+            budget = remaining
         count = evaluate(
             f"round({budget} / {price.value}, 6) // 1", {}, log, source="capacity"
         )

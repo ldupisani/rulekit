@@ -6,9 +6,11 @@ factual asks exclude it and a capacity shape can claim it instead), plus a
 
 The consumer commits ONLY when: a Price fact for the asked item exists
 (exactly one), a UNIQUE explicit budget is stated (the ask's own "with $B"
-tail, or absent that, the entity's single stated money holding), and no
-OTHER priced item is entangled with the same entity (a shared budget across
-several purchases would need subtraction this mechanism does not attempt).
+tail, or absent that, the entity's single stated money holding), and any
+OTHER priced item entangled with the same entity is itself a resolvable
+purchase (a later increment, remaining-budget-capacity, subtracts those
+purchases from the budget instead of declining outright — anything less
+resolvable than that still declines exactly as before).
 Floor division uses round-then-floor to avoid float-precision false floors
 (e.g. 1.0 // 0.1 == 9.0 in raw floating point, not 10). Synthetic only."""
 
@@ -99,13 +101,33 @@ def test_multiple_money_holdings_declines(full_registry):
     assert r.answer.kind == "decline"
 
 
-def test_entangled_other_priced_item_declines(full_registry):
+def test_entangled_but_fully_priced_purchase_computes_remaining_budget(full_registry):
     # Mary's budget is shared across pens AND erasers (she already bought
-    # erasers) — this mechanism only ever does a single floor division, so
-    # it must decline rather than silently spend the whole $10 on pens
+    # erasers) — a later increment (remaining-budget-capacity) taught this
+    # mechanism to subtract the entity's OTHER fully-priced purchases
+    # (3 erasers x $1 = $3) from the budget before dividing, rather than
+    # declining outright: (10 - 3) / 2 = 3 (floor).
     r = solve(
         "Pens cost 2 dollars each. Erasers cost 1 dollar each. "
         "Mary buys 3 erasers. How many pens can Mary buy with 10 dollars?",
+        full_registry,
+    )
+    assert r.answer.value == 3
+
+
+def test_entangled_purchase_with_a_further_unpriced_purchase_still_declines(
+    full_registry,
+):
+    # erasers ARE fully priced and resolvable, but Mary also bought 2
+    # markers with no stated price at all — the remaining-budget total
+    # can't drop that unpriced term silently (the increment-10
+    # definitive-or-decline invariant, reused unscoped here), so this
+    # must still decline exactly as before remaining-budget subtraction
+    # existed.
+    r = solve(
+        "Pens cost 2 dollars each. Erasers cost 1 dollar each. "
+        "Mary buys 3 erasers. Mary buys 2 markers. "
+        "How many pens can Mary buy with 10 dollars?",
         full_registry,
     )
     assert r.answer.kind == "decline"
