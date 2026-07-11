@@ -583,6 +583,24 @@ asks:
       member: "{member}"
       collection: "{coll}"
 
+  - id: ask/how-many-capacity
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {slot: modal, type: modal}
+        - {slot: who, type: entity}
+        - {slot: verb, type: verb}
+        - opt:
+            - {lit: with}
+            - {slot: budget, type: counted}
+    resolves:
+      consumer: capacity
+      entity: "{who}"
+      item: "{item}"
+      budget_value: "{budget.value}"
+
   - id: ask/how-many-partition
     match:
       question:

@@ -452,6 +452,74 @@ def answer(
             f"{total} total {item!r} minus {part.value} {attribute!r}",
         )
 
+    if consumer == "capacity":
+        # "how many X can/could/... WHO buy/purchase/afford (with $B)?" —
+        # budget ÷ unit price, floored (leftover money is never itself
+        # part of the count). The verb/modal are structural glue only
+        # (increment 14 split 'modal' from 'auxiliary' precisely so this
+        # ask can claim the token factual asks now exclude); the SEMANTIC
+        # gate is a Price fact for the asked item plus a UNIQUE explicit
+        # budget — never a surface cue. The budget is either the ask's own
+        # "with $B" tail or, absent that, the entity's single stated money
+        # holding; anything else (zero, or more than one, of either) is a
+        # genuine ambiguity and declines.
+        entity = query["entity"]
+        item = reg.plural_to_singular.get(query["item"], query["item"])
+        prices = [p for p in store.by_kind(Price) if p.item == item]
+        if len(prices) != 1:
+            return Answer(
+                "decline", None,
+                f"{len(prices)} price facts known for {item!r} — a capacity "
+                "ask needs exactly one",
+            )
+        price = prices[0]
+        budget_raw = query.get("budget_value")
+        if budget_raw is not None:
+            budget = evaluate(str(budget_raw), {}, log, source="capacity-budget")
+        else:
+            holdings = [
+                q for q in store.by_kind(Quantity)
+                if q.entity == entity and q.is_state
+                and (q.measure == "currency" or reg.word_in_category(q.measure, "currency"))
+            ]
+            if len(holdings) != 1:
+                return Answer(
+                    "decline", None,
+                    f"{len(holdings)} money holdings known for {entity!r} — "
+                    "no explicit budget stated and no unique holding to use",
+                )
+            budget = evaluate(
+                str(holdings[0].value), {}, log, source="capacity-budget"
+            )
+        # a budget shared across SEVERAL priced purchases needs splitting —
+        # this mechanism only ever does a single floor division, so any
+        # OTHER priced item this entity also has a quantity of (bought,
+        # wants, holds) makes the budget ambiguous and must decline rather
+        # than silently spend the whole budget on the asked item alone.
+        all_priced_items = {p2.item for p2 in store.by_kind(Price)}
+        other_priced = sorted(
+            {
+                q.measure
+                for q in store.by_kind(Quantity)
+                if q.entity == entity
+                and q.measure != item
+                and q.measure in all_priced_items
+            }
+        )
+        if other_priced:
+            return Answer(
+                "decline", None,
+                f"{entity!r} also has priced {other_priced} — the budget "
+                "would need splitting across items",
+            )
+        count = evaluate(
+            f"round({budget} / {price.value}, 6) // 1", {}, log, source="capacity"
+        )
+        return Answer(
+            "number", count,
+            f"floor({budget} / {price.value}) — budget ÷ unit price of {item!r}",
+        )
+
     if consumer == "membership-verdict":
         member, collection = query["member"], query["collection"]
         singular = reg.plural_to_singular.get(collection, collection)

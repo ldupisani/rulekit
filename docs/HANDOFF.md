@@ -398,6 +398,54 @@ dev-holdout items matching the premise shape) is the coverage evidence in
 the meantime.
 TEST look: pending — spent manually.
 
+## Increment 19: capacity asks (budget / unit price) (`<pending>`)
+
+"How many X can/could/... WHO buy/purchase/afford (with $B)?" — a genuinely
+NEW ask shape and a new committer (§3a unseen-structure risk family), kept
+narrow via structural gates rather than surface cues:
+
+1. A new `modal` slot type (`schemas.py` SLOT_TYPES, `patterns.py`
+   `_slot_ok`) keyed on the `modal` sense increment 14 split from
+   `auxiliary` — existing factual asks are auxiliary-gated and structurally
+   cannot match a modal token, so `ask/how-many-capacity` (`core.yaml`) is
+   the first ask able to claim this form. Zero ordering/overlap risk with
+   the ~18 existing asks: they simply never see a modal.
+2. `ask/how-many-capacity` matches "how many ITEM MODAL WHO VERB (with
+   BUDGET)?" (WHO: `type: entity` — name | common noun | resolved pronoun,
+   scoped to this ask id only). The optional "with $B" tail is the primary
+   budget source; `{budget.value}` in `resolves` marks it
+   pattern_consumed for the value-accounting guard, matching the rate-span
+   asks' `{span.value}` precedent.
+3. A new `capacity` consumer (`answer.py`) commits ONLY when: exactly one
+   Price fact exists for the asked item; a UNIQUE budget resolves (the
+   ask's own "with $B", or absent that, the entity's single stated money
+   holding); and no OTHER priced item is entangled with the same entity (a
+   shared budget across several purchases needs subtraction this mechanism
+   does not attempt — declines rather than risks a wrong; caught in
+   development against a real dev-train item shaped like a pens-and-pencils
+   shared-budget problem). Floor semantics use `round(budget/price, 6) //
+   1` rather than raw `//` — plain floordiv is a float-precision trap
+   (`1.0 // 0.1 == 9.0` in raw IEEE division, not 10); the synthetic suite
+   has a dedicated regression test for this (0.3 / 0.1).
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(14/0 unchanged), dev-holdout diff NEUTRAL 0/0/0 (14/0 unchanged), pytest
+184 passed (was 175 + 9 new, now `tests/test_mining_increment_19.py`),
+suite 52/52, lint 0 errors / 1 known-good warning (fraction-of-remnant /
+fraction-of-pool, same as increments 16-18). Shipped NEUTRAL on dev: the
+7 dev-train / 2 dev-holdout items matching the surface "how many X can WHO
+buy" shape all require additional derivation this brief scopes out
+(remaining-money-after-other-purchases, rate-derived budgets, or
+saves-enough-to-buy-N-at-an-old-price) and correctly decline rather than
+risk a wrong. The mechanism is exercised and verified via the synthetic
+suite (direct "with $B" budget, single-holding-fallback budget, multiple
+candidate budgets → decline, missing Price → decline, entangled
+second-priced-item → decline, floor-vs-round regression) — shipped as
+tested, safe infrastructure for a future combined increment (e.g.
+remaining-budget capacity asks), matching the pattern of several prior
+NEUTRAL-on-dev increments in this campaign.
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 Numbers below predate this session's work and need a fresh `rulekit

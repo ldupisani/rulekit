@@ -97,6 +97,12 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
             return sense == "verb"
         if t == "auxiliary":
             return sense == "auxiliary"
+        if t == "modal":
+            # increment 14 split 'modal' (can/could/will/would/should/may/
+            # might/must) from 'auxiliary' precisely so factual asks
+            # (auxiliary-gated) exclude it and a capacity ask (budget ÷
+            # unit price) can claim the modal token structurally.
+            return sense == "modal"
         if t == "pronoun":
             return sense == "pronoun"
         if t == "word":
