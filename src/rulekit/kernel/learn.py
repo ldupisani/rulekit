@@ -30,6 +30,21 @@ def _bound(unit: Unit, need: str) -> Unit | None:
     return None
 
 
+def _has_distributive_determiner(reading: Reading, noun: Unit) -> bool:
+    """'Each pen costs $3' — a quantifier ('each'/'every'/...) whose own
+    `collection` obligation resolves to THIS noun is a distributive
+    determiner scoped over it, structurally identical to the trailing
+    '$3 each' shape _is_rate already recognizes (same sense gate, opposite
+    side of the noun). Reverse lookup mirrors `_negated`'s pattern: scan
+    every unit's obligations for one bound TO this target, since the
+    quantifier -> collection edge only runs quantifier-to-noun, never
+    noun-to-quantifier."""
+    for unit in reading.units:
+        if _bound(unit, "collection") is noun:
+            return True
+    return False
+
+
 def _negated(reading: Reading, verb: Unit) -> bool:
     for unit in reading.units:
         for ob in unit.obligations():
@@ -433,10 +448,16 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
             # (_is_rate's existing quantifier scan) is what makes this a
             # PER-UNIT price rather than an unbuilt lump-sum/rate reading
             # (_rate_unit not None means a 'per NOUN' marker instead —
-            # different semantics, left alone). Either way 'cost' + a
-            # currency dobj is NEVER a holding: a price statement always
-            # skips the generic Quantity fallback below, priced or not.
-            if _is_rate(reading, dobj) and _rate_unit(reading, dobj) is None:
+            # different semantics, left alone). "Each ITEM costs $PRICE" —
+            # the SAME distributive quantifier, but scoped over the subject
+            # noun itself rather than trailing the price — is structurally
+            # equivalent (_has_distributive_determiner) and gets the
+            # identical Price fact. Either way 'cost' + a currency dobj is
+            # NEVER a holding: a price statement always skips the generic
+            # Quantity fallback below, priced or not.
+            if (
+                _is_rate(reading, dobj) and _rate_unit(reading, dobj) is None
+            ) or _has_distributive_determiner(reading, subject):
                 facts.append(
                     Price(
                         provenance=prov,

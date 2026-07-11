@@ -852,6 +852,41 @@ the decline discipline (ambiguous collection, no prior collection,
 unresolved total) holding throughout.
 TEST look: pending — spent manually.
 
+## Increment 29: determiner-each subject prices (Each ITEM costs $N) (`<pending-commit>`)
+
+The SUBJECT-side counterpart of increment 15's TRAILING distributive-'each'
+shape ("Eggs cost $2 each"): "Each pen costs 3 dollars" declined `0 price
+facts known` because the price_verb emission path only recognized the
+distributive quantifier trailing the currency dobj, never one scoping the
+subject noun itself. Fresh stats: "0 price facts known" = 139, "no pay
+events" = 45, "no spend events" = 67; cue scan found 47 dev-train items
+matching "each NOUN cost(s)".
+
+Mechanism: a new helper `_has_distributive_determiner` in `learn.py`
+mirrors `_negated`'s reverse-obligation-lookup pattern — scanning every
+unit in the reading for one whose `collection` obligation resolves to the
+price_verb's SUBJECT noun (the quantifier -> collection edge only runs
+quantifier-to-noun, never noun-to-quantifier, so the lookup must be
+reversed). The price_verb Price-emission condition becomes an OR of the
+pre-existing trailing-each test (`_is_rate` + `_rate_unit is None`,
+UNWIDENED per the increment-11 invariant) and this new subject-side test —
+same sense gate ('quantifier'), opposite side of the noun. No `answer.py`
+change: the increment-10/15 purchase-total consumer already matches Price
+facts by item noun regardless of emission site.
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(3772 items, 14/0 unchanged), dev-holdout diff NEUTRAL 0/0/0 (3701 items,
+14/0 unchanged), pytest 246 passed (was 239 + 7 new, now
+`tests/test_mining_increment_29.py`), suite 52/52, lint 0 errors / 1
+known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) / 22
+info. Shipped NEUTRAL on dev: 0 SOLVED because no sampled dev-train/
+dev-holdout item pairs this subject-priced-each shape with a companion
+purchase sentence on the same item noun in this slice — the mechanism is
+proven directly ("Tom buys 2 pens. Each pen costs 3 dollars. How much does
+Tom pay?" -> 6) and via the 47-item cue scan (0 new correct, 0 new wrong;
+every match still declines on a separate, unrelated gap).
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 Numbers below predate this session's work and need a fresh `rulekit
