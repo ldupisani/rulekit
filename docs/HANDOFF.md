@@ -1,7 +1,7 @@
 # Session handoff — 2026-07-11
 
 Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
-State below is committed through `be038b3` on `main` (github.com/ldupisani/rulekit;
+State below is committed through `87dbb7d` on `main` (github.com/ldupisani/rulekit;
 check `git status`/`git log origin/main..HEAD` before assuming push parity).
 
 ## Where the project is
@@ -15,9 +15,9 @@ every increment through the gates).
 
 **Current numbers (all verified at head):**
 - dev-train: 14 correct / 0 wrong (3,772 items, 100% precision)
-- dev-holdout: 14 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 252 · lint: 0 errors, 1 intended warning
-- TEST ledger (32 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- dev-holdout: 15 correct / 0 wrong (3,701 items — increment 33 was a real holdout SOLVE)
+- curated suite: 52/52 · pytest: 277 · lint: 0 errors, 1 intended warning
+- TEST ledger (36 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -30,7 +30,9 @@ every increment through the gates).
   6/1 (85.7%, look #27) → 6/1 (#28) → 6/1 (#29) → 6/1 (#30) → 6/1 (#31) →
   6/2 (75.0%, look #32: the fruit/fruits family alone, REVERTED — and the
   look #20 culprit thereby IDENTIFIED; fruit is now quarantined, see
-  docs/negative-results.md) → **6/1 (85.7%) ← live at increment 30** —
+  docs/negative-results.md) → 6/1 (#33) → 6/1 (#34) → 6/1 (#35) →
+  **6/1 (85.7%, look #36) ← live at increment 34** — #33–#36 batch 6
+  (the parked briefs: increments 31–34 all held) —
   #12–#13 batch 1, #14 the modal split, #15–#16 batch 2, #17–#19 batch 3,
   #20 vocab revert, #21–#27 batch-4 re-land, #28–#32 batch 5 (increments
   27–30 held; 31 reverted); precision held on every surviving increment
@@ -770,7 +772,7 @@ run re-proves the gate on `mining/batch-2026-07-11e`, the corrected
 staging lineage, from scratch.
 TEST look #27: 6/1 (85.7%) — precision HELD, increment kept.
 
-## Increment 27: negated-clause quantities (negation-blind fold) (`<pending-commit>`)
+## Increment 27: negated-clause quantities (negation-blind fold) (`d2d92cb`)
 
 Live confident-wrong invisible to the decline-bucket stats: "Tom does not
 have 5 apples. How many apples does Tom have?" committed 5.0 — the fold
@@ -804,9 +806,9 @@ correct/wrong classification changes on this slice (decline-only guard,
 "never", "no longer", clause-scoped so an unrelated negation elsewhere in
 the sentence doesn't blank an unrelated fold, and the pre-existing copula
 "is not" shape still declines as before) is the coverage evidence.
-TEST look: pending — spent manually.
+TEST look #28: 6/1 (85.7%) — precision HELD, increment kept.
 
-## Increment 28: fraction/percent partitions (N% / half of them are ADJ|NOUN) (`<pending-commit>`)
+## Increment 28: fraction/percent partitions (N% / half of them are ADJ|NOUN) (`7c7572b`)
 
 The PREMISE-side counterpart of increments 16/17's count-valued partition
 machinery ("N of them are ADJ/NOUN"): "25% of them are red" / "Half of the
@@ -853,9 +855,9 @@ dev-holdout item's grammatical shape is a full-commit fix on this slice
 sentences ("25% of them are red", "Half of the 10 apples are red"), with
 the decline discipline (ambiguous collection, no prior collection,
 unresolved total) holding throughout.
-TEST look: pending — spent manually.
+TEST look #29: 6/1 (85.7%) — precision HELD, increment kept.
 
-## Increment 29: determiner-each subject prices (Each ITEM costs $N) (`<pending-commit>`)
+## Increment 29: determiner-each subject prices (Each ITEM costs $N) (`7b66d7b`)
 
 The SUBJECT-side counterpart of increment 15's TRAILING distributive-'each'
 shape ("Eggs cost $2 each"): "Each pen costs 3 dollars" declined `0 price
@@ -888,9 +890,9 @@ purchase sentence on the same item noun in this slice — the mechanism is
 proven directly ("Tom buys 2 pens. Each pen costs 3 dollars. How much does
 Tom pay?" -> 6) and via the 47-item cue scan (0 new correct, 0 new wrong;
 every match still declines on a separate, unrelated gap).
-TEST look: pending — spent manually.
+TEST look #30: 6/1 (85.7%) — precision HELD, increment kept.
 
-## Increment 30: sales revenue asks (how much does WHO make/earn from selling N ITEM at $P each) (`<pending-commit>`)
+## Increment 30: sales revenue asks (how much does WHO make/earn from selling N ITEM at $P each) (`be038b3`)
 
 The sell-side mirror of increment 10's purchase-total. Fresh stats: "no
 'make' events" = 33, "no 'sell'" = 7, "no 'earn'" = 7; probe "Tom sells 5
@@ -929,9 +931,9 @@ above for verbs outside `purchase`; profit is out of this brief's scope) —
 the mechanism is proven directly ("Tom sells 5 cakes at 3 dollars each. How
 much money does Tom make?" -> 15) plus the ambiguity/decline probes in the
 synthetic suite.
-TEST look: pending — spent manually.
+TEST look #31: 6/1 (85.7%) — precision HELD, increment kept.
 
-## Increment 31: age asks (how old is WHO, over stated ages and older/younger relations) (`<pending-commit>`)
+## Increment 31: age asks (how old is WHO, over stated ages and older/younger relations) (`f239764`)
 
 Re-land of the batch-5 parked branch (`mining/parked/age-asks`), rebased onto
 current main via cherry-pick (clean — no conflicts this time; the earlier
@@ -976,9 +978,9 @@ the full stated-age + relation chain end to end (typical for this pack) —
 the mechanism is proven directly by the synthetic suite (stated-age lookup,
 older/younger relation chaining in either narration order, dangling-
 comparative decline, future-age decline) plus the frequency estimate above.
-TEST look: pending — spent manually.
+TEST look #33: 6/1 (85.7%) — precision HELD, increment kept.
 
-## Increment 32: stated-need premises as goals (WHO needs N ITEM) (`<pending-commit>`)
+## Increment 32: stated-need premises as goals (WHO needs N ITEM) (`8263f1e`)
 
 Re-land of the batch-5 parked branch (`mining/parked/need-as-goal`), reapplied
 by hand (the stored patch no longer applied cleanly due to context drift in
@@ -1021,9 +1023,9 @@ the full needs-premise + deficit-ask chain end to end (typical for this
 pack) — the mechanism is proven directly by the synthetic suite (goal
 emission, deficit resolution, the killed SVO-fold confident-wrong, and the
 `need_premise`/`receive` category split) plus the frequency estimate above.
-TEST look: pending — spent manually.
+TEST look #34: 6/1 (85.7%) — precision HELD, increment kept.
 
-## Increment 33: remaining-money asks (how much money does WHO have left) (`ee06024` squashed)
+## Increment 33: remaining-money asks (how much money does WHO have left) (`51853aa`)
 
 Re-land of the batch-5 parked branch (`mining/parked/money-left-asks`): the
 mechanism had already passed the full dev gate once; it was blocked only
@@ -1067,10 +1069,10 @@ Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
 15/1 solved — item `4a394fadccdf`), pytest 273 passed (was 265 + 8 new, now
 `tests/test_mining_increment_33.py`), suite 52/52, lint 0 errors / 1
 known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) / 21
-info. TEST look: pending — spent manually.
+info. TEST look #35: 6/1 (85.7%) — precision HELD, increment kept.
 
 ## Increment 34: attribute-qualified entity identity (coconut trees vs mango
-trees fold as distinct entities)
+trees fold as distinct entities) (`87dbb7d`)
 
 Re-land of the batch-5 parked branch (`mining/parked/attr-qualified-entities`),
 rebased onto increment 25's owner machinery (the cherry-pick conflict that
@@ -1110,21 +1112,25 @@ Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
 15/0 unchanged), pytest 277 passed (was 273 + 4 new, now
 `tests/test_mining_increment_34.py`), suite 52/52, lint 0 errors / 1
 known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) / 21
-info. TEST look: pending — spent manually.
+info. TEST look #36: 6/1 (85.7%) — precision HELD, increment kept.
 
 ## The next mining worklist (from the last close-miss scan)
 
 Numbers below predate this session's work and need a fresh `rulekit
 stats` pass before trusting them.
 
-- **Parked, near-ready briefs from batch 5** (branches under
-  `mining/parked/`; all passed constitution review and deferred only
-  on cherry-pick conflicts against increments that have since landed — a
-  fresh junior rebasing on current main should land them cheaply):
-  `state-verb-conjunction` (use `mining/parked/state-verb-conjunction-2`,
-  the post-increment-24 attempt). (`age-asks` landed as increment 31;
-  `need-as-goal` landed as increment 32; `money-left-asks` landed as
-  increment 33; `attr-qualified-entities` landed as increment 34.)
+- **state-verb-conjunction — deferred THREE times, always for the same
+  test contamination.** Batch 6's attempt (parked as
+  `mining/parked/state-verb-conjunction-3`) passed the dev gates but was
+  review-blocked because its tests contain "Maria has 4 dimes, 4
+  quarters, and 7 nickels" — a verbatim GSM8K train substring inherited
+  from the earlier parked branches' tests. The MECHANISM appears sound
+  across all three attempts. Next attempt: rebase the mechanism from
+  `state-verb-conjunction-3`, but write the tests from a blank file —
+  do NOT copy anything from any `mining/parked/state-*` branch's tests/.
+  (Batch 5's other parked briefs all landed in batch 6: `age-asks` →
+  increment 31, `need-as-goal` → 32, `money-left-asks` → 33,
+  `attr-qualified-entities` → 34.)
 
 - **Event-then-restate state disambiguation in `_entity_total`
   (answer.py)** — surfaced by /mine batch 3's failed `state-conjunction`
