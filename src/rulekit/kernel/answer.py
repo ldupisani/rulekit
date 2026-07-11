@@ -184,9 +184,9 @@ def answer(
         return Answer("number", total, f"fold over {entity!r}/{singular!r}")
 
     if consumer == "rate-span":
-        # Re-landing step 3 (docs/negative-results.md): conversion spans
-        # lifted via the mined conversions table. Population of the rate's
-        # entity-kind still declines — its own TEST look.
+        # Re-landing step 4 (docs/negative-results.md): conversion spans
+        # and rate x population are both live. The entity slot type is
+        # the one remaining parked piece.
         entity = query["entity"]
         measure = reg.plural_to_singular.get(query["measure"], query["measure"])
         span_unit = reg.plural_to_singular.get(query["span_unit"], query["span_unit"])
@@ -219,11 +219,31 @@ def answer(
                 f"no conversion from {span_unit!r} to the rate's "
                 f"{rate.per!r} — cannot span",
             )
-        if any(q.measure == rate.entity for q in store.by_kind(Quantity)):
+        # a PER-INDIVIDUAL rate ("a bird eats 7 berries a day") multiplies
+        # by the population when every holder's total resolves
+        holders = sorted(
+            {q.entity for q in store.by_kind(Quantity) if q.measure == rate.entity}
+        )
+        if holders:
+            pop_totals = [
+                _entity_total(store, reg, h, rate.entity, log) for h in holders
+            ]
+            if any(t is None for t in pop_totals):
+                return Answer(
+                    "decline", None,
+                    f"the rate is per-{rate.entity} but the population "
+                    "does not resolve",
+                )
+            population = evaluate(
+                " + ".join(str(t) for t in pop_totals), {}, log, source="rate-population"
+            )
+            total = evaluate(
+                f"{rate.value} * {population} * {k}", {}, log, source="rate-span"
+            )
             return Answer(
-                "decline", None,
-                f"the rate is per-{rate.entity} and a {rate.entity} "
-                "population is known — rate × population not yet re-landed",
+                "number", total,
+                f"{rate.value}/{rate.per} × {population} {rate.entity} × "
+                f"{k} {rate.per}",
             )
         total = evaluate(f"{rate.value} * {k}", {}, log, source="rate-span")
         return Answer(

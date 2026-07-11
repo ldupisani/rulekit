@@ -1,6 +1,8 @@
-"""Re-landing step 3: the rate-span committer plus conversion spans —
-exact or convertible units, lone rates. Population still declines behind
-its own TEST look (docs/negative-results.md)."""
+"""Re-landing steps 3+4: the rate-span committer, conversion spans, the
+`entity` slot type (name | common noun | resolved pronoun for ask
+subjects), and rate x population built on top of it — population is only
+reachable once the ask can name its holder via a common noun
+(docs/negative-results.md)."""
 
 from pathlib import Path
 
@@ -50,10 +52,30 @@ def test_unconvertible_span_declines(full_registry):
     assert "conversion" in r.answer.reason
 
 
-def test_population_declines_for_now(full_registry):
+def test_per_individual_rate_times_population(full_registry):
+    # 7/day per bird x 5 birds x 4 days
     r = solve(
         "A bird eats 7 berries a day. Samuel has 5 birds. "
         "How many berries does the bird eat in 4 days?",
+        full_registry,
+    )
+    assert r.answer.value == 140
+
+
+def test_population_across_multiple_holders_sums(full_registry):
+    # every holder of the rate's entity-kind contributes to the population
+    r = solve(
+        "A bird eats 7 berries a day. Samuel has 5 birds. Kevin has 3 birds. "
+        "How many berries does the bird eat in 4 days?",
+        full_registry,
+    )
+    assert r.answer.value == 224  # 7 * (5 + 3) * 4
+
+
+def test_entity_slot_still_requires_name_or_noun(full_registry):
+    # a pronoun that never resolves still cannot stand in for "who"
+    r = solve(
+        "A bird eats 7 berries a day. How many berries does it eat in 4 days?",
         full_registry,
     )
     assert r.answer.kind == "decline"

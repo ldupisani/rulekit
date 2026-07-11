@@ -81,6 +81,12 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
             return sense == "name"
         if t == "noun":
             return sense == "noun"
+        if t == "entity":
+            # anything that can HOLD a quantity: a name, a common noun
+            # ("the factory"), or a resolved pronoun
+            if sense == "pronoun":
+                return any(ob.need == "refers" and ob.met for ob in unit.obligations())
+            return sense in ("name", "noun")
         if t == "plural":
             return sense == "noun" and unit.features.get("number") == "plural"
         if t == "counted":
