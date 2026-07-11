@@ -267,6 +267,34 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
         is_state = reg.word_in_category(verb.features.get("fold", ""), "state")
         occurrence = None if is_state else reading.sentence_index
         is_purchase_verb = reg.word_in_category(verb_lemma, "purchase")
+        is_price_verb = reg.word_in_category(verb_lemma, "price_verb")
+        dobj_is_currency = (
+            dobj is not None
+            and dobj.features.get("value_kind") == "count"
+            and dobj.sense() == "noun"
+            and reg.word_in_category(_lemma(dobj), "currency")
+        )
+        if is_price_verb and dobj_is_currency:
+            # "ITEM cost(s) $PRICE each" — the ITEM is the SUBJECT (not the
+            # object of buy, increment 10's shape) and 'cost' carries the
+            # price itself as its dobj. The trailing distributive 'each'
+            # (_is_rate's existing quantifier scan) is what makes this a
+            # PER-UNIT price rather than an unbuilt lump-sum/rate reading
+            # (_rate_unit not None means a 'per NOUN' marker instead —
+            # different semantics, left alone). Either way 'cost' + a
+            # currency dobj is NEVER a holding: a price statement always
+            # skips the generic Quantity fallback below, priced or not.
+            if _is_rate(reading, dobj) and _rate_unit(reading, dobj) is None:
+                facts.append(
+                    Price(
+                        provenance=prov,
+                        item=_lemma(subject),
+                        value=float(dobj.features["value"]),
+                        verb=verb_lemma,
+                        occurrence=occurrence,
+                    )
+                )
+            continue
         if dobj is not None and _is_rate(reading, dobj):
             unit_noun = _rate_unit(reading, dobj)
             if (

@@ -39,6 +39,14 @@ categories:
   produce:
     parent: verb
     polarity: 1
+  price_verb:
+    parent: verb
+    notes: >
+      'ITEM cost(s) $X each' states a PER-UNIT price with the item as
+      grammatical SUBJECT (not the object of buy) — gates the learn.py
+      Price-fact emission site keyed on the subject noun, mirroring
+      spend_verb's role as a pure consumer/emission gate (no polarity:
+      a price is never a holding or an event quantity).
   purchase:
     parent: acquire
   receive:
@@ -413,6 +421,9 @@ members:
   - paints
   - sew
   - sews
+  price_verb:
+  - cost
+  - costs
   purchase:
   - bought
   - buy

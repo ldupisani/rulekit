@@ -233,6 +233,42 @@ Modal-stated rates now solve end to end ("Machines can produce 5 toys an
 hour. How many toys do machines produce in 2 hours?" → 10).
 TEST look #14: 6/1 (85.7%) — precision HELD vs look #13, increment kept.
 
+## Increment 15: subject-priced items (`5e91461`)
+
+"ITEM cost(s) $X each" — the price stated with the ITEM as grammatical
+SUBJECT, not the object of `buy` — used to fail to parse at all: 'cost'
+had only a noun sense (`packs/difg-mined/lexicon/a-f.yaml`), so "Eggs
+cost 2 dollars each" fused into a single broken compound noun with no
+subject/verb/dobj structure whatsoever. Fix, YAML-first:
+
+1. **`cost`/`costs` gain a verb sense**, gated by a new `price_verb`
+   category (`packs/difg-mined/categories/semantic.yaml`, parent `verb`,
+   no polarity — a pure emission/consumer gate mirroring increment 10's
+   `spend_verb`/`purchase`). Noun uses ("the cost", "splits the cost")
+   keep winning arbitration via the existing increment-14 article-
+   licensing rule, unwidened.
+2. **`learn.py`** emits a Price fact keyed on the SUBJECT noun's lemma
+   when a `price_verb`'s dobj is a currency-valued count noun followed by
+   the existing distributive-'each' structure, reusing `_is_rate`/
+   `_rate_unit` from increment 10 UNWIDENED (`_rate_unit` must be `None`,
+   else it's a "per NOUN" rate marker — different semantics, left alone).
+   A `price_verb` with a currency dobj always skips the generic Quantity
+   fallback: "X costs $Y" is never a bare holding, priced or not.
+3. **No `answer.py` changes** — the increment-10 purchase-total consumer
+   already matches Price facts to purchase quantities by item noun
+   regardless of which sentence shape produced the fact, and its
+   use-gated value-accounting check already covers this new emission site
+   generically.
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(14/0 unchanged), dev-holdout diff NEUTRAL 0/0/0 (14/0 unchanged), pytest
+155 passed (was 146 + 9 new in `tests/test_mining_increment_15.py`), suite
+52/52, lint 0 errors / 1 known-good warning. Shipped NEUTRAL on dev — no
+dev-train/dev-holdout item happens to hit this exact subject-priced shape
+with a companion purchase sentence linking the same item noun; the
+targeted synthetic tests are the coverage evidence in the meantime.
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 Numbers below predate this session's work and need a fresh `rulekit
@@ -246,15 +282,15 @@ stats` pass before trusting them.
   cautiously, gate hard, expect to catch a wrong mid-development like
   increment 11 did.
 - ~500 rate/price compositions (single- and multi-item priced purchases
-  now resolve; remaining blockers are price-per-item forms this session
-  didn't reach — flat-price items mixed with "each"-priced ones in the
-  same purchase list, and the "ITEM costs $X each" subject-price form,
-  which doesn't even PARSE today — see next bullet)
-- "ITEM cost(s) $X each" (item as SUBJECT, not object of buy) currently
-  fails to parse at all — "Eggs cost $0.50 each" fuses into a single
-  broken noun unit with no subject/verb/dobj structure. A grammar gap,
-  not a fold-logic gap; needs investigation in the tokenizer/POS layer,
-  not learn.py.
+  now resolve; remaining blockers are price-per-item forms — flat-price
+  items mixed with "each"-priced ones in the same purchase list)
+- "ITEM cost(s) $X each" (item as SUBJECT, not object of buy) — FIXED,
+  increment 15: `cost`/`costs` gained a `price_verb` sense and `learn.py`
+  emits a subject-keyed Price fact; the existing purchase-total consumer
+  matches it unchanged. Gated NEUTRAL on dev (no dev item happens to pair
+  this shape with a companion purchase sentence); re-run `rulekit stats`
+  to see whether this unblocks any of the "no quantity known"/"missing a
+  total" buckets now that the grammar gap is closed.
 - **Rate chaining (14 "0 rates known" items) — MECHANISM LANDED (increment
   13), bucket did not move.** The 2-rate bridge (pages/hour × hours/day ×
   days) is implemented in the rate-span consumer and gated clean, but

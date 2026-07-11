@@ -1752,6 +1752,7 @@ entries:
   cost:
     senses:
     - noun
+    - verb
     plural: costs
   costing:
     senses:
