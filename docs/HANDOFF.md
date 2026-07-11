@@ -128,6 +128,26 @@ stats` pass before trusting them.
   broken noun unit with no subject/verb/dobj structure. A grammar gap,
   not a fold-logic gap; needs investigation in the tokenizer/POS layer,
   not learn.py.
+- **Rate chaining (14 "0 rates known" items)**: "Tom reads 10 hours over 5
+  days. He reads 50 pages an hour... how many pages in 7 days?" needs TWO
+  rates multiplied together (pages/hour × hours/day × days), not just one
+  rate against a span. A genuinely NEW synthesizer class (rate × rate),
+  not an extension of the existing single-rate-span consumer. Scope
+  before touching: does it need a general N-rate chain, or just the
+  2-rate case actually observed?
+- **Passive voice (blocks some of the 9 "missing a total" items,
+  confirmed by tracing one example)**: "half of the $60 **was earned by**
+  Lisa" garbles into nonsense Predication facts (subject='dollar',
+  verb='be'/'earn', dobj='lisa') instead of a FractionQuantity — the
+  grammar only understands active voice subject-verb-object. This is a
+  tokenizer/obligation-attachment gap, not a fold or synthesizer gap;
+  likely touches shared parsing code used by every sentence (see the
+  blast-radius invariant below — gate this one especially hard). Do NOT
+  assume every "missing a total" item is passive voice — only one was
+  traced; the rest may be chained-fraction cases instead (Trey/Kris/
+  Kristen: "7 times as many... 1/4 as many...", which might just need
+  the EXISTING fraction/relation synthesizers to chain through an extra
+  hop rather than any new grammar).
 - ~210 "no quantity known": partitions ("Ten OF THEM are yellow"), goal/
   deficit shapes ("goal is 30 situps … make up the rest")
 - ~70 fold-vs-fold conflicts: possessed-noun entity identity (Kennedy's
