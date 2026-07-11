@@ -1,0 +1,28 @@
+format: rulekit/categories@1
+# Clause-boundary markers. Lives here (not core-english/categories) because
+# the member words ('when'/'after') are only lexically defined in THIS
+# pack's own lexicon — a core-english category naming them would fail to
+# compile whenever core-english is loaded without difg-mined (several unit
+# tests build exactly that minimal registry). Engine.py's leading-clause
+# split (packs/core-english's 'if'-clause precedent, generalized to
+# temporal subordinators) tests membership in these categories rather than
+# enumerating words in Python.
+categories:
+  clause_marker:
+    parent: conjunction
+    notes: >
+      subordinators, sensed 'conjunction' in the lexicon, that can open a
+      leading dependent clause carrying a stated quantity ("When Rita finds
+      4 shells, ..."). See 'clause_marker_prep' for the preposition-sensed
+      sibling ('after') this category cannot hold (different root sense).
+  clause_marker_prep:
+    parent: preposition
+    notes: >
+      the preposition-sensed half of 'clause_marker' — 'after' carries sense
+      'preposition' (not 'conjunction') in the lexicon, so it needs its own
+      root rather than widening either category's semantics or adding a
+      second sense to either word. engine.py ORs membership across both
+      categories to recognize a leading temporal-clause marker.
+members:
+  clause_marker: [when]
+  clause_marker_prep: [after]

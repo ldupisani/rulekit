@@ -34,6 +34,28 @@ def _has_ask_cue_sense(word: str, reg: Registry) -> bool:
     return entry is not None and bool(set(entry.senses) & ASK_CUE_SENSES)
 
 
+# categories (packs/difg-mined/categories/clauses.yaml — the member words
+# are only lexically defined in that pack) naming subordinators that can
+# open a leading temporal dependent clause ("When X, ..." / "After X, ...").
+# Category NAMES are structure, never the words themselves — 'if' stays a
+# literal per its own pre-existing skeleton precedent (the check right
+# below), but new markers are admitted purely by adding a pack member.
+CLAUSE_MARKER_CATEGORIES = ("clause_marker", "clause_marker_prep")
+
+
+def _leading_temporal_marker(question: str, reg: Registry) -> str | None:
+    """The sentence's first word, if it is a registered leading temporal
+    clause-marker (category membership only — never a Python word list);
+    else None."""
+    words = question.split()
+    if not words:
+        return None
+    first = words[0].lower().rstrip(",")
+    if any(reg.word_in_category(first, cat) for cat in CLAUSE_MARKER_CATEGORIES):
+        return first
+    return None
+
+
 def analyze(sentence: str, reg: Registry, sentence_index: int = 0) -> Reading:
     reading = tokenize(sentence, sentence_index)
     annotate_numbers(reading, reg)
@@ -95,6 +117,32 @@ def _split_leading_clause(question: str, reg: Registry) -> tuple[str | None, str
     return None, question
 
 
+def _split_leading_temporal_clause(question: str, reg: Registry) -> tuple[str | None, str]:
+    """'When/After <clause>, <wh…>?' -> the clause is a PREMISE, the wh-part
+    stays the question. Sibling of `_split_leading_clause`'s 'if' form: same
+    comma / ask-cue-sense split, but the marker is a pack-registered
+    clause_marker/clause_marker_prep category member (never a Python word
+    list) rather than a literal, and — mirroring `_split_trailing_clause`'s
+    (increment 12) safety property — only a clause that carries a digit is
+    promoted to a premise; a bare narrative marker with no stated quantity
+    ("When she got home, ...") is left alone rather than risk folding a
+    non-premise clause into the fold."""
+    marker = _leading_temporal_marker(question, reg)
+    if marker is None:
+        return None, question
+    parts = question.split(",")
+    for i in range(len(parts) - 1):
+        rest = ",".join(parts[i + 1 :]).strip()
+        first = rest.split()[0] if rest.split() else ""
+        if _has_ask_cue_sense(first, reg):
+            clause = ",".join(parts[: i + 1])[len(marker) :].strip().lstrip()
+            clause = clause.rstrip(".").strip()
+            if not clause or not any(ch.isdigit() for ch in clause):
+                return None, question
+            return clause + ".", rest
+    return None, question
+
+
 def _split_trailing_clause(question: str, reg: Registry) -> tuple[str | None, str]:
     """'<wh…>, if <clause>?' -> the clause is a PREMISE, the wh-part stays
     the question. Mirror of `_split_leading_clause` for the trailing form:
@@ -143,11 +191,18 @@ def split_question(text: str, reg: Registry | None = None) -> tuple[list[str], s
     if not is_question and reg is not None and last.lower().startswith("if "):
         clause, rest = _split_leading_clause(last, reg)
         is_question = clause is not None
+    # same shape, for a pack-registered temporal marker ("When she finds 4
+    # shells, calculate her total.") instead of the literal 'if'
+    if not is_question and reg is not None and _leading_temporal_marker(last, reg):
+        clause, rest = _split_leading_temporal_clause(last, reg)
+        is_question = clause is not None
     if not is_question:
         return sentences, None
     premises = sentences[:-1]
     if reg is not None:
         clause, last = _split_leading_clause(last, reg)
+        if clause is None:
+            clause, last = _split_leading_temporal_clause(last, reg)
         if clause is None:
             clause, last = _split_trailing_clause(last, reg)
         if clause is not None:

@@ -28,10 +28,16 @@ from .schemas import (
     SynthRule,
 )
 
-# Senses that can root a category hierarchy.
+# Senses that can root a category hierarchy. 'conjunction' was added so a
+# clause-marker category (packs/difg-mined/categories/clauses.yaml) can name
+# specific subordinators like 'when' -- purely additive: 'conjunction' was
+# already a known sense (and thus already a valid pattern-rule gate via the
+# "a sense name is a valid degenerate category" rule below), so this only
+# permits NEW categories to root here; it changes no existing category or
+# word behavior.
 ROOT_SENSES = (
     "noun", "verb", "adjective", "quantifier", "preposition", "comparative",
-    "negator",
+    "negator", "conjunction",
 )
 
 

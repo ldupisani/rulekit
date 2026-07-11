@@ -1288,6 +1288,38 @@ Price fact, so all decline safely — 0 net DEV gain, 0 harm; the mechanism
 is verified directly via synthetic probes in the test file.
 TEST look: pending — spent manually.
 
+## Increment 39: leading temporal-clause questions (After/When X, question?) (`<pending>`)
+
+Extends `engine.py`'s leading-clause split (the increment-12-adjacent
+`_split_leading_clause` mechanism, pre-existing for literal `if`) with a
+sibling `_split_leading_temporal_clause` that recognizes `when`/`after` as
+leading temporal subordinators. The marker set is pack-driven, never a
+Python word list: two new categories in
+`packs/difg-mined/categories/clauses.yaml` (`clause_marker` rooted at
+`conjunction` for `when`; `clause_marker_prep` rooted at `preposition` for
+`after` — the two words carry different lexicon senses and can't share one
+category root) are queried via `Registry.word_in_category`. The category
+lives in difg-mined rather than core-english because `when`/`after` are
+only lexically defined there; `conjunction` was added to `registry.py`'s
+`ROOT_SENSES` tuple to let the new category root there (purely additive —
+the sense was already a valid pattern-rule gate; no existing category or
+word behavior changes). Mirrors increment 12's digit gate: only a clause
+containing a stated digit is promoted to a premise, so a bare narrative
+marker with no quantity ("When she got home, ...") is never mis-promoted.
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(3772 items, 14/0 unchanged), dev-holdout diff NEUTRAL 0/0/0 (3701 items,
+15/0 unchanged), pytest 318 passed (was 309 + 9 new, now
+`tests/test_mining_increment_39.py`), suite 52/52, lint 0 errors / 1
+known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) / 22
+info. SOLVED is 0: a dev-train scan confirmed the split now correctly fires
+on real leading when/after-clause items (e.g. "Tom's fruit bowl contains 3
+oranges and 6 lemons. After Tom eats 3 of the fruits, how many fruits
+remain..."), but each still declines for an unrelated missing capability
+(remainder-ask shapes, vocabulary gaps) — pure groundwork this increment,
+correctly scoped to the clause-split class only, 0 net DEV gain, 0 harm.
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 Numbers below predate this session's work and need a fresh `rulekit
