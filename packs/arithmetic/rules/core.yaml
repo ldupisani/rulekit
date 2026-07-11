@@ -643,6 +643,36 @@ asks:
       # when the bare entity comes back empty.
       entity_owner: "{who.owner}"
 
+  - id: ask/how-many-entity-qualified
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {slot: aux, type: auxiliary}
+        # `qualified`, not `name`/`entity`/`possessed`: matches ONLY a noun
+        # merged from ADJECTIVE+NOUN or NOUN+NOUN (condense.py merge-
+        # attribute / merge-compound tags it with a `qualifier` feature) —
+        # "coconut trees", "red apples", never a bare common noun ("the
+        # store"). A separate ask id (not a widened `who` slot on
+        # ask/how-many-entity) so this can never shadow that ask's existing
+        # name-subject matches; scoped precisely to the attribute-qualified
+        # entity class this candidate targets. Increment 34, mirroring
+        # increment 25's ask/how-many-entity-possessed.
+        - {slot: who, type: qualified}
+        - {slot: verb, type: verb}
+    resolves:
+      consumer: single-entity
+      entity: "{who}"
+      measure: "{item}"
+      verb: "{verb}"
+      # the fold side only re-keys entity to "tree[coconut]" when a real
+      # same-key VALUE conflict forced the split (facts.py); the bare
+      # "{who}" above still resolves the common (non-conflicting) case
+      # unchanged. This is the fallback the single-entity consumer retries
+      # when the bare entity comes back empty.
+      entity_qualifier: "{who.qualifier}"
+
   - id: ask/how-many-left-entityless
     match:
       question:

@@ -96,6 +96,13 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
             # possessive tags it with an `owner` feature) — structural
             # possessive 's, never a bare common noun or a plain name
             return sense == "noun" and unit.features.get("owner") is not None
+        if t == "qualified":
+            # a noun merged from ADJECTIVE+NOUN or NOUN+NOUN (condense.py
+            # merge-attribute / merge-compound tags it with a `qualifier`
+            # feature) — "coconut trees", "red apples"; a bare noun with no
+            # attributive modifier never matches (increment 34 mirror of
+            # `possessed`)
+            return sense == "noun" and unit.features.get("qualifier") is not None
         if t == "plural":
             return sense == "noun" and unit.features.get("number") == "plural"
         if t == "counted":
@@ -251,6 +258,13 @@ def _slot_value(unit: Unit, attr: str | None) -> str:
         # template reads this to retry an owner-qualified entity key when
         # the bare one comes back empty (facts.py's collision-time split).
         return unit.features.get("owner", "") or ""
+    if attr == "qualifier":
+        # the attributive modifier of a `qualified`-typed slot (condense.py
+        # merge-attribute / merge-compound) — an ask's `entity_qualifier:
+        # "{who.qualifier}"` template reads this to retry a qualifier-
+        # tagged entity key when the bare one comes back empty (facts.py's
+        # collision-time split). Increment 34's mirror of `owner`.
+        return unit.features.get("qualifier", "") or ""
     return _lemma_of(unit)
 
 

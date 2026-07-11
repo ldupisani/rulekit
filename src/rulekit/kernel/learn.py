@@ -103,6 +103,26 @@ def _owner(unit: Unit) -> str | None:
     return unit.features.get("owner")
 
 
+def _qualifier(unit: Unit) -> str | None:
+    """The attributive modifier of a noun merged from ADJECTIVE+NOUN or
+    NOUN+NOUN (condense.py's merge-attribute / merge-compound: "coconut
+    trees", "mango trees"), if any — carried on Quantity facts SEPARATELY
+    from `entity` (the bare lemma stays the identity everywhere it already
+    worked, e.g. "the tree ... it ..." keeps folding into one entity
+    exactly as before). Only facts.py's collision handling reads this, and
+    only to split a genuine same-key VALUE conflict ("coconut tree" vs
+    "mango tree") into two entities — never to change identity when there
+    is no conflict. A second, independent qualifier field beside `owner`
+    (increment 25's mirror) — a subject can carry both when nested
+    ("Tom's red car"), each read only by its own ask/collision path."""
+    if unit.sense() == "pronoun":
+        antecedent = _bound(unit, "refers")
+        if antecedent is not None:
+            return antecedent.features.get("qualifier")
+        return None
+    return unit.features.get("qualifier")
+
+
 def _rate_unit(reading: Reading, counted: Unit) -> Unit | None:
     """For the article rate form 'N X a/an/per U', the unit noun U."""
     units = reading.units
@@ -546,6 +566,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                         provenance=prov,
                         entity=_lemma(subject),
                         owner=_owner(subject),
+                        qualifier=_qualifier(subject),
                         measure=_lemma(dobj),
                         value=float(dobj.features["value"]),
                         verb=verb_lemma,
@@ -575,6 +596,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                                 provenance=prov,
                                 entity=_lemma(subject),
                                 owner=_owner(subject),
+                                qualifier=_qualifier(subject),
                                 measure=_lemma(item),
                                 value=item_qty,
                                 verb=verb_lemma,
@@ -606,6 +628,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                         provenance=prov,
                         entity=_lemma(subject),
                         owner=_owner(subject),
+                        qualifier=_qualifier(subject),
                         measure=_lemma(dobj),
                         value=1.0,
                         verb=verb_lemma,
@@ -628,6 +651,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                             provenance=prov,
                             entity=_lemma(subject),
                             owner=_owner(subject),
+                            qualifier=_qualifier(subject),
                             measure=_lemma(item),
                             value=item_qty,
                             verb=verb_lemma,
@@ -655,6 +679,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                         provenance=prov,
                         entity=_lemma(subject),
                         owner=_owner(subject),
+                        qualifier=_qualifier(subject),
                         measure=_lemma(dobj),
                         value=float(value_unit.features["value"]),
                         verb=verb_lemma,

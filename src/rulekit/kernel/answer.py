@@ -262,6 +262,14 @@ def answer(
         # "Kennedy's house has 5 rooms" can never answer a question about
         # Benedict's house just because the bare lemma never collided.
         owner = query.get("entity_owner")
+        # increment 34's mirror of `owner`: an attribute-qualified subject
+        # ("the coconut tree") resolves bare ("tree") the same way UNLESS a
+        # same-key VALUE conflict forced facts.py to re-key it to
+        # "tree[coconut]" — same two-lookup, owner-scoped-fallback shape,
+        # gated on `qualifier` instead. An ask binds at most one of
+        # `entity_owner`/`entity_qualifier` (each comes from a distinct ask
+        # id), so the two never compete for the same query.
+        qualifier = query.get("entity_qualifier")
         singular = _resolve_measure(measure, store, reg)
         if singular is None:
             return Answer("decline", None,
@@ -270,6 +278,12 @@ def answer(
         if owner:
             owner_store = FactStore(facts=[
                 q for q in store.by_kind(Quantity) if q.owner is None or q.owner == owner
+            ])
+        qualifier_store = store
+        if qualifier:
+            qualifier_store = FactStore(facts=[
+                q for q in store.by_kind(Quantity)
+                if q.qualifier is None or q.qualifier == qualifier
             ])
         ask_verb = query.get("verb", "have")
         is_state_ask = ask_verb in ("have", "be") or reg.word_in_category(ask_verb, "state")
@@ -282,8 +296,11 @@ def answer(
                 _verb_total(store, f"{entity}[{owner}]", singular, ask_verb, log)
                 if owner else None
             )
+            if total is None and qualifier:
+                total = _verb_total(store, f"{entity}[{qualifier}]", singular, ask_verb, log)
             if total is None:
-                total = _verb_total(owner_store, entity, singular, ask_verb, log)
+                scoped = owner_store if owner else qualifier_store
+                total = _verb_total(scoped, entity, singular, ask_verb, log)
             if total is not None:
                 return Answer("number", total, f"Σ {ask_verb!r} events of {entity!r}/{singular!r}")
             # "how much did X pay/spend?" over priced purchases ("3 toys at
@@ -313,8 +330,11 @@ def answer(
                 f"no {ask_verb!r} events known for {entity!r}/{singular!r}",
             )
         total = _entity_total(store, reg, f"{entity}[{owner}]", singular, log) if owner else None
+        if total is None and qualifier:
+            total = _entity_total(store, reg, f"{entity}[{qualifier}]", singular, log)
         if total is None:
-            total = _entity_total(owner_store, reg, entity, singular, log)
+            scoped = owner_store if owner else qualifier_store
+            total = _entity_total(scoped, reg, entity, singular, log)
         if total is None:
             return Answer(
                 "decline", None,

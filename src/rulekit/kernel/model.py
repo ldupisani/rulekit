@@ -224,6 +224,18 @@ class Quantity(Fact):
     # house", both bare-folding to entity='house') into two entities —
     # never to change identity absent a real conflict.
     owner: str | None = None
+    # the attributive modifier of `entity`, when the subject noun was
+    # merged from ADJECTIVE+NOUN or NOUN+NOUN (condense.py merge-attribute
+    # / merge-compound: "coconut trees" / "mango trees") — the second,
+    # independent qualifier field beside `owner` (increment 25's mirror).
+    # NOT part of key() or value_part(): identity stays the bare entity
+    # lemma everywhere it already worked (bare-noun folding is untouched,
+    # e.g. "the tree ... it ..." keeps folding into one entity). Read
+    # ONLY by FactStore.admit's collision handling, to split a genuine
+    # same-key VALUE conflict ("coconut tree" vs "mango tree", both
+    # bare-folding to entity='tree') into two entities — never to change
+    # identity absent a real conflict.
+    qualifier: str | None = None
 
     @property
     def is_state(self) -> bool:

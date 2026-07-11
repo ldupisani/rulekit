@@ -1069,6 +1069,49 @@ Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
 known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) / 21
 info. TEST look: pending — spent manually.
 
+## Increment 34: attribute-qualified entity identity (coconut trees vs mango
+trees fold as distinct entities)
+
+Re-land of the batch-5 parked branch (`mining/parked/attr-qualified-entities`),
+rebased onto increment 25's owner machinery (the cherry-pick conflict that
+parked it). Fresh stats: "conflict: fold and fold disagree about" = 92
+(fourth-largest structure bucket) — the modifier-blind lemma collision class
+this HANDOFF has tracked since possessives were fixed by increment 25; the
+ADJECTIVE/noun-modifier half was still open. Two same-lemma nouns
+distinguished only by an attributive modifier ("The coconut tree has 12
+branches. The mango tree has 8 branches.") both folded to the bare noun
+lemma 'tree' (condense.py's merge-attribute / merge-compound don't touch the
+noun's own `lemma` feature), colliding as one fact-store entity and
+declining the whole item ("conflict: fold and fold disagree").
+
+Mechanism: a kernel-structural mirror of increment 25 (possessive-qualified
+entity identity), swapping the qualifier's SOURCE from possessive 's to an
+attributive modifier. Entity identity stays the bare lemma everywhere it
+already worked (`Quantity.entity` is unchanged, so "the tree ... it ..."
+keeps folding into one entity exactly as before). A new `qualifier` field on
+`Quantity` (`model.py`), independent of `owner` and excluded from
+`key()`/`value_part()`, is populated by `condense.py`'s merge-attribute
+("red apple") and merge-compound ("mango tree") passes and copied onto the
+fact by `learn.py`. It is read ONLY by `FactStore.admit`'s collision
+handling (`facts.py`): a same-key VALUE conflict between two Quantity facts
+with two DIFFERENT non-null qualifiers is not a genuine disagreement — it is
+two entities the bare lemma alone can't distinguish — so both re-key to
+`entity[qualifier]` and admit separately instead of quarantining. An
+unmentioned qualifier on the same noun still declines rather than borrowing
+a value from a differently-qualified sibling (increment 25/26
+decline-safety precedent, preserved). A new ask id
+(`ask/how-many-entity-qualified`, `packs/arithmetic/rules/core.yaml`) gated
+on a new `qualified` slot type in `patterns.py`/`schemas.py` routes the
+qualified question form through `answer.py`'s existing per-entity consumer,
+unchanged.
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(3772 items, 14/0 unchanged), dev-holdout diff NEUTRAL 0/0/0 (3701 items,
+15/0 unchanged), pytest 277 passed (was 273 + 4 new, now
+`tests/test_mining_increment_34.py`), suite 52/52, lint 0 errors / 1
+known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) / 21
+info. TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 Numbers below predate this session's work and need a fresh `rulekit
@@ -1078,11 +1121,10 @@ stats` pass before trusting them.
   `mining/parked/`; all passed constitution review and deferred only
   on cherry-pick conflicts against increments that have since landed — a
   fresh junior rebasing on current main should land them cheaply):
-  `attr-qualified-entities`,
   `state-verb-conjunction` (use `mining/parked/state-verb-conjunction-2`,
   the post-increment-24 attempt). (`age-asks` landed as increment 31;
   `need-as-goal` landed as increment 32; `money-left-asks` landed as
-  increment 33.)
+  increment 33; `attr-qualified-entities` landed as increment 34.)
 
 - **Event-then-restate state disambiguation in `_entity_total`
   (answer.py)** — surfaced by /mine batch 3's failed `state-conjunction`

@@ -78,9 +78,23 @@ def _nominal_pass(reading: Reading, reg: Registry) -> bool:
         if a.sense() == "adjective" and b.sense() == "noun":
             attrs = list(b.features.get("attributes", []))
             attrs.append(a.features.get("lemma", a.features["fold"]))
+            # `qualifier` is the ENTITY-IDENTITY qualifier, mirroring
+            # merge-possessive's `owner`: "coconut trees" and "mango trees"
+            # both fold to the bare noun lemma 'tree', so without it two
+            # same-noun holdings distinguished only by their modifier
+            # collide as one fact-store entity (learn.py/facts.py both
+            # read this feature to split a genuine value conflict).
+            # Preference for an INNER qualifier (already tagged on `a` by
+            # an earlier merge in this fixpoint) over the outer modifier's
+            # own lemma — best-effort for nested chains, not required by
+            # this candidate's target class. `attributes` is separate
+            # pre-existing bookkeeping, unread elsewhere today.
+            qualifier = a.features.get("qualifier") or a.features.get(
+                "lemma", a.features["fold"]
+            )
             _merge(reading, i, b, "merge-attribute",
                    f"adjective {a.surface!r} restricts {b.surface!r}",
-                   {"attributes": attrs})
+                   {"attributes": attrs, "qualifier": qualifier})
             return True
         # noun + noun -> compound, head = the RIGHT noun ("mango trees")
         if (
@@ -89,9 +103,12 @@ def _nominal_pass(reading: Reading, reg: Registry) -> bool:
         ):
             attrs = list(b.features.get("attributes", []))
             attrs.append(a.features.get("lemma", a.features["fold"]))
+            qualifier = a.features.get("qualifier") or a.features.get(
+                "lemma", a.features["fold"]
+            )
             _merge(reading, i, b, "merge-compound",
                    f"compound noun: {a.surface!r} modifies head {b.surface!r}",
-                   {"attributes": attrs})
+                   {"attributes": attrs, "qualifier": qualifier})
             return True
         # CAPITALIZED known word + name -> one name ("Tall Tuna", "Cat Cafe
         # Meow"): the capitalization, not the part of speech, is the naming

@@ -41,7 +41,11 @@ class FactStore:
         as separate facts instead. Scoped to the collision itself — a
         possessive noun that never collides keeps its bare identity
         untouched (cross-mention folding like "Tom's dog ... the dog ..."
-        is unaffected)."""
+        is unaffected). The same re-key applies, independently, when the
+        two sides instead carry two DIFFERENT attributive-modifier
+        qualifiers of the same bare-lemma entity ("coconut tree" vs
+        "mango tree", both fold to entity='tree') — increment 34's mirror
+        of the owner mechanism, gated on `qualifier` instead of `owner`."""
         for existing in self.facts:
             if existing.key() == fact.key():
                 if existing.value_part() == fact.value_part():
@@ -58,6 +62,21 @@ class FactStore:
                         replace(existing, entity=f"{existing.entity}[{existing.owner}]")
                     )
                     self.facts.append(replace(fact, entity=f"{fact.entity}[{fact.owner}]"))
+                    return True
+                if (
+                    isinstance(existing, Quantity)
+                    and isinstance(fact, Quantity)
+                    and existing.qualifier
+                    and fact.qualifier
+                    and existing.qualifier != fact.qualifier
+                ):
+                    self.facts.remove(existing)
+                    self.facts.append(
+                        replace(existing, entity=f"{existing.entity}[{existing.qualifier}]")
+                    )
+                    self.facts.append(
+                        replace(fact, entity=f"{fact.entity}[{fact.qualifier}]")
+                    )
                     return True
                 self.collisions.append(
                     Collision(
