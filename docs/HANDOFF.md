@@ -1023,6 +1023,52 @@ emission, deficit resolution, the killed SVO-fold confident-wrong, and the
 `need_premise`/`receive` category split) plus the frequency estimate above.
 TEST look: pending — spent manually.
 
+## Increment 33: remaining-money asks (how much money does WHO have left) (`ee06024` squashed)
+
+Re-land of the batch-5 parked branch (`mining/parked/money-left-asks`): the
+mechanism had already passed the full dev gate once; it was blocked only
+because its synthetic test file paraphrased a GSM8K corpus item (a
+lightly-edited Phillip/$95/$14/oranges item). This increment reapplies the
+unchanged mechanism and replaces the test file with entirely fresh names,
+nouns, and numbers invented from scratch (`tests/test_mining_increment_33.py`).
+Fresh stats: "no ask shape" = 2668 (money-left is a slice of it) plus "no
+'spend' events" = 66; cue scan found 82 dev-train items ending a question in
+"have left?", 76 matching "how much (money) ... left". Probe "Lily has 20
+dollars. She buys 3 pens at 2 dollars each. How much money does Lily have
+left?" declined via value-accounting before this increment — the facts
+exist, the ask shape did not.
+
+New ask (`ask/how-much-money-entity-left`, `packs/arithmetic/rules/core.yaml`)
+matching "how much money does WHO have left", gated on the literal 'money'
+plus a trailing 'left' plus the existing `state` verb category (have/has/
+had/...) so it consumes MORE units than the pre-existing
+`ask/how-much-noun-entity` over the same question and wins via max-consumed
+specificity, routed to a new `money-left` consumer in `answer.py`.
+
+Mechanism: the entity's general money total via the SHARED `_entity_total`
+fold (the same state-anchor + signed-event fold the bare "how much money
+does WHO have" ask already uses, so a "spends $N on Y" / "receives $N" event
+already signed by category polarity folds in unchanged) minus its priced
+purchases via `_purchase_total`, reused UNCHANGED so the increment-10/22
+invariant travels with it (any unpriced purchase, or a 'splits/shares the
+cost' predicate on the same entity, declines the WHOLE total rather than
+risk a silently dropped term). The subtraction never double-counts: a
+priced purchase ("buys a gadget for $8") never emits a currency-measured
+Quantity at all (learn.py emits an ITEM-measured Quantity plus a separate
+Price fact), so it is invisible to `_entity_total`'s currency fold and only
+ever appears once, in the purchase-total subtraction. A negative remainder
+(purchases exceeding the money total) declines rather than committing an
+impossible answer. Purely additive: new ask + new consumer branch, no
+shared-function widening (the `_purchase_total`/`_entity_total` call
+signatures are unchanged from increment 22).
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(3772 items, 14/0 unchanged), dev-holdout diff SHIP +1/0/0 (3701 items,
+15/1 solved — item `4a394fadccdf`), pytest 273 passed (was 265 + 8 new, now
+`tests/test_mining_increment_33.py`), suite 52/52, lint 0 errors / 1
+known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) / 21
+info. TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 Numbers below predate this session's work and need a fresh `rulekit
@@ -1034,10 +1080,9 @@ stats` pass before trusting them.
   fresh junior rebasing on current main should land them cheaply):
   `attr-qualified-entities`,
   `state-verb-conjunction` (use `mining/parked/state-verb-conjunction-2`,
-  the post-increment-24 attempt). Also `money-left-asks` — the MECHANISM
-  passed gates; it was blocked ONLY for a lightly-edited GSM8K test item
-  (needs its tests reinvented from scratch, nothing else). (`age-asks`
-  landed as increment 31; `need-as-goal` landed as increment 32.)
+  the post-increment-24 attempt). (`age-asks` landed as increment 31;
+  `need-as-goal` landed as increment 32; `money-left-asks` landed as
+  increment 33.)
 
 - **Event-then-restate state disambiguation in `_entity_total`
   (answer.py)** — surfaced by /mine batch 3's failed `state-conjunction`

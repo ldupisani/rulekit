@@ -871,3 +871,29 @@ asks:
       consumer: deficit
       entity: "{who}"
       measure: "{item}"
+
+  - id: ask/how-much-money-entity-left
+    # "how much money does WHO have left" — the remaining-money class: a
+    # stated single money holding minus the entity's priced purchases
+    # (the money-left consumer, answer.py). The literal 'money' plus the
+    # trailing 'left' make this ask consume MORE units than the existing
+    # ask/how-much-noun-entity ("how much money does Tom have", no 'left')
+    # over the same question, so max-consumed specificity (patterns.
+    # match_ask) routes a 'left' question here instead of to the raw-
+    # holding read that ask would otherwise give. The verb is gated to the
+    # `state` category (have/has/had/...), never the general `verb` type,
+    # because only a STATED HOLDING — not an event fold — is a valid base
+    # to subtract purchases from.
+    match:
+      question:
+        - {lit: how}
+        - {lit: much}
+        - {lit: money}
+        - {slot: aux, type: auxiliary}
+        - {slot: who, type: name}
+        - {slot: verb, cat: state}
+        - {lit: left}
+    resolves:
+      consumer: money-left
+      entity: "{who}"
+      measure: currency

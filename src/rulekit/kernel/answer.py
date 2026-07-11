@@ -675,6 +675,58 @@ def answer(
             f"floor({budget} / {price.value}) — budget ÷ unit price of {item!r}",
         )
 
+    if consumer == "money-left":
+        # "how much money does WHO have left" — the entity's general money
+        # total (_entity_total: the SAME state-anchor + signed-event fold
+        # the bare 'how much money does WHO have' ask already uses, so
+        # "spends $14 on oranges" / "receives $50" / "saves $27 in March"
+        # events it already signs by category polarity fold in exactly as
+        # they would for that ask) minus its priced purchases
+        # (_purchase_total, UNCHANGED — the increment-10 invariant travels
+        # with it: any unpriced purchase or a 'splits/shares the cost'
+        # predicate on this entity declines the WHOLE total rather than
+        # risk a silently dropped term). The subtraction is safe from
+        # double-counting: a priced purchase ("buys a toy for $8") never
+        # emits a currency-measured Quantity at all (learn.py emits an
+        # ITEM-measured Quantity plus a separate Price fact), so it is
+        # invisible to _entity_total's currency fold and only ever
+        # appears once, here.
+        entity = query["entity"]
+        measure = query.get("measure", "currency")
+        singular = _resolve_measure(measure, store, reg)
+        if singular is None:
+            return Answer("decline", None,
+                          f"measure {measure!r} is ambiguous across the facts")
+        base = _entity_total(store, reg, entity, singular, log)
+        if base is None:
+            return Answer(
+                "decline", None, f"no resolvable {singular!r} total for {entity!r}"
+            )
+        buys_exist = any(
+            q.entity == entity and reg.word_in_category(q.verb, "purchase")
+            for q in store.by_kind(Quantity)
+        )
+        spend = _purchase_total(store, reg, entity, log)
+        if spend is None:
+            if buys_exist:
+                return Answer(
+                    "decline", None,
+                    f"{entity!r}'s purchases don't all resolve to a safe "
+                    "total (unpriced item or a cost-split predicate)",
+                )
+            spend = 0.0
+        remaining = evaluate(f"{base} - {spend}", {}, log, source="money-left")
+        if remaining < 0:
+            return Answer(
+                "decline", None,
+                f"{entity!r}'s purchases ({spend}) exceed the money total "
+                f"({base}) — remaining money is negative",
+            )
+        return Answer(
+            "number", remaining,
+            f"{base} (money fold) minus {spend} spent on priced purchases",
+        )
+
     if consumer == "deficit":
         # "how many more X does WHO need" — goal minus the entity's single
         # CURRENT holding (a stated STATE quantity, never the general event
