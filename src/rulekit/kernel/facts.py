@@ -8,10 +8,10 @@ declines the item, and records a Collision with both provenances.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 from ..data.registry import Registry
-from .model import Fact
+from .model import Fact, Quantity
 from .patterns import RuleMatchResult, subsumes
 
 
@@ -32,11 +32,33 @@ class FactStore:
 
     def admit(self, fact: Fact) -> bool:
         """Admit one fact. Same key + same value dedupes; same key +
-        different value is a conflict → both quarantined."""
+        different value is a conflict → both quarantined — UNLESS both
+        sides are Quantity facts carrying two DIFFERENT possessive owners
+        of the same bare-lemma entity ("Kennedy's house" vs "Benedict's
+        house", both fold to entity='house'): that is not a genuine
+        disagreement, it is two distinct entities the bare lemma alone
+        can't tell apart, so both re-key to entity[owner] and are admitted
+        as separate facts instead. Scoped to the collision itself — a
+        possessive noun that never collides keeps its bare identity
+        untouched (cross-mention folding like "Tom's dog ... the dog ..."
+        is unaffected)."""
         for existing in self.facts:
             if existing.key() == fact.key():
                 if existing.value_part() == fact.value_part():
                     return True  # agreement: dedupe
+                if (
+                    isinstance(existing, Quantity)
+                    and isinstance(fact, Quantity)
+                    and existing.owner
+                    and fact.owner
+                    and existing.owner != fact.owner
+                ):
+                    self.facts.remove(existing)
+                    self.facts.append(
+                        replace(existing, entity=f"{existing.entity}[{existing.owner}]")
+                    )
+                    self.facts.append(replace(fact, entity=f"{fact.entity}[{fact.owner}]"))
+                    return True
                 self.collisions.append(
                     Collision(
                         key=fact.key(),

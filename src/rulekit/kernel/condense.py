@@ -61,7 +61,14 @@ def _nominal_pass(reading: Reading, reg: Registry) -> bool:
             units[i : i + 3] = [merged]
             reading.record(
                 "merge-possessive", merged,
-                {"attributes": attrs},
+                # `owner` is the ENTITY-IDENTITY qualifier: "Kennedy's house"
+                # and "Benedict's house" both fold to the bare noun lemma
+                # 'house', so without it two possessed nouns of the same
+                # kind collide as one fact-store entity (learn.py/patterns.py
+                # both read this feature to build the qualified key).
+                # `attributes` is separate pre-existing bookkeeping, unread
+                # elsewhere today — left untouched.
+                {"attributes": attrs, "owner": owner},
                 f"{a.surface!r} owns {c.surface!r} — one owner-attributed noun",
             )
             return True

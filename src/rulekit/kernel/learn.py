@@ -47,6 +47,23 @@ def _lemma(unit: Unit) -> str:
     return unit.features.get("lemma", unit.features.get("fold", unit.surface.lower()))
 
 
+def _owner(unit: Unit) -> str | None:
+    """The possessive owner of a noun merged from "OWNER 's NOUN" (condense
+    .py's merge-possessive), if any — carried on Quantity facts SEPARATELY
+    from `entity` (the bare lemma stays the identity everywhere it already
+    worked, e.g. "Tom's dog ... the dog ..." keeps folding into one entity
+    exactly as before). Only facts.py's collision handling reads this, and
+    only to split a genuine same-key VALUE conflict ("Kennedy's house" vs
+    "Benedict's house") into two entities — never to change identity when
+    there is no conflict."""
+    if unit.sense() == "pronoun":
+        antecedent = _bound(unit, "refers")
+        if antecedent is not None:
+            return antecedent.features.get("owner")
+        return None
+    return unit.features.get("owner")
+
+
 def _rate_unit(reading: Reading, counted: Unit) -> Unit | None:
     """For the article rate form 'N X a/an/per U', the unit noun U."""
     units = reading.units
@@ -479,6 +496,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                 Quantity(
                     provenance=prov,
                     entity=_lemma(subject),
+                    owner=_owner(subject),
                     measure=_lemma(dobj),
                     value=float(dobj.features["value"]),
                     verb=verb_lemma,
@@ -507,6 +525,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                         Quantity(
                             provenance=prov,
                             entity=_lemma(subject),
+                            owner=_owner(subject),
                             measure=_lemma(item),
                             value=item_qty,
                             verb=verb_lemma,
@@ -535,6 +554,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                 Quantity(
                     provenance=prov,
                     entity=_lemma(subject),
+                    owner=_owner(subject),
                     measure=_lemma(dobj),
                     value=1.0,
                     verb=verb_lemma,
@@ -556,6 +576,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                     Quantity(
                         provenance=prov,
                         entity=_lemma(subject),
+                        owner=_owner(subject),
                         measure=_lemma(item),
                         value=item_qty,
                         verb=verb_lemma,
@@ -579,6 +600,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                 Quantity(
                     provenance=prov,
                     entity=_lemma(subject),
+                    owner=_owner(subject),
                     measure=_lemma(dobj),
                     value=float(value_unit.features["value"]),
                     verb=verb_lemma,

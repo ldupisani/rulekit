@@ -215,6 +215,15 @@ class Quantity(Fact):
     # conflict); the sentence index for an EVENT (each occurrence is its own
     # fact: "finds 3 … finds 5" accumulates, never collides)
     occurrence: int | None = None
+    # the possessive owner of `entity`, when the subject was merged from
+    # "OWNER 's NOUN" (condense.py merge-possessive) — NOT part of key() or
+    # value_part(): identity stays the bare entity lemma everywhere it
+    # already worked (cross-mention folding, e.g. "Tom's dog ... the dog
+    # ..."). Read ONLY by FactStore.admit's collision handling, to split a
+    # genuine same-key VALUE conflict ("Kennedy's house" vs "Benedict's
+    # house", both bare-folding to entity='house') into two entities —
+    # never to change identity absent a real conflict.
+    owner: str | None = None
 
     @property
     def is_state(self) -> bool:

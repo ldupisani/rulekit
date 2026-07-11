@@ -91,6 +91,11 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
             if sense == "pronoun":
                 return any(ob.need == "refers" and ob.met for ob in unit.obligations())
             return sense in ("name", "noun")
+        if t == "possessed":
+            # a noun merged from "OWNER 's NOUN" (condense.py merge-
+            # possessive tags it with an `owner` feature) — structural
+            # possessive 's, never a bare common noun or a plain name
+            return sense == "noun" and unit.features.get("owner") is not None
         if t == "plural":
             return sense == "noun" and unit.features.get("number") == "plural"
         if t == "counted":
@@ -240,6 +245,12 @@ def _slot_value(unit: Unit, attr: str | None) -> str:
     if attr == "value":
         v = unit.features.get("value")
         return str(v) if v is not None else ""
+    if attr == "owner":
+        # the possessive owner of a `possessed`-typed slot (condense.py
+        # merge-possessive) — an ask's `entity_owner: "{who.owner}"`
+        # template reads this to retry an owner-qualified entity key when
+        # the bare one comes back empty (facts.py's collision-time split).
+        return unit.features.get("owner", "") or ""
     return _lemma_of(unit)
 
 

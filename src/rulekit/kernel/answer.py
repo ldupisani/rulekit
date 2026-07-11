@@ -213,10 +213,26 @@ def answer(
 
     if consumer == "single-entity":
         entity, measure = query["entity"], query["measure"]
+        # a possessive-qualified subject ("Kennedy's house") resolves bare
+        # ("house") the same as any other entity UNLESS a same-key VALUE
+        # conflict forced facts.py to re-key it to "house[kennedy]". Two
+        # asked-for lookups when `entity_owner` is bound (absent for every
+        # ask that never matches a `possessed` slot — a no-op there):
+        # the exact qualified key first (the conflict-split case), then
+        # the bare key SCOPED to owner-compatible facts only — excluding
+        # any Quantity whose OWN owner names a DIFFERENT possessor, so
+        # "Kennedy's house has 5 rooms" can never answer a question about
+        # Benedict's house just because the bare lemma never collided.
+        owner = query.get("entity_owner")
         singular = _resolve_measure(measure, store, reg)
         if singular is None:
             return Answer("decline", None,
                           f"measure {measure!r} is ambiguous across the facts")
+        owner_store = store
+        if owner:
+            owner_store = FactStore(facts=[
+                q for q in store.by_kind(Quantity) if q.owner is None or q.owner == owner
+            ])
         ask_verb = query.get("verb", "have")
         is_state_ask = ask_verb in ("have", "be") or reg.word_in_category(ask_verb, "state")
         if not is_state_ask:
@@ -224,7 +240,12 @@ def answer(
             # verb's own event quantities — a holdings fold answering an
             # eat-question with a buy-total is a category error (the
             # question's verb is part of the query, difg playbook lesson).
-            total = _verb_total(store, entity, singular, ask_verb, log)
+            total = (
+                _verb_total(store, f"{entity}[{owner}]", singular, ask_verb, log)
+                if owner else None
+            )
+            if total is None:
+                total = _verb_total(owner_store, entity, singular, ask_verb, log)
             if total is not None:
                 return Answer("number", total, f"Σ {ask_verb!r} events of {entity!r}/{singular!r}")
             # "how much did X pay/spend?" over priced purchases ("3 toys at
@@ -241,7 +262,9 @@ def answer(
                 "decline", None,
                 f"no {ask_verb!r} events known for {entity!r}/{singular!r}",
             )
-        total = _entity_total(store, reg, entity, singular, log)
+        total = _entity_total(store, reg, f"{entity}[{owner}]", singular, log) if owner else None
+        if total is None:
+            total = _entity_total(owner_store, reg, entity, singular, log)
         if total is None:
             return Answer(
                 "decline", None,

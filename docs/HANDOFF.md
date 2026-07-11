@@ -682,6 +682,48 @@ base that included a since-reverted vocabulary increment; re-proven clean
 here on `mining/batch-2026-07-11e`.
 TEST look #25: pending — spent manually.
 
+## Increment 25: possessive-qualified entity identity (`<pending>`)
+
+"Kennedy's house has 5 rooms. Benedict's house has 3 rooms." previously
+folded to the bare noun lemma 'house' regardless of possessor
+(`condense.py`'s merge-possessive doesn't touch the noun's own `lemma`
+feature), so two DIFFERENT possessors' same-noun holdings collided as one
+fact-store entity and the whole item declined with "conflict: fold and
+fold disagree" instead of resolving either possessor's question.
+
+Mechanism (kernel-structural, no lexicon): entity identity stays the bare
+lemma everywhere it already worked — `Quantity.entity` is unchanged, so
+"Tom's dog ... the dog ..." still folds into one entity exactly as
+before. A NEW `owner` field on `Quantity` (`condense.py` tags the merged
+possessive noun; `learn.py` copies it onto the fact) is read ONLY by
+`FactStore.admit`'s collision handling: a same-key VALUE conflict between
+two Quantity facts with two DIFFERENT non-null owners is not a genuine
+disagreement — it's two entities the bare lemma alone can't
+distinguish — so both re-key to `entity[owner]` and admit separately
+instead of quarantining. A new ask id (`ask/how-many-entity-possessed`,
+gated on a new `possessed` slot type requiring the noun to carry an
+owner) resolves a possessive-qualified subject the same way, with an
+owner-scoped fallback in the single-entity consumer so a bare
+(non-conflicting) holding can still answer — but never across a
+different NAMED owner. Decline-safety: an unmentioned owner's same-noun
+entity declines rather than borrowing another owner's number.
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(3772 items, 14/0 unchanged), dev-holdout diff NEUTRAL 0/0/0 (3701 items,
+14/0 unchanged), pytest 222 passed (was 218 + 4 new, now
+`tests/test_mining_increment_25.py`), suite 52/52, lint 0 errors / 1
+known-good warning (fraction-of-remnant / fraction-of-pool, unchanged).
+Shipped NEUTRAL on dev: no dev-train/dev-holdout item currently states two
+different possessors of the same-noun entity on this slice; the synthetic
+suite (two possessors of the same noun each resolving independently,
+cross-mention coreference still folding when only one owner is ever
+named, decline-safety for an unmentioned second owner) is the coverage
+evidence. This is a re-land: the candidate previously passed constitution
+review and (except for the interchangeable-measure increment) already
+re-gated cleanly on a staging base that included a since-reverted
+vocabulary increment; re-proven clean here on `mining/batch-2026-07-11e`.
+TEST look #26: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 Numbers below predate this session's work and need a fresh `rulekit

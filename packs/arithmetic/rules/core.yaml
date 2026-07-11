@@ -487,6 +487,34 @@ asks:
       measure: "{item}"
       verb: "{verb}"
 
+  - id: ask/how-many-entity-possessed
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {slot: aux, type: auxiliary}
+        # `possessed`, not `name`/`entity`: matches ONLY a noun merged from
+        # "OWNER 's NOUN" (condense.py merge-possessive tags it with an
+        # `owner` feature) — "Kennedy's house", never a bare common noun
+        # ("the store"). A separate ask id (not a widened `who` slot on
+        # ask/how-many-entity) so this can never shadow that ask's existing
+        # name-subject matches; scoped precisely to the possessive-qualified
+        # entity class this candidate targets.
+        - {slot: who, type: possessed}
+        - {slot: verb, type: verb}
+    resolves:
+      consumer: single-entity
+      entity: "{who}"
+      measure: "{item}"
+      verb: "{verb}"
+      # the fold side only re-keys entity to "house[kennedy]" when a real
+      # same-key VALUE conflict forced the split (facts.py); the bare
+      # "{who}" above still resolves the common (non-conflicting) case
+      # unchanged. This is the fallback the single-entity consumer retries
+      # when the bare entity comes back empty.
+      entity_owner: "{who.owner}"
+
   - id: ask/how-many-left-entityless
     match:
       question:
