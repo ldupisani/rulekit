@@ -1,7 +1,7 @@
 # Session handoff — 2026-07-11
 
 Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
-State below is committed through `87dbb7d` on `main` (github.com/ldupisani/rulekit;
+State below is committed through `8fa68fc` on `main` (github.com/ldupisani/rulekit;
 check `git status`/`git log origin/main..HEAD` before assuming push parity).
 
 ## Where the project is
@@ -16,8 +16,8 @@ every increment through the gates).
 **Current numbers (all verified at head):**
 - dev-train: 14 correct / 0 wrong (3,772 items, 100% precision)
 - dev-holdout: 15 correct / 0 wrong (3,701 items — increment 33 was a real holdout SOLVE)
-- curated suite: 52/52 · pytest: 277 · lint: 0 errors, 1 intended warning
-- TEST ledger (36 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- curated suite: 52/52 · pytest: 318 · lint: 0 errors, 1 intended warning
+- TEST ledger (41 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -31,8 +31,10 @@ every increment through the gates).
   6/2 (75.0%, look #32: the fruit/fruits family alone, REVERTED — and the
   look #20 culprit thereby IDENTIFIED; fruit is now quarantined, see
   docs/negative-results.md) → 6/1 (#33) → 6/1 (#34) → 6/1 (#35) →
-  **6/1 (85.7%, look #36) ← live at increment 34** — #33–#36 batch 6
-  (the parked briefs: increments 31–34 all held) —
+  6/1 (85.7%, look #36) → 6/1 (#37) → 6/1 (#38) → 6/1 (#39) → 6/1 (#40) →
+  **6/1 (85.7%, look #41) ← live at increment 39** — #33–#36 batch 6
+  (the parked briefs: increments 31–34), #37–#41 batch 7 (increments
+  35–39, incl. state-verb-conjunction on attempt 4 with clean tests) —
   #12–#13 batch 1, #14 the modal split, #15–#16 batch 2, #17–#19 batch 3,
   #20 vocab revert, #21–#27 batch-4 re-land, #28–#32 batch 5 (increments
   27–30 held; 31 reverted); precision held on every surviving increment
@@ -1114,7 +1116,7 @@ Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
 known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) / 21
 info. TEST look #36: 6/1 (85.7%) — precision HELD, increment kept.
 
-## Increment 35: conjoined state-verb holdings (`<pending>`)
+## Increment 35: conjoined state-verb holdings (`b27e091`)
 
 Re-land of `mining/parked/state-verb-conjunction-3`, the mechanism deferred
 THREE times before — always for the same reason: its tests inherited a
@@ -1158,9 +1160,9 @@ decline-safety, purchase-conjunction non-regression, event-verb
 non-regression) — no dev-train/dev-holdout item happens to need exactly
 this shape without also hitting an unrelated, already-open gap (matches the
 prior parked attempt's own finding).
-TEST look: pending — spent manually.
+TEST look #37: 6/1 (85.7%) — precision HELD, increment kept.
 
-## Increment 36: copular-priced items (`<pending>`)
+## Increment 36: copular-priced items (`691aaec`)
 
 Re-land of `mining/parked/copular-priced-items` (bfa484a), rebased onto
 current main (`learn.py` drifted through increments 20-34, especially
@@ -1203,9 +1205,9 @@ consistent with the parked branch's original result; pytest 296 passed (was
 288 + 8 new, now `tests/test_mining_increment_36.py`), suite 52/52, lint 0
 errors / 1 known-good warning (fraction-of-remnant / fraction-of-pool,
 unchanged) / 21 info.
-TEST look: pending — spent manually.
+TEST look #38: 6/1 (85.7%) — precision HELD, increment kept.
 
-## Increment 37: definite-NP partitions (`<pending>`)
+## Increment 37: definite-NP partitions (`54d60df`)
 
 Re-land of `mining/parked/partition-of-noun`, redone from scratch against
 current main (post increment-34) in a fresh worktree.
@@ -1255,9 +1257,9 @@ NOUN are ADJ" premises. The mechanism is verified directly via synthetic
 probes in the test file and is a legitimate, general class per the
 constitution (a definite-NP sibling of an already-shipped pronoun-form
 class).
-TEST look: pending — spent manually.
+TEST look #39: 6/1 (85.7%) — precision HELD, increment kept.
 
-## Increment 38: item-subject cost asks (`<pending>`)
+## Increment 38: item-subject cost asks (`b2731c9`)
 
 Adds `ask/how-much-item-cost` (`packs/arithmetic/rules/core.yaml`): "how
 much do/does/did ITEM cost", extending the increment 10/15/29 price-fact
@@ -1286,9 +1288,9 @@ info. The ask matches "how much ... cost" questions in both dev slices but
 every matching item needs a derived multi-step total rather than a stated
 Price fact, so all decline safely — 0 net DEV gain, 0 harm; the mechanism
 is verified directly via synthetic probes in the test file.
-TEST look: pending — spent manually.
+TEST look #40: 6/1 (85.7%) — precision HELD, increment kept.
 
-## Increment 39: leading temporal-clause questions (After/When X, question?) (`<pending>`)
+## Increment 39: leading temporal-clause questions (After/When X, question?) (`8fa68fc`)
 
 Extends `engine.py`'s leading-clause split (the increment-12-adjacent
 `_split_leading_clause` mechanism, pre-existing for literal `if`) with a
@@ -1318,7 +1320,7 @@ oranges and 6 lemons. After Tom eats 3 of the fruits, how many fruits
 remain..."), but each still declines for an unrelated missing capability
 (remainder-ask shapes, vocabulary gaps) — pure groundwork this increment,
 correctly scoped to the clause-split class only, 0 net DEV gain, 0 harm.
-TEST look: pending — spent manually.
+TEST look #41: 6/1 (85.7%) — precision HELD, increment kept.
 
 ## The next mining worklist (from the last close-miss scan)
 
