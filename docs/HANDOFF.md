@@ -1,7 +1,7 @@
 # Session handoff — 2026-07-11
 
 Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
-State below is committed through `691c14f` on `main` (github.com/ldupisani/rulekit;
+State below is committed through `38fc2a3` on `main` (github.com/ldupisani/rulekit;
 check `git status`/`git log origin/main..HEAD` before assuming push parity).
 
 ## Where the project is
@@ -16,18 +16,21 @@ every increment through the gates).
 **Current numbers (all verified at head):**
 - dev-train: 14 correct / 0 wrong (3,772 items, 100% precision)
 - dev-holdout: 14 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 184 · lint: 0 errors, 1 intended warning
-- TEST ledger (20 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- curated suite: 52/52 · pytest: 227 · lint: 0 errors, 1 intended warning
+- TEST ledger (27 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
   6/1 (#14) → 6/1 (#15) → 6/1 (#16) → 6/1 (#17) → 6/1 (#18) →
-  **6/1 (85.7%, look #19) ← live** → 6/2 (75.0%, look #20: the 12-word
-  vocab batch, REVERTED — the firewall's second kill, see
+  6/1 (85.7%, look #19) → 6/2 (75.0%, look #20: the 12-word vocab
+  batch, REVERTED — the firewall's second kill, see
   docs/negative-results.md; main reset to the look-#19 state and dev
-  verified item-identical, so 6/1 is restored without a confirmation
-  look) — #12–#13 /mine batch 1, #14 the modal split, #15–#16 /mine
-  batch 2, #17–#19 /mine batch 3
+  verified item-identical, so 6/1 restored without a confirmation look) →
+  6/1 (#21) → 6/1 (#22) → 6/1 (#23) → 6/1 (#24) → 6/1 (#25) → 6/1 (#26) →
+  **6/1 (85.7%, look #27) ← live** — #12–#13 /mine batch 1, #14 the modal
+  split, #15–#16 batch 2, #17–#19 batch 3, #20 the vocab revert, #21–#27
+  the batch-4 re-land (increments 20–26 incl. the interchangeable-measure
+  confident-wrong fix); precision held on every surviving increment
 - The looks #12–#13 walk was the first spent from a /mine staging branch:
   fast-forward main to each increment's commit, one look each, from the
   main checkout (the ledger lives in its gitignored snapshots dir).
@@ -450,7 +453,7 @@ remaining-budget capacity asks), matching the pattern of several prior
 NEUTRAL-on-dev increments in this campaign.
 TEST look #19: 6/1 (85.7%) — precision HELD vs look #18, increment kept.
 
-## Increment 20: fused ordinal number tokens (5th, 3rd, 21st) (`d18b9ba`)
+## Increment 20: fused ordinal number tokens (5th, 3rd, 21st) (`7b5b49f`)
 
 A pure unknown-word ceiling raise, not a new solver: the tokenizer
 previously split a fused ordinal ("5th", "21st", "3rd") into a digit token
@@ -492,9 +495,9 @@ while ['th'] are unknown"). This is a re-land: the candidate previously
 passed constitution review and re-gated cleanly on a staging base that
 included a since-reverted vocabulary increment; re-proven clean here on
 `mining/batch-2026-07-11e`.
-TEST look #21: pending — spent manually.
+TEST look #21: 6/1 (85.7%) — precision HELD, increment kept.
 
-## Increment 21: wage earnings asks (rate x worked span) (`83cc4cc`)
+## Increment 21: wage earnings asks (rate x worked span) (`1bf8e4c`)
 
 'How much does WHO earn/make (in SPAN)?' previously routed unconditionally
 to the general event-fold ask (single-entity/bare-entity), which only
@@ -536,9 +539,9 @@ is a re-land: the candidate previously passed constitution review and
 (except for the interchangeable-measure increment) already re-gated
 cleanly on a staging base that included a since-reverted vocabulary
 increment; re-proven clean here on `mining/batch-2026-07-11e`.
-TEST look #22: pending — spent manually.
+TEST look #22: 6/1 (85.7%) — precision HELD, increment kept.
 
-## Increment 22: remaining-budget capacity asks (budget minus other purchases, div unit price) (`e9af27c`)
+## Increment 22: remaining-budget capacity asks (budget minus other purchases, div unit price) (`481f792`)
 
 Extends increment 19's 'capacity' consumer (budget / unit price) to a budget
 entangled with OTHER purchases the same entity already made ("Pens cost $2
@@ -583,9 +586,9 @@ candidate previously passed constitution review and (except for the
 interchangeable-measure increment) already re-gated cleanly on a staging
 base that included a since-reverted vocabulary increment; re-proven clean
 here on `mining/batch-2026-07-11e`.
-TEST look #23: pending — spent manually.
+TEST look #23: 6/1 (85.7%) — precision HELD, increment kept.
 
-## Increment 23: goal-deficit asks (how many more X does WHO need) (`28cd753`)
+## Increment 23: goal-deficit asks (how many more X does WHO need) (`7cb20ce`)
 
 "How many more X does WHO need?" over a stated DESIRE goal ("Lena wants to
 collect 30 stamps") plus a current STATE holding ("She has 12 stamps") now
@@ -640,9 +643,9 @@ re-land: the candidate previously passed constitution review and (except
 for the interchangeable-measure increment) already re-gated cleanly on a
 staging base that included a since-reverted vocabulary increment;
 re-proven clean here on `mining/batch-2026-07-11e`.
-TEST look #24: pending — spent manually.
+TEST look #24: 6/1 (85.7%) — precision HELD, increment kept.
 
-## Increment 24: event-then-restate state disambiguation (`<pending>`)
+## Increment 24: event-then-restate state disambiguation (`a8be7f0`)
 
 `kernel/answer.py`'s `_entity_total` (the single-entity fold shared by
 every state-verb ask) used to sum a STATE Quantity together with any
@@ -680,9 +683,9 @@ previously passed constitution review and (except for the
 interchangeable-measure increment) already re-gated cleanly on a staging
 base that included a since-reverted vocabulary increment; re-proven clean
 here on `mining/batch-2026-07-11e`.
-TEST look #25: pending — spent manually.
+TEST look #25: 6/1 (85.7%) — precision HELD, increment kept.
 
-## Increment 25: possessive-qualified entity identity (`<pending>`)
+## Increment 25: possessive-qualified entity identity (`2ffa493`)
 
 "Kennedy's house has 5 rooms. Benedict's house has 3 rooms." previously
 folded to the bare noun lemma 'house' regardless of possessor
@@ -722,9 +725,9 @@ evidence. This is a re-land: the candidate previously passed constitution
 review and (except for the interchangeable-measure increment) already
 re-gated cleanly on a staging base that included a since-reverted
 vocabulary increment; re-proven clean here on `mining/batch-2026-07-11e`.
-TEST look #26: pending — spent manually.
+TEST look #26: 6/1 (85.7%) — precision HELD, increment kept.
 
-## Increment 26: category-sibling measure resolution is opt-in (interchangeable categories) (`<pending>`)
+## Increment 26: category-sibling measure resolution is opt-in (interchangeable categories) (`38fc2a3`)
 
 User-reported confident-wrong: "Tom has 20 pets. 8 of them are dogs. How
 many cats are there?" answered 8 — `_resolve_measure` let an ask noun with
@@ -762,7 +765,7 @@ that included a since-reverted vocabulary increment (unlike its
 batch-mates, its own gate outcome was also clean on that prior base); this
 run re-proves the gate on `mining/batch-2026-07-11e`, the corrected
 staging lineage, from scratch.
-TEST look #27: pending — spent manually.
+TEST look #27: 6/1 (85.7%) — precision HELD, increment kept.
 
 ## The next mining worklist (from the last close-miss scan)
 
