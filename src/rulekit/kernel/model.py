@@ -356,6 +356,29 @@ class Price(Fact):
 
 
 @dataclass(frozen=True)
+class Goal(Fact):
+    """'Lena wants to collect 30 stamps' — a stated TARGET quantity, not a
+    holding or an event. USE-GATED for value accounting, like Rate/Price:
+    a goal that merely EXISTS has not been read — only the deficit consumer
+    actually subtracting a holding from it counts as use (a wanted purchase
+    is not a purchase, the increment-14 kirsty lesson generalized to
+    desire verbs). `verb` records the stated desire verb ('want'); the
+    target action verb ('collect') is deliberately NOT captured here — the
+    goal is the quantity, not the activity."""
+
+    entity: str
+    measure: str
+    value: float
+    verb: str = "want"
+
+    def key(self) -> tuple:
+        return ("goal", self.entity, self.measure)
+
+    def value_part(self) -> Any:
+        return self.value
+
+
+@dataclass(frozen=True)
 class Before(Fact):
     earlier: str
     later: str

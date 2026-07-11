@@ -37,6 +37,23 @@ categories:
     notes: "'the REMAINING pages' / 'pages LEFT' — remainder-anchored fractions defer to the rest machinery"
   more_dir: {parent: delta, antonym: less_dir, polarity: 1}
   less_dir: {parent: delta, antonym: more_dir, polarity: -1}
+  desire:
+    parent: verb
+    notes: >
+      'wants/wishes to VERB N X' — a desire verb marks the stated quantity
+      as a GOAL, never an event: gates the goal-deficit Fact pattern.
+      Deliberately UNTAGGED for polarity — a wanted purchase is not a
+      purchase (the increment-14 kirsty lesson generalized): the generic
+      SVO fold's own Quantity(verb='want', ...) stays unsignable and keeps
+      declining the ordinary holdings fold. Members live in difg-mined.
+  need_ask_verb:
+    parent: verb
+    notes: >
+      the deficit ask's own verb gate ('how many more X does WHO need') —
+      kept SEPARATE from the (mined) 'receive' category that also lists
+      these forms, so the ask stays specific to the deficit phrasing and
+      never widens via 'receive's broader membership (get/has/have/...).
+      Members live in difg-mined.
 members:
   currency: [dollar]
   remnant_adj: [left]

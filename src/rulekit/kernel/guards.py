@@ -34,16 +34,17 @@ def _fact_values_by_sentence(store: FactStore) -> dict[int, set[float]]:
     a value is only accounted by facts its OWN sentence produced (a same
     number appearing in another sentence's fact must not mask an unread).
 
-    RATE and PRICE facts are excluded: a rate or price that merely EXISTS
-    has not been used — "makes $18 an hour" must not unlock a fold that
-    ignores the wage, and "$10 each" must not unlock one that ignores the
-    price. Their values count as read only when the arithmetic consumed
-    them (the caller checks the log for rate/price values)."""
-    from .model import Price, Rate
+    RATE, PRICE and GOAL facts are excluded: a rate, price, or goal that
+    merely EXISTS has not been used — "makes $18 an hour" must not unlock a
+    fold that ignores the wage, "$10 each" must not unlock one that ignores
+    the price, and "wants to collect 30 stamps" must not unlock one that
+    ignores the goal. Their values count as read only when the arithmetic
+    consumed them (the caller checks the log for rate/price/goal values)."""
+    from .model import Goal, Price, Rate
 
     out: dict[int, set[float]] = {}
     for fact in store.facts:
-        if isinstance(fact, (Rate, Price)):
+        if isinstance(fact, (Rate, Price, Goal)):
             continue
         values = out.setdefault(fact.provenance.sentence, set())
         for field_name in _NUMERIC_FACT_FIELDS:
@@ -87,14 +88,15 @@ def check(
         # "half as many", "twice", "40% more" or the question's "in 10
         # years" is exactly the confident-wrong this guard exists to stop.
         fact_values = _fact_values_by_sentence(store) if store is not None else {}
-        from .model import Price, Rate
+        from .model import Goal, Price, Rate
 
-        # values from USE-GATED fact kinds (Rate, Price): existence alone
-        # doesn't count as read, but the arithmetic log having consumed
-        # the value does
+        # values from USE-GATED fact kinds (Rate, Price, Goal): existence
+        # alone doesn't count as read, but the arithmetic log having
+        # consumed the value does
         rate_values = (
             {float(r.value) for r in store.by_kind(Rate)}
             | {float(p.value) for p in store.by_kind(Price)}
+            | {float(g.value) for g in store.by_kind(Goal)}
             if store is not None else set()
         )
         for reading in readings:

@@ -395,6 +395,30 @@ rules:
         verb: "{verb}"
         kind: membership
 
+  - id: arithmetic/goal-desire-quantity
+    phase: read
+    description: >
+      "Lena wants to collect 30 stamps" — a DESIRE verb ('want', a category
+      this pack gates on so 'wish'/etc admit the same way as mined vocabulary
+      grows) plus an infinitive VERB introduces a stated GOAL quantity, never
+      an event: a wanted purchase is not a purchase (the increment-14 kirsty
+      lesson generalized). Emits a Goal fact; the deficit consumer resolves
+      it against the entity's single current holding of the same measure.
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: want, cat: desire}
+        - {lit: to}
+        - {slot: verb, type: verb}
+        - {slot: item, type: counted}
+    consumes: [item]
+    emits:
+      - fact: goal
+        entity: "{who}"
+        measure: "{item}"
+        value: "item"
+        verb: "{want}"
+
 asks:
   - id: ask/how-many-in-place
     match:
@@ -661,3 +685,18 @@ asks:
       item: "{item}"
       attribute: "{attr}"
       negated: "true"
+
+  - id: ask/how-many-more-goal-need
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: dir, cat: delta}
+        - {slot: item, type: noun}
+        - {slot: aux, type: auxiliary}
+        - {slot: who, type: name}
+        - {slot: verb, cat: need_ask_verb}
+    resolves:
+      consumer: deficit
+      entity: "{who}"
+      measure: "{item}"

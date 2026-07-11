@@ -224,6 +224,11 @@ members:
   - money
   - pound
   - pounds
+  desire:
+  - want
+  - wanted
+  - wanting
+  - wants
   discount:
   - coupon
   - discount
@@ -326,6 +331,10 @@ members:
   - walked
   - walks
   - went
+  need_ask_verb:
+  - need
+  - needed
+  - needs
   person:
   - adult
   - adults

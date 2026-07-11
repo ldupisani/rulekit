@@ -585,6 +585,63 @@ base that included a since-reverted vocabulary increment; re-proven clean
 here on `mining/batch-2026-07-11e`.
 TEST look #23: pending — spent manually.
 
+## Increment 23: goal-deficit asks (how many more X does WHO need) (`28cd753`)
+
+"How many more X does WHO need?" over a stated DESIRE goal ("Lena wants to
+collect 30 stamps") plus a current STATE holding ("She has 12 stamps") now
+resolves as goal minus holding, instead of declining. A DESIRE verb +
+infinitive ("wants to collect 30 stamps") emits a new Goal fact — a stated
+TARGET quantity, distinct from a holding or an event — via a new
+`arithmetic/goal-desire-quantity` pattern rule, gated on a new `desire`
+verb category (declared in `core-english/categories/core.yaml`, members in
+`packs/difg-mined/categories/semantic.yaml`: want/wants/wanted/wanting;
+deliberately untagged for polarity so it can never leak into the signed
+event fold). A new ask shape ("how many more ITEM does WHO need", gated on
+a dedicated `need_ask_verb` category kept separate from the pre-existing
+broader `receive` category) resolves via a new `deficit` consumer
+(`answer.py`): goal value minus the entity's single current STATE holding
+of the same measure. Goal is use-gated for value accounting like
+Rate/Price (`guards.py`) — existence alone doesn't count as read. Commits
+only when exactly one Goal fact and exactly one current holding resolve
+for the entity/measure; declines on no holding, more than one goal, a goal
+already met (never a negative "how many more"), or conflicting goal
+statements.
+
+Verified side effect (in scope, not a separate change): the rule's own
+item-slot consumption masks the generic SVO fold's redundant Quantity
+emission for both the desire verb and its target verb on the same
+sentence (learn.py's existing pattern-consumed masking, unchanged) — "how
+many stamps does Lena have" over a goal-bearing sentence now answers from
+the stated holding cleanly.
+
+Scoped out (adjacent findings, not touched this increment): a possessive
+"X's goal is N item" premise form overlaps the in-flight
+possessive-entity-identity candidate; a "needs N item" premise form was
+dropped because 'need' is already mined into the 'receive' category
+(polarity +1) — folding it as a goal premise would sit next to a
+pre-existing, unrelated bug where "Tom needs 30 apples. He has 12." already
+answers 42 via the ordinary SVO scan today, on main, independent of this
+change (confirmed via diagnose; not this candidate's class to fix).
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(3772 items, 14/0 unchanged), dev-holdout diff NEUTRAL 0/0/0 (3701 items,
+14/0 unchanged), pytest 212 passed (was 206 + 6 new, now
+`tests/test_mining_increment_23.py`), suite 52/52, lint 0 errors / 1
+known-good warning (fraction-of-remnant / fraction-of-pool, same as
+increments 16-22). Shipped NEUTRAL on dev: no dev-train/dev-holdout item
+currently states both a desire-goal and a matching current holding — the
+mechanism is exercised and verified via the synthetic suite (goal minus
+holding across two independent entity/measure pairs; the unrelated-ask
+regression that a goal-bearing sentence still answers a plain "how many
+does X have" from the stated holding alone; decline-safety with no current
+holding stated; decline-safety when the goal is already met; decline-safety
+on two conflicting goal statements for the same entity/measure). This is a
+re-land: the candidate previously passed constitution review and (except
+for the interchangeable-measure increment) already re-gated cleanly on a
+staging base that included a since-reverted vocabulary increment;
+re-proven clean here on `mining/batch-2026-07-11e`.
+TEST look #24: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 Numbers below predate this session's work and need a fresh `rulekit
