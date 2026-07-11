@@ -1205,6 +1205,58 @@ errors / 1 known-good warning (fraction-of-remnant / fraction-of-pool,
 unchanged) / 21 info.
 TEST look: pending — spent manually.
 
+## Increment 37: definite-NP partitions (`<pending>`)
+
+Re-land of `mining/parked/partition-of-noun`, redone from scratch against
+current main (post increment-34) in a fresh worktree.
+
+Adds two pattern rules — `arithmetic/partition-attribute-of-noun` and
+`arithmetic/partition-membership-of-noun` — mirroring the existing
+partition-attribute/partition-membership pronoun-form rules (increments
+16/17), but with the collection slot as a definite plural NP ("the
+marbles") instead of the pronoun placeholder ("them"). "The" is already a
+SKIPPABLE article (never a literal), so the pattern is just
+number-of-plural-noun-verb-attribute.
+
+Since the collection noun IS the measure, resolution is either trivial or
+unnecessary. `_partition_synth` in `saturate.py` already had an
+"already names a real measure — nothing to resolve" early-continue (added
+by a later increment), so the raw fact is left untouched with its original
+(non-synth/partition) provenance — but two shared gates still recognized
+"resolved" ONLY via the synth/partition provenance tag:
+
+- `src/rulekit/kernel/guards.py`: the unresolved-derivation guard now also
+  treats a PartitionQuantity as resolved when its `collection` already
+  names a known measure directly, not only when its provenance is
+  synth/partition. This is a structural, declared-fact-store check (never
+  a rule-identity check), and is a pure superset of the old condition — the
+  pronoun path is unaffected (verified: increment 16/17 coverage plus a new
+  `test_pronoun_partition_unaffected_by_noun_form`).
+- `src/rulekit/kernel/saturate.py`: `_partition_membership_synth`'s gate
+  widens identically, so the definite-NP membership form also gets its
+  companion Quantity synthesized (the general entity-less "how many NOUN
+  are there" ask answers it, same as the pronoun form), with no bespoke
+  consumer.
+
+The partition-complement consumer and PartitionQuantity fact are reused
+completely unchanged.
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(3772 items, 14/0 unchanged), dev-holdout diff NEUTRAL 0/0/0 (3701 items,
+15/0 unchanged), pytest 303 passed (was 296 + 7 new, now
+`tests/test_mining_increment_37.py`), suite 52/52, lint 0 errors / 1
+known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) / 21
+info. Shipped NEUTRAL on dev: as with the parked attempt, this nets 0 on
+both dev slices in this corpus sample — the candidate brief's "0 partition
+facts known" / "no quantity known" stats evidence turned out, on
+inspection, to be rest-of-pool problems sharing the same generic
+decline-reason string via `ask/how-many-partition`, not actual "N of the
+NOUN are ADJ" premises. The mechanism is verified directly via synthetic
+probes in the test file and is a legitimate, general class per the
+constitution (a definite-NP sibling of an already-shipped pronoun-form
+class).
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 Numbers below predate this session's work and need a fresh `rulekit

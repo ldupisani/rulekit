@@ -359,12 +359,21 @@ def _partition_membership_synth(
     it, with no bespoke consumer. Fires only when the resolved collection's
     measure has EXACTLY one holding entity — an ambiguous holder (e.g. two
     entities both stated to have the collection) declines downstream
-    exactly like partition-complement's whole-total check, never guesses."""
+    exactly like partition-complement's whole-total check, never guesses.
+
+    A collection counts as "resolved" either via synth/partition (the
+    pronoun path) OR because the premise named the collection noun
+    directly (the definite-NP partition surface, "8 of the animals are
+    dogs"): both cases end with `collection` equal to a real known
+    measure, so the gate checks that structural fact rather than the
+    provenance tag, extending to the new surface without a per-rule
+    special case."""
     from .model import PartitionQuantity
 
     out: list[Fact] = []
+    known_measures = {q.measure for q in store.by_kind(Quantity)}
     for p in store.by_kind(PartitionQuantity):
-        if p.kind != "membership" or p.provenance.source != "synth/partition":
+        if p.kind != "membership" or p.collection not in known_measures:
             continue
         holders = {q.entity for q in store.by_kind(Quantity) if q.measure == p.collection}
         if len(holders) != 1:

@@ -165,7 +165,13 @@ def check(
         # total) — it matches on shape alone (attribute, verb, sentence);
         # dropping value from that key is strictly weaker and only ever
         # consulted for is_fraction=True facts, so cardinal matching is
-        # untouched.
+        # untouched. A partition also counts as resolved when its
+        # `collection` ALREADY names a known measure directly (the
+        # definite-NP surface, "6 of the marbles are red" — the noun IS the
+        # measure, nothing to resolve) — a declared fact-store property,
+        # never a rule-identity check, so it applies uniformly to whichever
+        # rule produced the fact.
+        known_measures = {q.measure for q in store.by_kind(Quantity)}
         resolved_by_value = {
             (p.attribute, p.value, p.verb, p.provenance.sentence)
             for p in store.by_kind(PartitionQuantity)
@@ -177,7 +183,7 @@ def check(
             if p.provenance.source == "synth/partition"
         }
         for p in store.by_kind(PartitionQuantity):
-            if p.provenance.source == "synth/partition":
+            if p.provenance.source == "synth/partition" or p.collection in known_measures:
                 continue
             if p.is_fraction:
                 resolved = (p.attribute, p.verb, p.provenance.sentence) in resolved_by_shape

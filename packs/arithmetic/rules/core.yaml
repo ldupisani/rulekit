@@ -474,6 +474,61 @@ rules:
         kind: membership
         is_fraction: true
 
+  - id: arithmetic/partition-attribute-of-noun
+    phase: read
+    description: >
+      "6 of the marbles are red" — the definite-NP partition surface: the
+      collection is a plural common noun named directly ("the" is a
+      SKIPPABLE article, never a literal here) instead of the pronoun
+      placeholder partition-attribute matches. Since the noun IS the
+      measure, there is nothing to resolve — the partition synthesizer's
+      "already names a real measure" branch leaves it as-is, and the
+      unresolved-derivation guard's structural known-measure check (not a
+      rule-identity check) recognizes it as resolved directly. Same
+      PartitionQuantity fact and partition-complement consumer as
+      partition-attribute, reused unchanged.
+    match:
+      sentence:
+        - {slot: n, type: number}
+        - {lit: of}
+        - {slot: coll, type: plural}
+        - {slot: verb, type: verb}
+        - {slot: attr, type: adjective}
+    consumes: [n]
+    emits:
+      - fact: partition_quantity
+        collection: "{coll}"
+        attribute: "{attr}"
+        value: "n"
+        verb: "{verb}"
+
+  - id: arithmetic/partition-membership-of-noun
+    phase: read
+    description: >
+      "8 of the animals are dogs" — the definite-NP counterpart of
+      partition-membership: the collection is a named plural noun, the
+      attribute a distinct plural common noun (membership, not a
+      modifier). Same PartitionQuantity fact (kind: membership); the
+      companion membership synth step's gate also accepts a collection
+      that already names a known measure directly (not only one resolved
+      via synth/partition), a structural widening shared with the pronoun
+      form, not a per-rule special case.
+    match:
+      sentence:
+        - {slot: n, type: number}
+        - {lit: of}
+        - {slot: coll, type: plural}
+        - {slot: verb, type: verb}
+        - {slot: attr, type: noun}
+    consumes: [n]
+    emits:
+      - fact: partition_quantity
+        collection: "{coll}"
+        attribute: "{attr}"
+        value: "n"
+        verb: "{verb}"
+        kind: membership
+
   - id: arithmetic/stated-age
     phase: read
     description: >
