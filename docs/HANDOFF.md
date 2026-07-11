@@ -1393,6 +1393,35 @@ pick up dev-holdout/test items with a simpler shape outside this half of
 dev-train.
 TEST look: pending — spent manually.
 
+## Increment 42: wh-difference asks (`141e2a0`)
+
+Adds `ask/what-is-the-difference-named` and its pronoun mirror
+`ask/what-is-the-difference-pronoun` to `packs/arithmetic/rules/core.yaml`:
+"what is/are/was the difference (in/between the number of) ITEM NAME and
+NAME have?" and "...ITEM they have?", both routed to the EXISTING
+`difference` consumer already shared with `ask/how-many-more` and
+`ask/how-much-noun-more-than`. The named-pair form is pure YAML (a/b bind
+directly, same as the existing asks, reusing the aggregate_noun+'of'
+framing already established by `arithmetic/times-the-number-of`); the
+copula gate reuses the established 'state' category (has/have/is/are/
+was/were/own/owns), the same pattern `ask/how-old-is` already uses. The
+pronoun form binds no a/b pair, so `answer.py`'s difference consumer
+gained a small fallback mirroring the 'combined' consumer's holder
+enumeration: it commits only when EXACTLY two entities hold the resolved
+measure, and declines otherwise (the established exactly-one/
+exactly-two-or-decline discipline) — no widening of `how-many-more`'s own
+slots.
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(3772 items, 14/0 unchanged), dev-holdout diff NEUTRAL 0/0/0 (3701 items,
+15/0 unchanged), pytest 337 passed (was 331 + 6 new, now
+`tests/test_mining_increment_42.py`), suite 52/52, lint 0 errors / 1
+known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) / 22
+info. SOLVED is 0 on both dev slices — the class is verified via a direct
+probe (Mia/Leo apples) and the suite, not by a dev-train/holdout hit;
+groundwork only, 0 net DEV gain, 0 harm.
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 **GOAL MODE (set 2026-07-11): the campaign target is 100 dev-train

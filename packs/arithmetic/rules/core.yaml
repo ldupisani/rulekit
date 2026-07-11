@@ -833,6 +833,63 @@ asks:
       measure: "{item}"
       verb: "{verb}"
 
+  - id: ask/what-is-the-difference-named
+    match:
+      question:
+        # "what is the difference in/between the number of ITEM NAME and
+        # NAME have" — the wh-difference CLASS routed to the EXISTING
+        # 'difference' consumer shared with ask/how-many-more; 'the'/'a'
+        # articles are skippable senses, never authored as literals.
+        # `cat: state` reuses the established has/have/is/are/was/were/
+        # own/owns equivalence class (core-english categories) for the
+        # copula, exactly as ask/how-old-is does.
+        - {lit: what}
+        - {slot: be, cat: state}
+        - {lit: difference}
+        - opt:
+            - {slot: prep, cat: preposition}
+        - opt:
+            # "the number of"/"the amount of" framing (same aggregate_noun
+            # + 'of' pairing as arithmetic/times-the-number-of) — optional
+            # because "the difference in ITEM ..." also occurs bare.
+            - {slot: frame, cat: aggregate_noun}
+            - {lit: of}
+        - {slot: item, type: noun}
+        - {slot: a, type: name}
+        - {lit: and}
+        - {slot: b, type: name}
+        - {slot: verb, type: verb}
+    resolves:
+      consumer: difference
+      a: "{a}"
+      b: "{b}"
+      measure: "{item}"
+      verb: "{verb}"
+
+  - id: ask/what-is-the-difference-pronoun
+    match:
+      question:
+        # the pronoun mirror of ask/what-is-the-difference-named ("...ITEM
+        # they have?") — no named pair to bind, so the consumer resolves
+        # the pair itself from the FACTS (exactly two holders of the
+        # measure, or decline; mirrors the 'combined' consumer's holder
+        # enumeration, but difference is inherently BINARY, never a Σ).
+        - {lit: what}
+        - {slot: be, cat: state}
+        - {lit: difference}
+        - opt:
+            - {slot: prep, cat: preposition}
+        - opt:
+            - {slot: frame, cat: aggregate_noun}
+            - {lit: of}
+        - {slot: item, type: noun}
+        - {slot: who, type: pronoun}
+        - {slot: verb, type: verb}
+    resolves:
+      consumer: difference
+      measure: "{item}"
+      verb: "{verb}"
+
   - id: ask/how-many-rate-span
     match:
       question:

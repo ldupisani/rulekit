@@ -522,11 +522,28 @@ def answer(
         return Answer("number", combined, f"Σ over {entities}")
 
     if consumer == "difference":
-        a, b, measure = query["a"], query["b"], query["measure"]
+        measure = query["measure"]
         singular = _resolve_measure(measure, store, reg)
         if singular is None:
             return Answer("decline", None,
                           f"measure {measure!r} is ambiguous across the facts")
+        a, b = query.get("a"), query.get("b")
+        if a is None or b is None:
+            # ask/what-is-the-difference-pronoun names no pair ("...ITEM
+            # they have?") — mirrors the 'combined' consumer's holder
+            # enumeration, but a difference is inherently BINARY: decline
+            # unless EXACTLY two entities hold the measure (the established
+            # exactly-one/exactly-two-or-decline discipline).
+            entities = sorted(
+                {q.entity for q in store.by_kind(Quantity) if q.measure == singular}
+            )
+            if len(entities) != 2:
+                return Answer(
+                    "decline", None,
+                    f"a pronoun difference ask needs exactly two holders of "
+                    f"{singular!r}; found {entities}",
+                )
+            a, b = entities
         ask_verb = query.get("verb", "have")
         if ask_verb in ("have", "be") or reg.word_in_category(ask_verb, "state"):
             ta = _entity_total(store, reg, a, singular, log)
