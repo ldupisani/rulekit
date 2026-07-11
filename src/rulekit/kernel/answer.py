@@ -154,6 +154,20 @@ def _entity_total(
         return None  # facts from DIFFERENT times — time arithmetic is unbuilt
     if any(_sign(q.verb, reg, strict=True) is None for q in events):
         return None  # an event with UNKNOWN polarity cannot be signed — decline
+    if state and events:
+        earliest_event = min(q.provenance.sentence for q in events)
+        if any(q.provenance.sentence > earliest_event for q in state):
+            # A state Quantity narrated AFTER a prior event for the same
+            # entity/measure is structurally ambiguous: it may be an
+            # independent additional holding (sum, the anchor-then-event
+            # order below already handles) OR a RESTATEMENT of the
+            # running post-event total ("Kendall finds 6 dimes. She now
+            # has 6 dimes." is 6, not 12 — the state isn't a second
+            # holding). Nothing in the fold distinguishes the two
+            # readings, so decline rather than risk a confident double-
+            # count; a state that precedes every event (the anchor
+            # narrative order) is unaffected.
+            return None
     total = 0.0
     parts: list[str] = []
     for q in state:

@@ -642,6 +642,46 @@ staging base that included a since-reverted vocabulary increment;
 re-proven clean here on `mining/batch-2026-07-11e`.
 TEST look #24: pending — spent manually.
 
+## Increment 24: event-then-restate state disambiguation (`<pending>`)
+
+`kernel/answer.py`'s `_entity_total` (the single-entity fold shared by
+every state-verb ask) used to sum a STATE Quantity together with any
+prior EVENT Quantity for the same entity/measure, even when the state
+sentence is narratively just restating the post-event running total
+("Kendall finds 6 dimes. She now has 6 dimes." returned 12 on unmodified
+main, not 6). This was root-caused during an earlier failed
+state-conjunction candidate and left as the worklist's top item.
+
+Mechanism (kernel-structural, no lexicon, no per-problem parsing): when
+both a state and an event Quantity exist for the same entity/measure, and
+any state fact's sentence index is greater than the EARLIEST event's, the
+fold now declines instead of summing — converting a silent latent wrong
+into a safe decline rather than attempting a resolution rule. A state
+that precedes every event (the ordinary anchor narrative order the fold
+was built for) is completely unaffected, since the new check only fires
+when the state comes strictly LATER than some event. All state verbs
+(have/own/be) are one equivalence class per the campaign invariant; the
+synthetic suite exercises more than one member of it ('have' and 'own').
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(3772 items, 14/0 unchanged), dev-holdout diff NEUTRAL 0/0/0 (3701 items,
+14/0 unchanged), pytest 218 passed (was 212 + 6 new, now
+`tests/test_mining_increment_24.py`), suite 52/52, lint 0 errors / 1
+known-good warning (fraction-of-remnant / fraction-of-pool, unchanged).
+Shipped NEUTRAL on dev: no dev-train/dev-holdout item currently exercises
+this exact event-then-restate pairing on this slice; the synthetic suite
+(event-then-restate decline, multi-event-then-restate decline, state-verb-
+equivalence-class decline via 'own', anchor-then-event regression,
+state-only and event-only baselines) is the coverage evidence, and the
+mechanism converts the exact silent-wrong class the failed
+state-conjunction candidate traced (Kendall/dimes, 12 vs 6) into a safe
+decline rather than a confident wrong. This is a re-land: the candidate
+previously passed constitution review and (except for the
+interchangeable-measure increment) already re-gated cleanly on a staging
+base that included a since-reverted vocabulary increment; re-proven clean
+here on `mining/batch-2026-07-11e`.
+TEST look #25: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 Numbers below predate this session's work and need a fresh `rulekit
