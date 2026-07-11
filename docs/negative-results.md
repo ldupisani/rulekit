@@ -85,7 +85,7 @@ one NEW confident-wrong unlocked on unseen text. Full revert of the
 increment; main reset to the pre-batch state and dev verified
 item-identical to the look #19 fingerprint (deterministic engine ⇒ TEST
 restored without spending a confirmation look). The candidate branch
-`mining/cand-vocab-ceiling-batch` preserves the exact word list.
+`mining/parked/vocab-ceiling-batch` preserves the exact word list.
 
 Which of the 12 words unlocked the wrong is UNKNOWN (TEST is aggregate-
 only; bisection would cost ~log2(12) ≈ 4 looks). Do not re-attempt as a

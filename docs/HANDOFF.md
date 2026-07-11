@@ -775,7 +775,7 @@ stats` pass before trusting them.
 - **Event-then-restate state disambiguation in `_entity_total`
   (answer.py)** — surfaced by /mine batch 3's failed `state-conjunction`
   candidate (`[FAILED-GATE]` WIP preserved on
-  `mining/cand-state-conjunction`): when a `state` Quantity for
+  `mining/parked/state-conjunction`): when a `state` Quantity for
   entity/measure X appears in a LATER sentence than a prior EVENT
   Quantity for the same entity/measure, the state sentence may be a
   RESTATEMENT of the running total (should anchor/replace), not an
