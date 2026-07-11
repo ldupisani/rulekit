@@ -936,6 +936,16 @@ TEST look: pending — spent manually.
 Numbers below predate this session's work and need a fresh `rulekit
 stats` pass before trusting them.
 
+- **Parked, near-ready briefs from batch 5** (branches under
+  `mining/parked/`; all four passed constitution review and deferred only
+  on cherry-pick conflicts against increments that have since landed — a
+  fresh junior rebasing on current main should land them cheaply):
+  `need-as-goal`, `age-asks`, `attr-qualified-entities`,
+  `state-verb-conjunction` (use `mining/parked/state-verb-conjunction-2`,
+  the post-increment-24 attempt). Also `money-left-asks` — the MECHANISM
+  passed gates; it was blocked ONLY for a lightly-edited GSM8K test item
+  (needs its tests reinvented from scratch, nothing else).
+
 - **Event-then-restate state disambiguation in `_entity_total`
   (answer.py)** — surfaced by /mine batch 3's failed `state-conjunction`
   candidate (`[FAILED-GATE]` WIP preserved on
