@@ -1,7 +1,7 @@
 # Session handoff — 2026-07-11
 
 Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
-State below is committed through `4bc6ed5` on `main` (github.com/ldupisani/rulekit;
+State below is committed through `75f8ec4` on `main` (github.com/ldupisani/rulekit;
 check `git status`/`git log origin/main..HEAD` before assuming push parity).
 
 ## Where the project is
@@ -16,12 +16,16 @@ every increment through the gates).
 **Current numbers (all verified at head):**
 - dev-train: 14 correct / 0 wrong (3,772 items, 100% precision)
 - dev-holdout: 14 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 130 · lint: 0 errors, 1 intended warning
-- TEST ledger (11 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- curated suite: 52/52 · pytest: 141 · lint: 0 errors, 1 intended warning
+- TEST ledger (13 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
-  **6/1 (85.7%, look #11) ← live** — a genuine COVERAGE GAIN on TEST
-  (same single persistent wrong, one more correct)
+  6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (look #12) →
+  **6/1 (85.7%, look #13) ← live** — looks #12–#13 covered the first
+  /mine batch (increments 12–13, both dev-NEUTRAL); precision held both times
+- The looks #12–#13 walk was the first spent from a /mine staging branch:
+  fast-forward main to each increment's commit, one look each, from the
+  main checkout (the ledger lives in its gitignored snapshots dir).
 - The 1 persistent TEST wrong is a stable §3a unseen shape, present since look #1.
 
 ## The mining loop (how work ships)
@@ -113,7 +117,7 @@ Gates: dev-train +1 SOLVED / 0 BROKE, dev-holdout +1 SOLVED / 0 BROKE
 (both 14/0). TEST look #11: 6/1 (85.7%) — a genuine coverage GAIN, not
 just NEUTRAL (same persistent wrong, one more correct).
 
-## Increment 12: trailing conditional-clause questions (`mining/batch-2026-07-11`)
+## Increment 12: trailing conditional-clause questions (`8b454cb`)
 
 Closes the trailing half of the leading/trailing "if"-clause split gap
 traced at the end of the previous session. `_split_leading_clause`
@@ -152,9 +156,9 @@ errors / 1 known-good warning. Shipped NEUTRAL on dev (no dev-train/
 dev-holdout item happens to use this exact trailing form) — the
 targeted synthetic tests are the coverage evidence; a dev/TEST item
 using this phrasing would show as a future SOLVED.
-TEST look: pending — spent manually, one look after the batch lands.
+TEST look #12: 6/1 (85.7%) — precision HELD vs look #11, increment kept.
 
-## Increment 13: chained rates (rate x rate spans) (`mining/batch-2026-07-11`)
+## Increment 13: chained rates (rate x rate spans) (`75f8ec4`)
 
 Extends the rate-span consumer (`kernel/answer.py`, `consumer ==
 "rate-span"`) for the observed 2-rate chained case only: pages/hour x
@@ -197,7 +201,7 @@ dev-holdout item happens to hit this exact chained-rate shape; the
 targeted synthetic tests (including the ambiguous-bridge decline case
 and the stated-bridge-overrides-generic-conversion case) are the
 coverage evidence.
-TEST look: pending — spent manually, one look after the batch lands.
+TEST look #13: 6/1 (85.7%) — precision HELD vs look #12, increment kept.
 
 ## The next mining worklist (from the last close-miss scan)
 
