@@ -95,6 +95,39 @@ def _split_leading_clause(question: str, reg: Registry) -> tuple[str | None, str
     return None, question
 
 
+def _split_trailing_clause(question: str, reg: Registry) -> tuple[str | None, str]:
+    """'<wh…>, if <clause>?' -> the clause is a PREMISE, the wh-part stays
+    the question. Mirror of `_split_leading_clause` for the trailing form:
+    split at the LAST top-level comma whose following text starts with the
+    conditional marker 'if' (already pack lexicon; the literal here is
+    grammatical skeleton exactly like the leading form's "if " check), strip
+    the trailing '?', and only split when the clause carries a number (a
+    bare appositive or 'in total, ...' tail never does) — declining a
+    coincidental ", if ..." tail with no number is safer than promoting a
+    non-premise to a premise."""
+    if not question.rstrip().endswith("?"):
+        return None, question
+    parts = question.split(",")
+    if len(parts) < 2:
+        return None, question
+    split_at = None
+    for i in range(len(parts) - 1):
+        rest = ",".join(parts[i + 1 :]).strip()
+        first = rest.split()[0].lower() if rest.split() else ""
+        if first == "if":
+            split_at = i  # keep the LAST such boundary
+    if split_at is None:
+        return None, question
+    wh_part = ",".join(parts[: split_at + 1]).strip()
+    clause_rest = ",".join(parts[split_at + 1 :]).strip()
+    clause_body = clause_rest[2:].strip().rstrip("?").rstrip(".").strip()
+    if not clause_body or not any(ch.isdigit() for ch in clause_body):
+        return None, question
+    if not wh_part.endswith("?"):
+        wh_part = wh_part.rstrip(".") + "?"
+    return clause_body + ".", wh_part
+
+
 def split_question(text: str, reg: Registry | None = None) -> tuple[list[str], str | None]:
     sentences = split_sentences(text)
     if not sentences:
@@ -115,6 +148,8 @@ def split_question(text: str, reg: Registry | None = None) -> tuple[list[str], s
     premises = sentences[:-1]
     if reg is not None:
         clause, last = _split_leading_clause(last, reg)
+        if clause is None:
+            clause, last = _split_trailing_clause(last, reg)
         if clause is not None:
             premises = premises + [clause]
     return premises, last

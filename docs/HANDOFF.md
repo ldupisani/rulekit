@@ -113,6 +113,47 @@ Gates: dev-train +1 SOLVED / 0 BROKE, dev-holdout +1 SOLVED / 0 BROKE
 (both 14/0). TEST look #11: 6/1 (85.7%) — a genuine coverage GAIN, not
 just NEUTRAL (same persistent wrong, one more correct).
 
+## Increment 12: trailing conditional-clause questions (`mining/batch-2026-07-11`)
+
+Closes the trailing half of the leading/trailing "if"-clause split gap
+traced at the end of the previous session. `_split_leading_clause`
+(engine.py) already handled "If X, question?"; questions phrased the
+other way round — "<wh-question>, if X has N?" — never had their
+trailing clause promoted to a premise, so its number bound as a
+spurious `dobj` on the wh-verb instead of becoming a fact (traced
+example: "How many more marbles does Anna have than Carl, if Carl has
+20?" declined "missing a total" while the logically identical
+leading-clause phrasing solved).
+
+`_split_trailing_clause` (engine.py, mirrors `_split_leading_clause`)
+splits the question sentence at the LAST top-level comma whose
+following text starts with the conditional marker "if" (structural
+skeleton, not lexicon — the leading form already keys on the same
+literal), strips the trailing "?", and promotes the clause to a
+premise sentence ahead of the wh-part — but ONLY when the clause
+contains a digit, so bare appositives and "in total, ..." tails are
+never mis-promoted to a premise. Runs only when the leading-form split
+finds nothing first, so existing leading-if behavior is byte-for-byte
+unchanged. Pure sentence-splitting before any grammar/obligation
+processing; no word list entered Python.
+
+Verified end-to-end: "Anna has 4 times as many marbles as Carl. How
+many more marbles does Anna have than Carl, if Carl has 20 marbles?"
+now splits and solves (60). The originally-traced HANDOFF item
+(Trey/Kris/Kristen) still declines post-fix — its trailing clause
+omits the measure noun ("if Kristen has 12", no "turtles"), a separate
+noun-ellipsis gap, out of scope here.
+
+Gates (integrated on staging, full re-proof): dev-train diff SOLVED 0 /
+BROKE 0 / DECL→WRONG 0 (NEUTRAL, 14/0 unchanged), dev-holdout diff
+identical (NEUTRAL, 14/0 unchanged), pytest 135 passed (was 130 + 5 new
+synthetic in `tests/test_mining_increment_12.py`), suite 52/52, lint 0
+errors / 1 known-good warning. Shipped NEUTRAL on dev (no dev-train/
+dev-holdout item happens to use this exact trailing form) — the
+targeted synthetic tests are the coverage evidence; a dev/TEST item
+using this phrasing would show as a future SOLVED.
+TEST look: pending — spent manually, one look after the batch lands.
+
 ## The next mining worklist (from the last close-miss scan)
 
 Numbers below predate this session's work and need a fresh `rulekit
