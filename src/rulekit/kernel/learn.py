@@ -68,11 +68,20 @@ def _rate_unit(reading: Reading, counted: Unit) -> Unit | None:
     return None
 
 
-def _price_each_value(reading: Reading, counted: Unit, reg: Registry) -> float | None:
+def _price_each_value(
+    reading: Reading, counted: Unit, reg: Registry, stop_at_list_boundary: bool = False
+) -> float | None:
     """'N ITEM at/for $PRICE each' — the PER-UNIT price, when a
     currency-valued noun sits between the counted item and a trailing
     'each' quantifier. Returns None for the plain distributive form ('2
-    notebooks for EACH of his children'), which stays a silent skip."""
+    notebooks for EACH of his children'), which stays a silent skip.
+
+    stop_at_list_boundary additionally stops at a comma: in a purchase
+    list ("A, B at $X each") an unpriced FIRST item must not borrow a
+    LATER item's price. Off by default — a bare comma is not a clause
+    boundary for every verb's rate-marker scan (widening it broke an
+    unrelated 'contains 8 bags ..., and ... each bag' holding elsewhere;
+    ask only the purchase-conjunction caller opts in)."""
     units = reading.units
     try:
         i = units.index(counted)
@@ -81,6 +90,8 @@ def _price_each_value(reading: Reading, counted: Unit, reg: Registry) -> float |
     price: Unit | None = None
     for unit in units[i + 1 :]:
         if unit.sense() == "complementizer" or unit.surface in (".", "?", "!"):
+            break
+        if stop_at_list_boundary and unit.surface == ",":
             break
         if unit.sense() == "quantifier":
             return float(price.features["value"]) if price is not None else None
@@ -92,6 +103,69 @@ def _price_each_value(reading: Reading, counted: Unit, reg: Registry) -> float |
         ):
             price = unit
     return None
+
+
+def _conjoined_purchase_items(
+    reading: Reading, reg: Registry, first_item: Unit
+) -> list[tuple[Unit, float | None]]:
+    """Additional purchased items conjoined to `first_item` in a list like
+    'A at $X each, B, and C at $Z each' — the verb's dobj obligation only
+    binds the FIRST item (a general, pre-existing limitation); this walks
+    the tail, segmenting on top-level commas/conjunctions, and returns
+    (item, price-or-None) for every SIBLING found (first_item excluded).
+    A segment's price counts only when that segment has its OWN 'each' —
+    a flat-priced item with no 'each' returns (item, None), same as an
+    unpriced one, so the caller's all-or-decline total stays honest."""
+    units = reading.units
+    try:
+        i = units.index(first_item)
+    except ValueError:
+        return []
+    conjuncts: list[tuple[Unit, float | None]] = []
+    segment: list[Unit] = []
+    # the FIRST segment (up to the first delimiter) is first_item's OWN
+    # trailing clause ("at $10 each") — already handled by the caller, not
+    # a new conjunct. Only segments after the first delimiter count.
+    seen_delimiter = False
+
+    def _flush(seg: list[Unit]) -> None:
+        item = next(
+            (
+                u for u in seg
+                if u.sense() == "noun" and u.features.get("value_kind") == "count"
+            ),
+            None,
+        )
+        if item is None:
+            return
+        price: Unit | None = None
+        has_each = any(u.sense() == "quantifier" for u in seg)
+        if has_each:
+            for u in seg:
+                if (
+                    u is not item
+                    and u.sense() == "noun"
+                    and u.features.get("value_kind") == "count"
+                    and reg.word_in_category(u.features.get("lemma", ""), "currency")
+                ):
+                    price = u
+        conjuncts.append((item, float(price.features["value"]) if price is not None else None))
+
+    for unit in units[i + 1 :]:
+        if unit.sense() == "complementizer" or unit.surface in (".", "?", "!"):
+            break
+        if unit.surface == "," or unit.sense() == "conjunction":
+            if seen_delimiter and segment:
+                _flush(segment)
+            segment = []
+            seen_delimiter = True
+            continue
+        if not seen_delimiter:
+            continue  # still inside first_item's own trailing clause
+        segment.append(unit)
+    if segment:
+        _flush(segment)
+    return conjuncts
 
 
 def _is_rate(reading: Reading, counted: Unit) -> bool:
@@ -192,6 +266,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
             continue
         is_state = reg.word_in_category(verb.features.get("fold", ""), "state")
         occurrence = None if is_state else reading.sentence_index
+        is_purchase_verb = reg.word_in_category(verb_lemma, "purchase")
         if dobj is not None and _is_rate(reading, dobj):
             unit_noun = _rate_unit(reading, dobj)
             if (
@@ -215,7 +290,9 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                 )
                 continue  # never a holding — no plain quantity from a rate
             price_value = (
-                _price_each_value(reading, dobj, reg)
+                _price_each_value(
+                    reading, dobj, reg, stop_at_list_boundary=is_purchase_verb
+                )
                 if dobj.features.get("value_kind") == "count" and dobj.sense() == "noun"
                 else None
             )
@@ -249,6 +326,33 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                     time=time_label,
                 )
             )
+            if is_purchase_verb:
+                # "buys A at $X each, B, and C at $Z each" — the dobj
+                # obligation only bound A; recover the conjoined siblings
+                # and fold each as its own purchase (Quantity + Price
+                # when that sibling has its own 'each').
+                for item, price_value in _conjoined_purchase_items(reading, reg, dobj):
+                    facts.append(
+                        Quantity(
+                            provenance=prov,
+                            entity=_lemma(subject),
+                            measure=_lemma(item),
+                            value=float(item.features["value"]),
+                            verb=verb_lemma,
+                            occurrence=occurrence,
+                            time=time_label,
+                        )
+                    )
+                    if price_value is not None:
+                        facts.append(
+                            Price(
+                                provenance=prov,
+                                item=_lemma(item),
+                                value=price_value,
+                                verb=verb_lemma,
+                                occurrence=occurrence,
+                            )
+                        )
         elif dobj is not None and dobj.uid in quantifies:
             value_unit = quantifies[dobj.uid]
             facts.append(
