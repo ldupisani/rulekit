@@ -716,6 +716,15 @@ asks:
       verb: "{verb}"
 
   - id: ask/how-many-entity
+    # NOTE (mining candidate pronoun-entity-asks): a widening of `who` to
+    # `type: entity` was tried here and DROPPED — it ties on consumed-unit
+    # count with ask/how-many-entity-possessed and ask/how-many-entity-
+    # qualified (both also 6 tokens: how/many/item/aux/who/verb) and the
+    # alphabetical id tie-break (patterns.match_ask) then routes a
+    # possessive- or attribute-qualified subject HERE instead of to the
+    # narrower ask, dropping their `entity_owner`/`entity_qualifier`
+    # binding and breaking the owner/qualifier-scoped fallback (caught by
+    # tests/test_mining_increment_25.py and _34.py). Left as `type: name`.
     match:
       question:
         - {lit: how}
@@ -813,6 +822,15 @@ asks:
       measure: "{item}"
 
   - id: ask/how-much-bare-entity
+    # NOTE (mining candidate pronoun-entity-asks): a widening of `who` to
+    # `type: entity` was tried here and DROPPED — it ties on consumed-unit
+    # count with ask/how-much-item-cost (both 5 tokens once `who` admits a
+    # bare noun: how/much/aux/who/verb here vs. how/much/aux/item/verb
+    # there) and the alphabetical id tie-break (patterns.match_ask) then
+    # routes an item-subject cost question ("how much do the jackets
+    # cost?") HERE — a `have`-style single-entity read with no matching
+    # fact — instead of to the item-cost consumer (caught by
+    # tests/test_mining_increment_38.py). Left as `type: name`.
     match:
       question:
         - {lit: how}
@@ -829,13 +847,17 @@ asks:
       verb: "{verb}"
 
   - id: ask/how-much-noun-entity
+    # `who, type: entity` (mining candidate pronoun-entity-asks): widened
+    # from `type: name` — see ask/how-many-entity's comment for the class
+    # rationale and ask/how-much-bare-entity's comment for why a plural
+    # pronoun subject can never collide with ask/how-much-combined.
     match:
       question:
         - {lit: how}
         - {lit: much}
         - {slot: item, type: noun}
         - {slot: aux, type: auxiliary}
-        - {slot: who, type: name}
+        - {slot: who, type: entity}
         - {slot: verb, type: verb}
     resolves:
       consumer: single-entity
@@ -1117,13 +1139,16 @@ asks:
     # `state` category (have/has/had/...), never the general `verb` type,
     # because only a STATED HOLDING — not an event fold — is a valid base
     # to subtract purchases from.
+    # `who, type: entity` (mining candidate pronoun-entity-asks): widened
+    # from `type: name` — see ask/how-many-entity's comment for the class
+    # rationale.
     match:
       question:
         - {lit: how}
         - {lit: much}
         - {lit: money}
         - {slot: aux, type: auxiliary}
-        - {slot: who, type: name}
+        - {slot: who, type: entity}
         - {slot: verb, cat: state}
         - {lit: left}
     resolves:

@@ -1455,6 +1455,43 @@ suite 52/52, lint 0 errors / 1 known-good warning (fraction-of-remnant /
 fraction-of-pool, unchanged) / 22 info.
 TEST look: pending — spent manually.
 
+## Increment 44: pronoun-subject/common-noun single-entity asks (`a580fa3`)
+
+Declared infrastructure (goal-mode exemption): widens the `who` slot from
+`type: name` to `type: entity` (the type already proven on
+ask/how-many-rate-span, ask/how-much-rate-span, ask/earn-span, and
+ask/how-many-capacity) on TWO single-entity ask ids in
+`packs/arithmetic/rules/core.yaml`, so a resolved pronoun subject ("how much
+money does she have?") or a bare common-noun subject ("how much money does
+the teacher have?") is recognized alongside the existing name subject:
+
+  - `ask/how-much-noun-entity`
+  - `ask/how-much-money-entity-left`
+
+Two sibling ids named in the brief — `ask/how-many-entity` and
+`ask/how-much-bare-entity` — were tried and DROPPED: widening them ties on
+consumed-unit count with `ask/how-many-entity-possessed`/`-qualified` and
+`ask/how-much-item-cost` respectively, and the alphabetical id tie-break in
+`patterns.match_ask` then silently shadows those narrower asks — caught by
+the EXISTING synthetic suite (`test_mining_increment_25.py`, `_34.py`,
+`_38.py`), not by the dev diff (which stayed NEUTRAL throughout). Those two
+ids are left unchanged at `type: name`.
+
+Recognition-only: every dev-corpus question newly recognized by this widening
+still declines downstream today on a premise gap (unresolved pronoun
+antecedent, or an entity never stated to hold the asked measure) — this is
+pure infrastructure for a follow-up class (pronoun/common-noun forms of the
+money-left / purchase-total / entity-fold ask families) to cash in as those
+premise gaps close in later batches.
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(3772 items, 16/0 unchanged), dev-holdout diff NEUTRAL 0/0/0 (3701 items,
+16/0 unchanged), pytest 350 passed (was 344 + 6 new, now
+`tests/test_mining_increment_44.py`), suite 52/52, lint 0 errors / 1
+known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) / 22
+info.
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 **GOAL MODE (set 2026-07-11): the campaign target is 100 dev-train
