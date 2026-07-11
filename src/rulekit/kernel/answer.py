@@ -184,10 +184,9 @@ def answer(
         return Answer("number", total, f"fold over {entity!r}/{singular!r}")
 
     if consumer == "rate-span":
-        # THE NARROW COMMITTER (re-landing step 2, docs/negative-results.md):
-        # exact span units only (no conversion), exactly one rate, and any
-        # known population of the rate's entity-kind declines. Each
-        # restriction lifts later behind its own TEST look.
+        # Re-landing step 3 (docs/negative-results.md): conversion spans
+        # lifted via the mined conversions table. Population of the rate's
+        # entity-kind still declines — its own TEST look.
         entity = query["entity"]
         measure = reg.plural_to_singular.get(query["measure"], query["measure"])
         span_unit = reg.plural_to_singular.get(query["span_unit"], query["span_unit"])
@@ -210,11 +209,15 @@ def answer(
                 "the span ask needs exactly one",
             )
         rate = rates[0]
-        if span_unit != rate.per:
+        if span_unit == rate.per:
+            k = span_value
+        elif (span_unit, rate.per) in reg.conversions:
+            k = span_value * reg.conversions[(span_unit, rate.per)]
+        else:
             return Answer(
                 "decline", None,
-                f"span unit {span_unit!r} differs from the rate's "
-                f"{rate.per!r} — conversion spans not yet re-landed",
+                f"no conversion from {span_unit!r} to the rate's "
+                f"{rate.per!r} — cannot span",
             )
         if any(q.measure == rate.entity for q in store.by_kind(Quantity)):
             return Answer(
@@ -222,10 +225,10 @@ def answer(
                 f"the rate is per-{rate.entity} and a {rate.entity} "
                 "population is known — rate × population not yet re-landed",
             )
-        total = evaluate(f"{rate.value} * {span_value}", {}, log, source="rate-span")
+        total = evaluate(f"{rate.value} * {k}", {}, log, source="rate-span")
         return Answer(
             "number", total,
-            f"{rate.value}/{rate.per} × {span_value} {rate.per} for {entity!r}",
+            f"{rate.value}/{rate.per} × {k} {rate.per} for {entity!r}",
         )
 
     if consumer == "unique-entity":

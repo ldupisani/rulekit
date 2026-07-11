@@ -1,6 +1,6 @@
-"""Re-landing step 2: the NARROW rate-span committer — exact units, lone
-rates, populations decline. Conversion and population lift later behind
-their own TEST looks (docs/negative-results.md)."""
+"""Re-landing step 3: the rate-span committer plus conversion spans —
+exact or convertible units, lone rates. Population still declines behind
+its own TEST look (docs/negative-results.md)."""
 
 from pathlib import Path
 
@@ -33,9 +33,17 @@ def test_money_rate_span(full_registry):
     assert r.answer.value == 720
 
 
-def test_conversion_span_declines_for_now(full_registry):
+def test_conversion_span(full_registry):
     r = solve(
         "Lisa walks 10 meters a minute. How many meters does Lisa walk in 2 hours?",
+        full_registry,
+    )
+    assert r.answer.value == 1200
+
+
+def test_unconvertible_span_declines(full_registry):
+    r = solve(
+        "Tom finds 3 coins a day. How many coins does Tom find in 5 gallons?",
         full_registry,
     )
     assert r.answer.kind == "decline"
