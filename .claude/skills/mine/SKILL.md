@@ -81,6 +81,10 @@ uv run rulekit --project projects/gsm8k bench --slice test --spend-test-look
 # after walking all increments: fast-forward main past the survivors and push
 ```
 
+After the TEST-look walk and HANDOFF records are committed, `git push
+origin main` — every processed batch ends pushed (standing user
+instruction, 2026-07-11); don't wait to be asked.
+
 Suggest (don't do): durable lessons from failed candidates belong in
 `docs/negative-results.md`; deferred briefs go back to the HANDOFF worklist.
 
