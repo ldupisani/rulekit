@@ -59,3 +59,16 @@ spans, rate × population, entity slots) proceeds behind per-piece looks.
 `reg.conversions` table), held TEST at the exact look #7 fingerprint —
 5/1/83.3%, zero TEST items touched at all. DEV both NEUTRAL. Shipped at
 `4836b01`. Remaining: rate × population, the `entity` slot type.
+
+**Update (look #9, 2026-07-11):** rate × population turned out to require
+the `entity` slot type to be reachable at all — the only realistic
+GSM8K shape ("the bird eats... in N days") names the rate's holder via a
+common noun, and the live rate-span asks only accepted `type: name`. Both
+landed together (`b8d7339`), the `entity` type applied narrowly to just
+the two rate-span asks' `who` slot. TEST: precision held at 5/1/83.3%
+(fingerprint changed — the committed/declined SET shifted, but correct
+and wrong counts are unchanged, no regression). DEV: dev-train NEUTRAL,
+dev-holdout +1 SOLVED / 0 BROKE / 0 DECL→WRONG (the same item the
+original increment 9 predicted). Re-landing plan is now COMPLETE — all
+four original pieces (ask ordering, narrow rate-span, conversion,
+population/entity) are live.
