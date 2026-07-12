@@ -2206,17 +2206,24 @@ directives while goal mode holds:
 0. **affine-relations-recut — LANDED as increment 46** (re-cut of
    `mining/parked/affine-relations` against current main; dev-train +4,
    holdout NEUTRAL).
-0. TOP SEEDS (batch 16 output): (a) ONE COMBINED BRIEF: event-verb
-   temporal conjunct fold + goal-deficit consumer — rebase BOTH parked
-   branches (`mining/parked/event-temporal-conjuncts`, gate-clean, its
-   first broader version was correctly caught by holdout and narrowed;
-   `mining/parked/event-progress-requeue`, [FAILED-GATE] only for
-   missing its enabler) into a single candidate; the traced James item
-   (Goal 18 − (5+7) = 6) flips → SOLVED ≥ 1 guaranteed by the brief's
-   own arithmetic. Per the sequencing rule these must NOT be two briefs.
-   (b) partitive-of re-cut from current main with the `partitive`
-   category DEDUPED against increment 59's identical declaration (one
-   declaration, union of both notes).
+0. TOP SEEDS (batch 17 output — ZERO landed; all five demoted at
+   0 SOLVED, five looks saved; all five mechanisms are gate-clean and
+   PARKED awaiting enablers). Two cross-cutting capabilities now block
+   nearly every remaining class — scout THESE, each as infrastructure
+   or paired with the parked branch it cashes in:
+   (a) SPELLED-OUT NUMBER WORDS ("eight pounds", "twelve muffins") —
+   reported as an unbuilt gap; verify with a scratchpad frequency scan
+   of dev-train declines containing word-numbers, then land through
+   annotate-numbers (numbers are structure; the word→value table is
+   pack data, check what packs/core-english/numbers already has).
+   Likely the highest-yield single capability left.
+   (b) CROSS-SENTENCE ITEM/MEASURE INHERITANCE — a goal/holding
+   sentence's noun carrying into a later sentence whose event conjuncts
+   elide it ("...18 chocolate bars... He sold 5 last week and 7 this
+   week"); pairs with `mining/parked/event-goal-progress` (rebased,
+   gate-green, 0-conflict) for a guaranteed James flip.
+   PARKED CASH-INS once (a)/(b) land: much-more-need-asks,
+   each-container-rates, partitive-each-share, spend-on-conjuncts.
 1. Prefer candidates that MINE THE ASK-SHAPE BUCKET: bucket the
    unrecognized questions by surface shape (scratchpad script over
    dev-train declines with that reason) and propose general ask shapes
