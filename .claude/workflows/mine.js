@@ -244,6 +244,24 @@ Repo: ${REPO}. Return the ScoutOutput structured output.`,
   if (scout.notes) log(`scout notes: ${scout.notes}`)
 }
 
+// Dev-train SOLVED count off the junior's diff; NaN when unparseable.
+const solvedCount = (r) =>
+  Number((/SOLVED\s+(\d+)/.exec(r?.gate_evidence?.train_diff ?? '') ?? [])[1] ?? NaN)
+
+// A candidate is goal-mode doomed if it gated but PROVABLY solved nothing and
+// never claimed the infra exemption. That verdict needs no cross-candidate
+// context, so it can be made BEFORE spending a reviewer on it. Two cases are
+// deliberately left to review + the post-pipeline enforcement below, which
+// keeps final say and stays exactly as strict as before:
+//   - infrastructure briefs: landing depends on the batch-wide infra slot,
+//     which isn't known until every junior is in.
+//   - an unparseable diff (NaN): skip only what's provably wasted, never on a
+//     number we failed to read.
+const doomed = (item) => {
+  const solved = solvedCount(item.result)
+  return Number.isFinite(solved) && solved === 0 && !item.brief.infrastructure
+}
+
 // ---------- Phase 2+3: Implement then Review (pipelined per candidate) ----------
 const reviewed = await pipeline(
   candidates,
@@ -258,6 +276,18 @@ const reviewed = await pipeline(
     if (item.result.status !== 'gated') {
       log(`${item.brief.slug}: junior returned ${item.result.status} — skipping review`)
       return { ...item, review: null }
+    }
+    if (doomed(item)) {
+      log(`${item.brief.slug}: GATED but 0 dev-train SOLVED and not declared infrastructure — demoted before review (goal mode)`)
+      return {
+        ...item,
+        review: null,
+        result: {
+          ...item.result,
+          status: 'failed',
+          notes: `goal-mode demotion: dev-train SOLVED=0, brief not declared infrastructure. ${item.result.notes ?? ''}`,
+        },
+      }
     }
     return protoAgent('constitution-reviewer', reviewPrompt(item.brief, item.result), {
       label: `review:${item.brief.slug}`,
@@ -274,7 +304,7 @@ const reviewed = await pipeline(
 let infraBudget = 1
 const enforced = reviewed.filter(Boolean).map((i) => {
   if (!i.result || i.result.status !== 'gated') return i
-  const solved = Number((/SOLVED\s+(\d+)/.exec(i.result.gate_evidence?.train_diff ?? '') ?? [])[1] ?? NaN)
+  const solved = solvedCount(i.result)
   if (Number.isFinite(solved) && solved > 0) return i
   if (i.brief.infrastructure && infraBudget > 0) {
     infraBudget -= 1
@@ -321,6 +351,10 @@ if (!landable.length) {
     const r = await protoAgent('mining-integrator', landPrompt(i.brief, i.result), {
       label: `land:${i.brief.slug}`,
       phase: 'Integrate',
+      // Landing is the serial tail of the batch and is mechanical: cherry-pick,
+      // run the gate commands, compare diff verdicts, squash. The judgement was
+      // already spent by the reviewer. Deferral is always the safe branch.
+      effort: 'low',
       schema: LAND_SCHEMA,
     })
     if (r && r.status === 'landed') {

@@ -72,9 +72,19 @@ increment number to assign is NOT an input — you derive it in step 4.
    contains the untracked `projects/gsm8k/data` symlink and snapshot files
    that must never enter a commit). Before committing, check
    `git status --porcelain` and confirm every staged path is intended.
-6. **Advance baselines** so the next candidate measures only its own delta:
-   re-snapshot `staging-base-train.json` / `staging-base-holdout.json` at the
-   new HEAD, and record the new pytest count.
+6. **Advance baselines** so the next candidate measures only its own delta.
+   The `<slug>-int-*.json` snapshots from step 2 already describe this HEAD's
+   bench behaviour — finalization only touches `tests/` and `docs/`, which
+   `bench` never reads — so promote them instead of re-benching:
+   ```
+   git diff --name-only $PRE HEAD        # every path must be under tests/, docs/, or packs|src (the pick itself)
+   ```
+   Confirm nothing changed under `packs/` or `src/` AFTER the step-2 snapshot
+   (i.e. the only post-gate edits are the test rename and the HANDOFF record).
+   If so: `cp <slug>-int-train.json staging-base-train.json` and the holdout
+   equivalent. If ANY pack or kernel file was touched after the gate ran, the
+   snapshots are stale — re-snapshot both slices with a real `bench` run.
+   Record the new pytest count either way.
 7. Return `{status: landed, increment: N, commit, gate_evidence, summary}`.
 
 ## FORBIDDEN — no exceptions
