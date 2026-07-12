@@ -26,7 +26,16 @@ parallel, so candidate quality and *disjointness* are your whole job.
 
 - Run `uv run rulekit --project projects/gsm8k stats` (and `--top 50` if the
   default cut is too shallow). This fresh run is authoritative for frequency
-  claims — cite it, not HANDOFF counts.
+  claims — cite it, not HANDOFF counts. **Read the decline-reason worklist as the
+  PRIMARY signal** (it names the structural blocker); the unknown-word and phrase
+  frequencies are secondary surface counts. Bench is now fast (dev-train ~9s
+  serial, ~2s at `--jobs 8`), so probing is cheap — walk items freely.
+- **A re-cut is pending and pre-approved**: `age-equative-relations` (branch
+  `mining/cand-age-equative-relations`) gated clean and failed review ONLY because
+  `_bare_age_anchor_synth` hardcodes `"year"` in `src/rulekit/kernel/saturate.py`.
+  The fix is stated in HANDOFF: declare an `age_measure` category in a pack and
+  gate on `reg.word_in_category(...)` (`currency` is the reference
+  implementation). If you propose it, say MUST-FIX in the mechanism.
 - You may probe grammar behavior with
   `uv run rulekit --project projects/gsm8k solve "<synthetic paraphrase>" --trace`.
   Paraphrase; never paste a GSM8K item into anything persistent.
@@ -66,6 +75,40 @@ ship time), never a single item. Per candidate:
   function or pack section. Prefer disjoint candidates: they are implemented
   in parallel and integrated sequentially, and overlaps are where integration
   re-gating fails.
+
+## ENABLER-FIRST SELECTION (set 2026-07-12 — read this before choosing anything)
+
+**The ask-shape seam is worked out. Stop hunting for more ask shapes.**
+
+The evidence, from three consecutive batches:
+
+- Batch 23: could not prove END-TO-END resolution for ANY of 3 candidates.
+- Batch 25: 10 candidates, **9 died at the shape gate** (0–2 of 3–4 walked items
+  resolving). One survived and failed review.
+- Batch 24, by contrast, moved dev-train **+4** — and it did it with an ENABLER
+  (particle-verb fusion) plus two classes built ON TOP of it.
+
+So the remaining ~3,734 dev-train declines are not waiting on another ask shape.
+They are blocked on STRUCTURE the reader cannot yet build. Your job now is to find
+the blocker, not the phrase.
+
+**Start from the decline REASONS, not the frequencies.** `rulekit stats` prints
+two worklists. The unknown-word and phrase-frequency lists are SURFACE counts —
+they tell you what items say. The **decline-reason** list tells you why the kernel
+REFUSED, and that is the blocker itself. Take the biggest reason buckets, walk
+items in each, and ask: *what structure is missing here that, if it existed, would
+let a whole family of these resolve?*
+
+**Prefer a BUNDLED brief: fix the blocker AND cash it in, in ONE increment.**
+That is the shape that wins. It solves >= 1 by construction, needs no
+infrastructure slot, and costs ONE TEST look for real coverage. A standalone
+enabler costs a TEST look it can only LOSE precision on (it commits nothing new on
+DEV), and strands its own value until a later batch cashes it in — that is exactly
+what happened to increment 66, which sat parked for a batch.
+
+A pure enabler is still legal, but it is the FALLBACK, not the goal, and it must
+clear the infrastructure bar below (name `unblocks`, prove >= 3
+`resolves_after_unblocks`). At most one per batch.
 
 ## The structural sample — WALK the items, don't count them
 
