@@ -257,7 +257,8 @@ def _entity_total(
 
 
 def _combined_holder_totals(
-    store: FactStore, reg: Registry, query: dict, log: ArithmeticLog
+    store: FactStore, reg: Registry, query: dict, log: ArithmeticLog,
+    *, exclude_entity: str | None = None,
 ) -> tuple[list[str], list[float]] | Answer:
     """The 'combined' consumer's holder enumeration, factored out so the
     'average' consumer (mining candidate average-asks) can reuse it
@@ -275,7 +276,19 @@ def _combined_holder_totals(
     holder mentioned elsewhere in the passage can never silently inflate
     the sum. The pronoun path ('they'/'we', ask/how-many-combined/ask/
     how-much-combined, and the 'average' consumer that reuses this
-    helper) is unchanged."""
+    helper) is unchanged.
+
+    `exclude_entity` (mining candidate entityless-total-recut, opt-in,
+    default None — every existing caller above is UNCHANGED): the ask's
+    `resolves` block may name a single entity (pack data, e.g.
+    `exclude_entity: world` on ask/how-many-there-combined) that must be
+    dropped from the enumerated holders before the >=2-holders-or-decline
+    check below — this function never hardcodes which entity that is.
+    ask/how-many-there-combined's own comment in packs/arithmetic/rules/
+    core.yaml explains why: a bare `world` scene-holder (arithmetic/
+    existential-premise-bare's unlocated "There are N X" fact) is a
+    scene-level restatement, not an independent holding, and summing it
+    alongside a real named entity is a confident-wrong."""
     measure = query["measure"]
     singular = _resolve_measure(measure, store, reg)
     if singular is None:
@@ -288,6 +301,8 @@ def _combined_holder_totals(
         entities = sorted(
             {q.entity for q in store.by_kind(Quantity) if q.measure == singular}
         )
+        if exclude_entity is not None:
+            entities = [e for e in entities if e != exclude_entity]
         if len(entities) < 2:
             # "how many do THEY have ALTOGETHER" asserts plurality — a
             # one-entity sum usually means a mangled parse (the permissive
@@ -703,7 +718,14 @@ def answer(
         return Answer("number", total, f"unique-entity fold over {entities[0]!r}/{singular!r}")
 
     if consumer == "combined":
-        holders = _combined_holder_totals(store, reg, query, log)
+        # `exclude_entity` (mining candidate entityless-total-recut): bound
+        # ONLY by ask/how-many-there-combined (`exclude_entity: world` in
+        # its own resolves block) — see `_combined_holder_totals`'s
+        # docstring for why that ask alone needs an entity dropped.
+        holders = _combined_holder_totals(
+            store, reg, query, log,
+            exclude_entity=query.get("exclude_entity"),
+        )
         if isinstance(holders, Answer):
             return holders
         entities, totals = holders

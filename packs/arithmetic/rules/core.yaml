@@ -1090,6 +1090,69 @@ asks:
       consumer: unique-entity
       measure: "{item}"
 
+  - id: ask/how-many-there-combined
+    # "how many X are/were there in total/altogether/together/combined?"
+    # (mining candidate entityless-total-recut, re-cutting parked candidate
+    # entityless-total-there-asks) — the totality-marked sibling of
+    # ask/how-many-there: the same entity-less "how many X ARE THERE"
+    # premise-read shape, but with a REQUIRED trailing aggregate marker
+    # (cat: aggregate — total/altogether/together/combined, packs/
+    # core-english/lexicon/core.yaml; optionally preceded by a
+    # preposition, so "in total" parses as prep 'in' + agg 'total' exactly
+    # like ask/how-many-combined's own tail). That marker is explicit
+    # license to sum EVERY holder of the measure, so this routes to the
+    # SAME 'combined' consumer (answer.py) the pronoun/named-pair combined
+    # asks already use — no new consumer logic: _combined_holder_totals
+    # already enumerates every holder of the measure when no a/b is bound
+    # (mining candidates how-many-combined / average-asks), which is
+    # exactly the entity-less read this ask needs.
+    #
+    # ask/how-many-there itself is byte-unchanged and keeps its exactly-
+    # one-holder discipline (unique-entity consumer) — that gate exists
+    # precisely because a bare "how many X are there?" over 2+ holders is
+    # ambiguous without a totality marker. This ask's tail (item/verb/
+    # there/[prep]/agg) always consumes MORE units than the bare sibling's
+    # (item/verb/there), so patterns.match_ask's max-consumed-units rule
+    # (the ask/how-much-money-entity-left "money-left" precedent) always
+    # prefers this ask when the marker is present, and this ask simply
+    # fails to match at all when it's absent — never a partial-match tie.
+    #
+    # `exclude_entity: world` (pack data, not a Python constant — see
+    # HANDOFF's "'world' entity ... pack-owned data constants" invariant):
+    # the bare `world` scene-holder (arithmetic/existential-premise-bare's
+    # unlocated "There are N X" fact, entity literally named `world` in
+    # THAT rule's own emits block above) can co-occur with a real named
+    # holder of the same measure ("Sam has 5 chairs. There are 12 chairs.
+    # How many chairs are there in total?") — summing it alongside a real
+    # holder would double-count a scene-level restatement as an
+    # independent third holding. This ask alone opts a specific entity out
+    # of the sum by naming it here as data; answer.py's
+    # `_combined_holder_totals` reads it via a generic `exclude_entity`
+    # parameter (default None — every existing combined/average ask is
+    # byte-unchanged) and never hardcodes the literal itself.
+    #
+    # OUT of scope (named at ship time): conjoined-item totality tails
+    # ("how many dogs and cats are there in all?") — single measure only.
+    # 'in all' itself is also OUT — 'all' is a bare quantifier sense
+    # (packs/core-english/lexicon/core.yaml), not tagged `aggregate`, and
+    # admitting that sense is a separate mining candidate (in-all-
+    # totality-tails) with its own blast-radius review.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {slot: verb, type: verb}
+        - {lit: there}
+        - opt:
+            - {slot: p, cat: preposition}
+        - {slot: agg, cat: aggregate}
+    resolves:
+      consumer: combined
+      measure: "{item}"
+      verb: "{verb}"
+      exclude_entity: world
+
   - id: ask/how-much-bare-entity
     # NOTE (mining candidate pronoun-entity-asks): a widening of `who` to
     # `type: entity` was tried here and DROPPED — it ties on consumed-unit

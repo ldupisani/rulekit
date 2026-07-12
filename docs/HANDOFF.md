@@ -2368,6 +2368,41 @@ suite 52/52, lint 0 errors / 1 known-good warning (fraction-of-remnant
 / fraction-of-pool, unchanged).
 TEST look #65: 8/1 (88.9%) — precision HELD, increment kept.
 
+## Increment 64: totality-marked entity-less there-asks (multi-holder sum),
+re-cut
+
+Class: a "there" existential ask carrying an explicit totality marker
+("in total" / "altogether" / "together" / "combined") over 2+ named
+holders of a measure — the bare `ask/how-many-there` (unique-holder
+discipline) correctly declines these, but the marker is explicit license
+to sum, which nothing previously read. Re-cut of the parked candidate
+`mining/parked/entityless-total-there-asks` (31af789), fixing ONLY the
+review finding named in worklist TOP SEED (a): the `world` scene-holder
+exclusion moves out of a Python-side constant in `answer.py` and into
+the new ask's own `resolves` block as pack data.
+
+Mechanism: new ask `ask/how-many-there-combined` in
+`packs/arithmetic/rules/core.yaml` requires the trailing aggregate marker
+and routes to the existing 'combined' consumer already used by the
+pronoun/named-pair combined asks; `ask/how-many-there` itself is
+untouched (still exactly-one-holder). `answer.py`'s
+`_combined_holder_totals` gained an opt-in `exclude_entity` parameter
+(default `None` — every pre-existing caller byte-unchanged) that takes
+an ENTITY NAME rather than a boolean; only the new ask supplies
+`exclude_entity: world` as pack data, so the literal `world` lives only
+in YAML, never hardcoded in the kernel. No new vocabulary.
+
+Files: `packs/arithmetic/rules/core.yaml`, `src/rulekit/kernel/answer.py`,
+`tests/test_mining_increment_64.py` (7 synthetic tests).
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL
++0/0/0 (3772 items, correct 33/0 wrong before and after), dev-holdout
+diff NEUTRAL +0/0/0 (3701 items, correct 21/0 wrong before and after),
+pytest 499 passed (was 492 + 7 new, now
+`tests/test_mining_increment_64.py`), suite 52/52, lint 0 errors / 1
+known-good warning (fraction-of-remnant / fraction-of-pool, unchanged).
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 **GOAL MODE (set 2026-07-11): the campaign target is 100 dev-train
