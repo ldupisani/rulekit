@@ -14,13 +14,13 @@ swing under the constitution (no lexicon in Python, no per-problem parsing,
 every increment through the gates).
 
 **Current numbers (all verified at head):**
-- dev-train: 38 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
+- dev-train: 39 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
 - dev-holdout: 22 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 549 · lint: 0 errors, 1 intended warning
+- curated suite: 52/52 · pytest: 555 · lint: 0 errors, 1 intended warning
 - bench wall: dev-train 16.6s -> 9.0s (trace opt-out) -> 1.7s at `--jobs 12`.
   `--jobs` defaults to 1; spend it in the SERIAL integration tail, never in the
   implementers' gates (they already run concurrently). See the two infra notes below.
-- TEST ledger (69 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- TEST ledger (70 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -3085,3 +3085,51 @@ A kernel gate on a MEASURE or any other word fact goes through
 NEVER a string literal in Python. `currency` is the reference implementation.
 Constitution rule 1 has no small-violation exemption: even a one-word lexicon fact
 in the kernel is the wrong fix.
+
+## Batch 26 (2026-07-12) — enabler-first scouting; increment 69 landed, 70 parked
+
+First batch with the scout aimed at DECLINE REASONS rather than phrase frequencies.
+It proposed 4 candidates (not 10 — enabler-shaped work is harder to prove, and
+that is the honest number).
+
+LANDED ON MAIN: **increment 69 — sum-constraint linear systems** (a stated relation
+between two holders plus a stated group total). da0cca9. dev-train 38 -> 39, SHIP,
+0 BROKE. TEST look #70: 8/1 (88.9%) — precision HELD, kept.
+
+PARKED: **increment 70 — attribute-qualified measure keys** (a qualified count noun
+must not collide with its bare measure). 0 SOLVED. Branch
+`mining/parked/qualified-measure-keys-enabler`, rebuilt on top of the new main so a
+payoff batch can use it directly as `base`.
+
+DROPPED AT THE SHAPE GATE: relation-standard-forms (1 of 3 walked items resolve).
+
+### THE PIPELINE LIMITATION THIS BATCH EXPOSED (important)
+
+Increment 70's brief said it "unblocks rest-partitions ... queued later in this
+batch". **That is structurally impossible.** Every candidate in a batch is cut from
+`BASE` in parallel, so `rest-partitions` was built from main WITHOUT increment 70.
+Its SOLVED=0 was measured in the enabler's ABSENCE, and the goal-mode gate then
+demoted it for solving nothing. The payoff was never disproved — it was never
+tested.
+
+A payoff can only build on an enabler ACROSS batches, via `base=<enabler branch>`
+(the mechanism batch 24 validated). Within one batch it cannot. The scout must not
+promise same-batch payoffs; propose the enabler, and let the NEXT batch cash it in
+with `base` pointed at it.
+
+NEXT BATCH: run with `base=mining/parked/qualified-measure-keys-enabler` and re-cut
+`rest-partitions` on top of it — that is the first honest test of whether increment
+70 is worth anything. Branch `mining/cand-rest-partitions` retained.
+
+### Free findings from the failed rest-partitions candidate
+
+1. It caught a real **DECL->WRONG** its guard prevented: "80 passengers, equal men
+   and women, the rest are children" — the men/women split is never stated as a
+   PartitionQuantity, so an unguarded rest-rule commits 80 as the children count
+   against a gold of 20. A REST partition with ZERO prior sibling partitions must
+   DECLINE. ("The rest" is the complement of STATED subsets.)
+2. **Pre-existing bug on main, unfixed:** `_partition_membership_synth` emits a
+   Quantity for the subset noun that pollutes the "unique measure in play" candidate
+   set for any LATER pronoun/remnant resolution in the same document. So sequential
+   membership partitions ("5 of them are dogs. The rest are cats.") mis-resolve.
+   Correctly left out of scope by the junior. Worth its own increment.
