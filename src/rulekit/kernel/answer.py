@@ -74,6 +74,27 @@ def _resolve_measure(measure: str, store: FactStore, reg: Registry) -> str | Non
     return _resolve_measure_against(measure, in_store, reg)
 
 
+def _check_req_unit(
+    req_unit: str | None, singular: str, store: FactStore, reg: Registry
+) -> bool:
+    """Decline-safety for a parenthetical unit qualifier ("how much money,
+    in dollars, ...", mining candidate unit-parenthetical-asks): the
+    ask-bound unit must resolve to the SAME concrete measure the ask's own
+    `measure` already resolved to (`singular`). Reuses
+    `_resolve_measure_against` unchanged — a generic currency word
+    ("money"/"pounds" standing in for whatever denomination is in play)
+    still resolves via the existing interchangeable-category fallback, but
+    a specific unit from a DIFFERENT, non-interchangeable category (asked
+    dollars, facts in quarters — `currency` and `coin` are distinct
+    categories in this pack) fails to resolve to `singular` and declines
+    rather than silently answering in the wrong unit. `req_unit` absent
+    (no parenthetical in the question) is always a pass-through."""
+    if req_unit is None:
+        return True
+    in_store = {q.measure for q in store.by_kind(Quantity)}
+    return _resolve_measure_against(req_unit, in_store, reg) == singular
+
+
 def _sign(verb: str, reg: Registry, strict: bool = False) -> int | None:
     """The verb's accumulation direction from its polarity category. In
     strict mode an UNTAGGED verb returns None — defaulting 'put half in
@@ -280,6 +301,12 @@ def answer(
         if singular is None:
             return Answer("decline", None,
                           f"measure {measure!r} is ambiguous across the facts")
+        req_unit = query.get("req_unit")
+        if not _check_req_unit(req_unit, singular, store, reg):
+            return Answer(
+                "decline", None,
+                f"asked unit {req_unit!r} does not match resolved measure {singular!r}",
+            )
         owner_store = store
         if owner:
             owner_store = FactStore(facts=[
@@ -781,6 +808,12 @@ def answer(
         if singular is None:
             return Answer("decline", None,
                           f"measure {measure!r} is ambiguous across the facts")
+        req_unit = query.get("req_unit")
+        if not _check_req_unit(req_unit, singular, store, reg):
+            return Answer(
+                "decline", None,
+                f"asked unit {req_unit!r} does not match resolved measure {singular!r}",
+            )
         base = _entity_total(store, reg, entity, singular, log)
         if base is None:
             return Answer(

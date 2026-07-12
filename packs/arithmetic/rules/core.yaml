@@ -917,11 +917,28 @@ asks:
     # from `type: name` — see ask/how-many-entity's comment for the class
     # rationale and ask/how-much-bare-entity's comment for why a plural
     # pronoun subject can never collide with ask/how-much-combined.
+    #
+    # The `opt: [in, req_unit]` group (mining candidate unit-parenthetical-
+    # asks) matches a parenthetical unit qualifier inserted mid-question
+    # ("How much money, in dollars, does Tom have?") — the surrounding
+    # commas are already globally-skippable punct (patterns.
+    # SKIPPABLE_SENSES), so only the literal 'in' plus a noun slot need
+    # authoring. Unbound when the parenthetical is absent (the ordinary
+    # "how much money does Tom have?" case is unchanged — the opt group
+    # simply fails to match and contributes nothing, exactly like every
+    # other optional group in this file). When bound, answer.py's
+    # single-entity consumer checks `req_unit` against the measure it
+    # actually resolves and DECLINES on a mismatch (asked dollars, facts
+    # in quarters) rather than silently answering in the wrong unit —
+    # never a new vocabulary admission, `type: noun` is structural.
     match:
       question:
         - {lit: how}
         - {lit: much}
         - {slot: item, type: noun}
+        - opt:
+            - {lit: in}
+            - {slot: req_unit, type: noun}
         - {slot: aux, type: auxiliary}
         - {slot: who, type: entity}
         - {slot: verb, type: verb}
@@ -930,6 +947,7 @@ asks:
       entity: "{who}"
       measure: "{item}"
       verb: "{verb}"
+      req_unit: "{req_unit}"
 
   - id: ask/how-much-combined
     # "how much money do they have in total/altogether?" — the how-much
@@ -1208,11 +1226,22 @@ asks:
     # `who, type: entity` (mining candidate pronoun-entity-asks): widened
     # from `type: name` — see ask/how-many-entity's comment for the class
     # rationale.
+    #
+    # The `opt: [in, req_unit]` group (mining candidate unit-parenthetical-
+    # asks): same mid-question parenthetical-unit mechanism as
+    # ask/how-much-noun-entity's comment above, applied here between the
+    # literal 'money' and 'aux' — "How much money, in dollars, does Ian
+    # have left?". Unbound when absent; bound, answer.py's money-left
+    # consumer checks it against the resolved currency measure the same
+    # way.
     match:
       question:
         - {lit: how}
         - {lit: much}
         - {lit: money}
+        - opt:
+            - {lit: in}
+            - {slot: req_unit, type: noun}
         - {slot: aux, type: auxiliary}
         - {slot: who, type: entity}
         - {slot: verb, cat: state}
@@ -1221,6 +1250,7 @@ asks:
       consumer: money-left
       entity: "{who}"
       measure: currency
+      req_unit: "{req_unit}"
 
   - id: ask/how-much-item-cost
     # "how much do/does/did ITEM cost" — the item-SUBJECT cost ask (mining

@@ -1573,6 +1573,37 @@ suite 52/52, lint 0 errors / 1 known-good warning (fraction-of-remnant /
 fraction-of-pool, unchanged) / 22 info.
 TEST look: pending — spent manually.
 
+## Increment 47: parenthetical unit-qualified questions (`, in dollars,` / `, in minutes,` mid-question)
+
+Lands worklist goal-mode directive 1 (mine the "no ask shape recognizes this
+question" bucket by surface shape). 89 dev-train declines contain a mid-
+question `, in UNIT,` parenthetical (dollars 42, minutes 11, hours 6, seconds
+5, ounces 5, ...), 81 of them inside the dominant 2495-item no-ask-shape
+bucket. Minimal pair verified the mechanism directly: "Randy has 10 dollars.
+Smith gives him another 4 dollars. How much money does Randy have?" commits
+14.0; inserting ", in dollars," into the identical question text declined
+no-ask-shape before this change.
+
+YAML-only: an optional `[in, req_unit]` group (comma literals + "in" literal
++ a unit/currency-sensed noun slot — grammatical skeleton, no new vocabulary)
+added to `ask/how-much-noun-entity` and `ask/how-much-money-entity-left` in
+`packs/arithmetic/rules/core.yaml`. When bound, `answer.py`'s single-entity
+and money-left consumers check the bound unit against the measure they
+actually resolve and decline on mismatch (asked one unit, facts state a
+different non-interchangeable one) instead of committing in the wrong unit.
+No kernel changes were needed — mid-pattern optional groups were already
+supported in `patterns.py`. Re-checked the increment 44 shadowing lesson:
+widening these two ask ids does not change their consumed-unit specificity
+relative to the other ~25 asks (no new ties).
+
+Gates (integrated on staging, full re-proof): dev-train diff SHIP +1/0/0
+(3772 items, SOLVED 4085a62be26e), dev-holdout diff NEUTRAL 0/0/0 (3701
+items, 16/0 unchanged), pytest 368 passed (was 364 + 4 new, now
+`tests/test_mining_increment_47.py`), suite 52/52, lint 0 errors / 1
+known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) / 22
+info.
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 **GOAL MODE (set 2026-07-11): the campaign target is 100 dev-train
