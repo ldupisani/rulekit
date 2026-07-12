@@ -110,6 +110,36 @@ A pure enabler is still legal, but it is the FALLBACK, not the goal, and it must
 clear the infrastructure bar below (name `unblocks`, prove >= 3
 `resolves_after_unblocks`). At most one per batch.
 
+### A BLOCKED CLASS IS AN ENABLER BRIEF. Do not throw it away.
+
+**This is the single most important instruction on this page.** When you walk a
+class and find it does NOT resolve — 0 or 1 of 3 items, at a frequency of 100+ —
+you have not found a dead end. **You have found a BLOCKER, and you already did the
+work to prove it exists.** Do not report that class as a coverage candidate and let
+the shape gate drop it. Convert it:
+
+1. Diagnose WHY those items don't resolve. Read the trace. What structure is the
+   reader failing to build? That missing structure is the enabler.
+2. Propose an INFRASTRUCTURE brief for the blocker itself:
+   - `infrastructure: true`
+   - `unblocks:` the class you just walked (name it as a class)
+   - `structural_sample:` the very items you just walked, marked
+     `resolves_after_unblocks: true` — you have ALREADY established they don't
+     resolve today and that this structure is what stands in the way.
+3. Say in `notes` what the payoff batch should build on top of it.
+
+The evidence for the enabler IS the failure of the coverage class. You are being
+handed it for free.
+
+**The record is unambiguous.** Every batch that moved the number was built on an
+enabler (27: +9; 28: +6). Every batch built on bare main has stalled (25: 0 of 10;
+29: 0 of 5, frequencies 103–252, nothing resolving). Batches 25 and 29 dropped ten
+classes between them and produced ZERO enabler briefs from that evidence. That is
+ten diagnoses thrown in the bin.
+
+If you cannot prove a single coverage class this pass, **that is not an empty
+batch — it is an enabler batch.** Come back with the blocker.
+
 ## The structural sample — WALK the items, don't count them
 
 **A frequency count is a SURFACE count.** It tells you how many items contain a

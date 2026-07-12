@@ -3522,3 +3522,37 @@ dev-train 48 -> 54. TEST looks #74, #75: both 10/1 (90.9%) — precision HELD.
 (and in batch 25). It was never a bad candidate; we were asking a kernel that lacked
 the enabler whether the enabler's items resolved. Measure on the tree you will build
 on.
+
+## Batch 29 (2026-07-12) — 0 landed on bare main. The pattern is now conclusive.
+
+All 5 candidates dropped at the shape gate (frequencies 103, 137, 137, 178, 252;
+0–1 of 3–4 walked items resolving). The scout probed main correctly this time, so
+this is a GENUINE result, not the batch-28 measurement bug.
+
+| batch | base | landed | dev-train |
+|---|---|---|---|
+| 25 | main | 0 of 10 | — |
+| 26 | main | 1 | +1 |
+| 27 | **enabler** | 4 | **+9** |
+| 28 | **enabler** | 2 | **+6** |
+| 29 | main | **0 of 5** | — |
+
+**Every batch that moved the number was built on an ENABLER. Every batch built on
+bare main has stalled.** The remaining ~3,718 dev-train declines are blocked on
+STRUCTURE, not on missing ask shapes.
+
+### The fix: a blocked class IS an enabler brief
+
+Batches 25 and 29 dropped TEN classes between them and produced ZERO enabler briefs
+from that evidence. That is ten diagnoses thrown in the bin. A class with 0 of 3
+walked items resolving at frequency 252 is not a dead end — it is a BLOCKER, already
+proven to exist by the walking the scout just did.
+
+The scout must now CONVERT a blocked class into an infrastructure brief: diagnose why
+the items don't resolve, propose the missing structure as the enabler, set
+`unblocks` to the class it just walked, and mark those same walked items
+`resolves_after_unblocks: true`. The evidence for the enabler IS the failure of the
+coverage class — it is handed to us for free.
+
+If the scout cannot prove a coverage class, that is not an empty batch. It is an
+ENABLER batch.
