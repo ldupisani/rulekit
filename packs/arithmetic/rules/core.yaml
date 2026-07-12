@@ -1455,6 +1455,47 @@ asks:
       measure: currency
       req_unit: "{req_unit}"
 
+  - id: ask/how-much-change
+    # "how much change does/did/will WHO get/receive/take (back)" (mining
+    # candidate change-asks): the buyer's TENDER — a stated payment amount
+    # handed over ("pays with a $50 bill" / "paid $200" / "gave $250 [to
+    # the cashier]", any tender_verb-category event whose measure is
+    # currency; packs/difg-mined/categories/semantic.yaml) — minus the
+    # SAME priced-purchase total ask/how-much-money-entity-left's
+    # money-left consumer already uses (answer.py's _purchase_total,
+    # UNCHANGED: the increment-10 invariant travels with it unscoped —
+    # any unpriced purchase or a cost-splitting predicate on this entity
+    # declines the whole total). 'change' is a specific, rare surface
+    # literal (methodology §5.3) rather than a category gate: no other
+    # ask in this file matches it, so a change question is never
+    # confused with a plain money-holding one.
+    #
+    # `verb, type: verb` deliberately UNCONSTRAINED (not gated to a
+    # receive/get category): the dev-train evidence for this class uses
+    # several different verbs for the identical "how much change did
+    # WHO ___?" shape ("get back" / "receive back" / "receive" / "take")
+    # and the answer never depends on which one — the change consumer
+    # computes tender minus spend regardless, so gating the verb would
+    # only narrow coverage with no safety benefit. The optional trailing
+    # 'back' group is unbound (and harmless) whenever the question omits
+    # it. `aux, type: future_modal` (not `auxiliary`): "will/would WHO
+    # receive" is the majority phrasing in the evidence, alongside the
+    # ordinary "does/did" form — see ask/how-many-entity's comment for
+    # the class rationale.
+    match:
+      question:
+        - {lit: how}
+        - {lit: much}
+        - {lit: change}
+        - {slot: aux, type: future_modal}
+        - {slot: who, type: entity}
+        - {slot: verb, type: verb}
+        - opt:
+            - {lit: back}
+    resolves:
+      consumer: change
+      entity: "{who}"
+
   - id: ask/how-much-item-cost
     # "how much do/does/did ITEM cost" — the item-SUBJECT cost ask (mining
     # candidate item-cost-asks): the item is the grammatical subject of

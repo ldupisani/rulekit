@@ -1955,6 +1955,68 @@ passed (was 424 + 10 new, now `tests/test_mining_increment_55.py`), suite
 fraction-of-pool, unchanged) / 22 info.
 TEST look: pending — spent manually.
 
+## Increment 56: change asks (`"how much change does/did/will WHO get/
+receive (back)"` = stated tender minus purchase total)
+
+Fresh snapshot scratchpad scan: 19 declining dev-train items contain "how
+much change" (18 no-ask-shape, 1 fold-conflict); leading-trigram "how much
+change" 11. Full chain traced on a synthetic paraphrase before committing
+to the mechanism: "Tom buys 3 shirts at 5 dollars each. He pays with a 20
+dollar bill. How much did Tom pay?" commits 15.0 via purchase-total with
+the tender sentence present and harmless — premises read, the purchase
+total folds gold, only the change ask + tender-minus-total arithmetic were
+missing.
+
+New ask shape `ask/how-much-change` in `packs/arithmetic/rules/core.yaml`,
+gated on the literal "change" — given a new noun sense alongside its
+existing verb sense in `packs/difg-mined/lexicon/a-f.yaml` (mirrors
+"cost", an existing noun+verb dual-sense word; `disambiguate()`'s general
+obligation-coverage arbitration picks the noun reading, no code change).
+Includes the future_modal aux variant from day one (will/would-phrased),
+per the increment-49 precedent — most real items are will-phrased.
+Routed to a new "change" consumer in `answer.py`: the buyer's stated
+TENDER minus the SAME priced-purchase total the money-left consumer
+already uses (`_purchase_total`, reused UNCHANGED — the increment-10
+invariant travels with it unscoped: any unpriced purchase, or a "splits
+the cost" predicate on the buyer, declines the whole total).
+
+The tender itself needed NO new fact kind and no `learn.py` change:
+"pays $50" / "pays with a $50 bill" / "gave $250 [to X]" already produce a
+plain currency Quantity EVENT via the existing general SVO fold today. A
+new `tender_verb` category (pay/give — `packs/difg-mined/categories/
+semantic.yaml`) just lets the change consumer name that event
+specifically, gated additionally on the fact's measure resolving to
+`currency`. No unique stated tender -> decline (more than one, or none, is
+a genuine ambiguity); negative change -> decline.
+
+Two decline disciplines beyond straight reuse, both found by probing real
+dev-train shapes before locking the mechanism:
+- unlike money-left, a change ask presupposes a purchase actually
+  happened, so "no priced purchase found" declines rather than defaulting
+  spend to 0 — money-left's fallback would otherwise manufacture a wrong
+  change amount here.
+- a discount/tip predicate on the buyer (semantic.yaml's `discount`
+  category, extended with 'tip'/'tips' — previously an unreferenced pack
+  category, this is its first kernel consumer) declines, generalizing
+  increment 10's single "splits the cost" verb check to a dobj category.
+
+Scope: only tender-as-separate-clause shapes ("She paid $200 for X." /
+"He paid with a $50 bill.") are covered — a leading "If X paid $N, how
+much change..." conditional-question clause and ditransitive "gave the
+cashier $N" (no preposition) are out of scope and stay declined;
+'cashier' is deliberately NOT admitted as vocabulary here (a separate,
+dedicated vocabulary-admission increment per methodology §4's one-word
+discipline). 'change' and 'bill' were already lexiconed and not
+quarantined; 'banknote' IS quarantined and was not touched.
+
+Gates (integrated on staging, full re-proof): dev-train diff SHIP +1/0/0
+(3772 items, 26->27 correct, 0 wrong), dev-holdout diff NEUTRAL 0/0/0
+(3701 items, 18/0 unchanged), pytest 445 passed (was 434 + 11 new, now
+`tests/test_mining_increment_56.py`), suite 52/52, lint 0 errors / 1
+known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) /
+23 info.
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 **GOAL MODE (set 2026-07-11): the campaign target is 100 dev-train

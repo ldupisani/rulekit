@@ -1258,7 +1258,16 @@ entries:
     senses:
     - noun
   change:
+    # mining candidate change-asks: 'change' also has a NOUN sense (the
+    # cash-change one gets back from a tender, "how much change...") —
+    # mirrors 'cost' below, another noun+verb dual-sense word. Uncountable
+    # (like 'money'), no plural. disambiguate()'s general obligation-
+    # coverage arbitration (obligations.py) picks NOUN here: as a bare
+    # verb mid-question ("how much change did WHO verb") it would need an
+    # unmet subject obligation, while the noun reading leaves nothing
+    # unmet — the same mechanism 'cost' already relies on.
     senses:
+    - noun
     - verb
   changed:
     senses:

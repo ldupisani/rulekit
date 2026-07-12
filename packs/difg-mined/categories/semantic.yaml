@@ -18,6 +18,14 @@ categories:
     parent: verb
   discount:
     parent: noun
+    notes: >
+      'coupon'/'discount'/'tip' — any stated price ADJUSTMENT on top of a
+      raw priced-purchase total (mining candidate change-asks: gates the
+      change consumer's own unconsumed-predicate check, answer.py — the
+      increment-10 'splits the cost' discipline generalized to a dobj
+      CATEGORY rather than one specific verb, since a tip/discount is
+      stated as a noun object, not a verb). Previously an unreferenced
+      pack category (data only); this is its first kernel consumer.
   divide:
     parent: verb
   higher:
@@ -81,6 +89,22 @@ categories:
       packs/difg-mined/categories/clauses.yaml for the same root sense).
       Lives here (not core-english) because 'for' is only lexically
       defined in this pack.
+  tender_verb:
+    parent: verb
+    notes: >
+      'pay'/'give' when their object is a stated currency amount ("pays
+      with a $50 bill" / "gave $250 [to the cashier]" — mining candidate
+      change-asks) is the buyer's TENDER, a narrower concept than the
+      general 'lose' polarity event both verbs already carry (spending
+      money is a loss for the general money fold; a change ask needs the
+      specific "amount handed over" isolated from that, the same
+      multi-membership pattern as 'sell' beside 'lose'). The already-
+      general SVO fold emits the plain currency Quantity event on its
+      own (no learn.py change needed); this category only lets the
+      change consumer (answer.py) name tender events specifically
+      without picking up 'ate'/'sold'/'spent'/etc, which also live under
+      'lose'. Gated additionally on the fact's measure resolving to
+      `currency` — an ordinary "gives 3 apples" never qualifies.
   timeperiod:
     parent: noun
   vehicle:
@@ -270,6 +294,8 @@ members:
   - coupon
   - discount
   - discounts
+  - tip
+  - tips
   divide:
   - cut
   - cuts
@@ -544,6 +570,13 @@ members:
   spend_target_prep:
   - for
   - on
+  tender_verb:
+  - gave
+  - give
+  - gives
+  - paid
+  - pay
+  - pays
   timeperiod:
   - afternoon
   - day
