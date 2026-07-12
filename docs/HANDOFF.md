@@ -3556,3 +3556,23 @@ coverage class — it is handed to us for free.
 
 If the scout cannot prove a coverage class, that is not an empty batch. It is an
 ENABLER batch.
+
+## Batch 30 (2026-07-13) — the scout produced an ENABLER. The conversion instruction works.
+
+First batch after "a blocked class IS an enabler brief". The scout came back with a
+structural brief instead of five coverage classes that don't resolve.
+
+PARKED: **increment 77 — container-content bridge** (N containers x per-container
+contents -> the holder's content total). An infrastructure synth in saturate.py:
+use-gated (sentence=-1), raw-fold-only, single-hop. dev-train NEUTRAL (0 SOLVED),
+dev-holdout SHIP +1 (23 -> 24). pytest 616, suite 52/52, lint clean.
+
+Branch: `mining/parked/container-content-bridge-enabler` (rebuilt on main).
+NOT landed and NO TEST look spent — a 0-dev-train-SOLVED increment cannot advance the
+100 goal and a look on it can only LOSE precision. It rides with its payoff, per the
+increment-66/70/74 precedent (all three of which paid off once cashed in).
+
+Dropped at the shape gate: partitive-content-keys (70), more-quantifier-transparency
+(76), resource-capacity-consumer (128), ask-side-qualified-measure (4).
+
+NEXT: batch 31 runs with `base=mining/parked/container-content-bridge-enabler`.
