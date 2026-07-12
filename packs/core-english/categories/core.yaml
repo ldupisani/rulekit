@@ -139,6 +139,28 @@ categories:
       this category resolve, purely additive (mirrors the earlier 'modal'
       root-sense addition) — 'than' keeps its single existing sense, so no
       new ambiguity is introduced for the many sentences that use it.
+  verb_particle:
+    parent: adverb
+    notes: >
+      the closed set of directional/completive particles that fuse to a
+      polarity-tagged event verb ("gives AWAY", "takes AWAY", "throws
+      AWAY") — sensed 'adverb' in the lexicon, unchanged. 'adverb' is added
+      to registry.ROOT_SENSES to let this category resolve, purely
+      additive (mirrors the earlier 'modal'/'particle' root-sense
+      additions) — no existing adverb-sensed word gains a new sense or new
+      behavior. condense.py's merge-particle-verb pass fuses a unit tagged
+      this category onto an IMMEDIATELY PRECEDING verb, but ONLY when that
+      verb already carries a polarity tag (_has_event_polarity, the
+      increment-45 invariant): an untagged verb + particle ("looked up")
+      stays exactly as today, decline-safe by construction. Deliberately
+      NOT "every adverb" — that would risk merging manner/locative adverbs
+      after an unrelated polarity verb ("sold quickly"). The four members
+      (away/out/off/up) are difg-mined-only words — no core-english word
+      carries the 'adverb' sense — so, mirroring 'future_modal'/
+      'relational_marker's sibling pattern, this category has NO members
+      here; they live in packs/difg-mined/categories/semantic.yaml. A
+      core-english-only registry (no difg-mined) compiles with this
+      category simply empty.
   partitive:
     parent: preposition
     notes: >

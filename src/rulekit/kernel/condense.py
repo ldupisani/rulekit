@@ -11,6 +11,7 @@ values to the completed nominals.
 from __future__ import annotations
 
 from ..data.registry import Registry
+from .learn import _has_event_polarity
 from .model import Reading, Unit
 
 
@@ -43,6 +44,28 @@ def _nominal_pass(reading: Reading, reg: Registry) -> bool:
                 "merge-perfect", merged, {},
                 f"perfect tense {merged.surface!r} — one verb, lemma "
                 f"{b.features.get('lemma', b.features['fold'])!r}",
+            )
+            return True
+    # polarity-tagged event verb + a following directional particle -> ONE
+    # verb lexeme ("gives away", "takes away", "throws away") — otherwise
+    # the particle reads as a free adverb, orphaning the fraction/count it
+    # modifies and tripping value-accounting on an unaccounted number
+    # (mining candidate particle-event-verbs). Gated on the base verb
+    # ALREADY carrying a polarity tag (_has_event_polarity, the
+    # increment-45 invariant): an untagged verb + particle ("looked up",
+    # "knows off") stays exactly as today — decline-safe by construction,
+    # never a blanket "every adverb after a verb" merge.
+    for i in range(len(units) - 1):
+        a, b = units[i], units[i + 1]
+        if (
+            a.sense() == "verb"
+            and reg.word_in_category(b.features.get("fold", ""), "verb_particle")
+            and _has_event_polarity(a.features.get("lemma", a.features.get("fold", "")), reg)
+        ):
+            _merge(
+                reading, i, a, "merge-particle-verb",
+                f"{a.surface!r} + particle {b.surface!r} = one event verb "
+                f"(polarity carried by {a.features.get('lemma', a.surface.lower())!r})",
             )
             return True
     # owner + 's + owned -> one owner-attributed noun ("Tom's apples")

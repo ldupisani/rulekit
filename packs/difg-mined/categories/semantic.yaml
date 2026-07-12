@@ -639,6 +639,11 @@ members:
   - paid
   - pay
   - pays
+  verb_particle:
+  - away
+  - off
+  - out
+  - up
 context_synonyms:
   contains:
     gate: building

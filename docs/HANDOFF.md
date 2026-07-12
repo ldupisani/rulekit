@@ -2455,6 +2455,41 @@ TEST look #67: 8/1 (88.9%) — precision HELD, increment kept. No TEST coverage
 gain (correct 8 -> 8): the class is real on DEV (dev-train 33 -> 34) but no
 TEST item exercises a common-noun relation subject. Held, not cashed.
 
+## Increment 66: phrasal/particle event verbs (VERB + away/out/off/up) as
+ordinary signed events (`750efd1`)
+
+Class: premises whose disposal/removal event is expressed as a polarity-
+tagged verb plus an immediately-following directional particle — "gives
+away 1/4 of the marbles", "gave away half of the stickers", "throws away
+the leftover", "takes 1/4 of them away" — where the particle currently
+reads as a free adverb and orphans the fraction/count it modifies,
+tripping the value-accounting guard on an unaccounted number.
+
+Mechanism: YAML-first. Declares a `particle` category
+(`packs/core-english/categories/core.yaml`) whose members are the existing
+adverb-sense directional particles (away/out/off/up — already in the
+lexicon, nothing new admitted, nothing quarantined). `condense.py` gained
+a merge-particle-verb pass that fuses a polarity-tagged event verb with an
+immediately adjacent particle into one verb lexeme, keeping the base
+verb's own lemma and polarity category. Decline-safety is gated on
+`_has_event_polarity` (the increment-45 invariant): an untagged verb plus
+a particle — "looks up 4 words", "take up to 12 people" (take carries no
+polarity tag in this pack) — stays exactly as declined as before. The
+merge is adjacent-only, so dobj-crossing particles ("took two letters off
+the shelf") are out of scope and stay decline-safe too.
+
+Files: `packs/core-english/categories/core.yaml`,
+`packs/difg-mined/categories/semantic.yaml`, `src/rulekit/kernel/condense.py`,
+`tests/test_mining_increment_66.py` (6 synthetic tests).
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL +0/0/0
+(3772 items, correct 34/0 wrong before and after), dev-holdout diff NEUTRAL
++0/0/0 (3701 items, correct 21/0 wrong before and after), pytest 530 passed
+(was 524 + 6 new), suite 52/52, lint 0 errors / 1 known-good warning
+(fraction-of-remnant / fraction-of-pool, unchanged).
+
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 **GOAL MODE (set 2026-07-11, PAUSED 2026-07-12 at 33/100 by user

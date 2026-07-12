@@ -42,10 +42,16 @@ from .schemas import (
 # can name 'than' -- the comparative/ratio clause-boundary word already
 # sensed 'particle' in the core-english lexicon -- without adding a second
 # sense to it (which would make every 'than'-bearing sentence in the
-# corpus newly ambiguous under obligations.disambiguate()).
+# corpus newly ambiguous under obligations.disambiguate()). 'adverb' was
+# added the same way again (mining candidate particle-event-verbs) so a
+# `verb_particle` category can name the closed set of directional
+# particles (away/out/off/up) that fuse to a polarity-tagged event verb in
+# condense.py -- purely additive: 'adverb' was already a known lexicon
+# sense, so this only permits a NEW category to root here; it changes no
+# existing word's sense or any other adverb-sensed word's behavior.
 ROOT_SENSES = (
     "noun", "verb", "adjective", "quantifier", "preposition", "comparative",
-    "negator", "conjunction", "modal", "particle",
+    "negator", "conjunction", "modal", "particle", "adverb",
 )
 
 
