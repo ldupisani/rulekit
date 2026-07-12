@@ -3129,6 +3129,47 @@ A kernel gate on a MEASURE or any other word fact goes through
 `reg.word_in_category(word, "<category>")` with the category declared in a pack —
 NEVER a string literal in Python. `currency` is the reference implementation.
 Constitution rule 1 has no small-violation exemption: even a one-word lexicon fact
+
+## Increment 71: equative age comparatives ("K times as old as Y") with
+bare-age anchors (`9e84465`)
+
+Class: equative age comparatives ("the eldest sibling is TWICE AS OLD AS
+that sibling") paired with bare copula age anchors left behind by a
+leading-'if' clause split ("if C is 11"). The ask matched and premises
+parsed, but no equative Relation was ever emitted — this is the re-cut of
+`mining/cand-age-equative-relations`, which gated clean on dev in Batch 25
+but failed constitution review for hardcoding the measure word `"year"` in
+`src/rulekit/kernel/saturate.py`. This version fixes that: gates the
+bare-age synth on a pack-declared `age_measure` category instead of a
+Python string literal.
+
+Mechanism: (1) `packs/arithmetic/rules/core.yaml` gains
+`arithmetic/times-as-old-as`, the equative sibling of the live
+`arithmetic/times-comparative-age-relation`, emitting the SAME Relation
+shape (measure year, factor k, offset 0, `distinct: [who, std]`) so the
+existing saturate fixpoint, anchored-relation-postfix and ask/how-old-is
+consume it with zero further change; decline-safety via
+`absent: {cat: temporal_marker}`. (2) `src/rulekit/kernel/saturate.py`
+gains `synth/bare-age-anchor`, promoting a bare copula number left by a
+leading-'if' split to a Quantity, ONLY when that entity already appears as
+subject or standard of a Relation whose measure is in the pack-declared
+`age_measure` category (`packs/core-english/categories/core.yaml`, member
+`year` supplied from `packs/difg-mined/categories/semantic.yaml`), gated
+via `reg.word_in_category(measure, "age_measure")` — the `currency`
+pattern in `answer.py:893`/`core.yaml:65`, no measure-word literal
+survives in Python.
+
+Files: `packs/arithmetic/rules/core.yaml`, `packs/core-english/categories/core.yaml`,
+`packs/difg-mined/categories/semantic.yaml`, `src/rulekit/kernel/saturate.py`,
+`src/rulekit/data/registry.py`, `tests/test_mining_increment_71.py` (8 synthetic
+tests).
+
+Gates (integrated on staging, full re-proof): dev-train diff SOLVED 5 /
+BROKE 0 / DECL→WRONG 0 (SHIP; 39→44: 073920968cf0, 0f2bea45f4a6,
+5bda86806af4, 7b70d37fe734, 83278256af21), dev-holdout diff SOLVED 0 /
+BROKE 0 / DECL→WRONG 0 (NEUTRAL; 22→22), pytest 568 passed (was 560 + 8
+new), suite 52/52, lint 0 errors / 1 known-good warning (fraction-of-remnant
+/ fraction-of-pool, unchanged). TEST look: pending — spent manually.
 in the kernel is the wrong fix.
 
 ## Batch 26 (2026-07-12) — enabler-first scouting; increment 69 landed, 70 parked

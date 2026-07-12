@@ -20,7 +20,7 @@ from ..data.registry import Registry
 from ..data.schemas import SynthRule
 from .evaluate import ArithmeticLog, EvaluationError, evaluate
 from .facts import FactStore
-from .model import Fact, GroupTotal, Provenance, Quantity, Relation
+from .model import Fact, GroupTotal, Predication, Provenance, Quantity, Relation
 
 MAX_ROUNDS = 50
 
@@ -195,6 +195,67 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
                         entity=rel.standard, measure=measure, value=value, verb=rel.verb,
                     )
                 )
+    return out
+
+
+def _bare_age_anchor_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> list[Fact]:
+    """"If Sherry is 25, how old is Randolph?" (mining candidate age-
+    equative-recut) — the leading-'if' clause split turns the
+    conditional's age statement into an ordinary premise, "Sherry is 25":
+    a copula with a BARE stated number and NO measure noun ('years old'
+    never appears). learn.py's generic SVO fold has nowhere to put a
+    noun-less value, so it falls all the way to a valueless Predication
+    (dobj holding the number's own surface/fold, e.g. '25') — an age
+    relation chain (times-as-old-as, times-comparative-age-relation,
+    anchored-relation-postfix, ...) needs a Quantity to anchor on, not a
+    Predication, so this shape left the whole chain unanchored.
+
+    GATED for decline-safety, not merely convenience: fires ONLY when the
+    Predication's subject is already the subject or standard of an
+    `age_measure`-category Relation ELSEWHERE in the document — a bare
+    copula number in a non-age document (no such Relation exists) can
+    never become an age, so this can never misfire on an unrelated "if X
+    is 5" premise. The measure itself is read off that Relation (never a
+    hardcoded 'year' literal — constitution rule 1; `reg.word_in_category`
+    against the pack-declared `age_measure` category mirrors `currency`'s
+    reference implementation in answer.py). Also declines (never guesses)
+    when the dobj doesn't parse as a plain numeral — a word-form number
+    ('twenty-five') is a separate, unbuilt reading. Emits the SAME
+    Quantity shape arithmetic/stated-age's pattern rule does (an
+    age-measure Quantity, no `occurrence` — a state), at the Predication's
+    OWN sentence, so guards.py's value-accounting sees the stated number
+    as read via the ordinary "a fact from this sentence carries the
+    value" path — no accounting change needed."""
+    out: list[Fact] = []
+    age_relations = [
+        r for r in store.by_kind(Relation)
+        if reg.word_in_category(r.measure, "age_measure")
+    ]
+    if not age_relations:
+        return out
+    entity_measure: dict[str, str] = {}
+    for r in age_relations:
+        entity_measure.setdefault(r.subject, r.measure)
+        entity_measure.setdefault(r.standard, r.measure)
+    known = {(q.entity, q.measure) for q in store.by_kind(Quantity)}
+    for p in store.by_kind(Predication):
+        if p.verb != "be" or not p.polarity or p.dobj is None:
+            continue
+        measure = entity_measure.get(p.subject)
+        if measure is None or (p.subject, measure) in known:
+            continue
+        try:
+            value = float(p.dobj)
+        except (TypeError, ValueError):
+            continue
+        out.append(
+            Quantity(
+                provenance=Provenance(
+                    source="synth/bare-age-anchor", sentence=p.provenance.sentence
+                ),
+                entity=p.subject, measure=measure, value=value, verb=p.verb,
+            )
+        )
     return out
 
 
@@ -491,6 +552,7 @@ def _sum_constraint_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -
 
 PLUGINS: dict[str, Synthesizer] = {
     "synth/relation-to-quantity": _relations_synth,
+    "synth/bare-age-anchor": _bare_age_anchor_synth,
     "synth/fraction-of-pool": _fraction_synth,
     "synth/rest-of-pool": _rest_synth,
     "synth/partition-of-collection": _partition_synth,

@@ -474,6 +474,16 @@ members:
   - times
   more_dir:
   - older
+  # 'temporal_marker' itself is declared in core-english/categories/core.yaml
+  # (parent: time, ROOT_SENSES-additive) — this pack only supplies the word,
+  # since 'today' is a difg-mined-only lexicon entry (sensed 'time').
+  temporal_marker:
+  - today
+  # 'age_measure' itself is declared in core-english/categories/core.yaml
+  # (parent: noun) — this pack only supplies the word, since 'year' is a
+  # difg-mined-only lexicon entry (sensed 'noun').
+  age_measure:
+  - year
   # 'never' lives in the difg-mined lexicon (not core-english); the
   # 'negation' category itself is declared in core-english/categories/
   # core.yaml — this pack only extends its membership with the mined word,

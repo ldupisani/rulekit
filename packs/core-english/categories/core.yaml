@@ -193,6 +193,45 @@ categories:
       here; they live in packs/difg-mined/categories/semantic.yaml. A
       core-english-only registry (no difg-mined) compiles with this
       category simply empty.
+  temporal_marker:
+    parent: time
+    notes: >
+      mining candidate age-equative-recut: the deictic word 'today' —
+      sensed 'time' in the lexicon, unchanged — that marks an equative age
+      relation's clause as relative to a SEPARATE temporal anchor stated
+      elsewhere in the document ("Diana is twice as old as Grace IS
+      TODAY. If Grace turned 3 a year ago, ..."). arithmetic/times-as-
+      old-as `absent`-gates on this category so that pairing declines
+      rather than committing the plain ratio over the anchor's raw
+      pre-offset number — decline-safety, not resolution; the offset
+      chain itself is a separate, unbuilt mechanism. 'time' is added to
+      registry.ROOT_SENSES to let this category resolve, purely additive
+      (mirrors the earlier 'modal'/'particle'/'adverb' root-sense
+      additions) — no existing time-sensed word gains a new sense or new
+      behavior elsewhere. 'today' is a difg-mined-only word — no
+      core-english word carries the 'time' sense — so, mirroring
+      'future_modal'/'relational_marker'/'verb_particle's sibling
+      pattern, this category has NO members here; it lives in
+      packs/difg-mined/categories/semantic.yaml. A core-english-only
+      registry (no difg-mined) compiles with this category simply empty.
+  age_measure:
+    parent: noun
+    notes: >
+      mining candidate age-equative-recut: the closed set of nouns that
+      name a person's AGE unit ('year') — sensed 'noun' in the lexicon,
+      unchanged. src/rulekit/kernel/saturate.py's `_bare_age_anchor_synth`
+      gates its bare-copula-number promotion on
+      `reg.word_in_category(measure, "age_measure")` rather than a
+      hardcoded `"year"` string literal (constitution rule 1; `currency`
+      at packs/core-english/categories/core.yaml:65 plus
+      src/rulekit/kernel/answer.py's `q.measure == "currency" or
+      reg.word_in_category(q.measure, "currency")` is the reference
+      implementation this mirrors). 'year' is a difg-mined-only word — no
+      core-english word carries this sense as an age unit — so, mirroring
+      'temporal_marker's sibling pattern above, this category has NO
+      members here; it lives in packs/difg-mined/categories/semantic.yaml.
+      A core-english-only registry (no difg-mined) compiles with this
+      category simply empty (the synth then never fires, decline-safe).
   partitive:
     parent: preposition
     notes: >

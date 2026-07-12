@@ -176,6 +176,48 @@ rules:
         offset: 0.0
         verb: "{verb}"
 
+  - id: arithmetic/times-as-old-as
+    phase: read
+    description: >
+      "Zhang is twice as old as Li" — the EQUATIVE sibling of arithmetic/
+      times-comparative-age-relation ('N times OLDER THAN Y'): English
+      states this ratio equatively far more often than comparatively.
+      Same implicit-'old' anchor (no stated noun — 'old' is the literal
+      itself), same emitted Relation shape (measure `year`, `factor: k`,
+      `offset: 0`) and same `distinct: [who, std]` self-reference guard,
+      so the existing saturate.py relation fixpoint, arithmetic/anchored-
+      relation-postfix and ask/how-old-is resolve it with ZERO further
+      change. Decline-safety: `absent: {cat: temporal_marker}` blocks the
+      rule the instant the SAME sentence also carries a trailing temporal
+      qualifier ("Diana is twice as old as Grace IS TODAY") — that clause
+      pairs the relation with an offset-anchored premise elsewhere in the
+      document ("Grace turned 3 a year ago") that this rule cannot read;
+      committing the plain 'twice as old as Grace' ratio over the RAW
+      pre-offset anchor is a confident-wrong (dev-train d22b0162e42c),
+      so the whole item stays declined rather than resolving on a partial
+      reading, mirroring temporal-offset-age-future/past's own `absent:
+      relational_marker`/`multiplier_marker` clause-boundary gates.
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: verb, cat: state}
+        - {slot: k, type: multiplier}
+        - {lit: as}
+        - {lit: old}
+        - {lit: as}
+        - {slot: std, type: name}
+    where:
+      - distinct: [who, std]
+      - absent: {cat: temporal_marker}
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: year
+        factor: "k"
+        offset: 0.0
+        verb: "{verb}"
+
   - id: arithmetic/times-as-many
     phase: read
     description: >

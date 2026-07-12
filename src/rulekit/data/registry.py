@@ -48,10 +48,17 @@ from .schemas import (
 # particles (away/out/off/up) that fuse to a polarity-tagged event verb in
 # condense.py -- purely additive: 'adverb' was already a known lexicon
 # sense, so this only permits a NEW category to root here; it changes no
-# existing word's sense or any other adverb-sensed word's behavior.
+# existing word's sense or any other adverb-sensed word's behavior. 'time'
+# was added the same way again (mining candidate age-equative-recut) so a
+# `temporal_marker` category can name the closed set of deictic time words
+# ('today', ...) that mark a clause's stated age as relative to a separate
+# temporal anchor elsewhere in the document -- purely additive: 'time' was
+# already a known lexicon sense (months, weekdays, 'now', 'today', ...), so
+# this only permits a NEW category to root here; it changes no existing
+# word's sense or any other time-sensed word's behavior.
 ROOT_SENSES = (
     "noun", "verb", "adjective", "quantifier", "preposition", "comparative",
-    "negator", "conjunction", "modal", "particle", "adverb",
+    "negator", "conjunction", "modal", "particle", "adverb", "time",
 )
 
 
