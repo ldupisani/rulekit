@@ -1585,6 +1585,143 @@ asks:
       measure: "{item}"
       verb: "{verb}"
 
+  - id: ask/how-many-plural-combined-prenominal-marker
+    # "how many TOTAL-MARKER ITEM do/does/did (THE) PLURAL-COMMON-NOUN
+    # have?" (mining candidate collective-totality-asks) — sibling of
+    # ask/how-many-plural-combined for the case where the aggregate
+    # marker sits PRENOMINALLY, right after "how many", instead of
+    # trailing the verb ("how many total toys do the boys have?" vs.
+    # "how many toys do the boys have in total?"). `pre, cat: aggregate`
+    # is a REQUIRED token (not optional): this ask exists ONLY to place
+    # the marker before the item noun, so the marker itself must be
+    # present or the sentence matches nothing here — a bare "how many
+    # toys do the boys have?" still declines (no marker anywhere, no
+    # cardinal on `who`). `total`/`combined` already carry the
+    # `aggregate` sense (packs/core-english/lexicon/core.yaml); this is
+    # grammatical skeleton, no new vocabulary. `who, type: plural` and
+    # `who_value: "{who.value}"` mirror ask/how-many-plural-combined
+    # exactly (a leading cardinal, "the two boys", is consumed the same
+    # way). Consumer is the EXISTING `combined` (answer.py untouched).
+    #
+    # Never a tie with ask/how-many-plural-combined: that ask's `item`
+    # slot sits IMMEDIATELY after "many" with no marker token between —
+    # a prenominal marker breaks its match before specificity is ever
+    # compared (the marker's `aggregate` sense fails `type: noun` and is
+    # not in SKIPPABLE_SENSES). Never a tie with ask/how-many-combined
+    # (pronoun `who`) or ask/how-many-combined-named (`type: name` a/b
+    # pair) for the same reason those two never tie with ask/how-many-
+    # plural-combined: a plural common noun subject satisfies neither
+    # slot type.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: pre, cat: aggregate}
+        - {slot: item, type: noun}
+        - {slot: aux, type: auxiliary}
+        - opt:
+            - {lit: the}
+        - {slot: who, type: plural}
+        - {slot: verb, type: verb}
+    resolves:
+      consumer: combined
+      measure: "{item}"
+      verb: "{verb}"
+      who_value: "{who.value}"
+
+  - id: ask/how-many-plural-combined-quantified-subject
+    # "how many ITEM do/does/did ALL/BOTH PLURAL-COMMON-NOUN have TOTAL-
+    # MARKER?" (mining candidate collective-totality-asks) — sibling of
+    # ask/how-many-plural-combined widening the subject NP's leading word
+    # from a bare `opt: {lit: the}` to any `quantifier`-sense word
+    # ('all'/'both' — packs/core-english/lexicon/core.yaml already tags
+    # both) IN ADDITION to keeping the trailing aggregate marker
+    # REQUIRED: "all the boys have ... combined" carries no cardinal to
+    # license the totality read on its own (unlike the cardinal-gated
+    # sibling below), so the marker still has to do that work here. `q,
+    # cat: quantifier` is REQUIRED (not optional) — this ask exists only
+    # to widen that one leading-word slot; a bare "how many X do the boys
+    # have combined?" is already ask/how-many-plural-combined's own
+    # territory and stays there.
+    #
+    # Never a tie with ask/how-many-plural-combined: that ask's subject
+    # position is `opt: {lit: the}` then `who` directly — a quantifier
+    # word there is neither the literal "the" (so the opt group simply
+    # doesn't match, consuming nothing) nor a `type: plural` noun, so
+    # that ask's own match fails on a quantified subject entirely rather
+    # than partially matching. Never a tie with ask/how-many-all-combined
+    # ("all of them" — pronoun `who`, literal "of" required): a bare
+    # quantifier immediately before a plural NOUN (no "of", no pronoun)
+    # cannot satisfy that ask's fixed [all, of, who:pronoun] subsequence.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {slot: aux, type: auxiliary}
+        - {slot: q, cat: quantifier}
+        - {slot: who, type: plural}
+        - {slot: verb, type: verb}
+        - opt:
+            - {slot: p, cat: preposition}
+        - {slot: agg, cat: aggregate}
+    resolves:
+      consumer: combined
+      measure: "{item}"
+      verb: "{verb}"
+      who_value: "{who.value}"
+
+  - id: ask/how-many-plural-combined-cardinal-subject
+    # "how many ITEM do/does/did (DEMONSTRATIVE|ALL/BOTH) CARDINAL PLURAL-
+    # COMMON-NOUN have?" (mining candidate collective-totality-asks) —
+    # sibling of ask/how-many-plural-combined for the case where the
+    # subject NP itself carries an EXPLICIT CARDINAL ("these three boys",
+    # "all three friends", "the two boys") and NO aggregate marker
+    # appears anywhere: the cardinal alone asserts the group and licenses
+    # the totality read, so the trailing marker this whole family
+    # otherwise requires becomes unnecessary. `who, type: counted` (not
+    # `type: plural`) is the load-bearing gate — `counted` requires the
+    # noun unit to carry a merged numeric VALUE (condense.py's count-
+    # merge folds "three boys" into one plural noun unit with
+    # value_kind: count), so a bare "the boys"/"these boys" (no cardinal)
+    # still fails this ask's own match and still declines exactly as
+    # before. `q, cat: quantifier` is OPTIONAL: a demonstrative
+    # ('these'/'this'/'those', sense `article`) is already in
+    # SKIPPABLE_SENSES and needs no slot at all, while a true quantifier
+    # ('all'/'both') is a `quantifier`-sense word that is NOT skippable
+    # and must be consumed explicitly when present — "the two boys" (bare
+    # article, auto-skipped) is licensed by the cardinal exactly the same
+    # as "these three boys" or "all three friends" are.
+    #
+    # This is the ONE hazard of this whole increment (see the mining
+    # brief's risk note): dropping the required marker widens what
+    # `combined` can claim, so the gate MUST be the explicit cardinal —
+    # never a bare plural subject. Verified no overlap-witness regression
+    # via `rulekit lint`.
+    #
+    # Never a tie with ask/how-many-plural-combined-quantified-subject
+    # (also requires `q`) nor with ask/how-many-plural-combined (marker
+    # required): both consume the trailing `agg` token when a marker is
+    # present, so on a marked+cardinal sentence they consume strictly
+    # MORE units than this ask and win outright (max-consumed-units) —
+    # this ask only wins when no marker is present at all, which is
+    # exactly its reason to exist.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {slot: aux, type: auxiliary}
+        - opt:
+            - {slot: q, cat: quantifier}
+        - {slot: who, type: counted}
+        - {slot: verb, type: verb}
+    resolves:
+      consumer: combined
+      measure: "{item}"
+      verb: "{verb}"
+      who_value: "{who.value}"
+
   - id: ask/how-many-combined-named-elided-measure
     # "how many do/does/did NAME and NAME have TOTAL-MARKER?" (mining
     # candidate plural-np-totality-asks) — the elided-measure sibling of

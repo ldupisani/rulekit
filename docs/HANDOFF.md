@@ -3409,3 +3409,47 @@ DECL→WRONG 0 (NEUTRAL; 22/3701 correct before and after), pytest 595
 passed, suite 52/52, lint 0 errors / 1 known-good warning (fraction-of-
 remnant / fraction-of-pool, unchanged). TEST look: pending — spent
 manually.
+
+## Increment 75: collective-subject totality asks (prenominal totality
+marker, quantified/cardinal collective subject)
+
+Class: asks whose collective subject already denotes the full group but
+whose surface form falls outside `ask/how-many-plural-combined`
+(increment 67) because the totality signal sits in a different position —
+"how many total toys do the boys have?" (aggregate marker PRENOMINAL,
+before the item noun, instead of trailing), "how many cookies do THESE
+THREE boys have?" (no marker at all; an explicit cardinal on the subject
+alone licenses the totality read), "how many points did ALL THREE friends
+score together?" (leading quantifier 'all'/'both' on the subject, marker
+still trailing). All three sample items' premises already fold to one
+Quantity per holder; the gap was purely in ask recognition.
+
+Mechanism: YAML-only, `packs/arithmetic/rules/core.yaml`, three new
+sibling ask ids beside the byte-identical `ask/how-many-plural-combined`
+(none of that ask's own match block touched): (a)
+`ask/how-many-plural-combined-prenominal-marker` — an optional
+`{slot: pre, cat: aggregate}` consumed between "how many|much" and
+`{slot: item}`; (b) `ask/how-many-plural-combined-quantified-subject` —
+the subject NP's leading `opt: {lit: the}` widens to also accept a
+`quantifier`-sense word ('all'/'both'), trailing aggregate marker still
+required; (c) `ask/how-many-plural-combined-cardinal-subject` — an
+explicit cardinal on the subject ("these three boys", "all three
+friends") licenses totality on its own, marker becomes optional, gated
+strictly on the cardinal's presence so a bare "how many cookies do the
+boys have?" still declines. The cardinal is consumed via the existing
+`who_value: "{who.value}"` precedent. Consumer is the EXISTING `combined`
+(answer.py untouched) — it already enumerates every holder of the
+measure from the facts. All three new ask ids consume strictly more
+units than the bare asks they sit beside, so max-consumed-units matching
+cannot create a partial-match tie with them.
+
+Files: `packs/arithmetic/rules/core.yaml`,
+`tests/test_mining_increment_75.py` (8 synthetic tests).
+
+Gates (integrated on staging, full re-proof against current staging
+baseline): dev-train diff SOLVED 3 / BROKE 0 / DECL→WRONG 0 (SHIP;
+92f395fa1709, 9a46ef7a9e2e, f59cecc6c642; 48→51/3772 correct), dev-holdout
+diff SOLVED 0 / BROKE 0 / DECL→WRONG 0 (NEUTRAL; 23/3701 correct before
+and after), pytest 603 passed, suite 52/52, lint 0 errors / 1 known-good
+warning (fraction-of-remnant / fraction-of-pool, unchanged). TEST look:
+pending — spent manually.
