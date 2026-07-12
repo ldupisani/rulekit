@@ -1541,6 +1541,38 @@ known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) / 22
 info.
 TEST look #47: 6/1 (85.7%) — precision HELD, increment kept.
 
+## Increment 46: affine relation offsets (c more/fewer than k times as many X as Y) (`c2d7759`)
+
+Re-cut of the parked branch `mining/parked/affine-relations` (1c749d0) against
+current main: it had already gated dev-train SOLVED 4 / BROKE 0 / DECL->WRONG
+0 with a clean NEUTRAL holdout, and deferred only on a core.yaml insertion
+conflict with increment 43 (now on main). This lands worklist directive 0
+("TOP SEED... re-cut against current main first; expect +4 corrects").
+
+Pure YAML: two new pattern rules in `packs/arithmetic/rules/core.yaml` —
+`arithmetic/affine-times-as-many` and `arithmetic/affine-fraction-as-many` —
+extend the existing times-as-many / fraction-as-many ratio family (the bare
+"as many ITEM as STD" frame) with the anchored-relation offset prefix ("N
+more/fewer than"), mirroring how `affine-frame-relation` already prefixes the
+"the number of" frame: subject = ratio*standard + n*sign(dir). No kernel
+changes — the Relation fact's `offset` field and saturate.py's forward/inverse
+resolution (subject = factor*standard + offset; standard =
+(subject - offset)/factor) already existed and are reused unchanged. Offset
+sign comes from the existing `more_dir`/`less_dir` polarity categories in the
+core-english lexicon, never a Python word list.
+
+Tests rewritten from a blank file against synthetic names/quantities (Duncan,
+Priyanka, Odalys, Beckett, Marisol, Tobias, Fenwick, Rosalind) — no GSM8K
+substring reuse.
+
+Gates (integrated on staging, full re-proof): dev-train diff SHIP +4/0/0
+(3772 items, 14->18 corrects: 47dd39ea4382, 4a1c79e953f6, 683e8e1debaa,
+cd7158be4a8a), dev-holdout diff NEUTRAL 0/0/0 (3701 items, 16/0 unchanged),
+pytest 364 passed (was 357 + 7 new, now `tests/test_mining_increment_46.py`),
+suite 52/52, lint 0 errors / 1 known-good warning (fraction-of-remnant /
+fraction-of-pool, unchanged) / 22 info.
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 **GOAL MODE (set 2026-07-11): the campaign target is 100 dev-train
@@ -1550,10 +1582,9 @@ worklist is dominated by **"no ask shape recognizes this question" —
 machinery is now largely ahead of the questions it can serve. Scout
 directives while goal mode holds:
 
-0. TOP SEED: `mining/parked/affine-relations` — its own-branch gate
-   showed dev-train SOLVED 4 with clean holdout; it deferred ONLY on a
-   core.yaml insertion conflict with increment 43. Re-cut it against
-   current main first; expect +4 corrects.
+0. **affine-relations-recut — LANDED as increment 46** (re-cut of
+   `mining/parked/affine-relations` against current main; dev-train +4,
+   holdout NEUTRAL).
 1. Prefer candidates that MINE THE ASK-SHAPE BUCKET: bucket the
    unrecognized questions by surface shape (scratchpad script over
    dev-train declines with that reason) and propose general ask shapes

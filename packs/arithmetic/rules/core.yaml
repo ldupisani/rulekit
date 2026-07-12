@@ -303,6 +303,72 @@ rules:
         offset: 0.0
         verb: "{verb}"
 
+  - id: arithmetic/affine-times-as-many
+    phase: read
+    description: >
+      "Andrew has 5 more than twice as many goats as Adam" — the AFFINE
+      "as many" form: subject = k·standard + n·sign(dir). The times-as-many
+      ratio shape, PREFIXED with the anchored-relation offset ("N more/fewer
+      than") the way affine-frame-relation prefixes the 'the number of'
+      frame — this is the same offset+ratio combination for the bare
+      "as many ITEM as STD" frame instead.
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: verb, type: verb}
+        - {slot: n, type: number}
+        - {slot: dir, cat: delta}
+        - {lit: than}
+        - {slot: k, type: multiplier}
+        - {lit: as}
+        - {lit: many}
+        - {slot: item, type: plural}
+        - {lit: as}
+        - {slot: std, type: name}
+    where:
+      - distinct: [who, std]
+    consumes: [n]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: "{item}"
+        factor: "k"
+        offset: "n * sign(dir)"
+        verb: "{verb}"
+
+  - id: arithmetic/affine-fraction-as-many
+    phase: read
+    description: >
+      "Randy has 5 less than half as many coconut trees as ITEM" — the
+      same AFFINE "as many" form as affine-times-as-many, with a FRACTION
+      ratio in place of the multiplier (mirrors how fraction-as-many sits
+      beside times-as-many): subject = f·standard + n·sign(dir).
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: verb, type: verb}
+        - {slot: n, type: number}
+        - {slot: dir, cat: delta}
+        - {lit: than}
+        - {slot: f, type: fraction}
+        - {lit: as}
+        - {lit: many}
+        - {slot: item, type: plural}
+        - {lit: as}
+        - {slot: std, type: name}
+    where:
+      - distinct: [who, std]
+    consumes: [n]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: "{item}"
+        factor: "f"
+        offset: "n * sign(dir)"
+        verb: "{verb}"
+
   - id: arithmetic/existential-premise
     phase: read
     description: >
