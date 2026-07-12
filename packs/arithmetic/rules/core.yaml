@@ -730,6 +730,85 @@ rules:
         value: n
         verb: "{verb}"
 
+  - id: arithmetic/temporal-offset-age-future
+    phase: read
+    description: >
+      "In 3 years, Tessa will be 21 years old" (mining candidate
+      temporal-offset-age-premises) — a FUTURE temporal-offset age
+      premise: the entity's age at a point N years from now, not a direct
+      current holding. Emits the SAME Quantity shape arithmetic/stated-age
+      does (measure 'year', a state — no `occurrence`), just computed as
+      stated-age MINUS the offset, so ask/how-old-is and the relation
+      synthesizers chain through it completely unchanged — no new fact
+      kind, no new consumer, no date arithmetic beyond one subtraction.
+      `{lit: be}` (not `cat: state`) is the grammatical skeleton here:
+      English always uses the bare infinitive after a modal ("will be"),
+      never 'is'/'was' — this is structure, not a lexicon fact, so it
+      needs no category widening. Decline-safety: `absent: relational_
+      marker`/`multiplier_marker` (increment 57's clause-boundary
+      categories) aborts emission the instant the SAME sentence carries a
+      comparative or ratio marker ("will be HALF of Ernesto's age", "will
+      be TWICE as old") — those clauses stay for the relation/ratio
+      synthesizers to resolve (this pattern's own literal 'old'-anchored,
+      plain-number shape never matches them anyway, since a fraction/
+      multiplier word never presents as a `type: counted` unit — but the
+      explicit gate documents the boundary and blocks the paraphrase-of-
+      the-same-clause case where a plain number ALSO happens to appear
+      alongside a relational word). Both consumed numbers (the offset and
+      the stated future age) are the same accounting story arithmetic/
+      stated-age and arithmetic/anchored-relation already use: `consumes`
+      marks the slot units read directly, independent of the emitted
+      fact's own fields.
+    match:
+      sentence:
+        - {lit: in}
+        - {slot: n, type: counted}
+        - {slot: who, type: name}
+        - {slot: aux, type: future_modal}
+        - {lit: be}
+        - {slot: m, type: counted}
+        - {lit: old}
+    where:
+      - absent: {cat: relational_marker}
+      - absent: {cat: multiplier_marker}
+    consumes: [n, m]
+    emits:
+      - fact: quantity
+        entity: "{who}"
+        measure: year
+        value: "m - n"
+        verb: be
+
+  - id: arithmetic/temporal-offset-age-past
+    phase: read
+    description: >
+      "Five years ago, Tessa was 21 years old" (mining candidate
+      temporal-offset-age-premises) — the mirrored PAST form of
+      arithmetic/temporal-offset-age-future: the entity's age N years ago,
+      resolved to its current age by ADDING the offset (the past form
+      naturally uses an ordinary state verb — 'was'/'were' — already
+      tagged `cat: state`, no bare-infinitive skeleton needed here). Same
+      Quantity shape, same decline-safety gate, same consumes-based value
+      accounting as the future sibling above.
+    match:
+      sentence:
+        - {slot: n, type: counted}
+        - {lit: ago}
+        - {slot: who, type: name}
+        - {slot: verb, cat: state}
+        - {slot: m, type: counted}
+        - {lit: old}
+    where:
+      - absent: {cat: relational_marker}
+      - absent: {cat: multiplier_marker}
+    consumes: [n, m]
+    emits:
+      - fact: quantity
+        entity: "{who}"
+        measure: year
+        value: "m + n"
+        verb: "{verb}"
+
   - id: arithmetic/goal-desire-quantity
     phase: read
     description: >

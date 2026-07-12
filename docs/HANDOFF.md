@@ -2194,6 +2194,46 @@ new, now `tests/test_mining_increment_59.py`), suite 52/52, lint 0 errors /
 1 known-good warning (fraction-of-remnant / fraction-of-pool, unchanged).
 TEST look #61: 7/1 (87.5%) — precision HELD, increment kept.
 
+## Increment 60: temporal-offset age premises (`In N years, WHO will be M
+years old` / `N years ago, WHO was M years old`) (`0c8a722`)
+
+Class: a temporal-offset age premise states an entity's age at a FUTURE or
+PAST point N years away rather than as a direct current holding — 28 dev-
+train items pair such a premise with a plain "how old is WHO now?" ask and
+declined "no quantity known for WHO of year" (the ask matched, the premise
+read, only the offset clause emitted nothing).
+
+Mechanism: two new pattern rules in `packs/arithmetic/rules/core.yaml` —
+`arithmetic/temporal-offset-age-future` ("In N years, WHO will be M years
+old") and the mirrored `arithmetic/temporal-offset-age-past` ("N years ago,
+WHO was M years old") — emit the SAME Quantity shape `arithmetic/stated-age`
+already produces (measure `year`), computed as stated age MINUS the offset
+for the future form and PLUS the offset for the past form. No new fact
+kind and no new consumer: ask/how-old-is and the existing relation/ratio
+synthesizers chain through unchanged, simpler than the brief's proposed
+OffsetAge-fact-plus-synthesizer route (reusing the Quantity shape sidesteps
+the existence-vs-use accounting decision entirely, since no new fact kind
+is introduced). Both consumed numbers (the offset and the stated age) go
+through `consumes: [n, m]`, the same idiom `stated-age` and `anchored-
+relation` already use. Decline-safety: `where: absent relational_marker /
+multiplier_marker` (increment 57's clause-boundary categories) aborts
+emission the instant the SAME sentence also carries a comparative or ratio
+marker ("will be twice as old", "will be half of X's age") — those clauses
+are left for the relation/ratio synthesizers, which is exercised directly
+by a synthetic test chaining an offset premise into an existing relation-
+inverse synth in a separate sentence. No new vocabulary (ago/old/be/in/
+years were all already in the lexicon); no quarantine check needed.
+
+Files: `packs/arithmetic/rules/core.yaml`, `tests/test_mining_increment_60.py`
+(5 synthetic tests).
+
+Gates (integrated on staging, full re-proof): dev-train diff SHIP +1/0/0
+(3772 items, 29->30 correct, 0 wrong; SOLVED 77b1aa145a80), dev-holdout diff
+NEUTRAL 0/0/0 (3701 items, 18/0 unchanged), pytest 478 passed (was 473 + 5
+new, now `tests/test_mining_increment_60.py`), suite 52/52, lint 0 errors /
+1 known-good warning (fraction-of-remnant / fraction-of-pool, unchanged).
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 **GOAL MODE (set 2026-07-11): the campaign target is 100 dev-train
