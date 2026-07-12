@@ -14,10 +14,10 @@ swing under the constitution (no lexicon in Python, no per-problem parsing,
 every increment through the gates).
 
 **Current numbers (all verified at head):**
-- dev-train: 33 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
+- dev-train: 34 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
 - dev-holdout: 21 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 499 · lint: 0 errors, 1 intended warning
-- TEST ledger (66 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- curated suite: 52/52 · pytest: 505 · lint: 0 errors, 1 intended warning
+- TEST ledger (67 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -45,12 +45,15 @@ every increment through the gates).
   7/1 (87.5%, look #63) →
   8/1 (88.9%, look #64 — the floor) →
   8/1 (88.9%, look #65) →
-  **8/1 (88.9%, look #66) ← live at increment 64** — #64 batch 19
+  8/1 (88.9%, look #66) →
+  **8/1 (88.9%, look #67) ← live at increment 65** — #64 batch 19
   (increment 62: +3/+3/+1, the campaign's largest), #65 batch 20,
   #66 batch 21 (increment 64, entity-less totality asks re-cut; the
   parked-pile composition reland measured 0 SOLVED — those mechanisms
-  await further enablers, not each other). GOAL RUN PAUSED here by
-  user decision at dev-train 33/100.
+  await further enablers, not each other), #67 batch 22 (increment 65,
+  common-noun relation subjects; HELD, no TEST coverage gain). GOAL RUN
+  PAUSED at dev-train 33/100 by user decision; batch 22 was run anyway
+  and took it to 34.
   #12–#13 batch 1, #14 the modal split, #15–#16 batch 2, #17–#19 batch 3,
   #20 vocab revert, #21–#27 batch-4 re-land, #28–#32 batch 5 (increments
   27–30 held; 31 reverted); precision held on every surviving increment
@@ -2444,7 +2447,10 @@ dev-holdout diff NEUTRAL +0/0/0 (3701 items, correct 21/0 wrong before and
 after), pytest 505 passed (was 499 + 6 new, now
 `tests/test_mining_increment_65.py`), suite 52/52, lint 0 errors / 1
 known-good warning (fraction-of-remnant / fraction-of-pool, unchanged).
-TEST look: pending — spent manually.
+
+TEST look #67: 8/1 (88.9%) — precision HELD, increment kept. No TEST coverage
+gain (correct 8 -> 8): the class is real on DEV (dev-train 33 -> 34) but no
+TEST item exercises a common-noun relation subject. Held, not cashed.
 
 ## The next mining worklist (from the last close-miss scan)
 
