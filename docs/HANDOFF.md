@@ -2134,6 +2134,65 @@ known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) / 26
 info.
 TEST look: pending — spent manually.
 
+## Increment 59: future-modal spend/pay asks + measure-of-item price emission
+(`a pound of coffee beans costs $2.50`) (`3bcc76f`)
+
+Reland of the parked `mining/parked/modal-spend-measure-price` (`92183a9`)
+lineage named as top-seed (a) in batch 15's worklist, alongside increment 58.
+Rebased onto current main and re-gated from scratch on staging; the cherry-
+pick landed with NO conflict against increment 58's compound-rate insertions
+(a single-block union merge in `core.yaml` against an unrelated
+`relational_marker` category landed earlier in the batch) — no manual
+conflict resolution was needed at integration time.
+
+Class: future-modal spend/pay asks ("how much will/would WHO pay?") PAIRED
+with the payoff that unlocks them on partitive-priced text: a `price_verb`
+statement whose subject is "a MEASURE of ITEM" ("a pound of coffee beans
+costs $2.50", "4 pounds of coffee beans cost $10 each"). Before this
+increment such a premise built NO Price fact at all (declined "0 price
+facts known", frequency 136 in the fresh stats scan).
+
+Mechanism: two coordinated pieces.
+1. Ask widening (mirrors increment 49 exactly, no consumer changes): the
+   `aux` slot on `ask/how-much-bare-entity` and `ask/how-much-pay-for-quantity`
+   widens from `type: auxiliary` to `type: future_modal`
+   (`packs/arithmetic/rules/core.yaml`) — "how much will/would WHO pay (for
+   N ITEM)?" now recognized alongside the ordinary do/does/did form.
+2. Price emission (`src/rulekit/kernel/learn.py`): a price_verb's subject
+   binds through the existing partitive 'of' preposition to the ITEM noun
+   (the of-object) — but the price is stated PER the MEASURE noun the 'of'
+   phrase anchors to ('pound'), not per item. A new `_measure_partitive_anchor`
+   helper finds that measure noun structurally: a `partitive`-category
+   preposition (new category, `packs/core-english/categories/core.yaml`,
+   exactly one member 'of') whose object is the subject, and whose anchor
+   names a KNOWN physical measure unit (`reg.conversions` — data-driven,
+   never a Python word list). The emitted Price is keyed on that measure
+   noun, not the item, lining up with the purchase premise's own
+   `Quantity.measure` (unwidened since increment 10) with zero changes to
+   `_purchase_total`. A bare (uncounted) measure anchor is itself the
+   per-unit signal ("a pound"); a counted anchor ("4 pounds") still needs
+   the existing 'each'/distributive trigger.
+
+A pre-existing rule collision is also fixed: `arithmetic/partition-
+membership-of-noun`'s `verb` slot narrows from the general `type: verb` to
+`cat: state` — a membership partition is always copular ("N of the X ARE
+Y"); the unrestricted slot let it swallow an unrelated priced-measure
+sentence sharing the same token order ("4 pounds of coffee beans COST 10
+dollars each"), stealing it from the price-verb emission before it could
+run and producing a bogus PartitionQuantity instead. Every real membership-
+partition instance already uses a state verb, so this is a pure narrowing.
+
+Files: `packs/arithmetic/rules/core.yaml`,
+`packs/core-english/categories/core.yaml`, `src/rulekit/kernel/learn.py`,
+`tests/test_mining_increment_59.py` (8 synthetic tests).
+
+Gates (integrated on staging, full re-proof): dev-train diff SHIP +1/0/0
+(3772 items, 28->29 correct, 0 wrong; SOLVED 10508e87ebf7), dev-holdout diff
+NEUTRAL 0/0/0 (3701 items, 18/0 unchanged), pytest 473 passed (was 465 + 8
+new, now `tests/test_mining_increment_59.py`), suite 52/52, lint 0 errors /
+1 known-good warning (fraction-of-remnant / fraction-of-pool, unchanged).
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 **GOAL MODE (set 2026-07-11): the campaign target is 100 dev-train

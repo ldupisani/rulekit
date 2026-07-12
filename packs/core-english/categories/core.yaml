@@ -139,8 +139,21 @@ categories:
       this category resolve, purely additive (mirrors the earlier 'modal'
       root-sense addition) — 'than' keeps its single existing sense, so no
       new ambiguity is introduced for the many sentences that use it.
+  partitive:
+    parent: preposition
+    notes: >
+      'of' in a MEASURE-of-ITEM partitive noun phrase ("a pound OF coffee
+      beans", "4 pounds OF coffee beans") — exactly one member, so this is
+      never a general preposition widening (mining candidate
+      modal-spend-measure-price). learn.py's price-verb branch uses this
+      category structurally (never a literal 'of' string comparison) to
+      find the partitive phrase whose OBJECT is the price statement's
+      subject, so it can key the emitted Price fact on the MEASURE noun
+      the phrase anchors to (the SAME noun the purchase-verb premise's own
+      Quantity.measure already uses) rather than on the item noun itself.
 members:
   currency: [dollar]
+  partitive: [of]
   remnant_adj: [left]
   animal: [dog, cat, fish, bird, rabbit, hamster]
   pet: [dog, cat, hamster]

@@ -45,6 +45,41 @@ def _has_distributive_determiner(reading: Reading, noun: Unit) -> bool:
     return False
 
 
+def _is_measure_unit(noun: Unit, reg: Registry) -> bool:
+    """A noun naming a KNOWN physical measure unit — one side of a
+    `reg.conversions` pair (pound, gallon, ounce, ...; both directions are
+    stored, so membership on either side is enough). Data-driven — never a
+    Python word list; a made-up container noun ('box', 'bag') is never a
+    member and stays out of scope for `_measure_partitive_anchor`."""
+    lemma = _lemma(noun)
+    return any(lemma in pair for pair in reg.conversions)
+
+
+def _measure_partitive_anchor(reading: Reading, subject: Unit, reg: Registry) -> Unit | None:
+    """'A pound of coffee beans costs $2.50' / '4 pounds of coffee beans
+    cost $10 each' — a price_verb's subject binds (via the existing 'of'
+    preposition's object obligation) to the ITEM noun, the same convenient
+    resolution any partitive 'of' phrase already produces. But the price is
+    stated PER the MEASURE noun the 'of' phrase anchors to ('pound'), not
+    per item — the Price fact must be keyed on that measure so
+    `_purchase_total`'s item-noun match (which already keys the purchase
+    Quantity by the SAME measure noun — 'Jasmine bought 4 pounds of coffee
+    beans' folds to measure='pound', unwidened since increment 10) finds
+    it. Returns the anchor noun when a `partitive`-category preposition's
+    object is exactly `subject` and its anchor names a known measure unit
+    (`_is_measure_unit`) — never a made-up container noun, which stays a
+    separate, ambiguous class out of scope here."""
+    for unit in reading.units:
+        if not reg.word_in_category(_lemma(unit), "partitive"):
+            continue
+        if _bound(unit, "object") is not subject:
+            continue
+        anchor = _bound(unit, "anchor")
+        if anchor is not None and anchor.sense() == "noun" and _is_measure_unit(anchor, reg):
+            return anchor
+    return None
+
+
 def _negated(reading: Reading, verb: Unit) -> bool:
     for unit in reading.units:
         for ob in unit.obligations():
@@ -551,13 +586,37 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
             # identical Price fact. Either way 'cost' + a currency dobj is
             # NEVER a holding: a price statement always skips the generic
             # Quantity fallback below, priced or not.
+            #
+            # "A pound of coffee beans costs $2.50" / "4 pounds of coffee
+            # beans cost $10 each" (mining candidate
+            # modal-spend-measure-price): 'of' binds the subject to the
+            # ITEM (coffee beans), never the MEASURE the price is actually
+            # PER (pound) — `_measure_partitive_anchor` finds that measure
+            # noun structurally. A BARE (uncounted) measure anchor is
+            # itself the per-unit signal ("a pound", the indefinite
+            # singular reading — no trailing 'each' exists to detect in
+            # this shape at all); a COUNTED anchor ("4 pounds") still needs
+            # the ordinary 'each'/distributive trigger above. Either way
+            # the emitted Price is keyed on the MEASURE noun, not the item,
+            # so it lines up with the purchase premise's own
+            # Quantity.measure (unwidened, increment 10).
+            measure_anchor = _measure_partitive_anchor(reading, subject, reg)
+            is_bare_measure_price = (
+                measure_anchor is not None
+                and measure_anchor.features.get("value_kind") != "count"
+            )
             if (
-                _is_rate(reading, dobj) and _rate_unit(reading, dobj) is None
-            ) or _has_distributive_determiner(reading, subject):
+                (_is_rate(reading, dobj) and _rate_unit(reading, dobj) is None)
+                or _has_distributive_determiner(reading, subject)
+                or is_bare_measure_price
+            ):
+                price_item = (
+                    _lemma(measure_anchor) if measure_anchor is not None else _lemma(subject)
+                )
                 facts.append(
                     Price(
                         provenance=prov,
-                        item=_lemma(subject),
+                        item=price_item,
                         value=float(dobj.features["value"]),
                         verb=verb_lemma,
                         occurrence=occurrence,

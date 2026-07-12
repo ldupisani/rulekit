@@ -678,12 +678,23 @@ rules:
       that already names a known measure directly (not only one resolved
       via synth/partition), a structural widening shared with the pronoun
       form, not a per-rule special case.
+      `verb, cat: state` (not the general `verb` type — mining candidate
+      modal-spend-measure-price): a membership partition is always a
+      COPULAR predication ("ARE dogs"), never any other verb; the
+      unrestricted `type: verb` previously let this rule swallow an
+      unrelated priced-measure sentence sharing the same surface token
+      order ("4 pounds of coffee beans COST 10 dollars each" — 'cost' is a
+      verb too), stealing it from learn.py's price-verb emission before it
+      ever ran and producing a bogus PartitionQuantity(collection='bean')
+      instead of any Price fact. Every real membership-partition instance
+      already uses a state verb (is/are/was/were), so this is a pure
+      narrowing with no coverage loss.
     match:
       sentence:
         - {slot: n, type: number}
         - {lit: of}
         - {slot: coll, type: plural}
-        - {slot: verb, type: verb}
+        - {slot: verb, cat: state}
         - {slot: attr, type: noun}
     consumes: [n]
     emits:
@@ -986,7 +997,11 @@ asks:
       question:
         - {lit: how}
         - {lit: much}
-        - {slot: aux, type: auxiliary}
+        # `future_modal`, not `auxiliary` (mining candidate
+        # modal-spend-measure-price): also accepts "how much will/would
+        # WHO pay?" alongside the ordinary "do/does/did" form — see
+        # ask/how-many-entity's comment for the class rationale.
+        - {slot: aux, type: future_modal}
         - {slot: who, type: name}
         - {slot: verb, type: verb}
     resolves:
@@ -1561,7 +1576,11 @@ asks:
       question:
         - {lit: how}
         - {lit: much}
-        - {slot: aux, type: auxiliary}
+        # `future_modal`, not `auxiliary` (mining candidate
+        # modal-spend-measure-price): also accepts "how much will/would
+        # WHO pay for N ITEM" alongside the ordinary "do/does/did" form —
+        # see ask/how-many-entity's comment for the class rationale.
+        - {slot: aux, type: future_modal}
         - {slot: who, type: name}
         - {slot: verb, cat: spend_verb}
         - {slot: prep, cat: spend_target_prep}
