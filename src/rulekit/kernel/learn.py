@@ -391,6 +391,83 @@ def _conjoined_purchase_items(
     return conjuncts
 
 
+def _conjoined_bare_number_events(
+    reading: Reading, reg: Registry, first_item: Unit
+) -> list[float]:
+    """'Vera ... sold 5 last week and 7 this week' — a further sibling of
+    `_conjoined_purchase_items` for an EVENT verb whose sibling conjunct
+    states no item noun of its own AT ALL: a bare, unmerged count VALUE
+    (never condensed into a counted noun, unlike `first_item` itself),
+    optionally trailing a bare temporal modifier ('this week', 'last
+    month' — the `timeperiod` category, structure only, never a literal).
+    Such a conjunct names no item because none IS stated — the only
+    coherent reading is that it counts ANOTHER occurrence of the SAME item
+    the verb's bound dobj (`first_item`) already counts, so the walker
+    hands back its bare value for the caller to fold as another event
+    Quantity under the head's own entity/measure/verb — inheriting, never
+    inventing, a measure.
+
+    Structural gate, no lexicon: a segment matches only when it holds
+    EXACTLY one count-value unit whose own sense is 'value' (a genuinely
+    NAMED item, however sparse-looking, is `_conjoined_purchase_items`'s
+    job, not this one — this walker never fires where that one already
+    would) and every noun-sense unit in the segment is a `timeperiod`
+    category member (a bare temporal adjunct never disqualifies the
+    conjunct; ANY other noun means a real item WAS stated and this walker
+    declines that segment entirely, leaving it to the noun-bearing path).
+    Zero or multiple bare values in a segment is an ambiguous shape and
+    silently declines, same discipline as `_conjoined_purchase_items`."""
+    units = reading.units
+    try:
+        i = units.index(first_item)
+    except ValueError:
+        return []
+    values: list[float] = []
+    segment: list[Unit] = []
+    seen_delimiter = False
+
+    def _flush(seg: list[Unit]) -> None:
+        bare_values = [
+            u
+            for u in seg
+            if u.sense() == "value" and u.features.get("value_kind") == "count"
+        ]
+        if len(bare_values) != 1:
+            return
+        other_nouns = [
+            u
+            for u in seg
+            if u.sense() == "noun"
+            and not reg.word_in_category(
+                u.features.get("lemma", u.features.get("fold", "")), "timeperiod"
+            )
+        ]
+        if other_nouns:
+            return  # a real item WAS stated here — not this walker's class
+        values.append(float(bare_values[0].features["value"]))
+
+    for unit in units[i + 1 :]:
+        if unit.sense() == "complementizer" or unit.surface in (".", "?", "!"):
+            break
+        if unit.sense() == "verb":
+            # a second finite clause starts here — same caution as
+            # `_conjoined_purchase_items`: never misattribute its subject.
+            segment = []
+            break
+        if unit.surface == "," or unit.sense() == "conjunction":
+            if seen_delimiter and segment:
+                _flush(segment)
+            segment = []
+            seen_delimiter = True
+            continue
+        if not seen_delimiter:
+            continue  # still inside first_item's own trailing clause
+        segment.append(unit)
+    if segment:
+        _flush(segment)
+    return values
+
+
 def _has_event_polarity(verb_lemma: str, reg: Registry) -> bool:
     """True when `verb_lemma` carries a polarity-tagged category (acquire/
     lose and their subcategories: purchase, produce, receive, sell, ...) —
@@ -827,6 +904,31 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                                     value=price_value,
                                     verb=verb_lemma,
                                     occurrence=occurrence,
+                                )
+                            )
+                    if not is_state and _has_event_polarity(verb_lemma, reg):
+                        # "sold 5 last week and 7 this week" — mining
+                        # candidate event-goal-progress-inheritance: a
+                        # sibling conjunct stating NO item noun of its own
+                        # (bare number, optional bare temporal modifier)
+                        # inherits `dobj`'s own measure — same entity/verb,
+                        # signed downstream by the SAME category polarity as
+                        # the first occurrence. Never fires where
+                        # `_conjoined_purchase_items` already emitted a fact
+                        # for the segment — see `_conjoined_bare_number_
+                        # events`'s docstring for the mutual-exclusion gate.
+                        for bare_value in _conjoined_bare_number_events(reading, reg, dobj):
+                            facts.append(
+                                Quantity(
+                                    provenance=prov,
+                                    entity=_lemma(subject),
+                                    owner=_owner(subject),
+                                    qualifier=_qualifier(subject),
+                                    measure=_lemma(dobj),
+                                    value=bare_value,
+                                    verb=verb_lemma,
+                                    occurrence=occurrence,
+                                    time=time_label,
                                 )
                             )
         elif flat_price_value is not None:

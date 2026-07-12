@@ -2234,6 +2234,53 @@ new, now `tests/test_mining_increment_60.py`), suite 52/52, lint 0 errors /
 1 known-good warning (fraction-of-remnant / fraction-of-pool, unchanged).
 TEST look: pending — spent manually.
 
+## Increment 61: cross-sentence item/measure inheritance for elided event
+conjuncts (`sold 5 last week and 7 this week`) (`98b0fad`)
+
+Class: an event verb's dobj obligation only binds the FIRST conjunct in a
+sentence — the pre-existing general conjunction-handling gap that increments
+11/35/45 closed for NOUN-bearing sibling conjuncts. This is the sibling for
+a conjunct whose item noun is fully ELIDED: a bare, unmerged count value,
+optionally trailing a bare temporal modifier ("last week", "this week").
+Probe: "Vera has 18 chocolate bars. She sold 5 last week and 7 this week.
+How many chocolate bars does Vera have left?" declined "stated count 7
+reached no fact" — the second bare-number conjunct was invisible to value
+accounting entirely. Named worklist TOP SEED (b), paired in the brief with
+the parked `event-goal-progress` mechanism as the next batch's follow-up.
+
+Mechanism: new walker `_conjoined_bare_number_events` in
+`src/rulekit/kernel/learn.py`, sibling to `_conjoined_purchase_items`
+(same top-level comma/conjunction segmentation, same clause-boundary
+caution breaking on a fresh finite verb). Matches a segment only when it
+holds EXACTLY one bare count-value unit (sense `value`, `value_kind`
+`count` — never a genuinely named item, which is `_conjoined_purchase_
+items`'s job) and every noun-sense unit in the segment is a `timeperiod`
+category member (structure only, never a lexicon word list; any other
+noun means a real item WAS stated and the walker declines that segment).
+Scoped opt-in per the HANDOFF invariant: called only from the existing
+`not is_state and _has_event_polarity(verb_lemma, reg)` block already
+guarding `_conjoined_purchase_items`, so a state verb's conjuncts, an
+untagged verb's conjuncts, and any genuinely noun-bearing conjunct are
+byte-unchanged. Each recovered bare value folds as its own event Quantity,
+inheriting entity/measure/verb/occurrence from the verb's own bound dobj.
+By design this enabler still fully declines end-to-end by itself: two
+facts recovered from the same head dobj share one fact-store key and
+collide via the pre-existing same-key-different-value safety net rather
+than silently summing (the sentence now declines for a fold/fold conflict
+instead of "stated count reached no fact" — strictly more informative,
+never a wrong commit). The brief's paired follow-up (re-cutting the parked
+`event-goal-progress` mechanism on top) is deferred to the next batch.
+
+Files: `src/rulekit/kernel/learn.py`, `tests/test_mining_increment_61.py`
+(4 synthetic tests).
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(3772 items, 30/0 unchanged — by design, see above), dev-holdout diff
+NEUTRAL 0/0/0 (3701 items, 18/0 unchanged), pytest 482 passed (was 478 + 4
+new, now `tests/test_mining_increment_61.py`), suite 52/52, lint 0 errors /
+1 known-good warning (fraction-of-remnant / fraction-of-pool, unchanged).
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 **GOAL MODE (set 2026-07-11): the campaign target is 100 dev-train
