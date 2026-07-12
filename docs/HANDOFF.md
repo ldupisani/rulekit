@@ -1,7 +1,7 @@
 # Session handoff — 2026-07-11
 
 Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
-State below is committed through `87b8242` on `main` (github.com/ldupisani/rulekit;
+State below is committed through `eacb5d4` on `main` (github.com/ldupisani/rulekit;
 check `git status`/`git log origin/main..HEAD` before assuming push parity).
 
 ## Where the project is
@@ -16,8 +16,8 @@ every increment through the gates).
 **Current numbers (all verified at head):**
 - dev-train: 33 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
 - dev-holdout: 21 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 487 · lint: 0 errors, 1 intended warning
-- TEST ledger (64 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- curated suite: 52/52 · pytest: 492 · lint: 0 errors, 1 intended warning
+- TEST ledger (65 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -43,10 +43,10 @@ every increment through the gates).
   7/1 (87.5%, look #59) → 7/1 (#60) →
   7/1 (87.5%, look #61) → 7/1 (#62) →
   7/1 (87.5%, look #63) →
-  **8/1 (88.9%, look #64) ← live at increment 62, the NEW FLOOR** —
-  #62–#63 batch 18, #64 batch 19 (increment 62, elided-measure entity
-  asks: +3 train / +3 holdout / +1 TEST — the largest single increment
-  of the campaign) —
+  8/1 (88.9%, look #64 — the floor) →
+  **8/1 (88.9%, look #65) ← live at increment 63** — #64 batch 19
+  (increment 62: +3/+3/+1, the campaign's largest), #65 batch 20
+  (increment 63, plural spelled fractions, infra) —
   #12–#13 batch 1, #14 the modal split, #15–#16 batch 2, #17–#19 batch 3,
   #20 vocab revert, #21–#27 batch-4 re-land, #28–#32 batch 5 (increments
   27–30 held; 31 reverted); precision held on every surviving increment
@@ -2325,7 +2325,7 @@ passed (was 482 + 5 new, now `tests/test_mining_increment_62.py`), suite
 fraction-of-pool, unchanged).
 TEST look #64: 8/1 (88.9%) — TEST coverage GAIN, new floor, increment kept.
 
-## Increment 63: plural spelled fraction words ("two thirds", "three
+## Increment 63: plural spelled fraction words ("two thirds", "three (`eacb5d4`)
 fifths") (`e0f3f72`)
 
 Class: plural spelled-out fraction words — TOP SEED (a) from the
@@ -2366,7 +2366,7 @@ Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL
 passed (was 487 + 5 new, now `tests/test_mining_increment_63.py`),
 suite 52/52, lint 0 errors / 1 known-good warning (fraction-of-remnant
 / fraction-of-pool, unchanged).
-TEST look: pending — spent manually.
+TEST look #65: 8/1 (88.9%) — precision HELD, increment kept.
 
 ## The next mining worklist (from the last close-miss scan)
 
@@ -2380,22 +2380,21 @@ directives while goal mode holds:
 0. **affine-relations-recut — LANDED as increment 46** (re-cut of
    `mining/parked/affine-relations` against current main; dev-train +4,
    holdout NEUTRAL).
-0. TOP SEEDS (batch 19 output): increment 62 proves the elided/unique-
-   measure ask family is rich — scout its siblings ("How many are
-   left?", "How many more does X need?" with elided measures).
-   (a) SPELLED-OUT NUMBER WORDS — STILL unattempted after two seedings;
-   scout MUST evaluate it this batch (frequency scan, then pack-data
-   word→value table through annotate-numbers).
-   (b) The event-goal lineage needs a NARROW cross-sentence inheritance
-   candidate: pass the entity's Goal facts (or accumulated FactStore
-   context) into the fold, gated structurally on `timeperiod` — the
-   occurrence-key shortcut is CONFIRMED UNSAFE (produces wrongs).
-   (c) Parked gate-clean cash-ins: years-old-age-phrasings,
-   parenthetical-currency-units, temporal-offset-age-asks (its
-   increment-31 test update is correct and pre-approved), much-more-
-   need-asks, each-container-rates, partitive-each-share,
-   spend-on-conjuncts — a future batch landing an enabler should
-   reland these in the SAME batch (they are already built and gated).
+0. TOP SEEDS (batch 20 output): (a) re-cut
+   `mining/parked/entityless-total-there-asks` fixing ONLY the review
+   finding: move the 'world' constant from answer.py into the ask's
+   resolves block (e.g. `exclude_entity: world`) — the mechanism is
+   otherwise gate-clean and its exclude_world fix already survived a
+   real holdout catch. (b) reland the gate-clean parked pile in ONE
+   batch (in-all-totality-tails, each-item-flat-cost-asks,
+   years-old-age-phrasings, parenthetical-currency-units,
+   temporal-offset-age-asks, much-more-need-asks, each-container-rates,
+   partitive-each-share, spend-on-conjuncts) — individually NEUTRAL but
+   their compositions may flip items; a single batch relanding them
+   sequentially with re-gates measures the composition for the cost of
+   at most a few looks. (c) spelled-out INTEGER words: increment 63
+   covered plural fractions; verify whether cardinal words (eight,
+   twelve) already parse and, if not, extend numbers.yaml the same way.
 1. Prefer candidates that MINE THE ASK-SHAPE BUCKET: bucket the
    unrecognized questions by surface shape (scratchpad script over
    dev-train declines with that reason) and propose general ask shapes
