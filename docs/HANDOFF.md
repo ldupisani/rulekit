@@ -14,13 +14,13 @@ swing under the constitution (no lexicon in Python, no per-problem parsing,
 every increment through the gates).
 
 **Current numbers (all verified at head):**
-- dev-train: 34 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
-- dev-holdout: 21 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 524 · lint: 0 errors, 1 intended warning
+- dev-train: 38 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
+- dev-holdout: 22 correct / 0 wrong (3,701 items)
+- curated suite: 52/52 · pytest: 549 · lint: 0 errors, 1 intended warning
 - bench wall: dev-train 16.6s -> 9.0s (trace opt-out) -> 1.7s at `--jobs 12`.
   `--jobs` defaults to 1; spend it in the SERIAL integration tail, never in the
   implementers' gates (they already run concurrently). See the two infra notes below.
-- TEST ledger (67 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- TEST ledger (69 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -2950,3 +2950,40 @@ not an exemption: the brief must name `unblocks` (the follow-up class) AND carry
 >= 3 walked items with `resolves_after_unblocks: true` (items that would resolve
 once that class lands on the enabler). The batch-23 brief — flag only, no proven
 payoff — would now be dropped before an implementer is spent.
+
+## Batch 24 (2026-07-12) — the payoff batch: enabler cashed in, dev-train 34 -> 38
+
+FIRST BATCH BUILT ON A PARKED ENABLER. `base = mining/parked/particle-event-verbs-enabler`,
+so candidates were cut from the held increment 66 instead of main, and the staging
+branch carried enabler + payoff. Landed on main as 3ed7005 (66), 21e25e3 (67),
+4861d35 (68).
+
+- increment 66 — phrasal/particle event verbs (the enabler, held since batch 23)
+- increment 67 — plural-NP / collective-subject totality asks
+- increment 68 — dimension-comparative relations and asks (height/length/weight/area)
+
+COMPOSITION GATE vs FRESH MAIN BASELINES (the new phase 5): dev-train 34 -> 38
+(SOLVED 4, BROKE 0, DECL->WRONG 0, SHIP), dev-holdout 21 -> 22 (SOLVED 1, SHIP),
+suite 52/52, pytest 549, lint clean. **solved_vs_main = 5.**
+
+Why that number matters: each increment was gated against its own predecessor (67
+against the enabler, 68 against 67) and the enabler against main in a DIFFERENT
+batch. The naive sum of per-increment SOLVED counts is not the truth — items can
+be solved by one increment and merely reconfirmed by the next, and pattern gates
+can target overlapping item sets. Only benching the COMPOSED TIP against MAIN says
+what the batch actually buys. That number did not exist before this batch.
+
+The enabler contributed 0 on its own; the +4 came from 67 and 68 on top of it.
+Holding it was right: landing it alone would have spent a TEST look on a
+zero-coverage change that could only LOSE precision.
+
+TEST LOOKS (2 spent, per the held-enabler deal — the enabler rides with its first
+payoff rather than costing a look of its own):
+- look #68 @ dabd3ca (increments 66 + 67): 8/1 (88.9%) — precision HELD.
+- look #69 @ b735e85 (increment 68): 8/1 (88.9%) — precision HELD.
+Neither bought TEST coverage (correct 8 -> 8): +5 on DEV, +0 on TEST. The classes
+are real but no TEST item exercises them. Held, not cashed.
+
+Landed by cherry-pick (main had moved past the enabler's cut point); docs/HANDOFF.md
+auto-merged. Landed state verified at head: dev-train 38/0, dev-holdout 22/0,
+suite 52/52, pytest 549, lint 0 errors.
