@@ -14,13 +14,13 @@ swing under the constitution (no lexicon in Python, no per-problem parsing,
 every increment through the gates).
 
 **Current numbers (all verified at head):**
-- dev-train: 39 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
-- dev-holdout: 22 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 555 · lint: 0 errors, 1 intended warning
+- dev-train: 48 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
+- dev-holdout: 23 correct / 0 wrong (3,701 items)
+- curated suite: 52/52 · pytest: 587 · lint: 0 errors, 1 intended warning
 - bench wall: dev-train 16.6s -> 9.0s (trace opt-out) -> 1.7s at `--jobs 12`.
   `--jobs` defaults to 1; spend it in the SERIAL integration tail, never in the
   implementers' gates (they already run concurrently). See the two infra notes below.
-- TEST ledger (70 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- TEST ledger (73 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -3301,3 +3301,43 @@ SOLVED 1 / BROKE 0 / DECL→WRONG 0 (SHIP; e76c3cbb053c), dev-holdout diff
 SOLVED 0 / BROKE 0 / DECL→WRONG 0 (NEUTRAL), pytest 587 passed, suite
 52/52, lint 0 errors / 1 known-good warning (fraction-of-remnant /
 fraction-of-pool, unchanged). TEST look: pending — spent manually.
+
+## Batch 27 (2026-07-12) — the enabler pays off. dev-train 39 -> 48, TEST 90.9% (NEW FLOOR)
+
+Run with `base=mining/parked/qualified-measure-keys-enabler` (increment 70), so the
+payoff classes could finally be built ON the enabler.
+
+LANDED ON MAIN (70 rides with its first payoff, per the increment-66 precedent):
+- 70 (9c14fe9) attribute-qualified measure keys — the enabler, 0 SOLVED alone
+- 71 (e58a849) equative age comparatives, bare-age anchors — **+5**
+- 72 (73c8b49) group-total premises as verb-subject totals — **+3** (+1 holdout)
+- 73 (cb689a0) "the rest are X" partitions with qualified subsets — **+1**
+
+PARKED: 74 index-labeled entity identity (Jar A / Machine C), 0 SOLVED. Branch
+`mining/parked/labeled-entity-identity-enabler`, rebuilt on the new main.
+
+COMPOSITION GATE vs fresh main: SOLVED 9 dev-train, SOLVED 1 dev-holdout, 0 BROKE,
+0 DECL->WRONG, both SHIP. suite 52/52, pytest 595, lint clean.
+
+**TEST LOOKS #71-#73: 10/1 (90.9%) — TEST COVERAGE GAIN, NEW FLOOR (was 8/1, 88.9%).**
+Look #71 (enabler 70 + 71) took TEST correct 8 -> 10; #72 and #73 held at 10/1.
+First TEST coverage gain since look #64.
+
+### Two "failures" that were nothing of the kind
+
+- **Increment 73 IS `rest-partitions`** — the candidate batch 26 demoted for solving
+  nothing. That zero was measured WITHOUT the enabler (same-batch candidates all
+  build from BASE in parallel). Rebuilt on increment 70 via `base`, it solves +1.
+  The payoff was never disproved; it was never tested. The enabler mechanism works.
+- **Increment 71 IS `age-equative-relations`** — the candidate the constitution
+  reviewer KILLED in batch 25 for hardcoding "year" in saturate.py. Re-cut with the
+  pack-category fix (`age_measure` + `reg.word_in_category`), it is the batch's
+  biggest single win at +5.
+
+Both were recovered by the standards, not despite them: the reviewer's precision
+about WHY it failed made the re-cut a one-line fix, and the `base` mechanism made
+the payoff measurable. Record failures with their fix, and they come back.
+
+NOTE: cherry-picking onto main conflicted in docs/HANDOFF.md (both sides append
+records). Resolved as a UNION — records are append-only, there is no semantic
+conflict. Expect this on every multi-increment landing.
