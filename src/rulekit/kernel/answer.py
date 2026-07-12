@@ -266,24 +266,38 @@ def _combined_holder_totals(
     holder's total (state-anchored or event-summed per the ask's verb),
     and retry with the sole in-play event verb when the ask's own verb
     resolves no totals. Returns either (entities, totals) or a decline
-    Answer — never partial results."""
+    Answer — never partial results.
+
+    A named-pair ask (ask/how-many-combined-named, ask/how-much-combined-
+    named — mining candidate named-pair-combined) binds `a`/`b` directly
+    instead of leaving them unbound: sum EXACTLY those two named holders,
+    never the enumerate-all-holders fallback below, so a third unnamed
+    holder mentioned elsewhere in the passage can never silently inflate
+    the sum. The pronoun path ('they'/'we', ask/how-many-combined/ask/
+    how-much-combined, and the 'average' consumer that reuses this
+    helper) is unchanged."""
     measure = query["measure"]
     singular = _resolve_measure(measure, store, reg)
     if singular is None:
         return Answer("decline", None,
                       f"measure {measure!r} is ambiguous across the facts")
-    entities = sorted(
-        {q.entity for q in store.by_kind(Quantity) if q.measure == singular}
-    )
-    if len(entities) < 2:
-        # "how many do THEY have ALTOGETHER" asserts plurality — a
-        # one-entity sum usually means a mangled parse (the permissive
-        # scan's Σ-over-one artifact), and declining costs no real coverage
-        return Answer(
-            "decline", None,
-            f"a combined ask needs at least two holders of {singular!r}; "
-            f"found {entities}",
+    a, b = query.get("a"), query.get("b")
+    if a is not None and b is not None:
+        entities = [a, b]
+    else:
+        entities = sorted(
+            {q.entity for q in store.by_kind(Quantity) if q.measure == singular}
         )
+        if len(entities) < 2:
+            # "how many do THEY have ALTOGETHER" asserts plurality — a
+            # one-entity sum usually means a mangled parse (the permissive
+            # scan's Σ-over-one artifact), and declining costs no real
+            # coverage
+            return Answer(
+                "decline", None,
+                f"a combined ask needs at least two holders of {singular!r}; "
+                f"found {entities}",
+            )
     ask_verb = query.get("verb", "have")
     state_ask = ask_verb in ("have", "be") or reg.word_in_category(ask_verb, "state")
     totals = []

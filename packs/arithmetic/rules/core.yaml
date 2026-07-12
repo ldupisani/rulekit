@@ -805,6 +805,41 @@ asks:
       measure: "{item}"
       verb: "{verb}"
 
+  - id: ask/how-many-combined-named
+    # "how many ITEM do/does/did NAME and NAME have together/in total/
+    # altogether?" (mining candidate named-pair-combined) — the named-pair
+    # sibling of ask/how-many-combined, binding the two holders DIRECTLY
+    # the same way ask/what-is-the-difference-named binds its a/b instead
+    # of resolving them from the pronoun-only fact enumeration. `aux,
+    # type: auxiliary` (not `future_modal` like the pronoun sibling): the
+    # do/does/did class is the narrower, exact cut this candidate targets.
+    #
+    # Never a tie/shadow risk with ask/how-many-combined: that ask's own
+    # opt group binds `who, type: pronoun`, which a proper name can never
+    # satisfy, so it fails to match a named-pair question at all rather
+    # than partially matching and tying on consumed units. This ask is
+    # also strictly more specific regardless (required item/aux/a/and/b/
+    # verb tokens vs. the pronoun sibling's mostly-optional group).
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {slot: aux, type: auxiliary}
+        - {slot: a, type: name}
+        - {lit: and}
+        - {slot: b, type: name}
+        - {slot: verb, type: verb}
+        - opt:
+            - {slot: p, cat: preposition}
+        - {slot: agg, cat: aggregate}
+    resolves:
+      consumer: combined
+      a: "{a}"
+      b: "{b}"
+      measure: "{item}"
+      verb: "{verb}"
+
   - id: ask/how-many-more
     match:
       question:
@@ -1031,6 +1066,40 @@ asks:
         - {slot: agg, cat: aggregate}
     resolves:
       consumer: combined
+      measure: "{item}"
+      verb: "{verb}"
+
+  - id: ask/how-much-combined-named
+    # "how much ITEM do/does/did NAME and NAME have together/in total/
+    # altogether?" — the how-much sibling of ask/how-many-combined-named,
+    # identical rationale: named holders bind DIRECTLY instead of the
+    # pronoun-only enumeration ask/how-much-combined above uses. Cannot
+    # tie/shadow that ask for the same reason documented there: its own
+    # opt group binds `who, type: pronoun`, which a proper name never
+    # satisfies, so it fails to match a named-pair question outright
+    # rather than partially matching. Also cannot collide with ask/how-
+    # much-noun-entity or ask/how-much-bare-entity (both require a SINGLE
+    # `who, type: name` immediately followed by `verb` — "NAME and NAME
+    # have" has 'and' between the first name and the verb, which neither
+    # of those asks' sequences can skip over, so they fail to match here
+    # too).
+    match:
+      question:
+        - {lit: how}
+        - {lit: much}
+        - {slot: item, type: noun}
+        - {slot: aux, type: auxiliary}
+        - {slot: a, type: name}
+        - {lit: and}
+        - {slot: b, type: name}
+        - {slot: verb, type: verb}
+        - opt:
+            - {slot: p, cat: preposition}
+        - {slot: agg, cat: aggregate}
+    resolves:
+      consumer: combined
+      a: "{a}"
+      b: "{b}"
       measure: "{item}"
       verb: "{verb}"
 

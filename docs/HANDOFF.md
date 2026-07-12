@@ -1882,6 +1882,38 @@ passed (was 409 + 9 new, now `tests/test_mining_increment_53.py`), suite
 fraction-of-pool, unchanged) / 22 info.
 TEST look #55: 6/1 (85.7%) — precision HELD, increment kept.
 
+## Increment 54: named-pair combined holdings asks (`"how many/much X do(es)
+A and B have together/altogether/in total"`)
+
+Re-cut of the parked `mining/parked/named-pair-combined` branch against
+current main (blocked only for two docstring quotes containing GSM8K text;
+every assertion in the landed test file is synthetic — invented names,
+never reused from the parked branch's evidence or the brief). Fresh stats:
+"no ask shape recognizes this question" = 2420 of 3749 dev-train declines;
+scratchpad scan found 10 shaped "how many/much X do(es) A and B have
+together/altogether/in total" where the existing combined asks only bind
+a pronoun subject ("they"/"we"), never a named pair.
+
+Two new ask ids in `packs/arithmetic/rules/core.yaml` —
+`ask/how-many-combined-named` and `ask/how-much-combined-named` — mirror
+`ask/how-many-combined`/`ask/how-much-combined`'s shape (item, aux,
+aggregate tail) but bind the two named holders directly via `a`/`b` slots
+joined by "and", the same named-pair binding `ask/what-is-the-difference-
+named` (increment 42) already uses. Both route to the existing "combined"
+consumer, `answer.py`'s `_combined_holder_totals`, additively extended:
+when `a`/`b` are bound it sums EXACTLY those two named holders — a third,
+unnamed holder mentioned elsewhere in the passage can never inflate the
+sum. The pronoun path (and the increment-52 average consumer that reuses
+the same helper) is untouched byte-for-byte.
+
+Gates (integrated on staging, full re-proof): dev-train diff SHIP +3/0/0
+(3772 items, 23->26 correct, 0 wrong), dev-holdout diff SHIP +1/0/0 (3701
+items, 17->18 correct, 0 wrong), pytest 424 passed (was 418 + 6 new, now
+`tests/test_mining_increment_54.py`), suite 52/52, lint 0 errors / 1
+known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) /
+22 info.
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 **GOAL MODE (set 2026-07-11): the campaign target is 100 dev-train
