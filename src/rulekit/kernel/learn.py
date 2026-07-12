@@ -158,6 +158,25 @@ def _qualifier(unit: Unit) -> str | None:
     return unit.features.get("qualifier")
 
 
+def _label(unit: Unit) -> str | None:
+    """The trailing index label of a noun merged from NOUN + single-
+    capital-letter INDEX (condense.py's merge-label: "Jar A", "Class B"),
+    if any — carried on Quantity facts SEPARATELY from `entity` (the bare
+    lemma stays the identity everywhere it already worked, e.g. "Jar A
+    ... it ..." keeps folding into one entity exactly as before). Only
+    facts.py's collision handling reads this, and only to split a genuine
+    same-key VALUE conflict ("Jar A" vs "Jar B", both bare-folding to
+    entity='jar') into two entities — never to change identity when
+    there is no conflict. A third, independent qualifier field beside
+    `owner`/`qualifier` (mining candidate labeled-entity-identity)."""
+    if unit.sense() == "pronoun":
+        antecedent = _bound(unit, "refers")
+        if antecedent is not None:
+            return antecedent.features.get("label")
+        return None
+    return unit.features.get("label")
+
+
 def _rate_unit(reading: Reading, counted: Unit) -> Unit | None:
     """For the article rate form 'N X a/an/per U', the unit noun U."""
     units = reading.units
@@ -854,6 +873,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                         entity=_lemma(subject),
                         owner=_owner(subject),
                         qualifier=_qualifier(subject),
+                        label=_label(subject),
                         measure=_lemma(dobj),
                         measure_qualifier=_qualifier(dobj),
                         value=float(dobj.features["value"]),
@@ -899,6 +919,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                                 entity=_lemma(subject),
                                 owner=_owner(subject),
                                 qualifier=_qualifier(subject),
+                                label=_label(subject),
                                 measure=_lemma(item),
                                 measure_qualifier=_qualifier(item),
                                 value=item_qty,
@@ -936,6 +957,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                                     entity=_lemma(subject),
                                     owner=_owner(subject),
                                     qualifier=_qualifier(subject),
+                                    label=_label(subject),
                                     measure=_lemma(dobj),
                                     measure_qualifier=_qualifier(dobj),
                                     value=bare_value,
@@ -959,6 +981,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                         entity=_lemma(subject),
                         owner=_owner(subject),
                         qualifier=_qualifier(subject),
+                        label=_label(subject),
                         measure=_lemma(dobj),
                         measure_qualifier=_qualifier(dobj),
                         value=1.0,
@@ -984,6 +1007,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                             entity=_lemma(subject),
                             owner=_owner(subject),
                             qualifier=_qualifier(subject),
+                            label=_label(subject),
                             measure=_lemma(item),
                             measure_qualifier=_qualifier(item),
                             value=item_qty,
@@ -1014,6 +1038,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                         entity=_lemma(subject),
                         owner=_owner(subject),
                         qualifier=_qualifier(subject),
+                        label=_label(subject),
                         measure=_lemma(dobj),
                         measure_qualifier=_qualifier(dobj),
                         value=float(value_unit.features["value"]),

@@ -27,6 +27,18 @@ entries:
   she: {senses: [pronoun]}
   they: {senses: [pronoun], number: plural}
   it: {senses: [pronoun]}
+  i:
+    senses: [pronoun]
+    notes: >
+      first-person singular — a base-lexicon gap this project never needed
+      until now (GSM8K narratives are almost always third-person), closed
+      as a decline-safety prerequisite for condense.py's merge-label pass
+      (mining candidate labeled-entity-identity): without a lexicon entry,
+      the single capital letter "I" is indistinguishable from a genuine
+      index label ("Jar B") and "the jar I have" would wrongly fuse into
+      one label-distinguished noun. With this entry it keeps its own
+      pronoun sense (its `refers` obligation then simply goes unmet, same
+      decline discipline every other unresolved pronoun already has).
 
   # negation
   not: {senses: [negator]}

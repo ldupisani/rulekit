@@ -250,6 +250,18 @@ class Quantity(Fact):
     # total vs. one named subset) is a genuine part/whole relation, not a
     # naming collision, and must keep declining.
     measure_qualifier: str | None = None
+    # the trailing index LABEL of `entity`, when the subject noun was
+    # merged from NOUN + single-capital-letter INDEX (condense.py
+    # merge-label: "Jar A", "Class B") — a fourth, independent
+    # entity-identity qualifier alongside `owner`/`qualifier` (mining
+    # candidate labeled-entity-identity, one label kind further; same
+    # scope as `qualifier` — the HOLDER noun, not the measure). NOT part
+    # of key() or value_part(): identity stays the bare entity lemma
+    # everywhere it already worked. Read ONLY by FactStore.admit's
+    # collision handling, to split a genuine same-key VALUE conflict
+    # ("Jar A" vs "Jar B", both bare-folding to entity='jar') into two
+    # entities — never to change identity absent a real conflict.
+    label: str | None = None
 
     @property
     def is_state(self) -> bool:

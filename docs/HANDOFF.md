@@ -3365,3 +3365,47 @@ it, so `resolves` reflects the tree candidates will actually be built on.
 
 INVARIANT: **when you add a parameter, enumerate its readers.** Four for four, the
 misses were caught by a self-test or a gate, never by inspection.
+## Increment 74: index-labeled entity identity (Jar A / Class B / Machine C /
+District 1 / house 3)
+
+Class: premises with two or more same-noun entities distinguished only by a
+trailing index label (a single uppercase letter or a bare cardinal digit) —
+"Jar A has 28 marbles. Jar B has 15 marbles." — where condense.py previously
+dropped the label, so both holdings folded onto one bare-lemma fact-store
+key and the item declined on `conflict: fold and fold disagree`. Proven by
+substitution: replacing the labels with distinct proper names made
+83ed471741f9 return the gold answer through the existing combined consumer
+with no other change; this increment gives the SAME resolution path to the
+label-bearing text itself. INFRASTRUCTURE — this is the enabler; it does
+not itself unlock the labeled-collective totality asks ("how many do all 4
+houses have in total", "how many total X in Districts 1-3") that motivated
+it. Those need a follow-on ask-shape class layered on this seam.
+
+Mechanism: a condense.py merge pass mirroring increment 25's merge-
+possessive byte-for-byte, one field over: a common noun immediately
+followed by a single uppercase letter or a bare cardinal index fuses into
+ONE noun unit carrying a `label` feature, gated on SENSE names only (the
+`unknown` sense for a bare capital with no lexicon entry, the `article`
+sense for "a"/"A", and numeral senses for the digit form) — never a
+lexicon word list, so no vocabulary is admitted and noise cases ("if I",
+"A.T. Cross", "Mr. B") are excluded structurally. Quantity.entity is
+unchanged (bare lemma), so existing coreference ("the jar ... it ...")
+still works; the label is read only by `FactStore.admit`'s collision
+handling, which now re-keys a same-key VALUE conflict between two
+DIFFERENT non-null labels to `entity[label]` and admits both separately
+instead of quarantining — the increment-25 `owner` design, one field over.
+Also drops bare labeling capitals out of the unknown-word ceiling.
+
+Files: `src/rulekit/kernel/condense.py`, `src/rulekit/kernel/model.py`,
+`src/rulekit/kernel/facts.py`, `src/rulekit/kernel/learn.py`,
+`tests/test_mining_increment_74.py` (8 synthetic tests).
+
+Gates (integrated on staging, full re-proof against current staging
+baseline): dev-train diff SOLVED 0 / BROKE 0 / DECL→WRONG 0 (NEUTRAL;
+39/3772 correct before and after — the two known latent-WRONG substitution
+items this enabler could have exposed, per the candidate brief, did not
+land as commits on this dev slice), dev-holdout diff SOLVED 0 / BROKE 0 /
+DECL→WRONG 0 (NEUTRAL; 22/3701 correct before and after), pytest 595
+passed, suite 52/52, lint 0 errors / 1 known-good warning (fraction-of-
+remnant / fraction-of-pool, unchanged). TEST look: pending — spent
+manually.

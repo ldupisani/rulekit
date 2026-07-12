@@ -95,6 +95,56 @@ def _nominal_pass(reading: Reading, reg: Registry) -> bool:
                 f"{a.surface!r} owns {c.surface!r} — one owner-attributed noun",
             )
             return True
+    # noun + trailing single-capital-letter INDEX -> one label-distinguished
+    # noun ("Jar A", "Class B", "Machine C") — the same entity-identity
+    # problem merge-possessive/merge-attribute already solve for possessive
+    # owners and attributive modifiers (mining candidate
+    # labeled-entity-identity), one label kind further: without this, "Jar
+    # A has 28 marbles. Jar B has 15 marbles." both bare-fold to entity=
+    # 'jar' and collide as one fact-store holding instead of two. The
+    # label is PRODUCTIVE INDEX MORPHOLOGY (a single capital letter
+    # standing in for "the Nth one"), never a lexicon fact — no vocabulary
+    # is admitted here. Two structural forms reach this token, both gated
+    # to exactly one uppercase LETTER (never a name, never a word):
+    #   - unknown: senses.py never guesses "name" for a ONE-CHARACTER
+    #     token (its capitalized-word branches require `surface[1:].
+    #     islower()`, which is False for an empty remainder), so a bare
+    #     single capital letter with no lexicon entry stays unknown ("Jar
+    #     B" — 'b' has no entry).
+    #   - article: the one single-letter word WITH a lexicon entry, "a" —
+    #     "Jar A" downcases to the indefinite article's own fold. Gated on
+    #     the SENSE name (structural), never the literal word: no other
+    #     single-letter token in English carries the `article` sense, and
+    #     the indefinite article never immediately FOLLOWS a noun in real
+    #     text (articles precede the noun they introduce), so this can't
+    #     be confused with an ordinary "a jar" — that "a" is lowercase and
+    #     precedes, not follows, its noun.
+    # Both forms additionally require the label be UPPERCASE — this is
+    # what keeps "if I have" (I is the pronoun, its own sense, never
+    # matches) and every ordinary lowercase "a" safely out, with no word
+    # list at all. "Mr. B" and "A.T. Cross" are blocked structurally too:
+    # a period is its own unit, so the title/initial and the letter are
+    # never ADJACENT units the way this pass requires.
+    for i in range(len(units) - 1):
+        a, b = units[i], units[i + 1]
+        if (
+            a.sense() == "noun"
+            and len(b.words) == 1
+            and len(b.surface) == 1
+            and b.surface.isupper()
+            and (
+                b.sense() == "article"
+                or (b.sense() is None and b.features.get("unknown"))
+            )
+        ):
+            label = b.surface
+            merged = _merge(
+                reading, i, a, "merge-label",
+                f"{a.surface!r} + index {b.surface!r} — one "
+                f"label-distinguished noun (label {label!r})",
+                {"label": label},
+            )
+            return True
     for i in range(len(units) - 1):
         a, b = units[i], units[i + 1]
         # adjective + noun -> restricted noun ("red apple")

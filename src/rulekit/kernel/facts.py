@@ -62,6 +62,16 @@ class FactStore:
         owner/entity-qualifier mechanisms above only split when BOTH
         sides are non-null.
 
+        A FOURTH, independent mirror (mining candidate labeled-entity-
+        identity) applies the same entity-key discipline as `owner`/
+        `qualifier` to a trailing INDEX label: "Jar A has 28 marbles" vs
+        "Jar B has 15 marbles" both fold to entity='jar'; when both sides
+        carry a non-null `label` (Quantity) and they DIFFER, re-key
+        `entity` to `bare[label]` and admit both — same shape as `owner`/
+        `qualifier`, no null-vs-non-null total guard needed (an index
+        label never legitimately co-occurs with an unlabeled bare sibling
+        the way a measure qualifier's part/whole total does).
+
         That null-vs-non-null guard alone is not enough when the total
         uses a DIFFERENT verb/occurrence than its parts ("collected 65
         shells… got 13 purple, 8 pink, 18 yellow, and 12 blue shells"): the
@@ -133,6 +143,19 @@ class FactStore:
                     self.facts.append(
                         replace(fact, measure=f"{fact.measure}[{fact.measure_qualifier}]")
                     )
+                    return True
+                if (
+                    isinstance(existing, Quantity)
+                    and isinstance(fact, Quantity)
+                    and existing.label
+                    and fact.label
+                    and existing.label != fact.label
+                ):
+                    self.facts.remove(existing)
+                    self.facts.append(
+                        replace(existing, entity=f"{existing.entity}[{existing.label}]")
+                    )
+                    self.facts.append(replace(fact, entity=f"{fact.entity}[{fact.label}]"))
                     return True
                 if (
                     isinstance(existing, Price)
