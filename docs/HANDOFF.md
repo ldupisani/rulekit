@@ -2987,3 +2987,59 @@ are real but no TEST item exercises them. Held, not cashed.
 Landed by cherry-pick (main had moved past the enabler's cut point); docs/HANDOFF.md
 auto-merged. Landed state verified at head: dev-train 38/0, dev-holdout 22/0,
 suite 52/52, pytest 549, lint 0 errors.
+
+## Batch 25 (2026-07-12) — 10 scouted, 0 landed, 9 killed at the shape gate
+
+NOTHING LANDED. No TEST look spent (ledger still 71). The batch cost 3 agents —
+scout, one implementer, one reviewer — for ten candidates.
+
+SHAPE GATE DROPPED 9 OF 10 before an implementer was spent:
+
+| slug | frequency | walked items resolving |
+|---|---|---|
+| collective-totality-asks | 33 | 2 of 4 |
+| modal-difference-asks | 19 | 0 of 3 |
+| offset-age-asks | 17 | 0 of 4 |
+| named-bare-dimension-asks | 15 | 1 of 3 |
+| age-frame-fraction-relations | 13 | 0 of 3 |
+| age-measure-name-unify | 12 | 0 of 3 |
+| relative-clause-relations | 3 | 0 of 3 |
+| retention-verb-asks | 1 | 1 of 3 |
+| intervening-modifier-offsets | 1 | 0 of 3 |
+
+Two came close (2/4, 1/3) — the gate is discriminating at its margin, not just
+bluntly rejecting. Under the pre-shape-gate pipeline this batch would have spent
+NINE implementer runs (worktree + dev gate + tests + Opus review each) to learn
+what the scout established by walking items.
+
+READ THIS AS A CAMPAIGN SIGNAL, not a bad batch. Two consecutive scouts have now
+struggled to prove classes end-to-end. The remaining ~3,734 dev-train declines are
+not waiting on more ask shapes.
+
+### The near-miss worth re-cutting: `age-equative-relations`
+
+Gated CLEAN on dev, then failed constitution review on **rule 1
+(lexicon-in-Python)**: `_bare_age_anchor_synth` in `src/rulekit/kernel/saturate.py`
+hardcodes the measure word `"year"` at four sites (≈lines 226, 227, 232, 243).
+Branch retained: `mining/cand-age-equative-relations`.
+
+THE FIX IS ONE LINE AWAY AND THE PRECEDENT IS ALREADY IN THE TREE. The reviewer
+grepped `src/` and found those are the ONLY measure-word literals in the whole
+Python tree. Every other kernel measure test goes through a pack-defined CATEGORY:
+
+    answer.py:893   q.measure == "currency" or reg.word_in_category(q.measure, "currency")
+    core.yaml:65    currency: {parent: noun, interchangeable: true}
+
+So: declare an `age_measure: [year]` category in a pack and gate the synth on
+`reg.word_in_category(...)`. The junior already took the pack route on the YAML
+side (a `temporal_marker` category rather than a literal `"today"`) — this is
+expedience in one corner, not a broken design. **Re-cut, don't discard**, with the
+pack-category fix stated in the brief as a MUST.
+
+### Invariant (do not relearn)
+
+A kernel gate on a MEASURE or any other word fact goes through
+`reg.word_in_category(word, "<category>")` with the category declared in a pack —
+NEVER a string literal in Python. `currency` is the reference implementation.
+Constitution rule 1 has no small-violation exemption: even a one-word lexicon fact
+in the kernel is the wrong fix.
