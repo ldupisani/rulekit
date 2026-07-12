@@ -79,6 +79,45 @@ rules:
         - {slot: dir, cat: delta}
     emits: []
 
+  - id: arithmetic/times-comparative-age-relation
+    phase: read
+    description: >
+      "Thor is 13 times older than Captain America" — a MULTIPLICATIVE age
+      comparative with NO stated noun at all (unlike anchored-relation-
+      postfix's "N years older than Y", which condenses a counted item);
+      'old' is implicit, exactly like arithmetic/stated-age's own literal-
+      'old' anchor. The comparative word is gated on the new
+      `age_comparative` category — scoped to exactly 'older'/'younger' —
+      so a general "N times more/fewer/less than Y" (money, marbles, ...)
+      is NOT swept in and given a spurious 'year' measure; those keep
+      declining until some OTHER rule states their measure. Emits the
+      SAME Relation fact shape as every other relation rule in this file;
+      the existing saturate.py fixed point (already round-based to a
+      fixpoint) chains it with any other relation hop — forward or
+      inverse — with no kernel change. `k**sign(dir)`: 'older' (sign +1)
+      keeps the ratio as stated (subject = k * standard); 'younger'
+      (sign -1) inverts it (subject = standard / k), matching the
+      symmetric reading "N times older" / "N times younger" already
+      established for the additive form's sign(dir)*n offset.
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: verb, cat: state}
+        - {slot: k, type: multiplier}
+        - {slot: dir, cat: age_comparative}
+        - {lit: than}
+        - {slot: std, type: name}
+    where:
+      - distinct: [who, std]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: year
+        factor: "k**sign(dir)"
+        offset: 0.0
+        verb: "{verb}"
+
   - id: arithmetic/times-as-many
     phase: read
     description: >

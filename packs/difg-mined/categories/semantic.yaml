@@ -125,6 +125,16 @@ members:
   - win
   - wins
   - won
+  age_comparative:
+  # "X is 13 times older than Y" — the MULTIPLICATIVE age-comparative form
+  # (arithmetic/times-comparative-age-relation, no stated noun, measure
+  # hardcoded 'year' exactly like stated-age's literal-'old' anchor).
+  # Deliberately its OWN category, not folded into 'more_dir'/'less_dir'
+  # (which 'older'/'younger' ALSO tag, for the additive/offset relation
+  # forms) — those stay valid for the general 'delta' family including
+  # 'more'/'fewer'/'less', which must NOT get an implicit 'year' measure.
+  - older
+  - younger
   animal:
   - bear
   - bears

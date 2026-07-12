@@ -21,6 +21,15 @@ categories:
       consumer's gate, kept narrower than the general 'lose' category so
       an unrelated 'sell' ask never answers from purchase data.
   delta: {parent: comparative, notes: "direction words in 'N more/fewer X than Y'"}
+  age_comparative:
+    parent: comparative
+    notes: >
+      the age-specific comparative pair ('older'/'younger') — a sibling of
+      'delta', not a member of it, so a MULTIPLICATIVE age relation ("X is
+      13 times older than Y", no stated noun) never sweeps in the general
+      magnitude words 'more'/'fewer'/'less' that also sit in 'delta' (and
+      in 'higher'/'lower'). Scoped to exactly these two words; members
+      live in difg-mined alongside their 'more_dir'/'less_dir' tagging.
   currency:
     parent: noun
     interchangeable: true

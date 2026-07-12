@@ -1604,6 +1604,54 @@ known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) / 22
 info.
 TEST look: pending — spent manually.
 
+## Increment 48: chained inverse relation resolution / multiplicative age comparatives
+
+Candidate investigated the goal-mode "no quantity known" bucket's 2-hop
+chain items (Thor/Captain America/Peter Parker ages; Kyle/Julian/Frederick/
+Tyson ages). The proposed mechanism (extend `saturate.py`'s
+`_relations_synth` to a fixed point so an inverse hop could consume a
+derived, not only stated, quantity) turned out to already exist:
+`saturate()`'s round-based loop already re-invokes `synth/relation-to-
+quantity` each round against the store as it stood after the previous
+round's admissions, so N-hop chains over already-supported relations (e.g.
+"times as many") already resolve with zero code change (regression-checked
+here, `test_two_hop_forward_as_many_chain_unaffected`, so a future
+saturate.py edit can't silently narrow the fixpoint back to one hop
+unnoticed).
+
+The actual gap was a missing EXTRACTION rule: "X is N times older/younger
+than Y" (a multiplicative age comparative with no stated noun) never
+produced a Relation fact at all — unlike the additive "X is N years older
+than Y" form, which already condenses a counted item via anchored-
+relation-postfix. Fix, YAML-only:
+
+- new `age_comparative` category (`packs/core-english/categories/core.yaml`,
+  parent `comparative`, a SIBLING of `delta` — not a member, so general
+  magnitude comparatives like "faster" don't inherit an implicit year
+  measure), members `older`/`younger` tagged in `packs/difg-mined/
+  categories/semantic.yaml`.
+- `arithmetic/times-comparative-age-relation` (`packs/arithmetic/rules/
+  core.yaml`): "WHO is K times {older|younger} than STD" emits the same
+  Relation fact shape as every other relation rule in the file (factor =
+  k**sign(dir), measure='year', offset=0). No consumer or kernel change;
+  the existing single-entity ask, additive relations, and saturate.py
+  fixpoint all compose with it unchanged (verified on a 3-hop mixed
+  additive+multiplicative chain, 60 -> 48).
+
+No dev-train item is resolved by this rule ALONE: the traced Thor/Captain
+America items also carry a trailing-if-clause extraction gap (variant of
+increment 12's split) and/or a bare no-noun age-statement gap, both scoped
+out as separate follow-up candidates per the one-class-per-increment
+discipline.
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(3772 items, 21/0 unchanged), dev-holdout diff NEUTRAL 0/0/0 (3701 items,
+16/0 unchanged), pytest 376 passed (was 368 + 8 new, now
+`tests/test_mining_increment_48.py`), suite 52/52, lint 0 errors / 1
+known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) / 22
+info.
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 **GOAL MODE (set 2026-07-11): the campaign target is 100 dev-train
