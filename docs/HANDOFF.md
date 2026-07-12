@@ -2490,6 +2490,45 @@ Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL +0/0/0
 
 TEST look: pending — spent manually.
 
+## Increment 67: plural-NP / collective-subject totality asks (`<squash-pending>`)
+
+Class: questions whose subject is a definite plural NP or collective
+pronoun standing in for two or more holders named earlier — "how many
+total ITEM do the boys have?", "how many ITEM are there in total in the
+two lakes?", "how many ITEM do NAME and NAME have combined?" with the
+measure elided, "how many ITEM does all of them have combined?" — rather
+than the single-name or explicit-pair subjects the existing combined/
+totality asks already serve.
+
+Mechanism: YAML-first, no new vocabulary. Four new ask ids in
+`packs/arithmetic/rules/core.yaml` beside `ask/how-many-there-combined`
+and `ask/how-many-combined-named`: `ask/how-many-plural-combined` (bare
+or cardinal-merged definite plural common-noun subject), `ask/how-many-
+all-combined` (plural-pronoun collective subject, a separate ask id
+because `ask/how-many-combined`'s own opt group binds [aux, who, verb] as
+one inseparable subsequence), and the elided-measure variants that reuse
+increment 62's elided-measure resolution and increment 54's named-pair
+combined consumer. All four route to EXISTING consumers (entity-less
+totality from increment 64, or named-pair combined from increment 54) —
+no new fact kind, no new committer. The one supporting mechanism change:
+the collective cardinal in an ask NP ("the two lakes") is listed in the
+ask's own `consumes:` so the value-accounting guard treats it as
+structural rather than an unaccounted operative count — scoped to these
+new ask ids' own consumed slot only, never a global loosening of the
+guard.
+
+Files: `packs/arithmetic/rules/core.yaml`, `src/rulekit/kernel/schemas.py`,
+`src/rulekit/kernel/patterns.py`, `tests/test_mining_increment_67.py` (10
+synthetic tests).
+
+Gates (integrated on staging, full re-proof): dev-train diff SOLVED 3 /
+BROKE 0 / DECL→WRONG 0 (SHIP; 0775ef2d50f6, a35290d93b09, b0b1d087abe4),
+dev-holdout diff NEUTRAL +0/0/0, pytest 540 passed (was 530 + 10 new),
+suite 52/52, lint 0 errors / 1 known-good warning (fraction-of-remnant /
+fraction-of-pool, unchanged).
+
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 **GOAL MODE (set 2026-07-11, PAUSED 2026-07-12 at 33/100 by user

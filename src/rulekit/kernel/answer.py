@@ -732,6 +732,34 @@ def answer(
         combined = evaluate(" + ".join(str(t) for t in totals), {}, log, source="combined")
         return Answer("number", combined, f"Σ over {entities}")
 
+    if consumer == "combined-elided-measure":
+        # mining candidate plural-np-totality-asks: the named-pair sibling
+        # of `single-entity-elided-measure` above — "how many do Tom and
+        # Jerry have combined?" has NO item slot at all. Mirrors that
+        # branch's unique-measure-in-play discipline, but BILATERAL: the
+        # elided measure is the ONE measure BOTH named holders share (set
+        # intersection of what each holds), never guessed when zero or
+        # more than one measure is common to both. Once resolved, this
+        # reuses `_combined_holder_totals` exactly as ask/how-many-
+        # combined-named does — a/b bound, so it sums exactly those two,
+        # never the enumerate-all-holders fallback.
+        a, b = query["a"], query["b"]
+        cand_a = {q.measure for q in store.by_kind(Quantity) if q.entity == a}
+        cand_b = {q.measure for q in store.by_kind(Quantity) if q.entity == b}
+        common = sorted(cand_a & cand_b)
+        if len(common) != 1:
+            return Answer(
+                "decline", None,
+                f"{a!r} and {b!r} share {len(common)} measures — an "
+                "elided-measure combined ask needs exactly one",
+            )
+        holders = _combined_holder_totals(store, reg, dict(query, measure=common[0]), log)
+        if isinstance(holders, Answer):
+            return holders
+        entities, totals = holders
+        combined = evaluate(" + ".join(str(t) for t in totals), {}, log, source="combined")
+        return Answer("number", combined, f"Σ over {entities}")
+
     if consumer == "average":
         # "what is/was the average number/amount of ITEM (that) they VERB?"
         # (mining candidate average-asks): the SAME holder enumeration the

@@ -1172,6 +1172,20 @@ asks:
     # (packs/core-english/lexicon/core.yaml), not tagged `aggregate`, and
     # admitting that sense is a separate mining candidate (in-all-
     # totality-tails) with its own blast-radius review.
+    #
+    # Trailing optional group (mining candidate plural-np-totality-asks):
+    # "...are there in total IN THE TWO LAKES?" — a collective NP naming
+    # the holders, appended after the aggregate marker. This NEVER binds a
+    # new query field (the consumer still enumerates every holder from the
+    # facts, unchanged) — it exists solely so the collective NP's own
+    # cardinal ("two") is CONSUMED (the `{grp.value}` precedent below,
+    # mirroring `span_value`/`item_value` elsewhere in this file) rather
+    # than left as an unaccounted stated count that trips value-accounting
+    # (methodology §5.2's "the 3 people" case). `grp, type: plural` alone
+    # (no new slot type): the SAME slot type as `arithmetic/anchored-
+    # relation`'s `item` binds a bare plural noun OR a cardinal-merged one
+    # ("lakes"/"two lakes") identically, since condense.py's count-merge
+    # keeps the head noun's `number: plural` feature on the merged unit.
     match:
       question:
         - {lit: how}
@@ -1182,11 +1196,141 @@ asks:
         - opt:
             - {slot: p, cat: preposition}
         - {slot: agg, cat: aggregate}
+        - opt:
+            - {slot: p2, cat: preposition}
+            - opt:
+                - {lit: the}
+            - {slot: grp, type: plural}
     resolves:
       consumer: combined
       measure: "{item}"
       verb: "{verb}"
       exclude_entity: world
+      grp_value: "{grp.value}"
+
+  - id: ask/how-many-plural-combined
+    # "how many ITEM do/does/did (THE) PLURAL-COMMON-NOUN have TOTAL-
+    # MARKER?" (mining candidate plural-np-totality-asks) — the definite-
+    # plural / collective-subject sibling of ask/how-many-combined
+    # (pronoun subject: "how many ITEM do THEY have combined?") and
+    # ask/how-many-combined-named (named-pair subject). Here the subject
+    # is a PLURAL COMMON NOUN standing in for two or more holders named
+    # earlier ("the two boys", "the girls") rather than a pronoun or an
+    # explicit name pair. `who, type: plural` (no new slot type): matches
+    # a bare plural noun OR a cardinal-merged one ("boys"/"two boys")
+    # identically — condense.py's count-merge keeps the head noun's
+    # `number: plural` feature, so a leading cardinal never needs its own
+    # slot. `who` itself is captured ONLY to consume the subject NP
+    # structurally (mirrors ask/how-many-combined's own pronoun `who`,
+    # which the resolves block below also never binds to a query field);
+    # this ask NEVER names a specific entity, so it routes to the SAME
+    # entity-less enumeration `_combined_holder_totals` performs when no
+    # a/b is bound — summing every holder of the measure is exactly the
+    # collective read "the boys" asserts.
+    #
+    # A leading cardinal on `who` ("the two boys") is explicitly consumed
+    # via `who_value: "{who.value}"` (the `span_value`/`item_value`
+    # precedent elsewhere in this file) so value-accounting never rejects
+    # it as an unaccounted stated count.
+    #
+    # Never a tie with ask/how-many-combined (pronoun `who`) or ask/how-
+    # many-combined-named (`type: name` a/b pair): both require a
+    # DIFFERENT slot type on the same position that a plural common noun
+    # can never satisfy, so at most one of the three asks matches a given
+    # question at all.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {slot: aux, type: auxiliary}
+        - opt:
+            - {lit: the}
+        - {slot: who, type: plural}
+        - {slot: verb, type: verb}
+        - opt:
+            - {slot: p, cat: preposition}
+        - {slot: agg, cat: aggregate}
+    resolves:
+      consumer: combined
+      measure: "{item}"
+      verb: "{verb}"
+      who_value: "{who.value}"
+
+  - id: ask/how-many-all-combined
+    # "how many ITEM do/does/did ALL OF THEM have TOTAL-MARKER?" (mining
+    # candidate plural-np-totality-asks) — the plural-pronoun collective
+    # sibling of ask/how-many-plural-combined above: "all of them" instead
+    # of a definite plural common noun. `all`/`of` are literal skeleton
+    # (both known words — `all` a `quantifier` sense, packs/core-english/
+    # lexicon/core.yaml); `who, type: pronoun` — a bare pronoun slot never
+    # requires a resolved antecedent (unlike `type: name`/`type: entity`)
+    # because, exactly like ask/how-many-combined's own pronoun `who`,
+    # this ask's resolves block never binds `who` to a query field — it
+    # is consumed purely to satisfy the match skeleton, and the 'combined'
+    # consumer enumerates every holder of the measure from the facts.
+    #
+    # A separate ask id from ask/how-many-combined (not a widened `who`
+    # slot there): that ask's own opt group binds [aux, who, verb] as ONE
+    # inseparable subsequence, so inserting "all of" between `aux` and
+    # `who` makes it fail to match at all rather than partially matching —
+    # this ask alone claims the "all of them" surface, never shadowing the
+    # bare "they"/"we" form.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {slot: aux, type: auxiliary}
+        - {lit: all}
+        - {lit: of}
+        - {slot: who, type: pronoun}
+        - {slot: verb, type: verb}
+        - opt:
+            - {slot: p, cat: preposition}
+        - {slot: agg, cat: aggregate}
+    resolves:
+      consumer: combined
+      measure: "{item}"
+      verb: "{verb}"
+
+  - id: ask/how-many-combined-named-elided-measure
+    # "how many do/does/did NAME and NAME have TOTAL-MARKER?" (mining
+    # candidate plural-np-totality-asks) — the elided-measure sibling of
+    # ask/how-many-combined-named: no `item` slot at all, the same elision
+    # ask/how-many-entity-elided-measure (increment 62) already admits for
+    # a SINGLE named entity, here over a NAMED PAIR. Routed to a NEW
+    # consumer (`combined-elided-measure`, answer.py) rather than
+    # `single-entity-elided-measure`: that consumer resolves the elided
+    # measure as the entity's own unique held measure, which has no
+    # meaning for TWO entities — the new consumer instead takes the
+    # measure BOTH named holders share (set intersection of their held
+    # measures), declining unless exactly one is common to both, then
+    # reuses `_combined_holder_totals` UNCHANGED (a/b bound, so it sums
+    # exactly those two, never the enumerate-all-holders fallback).
+    #
+    # Exactly 8 consumed units (how/many/aux/a/and/b/verb/agg) vs. ask/
+    # how-many-combined-named's 9+ (item present) — this ask's `aux`
+    # position immediately follows "many" with no item noun in between,
+    # so any question with an item noun there fails THIS ask's own match
+    # before the two could ever tie on specificity.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: aux, type: auxiliary}
+        - {slot: a, type: name}
+        - {lit: and}
+        - {slot: b, type: name}
+        - {slot: verb, type: verb}
+        - opt:
+            - {slot: p, cat: preposition}
+        - {slot: agg, cat: aggregate}
+    resolves:
+      consumer: combined-elided-measure
+      a: "{a}"
+      b: "{b}"
+      verb: "{verb}"
 
   - id: ask/how-much-bare-entity
     # NOTE (mining candidate pronoun-entity-asks): a widening of `who` to
