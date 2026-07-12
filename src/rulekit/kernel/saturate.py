@@ -400,21 +400,118 @@ def _partition_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
     `synth/fraction-of-pool` uses — before being re-emitted as a real count
     (`is_fraction=False`). An unresolvable total (no or ambiguous prior
     quantity for the measure) leaves it unresolved this round, same as an
-    unresolved collection."""
+    unresolved collection.
+
+    A REST partition ('THE REST are grey', `is_rest=True` — mining
+    candidate rest-partitions) resolves its 'rest'/'remainder' placeholder
+    collection the same unique-pool-in-play way, but sizing it needs every
+    OTHER (non-rest) partition of that same collection to have ALREADY
+    resolved to a real count first — otherwise it would under-subtract a
+    sibling still owed its share, a confident wrong rather than a decline.
+    A `pending` scan gates on that; once clear, the value becomes
+    (the collection's own total as of this sentence, via `_pool_before`)
+    minus the signed sum of those prior partitions, re-emitted as a real
+    count with `is_rest` cleared, in the SAME step as the collection
+    resolution (never a separate round) — a two-step resolution would
+    re-key the intermediate fact identically to the final one (collection/
+    attribute/verb, unchanged by sizing) and collide with it as a
+    same-key-different-value conflict.
+
+    Pre-existing bug fixed here (batch 26 free finding #2): once an
+    earlier MEMBERSHIP partition resolves, its companion synth
+    (`_partition_membership_synth`) emits a Quantity for the named subset
+    noun itself ("5 of them are dogs" -> Quantity(measure='dog', ...)) so
+    the general entity-less "how many dogs" ask can read it directly. That
+    synthesized Quantity used to count as its own candidate collection
+    measure here, so a LATER pronoun/remnant in the SAME document ("The
+    rest are cats") saw two distinct measures in play (the real collection
+    AND the subset noun) and permanently failed to resolve — an unrelated
+    synthesized side-effect masquerading as a second collection. Excluded
+    below by source, mirroring `_pool_before`'s existing exclusion of
+    `synth/rest` for the identical reason: a derived fact must never count
+    as evidence for what the document's own collection measure is."""
     from .model import PartitionQuantity
 
     out: list[Fact] = []
     known_measures = {q.measure for q in store.by_kind(Quantity)}
+
+    def _candidate_measure(sentence: int) -> str | None:
+        candidates = {
+            q.measure for q in store.by_kind(Quantity)
+            if q.provenance.sentence < sentence
+            and q.provenance.source != "synth/partition-membership"
+        }
+        return next(iter(candidates)) if len(candidates) == 1 else None
+
     for pq in store.by_kind(PartitionQuantity):
         if pq.collection in known_measures:
             continue  # already names a real measure — nothing to resolve
-        candidates = {
-            q.measure for q in store.by_kind(Quantity)
-            if q.provenance.sentence < pq.provenance.sentence
-        }
-        if len(candidates) != 1:
+        measure = _candidate_measure(pq.provenance.sentence)
+        if measure is None:
             continue
-        (measure,) = candidates
+        if pq.is_rest:
+            # A raw premise fact is never retracted, so an already-resolved
+            # sibling's UNRESOLVED copy (collection still the placeholder)
+            # lives on in the store forever alongside its resolved one —
+            # checking "every fact has a resolved collection" would find
+            # that stale copy and block forever. Identify siblings by
+            # (attribute, verb, sentence) instead and ask whether EACH
+            # identity has at least one resolved counterpart (collection
+            # == measure), exactly the guard's own resolved-by-shape check.
+            sibling_ids = {
+                (sib.attribute, sib.verb, sib.provenance.sentence)
+                for sib in store.by_kind(PartitionQuantity)
+                if not sib.is_rest
+                and sib.provenance.sentence < pq.provenance.sentence
+                and _candidate_measure(sib.provenance.sentence) == measure
+            }
+            resolved_ids = {
+                (p.attribute, p.verb, p.provenance.sentence)
+                for p in store.by_kind(PartitionQuantity)
+                if p.collection == measure and not p.is_rest
+            }
+            if not sibling_ids <= resolved_ids:
+                continue
+            prior_parts = [
+                p for p in store.by_kind(PartitionQuantity)
+                if p.collection == measure and not p.is_rest
+                and p.provenance.sentence < pq.provenance.sentence
+            ]
+            if not prior_parts:
+                # "the rest" names the EXACT COMPLEMENT of the STATED
+                # subsets (the class definition itself) — with none stated,
+                # committing the whole collection risks exactly the
+                # confident wrong a hidden, non-partition subset (an
+                # "equal men and women" algebra split, e.g.) would produce:
+                # decline rather than assume "the rest" is everything.
+                continue
+            total = _pool_before(
+                store, reg, pq.provenance.sentence, measure, log, "synth/partition"
+            )
+            if total is None:
+                continue
+            parts_expr = " ".join(
+                f"{'+' if p.polarity else '-'} {p.value}" for p in prior_parts
+            ) or "0"
+            value = evaluate(
+                f"{total} - ({parts_expr})", {}, log, source="synth/partition"
+            )
+            if value < 0:
+                # an inconsistent premise (siblings sum past the collection
+                # total) — same discipline as rest-of-pool: decline rather
+                # than commit a nonsensical negative count.
+                continue
+            out.append(
+                PartitionQuantity(
+                    provenance=Provenance(
+                        source="synth/partition", sentence=pq.provenance.sentence
+                    ),
+                    collection=measure, attribute=pq.attribute, value=value,
+                    verb=pq.verb, polarity=pq.polarity, kind=pq.kind,
+                    is_fraction=False, is_rest=False,
+                )
+            )
+            continue
         value = pq.value
         if pq.is_fraction:
             total = _pool_before(

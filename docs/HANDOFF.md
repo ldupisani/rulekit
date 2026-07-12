@@ -3254,3 +3254,50 @@ dev-holdout diff SOLVED 1 / BROKE 0 / DECL→WRONG 0 (SHIP; 5e1c4d6456b9),
 pytest 575 passed, suite 52/52, lint 0 errors / 1 known-good warning
 (fraction-of-remnant / fraction-of-pool, unchanged). TEST look: pending —
 spent manually.
+
+## Increment 73: "the rest are X" remainder partitions over a stated
+collection with attribute-qualified subsets
+
+Class: premises where a collection total is stated, one or more subsets are
+explicitly named as partitions (by count, percent, fraction, or plain
+membership), and a trailing "the rest (of the NOUN) are/is/were ADJ NOUN"
+clause states the complement — cashed against a how-many ask for the
+REST label, where the label's attribute sits either postfix or PRENOMINAL.
+Cut from `mining/parked/qualified-measure-keys-enabler` (increment 70) so
+the enabler and this first payoff land as one increment / one TEST look —
+increment 70 alone measured zero net SOLVED, because no existing ask shape
+read a resolved qualified PartitionQuantity when the attribute is
+prenominal ("how many GREY cats").
+
+Mechanism: two new pattern rules in `packs/arithmetic/rules/core.yaml`,
+`arithmetic/partition-rest-attribute` and
+`arithmetic/partition-rest-membership`, matching the REST determiner
+(instead of a number/fraction/percent slot) and emitting a
+PartitionQuantity marked `is_rest=True`. `src/rulekit/kernel/saturate.py`
+gains a rest-specific sizing extension to `_partition_synth` (reusing the
+existing `_pool_before` helper, no new pool notion) that resolves an
+`is_rest=True` PartitionQuantity to the collection total minus the signed
+sum of every already-resolved SIBLING partition, only once every sibling
+has itself resolved — a rest partition with ZERO stated sibling
+PartitionQuantity facts declines (the "rest" is the complement of STATED
+subsets only, never implied ones; caught in review as a real
+DECL→WRONG risk from a prior batch's unguarded attempt). Also lands the
+free finding recorded in the increment-72 entry's era of scouting:
+`_partition_membership_synth`'s emitted Quantity for the subset noun was
+polluting the unique-measure-in-play candidate set for later
+pronoun/remnant resolution in the same document; sequential membership
+partitions ("5 of them are dogs. The rest are cats.") now resolve
+correctly. `answer.py`'s partition-complement consumer is unchanged — it
+already reads prenominal-qualified PartitionQuantity facts once
+increment 70's measure keys exist. No new vocabulary.
+
+Files: `packs/arithmetic/rules/core.yaml`, `src/rulekit/kernel/saturate.py`,
+`src/rulekit/kernel/answer.py`, `tests/test_mining_increment_73.py` (12
+synthetic tests).
+
+Gates (integrated on staging, full re-proof against current staging
+baseline, which already carries the increment 70 enabler): dev-train diff
+SOLVED 1 / BROKE 0 / DECL→WRONG 0 (SHIP; e76c3cbb053c), dev-holdout diff
+SOLVED 0 / BROKE 0 / DECL→WRONG 0 (NEUTRAL), pytest 587 passed, suite
+52/52, lint 0 errors / 1 known-good warning (fraction-of-remnant /
+fraction-of-pool, unchanged). TEST look: pending — spent manually.

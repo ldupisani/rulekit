@@ -955,6 +955,82 @@ rules:
         verb: "{verb}"
         kind: membership
 
+  - id: arithmetic/partition-rest-attribute
+    phase: read
+    description: >
+      "The REST are grey" (mining candidate rest-partitions) — the EXACT
+      COMPLEMENT of every OTHER partition already stated for the same
+      collection. The rest determiner ("rest"/"remainder", cat: remnant) is
+      the same word rest-of-pool already resolves for POOLS; this is its
+      PARTITION sibling. `collection` starts as the bare remnant word,
+      never a real measure, resolved by the partition synthesizer exactly
+      as the pronoun placeholder is (the unique-pool-in-play principle) —
+      but only once every earlier partition of that collection has itself
+      resolved to a real count, at which point the value becomes the
+      collection's own total as of this sentence minus their signed sum,
+      re-emitted with `is_rest` cleared. `verb, cat: state`: a rest
+      partition is always a copular predication (is/are/was/were), never
+      any other verb — narrower than partition-attribute's pronoun form on
+      purpose, since "the rest" (unlike "N of them") could otherwise sit in
+      front of an unrelated priced/rated verb.
+
+      The optional "of the ITEM" span ("the rest OF THE CATS are grey") is
+      consumed but its noun is deliberately never bound into `collection`
+      — the collection stays the bare remnant-word placeholder either way,
+      resolved through the SAME unique-pool-in-play synth step as the bare
+      surface. A named `collection` (the -of-noun surface partition-
+      attribute-of-noun uses for the CARDINAL/stated form) would give this
+      premise fact the exact same key as its own resolved-value re-
+      emission (collection/attribute/verb, unchanged by sizing) and
+      self-collide the moment the value changed from the 0 placeholder to
+      the real count — is_fraction sizing has the identical constraint,
+      which is why it too only ever fires from a placeholder collection.
+    match:
+      sentence:
+        - {slot: r, cat: remnant}
+        - opt:
+            - {lit: of}
+            - {slot: item, type: plural}
+        - {slot: verb, cat: state}
+        - {slot: attr, type: adjective}
+    emits:
+      - fact: partition_quantity
+        collection: "{r}"
+        attribute: "{attr}"
+        value: "0"
+        verb: "{verb}"
+        is_rest: true
+
+  - id: arithmetic/partition-rest-membership
+    phase: read
+    description: >
+      "The REST are dogs" (mining candidate rest-partitions) — the
+      MEMBERSHIP-style counterpart of partition-rest-attribute: the rest
+      names a plural common noun subset, not an adjective. Resolved
+      identically (see partition-rest-attribute); the existing companion
+      membership synth (`synth/partition-membership-quantity`) then emits a
+      Quantity for the named subset noun once the collection resolves, so
+      the general entity-less "how many NOUN are there" ask answers it
+      directly — no bespoke consumer needed, exactly like
+      partition-membership. The same optional, deliberately-unbound "of the
+      ITEM" span as partition-rest-attribute (see its description for why).
+    match:
+      sentence:
+        - {slot: r, cat: remnant}
+        - opt:
+            - {lit: of}
+            - {slot: item, type: plural}
+        - {slot: verb, cat: state}
+        - {slot: attr, type: noun}
+    emits:
+      - fact: partition_quantity
+        collection: "{r}"
+        attribute: "{attr}"
+        value: "0"
+        verb: "{verb}"
+        kind: membership
+        is_rest: true
+
   - id: arithmetic/stated-age
     phase: read
     description: >
@@ -2016,6 +2092,72 @@ asks:
       item: "{item}"
       attribute: "{attr}"
       negated: "true"
+
+  - id: ask/how-many-attribute-partition-in-place
+    # mining candidate rest-partitions-qualified: PRENOMINAL sibling of
+    # ask/how-many-partition ("how many X are ADJ") — "how many ADJ X are
+    # in PLACE?" states the attribute BEFORE the noun instead of after a
+    # copula ("how many GREY cats are in this house?"). `type: qualified`
+    # (not a separate `type: adjective` slot before `item`): condense.py's
+    # merge-attribute already fuses ADJECTIVE+NOUN into ONE unit before
+    # asks ever run (the same convention ask/how-many-entity-qualified
+    # relies on for its subject), so there is no standalone adjective
+    # token left to match — `item.qualifier` reads the fused modifier off
+    # that single unit. Same partition-complement consumer and target
+    # fact (a resolved PartitionQuantity keyed on item/attribute — the
+    # rest-partition payoff and the ordinary "N of them are ADJ"
+    # partitions alike) as the postfix ask/how-many-partition.
+    #
+    # `type: qualified` is a STRICT SUBSET of ask/how-many-in-place's bare
+    # `type: noun` item (a qualified unit is still sense=='noun', so that
+    # ask still matches this sentence too, consuming the identical number
+    # of units — merge-attribute already fused the modifier into one
+    # unit, so there is no extra token left to out-consume it with,
+    # unlike ask/how-many-partition's postfix attr). patterns.match_ask
+    # breaks that tie by rule-id sort order alone (its own documented
+    # mechanism — see ask/how-many-entity's comment for the precedent of
+    # reasoning about it explicitly); this id is spelled to sort BEFORE
+    # "ask/how-many-in-place" ('a' < 'i' right after the shared
+    # "ask/how-many-" prefix) so a qualified item always routes here
+    # first. Never shadows the bare ask for an unqualified item — a
+    # `type: qualified` mismatch means this ask simply fails to match at
+    # all, leaving ask/how-many-in-place as the only candidate.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: qualified}
+        - {slot: verb, type: verb}
+        - {slot: prep, cat: preposition}
+        - {slot: place, type: noun}
+    resolves:
+      consumer: partition-complement
+      item: "{item}"
+      attribute: "{item.qualifier}"
+      negated: "false"
+
+  - id: ask/how-many-attribute-partition-there
+    # mining candidate rest-partitions-qualified: the entity-less sibling
+    # of ask/how-many-attribute-partition-in-place, mirroring
+    # ask/how-many-there the same way that ask mirrors
+    # ask/how-many-in-place — "how many ADJ X are there?" with no place
+    # named. Same partition-complement consumer and `type: qualified`
+    # item (see the in-place sibling's comment for the merge-attribute
+    # and id-sort-order reasoning); "attribute-partition-there" sorts
+    # before "there" the same way, so it wins the tie against the bare
+    # ask/how-many-there whenever the modifier is present.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: qualified}
+        - {slot: verb, type: verb}
+        - {lit: there}
+    resolves:
+      consumer: partition-complement
+      item: "{item}"
+      attribute: "{item.qualifier}"
+      negated: "false"
 
   - id: ask/how-many-more-goal-need
     match:

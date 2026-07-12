@@ -342,6 +342,21 @@ class PartitionQuantity(Fact):
     goes back to False. An unresolvable total (ambiguous or absent pool)
     leaves it unresolved, same decline discipline as fraction-of-pool.
 
+    `is_rest` marks a REST partition ("THE REST are ADJ|NOUN" — mining
+    candidate rest-partitions, the partition sibling of RestQuantity):
+    `collection` starts as the bare "rest"/"remainder" word (never a real
+    measure, exactly like the pronoun placeholder) and `value` starts as an
+    unused 0 placeholder. The collection synthesizer resolves `collection`
+    against the unique prior collection exactly as the cardinal/fractional
+    forms do, but only once EVERY OTHER (non-rest) partition of that same
+    collection has itself resolved to a real count — a still-pending
+    sibling would make this an under-subtraction (a confident wrong, not a
+    decline), so it stays unresolved that round instead. Once every sibling
+    is in, `value` is re-sized to (the collection's own total as of this
+    sentence) minus the signed sum of those prior partitions, and the
+    resolved fact carries a real count with `is_rest` cleared, exactly like
+    `is_fraction`.
+
     EXISTENCE, not use, counts as "read" for value accounting (like Quantity/
     FractionQuantity, unlike Rate/Price): this fact IS the captured stated
     count, not a dormant multiplier that arithmetic must actively consult —
@@ -355,6 +370,7 @@ class PartitionQuantity(Fact):
     polarity: bool = True
     kind: str = "adjective"
     is_fraction: bool = False
+    is_rest: bool = False
 
     def key(self) -> tuple:
         return ("partition_quantity", self.collection, self.attribute, self.verb)

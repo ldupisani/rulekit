@@ -176,7 +176,11 @@ def check(
         # total) — it matches on shape alone (attribute, verb, sentence);
         # dropping value from that key is strictly weaker and only ever
         # consulted for is_fraction=True facts, so cardinal matching is
-        # untouched. A partition also counts as resolved when its
+        # untouched. A REST partition's value legitimately changes too (the
+        # 0 placeholder becomes the collection-total-minus-siblings count —
+        # mining candidate rest-partitions), so it shares the same
+        # shape-only path as is_fraction. A partition also counts as
+        # resolved when its
         # `collection` ALREADY names a known measure directly (the
         # definite-NP surface, "6 of the marbles are red" — the noun IS the
         # measure, nothing to resolve) — a declared fact-store property,
@@ -196,16 +200,17 @@ def check(
         for p in store.by_kind(PartitionQuantity):
             if p.provenance.source == "synth/partition" or p.collection in known_measures:
                 continue
-            if p.is_fraction:
+            if p.is_fraction or p.is_rest:
                 resolved = (p.attribute, p.verb, p.provenance.sentence) in resolved_by_shape
             else:
                 resolved = (
                     p.attribute, p.value, p.verb, p.provenance.sentence
                 ) in resolved_by_value
             if not resolved:
+                what = "the rest" if p.is_rest else f"{p.value} of them"
                 return GuardVeto(
                     "unresolved-derivation",
-                    f"'{p.value} of them are {p.attribute}' never resolved "
+                    f"'{what} are {p.attribute}' never resolved "
                     "against a unique prior collection",
                 )
 
