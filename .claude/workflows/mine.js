@@ -54,6 +54,7 @@ const SCOUT_BRIEF = {
               ask_shape: { type: 'string', description: 'the ask, paraphrased' },
               fact_emitted: { type: 'string', description: 'what the mechanism emits, and what consumes it to an answer' },
               resolves: { type: 'boolean', description: 'does this item resolve END TO END under the proposed mechanism? Not "does the ask match" — the ask is the easy half.' },
+              resolves_after_unblocks: { type: 'boolean', description: 'INFRASTRUCTURE BRIEFS ONLY: this item does not resolve today, but WOULD resolve once the named `unblocks` class lands on top of this enabler. This is what an infra brief must prove instead of coverage.' },
             },
           },
         },
@@ -74,7 +75,11 @@ const SCOUT_BRIEF = {
     overlaps_with: { type: 'array', items: { type: 'string' } },
     infrastructure: {
       type: 'boolean',
-      description: 'true ONLY for a declared-infrastructure brief that names the follow-up class it unblocks; exempts the SOLVED>=1 goal-mode gate',
+      description: 'true ONLY for an enabler that cannot itself move the number. Exempts the shape gate and the SOLVED>=1 goal-mode gate — so it is the ONE way to land an increment that solves nothing, and it is NOT a free pass: it requires `unblocks` plus >= 3 structural_sample items with resolves_after_unblocks=true. At most one per batch.',
+    },
+    unblocks: {
+      type: 'string',
+      description: 'REQUIRED when infrastructure=true: the follow-up CLASS this enabler makes reachable, named as a class (constitution rule 2). "It is generally useful" is not an answer — name what lands next on top of it.',
     },
   },
 }
@@ -160,7 +165,24 @@ const LAND_SCHEMA = {
 const SMOKE_BRIEF = {
   slug: 'smoke-noop',
   class_name: 'pipeline smoke test (no-op)',
-  evidence: { frequency: 0, stats_reason: 'n/a — pipeline self-test', worklist_ref: 'n/a' },
+  evidence: {
+    frequency: 0,
+    stats_reason: 'n/a — pipeline self-test',
+    worklist_ref: 'n/a',
+    // The smoke brief must be a VALID infrastructure brief, not a special case:
+    // it clears the same bar every enabler clears. Keeping it legal by the real
+    // rules is what stops the self-test from silently rotting out of the gates
+    // (it has now had to satisfy four of them).
+    structural_sample: [1, 2, 3].map((n) => ({
+      item_id: `smoke-${n}`,
+      premise_shape: 'n/a — pipeline self-test, no real item is claimed',
+      ask_shape: 'n/a',
+      fact_emitted: 'none: the change is a YAML comment and compiles to nothing',
+      resolves: false,
+      resolves_after_unblocks: true,
+    })),
+  },
+  unblocks: 'n/a — this brief proves the PIPELINE (implement -> review -> integrate), not a problem class',
   mechanism:
     'Add a single YAML comment line at the top of packs/arithmetic/rules/core.yaml (a no-op: comments do not compile into the registry). Write tests/test_mining_smoke-noop.py asserting the full registry still compiles (reuse the full_registry fixture pattern). Expected diff verdict: NEUTRAL on both slices.',
   yaml_only: true,
@@ -282,12 +304,29 @@ Repo: ${REPO}. Return the ScoutOutput structured output.`,
 // spent three implementer runs on candidates whose counted items, once walked,
 // turned out not to present the targeted shape at all. So a candidate must show
 // >= 3 walked items that resolve END TO END, or it never reaches an implementer.
-// Infrastructure briefs are exempt: they exist to unblock a follow-up class and
-// legitimately resolve nothing yet (same carve-out the SOLVED>=1 gate makes).
+//
+// INFRASTRUCTURE is NOT an exemption — it is a DIFFERENT bar. An enabler cannot
+// move the number by definition, so it proves its worth by naming the class it
+// unblocks (`unblocks`) and showing >= 3 walked items that WOULD resolve once
+// that class lands on top of it (`resolves_after_unblocks`). Batch 23 landed a
+// 0-SOLVED enabler by simply ticking `infrastructure: true` — honestly, and with
+// disclosure, but a self-declared flag that skips both coverage gates is a free
+// pass, and the goal-mode gate exists precisely because prose directives were
+// being routed around. So the escape hatch stays; the free pass does not.
 const unproven = []
 candidates = candidates.filter((c) => {
-  if (c.infrastructure) return true // incl. the smoke brief, which declares it
   const walked = c.evidence?.structural_sample ?? []
+  if (c.infrastructure) {
+    const wouldResolve = walked.filter((s) => s.resolves_after_unblocks).length
+    if (c.unblocks && wouldResolve >= 3) return true
+    unproven.push({
+      slug: c.slug,
+      phase: 'scout-shape-gate',
+      reason: `infrastructure brief unproven: ${!c.unblocks ? 'no `unblocks` class named' : `names "${c.unblocks}" but only ${wouldResolve} of ${walked.length} walked items would resolve once it lands (need >= 3)`}. An enabler that cannot move the number must show what it unblocks — infrastructure is a different bar, not an exemption.`,
+    })
+    log(`${c.slug}: DROPPED at the shape gate — infrastructure brief without a proven payoff (${!c.unblocks ? 'no unblocks class' : `${wouldResolve}/${walked.length} would-resolve`}).`)
+    return false
+  }
   const resolving = walked.filter((s) => s.resolves).length
   if (resolving >= 3) return true
   unproven.push({

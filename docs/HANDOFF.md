@@ -2783,3 +2783,53 @@ stage: no cherry-pick, no re-gate, no staging branch, and a green report anyway.
 Both gates now carve out SMOKE explicitly. Lesson worth keeping: a self-test that
 shares the production gates will be killed by them the moment a gate gets stricter,
 and it fails GREEN.
+
+## Batch 23 (2026-07-12) — the shape gate's first real batch; increment 66 HELD
+
+SCOUTED 3, IMPLEMENTED 1, LANDED 0 ON MAIN. No TEST look spent (ledger still 69).
+
+DROPPED AT THE SHAPE GATE, before an implementer was spent:
+- `remnant-entity-subjects` — frequency **327**, 0 of 4 walked items resolve.
+- `existential-pool-depletion` — frequency 53, 0 of 4 walked items resolve.
+
+A 327-frequency signal that resolves nothing. Under the old pipeline that would
+have been the most attractive candidate on the board and would have burned a full
+implementer run to discover what the scout established in minutes. The gate paid
+for itself on its first batch.
+
+THE SCOUT'S OWN HEADLINE, which matters more than the batch: "I could not prove
+END-TO-END resolution for ANY candidate this pass. Every `resolves` is false,
+deliberately." It ran 14 mechanised end-to-end probes rather than trust the
+counts. Read that as a signal about the campaign, not the scout: **the easy
+classes are gone.** The remaining ~3,738 dev-train declines are not waiting on
+more ask shapes, they are waiting on ENABLERS.
+
+INCREMENT 66 (particle event verbs) — HELD, NOT LANDED.
+Branch: `mining/parked/particle-event-verbs-enabler` @ abb6052 (was the batch-23
+staging branch; renamed so its status is unambiguous).
+Class: phrasal/particle event verbs (VERB + away/out/off/up) as ordinary signed
+events. Touches packs/core-english/categories/core.yaml, difg-mined/semantic.yaml,
+src/rulekit/data/registry.py, src/rulekit/kernel/condense.py (+6 synthetic tests).
+Gate: both diffs NEUTRAL, **0 SOLVED on dev-train AND dev-holdout**, pytest 530,
+suite 52/52, lint clean.
+
+WHY HELD: a 0-SOLVED increment cannot GAIN precision — it commits nothing new on
+DEV — but it CAN lose it, because new fusion machinery in condense.py may commit
+on TEST's unseen structures. Spending a TEST look on it is a pure downside bet.
+It is an enabler: the scout's probes showed the fraction-of-pool and remnant
+classes are blocked precisely on unparsed particle verbs. So it waits on the
+parked branch and lands TOGETHER with the first increment that cashes it in —
+one TEST look then validates the enabler and its payoff.
+
+NEXT: the payoff class. A brief that consumes the particle-verb fusion (the
+fraction-of-pool / remnant-with-disposal shapes) should be built ON TOP of
+`mining/parked/particle-event-verbs-enabler`, not on main, and land as one
+increment with it.
+
+INFRA FLAG HARDENED as a result. `infrastructure: true` skipped BOTH coverage
+gates on a self-declaration — a free pass, and the goal-mode gate exists because
+prose directives were being routed around. Infrastructure is now a DIFFERENT bar,
+not an exemption: the brief must name `unblocks` (the follow-up class) AND carry
+>= 3 walked items with `resolves_after_unblocks: true` (items that would resolve
+once that class lands on the enabler). The batch-23 brief — flag only, no proven
+payoff — would now be dropped before an implementer is spent.

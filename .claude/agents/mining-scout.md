@@ -99,9 +99,31 @@ found a class — you have found a phrase. Say so in `notes` and propose somethi
 else. Reporting "I could only prove 1 of 28" is a GOOD scout outcome; it costs
 minutes and saves an implementer run.
 
-Infrastructure briefs are exempt (they exist to unblock a follow-up class and
-legitimately resolve nothing yet) — but an infrastructure brief must NAME the
-follow-up class it unblocks, and there is at most one per batch.
+## Infrastructure briefs — a DIFFERENT bar, not an exemption
+
+An enabler cannot move the number by definition, so it is the one way to land an
+increment that solves nothing. That makes `infrastructure: true` the most
+dangerous field in the brief: a self-declared flag that skips the coverage gates
+is a free pass, and the goal-mode gate exists precisely because prose directives
+were being routed around. Batch 23 landed a 0-SOLVED kernel enabler by ticking it
+— honestly and with disclosure, but at the cost of a TEST look that could only
+lose precision, never gain it.
+
+So an infrastructure brief proves its worth a different way. It must carry:
+
+- `unblocks` — the follow-up CLASS it makes reachable, named as a class. "It is
+  generally useful" is not an answer. Name what lands next on top of it.
+- `structural_sample` with **>= 3 items marked `resolves_after_unblocks: true`** —
+  items that do NOT resolve today but WOULD resolve once that named class lands
+  on this enabler. Same walking discipline as any other brief.
+
+Without both, the pipeline drops the candidate before an implementer is spent.
+At most one infrastructure brief per batch.
+
+**Prefer bundling.** An enabler that lands with its payoff class in the same
+increment costs ONE TEST look and moves the number. An enabler landing alone
+costs a TEST look for zero coverage and can only lose precision. If you can see
+the payoff, propose them together.
 
 ## Prohibitions
 
