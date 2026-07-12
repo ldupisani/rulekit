@@ -71,6 +71,14 @@ entries:
   total: {senses: [aggregate]}
   combined: {senses: [aggregate]}
   together: {senses: [aggregate]}
+  # moved from difg-mined (mining candidate average-asks): was mis-lexiconed
+  # as a bare noun there, which let condense.py's general NOUN+NOUN
+  # merge-compound pass eat it into a "average number"/"average amount"
+  # compound before any ask pattern ever saw a separate 'average' token —
+  # the same reason 'total'/'combined' above are tagged 'aggregate' rather
+  # than 'noun'. 'averaged'/'averages' (the verb forms) are untouched and
+  # stay in difg-mined.
+  average: {senses: [aggregate]}
   and: {senses: [conjunction]}
 
   # copula / possession verbs (state)

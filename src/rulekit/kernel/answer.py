@@ -256,6 +256,63 @@ def _entity_total(
     return evaluate(expr, {}, log, source="fold")
 
 
+def _combined_holder_totals(
+    store: FactStore, reg: Registry, query: dict, log: ArithmeticLog
+) -> tuple[list[str], list[float]] | Answer:
+    """The 'combined' consumer's holder enumeration, factored out so the
+    'average' consumer (mining candidate average-asks) can reuse it
+    UNCHANGED: resolve the measure, enumerate every entity that holds it
+    (>=2 or decline — a combined/average ask asserts plurality), fold each
+    holder's total (state-anchored or event-summed per the ask's verb),
+    and retry with the sole in-play event verb when the ask's own verb
+    resolves no totals. Returns either (entities, totals) or a decline
+    Answer — never partial results."""
+    measure = query["measure"]
+    singular = _resolve_measure(measure, store, reg)
+    if singular is None:
+        return Answer("decline", None,
+                      f"measure {measure!r} is ambiguous across the facts")
+    entities = sorted(
+        {q.entity for q in store.by_kind(Quantity) if q.measure == singular}
+    )
+    if len(entities) < 2:
+        # "how many do THEY have ALTOGETHER" asserts plurality — a
+        # one-entity sum usually means a mangled parse (the permissive
+        # scan's Σ-over-one artifact), and declining costs no real coverage
+        return Answer(
+            "decline", None,
+            f"a combined ask needs at least two holders of {singular!r}; "
+            f"found {entities}",
+        )
+    ask_verb = query.get("verb", "have")
+    state_ask = ask_verb in ("have", "be") or reg.word_in_category(ask_verb, "state")
+    totals = []
+    for entity in entities:
+        t = (
+            _entity_total(store, reg, entity, singular, log)
+            if state_ask
+            else _verb_total(store, entity, singular, ask_verb, log)
+        )
+        totals.append(t)
+    if any(t is None for t in totals) and state_ask:
+        # the ask's verb trails out of pattern reach ("did X, Y and Z
+        # READ?") — when every quantity of the measure shares exactly ONE
+        # event verb, that activity is what the question sums
+        verbs = {
+            q.verb for q in store.by_kind(Quantity) if q.measure == singular
+        } - {"have", "be"}
+        if len(verbs) == 1:
+            (only_verb,) = verbs
+            totals = [
+                _verb_total(store, entity, singular, only_verb, log)
+                for entity in entities
+            ]
+    if any(t is None for t in totals):
+        missing = entities[totals.index(None)]
+        return Answer("decline", None, f"{missing!r} has no resolvable total")
+    return entities, totals
+
+
 def answer(
     question: Reading,
     store: FactStore,
@@ -562,51 +619,29 @@ def answer(
         return Answer("number", total, f"unique-entity fold over {entities[0]!r}/{singular!r}")
 
     if consumer == "combined":
-        measure = query["measure"]
-        singular = _resolve_measure(measure, store, reg)
-        if singular is None:
-            return Answer("decline", None,
-                          f"measure {measure!r} is ambiguous across the facts")
-        entities = sorted(
-            {q.entity for q in store.by_kind(Quantity) if q.measure == singular}
-        )
-        if len(entities) < 2:
-            # "how many do THEY have ALTOGETHER" asserts plurality — a
-            # one-entity sum usually means a mangled parse (the permissive
-            # scan's Σ-over-one artifact), and declining costs no real coverage
-            return Answer(
-                "decline", None,
-                f"a combined ask needs at least two holders of {singular!r}; "
-                f"found {entities}",
-            )
-        ask_verb = query.get("verb", "have")
-        state_ask = ask_verb in ("have", "be") or reg.word_in_category(ask_verb, "state")
-        totals = []
-        for entity in entities:
-            t = (
-                _entity_total(store, reg, entity, singular, log)
-                if state_ask
-                else _verb_total(store, entity, singular, ask_verb, log)
-            )
-            totals.append(t)
-        if any(t is None for t in totals) and state_ask:
-            # the ask's verb trails out of pattern reach ("did X, Y and Z
-            # READ?") — when every quantity of the measure shares exactly ONE
-            # event verb, that activity is what the question sums
-            verbs = {
-                q.verb for q in store.by_kind(Quantity) if q.measure == singular
-            } - {"have", "be"}
-            if len(verbs) == 1:
-                (only_verb,) = verbs
-                totals = [
-                    _verb_total(store, entity, singular, only_verb, log)
-                    for entity in entities
-                ]
-        if any(t is None for t in totals):
-            missing = entities[totals.index(None)]
-            return Answer("decline", None, f"{missing!r} has no resolvable total")
+        holders = _combined_holder_totals(store, reg, query, log)
+        if isinstance(holders, Answer):
+            return holders
+        entities, totals = holders
         combined = evaluate(" + ".join(str(t) for t in totals), {}, log, source="combined")
         return Answer("number", combined, f"Σ over {entities}")
+
+    if consumer == "average":
+        # "what is/was the average number/amount of ITEM (that) they VERB?"
+        # (mining candidate average-asks): the SAME holder enumeration the
+        # 'combined' consumer uses (Σ over every holder of the resolved
+        # measure, >=2-holders-or-decline, same state/event-verb fallback),
+        # divided by the holder count. No new fact kind, no new decline
+        # surface beyond what 'combined' already has.
+        holders = _combined_holder_totals(store, reg, query, log)
+        if isinstance(holders, Answer):
+            return holders
+        entities, totals = holders
+        combined = evaluate(" + ".join(str(t) for t in totals), {}, log, source="combined")
+        average = evaluate(
+            f"({combined}) / {len(entities)}", {}, log, source="average"
+        )
+        return Answer("number", average, f"({combined}) ÷ {len(entities)} over {entities}")
 
     if consumer == "difference":
         measure = query["measure"]

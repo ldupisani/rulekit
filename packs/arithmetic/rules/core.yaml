@@ -1513,3 +1513,71 @@ asks:
       consumer: combined
       measure: "{item}"
       verb: "{verb}"
+
+  - id: ask/what-average-combined
+    # "What is/was the average (number/amount) of ITEM (that) they VERB?"
+    # (mining candidate average-asks): the average sibling of
+    # ask/what-total-combined — IDENTICAL shape, 'average' in place of
+    # 'total', routed to a NEW 'average' consumer (answer.py) that reuses
+    # ask/what-total-combined's own 'combined' holder-enumeration helper
+    # UNCHANGED (same Σ over every holder of the resolved measure, same
+    # >=2-holders-or-decline discipline, same state/event-verb fallback)
+    # and divides by the holder count. Can never collide with
+    # ask/what-total-combined: the two asks differ on the required literal
+    # right after the copula ('average' vs 'total'), so a question can
+    # only ever supply one of them — mutually exclusive matches, not a
+    # specificity contest. The trailing "(that) WHO VERB" clause is
+    # scoped to a bare pronoun exactly as in ask/what-total-combined, for
+    # the same reason: a counted/named subject needs holder-count/multi-
+    # name binding this candidate does not add, so it is left unconsumed
+    # and the ask still resolves via the same default verb ('have').
+    # Weighted-average and per-unit-rate phrasing ("average speed ... per
+    # hour", "average X per day/month/game") never reaches a WRONG answer
+    # here: those measures are not the kind of >=2 named holders the
+    # 'average' consumer enumerates (Quantity facts keyed by a real
+    # holder), so the consumer's own decline path — inherited unchanged
+    # from 'combined' — catches them (fewer than two holders, or no
+    # resolvable per-entity total), exactly as it already does for
+    # ask/what-total-combined's own equivalent risk surface.
+    match:
+      question:
+        - {lit: what}
+        - {slot: be, cat: state}
+        - {lit: average}
+        - opt:
+            - {slot: agg_noun, cat: aggregate_noun}
+            - {lit: of}
+        - {slot: item, type: noun}
+        - opt:
+            - opt:
+                - {lit: that}
+            - {slot: who, type: pronoun}
+            - {slot: verb, type: verb}
+    resolves:
+      consumer: average
+      measure: "{item}"
+      verb: "{verb}"
+
+  - id: ask/what-average-combined-contracted
+    # Same class as ask/what-average-combined, for the "what's" contraction
+    # — mirrors ask/what-total-combined-contracted's own rationale for why
+    # this needs a separate ask id rather than widening 'state' to admit
+    # the literal "'s" token.
+    match:
+      question:
+        - {lit: what}
+        - {lit: "'s"}
+        - {lit: average}
+        - opt:
+            - {slot: agg_noun, cat: aggregate_noun}
+            - {lit: of}
+        - {slot: item, type: noun}
+        - opt:
+            - opt:
+                - {lit: that}
+            - {slot: who, type: pronoun}
+            - {slot: verb, type: verb}
+    resolves:
+      consumer: average
+      measure: "{item}"
+      verb: "{verb}"

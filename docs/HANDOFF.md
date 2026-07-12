@@ -1807,6 +1807,43 @@ passed (was 390 + 9 new, now `tests/test_mining_increment_51.py`), suite
 fraction-of-pool, unchanged) / 22 info.
 TEST look: pending — spent manually.
 
+## Increment 52: average asks (`what is/was the average number of X
+they VERB` = combined total ÷ holder count)
+
+Lands goal-mode directive 1 (ask-shape bucket). Fresh stats: 70 of the
+2481 no-ask-shape declines contain "average" (12 exact "average
+number/amount of"; 8 "what is the average" + 7 "what was the average"
+prefix buckets). Probe-verified: "Tom scored 3 points. Mary scored 9
+points. What is the average number of points they scored?" declined
+no-ask-shape while the combined machinery already enumerates the same
+holders ("What is the total number of apples they have?" commits Sigma
+over [mary, tom] — increment 40/41).
+
+New ask shapes "what is/was the average number|amount of ITEM (they)
+VERB" in `packs/arithmetic/rules/core.yaml`, strictly more specific than
+`ask/what-total-combined` (increment 40) via the "average" token —
+confirmed non-disturbing to that ask's own matching by the zero-diff
+re-gate below. A new, narrow `average` consumer in `answer.py` reuses the
+combined-total consumer's own holder-enumeration helper UNCHANGED (>=2
+unambiguous holders each resolving a single value for the measure, same
+state/event-verb fallback, same decline-on-ambiguity discipline) and
+divides by the holder count. No new fact kind. `average`/`averaged`/
+`averages` were already lexiconed (packs/difg-mined/lexicon/a-f.yaml,
+sense "aggregate", not quarantined); moved alongside `total`/`combined`
+so condense.py's general NOUN+NOUN merge-compound pass never eats it into
+an "average number" compound before the ask pattern sees a separate
+`average` token. Scoped OUT: any weighted-average cue ("per", rates in
+play) and time-series phrasing ("average per day") — declined, out of
+class.
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL
+0/0/0 (3772 items, 21/0 unchanged), dev-holdout diff SHIP +1/0/0 (3701
+items, 16->17 correct, 0 wrong — SOLVED 076eae6e029a), pytest 409 passed
+(was 399 + 10 new, now `tests/test_mining_increment_52.py`), suite 52/52,
+lint 0 errors / 1 known-good warning (fraction-of-remnant /
+fraction-of-pool, unchanged) / 22 info.
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 **GOAL MODE (set 2026-07-11): the campaign target is 100 dev-train
