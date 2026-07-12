@@ -7,18 +7,33 @@ rules:
     phase: read
     description: >
       "X has N more/fewer ITEM than Y" — a Relation fact; the relation
-      synthesizer resolves it against Y's known quantity.
+      synthesizer resolves it against Y's known quantity. `who`/`std,
+      type: entity` (mining candidate common-noun-relation-subjects):
+      widened from `type: name` so a definite/possessive common-noun
+      subject or standard ("Her cousin has 6 fewer rubber bands than he
+      has") can anchor a relation too — the fold and the combined-ask
+      consumer already resolve entity keys generally (a bare common-noun
+      holding folds fine on its own); only the relation rules themselves
+      required a name. `distinct: [item, std]` blocks a DIFFERENT
+      collision the widening opens up: "has 2 fewer animal stickers than
+      flower stickers" bare-folds `item` and `std` to the SAME measure
+      lemma ('sticker') — that sentence compares two MEASURES of the
+      speaker's own holding (elliptical for "than [he has] flower
+      stickers"), not two holders' quantities of one measure, and must
+      keep declining rather than mint a self-referential Relation whose
+      standard IS the measure being counted.
     match:
       sentence:
-        - {slot: who, type: name}
+        - {slot: who, type: entity}
         - {slot: verb, type: verb}
         - {slot: n, type: number}
         - {slot: dir, cat: delta}
         - {slot: item, type: plural}
         - {lit: than}
-        - {slot: std, type: name}
+        - {slot: std, type: entity}
     where:
       - distinct: [who, std]
+      - distinct: [item, std]
     consumes: [n]
     emits:
       - fact: relation
@@ -34,17 +49,21 @@ rules:
     description: >
       "X picked 12 apples more than Y" — the POSTFIX comparative order: the
       count has already condensed into the noun, and the direction word
-      follows it. Same Relation fact as the prefix form.
+      follows it. Same Relation fact as the prefix form. `who`/`std,
+      type: entity` (mining candidate common-noun-relation-subjects):
+      same widening and same `distinct: [item, std]` self-referential
+      guard as arithmetic/anchored-relation — see its comment.
     match:
       sentence:
-        - {slot: who, type: name}
+        - {slot: who, type: entity}
         - {slot: verb, type: verb}
         - {slot: item, type: counted}
         - {slot: dir, cat: delta}
         - {lit: than}
-        - {slot: std, type: name}
+        - {slot: std, type: entity}
     where:
       - distinct: [who, std]
+      - distinct: [item, std]
     consumes: [item]
     emits:
       - fact: relation
@@ -123,19 +142,23 @@ rules:
     description: >
       "X has twice as many ITEM as Y" — a pure-ratio Relation fact
       (the rarer, more specific trigger; the offset case needs the
-      anchored-relation shape).
+      anchored-relation shape). `who`/`std, type: entity` (mining
+      candidate common-noun-relation-subjects): same widening and same
+      `distinct: [item, std]` self-referential guard as
+      arithmetic/anchored-relation — see its comment.
     match:
       sentence:
-        - {slot: who, type: name}
+        - {slot: who, type: entity}
         - {slot: verb, type: verb}
         - {slot: k, type: multiplier}
         - {lit: as}
         - {lit: many}
         - {slot: item, type: plural}
         - {lit: as}
-        - {slot: std, type: name}
+        - {slot: std, type: entity}
     where:
       - distinct: [who, std]
+      - distinct: [item, std]
     emits:
       - fact: relation
         subject: "{who}"
@@ -290,19 +313,23 @@ rules:
     phase: read
     description: >
       "Kelcie read half as many books as Megan" — the times-as-many shape
-      with a FRACTION ratio.
+      with a FRACTION ratio. `who`/`std, type: entity` (mining candidate
+      common-noun-relation-subjects): same widening and same
+      `distinct: [item, std]` self-referential guard as
+      arithmetic/anchored-relation — see its comment.
     match:
       sentence:
-        - {slot: who, type: name}
+        - {slot: who, type: entity}
         - {slot: verb, type: verb}
         - {slot: f, type: fraction}
         - {lit: as}
         - {lit: many}
         - {slot: item, type: plural}
         - {lit: as}
-        - {slot: std, type: name}
+        - {slot: std, type: entity}
     where:
       - distinct: [who, std]
+      - distinct: [item, std]
     consumes: [f]
     emits:
       - fact: relation
@@ -350,10 +377,13 @@ rules:
       ratio shape, PREFIXED with the anchored-relation offset ("N more/fewer
       than") the way affine-frame-relation prefixes the 'the number of'
       frame — this is the same offset+ratio combination for the bare
-      "as many ITEM as STD" frame instead.
+      "as many ITEM as STD" frame instead. `who`/`std, type: entity`
+      (mining candidate common-noun-relation-subjects): same widening and
+      same `distinct: [item, std]` self-referential guard as
+      arithmetic/anchored-relation — see its comment.
     match:
       sentence:
-        - {slot: who, type: name}
+        - {slot: who, type: entity}
         - {slot: verb, type: verb}
         - {slot: n, type: number}
         - {slot: dir, cat: delta}
@@ -363,9 +393,10 @@ rules:
         - {lit: many}
         - {slot: item, type: plural}
         - {lit: as}
-        - {slot: std, type: name}
+        - {slot: std, type: entity}
     where:
       - distinct: [who, std]
+      - distinct: [item, std]
     consumes: [n]
     emits:
       - fact: relation
@@ -382,10 +413,13 @@ rules:
       "Randy has 5 less than half as many coconut trees as ITEM" — the
       same AFFINE "as many" form as affine-times-as-many, with a FRACTION
       ratio in place of the multiplier (mirrors how fraction-as-many sits
-      beside times-as-many): subject = f·standard + n·sign(dir).
+      beside times-as-many): subject = f·standard + n·sign(dir). `who`/
+      `std, type: entity` (mining candidate common-noun-relation-
+      subjects): same widening and same `distinct: [item, std]` self-
+      referential guard as arithmetic/anchored-relation — see its comment.
     match:
       sentence:
-        - {slot: who, type: name}
+        - {slot: who, type: entity}
         - {slot: verb, type: verb}
         - {slot: n, type: number}
         - {slot: dir, cat: delta}
@@ -395,9 +429,10 @@ rules:
         - {lit: many}
         - {slot: item, type: plural}
         - {lit: as}
-        - {slot: std, type: name}
+        - {slot: std, type: entity}
     where:
       - distinct: [who, std]
+      - distinct: [item, std]
     consumes: [n]
     emits:
       - fact: relation

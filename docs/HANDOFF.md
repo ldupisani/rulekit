@@ -2407,6 +2407,45 @@ pytest 499 passed (was 492 + 7 new, now
 known-good warning (fraction-of-remnant / fraction-of-pool, unchanged).
 TEST look #66: 8/1 (88.9%) — precision HELD, increment kept.
 
+## Increment 65: common-noun relation subjects (definite/possessive common
+noun as relation holder or standard), (`2353da0`)
+
+Class: relation premises whose subject or standard is a definite/possessive
+common noun rather than a name — "Her cousin has 6 fewer rubber bands than
+he has." The `entity` slot type (name | common noun | resolved pronoun) was
+already built for the rate-span re-land and already used by the relation
+synthesizer and the combined-ask consumer; it had simply never been reached
+through the relation rules' subject/standard slots, which all hard-required
+`type: name`.
+
+Mechanism: YAML-only. Widens `who`/`std` from `type: name` to `type: entity`
+on the six Relation-emitting rules in `packs/arithmetic/rules/core.yaml`:
+`arithmetic/anchored-relation`, `arithmetic/anchored-relation-postfix`,
+`arithmetic/times-as-many`, `arithmetic/fraction-as-many`,
+`arithmetic/affine-times-as-many`, `arithmetic/affine-fraction-as-many` —
+each widened and gated individually per the HANDOFF invariant against
+blanket find/replace. No kernel edit was needed: `patterns.py`'s
+`_slot_ok` already implements `type: entity` generally, and the relation
+synthesizer already keys Relation facts by bare entity lemma regardless of
+whether it came from a name or a common noun. Widening surfaced a new
+self-referential collision — "has 2 fewer animal stickers than flower
+stickers" bare-folds `item` and `std` to the same measure lemma, comparing
+two measures of the speaker's own holding rather than two holders of one
+measure — caught on dev-train during landing; each widened rule gained a
+`distinct: [item, std]` where-clause to keep it declined instead of minting
+a confident-wrong.
+
+Files: `packs/arithmetic/rules/core.yaml`, `tests/test_mining_increment_65.py`
+(6 synthetic tests).
+
+Gates (integrated on staging, full re-proof): dev-train diff SOLVED 1, BROKE
+0, DECL->WRONG 0 (3772 items, correct 33 -> 34, 0 wrong, VERDICT SHIP),
+dev-holdout diff NEUTRAL +0/0/0 (3701 items, correct 21/0 wrong before and
+after), pytest 505 passed (was 499 + 6 new, now
+`tests/test_mining_increment_65.py`), suite 52/52, lint 0 errors / 1
+known-good warning (fraction-of-remnant / fraction-of-pool, unchanged).
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 **GOAL MODE (set 2026-07-11, PAUSED 2026-07-12 at 33/100 by user
