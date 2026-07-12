@@ -92,9 +92,17 @@ def check(
 
         # values from USE-GATED fact kinds (Rate, Price, Goal): existence
         # alone doesn't count as read, but the arithmetic log having
-        # consumed the value does
+        # consumed the value does. A COMPOUND Rate ("8 pages in 20
+        # minutes") additionally offers its own raw numerator/denominator
+        # here — the text stated TWO numbers, not the derived quotient
+        # `value`, so a consumer that actually divides/multiplies by those
+        # two raw numbers (rather than by the bare `value`) is what counts
+        # as reading them; simple (non-compound) Rates leave both None and
+        # contribute nothing new here.
         rate_values = (
             {float(r.value) for r in store.by_kind(Rate)}
+            | {float(r.numerator) for r in store.by_kind(Rate) if r.numerator is not None}
+            | {float(r.denominator) for r in store.by_kind(Rate) if r.denominator is not None}
             | {float(p.value) for p in store.by_kind(Price)}
             | {float(g.value) for g in store.by_kind(Goal)}
             if store is not None else set()

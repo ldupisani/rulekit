@@ -2082,6 +2082,58 @@ unchanged), pytest 459 passed (was 445 + 14 new, now
 known-good warning (fraction-of-remnant / fraction-of-pool, unchanged).
 TEST look #59: 7/1 (87.5%) — precision HELD, increment kept.
 
+## Increment 58: compound rate premises (`VERB N ITEM in T UNIT` feeding
+rate-span/rate-span-inverse) (`6c7b357`)
+
+Re-cut/reland of the parked `mining/parked/compound-rate-recut` (`bf93fbd`)
+lineage named as top-seed (a) in batch 15's worklist. Rebased onto current
+main (past increment 57) and re-gated from scratch on staging; the cherry-pick
+landed with NO core.yaml conflict against increment 57's `relational_marker`/
+`multiplier_marker` insertions (the candidate branch had already been rebased
+past that point before hand-off) — no manual conflict resolution was needed
+at integration time.
+
+Class: a premise stating an amount over an elapsed span with TWO numbers
+("Priya bakes 8 muffins in 4 minutes") — distinct from the existing per-unit
+article form ("4 cars a day", `_rate_unit`) which recognizes only a SINGLE
+stated number. Before this increment such a premise built NO Rate fact at
+all, so a paired rate-span/rate-span-inverse question declined "0 rates
+known" even though the ask ids and consumers were already live (increments
+8/9/13/21/51/55).
+
+Mechanism: `learn.py`'s `_compound_rate_span` recognizes the "N ITEM in T
+UNIT" shape (scanning forward from the counted dobj for a pack-declared
+`span_preposition`-category token — parent: preposition, members: [in],
+`packs/core-english/categories/core.yaml` — introducing its own counted
+noun; an intervening non-span prepositional frame is skipped, not treated as
+ending the scan) and emits a Rate fact carrying both the derived per-unit
+`value` and the two raw stated numbers (`Rate.numerator`/`denominator`,
+`model.py`) — the split exists so `guards.py`'s value-accounting credits the
+text's own two numbers as read only when a consumer's arithmetic actually
+uses them (the look #4-#7 existence-vs-use invariant), never merely because
+the Rate fact exists. `answer.py`'s existing `rate-span` (forward) and
+`rate-span-inverse` consumers each gain a numerator/denominator branch: a
+compound Rate divides/multiplies through its own raw stated numbers directly,
+answering honestly, value-accounted, in EITHER direction, under EITHER
+auxiliary or modal (increment 55) question phrasing. The plain (non-compound)
+Rate path in each consumer is untouched.
+
+Files: `src/rulekit/kernel/learn.py`, `src/rulekit/kernel/answer.py`,
+`src/rulekit/kernel/guards.py`, `src/rulekit/kernel/model.py`,
+`packs/core-english/categories/core.yaml`, `tests/test_mining_increment_58.py`
+(6 synthetic tests — forward span, modal inverse own-per-unit, modal inverse
+matching asked unit, an unrelated "in her closet" phrase correctly NOT
+misread as a compound rate, no-rate-at-all decline, and an intervening
+non-span prepositional frame correctly skipped rather than ending the scan).
+
+Gates (integrated on staging, full re-proof): dev-train diff SHIP +1/0/0
+(3772 items, 27->28 correct, 0 wrong; SOLVED 6bc7c26d8dd9), dev-holdout diff
+NEUTRAL 0/0/0 (3701 items, 18/0 unchanged), pytest 465 passed (was 459 + 6
+new, now `tests/test_mining_increment_58.py`), suite 52/52, lint 0 errors / 1
+known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) / 26
+info.
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 **GOAL MODE (set 2026-07-11): the campaign target is 100 dev-train

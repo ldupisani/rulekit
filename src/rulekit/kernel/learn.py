@@ -144,6 +144,48 @@ def _rate_unit(reading: Reading, counted: Unit) -> Unit | None:
     return None
 
 
+def _compound_rate_span(reading: Reading, counted: Unit, reg: Registry) -> Unit | None:
+    """'reads 8 pages in 20 minutes' — a COMPOUND rate stated as two
+    numbers (an amount and an elapsed span) rather than the simple 'N ITEM
+    a/an/per U' article form `_rate_unit` recognizes. Scans forward from
+    the counted item, within the same clause, for a preposition in the
+    pack-declared `span_preposition` category (structure, not a literal
+    string — the 'per'->'rate' sense is the precedent: a word-specific
+    fact belongs in the pack, never compared against in Python) that
+    itself introduces a counted noun (the span); an intervening
+    prepositional frame outside that category ("of a book") is simply not
+    a match and the scan continues past it — a LATER, unrelated member
+    (e.g. a location, "in the library") that fails the counted-noun test
+    still returns None rather than searching further, the same definitive-
+    or-decline caution as the rest of this module. A verb or clause
+    boundary reached first means no compound span is stated here at all."""
+    units = reading.units
+    try:
+        i = units.index(counted)
+    except ValueError:
+        return None
+    for idx in range(i + 1, len(units)):
+        unit = units[idx]
+        if unit.sense() == "complementizer" or unit.surface in (".", "?", "!"):
+            return None
+        if unit.sense() == "verb":
+            return None  # a second clause starts here
+        if unit.sense() == "preposition" and reg.word_in_category(
+            _lemma(unit), "span_preposition"
+        ):
+            j = idx + 1
+            while j < len(units) and units[j].sense() == "article":
+                j += 1
+            if (
+                j < len(units)
+                and units[j].sense() == "noun"
+                and units[j].features.get("value_kind") == "count"
+            ):
+                return units[j]
+            return None
+    return None
+
+
 def _price_each_value(
     reading: Reading, counted: Unit, reg: Registry, stop_at_list_boundary: bool = False
 ) -> float | None:
@@ -557,6 +599,41 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
         dobj_is_rate = dobj is not None and _is_rate(
             reading, dobj, stop_at_list_boundary=is_purchase_verb
         )
+        dobj_is_counted_noun = (
+            dobj is not None
+            and dobj.features.get("value_kind") == "count"
+            and dobj.sense() == "noun"
+        )
+        if not dobj_is_rate and dobj_is_counted_noun:
+            compound_span = _compound_rate_span(reading, dobj, reg)
+            if compound_span is not None and float(compound_span.features["value"]) != 0:
+                # "reads 8 pages in 20 minutes" — a COMPOUND rate (an
+                # amount over an elapsed span), rather than the simple
+                # per-unit article form below. Same Rate fact kind, same
+                # USE-GATED value-accounting discipline (guards.py's
+                # rate_values + log.uses_value gate, not mere existence —
+                # neither this branch nor the article one marks its units
+                # `pattern_consumed`): the forward rate-span consumer
+                # reads it going forward (value/per x span), the inverse
+                # consumer (rate-span-inverse) reads it going backward
+                # (a question-stated target ÷ value). Never a holding —
+                # a compound rate is not a balance.
+                numerator = float(dobj.features["value"])
+                denominator = float(compound_span.features["value"])
+                facts.append(
+                    Rate(
+                        provenance=prov,
+                        entity=_lemma(subject),
+                        measure=_lemma(dobj),
+                        per=_lemma(compound_span),
+                        value=numerator / denominator,
+                        verb=verb_lemma,
+                        occurrence=occurrence,
+                        numerator=numerator,
+                        denominator=denominator,
+                    )
+                )
+                continue  # never a holding — no plain quantity from a compound rate
         if dobj_is_rate:
             unit_noun = _rate_unit(reading, dobj)
             if (

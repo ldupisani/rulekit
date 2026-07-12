@@ -80,6 +80,17 @@ categories:
       from the (mined) 'receive' category, so the ask stays specific to
       the deficit phrasing and never widens via a premise/event verb's
       own broader membership. Members live in difg-mined.
+  span_preposition:
+    parent: preposition
+    notes: >
+      the preposition introducing a COMPOUND rate's elapsed span ("sews 8
+      shirts IN 20 minutes") — kept as its own category, not a literal
+      string compared in Python, mirroring the 'per'->'rate' sense
+      precedent (a word-specific fact belongs in the pack, never the
+      kernel). Narrower than the general 'preposition' sense: 'in' keeps
+      its ordinary locative/temporal preposition uses everywhere else —
+      this category only gates the compound-rate-span scan in learn.py,
+      it never changes 'in's own committed sense or disambiguation.
   negation:
     parent: negator
     notes: >
@@ -141,6 +152,7 @@ members:
   less_dir: [fewer, less]
   negation: [not]  # 'never' extends this from packs/difg-mined (its own lexicon)
   relational_marker: [than]
+  span_preposition: [in]
 context_synonyms:
   appendage:
     gate: animal

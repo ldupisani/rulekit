@@ -550,7 +550,18 @@ def answer(
                 f"{rate.value}/{rate.per} × {population} {rate.entity} × "
                 f"{k} {rate.per}",
             )
-        total = evaluate(f"{rate.value} * {k}", {}, log, source="rate-span")
+        if rate.numerator is not None and rate.denominator is not None:
+            # a COMPOUND rate ("8 pages in 20 minutes") — multiply through
+            # the raw stated numerator/denominator directly so value-
+            # accounting (guards.py) credits the text's own two numbers as
+            # read; using the derived `value` quotient here would leave
+            # them unaccounted (see Rate's docstring).
+            total = evaluate(
+                f"{rate.numerator} * {k} / {rate.denominator}", {}, log,
+                source="rate-span",
+            )
+        else:
+            total = evaluate(f"{rate.value} * {k}", {}, log, source="rate-span")
         return Answer(
             "number", total,
             f"{rate.value}/{rate.per} × {k} {rate.per} for {entity!r}",
@@ -602,9 +613,20 @@ def answer(
                 "not attempt a population division",
             )
         item_value = float(query["item_value"])
-        span = evaluate(
-            f"{item_value} / {rate.value}", {}, log, source="rate-span-inverse"
-        )
+        if rate.numerator is not None and rate.denominator is not None:
+            # a COMPOUND rate ("8 pages in 20 minutes") — invert through
+            # the raw stated numerator/denominator directly (same
+            # numerator/denominator-not-`value` discipline as the forward
+            # consumer's compound branch, Rate's docstring) so value-
+            # accounting credits the text's own two numbers as read.
+            span = evaluate(
+                f"{item_value} * {rate.denominator} / {rate.numerator}", {}, log,
+                source="rate-span-inverse",
+            )
+        else:
+            span = evaluate(
+                f"{item_value} / {rate.value}", {}, log, source="rate-span-inverse"
+            )
         return Answer(
             "number", span,
             f"{item_value} {measure} ÷ {rate.value}/{rate.per} for {entity!r}",

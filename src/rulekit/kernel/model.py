@@ -353,7 +353,19 @@ class PartitionQuantity(Fact):
 class Rate(Fact):
     """'makes $18 an hour' / '4 cars a day' — value of measure PER unit.
     Informative on its own (never folds into holdings); the rate-span
-    consumer multiplies it against an asked span."""
+    consumer multiplies it against an asked span.
+
+    `numerator`/`denominator` are set ONLY for a COMPOUND rate stated as
+    two numbers ("8 pages in 20 minutes" -> numerator=8, denominator=20,
+    value=8/20) rather than the simple per-unit article form ("4 cars a
+    day" -> value=4, numerator/denominator left None). `value` is always
+    the per-ONE-unit quotient either way, read identically by every
+    existing consumer — the split fields exist ONLY so value-accounting
+    (guards.py) can credit the text's own TWO stated numbers as read when
+    a consumer's arithmetic actually uses them; a consumer that instead
+    multiplies/divides by the bare `value` never touches either raw
+    number and value-accounting correctly declines rather than commit
+    around them unread."""
 
     entity: str
     measure: str
@@ -361,6 +373,8 @@ class Rate(Fact):
     value: float
     verb: str = "make"
     occurrence: int | None = None
+    numerator: float | None = None
+    denominator: float | None = None
 
     def key(self) -> tuple:
         return ("rate", self.entity, self.measure, self.per, self.verb, self.occurrence)
