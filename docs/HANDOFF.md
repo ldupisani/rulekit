@@ -1,7 +1,7 @@
 # Session handoff — 2026-07-11
 
 Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
-State below is committed through `ba6ee8d` on `main` (github.com/ldupisani/rulekit;
+State below is committed through `d521665` on `main` (github.com/ldupisani/rulekit;
 check `git status`/`git log origin/main..HEAD` before assuming push parity).
 
 ## Where the project is
@@ -14,10 +14,10 @@ swing under the constitution (no lexicon in Python, no per-problem parsing,
 every increment through the gates).
 
 **Current numbers (all verified at head):**
-- dev-train: 26 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
+- dev-train: 27 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
 - dev-holdout: 18 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 424 · lint: 0 errors, 1 intended warning
-- TEST ledger (56 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- curated suite: 52/52 · pytest: 445 · lint: 0 errors, 1 intended warning
+- TEST ledger (58 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -38,11 +38,10 @@ every increment through the gates).
   6/1 (85.7%, look #50) → 6/1 (#51) → 6/1 (#52) → 6/1 (#53) →
   6/1 (85.7%, look #54) →
   6/1 (85.7%, look #55) →
-  **7/1 (87.5%, look #56) ← live at increment 54** — a genuine TEST
-  coverage GAIN (first since look #11): named-pair combined asks
-  converted one TEST item; same persistent wrong. #55 batch 12
-  (increment 53, SHIP +2), #56 batch 13 (increment 54, +3 train /
-  +1 holdout / +1 TEST) —
+  7/1 (87.5%, look #56 — TEST coverage GAIN, the new floor) → 7/1 (#57) →
+  **7/1 (87.5%, look #58) ← live at increment 56** — #56 batch 13
+  (increment 54: +3 train / +1 holdout / +1 TEST), #57–#58 batch 14
+  (increment 55 modal how-long infra, increment 56 change asks +1) —
   #12–#13 batch 1, #14 the modal split, #15–#16 batch 2, #17–#19 batch 3,
   #20 vocab revert, #21–#27 batch-4 re-land, #28–#32 batch 5 (increments
   27–30 held; 31 reverted); precision held on every surviving increment
@@ -1915,7 +1914,7 @@ known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) /
 22 info.
 TEST look #56: 7/1 (87.5%) — a TEST coverage GAIN, increment kept.
 
-## Increment 55: modal how-long / how-many-TIMEUNIT duration asks
+## Increment 55: modal how-long / how-many-TIMEUNIT duration asks (`91a76e0`)
 (will/would-phrased inverse rate-span questions)
 
 Lands HANDOFF's "next mining worklist" TOP SEED (b): increment 51 shipped
@@ -1953,7 +1952,7 @@ dev-holdout diff NEUTRAL 0/0/0 (3701 items, 18/0 unchanged), pytest 434
 passed (was 424 + 10 new, now `tests/test_mining_increment_55.py`), suite
 52/52, lint 0 errors / 1 known-good warning (fraction-of-remnant /
 fraction-of-pool, unchanged) / 22 info.
-TEST look: pending — spent manually.
+TEST look #57: 7/1 (87.5%) — precision HELD, increment kept.
 
 ## Increment 56: change asks (`"how much change does/did/will WHO get/
 receive (back)"` = stated tender minus purchase total)
@@ -2015,7 +2014,7 @@ Gates (integrated on staging, full re-proof): dev-train diff SHIP +1/0/0
 `tests/test_mining_increment_56.py`), suite 52/52, lint 0 errors / 1
 known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) /
 23 info.
-TEST look: pending — spent manually.
+TEST look #58: 7/1 (87.5%) — precision HELD, increment kept.
 
 ## The next mining worklist (from the last close-miss scan)
 
@@ -2029,19 +2028,24 @@ directives while goal mode holds:
 0. **affine-relations-recut — LANDED as increment 46** (re-cut of
    `mining/parked/affine-relations` against current main; dev-train +4,
    holdout NEUTRAL).
-0. TOP SEEDS (batch 13 output): (a) conjoined-clause-holdings, THIRD
-   attempt — the parked branch fixed the frozenset correctly but added an
-   'and' literal (use the existing `conjunction` sense check, precedent
-   learn.py) and name-swapped the Tapanga/Corey sentence instead of
-   rewriting it (invent a NEW scenario: different number, item, and
-   structure). Fix EXACTLY those two findings, change nothing else —
-   the mechanism has now passed gates twice. (b) modal how-long asks:
-   compound-rate items phrase questions as "How long WILL it take…" but
-   increment 51 landed only auxiliary forms; land the modal ask-id
-   variants (mirror increment 14's aux/modal split), then re-cut
-   `mining/parked/compound-rate-emission` moving its 'in' literal to a
-   pack sense (the 'per'→'rate' sense is the exact precedent).
-   [superseded batch-12 seeds: named-pair-combined landed as increment 54]
+0. TOP SEEDS (batch 14 output): (a) conjoined-clause-holdings, FOURTH
+   attempt — the mechanism has now gated clean three times; batch 14's
+   junior fixed Tapanga/Corey but carried over the OTHER derived scenario
+   (the 54/45 gum item, name/item-swapped). Rewrite EVERY scenario in the
+   test file and engine.py docstrings with fresh numbers AND structure;
+   grep the parquet for every number-pair before committing.
+   (b) compound-rate-emission — re-cut `mining/parked/compound-rate-emission-recut`
+   from CURRENT main: increment 55's modal asks are now live, so its
+   isolated gate should show its SOLVED count directly (batch 14 demoted
+   it only because the asks landed in the same batch). The 'in'-literal
+   fix is already done on that branch.
+   (c) future-modal-spend widening (parked) must be re-proposed PAIRED
+   with one payoff class in a single brief (discount %, per-span
+   purchase totals, or "a MEASURE of ITEM costs $X" price emission —
+   36 identified items).
+   SEQUENCING RULE: never split an enabler and its payoff across two
+   briefs in the SAME batch — the isolated-gate demotion can't see
+   cross-candidate composition; use one brief or consecutive batches.
 1. Prefer candidates that MINE THE ASK-SHAPE BUCKET: bucket the
    unrecognized questions by surface shape (scratchpad script over
    dev-train declines with that reason) and propose general ask shapes
