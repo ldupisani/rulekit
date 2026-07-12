@@ -1,7 +1,7 @@
 # Session handoff — 2026-07-11
 
 Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
-State below is committed through `5327809` on `main` (github.com/ldupisani/rulekit;
+State below is committed through `d85ba74` on `main` (github.com/ldupisani/rulekit;
 check `git status`/`git log origin/main..HEAD` before assuming push parity).
 
 ## Where the project is
@@ -14,10 +14,10 @@ swing under the constitution (no lexicon in Python, no per-problem parsing,
 every increment through the gates).
 
 **Current numbers (all verified at head):**
-- dev-train: 21 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
-- dev-holdout: 16 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 409 · lint: 0 errors, 1 intended warning
-- TEST ledger (54 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- dev-train: 23 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
+- dev-holdout: 17 correct / 0 wrong (3,701 items)
+- curated suite: 52/52 · pytest: 418 · lint: 0 errors, 1 intended warning
+- TEST ledger (55 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -36,10 +36,12 @@ every increment through the gates).
   6/1 (85.7%, look #44) → 6/1 (#45) → 6/1 (#46) →
   6/1 (85.7%, look #47) → 6/1 (#48) → 6/1 (#49) →
   6/1 (85.7%, look #50) → 6/1 (#51) → 6/1 (#52) → 6/1 (#53) →
-  **6/1 (85.7%, look #54) ← live at increment 52** — #48–#50 batch 10
-  (affine offsets +4, parenthetical units +1), #51–#54 batch 11
-  (increments 49–52, ALL dev-NEUTRAL — goal-mode SOLVED enforcement was
-  prose-only; now enforced mechanically in mine.js) —
+  6/1 (85.7%, look #54) →
+  **6/1 (85.7%, look #55) ← live at increment 53** — #51–#54 batch 11
+  (all dev-NEUTRAL; prompted the mechanical SOLVED gate in mine.js),
+  #55 batch 12 (increment 53 only: comma-less trailing conditionals,
+  SHIP +2; two 0-SOLVED candidates demoted by the new gate instead of
+  landing) —
   #12–#13 batch 1, #14 the modal split, #15–#16 batch 2, #17–#19 batch 3,
   #20 vocab revert, #21–#27 batch-4 re-land, #28–#32 batch 5 (increments
   27–30 held; 31 reverted); precision held on every surviving increment
@@ -1878,7 +1880,7 @@ dev-holdout diff NEUTRAL 0/0/0 (3701 items, 17/0 unchanged), pytest 418
 passed (was 409 + 9 new, now `tests/test_mining_increment_53.py`), suite
 52/52, lint 0 errors / 1 known-good warning (fraction-of-remnant /
 fraction-of-pool, unchanged) / 22 info.
-TEST look: pending — spent manually.
+TEST look #55: 6/1 (85.7%) — precision HELD, increment kept.
 
 ## The next mining worklist (from the last close-miss scan)
 
@@ -1892,6 +1894,16 @@ directives while goal mode holds:
 0. **affine-relations-recut — LANDED as increment 46** (re-cut of
    `mining/parked/affine-relations` against current main; dev-train +4,
    holdout NEUTRAL).
+0. TOP SEEDS (batch 12 output): (a) `mining/parked/conjoined-clause-holdings`
+   — review-blocked ONLY for a 2-word frozenset in engine.py (move 'than'/
+   'times' gating to the existing comparative/multiplier category checks)
+   and ONE copied test sentence (Tapanga/Corey); the mechanism unblocks
+   the comma-joined-holdings gap that both goal-mode demotions named as
+   their shared blocker. (b) `mining/parked/named-pair-combined` —
+   blocked only for two docstring quotes; every assertion is synthetic.
+   (c) partitive measures ("pieces of gum") — the other shared blocker;
+   the parked partitive attempts document the 'of' skeleton trap: route
+   'of' through a pack sense/category, never a Python literal.
 1. Prefer candidates that MINE THE ASK-SHAPE BUCKET: bucket the
    unrecognized questions by surface shape (scratchpad script over
    dev-train declines with that reason) and propose general ask shapes
