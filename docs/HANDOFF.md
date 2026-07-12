@@ -1,7 +1,7 @@
 # Session handoff — 2026-07-11
 
 Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
-State below is committed through `3b4c332` on `main` (github.com/ldupisani/rulekit;
+State below is committed through `827e68d` on `main` (github.com/ldupisani/rulekit;
 check `git status`/`git log origin/main..HEAD` before assuming push parity).
 
 ## Where the project is
@@ -14,10 +14,10 @@ swing under the constitution (no lexicon in Python, no per-problem parsing,
 every increment through the gates).
 
 **Current numbers (all verified at head):**
-- dev-train: 27 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
+- dev-train: 29 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
 - dev-holdout: 18 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 459 · lint: 0 errors, 1 intended warning
-- TEST ledger (59 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- curated suite: 52/52 · pytest: 473 · lint: 0 errors, 1 intended warning
+- TEST ledger (61 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -40,9 +40,10 @@ every increment through the gates).
   6/1 (85.7%, look #55) →
   7/1 (87.5%, look #56 — TEST coverage GAIN, the new floor) → 7/1 (#57) →
   7/1 (87.5%, look #58) →
-  **7/1 (87.5%, look #59) ← live at increment 57** — #57–#58 batch 14,
-  #59 batch 15 (increment 57: the conjoined-clause-holdings enabler,
-  landed on attempt 4 with verified-clean tests) —
+  7/1 (87.5%, look #59) → 7/1 (#60) →
+  **7/1 (87.5%, look #61) ← live at increment 59** — #59 batch 15
+  (increment 57, the clause enabler), #60–#61 batch 16 (increments
+  58–59, +1 dev-train each: the enabler's first payoffs) —
   #12–#13 batch 1, #14 the modal split, #15–#16 batch 2, #17–#19 batch 3,
   #20 vocab revert, #21–#27 batch-4 re-land, #28–#32 batch 5 (increments
   27–30 held; 31 reverted); precision held on every surviving increment
@@ -2132,9 +2133,9 @@ NEUTRAL 0/0/0 (3701 items, 18/0 unchanged), pytest 465 passed (was 459 + 6
 new, now `tests/test_mining_increment_58.py`), suite 52/52, lint 0 errors / 1
 known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) / 26
 info.
-TEST look: pending — spent manually.
+TEST look #60: 7/1 (87.5%) — precision HELD, increment kept.
 
-## Increment 59: future-modal spend/pay asks + measure-of-item price emission
+## Increment 59: future-modal spend/pay asks + measure-of-item price emission (`827e68d`)
 (`a pound of coffee beans costs $2.50`) (`3bcc76f`)
 
 Reland of the parked `mining/parked/modal-spend-measure-price` (`92183a9`)
@@ -2191,7 +2192,7 @@ Gates (integrated on staging, full re-proof): dev-train diff SHIP +1/0/0
 NEUTRAL 0/0/0 (3701 items, 18/0 unchanged), pytest 473 passed (was 465 + 8
 new, now `tests/test_mining_increment_59.py`), suite 52/52, lint 0 errors /
 1 known-good warning (fraction-of-remnant / fraction-of-pool, unchanged).
-TEST look: pending — spent manually.
+TEST look #61: 7/1 (87.5%) — precision HELD, increment kept.
 
 ## The next mining worklist (from the last close-miss scan)
 
@@ -2205,21 +2206,17 @@ directives while goal mode holds:
 0. **affine-relations-recut — LANDED as increment 46** (re-cut of
    `mining/parked/affine-relations` against current main; dev-train +4,
    holdout NEUTRAL).
-0. TOP SEEDS (batch 15 output — increment 57 the clause-conjunction
-   enabler is now LIVE; its payoff classes should start flipping):
-   (a) rebase `mining/parked/compound-rate-recut` and
-   `mining/parked/modal-spend-measure-price` onto current main — both
-   deferred ONLY on core.yaml conflicts with increment 57; their
-   isolated gates should now show SOLVED directly.
-   (b) event-verb conjunction fold ("sold 5 last week and 7 this
-   week") — the third verb family for the increment 11/35 walker
-   (purchase/state landed; EVENT verbs still drop the second conjunct
-   and mis-bind the first). Recurring blocker named by two independent
-   failure reports; unblocks goal-deficit and progress classes.
-   (c) `mining/parked/event-progress-deficit` re-queue AFTER (b) —
-   gate-clean goal machinery, cashable once event conjuncts fold.
-   (d) single-word vocabulary candidate: 'aims' into the desire-verb
-   category (quarantine-checked, permissive-scan evidence, ONE word).
+0. TOP SEEDS (batch 16 output): (a) ONE COMBINED BRIEF: event-verb
+   temporal conjunct fold + goal-deficit consumer — rebase BOTH parked
+   branches (`mining/parked/event-temporal-conjuncts`, gate-clean, its
+   first broader version was correctly caught by holdout and narrowed;
+   `mining/parked/event-progress-requeue`, [FAILED-GATE] only for
+   missing its enabler) into a single candidate; the traced James item
+   (Goal 18 − (5+7) = 6) flips → SOLVED ≥ 1 guaranteed by the brief's
+   own arithmetic. Per the sequencing rule these must NOT be two briefs.
+   (b) partitive-of re-cut from current main with the `partitive`
+   category DEDUPED against increment 59's identical declaration (one
+   declaration, union of both notes).
 1. Prefer candidates that MINE THE ASK-SHAPE BUCKET: bucket the
    unrecognized questions by surface shape (scratchpad script over
    dev-train declines with that reason) and propose general ask shapes
