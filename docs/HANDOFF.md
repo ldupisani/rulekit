@@ -2325,6 +2325,49 @@ passed (was 482 + 5 new, now `tests/test_mining_increment_62.py`), suite
 fraction-of-pool, unchanged).
 TEST look #64: 8/1 (88.9%) — TEST coverage GAIN, new floor, increment kept.
 
+## Increment 63: plural spelled fraction words ("two thirds", "three
+fifths") (`e0f3f72`)
+
+Class: plural spelled-out fraction words — TOP SEED (a) from the
+worklist ("SPELLED-OUT NUMBER WORDS — scout MUST evaluate it this
+batch"). Fresh stats unknown-word worklist: thirds 16, fifths 10,
+fourths 5, sevenths 1, tenths 1 (quarters 26 excluded — `quarter`
+already carries a coin/currency sense, so its plural is withheld from
+this tight morphological family per the one-family-per-increment
+vocabulary rule, look #20/#32). 32 dev-train items contain a plural
+fraction word; in 11 it is the only unknown word (all 11 declined
+pre-landing).
+
+Mechanism: pack data only — add halves/thirds/fourths/fifths/sixths/
+sevenths/eighths/ninths/tenths to the `fractions` table in
+`packs/core-english/numbers.yaml`, beside their existing singulars.
+`numbers.py`'s existing word-count x word-fraction merge in
+`annotate_numbers` already reads any fold present in `reg.fractions`
+— no kernel code change. "Two thirds" is now read as 2/3 the same way
+"two fifths" already was, so the increment-28 fraction-partition
+machinery and the fraction-of-remainder/fraction-of-pool consumers run
+unchanged. DECLARED INFRASTRUCTURE: an in-memory injection scan across
+all 32 containing dev-train items measured 0 outcome flips before
+landing (a pure fully-read ceiling raise, +11 items fully read); the
+integrated re-gate below reproduces that result exactly (0 SOLVED, 0
+BROKE) — this increment cannot satisfy the SOLVED>=1 goal-mode gate on
+its own. It unblocks the already-landed increment-28 fraction/percent-
+partition and fraction-of-pool consumer families for "two thirds/three
+fifths" phrasings; per methodology the ceiling raise is TEST leverage,
+to be cashed in by this batch's own TEST look.
+
+Files: `packs/core-english/numbers.yaml`,
+`tests/test_mining_increment_63.py` (5 synthetic tests).
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL
++0/0/0 (3772 items, correct 33/0 wrong before and after; fully-read
+38.4%->38.7%), dev-holdout diff NEUTRAL +0/0/0 (3701 items, correct
+21/0 wrong before and after; fully-read 37.5%->37.9%), pytest 492
+passed (was 487 + 5 new, now `tests/test_mining_increment_63.py`),
+suite 52/52, lint 0 errors / 1 known-good warning (fraction-of-remnant
+/ fraction-of-pool, unchanged).
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 **GOAL MODE (set 2026-07-11): the campaign target is 100 dev-train
