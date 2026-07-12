@@ -236,6 +236,20 @@ class Quantity(Fact):
     # bare-folding to entity='tree') into two entities — never to change
     # identity absent a real conflict.
     qualifier: str | None = None
+    # the attributive modifier of `measure` (NOT `entity`) — "12 WHITE
+    # marbles" merges to measure='marble' with the adjective folded into
+    # this field by condense.py's merge-attribute, the exact mirror of
+    # `qualifier` above but scoped to the MEASURE noun instead of the
+    # entity/holder noun (mining candidate qualified-measure-keys). NOT
+    # part of key() or value_part(): identity stays the bare measure lemma
+    # everywhere it already worked. Read ONLY by FactStore.admit's
+    # collision handling, to split a genuine same-key VALUE conflict ("12
+    # white marbles" vs "6 blue marbles", both bare-folding to
+    # measure='marble') into two measures — never to change identity
+    # absent a real conflict. A null-vs-non-null pairing (a collection
+    # total vs. one named subset) is a genuine part/whole relation, not a
+    # naming collision, and must keep declining.
+    measure_qualifier: str | None = None
 
     @property
     def is_state(self) -> bool:
@@ -390,6 +404,16 @@ class Price(Fact):
     value: float
     verb: str = "buy"
     occurrence: int | None = None
+    # the attributive modifier of `item`, when the priced noun was merged
+    # from ADJECTIVE+NOUN or NOUN+NOUN (condense.py's merge-attribute /
+    # merge-compound) — the Price mirror of Quantity.measure_qualifier
+    # (mining candidate qualified-measure-keys). NOT part of key() or
+    # value_part(): identity stays the bare item lemma everywhere it
+    # already worked. Read ONLY by FactStore.admit's collision handling,
+    # to split a genuine same-key VALUE conflict ("red shirt" priced at
+    # $32 vs "blue shirt" priced at $27, both bare-folding to item='shirt')
+    # into two items — never to change identity absent a real conflict.
+    qualifier: str | None = None
 
     def key(self) -> tuple:
         return ("price", self.item, self.verb, self.occurrence)

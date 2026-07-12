@@ -2612,6 +2612,51 @@ BROKE 0 / DECL→WRONG 0 (NEUTRAL), pytest 555 passed (was 549 + 6 new),
 suite 52/52, lint 0 errors / 1 known-good warning (fraction-of-remnant /
 fraction-of-pool, unchanged).
 
+## Increment 70: attribute-qualified measure keys (a qualified count noun
+must not collide with its bare measure) (`<squash-pending>`)
+
+Class: attribute-qualified count-noun premises ("12 white marbles and 6
+blue marbles" alongside a bare "20 marbles" total; "1 red shirt for $32 and
+3 blue shirts at $27 each") were folding BOTH qualified variants to the
+bare measure lemma, so two differently-qualified holdings/prices of the
+same noun collided as one fact-store key and the whole item declined with
+"conflict: fold and fold disagree about (...)". This is the largest
+structural decline bucket in the current worklist (146 quantity + 11 price
+= 157 items, 54+ freshly evidenced) and is infrastructure: it unblocks the
+`rest-partitions` class and qualified-price purchase totals, both starved
+today by this same collision.
+
+Mechanism: KERNEL-STRUCTURAL, no lexicon — the exact mirror of increment
+25's owner split, applied to the MEASURE key instead of the entity key.
+condense.py's merge-attribute already tags a merged ADJ+NOUN unit with a
+`qualifier` feature; learn.py now also copies that qualifier onto the
+emitted fact as a new `measure_qualifier` field on `Quantity` and
+`qualifier` field on `Price` (`src/rulekit/kernel/model.py`), defaulting to
+`None` so every existing fact is byte-identical. `FactStore.admit`
+(`src/rulekit/kernel/facts.py`) reads that field ONLY in collision
+handling: a same-key VALUE conflict between two facts with two DIFFERENT
+non-null qualifiers is not a disagreement — it is two measures the bare
+lemma can't distinguish — so both re-key to `measure[qualifier]` (or
+`item[qualifier]`) and admit separately instead of quarantining. A
+null-vs-non-null qualifier (the collection total vs. a named subset) is
+deliberately NOT re-keyed — that stays a genuine part/whole relation and
+keeps declining until `rest-partitions` supplies a fact for it. NO consumer
+change: increment 26's `interchangeable` gate and the existing
+ask/how-many-entity-qualified (increment 34) already read the qualified
+keys correctly.
+
+Files: `src/rulekit/kernel/learn.py`, `src/rulekit/kernel/facts.py`,
+`src/rulekit/kernel/model.py`, `tests/test_mining_increment_70.py` (5
+synthetic tests).
+
+Gates (integrated on staging, full re-proof): dev-train diff SOLVED 0 /
+BROKE 0 / DECL→WRONG 0 (NEUTRAL), dev-holdout diff SOLVED 0 / BROKE 0 /
+DECL→WRONG 0 (NEUTRAL), pytest 560 passed (was 555 + 5 new), suite 52/52,
+lint 0 errors / 1 known-good warning (fraction-of-remnant /
+fraction-of-pool, unchanged). Pure enabler on this dev slice — no items
+resolve yet; payoff arrives when `rest-partitions` and qualified-price
+consumers land on top. TEST look: pending — spent manually.
+
 TEST look: pending — spent manually.
 
 ## The next mining worklist (from the last close-miss scan)

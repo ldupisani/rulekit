@@ -11,7 +11,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field, replace
 
 from ..data.registry import Registry
-from .model import Fact, Quantity
+from .model import Fact, Price, Quantity
 from .patterns import RuleMatchResult, subsumes
 
 
@@ -45,7 +45,38 @@ class FactStore:
         two sides instead carry two DIFFERENT attributive-modifier
         qualifiers of the same bare-lemma entity ("coconut tree" vs
         "mango tree", both fold to entity='tree') — increment 34's mirror
-        of the owner mechanism, gated on `qualifier` instead of `owner`."""
+        of the owner mechanism, gated on `qualifier` instead of `owner`.
+
+        A THIRD, independent mirror (mining candidate qualified-measure-
+        keys) applies the same discipline to the MEASURE key instead of
+        the entity key: "12 white marbles" vs "6 blue marbles" both fold
+        to measure='marble', and two differently-qualified Price facts
+        ("a red shirt for $32" vs "3 blue shirts at $27 each") both fold
+        to item='shirt'. When both sides carry a non-null
+        `measure_qualifier` (Quantity) or `qualifier` (Price) and they
+        DIFFER, re-key `measure`/`item` to `bare[qualifier]` and admit
+        both instead of quarantining. A null-vs-non-null pairing (the
+        collection total vs. one named subset, e.g. "20 marbles" then "12
+        white marbles") is NOT a naming collision — it is a genuine
+        part/whole relation and must keep declining, exactly like the
+        owner/entity-qualifier mechanisms above only split when BOTH
+        sides are non-null.
+
+        That null-vs-non-null guard alone is not enough when the total
+        uses a DIFFERENT verb/occurrence than its parts ("collected 65
+        shells… got 13 purple, 8 pink, 18 yellow, and 12 blue shells"): the
+        total's key never even collides with the parts' key, so a chain of
+        3+ mutually-different-qualifier parts can pairwise-split itself
+        completely clean, leaving the untouched bare total looking like an
+        uncontested, independent single holding — a confident wrong (found
+        on dev-holdout during development). The fix generalizes the same
+        invariant across the WHOLE store rather than just the colliding
+        pair: a split is refused whenever any OTHER already-admitted fact
+        for the same entity/item shares the bare measure with a null
+        qualifier — a bare sibling anywhere means a total is in play, so
+        this falls through to the ordinary quarantine-and-decline path
+        instead of laundering a genuine part/whole relation into a clean
+        store."""
         for existing in self.facts:
             if existing.key() == fact.key():
                 if existing.value_part() == fact.value_part():
@@ -76,6 +107,52 @@ class FactStore:
                     )
                     self.facts.append(
                         replace(fact, entity=f"{fact.entity}[{fact.qualifier}]")
+                    )
+                    return True
+                if (
+                    isinstance(existing, Quantity)
+                    and isinstance(fact, Quantity)
+                    and existing.measure_qualifier
+                    and fact.measure_qualifier
+                    and existing.measure_qualifier != fact.measure_qualifier
+                    and not any(
+                        isinstance(other, Quantity)
+                        and other.entity == fact.entity
+                        and other.measure == fact.measure
+                        and other.measure_qualifier is None
+                        for other in self.facts
+                    )
+                ):
+                    self.facts.remove(existing)
+                    self.facts.append(
+                        replace(
+                            existing,
+                            measure=f"{existing.measure}[{existing.measure_qualifier}]",
+                        )
+                    )
+                    self.facts.append(
+                        replace(fact, measure=f"{fact.measure}[{fact.measure_qualifier}]")
+                    )
+                    return True
+                if (
+                    isinstance(existing, Price)
+                    and isinstance(fact, Price)
+                    and existing.qualifier
+                    and fact.qualifier
+                    and existing.qualifier != fact.qualifier
+                    and not any(
+                        isinstance(other, Price)
+                        and other.item == fact.item
+                        and other.qualifier is None
+                        for other in self.facts
+                    )
+                ):
+                    self.facts.remove(existing)
+                    self.facts.append(
+                        replace(existing, item=f"{existing.item}[{existing.qualifier}]")
+                    )
+                    self.facts.append(
+                        replace(fact, item=f"{fact.item}[{fact.qualifier}]")
                     )
                     return True
                 self.collisions.append(

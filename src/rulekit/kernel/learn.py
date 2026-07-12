@@ -690,10 +690,16 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                 price_item = (
                     _lemma(measure_anchor) if measure_anchor is not None else _lemma(subject)
                 )
+                price_item_qualifier = (
+                    _qualifier(measure_anchor)
+                    if measure_anchor is not None
+                    else _qualifier(subject)
+                )
                 facts.append(
                     Price(
                         provenance=prov,
                         item=price_item,
+                        qualifier=price_item_qualifier,
                         value=float(dobj.features["value"]),
                         verb=verb_lemma,
                         occurrence=occurrence,
@@ -726,6 +732,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                 Price(
                     provenance=prov,
                     item=_lemma(subject),
+                    qualifier=_qualifier(subject),
                     value=float(dobj.features["value"]),
                     verb=verb_lemma,
                     occurrence=occurrence,
@@ -811,6 +818,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                 Price(
                     provenance=prov,
                     item=_lemma(dobj),
+                    qualifier=_qualifier(dobj),
                     value=price_value,
                     verb=verb_lemma,
                     occurrence=occurrence,
@@ -847,6 +855,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                         owner=_owner(subject),
                         qualifier=_qualifier(subject),
                         measure=_lemma(dobj),
+                        measure_qualifier=_qualifier(dobj),
                         value=float(dobj.features["value"]),
                         verb=verb_lemma,
                         occurrence=occurrence,
@@ -858,6 +867,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                         Price(
                             provenance=prov,
                             item=_lemma(dobj),
+                            qualifier=_qualifier(dobj),
                             value=flat_price_value,
                             verb=verb_lemma,
                             occurrence=occurrence,
@@ -890,6 +900,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                                 owner=_owner(subject),
                                 qualifier=_qualifier(subject),
                                 measure=_lemma(item),
+                                measure_qualifier=_qualifier(item),
                                 value=item_qty,
                                 verb=verb_lemma,
                                 occurrence=occurrence,
@@ -901,6 +912,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                                 Price(
                                     provenance=prov,
                                     item=_lemma(item),
+                                    qualifier=_qualifier(item),
                                     value=price_value,
                                     verb=verb_lemma,
                                     occurrence=occurrence,
@@ -925,6 +937,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                                     owner=_owner(subject),
                                     qualifier=_qualifier(subject),
                                     measure=_lemma(dobj),
+                                    measure_qualifier=_qualifier(dobj),
                                     value=bare_value,
                                     verb=verb_lemma,
                                     occurrence=occurrence,
@@ -947,6 +960,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                         owner=_owner(subject),
                         qualifier=_qualifier(subject),
                         measure=_lemma(dobj),
+                        measure_qualifier=_qualifier(dobj),
                         value=1.0,
                         verb=verb_lemma,
                         occurrence=occurrence,
@@ -957,6 +971,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                     Price(
                         provenance=prov,
                         item=_lemma(dobj),
+                        qualifier=_qualifier(dobj),
                         value=flat_price_value,
                         verb=verb_lemma,
                         occurrence=occurrence,
@@ -970,6 +985,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                             owner=_owner(subject),
                             qualifier=_qualifier(subject),
                             measure=_lemma(item),
+                            measure_qualifier=_qualifier(item),
                             value=item_qty,
                             verb=verb_lemma,
                             occurrence=occurrence,
@@ -981,6 +997,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                             Price(
                                 provenance=prov,
                                 item=_lemma(item),
+                                qualifier=_qualifier(item),
                                 value=price_value,
                                 verb=verb_lemma,
                                 occurrence=occurrence,
@@ -998,6 +1015,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                         owner=_owner(subject),
                         qualifier=_qualifier(subject),
                         measure=_lemma(dobj),
+                        measure_qualifier=_qualifier(dobj),
                         value=float(value_unit.features["value"]),
                         verb=verb_lemma,
                         occurrence=occurrence,
