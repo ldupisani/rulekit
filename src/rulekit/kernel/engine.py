@@ -58,8 +58,10 @@ def _leading_temporal_marker(question: str, reg: Registry) -> str | None:
     return None
 
 
-def analyze(sentence: str, reg: Registry, sentence_index: int = 0) -> Reading:
-    reading = tokenize(sentence, sentence_index)
+def analyze(
+    sentence: str, reg: Registry, sentence_index: int = 0, tracing: bool = True
+) -> Reading:
+    reading = tokenize(sentence, sentence_index, tracing=tracing)
     annotate_numbers(reading, reg)
     annotate_senses(reading, reg)
     disambiguate(reading, reg)
@@ -458,13 +460,19 @@ def split_question(text: str, reg: Registry | None = None) -> tuple[list[str], s
     return premises, last
 
 
-def solve(text: str, reg: Registry) -> Result:
+def solve(text: str, reg: Registry, tracing: bool = True) -> Result:
+    """Read `text` and answer it.
+
+    `tracing=False` skips snapshotting the reversible feature diffs in every
+    Decision. Only the designer (`engine.trace`) and `Reading.undo` read those;
+    a bench run does not, and the snapshotting is 61% of its wall-clock.
+    """
     premise_texts, question_text = split_question(text, reg)
     expanded_premise_texts: list[str] = []
     for premise_text in premise_texts:
         expanded_premise_texts.extend(_split_conjoined_clauses(premise_text, reg))
     premises = [
-        analyze(sentence, reg, sentence_index=i)
+        analyze(sentence, reg, sentence_index=i, tracing=tracing)
         for i, sentence in enumerate(expanded_premise_texts)
     ]
     doc = run_document(premises, reg)
@@ -477,7 +485,9 @@ def solve(text: str, reg: Registry) -> Result:
         result.document = doc
         return result
 
-    question = analyze(question_text, reg, sentence_index=len(expanded_premise_texts))
+    question = analyze(
+        question_text, reg, sentence_index=len(expanded_premise_texts), tracing=tracing
+    )
     # the question's own pronouns resolve against the document's discourse
     # exactly like premise pronouns: unique antecedent or stay unmet
     _bind_discourse(premises + [question])

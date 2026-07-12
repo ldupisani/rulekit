@@ -35,8 +35,8 @@ def split_sentences(text: str) -> list[str]:
     return [p for p in parts if p]
 
 
-def tokenize(sentence: str, sentence_index: int = 0) -> Reading:
-    reading = Reading(sentence, sentence_index)
+def tokenize(sentence: str, sentence_index: int = 0, tracing: bool = True) -> Reading:
+    reading = Reading(sentence, sentence_index, tracing=tracing)
     index = 0
     for match in _TOKEN.finditer(sentence):
         surface = match.group()

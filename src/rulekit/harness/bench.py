@@ -161,7 +161,9 @@ def run_suite(items: list[dict], reg: Registry) -> BenchReport:
         item_id = str(item.get("id", len(results)))
         expected = item["expect"]
         try:
-            result = solve(item["text"], reg)
+            # tracing=False: a bench reads facts and the answer, never the
+            # per-decision feature diffs. Snapshotting them was 61% of wall.
+            result = solve(item["text"], reg, tracing=False)
             outcome, got = _judge(expected, result)
             rules = sorted(
                 {

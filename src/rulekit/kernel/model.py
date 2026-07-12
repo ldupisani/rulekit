@@ -438,12 +438,27 @@ class Before(Fact):
 # ---------------------------------------------------------------------------
 
 
+def _snapshot(value: Any) -> Any:
+    """Copy a feature value for a Decision diff.
+
+    Immutable values cannot be mutated out from under the trace, so copying one
+    is a no-op that still pays deepcopy's full dispatch cost — and 60% of the
+    values passing through `record` are bare scalars. Everything else (notably
+    obligation lists, whose `target` is a live Unit) must still be deep-copied
+    or the "diff" would alias state that keeps changing.
+    """
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return value
+    return copy.deepcopy(value)
+
+
 class Reading:
     """The per-sentence workspace. `record()` is the single mutation door."""
 
-    def __init__(self, text: str, sentence_index: int = 0):
+    def __init__(self, text: str, sentence_index: int = 0, tracing: bool = True):
         self.text = text
         self.sentence_index = sentence_index
+        self.tracing = tracing
         self.units: list[Unit] = []
         self.decisions: list[Decision] = []
         self.facts: list[Fact] = []
@@ -466,10 +481,21 @@ class Reading:
         reason: str,
         rule_id: str | None = None,
     ) -> Decision:
-        """Apply `changes` to target.features, logging a reversible diff."""
-        before = {k: copy.deepcopy(target.features.get(k)) for k in changes}
-        target.features.update(changes)
-        after = {k: copy.deepcopy(target.features.get(k)) for k in changes}
+        """Apply `changes` to target.features, logging a reversible diff.
+
+        When `self.tracing` is off the diff is not snapshotted: the Decision is
+        still recorded (same seq, kind, target, reason) but `before`/`after` are
+        empty. Only `Reading.undo` and `engine.trace` read those, and neither
+        runs during a bench — snapshotting them cost 61% of bench wall-clock.
+        """
+        if self.tracing:
+            before = {k: _snapshot(target.features.get(k)) for k in changes}
+            target.features.update(changes)
+            after = {k: _snapshot(target.features.get(k)) for k in changes}
+        else:
+            before = {}
+            after = {}
+            target.features.update(changes)
         decision = Decision(
             seq=len(self.decisions),
             kind=kind,
@@ -484,6 +510,11 @@ class Reading:
         return decision
 
     def undo(self, decision: Decision) -> None:
+        if not self.tracing:
+            raise RuntimeError(
+                "cannot undo on a Reading built with tracing=False — the "
+                "before/after diffs were never snapshotted"
+            )
         unit = self.unit(decision.target_uid)
         for key, val in decision.before.items():
             if val is None and key not in decision.after:

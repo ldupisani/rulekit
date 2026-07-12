@@ -16,7 +16,9 @@ every increment through the gates).
 **Current numbers (all verified at head):**
 - dev-train: 34 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
 - dev-holdout: 21 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 505 · lint: 0 errors, 1 intended warning
+- curated suite: 52/52 · pytest: 519 · lint: 0 errors, 1 intended warning
+- bench wall: dev-train 9.0s (was 16.6s — decision-trace snapshotting is now
+  opt-out; see "Tracing is opt-out" below)
 - TEST ledger (67 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
@@ -2670,3 +2672,50 @@ uv run rulekit --project projects/gsm8k bench --slice test --spend-test-look   #
 
 Auto-memory (`~/.claude/projects/-Users-louis-Development-rulekit/memory/`)
 carries the same state in condensed form and is loaded automatically.
+
+## Tracing is opt-out (2026-07-12, infra — not a mining increment)
+
+`Reading.record` is the single mutation door and it deep-copied the before AND
+after value of every changed feature, so each Decision carries a reversible
+diff. Profiling a dev-train bench: **61% of wall-clock was `copy.deepcopy`**
+(41.2s of 67.3s cumulative, 35.7M calls, ~9,465 per item).
+
+Nothing in a bench reads those diffs. `Decision.before/after` are consumed only
+by `engine.trace()` (engine.py:97), which is called only by the designer API
+(`server/api.py:212`) — and `Reading.undo()`, the entire justification for
+`before`, **is never called anywhere in the codebase**. Snapshots don't contain
+decisions (`to_snapshot` derives `rules` from `fact.provenance`).
+
+So: `Reading(tracing=...)`, threaded through `tokenize → analyze → solve`,
+**defaulting to True** at every hop — every existing caller keeps today's
+behaviour, and `run_suite` is the single opt-out. A missed consumer degrades to
+"still traced", never to "silently lost its trace". `undo()` now raises on an
+untraced Reading rather than silently restoring nothing.
+
+Also added `model._snapshot`: immutable feature values (60% of everything
+passing through `record`) are returned as-is instead of paying deepcopy's
+dispatch for a no-op. Mutable values (obligation lists, whose `target` is a live
+Unit) are still deep-copied — aliasing them would let later mutation rewrite
+history.
+
+PROOF (the gate for a perf change is byte-identity, not a diff verdict):
+dev-train, dev-holdout and suite snapshots rebuilt and **byte-identical** to the
+pre-change baselines (`cmp`, plus NEUTRAL on both diffs). pytest 505 -> 519
+(+14 synthetic, `tests/test_tracing_optout.py`), suite 52/52, lint unchanged.
+
+RESULT: dev-train bench 16.6s -> 9.0s (1.84x). Every dev gate runs ~3 benches,
+and a mining batch runs a gate per implementer plus one per integration step, so
+this compounds across the whole pipeline.
+
+REMAINING HEADROOM (not taken):
+- 10.1M deepcopy calls survive, ~11.5s cumulative, in `obligations.disambiguate`
+  / `_coverage_score` — a genuine trial-state copy (one per sentence analysed),
+  not a trace. Real work; optimising it is riskier and needs its own byte-proof.
+- `run_suite` is still a single-threaded loop over independent items. The kernel
+  is deterministic and per-item independent, so a process pool is the obvious
+  next lever (~8 cores). Order-preserving `map` is required or snapshots move.
+
+LATENT BUG FOUND, NOT FIXED: `undo`'s pop-branch (`val is None and key not in
+decision.after`) is unreachable — `before`/`after` are built from the same
+`changes` keys, so undoing a previously-absent feature leaves it as None instead
+of removing it. Harmless while `undo` is dead code. Pinned as-is in the tests.
