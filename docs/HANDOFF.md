@@ -14,13 +14,13 @@ swing under the constitution (no lexicon in Python, no per-problem parsing,
 every increment through the gates).
 
 **Current numbers (all verified at head):**
-- dev-train: 48 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
+- dev-train: 54 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
 - dev-holdout: 23 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 587 · lint: 0 errors, 1 intended warning
+- curated suite: 52/52 · pytest: 612 · lint: 0 errors, 1 intended warning
 - bench wall: dev-train 16.6s -> 9.0s (trace opt-out) -> 1.7s at `--jobs 12`.
   `--jobs` defaults to 1; spend it in the SERIAL integration tail, never in the
   implementers' gates (they already run concurrently). See the two infra notes below.
-- TEST ledger (73 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- TEST ledger (75 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -3504,3 +3504,21 @@ diff SOLVED 0 / BROKE 0 / DECL→WRONG 0 (NEUTRAL; 23/3701 correct before
 and after), pytest 612 passed, suite 52/52, lint 0 errors / 1 known-good
 warning (fraction-of-remnant / fraction-of-pool, unchanged). TEST look:
 pending — spent manually.
+
+## Batch 28-rerun (2026-07-12) — the scout-probe fix, immediately vindicated
+
+Same base, same scout, same 5-candidate ask as the batch that landed NOTHING an hour
+earlier. The only change: the scout now probes on `$BASE` instead of main.
+
+LANDED (74 rides with its payoffs — the enabler proved itself):
+- 74 (82c3257) index-labeled entity identity — the enabler, 0 SOLVED alone
+- 75 (afe6966) collective-subject totality asks — **+3**
+- 76 (b8a52cb) complement-labeled subset asks — **+3**
+
+COMPOSITION GATE vs fresh main: SOLVED 6 dev-train, 0 BROKE, 0 DECL->WRONG, SHIP.
+dev-train 48 -> 54. TEST looks #74, #75: both 10/1 (90.9%) — precision HELD.
+
+`collective-totality-asks` is the SAME slug the shape gate dropped in the broken run
+(and in batch 25). It was never a bad candidate; we were asking a kernel that lacked
+the enabler whether the enabler's items resolved. Measure on the tree you will build
+on.
