@@ -91,6 +91,29 @@ categories:
       multi-word negation ("no longer") is deliberately NOT a member here —
       it needs its own phrase-level structural check, out of scope for this
       increment.
+  future_modal:
+    parent: modal
+    notes: >
+      the FUTURE-TENSE modal pair (will/would) — a narrower cut of the
+      general 'modal' sense increment 14 split from 'auxiliary' (which
+      spans all 8 capacity/hypothetical modals: can/could/will/would/
+      should/may/might/must). Gates the new `future_modal` slot type
+      (data/schemas.py SLOT_TYPES, kernel/patterns.py _slot_ok) so an
+      ORDINARY factual ask ("how many X does WHO have") can also match
+      the identical question phrased in the future/conditional tense
+      ("how many X will WHO have") without widening to the capacity
+      modals — can/could/should/may/might/must stay excluded so a
+      hypothetical/capacity-shaped question can never satisfy a factual
+      ask's aux slot (the increment-14 kirsty lesson generalized: a
+      wanted/hypothetical purchase is not a purchase). 'modal' is added to
+      registry.ROOT_SENSES to let this category resolve — purely additive,
+      mirroring the earlier 'conjunction' root-sense addition; changes no
+      existing category or word behavior. Both members (will/would) are
+      difg-mined-only words — no core-english word carries 'modal' sense —
+      so, mirroring 'negation'/'desire'/'need_premise', this category has
+      NO members here; they live in packs/difg-mined/categories/
+      semantic.yaml. A core-english-only registry (no difg-mined) compiles
+      with this category simply empty.
 members:
   currency: [dollar]
   remnant_adj: [left]

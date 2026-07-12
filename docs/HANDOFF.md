@@ -1652,6 +1652,67 @@ known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) / 22
 info.
 TEST look #50: 6/1 (85.7%) — precision HELD, increment kept.
 
+## Increment 49: future-modal factual asks (will/would-phrased questions over ordinary state/event folds)
+
+Lands worklist goal-mode directive 1 (mine the "no ask shape recognizes this
+question" bucket). Fresh stats over that bucket (2,481 dev-train declines):
+486 contain will/would in the question's final clause. Minimal pair verified
+the mechanism directly: "Tom has 12 dollars. He spends 4 dollars. How much
+money does Tom have left?" commits 8.0, and the identical text with "will Tom
+have left" declined no-ask-shape before this change — premises read, fold
+produces gold, only the ask gate differed.
+
+No new committer — reuses the four existing factual-ask consumers unchanged:
+
+- new `future_modal` category (`packs/core-english/categories/core.yaml`,
+  parent `modal`); `'modal'` added to `registry.ROOT_SENSES`
+  (`src/rulekit/data/registry.py`) purely additively, mirroring the earlier
+  `conjunction` root-sense addition, so the category can resolve. Both
+  members (will/would) are difg-mined-only words and so are declared in
+  `packs/difg-mined/categories/semantic.yaml` instead, mirroring the
+  `negation`/`never` precedent.
+- new `future_modal` slot type (`src/rulekit/data/schemas.py` SLOT_TYPES,
+  `src/rulekit/kernel/patterns.py` `_slot_ok`, mirroring increment 19's
+  `modal` type): matches an auxiliary-sense token OR a modal-sense token
+  whose word is in `future_modal`. The other six modal-sense words
+  (can/could/should/may/might/must — capacity/hypothetical modals) are NOT
+  members, so `ask/how-many-capacity`'s own territory is untouched — the
+  increment-14 kirsty lesson (a wanted/hypothetical purchase is not a
+  purchase) cannot recur through this slot.
+- applied to exactly four existing ask ids' `aux` slot
+  (`packs/arithmetic/rules/core.yaml`): ask/how-many-entity,
+  ask/how-much-money-entity-left, ask/how-much-noun-entity,
+  ask/how-many-combined. Every other auxiliary-gated ask (~14 others) is
+  byte-for-byte unchanged, per the no-blanket-widening invariant.
+
+Ask-specificity ordering vs `ask/how-many-capacity` was verified explicitly
+(per the brief's risk note): `ask/how-many-entity`'s widening ties exactly
+with `ask/how-many-capacity` on consumed-unit count for any "how many ITEM
+will/would WHO VERB" sentence, and `match_ask`'s deterministic id-order
+tie-break keeps capacity winning ("ask/how-many-capacity" sorts before
+"ask/how-many-entity") exactly as it already did before this change
+("How many marbles can Tom have?" and its 'will' variant both still decline
+via capacity's "0 price facts known"). The other three widened asks use a
+different leading literal or an aggregate-category token and never collide
+with capacity at all.
+
+No dev-train item is resolved by this rule alone (0 SOLVED both slices) —
+of 776 will/would-containing dev-train items scanned (scratchpad, not
+committed), 38 moved from "no ask shape recognizes this question" to a
+specific downstream decline reason, confirming the ask-shape gap is closing
+even where the item also needs unrelated machinery correctly left out of
+scope (compound interest, discounts, multi-service revenue, deposits-over-
+time) — the same "shipped NEUTRAL, safe infrastructure" pattern as roughly
+a dozen prior increments in this campaign.
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(3772 items, 21/0 unchanged), dev-holdout diff NEUTRAL 0/0/0 (3701 items,
+16/0 unchanged), pytest 383 passed (was 376 + 7 new, now
+`tests/test_mining_increment_49.py`), suite 52/52, lint 0 errors / 1
+known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) / 23
+info.
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 **GOAL MODE (set 2026-07-11): the campaign target is 100 dev-train

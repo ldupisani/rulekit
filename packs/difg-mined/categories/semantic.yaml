@@ -264,6 +264,13 @@ members:
   - shares
   - split
   - splits
+  # mining candidate will-tense-asks: 'future_modal' is declared (parent:
+  # modal) in packs/core-english/categories/core.yaml with NO members
+  # there — both members are difg-mined-only words, exactly the
+  # 'negation'/'never' precedent this pack's own comment above documents.
+  future_modal:
+  - will
+  - would
   higher:
   - bigger
   - faster

@@ -117,6 +117,23 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
             # (auxiliary-gated) exclude it and a capacity ask (budget ÷
             # unit price) can claim the modal token structurally.
             return sense == "modal"
+        if t == "future_modal":
+            # mining candidate will-tense-asks: an ordinary factual ask's
+            # aux slot ALSO accepts the future/conditional modal pair
+            # (will/would, the `future_modal` category — packs/core-
+            # english/categories/core.yaml) alongside the plain auxiliary
+            # (do/does/did) it already matched. The other 6 modal-sense
+            # words (can/could/should/may/might/must — capacity/
+            # hypothetical modals) are NOT in `future_modal`, so they stay
+            # excluded here exactly as before: the increment-14 kirsty
+            # lesson (a wanted/hypothetical purchase is not a purchase)
+            # cannot recur through this slot.
+            if sense == "auxiliary":
+                return True
+            if sense == "modal":
+                word = unit.features.get("lemma", unit.features.get("fold", ""))
+                return reg.word_in_category(word, "future_modal")
+            return False
         if t == "pronoun":
             return sense == "pronoun"
         if t == "word":

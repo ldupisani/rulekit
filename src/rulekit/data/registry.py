@@ -34,10 +34,13 @@ from .schemas import (
 # already a known sense (and thus already a valid pattern-rule gate via the
 # "a sense name is a valid degenerate category" rule below), so this only
 # permits NEW categories to root here; it changes no existing category or
-# word behavior.
+# word behavior. 'modal' was added the same way (mining candidate
+# will-tense-asks) so a `future_modal` category can name the will/would
+# subset of the 8 modal-sense words without disturbing the increment-14
+# modal/auxiliary split.
 ROOT_SENSES = (
     "noun", "verb", "adjective", "quantifier", "preposition", "comparative",
-    "negator", "conjunction",
+    "negator", "conjunction", "modal",
 )
 
 

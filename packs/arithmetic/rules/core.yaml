@@ -790,7 +790,11 @@ asks:
         - {lit: many}
         - {slot: item, type: noun}
         - opt:
-            - {slot: aux, type: auxiliary}
+            # `future_modal`, not `auxiliary` (mining candidate
+            # will-tense-asks): also accepts "how many X will/would they
+            # have altogether" alongside the ordinary "do/does/did" form —
+            # see ask/how-many-entity's comment for the class rationale.
+            - {slot: aux, type: future_modal}
             - {slot: who, type: pronoun}
             - {slot: verb, type: verb}
         - opt:
@@ -835,7 +839,14 @@ asks:
         - {lit: how}
         - {lit: many}
         - {slot: item, type: noun}
-        - {slot: aux, type: auxiliary}
+        # `future_modal`, not `auxiliary` (mining candidate
+        # will-tense-asks): also accepts "how many X will/would WHO have"
+        # alongside the ordinary "do/does/did" form — a future/conditional-
+        # tense phrasing of the SAME factual question, over the same
+        # premises. The 6 capacity/hypothetical modals (can/could/should/
+        # may/might/must) are excluded, so this can never widen into
+        # ask/how-many-capacity's own territory (increment 19/14).
+        - {slot: aux, type: future_modal}
         - {slot: who, type: name}
         - {slot: verb, type: verb}
     resolves:
@@ -978,7 +989,11 @@ asks:
         - opt:
             - {lit: in}
             - {slot: req_unit, type: noun}
-        - {slot: aux, type: auxiliary}
+        # `future_modal`, not `auxiliary` (mining candidate
+        # will-tense-asks): see ask/how-many-entity's comment for the class
+        # rationale — "how much ITEM will/would WHO have" alongside the
+        # ordinary "do/does/did" form.
+        - {slot: aux, type: future_modal}
         - {slot: who, type: entity}
         - {slot: verb, type: verb}
     resolves:
@@ -1281,7 +1296,11 @@ asks:
         - opt:
             - {lit: in}
             - {slot: req_unit, type: noun}
-        - {slot: aux, type: auxiliary}
+        # `future_modal`, not `auxiliary` (mining candidate
+        # will-tense-asks): see ask/how-many-entity's comment for the class
+        # rationale — "how much money will/would WHO have left" alongside
+        # the ordinary "do/does/did" form.
+        - {slot: aux, type: future_modal}
         - {slot: who, type: entity}
         - {slot: verb, cat: state}
         - {lit: left}
