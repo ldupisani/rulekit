@@ -20,7 +20,7 @@ from ..data.registry import Registry
 from ..data.schemas import SynthRule
 from .evaluate import ArithmeticLog, EvaluationError, evaluate
 from .facts import FactStore
-from .model import Fact, Provenance, Quantity, Relation
+from .model import Fact, GroupTotal, Provenance, Quantity, Relation
 
 MAX_ROUNDS = 50
 
@@ -416,12 +416,86 @@ def _partition_membership_synth(
     return out
 
 
+def _sum_constraint_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> list[Fact]:
+    """sum-constraint linear systems (mining candidate sum-constraint-
+    relations): "Anais has 30 more toys than Kamari. There are 160 toys
+    altogether." — a Relation (subject = factor*standard + offset) plus a
+    GroupTotal over the SAME measure jointly commit to a unique 2x2 linear
+    solve neither fact alone determines:
+
+        standard = (T - offset) / (1 + factor)
+        subject  = T - standard
+
+    Fires ONLY when exactly one Relation and exactly one GroupTotal share a
+    measure, and NEITHER the relation's subject nor its standard already
+    holds a Quantity of that measure (from anywhere — the ordinary
+    relation-resolution path, an earlier round of this very plugin, or a
+    stated holding): an existing holder means either the ordinary
+    arithmetic/relation-to-quantity path already solved it, or a THIRD
+    entity is also implicated and this plugin must never guess which
+    entities the stated total actually spans. `factor == -1` is the
+    degenerate case (the two terms cancel to a constant, not a sum) and
+    also declines. A negative solution declines too — never commit a
+    physically impossible split.
+
+    Deliberately scoped to exactly TWO holders per total (a three-entity
+    chain — two relations plus one total — is a named, separate increment,
+    not this one)."""
+    out: list[Fact] = []
+    totals_by_measure: dict[str, list[GroupTotal]] = {}
+    for gt in store.by_kind(GroupTotal):
+        totals_by_measure.setdefault(gt.measure, []).append(gt)
+    relations_by_measure: dict[str, list[Relation]] = {}
+    for rel in store.by_kind(Relation):
+        relations_by_measure.setdefault(rel.measure, []).append(rel)
+
+    for measure, totals in totals_by_measure.items():
+        if len(totals) != 1:
+            continue  # more than one stated total for this measure — ambiguous
+        (total,) = totals
+        rels = relations_by_measure.get(measure, [])
+        if len(rels) != 1:
+            continue  # more than one relation over this measure — ambiguous
+        (rel,) = rels
+        if rel.subject == rel.standard or rel.factor == -1:
+            continue  # self-referential or degenerate (terms cancel, not sum)
+        holders = {q.entity for q in store.by_kind(Quantity) if q.measure == measure}
+        if holders - {rel.subject, rel.standard}:
+            continue  # a third entity holds this measure — never guess the span
+        if rel.subject in holders or rel.standard in holders:
+            continue  # already resolved (or resolving) elsewhere — nothing to do
+        standard_value = evaluate(
+            f"({total.value} - {rel.offset}) / (1 + {rel.factor})", {}, log,
+            source="synth/sum-constraint",
+        )
+        subject_value = evaluate(
+            f"{total.value} - ({standard_value})", {}, log,
+            source="synth/sum-constraint",
+        )
+        if standard_value < 0 or subject_value < 0:
+            continue  # a physically impossible split — decline rather than commit
+        out.append(
+            Quantity(
+                provenance=Provenance(source="synth/sum-constraint", sentence=rel.provenance.sentence),
+                entity=rel.standard, measure=measure, value=standard_value, verb=rel.verb,
+            )
+        )
+        out.append(
+            Quantity(
+                provenance=Provenance(source="synth/sum-constraint", sentence=rel.provenance.sentence),
+                entity=rel.subject, measure=measure, value=subject_value, verb=rel.verb,
+            )
+        )
+    return out
+
+
 PLUGINS: dict[str, Synthesizer] = {
     "synth/relation-to-quantity": _relations_synth,
     "synth/fraction-of-pool": _fraction_synth,
     "synth/rest-of-pool": _rest_synth,
     "synth/partition-of-collection": _partition_synth,
     "synth/partition-membership-quantity": _partition_membership_synth,
+    "synth/sum-constraint": _sum_constraint_synth,
 }
 
 

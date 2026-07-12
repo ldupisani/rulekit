@@ -527,6 +527,64 @@ rules:
         value: "item"
         verb: have
 
+  - id: arithmetic/existential-premise-total
+    phase: read
+    description: >
+      "There are 160 toys altogether." — the totality-marked sibling of
+      arithmetic/existential-premise-bare (mining candidate sum-constraint-
+      relations): the identical "there VERB N ITEM" shape, but a REQUIRED
+      trailing aggregate marker (total/altogether/together/combined —
+      cat: aggregate) makes this a GROUP TOTAL across whichever entities
+      the passage names, never an independent holding of the bare `world`
+      scene-holder — exactly the reading existential-premise-bare's own
+      `absent: {cat: aggregate}` guard refuses. The two rules never both
+      fire on the same sentence: that guard declines whenever an aggregate
+      word appears ANYWHERE in the sentence, and this rule's own required
+      `agg` slot only matches when one is actually present.
+    match:
+      sentence:
+        - {lit: there}
+        - {slot: verb, type: verb}
+        - {slot: item, type: counted}
+        - opt:
+            - {slot: p, cat: preposition}
+        - {slot: agg, cat: aggregate}
+    consumes: [item]
+    emits:
+      - fact: group_total
+        measure: "{item}"
+        value: "item"
+        verb: have
+
+  - id: arithmetic/group-total-of
+    phase: read
+    description: >
+      "...a total of 160 toys" / "...a total of 35 floors" (mining
+      candidate sum-constraint-relations) — a stated SUM across the
+      entities the passage names, wherever in the sentence the framing
+      falls: matching scans every starting position, so this fires
+      identically for "Together they have a total of X", "A and B have
+      been VERBing for a total of X", and "WHO will VERB a total of X"
+      without needing to parse the varying subject/tense that precedes
+      it — only the "a total of N ITEM" tail itself is the sum-constraint
+      marker. Distinct from arithmetic/existential-premise-total's bare
+      "there are N X <aggregate>" existential (no 'total of' framing at
+      all, and the aggregate marker trails the noun rather than fronts
+      it): the two match disjoint literal skeletons and never tie.
+    match:
+      sentence:
+        - opt:
+            - {lit: a}
+        - {lit: total}
+        - {lit: of}
+        - {slot: item, type: counted}
+    consumes: [item]
+    emits:
+      - fact: group_total
+        measure: "{item}"
+        value: "item"
+        verb: have
+
   - id: arithmetic/fraction-of-pool
     phase: read
     description: >

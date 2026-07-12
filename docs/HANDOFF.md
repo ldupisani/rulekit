@@ -2572,6 +2572,48 @@ remnant / fraction-of-pool, unchanged).
 
 TEST look: pending — spent manually.
 
+## Increment 69: sum-constraint linear systems (a stated relation between two
+holders plus a stated group total) (`<squash-pending>`)
+
+Class: premises pairing a two-holder Relation ("A has 11 more floors than
+B", "one has 5 less than half the other") with a stated group TOTAL ("the
+two together total 35 floors", "there are 160 toys altogether") — a
+textbook 2x2 linear system. Before this, `arithmetic/existential-premise-
+bare` deliberately REFUSED the bare-existential totality form via its
+`absent: {cat: aggregate}` guard (documented in-line as "a group TOTAL,
+never an independent holding"), and nothing else picked the pair up, so
+these items declined with "no quantity known for 'X' of 'Y'" / "a combined
+ask needs at least two holders".
+
+Mechanism: BUNDLED enabler + payoff. (1) A new `GroupTotal` fact kind
+(`src/rulekit/kernel/model.py`). (2) Two premise rules in
+`packs/arithmetic/rules/core.yaml` emit it: the bare existential aggregate
+form the old rule refused, and a general "... a total of N ITEM" tail
+match. No new vocabulary — `aggregate` category already existed. (3) A new
+`synth/sum-constraint` plugin (`src/rulekit/kernel/saturate.py`, registered
+in `PLUGINS`): when exactly one Relation over a measure relates exactly two
+entities and exactly one GroupTotal over that measure is in play, solves
+standard = (T - offset) / (1 + factor), subject = T - standard, and emits
+both as ordinary Quantity facts — the existing single-entity/entity-less/
+combined consumers answer with no consumer change. Declines (emits
+nothing) on multiple Relations, multiple GroupTotals, factor == -1, a
+negative solution, or a third entity holding the measure. (4)
+`src/rulekit/kernel/guards.py`: GroupTotal is USE-gated for value
+accounting, like Rate/Price/Goal. A 3-entity chain extension (two relations
++ one total) is deliberately scoped out for a future increment.
+
+Files: `packs/arithmetic/rules/core.yaml`, `src/rulekit/kernel/model.py`,
+`src/rulekit/kernel/saturate.py`, `src/rulekit/kernel/guards.py`,
+`tests/test_mining_increment_69.py` (6 synthetic tests).
+
+Gates (integrated on staging, full re-proof): dev-train diff SOLVED 1 /
+BROKE 0 / DECL→WRONG 0 (SHIP; 7a124ab41af5), dev-holdout diff SOLVED 0 /
+BROKE 0 / DECL→WRONG 0 (NEUTRAL), pytest 555 passed (was 549 + 6 new),
+suite 52/52, lint 0 errors / 1 known-good warning (fraction-of-remnant /
+fraction-of-pool, unchanged).
+
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 **GOAL MODE (set 2026-07-11, PAUSED 2026-07-12 at 33/100 by user

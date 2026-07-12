@@ -34,17 +34,19 @@ def _fact_values_by_sentence(store: FactStore) -> dict[int, set[float]]:
     a value is only accounted by facts its OWN sentence produced (a same
     number appearing in another sentence's fact must not mask an unread).
 
-    RATE, PRICE and GOAL facts are excluded: a rate, price, or goal that
-    merely EXISTS has not been used — "makes $18 an hour" must not unlock a
-    fold that ignores the wage, "$10 each" must not unlock one that ignores
-    the price, and "wants to collect 30 stamps" must not unlock one that
-    ignores the goal. Their values count as read only when the arithmetic
-    consumed them (the caller checks the log for rate/price/goal values)."""
-    from .model import Goal, Price, Rate
+    RATE, PRICE, GOAL and GROUP_TOTAL facts are excluded: a rate, price,
+    goal, or group total that merely EXISTS has not been used — "makes $18
+    an hour" must not unlock a fold that ignores the wage, "$10 each" must
+    not unlock one that ignores the price, "wants to collect 30 stamps"
+    must not unlock one that ignores the goal, and "there are 160 toys
+    altogether" must not unlock one that ignores the stated total. Their
+    values count as read only when the arithmetic consumed them (the
+    caller checks the log for rate/price/goal/group-total values)."""
+    from .model import Goal, GroupTotal, Price, Rate
 
     out: dict[int, set[float]] = {}
     for fact in store.facts:
-        if isinstance(fact, (Rate, Price, Goal)):
+        if isinstance(fact, (Rate, Price, Goal, GroupTotal)):
             continue
         values = out.setdefault(fact.provenance.sentence, set())
         for field_name in _NUMERIC_FACT_FIELDS:
@@ -88,11 +90,11 @@ def check(
         # "half as many", "twice", "40% more" or the question's "in 10
         # years" is exactly the confident-wrong this guard exists to stop.
         fact_values = _fact_values_by_sentence(store) if store is not None else {}
-        from .model import Goal, Price, Rate
+        from .model import Goal, GroupTotal, Price, Rate
 
-        # values from USE-GATED fact kinds (Rate, Price, Goal): existence
-        # alone doesn't count as read, but the arithmetic log having
-        # consumed the value does. A COMPOUND Rate ("8 pages in 20
+        # values from USE-GATED fact kinds (Rate, Price, Goal, GroupTotal):
+        # existence alone doesn't count as read, but the arithmetic log
+        # having consumed the value does. A COMPOUND Rate ("8 pages in 20
         # minutes") additionally offers its own raw numerator/denominator
         # here — the text stated TWO numbers, not the derived quotient
         # `value`, so a consumer that actually divides/multiplies by those
@@ -105,6 +107,7 @@ def check(
             | {float(r.denominator) for r in store.by_kind(Rate) if r.denominator is not None}
             | {float(p.value) for p in store.by_kind(Price)}
             | {float(g.value) for g in store.by_kind(Goal)}
+            | {float(t.value) for t in store.by_kind(GroupTotal)}
             if store is not None else set()
         )
         for reading in readings:

@@ -22,6 +22,7 @@ from .model import (
     Fact,
     FractionQuantity,
     Goal,
+    GroupTotal,
     Membership,
     PartitionQuantity,
     Predication,
@@ -47,6 +48,7 @@ _FACT_CLASSES = {
     "rest_quantity": RestQuantity,
     "partition_quantity": PartitionQuantity,
     "goal": Goal,
+    "group_total": GroupTotal,
 }
 
 

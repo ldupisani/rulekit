@@ -181,7 +181,7 @@ class FactEmit(StrictModel):
     fact: Literal[
         "quantity", "relation", "membership", "subset", "predication",
         "before", "fraction_quantity", "rest_quantity", "partition_quantity",
-        "goal",
+        "goal", "group_total",
     ]
     # remaining fields are fact-kind specific; templated strings "{slot}" or
     # expressions evaluated by the safe evaluator.
