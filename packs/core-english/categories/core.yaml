@@ -30,6 +30,38 @@ categories:
       magnitude words 'more'/'fewer'/'less' that also sit in 'delta' (and
       in 'higher'/'lower'). Scoped to exactly these two words; members
       live in difg-mined alongside their 'more_dir'/'less_dir' tagging.
+  dimension_comparative:
+    parent: comparative
+    notes: >
+      mining candidate dimension-comparatives: physical-dimension
+      comparative adjectives ('taller'/'shorter', 'longer'/'shorter',
+      'heavier'/'lighter', 'wider'/'narrower', 'larger'/'smaller',
+      'higher'/...) that anchor a Relation exactly like 'age_comparative'
+      anchors the age family — a sibling of 'delta', NOT a member of it.
+      Unlike 'older'/'younger' (which ALSO tag 'more_dir'/'less_dir' for
+      their additive form), these words are otherwise unused elsewhere, so
+      admitting them to 'more_dir'/'less_dir' would silently widen
+      'delta' itself for every OTHER delta-gated rule (the shared-category
+      HANDOFF invariant) — the whole reason this is its OWN category
+      rather than an extension of an existing one. `dimension_more`/
+      `dimension_less` below carry the actual sign, mirroring 'more_dir'/
+      'less_dir's own polarity structure but scoped to this family only;
+      members live in difg-mined (the comparative forms are difg-mined
+      words) alongside their sign tagging.
+  dimension_more: {parent: dimension_comparative, antonym: dimension_less, polarity: 1}
+  dimension_less: {parent: dimension_comparative, antonym: dimension_more, polarity: -1}
+  dimension_adjective:
+    parent: adjective
+    notes: >
+      mining candidate dimension-comparatives: the POSITIVE (base) form of
+      a physical-dimension adjective ('tall', 'long', 'heavy', 'wide',
+      'high', 'large', 'small', 'short') — gates the dimension asks ("how
+      tall is X", "how many inches tall is X"), modelled on ask/how-old-is
+      but needing a CATEGORY (several base words) rather than one literal
+      ('old'). A sibling of 'dimension_comparative' (the comparative
+      forms), not a member of it: an ask needs the base form only, never
+      'taller'/'shorter' etc. Most members are difg-mined words; 'small'/
+      'large' are core-english, tagged in this file's own `members:`.
   currency:
     parent: noun
     interchangeable: true
@@ -185,6 +217,7 @@ members:
   spend_verb: [spend, spends, spent]
   more_dir: [more]
   less_dir: [fewer, less]
+  dimension_adjective: [small, large]  # 'tall'/'long'/... extend this from packs/difg-mined
   negation: [not]  # 'never' extends this from packs/difg-mined (its own lexicon)
   relational_marker: [than]
   span_preposition: [in]

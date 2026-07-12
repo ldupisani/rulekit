@@ -187,6 +187,51 @@ members:
   # 'more'/'fewer'/'less', which must NOT get an implicit 'year' measure.
   - older
   - younger
+  dimension_more:
+  # mining candidate dimension-comparatives: the "+1" comparative half —
+  # 'taller/longer/heavier/wider/higher/larger' — sign carried by this
+  # category (arithmetic/anchored-relation-postfix-dimension's sign(dir)),
+  # deliberately NOT added to 'more_dir' (see core-english/categories/
+  # core.yaml's dimension_comparative note — that would silently widen
+  # 'delta' for every other delta-gated rule). 'deeper'/'narrower' are
+  # NOT admitted here: neither they nor their positive forms
+  # ('deep'/'narrow') exist anywhere in this lexicon yet — admitting them
+  # would be a genuine new-vocabulary increment, out of scope here.
+  - taller
+  - longer
+  - heavier
+  - wider
+  - higher
+  - larger
+  dimension_less:
+  # the "-1" comparative half — 'shorter/lighter/smaller' — sibling of
+  # dimension_more above.
+  - shorter
+  - lighter
+  - smaller
+  dimension_adjective:
+  # mining candidate dimension-comparatives: the POSITIVE (base) form,
+  # gating the dimension asks ("how tall is X"). 'small'/'large' are
+  # core-english words and are tagged in that pack's own `members:`
+  # instead — this list only extends it with the difg-mined base forms.
+  # 'long' is DELIBERATELY excluded (unlike its comparative 'longer' in
+  # dimension_more above): "how long is X" is the standard English
+  # DURATION idiom ("how long is their experience/wait/trip" -> years/
+  # minutes), not physical length, and X is very often a resolved
+  # pronoun there — caught as a genuine DECL->WRONG on dev-train
+  # ("His partner has been teaching for 10 years less... How long is
+  # their combined experience?", -40 instead of decline) when 'long' sat
+  # in this list. The unit-qualified ask ("how many inches long is the
+  # rope") would need 'long' too, but no dev-train evidence supports it
+  # and admitting it back reopens the same collision, so it stays out for
+  # both asks. 'longer' in dimension_more is unaffected: the SENTENCE
+  # relation rule requires a stated counted unit + "than", which the
+  # bare ask has neither of, so that comparative form carries no such risk.
+  - tall
+  - heavy
+  - wide
+  - high
+  - short
   animal:
   - bear
   - bears

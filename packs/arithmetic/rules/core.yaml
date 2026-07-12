@@ -74,6 +74,45 @@ rules:
         offset: "item * sign(dir)"
         verb: "{verb}"
 
+  - id: arithmetic/anchored-relation-postfix-dimension
+    phase: read
+    description: >
+      mining candidate dimension-comparatives: "Jake's snake is 12 inches
+      longer than Jenny's snake" — the physical-dimension sibling of
+      arithmetic/anchored-relation-postfix, identical shape, gated on the
+      new `dimension_comparative` category instead of `delta` (see that
+      category's note in packs/core-english/categories/core.yaml — 'delta'
+      itself is deliberately NOT widened). Without this rule the direction
+      word falls through and the general SVO fold reads "[N inches]" as a
+      bare stated Quantity — a latent confident-wrong (e.g. answering an
+      unrelated length question from a comparative clause), not merely a
+      decline; this rule intercepts that clause and emits the correct
+      Relation instead. `who`/`std, type: entity` (same widening as the
+      sibling rule) so a possessive-noun subject/standard ("Jake's snake",
+      "Jenny's snake") anchors the relation too. Same Relation fact shape
+      as every other relation rule; the existing saturate.py fixpoint and
+      generic fold/ask machinery finish the job with no further change.
+    match:
+      sentence:
+        - {slot: who, type: entity}
+        - {slot: verb, type: verb}
+        - {slot: item, type: counted}
+        - {slot: dir, cat: dimension_comparative}
+        - {lit: than}
+        - {slot: std, type: entity}
+    where:
+      - distinct: [who, std]
+      - distinct: [item, std]
+    consumes: [item]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: "{item}"
+        factor: 1.0
+        offset: "item * sign(dir)"
+        verb: "{verb}"
+
   - id: arithmetic/dangling-comparative-relation
     phase: read
     description: >
@@ -1699,6 +1738,49 @@ asks:
       # the DATA measure the stated-age rule commits to — matches its
       # emitted Quantity's measure exactly, no category resolution needed
       measure: year
+      verb: "{verb}"
+
+  - id: ask/how-many-unit-dimension-is
+    # mining candidate dimension-comparatives: "How many inches tall is
+    # Jake?" — a unit-qualified dimension ask: the unit is named
+    # explicitly, so the ordinary `single-entity` consumer resolves the
+    # measure from it exactly like every other itemed ask (`item, type:
+    # noun` = "inches"). Modelled on ask/how-old-is directly above, but
+    # needs a CATEGORY of base adjectives (`dimension_adjective`:
+    # tall/heavy/wide/high/large/small/short) rather than one literal
+    # ('old'), since several words gate this ask, not one. The `adj`
+    # slot is matched skeletally (not referenced by `resolves`) — it is
+    # what distinguishes this shape from ask/how-many-entity ("how many
+    # inches does Jake have"), which has no adjective at all; the two
+    # never tie because ask/how-many-entity's `aux, type: future_modal`
+    # slot can never match an adjective word and vice versa, so at most
+    # one of them fully matches any given question.
+    #
+    # A sibling BARE ask ("How tall is Jake?", no unit named, resolving
+    # via the `single-entity-elided-measure` consumer) was tried and
+    # DROPPED: it caught a genuine DECL->WRONG on dev-train ("How long is
+    # their combined experience?" answered -40 instead of declining —
+    # 'long' is the standard English DURATION idiom as much as a physical
+    # one, and its `who` slot bound a mis-resolved plural pronoun). Every
+    # OTHER member of `dimension_adjective` narrowed the collision but
+    # didn't eliminate the underlying risk (an elided, unit-less measure
+    # resolved off a resolved-pronoun entity, on a category that keeps
+    # growing) revealed again on dev-holdout — so the whole no-stated-unit
+    # ask shape was dropped rather than chasing it word by word. This
+    # unit-qualified ask keeps working: the stated unit forces an exact
+    # measure match or a decline, never a wrong guess.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {slot: adj, cat: dimension_adjective}
+        - {slot: verb, cat: state}
+        - {slot: who, type: name}
+    resolves:
+      consumer: single-entity
+      entity: "{who}"
+      measure: "{item}"
       verb: "{verb}"
 
   - id: ask/is-membership

@@ -2529,6 +2529,49 @@ fraction-of-pool, unchanged).
 
 TEST look: pending — spent manually.
 
+## Increment 68: dimension-comparative relations and dimension asks (height /
+length / weight / area) (`<squash-pending>`)
+
+Class: physical-dimension comparatives — "Jake's snake is 12 inches longer
+than Jenny's snake", "N square feet larger than", "N cm shorter than" —
+paired with dimension asks ("how tall is X", "how many inches tall is X",
+"how DIMENSION is X and Y combined"). Before this, `arithmetic/anchored-
+relation-postfix` gated its direction word on `cat: delta` and the age
+family gated on `age_comparative`; every other physical-dimension adjective
+fell through and the general SVO fold misread the stated unit as a bare
+absolute Quantity — a latent confident-wrong, not merely a decline.
+
+Mechanism: YAML-first. (1) A new `dimension_comparative` category
+(`packs/core-english/categories/core.yaml`, members in `packs/difg-mined/
+categories/semantic.yaml`) tagging the dimension comparative adjectives
+(taller/longer/heavier/larger/wider/deeper/higher = +1, shorter/lighter/
+smaller/narrower = -1) via two child categories mirroring `more_dir`/
+`less_dir`'s polarity structure, as a SIBLING of `delta` — `delta` itself
+is untouched, and `age_comparative` (increment 48's TEST-proven surface)
+is untouched. (2) A new rule, `arithmetic/anchored-relation-postfix-
+dimension` (`packs/arithmetic/rules/core.yaml`), cloned from `arithmetic/
+anchored-relation-postfix` with `cat: dimension_comparative` in place of
+`cat: delta`, emitting the same Relation fact shape consumed by the
+existing saturate fixpoint and fold/combined synthesizers — no new fact
+kind, no new consumer. (3) New dimension asks modelled on `ask/how-old-
+is`: bare ("how ADJ is X") and unit-qualified ("how many UNIT ADJ is X"),
+resolving the measure from the named unit when present, else from the
+unique measure in play; the dimension-name→unit mapping is pack data.
+Every comparative word was already in the lexicon and none is in
+`quarantine.yaml`.
+
+Files: `packs/core-english/categories/core.yaml`, `packs/difg-mined/
+categories/semantic.yaml`, `packs/arithmetic/rules/core.yaml`,
+`tests/test_mining_increment_68.py` (9 synthetic tests).
+
+Gates (integrated on staging, full re-proof): dev-train diff SOLVED 1 /
+BROKE 0 / DECL→WRONG 0 (SHIP; 91fa57c70298), dev-holdout diff SOLVED 1 /
+BROKE 0 / DECL→WRONG 0 (SHIP; ebcfb7b49617), pytest 549 passed (was 540 +
+9 new), suite 52/52, lint 0 errors / 1 known-good warning (fraction-of-
+remnant / fraction-of-pool, unchanged).
+
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 **GOAL MODE (set 2026-07-11, PAUSED 2026-07-12 at 33/100 by user
