@@ -16,8 +16,11 @@ because the candidate "already passed" on its own branch.
 ## Setup mode (once per batch)
 
 1. `git -C "$MAIN" worktree prune`
-2. `git -C "$MAIN" worktree add "$STAGING" -b mining/batch-<date> main`
-   (the batch date is given in your prompt).
+2. `git -C "$MAIN" worktree add "$STAGING" -b mining/batch-<date> "$BASE"`
+   (the batch date and `$BASE` are given in your prompt). `$BASE` is USUALLY
+   `main` — but a payoff batch is cut from a parked enabler branch so it can build
+   on machinery that has not landed yet. The staging branch then carries enabler +
+   payoff, and ONE TEST look validates both. Never substitute `main` for `$BASE`.
 3. `ln -s "$MAIN/projects/gsm8k/data" "$STAGING/projects/gsm8k/data"`;
    `mkdir -p "$STAGING/projects/gsm8k/snapshots"`;
    `cd "$STAGING" && uv sync --extra bench` (never share the main `.venv` —
@@ -35,7 +38,10 @@ Inputs: candidate brief + junior result (branch `mining/cand-<slug>`), and the
 increment number to assign is NOT an input — you derive it in step 4.
 
 1. **Pick.** Record `PRE=$(git rev-parse HEAD)`. Cherry-pick the candidate's
-   commits: `git cherry-pick $(git merge-base main mining/cand-<slug>)..mining/cand-<slug>`.
+   commits: `git cherry-pick $(git merge-base "$BASE" mining/cand-<slug>)..mining/cand-<slug>`.
+   The merge-base is against `$BASE`, NOT main — a payoff candidate cut from a
+   parked enabler shares no recent ancestor with main, and using main here would
+   replay the enabler's commits too.
    On conflict: `git cherry-pick --abort`, verify HEAD == PRE, and return
    `{status: deferred, phase: integrate-conflict, ...}` — do NOT hand-resolve
    conflicts; a conflicting candidate goes back to the worklist.
@@ -91,6 +97,25 @@ increment number to assign is NOT an input — you derive it in step 4.
    snapshots are stale — re-snapshot both slices with a real `bench` run.
    Record the new pytest count either way.
 7. Return `{status: landed, increment: N, commit, gate_evidence, summary}`.
+
+## Compose mode (once per batch, ONLY when `$BASE` is not main)
+
+Every gate in a payoff batch is measured against `$BASE` — the parked enabler. The
+enabler was gated against main in its own batch; the increments on top were gated
+against the enabler. **Nothing has gated enabler + payoff against main**, and
+"parallel dev gates don't compose" is this campaign's founding lesson: two changes
+each clean against their own baseline can still interact. So the staging tip must
+re-prove the full gate against main before any of it is a landing candidate.
+
+1. Build FRESH main baselines in the staging worktree (check out main into a temp
+   worktree, or bench main directly): dev-train and dev-holdout, `--jobs 8`.
+2. Bench the staging TIP and diff it against those main baselines.
+3. PASS requires: 0 BROKE and 0 DECL→WRONG on BOTH slices, suite 52/52, pytest
+   green, lint 0 errors. Report `solved_vs_main` — the batch's TRUE coverage
+   delta, enabler included. That is the number the TEST look is spent against,
+   and it is NOT the sum of the per-increment SOLVED counts.
+4. **Change nothing.** This is a measurement. A failure means the composed state
+   is not landable and the batch must be reworked — it does NOT mean you fix it.
 
 ## FORBIDDEN — no exceptions
 

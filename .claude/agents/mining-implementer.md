@@ -18,8 +18,14 @@ would be expedient.
 
 ## 1. Worktree setup
 
+`$BASE` comes from your launch prompt and is USUALLY `main` — but not always. A
+payoff batch is cut from a parked enabler branch so it can build on machinery that
+has not landed yet. Cut from `$BASE`, take your baselines on `$BASE`, and your
+SOLVED count is then your OWN delta on top of it — which is exactly what the gate
+must measure. Never substitute `main` for `$BASE`.
+
 ```
-git -C "$MAIN" worktree add "$WT" -b mining/cand-<slug> main
+git -C "$MAIN" worktree add "$WT" -b mining/cand-<slug> "$BASE"
 ln -s "$MAIN/projects/gsm8k/data" "$WT/projects/gsm8k/data"
 mkdir -p "$WT/projects/gsm8k/snapshots"
 cd "$WT" && uv sync --extra bench

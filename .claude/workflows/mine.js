@@ -17,6 +17,14 @@ const DATE = A.date // YYYY-MM-DD, from the main agent
 const COUNT = A.count ?? 5
 const SMOKE = Boolean(A.smoke)
 const WT_ROOT = A.wtRoot ?? `${REPO}-worktrees`
+// The branch every candidate is cut from and every gate is measured against.
+// Defaults to main. Set it to a parked enabler branch to build a PAYOFF batch on
+// top of machinery that has not landed yet: the staging branch then carries
+// enabler + payoff, and ONE TEST look validates both (an enabler landed alone
+// costs a look it can only lose precision on — see HANDOFF, increment 66).
+// Baselines are taken on BASE, so a junior's SOLVED count measures the payoff's
+// own delta, not the enabler's.
+const BASE = A.base ?? 'main'
 if (!REPO || !DATE) throw new Error('mine.js requires args.repo and args.date (set by the /mine skill)')
 
 const STAGING_BRANCH = `mining/batch-${DATE}`
@@ -147,6 +155,18 @@ const SETUP_SCHEMA = {
   },
 }
 
+// The composition gate: the staging tip re-proved against MAIN, not against BASE.
+const COMPOSE_SCHEMA = {
+  type: 'object',
+  required: ['verdict', 'evidence'],
+  properties: {
+    verdict: { enum: ['pass', 'fail'], description: 'pass ONLY if both diffs vs main show 0 BROKE and 0 DECL->WRONG, suite 52/52, pytest green, lint 0 errors' },
+    solved_vs_main: { type: 'number', description: "the batch's TRUE dev-train coverage delta, enabler included — the number the TEST look is spent against" },
+    evidence: { type: 'string', description: 'the raw diff verdicts vs main for both slices, plus suite/pytest/lint' },
+    notes: { type: 'string' },
+  },
+}
+
 const LAND_SCHEMA = {
   type: 'object',
   required: ['status'],
@@ -223,6 +243,11 @@ synthetic test, single commit, forbidden list).
 MAIN=${REPO}
 WT=${WT_ROOT}/${c.slug}
 BRANCH=mining/cand-${c.slug}
+BASE=${BASE}
+
+Cut your worktree from BASE (not necessarily main) and take your baselines on it.
+Your SOLVED count is therefore YOUR delta on top of BASE, which is what the gate
+measures.
 
 Candidate brief:
 ${JSON.stringify(c, null, 2)}
@@ -237,7 +262,13 @@ per your agent protocol. This verdict gates integration onto the staging branch.
 MAIN=${REPO}
 WORKTREE=${WT_ROOT}/${c.slug}
 BRANCH=${r.branch}
-Diff to review: git diff main...${r.branch}
+BASE=${BASE}
+Diff to review: git diff ${BASE}...${r.branch}
+
+Review THIS candidate's own diff — the range is against BASE, not main. If BASE
+is not main, the branch sits on top of an enabler whose commits were already
+gated and reviewed in an earlier batch; diffing against main would attribute the
+enabler's changes to this brief.
 
 Candidate brief:
 ${JSON.stringify(c, null, 2)}
@@ -254,9 +285,37 @@ staging baselines, pytest count).
 MAIN=${REPO}
 STAGING=${STAGING_WT}
 BRANCH=${STAGING_BRANCH}
+BASE=${BASE}
 DATE=${DATE}
 
+Create the staging branch from BASE (not necessarily main) and take the staging
+baselines on it.
+
 Return the setup structured output.`
+
+const composePrompt = () => `COMPOSE MODE. Every gate in this batch was measured against BASE, and BASE is
+NOT main — so nothing has yet proven the staging tip against main. Dev gates do
+not compose: the enabler on BASE and the increments landed on top of it were each
+clean against their own baseline, and can still interact.
+
+Re-prove the FULL dev gate for the staging tip against MAIN's baselines:
+build fresh main baselines (bench dev-train and dev-holdout at main, --jobs 8),
+then bench the staging tip and diff against those. 0 BROKE and 0 DECL->WRONG on
+BOTH slices, suite 52/52, pytest green, lint 0 errors.
+
+Report SOLVED vs main too — that is the batch's TRUE coverage delta, enabler
+included, and it is the number the TEST look will be spent against.
+
+MAIN=${REPO}
+STAGING=${STAGING_WT}
+STAGING_BRANCH=${STAGING_BRANCH}
+BASE=${BASE}
+
+Change NOTHING. This is a measurement, not a landing. If the gate fails, say so —
+a failure means the composed state is not landable and the batch must be reworked,
+NOT that you should fix anything.
+
+Return the ComposeVerdict structured output.`
 
 const landPrompt = (c, r) => `LAND MODE. Land ONE review-passed candidate onto the staging branch per your
 agent protocol: cherry-pick, FULL re-gate on the integrated state vs current
@@ -268,6 +327,10 @@ MAIN=${REPO}
 STAGING=${STAGING_WT}
 STAGING_BRANCH=${STAGING_BRANCH}
 CANDIDATE_BRANCH=${r.branch}
+BASE=${BASE}
+
+The candidate was cut from BASE, so the cherry-pick range is
+$(git merge-base ${BASE} ${r.branch})..${r.branch} — NOT merge-base with main.
 
 Candidate brief:
 ${JSON.stringify(c, null, 2)}
@@ -472,9 +535,33 @@ if (!landable.length) {
   }
 }
 
+// ---------- Phase 5: COMPOSITION GATE (only when BASE !== main) ----------
+// Every gate in this batch was measured against BASE. If BASE is a parked enabler,
+// then the enabler was gated against main in ITS batch, and the payoff was gated
+// against the enabler here — but NOTHING has gated enabler+payoff against main.
+// "Parallel dev gates don't compose" is this campaign's founding lesson and it
+// applies across batches too: two changes each clean against their own base can
+// still interact. So the staging tip must re-prove the FULL gate against main
+// before any of it is a landing candidate.
+let composition = null
+if (stagingBranch && BASE !== 'main' && landed.length) {
+  phase('Compose')
+  composition = await protoAgent('mining-integrator', composePrompt(), {
+    label: 'compose-vs-main',
+    phase: 'Compose',
+    schema: COMPOSE_SCHEMA,
+  })
+  if (!composition || composition.verdict !== 'pass') {
+    log(`COMPOSITION GATE FAILED vs main — the staging tip is NOT landable: ${composition?.notes ?? 'no result'}`)
+  } else {
+    log(`composition gate PASSED: staging tip is clean vs main (${composition.evidence ?? ''})`)
+  }
+}
+
 // ---------- Report (the main agent adds cleanup + manual TEST-look steps) ----------
 return {
   smoke: SMOKE,
+  base: BASE,
   staging_branch: stagingBranch,
   staging_worktree: stagingBranch ? STAGING_WT : null,
   candidate_worktrees: candidates.map((c) => `${WT_ROOT}/${c.slug}`),
@@ -482,6 +569,7 @@ return {
   landed,
   deferred,
   failed,
+  composition,
   next_steps: stagingBranch
     ? `Staging branch ${stagingBranch} is linear, one commit per increment. Manually spend ONE TEST look per increment in order (fast-forward to each commit, then: uv run rulekit --project projects/gsm8k bench --slice test --spend-test-look). Precision holds → keep; drops → revert that commit. Fast-forward main only past survivors. The pipeline never touches TEST or main.`
     : 'Nothing landed; no TEST looks to spend.',
