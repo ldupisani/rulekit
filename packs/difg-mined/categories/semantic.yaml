@@ -65,6 +65,22 @@ categories:
       narrower tag lets the revenue consumer name sell-events
       specifically without picking up 'ate'/'gave'/'threw'/etc, which
       also live under 'lose'.
+  spend_target_prep:
+    parent: preposition
+    notes: >
+      'for'/'on' — the trailing marker in "paid $5 FOR the shirt"/"spent
+      $5 ON the shirt" (mining candidate priced-quantity-cost-asks): the
+      priced-quantity-cost ask's own trailing prep slot is gated to this
+      narrow pair rather than the general 'preposition' sense so it can
+      never also match 'in' — a LITERAL already reserved by ask/how-
+      much-rate-span and ask/earn-span for their own SPAN clause. A
+      general preposition gate here would tie those asks on consumed-
+      unit count for "how much did WHO pay IN N months" and let
+      alphabetical id order silently mis-route a span question to the
+      wrong consumer (mirrors clause_marker_prep's rationale in
+      packs/difg-mined/categories/clauses.yaml for the same root sense).
+      Lives here (not core-english) because 'for' is only lexically
+      defined in this pack.
   timeperiod:
     parent: noun
   vehicle:
@@ -525,6 +541,9 @@ members:
   - sell
   - sells
   - sold
+  spend_target_prep:
+  - for
+  - on
   timeperiod:
   - afternoon
   - day

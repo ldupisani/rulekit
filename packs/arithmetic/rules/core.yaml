@@ -1331,6 +1331,61 @@ asks:
       consumer: item-cost
       item: "{item}"
 
+  - id: ask/how-much-pay-for-quantity
+    # "how much did WHO pay/spend for/on N ITEM" (mining candidate priced-
+    # quantity-cost-asks): the ask itself states the quantity ("4 shirts",
+    # one merge-count unit) rather than relying on an existing Quantity
+    # fact — this is the class of question that INTRODUCES its own
+    # hypothetical count over a priced item, routed to the new
+    # 'cost-of-quantity' consumer (answer.py), which commits N (the
+    # question's own count) times the item's unique Price fact and checks
+    # the buyer's own cost-splitting predicates (increment 10's
+    # invariant) before committing.
+    #
+    # NOTE: the sibling no-buyer surface ("how much does it cost to buy N
+    # ITEM") was tried and DROPPED — 'cost' is a noun/verb homograph
+    # (charge-category noun vs price_verb), and a trailing purchase
+    # infinitive ("...to buy 4 shirts") gives the infinitive's own verb a
+    # SECOND viable subject candidate (the noun reading of 'cost' itself,
+    # nearer than the pronoun 'it'), which ties the coverage-arbitration
+    # score between the noun and verb readings of 'cost' for EVERY
+    # instance of that surface form (obligations.py's disambiguate(),
+    # confirmed via --trace on synthetic probes) — 'much'/'cost' stay
+    # permanently flagged ambiguous and the guard vetoes any commit
+    # regardless of ask/consumer design. Out of scope to fix here (a
+    # shared disambiguation tie-break, not this candidate's files); worth
+    # its own future mining candidate.
+    #
+    # The verb is gated to the EXISTING `spend_verb` category (pay/paid/
+    # pays/spend/spends/spent — already members via packs/core-english
+    # and packs/difg-mined, no new vocabulary), and the trailing
+    # preposition to the narrow `spend_target_prep` category ('for'/'on'
+    # only — see that category's own note for why the general
+    # `preposition` sense is NOT used here: it would tie ask/how-much-
+    # rate-span and ask/earn-span on consumed-unit count for "how much
+    # did WHO pay IN N months" and let alphabetical id order silently
+    # mis-route a span question here). Consumes MORE units than the
+    # existing ask/how-much-bare-entity ("how much did Tom pay", 5
+    # tokens) whenever this trailing clause is present, so max-consumed
+    # specificity (patterns.match_ask) routes here instead —
+    # ask/how-much-bare-entity's own spend_verb branch (answer.py's
+    # _purchase_total) still wins unchanged on the bare form, with no
+    # trailing "for/on N ITEM" clause to consume.
+    match:
+      question:
+        - {lit: how}
+        - {lit: much}
+        - {slot: aux, type: auxiliary}
+        - {slot: who, type: name}
+        - {slot: verb, cat: spend_verb}
+        - {slot: prep, cat: spend_target_prep}
+        - {slot: qty, type: counted}
+    resolves:
+      consumer: cost-of-quantity
+      entity: "{who}"
+      item: "{qty}"
+      qty_value: "{qty.value}"
+
   - id: ask/what-total-combined
     # "What is/was the total (number/amount) of ITEM (that) they VERB?" —
     # the wh-copular total ask (mining candidate wh-total-asks): 'what'

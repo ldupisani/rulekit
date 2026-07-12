@@ -786,6 +786,53 @@ def answer(
             f"{qty.value} * {price.value} — qty x unit price of {item!r}",
         )
 
+    if consumer == "cost-of-quantity":
+        # "how much did WHO pay/spend for/on N ITEM" (mining candidate
+        # priced-quantity-cost-asks): unlike item-cost, the QUESTION itself
+        # states the quantity (never an existing Quantity fact) — commit N
+        # (the question's own count) times the item's UNIQUE per-unit Price
+        # fact, the increment 19 exactly-one-Price discipline.
+        item = reg.plural_to_singular.get(query["item"], query["item"])
+        qty = evaluate(str(query["qty_value"]), {}, log, source="cost-of-quantity-qty")
+        prices = [p for p in store.by_kind(Price) if p.item == item]
+        if len(prices) != 1:
+            return Answer(
+                "decline", None,
+                f"{len(prices)} price facts known for {item!r} — a "
+                "cost-of-quantity ask needs exactly one",
+            )
+        price = prices[0]
+        entity = query["entity"]
+        # increment 10's invariant, reused verbatim: a buyer who
+        # splits/shares the cost with someone else means the raw qty *
+        # price is not necessarily what they themselves paid.
+        if any(
+            p.subject == entity and reg.word_in_category(p.verb, "divide")
+            for p in store.by_kind(Predication)
+        ):
+            return Answer(
+                "decline", None,
+                f"{entity!r} has a cost-splitting predicate — the raw "
+                "total is not necessarily what they paid",
+            )
+        # the SAME buyer already holding/having bought this item elsewhere
+        # in the text is a genuine ambiguity between two possible
+        # quantities (the premise's own and the question's stated one) —
+        # decline rather than silently prefer the question's count.
+        if any(
+            q.entity == entity and q.measure == item for q in store.by_kind(Quantity)
+        ):
+            return Answer(
+                "decline", None,
+                f"{entity!r} already has a quantity of {item!r} known — "
+                "ambiguous against the question's own count",
+            )
+        total = evaluate(f"{qty} * {price.value}", {}, log, source="cost-of-quantity")
+        return Answer(
+            "number", total,
+            f"{qty} * {price.value} — question qty x unit price of {item!r}",
+        )
+
     if consumer == "money-left":
         # "how much money does WHO have left" — the entity's general money
         # total (_entity_total: the SAME state-anchor + signed-event fold

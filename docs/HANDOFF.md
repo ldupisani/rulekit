@@ -1713,6 +1713,59 @@ known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) / 23
 info.
 TEST look: pending — spent manually.
 
+## Increment 50: question-supplied-quantity pay/spend cost asks (`how much did WHO pay/spend for/on N ITEM`)
+
+Lands part of worklist goal-mode directive 3 ("spend/pay event asks
+66+44" + "0 price facts known 143"). Fresh stats: "no spend events known" 67
++ "no pay events known" 45. Probe-verified the mechanism directly: "Shirts
+cost 5 dollars each. How much did Tom pay for 4 shirts?" declined "no pay
+events known" before this change — the Price fact emits fine (increment
+15/29/36 machinery), but the ask routed to the real-event fold instead of
+N x price.
+
+Note: the brief also proposed a sibling no-buyer surface ("how much does it
+cost to buy N ITEM"); the implementer DROPPED that half after discovering
+'cost' is a noun/verb homograph (charge-category noun vs `price_verb`) and a
+trailing purchase infinitive gives the infinitive's own verb a second viable
+subject candidate (the noun reading of 'cost', nearer than the pronoun
+'it') — this ties `obligations.py`'s disambiguation score between 'cost's
+two readings for every instance of that surface form, so the guard vetoes
+any commit regardless of ask/consumer design. That half is out of scope here
+(a shared disambiguation tie-break fix, not this candidate's files) and is
+noted as a future mining candidate. Only the pay/spend-for-quantity ask
+below actually shipped.
+
+New ask `ask/how-much-pay-for-quantity` ("how much did WHO pay/spend for/on N
+ITEM", `packs/arithmetic/rules/core.yaml`; the `spend_verb` category has
+existed since increment 10) consumes the question's own stated N
+(`{qty.value}` marked pattern-consumed, mirroring the rate-span
+`{span.value}` precedent — never an existing Quantity fact). New narrow
+category `spend_target_prep` (`packs/difg-mined/categories/semantic.yaml`,
+parent `preposition`, members for/on) scopes the ask's trailing preposition
+so it can never also match 'in', which `ask/how-much-rate-span` and
+`ask/earn-span` already reserve as a literal for their own SPAN clause — a
+general `preposition` gate would tie those asks on consumed-unit count for
+"how much did WHO pay IN N months" and let alphabetical id order silently
+mis-route a span question. New `cost-of-quantity` consumer in `answer.py`
+commits N times the item's UNIQUE per-unit Price fact (increment 19's
+exactly-one-Price discipline), declining on zero/multiple Price facts, on a
+cost-splitting predicate touching the buyer (increment 10's invariant,
+reused verbatim), or on a pre-existing Quantity of the same item for the
+same buyer (ambiguous against the question's own count).
+
+Verified: the pre-existing bare "how much did WHO pay" ask (no trailing
+"for/on N ITEM" clause) keeps winning via the real purchase total when there
+is no question-supplied quantity to consume, and "how much did WHO earn/pay
+in N months" keeps routing to the rate-span/earn-span family untouched.
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(3772 items, 21/0 unchanged — no matching items in this dev-train sample),
+dev-holdout diff NEUTRAL 0/0/0 (3701 items, 16/0 unchanged), pytest 390
+passed (was 383 + 7 new, now `tests/test_mining_increment_50.py`), suite
+52/52, lint 0 errors / 1 known-good warning (fraction-of-remnant /
+fraction-of-pool, unchanged) / 22 info.
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 **GOAL MODE (set 2026-07-11): the campaign target is 100 dev-train
