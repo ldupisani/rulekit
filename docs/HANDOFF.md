@@ -1,7 +1,7 @@
 # Session handoff — 2026-07-11
 
 Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
-State below is committed through `827e68d` on `main` (github.com/ldupisani/rulekit;
+State below is committed through `05e7729` on `main` (github.com/ldupisani/rulekit;
 check `git status`/`git log origin/main..HEAD` before assuming push parity).
 
 ## Where the project is
@@ -14,10 +14,10 @@ swing under the constitution (no lexicon in Python, no per-problem parsing,
 every increment through the gates).
 
 **Current numbers (all verified at head):**
-- dev-train: 29 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
+- dev-train: 30 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
 - dev-holdout: 18 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 473 · lint: 0 errors, 1 intended warning
-- TEST ledger (61 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- curated suite: 52/52 · pytest: 482 · lint: 0 errors, 1 intended warning
+- TEST ledger (63 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -41,9 +41,11 @@ every increment through the gates).
   7/1 (87.5%, look #56 — TEST coverage GAIN, the new floor) → 7/1 (#57) →
   7/1 (87.5%, look #58) →
   7/1 (87.5%, look #59) → 7/1 (#60) →
-  **7/1 (87.5%, look #61) ← live at increment 59** — #59 batch 15
-  (increment 57, the clause enabler), #60–#61 batch 16 (increments
-  58–59, +1 dev-train each: the enabler's first payoffs) —
+  7/1 (87.5%, look #61) → 7/1 (#62) →
+  **7/1 (87.5%, look #63) ← live at increment 61** — #60–#61 batch 16
+  (increments 58–59, +1 each), batch 17 zero landings (5 looks saved),
+  #62–#63 batch 18 (increment 60 +1; increment 61 the cross-sentence
+  inheritance enabler) —
   #12–#13 batch 1, #14 the modal split, #15–#16 batch 2, #17–#19 batch 3,
   #20 vocab revert, #21–#27 batch-4 re-land, #28–#32 batch 5 (increments
   27–30 held; 31 reverted); precision held on every surviving increment
@@ -2232,9 +2234,9 @@ Gates (integrated on staging, full re-proof): dev-train diff SHIP +1/0/0
 NEUTRAL 0/0/0 (3701 items, 18/0 unchanged), pytest 478 passed (was 473 + 5
 new, now `tests/test_mining_increment_60.py`), suite 52/52, lint 0 errors /
 1 known-good warning (fraction-of-remnant / fraction-of-pool, unchanged).
-TEST look: pending — spent manually.
+TEST look #62: 7/1 (87.5%) — precision HELD, increment kept.
 
-## Increment 61: cross-sentence item/measure inheritance for elided event
+## Increment 61: cross-sentence item/measure inheritance for elided event (`05e7729`)
 conjuncts (`sold 5 last week and 7 this week`) (`98b0fad`)
 
 Class: an event verb's dobj obligation only binds the FIRST conjunct in a
@@ -2279,7 +2281,7 @@ Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
 NEUTRAL 0/0/0 (3701 items, 18/0 unchanged), pytest 482 passed (was 478 + 4
 new, now `tests/test_mining_increment_61.py`), suite 52/52, lint 0 errors /
 1 known-good warning (fraction-of-remnant / fraction-of-pool, unchanged).
-TEST look: pending — spent manually.
+TEST look #63: 7/1 (87.5%) — precision HELD, increment kept.
 
 ## The next mining worklist (from the last close-miss scan)
 
@@ -2293,24 +2295,20 @@ directives while goal mode holds:
 0. **affine-relations-recut — LANDED as increment 46** (re-cut of
    `mining/parked/affine-relations` against current main; dev-train +4,
    holdout NEUTRAL).
-0. TOP SEEDS (batch 17 output — ZERO landed; all five demoted at
-   0 SOLVED, five looks saved; all five mechanisms are gate-clean and
-   PARKED awaiting enablers). Two cross-cutting capabilities now block
-   nearly every remaining class — scout THESE, each as infrastructure
-   or paired with the parked branch it cashes in:
-   (a) SPELLED-OUT NUMBER WORDS ("eight pounds", "twelve muffins") —
-   reported as an unbuilt gap; verify with a scratchpad frequency scan
-   of dev-train declines containing word-numbers, then land through
-   annotate-numbers (numbers are structure; the word→value table is
-   pack data, check what packs/core-english/numbers already has).
-   Likely the highest-yield single capability left.
-   (b) CROSS-SENTENCE ITEM/MEASURE INHERITANCE — a goal/holding
-   sentence's noun carrying into a later sentence whose event conjuncts
-   elide it ("...18 chocolate bars... He sold 5 last week and 7 this
-   week"); pairs with `mining/parked/event-goal-progress` (rebased,
-   gate-green, 0-conflict) for a guaranteed James flip.
-   PARKED CASH-INS once (a)/(b) land: much-more-need-asks,
-   each-container-rates, partitive-each-share, spend-on-conjuncts.
+0. TOP SEEDS (batch 18 output): increment 61 (cross-sentence conjunct
+   inheritance) is LIVE — (a) FIRST: rebase and land
+   `mining/parked/event-goal-progress` (gate-green, 0-conflict rebase
+   already proven); with 61 live its James arithmetic (Goal 18 − (5+7)
+   = 6) should finally show SOLVED ≥ 1 on its OWN isolated gate.
+   (b) SPELLED-OUT NUMBER WORDS — still unattempted, still the highest
+   estimated yield; scratchpad frequency scan first, word→value table
+   in packs (check packs/core-english numbers doc), wire through
+   annotate-numbers.
+   (c) parked cash-ins awaiting their enablers: much-more-need-asks
+   (re-queue AFTER event-goal-progress lands, per its own deferral
+   note), each-container-rates, partitive-each-share, spend-on-conjuncts,
+   partitive-measure-asks (re-scope: the _entity_total decline guard
+   must be its OWN increment per review).
 1. Prefer candidates that MINE THE ASK-SHAPE BUCKET: bucket the
    unrecognized questions by surface shape (scratchpad script over
    dev-train declines with that reason) and propose general ask shapes
