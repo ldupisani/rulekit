@@ -1915,6 +1915,46 @@ known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) /
 22 info.
 TEST look #56: 7/1 (87.5%) — a TEST coverage GAIN, increment kept.
 
+## Increment 55: modal how-long / how-many-TIMEUNIT duration asks
+(will/would-phrased inverse rate-span questions)
+
+Lands HANDOFF's "next mining worklist" TOP SEED (b): increment 51 shipped
+the bare-aux ("does/did it take") forms of the inverse rate-span duration
+asks but explicitly scoped OUT will/would-phrased forms as a separate
+candidate — this closes that gap, mirroring increment 14's aux/modal
+split. Fresh dev-train stats: 104 declining questions match "how long|how
+many hours/minutes/days/weeks/months/years will|would"; 48 of the "0 price
+facts known" reasons are time-unit capacity mis-routes (increment 51's
+sibling `ask/how-many-capacity` claims the will/would modal slot and
+declines on no Price fact instead of routing to duration). Full chain
+traced on a synthetic minimal pair: "Tom reads 5 pages per hour. How long
+does it take Tom to read 20 pages?" commits via rate-span-inverse; the
+identical premises with "will it take" declined no-ask-shape, and "How
+many hours will it take" declined "0 price facts known for hour".
+
+YAML-only: adds future_modal variants of increment 51's two ask ids
+(`ask/how-long-take-span`, `ask/how-many-timeunit-take-span`) in
+`packs/arithmetic/rules/core.yaml`, gating the aux position on the
+existing `future_modal` slot type (increment 49; will/would only —
+can/could/should/may/might/must stay with capacity, same discipline
+increment 49 established). Both route to the existing rate-span-inverse
+consumer in `answer.py`, byte-for-byte unchanged — no new consumer, no new
+fact kind. Ask-specificity vs `ask/how-many-capacity` (which also gates a
+will/would-capable modal slot) is resolved the same way increment 51
+resolved it against the bare-aux forms: the expletive 'it'/'take'/'to'
+skeleton this ask requires either fails capacity's `who, type: entity`
+slot outright or loses on consumed-unit specificity, so a genuine
+capacity question ("how many hours will Tom read?") still only matches
+`ask/how-many-capacity`.
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(3772 items, 26/0 unchanged — no matching items in this dev-train sample),
+dev-holdout diff NEUTRAL 0/0/0 (3701 items, 18/0 unchanged), pytest 434
+passed (was 424 + 10 new, now `tests/test_mining_increment_55.py`), suite
+52/52, lint 0 errors / 1 known-good warning (fraction-of-remnant /
+fraction-of-pool, unchanged) / 22 info.
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 **GOAL MODE (set 2026-07-11): the campaign target is 100 dev-train

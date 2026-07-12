@@ -1250,18 +1250,23 @@ asks:
     # 'how long does/did it take WHO to VERB N ITEM?' — the INVERSE of the
     # forward rate-span asks above: amount ASKED divided by a known Rate,
     # instead of a known span multiplied by a known Rate. "it take" is
-    # structural skeleton (the extraposed-infinitive idiom), not lexicon —
-    # 'aux' is restricted to the auxiliary sense (do/does/did) so a
-    # will-phrased "how long will it take" (a distinct, disjoint mining
-    # candidate) structurally cannot match here, since 'will' is tagged
-    # 'modal' (increment 14), never 'auxiliary'. Routed to a NEW consumer
+    # structural skeleton (the extraposed-infinitive idiom), not lexicon.
+    # `aux, type: future_modal` (mining candidate modal-how-long-asks):
+    # widened from `type: auxiliary` — also accepts "how long will/would it
+    # take" alongside the ordinary "do/does/did" form, the SAME future/
+    # conditional-tense widening already applied to ask/how-many-entity and
+    # ask/how-much-money-entity-left (see their comments for the class
+    # rationale). The 6 capacity/hypothetical modals (can/could/should/
+    # may/might/must) are excluded — only will/would are in the
+    # `future_modal` category — so a genuinely hypothetical/capacity-shaped
+    # question still cannot bind here. Routed to a NEW consumer
     # (rate-span-inverse) — the forward 'rate-span' consumer/branch above
     # is untouched byte-for-byte.
     match:
       question:
         - {lit: how}
         - {lit: long}
-        - {slot: aux, type: auxiliary}
+        - {slot: aux, type: future_modal}
         - {lit: it}
         - {lit: take}
         - {slot: who, type: entity}
@@ -1280,12 +1285,30 @@ asks:
     # UNIT is named explicitly ("how many hours...") instead of left to the
     # rate's own per-unit; the consumer additionally requires the named
     # unit to match the committing rate's per-unit, or declines.
+    #
+    # `aux, type: future_modal` (mining candidate modal-how-long-asks):
+    # same will/would widening as ask/how-long-take-span above. This is the
+    # one ask of the pair with a real adjacency risk: ask/how-many-capacity
+    # ALSO gates on a will/would-capable `modal` slot ("how many hours will
+    # WHO VERB" — increment 14/19) and could in principle tie on the same
+    # question. It cannot in practice: this ask's literal 'it'/'take'/'to'
+    # tokens are required, non-optional, and ask/how-many-capacity has no
+    # such literals in its shape, so a question that satisfies THIS ask's
+    # full 9-token span (how/many/span_unit/aux/it/take/who/to/verb, plus
+    # the counted item — 10 consumed units) either fails capacity's shape
+    # entirely (the expletive "it" cannot satisfy capacity's `who, type:
+    # entity` slot — an unresolved pronoun never does, per `_slot_ok`) or,
+    # on the rare reading where it did, loses on specificity (10 consumed
+    # units here vs. capacity's 6, `patterns.specificity` — the same
+    # max-consumed-units check increment 49 verified for its own modal
+    # widening). Confirmed against packs/difg-mined/quarantine.yaml: no new
+    # vocabulary admitted, this is a pure slot-type widening.
     match:
       question:
         - {lit: how}
         - {lit: many}
         - {slot: span_unit, type: noun}
-        - {slot: aux, type: auxiliary}
+        - {slot: aux, type: future_modal}
         - {lit: it}
         - {lit: take}
         - {slot: who, type: entity}

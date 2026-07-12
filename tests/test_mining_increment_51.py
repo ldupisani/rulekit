@@ -18,10 +18,15 @@ Two new ask ids (packs/arithmetic/rules/core.yaml):
 Both route to a NEW, additive consumer (rate-span-inverse, answer.py) — the
 existing forward 'rate-span' consumer/branch is untouched byte-for-byte.
 "it take" is structural skeleton (the extraposed-infinitive idiom); the aux
-slot is restricted to the auxiliary sense (do/does/did), so a will-phrased
-"how long will it take" structurally cannot match here ('will' is tagged
-'modal', not 'auxiliary', since increment 14) — this keeps the class
-disjoint from the separate will-tense-asks mining candidate.
+slot was originally restricted to the auxiliary sense (do/does/did), so a
+will-phrased "how long will it take" structurally could not match here.
+
+UPDATE (mining candidate modal-how-long-asks): the aux slot on both ask ids
+is now `type: future_modal`, so will/would-phrased duration questions ALSO
+match — see test_mining_modal_how_long_asks.py for that candidate's own
+coverage. `test_will_phrased_form_does_not_match` below is updated in place
+to its new, intended behavior rather than left contradicting the shipped
+ask shape.
 
 Synthetic only."""
 
@@ -114,18 +119,17 @@ def test_per_individual_rate_declines_no_population_attempt(full_registry):
     assert r.answer.kind == "decline"
 
 
-def test_will_phrased_form_does_not_match(full_registry):
-    # decline-safety: 'will' is tagged 'modal' (increment 14), never
-    # 'auxiliary' — this ask cannot match a will-phrased duration question,
-    # keeping the class disjoint from the separate will-tense-asks
-    # candidate. The forward ask/how-many-rate-span also can't answer it
-    # (no 'in SPAN' clause is stated), so the whole item safely declines.
+def test_will_phrased_form_now_matches(full_registry):
+    # UPDATED by mining candidate modal-how-long-asks: the aux slot widened
+    # to `type: future_modal`, so a will-phrased duration question now
+    # commits exactly like the auxiliary ("does/did") form above, through
+    # the SAME unchanged rate-span-inverse consumer.
     r = solve(
         "Sana reads 5 pages per hour. How long will it take Sana to read "
         "20 pages?",
         full_registry,
     )
-    assert r.answer.kind == "decline"
+    assert r.answer.value == 4
 
 
 def test_forward_rate_span_ask_unaffected(full_registry):
