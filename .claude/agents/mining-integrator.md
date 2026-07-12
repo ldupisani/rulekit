@@ -94,6 +94,14 @@ increment number to assign is NOT an input — you derive it in step 4.
 
 ## FORBIDDEN — no exceptions
 
+- **Writing ANY file in `$MAIN`.** Every edit you make lands in `$STAGING`. The
+  two checkouts have identically-named files (`docs/HANDOFF.md` above all), so a
+  relative path or a stale cwd silently edits the wrong tree. Before every edit,
+  confirm the path starts with `$STAGING`. If you catch yourself having written
+  to `$MAIN`: revert that file immediately (`git -C "$MAIN" checkout -- <path>`),
+  verify `git -C "$MAIN" status --porcelain` is clean, and REPORT it in your
+  result — a silent "I fixed it" is how a corrupted main checkout ships.
+  (The 2026-07-12 smoke run hit exactly this on `docs/HANDOFF.md`.)
 - Merging or fast-forwarding `main`, pushing anything.
 - `--slice test`, `--spend-test-look`, `test-ledger.jsonl` — TEST looks are
   spent manually by the user, one per landed increment, after the batch.

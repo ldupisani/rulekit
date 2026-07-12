@@ -168,6 +168,17 @@ const SMOKE_BRIEF = {
   risks: { blast_radius: 'none — comment-only change', shared_paths: [], quarantine_words: [] },
   priority: 1,
   overlaps_with: [],
+  // A no-op brief proves no class and solves nothing BY CONSTRUCTION, so every
+  // coverage gate would kill it — the shape gate (no resolving samples), the
+  // pre-review `doomed` filter and the post-pipeline goal-mode loop (SOLVED=0).
+  // All three already exempt `infrastructure`, so declaring it here makes the
+  // smoke candidate legal by the EXISTING rule instead of needing an `if (SMOKE)`
+  // in each gate — and any gate added later inherits the carve-out for free.
+  // (Before this, the goal-mode gate silently demoted the smoke candidate and
+  // /mine --smoke stopped exercising the Integrate stage while still reporting
+  // green. Three separate carve-outs is how that happens twice.)
+  infrastructure: true,
+  evidence_note: 'no-op self-test: proves the pipeline, not a class',
 }
 
 // ---------- agent spawning ----------
@@ -275,8 +286,7 @@ Repo: ${REPO}. Return the ScoutOutput structured output.`,
 // legitimately resolve nothing yet (same carve-out the SOLVED>=1 gate makes).
 const unproven = []
 candidates = candidates.filter((c) => {
-  if (SMOKE) return true // the self-test's no-op brief proves no class by design
-  if (c.infrastructure) return true
+  if (c.infrastructure) return true // incl. the smoke brief, which declares it
   const walked = c.evidence?.structural_sample ?? []
   const resolving = walked.filter((s) => s.resolves).length
   if (resolving >= 3) return true
@@ -305,6 +315,10 @@ const solvedCount = (r) =>
 //     which isn't known until every junior is in.
 //   - an unparseable diff (NaN): skip only what's provably wasted, never on a
 //     number we failed to read.
+//   - SMOKE: the self-test's brief is a no-op by construction and can never
+//     solve anything. This is the THIRD gate that has to know that (with the
+//     shape gate and the post-pipeline loop) — the 2026-07-12 smoke run died
+//     here after the other two were carved out.
 const doomed = (item) => {
   const solved = solvedCount(item.result)
   return Number.isFinite(solved) && solved === 0 && !item.brief.infrastructure
@@ -352,11 +366,6 @@ const reviewed = await pipeline(
 let infraBudget = 1
 const enforced = reviewed.filter(Boolean).map((i) => {
   if (!i.result || i.result.status !== 'gated') return i
-  // The smoke brief is a NO-OP by construction (a YAML comment), so it can never
-  // show SOLVED > 0. Without this carve-out the goal-mode gate demotes it and the
-  // self-test silently stops covering the Integrate stage — which is exactly what
-  // it had been doing until 2026-07-12.
-  if (SMOKE) return i
   const solved = solvedCount(i.result)
   if (Number.isFinite(solved) && solved > 0) return i
   if (i.brief.infrastructure && infraBudget > 0) {
