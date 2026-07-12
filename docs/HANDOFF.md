@@ -2762,3 +2762,24 @@ RESULT: dev-train 9.0s -> 1.73s at `--jobs 12` (~5.2x on top of the trace win;
 NOT TAKEN: the ~11.5s cumulative deepcopy left in `obligations.disambiguate` /
 `_coverage_score` is genuine trial-state copying (one per sentence analysed), not
 trace overhead. Optimising it needs its own byte-proof.
+
+## The shape gate, and a smoke-test bug it uncovered (2026-07-12, infra)
+
+SHAPE GATE. A scout brief's `evidence.frequency` is a SURFACE count — how many
+items contain a phrase, not how many the mechanism can READ. Batch 22 spent three
+implementer runs on that confusion (docs/negative-results.md, "the worklist counts
+surfaces, not shapes"). Briefs now require `evidence.structural_sample`: >= 3
+dev-train items WALKED end-to-end, each recording item_id, a PARAPHRASED premise
+and ask shape (never verbatim — deferred briefs are written back into this file),
+the fact emitted, and an honest `resolves` boolean. `mine.js` drops any candidate
+with fewer than 3 resolving samples BEFORE an implementer is spent; the drop is
+reported in the deferred table, never silently. Infrastructure briefs are exempt.
+
+SMOKE-TEST BUG FOUND AND FIXED. The smoke brief is a no-op by construction (a YAML
+comment), so it can never show SOLVED > 0 and it is not marked `infrastructure`.
+The goal-mode gate — added in an earlier batch — was therefore DEMOTING it to
+`failed`, which meant `/mine --smoke` silently stopped exercising the Integrate
+stage: no cherry-pick, no re-gate, no staging branch, and a green report anyway.
+Both gates now carve out SMOKE explicitly. Lesson worth keeping: a self-test that
+shares the production gates will be killed by them the moment a gate gets stricter,
+and it fails GREEN.

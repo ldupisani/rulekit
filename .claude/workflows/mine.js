@@ -31,10 +31,32 @@ const SCOUT_BRIEF = {
     class_name: { type: 'string' },
     evidence: {
       type: 'object',
+      required: ['frequency', 'structural_sample'],
       properties: {
         frequency: { type: 'number' },
         stats_reason: { type: 'string' },
         worklist_ref: { type: 'string' },
+        // A frequency count is a SURFACE count: it says how many items contain a
+        // phrase, not how many have premises the mechanism can consume. Batch 22
+        // burned three implementer runs on that confusion (see
+        // docs/negative-results.md, "the worklist counts surfaces, not shapes").
+        // So a frequency claim must be backed by items actually walked.
+        structural_sample: {
+          type: 'array',
+          minItems: 3,
+          description: 'Items from the counted set, WALKED. At least 3 must have resolves=true or the class is unproven and the candidate is dropped before an implementer is spent (infrastructure briefs exempt).',
+          items: {
+            type: 'object',
+            required: ['item_id', 'premise_shape', 'ask_shape', 'fact_emitted', 'resolves'],
+            properties: {
+              item_id: { type: 'string', description: 'dev-train item id, so the claim is auditable' },
+              premise_shape: { type: 'string', description: 'the premise the mechanism consumes — PARAPHRASED, never verbatim item text (briefs get written back to HANDOFF)' },
+              ask_shape: { type: 'string', description: 'the ask, paraphrased' },
+              fact_emitted: { type: 'string', description: 'what the mechanism emits, and what consumes it to an answer' },
+              resolves: { type: 'boolean', description: 'does this item resolve END TO END under the proposed mechanism? Not "does the ask match" — the ask is the easy half.' },
+            },
+          },
+        },
       },
     },
     mechanism: { type: 'string' },
@@ -244,6 +266,32 @@ Repo: ${REPO}. Return the ScoutOutput structured output.`,
   if (scout.notes) log(`scout notes: ${scout.notes}`)
 }
 
+// SHAPE GATE (docs/negative-results.md, batch 22): a frequency count says how
+// many items contain a phrase, not how many the mechanism can READ. Batch 22
+// spent three implementer runs on candidates whose counted items, once walked,
+// turned out not to present the targeted shape at all. So a candidate must show
+// >= 3 walked items that resolve END TO END, or it never reaches an implementer.
+// Infrastructure briefs are exempt: they exist to unblock a follow-up class and
+// legitimately resolve nothing yet (same carve-out the SOLVED>=1 gate makes).
+const unproven = []
+candidates = candidates.filter((c) => {
+  if (SMOKE) return true // the self-test's no-op brief proves no class by design
+  if (c.infrastructure) return true
+  const walked = c.evidence?.structural_sample ?? []
+  const resolving = walked.filter((s) => s.resolves).length
+  if (resolving >= 3) return true
+  unproven.push({
+    slug: c.slug,
+    phase: 'scout-shape-gate',
+    reason: `class unproven: ${resolving} of ${walked.length} walked items resolve end-to-end (need >= 3). frequency=${c.evidence?.frequency ?? '?'} is a SURFACE count — it does not show the mechanism can read those items. See docs/negative-results.md, "the worklist counts surfaces, not shapes".`,
+  })
+  log(`${c.slug}: DROPPED at the shape gate — ${resolving}/${walked.length} walked items resolve (need 3). Not spending an implementer on an unproven class.`)
+  return false
+})
+if (!candidates.length) {
+  return { staging_branch: null, landed: [], deferred: unproven, failed: [], notes: 'Every candidate failed the shape gate: frequency claims with no walked items that resolve end-to-end. Nothing implemented.' }
+}
+
 // Dev-train SOLVED count off the junior's diff; NaN when unparseable.
 const solvedCount = (r) =>
   Number((/SOLVED\s+(\d+)/.exec(r?.gate_evidence?.train_diff ?? '') ?? [])[1] ?? NaN)
@@ -304,6 +352,11 @@ const reviewed = await pipeline(
 let infraBudget = 1
 const enforced = reviewed.filter(Boolean).map((i) => {
   if (!i.result || i.result.status !== 'gated') return i
+  // The smoke brief is a NO-OP by construction (a YAML comment), so it can never
+  // show SOLVED > 0. Without this carve-out the goal-mode gate demotes it and the
+  // self-test silently stops covering the Integrate stage — which is exactly what
+  // it had been doing until 2026-07-12.
+  if (SMOKE) return i
   const solved = solvedCount(i.result)
   if (Number.isFinite(solved) && solved > 0) return i
   if (i.brief.infrastructure && infraBudget > 0) {
@@ -319,9 +372,13 @@ const items = enforced.filter((i) => i.result)
 const failed = items
   .filter((i) => i.result.status === 'failed')
   .map((i) => ({ slug: i.brief.slug, phase: 'implement', reason: i.result.notes || i.result.summary, branch: i.result.branch }))
-const deferred = items
-  .filter((i) => i.result.status === 'deferred')
-  .map((i) => ({ slug: i.brief.slug, phase: 'implement-deferral', reason: i.result.notes || i.result.summary }))
+const deferred = [
+  // candidates dropped at the shape gate, before any implementer was spent
+  ...unproven,
+  ...items
+    .filter((i) => i.result.status === 'deferred')
+    .map((i) => ({ slug: i.brief.slug, phase: 'implement-deferral', reason: i.result.notes || i.result.summary })),
+]
 for (const i of items.filter((x) => x.review && x.review.verdict === 'fail')) {
   deferred.push({ slug: i.brief.slug, phase: 'constitution-review', reason: JSON.stringify(i.review.violations) })
   log(`${i.brief.slug}: REVIEW FAIL — ${i.review.violations.map((v) => v.rule).join(', ')}`)
