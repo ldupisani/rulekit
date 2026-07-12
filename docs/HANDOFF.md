@@ -2283,6 +2283,47 @@ new, now `tests/test_mining_increment_61.py`), suite 52/52, lint 0 errors /
 1 known-good warning (fraction-of-remnant / fraction-of-pool, unchanged).
 TEST look #63: 7/1 (87.5%) — precision HELD, increment kept.
 
+## Increment 62: elided-measure entity asks ("How many does WHO have?" /
+"How many did WHO VERB?") (`d85b6f8`)
+
+Class: a question with NO item/measure noun at all — just "How many does
+WHO have?" or "How many did WHO VERB?" — where the existing itemed asks
+(ask/how-many-entity, the by-verb activity ask) all require a noun slot
+and so decline "no ask shape recognizes this question". Scratchpad
+fullread-declined scan found 6 dev-train items: "how many does W have" x4
+(63ee7f480954, 9300451bebe1, ...) and "how many did W make" x2
+(56ef08361887, fe95d045e503). Named worklist goal-mode directive 1 (ask-
+shape bucket). Items with "how many does he have TO" were inspected and
+excluded up front — that is modal "have to VERB", a different shape, not
+this class.
+
+Mechanism: two new ask ids mirroring ask/how-many-entity and the by-verb
+activity ask but with no item slot, in `packs/arithmetic/rules/core.yaml`.
+Resolution (a new `single-entity-elided-measure` branch in `answer.py`)
+supplies the measure as the UNIQUE measure for which the asked entity
+holds any fact — the same unique-pool-in-play discipline already used by
+synth/partition-of-collection and fraction-of-pronoun, never document-
+level guessing. Exactly one candidate measure for the entity or decline:
+"Tom has 5 marbles and 3 pencils. How many does Tom have?" stays a
+decline by design (probe-verified before landing) — that is the shipped
+decline-safety behavior, not a gap. The new elided-measure asks lose the
+specificity tie-break to every existing itemed ask (fewer consumed units),
+so a real item noun in the question still routes to the pre-existing ask
+unchanged — covered directly by a synthetic test. No new fact kind, no
+new vocabulary.
+
+Files: `packs/arithmetic/rules/core.yaml`, `src/rulekit/kernel/answer.py`,
+`tests/test_mining_increment_62.py` (5 synthetic tests).
+
+Gates (integrated on staging, full re-proof): dev-train diff SHIP +3/0/0
+(3772 items, 30->33 correct, 0 wrong; SOLVED 63ee7f480954, 98030d1ebb74,
+e895a4de0fdd), dev-holdout diff SHIP +3/0/0 (3701 items, 18->21 correct,
+0 wrong; SOLVED 0bf508041d77, 64eddb42f33f, c60b4a7d4525), pytest 487
+passed (was 482 + 5 new, now `tests/test_mining_increment_62.py`), suite
+52/52, lint 0 errors / 1 known-good warning (fraction-of-remnant /
+fraction-of-pool, unchanged).
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 **GOAL MODE (set 2026-07-11): the campaign target is 100 dev-train

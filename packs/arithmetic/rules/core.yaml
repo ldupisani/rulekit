@@ -980,6 +980,34 @@ asks:
       measure: "{item}"
       verb: "{verb}"
 
+  - id: ask/how-many-entity-elided-measure
+    # mining candidate elided-measure-entity-asks: sibling of
+    # ask/how-many-entity with NO `item` slot at all — "How many does Tom
+    # have?" / "How many did Tom make?" elide the measure entirely; the
+    # consumer supplies it as the entity's own unique measure in play (see
+    # answer.py's `single-entity-elided-measure` branch). Exactly 5
+    # consumed units (how/many/aux/who/verb) vs. every itemed sibling's 6
+    # (how/many/item/aux/who/verb) — this ALWAYS loses the specificity
+    # tie-break in patterns.match_ask whenever an item noun is present, so
+    # it can never shadow ask/how-many-entity or its
+    # possessed/qualified siblings. It also can never match the same
+    # sentence as those asks in the first place: with no item slot, this
+    # ask requires `aux` to immediately follow "how many" (skippable units
+    # are articles/punctuation only — see patterns.SKIPPABLE_SENSES), so
+    # any sentence with an item noun there fails this ask's own match
+    # before specificity is ever compared.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: aux, type: future_modal}
+        - {slot: who, type: name}
+        - {slot: verb, type: verb}
+    resolves:
+      consumer: single-entity-elided-measure
+      entity: "{who}"
+      verb: "{verb}"
+
   - id: ask/how-many-entity-possessed
     match:
       question:
