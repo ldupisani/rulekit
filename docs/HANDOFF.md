@@ -1,7 +1,7 @@
 # Session handoff — 2026-07-11
 
 Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
-State below is committed through `8c08859` on `main` (github.com/ldupisani/rulekit;
+State below is committed through `5327809` on `main` (github.com/ldupisani/rulekit;
 check `git status`/`git log origin/main..HEAD` before assuming push parity).
 
 ## Where the project is
@@ -16,8 +16,8 @@ every increment through the gates).
 **Current numbers (all verified at head):**
 - dev-train: 21 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
 - dev-holdout: 16 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 376 · lint: 0 errors, 1 intended warning
-- TEST ledger (50 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- curated suite: 52/52 · pytest: 409 · lint: 0 errors, 1 intended warning
+- TEST ledger (54 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -35,9 +35,11 @@ every increment through the gates).
   6/1 (85.7%, look #41) → 6/1 (#42) → 6/1 (#43) →
   6/1 (85.7%, look #44) → 6/1 (#45) → 6/1 (#46) →
   6/1 (85.7%, look #47) → 6/1 (#48) → 6/1 (#49) →
-  **6/1 (85.7%, look #50) ← live at increment 48** — #45–#47 batch 9
-  (increment 43 SHIP +2), #48–#50 batch 10 (increments 46–48: affine
-  offsets +4, parenthetical units +1, age-comparative relations) —
+  6/1 (85.7%, look #50) → 6/1 (#51) → 6/1 (#52) → 6/1 (#53) →
+  **6/1 (85.7%, look #54) ← live at increment 52** — #48–#50 batch 10
+  (affine offsets +4, parenthetical units +1), #51–#54 batch 11
+  (increments 49–52, ALL dev-NEUTRAL — goal-mode SOLVED enforcement was
+  prose-only; now enforced mechanically in mine.js) —
   #12–#13 batch 1, #14 the modal split, #15–#16 batch 2, #17–#19 batch 3,
   #20 vocab revert, #21–#27 batch-4 re-land, #28–#32 batch 5 (increments
   27–30 held; 31 reverted); precision held on every surviving increment
@@ -1652,7 +1654,7 @@ known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) / 22
 info.
 TEST look #50: 6/1 (85.7%) — precision HELD, increment kept.
 
-## Increment 49: future-modal factual asks (will/would-phrased questions over ordinary state/event folds)
+## Increment 49: future-modal factual asks (will/would-phrased questions over ordinary state/event folds) (`64b2053`)
 
 Lands worklist goal-mode directive 1 (mine the "no ask shape recognizes this
 question" bucket). Fresh stats over that bucket (2,481 dev-train declines):
@@ -1711,7 +1713,7 @@ Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
 `tests/test_mining_increment_49.py`), suite 52/52, lint 0 errors / 1
 known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) / 23
 info.
-TEST look: pending — spent manually.
+TEST look #51: 6/1 (85.7%) — precision HELD, increment kept.
 
 ## Increment 50: question-supplied-quantity pay/spend cost asks (`how much did WHO pay/spend for/on N ITEM`)
 
@@ -1764,7 +1766,7 @@ dev-holdout diff NEUTRAL 0/0/0 (3701 items, 16/0 unchanged), pytest 390
 passed (was 383 + 7 new, now `tests/test_mining_increment_50.py`), suite
 52/52, lint 0 errors / 1 known-good warning (fraction-of-remnant /
 fraction-of-pool, unchanged) / 22 info.
-TEST look: pending — spent manually.
+TEST look #52: 6/1 (85.7%) — precision HELD, increment kept.
 
 ## Increment 51: inverse rate-span (duration) asks (`how long / how many
 TIMEUNIT does it take WHO to VERB N ITEM` = amount ÷ rate)
@@ -1805,7 +1807,7 @@ dev-holdout diff NEUTRAL 0/0/0 (3701 items, 16/0 unchanged), pytest 399
 passed (was 390 + 9 new, now `tests/test_mining_increment_51.py`), suite
 52/52, lint 0 errors / 1 known-good warning (fraction-of-remnant /
 fraction-of-pool, unchanged) / 22 info.
-TEST look: pending — spent manually.
+TEST look #53: 6/1 (85.7%) — precision HELD, increment kept.
 
 ## Increment 52: average asks (`what is/was the average number of X
 they VERB` = combined total ÷ holder count)
@@ -1842,7 +1844,7 @@ items, 16->17 correct, 0 wrong — SOLVED 076eae6e029a), pytest 409 passed
 (was 399 + 10 new, now `tests/test_mining_increment_52.py`), suite 52/52,
 lint 0 errors / 1 known-good warning (fraction-of-remnant /
 fraction-of-pool, unchanged) / 22 info.
-TEST look: pending — spent manually.
+TEST look #54: 6/1 (85.7%) — precision HELD, increment kept.
 
 ## The next mining worklist (from the last close-miss scan)
 

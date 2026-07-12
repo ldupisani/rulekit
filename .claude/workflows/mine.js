@@ -50,6 +50,10 @@ const SCOUT_BRIEF = {
     },
     priority: { type: 'number' },
     overlaps_with: { type: 'array', items: { type: 'string' } },
+    infrastructure: {
+      type: 'boolean',
+      description: 'true ONLY for a declared-infrastructure brief that names the follow-up class it unblocks; exempts the SOLVED>=1 goal-mode gate',
+    },
   },
 }
 const SCOUT_SCHEMA = {
@@ -263,7 +267,25 @@ const reviewed = await pipeline(
   },
 )
 
-const items = reviewed.filter(Boolean).filter((i) => i.result)
+// Goal-mode mechanical gate: a gated coverage candidate whose dev-train diff
+// shows 0 SOLVED is demoted to failed unless its brief declared
+// infrastructure. Prose directives in HANDOFF were being routed around; this
+// is the hard version. At most ONE infrastructure landing per batch.
+let infraBudget = 1
+const enforced = reviewed.filter(Boolean).map((i) => {
+  if (!i.result || i.result.status !== 'gated') return i
+  const solved = Number((/SOLVED\s+(\d+)/.exec(i.result.gate_evidence?.train_diff ?? '') ?? [])[1] ?? NaN)
+  if (Number.isFinite(solved) && solved > 0) return i
+  if (i.brief.infrastructure && infraBudget > 0) {
+    infraBudget -= 1
+    log(`${i.brief.slug}: 0 SOLVED, declared infrastructure — using the batch's one infra slot`)
+    return i
+  }
+  log(`${i.brief.slug}: GATED but 0 dev-train SOLVED and no infra slot — demoted to failed (goal mode)`)
+  return { ...i, result: { ...i.result, status: 'failed', notes: `goal-mode demotion: dev-train SOLVED=0 (${i.brief.infrastructure ? 'infra slot already used this batch' : 'brief not declared infrastructure'}). ${i.result.notes ?? ''}` } }
+})
+
+const items = enforced.filter((i) => i.result)
 const failed = items
   .filter((i) => i.result.status === 'failed')
   .map((i) => ({ slug: i.brief.slug, phase: 'implement', reason: i.result.notes || i.result.summary, branch: i.result.branch }))
