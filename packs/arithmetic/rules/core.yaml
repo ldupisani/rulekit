@@ -1177,6 +1177,59 @@ asks:
       span_unit: "{span}"
       span_value: "{span.value}"
 
+  - id: ask/how-long-take-span
+    # 'how long does/did it take WHO to VERB N ITEM?' — the INVERSE of the
+    # forward rate-span asks above: amount ASKED divided by a known Rate,
+    # instead of a known span multiplied by a known Rate. "it take" is
+    # structural skeleton (the extraposed-infinitive idiom), not lexicon —
+    # 'aux' is restricted to the auxiliary sense (do/does/did) so a
+    # will-phrased "how long will it take" (a distinct, disjoint mining
+    # candidate) structurally cannot match here, since 'will' is tagged
+    # 'modal' (increment 14), never 'auxiliary'. Routed to a NEW consumer
+    # (rate-span-inverse) — the forward 'rate-span' consumer/branch above
+    # is untouched byte-for-byte.
+    match:
+      question:
+        - {lit: how}
+        - {lit: long}
+        - {slot: aux, type: auxiliary}
+        - {lit: it}
+        - {lit: take}
+        - {slot: who, type: entity}
+        - {lit: to}
+        - {slot: verb, type: verb}
+        - {slot: item, type: counted}
+    resolves:
+      consumer: rate-span-inverse
+      entity: "{who}"
+      item: "{item}"
+      item_value: "{item.value}"
+
+  - id: ask/how-many-timeunit-take-span
+    # 'how many TIMEUNIT does/did it take WHO to VERB N ITEM?' — same
+    # inverse class as ask/how-long-take-span above, but the asked time
+    # UNIT is named explicitly ("how many hours...") instead of left to the
+    # rate's own per-unit; the consumer additionally requires the named
+    # unit to match the committing rate's per-unit, or declines.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: span_unit, type: noun}
+        - {slot: aux, type: auxiliary}
+        - {lit: it}
+        - {lit: take}
+        - {slot: who, type: entity}
+        - {lit: to}
+        - {slot: verb, type: verb}
+        - {slot: item, type: counted}
+    resolves:
+      consumer: rate-span-inverse
+      entity: "{who}"
+      item: "{item}"
+      item_value: "{item.value}"
+      span_unit: "{span_unit}"
+
   - id: ask/how-old-is
     match:
       question:

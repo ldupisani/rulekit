@@ -485,6 +485,60 @@ def answer(
             f"{rate.value}/{rate.per} × {k} {rate.per} for {entity!r}",
         )
 
+    if consumer == "rate-span-inverse":
+        # the INVERSE of 'rate-span' above ('how long does it take WHO to
+        # VERB N ITEM?' / 'how many TIMEUNIT does it take...?'): an ASKED
+        # amount divided by a known Rate, rather than a known span
+        # multiplied by one. A distinct, additive branch — the forward
+        # 'rate-span' block above is untouched byte-for-byte.
+        entity = query["entity"]
+        measure = reg.plural_to_singular.get(query["item"], query["item"])
+        rates = [
+            r for r in store.by_kind(Rate)
+            if r.entity == entity
+            and (
+                r.measure == measure
+                or (
+                    measure in reg.category_parents
+                    and reg.word_in_category(r.measure, measure)
+                )
+            )
+        ]
+        if len(rates) != 1:
+            return Answer(
+                "decline", None,
+                f"{len(rates)} rates known for {entity!r}/{measure!r} — "
+                "the inverse span ask needs exactly one",
+            )
+        rate = rates[0]
+        if "span_unit" in query:
+            asked_unit = reg.plural_to_singular.get(query["span_unit"], query["span_unit"])
+            if asked_unit != rate.per:
+                return Answer(
+                    "decline", None,
+                    f"asked time unit {asked_unit!r} does not match the "
+                    f"rate's {rate.per!r} — cannot invert",
+                )
+        # a per-individual rate ("a bird eats 7 berries a day") entangles a
+        # population the simple division below does not attempt — decline
+        # rather than risk a wrong, mirroring the forward branch's own
+        # per-individual detection (holders of rate.entity as a measure).
+        holders = {q.entity for q in store.by_kind(Quantity) if q.measure == rate.entity}
+        if holders:
+            return Answer(
+                "decline", None,
+                f"the rate is per-{rate.entity} — the inverse span ask does "
+                "not attempt a population division",
+            )
+        item_value = float(query["item_value"])
+        span = evaluate(
+            f"{item_value} / {rate.value}", {}, log, source="rate-span-inverse"
+        )
+        return Answer(
+            "number", span,
+            f"{item_value} {measure} ÷ {rate.value}/{rate.per} for {entity!r}",
+        )
+
     if consumer == "unique-entity":
         # an ENTITY-LESS ask ("how many balloons are left?") resolves iff
         # exactly one entity holds the measure — definitive-or-decline

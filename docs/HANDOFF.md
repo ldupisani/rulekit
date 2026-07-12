@@ -1766,6 +1766,47 @@ passed (was 383 + 7 new, now `tests/test_mining_increment_50.py`), suite
 fraction-of-pool, unchanged) / 22 info.
 TEST look: pending — spent manually.
 
+## Increment 51: inverse rate-span (duration) asks (`how long / how many
+TIMEUNIT does it take WHO to VERB N ITEM` = amount ÷ rate)
+
+Lands HANDOFF's "Rate chaining" bullet (the 10-hours-over-5-days item
+"needs an hours-per-day division the bridge doesn't synthesize") plus
+goal-mode directive 1 / "0 rates known" 22 in fresh stats. Fresh stats: 41
+no-ask-shape declines match "how long ... take" + "no take events known" 14
+(probe showed "How many hours does it take Tom to read 20 pages?"
+mis-routing there). Probe-verified the forward half already works — "Tom
+reads 5 pages per hour. How many pages does Tom read in 3 hours?" commits
+15.0 via the existing rate-span consumer reading the Rate fact forward —
+the inverse question ("How long does it take Tom to read 20 pages?")
+declined "no ask shape" with the identical premises. Only the ask forms and
+the inverse division were missing.
+
+Two new ask ids in `packs/arithmetic/rules/core.yaml`:
+`ask/how-long-take-span` ("how long does/did it take WHO to VERB N ITEM?" —
+the span is implicitly in the rate's own per-unit) and
+`ask/how-many-timeunit-take-span` ("how many TIMEUNIT does/did it take WHO
+to VERB N ITEM?" — the named time unit must match the committing rate's
+per-unit or the ask declines). Both route to a NEW, additive
+`rate-span-inverse` consumer in `answer.py`; the existing forward
+`rate-span` consumer/branch (shared with increments 8/9/13/21) is untouched
+byte-for-byte — confirmed by the zero-diff dev-train/dev-holdout re-gate
+below. The inverse branch requires a UNIQUE Rate whose measured item
+matches the asked item (same unique-rate-or-decline discipline as the
+forward branch) and reads its value only through the shared arithmetic-log
+accounting (the look #4-#7 lesson on leaky accounting in this same
+consumer family). Scoped OUT: will-phrased forms ("how long will it take",
+most of the raw 41) stay with `will-tense-asks` (increment 49) to keep the
+two ask families disjoint — only bare aux does/did + "how long does" is
+matched here.
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(3772 items, 21/0 unchanged — no matching items in this dev-train sample),
+dev-holdout diff NEUTRAL 0/0/0 (3701 items, 16/0 unchanged), pytest 399
+passed (was 390 + 9 new, now `tests/test_mining_increment_51.py`), suite
+52/52, lint 0 errors / 1 known-good warning (fraction-of-remnant /
+fraction-of-pool, unchanged) / 22 info.
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 **GOAL MODE (set 2026-07-11): the campaign target is 100 dev-train
