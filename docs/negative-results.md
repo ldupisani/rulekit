@@ -111,3 +111,47 @@ the underlying mechanism wrong is found and fixed). Whatever 'fruit'
 unlocks commits a wrong via a mechanism dev never exercises — finding
 THAT wrong from the dev side (permissive scan over fruit-containing
 declines, looking for near-miss commits) is the durable fix path.
+
+## The worklist counts surfaces, not shapes (batch 22, 2026-07-12)
+
+**What happened:** three of five candidates in batch 22 gated cleanly, passed
+review, and moved NOTHING — `percent-of-collection-asks`, `partitive-measure-recut`
+and `attr-qualified-measure-subsets` all landed 0 dev-train SOLVED and were
+demoted by the goal-mode gate. Three full implementer runs (worktree, dev gate,
+synthetic tests, constitution review) bought zero coverage.
+
+**The clearest case.** `percent-of-collection-asks` was scouted on a frequency
+signal of 28 dev-train items (verified: 29 match `what percent(age)? of`). The
+junior implemented the mechanism, then hand-scanned all 28 and found that **none
+of them** present the shape it targets — `"N of them are ADJ. What percent of the
+ITEM are ADJ?"`. What the 28 actually contain is multi-step arithmetic that
+happens to *end* in a percent question:
+
+- "However, 5% of the germs they kill are the same ones… What percentage of germs
+  would be left after using both sprays?"
+- "Then she quadruples the amount of water in the jug. What percentage of the
+  liquid in the jug is koolaid powder?"
+
+**The lesson — a frequency count is a SURFACE count, not a SHAPE count.** The
+worklist tells you how many items contain a phrase. It cannot tell you how many
+items have premises the mechanism can consume. For an ask shape, the ask is the
+easy half; the premise structure is what decides whether anything resolves. A
+high phrase frequency with an unexamined premise distribution is not evidence —
+it is a hypothesis, and it is usually wrong, because the reason those items are
+still declining is precisely that their premises are hard.
+
+**What this costs:** ~1 implementer run per over-trusted signal, and it is the
+single largest source of wasted work in the batches so far.
+
+**What to do instead.** A brief that claims frequency N must also carry a
+STRUCTURAL sample: quote 3–5 of the N items and show, for each, the premise the
+mechanism would consume and the fact it would emit. If the scout cannot do that
+for at least 3, the candidate is not ready — the number is a phrase count and the
+class has not been demonstrated to exist. This is cheap for the scout (it is
+already reading dev-train) and it is the difference between "28 items say
+'percent'" and "28 items this mechanism can read".
+
+**Not a constitution violation, and that is the point.** All three candidates were
+clean, general, decline-safe machinery. The gate did its job and the goal-mode
+SOLVED>0 check caught them. The failure was upstream, in candidate SELECTION —
+and no amount of review discipline downstream recovers a wasted implementer run.
