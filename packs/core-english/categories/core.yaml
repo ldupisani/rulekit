@@ -244,6 +244,29 @@ categories:
       subject, so it can key the emitted Price fact on the MEASURE noun
       the phrase anchors to (the SAME noun the purchase-verb premise's own
       Quantity.measure already uses) rather than on the item noun itself.
+  complement_boy:
+    parent: noun
+    antonym: complement_girl
+    notes: >
+      mining candidate complement-labeled-subsets: a PACK-DECLARED
+      complementary-label PAIR — 'boy' and 'girl' EXHAUSTIVELY partition a
+      collection they both label (unlike an arbitrary sibling noun pair,
+      which increment 16 explicitly refused to assume exhaustive). Reuses
+      the SAME `antonym:` mechanism polarity pairs use (acquire/lose,
+      more_dir/less_dir), but deliberately carries NO `polarity` — this
+      pairing is not a signed direction, just two singleton categories so
+      saturate.py's `_complement_word` can look up 'the other label' by
+      category-antonym instead of a hardcoded word pair (constitution
+      rule 1). 'boy'/'girl' are difg-mined-only words — no core-english
+      word carries either sense — so, mirroring 'temporal_marker'/
+      'age_measure's sibling pattern above, this category has NO members
+      here; they live in packs/difg-mined/categories/semantic.yaml. A
+      core-english-only registry (no difg-mined) compiles with both
+      categories simply empty (the synth then never fires, decline-safe).
+  complement_girl:
+    parent: noun
+    antonym: complement_boy
+    notes: "the symmetric half of complement_boy — see its notes."
 members:
   currency: [dollar]
   partitive: [of]

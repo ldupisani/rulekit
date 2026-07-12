@@ -330,6 +330,10 @@ members:
   - nickel
   - penny
   - quarter
+  complement_boy:
+  - boy
+  complement_girl:
+  - girl
   contribute:
   - contribute
   - contributed

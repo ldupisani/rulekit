@@ -3453,3 +3453,54 @@ diff SOLVED 0 / BROKE 0 / DECL→WRONG 0 (NEUTRAL; 23/3701 correct before
 and after), pytest 603 passed, suite 52/52, lint 0 errors / 1 known-good
 warning (fraction-of-remnant / fraction-of-pool, unchanged). TEST look:
 pending — spent manually.
+
+## Increment 76: complement-labeled subset asks (the ask names the
+complementary label of a stated partition, not its negation)
+
+Class: asks where the premise states a collection total plus ONE
+fractional/spelled-fraction/percent membership partition naming a single
+subgroup noun (e.g. "N are boys"), and the ask names the COMPLEMENTARY
+label ("how many girls...") rather than the same label or its bare
+negation. Three surface variants: (a) "how many <complement> are in the
+<place>?" (routes to `ask/how-many-in-place`, previously died on "no
+quantity known" because only the stated subset had a Quantity); (b) "how
+many OF THE <collection> are <complement>?" (a partitive ask form with no
+matching ask id before this increment); (c) a bare-existential collection
+held by the scene (`world`), introduced by a leading place PP, asked via
+"how many <complement> are at this <place>?" (the named place holds no
+facts of the measure, only `world` does).
+
+Mechanism, three pieces: (1) pack data — a complementary-pair relation
+(boy<->girl only; neither word in `packs/difg-mined/quarantine.yaml`) in
+`packs/core-english/categories/core.yaml`, declared as a word fact (not a
+Python list), licensing exhaustiveness only for pairs an author has
+vetted rather than any arbitrary unstated sibling noun (increment 16's
+refusal still holds for unpaired words). (2) `saturate.py` —
+`_partition_synth` gains an ADDITIVE branch: when the asked measure has
+zero facts, exactly one non-fraction membership PartitionQuantity exists
+over a collection whose total resolves to exactly one holder, and the
+asked noun is the pack-declared complement of the partition's stated
+attribute, emit a Quantity for the asked measure = total − subset, keyed
+on the collection's own holder entity. Declines on a second stated
+partition over the same collection, an ambiguous total, or an asked noun
+with no declared complement; increment 73's rest-partition path is
+untouched (separate branch). (3) YAML — a new "how many OF THE COLLECTION
+are LABEL" partitive ask form routed to the existing entity-less consumer
+(no new consumer), plus a decline-safe fallback on
+`ask/how-many-in-place`'s single-entity consumer: when the named place
+holds no facts of the asked measure and exactly one holder (`world`)
+exists anywhere in the document, fall back to that holder — this can only
+convert a decline into a commit, never move an already-committed answer.
+
+Files: `packs/core-english/categories/core.yaml`,
+`packs/arithmetic/rules/core.yaml`, `src/rulekit/kernel/saturate.py`,
+`src/rulekit/kernel/answer.py`, `tests/test_mining_increment_76.py` (9
+synthetic tests).
+
+Gates (integrated on staging, full re-proof against current staging
+baseline): dev-train diff SOLVED 3 / BROKE 0 / DECL→WRONG 0 (SHIP;
+390d5fa105b6, 8da249810ab0, c09e5d318bb5; 51→54/3772 correct), dev-holdout
+diff SOLVED 0 / BROKE 0 / DECL→WRONG 0 (NEUTRAL; 23/3701 correct before
+and after), pytest 612 passed, suite 52/52, lint 0 errors / 1 known-good
+warning (fraction-of-remnant / fraction-of-pool, unchanged). TEST look:
+pending — spent manually.

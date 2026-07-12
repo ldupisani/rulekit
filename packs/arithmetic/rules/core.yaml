@@ -1185,6 +1185,17 @@ rules:
 
 asks:
   - id: ask/how-many-in-place
+    # `place_fallback_entity: world` (mining candidate complement-labeled-
+    # subsets): the single-entity consumer's OWN opt-in fallback (see its
+    # comment, answer.py) — bound ONLY here, mirroring the existing
+    # `exclude_entity: world` precedent (bound only by
+    # ask/how-many-there-combined for the 'combined' consumer): a shared
+    # consumer widened for ONE caller via a defaulted-off parameter, never
+    # globally (the HANDOFF invariant), and the fallback entity itself is
+    # pack DATA (the `world` scene constant), never a hardcoded string in
+    # the Python consumer. Every other single-entity ask in this file
+    # (named-entity asks like ask/how-many-entity) leaves it unset and is
+    # therefore untouched by the fallback.
     match:
       question:
         - {lit: how}
@@ -1198,6 +1209,7 @@ asks:
       entity: "{place}"
       measure: "{item}"
       verb: have
+      place_fallback_entity: world
 
   - id: ask/how-many-combined
     match:
@@ -2295,6 +2307,47 @@ asks:
       item: "{item}"
       attribute: "{item.qualifier}"
       negated: "false"
+
+  - id: ask/how-many-of-collection-are-label
+    # mining candidate complement-labeled-subsets: the PARTITIVE ask form
+    # "how many OF (THE) COLLECTION are LABEL?" — a distinct subject
+    # surface from ask/how-many-partition's postfix copula ("how many
+    # COLLECTION are LABEL?", item BEFORE the verb) and from
+    # ask/how-many-attribute-partition-in-place's prenominal form (LABEL
+    # BEFORE the noun): here the collection is the PARTITIVE object of
+    # 'of' right after "how many" — no other ask in this file starts with
+    # a literal 'of' in that position (grepped), so this never shadows or
+    # collides with an existing ask.
+    # `collection` is captured ONLY to consume the partitive subject NP
+    # structurally — never referenced below, mirrors
+    # ask/how-many-plural-combined's own unused `who` slot — because the
+    # asked LABEL is a plain measure word routed to the SAME entity-less
+    # 'unique-entity' consumer ask/how-many-there already uses (no new
+    # consumer): it resolves iff exactly one entity holds a Quantity of
+    # that measure. That Quantity for a COMPLEMENT label ('girl' when the
+    # stated partition was 'boy') comes from saturate.py's
+    # synth/partition-complement-quantity plugin — this ask form simply
+    # lets the question NAME the complement directly instead of negating
+    # the stated attribute; with no such fact (or the stated label
+    # itself, already a real measure via synth/partition-membership-
+    # quantity) this declines exactly like any other unique-entity ask
+    # over an unresolvable measure. `verb, cat: state` (not the general
+    # `verb` type): a membership label is always a COPULAR predication
+    # ("ARE girls"), mirroring arithmetic/partition-membership-of-noun's
+    # identical narrowing rationale.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {lit: of}
+        - opt:
+            - {lit: the}
+        - {slot: collection, type: noun}
+        - {slot: verb, cat: state}
+        - {slot: label, type: noun}
+    resolves:
+      consumer: unique-entity
+      measure: "{label}"
 
   - id: ask/how-many-more-goal-need
     match:

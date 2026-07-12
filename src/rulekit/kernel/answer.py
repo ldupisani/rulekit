@@ -454,6 +454,31 @@ def answer(
         if total is None:
             scoped = owner_store if owner else qualifier_store
             total = _entity_total(scoped, reg, entity, singular, log)
+        fallback_entity = query.get("place_fallback_entity")
+        if total is None and fallback_entity:
+            # decline-safe fallback (mining candidate complement-labeled-
+            # subsets), bound ONLY by ask/how-many-in-place — the HANDOFF
+            # opt-in-parameter discipline for widening a shared consumer
+            # (mirrors the pre-existing `exclude_entity: world` precedent
+            # on ask/how-many-there-combined: the fallback entity is pack
+            # DATA carried through the query, never a hardcoded "world"
+            # string literal in this Python consumer). The named PLACE
+            # holds NO facts of the asked measure at all (e.g. a bare
+            # existential collection scene-held on `world`, introduced by
+            # a leading place PP that never actually bound to the named
+            # place). Answer from `fallback_entity` ONLY when it is the
+            # SOLE holder of the measure anywhere in the document — never
+            # merely "some other single holder exists" (that would risk a
+            # confident wrong whenever an unrelated entity happens to be
+            # the only other holder, e.g. "Tom's STORE has 20 candies...
+            # how many are in the BOX?"). Every OTHER single-entity ask (a
+            # NAMED individual like "how many toys does Tom have") never
+            # binds this query field, so it can only ever CONVERT a
+            # decline into a commit for the in-place ask, never move an
+            # already-committed answer or reach for an unrelated entity.
+            holders = {q.entity for q in store.by_kind(Quantity) if q.measure == singular}
+            if holders == {fallback_entity}:
+                total = _entity_total(store, reg, fallback_entity, singular, log)
         if total is None:
             return Answer(
                 "decline", None,

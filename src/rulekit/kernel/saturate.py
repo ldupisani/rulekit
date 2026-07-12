@@ -574,6 +574,104 @@ def _partition_membership_synth(
     return out
 
 
+def _complement_word(reg: Registry, word: str) -> str | None:
+    """The pack-declared COMPLEMENT of a word ('girl' for 'boy'), mining
+    candidate complement-labeled-subsets: two singleton categories linked
+    by `antonym:` (packs/core-english/categories/core.yaml's structure,
+    packs/difg-mined/categories/semantic.yaml's members) — the SAME
+    antonym mechanism polarity pairs use (acquire/lose), reused here
+    purely structurally (no `polarity` declared for this pair). A category
+    with anything other than exactly one member on the antonym side is
+    not a clean word-to-word pairing — decline (None) rather than guess
+    which member is the intended complement."""
+    for cat in reg.word_categories.get(word, ()):
+        anto = reg.category_antonyms.get(cat)
+        if anto is None:
+            continue
+        members = reg.category_members.get(anto, ())
+        if len(members) == 1:
+            return members[0]
+    return None
+
+
+def _partition_complement_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> list[Fact]:
+    """Complement-labeled subset asks (mining candidate
+    complement-labeled-subsets): "This bookshop has 40 books. 25% of them
+    are graphic novels. How many are NOT graphic novels?" already answers
+    via the `partition-complement` consumer's NEGATION path — but "How
+    many TEXTBOOKS are in the bookshop?" (naming the complement by its OWN
+    label, never by negating the stated one) has no fact to read, because
+    the stated MEMBERSHIP partition only ever names the ONE subset it
+    counts. This plugin closes that gap by EMITTING the missing measure
+    directly, once a MEMBERSHIP partition ('boy') resolves its collection
+    to a real measure with EXACTLY one holder and the asked label ('girl')
+    is the PACK-DECLARED complement of the stated one (`_complement_word`
+    above) — never an arbitrary unstated sibling noun, which increment
+    16's own exhaustive-enumeration refusal still applies to. The declared
+    pair is what makes exhaustiveness sound (a complementary pair
+    partitions its collection BY DEFINITION), licensed by DATA instead of
+    guessed.
+
+    Declines (never fires) whenever: the partition is fractional/rest-
+    kind/negative-polarity (only a plain stated MEMBERSHIP cardinal
+    anchors a complement — those forms resolve to one here in a LATER
+    round, same fixpoint discipline every other synth plugin uses); more
+    than ONE membership partition is stated over the same collection (a
+    3-way split is not a complement — a second stated subset makes the
+    'exhaustive pair' assumption unsound); the collection's total has
+    anything other than exactly one holder (never guess which entity the
+    complement belongs to); the collection's own total is unresolvable as
+    of the partition's sentence; the resulting count would be negative
+    (an inconsistent premise); or the complement measure ALREADY has a
+    Quantity of its own (never overwrite or double-emit — decline-safe by
+    construction, mirrors every other synth plugin's `known_measures`
+    guard)."""
+    from .model import PartitionQuantity
+
+    out: list[Fact] = []
+    known_measures = {q.measure for q in store.by_kind(Quantity)}
+    for p in store.by_kind(PartitionQuantity):
+        if (
+            p.kind != "membership" or p.is_fraction or p.is_rest
+            or not p.polarity or p.collection not in known_measures
+        ):
+            continue
+        complement = _complement_word(reg, p.attribute)
+        if complement is None or complement in known_measures:
+            continue
+        siblings = [
+            s for s in store.by_kind(PartitionQuantity)
+            if s.collection == p.collection and s.kind == "membership"
+            and not s.is_fraction and not s.is_rest
+        ]
+        if len(siblings) != 1:
+            continue  # more than one stated subset — not a clean complement
+        holders = {q.entity for q in store.by_kind(Quantity) if q.measure == p.collection}
+        if len(holders) != 1:
+            continue
+        (holder,) = holders
+        total = _pool_before(
+            store, reg, p.provenance.sentence, p.collection, log,
+            "synth/partition-complement",
+        )
+        if total is None:
+            continue
+        value = evaluate(
+            f"{total} - {p.value}", {}, log, source="synth/partition-complement"
+        )
+        if value < 0:
+            continue  # an inconsistent premise — never commit a negative count
+        out.append(
+            Quantity(
+                provenance=Provenance(
+                    source="synth/partition-complement", sentence=p.provenance.sentence
+                ),
+                entity=holder, measure=complement, value=value, verb="have",
+            )
+        )
+    return out
+
+
 def _sum_constraint_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> list[Fact]:
     """sum-constraint linear systems (mining candidate sum-constraint-
     relations): "Anais has 30 more toys than Kamari. There are 160 toys
@@ -654,6 +752,7 @@ PLUGINS: dict[str, Synthesizer] = {
     "synth/rest-of-pool": _rest_synth,
     "synth/partition-of-collection": _partition_synth,
     "synth/partition-membership-quantity": _partition_membership_synth,
+    "synth/partition-complement-quantity": _partition_complement_synth,
     "synth/sum-constraint": _sum_constraint_synth,
 }
 
