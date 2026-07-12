@@ -40,6 +40,18 @@ categories:
     polarity: -1
   motion:
     parent: verb
+  multiplier_marker:
+    parent: noun
+    notes: >
+      the multiplicative-ratio clause marker 'times' (as in "N times as
+      many/much/the number of X as Y") — sensed 'noun' in the lexicon
+      (t-z.yaml); the merged 'N times' MULTIPLIER value itself is assigned
+      structurally in kernel/numbers.py and is unrelated to this category.
+      engine.py's `_is_relational_clause` (mining candidate conjoined-
+      clause-holdings) ORs membership in this category alongside
+      'comparative'/'multiplier' to recognize a comparative/ratio clause
+      structurally — the SAME "test a category, never enumerate the word
+      in Python" shape as 'clause_marker_prep' below.
   person:
     parent: noun
   persongroup:
@@ -413,6 +425,8 @@ members:
   - walked
   - walks
   - went
+  multiplier_marker:
+  - times
   more_dir:
   - older
   # 'never' lives in the difg-mined lexicon (not core-english); the

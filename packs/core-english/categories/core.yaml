@@ -114,6 +114,20 @@ categories:
       NO members here; they live in packs/difg-mined/categories/
       semantic.yaml. A core-english-only registry (no difg-mined) compiles
       with this category simply empty.
+  relational_marker:
+    parent: particle
+    notes: >
+      the comparative/ratio clause-boundary word 'than' — sensed
+      'particle' in the lexicon (core.yaml), unchanged. engine.py's
+      `_is_relational_clause` (mining candidate conjoined-clause-holdings)
+      ORs membership in this category alongside 'comparative'/'multiplier'
+      to recognize a comparative/ratio clause structurally — the SAME
+      "test a category, never enumerate the word in Python" shape as
+      'clause_marker'/'clause_marker_prep' (packs/difg-mined/categories/
+      clauses.yaml). 'particle' was added to registry.ROOT_SENSES to let
+      this category resolve, purely additive (mirrors the earlier 'modal'
+      root-sense addition) — 'than' keeps its single existing sense, so no
+      new ambiguity is introduced for the many sentences that use it.
 members:
   currency: [dollar]
   remnant_adj: [left]
@@ -126,6 +140,7 @@ members:
   more_dir: [more]
   less_dir: [fewer, less]
   negation: [not]  # 'never' extends this from packs/difg-mined (its own lexicon)
+  relational_marker: [than]
 context_synonyms:
   appendage:
     gate: animal

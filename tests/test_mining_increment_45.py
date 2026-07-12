@@ -118,15 +118,21 @@ def test_non_purchase_event_sibling_never_priced(full_registry):
     assert r.answer.kind == "decline"
 
 
-def test_coordinated_second_clause_declines_for_event_verb(full_registry):
-    # the stop-on-verb-break discipline (increment 35), unchanged for an
-    # acquire/lose-tagged event verb: a second finite clause coordinated
-    # with ','/'and' is a NEW clause, not a sibling noun phrase — walking
-    # into it and folding its dobj as a sibling of the first entity would
-    # be a silent miscount, so this must decline instead of committing 5.
+def test_coordinated_second_clause_now_resolves_for_event_verb(full_registry):
+    # the stop-on-verb-break discipline (increment 35) still guards a
+    # second finite clause with no NAME subject of its own (see
+    # test_mining_increment_35.py's counted-subject variant). This test
+    # originally asserted decline for "Jordan lost 6 books" specifically,
+    # on the theory that
+    # walking into it and folding its dobj as a sibling of the first
+    # entity would be a silent miscount. Mining candidate conjoined-
+    # clause-holdings makes that ambiguity structurally impossible:
+    # engine.py's `_split_conjoined_clauses` now splits "Jordan lost 6
+    # books" into its OWN premise before this walker's tail scan ever sees
+    # it, so the answer correctly resolves instead of declining.
     r = solve(
         "Priya lost 5 pens and 3 pencils, and Jordan lost 6 books. "
         "How many pens did Priya lose?",
         full_registry,
     )
-    assert r.answer.kind == "decline"
+    assert r.answer.value == 5

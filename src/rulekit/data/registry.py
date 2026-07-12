@@ -37,10 +37,15 @@ from .schemas import (
 # word behavior. 'modal' was added the same way (mining candidate
 # will-tense-asks) so a `future_modal` category can name the will/would
 # subset of the 8 modal-sense words without disturbing the increment-14
-# modal/auxiliary split.
+# modal/auxiliary split. 'particle' was added the same way again (mining
+# candidate conjoined-clause-holdings) so a `relational_marker` category
+# can name 'than' -- the comparative/ratio clause-boundary word already
+# sensed 'particle' in the core-english lexicon -- without adding a second
+# sense to it (which would make every 'than'-bearing sentence in the
+# corpus newly ambiguous under obligations.disambiguate()).
 ROOT_SENSES = (
     "noun", "verb", "adjective", "quantifier", "preposition", "comparative",
-    "negator", "conjunction", "modal",
+    "negator", "conjunction", "modal", "particle",
 )
 
 

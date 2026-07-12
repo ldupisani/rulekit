@@ -81,17 +81,25 @@ def test_spelled_out_numbers(full_registry):
     assert r.answer.value == 3
 
 
-def test_coordinated_second_clause_declines(full_registry):
+def test_coordinated_second_clause_now_resolves(full_registry):
     # a SECOND finite clause coordinated with ',/and' is a NEW clause with
     # its own subject/verb, not a sibling noun phrase in the first
-    # subject's list — walking into it and folding its dobj as a sibling
-    # of the first entity would be a silent miscount; must decline instead.
+    # subject's list. This test originally asserted decline (walking into
+    # the second clause and folding its dobj as a sibling of the first
+    # entity would have been a silent miscount). Mining candidate
+    # conjoined-clause-holdings makes the ambiguity structurally
+    # impossible: "Jordan has 6 books" is now split into its OWN premise
+    # by engine.py's `_split_conjoined_clauses` before this walker's tail
+    # scan ever sees it, so the walker's stop-on-verb-break discipline
+    # (still exercised by the counted-subject variant below, which has no
+    # NAME after the comma and so never splits) no longer needs to guard
+    # this exact shape — the answer correctly resolves instead.
     r = solve(
         "Priya has 5 pens and 3 pencils, and Jordan has 6 books. "
         "How many pens does Priya have?",
         full_registry,
     )
-    assert r.answer.kind == "decline"
+    assert r.answer.value == 5
 
 
 def test_coordinated_second_clause_with_counted_subject_declines(full_registry):

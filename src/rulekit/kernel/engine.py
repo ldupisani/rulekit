@@ -8,6 +8,7 @@ why-not + what IS known).
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 
 from ..data.registry import Registry
@@ -17,6 +18,7 @@ from .document import Document, _bind_discourse, run_document
 from .evaluate import ArithmeticLog
 from .facts import FactStore
 from .guards import GuardVeto, check as run_guards
+from .learn import _has_event_polarity
 from .model import Fact, Reading
 from .numbers import annotate_numbers
 from .obligations import attach_obligations, bind, disambiguate
@@ -209,6 +211,219 @@ def _split_trailing_clause_commaless(question: str) -> tuple[str | None, str]:
     return clause_body + ".", wh_part + "?"
 
 
+_CLAUSE_BOUNDARY = re.compile(r",\s+|(?P<word>[A-Za-z]+)\s+")
+
+
+def _is_conjunction_word(word: str, reg: Registry) -> bool:
+    """Same structural sense check `_has_ask_cue_sense` already uses for
+    ask-cue words: true when `word` carries the pack-registered
+    `conjunction` sense (packs/core-english's 'and' — the ONLY member
+    today, but zero words are enumerated here; constitution rule 1).
+    `_CLAUSE_BOUNDARY` matches every plain word so this can filter which
+    ones are genuine coordinators; `_clause_finite_verb`'s compound-
+    subject chain walk uses the same check for the identical reason."""
+    entry = reg.lexicon.get(word.lower().rstrip(",.;:"))
+    return entry is not None and "conjunction" in entry.senses
+
+
+def _is_name_token(word: str) -> bool:
+    """The SAME structural exception senses.py itself uses: a capitalized,
+    not-all-caps word reads as a name — never a Python name list."""
+    w = word.rstrip(",.;:")
+    return bool(w) and w[:1].isupper() and w[1:].islower()
+
+
+def _clause_finite_verb(words: list[str], reg: Registry) -> str | None:
+    """Walks `words` as SUBJECT (NAME (`and` NAME)*) VERB — a single name,
+    or a chain of names joined by 'and' with no other token between them
+    ('Ann and Cate'), immediately followed by a registered state/event-
+    polarity verb. Returns the verb's lemma, or None if the chain breaks
+    on anything else (a pronoun, a comma, a non-name, an unregistered
+    word) before a verb is reached — this is what stops a dangling
+    compound-OBJECT tail ('..., and she gave more to Idris') from being
+    mistaken for a new clause: the tail name passes as a name, but the
+    token chain breaks at the pronoun before ever finding a verb reachable
+    from that name itself."""
+    if not words or not _is_name_token(words[0]):
+        return None
+    i = 1
+    while (
+        i + 1 < len(words)
+        and _is_conjunction_word(words[i], reg)
+        and _is_name_token(words[i + 1])
+    ):
+        i += 2
+    if i >= len(words):
+        return None
+    fold = words[i].lower().rstrip(",.;:")
+    entry = reg.lexicon.get(fold)
+    if entry is None or "verb" not in entry.senses:
+        return None
+    lemma = reg.verb_lemmas.get(fold, fold)
+    if reg.word_in_category(lemma, "state") or _has_event_polarity(lemma, reg):
+        return lemma
+    return None
+
+
+def _is_relational_clause(text: str, reg: Registry) -> bool:
+    """True when `text` carries a comparative/ratio marker: a word rooted
+    in the `comparative` category (more/fewer/less/older/younger — the
+    SAME category `arithmetic/anchored-relation` and its age/ratio
+    siblings gate on), the `multiplier` sense (twice/half — the ratio
+    rules' `k` slot), or the `relational_marker`/`multiplier_marker`
+    categories (packs/core-english's 'than', packs/difg-mined's 'times' —
+    the clause-boundary words those same rules match on as grammatical
+    skeleton). Tests category membership only, exactly like
+    `clause_marker`/`clause_marker_prep` (packs/difg-mined/categories/
+    clauses.yaml) — never a Python word list. These clauses feed the
+    relation/ratio synthesizers, which resolve one person's stated
+    quantity against ANOTHER named person's — exactly the interaction our
+    split newly makes reachable for pairs of people who previously never
+    both got a fact at all (the train-diff wrong that first exposed this:
+    two comparative clauses about the SAME two people, split, mis-resolved
+    through arithmetic/anchored-relation + synth/relation). Scoping this
+    increment to PLAIN quantity clauses only — deferring comparative
+    conjuncts to the relation-family increments named in the brief's
+    'overlaps_with' — keeps the blast radius to the class actually
+    described (two or more plain "NAME has N ITEM" clauses)."""
+    for word in text.split():
+        fold = word.lower().rstrip(",.;:")
+        for category in (
+            "comparative",
+            "multiplier",
+            "relational_marker",
+            "multiplier_marker",
+        ):
+            if reg.word_in_category(fold, category):
+                return True
+    return False
+
+
+def _has_finite_verb(text: str, reg: Registry) -> bool:
+    """Does `text` contain its OWN registered state/event-polarity verb
+    anywhere? Confirms a candidate HEAD (the text before a boundary) is
+    already a complete clause in its own right — not a bare compound-
+    subject fragment ('Callum' in 'Callum and Soraya paint 12 fences over
+    the weekend', where the verb belongs to BOTH names and there is no
+    clause boundary there at all, only a conjoined SUBJECT). Scans every
+    word (not just a leading window) because the head can be arbitrarily
+    long by the time later boundaries are considered."""
+    for word in text.split():
+        fold = word.lower().rstrip(",.;:")
+        entry = reg.lexicon.get(fold)
+        if entry is None or "verb" not in entry.senses:
+            continue
+        lemma = reg.verb_lemmas.get(fold, fold)
+        if reg.word_in_category(lemma, "state") or _has_event_polarity(lemma, reg):
+            return True
+    return False
+
+
+_NEW_CLAUSE_WINDOW = 8  # words scanned after a boundary — enough for a
+# subject (possibly a small compound: 'Ann and Cate'), its verb, and its
+# own number, without reaching into a wholly separate later clause.
+
+
+def _looks_like_new_clause(clause_text: str, reg: Registry) -> bool:
+    """Structural gate for `_split_conjoined_clauses`: does `clause_text`
+    (a fixed-size word window starting right after a candidate boundary,
+    deliberately NOT truncated at the next comma/'and' — see the docstring
+    below) open with a NAME subject (possibly a small compound, 'Ann and
+    Cate') reaching a finite state/event verb with NOTHING else between
+    (`_clause_finite_verb`), and state its own digit? Only then is this a
+    genuinely conjoined FULL CLAUSE (own subject) rather than a same-
+    subject NP conjunction ('Tom has 3 apples and 5 pears' — no new
+    subject here, already the increment 11/35/45 walker's job), a
+    subordinate/relative clause (no comma/'and'-introduced subject to
+    find in the first place), or a dangling compound-OBJECT tail."""
+    words = clause_text.split()
+    if len(words) < 3:
+        return False
+    if _clause_finite_verb(words, reg) is None:
+        return False
+    return any(ch.isdigit() for ch in clause_text)
+
+
+def _split_conjoined_clauses(sentence: str, reg: Registry) -> list[str]:
+    """'Nadia has 17 stickers, Owen has 29 stickers and Farah has 8
+    stickers.' — a premise sentence coordinating multiple FULL clauses at
+    the top level, each with its own NAME subject, currently folds only
+    the FIRST clause (the verb->dobj obligation binds once per sentence).
+    Sibling of `_split_leading_clause`/`_split_trailing_clause` above:
+    same 'find the boundary, promote what follows' shape, but scanning
+    every top-level comma/coordinator boundary in a PREMISE and testing
+    each candidate remainder with `_looks_like_new_clause` instead of an
+    ask-cue sense. `_CLAUSE_BOUNDARY` matches every plain word so the
+    loop can test candidates by SENSE (`_is_conjunction_word`, mirroring
+    `_has_ask_cue_sense`) rather than hardcoding the literal 'and' —
+    constitution rule 1, zero words enumerated in this module. Declines
+    (returns `[sentence]` unchanged) wherever no
+    boundary's remainder carries its own subject+verb+digit — protecting
+    relative clauses, complementizer clauses, and same-subject NP
+    conjunctions (learn.py's own conjunct walkers, increments 11/35/45)
+    from ever being double-split here. MUST NOT touch
+    `_conjoined_purchase_items`/`_is_rate` — this is a purely textual
+    pre-split that runs before any of that fold machinery sees the text.
+
+    Critically, a boundary only splits when the HEAD accumulated so far
+    (`_has_finite_verb`) is ALREADY a complete clause on its own — this is
+    what tells 'Nadia has 17 stickers, Owen has 29 stickers' (head 'Nadia
+    has 17 stickers' — a complete clause; split) apart from 'Callum and
+    Soraya paint 12 fences over the weekend' (head 'Callum' — a bare
+    name, no verb of its own; the 'and' here conjoins a compound SUBJECT,
+    not two clauses, so it must not split).
+
+    The candidate remainder is checked over a fixed word WINDOW
+    (`_NEW_CLAUSE_WINDOW`), never truncated at the very next boundary —
+    'Idris and Wren pack 50% of their boxes and Talon and Yusuf pack 75%
+    of the boxes' has a boundary right after 'Talon', but 'Talon' alone is
+    not a clause (it is half of the compound subject 'Talon and Yusuf');
+    reading only up to that next boundary would hide the verb 'pack' that
+    makes 'Talon and Yusuf pack 75%...' a genuine new clause, and the
+    boundary scan would then wrongly keep extending the FIRST clause's
+    head to swallow the dangling name.
+
+    Neither side of an accepted boundary may be a comparative/ratio
+    clause (`_is_relational_clause`) — see that function's docstring for
+    why this fold is scoped to plain quantity statements only."""
+    body = sentence.strip()
+    if not body:
+        return [sentence]
+    trailing = ""
+    if body.endswith("."):
+        body, trailing = body[:-1], "."
+    matches = list(_CLAUSE_BOUNDARY.finditer(body))
+    if not matches:
+        return [sentence]
+    clauses: list[str] = []
+    cursor = 0
+    for m in matches:
+        word = m.group("word")
+        if word is not None and not _is_conjunction_word(word, reg):
+            continue  # a plain word, not a coordinator — not a boundary
+        boundary_start = m.start()
+        clause_start = m.end()
+        head = body[cursor:boundary_start].strip()
+        if not head or not _has_finite_verb(head, reg):
+            continue  # head isn't a standalone clause yet — e.g. a bare
+            # compound-subject fragment; keep accumulating, don't split
+        if _is_relational_clause(head, reg):
+            continue
+        window = " ".join(body[clause_start:].split()[:_NEW_CLAUSE_WINDOW])
+        if not _looks_like_new_clause(window, reg) or _is_relational_clause(
+            window, reg
+        ):
+            continue
+        clauses.append(head)
+        cursor = clause_start
+    tail = body[cursor:].strip()
+    if tail and clauses:
+        clauses.append(tail)
+    if len(clauses) < 2:
+        return [sentence]
+    return [c + trailing for c in clauses]
+
+
 def split_question(text: str, reg: Registry | None = None) -> tuple[list[str], str | None]:
     sentences = split_sentences(text)
     if not sentences:
@@ -245,9 +460,12 @@ def split_question(text: str, reg: Registry | None = None) -> tuple[list[str], s
 
 def solve(text: str, reg: Registry) -> Result:
     premise_texts, question_text = split_question(text, reg)
+    expanded_premise_texts: list[str] = []
+    for premise_text in premise_texts:
+        expanded_premise_texts.extend(_split_conjoined_clauses(premise_text, reg))
     premises = [
         analyze(sentence, reg, sentence_index=i)
-        for i, sentence in enumerate(premise_texts)
+        for i, sentence in enumerate(expanded_premise_texts)
     ]
     doc = run_document(premises, reg)
 
@@ -259,7 +477,7 @@ def solve(text: str, reg: Registry) -> Result:
         result.document = doc
         return result
 
-    question = analyze(question_text, reg, sentence_index=len(premise_texts))
+    question = analyze(question_text, reg, sentence_index=len(expanded_premise_texts))
     # the question's own pronouns resolve against the document's discourse
     # exactly like premise pronouns: unique antecedent or stay unmet
     _bind_discourse(premises + [question])

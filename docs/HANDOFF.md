@@ -2016,6 +2016,71 @@ known-good warning (fraction-of-remnant / fraction-of-pool, unchanged) /
 23 info.
 TEST look #58: 7/1 (87.5%) — precision HELD, increment kept.
 
+## Increment 57: conjoined full-clause holdings (multi-clause premise
+sentences, one NAME subject per clause) (`6826419`)
+
+Fourth landing attempt for this mechanism (`mining/parked/conjoined-clause-
+holdings`, `840493c`) — gated NEUTRAL clean three prior times but blocked in
+batch 14 on one remaining test-contamination finding: the Priya/Odell/Mabel
+"54 pencils / 45 pencils" scenario was a name/item-swap of GSM8K dev-train
+item "John has 54 pieces of gum, Cole has 45 pieces of gum and Aubrey has
+no pieces of gum" (same two numbers, same three-clause "X has N ITEM"
+shape). This re-cut fixes ONLY that hygiene finding — every scenario in the
+test file and every matching docstring example in `engine.py` rewritten
+with fresh names/numbers/items/structure (Nadia/Owen/Farah stickers;
+Milo/Petra shells; Callum/Soraya fences; Idris/Wren/Talon/Yusuf boxes and
+folders; Owen's ribbons/notebooks/bracelets purchase list; Petra/Callum/
+Soraya races; Yusuf/Idris/Wren ages), each number-pair grepped against the
+parquet before committing. Mechanism is byte-identical to `840493c`.
+
+Class: a premise sentence coordinating multiple FULL clauses at the top
+level, each with its OWN NAME subject and finite state/event verb ("Nadia
+has 17 stickers, Owen has 29 stickers and Farah has 8 stickers.") —
+previously only the FIRST clause folded (the verb->dobj obligation binds
+once per sentence), so every subsequent conjunct's own subject/verb/number
+was silently dropped. This is the CLAUSE-conjunction sibling of the
+NP-conjunction walkers (increments 11/35/45, which recover extra sibling
+ITEMS for the SAME subject) — distinct because here each conjunct
+introduces a NEW subject.
+
+Mechanism: a structural pre-split in `engine.py`
+(`_split_conjoined_clauses`), ahead of any fold machinery — every
+top-level ','/'and' boundary in a premise is a candidate clause boundary.
+A boundary only splits when (1) the accumulated head is ALREADY a
+complete clause with its own registered state/event verb
+(`_has_finite_verb`) — telling a genuine clause boundary apart from a bare
+compound-subject fragment ("Callum" in "Callum and Soraya paint 12 fences
+over the weekend") — and (2) the candidate remainder opens with a NAME
+subject (small compounds like "Talon and Yusuf" tolerated) reaching a
+finite state/event verb with nothing else between (`_clause_finite_verb`)
+and stating its own digit. Comparative/ratio clauses ("N more/fewer ITEM
+than Y", "N times as many X as Y") are deliberately out of scope
+(`_is_relational_clause`) — `than`/`times` recognized via the new
+`relational_marker`/`multiplier_marker` categories (`packs/core-english`,
+`packs/difg-mined`), never a Python word list. Does not touch
+`_conjoined_purchase_items`/`_is_rate`/`_price_each_value` (increment 11's
+existing NP-conjunction walkers) — a purely textual pre-split that runs
+before any of that fold machinery sees the text.
+
+Files: `src/rulekit/kernel/engine.py`, `packs/core-english/categories/
+core.yaml`, `packs/difg-mined/categories/semantic.yaml`,
+`src/rulekit/data/registry.py` (a `particle` root-sense addition),
+`tests/test_mining_increment_57.py` (14 synthetic tests — clause-boundary
+splitting, compound-subject/compound-object-tail non-boundaries, relative/
+complementizer clauses, relational-clause and no-digit declines, and
+non-interference with increments 11/35/45). `tests/test_mining_increment_
+35.py` and `_45.py` carry forward only their own pre-existing, already
+TEST-gated assertion updates from `840493c` — untouched otherwise by this
+landing.
+
+Gates (integrated on staging, full re-proof): dev-train diff NEUTRAL 0/0/0
+(3772 items, 27/0 unchanged from baseline — infrastructure increment, no
+new SOLVEs expected), dev-holdout diff NEUTRAL 0/0/0 (3701 items, 18/0
+unchanged), pytest 459 passed (was 445 + 14 new, now
+`tests/test_mining_increment_57.py`), suite 52/52, lint 0 errors / 1
+known-good warning (fraction-of-remnant / fraction-of-pool, unchanged).
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 **GOAL MODE (set 2026-07-11): the campaign target is 100 dev-train
