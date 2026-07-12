@@ -16,9 +16,10 @@ every increment through the gates).
 **Current numbers (all verified at head):**
 - dev-train: 34 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
 - dev-holdout: 21 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 519 · lint: 0 errors, 1 intended warning
-- bench wall: dev-train 9.0s (was 16.6s — decision-trace snapshotting is now
-  opt-out; see "Tracing is opt-out" below)
+- curated suite: 52/52 · pytest: 524 · lint: 0 errors, 1 intended warning
+- bench wall: dev-train 16.6s -> 9.0s (trace opt-out) -> 1.7s at `--jobs 12`.
+  `--jobs` defaults to 1; spend it in the SERIAL integration tail, never in the
+  implementers' gates (they already run concurrently). See the two infra notes below.
 - TEST ledger (67 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
@@ -2719,3 +2720,45 @@ LATENT BUG FOUND, NOT FIXED: `undo`'s pop-branch (`val is None and key not in
 decision.after`) is unreachable — `before`/`after` are built from the same
 `changes` keys, so undoing a previously-absent feature leaves it as None instead
 of removing it. Harmless while `undo` is dead code. Pinned as-is in the tests.
+
+## Parallel bench is opt-in (2026-07-12, infra — not a mining increment)
+
+`run_suite` was a single-threaded loop over independent items. The kernel is
+deterministic and per-item independent, so items now fan out over a process pool
+under `bench --jobs N`.
+
+WHY IT DEFAULTS TO SERIAL (jobs=1): a mining batch already runs five implementers
+concurrently, each running its own dev gate. If every bench grabbed every core,
+that phase would oversubscribe the box (5 x 12 workers on 14 cores) and get
+SLOWER. The machine is only idle where the pipeline is serial — the integration
+tail. So `--jobs` is spent there and nowhere else; the integrator protocol now
+passes `--jobs 8`, the implementer protocol deliberately does not.
+
+MECHANICS: a Registry cannot be pickled (mappingproxy), so a worker cannot be
+handed one — each rebuilds it from the project dir (~540ms, paid once per worker,
+in parallel). `_worker_init` then checks the worker's pack fingerprint against
+the parent's and RAISES on mismatch: a run dies loudly rather than quietly
+benching a mixture of two pack states. `Pool.map` preserves input order. Start
+method is spawn (never fork: the parent has pyarrow loaded, and forking a process
+with native thread pools risks deadlock).
+
+`_solve_item` is now the single code path for both serial and parallel — that is
+what makes byte-identity achievable rather than merely hoped-for. The item-id
+fallback is the item's INDEX, not `len(results)`, so a worker never needs to know
+how many items preceded it.
+
+`bench --twice` is now stronger: with `--jobs N` the second run is deliberately
+SERIAL, making it a parallel-vs-serial equivalence check rather than a parallel
+run agreeing with itself.
+
+PROOF: dev-train snapshots at `--jobs 1`, `--jobs 6` and `--jobs 12` are all
+byte-identical (`cmp`) to the baseline taken BEFORE both this and the trace
+change. `--twice --jobs 12` passes. pytest 519 -> 524 (+5 synthetic,
+`tests/test_bench_parallel.py`), suite 52/52, lint unchanged.
+
+RESULT: dev-train 9.0s -> 1.73s at `--jobs 12` (~5.2x on top of the trace win;
+~9.6x vs the 16.6s starting point).
+
+NOT TAKEN: the ~11.5s cumulative deepcopy left in `obligations.disambiguate` /
+`_coverage_score` is genuine trial-state copying (one per sentence analysed), not
+trace overhead. Optimising it needs its own byte-proof.

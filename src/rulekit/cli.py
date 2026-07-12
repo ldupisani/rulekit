@@ -81,7 +81,7 @@ def cmd_bench(args) -> int:
               "not the slice number; never ship on it")
         items = items[: args.limit]
 
-    report = run_suite(items, reg)
+    report = run_suite(items, reg, jobs=args.jobs, project_dir=args.project)
     inspectable = (
         not project.doc.datasets
         or args.slice in INSPECTABLE_SLICES
@@ -102,9 +102,16 @@ def cmd_bench(args) -> int:
         write_snapshot(report, path)
         print(f"snapshot -> {path}")
     if args.twice:
-        second = run_suite(items, reg)
+        # With --jobs > 1 the re-run is deliberately SERIAL: that makes --twice a
+        # parallel-vs-serial equivalence proof, which is strictly stronger than
+        # repeating the same parallel run and finding it agrees with itself.
+        second = run_suite(items, reg, jobs=1)
         if report.to_snapshot() != second.to_snapshot():
-            print("DETERMINISM FAILURE: two runs disagree", file=sys.stderr)
+            print(
+                "DETERMINISM FAILURE: two runs disagree"
+                + (f" (--jobs {args.jobs} vs serial)" if args.jobs > 1 else ""),
+                file=sys.stderr,
+            )
             return 3
         print("determinism: two in-process runs identical")
     return 0 if report.counts["wrong"] == 0 else 1
@@ -216,6 +223,11 @@ def main(argv: list[str] | None = None) -> int:
                    help="required for --slice test; the look is recorded in the ledger")
     p.add_argument("--snapshot", help="write snapshot JSON under snapshots/")
     p.add_argument("--twice", action="store_true", help="determinism self-check")
+    p.add_argument("--jobs", type=int, default=1,
+                   help="fan items out over N processes (default 1). Output is "
+                        "byte-identical to a serial run. Serial BY DEFAULT: a "
+                        "mining batch already runs its implementers in parallel, "
+                        "so spend this only where the pipeline is serial.")
     p.set_defaults(fn=cmd_bench)
 
     p = sub.add_parser("stats", help="unknown-word worklist, decline taxonomy, rule attribution")

@@ -13,6 +13,7 @@ change, no matter how good other numbers look.
 from __future__ import annotations
 
 import json
+import multiprocessing
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -154,39 +155,99 @@ def _judge(expected: object, result) -> tuple[str, object]:
     return "declined", None
 
 
-def run_suite(items: list[dict], reg: Registry) -> BenchReport:
+def _solve_item(index: int, item: dict, reg: Registry) -> ItemResult:
+    """Bench exactly one item. The single code path for serial AND parallel runs.
+
+    `index` is the item's position in the slice — it is the id fallback, so a
+    worker never needs to know how many items came before it.
+    """
+    item_id = str(item.get("id", index))
+    expected = item["expect"]
+    try:
+        # tracing=False: a bench reads facts and the answer, never the
+        # per-decision feature diffs. Snapshotting them was 61% of wall.
+        result = solve(item["text"], reg, tracing=False)
+        outcome, got = _judge(expected, result)
+        rules = sorted(
+            {
+                f.provenance.source
+                for f in result.store.facts
+                if f.provenance.source not in ("fold",)
+            }
+        )
+        unknown = sorted(
+            {w.lower() for r in result.premises for w in r.unknown_words()}
+            | {w.lower() for w in (result.question.unknown_words() if result.question else [])}
+        )
+        return ItemResult(
+            item_id, outcome, expected, got,
+            reason=result.answer.reason,
+            rules=rules,
+            collisions=len(result.store.collisions),
+            unknown_words=unknown,
+        )
+    except Exception as exc:  # noqa: BLE001 — errored is a taxonomy bucket
+        return ItemResult(item_id, "errored", expected, None, reason=repr(exc))
+
+
+_WORKER_REG: Registry | None = None
+
+
+def _worker_init(project_dir: str, expected_fingerprint: str) -> None:
+    """Build this worker's own Registry.
+
+    A Registry cannot be pickled (mappingproxy), so it cannot be shipped to a
+    worker; each one loads the project itself. The fingerprint check is the
+    safety net: if a worker somehow reads a different pack state than the parent
+    reports in the snapshot, the run dies loudly instead of quietly benching a
+    mixture of two states.
+    """
+    global _WORKER_REG
+    from ..data.project import load_project
+
+    reg = load_project(Path(project_dir)).registry
+    if reg.fingerprint != expected_fingerprint:
+        raise RuntimeError(
+            f"worker registry fingerprint {reg.fingerprint!r} != parent "
+            f"{expected_fingerprint!r} — refusing to bench a mixed pack state"
+        )
+    _WORKER_REG = reg
+
+
+def _run_one(arg: tuple[int, dict]) -> ItemResult:
+    index, item = arg
+    assert _WORKER_REG is not None, "worker used before _worker_init"
+    return _solve_item(index, item, _WORKER_REG)
+
+
+def run_suite(
+    items: list[dict],
+    reg: Registry,
+    jobs: int = 1,
+    project_dir: Path | None = None,
+) -> BenchReport:
+    """Bench a slice.
+
+    `jobs > 1` fans the items out over a process pool. Items are independent and
+    the kernel is deterministic, and `Pool.map` preserves input order, so the
+    report — and therefore the snapshot — is byte-identical to a serial run.
+
+    Default is serial ON PURPOSE. A mining batch already runs its implementers
+    concurrently; a bench that silently grabbed every core would oversubscribe
+    the box and make that phase slower. Spend `jobs` where the pipeline is
+    actually serial — the integration tail.
+    """
     started = time.monotonic()
-    results: list[ItemResult] = []
-    for item in items:
-        item_id = str(item.get("id", len(results)))
-        expected = item["expect"]
-        try:
-            # tracing=False: a bench reads facts and the answer, never the
-            # per-decision feature diffs. Snapshotting them was 61% of wall.
-            result = solve(item["text"], reg, tracing=False)
-            outcome, got = _judge(expected, result)
-            rules = sorted(
-                {
-                    f.provenance.source
-                    for f in result.store.facts
-                    if f.provenance.source not in ("fold",)
-                }
-            )
-            unknown = sorted(
-                {w.lower() for r in result.premises for w in r.unknown_words()}
-                | {w.lower() for w in (result.question.unknown_words() if result.question else [])}
-            )
-            results.append(
-                ItemResult(
-                    item_id, outcome, expected, got,
-                    reason=result.answer.reason,
-                    rules=rules,
-                    collisions=len(result.store.collisions),
-                    unknown_words=unknown,
-                )
-            )
-        except Exception as exc:  # noqa: BLE001 — errored is a taxonomy bucket
-            results.append(ItemResult(item_id, "errored", expected, None, reason=repr(exc)))
+    if jobs > 1 and project_dir is not None and len(items) > 1:
+        ctx = multiprocessing.get_context("spawn")
+        with ctx.Pool(
+            processes=jobs,
+            initializer=_worker_init,
+            initargs=(str(project_dir), reg.fingerprint),
+        ) as pool:
+            results = pool.map(_run_one, list(enumerate(items)), chunksize=32)
+    else:
+        results = [_solve_item(i, item, reg) for i, item in enumerate(items)]
     return BenchReport(results, fingerprint=reg.fingerprint, elapsed=time.monotonic() - started)
 
 

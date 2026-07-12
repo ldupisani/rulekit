@@ -22,8 +22,8 @@ because the candidate "already passed" on its own branch.
    `mkdir -p "$STAGING/projects/gsm8k/snapshots"`;
    `cd "$STAGING" && uv sync --extra bench` (never share the main `.venv` —
    rulekit is editable-installed and a shared env benches the wrong checkout).
-4. Staging baselines:
-   `uv run rulekit --project projects/gsm8k bench --slice dev-train --snapshot staging-base-train.json`
+4. Staging baselines (setup is serial too — use `--jobs 8`):
+   `uv run rulekit --project projects/gsm8k bench --slice dev-train --jobs 8 --snapshot staging-base-train.json`
    and the dev-holdout equivalent → `staging-base-holdout.json`. Record the
    pytest count (`uv run pytest -q`).
 5. Return `{status: ready, branch, baseline_evidence}` (or `status: failed`
@@ -39,10 +39,15 @@ increment number to assign is NOT an input — you derive it in step 4.
    On conflict: `git cherry-pick --abort`, verify HEAD == PRE, and return
    `{status: deferred, phase: integrate-conflict, ...}` — do NOT hand-resolve
    conflicts; a conflicting candidate goes back to the worklist.
-2. **Re-gate on the integrated state** vs the CURRENT staging baselines:
+2. **Re-gate on the integrated state** vs the CURRENT staging baselines.
+   Landing is the pipeline's serial tail and the box is otherwise idle, so bench
+   with `--jobs 8` here: output is byte-identical to a serial run (each worker
+   rebuilds the registry and refuses to run if its pack fingerprint differs from
+   the parent's). Do NOT put `--jobs` in the IMPLEMENTER's gate — those run
+   concurrently and would oversubscribe the machine.
    ```
-   uv run rulekit --project projects/gsm8k bench --slice dev-train --snapshot <slug>-int-train.json
-   uv run rulekit --project projects/gsm8k bench --slice dev-holdout --snapshot <slug>-int-holdout.json
+   uv run rulekit --project projects/gsm8k bench --slice dev-train --jobs 8 --snapshot <slug>-int-train.json
+   uv run rulekit --project projects/gsm8k bench --slice dev-holdout --jobs 8 --snapshot <slug>-int-holdout.json
    uv run rulekit --project projects/gsm8k diff staging-base-train.json <slug>-int-train.json
    uv run rulekit --project projects/gsm8k diff staging-base-holdout.json <slug>-int-holdout.json
    uv run pytest -q
