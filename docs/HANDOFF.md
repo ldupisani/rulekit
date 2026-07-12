@@ -3576,3 +3576,36 @@ Dropped at the shape gate: partitive-content-keys (70), more-quantifier-transpar
 (76), resource-capacity-consumer (128), ask-side-qualified-measure (4).
 
 NEXT: batch 31 runs with `base=mining/parked/container-content-bridge-enabler`.
+## Increment 77 (2026-07-13) — container-content bridge (infrastructure)
+
+Class: a Quantity whose ENTITY is another Quantity's MEASURE — a holder's
+container COUNT bridged with a per-container content RATE into the holder's
+derived content total ("Priya bought 6 boxes of marbles. Each box has 9
+marbles." folds to two independently-true facts nothing previously
+connected into "Priya bought 54 marbles"). New `synth/container-contents`
+plugin in `saturate.py`: when a Quantity CR has entity == C and measure ==
+I (a per-container content rate) and a DIFFERENT Quantity H has measure ==
+C (the holder's container count), emit Quantity(entity=H.entity,
+measure=I, value=H.value*CR.value, verb=H.verb). Restricted to raw-fold
+facts only (never another synth's output) for a stable single-hop
+fixpoint; decline-safe on exactly-one container-rate per (C, I), holder ≠
+container, holder not already holding a Quantity of measure I, and shared
+`time`. Emitted at sentence=-1 (the existing SynthRule datalog
+convention) so it is use-gated, not existence-gated, per the look #4–7
+invariant.
+
+Infrastructure: 0 SOLVED on dev-train by design — this increment adds no
+ask-shape consumer, it only makes the bridged fact available to whichever
+consumer already reads a plain Quantity(entity, measure, verb). The
+payoff class (container-content totality asks) is parked as the next
+batch, based on this branch per the batch-27/28 lesson.
+
+Files: `src/rulekit/kernel/saturate.py`, `tests/test_mining_increment_77.py`
+(4 synthetic tests).
+
+Gates (integrated on staging, full re-proof against current staging
+baseline): dev-train diff NEUTRAL, 0 BROKE, 0 DECL→WRONG (54/3772 correct
+before and after); dev-holdout diff SHIP, SOLVED 1 (85bf6abfa0d2), 0
+BROKE, 0 DECL→WRONG (23→24/3701 correct); pytest 616 passed; suite
+52/52; lint 0 errors / 1 known-good warning (fraction-of-remnant /
+fraction-of-pool, unchanged). TEST look: pending — spent manually.

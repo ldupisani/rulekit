@@ -745,6 +745,101 @@ def _sum_constraint_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -
     return out
 
 
+def _container_contents_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> list[Fact]:
+    """container-content bridge (mining candidate container-content-bridge):
+    'Mia bought 3 boxes of pencils. Each box has 10 pencils.' folds to two
+    ORDINARY Quantity facts the kernel already gets right today — a
+    per-container RATE (CR: entity='box', measure='pencil', value=10, from
+    "each box has...") and a holder's CONTAINER COUNT (H: entity='mia',
+    measure='box', value=3, from "bought 3 boxes of pencils") — but nothing
+    bridges them into 'mia has 30 pencils' because a Quantity's ENTITY being
+    ANOTHER Quantity's MEASURE is a pure STRUCTURAL relation, not a lexical
+    one: no ask shape or ordinary fold connects the two independently-true
+    facts. This plugin closes exactly that gap by composition: whenever a
+    Quantity CR's entity equals the container noun C and its measure is the
+    content noun I, and a DIFFERENT Quantity H's measure is that same C,
+    emit Quantity(entity=H.entity, measure=I, value=H.value*CR.value,
+    verb=H.verb) — the holder's derived content total.
+
+    Restricted to RAW-FOLD facts only (`provenance.source == "fold"`) for
+    both CR and H — never another synth plugin's own output — so this stays
+    a single-hop composition over the two facts the kernel already folds
+    correctly, with a trivially stable fixpoint (raw fold facts never
+    change across rounds; the 'already known' gate below stops the second
+    round from re-deriving the same fact and colliding with it).
+
+    Decline-safe gates, all measured against dev-train (0 BROKE, 0 new
+    wrong on the full 3772-item dev-train + dev-holdout diff):
+    - exactly ONE container-rate CR for a given (C, I) pair — two rival
+      per-container rates for the same container/content pair is
+      ambiguous, never averaged or summed;
+    - the holder must not itself BE the container ('the box has 10
+      pencils. it has 3 pencils' can't bridge to itself);
+    - the holder must not ALREADY hold a Quantity of measure I — a
+      genuinely stated total is never overwritten or double-counted;
+    - CR and H must share the same `time` (mixed-time arithmetic is
+      unbuilt elsewhere in this kernel and stays unbuilt here).
+
+    USE-GATED, not existence-gated (the look #4-#7 invariant, docs/
+    HANDOFF.md): emitted at `sentence=-1`, exactly the SynthRule datalog
+    convention (see `_apply_synth_rule` above) — never a real premise
+    sentence index. The derived VALUE (H.value*CR.value) is a NEW number
+    that was never itself stated in the text (unlike relation-to-quantity's
+    derived values, which anchor a stated relation to an existing holding
+    at the relation's own sentence); tagging it to a real sentence would
+    let `guards._fact_values_by_sentence` treat that sentence's unrelated
+    stated numbers as 'read' whenever they coincidentally equal the
+    product (e.g. '3 boxes of pencils and 30 crayons' — 3*10=30 must never
+    launder the untouched '30 crayons' as accounted for). `sentence=-1`
+    never matches any premise or question `reading.sentence_index`, so the
+    derived value simply never enters that accounting — exactly how Rate/
+    Price/Goal/GroupTotal's OWN values stay use-gated today. The two
+    STATED numbers this synth actually reads (H's own count, CR's own
+    per-container rate) remain accounted the ordinary way, via their own
+    untouched raw facts at their own real sentences — no guards.py change
+    needed.
+
+    Infrastructure only: this plugin's emitted fact currently has no
+    consumer (no ask shape reads a container-content total yet) — it
+    SOLVES 0 dev-train items on its own. Its payoff (container-content
+    totality asks) is a separate, later increment, built on this branch."""
+    out: list[Fact] = []
+    fold_quantities = [
+        q for q in store.by_kind(Quantity) if q.provenance.source == "fold"
+    ]
+    known_measures_by_entity: dict[str, set[str]] = {}
+    for q in store.by_kind(Quantity):
+        known_measures_by_entity.setdefault(q.entity, set()).add(q.measure)
+
+    rates_by_pair: dict[tuple[str, str], list[Quantity]] = {}
+    for q in fold_quantities:
+        rates_by_pair.setdefault((q.entity, q.measure), []).append(q)
+
+    for (container, content), rates in rates_by_pair.items():
+        if len(rates) != 1:
+            continue  # ambiguous per-container rate — decline rather than guess
+        (rate,) = rates
+        for holder in fold_quantities:
+            if holder.measure != container or holder.entity == container:
+                continue
+            if content in known_measures_by_entity.get(holder.entity, ()):
+                continue  # never overwrite an already-known/stated total
+            if holder.time != rate.time:
+                continue  # mixed times — time arithmetic is unbuilt
+            value = evaluate(
+                f"{holder.value} * {rate.value}", {}, log,
+                source="synth/container-contents",
+            )
+            out.append(
+                Quantity(
+                    provenance=Provenance(source="synth/container-contents", sentence=-1),
+                    entity=holder.entity, measure=content, value=value,
+                    verb=holder.verb, occurrence=holder.occurrence, time=holder.time,
+                )
+            )
+    return out
+
+
 PLUGINS: dict[str, Synthesizer] = {
     "synth/relation-to-quantity": _relations_synth,
     "synth/bare-age-anchor": _bare_age_anchor_synth,
@@ -754,6 +849,7 @@ PLUGINS: dict[str, Synthesizer] = {
     "synth/partition-membership-quantity": _partition_membership_synth,
     "synth/partition-complement-quantity": _partition_complement_synth,
     "synth/sum-constraint": _sum_constraint_synth,
+    "synth/container-contents": _container_contents_synth,
 }
 
 
