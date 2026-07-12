@@ -1846,6 +1846,40 @@ lint 0 errors / 1 known-good warning (fraction-of-remnant /
 fraction-of-pool, unchanged) / 22 info.
 TEST look #54: 6/1 (85.7%) — precision HELD, increment kept.
 
+## Increment 53: comma-less trailing conditional clauses (`"How old is X
+if Y is N years old?"` with no comma anywhere in the question)
+
+Lands the comma-less half of the trailing-if-clause gap that increment 12
+only closed for the comma-anchored form. Fresh stats: "no ask shape
+recognizes this question" = 2419 of 3751 dev-train declines; scratchpad
+scan found 83 currently-declining questions ending in a trailing ` if
+<clause containing a digit>` with NO comma anywhere, so increment 12's
+`_split_trailing_clause` (comma-anchored) never fires on them. Full-chain
+verified on 2 of the 83 (the rest decline downstream, correctly out of
+scope): an age-relation chain resolving through the increment-46/48
+relation machinery, and a combined-items item resolving through the
+increment-40/41 combined-total machinery.
+
+`_split_trailing_clause` (`src/rulekit/kernel/engine.py`) gets a
+comma-less fallback: only when the existing comma-anchored split finds NO
+split at all does it fall back to splitting at the LAST ` if ` token
+boundary of the question sentence, strip the trailing `?`, and promote
+the clause to a premise. Both of increment 12's safety gates are
+preserved verbatim: the fallback only runs when nothing else has already
+split the question, and only when the promoted clause carries a digit
+(a bare narrative tail like "... to see if that works?" is never
+promoted). `if` remains a grammatical-skeleton literal, identical to its
+use in increments 12/39 — no word list enters Python. The pre-existing
+comma-anchored path is untouched byte-for-byte.
+
+Gates (integrated on staging, full re-proof): dev-train diff SHIP +2/0/0
+(3772 items, 21->23 correct, 0 wrong — SOLVED 123c7d57d7e0, a29f36cb3fd0),
+dev-holdout diff NEUTRAL 0/0/0 (3701 items, 17/0 unchanged), pytest 418
+passed (was 409 + 9 new, now `tests/test_mining_increment_53.py`), suite
+52/52, lint 0 errors / 1 known-good warning (fraction-of-remnant /
+fraction-of-pool, unchanged) / 22 info.
+TEST look: pending — spent manually.
+
 ## The next mining worklist (from the last close-miss scan)
 
 **GOAL MODE (set 2026-07-11): the campaign target is 100 dev-train

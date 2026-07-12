@@ -152,28 +152,61 @@ def _split_trailing_clause(question: str, reg: Registry) -> tuple[str | None, st
     the trailing '?', and only split when the clause carries a number (a
     bare appositive or 'in total, ...' tail never does) — declining a
     coincidental ", if ..." tail with no number is safer than promoting a
-    non-premise to a premise."""
+    non-premise to a premise.
+
+    Increment 53: when no top-level comma+'if' split exists at all (a
+    comma-less trailing conditional — "How old is Ironman if Thor is 1456
+    years old?", no comma anywhere), fall back to `_split_trailing_clause_
+    commaless`, which finds the same shape at the LAST ' if ' token
+    boundary instead of a comma. The comma path above is untouched byte-
+    for-byte; the fallback only runs when it found no split at all."""
     if not question.rstrip().endswith("?"):
         return None, question
     parts = question.split(",")
-    if len(parts) < 2:
-        return None, question
     split_at = None
-    for i in range(len(parts) - 1):
-        rest = ",".join(parts[i + 1 :]).strip()
-        first = rest.split()[0].lower() if rest.split() else ""
-        if first == "if":
-            split_at = i  # keep the LAST such boundary
-    if split_at is None:
+    if len(parts) >= 2:
+        for i in range(len(parts) - 1):
+            rest = ",".join(parts[i + 1 :]).strip()
+            first = rest.split()[0].lower() if rest.split() else ""
+            if first == "if":
+                split_at = i  # keep the LAST such boundary
+    if split_at is not None:
+        wh_part = ",".join(parts[: split_at + 1]).strip()
+        clause_rest = ",".join(parts[split_at + 1 :]).strip()
+        clause_body = clause_rest[2:].strip().rstrip("?").rstrip(".").strip()
+        if not clause_body or not any(ch.isdigit() for ch in clause_body):
+            return None, question
+        if not wh_part.endswith("?"):
+            wh_part = wh_part.rstrip(".") + "?"
+        return clause_body + ".", wh_part
+    return _split_trailing_clause_commaless(question)
+
+
+def _split_trailing_clause_commaless(question: str) -> tuple[str | None, str]:
+    """Comma-less sibling of `_split_trailing_clause` (increment 53): only
+    reached when the question has no top-level comma+'if' split at all.
+    Splits at the LAST ' if ' token boundary of the sentence instead of a
+    comma — 'if' stays grammatical skeleton, the identical literal used by
+    the comma'd form above and by `_split_leading_clause`. Same safety
+    property: the promoted clause must carry a digit, so a bare narrative
+    tail ('...to see if that works?', '...wondering if she'll come?') is
+    left alone rather than risk folding a non-premise clause into the
+    fold. The ' if ' spacing anchors on a whole word, not a substring
+    (so 'gift'/'differently' never match), and taking the LAST occurrence
+    mirrors the comma'd form's 'keep the LAST such boundary' rule when a
+    sentence happens to contain more than one 'if'."""
+    stripped = question.rstrip()
+    if not stripped.endswith("?"):
         return None, question
-    wh_part = ",".join(parts[: split_at + 1]).strip()
-    clause_rest = ",".join(parts[split_at + 1 :]).strip()
-    clause_body = clause_rest[2:].strip().rstrip("?").rstrip(".").strip()
-    if not clause_body or not any(ch.isdigit() for ch in clause_body):
+    body = stripped[:-1]
+    idx = body.lower().rfind(" if ")
+    if idx == -1:
         return None, question
-    if not wh_part.endswith("?"):
-        wh_part = wh_part.rstrip(".") + "?"
-    return clause_body + ".", wh_part
+    wh_part = body[:idx].rstrip()
+    clause_body = body[idx + len(" if ") :].strip().rstrip(".").strip()
+    if not wh_part or not clause_body or not any(ch.isdigit() for ch in clause_body):
+        return None, question
+    return clause_body + ".", wh_part + "?"
 
 
 def split_question(text: str, reg: Registry | None = None) -> tuple[list[str], str | None]:
