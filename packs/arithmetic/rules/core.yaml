@@ -627,6 +627,82 @@ rules:
         value: "item"
         verb: have
 
+  - id: arithmetic/group-total-trailing
+    phase: read
+    description: >
+      "Tom and Jerry have 29 apples together." / "They picked 274 apples
+      total." (mining candidate group-total-phrasings) — a stated quantity
+      followed by a TRAILING totality marker (cat: aggregate — together/
+      altogether/total/combined, packs/core-english/lexicon/core.yaml,
+      optionally preceded by the quantifier 'all' — "all together" — or a
+      preposition — "in total") is a GROUP TOTAL across whichever entities
+      the passage names, never one entity's own independent holding —
+      exactly the reading arithmetic/existential-premise-bare's own
+      `absent: {cat: aggregate}` guard refuses for the bare "there are N
+      X" shape. Matching scans every starting position (mirrors
+      arithmetic/group-total-of): only the "N ITEM <marker>" tail itself
+      is the sum-constraint marker, so this fires regardless of the
+      preceding subject/verb — "A and B have N X together", "WHO will
+      VERB N X all together" match identically without needing to parse
+      the varying subject/tense that precedes the tail. The matched
+      item's noun unit is the SAME unit the sentence's own verb would
+      otherwise bind as its dobj; consuming it here (pattern_consumed)
+      suppresses learn.py's ordinary per-entity fold for this clause
+      (`learn.py`: `consumed = verb.features.get("pattern_consumed") or
+      dobj...`), so the stated number is read exactly once — as a group
+      total, never ALSO as an independent holding (the double-count this
+      brief's decline-safety analysis flags). Routes to the existing,
+      unchanged synth/sum-constraint plugin (saturate.py) — no new fact
+      kind, no new consumer, no new ask shape.
+    match:
+      sentence:
+        - {slot: item, type: counted}
+        - opt:
+            - {lit: all}
+        - opt:
+            - {slot: p, cat: preposition}
+        - {slot: agg, cat: aggregate}
+    consumes: [item]
+    emits:
+      - fact: group_total
+        measure: "{item}"
+        value: "item"
+        verb: have
+
+  - id: arithmetic/group-total-leading
+    phase: read
+    description: >
+      "In total, they sold 120 oranges." (mining candidate group-total-
+      phrasings) — the LEADING sibling of arithmetic/group-total-trailing:
+      the same "in total" marker fronts the clause (comma skippable punct)
+      instead of trailing it, ahead of the ordinary SUBJ VERB N ITEM
+      skeleton. `who` binds any single subject token generically (`type:
+      word` — a name, common noun, or pronoun, resolved or not) purely to
+      bridge across it from the marker to the verb; its identity is never
+      read in the emitted fact — like every sibling GroupTotal rule here,
+      the fact deliberately carries no subject/owner, exactly the unowned
+      "sum across the passage's entities" semantics synth/sum-constraint
+      (saturate.py, unchanged) already consumes. Requiring the real VERB
+      and counted ITEM slots (not a generic skip) means the matched item
+      is the sentence's own dobj, so capturing it here suppresses
+      learn.py's per-entity fold for the identical double-count reason
+      arithmetic/group-total-trailing documents — an ordinary single-
+      holder reading and a group total can never both register for the
+      same clause.
+    match:
+      sentence:
+        - {lit: in}
+        - {lit: total}
+        - {slot: who, type: word}
+        - {slot: verb, type: verb}
+        - {slot: item, type: counted}
+    consumes: [item]
+    emits:
+      - fact: group_total
+        measure: "{item}"
+        value: "item"
+        verb: "{verb}"
+
   - id: arithmetic/fraction-of-pool
     phase: read
     description: >

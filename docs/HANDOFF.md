@@ -3219,3 +3219,38 @@ NEXT BATCH: run with `base=mining/parked/qualified-measure-keys-enabler` and re-
    set for any LATER pronoun/remnant resolution in the same document. So sequential
    membership partitions ("5 of them are dogs. The rest are cats.") mis-resolve.
    Correctly left out of scope by the junior. Worth its own increment.
+## Increment 72: group-total premises phrased as verb-subject totals ("A and
+B have N ITEM together", "In total, they VERB N ITEM", "N ITEM total")
+
+Class: group-total premises whose totality is stated as a TRAILING marker on
+a quantity ("... N ITEM together / altogether / all together / in total /
+total") or a LEADING "In total, SUBJ VERB N ITEM" clause — the two forms
+increment 69's `arithmetic/group-total-of` cannot read (it only matches the
+"a total of N ITEM" tail and the bare existential aggregate form).
+
+Mechanism: YAML-only. Two new pattern rules in
+`packs/arithmetic/rules/core.yaml` beside `arithmetic/group-total-of`,
+emitting the SAME existing `GroupTotal` fact kind (model.py and guards.py
+untouched) that increment 69's live `synth/sum-constraint` plugin already
+consumes: `arithmetic/group-total-trailing` (a stated quantity followed by a
+trailing totality marker, gated on the existing `aggregate` category — the
+same category `arithmetic/existential-premise-bare`'s `absent:` guard
+already uses, so the marker is grammatical skeleton, not a Python word
+list) and `arithmetic/group-total-leading` ("In total, SUBJ VERB N ITEM").
+No new fact kind, no new consumer, no new ask shape, no new vocabulary.
+Decline-safety: `arithmetic/existential-premise-bare`'s existing
+`absent: {cat: aggregate}` guard keeps the same sentence from also folding
+as an ordinary holding (which would double-count the number); two holders
+of the measure must be in play, and `synth/sum-constraint` already declines
+on multiple Relations, multiple GroupTotals, factor == -1, negative
+solutions, or a third holder.
+
+Files: `packs/arithmetic/rules/core.yaml`, `tests/test_mining_increment_72.py`
+(7 synthetic tests).
+
+Gates (integrated on staging, full re-proof): dev-train diff SOLVED 3 /
+BROKE 0 / DECL→WRONG 0 (SHIP; 6925c60de387, 8229217ed5cf, dd576541c9c9),
+dev-holdout diff SOLVED 1 / BROKE 0 / DECL→WRONG 0 (SHIP; 5e1c4d6456b9),
+pytest 575 passed, suite 52/52, lint 0 errors / 1 known-good warning
+(fraction-of-remnant / fraction-of-pool, unchanged). TEST look: pending —
+spent manually.
