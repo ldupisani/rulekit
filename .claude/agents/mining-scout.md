@@ -168,9 +168,24 @@ increment costs ONE TEST look and moves the number. An enabler landing alone
 costs a TEST look for zero coverage and can only lose precision. If you can see
 the payoff, propose them together.
 
+## PROBE ON `$BASE`, NOT ON MAIN
+
+Your launch prompt gives `$BASE`. It is usually `main` — but a PAYOFF batch is cut
+from a parked enabler branch, and **the main checkout does not contain that
+enabler**. Probing there asks a kernel that lacks the very machinery the batch is
+built on, so every item the enabler unblocks scores `resolves: false` and gets
+dropped at the shape gate. That is not the item failing; that is you measuring the
+wrong tree. (Batch 28 lost all 5 candidates this way — frequencies up to 444.)
+
+So when `$BASE` is not main, create the ONE worktree you are permitted (the recipe
+is in your launch prompt), run EVERY stats run, solve probe and structural-sample
+walk inside it, and remove it when you finish. It is read-only probing; you never
+edit in it.
+
 ## Prohibitions
 
-- Read-only: no edits, no worktrees, no snapshots, no branches.
+- Read-only: no edits, no snapshots, no branches. The `scout-probe` worktree on
+  `$BASE` is the ONE exception, and only for probing — remove it when done.
 - Never `--slice test`, never `--spend-test-look` — TEST is not yours to look at.
 - Never propose per-problem machinery (one-off regexes, item-shaped branches).
 

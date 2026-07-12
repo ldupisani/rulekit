@@ -351,7 +351,28 @@ if (SMOKE) {
     'mining-scout',
     `Select ${COUNT} candidate mining increments for rulekit per your protocol
 (required reading, fresh stats run, brief requirements, disjointness).
-Repo: ${REPO}. Return the ScoutOutput structured output.`,
+
+MAIN=${REPO}
+BASE=${BASE}
+WT_ROOT=${WT_ROOT}
+${BASE === 'main'
+  ? 'BASE is main: probe in the main checkout as usual.'
+  : `BASE IS NOT MAIN — this is a PAYOFF batch built on a parked enabler.
+The main checkout does NOT contain that enabler, so probing there would ask a
+kernel that lacks the very machinery this batch is built on, and every item the
+enabler unblocks would score resolves:false. YOU MUST PROBE ON BASE:
+
+  git -C "$MAIN" worktree add "${WT_ROOT}/scout-probe" ${BASE}
+  ln -s "$MAIN/projects/gsm8k/data" "${WT_ROOT}/scout-probe/projects/gsm8k/data"
+  mkdir -p "${WT_ROOT}/scout-probe/projects/gsm8k/snapshots"
+  cd "${WT_ROOT}/scout-probe" && uv sync --extra bench
+
+Run EVERY stats run, solve probe and structural-sample walk in that worktree, so
+\`resolves\` reflects the state candidates will actually be built on. Remove it
+when you finish: git -C "$MAIN" worktree remove --force "${WT_ROOT}/scout-probe".
+This is the ONE worktree you may create; it is read-only probing, never edits.`}
+
+Return the ScoutOutput structured output.`,
     { label: 'scout', phase: 'Scout', schema: SCOUT_SCHEMA },
   )
   if (!scout || !scout.candidates?.length) {

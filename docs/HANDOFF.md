@@ -3341,3 +3341,27 @@ the payoff measurable. Record failures with their fix, and they come back.
 NOTE: cherry-picking onto main conflicted in docs/HANDOFF.md (both sides append
 records). Resolved as a UNION — records are append-only, there is no semantic
 conflict. Expect this on every multi-increment landing.
+
+## Batch 28 (2026-07-12) — 0 landed; the scout was probing the WRONG TREE
+
+All 5 candidates died at the shape gate (frequencies 9, 20, 87, 101, **444**;
+0–2 of 3–4 walked items resolving). Cost: one agent.
+
+THE CAUSE WAS OURS, NOT THE SCOUT'S. The batch ran with
+`base=mining/parked/labeled-entity-identity-enabler`, but **the scout probes in the
+MAIN checkout** — which does not contain that enabler. So when it walked an item
+and asked "does this resolve end-to-end?", it asked a kernel LACKING the machinery
+the batch was built on. Every item the enabler unblocks scored `resolves: false`
+and was dropped.
+
+Same failure family as batch 26 (rest-partitions measured without its enabler) and
+the batch-27 smoke (BASE never reached the reviewer). `BASE` was threaded to the
+implementer, integrator, reviewer and compose agent — and NOT to the scout. That is
+the fourth time a new parameter reached only some of its readers.
+
+FIXED: on a payoff batch the scout now creates ONE read-only `scout-probe` worktree
+at `$BASE` and runs every stats run, solve probe and structural-sample walk inside
+it, so `resolves` reflects the tree candidates will actually be built on.
+
+INVARIANT: **when you add a parameter, enumerate its readers.** Four for four, the
+misses were caught by a self-test or a gate, never by inspection.
