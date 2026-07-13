@@ -14,13 +14,13 @@ swing under the constitution (no lexicon in Python, no per-problem parsing,
 every increment through the gates).
 
 **Current numbers (all verified at head):**
-- dev-train: 62 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
+- dev-train: 65 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
 - dev-holdout: 26 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 684 · lint: 0 errors, 1 intended warning
+- curated suite: 52/52 · pytest: 691 · lint: 0 errors, 1 intended warning
 - bench wall: dev-train 16.6s -> 9.0s (trace opt-out) -> 1.7s at `--jobs 12`.
   `--jobs` defaults to 1; spend it in the SERIAL integration tail, never in the
   implementers' gates (they already run concurrently). See the two infra notes below.
-- TEST ledger (84 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- TEST ledger (85 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -4207,3 +4207,37 @@ question sentence, and read-phase pattern rules only run over premise readings.
 CALIBRATION (§9.4): elided-measure family — pool_frequency 354, solved_vs_main +2
 (dev-train). Resolve rate ~0.6%. Sobering: a 354-item family yielded 2. The pool count is
 a CEILING, not a forecast, and the gap between them is where the real work is.
+
+## Batch 39 (2026-07-13) — increment 87. dev-train 62 -> 65. TEST look #85: 11/1 (91.7%) HELD.
+
+LANDED: **87 — elided-measure anchor quantities** (a bare numeral stated for an entity
+whose measure noun is dropped: "who caught 2", "if Kristen has 12", "Ben has 9"). +3.
+
+THREE GOAL-MODE DEMOTIONS THAT EACH FOUND A REAL BUG. Do not treat these as failures —
+their branches are retained and each finding is a named candidate:
+
+1. **LIVE BUG ON MAIN (weekday names).** `time-period-qualified-events` found that
+   weekday words (monday..sunday) are lexically sensed `time` — an inert sense nothing
+   reads — and, being always capitalized, were ALWAYS misread as bare PROPER NAMES by
+   senses.py's capitalization heuristic. That silently adds a spurious second "name" to
+   `_discourse_candidates` (document.py) whenever a premise carries a weekday adjunct,
+   **breaking the FOLLOWING sentence's pronoun resolution.** Confirmed on unmodified main
+   via manual probes. Its fix (retag weekday -> noun, admit to the EXISTING `timeperiod`
+   category, exempt timeperiod words from the capitalization override) is
+   category-gated and constitution-clean. Branch: `mining/cand-time-period-qualified-events`.
+   **RE-CUT THIS — it is a precision bug on main, not a coverage candidate.**
+
+2. **Coordinated-subject binding bug.** `container-pool-depletion` traced a general
+   multi-clause bug in `obligations.py::_candidates`: a counted-noun object's
+   conjoined-sibling check short-circuits with an early return BEFORE the
+   uncounted-noun/adjacency-arbitration filters run — so "X did A and Y did B" loses Y's
+   subject whenever the first clause's object noun sits right before "and Y".
+
+3. **Existential-premise entity mis-binding.** Same candidate: "N pieces OF CANDY in a
+   bowl" binds the existential rule's entity to the SUBSTANCE noun instead of the
+   CONTAINER — a precedence gap between the 'of' partitive and the trailing 'in PLACE'
+   phrase.
+
+`partitive-combined-asks` shipped NEUTRAL honestly: no dev item hits its exact shape
+today because the pool items carrying that ask have a SECOND blocker (elided standards,
+equal-share division, dozen conversions, reverse solves). Its 12 synthetic tests stand.
