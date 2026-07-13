@@ -39,9 +39,19 @@ const SCOUT_BRIEF = {
     class_name: { type: 'string' },
     evidence: {
       type: 'object',
-      required: ['frequency', 'structural_sample'],
+      required: ['pool_frequency', 'structural_sample'],
       properties: {
-        frequency: { type: 'number' },
+        // THE YIELD ESTIMATE (methodology §9). Matches for this class's ASK FAMILY
+        // within the ADDRESSABLE POOL — items that are fully-read (no unknown words)
+        // AND declining. That is the candidate's ceiling. Cluster the pool by
+        // SEMANTIC family, never by lexical frame: by word-frame the pool looks like
+        // 616 clusters of ~1 item; by family it is per-unit 100 / total 90 /
+        // money-cost 78 / partitive 70. Same items, opposite conclusion.
+        pool_frequency: { type: 'number', description: 'items in the ADDRESSABLE POOL matching this ask family — the yield ceiling. Below 3 the candidate cannot yield 3 and is dropped.' },
+        // The old surface count across ALL 3772 items. Banned as evidence: it has
+        // twice pointed at classes that resolved nothing (327, 444). Report it only
+        // as context, never as justification.
+        frequency: { type: 'number', description: 'SURFACE count across all items. NOT evidence — context only. See docs/negative-results.md.' },
         stats_reason: { type: 'string' },
         worklist_ref: { type: 'string' },
         // A frequency count is a SURFACE count: it says how many items contain a
@@ -186,6 +196,7 @@ const SMOKE_BRIEF = {
   slug: 'smoke-noop',
   class_name: 'pipeline smoke test (no-op)',
   evidence: {
+    pool_frequency: 0,
     frequency: 0,
     stats_reason: 'n/a — pipeline self-test',
     worklist_ref: 'n/a',
@@ -411,6 +422,21 @@ candidates = candidates.filter((c) => {
     log(`${c.slug}: DROPPED at the shape gate — infrastructure brief without a proven payoff (${!c.unblocks ? 'no unblocks class' : `${wouldResolve}/${walked.length} would-resolve`}).`)
     return false
   }
+  // YIELD GATE (methodology §9): pool_frequency is the candidate's ceiling — matches
+  // within the addressable pool (fully-read AND declining). A class with fewer than 3
+  // addressable items CANNOT yield 3, so no implementer is spent on it, however
+  // impressive its surface frequency. (Surface frequency has twice pointed at classes
+  // that resolved nothing: 327 and 444.)
+  const pool = c.evidence?.pool_frequency
+  if (!(pool >= 3)) {
+    unproven.push({
+      slug: c.slug,
+      phase: 'scout-yield-gate',
+      reason: `yield ceiling too low: pool_frequency=${pool ?? 'MISSING'} (need >= 3). This is the count of ADDRESSABLE items (fully-read AND declining) matching the ask family — the most this class could ever win. Surface frequency=${c.evidence?.frequency ?? '?'} is not evidence (methodology §9).`,
+    })
+    log(`${c.slug}: DROPPED at the yield gate — pool_frequency=${pool ?? 'MISSING'} < 3. Ceiling too low to be worth an implementer.`)
+    return false
+  }
   const resolving = walked.filter((s) => s.resolves).length
   if (resolving >= 3) return true
   unproven.push({
@@ -518,7 +544,11 @@ for (const i of items.filter((x) => x.review && x.review.verdict === 'fail')) {
 
 const landable = items
   .filter((i) => i.result.status === 'gated' && i.review && i.review.verdict === 'pass')
-  .sort((a, b) => a.brief.priority - b.brief.priority)
+  // Land biggest-ceiling first (methodology §9): if a later pick conflicts or fails its
+  // re-gate, the coverage already banked is the most that was available.
+  .sort((a, b) =>
+    (b.brief.evidence?.pool_frequency ?? 0) - (a.brief.evidence?.pool_frequency ?? 0) ||
+    a.brief.priority - b.brief.priority)
 
 // ---------- Phase 4: Integrate (strictly sequential) ----------
 const landed = []

@@ -108,13 +108,42 @@ unreadable items, they failed end-to-end, and the seam looked worked out.
 decline with `no ask shape`. There, the ask is the only thing missing — which is
 precisely the thing your brief proposes to build.
 
+### The YIELD-RANKED WORKLIST (measured 2026-07-13 at dev-train=60)
+
+Cluster the pool by **SEMANTIC ASK FAMILY**, never by lexical frame. This matters
+more than anything else on this page. By word-frame the pool is **616 clusters over
+678 items, biggest 5** — it looks hopeless, and that illusion is what produced the
+"seam is exhausted" misdiagnosis. By semantic family, the SAME items give:
+
+| pool count | family |
+|---|---|
+| **100** | per-unit / each ("how much does each…", per, apiece) |
+| **90** | total / altogether / in all |
+| **78** | money-cost (cost / price / pay / spend) |
+| **70** | partitive measure ("how many CUPS of X", slices, liters, bags) |
+| 57 | duration ("how long…", how many hours) |
+| 56 | comparative ("how many/much more/fewer/less") |
+| 54 | remainder ("… left", remaining) |
+| 38 | need / deficit ("how much more … need") |
+| 16 | rate · 11 percent/fraction |
+| 261 | *genuine long tail — not minable* |
+
+"how many cups of X", "how many slices of Y", "how many liters of Z" are ONE family,
+not three. The engine generalises over tense, pronoun and measure noun — so your
+clustering must too, or you will see noise where the engine sees a class.
+
 ### How to build the pool (throwaway scratchpad script, methodology §4)
 
-Bench dev-train in-process and keep the items where `unknown_words` is empty and
-`outcome == "declined"` and the reason starts with `no ask shape`. Cluster those
-728 by QUESTION SHAPE (the wh-word, the asked measure, the frame — "how much
-does X cost in total", "how many more X than Y", "what will X be after N"), and
-pick the biggest clusters whose PREMISES already resolve. Walk them, as always.
+Bench dev-train in-process (`_solve_item` from `rulekit.harness.bench`) and keep items
+where `unknown_words` is empty, `outcome == "declined"` and the reason starts with
+`no ask shape`. Take the last `?`-terminated sentence as the question. Match it against
+ask-family regexes to get `pool_frequency`. Re-derive this yourself — the counts above
+are from dev-train=60 and will drift as increments land.
+
+`pool_frequency` is **required** in every brief and is your yield ceiling. Below 3 the
+candidate is dropped before an implementer is spent. Rank by it. The old surface
+`frequency` is context ONLY, never justification — it has twice pointed at classes that
+resolved nothing (327, 444).
 
 The shape gate is unchanged and still binding: **>= 3 walked items resolving
 END-TO-END.** But now you are drawing from a pool where premises are already built,
