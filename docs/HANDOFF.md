@@ -14,13 +14,13 @@ swing under the constitution (no lexicon in Python, no per-problem parsing,
 every increment through the gates).
 
 **Current numbers (all verified at head):**
-- dev-train: 59 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
+- dev-train: 60 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
 - dev-holdout: 25 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 640 · lint: 0 errors, 1 intended warning
+- curated suite: 52/52 · pytest: 650 · lint: 0 errors, 1 intended warning
 - bench wall: dev-train 16.6s -> 9.0s (trace opt-out) -> 1.7s at `--jobs 12`.
   `--jobs` defaults to 1; spend it in the SERIAL integration tail, never in the
   implementers' gates (they already run concurrently). See the two infra notes below.
-- TEST ledger (77 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- TEST ledger (80 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -3862,3 +3862,24 @@ DECL→WRONG (60→61/3772 correct); dev-holdout diff NEUTRAL, 0 BROKE, 0
 DECL→WRONG (25/3701 correct before and after); pytest 655 passed; suite
 52/52; lint 0 errors / 1 known-good warning (fraction-of-remnant /
 fraction-of-pool, unchanged). TEST look: pending — spent manually.
+
+## Batch 34 (2026-07-13) — FIRST PRECISION DROP OF THE RUN. Increment 81 killed.
+
+Bare-main batch, 2 landed on staging, ONE SURVIVED.
+
+- **increment 81 (gifted-budget money-left asks) — KILLED at TEST look #78.**
+  DEV was immaculate (dev-train 59->60 SHIP, holdout NEUTRAL, suite 52/52, review
+  passed). TEST: **11/2 = 84.6%**, down from 90.9% — a new confident-wrong. REVERTED.
+  See docs/negative-results.md. Branch `mining/cand-gifted-budget-money-left` kept.
+- **increment 82 (relations with index-/ordinal-LABELED subjects: Jar A, house 3, the
+  second box) — HELD.** Its look #79 was CONTAMINATED (taken with 81 present, read
+  11/2), so it was re-cut onto bare main and given its own look #80: **10/1, 90.9%.**
+  Landed (2a34ec2). dev-train 59 -> 60.
+
+THREE LOOKS SPENT (#78 kill, #79 contaminated, #80 clean re-measure). Worth it: a
+contaminated look is not evidence about the increment above the bad one. Re-measure in
+isolation or you discard good work along with the bad.
+
+**A clean DEV gate is necessary but never sufficient.** 7,473 DEV items said increment
+81 was safe. TEST disagreed. This is why looks are rationed and why DEV-clean is not a
+licence to land.

@@ -155,3 +155,40 @@ already reading dev-train) and it is the difference between "28 items say
 clean, general, decline-safe machinery. The gate did its job and the goal-mode
 SOLVED>0 check caught them. The failure was upstream, in candidate SELECTION —
 and no amount of review discipline downstream recovers a wasted implementer run.
+
+## Increment 81 KILLED at TEST look #78 (gifted-budget money-left asks, 2026-07-13)
+
+**What it was:** "money-left asks over a GIFTED budget and container-partitive priced
+purchases" — e.g. a budget arriving as a gift rather than as a stated holding, then
+priced purchases drawn against it.
+
+**DEV evidence (immaculate):** dev-train 59 -> 60 (SHIP, +1 SOLVED, 0 BROKE,
+0 DECL->WRONG), dev-holdout NEUTRAL, suite 52/52, pytest green, lint clean. It also
+passed constitution review. Nothing on 3,772 dev-train items or 3,701 dev-holdout
+items said it was unsafe.
+
+**TEST verdict (look #78):** 11 correct / **2 wrong** = **84.6%**, down from 10/1 =
+90.9%. It bought +1 TEST correct and introduced a NEW CONFIDENT-WRONG. Precision
+dropped 6.3 points.
+
+**Action:** REVERTED — not landed on main. Branch `mining/cand-gifted-budget-money-left`
+retained for postmortem.
+
+**The isolation:** increment 82 shipped in the same batch and its look (#79, taken WITH
+81 present) also read 11/2 — telling us nothing about 82 alone. So 82 was re-cut onto
+bare main and given its OWN look (#80): **10/1, 90.9% — HELD.** That isolates 81 as the
+sole culprit and let 82 land. A contaminated look is not evidence about the increment
+sitting on top of the bad one; re-measure in isolation or you throw away good work with
+the bad.
+
+**The lesson (the whole reason the firewall exists):** a clean DEV gate is NECESSARY but
+NEVER SUFFICIENT. Increment 81 commits on an unseen TEST structure that no DEV item
+exercises — the §3a distribution-shift trap. 7,473 DEV items voted "safe" and were
+wrong. This is the third TEST kill of the campaign (after the 12-word vocab batch at
+look #20 and the fruit family at look #32), and the first of a STRUCTURAL increment
+rather than vocabulary.
+
+**Suspect, for any re-cut:** the gifted-budget premise likely widens what counts as a
+budget/holding, letting money-left machinery commit where the budget was never really
+stated. A re-cut must narrow the premise to an explicitly-stated budget and re-prove on
+TEST with its own look.
