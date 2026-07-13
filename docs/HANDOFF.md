@@ -14,13 +14,13 @@ swing under the constitution (no lexicon in Python, no per-problem parsing,
 every increment through the gates).
 
 **Current numbers (all verified at head):**
-- dev-train: 70 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
+- dev-train: 73 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
 - dev-holdout: 28 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 757 · lint: 0 errors, 1 intended warning
+- curated suite: 52/52 · pytest: 775 · lint: 0 errors, 1 intended warning
 - bench wall: dev-train 16.6s -> 9.0s (trace opt-out) -> 1.7s at `--jobs 12`.
   `--jobs` defaults to 1; spend it in the SERIAL integration tail, never in the
   implementers' gates (they already run concurrently). See the two infra notes below.
-- TEST ledger (91 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- TEST ledger (93 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -4584,3 +4584,22 @@ DECL->WRONG, 28 correct unchanged). Suite 52/52. Lint 0 errors (1 pre-existing
 warning: fraction-of-remnant/fraction-of-pool overlap, known-good). pytest 765 -> 775
 (+10 new synthetic tests).
 **TEST look: pending — spent manually.**
+
+## Batch 42 (2026-07-13) — increments 94, 95. dev-train 70 -> 73.
+
+LANDED (looks #92, #93 — both 11/1, 91.7%, HELD):
+- **94 — anaphoric-multiplier relation standards** ("twice that many", "three times that
+  amount", "half that much", "5 times that number"). +1.
+- **95 — sum-constraint premise surfaces** ("the sum of their AGES is N", "Together, they
+  have $N", "a combined WEIGHT of N") feeding the EXISTING linear-system solver — it reuses
+  the pre-existing `_resolve_measure_against` bridge rather than widening the 2x2 solve. +2.
+
+SHAPE GATE, now with honest denominators (minItems=8): equal-share-division-recut 1 of 12,
+sum-and-combined-dimension-asks 1 of 12, measure-unit-priced-purchases 0 of 10. These are
+real samples, not token 3-walks — the gate is discriminating properly.
+
+NOTE: `equal-share-division` has now failed three separate ways (goal-mode 0 SOLVED, rule-1
+review kill, and now 1 of 12 walked). Three independent signals say this class is not
+reachable with current machinery. STOP PROPOSING IT until its named blockers land ("each
+one" as a noun; elided-measure events folding as Predication; division premises fused into
+the question sentence).
