@@ -14,13 +14,13 @@ swing under the constitution (no lexicon in Python, no per-problem parsing,
 every increment through the gates).
 
 **Current numbers (all verified at head):**
-- dev-train: 75 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
-- dev-holdout: 28 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 792 · lint: 0 errors, 1 intended warning
+- dev-train: 76 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
+- dev-holdout: 29 correct / 0 wrong (3,701 items)
+- curated suite: 52/52 · pytest: 805 · lint: 0 errors, 1 intended warning
 - bench wall: dev-train 16.6s -> 9.0s (trace opt-out) -> 1.7s at `--jobs 12`.
   `--jobs` defaults to 1; spend it in the SERIAL integration tail, never in the
   implementers' gates (they already run concurrently). See the two infra notes below.
-- TEST ledger (94 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- TEST ledger (96 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -4739,3 +4739,30 @@ Reproduced exactly: "Sam has 2 dogs. Sam buys 4 dogs. Sam has three times as man
 dogs." was 6, correctly 18. The junior proved the fix safe across the full dev gate on its
 own, and says so explicitly — it is "independently valuable regardless of this candidate's
 fate". RE-CUT THIS AS ITS OWN INCREMENT. Branch: `mining/cand-existential-relation-binding`.
+
+## Increments 98, 99 (2026-07-13) — dev-train 76. A SECOND confident-wrong killed.
+
+- **98 — elided comparative standards** (the standard is the discourse/coordinate
+  antecedent, not named after 'than'/'as'). +1 dev-train, +1 dev-holdout. Look #95 HELD.
+- **99 — relations anchor on the standard's TOTAL, not its state fact.** A CONFIDENT WRONG,
+  live on main. Look #96 HELD.
+
+INCREMENT 99 IS THE SECOND LATENT CONFIDENT-WRONG FOUND THIS SESSION (after the weekday
+name bug), and both came from FAILED candidates.
+
+  "Sam has 2 dogs. Sam buys 4 dogs. Sam has three times as many cats as dogs."
+    main:  anchored on the STATE fact (2) -> committed 3 x 2 = 6.
+    truth: 3 x (2+4) = 18.
+
+`_relations_synth` read a single raw Quantity's `.value` and ignored any later EVENT on the
+same (subject, standard). The fix routes the anchor through `_entity_total` — the same fold
+the single-entity ASK consumer already uses — so a relation's notion of "how much X has"
+agrees with the engine's everywhere else. STRICTLY MORE CONSERVATIVE than the raw peek:
+_entity_total returns None on ambiguity and we decline rather than commit a stale anchor.
+Qualified standards keep the raw lookup byte-identical (a bare-key fold would mix a 'red
+apple' sibling into a 'green apple' anchor — increment 97's path is untouched).
+
+THE PATTERN, now twice: **the failed candidates are where the bugs are.** Increment 99 came
+from `existential-relation-binding`, which never cracked its own target item, proved this
+fix out on the way, and SAID SO in its failure report. Increment 88 came from
+`time-period-qualified-events`, also demoted. Both were 0-SOLVED. Read the failure reports.
