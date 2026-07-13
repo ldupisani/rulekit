@@ -4132,6 +4132,49 @@ staging baseline of 677); suite 52/52; lint 0 errors / 1 known-good warning
 (fraction-of-remnant / fraction-of-pool, unchanged). TEST look: pending —
 spent manually.
 
+## Increment 87 (2026-07-13) — elided-measure anchor quantities (a bare numeral stated for an entity whose measure noun is dropped: "who caught 2", "if Kristen has 12", "Ben has 9")
+
+Class: elided-measure anchor quantities — an event/state verb's dobj (or a
+copula's complement) resolves to a COUNT-valued unit with no measure noun
+attached ("...as X who caught 2", "..., if Kristen has 12?"). This is the
+premise-side sibling of increment 85 (elided-measure RELATIONS) and
+increment 62 (elided-measure ASKS); the anchor side was left open by
+increment 12 and named again as a blocker in a FAILED batch-38 equal-share
+junior. Marked infrastructure: only 2 of 12 walked dev-train items resolve on
+this fix alone, below the 3-of-8 shape bar, while >=4 more resolve once the
+named follow-on (conjoined elided-measure event lists) lands on top.
+
+Mechanism (kernel-structural, no lexicon): in `learn.py`, when an event/state
+verb's dobj (or copula complement) resolves to a bare COUNT with no measure
+noun, emit a `Quantity` with `measure: null` — an explicit unresolved
+sentinel, exactly as increment 85's elision rules do for `Relation` — instead
+of dropping the fact and leaving only a string-dobj `Predication`. The
+sentinel is recovered in `saturate.py` on the same unique-in-play discipline
+`_relations_synth` (increment 85), `synth/fraction-of-pronoun`, and
+`synth/partition-of-collection` already use: the measure resolves from the
+unique measure in play for that entity/verb context (a sibling relation's
+measure, the unique prior Quantity measure, or a conjoined list's spelled
+sibling); zero or two-or-more candidates is AMBIGUOUS and declines that round
+— never a guess. `guards.py`/`model.py` key the sentinel fact the way
+increment 28 keys `is_fraction` facts: `value`/`measure` are dropped from the
+identity key while unresolved, so a null-measure Quantity does not count as
+"read" until resolved. Unblocks: conjoined elided-measure event lists
+("A collected 29, B collected 17, and C collected 8 shells" combined/total
+asks where only the last conjunct spells the measure).
+
+Files: `src/rulekit/kernel/learn.py`, `src/rulekit/kernel/saturate.py`,
+`src/rulekit/kernel/guards.py`, `src/rulekit/kernel/model.py`,
+`tests/test_mining_increment_87.py`.
+
+Gates (integrated on staging, full re-proof against current staging
+baseline): dev-train diff SHIP, +3 SOLVED (094cfd5b94b8, 5dfb02752ef5,
+9aaef1e4ce47), 0 BROKE, 0 DECL→WRONG (65/3772 correct, up from 62, 0 wrong);
+dev-holdout diff NEUTRAL, 0 SOLVED, 0 BROKE, 0 DECL→WRONG (26/3701 correct,
+unchanged, 0 wrong); pytest 691 passed (+7 synthetic tests in
+`tests/test_mining_increment_87.py` over the prior staging baseline of 684);
+suite 52/52; lint 0 errors / 1 known-good warning (fraction-of-remnant /
+fraction-of-pool, unchanged). TEST look: pending — spent manually.
+
 ## Batch 38 (2026-07-13) — the gate fix vindicated. TEST 91.7% (NEW FLOOR), dev-train 62.
 
 Same base, same pool targeting as the three empty batches — the ONLY change was walking

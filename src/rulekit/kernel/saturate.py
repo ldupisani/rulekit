@@ -20,7 +20,7 @@ from ..data.registry import Registry
 from ..data.schemas import SynthRule
 from .evaluate import ArithmeticLog, EvaluationError, evaluate
 from .facts import FactStore
-from .model import Fact, GroupTotal, Predication, Provenance, Quantity, Relation
+from .model import AnchorQuantity, Fact, GroupTotal, Predication, Provenance, Quantity, Relation
 
 MAX_ROUNDS = 50
 
@@ -351,6 +351,67 @@ def _bare_age_anchor_synth(store: FactStore, reg: Registry, log: ArithmeticLog) 
                     source="synth/bare-age-anchor", sentence=p.provenance.sentence
                 ),
                 entity=p.subject, measure=measure, value=value, verb=p.verb,
+            )
+        )
+    return out
+
+
+def _anchor_quantity_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> list[Fact]:
+    """Resolve AnchorQuantity's bare-numeral placeholder (mining candidate
+    elided-measure-anchors: "Quinn catches twice the amount of frogs as
+    Alster WHO CAUGHT 2", "...if Kristen HAS 12?") against the UNIQUE
+    measure already in play for that entity — a sibling Relation naming
+    the entity as its subject or standard (the relation's OWN stated
+    measure, e.g. "twice the amount of FROGS as Alster"), or the entity's
+    own other stated Quantity measure. Zero or two-or-more candidates is
+    ambiguous and declines this round — never a guess, the SAME
+    unique-pool-in-play discipline `_relations_synth` (increment 85)
+    already applies to elided-measure RELATIONS.
+
+    A Relation whose OWN measure is itself still an unresolved elided
+    sentinel (`rel.measure is None`, increment 85's shape) contributes NO
+    candidate — it hasn't been recovered yet either, and guessing off an
+    unresolved sibling would compound two guesses into one; it resolves
+    on a LATER round with no extra loop here, exactly like
+    `_relations_synth`'s own re-run-each-round design (`saturate()` is the
+    fixpoint driver for both).
+
+    A target entity that ALREADY holds a Quantity under the anchor's OWN
+    verb blocks re-deriving (the same re-derivation guard `_relations_
+    synth` applies) — re-deriving a known holding would double it."""
+    out: list[Fact] = []
+    resolved = {
+        (q.entity, q.verb, q.occurrence, q.time)
+        for q in store.by_kind(Quantity)
+        if q.provenance.source == "synth/anchor-quantity"
+    }
+    measures_by_entity: dict[str, set[str]] = {}
+    for q in store.by_kind(Quantity):
+        measures_by_entity.setdefault(q.entity, set()).add(q.measure)
+    for rel in store.by_kind(Relation):
+        if rel.measure is None:
+            continue
+        measures_by_entity.setdefault(rel.subject, set()).add(rel.measure)
+        measures_by_entity.setdefault(rel.standard, set()).add(rel.measure)
+    known_by_verb = {(q.entity, q.measure, q.verb) for q in store.by_kind(Quantity)}
+    for anchor in store.by_kind(AnchorQuantity):
+        identity = (anchor.entity, anchor.verb, anchor.occurrence, anchor.time)
+        if identity in resolved:
+            continue
+        candidates = measures_by_entity.get(anchor.entity, set())
+        if len(candidates) != 1:
+            continue
+        (measure,) = candidates
+        if (anchor.entity, measure, anchor.verb) in known_by_verb:
+            continue  # already has a quantity under this verb — would double it
+        out.append(
+            Quantity(
+                provenance=Provenance(
+                    source="synth/anchor-quantity", sentence=anchor.provenance.sentence
+                ),
+                entity=anchor.entity, measure=measure, value=anchor.value,
+                verb=anchor.verb, occurrence=anchor.occurrence, time=anchor.time,
+                owner=anchor.owner, qualifier=anchor.qualifier, label=anchor.label,
             )
         )
     return out
@@ -1083,6 +1144,7 @@ def _distributive_container_total_synth(store: FactStore, reg: Registry, log: Ar
 PLUGINS: dict[str, Synthesizer] = {
     "synth/relation-to-quantity": _relations_synth,
     "synth/bare-age-anchor": _bare_age_anchor_synth,
+    "synth/anchor-quantity": _anchor_quantity_synth,
     "synth/fraction-of-pool": _fraction_synth,
     "synth/rest-of-pool": _rest_synth,
     "synth/partition-of-collection": _partition_synth,

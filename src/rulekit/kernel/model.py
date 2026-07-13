@@ -451,6 +451,66 @@ class PartitionQuantity(Fact):
 
 
 @dataclass(frozen=True)
+class AnchorQuantity(Fact):
+    """A bare numeral stated for an entity whose MEASURE NOUN is elided
+    entirely — mining candidate elided-measure-anchors: "Quinn catches
+    twice the amount of frogs as Alster WHO CAUGHT 2" (no 'frogs' in the
+    relative clause), "...how many more turtles does Trey have than
+    Kristen, IF KRISTEN HAS 12?" (the trailing conditional states a bare
+    count, no 'turtles'). learn.py's generic SVO fold always needs a
+    counted NOUN dobj to build a Quantity; a noun-less value has nowhere
+    to go and would otherwise fall all the way to a valueless Predication
+    (dobj holding the number's own surface, e.g. '2') — exactly the gap
+    `_bare_age_anchor_synth` already patches for the age-specific case,
+    generalized here to any measure via a proper fact kind instead of a
+    bespoke per-category synth.
+
+    Resolved to a real Quantity (measure filled in) by saturate.py's
+    `_anchor_quantity_synth` — the anchor-quantity sibling of
+    FractionQuantity/RestQuantity/PartitionQuantity: the measure comes
+    from the UNIQUE measure already in play for this entity (a sibling
+    Relation naming the entity as its subject/standard, or the entity's
+    own other stated Quantity measure), the SAME unique-pool-in-play
+    discipline `_relations_synth` (increment 85) already applies to
+    elided-measure RELATIONS. Zero or two-or-more candidates is ambiguous
+    and declines — never a guess.
+
+    A SEPARATE fact kind from Quantity on purpose, not a nullable
+    `measure` field on Quantity itself (Relation's increment-85 approach):
+    Quantity is the single most-consumed fact kind in the engine (~30 call
+    sites across answer.py/saturate.py/guards.py/facts.py, several
+    building bare `{q.measure for q in ...}` sets used for ambiguity
+    checks) — an unresolved `measure=None` sitting among them would
+    silently pollute every one of those sets and collision-splitting
+    mirrors in facts.py's `admit()` (all gated on `isinstance(fact,
+    Quantity)`). A distinct class is invisible to all of that until this
+    module's own synth explicitly promotes it into a real Quantity.
+
+    UNRESOLVED ones veto any commit (guards.py's `unresolved-derivation`),
+    exactly like Fraction/RestQuantity — a silently dropped bare count is
+    a confident-wrong factory. EXISTENCE (not use) counts as value-
+    accounting "read", same as Quantity/FractionQuantity/PartitionQuantity
+    (unlike Rate/Price/Goal/GroupTotal): this fact IS the captured stated
+    count the moment the fold sees it; the unresolved-derivation veto is
+    what actually protects an anchor that never finds its measure."""
+
+    entity: str
+    value: float
+    verb: str = "have"
+    occurrence: int | None = None
+    time: str | None = None
+    owner: str | None = None
+    qualifier: str | None = None
+    label: str | None = None
+
+    def key(self) -> tuple:
+        return ("anchor_quantity", self.entity, self.verb, self.occurrence, self.time)
+
+    def value_part(self) -> Any:
+        return self.value
+
+
+@dataclass(frozen=True)
 class Rate(Fact):
     """'makes $18 an hour' / '4 cars a day' — value of measure PER unit.
     Informative on its own (never folds into holdings); the rate-span

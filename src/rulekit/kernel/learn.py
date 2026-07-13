@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from ..data.registry import Registry
 from .model import (
+    AnchorQuantity,
     Fact,
     Membership,
     Predication,
@@ -1222,6 +1223,38 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                     polarity=polarity,
                 )
             )
+        elif (
+            dobj is not None
+            and dobj.sense() == "value"
+            and dobj.features.get("value_kind") == "count"
+        ):
+            # mining candidate elided-measure-anchors: a bare numeral dobj
+            # with NO measure noun stated AT ALL ("who caught 2", "if
+            # Kristen has 12") — the generic fold has nowhere to put a
+            # noun-less value and would otherwise fall through to the
+            # catch-all Predication below (dobj holding the numeral's own
+            # surface, e.g. '2' — never usable as an anchor). Emit an
+            # explicit UNRESOLVED sentinel fact instead (never a guess);
+            # saturate.py's `_anchor_quantity_synth` recovers the measure
+            # from the unique measure already in play for this entity, and
+            # guards.py's `unresolved-derivation` guard vetoes commit if it
+            # never does. Same negated-clause decline as every other
+            # Quantity-emitting branch above — a negated bare count must
+            # not become a holding at all.
+            if not negated_clause:
+                facts.append(
+                    AnchorQuantity(
+                        provenance=prov,
+                        entity=_lemma(subject),
+                        owner=_owner(subject),
+                        qualifier=_qualifier(subject),
+                        label=_label(subject),
+                        value=float(dobj.features["value"]),
+                        verb=verb_lemma,
+                        occurrence=occurrence,
+                        time=time_label,
+                    )
+                )
         elif dobj is not None:
             facts.append(
                 Predication(

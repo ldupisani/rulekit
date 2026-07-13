@@ -145,7 +145,13 @@ def check(
         # a FractionQuantity/RestQuantity the synthesizers could NOT resolve
         # means part of the text was read but not computed — committing
         # around it is how "ate half the sandwiches" silently vanishes
-        from .model import FractionQuantity, PartitionQuantity, Quantity, RestQuantity
+        from .model import (
+            AnchorQuantity,
+            FractionQuantity,
+            PartitionQuantity,
+            Quantity,
+            RestQuantity,
+        )
 
         derived = {
             (q.entity, q.verb, q.occurrence)
@@ -165,6 +171,21 @@ def check(
                     "unresolved-derivation",
                     f"'the rest' ({r.entity!r}, {r.verb!r}) never resolved "
                     "against a unique pool",
+                )
+        # AnchorQuantity (mining candidate elided-measure-anchors): a bare
+        # numeral with no measure noun at all ("who caught 2") that
+        # `_anchor_quantity_synth` could NOT resolve against a unique
+        # in-play measure — the SAME `derived` set already covers it
+        # (populated from EVERY synth-sourced Quantity regardless of
+        # source name, "synth/anchor-quantity" included), so an unresolved
+        # anchor is caught here rather than silently laundered through as
+        # a valueless Predication ever was.
+        for a in store.by_kind(AnchorQuantity):
+            if (a.entity, a.verb, a.occurrence) not in derived:
+                return GuardVeto(
+                    "unresolved-derivation",
+                    f"the bare count {a.value!r} stated for {a.entity!r} "
+                    f"({a.verb!r}) never resolved to a known measure",
                 )
         # a PartitionQuantity resolves into ANOTHER PartitionQuantity (its
         # collection replaced by the real measure), never a Quantity — the
