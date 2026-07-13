@@ -4838,3 +4838,47 @@ it declared, and re-gate attributing that hunk specifically.
 been caught TWICE by review. The docstring warning did not prevent the second one. Consider a
 lint check: no bare measure-lemma string literals in `src/rulekit/kernel/answer.py` or
 `saturate.py` outside the known sentinels (`world`, `currency`).
+
+## Increment 101 — coordinated independent clauses whose second clause loses its subject
+when the first clause's object ends in a counted noun ("Diego scored 6 points and Sofia
+scored 9 points").
+
+CLASS: infrastructure. Proven on unmodified main by a verb-category-dependent minimal pair:
+"Bruce ATE 4 apples and Michael ate 3 apples" binds both clauses' subjects correctly (7.0),
+but "Bruce SCORED 4 goals and Michael scored 3 goals" drops Michael's clause entirely (no
+Quantity, no Predication) — the item declines "a combined ask needs at least two holders of
+'goal'; found ['bruce']". Same loss with 'read' and with the coordinator 'while'. Splitting
+the sentence into two restores it. Filed as HANDOFF batch 39 finding #2's long-open
+follow-on.
+
+MECHANISM: kernel-structural, no lexicon. In `src/rulekit/kernel/obligations.py::_candidates`
+the counted-noun object's conjoined-sibling check used to short-circuit with an early return
+before the uncounted-noun / adjacency-arbitration filters ran. When the first clause's
+counted-noun object sat immediately before the coordinator ("...4 goals AND Michael..."),
+the following capitalised NAME was consumed as a conjoined sibling of the counted-noun
+OBJECT rather than arbitrated as the SUBJECT of a new independent clause. The fix reorders
+the filters so the counted-noun exclusion runs first: once the counted noun is out of the
+candidate pool, the sibling check (and, failing that, adjacency arbitration) only considers
+genuine nominal subject candidates, so the second clause's own name wins its own verb's
+subject uniquely. Pure reordering of two pre-existing filters, verb-category-independent
+(proven on 'score' and 'read', for both 'and' and 'while'); the single-clause path and the
+genuinely-ambiguous conjoined-subject-group shape are pinned unchanged.
+
+FILES: src/rulekit/kernel/obligations.py, tests/test_mining_increment_101.py.
+
+GATE (integrated, staging tip): dev-train diff NEUTRAL (0 SOLVED / 0 BROKE / 0 DECL->WRONG,
+77 correct, 3772 items, 100% precision). dev-holdout diff NEUTRAL (0 SOLVED / 0 BROKE / 0
+DECL->WRONG, 29 correct, 3701 items, 100% precision). Suite 52/52. Lint 0 errors (1
+pre-existing warning: fraction-of-remnant/fraction-of-pool overlap, known-good). pytest
+811 -> 816 (+5 new synthetic tests).
+**TEST look: pending — spent manually.**
+
+BLAST RADIUS: this is the batch's designated highest-blast-radius change — `_candidates`
+runs on every sentence of every item — landed with a clean full dev-train and dev-holdout
+diff (no BROKE, no DECL->WRONG anywhere), so no opt-in narrowing was needed. This increment
+is pure infrastructure: it adds the missing second-conjunct fact but resolves nothing on its
+own (0 SOLVED) — every one of the 10 pool items that gain a fact carries a second, ask-side
+blocker. It unblocks the 77 fully-read, ask-recognized dev-train declines reading "a
+combined ask needs at least two holders of X" (29 with exactly one holder found) for the
+follow-on ask-surface work named in the brief: a marker-less named-pair combined ask, a
+comparative whose left side is a combined pair, and a multi-holder rate-span totality ask.

@@ -213,6 +213,28 @@ def _candidates(reading: Reading, holder: Unit, ob: Obligation, reg: Registry) -
             ):
                 continue
         out.append(unit)
+    # A bare value competes for an argument slot only when nothing nominal
+    # does ("Tom ate 3" is elliptical; "Tom ate 3 apples" condensed anyway).
+    if ob.need in ("dobj", "object", "standard"):
+        nominal = [u for u in out if _unit_sense_class(u) != "value"]
+        if nominal:
+            out = nominal
+    # A counted noun is rarely an AGENT: "he made $100,000 and got a bonus"
+    # must not give 'got' the subject '$100,000'. Prefer uncounted nominals.
+    # This must run BEFORE the conjoined-sibling check below: a counted
+    # noun sitting immediately before "and <Name>" ("...scored 4 goals AND
+    # Michael scored...") is itself a (wrong) subject candidate for the
+    # SECOND clause's verb, and if left in `out` its adjacency to the
+    # coordinator makes the sibling check below misread the new clause's
+    # subject as a conjunct of the counted noun — silently dropping the
+    # second clause's subject entirely (mining candidate
+    # coordinated-clause-conjuncts). Filtering counted nouns out of `out`
+    # first ensures the sibling check only ever considers genuine nominal
+    # subject candidates.
+    if ob.need == "subject":
+        uncounted = [u for u in out if u.features.get("value_kind") != "count"]
+        if uncounted:
+            out = uncounted
     # A conjoined name ("Frankie AND Carla played…") is not a lone subject —
     # the subject is the GROUP. Keep both conjuncts in play and FORBID
     # adjacency from arbitrating between them: the binding stays non-unique
@@ -224,18 +246,6 @@ def _candidates(reading: Reading, holder: Unit, ob: Obligation, reg: Registry) -
                 if sibling not in out:
                     out.append(sibling)
                 return out
-    # A bare value competes for an argument slot only when nothing nominal
-    # does ("Tom ate 3" is elliptical; "Tom ate 3 apples" condensed anyway).
-    if ob.need in ("dobj", "object", "standard"):
-        nominal = [u for u in out if _unit_sense_class(u) != "value"]
-        if nominal:
-            out = nominal
-    # A counted noun is rarely an AGENT: "he made $100,000 and got a bonus"
-    # must not give 'got' the subject '$100,000'. Prefer uncounted nominals.
-    if ob.need == "subject":
-        uncounted = [u for u in out if u.features.get("value_kind") != "count"]
-        if uncounted:
-            out = uncounted
     if len(out) > 1:
         # Adjacency arbitration: the nearest candidate wins ONLY if strictly
         # nearer than all others; equal distance stays ambiguous.
