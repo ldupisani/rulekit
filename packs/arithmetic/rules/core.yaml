@@ -1604,6 +1604,161 @@ rules:
         numerator: "{item.value}"
         denominator: "{span.value}"
 
+  - id: arithmetic/discount-percent-off
+    phase: read
+    description: >
+      mining candidate discounted-purchase-totals: "N% off" ("50% off",
+      "on sale for 50% off", "10% off all purchases") — a stated PERCENT
+      reduction on a priced purchase, scope=total (the bare/default
+      reading: applies once to the summed purchase total). Emits a
+      Discount fact the purchase-total consumer (answer.py's
+      `_purchase_total`) applies to its Σ price × qty total before
+      committing — see that function and model.Discount for the full
+      mechanism and the decline-safety discipline around more than one
+      stated discount. `type: percent` (patterns.py) gates on the SAME
+      fraction value_kind every percent relation rule already reads,
+      restricted to the `percent` feature numbers.py sets only for "%"/
+      "percent" tokens — a bare fraction WORD ("half off") never matches
+      this slot type, so this rule cannot collide with the existing
+      relation-standard machinery (which reads plain fractions under a
+      completely different trailing literal: "more"/"fewer"/"as many as",
+      never "off"/"discount").
+    match:
+      sentence:
+        - {slot: pct, type: percent}
+        - {lit: off}
+    consumes: [pct]
+    emits:
+      - fact: discount
+        value: "pct"
+        percent: true
+        scope: total
+
+  - id: arithmetic/discount-percent-noun
+    phase: read
+    description: >
+      mining candidate discounted-purchase-totals: "gets a 15% discount" /
+      "a 15% discount" — the percent-BEFORE-noun order, sibling of
+      arithmetic/discount-percent-off's percent-BEFORE-'off' order. Same
+      Discount fact shape, scope=total; see that rule's comment for the
+      `type: percent` disjointness argument.
+    match:
+      sentence:
+        - {slot: pct, type: percent}
+        - {lit: discount}
+    consumes: [pct]
+    emits:
+      - fact: discount
+        value: "pct"
+        percent: true
+        scope: total
+
+  - id: arithmetic/discount-of-percent
+    phase: read
+    description: >
+      mining candidate discounted-purchase-totals: "he is given a discount
+      of 50%" / "there is a discount of 20%" — the percent-AFTER-'discount
+      of' order (compare arithmetic/discount-percent-noun's percent-BEFORE
+      order — a genuinely different token sequence, so the two rules can
+      never both match the same span). Same Discount fact shape,
+      scope=total.
+    match:
+      sentence:
+        - {lit: discount}
+        - {lit: of}
+        - {slot: pct, type: percent}
+    consumes: [pct]
+    emits:
+      - fact: discount
+        value: "pct"
+        percent: true
+        scope: total
+
+  - id: arithmetic/discount-flat-noun
+    phase: read
+    description: >
+      mining candidate discounted-purchase-totals: "a $100 discount" — the
+      FLAT-dollar sibling of arithmetic/discount-percent-noun (amount
+      BEFORE the 'discount' noun). `type: number` (a bare stated count,
+      never a fraction) keeps this structurally disjoint from the percent
+      rules above — a percent token's value_kind is always 'fraction', a
+      dollar amount's is always 'count' (numbers.py), so the same numeral
+      can never satisfy both slot types. scope=total (the bare reading).
+    match:
+      sentence:
+        - {slot: amt, type: number}
+        - {lit: discount}
+    consumes: [amt]
+    emits:
+      - fact: discount
+        value: "amt"
+        percent: false
+        scope: total
+
+  - id: arithmetic/discount-flat-off
+    phase: read
+    description: >
+      mining candidate discounted-purchase-totals: "$100 off" — the FLAT
+      sibling of arithmetic/discount-percent-off. scope=total.
+    match:
+      sentence:
+        - {slot: amt, type: number}
+        - {lit: off}
+    consumes: [amt]
+    emits:
+      - fact: discount
+        value: "amt"
+        percent: false
+        scope: total
+
+  - id: arithmetic/discount-of-flat-total
+    phase: read
+    description: >
+      mining candidate discounted-purchase-totals: "a discount of $2" (NO
+      trailing 'each') — the flat sibling of arithmetic/discount-of-percent,
+      scope=total. Deliberately less specific than arithmetic/discount-of-
+      flat-per-unit below (consumes fewer tokens — no 'each'), so a genuine
+      per-unit discount ("a discount of $2 each") is always won by that
+      strictly-more-specific sibling via ordinary subsumption
+      (patterns.subsumes: a superset match at higher specificity wins
+      silently); this rule only ever survives a match when 'each' is truly
+      absent from the span, matching byte-identical to today whenever this
+      candidate's machinery isn't in play at all.
+    match:
+      sentence:
+        - {lit: discount}
+        - {lit: of}
+        - {slot: amt, type: number}
+    consumes: [amt]
+    emits:
+      - fact: discount
+        value: "amt"
+        percent: false
+        scope: total
+
+  - id: arithmetic/discount-of-flat-per-unit
+    phase: read
+    description: >
+      mining candidate discounted-purchase-totals: "she was given a
+      discount of $0.5 EACH" / "given a discount of $2 each" — the
+      trailing 'each' scopes the flat discount to EVERY purchased unit
+      rather than the summed total (compare arithmetic/discount-of-flat-
+      total's bare form). scope=per_unit: the purchase-total consumer
+      multiplies this per-unit amount by the purchased quantity before
+      subtracting, rather than subtracting it once from the total.
+    match:
+      sentence:
+        - {lit: discount}
+        - {lit: of}
+        - {slot: amt, type: number}
+        - {lit: each}
+    consumes: [amt]
+    emits:
+      - fact: discount
+        value: "amt"
+        percent: false
+        scope: per_unit
+
 asks:
   - id: ask/how-many-in-place
     # `place_fallback_entity: world` (mining candidate complement-labeled-

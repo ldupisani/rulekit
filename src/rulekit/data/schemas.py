@@ -151,7 +151,7 @@ class ObligationsDoc(StrictModel):
 SLOT_TYPES = (
     "number", "fraction", "multiplier", "name", "noun", "plural", "counted",
     "entity", "verb", "auxiliary", "modal", "future_modal", "pronoun", "word",
-    "adjective", "possessed", "qualified",
+    "adjective", "possessed", "qualified", "percent",
 )
 
 
@@ -199,7 +199,7 @@ class FactEmit(StrictModel):
     fact: Literal[
         "quantity", "relation", "membership", "subset", "predication",
         "before", "fraction_quantity", "rest_quantity", "partition_quantity",
-        "goal", "group_total", "rate",
+        "goal", "group_total", "rate", "discount",
     ]
     # remaining fields are fact-kind specific; templated strings "{slot}" or
     # expressions evaluated by the safe evaluator.

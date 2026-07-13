@@ -16,6 +16,7 @@ from ..data.registry import Registry
 from .evaluate import ArithmeticLog, evaluate
 from .facts import FactStore
 from .model import (
+    Discount,
     Goal,
     GroupTotal,
     Membership,
@@ -208,7 +209,21 @@ def _purchase_total(
     `exclude_item` (opt-in, default None — every other caller is
     unaffected) omits one item's own purchase-verb quantities from the
     sum; the remaining-budget capacity path uses it to total the entity's
-    OTHER priced purchases without double-counting the asked item."""
+    OTHER priced purchases without double-counting the asked item.
+
+    DISCOUNT (mining candidate discounted-purchase-totals): at most ONE
+    in-play Discount fact (model.Discount, USE-gated for value accounting)
+    is applied to the raw Σ price × qty total before it commits — a
+    'total'-scoped discount multiplies the whole sum once (percent) or
+    subtracts a flat amount once; a 'per_unit'-scoped discount (a flat
+    amount stated "EACH") is multiplied by the summed purchased quantity
+    first. TWO OR MORE stated discounts is a compounding scenario this
+    consumer does not model (out of scope — see Discount's own docstring);
+    facts.py's ordinary same-key collision already quarantines a second,
+    differently-valued Discount, so `store.quarantined` is checked too —
+    otherwise the ambiguity would silently vanish and this would commit
+    the pre-discount total as though it were final, exactly the
+    confident-wrong the whole USE-gating discipline exists to prevent."""
     buys = [
         q for q in store.by_kind(Quantity)
         if q.entity == entity
@@ -229,7 +244,26 @@ def _purchase_total(
         if price is None:
             return None
         parts.append(f"{q.value} * {price.value}")
-    return evaluate(" + ".join(parts), {}, log, source="purchase-total")
+    base_expr = " + ".join(parts)
+    if any(isinstance(f, Discount) for f in store.quarantined):
+        return None  # two or more stated discounts — ambiguous, decline
+    discounts = store.by_kind(Discount)
+    if len(discounts) > 1:
+        return None
+    if not discounts:
+        return evaluate(base_expr, {}, log, source="purchase-total")
+    discount = discounts[0]
+    if discount.scope == "total":
+        expr = (
+            f"({base_expr}) * (1 - {discount.value})" if discount.percent
+            else f"({base_expr}) - {discount.value}"
+        )
+    elif discount.scope == "per_unit" and not discount.percent:
+        qty_expr = " + ".join(str(q.value) for q in buys)
+        expr = f"({base_expr}) - ({qty_expr}) * {discount.value}"
+    else:
+        return None  # an unmodeled scope/percent combination — decline
+    return evaluate(expr, {}, log, source="purchase-total")
 
 
 def _revenue_total(

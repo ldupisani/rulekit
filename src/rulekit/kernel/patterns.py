@@ -19,6 +19,7 @@ from ..data.schemas import AskRule, MatchToken, PatternRule
 from .evaluate import ArithmeticLog, EvaluationError, evaluate
 from .model import (
     Before,
+    Discount,
     Fact,
     FractionQuantity,
     Goal,
@@ -51,6 +52,7 @@ _FACT_CLASSES = {
     "goal": Goal,
     "group_total": GroupTotal,
     "rate": Rate,
+    "discount": Discount,
 }
 
 
@@ -77,6 +79,19 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
             return kind == "count"
         if t == "fraction":
             return kind == "fraction"
+        if t == "percent":
+            # mining candidate discounted-purchase-totals: the PERCENT
+            # subset of fraction tokens only — numbers.py sets the
+            # `percent` feature exclusively for "%"/"percent" surface
+            # forms, never for word fractions ("half", "one third"), so
+            # "half off" structurally cannot satisfy this slot the way
+            # "50% off" does. Keeps the discount rules structurally
+            # disjoint from every existing fraction-consuming rule (the
+            # relation rules read plain `type: fraction` under a
+            # completely different trailing literal — "more"/"fewer"/"as
+            # many as", never "off"/"discount" — so there is no overlap
+            # even before this narrower gate).
+            return kind == "fraction" and bool(unit.features.get("percent"))
         if t == "multiplier":
             return kind == "multiplier"
         if t == "name":

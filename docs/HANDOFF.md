@@ -4373,6 +4373,46 @@ warning: fraction-of-remnant/fraction-of-pool overlap, known-good). pytest 722 -
 (+15).
 **TEST look: pending — spent manually.**
 
+## Increment 92 (2026-07-13) — discounted purchase totals (re-cut of the batch-38
+`discounted-purchase-prices` deferral)
+
+CLASS: a percent or flat discount applied to a priced purchase before the pay/spend
+total ("N% off", "a N% discount", "on sale for N% off", "a $N discount", "$N off").
+Re-cut against the current tip (which now includes increment 91's generic
+unit-price-premise machinery) after the batch-38 attempt was DEFERRED at
+integrate-conflict in `answer.py`.
+
+PROVEN on unmodified main: "Jorge bought 24 tickets for $7 each. How much did Jorge
+spend on tickets?" commits 168.0 via the live `Σ price × qty over 'jorge''s
+purchases` consumer; the real item adds "he is given a discount of 50%" and gold is
+84.0. Same shape for "Tim buys a cabinet for $1200" (1200.0 vs gold 1020.0 at 15%
+off) and "Miley bought two cellphones... Each cellphone costs $800" (1520.0 already
+correct pre-discount in one variant, 1520.0 post a 5% TOTAL discount in another —
+the discount scope is on the total, not per unit).
+
+MECHANISM: YAML-first plus one consumer edit. (1) `packs/arithmetic/rules/core.yaml`:
+new pattern rules emitting a `Discount` fact — percent form ("N% off", "a N%
+discount", "a discount of N%") and flat form ("a $N discount", "$N off", "a discount
+of $N"), each carrying a `scope` of total|per_unit read from the surface ("a discount
+of $N EACH" is per-unit; a bare discount is total). (2) `src/rulekit/kernel/model.py`:
+the `Discount` fact kind. (3) `src/rulekit/kernel/guards.py`: USE-gated for value
+accounting exactly like Rate/Price/Goal/GroupTotal — its number counts as read only
+when the arithmetic log actually consumed it. (4) `src/rulekit/kernel/answer.py`: the
+existing purchase-total consumer (`Σ price × qty over WHO's purchases`) applies at
+most ONE in-play Discount to its total before committing; two or more Discounts, or a
+Discount whose scope cannot be determined, DECLINE rather than guess. No new ask shape
+and no new vocabulary — `discount`/`sale`/`off` were already in the lexicon.
+
+Cherry-picked from `mining/cand-discounted-purchase-totals` onto the current staging
+tip; the pick auto-merged cleanly in `answer.py` (no manual conflict resolution).
+
+GATE (integrated, vs current staging baselines): dev-train diff SOLVED 1
+(d7a0e512633b) / BROKE 0 / DECL->WRONG 0 — VERDICT SHIP (67 -> 68 correct).
+dev-holdout diff NEUTRAL (0 SOLVED / 0 BROKE / 0 DECL->WRONG, 28 correct unchanged).
+Suite 52/52. Lint 0 errors (1 pre-existing warning: fraction-of-remnant/
+fraction-of-pool overlap, known-good). pytest 737 -> 748 (+11).
+**TEST look: pending — spent manually.**
+
 ## Batch 40 (2026-07-13) — increments 89, 90. dev-train 66, holdout 28.
 
 LANDED (looks #87, #88 — both 11/1, 91.7%, HELD):

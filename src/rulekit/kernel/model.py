@@ -624,6 +624,46 @@ class GroupTotal(Fact):
 
 
 @dataclass(frozen=True)
+class Discount(Fact):
+    """'Tim buys a cabinet for $1200 and gets a 15% discount' / 'a $100
+    discount' / 'a discount of $2 EACH' — a stated reduction applied to a
+    priced purchase's total (mining candidate discounted-purchase-totals).
+    USE-GATED for value accounting, like Rate/Price/Goal/GroupTotal (the
+    look #4-#7 invariant every new fact kind must decide explicitly): a
+    discount that merely EXISTS has not been read — only the purchase-total
+    consumer (answer.py's `_purchase_total`) actually applying it to a
+    committed total counts as use.
+
+    `value` is the fraction (0.15 for '15%') for a percent discount, or the
+    raw currency amount for a flat discount — `percent` disambiguates
+    which. `scope` is 'total' (the bare/default reading: applies ONCE to
+    the summed purchase total) or 'per_unit' (the surface explicitly scopes
+    the discount to EACH unit bought — "a discount of $2 EACH" — so the
+    consumer multiplies by the purchased quantity before subtracting).
+
+    Same-key (global) disagreement is a genuine conflict, exactly like
+    GroupTotal's single-measure invariant: a document states at most ONE
+    discount the purchase-total consumer can safely apply. A SECOND,
+    differently-valued discount mention (a compounding discount, e.g. "an
+    additional 5% discount" stacked on a first one) is a genuinely
+    different, out-of-scope arithmetic shape — colliding quarantines BOTH
+    (facts.py's ordinary same-key-disagreement path), and the consumer
+    checks `store.quarantined` too, so it declines rather than silently
+    picking one discount, or worse, silently applying neither and
+    committing the pre-discount total as though it were final."""
+
+    value: float
+    percent: bool
+    scope: str = "total"
+
+    def key(self) -> tuple:
+        return ("discount",)
+
+    def value_part(self) -> Any:
+        return (self.value, self.percent, self.scope)
+
+
+@dataclass(frozen=True)
 class Before(Fact):
     earlier: str
     later: str
