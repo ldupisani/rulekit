@@ -14,13 +14,13 @@ swing under the constitution (no lexicon in Python, no per-problem parsing,
 every increment through the gates).
 
 **Current numbers (all verified at head):**
-- dev-train: 76 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
+- dev-train: 77 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
 - dev-holdout: 29 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 805 · lint: 0 errors, 1 intended warning
+- curated suite: 52/52 · pytest: 811 · lint: 0 errors, 1 intended warning
 - bench wall: dev-train 16.6s -> 9.0s (trace opt-out) -> 1.7s at `--jobs 12`.
   `--jobs` defaults to 1; spend it in the SERIAL integration tail, never in the
   implementers' gates (they already run concurrently). See the two infra notes below.
-- TEST ledger (96 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- TEST ledger (97 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -4811,3 +4811,30 @@ the 4 structural-sample items marked `resolves_after_unblocks` (acquisition-verb
 totals, cost-of-all-N-item asks, order-total asks) plus the free container-content payoff
 (1052a98b9604, feeds increment 77's bridge) are now unblocked and waiting on their own
 consumer-side increments.
+
+## Batch 45 (2026-07-13) — increment 100. dev-train 77.
+
+LANDED (look #97: 11/1, 91.7%, HELD):
+- **100 — restrictive 'that'-relative clauses on a numeral antecedent** ("5 toys that each
+  cost $3", "10 lessons that cost $10 each", "6 boxes of crayons that hold 8 crayons") —
+  the clause's VERB was being mis-read as a NOUN. +1.
+
+REVIEW KILL, and the first count is damning: `relation-standard-frames` hardcoded the
+measure lemma `"year"` in `answer.py` — **and `saturate.py:711` already carries a docstring
+saying verbatim "never a hardcoded 'year' literal — constitution rule 1"**, written the LAST
+time this exact sin was caught (batch 25). The reviewer found the prior warning, proved
+every other consumer in answer.py takes its measure from `query["measure"]`, and showed the
+fix is ONE YAML line (`measure: year` in the ask's `resolves:` block, as `ask/how-old-is`
+already does). Expedience, not necessity.
+
+Second count — SCOPE: the diff edited `tokenize.py`'s master `_TOKEN` regex and the `fold`
+assignment. That is the single most-shared scan function in the system, touched by every
+reading of every item, and it was in neither `files_expected` nor `risks.shared_paths`. The
+change may well be defensible (trailing-apostrophe possessives, no words enumerated) — but
+an unbriefed edit to THE shared scan function gets flagged, not waved through. Re-cut with
+it declared, and re-gate attributing that hunk specifically.
+
+**A RULE THAT KEEPS BEING BROKEN NEEDS A MECHANISM, NOT A COMMENT.** "year" in Python has now
+been caught TWICE by review. The docstring warning did not prevent the second one. Consider a
+lint check: no bare measure-lemma string literals in `src/rulekit/kernel/answer.py` or
+`saturate.py` outside the known sentinels (`world`, `currency`).
