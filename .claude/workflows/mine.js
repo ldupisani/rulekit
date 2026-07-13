@@ -61,8 +61,8 @@ const SCOUT_BRIEF = {
         // So a frequency claim must be backed by items actually walked.
         structural_sample: {
           type: 'array',
-          minItems: 3,
-          description: 'Items from the counted set, WALKED. At least 3 must have resolves=true or the class is unproven and the candidate is dropped before an implementer is spent (infrastructure briefs exempt).',
+          minItems: 8,
+          description: 'Items from the pool, WALKED — AT LEAST 8. The gate needs >= 3 of them resolving, i.e. a ~38% resolve rate, NOT perfection. Walking only 3 made the gate demand 3-of-3 (100%) and killed excellent candidates: batch 37 lost two classes at 2-of-3, one of them a 354-item family. Walk 8-12; a class that resolves 3 of 10 against a 70-item family is worth ~20 answers.',
           items: {
             type: 'object',
             required: ['item_id', 'premise_shape', 'ask_shape', 'fact_emitted', 'resolves'],

@@ -192,3 +192,35 @@ rather than vocabulary.
 budget/holding, letting money-left machinery commit where the budget was never really
 stated. A re-cut must narrow the premise to an explicitly-stated budget and re-prove on
 TEST with its own look.
+
+## The shape gate was demanding PERFECT classes (2026-07-13)
+
+**Three consecutive batches (35, 36, 37) landed zero coverage.** The cause was a gate I
+built, not the seam.
+
+`structural_sample.minItems` was **3**, and the shape gate required **>= 3 resolving**.
+The scout, obeying the schema, walked exactly 3 items. So the gate was silently
+demanding **3 of 3 — a 100% resolve rate on the sample.**
+
+Batch 37's casualties tell the story:
+
+| candidate | walked | pool |
+|---|---|---|
+| elided-measure-standards | **2 of 3** | 354 |
+| discounted-purchase-totals | **2 of 3** | 24 |
+| share-equally-division | 1 of 3 | 99 |
+| capacity-ask-rate-fallback | 1 of 3 | 287 |
+
+A class resolving 2 of 3 against a **354-item family** is an excellent candidate — it
+was thrown away for a single non-resolving sample. Perfect classes do not exist in the
+tail we are now mining, and we do not need them: a class that resolves 3 of 10 against a
+70-item family is worth twenty-plus answers.
+
+**FIX:** `minItems` raised to **8** (walk 8–12), bar unchanged at **>= 3 resolving** —
+so the gate now means "38% of a real sample", not "100% of a token one".
+
+**THE GENERAL LESSON:** a threshold and a sample size are one parameter, not two. I
+tuned the threshold (3) and left the sample size at its minimum (3), which quietly
+turned a reasonable-sounding bar into an impossible one. Whenever a gate reads "N of the
+sample", ask what the sample size actually is in practice — the schema's `minItems` IS
+the sample size, because an agent will supply exactly the minimum.

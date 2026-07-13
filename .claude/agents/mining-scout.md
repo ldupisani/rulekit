@@ -216,11 +216,27 @@ END TO END. For each, record in `evidence.structural_sample`:
   Not "does the ask match". Be honest: a false `true` here costs a full
   implementer run (worktree, dev gate, tests, review) and buys nothing.
 
-**At least 3 sampled items must have `resolves: true`, or the pipeline drops the
-candidate before an implementer is spent.** If you cannot find 3, you have not
-found a class — you have found a phrase. Say so in `notes` and propose something
-else. Reporting "I could only prove 1 of 28" is a GOOD scout outcome; it costs
-minutes and saves an implementer run.
+### WALK AT LEAST 8. The bar is 3 RESOLVING — not perfection.
+
+**Walk 8–12 items from the pool and report them all.** The gate needs **>= 3 of
+them resolving** — roughly a 38% resolve rate, not 100%.
+
+This matters enormously and it is a lesson paid for in three empty batches. When the
+sample was 3 items and the bar was 3 resolving, the gate was silently demanding
+**3-of-3 — a PERFECT class**. Batch 37 lost `elided-measure-standards` (a **354**-item
+family) and `discounted-purchase-totals` at **2 of 3**. Those are strong candidates: a
+class resolving 2 of 3, or 3 of 10, against a 70-item family is worth twenty-plus
+answers. Perfect classes do not exist in the tail we now mine — and we do not need
+them.
+
+So: a class with 3 of 10 walked items resolving is a GOOD candidate, and you should
+propose it. A class with 2 of 12 is not. Report every item you walked, resolving or
+not — the honest denominator is what makes the resolve rate meaningful, and it feeds
+the calibration record (methodology §9.4).
+
+If you genuinely cannot find 3 resolving in 8–12 walked, you have not found a class.
+Say so in `notes`, and diagnose the blocker instead (a blocked class IS an enabler
+brief — see above).
 
 ## Infrastructure briefs — a DIFFERENT bar, not an exemption
 
