@@ -3782,3 +3782,83 @@ Composition gate vs fresh main: SOLVED 2 dev-train, 0 holdout, 0 BROKE,
 
 ENABLER YIELD IS DECLINING: 66 -> +9, 70 -> +6, 74 -> +6, 77 -> +5, 79 -> +2.
 Still positive, still the only thing that works, but the seam is thinning. Watch this.
+
+## Increment 81 (2026-07-13) — money-left asks over a gifted budget and container-partitive priced purchases
+
+Class: money-left asks over a GIFTED budget ("X's RELATIVE gave him/her $N
+...") and container-partitive priced purchases ("N CONTAINER of ITEM ...
+each CONTAINER of ITEM costs $Y"). Two coordinated, strictly-additional
+structural pieces. (1) POSSESSOR ANTECEDENT
+(`document.py::_possessor_antecedent`, a new fallback inside
+`_bind_discourse`): a possessive determiner merged into the clause
+SUBJECT's NP is a legitimate antecedent for a NON-subject pronoun bound as
+that same verb's own argument — "Clare's mother gave her $47" -> her =
+clare (Principle B: an object pronoun cannot corefer with its own clause
+subject). Fires ONLY as a fallback when no unique prior-sentence
+antecedent exists; the pre-existing cross-sentence path is unchanged and
+always takes priority. Paired with
+`packs/arithmetic/rules/transfer.yaml`'s `giver` slot widened from
+`type: name` to `type: entity` (name OR common noun, e.g. "mother"/
+"uncle"). (2) CONTAINER-NOUN PARTITIVE PRICE ANCHOR
+(`learn.py::_measure_partitive_anchor`): widened to key a `price_verb`
+subject's Price on ANY partitive head that the purchase Quantity itself
+already keys on (not just known measure units in `reg.conversions`), so
+Price.item and Quantity.measure agree by construction; gated to fire only
+when a matching purchase Quantity exists for the same entity. (3) The
+partitive SECOND conjunct of a purchase list ("4 loaves of bread and 2
+cartons of milk") now resolves via `_conjoined_purchase_items` taking the
+partitive head of each segment. No `answer.py` change — the existing
+increment-10 purchase-total and money-left consumer already read
+Price/Quantity by matching noun.
+
+Files: `src/rulekit/kernel/document.py`, `src/rulekit/kernel/obligations.py`,
+`src/rulekit/kernel/learn.py`, `packs/arithmetic/rules/transfer.yaml`,
+`tests/test_mining_increment_81.py`.
+
+Gates (integrated on staging, full re-proof against current staging
+baseline): dev-train diff SHIP, SOLVED 1 (af5cc0edbf84), 0 BROKE, 0
+DECL→WRONG (59→60/3772 correct); dev-holdout diff NEUTRAL, 0 BROKE, 0
+DECL→WRONG (25/3701 correct before and after); pytest 645 passed; suite
+52/52; lint 0 errors / 1 known-good warning (fraction-of-remnant /
+fraction-of-pool, unchanged). TEST look: pending — spent manually.
+
+## Increment 82 (2026-07-13) — relations whose subject or standard is an index- or ordinal-labeled entity (Jar A / house 3 / the second box)
+
+Class: relations whose subject or standard is an index- or ordinal-LABELED
+entity ("Jar A", "house 3", "the second box"). INFRASTRUCTURE (this
+batch's one enabler): increment 74 made index/ordinal labels first-class
+on Quantity only (a `label` field plus FactStore collision-time re-key),
+but a RELATION between two labeled entities ("Jar B has 12 more marbles
+than jar A") emitted NOTHING — the relation pattern rules' `who`/`std`
+slots (already `type: entity`, so they structurally accept a labeled
+common noun) still bare-fold both sides to the same lemma ('jar'), and
+every `distinct: [who, std]` self-reference guard treated that as "X
+compares to itself" and silently declined the whole relation. Mechanism
+(kernel + YAML, additive only): (1) `_check_where`'s `distinct` predicate
+(`patterns.py`) now compares (lemma, label) pairs instead of bare lemma
+alone — two units sharing a lemma AND carrying two DIFFERENT non-null
+labels are no longer treated as the same referent; every existing
+`distinct` check where both sides are unlabeled (label=None on both)
+compares exactly as before. (2) `Relation` (`model.py`) gains
+`subject_label`/`standard_label` fields, defaulting to None, so every
+existing fact is byte-identical. (3) `saturate.py::_relations_synth`
+resolves a labeled standard against the `entity[label]` fact key
+FactStore.admit already produces, and emits the derived Quantity carrying
+the subject's label. No consumer change: the existing combined /
+entity-less-totality consumers already sum labeled holders. Cashes in
+immediately on one dev-train item (three index-labeled containers chained
+by relations, entity-less totality ask); the rest of the named payoff
+class (labeled in-place existentials as holders, labeled-entity
+single-entity/place asks) is left for the next batch to build on this
+branch, per brief.
+
+Files: `packs/arithmetic/rules/core.yaml`, `src/rulekit/kernel/patterns.py`,
+`src/rulekit/data/schemas.py`, `src/rulekit/kernel/model.py`,
+`src/rulekit/kernel/saturate.py`, `tests/test_mining_increment_82.py`.
+
+Gates (integrated on staging, full re-proof against current staging
+baseline): dev-train diff SHIP, SOLVED 1 (83ed471741f9), 0 BROKE, 0
+DECL→WRONG (60→61/3772 correct); dev-holdout diff NEUTRAL, 0 BROKE, 0
+DECL→WRONG (25/3701 correct before and after); pytest 655 passed; suite
+52/52; lint 0 errors / 1 known-good warning (fraction-of-remnant /
+fraction-of-pool, unchanged). TEST look: pending — spent manually.

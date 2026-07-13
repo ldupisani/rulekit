@@ -130,20 +130,52 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
     quantities: dict[tuple[str, str], Quantity] = {}
     by_verb: set[tuple[str, str, str]] = set()
     measures_by_entity: dict[str, set[str]] = {}
+    # mining candidate labeled-entity-relations: a SECOND, label-keyed index
+    # beside the bare-entity ones above — read ONLY when a relation's own
+    # `subject_label`/`standard_label` is set (Relation, model.py), never
+    # consulted for an ordinary unlabeled relation, so every existing
+    # relation's resolution path below is untouched byte-for-byte. Keyed on
+    # the entity's BARE lemma (stripped of any `[label]` suffix
+    # facts.py's collision-time re-key may already have applied) so a
+    # lookup succeeds whether or not the target quantity has collided with
+    # a same-lemma sibling yet — `q.label` itself survives that re-key
+    # unchanged (facts.py's `replace()` only ever touches `entity`).
+    labeled_quantities: dict[tuple[str, str, str], Quantity] = {}
+    by_verb_labeled: set[tuple[str, str, str, str]] = set()
     for q in store.by_kind(Quantity):
         quantities.setdefault((q.entity, q.measure), q)
         by_verb.add((q.entity, q.measure, verb_key(q.verb)))
         measures_by_entity.setdefault(q.entity, set()).add(q.measure)
         if q.is_state:
             quantities[(q.entity, q.measure)] = q
+        if q.label:
+            base = q.entity.split("[", 1)[0]
+            labeled_quantities.setdefault((base, q.measure, q.label), q)
+            by_verb_labeled.add((base, q.measure, verb_key(q.verb), q.label))
+            if q.is_state:
+                labeled_quantities[(base, q.measure, q.label)] = q
 
-    def anchor_measure(entity: str, measure: str) -> tuple[str, Quantity] | None:
+    def anchor_measure(
+        entity: str, measure: str, label: str | None = None
+    ) -> tuple[str, Quantity] | None:
         """The relation's stated measure resolved against ONE entity's own
         holdings — an EXACT match first, else (only for `interchangeable`
         categories, e.g. currency) the entity's unique same-category
         measure ('money' resolves to the anchor's own stated 'dollar').
         Ambiguous (two different currencies on the same entity) or
-        unresolvable declines this relation, never guesses."""
+        unresolvable declines this relation, never guesses.
+
+        `label`, when given (mining candidate labeled-entity-relations):
+        the relation's own text named a SPECIFIC labeled standard ("jar
+        A") — resolve against exactly that labeled Quantity or decline;
+        never fall back to a same-lemma sibling under a DIFFERENT label,
+        and never widen via the interchangeable-category path either (a
+        stated label is already maximally specific, so borrowing a
+        sibling measure on top of it would compound two guesses into
+        one)."""
+        if label:
+            known = labeled_quantities.get((entity, measure, label))
+            return (measure, known) if known is not None else None
         exact = quantities.get((entity, measure))
         if exact is not None:
             return measure, exact
@@ -160,10 +192,15 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
         # THE RELATION'S OWN VERB — "Zig wrote 4× as many" plus "Zig wrote
         # 60" describe the SAME writing (re-deriving doubles it); a lose
         # event on top of a have-relation is a CHANGE and stays allowed
-        resolved = anchor_measure(rel.standard, rel.measure)
+        resolved = anchor_measure(rel.standard, rel.measure, rel.standard_label)
         if resolved is not None:
             measure, known = resolved
-            if (rel.subject, measure, verb_key(rel.verb)) not in by_verb:
+            already = (
+                (rel.subject, measure, verb_key(rel.verb), rel.subject_label) in by_verb_labeled
+                if rel.subject_label
+                else (rel.subject, measure, verb_key(rel.verb)) in by_verb
+            )
+            if not already:
                 value = evaluate(
                     f"{rel.factor} * {known.value} + {rel.offset}", {}, log,
                     source=f"relation:{rel.provenance.source}",
@@ -172,6 +209,7 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
                     Quantity(
                         provenance=Provenance(source="synth/relation", sentence=rel.provenance.sentence),
                         entity=rel.subject, measure=measure, value=value, verb=rel.verb,
+                        label=rel.subject_label or None,
                     )
                 )
                 continue
@@ -212,13 +250,18 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
         # INVERSE: the subject is known, the standard is not — solve
         # standard = (subject − offset) / factor ("If Zig wrote 60, and Zig
         # wrote four times as many as Flo…")
-        resolved = anchor_measure(rel.subject, rel.measure)
+        resolved = anchor_measure(rel.subject, rel.measure, rel.subject_label)
         if (
             resolved is not None
             and rel.factor != 0
         ):
             measure, known = resolved
-            if (rel.standard, measure, verb_key(rel.verb)) not in by_verb:
+            already = (
+                (rel.standard, measure, verb_key(rel.verb), rel.standard_label) in by_verb_labeled
+                if rel.standard_label
+                else (rel.standard, measure, verb_key(rel.verb)) in by_verb
+            )
+            if not already:
                 value = evaluate(
                     f"({known.value} - {rel.offset}) / {rel.factor}", {}, log,
                     source=f"relation-inverse:{rel.provenance.source}",
@@ -227,6 +270,7 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
                     Quantity(
                         provenance=Provenance(source="synth/relation", sentence=rel.provenance.sentence),
                         entity=rel.standard, measure=measure, value=value, verb=rel.verb,
+                        label=rel.standard_label or None,
                     )
                 )
     return out

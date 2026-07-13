@@ -43,6 +43,8 @@ rules:
         factor: 1.0
         offset: "n * sign(dir)"
         verb: "{verb}"
+        subject_label: "{who.label}"
+        standard_label: "{std.label}"
 
   - id: arithmetic/anchored-relation-postfix
     phase: read
@@ -73,6 +75,8 @@ rules:
         factor: 1.0
         offset: "item * sign(dir)"
         verb: "{verb}"
+        subject_label: "{who.label}"
+        standard_label: "{std.label}"
 
   - id: arithmetic/anchored-relation-postfix-dimension
     phase: read
@@ -112,6 +116,8 @@ rules:
         factor: 1.0
         offset: "item * sign(dir)"
         verb: "{verb}"
+        subject_label: "{who.label}"
+        standard_label: "{std.label}"
 
   - id: arithmetic/dangling-comparative-relation
     phase: read
@@ -248,6 +254,8 @@ rules:
         factor: "k"
         offset: 0.0
         verb: "{verb}"
+        subject_label: "{who.label}"
+        standard_label: "{std.label}"
 
   - id: arithmetic/times-as-much
     phase: read
@@ -420,6 +428,8 @@ rules:
         factor: "f"
         offset: 0.0
         verb: "{verb}"
+        subject_label: "{who.label}"
+        standard_label: "{std.label}"
 
   - id: arithmetic/fraction-as-much
     phase: read
@@ -487,6 +497,8 @@ rules:
         factor: "k"
         offset: "n * sign(dir)"
         verb: "{verb}"
+        subject_label: "{who.label}"
+        standard_label: "{std.label}"
 
   - id: arithmetic/affine-fraction-as-many
     phase: read
@@ -523,6 +535,8 @@ rules:
         factor: "f"
         offset: "n * sign(dir)"
         verb: "{verb}"
+        subject_label: "{who.label}"
+        standard_label: "{std.label}"
 
   - id: arithmetic/existential-premise
     phase: read

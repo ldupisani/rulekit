@@ -246,7 +246,23 @@ def _check_where(
             if len(lemmas) > 1:
                 return False
         if pred.distinct is not None:
-            values = [_lemma_of(slots[s]) for s in pred.distinct if s in slots]
+            # (lemma, label) pairs, not bare lemma alone — mining candidate
+            # labeled-entity-relations: "Jar B has 12 more marbles than jar
+            # A" bare-folds who/std to the SAME lemma 'jar' (the label
+            # lives in a separate feature, condense.py merge-label), so a
+            # bare-lemma-only distinct check wrongly read this as the
+            # self-referential "X compares to itself" case every `distinct:
+            # [who, std]` guard exists to block, and silently declined
+            # every labeled relation. Two unlabeled units (label=None on
+            # both sides, the overwhelming common case) compare exactly as
+            # before — (lemma, None) == (lemma, None) still collides, so
+            # every existing distinct check's behavior is unchanged; this
+            # only additionally distinguishes a pair that share a lemma AND
+            # carry two DIFFERENT non-null labels.
+            values = [
+                (_lemma_of(slots[s]), slots[s].features.get("label"))
+                for s in pred.distinct if s in slots
+            ]
             if len(values) != len(set(values)):
                 return False
         if pred.absent is not None:
@@ -286,6 +302,16 @@ def _slot_value(unit: Unit, attr: str | None) -> str:
         # tagged entity key when the bare one comes back empty (facts.py's
         # collision-time split). Increment 34's mirror of `owner`.
         return unit.features.get("qualifier", "") or ""
+    if attr == "label":
+        # the trailing index label of a noun merged from NOUN + single-
+        # capital-letter INDEX (condense.py merge-label) — mining
+        # candidate labeled-entity-relations: a relation rule's
+        # `subject_label: "{who.label}"` / `standard_label: "{std.label}"`
+        # reads this so saturate.py's `_relations_synth` can resolve a
+        # labeled standard against the SPECIFIC same-label Quantity
+        # instead of an arbitrary same-lemma one. Mirrors `owner`/
+        # `qualifier` above, one field over (increment 74's field).
+        return unit.features.get("label", "") or ""
     return _lemma_of(unit)
 
 

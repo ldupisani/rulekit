@@ -284,9 +284,37 @@ class Relation(Fact):
     factor: float = 1.0
     offset: float = 0.0
     verb: str = "have"
+    # the trailing index LABEL of `subject`/`standard`, when either side's
+    # noun was merged from NOUN + single-capital-letter INDEX (condense.py
+    # merge-label: "Jar A", "Class B") — mining candidate
+    # labeled-entity-relations, the Relation-side mirror of Quantity.label
+    # (increment 74). `subject`/`standard` themselves stay the bare entity
+    # lemma everywhere they already worked (e.g. both sides of a "Jar A ...
+    # Jar B ..." relation both read `subject='jar'`/`standard='jar'`, the
+    # same as before this field existed); these two fields exist ONLY so
+    # saturate.py's `_relations_synth` can (a) resolve a labeled standard
+    # against the SPECIFIC labeled Quantity FactStore.admit's existing
+    # label-collision re-key (facts.py) produces, instead of an arbitrary
+    # same-lemma quantity, and (b) tag a derived subject Quantity with its
+    # own label so a later same-lemma sibling can be told apart from it by
+    # that same collision-time re-key. Included in `key()` (unlike
+    # Quantity.label, which deliberately stays OUT of Quantity.key()):
+    # Relation.key() has no separate identity-collision-splitting path the
+    # way Quantity/facts.py does, so two DIFFERENT labeled relations that
+    # happen to share the same bare subject/standard/measure/verb (e.g. a
+    # "Jar C = 2x Jar B" relation and a "Jar B = Jar A + 12" relation both
+    # bare-key to subject='jar'/standard='jar') must not silently dedupe or
+    # quarantine each other — including the label in the key keeps them
+    # naturally distinct facts, with zero change to any existing (both
+    # fields None) relation's key tuple.
+    subject_label: str | None = None
+    standard_label: str | None = None
 
     def key(self) -> tuple:
-        return ("relation", self.subject, self.standard, self.measure, self.verb)
+        return (
+            "relation", self.subject, self.subject_label,
+            self.standard, self.standard_label, self.measure, self.verb,
+        )
 
     def value_part(self) -> Any:
         return (self.factor, self.offset)
