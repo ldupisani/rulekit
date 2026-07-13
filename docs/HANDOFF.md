@@ -4045,3 +4045,44 @@ either — both are 0-SOLVED.
 
 NEXT: batch 37 on `base=mining/parked/partitive-slot-enabler`, aimed at the partitive
 family's ASK SHAPES now that the slot can hold them.
+## Increment 85 (2026-07-13) — comparative/multiplicative relations whose MEASURE NOUN is elided ("3 more than Tom", "twice as much as Cecil", "one-third as long")
+
+Class: comparative/multiplicative relations whose measure noun is elided —
+"Ben has twice as many apples as Ann" resolves today, but "Ben has twice as
+many as Ann" (measure noun dropped) does not: no Relation fact forms at all,
+so every downstream consumer (single-entity fold, combined-total ask,
+comparative |a-b|) — already built and already correct — never fires.
+Reproduced on synthetics: the spelled-measure and elided-measure forms of
+the same premise diverge from 90 (correct) to a flat decline. Same split for
+additive ("3 more marbles than Tom" vs "3 more than Tom") and percent ("20%
+more apples than Ann" vs "20% more than Ann") forms.
+
+Mechanism (YAML-first, no lexicon in Python): six new ELISION variants of
+the existing relation pattern rules in `packs/arithmetic/rules/core.yaml`,
+matching the same comparative shapes with the measure-noun slot ABSENT and
+emitting the Relation with `measure: null` — an explicit unresolved
+sentinel, never a guess. `saturate.py`'s `_relations_synth` gains a step
+that recovers the sentinel from the STANDARD entity's own unique in-play
+quantity, following the same unique-pool-in-play discipline already used by
+`synth/fraction-of-pronoun` and `synth/partition-of-collection`: exactly one
+measure known for the standard resolves the relation; zero or two-or-more
+candidate measures (ambiguous) decline it for that round rather than guess.
+Scoped to a NAMED standard only ("than Tom", "as Cecil") — a relation whose
+standard is ALSO elided (a bare "twice as long") is out of scope here and
+left as a follow-on. The elision rules match a strictly SHORTER comparative
+NP than their spelled-measure siblings; arbitration is by specificity so the
+spelled-measure rule still wins whenever the measure noun is present. No new
+consumer was needed — the fold, combined-total ask, and comparative consumer
+already resolve these items once the Relation exists.
+
+Files: `packs/arithmetic/rules/core.yaml`, `src/rulekit/kernel/saturate.py`,
+`tests/test_mining_increment_85.py`.
+
+Gates (integrated on staging, full re-proof against current staging
+baseline): dev-train diff SHIP, 2 SOLVED (1cd6e3e8a4a7, 56ef08361887), 0
+BROKE, 0 DECL→WRONG (62/3772 correct, up from 60, 0 wrong); dev-holdout diff
+SHIP, 1 SOLVED (8b664d490ea4), 0 BROKE, 0 DECL→WRONG (26/3701 correct, up
+from 25, 0 wrong); pytest 677 passed (+10 synthetic tests in
+`tests/test_mining_increment_85.py` over the prior staging baseline of 667);
+suite 52/52; lint 0 errors / 1 known-good warning (fraction-of-remnant /
+fraction-of-pool, unchanged). TEST look: pending — spent manually.

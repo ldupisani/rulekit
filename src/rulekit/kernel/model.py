@@ -304,7 +304,14 @@ class Relation(Fact):
 
     subject: str
     standard: str
-    measure: str
+    # None only for a mining-candidate elided-measure-relations rule ("Ben
+    # has twice as many as Ann" — no measure noun at all in the text): an
+    # explicit UNRESOLVED sentinel, never a guess. saturate.py's
+    # `_relations_synth` recovers it from the standard's own unique
+    # in-play quantity before doing anything else with the relation;
+    # every OTHER emitting rule always states a concrete measure, so this
+    # stays `str` in practice everywhere except that one elided family.
+    measure: str | None
     factor: float = 1.0
     offset: float = 0.0
     verb: str = "have"

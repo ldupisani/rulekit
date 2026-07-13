@@ -46,6 +46,52 @@ rules:
         subject_label: "{who.label}"
         standard_label: "{std.label}"
 
+  - id: arithmetic/anchored-relation-elided
+    phase: read
+    description: >
+      mining candidate elided-measure-relations: "Ben has 3 more than Ann" —
+      the additive comparative with the MEASURE NOUN elided entirely (no
+      "marbles"/"apples" between the delta word and 'than'; compare
+      arithmetic/anchored-relation's "N more ITEM than Y"). Emits the SAME
+      Relation fact shape with `measure: null` — an explicit UNRESOLVED
+      sentinel, never a guess — which saturate.py's `_relations_synth`
+      recovers from the STANDARD's own unique in-play quantity (the same
+      unique-pool-in-play discipline synth/fraction-of-pool and synth/
+      partition-of-collection already use): the standard holding exactly
+      one measure resolves it; zero or two-or-more measures declines,
+      never guesses (see that function's comment). This rule's sequence
+      requires 'than' IMMEDIATELY after the delta word, so it can never
+      match text that states the item noun — arithmetic/anchored-relation
+      is the only rule whose sequence matches there, with zero arbitration
+      needed (the two spans are structurally disjoint, not merely
+      differently-specific). Covers the postfix idiom too ("Ben picked 3
+      more than Ann"): with the item elided, prefix and postfix comparatives
+      collapse to the identical NUMBER-DELTA-'than'-STD token stream, so no
+      separate postfix-elided rule is needed. `who`/`std, type: entity`:
+      same widening and same self-reference guard as arithmetic/
+      anchored-relation.
+    match:
+      sentence:
+        - {slot: who, type: entity}
+        - {slot: verb, type: verb}
+        - {slot: n, type: number}
+        - {slot: dir, cat: delta}
+        - {lit: than}
+        - {slot: std, type: entity}
+    where:
+      - distinct: [who, std]
+    consumes: [n]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: null
+        factor: 1.0
+        offset: "n * sign(dir)"
+        verb: "{verb}"
+        subject_label: "{who.label}"
+        standard_label: "{std.label}"
+
   - id: arithmetic/anchored-relation-postfix
     phase: read
     description: >
@@ -257,6 +303,41 @@ rules:
         subject_label: "{who.label}"
         standard_label: "{std.label}"
 
+  - id: arithmetic/times-as-many-elided
+    phase: read
+    description: >
+      mining candidate elided-measure-relations: "Ben has twice as many as
+      Ann" — times-as-many with the plural ITEM noun elided entirely (no
+      noun between 'many' and 'as'; compare arithmetic/times-as-many's "N
+      times as many ITEM as Y"). Same `measure: null` UNRESOLVED-sentinel
+      emission and the same standard-anchored recovery in saturate.py's
+      `_relations_synth` as arithmetic/anchored-relation-elided — see its
+      comment. Requires 'as' immediately after 'many', so this can never
+      match text that states the item noun (the two rules' spans are
+      structurally disjoint). `who`/`std, type: entity`: same widening and
+      same self-reference guard as arithmetic/times-as-many.
+    match:
+      sentence:
+        - {slot: who, type: entity}
+        - {slot: verb, type: verb}
+        - {slot: k, type: multiplier}
+        - {lit: as}
+        - {lit: many}
+        - {lit: as}
+        - {slot: std, type: entity}
+    where:
+      - distinct: [who, std]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: null
+        factor: "k"
+        offset: 0.0
+        verb: "{verb}"
+        subject_label: "{who.label}"
+        standard_label: "{std.label}"
+
   - id: arithmetic/times-as-much
     phase: read
     description: >
@@ -288,6 +369,37 @@ rules:
         offset: 0.0
         verb: "{verb}"
 
+  - id: arithmetic/times-as-much-elided
+    phase: read
+    description: >
+      mining candidate elided-measure-relations: "Catherine has twice as
+      much as Cecil" — times-as-much's elided-item sibling (no noun between
+      'much' and 'as'), exactly the additive-elision pairing
+      arithmetic/anchored-relation-elided provides for arithmetic/
+      anchored-relation. Same `measure: null` UNRESOLVED-sentinel emission
+      and standard-anchored recovery — see that rule's comment. `who`/
+      `std, type: name`: unwidened, matching times-as-much's own
+      (not-yet-widened) slot types.
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: verb, type: verb}
+        - {slot: k, type: multiplier}
+        - {lit: as}
+        - {lit: much}
+        - {lit: as}
+        - {slot: std, type: name}
+    where:
+      - distinct: [who, std]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: null
+        factor: "k"
+        offset: 0.0
+        verb: "{verb}"
+
   - id: arithmetic/fraction-delta-relation
     phase: read
     description: >
@@ -310,6 +422,38 @@ rules:
         subject: "{who}"
         standard: "{std}"
         measure: "{item}"
+        factor: "1 + f * sign(dir)"
+        offset: 0.0
+        verb: "{verb}"
+
+  - id: arithmetic/fraction-delta-relation-elided
+    phase: read
+    description: >
+      mining candidate elided-measure-relations: "20% more than Ann" —
+      fraction-delta-relation with the item noun elided entirely (no noun
+      between the delta word and 'than'; compare fraction-delta-relation's
+      "20% MORE X than Y"). Same `measure: null` UNRESOLVED-sentinel
+      emission and standard-anchored recovery as arithmetic/
+      anchored-relation-elided — see its comment. Requires 'than'
+      IMMEDIATELY after the delta word, so this can never match text that
+      states the item noun. `who`/`std, type: name`: unwidened, matching
+      fraction-delta-relation's own (not-yet-widened) slot types.
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: verb, type: verb}
+        - {slot: f, type: fraction}
+        - {slot: dir, cat: delta}
+        - {lit: than}
+        - {slot: std, type: name}
+    where:
+      - distinct: [who, std]
+    consumes: [f]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: null
         factor: "1 + f * sign(dir)"
         offset: 0.0
         verb: "{verb}"
@@ -431,6 +575,39 @@ rules:
         subject_label: "{who.label}"
         standard_label: "{std.label}"
 
+  - id: arithmetic/fraction-as-many-elided
+    phase: read
+    description: >
+      mining candidate elided-measure-relations: "Ben has half as many as
+      Ann" — fraction-as-many with the plural ITEM elided entirely (no
+      noun between 'many' and 'as'), mirroring times-as-many-elided with a
+      FRACTION ratio in place of the multiplier. Same `measure: null`
+      UNRESOLVED-sentinel emission and standard-anchored recovery as
+      arithmetic/anchored-relation-elided — see its comment. `who`/`std,
+      type: entity`: same widening as arithmetic/fraction-as-many.
+    match:
+      sentence:
+        - {slot: who, type: entity}
+        - {slot: verb, type: verb}
+        - {slot: f, type: fraction}
+        - {lit: as}
+        - {lit: many}
+        - {lit: as}
+        - {slot: std, type: entity}
+    where:
+      - distinct: [who, std]
+    consumes: [f]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: null
+        factor: "f"
+        offset: 0.0
+        verb: "{verb}"
+        subject_label: "{who.label}"
+        standard_label: "{std.label}"
+
   - id: arithmetic/fraction-as-much
     phase: read
     description: >
@@ -456,6 +633,37 @@ rules:
         subject: "{who}"
         standard: "{std}"
         measure: "{item}"
+        factor: "f"
+        offset: 0.0
+        verb: "{verb}"
+
+  - id: arithmetic/fraction-as-much-elided
+    phase: read
+    description: >
+      mining candidate elided-measure-relations: "Catherine has half as
+      much as Cecil" — fraction-as-much with the item elided entirely (no
+      noun between 'much' and 'as'), mirroring times-as-much-elided with a
+      FRACTION ratio. Same `measure: null` UNRESOLVED-sentinel emission and
+      standard-anchored recovery as arithmetic/anchored-relation-elided —
+      see its comment. `who`/`std, type: name`: unwidened, matching
+      fraction-as-much's own slot types.
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: verb, type: verb}
+        - {slot: f, type: fraction}
+        - {lit: as}
+        - {lit: much}
+        - {lit: as}
+        - {slot: std, type: name}
+    where:
+      - distinct: [who, std]
+    consumes: [f]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: null
         factor: "f"
         offset: 0.0
         verb: "{verb}"

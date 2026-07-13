@@ -13,7 +13,7 @@ dedupes; each round must add a fact or we stop). A hard cap backstops it.
 from __future__ import annotations
 
 import itertools
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Callable, Protocol
 
 from ..data.registry import Registry
@@ -188,6 +188,25 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
         return candidate, candidate_known
 
     for rel in store.by_kind(Relation):
+        if rel.measure is None:
+            # mining candidate elided-measure-relations: the pattern rule
+            # stated no measure noun at all ("Ben has twice as many as
+            # Ann") — recover it from the STANDARD's own unique in-play
+            # quantity, the same unique-pool-in-play discipline
+            # synth/fraction-of-pool and synth/partition-of-collection
+            # already use. Exactly one measure known for the standard
+            # resolves; zero or two-or-more (ambiguous) declines this
+            # relation for the round — never guesses. A standard whose
+            # own measure is itself only DERIVED by an earlier round (a
+            # chained elided relation) resolves on a LATER round with no
+            # extra loop here: saturate() reruns this whole function every
+            # round from the fixpoint driver, rebuilding `measures_by_entity`
+            # from the then-current store each time.
+            std_candidates = measures_by_entity.get(rel.standard, set())
+            if len(std_candidates) != 1:
+                continue
+            (recovered,) = std_candidates
+            rel = replace(rel, measure=recovered)
         # resolution is blocked when the target already has a quantity UNDER
         # THE RELATION'S OWN VERB — "Zig wrote 4× as many" plus "Zig wrote
         # 60" describe the SAME writing (re-deriving doubles it); a lose
