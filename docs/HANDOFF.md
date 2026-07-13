@@ -14,13 +14,13 @@ swing under the constitution (no lexicon in Python, no per-problem parsing,
 every increment through the gates).
 
 **Current numbers (all verified at head):**
-- dev-train: 60 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
-- dev-holdout: 25 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 650 · lint: 0 errors, 1 intended warning
+- dev-train: 62 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
+- dev-holdout: 26 correct / 0 wrong (3,701 items)
+- curated suite: 52/52 · pytest: 684 · lint: 0 errors, 1 intended warning
 - bench wall: dev-train 16.6s -> 9.0s (trace opt-out) -> 1.7s at `--jobs 12`.
   `--jobs` defaults to 1; spend it in the SERIAL integration tail, never in the
   implementers' gates (they already run concurrently). See the two infra notes below.
-- TEST ledger (80 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- TEST ledger (84 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -4131,3 +4131,36 @@ BROKE, 0 DECL→WRONG (26/3701 correct, unchanged, 0 wrong); pytest 684 passed
 staging baseline of 677); suite 52/52; lint 0 errors / 1 known-good warning
 (fraction-of-remnant / fraction-of-pool, unchanged). TEST look: pending —
 spent manually.
+
+## Batch 38 (2026-07-13) — the gate fix vindicated. TEST 91.7% (NEW FLOOR), dev-train 62.
+
+Same base, same pool targeting as the three empty batches — the ONLY change was walking
+8 items instead of 3. **All 5 candidates reached implementers** (previously: zero).
+
+LANDED: 83, 84 (parked enablers, riding with their payoff), 85, 86.
+- **85 — elided-measure relations** ("3 more than Tom", "twice as much as Cecil",
+  "one-third as long"): the 354-item family the old gate killed at 2-of-3. **+2 dev-train,
+  +1 dev-holdout.**
+- 86 — distributive 'each' totals: 0 SOLVED, infrastructure. Removes a LATENT
+  CONFIDENT-WRONG in the unique-entity fold for distributive 'each' container premises.
+
+**TEST looks #83 (85) and #84 (86): 11/1 = 91.7% — TEST COVERAGE GAIN and a NEW FLOOR**
+(was 10/1, 90.9%). Increment 85 won a TEST item outright.
+
+DEFERRED at integrate-conflict (back to the worklist, need rebase onto the new main):
+`discounted-purchase-prices` (conflicted in answer.py), `percent-change-relations`
+(shares saturate.py's relation/partition synths with 85; was explicitly cut to land AFTER
+it). Both branches retained. These are NOT failures — they are candidates that need
+re-cutting against the current tip.
+
+FAILED: `equal-share-division-asks` (goal-mode, SOLVED=0). Its junior traced why its own
+3 samples don't resolve, to three DISTINCT pre-existing gaps — each a nameable follow-on
+candidate: (a) "each one" — 'one' senses only as a value, never a noun, so it cannot fill
+a recipient-noun slot; (b) elided-measure events ("Priya collected 29") fold as a
+Predication with a string dobj, never a Quantity, so the dividend has no holder; (c) a
+trailing "...if they divide X amongst themselves?" fuses the division premise INTO the
+question sentence, and read-phase pattern rules only run over premise readings.
+
+CALIBRATION (§9.4): elided-measure family — pool_frequency 354, solved_vs_main +2
+(dev-train). Resolve rate ~0.6%. Sobering: a 354-item family yielded 2. The pool count is
+a CEILING, not a forecast, and the gap between them is where the real work is.
