@@ -262,6 +262,30 @@ class Quantity(Fact):
     # ("Jar A" vs "Jar B", both bare-folding to entity='jar') into two
     # entities — never to change identity absent a real conflict.
     label: str | None = None
+    # a within-sentence CONJUNCT index (mining candidate
+    # conjoined-event-conjuncts): "sold 3 boxes to her aunt and 4 boxes to
+    # her uncle" binds every conjunct to the SAME entity/measure/verb, and
+    # `occurrence` alone (the sentence index) cannot tell them apart — the
+    # second conjunct's fact collides with the first's at the identical
+    # key(), even though they are two genuine, distinct events to be
+    # SUMMED, not two disagreeing readings of one holding. `segment` carries
+    # the conjunct's position (1, 2, 3, ... — the FIRST/only conjunct in a
+    # sentence stays None). NOT part of key() or value_part() — the FIFTH
+    # of FactStore.admit's collision-time mirrors (after owner/qualifier/
+    # measure_qualifier/label): only consulted once a same-key VALUE
+    # conflict has already happened and none of those four fields could
+    # explain it (a genuinely unqualified repeated noun, "3 rolls to
+    # grandma ... 3 rolls to a neighbour" — the distinguishing signal is
+    # the conjunct's POSITION, never its value, so a SAME-VALUE pair
+    # coexists as two facts too, instead of deduping and undercounting).
+    # Ordering AFTER the other four matters: a genuinely qualifier-
+    # differentiated conjunct pair ("1 purple hat" / "4 green hats") still
+    # re-keys to measure[qualifier] exactly as it always did, keeping its
+    # paired Price facts (which carry no `segment`) in lockstep. Left None
+    # (and so never a factor) for STATE quantities: a same-key value
+    # disagreement there is a genuine holding conflict, not a list of
+    # distinct events, and must keep quarantining exactly as before.
+    segment: int | None = None
 
     @property
     def is_state(self) -> bool:

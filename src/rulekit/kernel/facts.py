@@ -86,10 +86,42 @@ class FactStore:
         qualifier — a bare sibling anywhere means a total is in play, so
         this falls through to the ordinary quarantine-and-decline path
         instead of laundering a genuine part/whole relation into a clean
-        store."""
+        store.
+
+        A FIFTH, independent mirror (mining candidate conjoined-event-
+        conjuncts) disambiguates by within-sentence CONJUNCT POSITION
+        instead of any naming field: "sold 3 boxes to her aunt and 4 boxes
+        to her uncle" — both conjuncts share the SAME bare entity/measure
+        with no owner/qualifier/measure_qualifier/label to split on at all.
+        Tried LAST, after all four naming mirrors, so a genuinely qualifier-
+        differentiated pair ("1 purple hat" / "4 green hats") still takes
+        the measure_qualifier path unchanged (keeping its paired Price
+        facts, which carry no `segment`, in lockstep). Unlike the naming
+        mirrors this one renames nothing — both sides admit as-is, sharing
+        one key(); every consumer already reads Quantity facts by iterating
+        `store.by_kind(Quantity)` and filtering by attribute, never by a
+        unique key lookup, so the existing Sigma-events fold sums the
+        conjuncts unchanged. A SAME-VALUE conjunct pair ("3 rolls to
+        grandma ... 3 rolls to a neighbour") reaches this mirror too
+        (segment still differs, so it never hits the top-of-loop agreement
+        dedupe) and so is never silently undercounted to one occurrence."""
         for existing in self.facts:
             if existing.key() == fact.key():
-                if existing.value_part() == fact.value_part():
+                # A conjunct-segment split (mirror #5 below) must win even
+                # when the two conjuncts happen to state the SAME value
+                # ("3 rolls to grandma ... 3 rolls to a neighbour") — the
+                # ordinary agreement-dedupe below would otherwise treat
+                # them as one restated fact and the fold would UNDERCOUNT
+                # (3 + 3 folding to a single 3 instead of 6). Checked here,
+                # ahead of the dedupe, but the actual split still happens
+                # at mirror #5 in its normal (last-resort) priority order.
+                conjunct_split = (
+                    isinstance(existing, Quantity)
+                    and isinstance(fact, Quantity)
+                    and (existing.segment is not None or fact.segment is not None)
+                    and (existing.segment or 0) != (fact.segment or 0)
+                )
+                if existing.value_part() == fact.value_part() and not conjunct_split:
                     return True  # agreement: dedupe
                 if (
                     isinstance(existing, Quantity)
@@ -156,6 +188,48 @@ class FactStore:
                         replace(existing, entity=f"{existing.entity}[{existing.label}]")
                     )
                     self.facts.append(replace(fact, entity=f"{fact.entity}[{fact.label}]"))
+                    return True
+                if (
+                    isinstance(existing, Quantity)
+                    and isinstance(fact, Quantity)
+                    and (existing.segment is not None or fact.segment is not None)
+                    and (existing.segment or 0) != (fact.segment or 0)
+                ):
+                    # A FIFTH, independent mirror (mining candidate
+                    # conjoined-event-conjuncts) — the within-sentence
+                    # CONJUNCT position, tried only once none of the four
+                    # mirrors above already explained the collision (so a
+                    # genuinely qualifier/owner/label-differentiated pair
+                    # still re-keys exactly as before, keeping its paired
+                    # Price facts — which carry no `segment` — in
+                    # lockstep). "sold 3 boxes to her aunt and 4 boxes to
+                    # her uncle" folds both conjuncts to the SAME bare
+                    # entity/measure with no other distinguishing field at
+                    # all; unlike the other four mirrors this one needs no
+                    # rename — downstream fold consumers iterate
+                    # `store.by_kind(Quantity)` and filter by attribute, not
+                    # by a unique key lookup — so both facts admit as-is,
+                    # sharing one key(), and the existing Sigma-events fold
+                    # sums them unchanged. A SAME-VALUE conjunct pair ("3
+                    # rolls to grandma ... 3 rolls to a neighbour") takes
+                    # this same path (segment still differs) instead of the
+                    # top-of-loop agreement dedupe, so it is never silently
+                    # undercounted to one occurrence.
+                    #
+                    # `None` normalizes to 0 in the comparison because the
+                    # FIRST/head conjunct's own fact is emitted before its
+                    # siblings are even walked (learn.py's pre-existing
+                    # first-item emission site) and deliberately keeps
+                    # `segment=None` rather than being retrofitted to 0 —
+                    # every fact predating this field stays byte-identical.
+                    # A head/first-conjunct pair (None vs 1) must still
+                    # split here, so the `or 0` reads a bare None as segment
+                    # position zero for this comparison only; requiring at
+                    # least one side non-None keeps two ordinary unrelated
+                    # facts (segment None on both sides, the overwhelming
+                    # common case) falling through to quarantine exactly as
+                    # before this mirror existed.
+                    self.facts.append(fact)
                     return True
                 if (
                     isinstance(existing, Price)

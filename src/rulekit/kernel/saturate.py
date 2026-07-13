@@ -451,6 +451,27 @@ def _rest_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> list[Fac
         )
         if pending:
             continue
+        # "gave 6 roses to his mother, 9 to his grandmother, 4 to his
+        # sister, and he kept the rest" — a coordinated EVENT clause and the
+        # 'kept the rest' clause sharing ONE sentence (mining candidate
+        # conjoined-event-conjuncts unmasked this: those give-events used to
+        # fold-conflict and decline the item outright, hiding this separate
+        # gap). `_pool_before` only ever sums STRICTLY EARLIER sentences
+        # (the "pools = signed sum of prior-sentence facts" invariant) — it
+        # cannot see an event in the REST's own sentence at all, so
+        # resolving here would silently return the pool BEFORE the
+        # depleting events (a confident wrong, not a remainder). Declining
+        # keeps this shape exactly as safe as it already was: same-sentence
+        # rest-of-events is a distinct, not-yet-built consumer, not this
+        # candidate's job.
+        same_sentence_event = any(
+            q.provenance.sentence == rq.provenance.sentence
+            and q.provenance.source != "synth/rest"
+            and not q.is_state
+            for q in store.by_kind(Quantity)
+        )
+        if same_sentence_event:
+            continue
         value = _pool_before(store, reg, rq.provenance.sentence, measure, log, "synth/rest")
         if value is None or value < 0:
             continue

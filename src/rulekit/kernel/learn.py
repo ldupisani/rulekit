@@ -912,7 +912,37 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                     # with NO polarity category ('want'/'need' — see
                     # _has_event_polarity) still declines: only a
                     # purchase verb's siblings ever emit a Price.
+                    #
+                    # is_event (mining candidate conjoined-event-conjuncts):
+                    # a non-state, polarity-tagged verb — purchase is a
+                    # member via its `acquire` ancestor, so this is the SAME
+                    # gate `_has_event_polarity` already applies, not a new
+                    # word list. Each such conjunct gets its own `segment`
+                    # index so two conjuncts that land on the SAME
+                    # entity/measure ("sold 3 boxes to her aunt and 4 boxes
+                    # to her uncle" — one item noun repeated) are distinct
+                    # Quantity facts instead of colliding at fold time
+                    # (model.Quantity.key() now includes `segment`). STATE
+                    # conjuncts are untouched (segment stays None): a
+                    # same-key value disagreement between two holdings is a
+                    # genuine conflict, not a list of events to sum.
+                    is_event = not is_state and _has_event_polarity(verb_lemma, reg)
+                    # `dobj` itself occasionally mis-binds to a TIMEPERIOD
+                    # noun ("lost 4 last week" reading 'week' as the counted
+                    # item — a pre-existing, unrelated parse gap, not this
+                    # candidate's to fix). Inheriting THAT as a real item
+                    # measure is unsound, so segment differentiation stays
+                    # OFF for this shape only: the conjuncts keep colliding
+                    # exactly as they did before this candidate (decline-
+                    # safe), rather than this candidate turning a pre-
+                    # existing mis-parse's safety-net collision into a
+                    # confident wrong.
+                    is_event_segmented = is_event and not reg.word_in_category(
+                        _lemma(dobj), "timeperiod"
+                    )
+                    conjunct_segment = 0
                     for item, item_qty, price_value in _conjoined_purchase_items(reading, reg, dobj):
+                        conjunct_segment += 1
                         facts.append(
                             Quantity(
                                 provenance=prov,
@@ -926,6 +956,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                                 verb=verb_lemma,
                                 occurrence=occurrence,
                                 time=time_label,
+                                segment=conjunct_segment if is_event_segmented else None,
                             )
                         )
                         if is_purchase_verb and price_value is not None:
@@ -939,7 +970,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                                     occurrence=occurrence,
                                 )
                             )
-                    if not is_state and _has_event_polarity(verb_lemma, reg):
+                    if is_event:
                         # "sold 5 last week and 7 this week" — mining
                         # candidate event-goal-progress-inheritance: a
                         # sibling conjunct stating NO item noun of its own
@@ -950,7 +981,12 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                         # `_conjoined_purchase_items` already emitted a fact
                         # for the segment — see `_conjoined_bare_number_
                         # events`'s docstring for the mutual-exclusion gate.
+                        # `conjunct_segment` keeps counting up from the
+                        # purchase-item loop above so every conjunct in the
+                        # sentence — named item or bare value — carries a
+                        # unique segment.
                         for bare_value in _conjoined_bare_number_events(reading, reg, dobj):
+                            conjunct_segment += 1
                             facts.append(
                                 Quantity(
                                     provenance=prov,
@@ -964,6 +1000,9 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                                     verb=verb_lemma,
                                     occurrence=occurrence,
                                     time=time_label,
+                                    segment=(
+                                        conjunct_segment if is_event_segmented else None
+                                    ),
                                 )
                             )
         elif flat_price_value is not None:
@@ -1000,7 +1039,18 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                         occurrence=occurrence,
                     )
                 )
-                for item, item_qty, price_value in _conjoined_purchase_items(reading, reg, dobj):
+                # is_purchase_verb is always True on this branch (only path
+                # to a flat price), so `segment` differentiates conjunct
+                # siblings here the SAME way as the counted-dobj branch
+                # above — see conjoined-event-conjuncts' mechanism on
+                # Quantity.segment. Same timeperiod-mis-binding guard as
+                # that branch (dobj here is a bare singular item noun, not
+                # normally a temporal noun, but the guard costs nothing and
+                # keeps the two branches' safety identical).
+                flat_price_segmented = not reg.word_in_category(_lemma(dobj), "timeperiod")
+                for conjunct_segment, (item, item_qty, price_value) in enumerate(
+                    _conjoined_purchase_items(reading, reg, dobj), start=1
+                ):
                     facts.append(
                         Quantity(
                             provenance=prov,
@@ -1014,6 +1064,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                             verb=verb_lemma,
                             occurrence=occurrence,
                             time=time_label,
+                            segment=conjunct_segment if flat_price_segmented else None,
                         )
                     )
                     if price_value is not None:

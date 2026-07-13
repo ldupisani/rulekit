@@ -3863,6 +3863,53 @@ DECL→WRONG (25/3701 correct before and after); pytest 655 passed; suite
 52/52; lint 0 errors / 1 known-good warning (fraction-of-remnant /
 fraction-of-pool, unchanged). TEST look: pending — spent manually.
 
+## Increment 83 (2026-07-13) — conjoined event-verb object lists (each conjunct is its own event, bound to its own counted noun)
+
+Class: conjoined EVENT-verb object lists where each conjunct is its own
+event bound to its own counted noun ("sold 3 boxes to her aunt and 4
+boxes to her uncle", "lost 20 chickens, 8 turkeys and 5 guinea fowls").
+INFRASTRUCTURE (zero-risk enabler, not yet cashed in by any consumer on
+dev): today `Quantity.occurrence` is the SENTENCE index, so two event
+Quantities emitted from one sentence collide on `key()` and quarantine as
+"fold and fold disagree" — 132 dev-train items carry exactly this
+conflict bucket, the 4th-largest decline reason and the largest
+non-ask-shape structural one. Mechanism (kernel-structural, no lexicon,
+no per-problem parsing): (1) `learn.py` generalizes the segment-wise
+conjunct-binding helper that increments 11/18 built for purchase verbs
+(and 35 for state verbs) to EVENT-category verbs — polarity-tagged
+acquire/lose/produce/receive members (the category is the gate, never a
+word list) — so each comma/conjunction-segmented conjunct after the
+first takes its OWN counted noun, inheriting the head noun by ellipsis
+when a segment has a count but no noun of its own (precedented by
+increment 80's elided-conjunct distribution). The shared
+`_is_rate`/`_price_each_value` clause-boundary scans are untouched —
+segmentation is opt-in per verb category, defaulted to today's behavior.
+(2) `model.py`/`facts.py`: `Quantity` gains an optional `segment` field
+(within-sentence conjunct index, default None) so every existing fact is
+byte-identical; each conjunct now gets a distinct `key()` via its segment
+position (NOT via its value — `FactStore.admit` still collides on equal
+values from DIFFERENT segments correctly as two summable facts, avoiding
+the undercount trap where two same-valued conjuncts would otherwise
+silently dedupe). The existing Sigma-events fold in `answer.py` sums the
+now-distinct facts with no consumer change. Confirmed by design as a
+clean enabler: dev-train cannot cash this in alone (every item unblocked
+by the fold fix carries a second, independent blocker — a remainder
+consumer, a goal-deficit consumer, or a unit-converted event-total
+consumer, none of which exist yet); those consumers are left for the
+next payoff batch, per brief.
+
+Files: `src/rulekit/kernel/learn.py`, `src/rulekit/kernel/model.py`,
+`src/rulekit/kernel/facts.py`, `tests/test_mining_increment_83.py`.
+
+Gates (integrated on staging, full re-proof against current staging
+baseline): dev-train diff NEUTRAL, 0 SOLVED, 0 BROKE, 0 DECL→WRONG
+(60/3772 correct unchanged, 0 wrong); dev-holdout diff NEUTRAL, 0 SOLVED,
+0 BROKE, 0 DECL→WRONG (25/3701 correct unchanged, 0 wrong); pytest 659 passed (+9 synthetic
+tests in `tests/test_mining_increment_83.py` over the prior staging
+baseline); suite 52/52; lint 0 errors / 1 known-good warning
+(fraction-of-remnant / fraction-of-pool, unchanged). TEST look: pending
+— spent manually.
+
 ## Batch 34 (2026-07-13) — FIRST PRECISION DROP OF THE RUN. Increment 81 killed.
 
 Bare-main batch, 2 landed on staging, ONE SURVIVED.
