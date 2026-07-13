@@ -1399,6 +1399,18 @@ asks:
       entity: "{who}"
       measure: "{item}"
       verb: "{verb}"
+      # NOT given a partitive tail (mining candidate
+      # partitive-measure-ask-slot considered it and DROPPED it): "how many
+      # OUNCES of milk does James have left?" over premises stating a
+      # DIFFERENT-but-convertible measure ("3 GALLONS of milk... 128 ounces
+      # in a gallon") newly matched here and answered from the 'ounce'-only
+      # event fold alone (-13, a confident wrong — gsm8k item b2d02b893826
+      # on dev-train, caught by the dev-train gate) because the fold has no
+      # unit-conversion step at all; that class needs `ask/how-many-
+      # capacity`'s own machinery, not this consumer. The entity-LESS
+      # siblings below (unique-entity/combined) got the partitive tail
+      # instead — none of this candidate's structural samples were this
+      # ask's own shape, so scope stays exactly at what was evidenced.
 
   - id: ask/how-many-entity-prenominal-marker
     # "how many TOTAL-MARKER toys does WHO buy?" (mining candidate
@@ -1527,11 +1539,20 @@ asks:
         - {lit: how}
         - {lit: many}
         - {slot: item, type: noun}
+        # optional partitive tail (mining candidate
+        # partitive-measure-ask-slot): "how many CONTAINERS OF MEAT were
+        # left?" — see ask/how-many-entity's identical opt group for the
+        # full rationale (item still binds the bare measure noun only;
+        # `substance` is consumed and feeds ONLY the decline-safety guard).
+        - opt:
+            - {lit: of}
+            - {slot: substance, type: noun}
         - {slot: verb, type: verb}
         - {lit: left}
     resolves:
       consumer: unique-entity
       measure: "{item}"
+      measure_substance: "{substance}"
 
   - id: ask/how-many-there
     match:
@@ -1539,11 +1560,19 @@ asks:
         - {lit: how}
         - {lit: many}
         - {slot: item, type: noun}
+        # optional partitive tail (mining candidate
+        # partitive-measure-ask-slot): "how many KILOGRAMS OF MEAT are
+        # there?" — see ask/how-many-entity's identical opt group for the
+        # full rationale.
+        - opt:
+            - {lit: of}
+            - {slot: substance, type: noun}
         - {slot: verb, type: verb}
         - {lit: there}
     resolves:
       consumer: unique-entity
       measure: "{item}"
+      measure_substance: "{substance}"
 
   - id: ask/how-many-there-combined
     # "how many X are/were there in total/altogether/together/combined?"
@@ -1562,15 +1591,18 @@ asks:
     # (mining candidates how-many-combined / average-asks), which is
     # exactly the entity-less read this ask needs.
     #
-    # ask/how-many-there itself is byte-unchanged and keeps its exactly-
-    # one-holder discipline (unique-entity consumer) — that gate exists
-    # precisely because a bare "how many X are there?" over 2+ holders is
-    # ambiguous without a totality marker. This ask's tail (item/verb/
-    # there/[prep]/agg) always consumes MORE units than the bare sibling's
-    # (item/verb/there), so patterns.match_ask's max-consumed-units rule
-    # (the ask/how-much-money-entity-left "money-left" precedent) always
-    # prefers this ask when the marker is present, and this ask simply
-    # fails to match at all when it's absent — never a partial-match tie.
+    # ask/how-many-there keeps its exactly-one-holder discipline (unique-
+    # entity consumer) unaffected — that gate exists precisely because a
+    # bare "how many X are there?" over 2+ holders is ambiguous without a
+    # totality marker. This ask's tail (item/[of substance]/verb/there/
+    # [prep]/agg) always consumes MORE units than the bare sibling's
+    # (item/[of substance]/verb/there — mining candidate
+    # partitive-measure-ask-slot gave both siblings the identical optional
+    # partitive group, so it can never itself break the tie), so
+    # patterns.match_ask's max-consumed-units rule (the ask/how-much-
+    # money-entity-left "money-left" precedent) always prefers this ask
+    # when the marker is present, and this ask simply fails to match at
+    # all when it's absent — never a partial-match tie.
     #
     # `exclude_entity: world` (pack data, not a Python constant — see
     # HANDOFF's "'world' entity ... pack-owned data constants" invariant):
@@ -1606,11 +1638,23 @@ asks:
     # relation`'s `item` binds a bare plural noun OR a cardinal-merged one
     # ("lakes"/"two lakes") identically, since condense.py's count-merge
     # keeps the head noun's `number: plural` feature on the merged unit.
+    #
+    # Optional partitive tail right after `item` (mining candidate
+    # partitive-measure-ask-slot): "how many KILOGRAMS OF MEAT are there in
+    # total?" — see ask/how-many-entity's identical opt group for the full
+    # rationale. Sits BEFORE the totality-marker tail this ask already
+    # requires, so it never competes with that tail's own tokens for the
+    # same units; it only ever adds MORE consumed units on top, keeping
+    # this ask's existing always-wins-over-the-bare-sibling specificity
+    # argument (above) unaffected.
     match:
       question:
         - {lit: how}
         - {lit: many}
         - {slot: item, type: noun}
+        - opt:
+            - {lit: of}
+            - {slot: substance, type: noun}
         - {slot: verb, type: verb}
         - {lit: there}
         - opt:
@@ -1627,6 +1671,7 @@ asks:
       verb: "{verb}"
       exclude_entity: world
       grp_value: "{grp.value}"
+      measure_substance: "{substance}"
 
   - id: ask/how-many-plural-combined
     # "how many ITEM do/does/did (THE) PLURAL-COMMON-NOUN have TOTAL-

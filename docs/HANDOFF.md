@@ -3910,6 +3910,50 @@ baseline); suite 52/52; lint 0 errors / 1 known-good warning
 (fraction-of-remnant / fraction-of-pool, unchanged). TEST look: pending
 — spent manually.
 
+## Increment 84 (2026-07-13) — partitive-measure asks ("how many MEASURE of SUBSTANCE ...") — the item slot cannot represent a partitive NP
+
+Class: partitive-measure asks — questions that name the measure through a
+partitive NP ("how many kilograms of meat are left?", "how many containers
+of the substance were left?") rather than a bare measure noun. INFRASTRUCTURE
+(enabler, cut from the parked `mining/parked/conjoined-event-conjuncts-enabler`
+branch): every existing ask id binds `item` as a single `{type: noun}` slot,
+so a partitive NP (MEASURE + `of` + SUBSTANCE) matches none of them and 71
+dev-train items decline on "no ask shape recognizes this question" before any
+premise or consumer is ever consulted. Walked all 71 by stripping only the
+partitive tail: 0/71 resolve today — confirming this is a pure ask-shape
+blocker, not a coverage gap needing new arithmetic.
+
+Mechanism (no new slot TYPE; reuses the existing optional sub-sequence
+machinery already precedented by ask/how-many-of-collection-are-label):
+`packs/arithmetic/rules/core.yaml` — `ask/how-many-there`,
+`ask/how-many-left-entityless`, and `ask/how-many-there-combined` each gain
+an optional `[{lit: of}, {slot: substance, type: noun}]` group right after
+their existing `item` slot. `item` still binds ONLY the bare measure noun
+exactly as every existing bare-measure ask already does; the group exists
+purely so the trailing "of SUBSTANCE" NP is CONSUMED instead of breaking the
+match. When more than one substance shares the same measure noun, the ask
+DECLINES rather than guessing which substance's quantity to report — same
+discipline as increment 26's non-interchangeable categories, and the named
+hazard (a partitive ask silently answering the wrong substance's question)
+is covered by a synthetic multi-substance DECLINE test. Applied to a NAMED,
+SHORT list of three existing ask ids, never find-replaced across the ~48
+asks (HANDOFF invariant: a widened slot type must be applied to the specific
+ask ids that need it). With the slot in place these route to consumers that
+ALREADY exist (the signed event fold, the entity-less Σ, the multi-holder
+combined Σ) — payoff lands next rather than needing new arithmetic.
+
+Files: `packs/arithmetic/rules/core.yaml`, `tests/test_mining_increment_84.py`
+(plus schema/pattern support files carried from the candidate branch).
+
+Gates (integrated on staging, full re-proof against current staging
+baseline): dev-train diff NEUTRAL, 0 SOLVED, 0 BROKE, 0 DECL→WRONG
+(60/3772 correct unchanged, 0 wrong); dev-holdout diff NEUTRAL, 0 SOLVED,
+0 BROKE, 0 DECL→WRONG (25/3701 correct unchanged, 0 wrong); pytest 667
+passed (+8 synthetic tests in `tests/test_mining_increment_84.py` over the
+prior staging baseline of 659); suite 52/52; lint 0 errors / 1 known-good
+warning (fraction-of-remnant / fraction-of-pool, unchanged). TEST look:
+pending — spent manually.
+
 ## Batch 34 (2026-07-13) — FIRST PRECISION DROP OF THE RUN. Increment 81 killed.
 
 Bare-main batch, 2 landed on staging, ONE SURVIVED.

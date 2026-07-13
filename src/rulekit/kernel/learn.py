@@ -80,6 +80,40 @@ def _measure_partitive_anchor(reading: Reading, subject: Unit, reg: Registry) ->
     return None
 
 
+def _measure_substance(reading: Reading, measure_unit: Unit, reg: Registry) -> str | None:
+    """'3 kilograms OF MEAT' — the SUBSTANCE named by a partitive 'of'
+    phrase anchored on `measure_unit` (mining candidate
+    partitive-measure-ask-slot). The mirror-image walk of
+    `_measure_partitive_anchor` above: that resolves the MEASURE from a
+    known SUBSTANCE subject (the price-per-measure shape); this resolves
+    the SUBSTANCE from a MEASURE noun a Quantity is already about to key
+    on, via the SAME `partitive`-category preposition's anchor (left) /
+    object (right) obligations — no new grammar, no new obligation, purely
+    a second read of the identical structural fact.
+    Used ONLY as a `measure_qualifier` fallback (below, at every existing
+    `_qualifier(dobj)`/`_qualifier(item)` call site that feeds
+    `measure_qualifier=`), so a partitive-tail ask's decline-safety guard
+    (answer.py's `_measure_substance_guard`) can tell whether more than one
+    substance is attested for the SAME measure noun in this document — the
+    exact discipline `_qualifier`/`measure_qualifier` already established
+    for adjective-qualified measures ("12 white marbles" vs "6 blue
+    marbles", mining candidate qualified-measure-keys), one more surface
+    realization of "the measure noun carries an identifying modifier"
+    reusing the SAME field rather than a new one. Never touches `measure`
+    itself (identity stays the bare lemma everywhere it already worked);
+    returns None absent a partitive 'of' phrase anchored here, so every
+    non-partitive call site is unaffected."""
+    for unit in reading.units:
+        if not reg.word_in_category(_lemma(unit), "partitive"):
+            continue
+        if _bound(unit, "anchor") is not measure_unit:
+            continue
+        obj = _bound(unit, "object")
+        if obj is not None and obj.sense() == "noun":
+            return _lemma(obj)
+    return None
+
+
 def _negated(reading: Reading, verb: Unit) -> bool:
     for unit in reading.units:
         for ob in unit.obligations():
@@ -875,7 +909,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                         qualifier=_qualifier(subject),
                         label=_label(subject),
                         measure=_lemma(dobj),
-                        measure_qualifier=_qualifier(dobj),
+                        measure_qualifier=_qualifier(dobj) or _measure_substance(reading, dobj, reg),
                         value=float(dobj.features["value"]),
                         verb=verb_lemma,
                         occurrence=occurrence,
@@ -951,7 +985,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                                 qualifier=_qualifier(subject),
                                 label=_label(subject),
                                 measure=_lemma(item),
-                                measure_qualifier=_qualifier(item),
+                                measure_qualifier=_qualifier(item) or _measure_substance(reading, item, reg),
                                 value=item_qty,
                                 verb=verb_lemma,
                                 occurrence=occurrence,
@@ -995,7 +1029,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                                     qualifier=_qualifier(subject),
                                     label=_label(subject),
                                     measure=_lemma(dobj),
-                                    measure_qualifier=_qualifier(dobj),
+                                    measure_qualifier=_qualifier(dobj) or _measure_substance(reading, dobj, reg),
                                     value=bare_value,
                                     verb=verb_lemma,
                                     occurrence=occurrence,
@@ -1022,7 +1056,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                         qualifier=_qualifier(subject),
                         label=_label(subject),
                         measure=_lemma(dobj),
-                        measure_qualifier=_qualifier(dobj),
+                        measure_qualifier=_qualifier(dobj) or _measure_substance(reading, dobj, reg),
                         value=1.0,
                         verb=verb_lemma,
                         occurrence=occurrence,
@@ -1059,7 +1093,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                             qualifier=_qualifier(subject),
                             label=_label(subject),
                             measure=_lemma(item),
-                            measure_qualifier=_qualifier(item),
+                            measure_qualifier=_qualifier(item) or _measure_substance(reading, item, reg),
                             value=item_qty,
                             verb=verb_lemma,
                             occurrence=occurrence,
@@ -1091,7 +1125,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                         qualifier=_qualifier(subject),
                         label=_label(subject),
                         measure=_lemma(dobj),
-                        measure_qualifier=_qualifier(dobj),
+                        measure_qualifier=_qualifier(dobj) or _measure_substance(reading, dobj, reg),
                         value=float(value_unit.features["value"]),
                         verb=verb_lemma,
                         occurrence=occurrence,

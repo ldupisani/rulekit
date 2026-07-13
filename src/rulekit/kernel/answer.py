@@ -95,6 +95,58 @@ def _check_req_unit(
     return _resolve_measure_against(req_unit, in_store, reg) == singular
 
 
+def _measure_substance_guard(
+    store: FactStore, measure: str, substance: str, entities: list[str] | None = None,
+) -> Answer | None:
+    """Decline-safety for a partitive-tail ask (mining candidate
+    partitive-measure-ask-slot: "how many KILOGRAMS OF MEAT are left" /
+    "... are there" / "... does WHO have"). The ask's `item` slot only ever
+    binds the bare MEASURE noun ('kilogram') — the ASKED substance ('meat')
+    names nothing any fact is keyed on, so a naive fold would silently sum
+    every substance sharing that measure noun across the document, exactly
+    the sibling-borrow wrong `_resolve_measure_against`'s own docstring
+    warns about for non-interchangeable categories ("How many cats?"
+    answered from 'dog' facts): a 'rice' quantity answering a 'meat'
+    question.
+
+    `measure_qualifier` (learn.py's `_measure_substance`, a fallback source
+    for the SAME field `_qualifier`/`measure_qualifier` already use for
+    adjective-qualified measures — mining candidate qualified-measure-keys)
+    carries the STATED substance on every Quantity fact whose counted noun
+    came from a partitive 'MEASURE of SUBSTANCE' phrase. Scanning the
+    candidate facts (optionally scoped to `entities`, for a single-entity
+    ask) for DISTINCT non-null `measure_qualifier` values:
+    - more than one distinct substance attested -> the text names two+
+      substances under this measure and the ask cannot tell which the fold
+      already summed -> decline;
+    - exactly one attested and it does not match the ASKED substance ->
+      zero facts exist about the asked substance -> decline;
+    - zero attested (the overwhelming case: no partitive tail anywhere, or
+      every mention agrees with what was asked) -> None, proceed exactly as
+      the bare (non-partitive) ask always has.
+
+    Every EXISTING (non-partitive) ask never binds `measure_substance` in
+    its query, so this function is never even called for them — a pure
+    opt-in addition, zero change to any currently-shipped consumer path."""
+    candidates = [
+        q for q in store.by_kind(Quantity)
+        if q.measure == measure and (entities is None or q.entity in entities)
+    ]
+    qualifiers = {q.measure_qualifier for q in candidates if q.measure_qualifier}
+    if len(qualifiers) > 1:
+        return Answer(
+            "decline", None,
+            f"measure {measure!r} names more than one substance in the "
+            f"facts {sorted(qualifiers)!r} — asked for {substance!r}",
+        )
+    if len(qualifiers) == 1 and substance not in qualifiers:
+        return Answer(
+            "decline", None,
+            f"no {substance!r} facts known for measure {measure!r}",
+        )
+    return None
+
+
 def _sign(verb: str, reg: Registry, strict: bool = False) -> int | None:
     """The verb's accumulation direction from its polarity category. In
     strict mode an UNTAGGED verb returns None — defaulting 'put half in
@@ -365,6 +417,11 @@ def _combined_holder_totals(
     if singular is None:
         return Answer("decline", None,
                       f"measure {measure!r} is ambiguous across the facts")
+    measure_substance = query.get("measure_substance")
+    if measure_substance:
+        guard = _measure_substance_guard(store, singular, measure_substance)
+        if guard is not None:
+            return guard
     a, b = query.get("a"), query.get("b")
     if a is not None and b is not None:
         entities = [a, b]
@@ -464,6 +521,13 @@ def answer(
                 "decline", None,
                 f"asked unit {req_unit!r} does not match resolved measure {singular!r}",
             )
+        measure_substance = query.get("measure_substance")
+        if measure_substance:
+            guard = _measure_substance_guard(
+                store, singular, measure_substance, entities=[entity]
+            )
+            if guard is not None:
+                return guard
         owner_store = store
         if owner:
             owner_store = FactStore(facts=[
@@ -857,6 +921,11 @@ def answer(
         if singular is None:
             return Answer("decline", None,
                           f"measure {measure!r} is ambiguous across the facts")
+        measure_substance = query.get("measure_substance")
+        if measure_substance:
+            guard = _measure_substance_guard(store, singular, measure_substance)
+            if guard is not None:
+                return guard
         entities = sorted(
             {q.entity for q in store.by_kind(Quantity) if q.measure == singular}
         )
