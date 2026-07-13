@@ -70,11 +70,23 @@ def annotate_senses(reading: Reading, reg: Registry) -> Reading:
         # A capitalized mid-sentence word WITHOUT a preceding article is a
         # name even when the lowercase word is known ("Is Rose a teacher?"
         # vs "the rose wilted") — proper nouns don't take articles.
+        # EXCEPT a `timeperiod` category word (mining candidate time-
+        # period-qualified-events: 'Monday', 'Tuesday', ... — always
+        # capitalized by English convention, and never a person's name in
+        # this corpus, unlike genuinely name-ambiguous words such as
+        # 'Rose'). Without this exemption every weekday adjunct sentence
+        # ("On Monday, Sam sold...") misread its weekday as a second bare
+        # NAME, which then polluted `_discourse_candidates` (document.py)
+        # with a spurious second antecedent and broke cross-sentence
+        # pronoun binding for the following sentence's "he"/"she" — not
+        # merely a wrong sense for the weekday word itself. Structural
+        # (category membership), never a literal word list.
         if (
             entry is not None
             and surface[:1].isupper()
             and surface[1:].islower()
             and unit.words[0].index > 0
+            and not reg.word_in_category(fold, "timeperiod")
         ):
             prev = _previous_word_unit(reading, unit)
             prev_fold = prev.features.get("fold") if prev is not None else None

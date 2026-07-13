@@ -680,15 +680,26 @@ members:
   - pay
   - pays
   timeperiod:
+  # monday..sunday added by mining candidate time-period-qualified-events:
+  # the SAME category as the pre-existing period nouns above (not a new
+  # one) — see the 'monday' lexicon entry (packs/difg-mined/lexicon/
+  # g-m.yaml) for why weekday names were retagged 'noun' to join it.
   - afternoon
   - day
   - decade
   - evening
+  - friday
+  - monday
   - month
   - morning
   - night
+  - saturday
   - season
   - semester
+  - sunday
+  - thursday
+  - tuesday
+  - wednesday
   - week
   - weekend
   - year

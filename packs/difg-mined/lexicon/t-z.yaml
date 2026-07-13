@@ -261,8 +261,11 @@ entries:
     verb:
       lemma: throw
   thursday:
+    # mining candidate time-period-qualified-events: retagged 'time' ->
+    # 'noun' — see the 'monday' entry (packs/difg-mined/lexicon/g-m.yaml)
+    # for the full rationale; same change, same `timeperiod` category.
     senses:
-    - time
+    - noun
   tic-tac-toe:
     senses:
     - noun
@@ -512,8 +515,11 @@ entries:
     verb:
       lemma: try
   tuesday:
+    # mining candidate time-period-qualified-events: retagged 'time' ->
+    # 'noun' — see the 'monday' entry (packs/difg-mined/lexicon/g-m.yaml)
+    # for the full rationale; same change, same `timeperiod` category.
     senses:
-    - time
+    - noun
   tuition:
     senses:
     - noun
@@ -883,8 +889,11 @@ entries:
     senses:
     - noun
   wednesday:
+    # mining candidate time-period-qualified-events: retagged 'time' ->
+    # 'noun' — see the 'monday' entry (packs/difg-mined/lexicon/g-m.yaml)
+    # for the full rationale; same change, same `timeperiod` category.
     senses:
-    - time
+    - noun
   week:
     senses:
     - noun

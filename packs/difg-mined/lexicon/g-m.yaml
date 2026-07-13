@@ -1632,8 +1632,22 @@ entries:
     senses:
     - noun
   monday:
+    # mining candidate time-period-qualified-events: was sensed 'time' (an
+    # inert sense — nothing in the kernel reads it for this word; only
+    # 'today' uses 'time' via the `temporal_marker` category). Retagged
+    # 'noun' so it can join the `timeperiod` category (packs/difg-mined/
+    # categories/semantic.yaml, root sense 'noun') alongside 'morning'/
+    # 'week'/'year' — the SAME category, not a new one, unifying weekday
+    # names with the period nouns already there. Needed structurally: a
+    # capitalized weekday word with no lexicon 'noun'/'name' competition
+    # was ALWAYS overridden to 'name' by senses.py's capitalization
+    # heuristic (harmless for genuinely name-ambiguous words like 'Rose',
+    # but wrong here — 'Monday' is never a person's name in this corpus),
+    # which polluted cross-sentence pronoun antecedent resolution whenever
+    # a premise carried a weekday adjunct (see senses.py's `timeperiod`
+    # exemption for the other half of this fix).
     senses:
-    - time
+    - noun
   money:
     senses:
     - noun
