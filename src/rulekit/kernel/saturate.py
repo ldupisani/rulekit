@@ -148,7 +148,7 @@ _ELIDED_STANDARD = "$elided:standard$"
 def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> list[Fact]:
     """Resolve Relation facts against known Quantities:
     subject = factor*standard + offset, hop by hop (raw factors visible)."""
-    from .answer import _resolve_measure_against
+    from .answer import _entity_total, _resolve_measure_against
 
     out: list[Fact] = []
     # a relation anchors on ANY known quantity of the standard, but only an
@@ -512,8 +512,35 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
             else (rel.subject, rel.measure, verb_key(rel.verb)) in by_verb
         )
         if subtype_known is not None and not already_derived:
+            # THE ANCHOR IS THE STANDARD'S FULL TOTAL, NOT ITS STATE FACT.
+            # `qualified_lookup` returns a single raw Quantity, so reading its
+            # `.value` silently uses only the STATE and ignores any later EVENT on
+            # the same (subject, standard): "Sam has 2 dogs. Sam buys 4 dogs. Sam
+            # has three times as many cats as dogs." anchored on 2 and committed 6
+            # — a CONFIDENT WRONG, where the truth is 3 × (2+4) = 18. Route through
+            # `_entity_total`, the exact same fold the single-entity ASK consumer
+            # already uses, so a relation's notion of "how much X has" agrees with
+            # the engine's everywhere else.
+            #
+            # Strictly more conservative than the raw peek: `_entity_total` returns
+            # None on any ambiguity it cannot safely resolve (mixed times, unknown
+            # verb polarity), and we then DECLINE rather than commit a stale anchor.
+            # A pure-state anchor with no events returns the identical value it
+            # always did.
+            #
+            # QUALIFIED standards keep the raw lookup untouched: `_entity_total`
+            # folds the BARE (entity, measure) key, which would mix a 'red apple'
+            # sibling into a 'green apple' anchor. Increment 97's qualified path is
+            # byte-identical.
+            if rel.standard_qualifier:
+                anchor_value = subtype_known.value
+            else:
+                total = _entity_total(store, reg, rel.subject, rel.standard, log)
+                if total is None:
+                    continue
+                anchor_value = total
             value = evaluate(
-                f"{rel.factor} * {subtype_known.value} + {rel.offset}", {}, log,
+                f"{rel.factor} * {anchor_value} + {rel.offset}", {}, log,
                 source=f"relation-subtype:{rel.provenance.source}",
             )
             # a 3+-way qualified chain (mining candidate qualified-measure-
