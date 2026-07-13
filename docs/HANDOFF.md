@@ -14,13 +14,13 @@ swing under the constitution (no lexicon in Python, no per-problem parsing,
 every increment through the gates).
 
 **Current numbers (all verified at head):**
-- dev-train: 57 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
+- dev-train: 59 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
 - dev-holdout: 25 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 622 · lint: 0 errors, 1 intended warning
+- curated suite: 52/52 · pytest: 640 · lint: 0 errors, 1 intended warning
 - bench wall: dev-train 16.6s -> 9.0s (trace opt-out) -> 1.7s at `--jobs 12`.
   `--jobs` defaults to 1; spend it in the SERIAL integration tail, never in the
   implementers' gates (they already run concurrently). See the two infra notes below.
-- TEST ledger (76 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- TEST ledger (77 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -3770,3 +3770,15 @@ suite 52/52; lint 0 errors / 1 known-good warning (fraction-of-remnant /
 fraction-of-pool, unchanged). TEST look: pending — spent manually.
 
 LANDED: 79 (b18e4da) extraposed-duration rate premises — the enabler, rides with its payoff.
+
+## Batch 33 (2026-07-13) — enabler 79 cashed in. dev-train 57 -> 59.
+
+LANDED: 79 (extraposed-duration rate premises, the enabler) + 80 (asked-item
+resolution in duration-rate inverse-span asks — totality-marked item, unit-mismatched
+asked time unit, "for"-variant, conjoined item list).
+
+Composition gate vs fresh main: SOLVED 2 dev-train, 0 holdout, 0 BROKE,
+0 DECL->WRONG. TEST look #77: 10/1 (90.9%) — precision HELD.
+
+ENABLER YIELD IS DECLINING: 66 -> +9, 70 -> +6, 74 -> +6, 77 -> +5, 79 -> +2.
+Still positive, still the only thing that works, but the seam is thinning. Watch this.
