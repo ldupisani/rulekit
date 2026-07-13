@@ -14,13 +14,13 @@ swing under the constitution (no lexicon in Python, no per-problem parsing,
 every increment through the gates).
 
 **Current numbers (all verified at head):**
-- dev-train: 54 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
-- dev-holdout: 23 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 612 · lint: 0 errors, 1 intended warning
+- dev-train: 57 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
+- dev-holdout: 25 correct / 0 wrong (3,701 items)
+- curated suite: 52/52 · pytest: 622 · lint: 0 errors, 1 intended warning
 - bench wall: dev-train 16.6s -> 9.0s (trace opt-out) -> 1.7s at `--jobs 12`.
   `--jobs` defaults to 1; spend it in the SERIAL integration tail, never in the
   implementers' gates (they already run concurrently). See the two infra notes below.
-- TEST ledger (75 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- TEST ledger (76 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -3652,3 +3652,21 @@ dev-holdout diff SHIP, SOLVED 1, 0 BROKE, 0 DECL→WRONG (24→25/3701
 correct; SOLVED 7822e5e02965); pytest 622 passed; suite 52/52; lint 0
 errors / 1 known-good warning (fraction-of-remnant / fraction-of-pool,
 unchanged). TEST look: pending — spent manually.
+
+## Batch 31 (2026-07-13) — enabler 77 cashed in. dev-train 54 -> 57, holdout 23 -> 25.
+
+Run with `base=mining/parked/container-content-bridge-enabler`.
+
+LANDED: 77 (e635cd1) container-content bridge — the enabler, rides with its payoff.
+        78 (c15a73b) superordinate totality asks over same-holder subtype
+        comparatives ("twice as many daughters as sons ... how many children") — +3.
+
+COMPOSITION GATE vs fresh main: SOLVED 3 dev-train + 2 dev-holdout, 0 BROKE,
+0 DECL->WRONG, both SHIP. TEST look #76: 10/1 (90.9%) — precision HELD.
+
+THE TWO-STROKE RHYTHM IS NOW THE METHOD (4 for 4):
+  enabler batch on main (finds the blocker, parks it, 0 coverage)
+  -> payoff batch on that enabler (cashes it in)
+Enabler bases: 66 -> +9, 70 -> +6, 74 -> +6, 77 -> +5. Bare-main coverage batches:
+0 of 10, 0 of 5. A single batch is HALF a cycle; the honest unit of progress is the
+pair. Do not read an enabler batch's 0 coverage as a failed batch.
