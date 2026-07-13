@@ -14,13 +14,13 @@ swing under the constitution (no lexicon in Python, no per-problem parsing,
 every increment through the gates).
 
 **Current numbers (all verified at head):**
-- dev-train: 73 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
+- dev-train: 75 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
 - dev-holdout: 28 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 775 · lint: 0 errors, 1 intended warning
+- curated suite: 52/52 · pytest: 792 · lint: 0 errors, 1 intended warning
 - bench wall: dev-train 16.6s -> 9.0s (trace opt-out) -> 1.7s at `--jobs 12`.
   `--jobs` defaults to 1; spend it in the SERIAL integration tail, never in the
   implementers' gates (they already run concurrently). See the two infra notes below.
-- TEST ledger (93 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- TEST ledger (94 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -4683,3 +4683,26 @@ pre-existing warning: fraction-of-remnant/fraction-of-pool overlap, known-good).
 782 -> 792 (+10 new synthetic tests, plus 2 pre-existing decline-safety assertions
 updated to reflect genuinely-superseded capability).
 **TEST look: pending — spent manually.**
+
+## Batch 43 (2026-07-13) — increments 96, 97. dev-train 73 -> 75.
+
+LANDED (look #94: 11/1, 91.7%, HELD — 96 is 0-SOLVED and rides with its payoff):
+- **96 — capacity-ask overmatch**: modal questions were being HIJACKED from every other
+  consumer by the capacity ask. A precision fix; NEUTRAL on both slices.
+- **97 — attribute-partitioned collections** (colour/type-qualified measure variants). +2.
+
+DEFERRED (integrate-conflict): `qualified-variant-partitions` — conflicted in
+`src/rulekit/data/schemas.py` AND collided on a test FILENAME
+(`tests/test_mining_increment_70.py`, already landed). Branch retained; needs a re-cut
+against the current tip. NOTE the filename collision: juniors number their test file from
+the tip they were cut from, so two candidates in one batch can pick the same increment
+number. The integrator renames on landing, but a cherry-pick of the ORIGINAL branch later
+still carries the old name. Re-cut, don't hand-merge.
+
+FREE FINDING, worth its own increment: `existential-relation-binding` (failed) traced and
+FIXED a genuine **stale-anchor bug** in saturate.py — a relation's standard, when it also
+carries a later event, was anchored on the raw pre-event state instead of the full total.
+Reproduced exactly: "Sam has 2 dogs. Sam buys 4 dogs. Sam has three times as many cats as
+dogs." was 6, correctly 18. The junior proved the fix safe across the full dev gate on its
+own, and says so explicitly — it is "independently valuable regardless of this candidate's
+fate". RE-CUT THIS AS ITS OWN INCREMENT. Branch: `mining/cand-existential-relation-binding`.
