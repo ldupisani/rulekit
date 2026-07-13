@@ -4641,3 +4641,45 @@ review kill, and now 1 of 12 walked). Three independent signals say this class i
 reachable with current machinery. STOP PROPOSING IT until its named blockers land ("each
 one" as a noun; elided-measure events folding as Predication; division premises fused into
 the question sentence).
+
+## Increment 97 (2026-07-13) — attribute-partitioned collections: qualified measure keys
+
+CLASS: attribute-partitioned collections (colour/type-qualified measure variants). The
+engine already computes the attributive modifier: a same-measure collision splits into
+`measure='shirt[blue]'` + `measure_qualifier='blue'` (facts.py admit). But that qualifier
+was a dead end — nothing could address the split variants again. Three coupled gaps, one
+root cause (the qualifier was not part of the measure KEY):
+
+(a) RELATION RESOLUTION dropped the qualifier, so a relation between two qualified
+    variants of the SAME base measure ("Sam has 16 red apples. Sam has 12 more green
+    apples than red apples.") collapsed both sides to base 'apple' and never emitted.
+    Fixed by keying relations on the qualified measure, with a fallback to today's base-
+    measure behaviour when no qualifier exists.
+(b) EXISTENTIAL premises over qualified variants of one base measure CONFLICTED instead
+    of splitting ("There are 16 red apples... There are 28 green apples...") — the
+    qualifier-split collision path the `state` fold already used was not reached by the
+    existential-premise synthesizer. Fixed by routing existential admission through the
+    SAME existing collision-split path (no parallel mechanism).
+(c) BARE-MEASURE ROLL-UP ask ("Sam has 30 red balls. Sam has 36 green balls. How many
+    balls does Sam have?") found no exact fact for the bare measure. Fixed by summing an
+    entity's qualified variants of a base measure when the ask opts in via a new
+    resolves-block flag, `sum_measure_variants: true` — mirroring increment 26's opt-in
+    category-sibling resolution and increment 19's `place_fallback_entity`. This is
+    scoped to the specific ask ids that need it; the single-entity consumer in
+    answer.py is otherwise untouched, per the HANDOFF shared-path invariant.
+
+No lexicon anywhere: colour/type words are never named in Python or as literals beyond
+grammatical skeleton — the mechanism is purely structural over the qualifier the grammar
+already extracts.
+
+FILES: src/rulekit/kernel/answer.py, src/rulekit/kernel/saturate.py,
+src/rulekit/kernel/facts.py, packs/arithmetic/rules/core.yaml,
+tests/test_mining_increment_97.py.
+
+GATE (integrated, staging tip): dev-train diff SHIP (+2 SOLVED / 0 BROKE / 0 DECL->WRONG,
+75 correct, 3772 items, 100% precision). dev-holdout diff NEUTRAL (0 SOLVED / 0 BROKE /
+0 DECL->WRONG, 28 correct, 3701 items, 100% precision). Suite 52/52. Lint 0 errors (1
+pre-existing warning: fraction-of-remnant/fraction-of-pool overlap, known-good). pytest
+782 -> 792 (+10 new synthetic tests, plus 2 pre-existing decline-safety assertions
+updated to reflect genuinely-superseded capability).
+**TEST look: pending — spent manually.**

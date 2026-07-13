@@ -67,14 +67,25 @@ rules:
       has") can anchor a relation too — the fold and the combined-ask
       consumer already resolve entity keys generally (a bare common-noun
       holding folds fine on its own); only the relation rules themselves
-      required a name. `distinct: [item, std]` blocks a DIFFERENT
-      collision the widening opens up: "has 2 fewer animal stickers than
-      flower stickers" bare-folds `item` and `std` to the SAME measure
-      lemma ('sticker') — that sentence compares two MEASURES of the
+      required a name. `distinct_measure: [item, std]` (mining candidate
+      qualified-measure-keys, patterns.py's qualifier-aware sibling of
+      `distinct`) blocks a DIFFERENT collision the widening opens up: "has
+      2 fewer animal stickers than flower stickers" bare-folds `item` and
+      `std` to the SAME measure lemma ('sticker') with the SAME (absent)
+      qualifier on both sides — that sentence compares two MEASURES of the
       speaker's own holding (elliptical for "than [he has] flower
       stickers"), not two holders' quantities of one measure, and must
       keep declining rather than mint a self-referential Relation whose
-      standard IS the measure being counted.
+      standard IS the measure being counted. A pair that shares the lemma
+      but carries two DIFFERENT non-null qualifiers ("12 more GREEN apples
+      than RED apples") is NOT that self-reference — it is two
+      attribute-qualified variants of the SAME holder's own measure — and
+      is deliberately let through: `measure_qualifier`/`standard_qualifier`
+      below carry each side's own qualifier so saturate.py's same-holder
+      subtype branch can resolve the standard against the SPECIFIC
+      qualified sibling and tag the derived quantity with its own
+      qualifier, letting facts.py's existing measure-qualifier collision
+      split (increment 70) re-key both cleanly instead of colliding.
     match:
       sentence:
         - {slot: who, type: entity}
@@ -94,13 +105,15 @@ rules:
         - {slot: std, type: entity}
     where:
       - distinct: [who, std]
-      - distinct: [item, std]
+      - distinct_measure: [item, std]
     consumes: [n]
     emits:
       - fact: relation
         subject: "{who}"
         standard: "{std}"
         measure: "{item}"
+        measure_qualifier: "{item.qualifier}"
+        standard_qualifier: "{std.qualifier}"
         factor: 1.0
         offset: "n * sign(dir)"
         verb: "{verb}"
@@ -252,8 +265,9 @@ rules:
       count has already condensed into the noun, and the direction word
       follows it. Same Relation fact as the prefix form. `who`/`std,
       type: entity` (mining candidate common-noun-relation-subjects):
-      same widening and same `distinct: [item, std]` self-referential
-      guard as arithmetic/anchored-relation — see its comment.
+      same widening and same `distinct_measure: [item, std]` qualifier-
+      aware self-referential guard as arithmetic/anchored-relation — see
+      its comment (mining candidate qualified-measure-keys).
     match:
       sentence:
         - {slot: who, type: entity}
@@ -267,13 +281,15 @@ rules:
         - {slot: std, type: entity}
     where:
       - distinct: [who, std]
-      - distinct: [item, std]
+      - distinct_measure: [item, std]
     consumes: [item]
     emits:
       - fact: relation
         subject: "{who}"
         standard: "{std}"
         measure: "{item}"
+        measure_qualifier: "{item.qualifier}"
+        standard_qualifier: "{std.qualifier}"
         factor: 1.0
         offset: "item * sign(dir)"
         verb: "{verb}"
@@ -1168,7 +1184,16 @@ rules:
     phase: read
     description: >
       "There are 15 trees in the grove" — a located existential: the place
-      holds the counted noun as a state quantity.
+      holds the counted noun as a state quantity. `measure_qualifier:
+      "{item.qualifier}"` (mining candidate qualified-measure-keys): the
+      SVO fold has carried this since increment 70 (learn.py's `_qualifier`
+      helper at every emission site) but this existential premise never
+      did — "There are 16 red apples in a bowl. There are 28 green apples
+      in the bowl." both bare-fold to measure='apple' with NO qualifier at
+      all, so facts.py's admit-time qualifier split (which requires BOTH
+      sides non-null) never engages and the two counts genuinely conflict
+      instead of splitting into 'apple[red]'/'apple[green]'. Byte-identical
+      whenever `item` carries no qualifier (the overwhelming existing case).
     match:
       sentence:
         - {lit: there}
@@ -1183,6 +1208,7 @@ rules:
       - fact: quantity
         entity: "{place}"
         measure: "{item}"
+        measure_qualifier: "{item.qualifier}"
         value: "item"
         verb: have
 
@@ -1225,6 +1251,7 @@ rules:
       - fact: quantity
         entity: "{place}"
         measure: "{item}"
+        measure_qualifier: "{item.qualifier}"
         value: "item"
         verb: have
 
@@ -1248,6 +1275,7 @@ rules:
       - fact: quantity
         entity: world
         measure: "{item}"
+        measure_qualifier: "{item.qualifier}"
         value: "item"
         verb: have
 
@@ -2230,6 +2258,16 @@ asks:
       measure: "{item}"
       verb: have
       place_fallback_entity: world
+      # mining candidate qualified-measure-keys, gap (b): "There are 16 red
+      # apples in a bowl. There are 28 green apples in the bowl. How many
+      # apples are in the bowl?" — both existential premises now carry
+      # `measure_qualifier` (see arithmetic/existential-premise's own
+      # comment), so facts.py's admit-time split re-keys them into
+      # 'apple[red]'/'apple[green]' instead of conflicting; this bare
+      # "how many apples" ask sums the qualified siblings the same opt-in
+      # way ask/how-many-entity does — see `_qualified_variant_total`'s
+      # decline-safety docstring.
+      sum_measure_variants: "true"
 
   - id: ask/how-many-combined
     match:
@@ -2337,6 +2375,22 @@ asks:
       entity: "{who}"
       measure: "{item}"
       verb: "{verb}"
+      # mining candidate qualified-measure-keys: `item`'s OWN qualifier
+      # feature (condense.py merge-attribute/merge-compound — "how many
+      # GREEN apples does Sam have?"), a no-op empty string whenever the
+      # item noun carries no adjective. Retries the exact qualified key
+      # ("apple[green]") when the bare fold comes back empty, and scopes
+      # the bare fallback to compatible siblings only — see the
+      # single-entity consumer's own comment.
+      measure_qualifier: "{item.qualifier}"
+      # opt-in per this ask id only (mining candidate qualified-measure-
+      # keys, mirroring increment 26/19's opt-in fallback flags): "how many
+      # balls does Sam have?" over 'red'/'green' qualified siblings with
+      # no bare 'ball' fact of its own sums them, but ONLY once every
+      # other lookup above has already come back empty and only for a
+      # BARE (non-qualifier) ask — see `_qualified_variant_total`'s own
+      # decline-safety docstring.
+      sum_measure_variants: "true"
       # NOT given a partitive tail (mining candidate
       # partitive-measure-ask-slot considered it and DROPPED it): "how many
       # OUNCES of milk does James have left?" over premises stating a

@@ -32,14 +32,23 @@ common noun is the STANDARD.
 
 Each widened rule also gained a `distinct: [item, std]` where-clause: the
 widening opens a DIFFERENT collision the mechanism must reject -- "has 2
-fewer animal stickers than flower stickers" bare-folds `item` and `std` to
-the SAME measure lemma ('sticker'), because that sentence compares two
-MEASURES of the speaker's own holding (elliptical for "than [he has] flower
-stickers"), not two holders' quantities of one measure. Without the guard
-this mints a self-referential Relation whose standard IS the measure being
-counted (caught on dev-train during landing: "Victor has 8 flower stickers.
-He has 2 fewer animal stickers than flower stickers." previously declined,
-would otherwise become confident-wrong).
+fewer stickers than stickers" bare-folds `item` and `std` to the SAME
+measure lemma AND the same (absent) qualifier ('sticker'), a genuine
+self-reference -- comparing a measure to itself, not two holders'
+quantities. Without the guard this mints a self-referential Relation whose
+standard IS the measure being counted (caught on dev-train during landing).
+
+UPDATE (mining candidate qualified-measure-keys): `distinct: [item, std]`
+was later split into two predicates -- the plain `distinct` above stays for
+`who`/`std` (entity-holder identity, unchanged), while `item`/`std` moved to
+the qualifier-aware `distinct_measure` (patterns.py): a pair sharing the
+bare lemma but carrying two DIFFERENT non-null qualifiers ("2 fewer ANIMAL
+stickers than FLOWER stickers") is NOT the self-reference this guard
+exists to block -- it is two attribute-qualified variants of the SAME
+holder's own measure, and now correctly resolves and sums (see
+tests/test_mining_qualified_measure_keys.py). Only a lemma match with
+agreeing (or absent) qualifiers on both sides still declines, exercised by
+`test_common_noun_relation_self_reference_declines` below.
 
 Synthetic only.
 """
@@ -114,15 +123,22 @@ def test_possessive_common_noun_subject_fraction_as_many(full_registry):
 
 
 def test_common_noun_relation_self_reference_declines(full_registry):
-    # decline-safety: "N fewer ITEM1 than ITEM2" bare-folds item and std to
-    # the same measure lemma ('sticker') -- comparing two measures of the
-    # SAME holding, not two holders' quantities. The `distinct: [item,
-    # std]` guard must keep this declined, never mint a self-referential
-    # Relation whose standard is the measure itself.
+    # decline-safety: "N fewer ITEM than ITEM" bare-folds item and std to
+    # the SAME measure lemma ('sticker') AND the same (absent) qualifier --
+    # a genuine self-reference, "comparing a measure to itself", not two
+    # attribute-qualified variants. `distinct_measure: [item, std]` (mining
+    # candidate qualified-measure-keys, patterns.py's qualifier-aware
+    # sibling of `distinct`) must keep THIS declined, never mint a
+    # self-referential Relation whose standard is the measure itself.
+    #
+    # (A qualifier-DIFFERENTIATED pair sharing the same bare lemma --
+    # "2 fewer ANIMAL stickers than FLOWER stickers" -- is NOT this shape:
+    # it is two variants of the same holder's own measure, and mining
+    # candidate qualified-measure-keys' relation resolution now correctly
+    # resolves and sums it; see tests/test_mining_qualified_measure_keys.py.)
     r = solve(
-        "Victor has 8 flower stickers. He has 2 fewer animal stickers "
-        "than flower stickers. How many stickers does Victor have in "
-        "total?",
+        "Victor has 8 stickers. He has 2 fewer stickers than stickers. "
+        "How many stickers does Victor have in total?",
         full_registry,
     )
     assert r.answer.kind == "decline"

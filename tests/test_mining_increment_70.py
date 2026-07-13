@@ -100,18 +100,22 @@ def test_bare_total_different_verb_from_qualified_parts_still_declines(full_regi
     assert not r.answer.committed
 
 
-def test_split_without_wired_ask_still_declines_safely(full_registry):
-    # the split itself is scoped to fact ADMISSION only (no consumer
-    # change): two qualified state-quantities split cleanly (no collision)
-    # but a question asking for ONE qualified subset has no consumer wired
-    # to read `measure_qualifier` yet, so it must decline rather than guess
-    # — never silently answer with the bare, unqualified-ask total either.
+def test_qualified_subset_ask_now_resolves(full_registry):
+    # UPDATE (mining candidate qualified-measure-keys): this increment's
+    # own split was scoped to fact ADMISSION only — no consumer read
+    # `measure_qualifier` yet, so a question asking for ONE qualified
+    # subset used to decline rather than guess. qualified-measure-keys
+    # wires exactly that consumer (ask/how-many-entity's
+    # `measure_qualifier: "{item.qualifier}"`), so this now correctly
+    # answers the stated 'red' subset directly, never the bare
+    # unqualified total (5, the 'green' sibling, is never reachable here).
     r = solve(
         "Nadia has 12 red marbles and 5 green marbles. "
         "How many red marbles does Nadia have?",
         full_registry,
     )
-    assert not r.answer.committed
+    assert r.answer.committed
+    assert r.answer.value == 12
 
 
 def test_unqualified_folding_is_unaffected(full_registry):

@@ -181,13 +181,29 @@ class WherePredicate(StrictModel):
 
     same_lemma: list[str] | None = None
     distinct: list[str] | None = None
+    # mining candidate qualified-measure-keys: the SAME self-reference
+    # guard as `distinct` (lemma, label), plus each slot's own `qualifier`
+    # feature (condense.py merge-attribute/merge-compound) — "12 more
+    # GREEN apples than RED apples" bare-folds item/std to lemma 'apple'
+    # but carries two DIFFERENT qualifiers, so it is NOT the self-
+    # referential "compares a measure to itself" shape `distinct` exists to
+    # block; two bare (qualifier-less) units still collide exactly as
+    # `distinct` always has. A SEPARATE predicate name, not a widening of
+    # `distinct` itself: `distinct: [who, std]` (entity-holder identity)
+    # must keep its exact pre-existing behavior everywhere it is already
+    # used — this is opt-in per rule, applied only where a measure-noun
+    # slot pair (`item`/`std`) needs the qualifier-aware comparison.
+    distinct_measure: list[str] | None = None
     name_count: dict[str, int] | None = None  # {"exactly": 2}
     absent: dict[str, str] | None = None  # {"cat": name} — no such word in sentence
 
     @model_validator(mode="after")
     def _one(self) -> "WherePredicate":
         set_ = [
-            v for v in (self.same_lemma, self.distinct, self.name_count, self.absent)
+            v for v in (
+                self.same_lemma, self.distinct, self.distinct_measure,
+                self.name_count, self.absent,
+            )
             if v is not None
         ]
         if len(set_) != 1:

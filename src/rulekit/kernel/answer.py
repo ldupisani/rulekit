@@ -423,6 +423,50 @@ def _superordinate_total(
     return evaluate(" + ".join(parts), {}, log, source="superordinate-total")
 
 
+def _qualified_variant_total(
+    store: FactStore, reg: Registry, entity: str, measure: str, log: ArithmeticLog
+) -> float | None:
+    """Bare-measure roll-up over attribute-qualified measure variants
+    (mining candidate qualified-measure-keys, gap (c)): 'Sam has 30 red
+    balls. Sam has 36 green balls. How many balls does Sam have?' — no
+    bare 'ball' fact exists (facts.py's admit-time measure-qualifier split,
+    increment 70, already re-keyed both into 'ball[red]'/'ball[green]'),
+    so the ordinary bare-key lookup the `single-entity` consumer already
+    tries comes back empty. Reached ONLY once that lookup (and every other
+    fallback) has already failed, and only for an ask that opted in via
+    `sum_measure_variants` (never a blanket widening of this consumer —
+    the HANDOFF shared-path invariant).
+
+    Every `measure[qualifier]` sibling this ENTITY holds is summed via
+    `_entity_total` (so an ambiguous per-sibling fold — mixed times,
+    unsigned events — declines the WHOLE aggregate, exactly like
+    `_purchase_total`/`_superordinate_total`: definitive or decline,
+    never a partial sum). Fewer than two siblings is not a roll-up at
+    all — a single qualified fact answering a bare-measure ask would
+    silently assume no other variant exists — so this declines rather
+    than guess. A stated `GroupTotal` for the same bare measure means the
+    document already names an explicit total some OTHER mechanism should
+    reconcile against (mirroring the existing distributive-each guard
+    elsewhere in this module): summing the qualified variants here too
+    would risk double-counting against it, so this declines instead."""
+    if any(g.measure == measure for g in store.by_kind(GroupTotal)):
+        return None
+    prefix = f"{measure}["
+    siblings = sorted({
+        q.measure for q in store.by_kind(Quantity)
+        if q.entity == entity and q.measure.startswith(prefix) and q.measure.endswith("]")
+    })
+    if len(siblings) < 2:
+        return None
+    parts: list[str] = []
+    for sibling in siblings:
+        subtotal = _entity_total(store, reg, entity, sibling, log)
+        if subtotal is None:
+            return None
+        parts.append(str(subtotal))
+    return evaluate(" + ".join(parts), {}, log, source="qualified-variant-total")
+
+
 def _combined_holder_totals(
     store: FactStore, reg: Registry, query: dict, log: ArithmeticLog,
     *, exclude_entity: str | None = None,
@@ -555,6 +599,15 @@ def answer(
         # `entity_owner`/`entity_qualifier` (each comes from a distinct ask
         # id), so the two never compete for the same query.
         qualifier = query.get("entity_qualifier")
+        # mining candidate qualified-measure-keys: the MEASURE-side mirror
+        # of `qualifier` above, one field over — "how many GREEN apples
+        # does Sam have?" resolves the bare measure ("apple") the same way
+        # UNLESS a same-key VALUE conflict forced facts.py to re-key it to
+        # "apple[green]" (increment 70). Read off the ask's OWN `item`
+        # token's qualifier feature (bound only on ask ids that opt in via
+        # `measure_qualifier: "{item.qualifier}"` — a no-op empty string
+        # everywhere else), never the entity-level `entity_qualifier`.
+        measure_qualifier = query.get("measure_qualifier")
         singular = _resolve_measure(measure, store, reg)
         if singular is None:
             return Answer("decline", None,
@@ -583,6 +636,20 @@ def answer(
                 q for q in store.by_kind(Quantity)
                 if q.qualifier is None or q.qualifier == qualifier
             ])
+        # mining candidate qualified-measure-keys: scopes the generic
+        # bare-measure fallback to compatible siblings only, exactly like
+        # `qualifier_store` above but keyed on `measure_qualifier` instead
+        # of `qualifier` — a bare 'apple' fact tagged 'red' must NEVER
+        # answer a question asking specifically about GREEN apples just
+        # because a same-key collision never happened to force the split.
+        measure_qualifier_store = store
+        if measure_qualifier:
+            measure_qualifier_store = FactStore(facts=[
+                q for q in store.by_kind(Quantity)
+                if q.measure != singular
+                or q.measure_qualifier is None
+                or q.measure_qualifier == measure_qualifier
+            ])
         ask_verb = query.get("verb", "have")
         is_state_ask = ask_verb in ("have", "be") or reg.word_in_category(ask_verb, "state")
         if not is_state_ask:
@@ -596,8 +663,14 @@ def answer(
             )
             if total is None and qualifier:
                 total = _verb_total(store, f"{entity}[{qualifier}]", singular, ask_verb, log)
+            if total is None and measure_qualifier:
+                total = _verb_total(store, entity, f"{singular}[{measure_qualifier}]", ask_verb, log)
             if total is None:
-                scoped = owner_store if owner else qualifier_store
+                scoped = (
+                    owner_store if owner
+                    else qualifier_store if qualifier
+                    else measure_qualifier_store
+                )
                 total = _verb_total(scoped, entity, singular, ask_verb, log)
             if total is not None:
                 return Answer("number", total, f"Σ {ask_verb!r} events of {entity!r}/{singular!r}")
@@ -640,9 +713,30 @@ def answer(
         total = _entity_total(store, reg, f"{entity}[{owner}]", singular, log) if owner else None
         if total is None and qualifier:
             total = _entity_total(store, reg, f"{entity}[{qualifier}]", singular, log)
+        if total is None and measure_qualifier:
+            # mining candidate qualified-measure-keys: the exact qualified
+            # key first (the conflict-split case) — mirrors the owner/
+            # entity_qualifier two-lookup shape above, keyed on the
+            # MEASURE's own qualifier instead of the entity's.
+            total = _entity_total(store, reg, entity, f"{singular}[{measure_qualifier}]", log)
         if total is None:
-            scoped = owner_store if owner else qualifier_store
+            scoped = (
+                owner_store if owner
+                else qualifier_store if qualifier
+                else measure_qualifier_store
+            )
             total = _entity_total(scoped, reg, entity, singular, log)
+        if total is None and query.get("sum_measure_variants") and not measure_qualifier:
+            # gap (c), mining candidate qualified-measure-keys: "Sam has 30
+            # red balls. Sam has 36 green balls. How many balls does Sam
+            # have?" — no bare 'ball' fact exists (facts.py's admit-time
+            # qualifier split already re-keyed both into
+            # 'ball[red]'/'ball[green]'), so every lookup above comes back
+            # empty. Opt-in per ask id (never a blanket widening of this
+            # consumer) and only for a BARE ask (`not measure_qualifier`):
+            # a question naming one SPECIFIC variant must never silently
+            # roll up every colour instead.
+            total = _qualified_variant_total(store, reg, entity, singular, log)
         fallback_entity = query.get("place_fallback_entity")
         if total is None and fallback_entity:
             # decline-safe fallback (mining candidate complement-labeled-

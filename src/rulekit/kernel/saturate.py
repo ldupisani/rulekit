@@ -160,6 +160,34 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
     # unchanged (facts.py's `replace()` only ever touches `entity`).
     labeled_quantities: dict[tuple[str, str, str], Quantity] = {}
     by_verb_labeled: set[tuple[str, str, str, str]] = set()
+    # mining candidate qualified-measure-keys: a THIRD, qualifier-keyed
+    # index beside the bare-entity and label ones above — read ONLY when a
+    # relation's own `measure_qualifier`/`standard_qualifier` is set, never
+    # consulted for an ordinary unqualified relation, so every existing
+    # relation's resolution path stays untouched byte-for-byte. Keyed on
+    # the entity and the measure's BARE lemma (stripped of any
+    # `[qualifier]` suffix facts.py's collision-time re-key may already
+    # have applied — the SAME base-lemma stripping `labeled_quantities`
+    # above uses for `entity`, one field over for `measure`), so a lookup
+    # succeeds whether or not the target quantity has collided with a
+    # same-lemma sibling yet.
+    qualified_quantities: dict[tuple[str, str, str], Quantity] = {}
+    by_verb_qualified: set[tuple[str, str, str, str]] = set()
+    # mining candidate qualified-measure-keys: which (entity, base measure)
+    # pairs ALREADY have a collision-split `measure[qualifier]` sibling in
+    # the store, read by the same-holder subtype branches below to decide
+    # whether a NEWLY derived sibling must be emitted PRE-bracketed. A 3+
+    # way qualified chain ("12 pink pens" -> derive green -> derive blue")
+    # only ever pairwise-collides ONCE: once pink/green have already split
+    # to 'pen[pink]'/'pen[green]', a THIRD bare-'pen' fact for blue no
+    # longer shares either sibling's key at all and would never collide
+    # (and so never split) via facts.py's ordinary same-key admission path
+    # — it would silently sit alongside them as an orphan bare-keyed
+    # holding, and the fold would answer from ONE sibling instead of all
+    # three. Emitting the THIRD-plus sibling already bracketed sidesteps
+    # this: it lands with its own distinct key from the start, alongside
+    # its already-split siblings, with nothing left to collide over.
+    already_split_bases: set[tuple[str, str]] = set()
     for q in store.by_kind(Quantity):
         quantities.setdefault((q.entity, q.measure), q)
         by_verb.add((q.entity, q.measure, verb_key(q.verb)))
@@ -172,6 +200,43 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
             by_verb_labeled.add((base, q.measure, verb_key(q.verb), q.label))
             if q.is_state:
                 labeled_quantities[(base, q.measure, q.label)] = q
+        if q.measure_qualifier:
+            base_measure = q.measure.split("[", 1)[0]
+            qualified_quantities.setdefault((q.entity, base_measure, q.measure_qualifier), q)
+            by_verb_qualified.add(
+                (q.entity, base_measure, verb_key(q.verb), q.measure_qualifier)
+            )
+            if q.is_state:
+                qualified_quantities[(q.entity, base_measure, q.measure_qualifier)] = q
+        if "[" in q.measure:
+            already_split_bases.add((q.entity, q.measure.split("[", 1)[0]))
+
+    def qualified_lookup(
+        entity: str, measure: str, measure_qualifier: str | None
+    ) -> Quantity | None:
+        """Resolve (entity, measure) against an OPTIONAL measure qualifier
+        (mining candidate qualified-measure-keys) — the SAME-HOLDER
+        SUBTYPE branches' own mirror of `anchor_measure`'s `label`
+        parameter, one field over. An exact qualified sibling (the
+        collision-split `measure[qualifier]` key, or the still-unsplit
+        bare fact that already carries this SAME qualifier) resolves;
+        a bare fact carrying a DIFFERENT non-null qualifier is a
+        genuinely mismatched sibling and must NOT resolve — never borrow
+        the wrong colour's count."""
+        if measure_qualifier:
+            exact = qualified_quantities.get((entity, measure, measure_qualifier))
+            if exact is not None:
+                return exact
+        bare = quantities.get((entity, measure))
+        if bare is None:
+            return None
+        if (
+            measure_qualifier
+            and bare.measure_qualifier
+            and bare.measure_qualifier != measure_qualifier
+        ):
+            return None
+        return bare
 
     def anchor_measure(
         entity: str, measure: str, label: str | None = None
@@ -365,19 +430,50 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
         # cyclic pair decline rather than diverge: with no base-case
         # Quantity anywhere in the chain, neither side is ever found by
         # this lookup, so nothing is ever emitted for it.
-        subtype_known = quantities.get((rel.subject, rel.standard))
-        if (
-            subtype_known is not None
-            and (rel.subject, rel.measure, verb_key(rel.verb)) not in by_verb
-        ):
+        #
+        # `qualified_lookup` (mining candidate qualified-measure-keys),
+        # not the bare `quantities.get`, when `rel.standard_qualifier` is
+        # set: "Sam has 16 red apples. Sam has 12 more green apples than
+        # red apples" bare-folds subject/standard to the SAME lemma
+        # 'apple' — the standard must resolve against the SPECIFIC
+        # qualified sibling ('apple' tagged 'red'), never an arbitrary
+        # same-lemma one. The re-derivation guard mirrors `by_verb_labeled`
+        # one field over: a QUALIFIED relation checks the qualifier-keyed
+        # index instead of the bare one, so deriving the 'green' sibling
+        # is never blocked merely because the (unrelated) 'red' sibling
+        # already occupies the same bare key under the same verb — every
+        # UNQUALIFIED relation (the overwhelming existing case) keeps the
+        # exact original `by_verb` check, byte-identical.
+        subtype_known = qualified_lookup(rel.subject, rel.standard, rel.standard_qualifier)
+        already_derived = (
+            (rel.subject, rel.measure, verb_key(rel.verb), rel.measure_qualifier) in by_verb_qualified
+            if rel.measure_qualifier
+            else (rel.subject, rel.measure, verb_key(rel.verb)) in by_verb
+        )
+        if subtype_known is not None and not already_derived:
             value = evaluate(
                 f"{rel.factor} * {subtype_known.value} + {rel.offset}", {}, log,
                 source=f"relation-subtype:{rel.provenance.source}",
             )
+            # a 3+-way qualified chain (mining candidate qualified-measure-
+            # keys): once (subject, measure) already has a collision-split
+            # sibling in the store, a bare-keyed emission here would never
+            # collide with it (different key entirely) and so would never
+            # get bracketed — pre-bracket it instead, landing it alongside
+            # its siblings with nothing left to collide over. The first
+            # sibling of a pair (no split yet) stays bare, letting facts.py's
+            # ordinary same-key admission perform that FIRST split exactly
+            # as before this candidate existed.
+            derived_measure = (
+                f"{rel.measure}[{rel.measure_qualifier}]"
+                if rel.measure_qualifier and (rel.subject, rel.measure) in already_split_bases
+                else rel.measure
+            )
             out.append(
                 Quantity(
                     provenance=Provenance(source="synth/relation", sentence=rel.provenance.sentence),
-                    entity=rel.subject, measure=rel.measure, value=value, verb=rel.verb,
+                    entity=rel.subject, measure=derived_measure, value=value, verb=rel.verb,
+                    measure_qualifier=rel.measure_qualifier or None,
                 )
             )
             continue
@@ -417,21 +513,47 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
         # unique-in-play, never-guess discipline as every other branch
         # here: a zero factor, or a (subject, standard) pair already
         # resolved under this verb, skips rather than re-derives.
-        subject_known = quantities.get((rel.subject, rel.measure))
+        #
+        # `qualified_lookup`, not the bare `quantities.get` (mining
+        # candidate qualified-measure-keys): when `rel.measure` and
+        # `rel.standard` bare-fold to the SAME lemma with two DIFFERENT
+        # qualifiers ("50 fewer BASEBALL cards than FOOTBALL cards" —
+        # `is_subtype_standard` reads exactly true for this shape, same
+        # lemma, no labels, single subject), the bare lookup would happily
+        # grab ANY other same-lemma sibling holding this entity has (e.g.
+        # an unrelated 'hockey' card count) and treat it as the subject's
+        # OWN 'baseball' quantity — a genuine confident-wrong. The
+        # qualifier-aware lookup correctly returns None instead (no
+        # 'baseball' quantity is actually known), declining this hop
+        # exactly like the unqualified branch already declines an
+        # unresolvable one. Every UNQUALIFIED relation keeps the exact
+        # original bare-lookup result, byte-identical.
+        subject_known = qualified_lookup(rel.subject, rel.measure, rel.measure_qualifier)
+        already_inverse_derived = (
+            (rel.subject, rel.standard, verb_key(rel.verb), rel.standard_qualifier) in by_verb_qualified
+            if rel.standard_qualifier
+            else (rel.subject, rel.standard, verb_key(rel.verb)) in by_verb
+        )
         if (
             subject_known is not None
             and rel.factor != 0
             and is_subtype_standard(rel)
-            and (rel.subject, rel.standard, verb_key(rel.verb)) not in by_verb
+            and not already_inverse_derived
         ):
             value = evaluate(
                 f"({subject_known.value} - {rel.offset}) / {rel.factor}", {}, log,
                 source=f"relation-subtype-inverse:{rel.provenance.source}",
             )
+            derived_standard_measure = (
+                f"{rel.standard}[{rel.standard_qualifier}]"
+                if rel.standard_qualifier and (rel.subject, rel.standard) in already_split_bases
+                else rel.standard
+            )
             out.append(
                 Quantity(
                     provenance=Provenance(source="synth/relation", sentence=rel.provenance.sentence),
-                    entity=rel.subject, measure=rel.standard, value=value, verb=rel.verb,
+                    entity=rel.subject, measure=derived_standard_measure, value=value, verb=rel.verb,
+                    measure_qualifier=rel.standard_qualifier or None,
                 )
             )
             continue

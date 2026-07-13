@@ -340,11 +340,38 @@ class Relation(Fact):
     # fields None) relation's key tuple.
     subject_label: str | None = None
     standard_label: str | None = None
+    # the attributive modifier of `measure`/`standard`, when the relation's
+    # own ITEM or STANDARD noun was merged from ADJECTIVE+NOUN or NOUN+NOUN
+    # (condense.py merge-attribute / merge-compound) — mining candidate
+    # qualified-measure-keys, the Relation-side mirror of Quantity.
+    # measure_qualifier (increment 70), one field over: "Sam has 16 red
+    # apples. Sam has 12 more green apples than red apples" bare-folds
+    # `item`/`std` to the SAME lemma 'apple' (patterns.py's qualifier-aware
+    # `distinct_measure` where-predicate is what lets this rule match at
+    # all instead of declining as self-referential); with no qualifier
+    # carried through the Relation fact, saturate.py's same-holder subtype
+    # branch had no way to (a) resolve the STANDARD side against the
+    # SPECIFIC qualified sibling quantity (never an arbitrary same-lemma
+    # one — the exact discipline `standard_label` already established for
+    # index labels) or (b) tag the derived subject Quantity with its own
+    # qualifier so a later same-key collision re-keys cleanly instead of
+    # colliding null-vs-non-null (facts.py's own guard against exactly that
+    # laundering). Included in `key()`, same reasoning as `subject_label`/
+    # `standard_label`: two DIFFERENT qualified relations sharing a bare
+    # subject/standard/measure/verb ("12 more green apples than red
+    # apples" + "5 fewer blue apples than red apples") must not quarantine
+    # each other as a same-key value disagreement. Every existing relation
+    # rule that never emits these two fields keeps both None — a byte-
+    # identical key() tuple for every relation shipped before this field
+    # existed.
+    measure_qualifier: str | None = None
+    standard_qualifier: str | None = None
 
     def key(self) -> tuple:
         return (
             "relation", self.subject, self.subject_label,
-            self.standard, self.standard_label, self.measure, self.verb,
+            self.standard, self.standard_label, self.measure,
+            self.measure_qualifier, self.standard_qualifier, self.verb,
         )
 
     def value_part(self) -> Any:

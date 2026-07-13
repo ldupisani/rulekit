@@ -280,6 +280,28 @@ def _check_where(
             ]
             if len(values) != len(set(values)):
                 return False
+        if pred.distinct_measure is not None:
+            # mining candidate qualified-measure-keys: the (lemma, label)
+            # pair from `distinct` above, PLUS each slot's own `qualifier`
+            # feature — "12 more green apples than red apples" shares
+            # lemma 'apple' and label None on both sides but carries two
+            # DIFFERENT non-null qualifiers ('green' vs 'red'), so this is
+            # NOT the self-referential "compares a measure to itself" shape
+            # (lemma, label, qualifier) all matching still blocks (a bare,
+            # unqualified repeat, or two qualifiers that happen to agree,
+            # is genuinely self-referential); only rules that opt into this
+            # predicate (instead of plain `distinct`) get the widened
+            # comparison — `distinct: [who, std]` elsewhere is untouched.
+            values = [
+                (
+                    _lemma_of(slots[s]),
+                    slots[s].features.get("label"),
+                    slots[s].features.get("qualifier"),
+                )
+                for s in pred.distinct_measure if s in slots
+            ]
+            if len(values) != len(set(values)):
+                return False
         if pred.absent is not None:
             cat = pred.absent["cat"]
             for u in reading.units:
