@@ -122,6 +122,13 @@ categories:
   vehicle:
     parent: noun
 members:
+  # mining candidate sum-constraint-premise-surfaces: 'age' is a difg-mined
+  # lexicon word (packs/difg-mined/lexicon/a-f.yaml); the category itself
+  # (parent/notes) is declared in core-english (packs/core-english/
+  # categories/core.yaml — see that file's notes for the full mechanism),
+  # mirroring 'child'/'toy'/'fish' below.
+  age_noun:
+  - age
   # subtype-total-asks (mining candidate): the difg-mined-only member words
   # of the core-english superordinate categories 'child'/'toy'/'fish'
   # (packs/core-english/categories/core.yaml — see that file's notes for

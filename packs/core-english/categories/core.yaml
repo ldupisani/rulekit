@@ -71,6 +71,23 @@ categories:
       `interchangeable` because denominations name the same stuff — the ONLY
       category allowed to resolve a factless ask noun to its in-store
       sibling (cat/dog in 'animal' must never stand in for each other).
+  age_noun:
+    parent: noun
+    notes: >
+      mining candidate sum-constraint-premise-surfaces: the noun 'age'
+      (singular lemma; 'ages' collapses onto it via the ordinary plural
+      mapping) — gates the sum-constraint premise surfaces that state an
+      AGE total ("the sum of their ages is N", "a combined age of N") so
+      they can emit the same DATA measure 'year' the age family already
+      commits to everywhere else (arithmetic/stated-age, ask/how-old-is),
+      never a bare 'age' measure key nothing else in the age family would
+      ever match. Scoped to exactly this one word — a separate class from
+      'age_comparative' (the comparative ADJECTIVES 'older'/'younger'),
+      which anchors a Relation, not a group total. Same structural-only
+      definition as 'child'/'fish' above: the word 'age' itself is a
+      difg-mined lexicon entry, so its membership lives in packs/difg-
+      mined/categories/semantic.yaml, not here (the shared core-english +
+      arithmetic-only test registry never sees it and must not need to).
   aggregate_noun:
     parent: noun
     notes: "'the NUMBER of X' / 'the AMOUNT of X' — frame nouns for ratio rules"

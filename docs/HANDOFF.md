@@ -4542,3 +4542,45 @@ GATE: dev-train diff SOLVED 1 (a18c0df9ca3e) / BROKE 0 / DECL->WRONG 0 — VERDI
 correct unchanged). Suite 52/52. Lint 0 errors (1 pre-existing warning: fraction-of-
 remnant/fraction-of-pool overlap, known-good). pytest 757 -> 765 (+8).
 **TEST look: pending — spent manually.**
+
+## Increment 95 (2026-07-13) — sum-constraint premise surfaces
+
+CLASS: a stated group total phrased through one of three constraint-premise surfaces
+that previously emitted no `group_total` fact at all — "the sum of their AGES is N"
+(copular sum-of), a LEADING bare-aggregate marker ("Together, they have N ITEM" /
+"weigh" — no literal "in total" required), and an aggregate-qualified dimension NP
+("a combined AGE of N") — all feeding the pre-existing, UNCHANGED synth/sum-constraint
+2x2 linear-system solver.
+
+PROVEN on unmodified main via minimal-pair surface rewrite: "X is 4 years older than
+Y. They have a combined total of 34 years. How old is X?" commits 19.0, while the
+identical problem phrased "If the sum of their ages is 34" declined; same for
+"Together, they have $150" and "a combined age of 132" (items 5cc8bffa10ee,
+214d78085390, 56d24a8643cc).
+
+MECHANISM: YAML-first, no new fact kind, no new consumer, no new ask shape.
+`packs/arithmetic/rules/core.yaml` gains three pattern rules all emitting the existing
+`group_total` fact: `arithmetic/group-total-leading-marker` (the existing
+group-total-leading tail, fronted by a bare `cat: aggregate` marker instead of the
+literal "in total"), `arithmetic/group-total-sum-of-age` (copular "the sum of their
+ages is N", gated on a new single-word `age_noun` category), and
+`arithmetic/group-total-of-age` (generalizes group-total-of's literal 'total' to the
+full `aggregate` category, restricted to `age_noun`). New category `age_noun` added to
+`packs/core-english/categories/core.yaml`, mirrored into
+`packs/difg-mined/categories/semantic.yaml`. Every new surface keeps the established
+double-count discipline: the matched value is `consumes:`d, suppressing learn.py's
+per-entity fold for that clause. Also touches `src/rulekit/kernel/saturate.py`:
+synth/sum-constraint's measure matching now additionally tries the pre-existing
+interchangeable-category bridge (`_resolve_measure_against`, answer.py — the same
+'money'->'dollar' bridge a bare how-much ask already uses) when no exact measure-key
+match exists, unioned with (never short-circuiting) the exact-match path, so "three
+times as much MONEY as" resolves against a group total stated as a bare "$N". The
+2x2-solve logic itself is unchanged; still strictly two holders per total (a
+three-entity chain is a separate, named follow-on).
+
+GATE: dev-train diff SOLVED 2 (56d24a8643cc, 5cc8bffa10ee) / BROKE 0 / DECL->WRONG 0
+— VERDICT SHIP (71 -> 73 correct). dev-holdout diff NEUTRAL (0 SOLVED / 0 BROKE / 0
+DECL->WRONG, 28 correct unchanged). Suite 52/52. Lint 0 errors (1 pre-existing
+warning: fraction-of-remnant/fraction-of-pool overlap, known-good). pytest 765 -> 775
+(+10 new synthetic tests).
+**TEST look: pending — spent manually.**

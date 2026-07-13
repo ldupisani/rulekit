@@ -1061,19 +1061,42 @@ def _sum_constraint_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -
     Deliberately scoped to exactly TWO holders per total (a three-entity
     chain — two relations plus one total — is a named, separate increment,
     not this one)."""
+    from .answer import _resolve_measure_against
+
     out: list[Fact] = []
     totals_by_measure: dict[str, list[GroupTotal]] = {}
     for gt in store.by_kind(GroupTotal):
         totals_by_measure.setdefault(gt.measure, []).append(gt)
     relations_by_measure: dict[str, list[Relation]] = {}
-    for rel in store.by_kind(Relation):
+    all_relations = list(store.by_kind(Relation))
+    for rel in all_relations:
         relations_by_measure.setdefault(rel.measure, []).append(rel)
 
     for measure, totals in totals_by_measure.items():
         if len(totals) != 1:
             continue  # more than one stated total for this measure — ambiguous
         (total,) = totals
-        rels = relations_by_measure.get(measure, [])
+        # mining candidate sum-constraint-premise-surfaces: an EXACT
+        # measure-key match first (unchanged), plus a bridged match via the
+        # pre-existing interchangeable-category machinery
+        # (_resolve_measure_against, answer.py — the SAME 'money'->'dollar'
+        # bridge a bare how-much ask already uses) for a relation whose own
+        # measure word is a CURRENCY-CATEGORY generic ("three times as
+        # much MONEY as") while the group total states a SPECIFIC bare '$N'
+        # denomination ("a combined total of $150" resolves to the DATA
+        # measure 'dollar' via senses.py's currency-amount noun reading).
+        # Both are always unioned (never short-circuited on the exact
+        # match alone) so a genuinely ambiguous pairing — an exact-measure
+        # relation AND a separately bridged one both present — still
+        # declines via the `len(rels) != 1` check below, exactly like two
+        # exact-measure relations already do.
+        exact_rels = relations_by_measure.get(measure, [])
+        bridged_rels = [
+            r for r in all_relations
+            if r.measure != measure
+            and _resolve_measure_against(r.measure, {measure}, reg) == measure
+        ]
+        rels = exact_rels + bridged_rels
         if len(rels) != 1:
             continue  # more than one relation over this measure — ambiguous
         (rel,) = rels

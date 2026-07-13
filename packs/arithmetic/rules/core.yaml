@@ -1385,6 +1385,121 @@ rules:
         value: "item"
         verb: "{verb}"
 
+  - id: arithmetic/group-total-leading-marker
+    phase: read
+    description: >
+      "Together, they have 34 years." / "Combined, they weigh 98
+      kilograms." (mining candidate sum-constraint-premise-surfaces) — the
+      BARE-MARKER sibling of arithmetic/group-total-leading: that rule
+      requires the specific two-word literal "in total" fronting the
+      clause; a single fronting `aggregate` word ('together'/'combined'/
+      'altogether'/'total' itself) never satisfied its literal 'in'+
+      'total' skeleton and declined outright. Same "SUBJ VERB N ITEM"
+      tail, same generic `who, type: word` bridge slot whose identity is
+      never read (every sibling GroupTotal rule here emits an unowned
+      fact), same double-count discipline: capturing the counted ITEM
+      here suppresses learn.py's per-entity fold for this clause
+      (arithmetic/group-total-leading's own comment). This rule's own
+      `agg` slot ALSO matches starting at the bare word 'total' inside
+      "In total, they sold 120 oranges." (that sentence's leading 'In' is
+      simply not part of THIS match) — harmless, not a collision: both
+      rules emit the byte-identical GroupTotal (same measure/value/verb,
+      the same "SUBJ VERB N ITEM" tail read twice under two provenance
+      tags), and the fact store treats two agreeing facts for one
+      (measure, sentence) key as one, never a double-count. Confirmed by
+      the full dev-train/holdout diff carrying zero new lint overlap
+      warnings beyond the one pre-existing known-good one.
+    match:
+      sentence:
+        - {slot: agg, cat: aggregate}
+        - {slot: who, type: word}
+        - {slot: verb, type: verb}
+        - {slot: item, type: counted}
+    consumes: [item]
+    emits:
+      - fact: group_total
+        measure: "{item}"
+        value: "item"
+        verb: "{verb}"
+
+  - id: arithmetic/group-total-sum-of-age
+    phase: read
+    description: >
+      "Rachel is 4 years older than Leah. If the sum of their ages is 34,
+      how old is Rachel?" (mining candidate sum-constraint-premise-
+      surfaces) — a COPULAR sum-of-ages constraint: none of the existing
+      group-total-* rules read this shape at all (they all anchor on an
+      `aggregate` marker trailing or fronting a stated quantity; here
+      there is no `aggregate` word anywhere — 'sum' names the total, and
+      the age noun and the value sit on OPPOSITE sides of the copula, "of
+      their ages IS 34", never adjacent the way a counted noun would be).
+      `noun, cat: age_noun` (a single-word category, packs/core-english/
+      categories/core.yaml — 'age' only, never a bare 'age' measure key
+      the age family elsewhere never matches) is what lets this rule emit
+      the same DATA measure 'year' arithmetic/stated-age and ask/how-old-
+      is already commit to, hardcoded exactly as those two rules already
+      hardcode it (constitution rule 1: a single pack-owned data literal,
+      not a Python word list). `n, type: number` binds the bare trailing
+      value (no noun follows it here, unlike every sibling's `type:
+      counted` item) — consuming it suppresses learn.py's own bare-count
+      fold for this clause (learn.py's elided-measure-anchor branch, which
+      would otherwise mis-anchor an AnchorQuantity to whichever noun its
+      own subject-binding happens to pick), the identical double-count
+      guard every sibling GroupTotal rule here already relies on.
+    match:
+      sentence:
+        - opt:
+            - {lit: the}
+        - {lit: sum}
+        - {lit: of}
+        - opt:
+            - {slot: poss, type: pronoun}
+        - {slot: noun, cat: age_noun}
+        - {slot: verb, cat: state}
+        - {slot: n, type: number}
+    consumes: [n]
+    emits:
+      - fact: group_total
+        measure: year
+        value: n
+        verb: have
+
+  - id: arithmetic/group-total-of-age
+    phase: read
+    description: >
+      "Amy, Jeremy, and Chris have a combined age of 132." / "their
+      combined age is 132" (mining candidate sum-constraint-premise-
+      surfaces) — an AGGREGATE-QUALIFIED dimension NP: arithmetic/group-
+      total-of only reads "a total of N ITEM" (the literal word 'total',
+      the counted noun TRAILING the number); here the aggregate word
+      QUALIFIES the age noun itself, and the age noun FRONTS the number
+      ("combined AGE of 132"), an entirely disjoint token order group-
+      total-of's own skeleton cannot match. `agg, cat: aggregate` (the
+      full category, 'total' included — unlike the leading-marker rule
+      above, there is no "In total, ..." literal to collide with here:
+      the position right before 'age' can never be confused with that
+      other rule's own two-literal skeleton) plus `noun, cat: age_noun`
+      (the same single-word category arithmetic/group-total-sum-of-age
+      uses) resolves to the hardcoded DATA measure 'year' the age family
+      already commits to everywhere. `n, type: number` also accepts an
+      already-condensed "132 years" counted noun (its own `value_kind`
+      stays 'count' after merging — the hardcoded 'year' measure below
+      does not depend on capturing that trailing unit word at all).
+    match:
+      sentence:
+        - opt:
+            - {lit: a}
+        - {slot: agg, cat: aggregate}
+        - {slot: noun, cat: age_noun}
+        - {lit: of}
+        - {slot: n, type: number}
+    consumes: [n]
+    emits:
+      - fact: group_total
+        measure: year
+        value: n
+        verb: have
+
   - id: arithmetic/fraction-of-pool
     phase: read
     description: >
