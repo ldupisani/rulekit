@@ -14,13 +14,13 @@ swing under the constitution (no lexicon in Python, no per-problem parsing,
 every increment through the gates).
 
 **Current numbers (all verified at head):**
-- dev-train: 77 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
-- dev-holdout: 29 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 811 · lint: 0 errors, 1 intended warning
+- dev-train: 79 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
+- dev-holdout: 32 correct / 0 wrong (3,701 items)
+- curated suite: 52/52 · pytest: 830 · lint: 0 errors, 1 intended warning
 - bench wall: dev-train 16.6s -> 9.0s (trace opt-out) -> 1.7s at `--jobs 12`.
   `--jobs` defaults to 1; spend it in the SERIAL integration tail, never in the
   implementers' gates (they already run concurrently). See the two infra notes below.
-- TEST ledger (97 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- TEST ledger (98 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -4931,3 +4931,27 @@ to invert (66409a675cb3), a co-offset "then" on the standard (df2bd3686c13), an
 age-as-price bridge plus 2x2 sum-constraint (615bea763a56), an unbuilt birth-cohort premise
 (dfe494f7883f), and an unbuilt when-clause temporal anchor with a spelled dozen-multiplier
 (19bfb5be7629) — none of these fabricate an answer; all decline cleanly.
+
+## Batch 46 (2026-07-14) — increments 101, 102. dev-train 79, holdout 32.
+
+LANDED (look #98: 11/1, 91.7%, HELD — 101 is 0-SOLVED and rides with its payoff):
+- **101 — coordinated independent clauses whose SECOND clause loses its subject** when the
+  first clause's object ends in a counted noun ("Bruce scored 4 goals and Michael scored 3
+  goals" — Michael's goals were being lost). This is the binding bug `container-pool-depletion`
+  traced in batch 39 (`obligations.py::_candidates` short-circuiting before the
+  adjacency-arbitration filters). Verified fixed at head. 0 SOLVED on dev — another LATENT
+  correctness bug, invisible to coverage.
+- **102 — relation STANDARDS in un-read frames** (possessive-NP standards "X is twice Y's
+  age", mass-measure affine offsets) + the projected/unit-explicit age asks they feed.
+  **+2 dev-train, +3 dev-holdout.**
+
+**THE RE-CUT WORKED.** 102 is `relation-standard-frames`, killed by review in batch 45 for
+hardcoding `"year"` in answer.py and for an undeclared `tokenize.py` edit. The re-cut applied
+BOTH must-fixes (measure read from `query["measure"]`; the tokenize edit dropped) and landed
++5 across the two slices. A review kill with a NAMED fix is not a dead candidate — it is a
+one-batch delay. Three for three now: 71 (age-equative), 73 (rest-partitions), 102.
+
+DEFERRED: `temporal-offset-age-recut` at integrate-conflict (another candidate in the same
+batch touched the same core.yaml age-relation region — it was cut from main, and the merge-base
+is behind the staging tip). Re-cut against the current tip. `qualified-variant-partitions` (1
+of 9) and `percent-change-relations` (1 of 8) dropped at the shape gate on honest walks.
