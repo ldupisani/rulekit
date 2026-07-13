@@ -4086,3 +4086,48 @@ from 25, 0 wrong); pytest 677 passed (+10 synthetic tests in
 `tests/test_mining_increment_85.py` over the prior staging baseline of 667);
 suite 52/52; lint 0 errors / 1 known-good warning (fraction-of-remnant /
 fraction-of-pool, unchanged). TEST look: pending — spent manually.
+
+## Increment 86 (2026-07-13) — distributive 'each' container totals (infrastructure, 0 SOLVED by design)
+
+Class: distributive 'each' totals — N per EACH of M things ("there are 20
+rows and 6 chairs in each row", "he gave 4 stickers each to 3 friends"). This
+is a PRECISION finding first (constitution rule 4), not a coverage one:
+verified on the parked partitive-slot-enabler baseline, "There are 40 rows of
+chairs. There are 20 chairs in each row. How many chairs are there?" commits
+a CONFIDENT WRONG **20.0** (gold 800) — the unique-entity fold reads the
+per-container content Quantity as if it were the group's whole total. No
+dev-train item currently exercises this shape (dev-train has 0 wrongs), so it
+was a LATENT wrong of exactly the §3a shape that killed increment 81 on TEST.
+
+Mechanism (kernel-structural, no lexicon): (a) a new `saturate.py` plugin
+`synth/distributive-container-total` — when a Quantity's holder noun is
+itself COUNTED elsewhere (a Quantity whose MEASURE is that holder noun),
+synthesizes `GroupTotal(contained) = container_count × per_container_content`,
+chained transitively across saturation rounds while the chain stays UNIQUE at
+every hop; declines (never commits) whenever the chain is ambiguous or the
+container count is missing; (b) the same distributive-EVENT form ("gave 4
+stickers EACH to 3 friends" → value = 4×3) in `learn.py`, reusing the
+existing `_is_rate` quantifier lookahead via an OPT-IN flag only — per the
+increment-11 invariant, the shared clause-boundary scan is never widened
+globally; (c) `answer.py`'s unique-entity fold now declines whenever a
+GroupTotal already exists for the measure it's about to fold a lone holder
+over, converting the latent confident-wrong into a safe decline. No ask
+shape reads GroupTotal directly yet — that is later, follow-on machinery —
+so this increment SOLVES 0 items by design; it only removes a latent wrong
+and makes the composed total available downstream. Unblocks: entity-less
+container-total asks ("how many CHAIRS are there", "how many LITERS
+altogether") over a distributive container chain, and the remainder/fraction
+consumers that need the group total as their pool.
+
+Files: `src/rulekit/kernel/saturate.py`, `src/rulekit/kernel/learn.py`,
+`src/rulekit/kernel/answer.py`, `packs/arithmetic/rules/core.yaml`,
+`tests/test_mining_increment_86.py`.
+
+Gates (integrated on staging, full re-proof against current staging
+baseline): dev-train diff NEUTRAL, 0 SOLVED, 0 BROKE, 0 DECL→WRONG
+(62/3772 correct, unchanged, 0 wrong); dev-holdout diff NEUTRAL, 0 SOLVED, 0
+BROKE, 0 DECL→WRONG (26/3701 correct, unchanged, 0 wrong); pytest 684 passed
+(+7 synthetic tests in `tests/test_mining_increment_86.py` over the prior
+staging baseline of 677); suite 52/52; lint 0 errors / 1 known-good warning
+(fraction-of-remnant / fraction-of-pool, unchanged). TEST look: pending —
+spent manually.

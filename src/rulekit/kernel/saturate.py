@@ -958,6 +958,128 @@ def _container_contents_synth(store: FactStore, reg: Registry, log: ArithmeticLo
     return out
 
 
+def _distributive_container_total_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> list[Fact]:
+    """Distributive 'each' container totals (mining candidate distributive-
+    each-totals): 'There are 40 rows of chairs. There are 20 chairs in each
+    row.' / 'There are 5 boxes and each box has 8 pens.' — a per-container
+    RATE (CR: entity=container noun, measure=content noun, e.g. entity=
+    'row'/'box', measure='chair'/'pen' — from an ordinary SVO fold "each
+    box HAS 8 pens" or from arithmetic/existential-premise-distributive's
+    "20 chairs IN EACH row") composes with the container's own COUNT
+    (H: any Quantity or GroupTotal whose MEASURE is that SAME container
+    noun — '40 rows', '5 boxes', or a container total this very plugin
+    derived on an earlier saturation round) into the group's total content:
+    GroupTotal(measure=content, value=H.value * CR.value).
+
+    Chained transitively for free by the ordinary saturation fixpoint,
+    exactly like every other plugin here: a derived GroupTotal from one hop
+    (measure=container) is itself a valid H for the NEXT hop — 'six chairs
+    in each row; twenty rows' derives GroupTotal(chair)=120, then 'each
+    chair holds five people' composes THAT total as the chair-count input
+    into GroupTotal(person)=600, with no extra loop needed here (saturate()
+    already reruns every plugin each round).
+
+    UNIQUE AT EVERY HOP, never guessed:
+    - CR must be a RAW premise fact (`provenance.source` not a `synth/`
+      derivation, mirroring `_container_contents_synth`'s own raw-CR
+      discipline) — the stated per-container rate itself, never a value
+      some other synth already produced;
+    - exactly one CR for the (container, content) pair — two rival stated
+      rates is ambiguous, never averaged;
+    - the container must not equal the content (no self-loop);
+    - exactly one holder-count fact (Quantity OR GroupTotal, any source)
+      for the container measure across the WHOLE store — zero is exactly
+      today's decline (a per-container rate with no stated container
+      count), several is a genuine ambiguity (e.g. two independent
+      groups both counted in the same noun) and also declines rather than
+      guess which one the rate belongs to;
+    - never emits when a GroupTotal for the content measure already
+      exists — a genuinely stated total (or an earlier-round derivation)
+      wins; same-key disagreement is a real conflict per GroupTotal's own
+      docstring, so this plugin refuses to even attempt a second value
+      rather than let facts.py quarantine a spurious collision.
+
+    THE PRECISION FIX THIS INCREMENT SHIPS (constitution rule 4): before
+    this plugin existed, CR (entity=container) was the ONLY fact known for
+    the content measure, so answer.py's unique-entity fold read it as if
+    it were the group's total — a CONFIDENT WRONG ('20 chairs in each row'
+    answered '20' for 'how many chairs are there?', gold 800). Emitting
+    this GroupTotal does not, by itself, change that fold's reasoning —
+    answer.py's unique-entity consumer additionally declines whenever a
+    GroupTotal now exists for the measure it is about to fold a lone
+    per-container entity over (see its own comment there), converting the
+    latent wrong into a safe decline. The follow-up class (entity-less
+    container-total asks that read this GroupTotal directly, remainder/
+    fraction consumers that treat it as a pool) is a separate, later
+    increment: this plugin SOLVES 0 dev-train items by design — it is
+    infrastructure, not a payoff."""
+    # a per-container RATE must come from a surface that actually STATES a
+    # per-unit content — an ordinary SVO fold ("each box HAS 8 pens") or
+    # this candidate's own distributive-existential rule ("20 chairs IN
+    # EACH row"). A plain partitive existential ("40 ROWS of chairs",
+    # arithmetic/existential-premise) states a TOTAL count, not a rate —
+    # despite folding to the identical (entity, measure) shape by the
+    # generic 'item PREP place' skeleton — so it must never be read as one
+    # here: doing so would derive a spurious REVERSED total (mistaking
+    # 'chairs' as the container of 'rows') and, via the unique-entity
+    # guard below, wrongly decline the ordinary, already-correct "how many
+    # rows are there?" reading of the very same two sentences.
+    _RATE_SOURCES = {"fold", "arithmetic/existential-premise-distributive"}
+    out: list[Fact] = []
+    known_group_totals = {gt.measure for gt in store.by_kind(GroupTotal)}
+
+    rate_facts: set[int] = set()
+    rates_by_pair: dict[tuple[str, str], list[Quantity]] = {}
+    for q in store.by_kind(Quantity):
+        if q.provenance.source not in _RATE_SOURCES or q.entity == q.measure:
+            continue
+        rates_by_pair.setdefault((q.entity, q.measure), []).append(q)
+        rate_facts.add(id(q))
+
+    # a CONTAINER COUNT must be the container's own stated/derived TOTAL,
+    # never a fact that is itself playing the CR (per-unit rate) role for
+    # some OTHER pair — a two-hop chain's middle noun ('chair' above) is
+    # simultaneously the CONTENT of one rate ('row'/'chair') and the
+    # CONTAINER of the next ('chair'/'person'); the first rate's own raw
+    # fact happens to carry measure='chair' too, but its value (6, "per
+    # row") is not a chair TOTAL and must never masquerade as one — that
+    # would derive the next hop from a stale per-unit number instead of
+    # the composed total, and (worse) lock in the wrong value permanently
+    # once this plugin's own 'never overwrite an existing GroupTotal'
+    # guard treats that wrong first answer as already resolved.
+    counts_by_container: dict[str, list[float]] = {}
+    for q in store.by_kind(Quantity):
+        if id(q) in rate_facts:
+            continue
+        counts_by_container.setdefault(q.measure, []).append(q.value)
+    for gt in store.by_kind(GroupTotal):
+        counts_by_container.setdefault(gt.measure, []).append(gt.value)
+
+    for (container, content), rates in rates_by_pair.items():
+        if len(rates) != 1:
+            continue  # ambiguous per-container rate — decline rather than guess
+        (rate,) = rates
+        if content in known_group_totals:
+            continue  # a real (or earlier-round) total already wins
+        counts = counts_by_container.get(container, [])
+        if len(counts) != 1:
+            continue  # zero or ambiguous container counts — decline
+        (count,) = counts
+        value = evaluate(
+            f"{count} * {rate.value}", {}, log,
+            source="synth/distributive-container-total",
+        )
+        out.append(
+            GroupTotal(
+                provenance=Provenance(
+                    source="synth/distributive-container-total", sentence=-1
+                ),
+                measure=content, value=value, verb=rate.verb,
+            )
+        )
+    return out
+
+
 PLUGINS: dict[str, Synthesizer] = {
     "synth/relation-to-quantity": _relations_synth,
     "synth/bare-age-anchor": _bare_age_anchor_synth,
@@ -968,6 +1090,7 @@ PLUGINS: dict[str, Synthesizer] = {
     "synth/partition-complement-quantity": _partition_complement_synth,
     "synth/sum-constraint": _sum_constraint_synth,
     "synth/container-contents": _container_contents_synth,
+    "synth/distributive-container-total": _distributive_container_total_synth,
 }
 
 

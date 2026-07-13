@@ -15,7 +15,17 @@ from dataclasses import dataclass
 from ..data.registry import Registry
 from .evaluate import ArithmeticLog, evaluate
 from .facts import FactStore
-from .model import Goal, Membership, PartitionQuantity, Predication, Price, Quantity, Rate, Reading
+from .model import (
+    Goal,
+    GroupTotal,
+    Membership,
+    PartitionQuantity,
+    Predication,
+    Price,
+    Quantity,
+    Rate,
+    Reading,
+)
 from .patterns import match_ask
 
 
@@ -934,6 +944,22 @@ def answer(
                 "decline", None,
                 f"{len(entities)} entities hold {singular!r} — an entity-less "
                 "ask needs exactly one",
+            )
+        if any(gt.measure == singular for gt in store.by_kind(GroupTotal)):
+            # mining candidate distributive-each-totals (the precision fix):
+            # a GroupTotal for this SAME measure means the lone entity's own
+            # Quantity is a PER-CONTAINER rate ("each row has 20 chairs"),
+            # not the group's whole — saturate.py's
+            # synth/distributive-container-total (or a stated "N X
+            # altogether" premise) already says so. Folding the single
+            # entity's raw value here would be exactly the confident wrong
+            # that GroupTotal exists to prevent ("20 chairs in each row"
+            # read as the total 20 instead of composing with the row count
+            # for 800) — decline rather than guess which one the ask means.
+            return Answer(
+                "decline", None,
+                f"{singular!r} has both a lone holder and a group total — "
+                "an entity-less ask cannot tell which one is meant",
             )
         total = _entity_total(store, reg, entities[0], singular, log)
         if total is None:

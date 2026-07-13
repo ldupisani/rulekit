@@ -589,6 +589,55 @@ def _is_rate(
     return False
 
 
+def _distributive_event_recipient_count(
+    reading: Reading, counted: Unit, reg: Registry
+) -> float | None:
+    """'gave 4 stickers EACH to 3 friends' — mining candidate distributive-
+    each-totals, event half. `_is_rate` (above) already flags the counted
+    noun as per-recipient the moment a bare distributive quantifier
+    ('each'/'every') trails it within the clause — that is what makes
+    `dobj_is_rate` true for this shape in `learn()`. `_price_each_value`
+    then looks for a CURRENCY noun after the quantifier ('$5 each') and
+    finds none here, so the caller reaches this function next: the OTHER
+    reading of a bare distributive count is a per-recipient event total,
+    not a price — 'N ITEM each to M RECIPIENT' means N*M items changed
+    hands, not N.
+
+    Structural, no lexicon: scans strictly within the counted noun's own
+    clause (stops at a clause boundary, a second finite verb, or a
+    comma/conjunction — the same coordination caution
+    `_conjoined_purchase_items` uses, never leaking into a sibling
+    conjunct or a later sentence) for a counted noun distinct from
+    `counted` itself. Exactly one such noun is the recipient count M;
+    zero or more than one is ambiguous and declines (returns None) —
+    the caller's existing silent skip is unchanged in that case, so this
+    is purely additive: no previously-declining item can newly commit a
+    WRONG value, only a previously-declining recipient-count shape can
+    newly resolve."""
+    units = reading.units
+    try:
+        i = units.index(counted)
+    except ValueError:
+        return None
+    candidates: list[Unit] = []
+    for unit in units[i + 1 :]:
+        if unit.sense() == "complementizer" or unit.surface in (".", "?", "!"):
+            break
+        if unit.sense() == "verb":
+            break  # a second finite clause — never a sibling of this one
+        if unit.surface == "," or unit.sense() == "conjunction":
+            break
+        if (
+            unit is not counted
+            and unit.sense() == "noun"
+            and unit.features.get("value_kind") == "count"
+        ):
+            candidates.append(unit)
+    if len(candidates) != 1:
+        return None
+    return float(candidates[0].features["value"])
+
+
 def _flat_purchase_price(reading: Reading, item: Unit, reg: Registry) -> float | None:
     """'a hat for $10' — a FLAT TOTAL price for a purchased item that
     carries no explicit count (a bare singular noun, quantity 1 by the
@@ -860,8 +909,40 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                 else None
             )
             if price_value is None:
-                continue  # the for-each distributive ("for EACH of his
-                # children") still just skips — no fact, value unaccounted
+                # mining candidate distributive-each-totals (event half):
+                # 'gave 4 stickers EACH to 3 friends' — no currency noun
+                # means this isn't a per-unit PRICE; check whether it is
+                # instead a per-RECIPIENT event total (a distinct counted
+                # noun, the recipient count, trailing within this same
+                # clause). Declines (no fact, value unaccounted — exactly
+                # today's behavior) whenever that recipient count is
+                # absent or ambiguous, e.g. "2 notebooks for EACH of his
+                # children" (no counted noun at all after the quantifier)
+                # or a genuinely unbuilt multi-recipient list.
+                recipient_count = (
+                    _distributive_event_recipient_count(reading, dobj, reg)
+                    if dobj.features.get("value_kind") == "count" and dobj.sense() == "noun"
+                    else None
+                )
+                if recipient_count is not None and not negated_clause:
+                    facts.append(
+                        Quantity(
+                            provenance=prov,
+                            entity=_lemma(subject),
+                            owner=_owner(subject),
+                            qualifier=_qualifier(subject),
+                            label=_label(subject),
+                            measure=_lemma(dobj),
+                            measure_qualifier=(
+                                _qualifier(dobj) or _measure_substance(reading, dobj, reg)
+                            ),
+                            value=float(dobj.features["value"]) * recipient_count,
+                            verb=verb_lemma,
+                            occurrence=occurrence,
+                            time=time_label,
+                        )
+                    )
+                continue
             # "N ITEM at/for $PRICE each" — the ITEM is a genuine purchased
             # COUNT (unlike the day-rate case), so it falls through to the
             # normal condensed-count Quantity emission below; the price is

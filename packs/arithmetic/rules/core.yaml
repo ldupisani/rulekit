@@ -768,6 +768,48 @@ rules:
         value: "item"
         verb: have
 
+  - id: arithmetic/existential-premise-distributive
+    phase: read
+    description: >
+      "There are 20 chairs in EACH row" (mining candidate distributive-
+      each-totals) — the located existential above, widened to a
+      DISTRIBUTIVE place: a quantifier ('each'/'every' — the `quantifier`
+      sense, same word class `_has_distributive_determiner`/`_is_rate`
+      already recognize elsewhere in the kernel) between the preposition
+      and the place noun makes the count PER-CONTAINER rather than a
+      located total — "in each row" names the CONTAINER (row) as the
+      quantity's holder exactly like "each box has 8 pens" already does
+      via the ordinary SVO fold, just phrased existentially instead of
+      with a stating verb. Emits the SAME per-container Quantity shape
+      (entity=container, measure=content) so saturate.py's distributive-
+      container-total synth composes it with the container's own stated
+      count identically regardless of which surface produced it.
+
+      Strictly more specific than both arithmetic/existential-premise
+      (whose `place` slot requires a bare noun immediately after the
+      preposition — a quantifier there fails that slot, so the two rules
+      never tie) and arithmetic/existential-premise-bare (whose shorter
+      "there VERB item" span this rule's longer match subsumes on any
+      sentence with a trailing "PREP QUANTIFIER NOUN" tail): ordinary
+      "There are 12 chairs." (no such tail) is untouched.
+    match:
+      sentence:
+        - {lit: there}
+        - {slot: verb, type: verb}
+        - {slot: item, type: counted}
+        - {slot: prep, cat: preposition}
+        - {slot: q, cat: quantifier}
+        - {slot: place, type: noun}
+    where:
+      - absent: {cat: aggregate}
+    consumes: [item]
+    emits:
+      - fact: quantity
+        entity: "{place}"
+        measure: "{item}"
+        value: "item"
+        verb: have
+
   - id: arithmetic/existential-premise-bare
     phase: read
     description: >
