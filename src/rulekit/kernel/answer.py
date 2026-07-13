@@ -823,6 +823,35 @@ def answer(
             )
         return Answer("number", total, f"fold over {entity!r}/{measure!r}")
 
+    if consumer == "age-projected":
+        # mining candidate relation-standard-frames: "How old will X be in/
+        # after N years?" / "...N years from now?" — a PROJECTED age ask,
+        # sibling of ask/how-old-is: the SAME current-age quantity
+        # (_entity_total, measure read from `query["measure"]` — constitution
+        # rule 1, never a hardcoded 'year' literal; the ask's own `resolves:`
+        # block commits `measure: year` exactly as ask/how-old-is does)
+        # plus the stated offset named IN THE QUESTION ITSELF, added rather
+        # than compared. Gated on this ask id alone (via the `consumer`
+        # key), never a widening of `single-entity`'s own state-ask branch:
+        # a projected ask's offset is not a measure/entity slot that
+        # branch's owner/qualifier machinery could even express.
+        entity, measure = query["entity"], query["measure"]
+        offset_raw = query.get("offset")
+        if offset_raw is None:
+            return Answer(
+                "decline", None, "projected age ask has no stated year offset",
+            )
+        offset = evaluate(str(offset_raw), {}, log, source="age-projected-offset")
+        base = _entity_total(store, reg, entity, measure, log)
+        if base is None:
+            return Answer(
+                "decline", None, f"no {measure} quantity known for {entity!r}",
+            )
+        return Answer(
+            "number", base + offset,
+            f"{entity!r}'s current {measure} {base} + stated offset {offset}",
+        )
+
     if consumer == "rate-span":
         # Re-landing step 4 (docs/negative-results.md): conversion spans
         # and rate x population are both live. The entity slot type is

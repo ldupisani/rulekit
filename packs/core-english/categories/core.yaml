@@ -88,6 +88,24 @@ categories:
       difg-mined lexicon entry, so its membership lives in packs/difg-
       mined/categories/semantic.yaml, not here (the shared core-english +
       arithmetic-only test registry never sees it and must not need to).
+  count_intensifier:
+    parent: comparative
+    notes: >
+      mining candidate relation-standard-frames: 'more' used as a bare
+      INTENSIFIER wedged between a bare count and its noun ("in eight MORE
+      years", "eight more years, ...") — never the comparative-DELTA use
+      of the same word ("5 MORE apples THAN Tom", cat: more_dir/delta).
+      'more' carries BOTH tags at once, exactly like 'older'/'younger'
+      already carry both 'age_comparative' and 'more_dir'/'less_dir'
+      elsewhere in this file: a word belonging to two categories never
+      widens either category's own membership, so every OTHER rule gated
+      on 'delta'/'more_dir' keeps matching exactly as before. Root sense
+      'comparative' (not 'adjective'): 'more's own lexicon sense above is
+      'comparative', and every category member must carry its category's
+      root sense (registry.py's compile-time invariant) — this is why
+      'additional' (an 'adjective'-sensed synonym) is NOT folded into this
+      same category rather than widening the root; it would need its own
+      sibling category, out of scope until a second proven pair needs it.
   aggregate_noun:
     parent: noun
     notes: "'the NUMBER of X' / 'the AMOUNT of X' — frame nouns for ratio rules"
@@ -417,6 +435,7 @@ members:
   spend_verb: [spend, spends, spent]
   more_dir: [more]
   less_dir: [fewer, less]
+  count_intensifier: [more]
   dimension_adjective: [small, large]  # 'tall'/'long'/... extend this from packs/difg-mined
   negation: [not]  # 'never' extends this from packs/difg-mined (its own lexicon)
   relational_marker: [than]

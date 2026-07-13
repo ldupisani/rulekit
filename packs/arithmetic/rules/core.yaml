@@ -451,6 +451,85 @@ rules:
         offset: 0.0
         verb: "{verb}"
 
+  - id: arithmetic/times-as-old-as-possessive-standard
+    phase: read
+    description: >
+      mining candidate relation-standard-frames: "Jerica is twice Louis'
+      age" — the POSSESSIVE-NP sibling of arithmetic/times-as-old-as: the
+      standard is stated as an owned age noun ("Louis' age") instead of
+      the equative "as old as Y" frame, so there is no 'as'/'old'/'as'
+      literal skeleton to anchor on at all — the multiplier is immediately
+      followed by the possessive NP. `std, cat: age_noun` (declared in
+      packs/core-english/categories/core.yaml, membered in packs/difg-
+      mined/categories/semantic.yaml — the SAME single-word category
+      arithmetic/group-total-sum-of-age already gates on) matches the noun
+      REGARDLESS of whether condense.py's merge-possessive folded an
+      "OWNER 's" prefix onto it first, so this rule fires on both a bare
+      age noun (never useful here, since no relation without an owner
+      resolves to anything) and the owned form — the class this candidate
+      targets. `standard: "{std.owner}"` (not "{std}") is the whole
+      mechanism: `_slot_value`'s `owner` attribute (patterns.py, the same
+      lookup ask/how-many-entity-possessed already uses for `entity_
+      owner`) reads the possessive's OWNER off the merged noun's own
+      `owner` feature — "Louis' age" merges to a noun whose lemma is
+      'age' but whose `owner` is 'louis', so the Relation's standard is
+      the PERSON, never the measure word. Same hardcoded DATA measure
+      'year' arithmetic/stated-age and ask/how-old-is already commit to
+      everywhere (constitution rule 1: one pack-owned literal, not a
+      Python word list). PROVEN minimal pair on unmodified main: "Jerica
+      is twice as old as Louis..." commits 35.0 (the gold) while "Jerica
+      is twice Louis' age..." declines outright — this rule is what
+      closes that gap. A bare (unowned) 'age' noun right after a
+      multiplier is not a grammatical English possessive-standard
+      sentence in this corpus, so it never arises in practice; if it ever
+      did, `{std.owner}` reads empty and the Relation's standard resolves
+      to no known quantity, declining exactly as safely as today.
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: verb, cat: state}
+        - {slot: k, type: multiplier}
+        - {slot: std, cat: age_noun}
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std.owner}"
+        measure: year
+        factor: "k"
+        offset: 0.0
+        verb: "{verb}"
+
+  - id: arithmetic/times-as-old-as-both-possessive
+    phase: read
+    description: >
+      mining candidate relation-standard-frames: "Ana's age is twice
+      Beto's age" — the DOUBLY-possessive sibling of arithmetic/times-as-
+      old-as-possessive-standard: BOTH the subject and the standard are
+      owned age NPs, so `who` ALSO needs `{std.owner}`'s own treatment
+      (`"{who.owner}"`) rather than the bare-name `"{who}"` the one-sided
+      sibling uses. Gated the same way (`cat: age_noun` on both slots,
+      never `type: possessed` combined with a category gate — the schema
+      forbids a slot naming both `type` and `cat`), so this rule and its
+      one-sided sibling both fire off the exact same underlying merge
+      (condense.py's merge-possessive) and never collide: a subject that
+      IS a possessive age NP can only ever match THIS rule's `who` slot
+      (`type: name` on the sibling rejects a merged noun outright), so the
+      two are structurally disjoint, not a specificity tie-break.
+    match:
+      sentence:
+        - {slot: who, cat: age_noun}
+        - {slot: verb, cat: state}
+        - {slot: k, type: multiplier}
+        - {slot: std, cat: age_noun}
+    emits:
+      - fact: relation
+        subject: "{who.owner}"
+        standard: "{std.owner}"
+        measure: year
+        factor: "k"
+        offset: 0.0
+        verb: "{verb}"
+
   - id: arithmetic/times-as-many
     phase: read
     description: >
@@ -712,6 +791,54 @@ rules:
         subject: "{who}"
         standard: "$elided:standard$"
         measure: "{item}"
+        factor: "k"
+        offset: 0.0
+        verb: "{verb}"
+
+  - id: arithmetic/times-as-many-possessive-standard
+    phase: read
+    description: >
+      mining candidate relation-standard-frames: "Carmela has twice
+      Cecil's money" — the GENERAL possessive-NP standard, one measure
+      family over from arithmetic/times-as-old-as-possessive-standard: any
+      owned measure noun (money/savings/marbles/...), never restricted to
+      'age' — that rule's own `cat: age_noun` gate makes it strictly MORE
+      specific on the identical span whenever the possessed noun really is
+      'age' (patterns.subsumes: same consumed tokens, higher gate depth),
+      so the two never double-emit; this rule is the one that survives
+      for every OTHER measure noun. `std, type: possessed` (condense.py
+      merge-possessive's own `owner` tag — the same slot type ask/how-
+      many-entity-possessed already gates on) requires an ACTUAL "OWNER's
+      NOUN" merge, never a bare common noun, so this can't be confused
+      with times-as-many/times-as-much's own "as many/as much ITEM as Y"
+      shape: those require a LITERAL 'as' immediately after the
+      multiplier, which this rule's very next token (the possessed noun
+      itself) can never satisfy, and vice versa — the two families are
+      structurally disjoint spans, not a specificity tie-break. `standard:
+      "{std.owner}"` / `measure: "{std}"` read the OWNER and the noun's
+      own lemma separately off the SAME merged unit (`_slot_value`'s
+      `owner` attribute vs. its default lemma lookup, patterns.py) — the
+      Relation's standard is the PERSON ('cecil'), its measure the noun
+      itself ('money'), never the reverse. PROVEN minimal pair on
+      unmodified main: "Catherine has twice as much money as Cecil"
+      commits while "Catherine has twice Cecil's money" declines outright.
+      `who, type: name`: unwidened, matching times-as-much's own
+      (not-yet-widened) slot type — this candidate's own structural sample
+      never needed the common-noun-subject widening times-as-many/times-
+      as-much-elided-standard already carry.
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: verb, type: verb}
+        - {slot: k, type: multiplier}
+        - {slot: std, type: possessed}
+    where:
+      - distinct: [who, std]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std.owner}"
+        measure: "{std}"
         factor: "k"
         offset: 0.0
         verb: "{verb}"
@@ -1386,6 +1513,56 @@ rules:
         verb: "{verb}"
         subject_label: "{who.label}"
         standard_label: "{std.label}"
+
+  - id: arithmetic/affine-times-as-much
+    phase: read
+    description: >
+      mining candidate relation-standard-frames: "Alexa has $250 less than
+      twice as much money as Cecil" — the MASS-NOUN sibling of arithmetic/
+      affine-times-as-many, one field over exactly like arithmetic/times-
+      as-much sits beside arithmetic/times-as-many ('much'/`item, type:
+      noun` in place of 'many'/`type: plural`, since a mass noun never
+      carries plural morphology). Same AFFINE shape: subject = k·standard
+      + n·sign(dir). `who`/`std, type: name`: unwidened, matching times-
+      as-much's own (not-yet-widened) slot type. Increment 46 (affine-
+      relations-recut) only ever built the affine-offset prefix onto the
+      COUNT/'as many' form; this closes the MASS/'as much' gap the
+      relation-standard-frames candidate's own structural sample names
+      directly. PROVEN minimal pair on unmodified main: "250 less than
+      twice as many dollars as Cecil" commits while "250 less than twice
+      as much money as Cecil" declines outright.
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: verb, type: verb}
+        - {slot: n, type: number}
+        - {slot: dir, cat: delta}
+        - {lit: than}
+        - {slot: k, type: multiplier}
+        - {lit: as}
+        - {lit: much}
+        - {slot: item, type: noun}
+        - opt:
+            - {slot: pp_prep, cat: preposition}
+            - opt:
+                - {slot: pp_det, type: pronoun}
+            - {slot: pp_obj, type: noun}
+        - {lit: as}
+        - opt:
+            - {slot: appos_det, type: pronoun}
+            - {slot: appos_role, type: noun}
+        - {slot: std, type: name}
+    where:
+      - distinct: [who, std]
+    consumes: [n]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: "{item}"
+        factor: "k"
+        offset: "n * sign(dir)"
+        verb: "{verb}"
 
   - id: arithmetic/existential-premise
     phase: read
@@ -2166,6 +2343,59 @@ rules:
         measure: year
         value: "m + n"
         verb: "{verb}"
+
+  - id: arithmetic/temporal-offset-age-future-intensified
+    phase: read
+    description: >
+      mining candidate relation-standard-frames: "In eight MORE years,
+      Tessa will be 40 years old" — the intensifier-tolerant sibling of
+      arithmetic/temporal-offset-age-future: an INTENSIFIER word
+      ('more' — `cat: count_intensifier`, packs/core-english/categories/
+      core.yaml — deliberately NOT the same category as 'more_dir'/
+      'delta', see its own note) wedged between the bare count and its
+      noun blocks condense.py's ordinary count+noun merge (`_count_pass`
+      only merges ADJACENT units), so the base rule's `n, type: counted`
+      slot — which requires that merge to have already happened — can
+      never match "eight more years" at all; PROVEN on unmodified main:
+      "in eight years" commits 64.0, "in eight more years" declines
+      outright. Rather than widen `_count_pass` itself (a SHARED
+      condense-time function every "N NOUN" merge in the pack depends on —
+      the HANDOFF invariant against globally widening shared scan
+      functions for one caller), this is a SEPARATE sibling rule matching
+      the UNMERGED three-token span directly (`n, type: number` + the
+      intensifier + `yr, type: noun`, instead of one `type: counted`
+      slot) — so "5 MORE apples THAN Tom" (the ordinary delta-relation
+      reading of the same word 'more') is completely untouched: that
+      shape is read by a DIFFERENT rule family entirely (anchored-
+      relation-postfix and friends), never this one, and never will be,
+      since this rule's own literal skeleton has no 'than' anywhere.
+      `yr` is consumed but not read by the emitted fact (the measure is
+      hardcoded 'year' exactly like the base rule's own `m`/`n` — neither
+      rule's emitted Quantity depends on which noun word actually
+      followed the count). Same decline-safety gates and same Quantity
+      shape as the base rule; `consumes: [n, yr, m]` mirrors its own
+      `consumes: [n, m]` one slot wider, for the extra unmerged noun.
+    match:
+      sentence:
+        - {lit: in}
+        - {slot: n, type: number}
+        - {slot: mod, cat: count_intensifier}
+        - {slot: yr, type: noun}
+        - {slot: who, type: name}
+        - {slot: aux, type: future_modal}
+        - {lit: be}
+        - {slot: m, type: counted}
+        - {lit: old}
+    where:
+      - absent: {cat: relational_marker}
+      - absent: {cat: multiplier_marker}
+    consumes: [n, yr, m]
+    emits:
+      - fact: quantity
+        entity: "{who}"
+        measure: year
+        value: "m - n"
+        verb: be
 
   - id: arithmetic/goal-desire-quantity
     phase: read
@@ -3701,6 +3931,93 @@ asks:
       # emitted Quantity's measure exactly, no category resolution needed
       measure: year
       verb: "{verb}"
+
+  - id: ask/how-many-years-old-is
+    # mining candidate relation-standard-frames: "How many years old is
+    # Rachel?" — the UNIT-EXPLICIT sibling of ask/how-old-is: the same
+    # literal-'old' age anchor, with 'how many years' spelled out instead
+    # of the bare 'how'. Routes to the SAME `single-entity` consumer with
+    # the SAME hardcoded `measure: year` — no new consumer, no category
+    # resolution. 'years' is grammatical skeleton here exactly like 'old'
+    # already is in ask/how-old-is (constitution rule 2: literals are
+    # skeleton, not lexicon facts) — its own fold survives condense.py's
+    # plural-lemma canonicalization unchanged (`fold` stays the surface
+    # 'years'; only `lemma` collapses to 'year'), so the literal token
+    # matches directly. Cannot tie with ask/how-many-entity ('how many
+    # ITEM will/would WHO VERB' — 'old' can never satisfy that ask's
+    # `aux, type: future_modal` slot) or with ask/how-old-is itself (whose
+    # own literal 'old' must immediately follow 'how', never true here).
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {lit: years}
+        - {lit: old}
+        - {slot: verb, cat: state}
+        - {slot: who, type: name}
+    resolves:
+      consumer: single-entity
+      entity: "{who}"
+      measure: year
+      verb: "{verb}"
+
+  - id: ask/how-old-will-be-projected
+    # mining candidate relation-standard-frames: "How old will Rachel be in
+    # 8 years?" / "...after 8 years?" — a PROJECTED age ask: the entity's
+    # CURRENT age plus a stated future offset, resolved by the new
+    # `age-projected` consumer (answer.py) rather than `single-entity` —
+    # that consumer ADDS the offset instead of doing a bare lookup, which
+    # `single-entity` has no field for. `prep, cat: preposition` (matches
+    # both 'in' and 'after' — packs/core-english/lexicon/core.yaml senses
+    # 'in' as `preposition` directly; 'after' is a difg-mined preposition —
+    # never a word list in Python) keeps this to ONE ask id for both
+    # prepositions rather than two near-duplicates. `n, type: counted`
+    # binds the offset (a plain "N years" — no intensifier tolerance
+    # needed here, since asks are never fed through condense.py's ordinary
+    # merge fixpoint any differently than premises are); `offset:
+    # "{n.value}"` reads the raw numeral (patterns.py's `_slot_value`
+    # `value` attribute — NOT the default lemma lookup, which would
+    # return 'year').
+    match:
+      question:
+        - {lit: how}
+        - {lit: old}
+        - {slot: aux, type: future_modal}
+        - {slot: who, type: name}
+        - {lit: be}
+        - {slot: prep, cat: preposition}
+        - {slot: n, type: counted}
+    resolves:
+      consumer: age-projected
+      entity: "{who}"
+      offset: "{n.value}"
+      # constitution rule 1: the DATA measure the stated-age rule commits
+      # to, read by the age-projected consumer from query["measure"] —
+      # never a hardcoded Python literal, exactly as ask/how-old-is does.
+      measure: year
+
+  - id: ask/how-old-will-be-projected-from-now
+    # mining candidate relation-standard-frames: "How old will Rachel be
+    # 8 years from now?" — the trailing 'from now' sibling of ask/how-
+    # old-will-be-projected (same class, one preposition-less variant:
+    # 'now' is sensed 'time' in the lexicon, mirroring arithmetic/
+    # temporal-offset-age-past's own trailing 'ago' — a SYMMETRIC future
+    # anchor, never a Python word list). Same `age-projected` consumer.
+    match:
+      question:
+        - {lit: how}
+        - {lit: old}
+        - {slot: aux, type: future_modal}
+        - {slot: who, type: name}
+        - {lit: be}
+        - {slot: n, type: counted}
+        - {lit: from}
+        - {lit: now}
+    resolves:
+      consumer: age-projected
+      entity: "{who}"
+      offset: "{n.value}"
+      measure: year
 
   - id: ask/how-many-unit-dimension-is
     # mining candidate dimension-comparatives: "How many inches tall is

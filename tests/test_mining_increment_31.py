@@ -73,10 +73,25 @@ def test_dangling_comparative_declines(full_registry):
     assert not r.answer.committed
 
 
-def test_future_age_declines(full_registry):
-    # "in N years" is date arithmetic — explicitly out of scope, must decline
+def test_future_age_now_resolves(full_registry):
+    # mining candidate relation-standard-frames: "in N years" projected-age
+    # asks were out of scope when this test was first written (no consumer
+    # read the stated offset); ask/how-old-will-be-projected + the
+    # age-projected consumer now close that gap deliberately — this
+    # boundary intentionally moved from decline to a correct commit.
     r = solve(
         "Sara is 4 years old. How old will Sara be in 5 years?",
+        full_registry,
+    )
+    assert r.answer.value == 9
+
+
+def test_future_age_without_stated_current_age_declines(full_registry):
+    # the projected-age consumer still needs a KNOWN current age to add
+    # the offset to — with none stated anywhere, this must stay declined,
+    # never guess.
+    r = solve(
+        "How old will Sara be in 5 years?",
         full_registry,
     )
     assert not r.answer.committed

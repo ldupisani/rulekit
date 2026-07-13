@@ -4882,3 +4882,52 @@ blocker. It unblocks the 77 fully-read, ask-recognized dev-train declines readin
 combined ask needs at least two holders of X" (29 with exactly one holder found) for the
 follow-on ask-surface work named in the brief: a marker-less named-pair combined ask, a
 comparative whose left side is a combined pair, and a multi-holder rate-span totality ask.
+
+## Increment 102 — comparative relation STANDARDS in un-read frames (possessive-NP
+standards, mass-measure affine offsets) plus the projected/unit-explicit age asks they feed
+
+CLASS: comparative relation standards expressed via a possessive NP ("X is twice Y's age",
+"X's age is twice Y's age", "X has twice Y's money") instead of the usual "as [name]" frame,
+plus the mass-noun affine sibling ("$N less than twice as much MEASURE as Y"), plus a bare
+count wedged with an intensifier before its time noun in a future-offset premise ("in eight
+MORE years"). Re-cut of `mining/cand-relation-standard-frames`, retained since HANDOFF batch
+45 REVIEW KILL (two counts: rule-1 hardcoded measure lemma "year" in answer.py, the SECOND
+time that exact sin was caught; and an undeclared edit to tokenize.py's master `_TOKEN`
+regex). Both must-fixes applied in the re-cut: the new age asks read `measure` from their
+YAML `resolves:` block exactly like `ask/how-old-is` already does, and the `_TOKEN`/`fold`
+hunk was dropped entirely — this landing's diff touches no tokenizer file.
+
+MECHANISM: packs/arithmetic/rules/core.yaml gains (a) `times-as-old-as-possessive-standard`
+/ `-both-possessive` — the multiplicative age relation whose standard is read via
+`{std.owner}` off a `cat: age_noun`-gated possessed noun (condense.py's merge-possessive
+already carries the owner feature, no kernel change needed); (b)
+`times-as-many-possessive-standard` — the general non-age possessive-NP standard, `type:
+possessed`, subsumed by the age-specific rule on the identical span via `patterns.subsumes`;
+(c) `affine-times-as-much` — the mass-noun sibling of `affine-times-as-many` (increment 46);
+(d) `temporal-offset-age-future-intensified` — a new single-word `count_intensifier` category
+(packs/core-english/categories/core.yaml) lets a sibling rule match the unmerged "N
+INTENSIFIER noun" span, since widening condense.py's shared `_count_pass` globally is
+forbidden by the HANDOFF invariant. New asks: `ask/how-many-years-old-is` and
+`ask/how-old-will-be-projected(-from-now)`, both feeding a new `age-projected` consumer in
+src/rulekit/kernel/answer.py that reads its measure from `query["measure"]`, matching every
+other answer.py consumer (constitution rule 1).
+
+FILES: packs/arithmetic/rules/core.yaml, packs/core-english/categories/core.yaml,
+src/rulekit/kernel/answer.py, tests/test_mining_increment_102.py.
+
+GATE (integrated, staging tip): dev-train diff SHIP (+2 SOLVED / 0 BROKE / 0 DECL->WRONG,
+77 -> 79 correct, 3772 items, 100% precision). dev-holdout diff SHIP (+3 SOLVED / 0 BROKE /
+0 DECL->WRONG, 29 -> 32 correct, 3701 items, 100% precision). Suite 52/52. Lint 0 errors (1
+pre-existing warning: fraction-of-remnant/fraction-of-pool overlap, known-good). pytest
+816 -> 830 (+13 new synthetic tests, +1 net from splitting
+test_mining_increment_31.py::test_future_age_declines into
+test_future_age_now_resolves / test_future_age_without_stated_current_age_declines — a
+deliberate decline->correct boundary move, documented in-test).
+**TEST look: pending — spent manually.**
+
+SOLVED (dev-train): 0d0cc7b2533c, b09a1168ffd7. SOLVED (dev-holdout): 0c06af60be80,
+487dc6a8e308, 4bcb1d148338. Six pool items remain declined by design: a linear equation
+to invert (66409a675cb3), a co-offset "then" on the standard (df2bd3686c13), an
+age-as-price bridge plus 2x2 sum-constraint (615bea763a56), an unbuilt birth-cohort premise
+(dfe494f7883f), and an unbuilt when-clause temporal anchor with a spelled dozen-multiplier
+(19bfb5be7629) — none of these fabricate an answer; all decline cleanly.
