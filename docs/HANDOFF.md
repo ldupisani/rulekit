@@ -4766,3 +4766,48 @@ THE PATTERN, now twice: **the failed candidates are where the bugs are.** Increm
 from `existential-relation-binding`, which never cracked its own target item, proved this
 fix out on the way, and SAID SO in its failure report. Increment 88 came from
 `time-period-qualified-events`, also demoted. Both were 0-SOLVED. Read the failure reports.
+
+## Increment 100 (2026-07-13) — restrictive 'that'-relative clauses on a numeral antecedent
+
+CLASS: restrictive relative clauses headed by 'that' on a numeral antecedent ("5 toys that
+each cost $3", "10 lessons that cost $10 each", "6 boxes of crayons that hold 8 crayons") —
+the clause's own price/measure verb was previously mis-read as a NOUN because its `subject`
+obligation could never be satisfied across the 'that' complementizer, which tipped coverage
+arbitration into the NOUN sense (then merged with its trailing value by condense's compound
+pass) before any fold ever ran. This is INFRASTRUCTURE, not a coverage increment on its own:
+it flips exactly 1 dev-train item (0b70dc5a080f) by design — its value is standing in front
+of the 48 declines that share this shape, most of which still need other consumers (purchase-
+total over an acquisition verb, cost-of-all-N-item, order-total, container-content) to
+finish the job.
+
+MECHANISM: a single, narrowly gated override at the obligation/disambiguation stage (not a
+post-hoc token scan): a 'that' immediately following a COUNTED noun is read as a relative
+pronoun on that noun (never a subordinating complementizer, which is preceded by a VERB,
+e.g. "found out THAT 7 caps weigh..."), and the verb whose clause that SAME 'that'
+introduces may bind its subject to that antecedent. Consulted from both disambiguation's
+own pre-condense coverage-scoring trial and the real, final obligation resolution, so every
+downstream consumer (price, rate, measure, container-content) sees the clause as a normal
+verb reading, not just the pre-existing `_relative_clause_each_price` price-only scan (left
+untouched, not widened). No lexicon: 'that' and "counted" are structure the grammar already
+carries (a value's `quantifies` obligation).
+
+FILES: src/rulekit/kernel/learn.py, src/rulekit/kernel/condense.py,
+src/rulekit/kernel/engine.py, tests/test_mining_increment_100.py.
+
+GATE (integrated, staging tip): dev-train diff SHIP (+1 SOLVED / 0 BROKE / 0 DECL->WRONG,
+77 correct, 3772 items, 100% precision). dev-holdout diff NEUTRAL (0 SOLVED / 0 BROKE / 0
+DECL->WRONG, 29 correct, 3701 items, 100% precision). Suite 52/52. Lint 0 errors (1
+pre-existing warning: fraction-of-remnant/fraction-of-pool overlap, known-good). pytest
+805 -> 811 (+6 new synthetic tests; 1 existing assertion in test_mining_increment_91.py
+updated from a decline to the new correct-answer, since it documented exactly the gap this
+increment closes).
+**TEST look: pending — spent manually.**
+
+BLAST RADIUS: this is the batch's one infrastructure brief, gated narrowly on purpose (the
+'that' must immediately follow a COUNTED noun) precisely because widening sense arbitration
+is the class of change that has broken unrelated items before. Full dev-train and
+dev-holdout diffs came back clean; no regression surfaced. Worklist for a future increment:
+the 4 structural-sample items marked `resolves_after_unblocks` (acquisition-verb purchase
+totals, cost-of-all-N-item asks, order-total asks) plus the free container-content payoff
+(1052a98b9604, feeds increment 77's bridge) are now unblocked and waiting on their own
+consumer-side increments.

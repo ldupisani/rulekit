@@ -158,15 +158,19 @@ def test_trailing_each_form_after_which_still_works(full_registry):
     assert r.answer.value == 12
 
 
-def test_that_headed_floating_each_declines_known_gap(full_registry):
-    # 'that' (a complementizer, unlike 'which') is a DELIBERATELY
-    # deferred gap (see _relative_clause_each_price's docstring) — must
-    # decline rather than silently misread.
+def test_that_headed_floating_each_now_resolves(full_registry):
+    # 'that' (a complementizer, unlike 'which') was a DELIBERATELY
+    # deferred gap (see _relative_clause_each_price's docstring) — mining
+    # candidate that-relative-clause-binding closes it at the
+    # disambiguation stage (obligations.py's subject-antecedent binding)
+    # plus learn.py's _relative_clause_distributive_price gate. See
+    # tests/test_mining_that_relative_clause_binding.py for the dedicated
+    # synthetic coverage of this mechanism.
     r = solve(
         "Nora buys 4 candles that each cost $3. How much does Nora pay?",
         full_registry,
     )
-    assert r.answer.kind == "decline"
+    assert r.answer.value == 12
 
 
 def test_which_bare_no_each_still_declines(full_registry):

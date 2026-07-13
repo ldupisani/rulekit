@@ -131,6 +131,41 @@ def _relative_clause_each_price(
     return None
 
 
+def _relative_clause_distributive_price(reading: Reading, subject: Unit, verb: Unit) -> bool:
+    """'5 toys THAT EACH cost $3' (mining candidate that-relative-clause-
+    binding) — the floating-'each' twin of `_has_distributive_determiner`
+    for a price_verb whose SUBJECT is bound across a restrictive 'that'-
+    relative clause (obligations.py's `_relative_clause_subject_
+    antecedent`, which lets `subject` reach `verb` at all). A quantifier's
+    own `collection` obligation is direction=right ONLY (a quantifier
+    "ranges over" what follows it — "each STUDENT"), so 'each' floating
+    immediately after 'that' and before the verb can never bind its
+    collection back to the antecedent the way subject now can; widening
+    `collection`'s candidate search globally to allow leftward binding
+    would touch every quantifier in the corpus, so this stays a narrow,
+    local token check instead — mirroring `_relative_clause_subject_
+    antecedent`'s own adjacency gate rather than widening a shared scan
+    (the increment-11 lesson).
+
+    True only for the exact shape 'NOUN that (each|every) VERB' with
+    `verb` the immediate next token after the quantifier — never a looser
+    scan, and never anything but the antecedent noun ALREADY the verb's
+    bound subject (callers pass their own `subject`/`verb`, so this can
+    only confirm a binding that already exists, not create a new one)."""
+    units = reading.units
+    try:
+        idx = units.index(subject)
+    except ValueError:
+        return False
+    if idx + 1 >= len(units) or units[idx + 1].sense() != "complementizer":
+        return False
+    j = idx + 2
+    if j >= len(units) or units[j].sense() != "quantifier":
+        return False
+    j += 1
+    return j < len(units) and units[j].uid == verb.uid
+
+
 def _is_measure_unit(noun: Unit, reg: Registry) -> bool:
     """A noun naming a KNOWN physical measure unit — one side of a
     `reg.conversions` pair (pound, gallon, ounce, ...; both directions are
@@ -879,6 +914,12 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                 # is itself per-unit evidence with no trailing 'each' to
                 # detect at all.
                 or _has_indefinite_singular_determiner(reading, subject, reg)
+                # mining candidate that-relative-clause-binding: "5 toys
+                # THAT EACH cost $3" — subject is bound across the 'that'
+                # clause (obligations.py), but the floating 'each' itself
+                # can't reach back the same way (see
+                # _relative_clause_distributive_price's docstring).
+                or _relative_clause_distributive_price(reading, subject, verb)
             ):
                 price_item = (
                     _lemma(measure_anchor) if measure_anchor is not None else _lemma(subject)

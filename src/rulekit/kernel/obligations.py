@@ -86,6 +86,68 @@ def _crosses_clause_boundary(reading: Reading, a: Unit, b: Unit) -> bool:
     )
 
 
+def _relative_clause_subject_antecedent(
+    reading: Reading, candidate: Unit, holder: Unit
+) -> bool:
+    """A restrictive relative clause headed by 'that' on a COUNTED numeral
+    antecedent ('5 toys THAT each cost $3', '10 lessons THAT cost $10
+    each', '6 boxes THAT hold 8 crayons') lets its verb (`holder`) satisfy
+    its subject obligation by binding to the antecedent noun (`candidate`)
+    immediately to 'that's left — a relative pronoun 'that', structurally
+    distinct from a subordinating 'that'-clause with its own subject
+    ('found out THAT 7 caps weigh...', which is preceded by a VERB, never
+    a counted noun). Gated on the narrowest possible structure: 'that'
+    must sit immediately adjacent to `candidate` (no scan through an
+    intervening PP/appositive — a looser antecedent search, e.g. through
+    'boxes OF crayons that hold...', is a separate, unproven class left
+    for a future increment), and `holder` must be the verb of THAT SAME
+    clause (no other complementizer between the marker and it, so a
+    nested subordinate clause inside the relative clause never borrows
+    this exception).
+
+    This is consulted from `_candidates` ONLY for the `subject` need, and
+    only as an override of `_crosses_clause_boundary` — every other
+    boundary-respecting rule (dobj/object binding, the ordinary case with
+    no 'that' at all) is unchanged.
+
+    "COUNTED" is checked two ways because this runs at two different
+    pipeline moments: disambiguation's own coverage-scoring trial calls
+    `bind()` BEFORE `condense()` has merged a leading numeral into its
+    noun (so 'toys' is still a bare noun with no `value_kind` yet — but
+    the numeral's own `quantifies` obligation has typically already bound
+    to it earlier in the SAME fixpoint sweep, token order being NUMBER
+    then NOUN then verb), while the real, final `bind()` runs AFTER
+    `condense()` (so 'toys' is by then the merged '5 toys' unit and
+    carries `value_kind == 'count'` directly). Checking either signal
+    keeps both call sites correct without duplicating this function."""
+    if candidate.sense() != "noun":
+        return False
+    if candidate.features.get("value_kind") != "count" and not any(
+        ob.need == "quantifies" and ob.met and ob.target is candidate
+        for unit in reading.units
+        for ob in unit.obligations()
+    ):
+        return False
+    units = reading.units
+    try:
+        idx = units.index(candidate)
+    except ValueError:
+        return False
+    if idx + 1 >= len(units):
+        return False
+    marker = units[idx + 1]
+    if marker.sense() != "complementizer":
+        return False
+    if holder.span[0] <= marker.span[0]:
+        return False
+    for u in units:
+        if u.uid == marker.uid:
+            continue
+        if u.sense() == "complementizer" and marker.span[0] < u.span[0] < holder.span[0]:
+            return False
+    return True
+
+
 def attach_obligations(reading: Reading, reg: Registry) -> Reading:
     for unit in reading.units:
         sense = unit.sense()
@@ -138,10 +200,18 @@ def _candidates(reading: Reading, holder: Unit, ob: Obligation, reg: Registry) -
             continue
         # arguments are CLAUSE-LOCAL: a complementizer ("found out THAT
         # 7 caps weigh…") is a boundary no subject/dobj binding may cross
+        # — EXCEPT a restrictive 'that'-relative clause's verb may still
+        # reach its own antecedent for its subject (see
+        # _relative_clause_subject_antecedent; mining candidate
+        # that-relative-clause-binding).
         if ob.need in ("subject", "dobj", "object") and _crosses_clause_boundary(
             reading, holder, unit
         ):
-            continue
+            if not (
+                ob.need == "subject"
+                and _relative_clause_subject_antecedent(reading, unit, holder)
+            ):
+                continue
         out.append(unit)
     # A conjoined name ("Frankie AND Carla played…") is not a lone subject —
     # the subject is the GROUP. Keep both conjuncts in play and FORBID
