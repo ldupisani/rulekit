@@ -4270,3 +4270,35 @@ lint clean. 0 SOLVED — no DEV item happens to hit the trap, which is what "lat
 
 WORTH REMEMBERING: this came from a candidate the goal-mode gate DEMOTED for solving
 nothing. "0 SOLVED" is not "worthless" — read the failed-candidate reports.
+
+## Increment 89 (2026-07-13) — passive-voice entity-less event totality asks
+
+CLASS: "how many X were eaten/sold/given/bought in total?" — the passive-voice sibling
+of the existing active-voice entity-less totality asks (e.g. "how many pies did they
+eat in total?"). Every ask id in `packs/arithmetic/rules/core.yaml` was ACTIVE-voice
+only; not one matched a passive question, despite identical premises already building
+the right facts.
+
+MECHANISM: YAML-ONLY. Added `ask/how-many-passive-combined` to
+`packs/arithmetic/rules/core.yaml` — a copula ({cat: state}: is/was/are/were) directly
+followed by a bare past-participle verb form (no subject, no auxiliary, no literal
+"there"), plus the same required trailing totality marker (optionally preceded by a
+preposition: "in total", "altogether", "combined"). Routes to the SAME unchanged
+`combined` consumer every other entity-less totality ask already uses. No new
+consumer, no new fact kind, no new vocabulary — every past participle exercised
+already carries `sense=verb` with its own `verb.lemma` feature in the shipped packs.
+Zero ordering risk: the passive frame requires a copula + past participle, which no
+active ask's frame admits, so it can never tie with an existing ask id (confirmed by
+lint's overlap witness).
+
+PROVEN on a controlled pair on unmodified main: "Sierra ate 12 pies. Bill ate 6 pies.
+Adam ate 9 pies. How many pies did they eat in total?" -> commits 27.0 (correct).
+Same premises, "...how many pies were eaten in total?" -> declined (no ask shape
+recognized it). Confirmed on the real item 409628e79bf6 (gold 27): rewriting only its
+ask to the active voice already committed correctly on main; the new passive ask id
+now makes the ORIGINAL passive item commit 27.0 directly.
+
+GATE: dev-train diff SOLVED 1 (409628e79bf6) / BROKE 0 / DECL->WRONG 0 — VERDICT SHIP.
+dev-holdout diff NEUTRAL (0/0/0). Suite 52/52. Lint 0 errors (1 pre-existing warning:
+fraction-of-remnant/fraction-of-pool overlap, known-good). pytest 708 -> 715 (+7).
+**TEST look: pending — spent manually.**

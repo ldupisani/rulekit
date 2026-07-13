@@ -1923,6 +1923,102 @@ asks:
       grp_value: "{grp.value}"
       measure_substance: "{substance}"
 
+  - id: ask/how-many-passive-combined
+    # "how many X WAS/WERE PAST-PARTICIPLE (in total/altogether/together/
+    # combined)?" (mining candidate passive-event-totality-asks) — the
+    # PASSIVE-VOICE sibling of ask/how-many-there-combined. Every ask in
+    # this file up to now requires either an auxiliary/modal + subject
+    # ("did they eat", "will she have") or the literal existential 'there'
+    # ("are there") — none of them can match a copula ({cat: state}: is/
+    # was/are/were, the SAME slot ask/what-total-combined already calls
+    # "the copula") immediately followed by a bare past-participle verb
+    # form with NO subject at all ("were eaten", "was sold", "were given",
+    # "was bought"). That is exactly the passive frame: the same
+    # entity-less premise-read this file's other combined asks already
+    # answer (Σ over every holder of the resolved measure), phrased without
+    # an agent.
+    #
+    # No new vocabulary: 'eaten'/'sold'/'given'/'bought' etc. are already
+    # lexiconed with sense=verb and their own `verb.lemma` feature (e.g.
+    # difg-mined's `eaten: {senses: [verb], verb: {lemma: eat}}`) — the
+    # SAME feature `{verb}`'s template resolution already reads by default
+    # (patterns._slot_value falls through to `_lemma_of`), so binding
+    # {slot: verb, type: verb} to the participle and writing `verb:
+    # "{verb}"` below yields the LEMMA ("eat", not "eaten") exactly the way
+    # ask/how-many-combined's own {verb} slot yields "eat" from the base
+    # form after do-support. The 'combined' consumer's existing ask_verb
+    # branch (`answer.py::_combined_holder_totals`: state verbs anchor via
+    # `_entity_total`, event verbs sum unsigned via `_verb_total`) is
+    # therefore driven correctly regardless of voice — this ask changes
+    # nothing in answer.py.
+    #
+    # Reuses ask/how-many-there-combined's identical optional groups
+    # (partitive substance tail, optional preposition before the aggregate
+    # marker, optional trailing collective-NP group so its own cardinal is
+    # consumed rather than tripping value-accounting) and its
+    # `exclude_entity: world` discipline (the bare existential scene-holder
+    # must never be double-counted alongside a real named holder) —
+    # verbatim, not re-derived.
+    #
+    # Zero ordering/overlap risk with any existing ask: a copula
+    # immediately followed by a bare past-participle with no subject/aux/
+    # 'there' in between is a token sequence no other ask's literal
+    # skeleton can consume (ask/how-many-there-combined itself requires
+    # the literal 'there' right after its own {verb} slot; ask/how-many-
+    # combined's optional aux/who/verb group requires either a
+    # future_modal or a pronoun subject, neither of which a copula
+    # satisfies) — this ask simply fails to match active-voice questions,
+    # and they simply fail to match this one; never a partial-match tie.
+    #
+    # Verified end-to-end against real dev-train text (increment
+    # development, not a shipped test): "...If Sierra ate 12 pies, how
+    # many pies were eaten in total?" now commits 27.0 via this ask,
+    # identically to its already-shipped active twin "...how many pies did
+    # they eat in total?".
+    #
+    # SCOPED OUT at ship time (found during development, not forced):
+    # (1) a passive COMPARATIVE sibling ("how many more X were sold on A
+    # than B") was drafted but dropped — tracing a real candidate item
+    # showed the two compared quantities are TIME-scoped facts on one
+    # shared entity (Quantity.time, e.g. 'on saturday'/'on sunday'), not
+    # two separate named entities the existing 'difference' consumer's a/b
+    # binding can address; closing that gap needs a time-scoped consumer,
+    # not a YAML-only ask, so it stays future work. (2) a passive BARE
+    # sibling with no totality marker ("how many X were eaten?") was also
+    # dropped: routing it to the 'unique-entity' consumer (ask/how-many-
+    # there's own consumer) would unconditionally apply `_entity_total`'s
+    # SIGNED state-fold to an event verb's own holder — "Sam ate 5
+    # cookies. How many cookies were eaten?" would commit -5.0 instead of
+    # 5.0, a confident wrong (verified live against unmodified `combined`/
+    # `unique-entity` behavior during development). `unique-entity` has no
+    # ask_verb branch to fix this without kernel changes, so that sibling
+    # is out of scope for a YAML-only increment.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - opt:
+            - {lit: of}
+            - {slot: substance, type: noun}
+        - {slot: be, cat: state}
+        - {slot: verb, type: verb}
+        - opt:
+            - {slot: p, cat: preposition}
+        - {slot: agg, cat: aggregate}
+        - opt:
+            - {slot: p2, cat: preposition}
+            - opt:
+                - {lit: the}
+            - {slot: grp, type: plural}
+    resolves:
+      consumer: combined
+      measure: "{item}"
+      verb: "{verb}"
+      exclude_entity: world
+      grp_value: "{grp.value}"
+      measure_substance: "{substance}"
+
   - id: ask/how-many-plural-combined
     # "how many ITEM do/does/did (THE) PLURAL-COMMON-NOUN have TOTAL-
     # MARKER?" (mining candidate plural-np-totality-asks) — the definite-
