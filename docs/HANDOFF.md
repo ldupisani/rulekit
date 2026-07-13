@@ -3670,3 +3670,14 @@ THE TWO-STROKE RHYTHM IS NOW THE METHOD (4 for 4):
 Enabler bases: 66 -> +9, 70 -> +6, 74 -> +6, 77 -> +5. Bare-main coverage batches:
 0 of 10, 0 of 5. A single batch is HALF a cycle; the honest unit of progress is the
 pair. Do not read an enabler batch's 0 coverage as a failed batch.
+
+## Batch 32 (2026-07-13) — enabler batch: increment 79 parked
+
+Scout returned one structural brief (the conversion instruction is holding).
+
+PARKED: **increment 79 — extraposed-duration rate premises** ("it takes WHO N
+TIMEUNIT to VERB M ITEM"). NEUTRAL on dev-train AND dev-holdout (0 SOLVED),
+pytest 628, suite 52/52, lint clean.
+Branch: `mining/parked/extraposed-duration-rates-enabler`. No TEST look spent.
+
+NEXT: payoff batch on `base=mining/parked/extraposed-duration-rates-enabler`.
