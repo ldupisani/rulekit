@@ -3931,3 +3931,26 @@ This was the last batch scouted under the surface-frequency worklist. From batch
 scout runs on the ADDRESSABLE POOL with the yield gate (methodology §9). Batch 36 runs
 on `base=mining/parked/conjoined-event-conjuncts-enabler` so the enabler rides with
 whatever the new targeting wins.
+
+## Batch 36 (2026-07-13) — first batch on the YIELD-BASED targeting. It found the real blocker.
+
+LANDED (0 coverage, PARKED): **increment 84 — partitive-measure asks: THE ITEM SLOT
+CANNOT REPRESENT A PARTITIVE NP.** Composition gate PASS (0 BROKE, 0 DECL->WRONG on both
+slices, suite 52/52, pytest 667) but `solved_vs_main = 0`.
+
+READ THAT CORRECTLY. It is not a failed ask shape. The scout walked the **70-item
+partitive-measure family** (the pool's 4th-biggest), found the items do not resolve, and
+diagnosed WHY: the ask's item slot has no way to hold "cups OF milk" as one thing. So it
+produced the ENABLER for a 70-item family — exactly what §9 targeting is supposed to do.
+The old targeting was finding 3-5 item classes.
+
+CALIBRATION (first data point, methodology §9.4):
+  partitive-measure family — pool_frequency ~70, solved_vs_main 0.
+  Expected: what landed was the ENABLER, not the ask. The payoff batch is the test.
+
+PARKED BASE: `mining/parked/partitive-slot-enabler` = main + increment 83
+(conjoined event conjuncts) + increment 84 (partitive item slot). No TEST look spent on
+either — both are 0-SOLVED.
+
+NEXT: batch 37 on `base=mining/parked/partitive-slot-enabler`, aimed at the partitive
+family's ASK SHAPES now that the slot can hold them.
