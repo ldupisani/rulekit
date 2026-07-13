@@ -267,6 +267,54 @@ categories:
     parent: noun
     antonym: complement_boy
     notes: "the symmetric half of complement_boy — see its notes."
+  child:
+    parent: noun
+    # mining candidate subtype-total-asks: only a category EXPLICITLY
+    # opted in here may feed answer.py's `_superordinate_total` — see
+    # `superordinate`'s own schema docstring (data/schemas.py CategoryDef)
+    # for why this must be a SEPARATE flag from merely "has members":
+    # 'animal'/'pet' below also declare members, for unrelated decline-
+    # safety regression coverage, with a deliberately PARTIAL list that
+    # must never be read as an exhaustive subtype set.
+    superordinate: true
+    notes: >
+      a PACK-DECLARED SUPERORDINATE — 'daughter' and 'son' are SUBTYPES of
+      'child' ("Sandro has six times as many daughters as sons... how many
+      children does he have?"). The category's NAME IS the superordinate
+      WORD itself: a generic consumer (answer.py's `_superordinate_total`)
+      sums an entity's own subtype holdings into the asked measure's total
+      whenever the asked measure carries no fact of its own and every
+      measure the entity DOES hold is a declared member here — resolved
+      via `reg.category_members.get(asked_measure)`, never a hardcoded
+      word in Python (constitution rule 1). Deliberately NO `polarity`/
+      `interchangeable`: subtypes are not signed and are never
+      interchangeable stand-ins for each other (that would let a 'son'
+      fact answer a 'daughter' ask) — they only ever SUM into the
+      superordinate. 'daughter'/'son' are difg-mined-only words, so
+      (mirroring complement_boy/girl's sibling pattern above) this
+      category has NO members here; they live in packs/difg-mined/
+      categories/semantic.yaml. A core-english-only registry compiles with
+      this category simply empty (the consumer then never fires,
+      decline-safe).
+  toy:
+    parent: noun
+    superordinate: true
+    notes: >
+      sibling of 'child' (subtype-total-asks) — subtypes: toy soldier / toy
+      car ("James buys twice as many toy soldiers as toy cars... how many
+      total toys does he buy?"). Same structural-only definition; members
+      ('soldier'/'car', difg-mined-only) live in packs/difg-mined/
+      categories/semantic.yaml. See child's note for the full mechanism.
+  fish:
+    parent: noun
+    superordinate: true
+    notes: >
+      sibling of 'child' (subtype-total-asks) — subtypes: goldfish /
+      angelfish / guppy ("Catriona has 8 goldfish... 4 more angelfish than
+      goldfish... twice as many guppies as angelfish... how many fish does
+      Catriona have?"). Same structural-only definition; members (difg-
+      mined-only) live in packs/difg-mined/categories/semantic.yaml. See
+      child's note for the full mechanism.
 members:
   currency: [dollar]
   partitive: [of]

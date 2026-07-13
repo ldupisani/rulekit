@@ -69,6 +69,24 @@ class CategoryDef(StrictModel):
     # resolve to the unique in-store member — sibling count nouns (cat/dog in
     # 'animal') never stand in for each other.
     interchangeable: bool = False
+    # Members are EXHAUSTIVE, author-vetted SUBTYPES of the category's own
+    # NAME (mining candidate subtype-total-asks: 'child' -> daughter/son) —
+    # the category NAME doubles as the superordinate MEASURE word. Only
+    # such categories let answer.py's `_superordinate_total` sum an
+    # entity's own subtype holdings into an otherwise-factless ask for the
+    # category's name. Deliberately a SEPARATE opt-in flag from
+    # `interchangeable`, never inferred from "has members" alone — 'animal'/
+    # 'pet' (this pack) also declare members, for a DIFFERENT purpose
+    # (decline-safety regression coverage in `_resolve_measure_against`'s
+    # own docstring) with a deliberately PARTIAL, non-exhaustive list (only
+    # 3 of the animal words dev-train ever mentions are 'pet' members) — if
+    # `_superordinate_total` read `members` directly it would silently sum
+    # only the CAPTURED subset while the text's own uncaptured subtype
+    # (e.g. an unresolved 'fish' relation) drops out unaccounted, a
+    # confident-wrong the dev-train gate itself caught. This flag is the
+    # single mandatory guard against that: a category must be explicitly
+    # author-vetted as exhaustive before this consumer will touch it.
+    superordinate: bool = False
     notes: str | None = None
 
 

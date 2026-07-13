@@ -3609,3 +3609,46 @@ before and after); dev-holdout diff SHIP, SOLVED 1 (85bf6abfa0d2), 0
 BROKE, 0 DECL→WRONG (23→24/3701 correct); pytest 616 passed; suite
 52/52; lint 0 errors / 1 known-good warning (fraction-of-remnant /
 fraction-of-pool, unchanged). TEST look: pending — spent manually.
+
+## Increment 78 (2026-07-13) — superordinate totality asks over same-holder
+subtype comparatives (payoff, on increment 77's container-content bridge
+branch)
+
+Class: a superordinate totality ask ("how many children/toys/fish does he
+have?") over an entity whose stated facts are all same-holder SUBTYPE
+comparatives of that superordinate ("twice as many daughters as sons",
+"N more X than Y" chains) rather than a direct fact for the superordinate
+measure itself. Three-piece mechanism: (1) `saturate.py`
+`_relations_synth` gains a strictly-additional same-holder SUBTYPE anchor
+branch — when a Relation's `standard` is not another entity's holding but
+IS a DIFFERENT measure the relation's own subject already holds, the
+relation resolves against that subject-held quantity; the pre-existing
+fixpoint driver reruns every synth each round so chained standards (A
+derived from B, C derived from A) resolve with no extra loop. (2) The
+additive "N more X than Y" pattern (`packs/arithmetic/rules/core.yaml`)
+now emits a Relation (not just a bare Predication) when the "than"
+standard is a same-holder measure. (3) A new `answer.py` consumer,
+`_superordinate_total`, sums an entity's own subtype holdings into the
+asked superordinate measure — gated on an explicit, opt-in
+`superordinate: true` category flag (`packs/core-english/categories/core.yaml`,
+`packs/difg-mined/categories/semantic.yaml`) naming the superordinate word
+and its exhaustive subtype members (child: daughter/son; toy:
+soldier/car; fish: goldfish/angelfish/guppy) — deliberately a separate
+flag from bare category `members`, since pre-existing categories
+(animal/pet) declare partial member lists for an unrelated purpose and
+reading `members` alone would silently under-count. Also accepts the
+optional prenominal `aggregate` marker (increment 75 precedent) on the
+single-entity ask.
+
+Files: `src/rulekit/kernel/saturate.py`, `src/rulekit/kernel/answer.py`,
+`packs/core-english/categories/core.yaml`,
+`packs/difg-mined/categories/semantic.yaml`,
+`packs/arithmetic/rules/core.yaml`, `tests/test_mining_increment_78.py`.
+
+Gates (integrated on staging, full re-proof against current staging
+baseline): dev-train diff SHIP, SOLVED 3, 0 BROKE, 0 DECL→WRONG
+(54→57/3772 correct; SOLVED 1a0944559f81, 397d6a52403e, f5d2b1bcc320);
+dev-holdout diff SHIP, SOLVED 1, 0 BROKE, 0 DECL→WRONG (24→25/3701
+correct; SOLVED 7822e5e02965); pytest 622 passed; suite 52/52; lint 0
+errors / 1 known-good warning (fraction-of-remnant / fraction-of-pool,
+unchanged). TEST look: pending — spent manually.

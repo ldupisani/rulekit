@@ -1318,6 +1318,41 @@ asks:
       measure: "{item}"
       verb: "{verb}"
 
+  - id: ask/how-many-entity-prenominal-marker
+    # "how many TOTAL-MARKER toys does WHO buy?" (mining candidate
+    # subtype-total-asks) — sibling of ask/how-many-entity for the
+    # PRENOMINAL aggregate-marker placement, mirroring ask/how-many-
+    # plural-combined-prenominal-marker's shape (increment 75) but routed
+    # to the SINGLE-entity consumer, not `combined` — the marker here
+    # names ONE holder's own superordinate total ("how many total toys
+    # does he buy" sums James's own car/soldier holdings), never several
+    # holders'. `pre, cat: aggregate` is a REQUIRED token (not optional):
+    # this ask exists ONLY for the marker-before-noun placement; a bare
+    # "how many toys does he buy" (no marker anywhere) still matches
+    # ask/how-many-entity exactly as before, unaffected.
+    #
+    # Never a tie with ask/how-many-entity: that ask's `item` slot sits
+    # IMMEDIATELY after "many" with no marker token between — a prenominal
+    # marker fails its match before specificity is ever compared (the
+    # marker's `aggregate` sense fails `type: noun` and is not in
+    # SKIPPABLE_SENSES), exactly the same non-tie ask/how-many-plural-
+    # combined-prenominal-marker already established against its own
+    # bare sibling.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: pre, cat: aggregate}
+        - {slot: item, type: noun}
+        - {slot: aux, type: future_modal}
+        - {slot: who, type: name}
+        - {slot: verb, type: verb}
+    resolves:
+      consumer: single-entity
+      entity: "{who}"
+      measure: "{item}"
+      verb: "{verb}"
+
   - id: ask/how-many-entity-elided-measure
     # mining candidate elided-measure-entity-asks: sibling of
     # ask/how-many-entity with NO `item` slot at all — "How many does Tom

@@ -256,6 +256,77 @@ def _entity_total(
     return evaluate(expr, {}, log, source="fold")
 
 
+def _superordinate_total(
+    store: FactStore, reg: Registry, entity: str, measure: str, log: ArithmeticLog,
+    verb: str | None = None,
+) -> float | None:
+    """Superordinate totality asks over same-holder subtype comparatives
+    (mining candidate subtype-total-asks): "Sandro has six times as many
+    daughters as sons... how many children does he have?" — the asked
+    measure ('child') carries no fact of its own, but every measure this
+    entity actually holds is a pack-DECLARED subtype of it (packs/core-
+    english/categories/core.yaml + packs/difg-mined/categories/
+    semantic.yaml: `reg.category_members[measure]` — the superordinate
+    WORD doubles as its own category name, mirroring 'currency's
+    structural role — resolved generically, never a hardcoded word list in
+    Python, constitution rule 1).
+
+    Fires ONLY when EVERY measure the entity holds is a declared member of
+    the asked measure's category AND at least two distinct subtypes are
+    held — so a partition ('Tom has 20 pets, 8 of them are dogs') never
+    double-counts: 'pet' already carries its own fact and this consumer is
+    only ever reached (from the `single-entity` branch) once that direct
+    lookup has already come back empty. A single incidental subtype
+    mention alone (only one declared member ever held) is not "every
+    subtype", so it stays declined rather than risk answering a bare
+    restatement as if it were the whole superordinate total.
+
+    `verb` (opt-in, default None — the STATE-ask caller is unaffected):
+    when given (an EVENT ask, e.g. "how many total toys does he BUY"),
+    scopes both which measures count as "held" and how each subtype is
+    summed to THAT VERB alone, mirroring `_verb_total`'s own verb-scoping
+    discipline — reusing the state/event `_entity_total` fold here would
+    silently pull in an unrelated verb's facts for the same measure. Either
+    way this never re-implements the underlying fold: state asks reuse
+    `_entity_total`, event asks reuse `_verb_total`, so an ambiguous
+    subtype (mixed times, unsigned event) declines the WHOLE total,
+    definitive-or-decline exactly like `_purchase_total`/`_revenue_total`."""
+    if measure not in reg.superordinate_categories:
+        # NOT merely "measure has declared members" — 'animal'/'pet' also
+        # have members (a different, deliberately PARTIAL list, for
+        # unrelated decline-safety regression coverage) and reading them
+        # here would silently sum only the CAPTURED subset while an
+        # uncaptured subtype phrase in the text (e.g. an unresolved
+        # relation) drops out unaccounted — a genuine confident-wrong the
+        # dev-train gate caught. Only a category the pack explicitly marks
+        # `superordinate: true` (data/schemas.py CategoryDef) is eligible.
+        return None
+    members = set(reg.category_members.get(measure, ()))
+    if not members:
+        return None
+    if verb is None:
+        held_measures = {q.measure for q in store.by_kind(Quantity) if q.entity == entity}
+    else:
+        held_measures = {
+            q.measure for q in store.by_kind(Quantity)
+            if q.entity == entity and q.verb == verb
+        }
+    if not held_measures or not held_measures <= members:
+        return None
+    if len(held_measures) < 2:
+        return None
+    parts: list[str] = []
+    for m in sorted(held_measures):
+        subtotal = (
+            _entity_total(store, reg, entity, m, log) if verb is None
+            else _verb_total(store, entity, m, verb, log)
+        )
+        if subtotal is None:
+            return None
+        parts.append(str(subtotal))
+    return evaluate(" + ".join(parts), {}, log, source="superordinate-total")
+
+
 def _combined_holder_totals(
     store: FactStore, reg: Registry, query: dict, log: ArithmeticLog,
     *, exclude_entity: str | None = None,
@@ -444,6 +515,16 @@ def answer(
                     return Answer(
                         "number", total, f"Σ price × qty over {entity!r}'s sales"
                     )
+            # superordinate-totality fallback (mining candidate subtype-
+            # total-asks), verb-scoped sibling of the state-ask fallback
+            # below: "James buys twice as many toy soldiers as toy cars...
+            # how many total toys does he buy?" — see `_superordinate_
+            # total`'s own docstring for the guard.
+            total = _superordinate_total(store, reg, entity, singular, log, verb=ask_verb)
+            if total is not None:
+                return Answer(
+                    "number", total, f"Σ {ask_verb!r} subtype events of {entity!r}/{singular!r}"
+                )
             return Answer(
                 "decline", None,
                 f"no {ask_verb!r} events known for {entity!r}/{singular!r}",
@@ -479,6 +560,12 @@ def answer(
             holders = {q.entity for q in store.by_kind(Quantity) if q.measure == singular}
             if holders == {fallback_entity}:
                 total = _entity_total(store, reg, fallback_entity, singular, log)
+        if total is None:
+            # superordinate-totality fallback (mining candidate subtype-
+            # total-asks): the asked measure has ZERO facts of its own but
+            # every measure this entity holds is a pack-declared subtype of
+            # it — see `_superordinate_total`'s own docstring for the guard.
+            total = _superordinate_total(store, reg, entity, singular, log)
         if total is None:
             return Answer(
                 "decline", None,

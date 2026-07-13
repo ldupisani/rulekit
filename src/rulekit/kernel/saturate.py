@@ -175,6 +175,40 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
                     )
                 )
                 continue
+        # SAME-HOLDER SUBTYPE anchor (mining candidate subtype-total-asks):
+        # "Sandro has six times as many daughters as sons" — 'son' is NOT
+        # another entity's own holding of 'daughter' (the ENTITY anchor
+        # above correctly found nothing), it is a DIFFERENT measure the
+        # RELATION'S OWN SUBJECT already holds. Strictly additive: reachable
+        # only when the entity anchor above found nothing at all — i.e.
+        # exactly the relations that decline today — so no existing
+        # entity-anchored relation is ever intercepted here first. Guarded
+        # by the SAME by-verb re-derivation block as the entity anchor, and
+        # blocks re-deriving the SAME (subject, standard) pair once
+        # resolved: the fixpoint driver (saturate()) reruns this synth every
+        # round, so a chained standard ("son" -> "daughter" -> ... deriving
+        # a third subtype from a second-round Quantity) resolves over
+        # successive rounds with no extra loop here, and the by_verb guard
+        # (rebuilt from the store each round, monotonically growing) makes a
+        # cyclic pair decline rather than diverge: with no base-case
+        # Quantity anywhere in the chain, neither side is ever found by
+        # this lookup, so nothing is ever emitted for it.
+        subtype_known = quantities.get((rel.subject, rel.standard))
+        if (
+            subtype_known is not None
+            and (rel.subject, rel.measure, verb_key(rel.verb)) not in by_verb
+        ):
+            value = evaluate(
+                f"{rel.factor} * {subtype_known.value} + {rel.offset}", {}, log,
+                source=f"relation-subtype:{rel.provenance.source}",
+            )
+            out.append(
+                Quantity(
+                    provenance=Provenance(source="synth/relation", sentence=rel.provenance.sentence),
+                    entity=rel.subject, measure=rel.measure, value=value, verb=rel.verb,
+                )
+            )
+            continue
         # INVERSE: the subject is known, the standard is not — solve
         # standard = (subject − offset) / factor ("If Zig wrote 60, and Zig
         # wrote four times as many as Flo…")
