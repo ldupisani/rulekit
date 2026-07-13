@@ -16,11 +16,11 @@ every increment through the gates).
 **Current numbers (all verified at head):**
 - dev-train: 65 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
 - dev-holdout: 26 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 691 · lint: 0 errors, 1 intended warning
+- curated suite: 52/52 · pytest: 708 · lint: 0 errors, 1 intended warning
 - bench wall: dev-train 16.6s -> 9.0s (trace opt-out) -> 1.7s at `--jobs 12`.
   `--jobs` defaults to 1; spend it in the SERIAL integration tail, never in the
   implementers' gates (they already run concurrently). See the two infra notes below.
-- TEST ledger (85 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- TEST ledger (86 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -4241,3 +4241,32 @@ their branches are retained and each finding is a named candidate:
 `partitive-combined-asks` shipped NEUTRAL honestly: no dev item hits its exact shape
 today because the pool items carrying that ask have a SECOND blocker (elided standards,
 equal-share division, dozen conversions, reverse solves). Its 12 synthetic tests stand.
+
+## Increment 88 (2026-07-13) — WEEKDAY PRECISION FIX. A live bug on main, killed.
+
+Not a coverage increment. Constitution rule 4: precision before coverage.
+
+THE BUG (live on main until now): weekday words carried an inert `time` sense nothing
+reads, and — always capitalized — senses.py's capitalization heuristic ALWAYS overrode them
+to `name`. A weekday adjunct injected a spurious proper name into `_discourse_candidates`,
+which could steal a following pronoun's binding and silently drop the real holder's
+quantity.
+
+PROVEN, not asserted. Same shape, two adjuncts:
+  "On Monday,      Sam had 12 apples. He found 5 apples."  -> main: quantity LOST
+  "In the morning, Sam had 12 apples. He found 5 apples."  -> main: quantity attached
+The divergence IS the bug. With the fix they behave identically.
+
+THE FIX IS STRUCTURAL: weekdays retagged `time` -> `noun`, admitted to the PRE-EXISTING
+`timeperiod` category (with morning/week/year), and senses.py exempts timeperiod-category
+words from the capitalization override. The kernel names a CATEGORY, never a word.
+**NO NEW VOCABULARY** — all seven weekdays were already in the lexicon; only their SENSE is
+corrected. Both prior TEST vocab kills were about admitting UNKNOWN words; this is a
+different and far safer operation. Quarantine checked.
+
+GATE: both diffs NEUTRAL (0 BROKE, 0 DECL->WRONG), suite 52/52, pytest 691 -> 708 (+17),
+lint clean. 0 SOLVED — no DEV item happens to hit the trap, which is what "latent" means.
+**TEST look #86: 11/1 (91.7%) — HELD.** Landed.
+
+WORTH REMEMBERING: this came from a candidate the goal-mode gate DEMOTED for solving
+nothing. "0 SOLVED" is not "worthless" — read the failed-candidate reports.
