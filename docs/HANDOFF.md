@@ -3919,3 +3919,15 @@ becomes an enabler brief.
 
 Enabler yield was declining anyway (+9, +6, +6, +5, +2) — consistent with the
 enabler path being a detour around a mis-sampled pool rather than the main seam.
+
+## Batch 35 (2026-07-13) — increment 83 parked (last batch on the OLD targeting)
+
+PARKED: **increment 83 — conjoined event-verb object lists** (each conjunct is its own
+event, bound to its own counted noun). Both diffs NEUTRAL (0 SOLVED), pytest 659,
+suite 52/52, lint clean. Branch `mining/parked/conjoined-event-conjuncts-enabler`.
+No TEST look spent.
+
+This was the last batch scouted under the surface-frequency worklist. From batch 36 the
+scout runs on the ADDRESSABLE POOL with the yield gate (methodology §9). Batch 36 runs
+on `base=mining/parked/conjoined-event-conjuncts-enabler` so the enabler rides with
+whatever the new targeting wins.
