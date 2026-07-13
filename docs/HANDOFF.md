@@ -14,13 +14,13 @@ swing under the constitution (no lexicon in Python, no per-problem parsing,
 every increment through the gates).
 
 **Current numbers (all verified at head):**
-- dev-train: 66 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
+- dev-train: 70 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
 - dev-holdout: 28 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 722 · lint: 0 errors, 1 intended warning
+- curated suite: 52/52 · pytest: 757 · lint: 0 errors, 1 intended warning
 - bench wall: dev-train 16.6s -> 9.0s (trace opt-out) -> 1.7s at `--jobs 12`.
   `--jobs` defaults to 1; spend it in the SERIAL integration tail, never in the
   implementers' gates (they already run concurrently). See the two infra notes below.
-- TEST ledger (88 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- TEST ledger (91 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -4480,3 +4480,28 @@ GATE: dev-train diff SOLVED 2 (7394eac428cb, 8ea333bd91f4) / BROKE 0 / DECL->WRO
 warning: fraction-of-remnant/fraction-of-pool overlap, known-good). pytest 748 -> 757
 (+9).
 **TEST look: pending — spent manually.**
+
+## Batch 41 (2026-07-13) — three landed. dev-train 66 -> 70. Best batch of the goal run.
+
+LANDED (looks #89, #90, #91 — all 11/1, 91.7%, HELD):
+- **91 — generic unit-price premises**: per-unit prices whose subject frame was never read
+  — indefinite-singular generics ("a book costs $5"), pronoun subjects ("they are $20
+  each"), floating-'each' relative clauses ("5 toys that each cost $3"). +1.
+- **92 — discounted purchase totals**: a percent or flat discount applied to a priced
+  purchase before the pay/spend total. +1.
+- **93 — same-holder cross-measure relations**: PP-interrupted measure NPs, conjoined-clause
+  premises, inverse (standard-unknown) resolution, superordinate totality asks over them. +2.
+
+REVIEW KILL — **rule 3, the most serious violation yet**: `temporal-offset-age-relations`
+put a **VERBATIM GSM8K TRAIN ITEM** into `tests/` ("9 years from now, John will be 3 times
+as old as he was 11 years ago. How old is he now?"). The reviewer verified it BYTE-FOR-BYTE
+against `gsm8k_train.parquet` — item ae407466fc20, quoted in the brief's own structural
+sample and copied straight through instead of synthesized. It caught a second, subtler one
+in the same file: a truncated two-sentence premise from another train item with only the
+ask swapped. Branch retained; fix is trivial (synthesize equivalents) but it goes back to
+the worklist, NOT into a review-pressure edit.
+
+**AUDITED main directly afterwards: no GSM8K train strings in tests/. The line held.**
+
+SHAPE GATE: `rate-stack-robustness` dropped at 2 of 10 walked — the minItems=8 fix working
+as intended (a real sample, an honest denominator).
