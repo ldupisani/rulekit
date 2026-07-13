@@ -14,13 +14,13 @@ swing under the constitution (no lexicon in Python, no per-problem parsing,
 every increment through the gates).
 
 **Current numbers (all verified at head):**
-- dev-train: 65 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
-- dev-holdout: 26 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 708 · lint: 0 errors, 1 intended warning
+- dev-train: 66 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
+- dev-holdout: 28 correct / 0 wrong (3,701 items)
+- curated suite: 52/52 · pytest: 722 · lint: 0 errors, 1 intended warning
 - bench wall: dev-train 16.6s -> 9.0s (trace opt-out) -> 1.7s at `--jobs 12`.
   `--jobs` defaults to 1; spend it in the SERIAL integration tail, never in the
   implementers' gates (they already run concurrently). See the two infra notes below.
-- TEST ledger (86 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- TEST ledger (88 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -4338,3 +4338,29 @@ DECL->WRONG 0 — VERDICT SHIP (26 -> 28 correct). Suite 52/52. Lint 0 errors (1
 pre-existing warning: fraction-of-remnant/fraction-of-pool overlap, known-good).
 pytest 715 -> 722 (+7).
 **TEST look: pending — spent manually.**
+
+## Batch 40 (2026-07-13) — increments 89, 90. dev-train 66, holdout 28.
+
+LANDED (looks #87, #88 — both 11/1, 91.7%, HELD):
+- **89 — passive-voice entity-less event totality asks** ("how many X were eaten / sold /
+  given / bought in total?"). +1 dev-train.
+- **90 — appositive / relative-clause relation STANDARDS** ("than his friend Sam", "than
+  her sister Gigi", "than Sam, who runs 12 miles"). 0 dev-train, **+2 dev-holdout** (26 ->
+  28).
+
+REVIEW KILL: `equal-share-division-asks` failed constitution review on **rule 1** —
+`answer.py` hardcoded `recipient_noun in (None, "person")`, encoding "the word *person* is
+the generic recipient placeholder" in Python. The reviewer verified `"person"` appears
+NOWHERE under `src/` on main, and demolished the junior's pre-defence (that it is "a
+pack-owned constant like world/currency"): `world` and `currency` are kernel SENTINELS
+never matched against text-derived lemmas, whereas `person` IS. And a `person` category
+already exists in the packs — the diff itself promotes it. Fix is one gate away. RE-CUT.
+
+FAILED (goal-mode, 0 SOLVED) but valuable: `counted-subject-each-events` redesigned its
+mechanism to emit two ordinary Quantity facts instead of a GroupTotal, so increment 86's
+EXISTING distributive-container synth composes them for free — and got transitive chaining
+gratis. It also caught a real KeyError (13 dev-train items errored) before shipping, and
+documented a hard structural limit: **GroupTotal.key() is (measure,) only**, so two
+same-measure GroupTotals quarantine each other at FactStore.admit and multi-group summing
+is impossible without a distinguishing field on GroupTotal + a FactStore.admit re-key.
+Named as a clean follow-on.
