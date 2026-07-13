@@ -3496,6 +3496,37 @@ asks:
       collection: "{coll}"
 
   - id: ask/how-many-capacity
+    # `verb, cat: purchase` (mining candidate capacity-ask-overmatch): the
+    # `modal` slot alone ("how many X can/will/must WHO VERB") is satisfied
+    # by essentially ANY verb — "how many stickers will she have left",
+    # "how many pages must she read", "how many students can this school
+    # accommodate" all match the OLD `type: verb` slot just as well as the
+    # genuine "how many pens can Mary buy" this ask exists for. Because it
+    # is the most-specific (or only) matching ask on every one of those
+    # questions, it wins ask-specificity and then unconditionally declines
+    # on its own precondition (`0 price facts known for X`) — masking
+    # dozens of fully-read dev-train items from every OTHER consumer that
+    # could have been consulted (remainder folds, goal-deficit, rate-span,
+    # per-unit-rate). The capacity consumer's entire semantics (budget ÷
+    # unit price) is about SPENDING MONEY on an item, which in this
+    # grammar is exactly what the `purchase` category (buy/buys/bought/
+    # buying/purchase/purchased/purchases/order/orders/ordered —
+    # packs/difg-mined/categories/semantic.yaml, already the gate
+    # `_purchase_total`/the remaining-budget subtraction in answer.py use
+    # to recognise a genuine purchase) names structurally. Narrowing the
+    # verb slot to this category is therefore not a surface "budget cue"
+    # regex but the ask finally requiring the one thing its own consumer
+    # requires: a purchase. `acquire` (purchase's broader parent, which
+    # also holds get/receive/collect/earn/find/win) is deliberately NOT
+    # used here — those verbs don't imply money changed hands and are
+    # exactly the kind of non-price verb this narrowing exists to exclude.
+    # A question whose verb IS a purchase verb still matches and reaches
+    # the unchanged capacity consumer exactly as before (increments 14/19/
+    # 22's own suite, none of which use any verb outside this set); a
+    # question with any other verb no longer ties on this ask at all and
+    # falls through to ask-specificity among the remaining asks, or to no
+    # ask and a decline — never a reroute into a wrong commit, since no
+    # committing logic changed, only which questions may reach it.
     match:
       question:
         - {lit: how}
@@ -3503,7 +3534,7 @@ asks:
         - {slot: item, type: noun}
         - {slot: modal, type: modal}
         - {slot: who, type: entity}
-        - {slot: verb, type: verb}
+        - {slot: verb, cat: purchase}
         - opt:
             - {lit: with}
             - {slot: budget, type: counted}

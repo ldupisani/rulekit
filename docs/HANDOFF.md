@@ -4585,6 +4585,44 @@ warning: fraction-of-remnant/fraction-of-pool overlap, known-good). pytest 765 -
 (+10 new synthetic tests).
 **TEST look: pending — spent manually.**
 
+## Increment 96 (2026-07-13) — capacity-ask overmatch: modal questions hijacked from every other consumer
+
+CLASS: infrastructure. The capacity ask ("how many X can/will/must WHO VERB (with
+$B)?", increment 19) gated on the bare `modal` token plus a `type: verb` slot — any
+verb at all — so it matched almost every modal-phrased "how many" question, won
+ask-specificity over every other ask, and then unconditionally declined on its own
+precondition ("N price facts known for X — a capacity ask needs exactly one"). No
+other consumer was ever consulted for these questions.
+
+PROVEN on unmodified main via minimal-pair surface rewrite: "Paige has 100 stickers.
+She gives away 40 stickers. How many stickers WILL she have left?" declines with the
+price-fact error; changing only the modal to "...how many stickers DOES she have
+left?" commits 60 via the ordinary fold. Identical premises, identical available
+consumer; the modal alone routed it into a dead ask.
+
+MECHANISM: YAML-only. `packs/arithmetic/rules/core.yaml`'s capacity-ask verb slot is
+narrowed from `type: verb` to `cat: purchase` (buy/buys/bought/buying/purchase/
+purchases/purchased/order/orders/ordered — `packs/difg-mined/categories/semantic.yaml`),
+matching exactly the verbs the capacity consumer's own semantics (budget divided by
+unit price) are actually about — the same category answer.py already uses elsewhere
+for `_purchase_total`/remaining-budget subtraction. No new fact kind, no new consumer,
+no demotion of the ask's specificity — it now simply declines to match questions it
+was never able to serve, letting ask-specificity fall through to the ordinary
+consumers (event folds, remainder/goal-deficit, rate-span) for the 53 previously
+masked fully-read dev-train items.
+
+HONEST SCOPE: this increment moves dev-train/dev-holdout by ZERO on its own — the 53
+un-masked items all need further, multi-step machinery (future-modal folds, goal-
+deficit routing, rate-span consumers) that isn't yet wired to consume them. Its value
+is un-masking those items for the next batch: they are now visible as fully-read
+declines with a real fact-shape need instead of reporting a spurious price error.
+
+GATE: dev-train diff NEUTRAL (0 SOLVED / 0 BROKE / 0 DECL->WRONG, 73 correct
+unchanged). dev-holdout diff NEUTRAL (0 SOLVED / 0 BROKE / 0 DECL->WRONG, 28 correct
+unchanged). Suite 52/52. Lint 0 errors (1 pre-existing warning: fraction-of-remnant/
+fraction-of-pool overlap, known-good). pytest 775 -> 782 (+7 new synthetic tests).
+**TEST look: pending — spent manually.**
+
 ## Batch 42 (2026-07-13) — increments 94, 95. dev-train 70 -> 73.
 
 LANDED (looks #92, #93 — both 11/1, 91.7%, HELD):
