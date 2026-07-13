@@ -4302,3 +4302,39 @@ GATE: dev-train diff SOLVED 1 (409628e79bf6) / BROKE 0 / DECL->WRONG 0 — VERDI
 dev-holdout diff NEUTRAL (0/0/0). Suite 52/52. Lint 0 errors (1 pre-existing warning:
 fraction-of-remnant/fraction-of-pool overlap, known-good). pytest 708 -> 715 (+7).
 **TEST look: pending — spent manually.**
+
+## Increment 90 (2026-07-13) — appositive/relative-clause-introduced relation standards
+(PRECISION FIX)
+
+CLASS: relations whose STANDARD is introduced by an appositive or relative clause
+("than his friend Sam", "than her sister Gigi", "than Sam, who runs 12 miles"). Not a
+coverage candidate — a precision fix (increment 88's precedent): the relation pattern
+rules in `packs/arithmetic/rules/core.yaml` bound their `standard` slot to the first
+noun after "than"/"as", so a kinship/role common noun immediately followed by an
+appositive NAME ("his friend Sam") bound the standard to the ROLE NOUN instead of the
+NAME.
+
+PROVEN on unmodified main: "Tom has 2 more apples than Ann. Ann has 5 apples." ->
+Tom = 7 (correct). Insert a kinship appositive: "Tom has 2 more apples than his
+sister, Ann." -> DECLINES. Worse, on an event verb it committed a confident wrong:
+"Harvey runs 8 miles more than his friend Sam. Sam runs 12 miles. How many miles does
+Harvey run?" -> committed 8.0 (gold 20). Second confident wrong: "Mr. Martinez is two
+feet taller than his daughter, Chiquita. Chiquita is 5 feet tall. How many feet do
+they have in total?" -> committed 7.0 (gold 12).
+
+MECHANISM: pattern-only, no kernel edit. Added a `standard` slot variant to the
+relation rules in `packs/arithmetic/rules/core.yaml` that consumes an optional
+[poss/det + common-noun + optional comma] SKIPPABLE appositive prefix before the
+name, so the standard binds to the NAME rather than the role noun. Decline-safety:
+when the appositive slot is absent, the rules match byte-identically to today (purely
+additive, strictly-longer match). Bare role-noun standards with no following name
+("than his sister") are unchanged — out of scope, named at ship time. No word list
+enters Python or the gate condition: the match is structural (possessive/determiner +
+common noun + capitalized name), never an enumeration of "friend"/"sister"/"daughter".
+
+GATE: dev-train diff NEUTRAL (0 SOLVED / 0 BROKE / 0 DECL->WRONG, 66 correct
+unchanged). dev-holdout diff SOLVED 2 (107662a7cb1b, 11d78d0b4f70) / BROKE 0 /
+DECL->WRONG 0 — VERDICT SHIP (26 -> 28 correct). Suite 52/52. Lint 0 errors (1
+pre-existing warning: fraction-of-remnant/fraction-of-pool overlap, known-good).
+pytest 715 -> 722 (+7).
+**TEST look: pending — spent manually.**

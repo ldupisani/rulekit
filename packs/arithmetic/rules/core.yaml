@@ -2,6 +2,32 @@ format: rulekit/rules@1
 # Minimum-structure rule: only the grammatical skeleton is literal; every
 # content word is a captured, gated slot. Rules emit FACTS — the shared
 # saturate/answer pipeline finishes. There is no priority field anywhere.
+#
+# EVERY relation rule's `std` slot is preceded by an optional, SKIPPABLE
+# appositive prefix (mining candidate appositive-relation-standards):
+#   - opt:
+#       - {slot: appos_det, type: pronoun}
+#       - {slot: appos_role, type: noun}
+# "than his friend Sam" / "than her sister, Gigi" — a possessive determiner
+# (his/her/their/its; lexicon sense `pronoun`, unconditional — the slot type
+# never requires the pronoun's cross-sentence `refers` to resolve) plus a
+# common noun (any word sensed `noun` — no kinship/role word list) directly
+# describes an upcoming NAME rather than being the standard itself. When both
+# are present immediately after 'than'/'as' (SKIPPABLE_SENSES already
+# auto-skips a trailing comma between the role noun and the name, same as
+# every other punct-adjacent match today), the opt block consumes them and
+# `std` binds the NAME that follows, exactly as arithmetic/anchored-
+# relation's own header comment already does for a bare possessive common
+# noun. When no such [pronoun, noun] pair sits there, the opt block cannot
+# match at all (a NAME's own sense is never `pronoun`) and the sequence is
+# byte-identical to before this candidate — `std` binds the very next
+# unit exactly as every existing rule already does. When the appositive
+# pair IS present but nothing entity-shaped follows it (a bare "than his
+# sister" with no trailing name) the whole match fails at this position,
+# same net decline as today (a bare possessive pronoun immediately after
+# 'than' only ever satisfied `type: entity` when independently resolved,
+# which a bare kinship-noun tail does not change). No word list enters
+# Python: the gate is purely structural (pronoun sense + noun sense).
 rules:
   - id: arithmetic/anchored-relation
     phase: read
@@ -30,6 +56,9 @@ rules:
         - {slot: dir, cat: delta}
         - {slot: item, type: plural}
         - {lit: than}
+        - opt:
+            - {slot: appos_det, type: pronoun}
+            - {slot: appos_role, type: noun}
         - {slot: std, type: entity}
     where:
       - distinct: [who, std]
@@ -77,6 +106,9 @@ rules:
         - {slot: n, type: number}
         - {slot: dir, cat: delta}
         - {lit: than}
+        - opt:
+            - {slot: appos_det, type: pronoun}
+            - {slot: appos_role, type: noun}
         - {slot: std, type: entity}
     where:
       - distinct: [who, std]
@@ -108,6 +140,9 @@ rules:
         - {slot: item, type: counted}
         - {slot: dir, cat: delta}
         - {lit: than}
+        - opt:
+            - {slot: appos_det, type: pronoun}
+            - {slot: appos_role, type: noun}
         - {slot: std, type: entity}
     where:
       - distinct: [who, std]
@@ -149,6 +184,9 @@ rules:
         - {slot: item, type: counted}
         - {slot: dir, cat: dimension_comparative}
         - {lit: than}
+        - opt:
+            - {slot: appos_det, type: pronoun}
+            - {slot: appos_role, type: noun}
         - {slot: std, type: entity}
     where:
       - distinct: [who, std]
@@ -216,6 +254,9 @@ rules:
         - {slot: k, type: multiplier}
         - {slot: dir, cat: age_comparative}
         - {lit: than}
+        - opt:
+            - {slot: appos_det, type: pronoun}
+            - {slot: appos_role, type: noun}
         - {slot: std, type: name}
     where:
       - distinct: [who, std]
@@ -257,6 +298,9 @@ rules:
         - {lit: as}
         - {lit: old}
         - {lit: as}
+        - opt:
+            - {slot: appos_det, type: pronoun}
+            - {slot: appos_role, type: noun}
         - {slot: std, type: name}
     where:
       - distinct: [who, std]
@@ -288,6 +332,9 @@ rules:
         - {lit: many}
         - {slot: item, type: plural}
         - {lit: as}
+        - opt:
+            - {slot: appos_det, type: pronoun}
+            - {slot: appos_role, type: noun}
         - {slot: std, type: entity}
     where:
       - distinct: [who, std]
@@ -324,6 +371,9 @@ rules:
         - {lit: as}
         - {lit: many}
         - {lit: as}
+        - opt:
+            - {slot: appos_det, type: pronoun}
+            - {slot: appos_role, type: noun}
         - {slot: std, type: entity}
     where:
       - distinct: [who, std]
@@ -357,6 +407,9 @@ rules:
         - {lit: much}
         - {slot: item, type: noun}
         - {lit: as}
+        - opt:
+            - {slot: appos_det, type: pronoun}
+            - {slot: appos_role, type: noun}
         - {slot: std, type: name}
     where:
       - distinct: [who, std]
@@ -388,6 +441,9 @@ rules:
         - {lit: as}
         - {lit: much}
         - {lit: as}
+        - opt:
+            - {slot: appos_det, type: pronoun}
+            - {slot: appos_role, type: noun}
         - {slot: std, type: name}
     where:
       - distinct: [who, std]
@@ -413,6 +469,9 @@ rules:
         - {slot: dir, cat: delta}
         - {slot: item, type: noun}
         - {lit: than}
+        - opt:
+            - {slot: appos_det, type: pronoun}
+            - {slot: appos_role, type: noun}
         - {slot: std, type: name}
     where:
       - distinct: [who, std]
@@ -445,6 +504,9 @@ rules:
         - {slot: f, type: fraction}
         - {slot: dir, cat: delta}
         - {lit: than}
+        - opt:
+            - {slot: appos_det, type: pronoun}
+            - {slot: appos_role, type: noun}
         - {slot: std, type: name}
     where:
       - distinct: [who, std]
@@ -473,6 +535,9 @@ rules:
         - {lit: of}
         - {slot: item, type: noun}
         - {lit: as}
+        - opt:
+            - {slot: appos_det, type: pronoun}
+            - {slot: appos_role, type: noun}
         - {slot: std, type: name}
     where:
       - distinct: [who, std]
@@ -502,6 +567,9 @@ rules:
         - {lit: of}
         - {slot: item, type: noun}
         - {slot: c, cat: complementizer}
+        - opt:
+            - {slot: appos_det, type: pronoun}
+            - {slot: appos_role, type: noun}
         - {slot: std, type: name}
     where:
       - distinct: [who, std]
@@ -529,6 +597,9 @@ rules:
         - {lit: of}
         - {slot: item, type: noun}
         - {slot: c, cat: complementizer}
+        - opt:
+            - {slot: appos_det, type: pronoun}
+            - {slot: appos_role, type: noun}
         - {slot: std, type: name}
     where:
       - distinct: [who, std]
@@ -559,6 +630,9 @@ rules:
         - {lit: many}
         - {slot: item, type: plural}
         - {lit: as}
+        - opt:
+            - {slot: appos_det, type: pronoun}
+            - {slot: appos_role, type: noun}
         - {slot: std, type: entity}
     where:
       - distinct: [who, std]
@@ -593,6 +667,9 @@ rules:
         - {lit: as}
         - {lit: many}
         - {lit: as}
+        - opt:
+            - {slot: appos_det, type: pronoun}
+            - {slot: appos_role, type: noun}
         - {slot: std, type: entity}
     where:
       - distinct: [who, std]
@@ -624,6 +701,9 @@ rules:
         - {lit: much}
         - {slot: item, type: noun}
         - {lit: as}
+        - opt:
+            - {slot: appos_det, type: pronoun}
+            - {slot: appos_role, type: noun}
         - {slot: std, type: name}
     where:
       - distinct: [who, std]
@@ -655,6 +735,9 @@ rules:
         - {lit: as}
         - {lit: much}
         - {lit: as}
+        - opt:
+            - {slot: appos_det, type: pronoun}
+            - {slot: appos_role, type: noun}
         - {slot: std, type: name}
     where:
       - distinct: [who, std]
@@ -692,6 +775,9 @@ rules:
         - {lit: many}
         - {slot: item, type: plural}
         - {lit: as}
+        - opt:
+            - {slot: appos_det, type: pronoun}
+            - {slot: appos_role, type: noun}
         - {slot: std, type: entity}
     where:
       - distinct: [who, std]
@@ -730,6 +816,9 @@ rules:
         - {lit: many}
         - {slot: item, type: plural}
         - {lit: as}
+        - opt:
+            - {slot: appos_det, type: pronoun}
+            - {slot: appos_role, type: noun}
         - {slot: std, type: entity}
     where:
       - distinct: [who, std]
