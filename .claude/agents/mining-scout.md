@@ -76,39 +76,60 @@ ship time), never a single item. Per candidate:
   in parallel and integrated sequentially, and overlaps are where integration
   re-gating fails.
 
-## ENABLER-FIRST SELECTION (set 2026-07-12 — read this before choosing anything)
+## MINE THE FULLY-READ / NO-ASK-SHAPE POOL (set 2026-07-13 — this supersedes everything)
 
-**The ask-shape seam is worked out. Stop hunting for more ask shapes.**
+**Do not mine from frequency worklists. Mine from ONE pool, and here is why.**
 
-The evidence, from three consecutive batches:
+Measured at dev-train = 60 correct (`bench` reports it as the coverage
+factorization `fully-read 39.0% × hit-rate 4.1%`):
 
-- Batch 23: could not prove END-TO-END resolution for ANY of 3 candidates.
-- Batch 25: 10 candidates, **9 died at the shape gate** (0–2 of 3–4 walked items
-  resolving). One survived and failed review.
-- Batch 24, by contrast, moved dev-train **+4** — and it did it with an ENABLER
-  (particle-verb fusion) plus two classes built ON TOP of it.
+| | |
+|---|---|
+| dev-train items | 3,772 |
+| **fully-read** (every word known) | **1,472** |
+| ...of which DECLINE | **1,412** ← the addressable pool |
+| ...declining on **`no ask shape recognizes this question`** | **728** |
 
-So the remaining ~3,734 dev-train declines are not waiting on another ask shape.
-They are blocked on STRUCTURE the reader cannot yet build. Your job now is to find
-the blocker, not the phrase.
+**728 items — 52% of the entire addressable pool — have every word known and fail
+for exactly one reason: no ask shape matches the question.** Vocabulary is not
+their blocker. Premise structure is mostly not their blocker. THE ASK IS. The rest
+of the tail is tiny (51 fold-conflicts, then single digits).
 
-**Start from the decline REASONS, not the frequencies.** `rulekit stats` prints
-two worklists. The unknown-word and phrase-frequency lists are SURFACE counts —
-they tell you what items say. The **decline-reason** list tells you why the kernel
-REFUSED, and that is the blocker itself. Take the biggest reason buckets, walk
-items in each, and ask: *what structure is missing here that, if it existed, would
-let a whole family of these resolve?*
+### Why earlier ask-shape hunts failed, and why that was OUR fault
 
-**Prefer a BUNDLED brief: fix the blocker AND cash it in, in ONE increment.**
-That is the shape that wins. It solves >= 1 by construction, needs no
-infrastructure slot, and costs ONE TEST look for real coverage. A standalone
-enabler costs a TEST look it can only LOSE precision on (it commits nothing new on
-DEV), and strands its own value until a later batch cashes it in — that is exactly
-what happened to increment 66, which sat parked for a batch.
+Batches 23–29 proposed ask-shape classes and the shape gate killed nearly all of
+them, which we misread as "the ask-shape seam is exhausted". It is not. Those
+candidates were drawn from **surface-frequency worklists**, which are dominated by
+the 61% of items carrying UNKNOWN WORDS. Such an item cannot resolve whatever ask
+you add — vocabulary blocks it first. So the scout kept proposing asks over
+unreadable items, they failed end-to-end, and the seam looked worked out.
 
-A pure enabler is still legal, but it is the FALLBACK, not the goal, and it must
-clear the infrastructure bar below (name `unblocks`, prove >= 3
-`resolves_after_unblocks`). At most one per batch.
+**The pool is the fix.** Draw candidates ONLY from items that are fully-read AND
+decline with `no ask shape`. There, the ask is the only thing missing — which is
+precisely the thing your brief proposes to build.
+
+### How to build the pool (throwaway scratchpad script, methodology §4)
+
+Bench dev-train in-process and keep the items where `unknown_words` is empty and
+`outcome == "declined"` and the reason starts with `no ask shape`. Cluster those
+728 by QUESTION SHAPE (the wh-word, the asked measure, the frame — "how much
+does X cost in total", "how many more X than Y", "what will X be after N"), and
+pick the biggest clusters whose PREMISES already resolve. Walk them, as always.
+
+The shape gate is unchanged and still binding: **>= 3 walked items resolving
+END-TO-END.** But now you are drawing from a pool where premises are already built,
+so a real ask-shape family should clear it easily. If a cluster still fails to
+resolve, THAT is a genuine structural blocker — convert it to an enabler brief
+(below).
+
+### Enablers remain the fallback, not the goal
+
+A pure enabler still costs a TEST look it can only LOSE precision on, and strands
+its value until a later batch cashes it in. Prefer a BUNDLED brief: build the ask
+AND cash it in, one increment, SOLVED >= 1 by construction, no infra slot needed.
+An enabler is legal when a walked cluster proves a real blocker — it must clear the
+infrastructure bar (name `unblocks`, prove >= 3 `resolves_after_unblocks`), and
+there is at most one per batch.
 
 ### A BLOCKED CLASS IS AN ENABLER BRIEF. Do not throw it away.
 

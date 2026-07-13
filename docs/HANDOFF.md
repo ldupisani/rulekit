@@ -3883,3 +3883,39 @@ isolation or you discard good work along with the bad.
 **A clean DEV gate is necessary but never sufficient.** 7,473 DEV items said increment
 81 was safe. TEST disagreed. This is why looks are rationed and why DEV-clean is not a
 licence to land.
+
+## THE SEAM WAS MISDIAGNOSED (2026-07-13) — mine the fully-read / no-ask-shape pool
+
+I told the scout on 2026-07-12 that "the ask-shape seam is worked out". **That was
+wrong**, and it cost several batches. The measurement that settles it, at dev-train
+= 60:
+
+| | |
+|---|---|
+| dev-train items | 3,772 |
+| fully-read (every word known) | 1,472 |
+| ...of which DECLINE | **1,412** — the addressable pool |
+| ...declining on `no ask shape recognizes this question` | **728** |
+
+**728 items — 52% of the addressable pool — are fully readable and fail ONLY because
+no ask shape matches the question.** The rest of the tail is negligible (51
+fold-conflicts, then single digits). `bench` was telling us this all along in the
+coverage factorization: `fully-read 39.0% × hit-rate 4.1%` — we can READ 39% of
+items and ANSWER 4% of what we read.
+
+WHY THE EARLIER ASK-SHAPE HUNTS FAILED — and it was our fault, not the seam's.
+Batches 23–29 drew candidates from SURFACE-FREQUENCY worklists, which are dominated
+by the 61% of items carrying UNKNOWN WORDS. Such an item cannot resolve whatever ask
+you add: vocabulary blocks it first. So the scout proposed asks over unreadable
+items, they failed end-to-end, the shape gate killed them, and the seam looked
+exhausted. It was a sampling error, not a finding.
+
+THE FIX: the scout now draws candidates ONLY from the fully-read AND `no ask shape`
+intersection, clusters them by QUESTION SHAPE, and proposes the biggest clusters
+whose premises already resolve. The shape gate is unchanged and still binding — but
+in this pool a real ask-shape family should clear it easily, because the ask is the
+only missing piece. A cluster that STILL fails to resolve is a genuine blocker, and
+becomes an enabler brief.
+
+Enabler yield was declining anyway (+9, +6, +6, +5, +2) — consistent with the
+enabler path being a detour around a mis-sampled pool rather than the main seam.
