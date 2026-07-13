@@ -4438,3 +4438,45 @@ documented a hard structural limit: **GroupTotal.key() is (measure,) only**, so 
 same-measure GroupTotals quarantine each other at FactStore.admit and multi-group summing
 is impossible without a distinguishing field on GroupTotal + a FactStore.admit re-key.
 Named as a clean follow-on.
+
+## Increment 93 (2026-07-13) — same-holder cross-measure relations: PP-interrupted
+measure NPs, conjoined-clause premises, inverse resolution, superordinate totality asks
+
+CLASS: same-holder cross-measure comparative relations ("twice as many SHOES as
+BELTS", "9 more KNIVES than FORKS") reached through surfaces the existing same-holder
+subtype-anchor branch (increment 78) does not yet see, plus the inverse resolution
+direction and superordinate totality asks over the resolved subtypes.
+
+PROVEN on unmodified main: "Clinton has twice as many shoes as belts. He has 2 more
+belts than hats. He has 5 hats. How many shoes does Clinton have?" commits 14.0 (the
+gold of the real item) but the real item — which interrupts the measure NP with a
+locative PP and states the anchor quantity in a conjoined clause — declines. Likewise
+"Mr. Rainwater has 9 cows. He has 4 times as many goats as cows." commits 36.0
+forward, but the real item asks for the STANDARD measure (cows) from a known subject
+measure (goats), which the existing branch cannot resolve backwards.
+
+MECHANISM: YAML-first, one kernel widening. (1) `packs/arithmetic/rules/core.yaml`:
+widened the existing same-holder comparative relation rules' measure-NP slot to skip
+an optional trailing prepositional phrase before "as"/"than" (a skippable
+`[prep + det? + noun]` prefix, structurally matched — mirrors increment 90's
+appositive-prefix precedent, purely additive so the no-PP case matches
+byte-identically to today). (2) same file: a new rule,
+`arithmetic/anchored-relation-conjoined-anchor`, admits the conjoined-clause premise
+form ("... N more X than Y and currently has M Y"), matching the state-verb
+conjunction gap (increment 35) reaching a relation-bearing clause. (3)
+`src/rulekit/kernel/saturate.py`'s `_relations_synth` same-holder subtype branch
+gains the INVERSE direction (solve `standard = (subject - offset) / factor` from a
+known subject measure), guarded by `is_subtype_standard` and the same
+unique-in-play discipline — two candidate quantities, or a zero factor, decline for
+that round rather than guess. (4) additional `superordinate: true` category entries
+with exhaustive subtype member lists in `packs/core-english/categories/core.yaml` /
+`packs/difg-mined/categories/semantic.yaml`, so increment 78's existing
+`_superordinate_total` consumer answers totality asks over the newly-resolved
+subtypes. No word list enters Python; the PP/conjunction matches are structural.
+
+GATE: dev-train diff SOLVED 2 (7394eac428cb, 8ea333bd91f4) / BROKE 0 / DECL->WRONG
+0 — VERDICT SHIP (68 -> 70 correct). dev-holdout diff NEUTRAL (0 SOLVED / 0 BROKE /
+0 DECL->WRONG, 28 correct unchanged). Suite 52/52. Lint 0 errors (1 pre-existing
+warning: fraction-of-remnant/fraction-of-pool overlap, known-good). pytest 748 -> 757
+(+9).
+**TEST look: pending — spent manually.**

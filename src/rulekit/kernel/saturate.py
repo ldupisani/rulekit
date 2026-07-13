@@ -187,6 +187,37 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
             return None
         return candidate, candidate_known
 
+    # mining candidate cross-measure-relation-fixes: subjects that use each
+    # STANDARD lemma across every relation in the store — the discriminator
+    # the SAME-HOLDER SUBTYPE INVERSE branch (below) needs to tell "Rainwater
+    # has 4x goats as cows and 2x goats as CHICKENS" (a subtype comparison —
+    # 'chicken' is used as a standard by exactly ONE subject, 'rainwater')
+    # apart from "Adam eats 3 more pies than BILL. Sierra eats 2x as many
+    # pies as BILL." (an ordinary cross-entity comparison sharing a
+    # standard — 'bill' is used as a standard by TWO DIFFERENT subjects,
+    # 'adam' AND 'sierra': a genuine third-party holder others compare
+    # themselves against is never a same-holder subtype of any ONE of them).
+    standard_subjects: dict[str, set[str]] = {}
+    for r in store.by_kind(Relation):
+        standard_subjects.setdefault(r.standard, set()).add(r.subject)
+
+    def is_subtype_standard(rel: Relation) -> bool:
+        """True only for a standard that structurally LOOKS like a same-
+        holder subtype measure, never a separate (named or labeled)
+        holder: lexiconed `noun` sense (a name is never in the lexicon at
+        all — constitution rule 1, no word list, this reads the pre-
+        existing sense data), carries no label (a labeled standard, "jar
+        A", is always a genuine distinguishable holder — mining candidate
+        labeled-entity-relations), and is used as a standard by exactly
+        ONE subject anywhere in this document (the `standard_subjects`
+        discriminator above)."""
+        return (
+            reg.word_in_category(rel.standard, "noun")
+            and not rel.subject_label
+            and not rel.standard_label
+            and len(standard_subjects.get(rel.standard, ())) <= 1
+        )
+
     for rel in store.by_kind(Relation):
         if rel.measure is None:
             # mining candidate elided-measure-relations: the pattern rule
@@ -266,13 +297,83 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
                 )
             )
             continue
+        # SAME-HOLDER SUBTYPE INVERSE (mining candidate cross-measure-
+        # relation-fixes): the mirror of the forward branch just above —
+        # "Mr. Rainwater has 9 cows. He has 4 times as many goats as cows
+        # and 2 times as many goats as chickens. How many chickens does he
+        # have?" The first relation's forward hop derives Rainwater's own
+        # 'goat' quantity (36); the SECOND relation states that SAME 'goat'
+        # measure again as ITS OWN subject-side quantity, with 'chicken' —
+        # a subtype, not another holder — as the (still unknown) standard.
+        # subject_known = the RELATION'S OWN measure, already resolved for
+        # this SAME subject (by an earlier round's forward hop, or a
+        # sibling relation) -> solve standard = (subject − offset) / factor,
+        # entity-KEYED ON THE SAME SUBJECT (never a separate holder).
+        # `is_subtype_standard` (defined above) is the load-bearing gate:
+        # it is what tells this shape apart from an ORDINARY cross-entity
+        # relation whose standard just happens to have no known quantity
+        # YET either ("Jeff has twice as many marbles as Ann. Jeff has 10
+        # marbles.") — there `rel.standard` is a NAME ('ann'), never
+        # lexiconed with sense 'noun', so this branch never fires and the
+        # EXISTING cross-entity INVERSE branch below (which correctly keys
+        # the new Quantity on `rel.standard` as an ENTITY, not a measure)
+        # is the only one that ever resolves it. The bare `noun`-sense
+        # check ALONE is not enough — some names collide with common-noun
+        # homonyms ("Bill" the person / 'bill' the lexiconed noun, "Jar A"
+        # / "Jar B" both bare-lemma 'jar') — so `is_subtype_standard` ALSO
+        # requires no label on either side (a labeled standard is always a
+        # genuine distinguishable holder) and that the standard is used by
+        # exactly one subject across every relation in the document (a
+        # standard two different subjects both compare themselves against,
+        # like 'bill', is a shared THIRD-PARTY holder, never a subtype of
+        # either one). Without this gate, this branch would misfire on an
+        # ordinary cross-entity relation whose subject-side measure is
+        # already known, minting a nonsense Quantity(entity=Jeff,
+        # measure='ann', ...) — a measure that is a person's name. Same
+        # unique-in-play, never-guess discipline as every other branch
+        # here: a zero factor, or a (subject, standard) pair already
+        # resolved under this verb, skips rather than re-derives.
+        subject_known = quantities.get((rel.subject, rel.measure))
+        if (
+            subject_known is not None
+            and rel.factor != 0
+            and is_subtype_standard(rel)
+            and (rel.subject, rel.standard, verb_key(rel.verb)) not in by_verb
+        ):
+            value = evaluate(
+                f"({subject_known.value} - {rel.offset}) / {rel.factor}", {}, log,
+                source=f"relation-subtype-inverse:{rel.provenance.source}",
+            )
+            out.append(
+                Quantity(
+                    provenance=Provenance(source="synth/relation", sentence=rel.provenance.sentence),
+                    entity=rel.subject, measure=rel.standard, value=value, verb=rel.verb,
+                )
+            )
+            continue
         # INVERSE: the subject is known, the standard is not — solve
         # standard = (subject − offset) / factor ("If Zig wrote 60, and Zig
-        # wrote four times as many as Flo…")
+        # wrote four times as many as Flo…"). `not is_subtype_standard(rel)`
+        # (mining candidate cross-measure-relation-fixes): this branch's
+        # own emit keys the new Quantity's ENTITY on `rel.standard` —
+        # correct when `rel.standard` is a genuine second holder (a NAME
+        # like 'flo', or a LABELED common noun like "Jar A"), but the
+        # SAME-HOLDER SUBTYPE INVERSE branch just above is what must claim
+        # an unlabeled, singly-referenced noun-sensed standard (e.g.
+        # 'chicken') instead: those never reach here anyway once that
+        # branch's own condition is satisfied (it `continue`s first), but
+        # on a LATER fixpoint round — once its own by_verb guard blocks
+        # re-deriving the (subject, standard) pair it already resolved —
+        # this branch would otherwise still fire unguarded and mint a
+        # second, nonsense Quantity(entity='chicken', measure='goat', ...)
+        # (a measure noun standing in as an entity). Sharing the identical
+        # `is_subtype_standard` predicate (rather than a separately-tuned
+        # condition) is what keeps the two branches mutually exclusive.
         resolved = anchor_measure(rel.subject, rel.measure, rel.subject_label)
         if (
             resolved is not None
             and rel.factor != 0
+            and not is_subtype_standard(rel)
         ):
             measure, known = resolved
             already = (

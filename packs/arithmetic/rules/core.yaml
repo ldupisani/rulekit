@@ -28,6 +28,33 @@ format: rulekit/rules@1
 # 'than' only ever satisfied `type: entity` when independently resolved,
 # which a bare kinship-noun tail does not change). No word list enters
 # Python: the gate is purely structural (pronoun sense + noun sense).
+#
+# EVERY same-holder comparative relation rule whose measure NP sits
+# directly before the 'as'/'than' that introduces the standard (mining
+# candidate cross-measure-relation-fixes) ALSO gets a second, independent
+# SKIPPABLE prefix right before that literal:
+#   - opt:
+#       - {slot: pp_prep, cat: preposition}
+#       - opt:
+#           - {slot: pp_det, type: pronoun}
+#       - {slot: pp_obj, type: noun}
+# "twice as many shoes IN HIS WARDROBE as belts" — a locative PP
+# interrupting the measure noun and the comparative literal. `pp_prep`
+# is gated on the (pre-existing) `preposition` sense-category — 'as' and
+# 'than' are lexiconed `particle`, never `preposition`, so this opt block
+# can never fire ON the comparative literal itself and steal its span.
+# The inner opt for `pp_det` exists only for a POSSESSIVE pronoun
+# ('his'/'her'/'their'/'its'); a plain article ('in THE wardrobe') needs
+# no slot at all — SKIPPABLE_SENSES already auto-skips 'article' between
+# any two explicit tokens, exactly as it does everywhere else in this
+# grammar. `pp_obj` is bound but never read by any `emits:` template
+# (structural consumption only, so the general fold can't independently
+# misread the PP as something else) — the same "widen the match span,
+# add no new emitted field" shape increment 90's appositive prefix uses.
+# When no preposition sits there, `_slot_ok` fails on the very first
+# token of the opt block and `_try_match_at` falls straight through
+# (patterns.py) with zero units consumed — the no-PP case is
+# byte-identical to before this candidate.
 rules:
   - id: arithmetic/anchored-relation
     phase: read
@@ -55,6 +82,11 @@ rules:
         - {slot: n, type: number}
         - {slot: dir, cat: delta}
         - {slot: item, type: plural}
+        - opt:
+            - {slot: pp_prep, cat: preposition}
+            - opt:
+                - {slot: pp_det, type: pronoun}
+            - {slot: pp_obj, type: noun}
         - {lit: than}
         - opt:
             - {slot: appos_det, type: pronoun}
@@ -74,6 +106,95 @@ rules:
         verb: "{verb}"
         subject_label: "{who.label}"
         standard_label: "{std.label}"
+
+  - id: arithmetic/anchored-relation-conjoined-anchor
+    phase: read
+    description: >
+      mining candidate cross-measure-relation-fixes: "Clinton has 2 more
+      belts than hats AND CURRENTLY HAS 5 hats" — arithmetic/anchored-
+      relation's own "N more/fewer ITEM than STD" clause, immediately
+      followed by a CONJOINED trailing clause that states the STANDARD's
+      own quantity. This is the state-verb conjunction gap (increment 35)
+      reaching a RELATION-bearing clause, a shape increment 35 never
+      covered: that walker (learn.py's `_conjoined_purchase_items`)
+      recovers a second BARE-NOUN conjunct of the SAME verb ("has 3
+      apples and 5 oranges"), not a second FULL clause with its own
+      elided subject and its own verb. Left to the general fold, the
+      trailing clause's elided subject wrongly adjacency-binds to the
+      NEAREST preceding noun — the relation's own standard noun ("hats"),
+      not the sentence's real subject (obligations.py's `_candidates`
+      picks the strictly-nearer candidate) — a latent
+      Quantity(entity='hat', measure='hat', ...) that answers nothing
+      today but would silently misattribute the anchor were anything ever
+      to query it. Rather than touch that shared adjacency arbitration
+      (used by every verb's subject binding — HANDOFF's own "never widen
+      a shared scan globally" lesson), this rule matches the WHOLE
+      conjoined sentence structurally and emits TWO facts: the ordinary
+      Relation (byte-identical to anchored-relation's own) plus a
+      same-holder Quantity for `who`'s own STANDARD measure — exactly the
+      shape saturate.py's SAME-HOLDER SUBTYPE branch already resolves
+      (`quantities.get((rel.subject, rel.standard))`), so "hats" anchors
+      the relation with ZERO saturate.py change. The trailing count+noun
+      ("5 hats") condenses to a SINGLE merged unit (the same `type:
+      counted` shape anchored-relation-postfix's own item slot uses), so
+      it needs its OWN slot name (`std_echo`) rather than reusing `std` —
+      `where: same_lemma: [std, std_echo]` is the cross-slot equality
+      check instead (patterns.py's pre-existing predicate), so "...than
+      hats and currently has 5 BELTS" (a different noun) fails this rule
+      outright rather than mis-anchoring a different measure; it stays
+      declined exactly as before this candidate (only the unmodified
+      anchored-relation's own Relation still fires there). `trailing_adv`
+      is scoped to the pre-existing `adverb` sense (structural, no word
+      list) and independently skippable, so a bare "...and has 5 hats"
+      (no adverb) matches too. `trailing_verb, cat: state`: only a
+      STATIVE echo (have/own/be) anchors a holding this way — an event
+      verb conjunct is a different, unbuilt shape and stays declined.
+      Byte-identical to plain anchored-relation when no conjoined tail
+      follows 'than STD': the mandatory 'and' literal simply fails to
+      match there, so only the unmodified anchored-relation rule (still
+      present, untouched) ever fires on that shorter shape.
+    match:
+      sentence:
+        - {slot: who, type: entity}
+        - {slot: verb, type: verb}
+        - {slot: n, type: number}
+        - {slot: dir, cat: delta}
+        - {slot: item, type: plural}
+        - opt:
+            - {slot: pp_prep, cat: preposition}
+            - opt:
+                - {slot: pp_det, type: pronoun}
+            - {slot: pp_obj, type: noun}
+        - {lit: than}
+        - opt:
+            - {slot: appos_det, type: pronoun}
+            - {slot: appos_role, type: noun}
+        - {slot: std, type: entity}
+        - {lit: and}
+        - opt:
+            - {slot: trailing_adv, cat: adverb}
+        - {slot: trailing_verb, cat: state}
+        - {slot: std_echo, type: counted}
+    where:
+      - distinct: [who, std]
+      - distinct: [item, std]
+      - same_lemma: [std, std_echo]
+    consumes: [n, std_echo]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: "{item}"
+        factor: 1.0
+        offset: "n * sign(dir)"
+        verb: "{verb}"
+        subject_label: "{who.label}"
+        standard_label: "{std.label}"
+      - fact: quantity
+        entity: "{who}"
+        measure: "{std_echo}"
+        value: "std_echo"
+        verb: "{trailing_verb}"
 
   - id: arithmetic/anchored-relation-elided
     phase: read
@@ -331,6 +452,11 @@ rules:
         - {lit: as}
         - {lit: many}
         - {slot: item, type: plural}
+        - opt:
+            - {slot: pp_prep, cat: preposition}
+            - opt:
+                - {slot: pp_det, type: pronoun}
+            - {slot: pp_obj, type: noun}
         - {lit: as}
         - opt:
             - {slot: appos_det, type: pronoun}
@@ -406,6 +532,11 @@ rules:
         - {lit: as}
         - {lit: much}
         - {slot: item, type: noun}
+        - opt:
+            - {slot: pp_prep, cat: preposition}
+            - opt:
+                - {slot: pp_det, type: pronoun}
+            - {slot: pp_obj, type: noun}
         - {lit: as}
         - opt:
             - {slot: appos_det, type: pronoun}
@@ -468,6 +599,11 @@ rules:
         - {slot: f, type: fraction}
         - {slot: dir, cat: delta}
         - {slot: item, type: noun}
+        - opt:
+            - {slot: pp_prep, cat: preposition}
+            - opt:
+                - {slot: pp_det, type: pronoun}
+            - {slot: pp_obj, type: noun}
         - {lit: than}
         - opt:
             - {slot: appos_det, type: pronoun}
@@ -534,6 +670,11 @@ rules:
         - {slot: frame, cat: aggregate_noun}
         - {lit: of}
         - {slot: item, type: noun}
+        - opt:
+            - {slot: pp_prep, cat: preposition}
+            - opt:
+                - {slot: pp_det, type: pronoun}
+            - {slot: pp_obj, type: noun}
         - {lit: as}
         - opt:
             - {slot: appos_det, type: pronoun}
@@ -629,6 +770,11 @@ rules:
         - {lit: as}
         - {lit: many}
         - {slot: item, type: plural}
+        - opt:
+            - {slot: pp_prep, cat: preposition}
+            - opt:
+                - {slot: pp_det, type: pronoun}
+            - {slot: pp_obj, type: noun}
         - {lit: as}
         - opt:
             - {slot: appos_det, type: pronoun}
@@ -700,6 +846,11 @@ rules:
         - {lit: as}
         - {lit: much}
         - {slot: item, type: noun}
+        - opt:
+            - {slot: pp_prep, cat: preposition}
+            - opt:
+                - {slot: pp_det, type: pronoun}
+            - {slot: pp_obj, type: noun}
         - {lit: as}
         - opt:
             - {slot: appos_det, type: pronoun}
@@ -774,6 +925,11 @@ rules:
         - {lit: as}
         - {lit: many}
         - {slot: item, type: plural}
+        - opt:
+            - {slot: pp_prep, cat: preposition}
+            - opt:
+                - {slot: pp_det, type: pronoun}
+            - {slot: pp_obj, type: noun}
         - {lit: as}
         - opt:
             - {slot: appos_det, type: pronoun}
@@ -815,6 +971,11 @@ rules:
         - {lit: as}
         - {lit: many}
         - {slot: item, type: plural}
+        - opt:
+            - {slot: pp_prep, cat: preposition}
+            - opt:
+                - {slot: pp_det, type: pronoun}
+            - {slot: pp_obj, type: noun}
         - {lit: as}
         - opt:
             - {slot: appos_det, type: pronoun}
