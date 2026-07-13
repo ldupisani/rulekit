@@ -1267,7 +1267,17 @@ def answer(
         item = reg.plural_to_singular.get(query["item"], query["item"])
         qty = evaluate(str(query["qty_value"]), {}, log, source="cost-of-quantity-qty")
         prices = [p for p in store.by_kind(Price) if p.item == item]
-        if len(prices) != 1:
+        # mining candidate generic-unit-price-premises: reading MORE price
+        # frames (subject-side generics, floating-each relative clauses)
+        # means the SAME per-unit price can now legitimately be RESTATED
+        # via two different surface forms in one document ("A mug costs 8
+        # dollars. Mugs are 8 dollars each.") — two Price facts that fully
+        # AGREE on value are the same fact said twice, not an ambiguity;
+        # facts.py's key() differs (verb/occurrence) so they never dedupe
+        # at admission. Only a genuine VALUE disagreement is still the
+        # increment-19 ambiguity this guard exists to catch.
+        distinct_values = {p.value for p in prices}
+        if len(distinct_values) != 1:
             return Answer(
                 "decline", None,
                 f"{len(prices)} price facts known for {item!r} — a "

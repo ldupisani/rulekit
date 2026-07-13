@@ -4339,6 +4339,40 @@ pre-existing warning: fraction-of-remnant/fraction-of-pool overlap, known-good).
 pytest 715 -> 722 (+7).
 **TEST look: pending — spent manually.**
 
+## Increment 91 (2026-07-13) — generic unit-price premises (ENABLER)
+
+CLASS: per-unit price premises whose subject frame the price_verb branch did not yet
+read: indefinite-singular generics ("a book costs $5"), pronoun subjects ("they are
+$20 each"), and floating-'each' relative clauses ("5 toys that each cost $3"). All
+three emit the SAME `Price` fact increments 15/29/36 already emit and that the live
+purchase-total/cost-of-quantity consumers already read by item lemma.
+
+PROVEN on unmodified main as a minimal pair: "In a bookstore, EACH book costs $5.
+Sheryll bought 10 books. How much did Sheryll pay in all?" commits 50.0 — change one
+word to the indefinite generic, "In a bookstore, A book costs $5. ...", and it
+declines `no 'pay' events known for 'sheryll'/'currency'`. Same minimal-pair shape
+for the pronoun form and the floating-'each' relative clause.
+
+MECHANISM: pattern-only, no kernel edit. Three additive pattern-rule variants of the
+existing price rules in `packs/arithmetic/rules/core.yaml`: (1) an indefinite-singular
+generic subject (det in {a, an, one} + count noun + price_verb/copula + currency
+value); (2) a pronoun subject in the copular price frame ("they/it are/is $P each"),
+resolved via the pipeline's existing discourse candidates, with an optional
+hedging-adverb slot; (3) a relative clause with a floating quantifier ("N ITEMs that
+each cost $P"). Arbitration by specificity — each variant matches a strictly longer
+frame than any rule it could tie with, so no existing price rule loses. Filed as an
+ENABLER, not coverage: of the 24 already-recognized-ask items blocked only on the
+price frame, fixing the frame alone resolves 1 (the rest carry a second blocker —
+discount, obligation-framed pay ask, or conjoined purchase — named as follow-on
+classes, e.g. `discounted-purchase-totals`).
+
+GATE: dev-train diff SOLVED 1 (b1cd78e295ec) / BROKE 0 / DECL->WRONG 0 — VERDICT
+SHIP (66 -> 67 correct). dev-holdout diff NEUTRAL (0 SOLVED / 0 BROKE / 0
+DECL->WRONG, 28 correct unchanged). Suite 52/52. Lint 0 errors (1 pre-existing
+warning: fraction-of-remnant/fraction-of-pool overlap, known-good). pytest 722 -> 737
+(+15).
+**TEST look: pending — spent manually.**
+
 ## Batch 40 (2026-07-13) — increments 89, 90. dev-train 66, holdout 28.
 
 LANDED (looks #87, #88 — both 11/1, 91.7%, HELD):

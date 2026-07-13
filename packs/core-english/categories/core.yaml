@@ -334,6 +334,21 @@ categories:
       Catriona have?"). Same structural-only definition; members (difg-
       mined-only) live in packs/difg-mined/categories/semantic.yaml. See
       child's note for the full mechanism.
+  indefinite_article:
+    parent: article
+    notes: >
+      mining candidate generic-unit-price-premises: 'a'/'an' mark a
+      SINGULAR noun as a GENERIC instance ('A book costs $5' means every
+      book of that kind, the same per-unit reading 'each book costs $5'
+      already carries) rather than one specific previously-established
+      referent — unlike 'the', which is deliberately NOT a member here
+      (a definite singular price statement is a separate, more ambiguous
+      class left out of scope). learn.py's price_verb branch reads this
+      structurally (an indefinite article immediately left of an
+      uncounted singular subject, crossing only adjectives) as an
+      ADDITIONAL per-unit signal alongside the existing distributive-
+      determiner/trailing-each/bare-measure gates — never a replacement
+      for any of them.
 members:
   currency: [dollar]
   partitive: [of]
@@ -350,6 +365,7 @@ members:
   negation: [not]  # 'never' extends this from packs/difg-mined (its own lexicon)
   relational_marker: [than]
   span_preposition: [in]
+  indefinite_article: [a, an]
 context_synonyms:
   appendage:
     gate: animal

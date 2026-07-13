@@ -46,6 +46,91 @@ def _has_distributive_determiner(reading: Reading, noun: Unit) -> bool:
     return False
 
 
+def _has_indefinite_singular_determiner(reading: Reading, noun: Unit, reg: Registry) -> bool:
+    """'A book costs $5' (mining candidate generic-unit-price-premises) —
+    an indefinite article ('a'/'an', the `indefinite_article` category)
+    immediately to the left of an UNCOUNTED SINGULAR noun (crossing only
+    adjectives, mirroring `_article_licenses_noun`'s scan) is itself a
+    per-unit generic price signal: there is no trailing 'each'/distributive
+    determiner to detect in this shape at all, the article IS the
+    evidence. A PLURAL bare noun ('Eggs cost $2', no article at all) or a
+    definite article ('The book costs $5' — a specific referent, a
+    separate and more ambiguous class) never qualifies — this stays
+    exactly as narrow as the proven minimal pair."""
+    if noun.features.get("value_kind") == "count":
+        return False
+    if noun.features.get("number") == "plural":
+        return False
+    units = reading.units
+    try:
+        idx = units.index(noun)
+    except ValueError:
+        return False
+    for prev in reversed(units[:idx]):
+        sense = prev.sense()
+        if sense == "adjective":
+            continue
+        if sense == "article":
+            return reg.word_in_category(_lemma(prev), "indefinite_article")
+        return False
+    return False
+
+
+def _relative_clause_each_price(
+    reading: Reading, counted: Unit, reg: Registry
+) -> float | None:
+    """'5 toys WHICH EACH cost $3' (mining candidate generic-unit-price-
+    premises) — the mirror ORDER of `_price_each_value`'s '$PRICE each'
+    scan: there, a currency noun is followed by the distributive 'each';
+    here 'each' FLOATS immediately before the price_verb itself, ahead of
+    the price, so that forward scan (which gives up the instant it meets
+    a quantifier with no price seen yet) never reaches the number. A
+    dedicated, narrow flat scan starting right after the purchased item:
+    an optional relative marker ('which', the `wh_which` sense — 'that'
+    is a COMPLEMENTIZER and is deliberately excluded, see below), then a
+    bare 'each'/'every' quantifier, then a registered price_verb, then a
+    currency-valued counted noun — returns that noun's value, else None
+    for anything that doesn't match this exact shape (the ordinary
+    trailing-each form is already handled by `_price_each_value`/
+    `_is_rate` and never reaches here since THIS shape requires the
+    quantifier to come BEFORE the verb, not after the price).
+
+    'that' is excluded on purpose, not merely unimplemented: unlike
+    'which' (no lexicon role, invisible to subject-binding), 'that' is a
+    genuine clause-boundary sense that ALSO feeds sense disambiguation —
+    a restrictive relative clause built on 'that' makes the price_verb's
+    own subject obligation permanently unmet, which tips coverage
+    arbitration into reading the verb as a NOUN instead (merged with its
+    following value by condense's compound pass) before this fold ever
+    runs. Recognizing that shape needs a disambiguation-stage fix, a
+    materially larger and riskier change than this narrow token scan —
+    left for a future increment rather than forced here."""
+    units = reading.units
+    try:
+        i = units.index(counted)
+    except ValueError:
+        return None
+    j = i + 1
+    if j < len(units) and units[j].sense() == "wh_which":
+        j += 1
+    if j >= len(units) or units[j].sense() != "quantifier":
+        return None
+    j += 1
+    if j >= len(units) or units[j].sense() != "verb":
+        return None
+    if not reg.word_in_category(_lemma(units[j]), "price_verb"):
+        return None
+    j += 1
+    if (
+        j < len(units)
+        and units[j].sense() == "noun"
+        and units[j].features.get("value_kind") == "count"
+        and reg.word_in_category(units[j].features.get("lemma", ""), "currency")
+    ):
+        return float(units[j].features["value"])
+    return None
+
+
 def _is_measure_unit(noun: Unit, reg: Registry) -> bool:
     """A noun naming a KNOWN physical measure unit — one side of a
     `reg.conversions` pair (pound, gallon, ounce, ...; both directions are
@@ -789,6 +874,11 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                 (_is_rate(reading, dobj) and _rate_unit(reading, dobj) is None)
                 or _has_distributive_determiner(reading, subject)
                 or is_bare_measure_price
+                # mining candidate generic-unit-price-premises: an
+                # indefinite-singular generic subject ("A book costs $5")
+                # is itself per-unit evidence with no trailing 'each' to
+                # detect at all.
+                or _has_indefinite_singular_determiner(reading, subject, reg)
             ):
                 price_item = (
                     _lemma(measure_anchor) if measure_anchor is not None else _lemma(subject)
@@ -909,6 +999,25 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                 if dobj.features.get("value_kind") == "count" and dobj.sense() == "noun"
                 else None
             )
+            if (
+                price_value is None
+                and dobj.features.get("value_kind") == "count"
+                and dobj.sense() == "noun"
+            ):
+                # mining candidate generic-unit-price-premises: "buys 5
+                # toys WHICH EACH cost $3" — the floating-each-BEFORE-the-
+                # verb order _price_each_value's own scan (currency-then-
+                # quantifier) cannot see, since here the quantifier
+                # precedes the price_verb instead of following the price.
+                # `_is_rate` already flagged this dobj as a rate/
+                # distributive shape because a bare 'each' trails it
+                # somewhere in the clause (the SAME signal the recipient-
+                # count reading below uses) — tried only after the
+                # ordinary trailing-each reading has already declined, so
+                # it never shadows it, and only when this narrow price
+                # shape actually matches (see _relative_clause_each_price)
+                # does it pre-empt the recipient-count fallback.
+                price_value = _relative_clause_each_price(reading, dobj, reg)
             if price_value is None:
                 # mining candidate distributive-each-totals (event half):
                 # 'gave 4 stickers EACH to 3 friends' — no currency noun

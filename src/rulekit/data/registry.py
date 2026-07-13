@@ -55,10 +55,17 @@ from .schemas import (
 # temporal anchor elsewhere in the document -- purely additive: 'time' was
 # already a known lexicon sense (months, weekdays, 'now', 'today', ...), so
 # this only permits a NEW category to root here; it changes no existing
-# word's sense or any other time-sensed word's behavior.
+# word's sense or any other time-sensed word's behavior. 'article' was added
+# the same way again (mining candidate generic-unit-price-premises) so an
+# `indefinite_article` category can name the 'a'/'an' subset of articles,
+# distinct from 'the' -- purely additive: 'article' was already a known
+# lexicon sense (a/an/the), so this only permits a NEW category to root
+# here; it changes no existing word's sense or any other article-sensed
+# word's behavior.
 ROOT_SENSES = (
     "noun", "verb", "adjective", "quantifier", "preposition", "comparative",
     "negator", "conjunction", "modal", "particle", "adverb", "time",
+    "article",
 )
 
 
