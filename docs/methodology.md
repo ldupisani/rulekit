@@ -236,3 +236,56 @@ What moves TEST, in leverage order:
 - **Single-word vocab is dead at the margin for immediate solves** (`vocab-scan`): remaining vocab
   value is CEILING-raising (see §9.1) and family vocab verified by the post-system sweep.
 - Remaining work is **composition** (multi-step solves) — riskier per-increment, must clear the firewall.
+
+## §9 Candidate selection by YIELD (added 2026-07-13, after the seam misdiagnosis)
+
+For 30 batches candidate selection was driven by SURFACE PHRASE FREQUENCY — how many
+of the 3,772 dev-train items contain a phrase. That number is worse than useless: it
+has twice pointed at classes that resolved NOTHING (frequency 327, frequency 444; see
+negative-results) and it caused a wrong strategic conclusion ("the ask-shape seam is
+worked out") that cost several batches of enabler detours.
+
+Selection now runs on three measured quantities.
+
+### 1. The ADDRESSABLE POOL — the only legitimate denominator
+
+An item is addressable iff it is **fully-read** (no unknown words) **and declining**.
+Vocabulary is not its blocker, so an ask or a structure could actually win it.
+
+    dev-train 3,772 -> fully-read 1,472 -> declining 1,412  (at dev-train=60)
+      ...of which 678–728 decline on `no ask shape recognizes this question`
+
+`bench` prints this as the coverage factorization: `fully-read 39.0% × hit-rate 4.1%`
+— we can READ 39% of items and ANSWER 4% of what we read. The hit-rate is the number
+mining moves; fully-read is a vocabulary ceiling (and vocabulary has killed TEST
+twice — do not go there for the 100 goal; the pool is large enough without it).
+
+### 2. Cluster by SEMANTIC ASK FAMILY, never by lexical frame
+
+This is the trap that hid the seam. Clustering the pool's questions by word-prefix or
+by masked frame gives **616 distinct frames over 678 items, biggest cluster 5** — a
+long tail with nothing worth building. Cluster the SAME items by semantic family and
+the picture inverts:
+
+    per-unit/each 100 · total/altogether 90 · money-cost 78 · partitive measure 70
+    duration 57 · comparative 56 · remainder 54 · need/deficit 38 · rate 16 · percent 11
+    (overlapping; 261 = 38.5% genuinely tail)
+
+"how many cups of X" / "how many slices of Y" / "how many liters of Z" are ONE family,
+not three. A grammar engine generalises over tense, pronoun and measure noun — so
+candidate selection must too, or it sees noise where the engine sees a class.
+
+### 3. `pool_frequency` is the yield estimate; the surface count is banned
+
+Every brief carries `evidence.pool_frequency` = matches for this class's ask family
+WITHIN the addressable pool. That is the candidate's YIELD CEILING. A class with
+pool_frequency < 3 cannot yield 3 and never reaches an implementer. Candidates are
+prioritised by pool_frequency, not by intuition.
+
+### 4. CALIBRATE — the part that compounds
+
+For every landed increment, record the pair (`pool_frequency` estimated,
+`solved_vs_main` actual) in the HANDOFF entry. Over batches this yields the RESOLVE
+RATE: what fraction of an addressable family a well-built increment actually wins.
+Without it the estimator stays a guess forever; with it, it becomes a forecast.
+Nothing in the pipeline previously ever checked whether a prediction was any good.
