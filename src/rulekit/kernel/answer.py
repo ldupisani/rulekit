@@ -768,14 +768,6 @@ def answer(
                 "the inverse span ask needs exactly one",
             )
         rate = rates[0]
-        if "span_unit" in query:
-            asked_unit = reg.plural_to_singular.get(query["span_unit"], query["span_unit"])
-            if asked_unit != rate.per:
-                return Answer(
-                    "decline", None,
-                    f"asked time unit {asked_unit!r} does not match the "
-                    f"rate's {rate.per!r} — cannot invert",
-                )
         # a per-individual rate ("a bird eats 7 berries a day") entangles a
         # population the simple division below does not attempt — decline
         # rather than risk a wrong, mirroring the forward branch's own
@@ -787,7 +779,33 @@ def answer(
                 f"the rate is per-{rate.entity} — the inverse span ask does "
                 "not attempt a population division",
             )
-        item_value = float(query["item_value"])
+        if "item_value" in query:
+            item_value = float(query["item_value"])
+        else:
+            # mining candidate duration-rate-item-asks (TOTALITY ITEM): the
+            # ask named no numeral at all ("all of the windows") — the
+            # asked count instead resolves from the entity's own UNIQUELY
+            # stated Quantity of this measure, elsewhere in the text
+            # (the increment-10/16 whole-total-decline discipline: zero or
+            # ambiguous totals both decline, never a partial/guessed sum).
+            # `q.owner == entity` (not just `q.entity == entity`): "David's
+            # house has 64 windows" states the total on the POSSESSED noun
+            # ('house'), owner-tagged 'david' (condense.py merge-possessive,
+            # Quantity.owner — the SAME declared field the single-entity
+            # consumer's own `entity_owner` fallback already reads), so a
+            # totality stated through what the asked entity OWNS resolves
+            # exactly as one stated directly on the entity would.
+            totals = [
+                q for q in store.by_kind(Quantity)
+                if q.measure == measure and (q.entity == entity or q.owner == entity)
+            ]
+            if len(totals) != 1:
+                return Answer(
+                    "decline", None,
+                    f"{len(totals)} {measure!r} quantities known for "
+                    f"{entity!r} — the totality item needs exactly one",
+                )
+            item_value = totals[0].value
         if rate.numerator is not None and rate.denominator is not None:
             # a COMPOUND rate ("8 pages in 20 minutes") — invert through
             # the raw stated numerator/denominator directly (same
@@ -802,9 +820,33 @@ def answer(
             span = evaluate(
                 f"{item_value} / {rate.value}", {}, log, source="rate-span-inverse"
             )
+        span_unit = rate.per
+        if "span_unit" in query:
+            asked_unit = reg.plural_to_singular.get(query["span_unit"], query["span_unit"])
+            if asked_unit != rate.per:
+                # mining candidate duration-rate-item-asks (ASKED-UNIT
+                # CONVERSION): the asked time unit differs from the
+                # committing rate's own per-unit — apply the SAME static
+                # `reg.conversions` table the forward rate-span consumer
+                # already applies above, in the REVERSE direction (the
+                # computed span is stated in the rate's per-unit; convert
+                # it INTO the asked unit). An absent/ambiguous conversion
+                # still declines exactly as before this widening.
+                if (rate.per, asked_unit) not in reg.conversions:
+                    return Answer(
+                        "decline", None,
+                        f"no conversion from the rate's {rate.per!r} to "
+                        f"asked time unit {asked_unit!r} — cannot invert",
+                    )
+                span = evaluate(
+                    f"{span} * {reg.conversions[(rate.per, asked_unit)]}", {}, log,
+                    source="rate-span-inverse",
+                )
+                span_unit = asked_unit
         return Answer(
             "number", span,
-            f"{item_value} {measure} ÷ {rate.value}/{rate.per} for {entity!r}",
+            f"{item_value} {measure} ÷ {rate.value}/{rate.per} for {entity!r}"
+            + (f" -> {span_unit}" if span_unit != rate.per else ""),
         )
 
     if consumer == "unique-entity":

@@ -3728,3 +3728,45 @@ pytest 628, suite 52/52, lint clean.
 Branch: `mining/parked/extraposed-duration-rates-enabler`. No TEST look spent.
 
 NEXT: payoff batch on `base=mining/parked/extraposed-duration-rates-enabler`.
+## Increment 80 (2026-07-13) — asked-item resolution in duration-rate inverse-span asks (totality-marked item, unit-mismatched asked time unit, 'for'-variant, conjoined item list) — the payoff for increment 79
+
+Class: asked-item resolution in duration-rate inverse-span asks — the payoff
+for increment 79's extraposed-duration-rate premise Rate. Four coordinated
+pieces, all on the two EXISTING inverse-span asks
+(`ask/how-long-take-span`, `ask/how-many-timeunit-take-span`,
+`packs/arithmetic/rules/core.yaml`) and the EXISTING `rate-span-inverse`
+consumer (`answer.py`) — the forward `rate-span` consumer/branch stays
+byte-for-byte untouched. (1) TOTALITY ITEM: the asks' `item` slot also
+binds a totality-marked bare noun ("all (of) the X"), and rate-span-inverse
+resolves the count from the entity's own uniquely stated Quantity of that
+measure, declining on zero or ambiguous totals. (2) ASKED-UNIT CONVERSION:
+when the ask names a time unit differing from the committing Rate's `per`
+unit, the same static `reg.conversions` lookup the forward rate-span
+consumer already applies now fires here too, instead of an outright
+decline; ambiguous/absent conversion still declines. (3) FOR-VARIANT: an
+optional `{lit: for}` before the `who` slot in both asks ("how long does
+it take FOR WHO to VERB N ITEM"), pure grammatical skeleton. (4) CONJOINED
+ITEM LIST: an article-singular item in a duration-rate premise counts as
+one (implicit-one); the elided conjunct in "N TU to VERB a X and M TU to
+VERB a Y" distributes the extraposed/SVO subject+verb so both Rates emit;
+the ask's `item` becomes a list of counted items and the consumer sums
+item_i / rate_i, declining unless every asked item has exactly one
+matching Rate (never a partial sum). Piece 4's premise-side widening
+(`learn.py::_compound_rate_span`) is opt-in, defaulted to today's
+behavior — the increment-11/18 shared-scan invariant.
+
+Files: `packs/arithmetic/rules/core.yaml`, `src/rulekit/kernel/answer.py`,
+`src/rulekit/kernel/patterns.py`, `src/rulekit/kernel/learn.py`,
+`tests/test_mining_increment_80.py` (11 synthetic tests; also updates two
+pre-existing tests in `test_mining_increment_51.py` /
+`test_mining_increment_55.py` whose asserted "mismatched-unit always
+declines" behavior is superseded by piece 2).
+
+Gates (integrated on staging, full re-proof against current staging
+baseline): dev-train diff SHIP, SOLVED 2 (1cfb8c5f4161, 81fc6d6693fd), 0
+BROKE, 0 DECL→WRONG (57→59/3772 correct); dev-holdout diff NEUTRAL, 0
+BROKE, 0 DECL→WRONG (25/3701 correct before and after); pytest 640 passed;
+suite 52/52; lint 0 errors / 1 known-good warning (fraction-of-remnant /
+fraction-of-pool, unchanged). TEST look: pending — spent manually.
+
+LANDED: 79 (b18e4da) extraposed-duration rate premises — the enabler, rides with its payoff.

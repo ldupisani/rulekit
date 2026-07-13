@@ -78,11 +78,28 @@ def test_how_many_timeunit_matching_rate_per_unit(full_registry):
     assert r.answer.value == 4
 
 
-def test_how_many_timeunit_mismatched_unit_declines(full_registry):
+def test_how_many_timeunit_mismatched_unit_converts(full_registry):
     # the asked unit ('minutes') doesn't match the rate's own per-unit
-    # ('hour') — the inverse ask does no conversion, only a direct match
+    # ('hour') — mining candidate duration-rate-item-asks (ASKED-UNIT
+    # CONVERSION) widened the rate-span-inverse consumer to apply the
+    # static reg.conversions table here, the SAME table the forward
+    # rate-span consumer already applies, instead of the outright decline
+    # this test used to pin: 20 pages / 5 pages-per-hour = 4 hours = 240
+    # minutes.
     r = solve(
         "Sana reads 5 pages per hour. How many minutes does it take Sana "
+        "to read 20 pages?",
+        full_registry,
+    )
+    assert r.answer.kind == "number"
+    assert r.answer.value == pytest.approx(240.0)
+
+
+def test_how_many_timeunit_no_conversion_declines(full_registry):
+    # an asked unit with NO defined conversion to the rate's per-unit still
+    # declines exactly as before this widening (never a guessed factor).
+    r = solve(
+        "Sana reads 5 pages per dollar. How many minutes does it take Sana "
         "to read 20 pages?",
         full_registry,
     )

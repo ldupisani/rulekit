@@ -100,16 +100,18 @@ def test_ordinary_auxiliary_form_still_matches_unchanged(full_registry):
     assert r.answer.value == 4
 
 
-def test_how_many_timeunit_mismatched_unit_declines(full_registry):
-    # will-phrased sibling of increment 51's own mismatch decline-safety
-    # test: the asked unit ('minutes') doesn't match the rate's own
-    # per-unit ('hour') — no conversion is attempted
+def test_how_many_timeunit_mismatched_unit_converts(full_registry):
+    # will-phrased sibling of increment 51's own mismatch test: mining
+    # candidate duration-rate-item-asks (ASKED-UNIT CONVERSION) widened
+    # rate-span-inverse to apply reg.conversions instead of declining
+    # outright — 24 muffins / 6 muffins-per-hour = 4 hours = 240 minutes.
     r = solve(
         "Priya bakes 6 muffins per hour. How many minutes will it take "
         "Priya to bake 24 muffins?",
         full_registry,
     )
-    assert r.answer.kind == "decline"
+    assert r.answer.kind == "number"
+    assert r.answer.value == pytest.approx(240.0)
 
 
 def test_no_rate_known_declines(full_registry):

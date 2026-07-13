@@ -2169,6 +2169,14 @@ asks:
     # question still cannot bind here. Routed to a NEW consumer
     # (rate-span-inverse) — the forward 'rate-span' consumer/branch above
     # is untouched byte-for-byte.
+    #
+    # `opt: [{lit: for}]` (mining candidate duration-rate-item-asks,
+    # FOR-variant): "how long does it take FOR WHO to VERB..." is the same
+    # extraposed-infinitive idiom with an optional dative 'for' inserted
+    # before `who` -- pure grammatical skeleton ('for' already a known
+    # preposition-sense word, packs/difg-mined/lexicon/a-f.yaml), never
+    # bound to a query field, so a question without it matches exactly as
+    # before.
     match:
       question:
         - {lit: how}
@@ -2176,6 +2184,8 @@ asks:
         - {slot: aux, type: future_modal}
         - {lit: it}
         - {lit: take}
+        - opt:
+            - {lit: for}
         - {slot: who, type: entity}
         - {lit: to}
         - {slot: verb, type: verb}
@@ -2185,6 +2195,57 @@ asks:
       entity: "{who}"
       item: "{item}"
       item_value: "{item.value}"
+
+  - id: ask/how-long-take-span-totality-item
+    # 'how long does/did it take (FOR) WHO to VERB ALL (OF) (THE) ITEM?'
+    # (mining candidate duration-rate-item-asks) -- sibling of
+    # ask/how-long-take-span above for a TOTALITY-MARKED bare item ("all
+    # of the windows") instead of a stated count ("64 windows"): the asked
+    # count is never spelled out, so the consumer resolves it from the
+    # entity's own uniquely-stated Quantity of that measure elsewhere in
+    # the text (the increment-10/16 whole-total-decline discipline --
+    # unique-or-decline, zero or ambiguous totals both refuse). `all` is a
+    # REQUIRED `quantifier`-sense literal word -- the same totality marker
+    # ask/how-many-all-combined and ask/how-many-plural-combined-
+    # quantified-subject already use as a bare `{lit: all}` token; `of`/
+    # `the` are each independently optional so "all X", "all the X" and
+    # "all of the X" bind identically. `item, type: noun` (not `counted`):
+    # a totality-marked item never carries its own numeral.
+    #
+    # A SEPARATE ask id from ask/how-long-take-span, never a widened
+    # `item` slot there: the two item shapes are structurally disjoint (a
+    # numeral vs. a totality marker), and the base ask's own
+    # `item_value: "{item.value}"` template would silently break on an
+    # unnumbered noun -- the increment-64 precedent (a new sibling ask for
+    # a totality-marked reading) rather than a shared slot widening. Never
+    # a tie with the base ask either: that ask's `item` position sits
+    # directly after `verb` with no `all` literal, so a question carrying
+    # "all (of) (the)" fails the base ask's fixed sequence at that point
+    # (no opt group there to skip it) while satisfying this one instead,
+    # and a question WITHOUT "all" fails this ask's own required literal
+    # and falls through to the base ask exactly as before.
+    match:
+      question:
+        - {lit: how}
+        - {lit: long}
+        - {slot: aux, type: future_modal}
+        - {lit: it}
+        - {lit: take}
+        - opt:
+            - {lit: for}
+        - {slot: who, type: entity}
+        - {lit: to}
+        - {slot: verb, type: verb}
+        - {lit: all}
+        - opt:
+            - {lit: of}
+        - opt:
+            - {lit: the}
+        - {slot: item, type: noun}
+    resolves:
+      consumer: rate-span-inverse
+      entity: "{who}"
+      item: "{item}"
 
   - id: ask/how-many-timeunit-take-span
     # 'how many TIMEUNIT does/did it take WHO to VERB N ITEM?' — same
@@ -2210,6 +2271,12 @@ asks:
     # max-consumed-units check increment 49 verified for its own modal
     # widening). Confirmed against packs/difg-mined/quarantine.yaml: no new
     # vocabulary admitted, this is a pure slot-type widening.
+    #
+    # `opt: [{lit: for}]` (mining candidate duration-rate-item-asks,
+    # FOR-variant): same optional dative 'for' before `who` as
+    # ask/how-long-take-span's own widening, unaffected in the adjacency
+    # argument above (the literal is consumed either way, so the token
+    # count this ask wins specificity on only grows).
     match:
       question:
         - {lit: how}
@@ -2218,6 +2285,8 @@ asks:
         - {slot: aux, type: future_modal}
         - {lit: it}
         - {lit: take}
+        - opt:
+            - {lit: for}
         - {slot: who, type: entity}
         - {lit: to}
         - {slot: verb, type: verb}
@@ -2227,6 +2296,41 @@ asks:
       entity: "{who}"
       item: "{item}"
       item_value: "{item.value}"
+      span_unit: "{span_unit}"
+
+  - id: ask/how-many-timeunit-take-span-totality-item
+    # totality-item sibling of ask/how-many-timeunit-take-span, mirroring
+    # ask/how-long-take-span-totality-item's own widening for the
+    # explicit-time-unit form (mining candidate duration-rate-item-asks).
+    # See that ask's comment for the totality-marker/decline discipline
+    # and the never-a-tie argument against its own base ask; the
+    # adjacency argument against ask/how-many-capacity in the base ask's
+    # comment applies here a fortiori (this ask's own required span is
+    # even longer, so it only wins the max-consumed-units tie-break by a
+    # wider margin).
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: span_unit, type: noun}
+        - {slot: aux, type: future_modal}
+        - {lit: it}
+        - {lit: take}
+        - opt:
+            - {lit: for}
+        - {slot: who, type: entity}
+        - {lit: to}
+        - {slot: verb, type: verb}
+        - {lit: all}
+        - opt:
+            - {lit: of}
+        - opt:
+            - {lit: the}
+        - {slot: item, type: noun}
+    resolves:
+      consumer: rate-span-inverse
+      entity: "{who}"
+      item: "{item}"
       span_unit: "{span_unit}"
 
   - id: ask/how-old-is
