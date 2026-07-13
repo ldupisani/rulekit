@@ -660,6 +660,12 @@ members:
   aggregate_noun:
   - amount
   - number
+  quantity_anaphor:
+  - amount
+  - number
+  price_anaphor:
+  - price
+  - cost
   remnant:
   - remainder
   - rest

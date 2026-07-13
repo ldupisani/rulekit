@@ -902,6 +902,174 @@ rules:
         offset: 0.0
         verb: "{verb}"
 
+  - id: arithmetic/anaphoric-multiplier-standard-much
+    phase: read
+    description: >
+      mining candidate anaphoric-multiplier-standards (family overview —
+      the three '-much'/'-many'/(bare, amount/number) siblings and the
+      price sibling below share this shape): "he also orders TWICE THAT
+      MUCH chicken", "she lost THREE TIMES THAT MANY pounds", "it caught
+      TWICE THIS MANY at night", "he built THREE TIMES THIS AMOUNT", "she
+      has sent TWICE THAT NUMBER" — a DEMONSTRATIVE multiplier standard:
+      unlike every other relation rule in this file, "that"/"this" here
+      never denotes a comparison ENTITY (no name, no common noun) — it
+      anaphorically points BACK at a quantity already stated earlier in
+      the document. `k, type: multiplier` already absorbs a leading "N
+      times" as one token (numbers.py), so no separate 'times' literal is
+      needed, mirroring every other relation rule in this file. No
+      `{lit: that}`/`{lit: this}` token is written for the demonstrative
+      itself in a way that would REQUIRE 'this' specifically: 'that' is
+      fine (it takes the literal), but 'this'/'these'/'those' are sensed
+      `article` — already in SKIPPABLE_SENSES — so patterns.py's matcher
+      skips them BEFORE testing any token at all (ask/how-many-plural-
+      combined-cardinal-subject's own comment documents this same
+      invariant for its optional `q, cat: quantifier` slot); a literal
+      token can therefore never require or forbid 'this' either way. An
+      `opt: [{lit: that}]` consumes 'that' when present and is a no-op
+      otherwise (the skip loop already passes through unmatched non-'that'
+      skippable filler on its own), so ONE rule per head word covers "that
+      HEAD" and "this HEAD" alike, with the demonstrative-less bare "HEAD"
+      span never independently reachable by any other existing rule (no
+      rule in this pack matches a bare multiplier immediately followed by
+      'much'/'many'/'amount'/'number'/'price'/'cost' with nothing
+      structural between). Each sibling gates its OWN head word literally
+      rather than through one shared category: the lexicon's own
+      root-sense invariant (registry.compile_registry) requires every
+      category member to carry that category's root sense, and 'much'
+      (quantifier/interrogative) shares no common root with 'many'
+      (interrogative only) or with the noun-sensed 'amount'/'number' — so
+      gating on `{lit: much}` here mirrors how 'much' and 'many' are
+      ALREADY two separate literal-gated rule families everywhere else in
+      this file (times-as-much / times-as-many), never a shared category.
+      The Relation's `standard` is emitted as an explicit reserved
+      sentinel (never a guess) that resolves in saturate.py's
+      `_relations_synth` against the UNIQUE prior Quantity known
+      document-wide (there is no entity to anchor on, unlike the
+      elided-measure sibling rules above) — a SIBLING branch there, never
+      a widening of the existing measure-elided one. `who, type: entity`
+      matches this file's common-noun-relation-subjects widening
+      throughout. `where: absent: {cat: partitive}` on every sibling in
+      this family (dev-train look #66's own DECL->WRONG catch): 'amount'/
+      'number' are ALSO the frame nouns of the completely different
+      "N times the NUMBER OF X that/as Y" construction (arithmetic/times-
+      the-number-of and siblings) — that frame always has 'of' immediately
+      after the head noun, our anaphoric reading never does, and this
+      engine has no positional negative-lookahead token, so the safe,
+      general gate is: decline this whole family whenever 'of' appears
+      ANYWHERE in the sentence, rather than risk binding the wrong
+      standard to whichever entity the frame construction actually names.
+    match:
+      sentence:
+        - {slot: who, type: entity}
+        - {slot: verb, type: verb}
+        - {slot: k, type: multiplier}
+        - opt:
+            - {lit: that}
+        - {lit: much}
+    where:
+      - absent: {cat: partitive}
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "$anaphor:quantity$"
+        measure: null
+        factor: "k"
+        offset: 0.0
+        verb: "{verb}"
+        subject_label: "{who.label}"
+
+  - id: arithmetic/anaphoric-multiplier-standard-many
+    phase: read
+    description: >
+      mining candidate anaphoric-multiplier-standards: the '-many' sibling
+      of arithmetic/anaphoric-multiplier-standard-much — see its
+      description for the full mechanism. Literally gated on 'many'
+      rather than through a shared category for the same lexicon
+      root-sense reason (also documented there).
+    match:
+      sentence:
+        - {slot: who, type: entity}
+        - {slot: verb, type: verb}
+        - {slot: k, type: multiplier}
+        - opt:
+            - {lit: that}
+        - {lit: many}
+    where:
+      - absent: {cat: partitive}
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "$anaphor:quantity$"
+        measure: null
+        factor: "k"
+        offset: 0.0
+        verb: "{verb}"
+        subject_label: "{who.label}"
+
+  - id: arithmetic/anaphoric-multiplier-standard
+    phase: read
+    description: >
+      mining candidate anaphoric-multiplier-standards: the bare-noun
+      sibling of arithmetic/anaphoric-multiplier-standard-much, for the
+      two NOUN-sensed anaphor heads 'amount'/'number' (packs/difg-mined) —
+      these two DO share a root sense ('noun'), so `quantity_anaphor`
+      (packs/core-english/categories/core.yaml) gates them through one
+      category rather than two more literal siblings. See
+      arithmetic/anaphoric-multiplier-standard-much's description for the
+      full mechanism (demonstrative handling, sentinel standard,
+      saturate.py resolution) — identical here but for the head slot.
+    match:
+      sentence:
+        - {slot: who, type: entity}
+        - {slot: verb, type: verb}
+        - {slot: k, type: multiplier}
+        - opt:
+            - {lit: that}
+        - {slot: head, cat: quantity_anaphor}
+    where:
+      - absent: {cat: partitive}
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "$anaphor:quantity$"
+        measure: null
+        factor: "k"
+        offset: 0.0
+        verb: "{verb}"
+        subject_label: "{who.label}"
+
+  - id: arithmetic/anaphoric-price-standard
+    phase: read
+    description: >
+      mining candidate anaphoric-multiplier-standards: sibling of
+      arithmetic/anaphoric-multiplier-standard for the PRICE-denominated
+      anaphor ("the other priced at 3 TIMES THAT PRICE") — same
+      demonstrative-standard shape, `head` gated on `price_anaphor`
+      (price/cost) instead of `quantity_anaphor`, and a DIFFERENT reserved
+      sentinel so saturate.py's `_relations_synth` resolves it against the
+      UNIQUE prior Price fact document-wide instead of a Quantity — the
+      two sentinels are never conflated, keeping this a genuinely separate
+      sibling branch there (never a widening of the quantity one).
+    match:
+      sentence:
+        - {slot: who, type: entity}
+        - {slot: verb, type: verb}
+        - {slot: k, type: multiplier}
+        - opt:
+            - {lit: that}
+        - {slot: head, cat: price_anaphor}
+    where:
+      - absent: {cat: partitive}
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "$anaphor:price$"
+        measure: null
+        factor: "k"
+        offset: 0.0
+        verb: "{verb}"
+        subject_label: "{who.label}"
+
   - id: arithmetic/affine-times-as-many
     phase: read
     description: >

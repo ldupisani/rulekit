@@ -20,7 +20,16 @@ from ..data.registry import Registry
 from ..data.schemas import SynthRule
 from .evaluate import ArithmeticLog, EvaluationError, evaluate
 from .facts import FactStore
-from .model import AnchorQuantity, Fact, GroupTotal, Predication, Provenance, Quantity, Relation
+from .model import (
+    AnchorQuantity,
+    Fact,
+    GroupTotal,
+    Predication,
+    Price,
+    Provenance,
+    Quantity,
+    Relation,
+)
 
 MAX_ROUNDS = 50
 
@@ -109,6 +118,15 @@ def _apply_synth_rule(
 
 
 # -- algorithmic plugins ------------------------------------------------------
+
+# mining candidate anaphoric-multiplier-standards: reserved `Relation.standard`
+# sentinels for a DEMONSTRATIVE standard ("twice that much/many/amount/number",
+# "3 times that price") — never a real entity lemma (both contain characters
+# no tokenizer-produced lemma can), so they can never collide with a genuine
+# document entity. Two, not one, so the quantity-anchored and price-anchored
+# resolution paths in `_relations_synth` stay structurally disjoint.
+_ANAPHOR_QUANTITY_STANDARD = "$anaphor:quantity$"
+_ANAPHOR_PRICE_STANDARD = "$anaphor:price$"
 
 
 def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> list[Fact]:
@@ -219,6 +237,72 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
         )
 
     for rel in store.by_kind(Relation):
+        if rel.standard in (_ANAPHOR_QUANTITY_STANDARD, _ANAPHOR_PRICE_STANDARD):
+            # mining candidate anaphoric-multiplier-standards: "twice that
+            # much"/"twice this many"/"3 times that price" — a DEMONSTRATIVE
+            # standard names no entity at all (the pattern rule's own
+            # `standard` is one of the two reserved sentinels above, never
+            # a real lemma), so the entity-anchored `anchor_measure` above
+            # can never apply. A SIBLING branch, deliberately never folded
+            # into the `rel.measure is None` elided-measure branch below
+            # (which recovers a measure from a NAMED standard entity's own
+            # holdings — a different antecedent shape entirely): binds
+            # instead to the UNIQUE fact of the right kind known from
+            # EARLIER sentences document-wide — the same unique-in-play,
+            # never-guess discipline every other branch here uses, just
+            # scoped to the whole document instead of one entity because
+            # there is no entity to scope by. Zero or two-or-more earlier
+            # facts of that kind is ambiguous and declines this round: a
+            # derived/aggregate antecedent ("twice that number" referring
+            # to the SUM of two counts stated separately) leaves TWO prior
+            # facts in play, not one, so it correctly declines rather than
+            # guessing which one (or that their sum) is meant.
+            if rel.standard == _ANAPHOR_QUANTITY_STANDARD:
+                prior_q = [
+                    q for q in store.by_kind(Quantity)
+                    if q.provenance.sentence < rel.provenance.sentence
+                ]
+                if len(prior_q) == 1:
+                    (anchor_q,) = prior_q
+                    if (rel.subject, anchor_q.measure, verb_key(rel.verb)) not in by_verb:
+                        value = evaluate(
+                            f"{rel.factor} * {anchor_q.value} + {rel.offset}", {}, log,
+                            source=f"relation-anaphor:{rel.provenance.source}",
+                        )
+                        out.append(
+                            Quantity(
+                                provenance=Provenance(
+                                    source="synth/relation", sentence=rel.provenance.sentence
+                                ),
+                                entity=rel.subject, measure=anchor_q.measure, value=value,
+                                verb=rel.verb, label=rel.subject_label or None,
+                            )
+                        )
+            else:
+                prior_p = [
+                    p for p in store.by_kind(Price)
+                    if p.provenance.sentence < rel.provenance.sentence
+                ]
+                if len(prior_p) == 1:
+                    (anchor_p,) = prior_p
+                    already_priced = any(
+                        p.item == rel.subject and p.verb == rel.verb
+                        for p in store.by_kind(Price)
+                    )
+                    if not already_priced:
+                        value = evaluate(
+                            f"{rel.factor} * {anchor_p.value} + {rel.offset}", {}, log,
+                            source=f"relation-anaphor:{rel.provenance.source}",
+                        )
+                        out.append(
+                            Price(
+                                provenance=Provenance(
+                                    source="synth/relation", sentence=rel.provenance.sentence
+                                ),
+                                item=rel.subject, value=value, verb=rel.verb,
+                            )
+                        )
+            continue
         if rel.measure is None:
             # mining candidate elided-measure-relations: the pattern rule
             # stated no measure noun at all ("Ben has twice as many as
@@ -998,6 +1082,27 @@ def _sum_constraint_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -
         holders = {q.entity for q in store.by_kind(Quantity) if q.measure == measure}
         if holders - {rel.subject, rel.standard}:
             continue  # a third entity holds this measure — never guess the span
+        # mining candidate anaphoric-multiplier-standards: a THIRD relation
+        # touching either of this relation's two entities is the SAME
+        # three-entity-chain case the docstring already declines for
+        # (Stacy=4xSteve, Steve=2xSkylar, 1100 total — a chain, not a
+        # 2-holder split), but the `holders` check above alone cannot see
+        # it: the other relation's OWN measure can still be unresolved
+        # (e.g. an anaphoric-standard Relation, `measure is None`, that
+        # hasn't recovered its measure yet) and so never lands in this
+        # `measure`'s own bucket, leaving the chain invisible to
+        # `relations_by_measure`. Checking every OTHER relation's subject/
+        # standard directly (regardless of ITS OWN measure) closes that
+        # gap without narrowing anything: an ordinary isolated 2-holder
+        # relation (the overwhelming common case) has no other relation
+        # naming either of its entities, so this adds zero new declines
+        # there.
+        if any(
+            other is not rel and (rel.subject in (other.subject, other.standard)
+                                   or rel.standard in (other.subject, other.standard))
+            for other in store.by_kind(Relation)
+        ):
+            continue  # a third relation also implicates one of these two entities — a chain, not a 2-holder split
         if rel.subject in holders or rel.standard in holders:
             continue  # already resolved (or resolving) elsewhere — nothing to do
         standard_value = evaluate(

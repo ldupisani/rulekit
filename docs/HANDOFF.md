@@ -4505,3 +4505,40 @@ the worklist, NOT into a review-pressure edit.
 
 SHAPE GATE: `rate-stack-robustness` dropped at 2 of 10 walked — the minItems=8 fix working
 as intended (a real sample, an honest denominator).
+
+## Increment 94 (2026-07-13) — anaphoric-multiplier relation standards
+
+CLASS: demonstrative multiplier NPs used as a relation STANDARD — "twice that many",
+"three times that amount", "half that much", "5 times that number", "twice this many",
+"3 times that price" — the anaphoric sibling of increment 85's ELIDED-standard family
+(85 handles a dropped measure noun; this handles a demonstrative pointing back at a
+quantity or price already stated earlier in the document).
+
+PROVEN on unmodified main: "John orders 1000 beef for $8 each. He also orders TWICE
+THAT MUCH chicken at $3 each." declines with "stated multiplier twice (sentence 1)
+reached no fact and no arithmetic"; substituting the explicit number into the same
+text commits 14000.0 — the gold of item 84e2001d4069.
+
+MECHANISM: INFRASTRUCTURE (enabler). `packs/arithmetic/rules/core.yaml` gains rules
+admitting a demonstrative NP as a relation standard: [multiplier] + optional "times" +
+{lit: that|this} + a head noun in the new `quantity_anaphor` category (much / many /
+amount / number / price / cost) — all grammatical skeleton, no new vocabulary. The
+rule emits the existing Relation fact with the standard left as the same null-standard
+sentinel increments 85/87 use. `src/rulekit/kernel/saturate.py`'s `_relations_synth`
+resolves it on the SAME unique-in-play discipline those two already use: the standard
+binds to the unique prior Quantity of the same measure in play (or, for "that price",
+the unique prior Price); zero or two-or-more candidates is ambiguous and declines —
+never a guess. New category `quantity_anaphor` (parent noun) added to
+`packs/core-english/categories/core.yaml`; `packs/difg-mined/categories/semantic.yaml`
+touched to extend membership consistently with the root-sense invariant. Filed
+infrastructure: only 1 of 12 walked items resolves on this fix alone — the rest are
+blocked downstream on totality-ask surfaces this enabler does not build (unblocks:
+single-holder totality/combining asks over anaphoric-multiplier event chains — a
+present-perfect totality ask, a FRONTED "In total, how many X..." marker, and combined
+value-accounting asks — the payoff class that cashes this in).
+
+GATE: dev-train diff SOLVED 1 (a18c0df9ca3e) / BROKE 0 / DECL->WRONG 0 — VERDICT SHIP
+(70 -> 71 correct). dev-holdout diff NEUTRAL (0 SOLVED / 0 BROKE / 0 DECL->WRONG, 28
+correct unchanged). Suite 52/52. Lint 0 errors (1 pre-existing warning: fraction-of-
+remnant/fraction-of-pool overlap, known-good). pytest 757 -> 765 (+8).
+**TEST look: pending — spent manually.**

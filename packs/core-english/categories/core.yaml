@@ -349,6 +349,45 @@ categories:
       ADDITIONAL per-unit signal alongside the existing distributive-
       determiner/trailing-each/bare-measure gates — never a replacement
       for any of them.
+  quantity_anaphor:
+    parent: noun
+    notes: >
+      mining candidate anaphoric-multiplier-standards: the closed set of
+      QUANTITY-anaphor head NOUNS that name a previously-stated amount
+      without repeating it — 'amount'/'number' extend this from packs/
+      difg-mined, where they are ALSO already members of 'aggregate_noun'
+      for a completely different frame-noun purpose ("the NUMBER of X")
+      — this is a separate, sibling category, never a widening of
+      aggregate_noun, so aggregate_noun's own gated rules never see a new
+      member from this. Deliberately EXCLUDES 'much'/'many' — the
+      lexicon's own root-sense invariant (registry.compile_registry)
+      requires every category member to actually carry that category's
+      root sense, and 'much'/'many' are sensed quantifier/interrogative,
+      not noun — so this pack's sibling pattern rules
+      (arithmetic/anaphoric-multiplier-standard-much/-many) gate on
+      those two literally instead, mirroring how 'much'/'many' are
+      ALREADY two separate literal-gated rule families everywhere else
+      in this file (times-as-much / times-as-many), never a shared
+      category. Gates arithmetic/anaphoric-multiplier-standard's
+      head-noun slot: "3 times THAT AMOUNT" / "twice THAT NUMBER" — a
+      demonstrative standard that names no ENTITY at all (unlike a name
+      or a common noun, "that"/"this" never denotes a holder); saturate.py's
+      `_relations_synth` resolves the emitted Relation's sentinel standard
+      against the UNIQUE prior Quantity known document-wide instead of
+      any entity's own holdings — zero or two-or-more candidates declines,
+      never a guess.
+  price_anaphor:
+    parent: noun
+    notes: >
+      mining candidate anaphoric-multiplier-standards: sibling of
+      'quantity_anaphor' for the PRICE-denominated anaphor head nouns
+      ('price'/'cost', difg-mined nouns — members extend from packs/
+      difg-mined/categories/semantic.yaml). Gates arithmetic/anaphoric-
+      price-standard ("3 times THAT PRICE"); saturate.py resolves the
+      emitted Relation's sentinel standard against the UNIQUE prior Price
+      known document-wide rather than a Quantity — kept a SEPARATE
+      category from 'quantity_anaphor' (never folded together) because
+      the two anchor against two entirely different fact kinds.
 members:
   currency: [dollar]
   partitive: [of]
