@@ -4684,6 +4684,39 @@ pre-existing warning: fraction-of-remnant/fraction-of-pool overlap, known-good).
 updated to reflect genuinely-superseded capability).
 **TEST look: pending — spent manually.**
 
+## Increment 98 (2026-07-13) — elided comparative standards
+
+CLASS: comparative/multiplicative relations whose STANDARD is elided (the discourse or
+coordinate antecedent), rather than named after "than"/"as". The pattern layer only
+emitted a Relation when the comparative named its standard ("three times as many X AS Y",
+"N more X THAN Y"). New sibling pattern rules in packs/arithmetic/rules/core.yaml
+(arithmetic/times-as-many-elided-standard, times-as-much-elided-standard,
+fraction-as-many-elided-standard, fraction-as-much-elided-standard) match the same
+"K times as many/much" / "half as many/much" comparatives with the `std` slot OPTIONAL,
+emitting the ordinary Relation shape with `standard` set to a reserved
+`$elided:standard$` sentinel when no "as Y" continuation exists. saturate.py's
+`_relations_synth` resolves the sentinel structurally: the unique OTHER entity holding
+the SAME measure in an earlier sentence (cross-sentence case). Zero or two-or-more
+same-measure holders declines rather than guessing — no antecedent, no fact, so no item
+can move declined -> wrong. A repeated self-mention with no demonstrative is excluded
+from the antecedent search (that is increment 94's anaphoric-multiplier shape, "twice
+THAT many", not this one). Each new rule's `where: unbound: [std_seen]` guard rejects the
+whole match whenever a trailing "as Y" continuation is grammatically present at all, so
+the rule never mistakes a truncated prefix of a longer explicit comparative for a
+genuinely elided one. No lexicon anywhere: "twice/times/as many" are grammatical
+skeleton already used by the mandatory-standard sibling rules; the new machinery is
+purely structural antecedent binding.
+
+FILES: packs/arithmetic/rules/core.yaml, src/rulekit/kernel/saturate.py,
+tests/test_mining_increment_98.py.
+
+GATE (integrated, staging tip): dev-train diff SHIP (+1 SOLVED / 0 BROKE / 0 DECL->WRONG,
+76 correct, 3772 items, 100% precision). dev-holdout diff SHIP (+1 SOLVED / 0 BROKE / 0
+DECL->WRONG, 29 correct, 3701 items, 100% precision). Suite 52/52. Lint 0 errors (1
+pre-existing warning: fraction-of-remnant/fraction-of-pool overlap, known-good). pytest
+792 -> 799 (+7 new synthetic tests).
+**TEST look: pending — spent manually.**
+
 ## Batch 43 (2026-07-13) — increments 96, 97. dev-train 73 -> 75.
 
 LANDED (look #94: 11/1, 91.7%, HELD — 96 is 0-SOLVED and rides with its payoff):

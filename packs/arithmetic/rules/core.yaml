@@ -530,6 +530,74 @@ rules:
         subject_label: "{who.label}"
         standard_label: "{std.label}"
 
+  - id: arithmetic/times-as-many-elided-standard
+    phase: read
+    description: >
+      mining candidate elided-comparative-standards: "Boy A holds 7 fish.
+      Boy B has three times as many fish in his aquarium." — times-as-many
+      with the STANDARD clause elided entirely (no "as Y" after the item
+      noun at all; compare arithmetic/times-as-many-elided, which elides
+      the ITEM noun instead and still states "as Y"). The comparison
+      entity is not named anywhere in this sentence — it is the discourse
+      antecedent, the most recent OTHER holder of the SAME measure. Emits
+      the SAME Relation shape times-as-many does, with `standard` set to
+      the reserved `$elided:standard$` sentinel (never a guess) instead of
+      a slot-bound entity; saturate.py's `_relations_synth` recovers it
+      from the unique earlier same-measure Quantity, the same
+      unique-pool-in-play discipline the measure-elided siblings already
+      use for the mirror-image gap. The trailing `opt: [as, ..., std_seen]`
+      block mirrors times-as-many's own mandatory "as Y" continuation
+      structurally, but binds it to `std_seen` and then `where: unbound:
+      [std_seen]` REJECTS this whole match if it ever binds — the general
+      negative-lookahead mirror (schemas.py's own comment on `unbound`):
+      relying only on `patterns.subsumes` to drop this rule's redundant
+      shorter match whenever times-as-many's own fuller one wins is NOT
+      enough, because the fuller rule can itself decline for an unrelated
+      reason (its `distinct: [item, std]` self-reference guard rejects a
+      same-lemma-different-qualifier pair like "4 times as many purple
+      marbles as orange marbles" — a pre-existing, separate gap, not
+      qualifier-aware the way arithmetic/anchored-relation's `distinct_
+      measure` already is) — with no competing match to subsume, this
+      rule would otherwise be the ONLY survivor and misread the truncated
+      prefix as a genuinely elided standard, when a std was actually
+      right there in the text (dev-train look: 7fc8fb0445e6 caught this
+      as a DECL->WRONG before the `unbound` guard was added). Matching
+      `std_seen` into a slot and rejecting on it self-declines regardless
+      of whether the fuller rule accepts or rejects that same span — this
+      rule only ever survives when no "as Y" continuation is even
+      grammatically present to consume, i.e. exactly the elided case.
+      `who, type: entity`: same widening as arithmetic/times-as-many.
+    match:
+      sentence:
+        - {slot: who, type: entity}
+        - {slot: verb, type: verb}
+        - {slot: k, type: multiplier}
+        - {lit: as}
+        - {lit: many}
+        - {slot: item, type: plural}
+        - opt:
+            - {slot: pp_prep, cat: preposition}
+            - opt:
+                - {slot: pp_det, type: pronoun}
+            - {slot: pp_obj, type: noun}
+        - opt:
+            - {lit: as}
+            - opt:
+                - {slot: appos_det, type: pronoun}
+                - {slot: appos_role, type: noun}
+            - {slot: std_seen, type: entity}
+    where:
+      - unbound: [std_seen]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "$elided:standard$"
+        measure: "{item}"
+        factor: "k"
+        offset: 0.0
+        verb: "{verb}"
+        subject_label: "{who.label}"
+
   - id: arithmetic/times-as-much
     phase: read
     description: >
@@ -599,6 +667,51 @@ rules:
         subject: "{who}"
         standard: "{std}"
         measure: null
+        factor: "k"
+        offset: 0.0
+        verb: "{verb}"
+
+  - id: arithmetic/times-as-much-elided-standard
+    phase: read
+    description: >
+      mining candidate elided-comparative-standards: "He gave $8 to Meg
+      and thrice as much to Bianca" — times-as-much's STANDARD-elided
+      sibling, exactly mirroring arithmetic/times-as-many-elided-standard
+      one field over ('much'/mass-noun `item` in place of 'many'/plural).
+      See that rule's comment for the full mechanism (the reserved
+      `$elided:standard$` sentinel, its saturate.py recovery, and the
+      `where: unbound: [std_seen]` self-decline guard on the trailing
+      `opt` block, which rejects this match outright whenever an "as Y"
+      continuation is grammatically present — even one the FULLER rule
+      itself would go on to reject for an unrelated reason). `who, type:
+      name`: unwidened, matching times-as-much's own (not-yet-widened)
+      slot type.
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: verb, type: verb}
+        - {slot: k, type: multiplier}
+        - {lit: as}
+        - {lit: much}
+        - {slot: item, type: noun}
+        - opt:
+            - {slot: pp_prep, cat: preposition}
+            - opt:
+                - {slot: pp_det, type: pronoun}
+            - {slot: pp_obj, type: noun}
+        - opt:
+            - {lit: as}
+            - opt:
+                - {slot: appos_det, type: pronoun}
+                - {slot: appos_role, type: noun}
+            - {slot: std_seen, type: name}
+    where:
+      - unbound: [std_seen]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "$elided:standard$"
+        measure: "{item}"
         factor: "k"
         offset: 0.0
         verb: "{verb}"
@@ -847,6 +960,58 @@ rules:
         subject_label: "{who.label}"
         standard_label: "{std.label}"
 
+  - id: arithmetic/fraction-as-many-elided-standard
+    phase: read
+    description: >
+      mining candidate elided-comparative-standards: "12 yellow ones, half
+      as many blue ones, and twice as many green ones as yellow ones" —
+      the middle conjunct's STANDARD is elided (the first conjunct's own
+      standard is coordinate, not cross-sentence; that same-sentence
+      antecedent shape is left for a future increment — see saturate.py's
+      `_ELIDED_STANDARD` comment) while its ITEM noun ('blue ones') is
+      still stated in full. fraction-as-many's STANDARD-elided sibling,
+      exactly mirroring arithmetic/times-as-many-elided-standard one field
+      over (FRACTION ratio in place of the multiplier) — see that rule's
+      comment for the full mechanism (the reserved `$elided:standard$`
+      sentinel, its saturate.py recovery via the unique earlier
+      same-measure Quantity, and the `where: unbound: [std_seen]`
+      self-decline guard on the trailing `opt` block, which rejects this
+      match outright whenever an "as Y" continuation is grammatically
+      present — even one the FULLER rule itself would go on to reject for
+      an unrelated reason). `who, type: entity`: same widening as
+      arithmetic/fraction-as-many.
+    match:
+      sentence:
+        - {slot: who, type: entity}
+        - {slot: verb, type: verb}
+        - {slot: f, type: fraction}
+        - {lit: as}
+        - {lit: many}
+        - {slot: item, type: plural}
+        - opt:
+            - {slot: pp_prep, cat: preposition}
+            - opt:
+                - {slot: pp_det, type: pronoun}
+            - {slot: pp_obj, type: noun}
+        - opt:
+            - {lit: as}
+            - opt:
+                - {slot: appos_det, type: pronoun}
+                - {slot: appos_role, type: noun}
+            - {slot: std_seen, type: entity}
+    where:
+      - unbound: [std_seen]
+    consumes: [f]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "$elided:standard$"
+        measure: "{item}"
+        factor: "f"
+        offset: 0.0
+        verb: "{verb}"
+        subject_label: "{who.label}"
+
   - id: arithmetic/fraction-as-much
     phase: read
     description: >
@@ -914,6 +1079,48 @@ rules:
         subject: "{who}"
         standard: "{std}"
         measure: null
+        factor: "f"
+        offset: 0.0
+        verb: "{verb}"
+
+  - id: arithmetic/fraction-as-much-elided-standard
+    phase: read
+    description: >
+      mining candidate elided-comparative-standards: fraction-as-much's
+      STANDARD-elided sibling, exactly mirroring arithmetic/times-as-much-
+      elided-standard one field over (FRACTION ratio in place of the
+      multiplier) — see arithmetic/times-as-many-elided-standard's
+      comment for the full mechanism, including the `where: unbound:
+      [std_seen]` self-decline guard on the trailing `opt` block. `who,
+      type: name`: unwidened, matching fraction-as-much's own
+      (not-yet-widened) slot type.
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: verb, type: verb}
+        - {slot: f, type: fraction}
+        - {lit: as}
+        - {lit: much}
+        - {slot: item, type: noun}
+        - opt:
+            - {slot: pp_prep, cat: preposition}
+            - opt:
+                - {slot: pp_det, type: pronoun}
+            - {slot: pp_obj, type: noun}
+        - opt:
+            - {lit: as}
+            - opt:
+                - {slot: appos_det, type: pronoun}
+                - {slot: appos_role, type: noun}
+            - {slot: std_seen, type: name}
+    where:
+      - unbound: [std_seen]
+    consumes: [f]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "$elided:standard$"
+        measure: "{item}"
         factor: "f"
         offset: 0.0
         verb: "{verb}"

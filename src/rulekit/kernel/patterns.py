@@ -313,6 +313,14 @@ def _check_where(
             names = {u.features["fold"] for u in reading.units if u.sense() == "name"}
             if exactly is not None and len(names) != exactly:
                 return False
+        if pred.unbound is not None:
+            # mining candidate elided-comparative-standards: a general
+            # negative-lookahead mirror (schemas.py's own comment) — these
+            # slots are only ever reachable through an OPTIONAL sub-
+            # sequence in the rule's own match tokens, so "bound" means
+            # that optional continuation actually matched text.
+            if any(s in slots for s in pred.unbound):
+                return False
     return True
 
 

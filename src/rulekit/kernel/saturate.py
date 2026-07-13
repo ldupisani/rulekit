@@ -128,6 +128,22 @@ def _apply_synth_rule(
 _ANAPHOR_QUANTITY_STANDARD = "$anaphor:quantity$"
 _ANAPHOR_PRICE_STANDARD = "$anaphor:price$"
 
+# mining candidate elided-comparative-standards: a THIRD reserved sentinel,
+# for a comparative whose standard is ELIDED ENTIRELY — no "as Y"/"than Y"
+# clause at all ("Boy A holds 7 fish. Boy B has three times as many fish in
+# his aquarium.") — never a real entity lemma either, same `$...$` shape as
+# the two anaphor sentinels above, so it can never collide with one of them
+# or with a genuine document entity. Deliberately its OWN sentinel, not one
+# of the two anaphor ones: an anaphor sentinel's standard is a DEMONSTRATIVE
+# ("that much") naming no entity AND no measure noun either (the pattern
+# rule never states one), so it resolves against the unique prior fact of
+# the right KIND document-wide; this sentinel's relation ALWAYS carries a
+# real, stated `measure` (the item noun IS present in the text — only the
+# comparison entity is missing), so it resolves differently: against the
+# unique OTHER entity already holding that SAME measure, not against "the
+# unique prior quantity of any kind".
+_ELIDED_STANDARD = "$elided:standard$"
+
 
 def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> list[Fact]:
     """Resolve Relation facts against known Quantities:
@@ -367,6 +383,51 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
                                 item=rel.subject, value=value, verb=rel.verb,
                             )
                         )
+            continue
+        if rel.standard == _ELIDED_STANDARD:
+            # mining candidate elided-comparative-standards: "Boy A holds 7
+            # fish. Boy B has three times as many fish in his aquarium." —
+            # the pattern rule's own `standard` is the reserved sentinel
+            # above (never a real lemma): the text names no comparison
+            # entity at all, so `anchor_measure` can never apply (there is
+            # no entity to anchor against). Recover the DISCOURSE
+            # antecedent structurally instead: the UNIQUE OTHER entity
+            # (never the relation's own subject — a repeated self-mention
+            # without a demonstrative is not this shape; see
+            # arithmetic/anaphoric-multiplier-standard-* for "twice that
+            # many") already holding the SAME stated measure in an EARLIER
+            # sentence — the same unique-pool-in-play, never-guess
+            # discipline every other branch here uses, just keyed by
+            # MEASURE instead of by a stated standard name. Reuses the
+            # `quantities` index built above (state overrides event per
+            # entity/measure, exactly like every entity-anchored branch
+            # here). Zero or two-or-more same-measure holders is ambiguous
+            # and declines this round rather than guessing which one is
+            # meant — a document with two independent prior holders of the
+            # same measure leaves the antecedent genuinely unresolved.
+            candidates = [
+                q for (ent, meas), q in quantities.items()
+                if meas == rel.measure
+                and ent != rel.subject
+                and q.provenance.sentence < rel.provenance.sentence
+            ]
+            if len(candidates) == 1:
+                (anchor_q,) = candidates
+                already = (rel.subject, rel.measure, verb_key(rel.verb)) in by_verb
+                if not already:
+                    value = evaluate(
+                        f"{rel.factor} * {anchor_q.value} + {rel.offset}", {}, log,
+                        source=f"relation-elided-standard:{rel.provenance.source}",
+                    )
+                    out.append(
+                        Quantity(
+                            provenance=Provenance(
+                                source="synth/relation", sentence=rel.provenance.sentence
+                            ),
+                            entity=rel.subject, measure=rel.measure, value=value,
+                            verb=rel.verb, label=rel.subject_label or None,
+                        )
+                    )
             continue
         if rel.measure is None:
             # mining candidate elided-measure-relations: the pattern rule

@@ -196,13 +196,26 @@ class WherePredicate(StrictModel):
     distinct_measure: list[str] | None = None
     name_count: dict[str, int] | None = None  # {"exactly": 2}
     absent: dict[str, str] | None = None  # {"cat": name} — no such word in sentence
+    # mining candidate elided-comparative-standards: these OPTIONAL slots
+    # must NOT have matched anything — the general, reusable mirror of a
+    # positional negative lookahead this engine otherwise has no way to
+    # express (no rule can require "nothing of shape X follows"). A rule
+    # that WANTS to decline whenever its own trailing optional clause
+    # happens to bind (rather than silently truncating a longer, still-
+    # grammatical continuation it isn't equipped to interpret) matches
+    # that continuation into a slot and lists it here: if a sibling rule
+    # was meant to own that fuller span but itself declines for an
+    # unrelated reason (a different `where` guard elsewhere rejects it),
+    # this rule still won't step in and misread the truncated prefix as
+    # the whole story.
+    unbound: list[str] | None = None
 
     @model_validator(mode="after")
     def _one(self) -> "WherePredicate":
         set_ = [
             v for v in (
                 self.same_lemma, self.distinct, self.distinct_measure,
-                self.name_count, self.absent,
+                self.name_count, self.absent, self.unbound,
             )
             if v is not None
         ]
