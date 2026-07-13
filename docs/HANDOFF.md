@@ -3657,6 +3657,53 @@ unchanged). TEST look: pending — spent manually.
 
 Run with `base=mining/parked/container-content-bridge-enabler`.
 
+## Increment 79 (2026-07-13) — extraposed-duration rate premises (infrastructure)
+
+Class: the extraposed-infinitive duration idiom ("it takes/took WHO N
+TIMEUNIT to VERB M ITEM") read as a PREMISE, not just as an ask. Today
+this idiom's duration folds as a bare Quantity on the entity; nothing
+turns it into a Rate, so the existing rate-span-inverse consumer
+(`answer.py`) can never fire on it even though the identical rate stated
+in SVO form ("Dev can wash 4 windows in 10 minutes") already commits.
+Two-piece mechanism, YAML-first: (1) registers `rate` as a
+pattern-emittable fact kind — `"rate": Rate` added to `_FACT_CLASSES`
+(`src/rulekit/kernel/patterns.py`) and `"rate"` added to `FactEmit.fact`
+(`src/rulekit/data/schemas.py`); additive only, Rate was previously
+emitted only from `learn.py`. (2) new pattern rule
+`arithmetic/extraposed-duration-rate`
+(`packs/arithmetic/rules/core.yaml`), minimum-structure `it <duration_verb>
+WHO SPAN to VERB ITEM`, emitting a compound Rate (value = item/span,
+numerator/denominator preserved) exactly mirroring learn.py's
+`_compound_rate_span` SVO branch, SVO-inverted; `consumes: [span, item]`
+suppresses the redundant bare-Quantity fold on the same span/item pair
+(a compound rate is never a holding — the increment-58 invariant). The
+new `take/takes/took` duration-verb gate is a category declared in
+`packs/difg-mined/categories/semantic.yaml`, not a Python word list. Rate
+is already use-gated (guards.py `rate_values` + `log.uses_value`), so no
+new value-accounting decision was needed.
+
+Infrastructure: 0 SOLVED on dev-train by design — every dev-train item
+carrying this premise idiom also needs one of two ask-side widenings
+(a totality-marked asked item, or a conjoined multi-rate item list),
+both parked as the next batch's payoff on this branch, per the
+batch-27/28 (increment 77/78) precedent. Consumer chain already proven
+by probe: the SVO-form rate commits 160.0 on "Dev can wash 4 windows in
+10 minutes. How many minutes will it take Dev to wash 64 windows?"; this
+increment only supplies the missing Rate for the extraposed-premise
+form.
+
+Files: `packs/arithmetic/rules/core.yaml`,
+`packs/difg-mined/categories/semantic.yaml`,
+`src/rulekit/kernel/patterns.py`, `src/rulekit/data/schemas.py`,
+`tests/test_mining_increment_79.py` (6 synthetic tests).
+
+Gates (integrated on staging, full re-proof against current staging
+baseline): dev-train diff NEUTRAL, 0 BROKE, 0 DECL→WRONG (57/3772 correct
+before and after); dev-holdout diff NEUTRAL, 0 BROKE, 0 DECL→WRONG
+(25/3701 correct before and after); pytest 628 passed; suite 52/52; lint
+0 errors / 1 known-good warning (fraction-of-remnant / fraction-of-pool,
+unchanged). TEST look: pending — spent manually.
+
 LANDED: 77 (e635cd1) container-content bridge — the enabler, rides with its payoff.
         78 (c15a73b) superordinate totality asks over same-holder subtype
         comparatives ("twice as many daughters as sons ... how many children") — +3.

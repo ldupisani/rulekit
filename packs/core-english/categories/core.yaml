@@ -157,6 +157,25 @@ categories:
       NO members here; they live in packs/difg-mined/categories/
       semantic.yaml. A core-english-only registry (no difg-mined) compiles
       with this category simply empty.
+  duration_verb:
+    parent: verb
+    notes: >
+      'takes'/'took' in the extraposed-infinitive duration idiom ("it
+      TAKES her 5 minutes to paint a lily", mining candidate
+      extraposed-duration-rates) — a narrow consumer gate for
+      arithmetic/extraposed-duration-rate, mirroring the spend_verb/
+      price_verb/wage_verb precedent: 'take' already carries no other
+      category (it is not 'acquire' — "it takes 5 minutes" is not a
+      possession event), so this exists purely so the pattern rule can
+      name the declarative-tense inflections (take/takes/took) directly,
+      since — unlike an ask's bare infinitive after a modal, a single
+      literal fold — a declarative premise inflects for tense. 'take' is
+      a difg-mined-only lexicon entry, so, mirroring 'negation'/
+      'future_modal' above, this category has NO members here; they live
+      in packs/difg-mined/categories/semantic.yaml. A core-english-only
+      registry (no difg-mined) compiles with this category simply empty
+      (and could never match the rule anyway — there is no 'take' word to
+      tokenize without difg-mined loaded).
   relational_marker:
     parent: particle
     notes: >

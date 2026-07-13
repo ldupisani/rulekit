@@ -28,6 +28,7 @@ from .model import (
     Predication,
     Provenance,
     Quantity,
+    Rate,
     Reading,
     Relation,
     RestQuantity,
@@ -49,6 +50,7 @@ _FACT_CLASSES = {
     "partition_quantity": PartitionQuantity,
     "goal": Goal,
     "group_total": GroupTotal,
+    "rate": Rate,
 }
 
 
@@ -332,7 +334,7 @@ def _resolve_field(
     return evaluate(expr, env, log, source=rule_id)
 
 
-_NUMERIC_FIELDS = {"value", "factor", "offset", "fraction"}
+_NUMERIC_FIELDS = {"value", "factor", "offset", "fraction", "numerator", "denominator"}
 
 
 def _build_fact(

@@ -1183,6 +1183,74 @@ rules:
         value: "item"
         verb: "{need}"
 
+  - id: arithmetic/extraposed-duration-rate
+    phase: read
+    description: >
+      "It takes her 5 minutes to paint a lily" (mining candidate
+      extraposed-duration-rates) — the extraposed-infinitive duration
+      idiom as a PREMISE, stating a COMPOUND rate exactly like
+      `_compound_rate_span` in learn.py ("reads 8 pages in 20 minutes"),
+      just SVO-inverted: the elapsed span comes before the infinitive
+      clause naming the counted item, so value = item/span with
+      numerator/denominator preserved for value-accounting exactly as
+      the SVO compound-rate branch does (Rate's docstring, model.py).
+      The 'it'/'to' literals are grammatical skeleton — the SAME
+      extraposed-infinitive construction ask/how-long-take-span's own
+      comment already documents as structure, not lexicon. The verb is
+      gated on the narrow `duration_verb` category — declared in
+      packs/core-english/categories/core.yaml (parent: verb, no members
+      there, since 'take' is a difg-mined-only lexicon entry), membered
+      in packs/difg-mined/categories/semantic.yaml, the SAME
+      declared-in-core/membered-in-mined split 'negation'/'future_modal'
+      already use, so a core-english-only registry still compiles this
+      rule — rather than a literal: unlike the ask side (always the bare
+      infinitive after a modal — one literal fold), a declarative
+      premise inflects for tense (takes/took), so the category names
+      both inflections directly — mirrors the
+      spend_verb/price_verb/wage_verb narrow-gate precedent.
+
+      `consumes: [span, item]` marks the two counted slots read directly
+      (independent of the emitted fact's own fields — the same
+      discipline arithmetic/temporal-offset-age-future documents).
+      Because `verb` and `item` are inside this rule's OWN matched span,
+      they become `pattern_consumed` (document.py round 0), which makes
+      learn.py's general SVO fold skip the infinitive clause entirely
+      (a pattern_consumed verb or dobj is never re-folded) — so it never
+      ALSO folds as a bare Quantity holding on the entity (today's
+      behavior, and a fold CONFLICT the instant more than one such
+      clause is conjoined in one sentence, since they collide on the
+      same signed-quantity key). Never a holding — a compound rate is
+      not a balance (the increment-58 invariant, verbatim).
+
+      Infrastructure only: the existing rate-span-inverse consumer
+      (answer.py) already resolves the inverse span ask the instant a
+      matching Rate exists (verified: "Dev can wash 4 windows in 10
+      minutes. How many minutes will it take Dev to wash 64 windows?"
+      commits 160.0 today) — this rule only supplies the missing Rate
+      for the PREMISE side of the idiom. 0 SOLVED is expected from this
+      increment alone; the payoff is a separate widening of the
+      how-long/how-many-timeunit-take-span asks' `item` slot and a
+      conjoined-list consumer sum, named in this candidate's `unblocks`.
+    match:
+      sentence:
+        - {lit: it}
+        - {slot: v, cat: duration_verb}
+        - {slot: who, type: entity}
+        - {slot: span, type: counted}
+        - {lit: to}
+        - {slot: verb, type: verb}
+        - {slot: item, type: counted}
+    consumes: [span, item]
+    emits:
+      - fact: rate
+        entity: "{who}"
+        measure: "{item}"
+        per: "{span}"
+        value: "item / span"
+        verb: "{verb}"
+        numerator: "{item.value}"
+        denominator: "{span.value}"
+
 asks:
   - id: ask/how-many-in-place
     # `place_fallback_entity: world` (mining candidate complement-labeled-
