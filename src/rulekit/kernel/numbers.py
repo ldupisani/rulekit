@@ -141,60 +141,88 @@ def annotate_numbers(reading: Reading, reg: Registry) -> Reading:
 
     # word-count + word-fraction -> one fraction ("one half" = 0.5,
     # "three fourths" = 0.75; hyphens tokenize apart, so "one-fifth" lands
-    # here too). Word-derived counts only — digits never merge.
-    units = reading.units
-    for j in range(len(units) - 1):
-        a, b = units[j], units[j + 1]
-        if (
-            a.features.get("value_kind") == "count"
-            and b.features.get("value_kind") == "fraction"
-            and not any(ch.isdigit() for ch in a.features.get("fold", ""))
-            and not b.features.get("percent")
-        ):
-            merged = reading.new_unit(a.words + b.words, dict(b.features))
-            merged.features["fold"] = f"{a.features['fold']} {b.features['fold']}"
-            units[j : j + 2] = [merged]
-            reading.record(
-                "merge-number", merged,
-                {"value": a.features["value"] * b.features["value"],
-                 "value_kind": "fraction"},
-                f"word fraction {merged.surface!r}",
-            )
-            break
+    # here too). Word-derived counts only — digits never merge. Mining
+    # candidate relclause-subject-relations: this used a single-shot `for
+    # ...: break` that merged only the FIRST occurrence in the whole
+    # sentence — any second, independent word-fraction phrase in the same
+    # sentence ("... half as many X as Y, who has a third as many Z as W")
+    # was silently left unmerged. Same `changed`-fixpoint idiom as the
+    # word-number cascade immediately above (re-scan after every merge,
+    # since each merge shrinks/shifts `units`); a sentence with exactly one
+    # occurrence re-scans once more, finds nothing, and exits — byte-
+    # identical to the old single-shot behavior for every sentence that
+    # only ever had one such phrase to begin with.
+    changed = True
+    while changed:
+        changed = False
+        units = reading.units
+        for j in range(len(units) - 1):
+            a, b = units[j], units[j + 1]
+            if (
+                a.features.get("value_kind") == "count"
+                and b.features.get("value_kind") == "fraction"
+                and not any(ch.isdigit() for ch in a.features.get("fold", ""))
+                and not b.features.get("percent")
+            ):
+                merged = reading.new_unit(a.words + b.words, dict(b.features))
+                merged.features["fold"] = f"{a.features['fold']} {b.features['fold']}"
+                units[j : j + 2] = [merged]
+                reading.record(
+                    "merge-number", merged,
+                    {"value": a.features["value"] * b.features["value"],
+                     "value_kind": "fraction"},
+                    f"word fraction {merged.surface!r}",
+                )
+                changed = True
+                break
 
     # "N times" -> ONE multiplier unit ("four times as many" must present
     # [multiplier][as][many] to the patterns, not [multiplier][times][as]…)
-    units = reading.units
-    for j in range(len(units) - 1):
-        a, b = units[j], units[j + 1]
-        if (
-            a.features.get("value_kind") == "count"
-            and b.features.get("fold") == "times"
-        ):
-            merged = reading.new_unit(a.words + b.words, dict(a.features))
-            merged.features["fold"] = f"{a.features['fold']} times"
-            units[j : j + 2] = [merged]
-            reading.record(
-                "merge-number", merged,
-                {"value": a.features["value"], "value_kind": "multiplier"},
-                f"{merged.surface!r} reads as one multiplier",
-            )
-            break
+    # Same fixpoint widening as the word-fraction block above and for the
+    # same reason (mining candidate relclause-subject-relations): a
+    # relative-clause-subject relation commonly carries a SECOND,
+    # independent "N times" phrase in the same sentence as the outer
+    # relation's own.
+    changed = True
+    while changed:
+        changed = False
+        units = reading.units
+        for j in range(len(units) - 1):
+            a, b = units[j], units[j + 1]
+            if (
+                a.features.get("value_kind") == "count"
+                and b.features.get("fold") == "times"
+            ):
+                merged = reading.new_unit(a.words + b.words, dict(a.features))
+                merged.features["fold"] = f"{a.features['fold']} times"
+                units[j : j + 2] = [merged]
+                reading.record(
+                    "merge-number", merged,
+                    {"value": a.features["value"], "value_kind": "multiplier"},
+                    f"{merged.surface!r} reads as one multiplier",
+                )
+                changed = True
+                break
 
-    # "N percent" (the word) -> fraction, factor from the percents data
-    units = reading.units
-    for j in range(len(units) - 1):
-        a, b = units[j], units[j + 1]
-        factor = reg.percents.get(b.features.get("fold", ""))
-        if a.features.get("value_kind") == "count" and factor is not None:
-            merged = reading.new_unit(a.words + b.words, dict(a.features))
-            merged.features["fold"] = f"{a.features['fold']} {b.features['fold']}"
-            units[j : j + 2] = [merged]
-            reading.record(
-                "merge-number", merged,
-                {"value": a.features["value"] * factor,
-                 "value_kind": "fraction", "percent": True},
-                f"{merged.surface!r} reads as a fraction",
-            )
-            break
+    # "N percent" (the word) -> fraction, factor from the percents data.
+    # Same fixpoint widening as the two blocks above, same reason.
+    changed = True
+    while changed:
+        changed = False
+        units = reading.units
+        for j in range(len(units) - 1):
+            a, b = units[j], units[j + 1]
+            factor = reg.percents.get(b.features.get("fold", ""))
+            if a.features.get("value_kind") == "count" and factor is not None:
+                merged = reading.new_unit(a.words + b.words, dict(a.features))
+                merged.features["fold"] = f"{a.features['fold']} {b.features['fold']}"
+                units[j : j + 2] = [merged]
+                reading.record(
+                    "merge-number", merged,
+                    {"value": a.features["value"] * factor,
+                     "value_kind": "fraction", "percent": True},
+                    f"{merged.surface!r} reads as a fraction",
+                )
+                changed = True
+                break
     return reading
