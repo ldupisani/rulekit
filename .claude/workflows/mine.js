@@ -394,6 +394,19 @@ Return the ScoutOutput structured output.`,
   if (scout.notes) log(`scout notes: ${scout.notes}`)
 }
 
+// DEAD-CLASS GATE. A class that has failed repeatedly, through DIFFERENT gates, is not
+// a candidate — it is a known-blocked class, and every re-proposal costs an implementer
+// run. Prose stop-rules in HANDOFF do not hold: `equal-share-division` was recorded as
+// blocked and the scout proposed it again the very next batch. A rule that keeps being
+// broken needs a mechanism, not a comment.
+//
+// A class leaves this list when its NAMED blockers land — not because a scout feels
+// differently about it.
+const DEAD_CLASSES = {
+  'equal-share-division': `blocked, 4 failures through 4 different gates (goal-mode 0 SOLVED x2, a rule-1 review kill, and 1-of-12 on an honest walk). Its blockers are NAMED and none have landed: (a) "each one" — the word 'one' senses only as a value, never a noun, so it cannot fill a recipient-noun slot; (b) elided-measure events ("Priya collected 29") fold as a Predication with a string dobj, never a Quantity, so the dividend has no holder; (c) a trailing "...if they divide X amongst themselves?" fuses the division premise INTO the question sentence, and read-phase pattern rules only run over premise readings. Land those first.`,
+}
+const deadClass = (slug) => Object.keys(DEAD_CLASSES).find((k) => slug.includes(k))
+
 // SHAPE GATE (docs/negative-results.md, batch 22): a frequency count says how
 // many items contain a phrase, not how many the mechanism can READ. Batch 22
 // spent three implementer runs on candidates whose counted items, once walked,
@@ -410,6 +423,12 @@ Return the ScoutOutput structured output.`,
 // being routed around. So the escape hatch stays; the free pass does not.
 const unproven = []
 candidates = candidates.filter((c) => {
+  const dead = deadClass(c.slug)
+  if (dead) {
+    unproven.push({ slug: c.slug, phase: 'scout-dead-class', reason: `DEAD CLASS: ${DEAD_CLASSES[dead]}` })
+    log(`${c.slug}: DROPPED at the dead-class gate — ${dead} is known-blocked. Not spending an implementer on it again.`)
+    return false
+  }
   const walked = c.evidence?.structural_sample ?? []
   if (c.infrastructure) {
     const wouldResolve = walked.filter((s) => s.resolves_after_unblocks).length

@@ -14,13 +14,13 @@ swing under the constitution (no lexicon in Python, no per-problem parsing,
 every increment through the gates).
 
 **Current numbers (all verified at head):**
-- dev-train: 79 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
-- dev-holdout: 32 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 830 · lint: 0 errors, 1 intended warning
+- dev-train: 83 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
+- dev-holdout: 33 correct / 0 wrong (3,701 items)
+- curated suite: 52/52 · pytest: 855 · lint: 0 errors, 1 intended warning
 - bench wall: dev-train 16.6s -> 9.0s (trace opt-out) -> 1.7s at `--jobs 12`.
   `--jobs` defaults to 1; spend it in the SERIAL integration tail, never in the
   implementers' gates (they already run concurrently). See the two infra notes below.
-- TEST ledger (98 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- TEST ledger (100 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -5085,3 +5085,34 @@ fraction-of-pool overlap, known-good; no new overlap flagged for the two new ask
 `capacity_modal` category). pytest 848 -> 855 (+7 new synthetic tests,
 tests/test_mining_increment_105.py).
 **TEST look: pending — spent manually.**
+
+## Batch 47 (2026-07-14) — three landed. dev-train 83, holdout 33.
+
+LANDED (looks #99, #100 — both 11/1, 91.7%, HELD):
+- **103 — partitive-qualified measure asks** ("how many CUPS OF flour / PAIRS OF shoes does
+  WHO have?"). 0 SOLVED, infrastructure — unblocks the partitive comparative/combined/
+  remainder asks. Rode with its payoff.
+- **104 — relation standards in COUNT-NOUN frames** ("K times THE NUMBER OF ITEM that
+  STANDARD VERBs", "the amount of ITEM as STANDARD"), incl. verb-preposition-separated
+  heads. **+3 dev-train, +1 holdout.**
+- **105 — periodic-rate premises** ("N ITEM every K TIMEUNIT") + modal rate-span asks ("how
+  many ITEM can WHO VERB in K TIMEUNIT"). +1.
+
+THIRD RULE-1 REVIEW KILL: `unit-price-from-total-asks` hardcoded the VERB LEMMA `"change"` in
+answer.py to detect the paid-minus-change idiom — while EVERY other gate in that same consumer
+correctly went through `reg.word_in_category` (purchase, divide, tender_verb, currency,
+receive). The reviewer also noted the packs ALREADY prescribe the fix: semantic.yaml documents
+`tender_verb`/`discount` as existing precisely so the change consumer can name tender events
+"via a dobj CATEGORY rather than one specific verb". Re-cut.
+
+### DEAD-CLASS GATE (new) — because prose stop-rules do not hold
+
+`equal-share-division` failed a FOURTH time. I recorded a prose stop-rule in this file last
+batch ("STOP PROPOSING IT until its blockers land") and the scout proposed it again the very
+next batch. **A rule that keeps being broken needs a MECHANISM, not a comment** — the same
+lesson the twice-caught `"year"` literal taught.
+
+`mine.js` now carries a DEAD_CLASSES map and drops any matching candidate before an implementer
+is spent. `equal-share-division` is the first entry, with its four failure modes and its three
+NAMED blockers recorded. A class leaves the list when its blockers LAND — not because a scout
+feels differently about it.
