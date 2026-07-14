@@ -16,11 +16,11 @@ every increment through the gates).
 **Current numbers (all verified at head):**
 - dev-train: **100 correct / 0 wrong** (3,772 items, 100% precision) — **GOAL REACHED**
 - dev-holdout: 39 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 967 · lint: 0 errors, 1 intended warning
+- curated suite: 52/52 · pytest: 979 · lint: 0 errors, 1 intended warning
 - bench wall: dev-train 16.6s -> 9.0s (trace opt-out) -> 1.7s at `--jobs 12`.
   `--jobs` defaults to 1; spend it in the SERIAL integration tail, never in the
   implementers' gates (they already run concurrently). See the two infra notes below.
-- TEST ledger (115 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- TEST ledger (119 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -5756,3 +5756,82 @@ The seam is now the single point of change. Switching on a real metric for any d
 a ONE-LINE edit at one site (`constant` -> the metric) — which is precisely why each must be
 its own gated increment with its own TEST look. `token_distance` is live at exactly one site
 (obligations) and wired to nothing else. **The month fix remains BLOCKED on phase 2.**
+
+## Increments 122-125: THE MONTH FIX LANDS (deixis.md §4's revert, undone)
+
+The change `docs/deixis.md` §4 ran, gated, and **REVERTED** at `DECL->WRONG 1` now lands
+with a clean gate. **TEST looks #116-119: 11/1 (91.7%) — ALL HELD.**
+
+### The retag was never the fix. It was the TRIGGER.
+
+§4's own diagnosis was incomplete. Making months readable did not *cause* a wrong — it
+**exposed two defects that were already there**, waiting for any timestamped document:
+
+**1. `_verb_total` computed its time-set AFTER filtering by verb** (`answer.py`), so it
+could only ever detect time-mixing *within one verb*. Cross-verb evidence was
+structurally invisible:
+
+```
+"In January Benny adds $19 ... By the end of March he has $46.
+ How many dollars did he add in March?"
+
+matching = [add $19 @january]      <- the only 'add' fact
+the $46 @march state is verb='have' -> FILTERED OUT BEFORE THE GUARD RUNS
+len({'january'}) == 1              -> no refusal
+=> COMMITS 19.  Gold is 8.
+```
+
+**2. Nothing could carry "March".** No ask could name a point in time, so even a firing
+guard could only ever have DECLINED — the gold was unreachable by construction.
+
+### The four increments
+
+- **122** (`0aeff5d`) — **normalise the time label.** `_sentence_time` returned a two-word
+  surface fold ("on monday", "of march"), and because `time` is part of `Quantity.key()`,
+  the PREPOSITION was part of a fact's IDENTITY: "on Monday", "by Monday" and a bare
+  "Monday" were three different moments. Prepositions stripped; **determiners kept** —
+  "last year" and "this year" are genuinely different moments sharing the noun `year`,
+  and the obvious normalisation (key on the lemma) would have collapsed them, stopped the
+  mixed-time refusals firing, and turned a decline into a WRONG.
+- **123** (`d9541cc`) — **close the cross-verb hole.** The guard now sees every fact about
+  the entity/measure. Strictly precision: it can only turn a commit into a decline. **It
+  cost nothing on dev (NEUTRAL) precisely because months were not yet timestamped** — a
+  guard landed *after* the change it guards is a guard that has already failed.
+- **124** (`ad001c3`) — **the temporal origo.** The ask can finally name a moment.
+  Computed ONCE in `answer()` before dispatch, never per-ask (a `{slot: when}` on each ask
+  would be the per-problem parsing the constitution forbids). A reference time is a
+  `timeperiod` noun GOVERNED BY A PREPOSITION that the ask's slots did not take — the
+  preposition test keeps a *measure* out ("how many MONTHS are there?"), the consumed test
+  keeps the ask's own subject matter out. Resolved through `deixis.resolve` on the **TIME
+  dimension — its first live use.** Two named moments DECLINE: arbitrating between times
+  needs an ORDER, and `time` has none.
+- **125** (`f8e3305`) — **the retag.** Pure data, zero Python. Eleven months: inert sense
+  `time` -> `noun`, admitted to the EXISTING `timeperiod` category. **No new vocabulary.**
+  `may` deliberately excluded (genuinely modal/month ambiguous; a second sense would trip
+  the `disambiguate()` race registry.py documents for 'ones').
+
+```
+"In March, Sam had 12 apples. He found 5 more apples."
+before: bind-discourse candidates = [march, sam]  -> TIE -> no binding, quantity dropped
+after:  bind-discourse candidates = [sam]         -> BOUND
+```
+
+### The rule, now demonstrated in BOTH directions
+
+> **Do not make a deictic dimension readable before the ask can name a point along it.**
+
+Land the guard first and the same data change is **inert**. Land it second and it is a
+**confident-wrong factory**. Same diff, opposite outcome — the only variable is order.
+
+### Still open (coverage, not precision)
+
+The §4 item now DECLINES rather than committing 19. Its gold (8 = 46 - 19 - 19) needs
+temporal ARITHMETIC, which is still unbuilt: `time` remains an opaque label, comparable
+only for EQUALITY. `Before(earlier, later)` is still unproduced — though note
+`synth/transitive-before` (packs/arithmetic/synth.yaml) is **already wired and waiting for
+a producer**, so the closure machinery exists.
+
+Also open: the mixed-time refusals treat `None` as a distinct moment, so "In March Sam had
+12 apples. He found 5 more." still declines (`{march, None}`). Relaxing that to ignore
+untimed facts is a COVERAGE move that could create wrongs — it needs its own gated
+increment, not a free ride on this one.
