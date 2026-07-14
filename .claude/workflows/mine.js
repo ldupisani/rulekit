@@ -39,8 +39,27 @@ const SCOUT_BRIEF = {
     class_name: { type: 'string' },
     evidence: {
       type: 'object',
-      required: ['pool_frequency', 'structural_sample'],
+      required: ['pool_frequency', 'structural_sample', 'premise_mechanism'],
       properties: {
+        // AN ASK SHAPE WITHOUT ITS PREMISE MACHINERY IS A DEAD BRIEF.
+        //
+        // This is why ask-shape candidates keep dying at the shape gate at 0-2 of 12,
+        // batch after batch, even when drawn correctly from the addressable pool. The
+        // ask is genuinely missing — and ADDING IT ALONE CONVERTS NOTHING, because the
+        // premises never derive the quantity the ask would fold:
+        //
+        //   "Calculate the total time the eight runners took to finish the race."
+        //     facts today: Quantity(world, runner, 8)   Quantity(runner, hour, 2)
+        //     gold:        8 x 2 = 16
+        //     missing:     nothing reads (runner, hour, 2) as a PER-RUNNER RATE, so
+        //                  there is no total for any ask to return.
+        //
+        // The gate has been telling us this for four batches. A brief must therefore
+        // account for BOTH HALVES, and say plainly which of them is missing.
+        premise_mechanism: {
+          type: 'string',
+          description: 'REQUIRED. For a walked item that does NOT resolve today: name the PREMISE-side mechanism that must exist for the ask to have anything to fold — the fact(s) the premises must yield, and whether they already do. If the premises already produce them and only the ask is missing, say so explicitly ("premises already yield Quantity(x, y, N); the ask shape is the only gap") — that is the ONE case where an ask-only brief is legitimate. If they do not, this brief must build BOTH, or it is a dead brief and you should not propose it.',
+        },
         // THE YIELD ESTIMATE (methodology §9). Matches for this class's ASK FAMILY
         // within the ADDRESSABLE POOL — items that are fully-read (no unknown words)
         // AND declining. That is the candidate's ceiling. Cluster the pool by

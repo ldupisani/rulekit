@@ -145,6 +145,31 @@ candidate is dropped before an implementer is spent. Rank by it. The old surface
 `frequency` is context ONLY, never justification — it has twice pointed at classes that
 resolved nothing (327, 444).
 
+### THE RULE THAT KILLED FOUR BATCHES: an ask shape without its premise machinery is a DEAD BRIEF
+
+Drawing from the pool is necessary and **not sufficient**. Batches 2026-07-14c and -14e
+proposed ask-shape classes drawn correctly from the pool, walked them honestly, and scored
+**0/12, 1/9, 2/8, 0/12, 1/12**. The shape gate was right every time. The briefs were half a
+mechanism.
+
+```
+"Calculate the total time the eight runners took to finish the race."   (pool: 50 items)
+  facts today:  Quantity(world, runner, 8.0)    Quantity(runner, hour, 2.0)
+  gold:         8 x 2 = 16
+  missing:      NOTHING reads (runner, hour, 2) as a PER-RUNNER RATE, so there is no
+                total for any ask to return. Ship the ask alone and it converts ZERO.
+```
+
+So `evidence.premise_mechanism` is now REQUIRED in every brief. For each walked item that
+does not resolve, state what the PREMISES must yield and whether they already do:
+
+- **They already do** — "premises already yield `Quantity(x, y, N)`; the ask shape is the
+  only gap." This is the one case where an ask-only brief is legitimate, and it is the only
+  kind that has ever converted.
+- **They do not** — then this brief must build BOTH halves in one increment, or it is a
+  dead brief. Do not propose it. A half-mechanism looks excellent on a frequency chart and
+  converts nothing, which is exactly how four batches were spent.
+
 The shape gate is unchanged and still binding: **>= 3 walked items resolving
 END-TO-END.** But now you are drawing from a pool where premises are already built,
 so a real ask-shape family should clear it easily. If a cluster still fails to
