@@ -558,3 +558,45 @@ an elided head noun (`3 times as many pink as orange balls`), `half times as man
 **And the meta-lesson, earned twice in one session:** a structural hypothesis built from ONE
 example is not a hypothesis, it is an anecdote. Count it *before* you believe it — even when
 the mechanism is so clean you can see it in the YAML.
+
+## The ask layer is a PRODUCT, and single-dimension fixes buy ZERO (2026-07-14)
+
+**The buy-test.** All 32 remaining ask auxiliary slots widened from `type: auxiliary`
+(do/does/did) to `type: future_modal` (+ will/would) — one sed, zero Python, and the category
+already existed and was already live on the other 31 asks. Target: the **92** declining items
+whose question carries a future auxiliary (`will he weigh`, `will they have saved`).
+
+```
+SOLVED      0        <- converts NONE of the 92
+DECL->WRONG 1        <- manufactures a confident wrong (expected 490, got 500)
+VERDICT: REVERT
+```
+
+**Zero coverage AND a precision loss.** Dead on rule 4 regardless of the linguistics.
+
+**The `0 SOLVED` is the real finding: ask failures are MULTIPLY BLOCKED.** Those 92 questions
+carry `will` *and something else*. The ask space is a PRODUCT:
+
+```
+{how many, how much, how long, how old, what is}                     wh-operator
+  x {bare, named, common-noun, possessed, qualified, elided}          entity form
+  x {simple, combined, in-all, partitive, more-than, average, ...}    aggregation
+  x {do/does/did, will, has+Ven, be+Ven, not}                         TAM / voice / polarity
+```
+
+Each of the 79 ask shapes is ONE CELL. A question that misses lands outside several coordinates
+at once, so **removing one blocker converts nothing — the next one is right behind it.**
+
+> **This is why five mining batches on the ask seam netted +2.** Not bad luck, not an
+> exhausted seam: **single-dimension fixes have zero marginal yield on a product space.** Two
+> independent measurements now say the same thing — five batches, and this 90-second buy-test.
+
+**The incremental path into the ask layer is CLOSED.** Do not widen another slot; do not mine
+another ask cell. The only thing that dissolves a product is a COMPOSITIONAL parser that turns
+it into a SUM (handle wh-operator, entity form, aggregation, and TAM once each, independently).
+Half a compositional parser buys exactly what was measured above: nothing, plus a wrong.
+
+**Caveat carried forward:** the ask layer is the layer that COMMITS. This buy-test produced a
+confident wrong from a single line of YAML. Any compositional work must be a FALLBACK behind
+the existing 79 asks (0 BROKE by construction) and must still argue DECL->WRONG, never BROKE
+(`0 BROKE by construction is not 0 wrongs by construction`).
