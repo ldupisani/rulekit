@@ -6379,6 +6379,55 @@ asks:
       item: "{qty}"
       qty_value: "{qty.value}"
 
+  - id: ask/how-much-each-item-cost
+    # "how much do/does/did each ITEM cost?" (mining candidate unit-price-
+    # from-total, re-cut of the batch-47 review kill: HANDOFF's own "Re-
+    # cut" instruction) — the leading-distributive twin of ask/how-much-
+    # item-cost: the required 'each' literal between `aux` and `item`
+    # means this can never tie that sibling ask (which has no 'each' slot
+    # at all — a bare "how much does ITEM cost" simply fails this
+    # skeleton's extra literal and stays with the other ask). Routes to
+    # the NEW `unit-price-from-total` consumer (answer.py) rather than
+    # item-cost's own single-Price lookup: this class asks about an item
+    # whose PRICE IS NOT STATED anywhere — only a grand total for the
+    # whole purchase is — so the consumer recovers it by subtraction
+    # instead of reading an existing Price fact.
+    match:
+      question:
+        - {lit: how}
+        - {lit: much}
+        - {slot: aux, type: auxiliary}
+        - {lit: each}
+        - {slot: item, type: noun}
+        - {slot: verb, cat: price_verb}
+    resolves:
+      consumer: unit-price-from-total
+      item: "{item}"
+
+  - id: ask/what-is-the-cost-of-quantity
+    # "what is the cost of N ITEM?" (mining candidate unit-price-from-
+    # total) — the question STATES its own quantity ('2 pans') rather than
+    # relying on an existing per-unit Price fact, exactly like ask/how-
+    # much-pay-for-quantity's `qty_value` shape, but fronts with 'what
+    # is/was the cost of' (a copula + the `cost` noun) instead of a named
+    # buyer paying/spending — a disjoint literal skeleton that can never
+    # tie any existing ask ('the' between 'is' and 'cost' is a globally-
+    # skippable article, same discipline as ask/what-total-combined's own
+    # comment). Routes to the SAME new `unit-price-from-total` consumer as
+    # ask/how-much-each-item-cost: the recovered unit price is multiplied
+    # by this ask's own stated `qty_value` rather than left bare.
+    match:
+      question:
+        - {lit: what}
+        - {slot: be, cat: state}
+        - {lit: cost}
+        - {lit: of}
+        - {slot: qty, type: counted}
+    resolves:
+      consumer: unit-price-from-total
+      item: "{qty}"
+      qty_value: "{qty.value}"
+
   - id: ask/what-total-combined
     # "What is/was the total (number/amount) of ITEM (that) they VERB?" —
     # the wh-copular total ask (mining candidate wh-total-asks): 'what'

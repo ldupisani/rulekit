@@ -5876,6 +5876,43 @@ DECL->WRONG, 100 -> 101; SOLVED: `bacb0d512ef7`). dev-holdout diff SHIP (+1 SOLV
 BROKE, 0 DECL->WRONG, 39 -> 40; SOLVED: `59c12e7e796c`). pytest 979 -> 989 (+10 synthetic).
 suite 52/52. lint 0 errors, 1 pre-existing known-good warning.
 
+## Increment 127: unit price recovered from a stated purchase total (re-cut of the batch-47 review kill)
+
+**Class**: a per-unit price recovered from a stated GRAND TOTAL for one buyer's whole
+purchase, minus every other already-priced line item's cost, divided by the asked item's
+own purchased count — "how much does/did each ITEM cost/sell for?" and "what is the cost
+of N ITEM?" (the question's own stated quantity multiplies the recovered unit price). This
+is HANDOFF batch 47's THIRD rule-1 REVIEW KILL, re-cut: the prior cut hardcoded the verb
+lemma `"change"` in `answer.py`. This re-cut drops the tender/change route entirely (it
+needs a pre-existing subject-binding parse bug fixed first, out of scope) and ships only
+the residual-arithmetic route, which needs no verb lemma at all — the MUST-FIX condition
+is satisfied by construction, not by routing through a category gate.
+
+**Mechanism**: a new consumer `_unit_price_from_total` (`answer.py`) recovers an item's
+per-unit price from a stated GRAND TOTAL for one buyer's whole purchase, minus every other
+already-priced line item's cost (`_purchase_total`, UNCHANGED — the increment-10
+definitive-or-decline discipline travels via its existing `exclude_item` parameter),
+divided by the asked item's own purchased count. Both the buyer and the grand total are
+resolved STRUCTURALLY: the buyer is whichever entity uniquely holds a purchase-verb
+Quantity of the asked item (the same single-holder discipline `ask/how-much-item-cost`
+already uses); the grand total is read from an entity-OWNED currency Quantity —
+`condense.py`'s existing merge-possessive already produces this for "the total cost of
+X's items is $Y" ("X's" -> owner=X), deliberately narrower than GroupTotal's unowned
+sum-across-the-passage reading so this never fires on a total belonging to a different or
+unnamed buyer. Two new ask shapes (`packs/arithmetic/rules/core.yaml`) route to it — both
+disjoint literal skeletons from every existing ask, so neither ties or shadows current
+coverage. Deliberately not attempted: the tender/change (paid-with-banknote) route and the
+container-content-bridge / cents-conversion siblings from the brief's structural sample —
+both out of scope by construction (parse-bug and two-hop-arithmetic respectively).
+
+**Files**: `packs/arithmetic/rules/core.yaml`, `src/rulekit/kernel/answer.py`,
+`tests/test_mining_increment_127.py`.
+
+**Gate** (integrated on staging tip): dev-train diff SHIP (+1 SOLVED, 0 BROKE, 0
+DECL->WRONG, 101 -> 102; SOLVED: `544a7d5eca45`). dev-holdout diff NEUTRAL (0 SOLVED, 0
+BROKE, 0 DECL->WRONG, 40 -> 40). pytest 989 -> 995 (+6 synthetic). suite 52/52. lint 0
+errors, 1 pre-existing known-good warning. TEST look: pending — spent manually.
+
 TEST look: pending — spent manually.
 
 ### Batch 2026-07-14 outcome (increment 126)

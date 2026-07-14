@@ -414,6 +414,77 @@ def _purchase_total(
     return evaluate(expr, {}, log, source="purchase-total")
 
 
+def _unit_price_from_total(
+    store: FactStore, reg: Registry, item: str, log: ArithmeticLog
+) -> tuple[str, float, float] | None:
+    """'Katerina purchases 3 pots and 4 pans. Each pot costs $20. The total
+    cost of Katerina's items is $100. What is the cost of 2 pans?' (mining
+    candidate unit-price-from-total, re-cut of the batch-47 review kill): a
+    stated GRAND TOTAL for one buyer's whole purchase, minus every OTHER
+    line item's already-priced cost (`_purchase_total`, UNCHANGED —
+    exclude_item, the increment-19 remaining-budget discipline, reused
+    verbatim), leaves the asked item's own total spend; dividing by its
+    stated purchased COUNT recovers its per-unit price.
+
+    The buyer is resolved STRUCTURALLY, never via a `who` slot (neither ask
+    surface names one): exactly one entity may hold a purchase-verb
+    Quantity of `item` — the same single-holder discipline
+    ask/how-much-item-cost's item-cost consumer already applies. The grand
+    total is read from an entity-OWNED currency Quantity (condense.py's
+    merge-possessive: "TOM's items" -> owner='tom' on the copular "the
+    total cost ... is $X" fold) — deliberately narrower than GroupTotal's
+    unowned sum-across-the-passage reading, so this never fires on a
+    total that belongs to a DIFFERENT buyer or to no buyer at all.
+
+    Declines (never guesses) unless: (i) exactly one purchase-verb
+    Quantity of `item` exists for that buyer, (ii) exactly one owned
+    currency total exists for the SAME buyer, (iii) every OTHER
+    purchase-verb item that buyer holds is fully priced (or there are
+    none) — `_purchase_total`'s own definitive-or-decline invariant
+    (increment 10) travels here unscoped, and (iv) the residual spend on
+    `item` is non-negative. Returns (entity, unit_price, count) so a
+    caller can multiply by its own asked quantity (1 for a bare "how much
+    does each ITEM cost", or the question's own stated N)."""
+    holders = [
+        q for q in store.by_kind(Quantity)
+        if q.measure == item and reg.word_in_category(q.verb, "purchase")
+    ]
+    if len(holders) != 1:
+        return None
+    holder = holders[0]
+    entity = holder.entity
+    count = holder.value
+    if count <= 0:
+        return None
+    totals = [
+        q for q in store.by_kind(Quantity)
+        if q.owner == entity and reg.word_in_category(q.measure, "currency")
+    ]
+    if len(totals) != 1:
+        return None
+    grand_total = totals[0].value
+    other_items = {
+        q.measure for q in store.by_kind(Quantity)
+        if q.entity == entity and q.measure != item
+        and reg.word_in_category(q.verb, "purchase")
+    }
+    if other_items:
+        other_total = _purchase_total(store, reg, entity, log, exclude_item=item)
+        if other_total is None:
+            return None
+    else:
+        other_total = 0.0
+    residual = evaluate(
+        f"{grand_total} - {other_total}", {}, log, source="unit-price-from-total"
+    )
+    if residual < 0:
+        return None
+    unit_price = evaluate(
+        f"{residual} / {count}", {}, log, source="unit-price-from-total"
+    )
+    return entity, unit_price, count
+
+
 def _revenue_total(
     store: FactStore, reg: Registry, entity: str, log: ArithmeticLog
 ) -> float | None:
@@ -1901,6 +1972,44 @@ def answer(
         return Answer(
             "number", total,
             f"{qty} * {price.value} — question qty x unit price of {item!r}",
+        )
+
+    if consumer == "unit-price-from-total":
+        # "how much does/did each ITEM cost?" / "what is the cost of N
+        # ITEM?" (mining candidate unit-price-from-total, re-cut of the
+        # batch-47 review kill): the per-unit price is never stated —
+        # `_unit_price_from_total` recovers it from a stated GRAND TOTAL
+        # minus every other already-priced line item, divided by the
+        # asked item's own purchased count (definitive-or-decline, the
+        # increment-10 discipline traveling through `_purchase_total`
+        # unchanged). The ask's own stated quantity (`qty_value`, when
+        # present — "cost of N ITEM") multiplies the recovered unit price;
+        # a bare "each ITEM" ask (no stated quantity) leaves it at 1.
+        item = reg.plural_to_singular.get(query["item"], query["item"])
+        resolved = _unit_price_from_total(store, reg, item, log)
+        if resolved is None:
+            return Answer(
+                "decline", None,
+                f"no resolvable grand-total residual for {item!r} — needs "
+                "exactly one buyer, one owned grand total, and every "
+                "other purchased item priced",
+            )
+        entity, unit_price, _count = resolved
+        qty_raw = query.get("qty_value")
+        if qty_raw is None:
+            return Answer(
+                "number", unit_price,
+                f"{entity!r}'s grand total minus other priced purchases, "
+                f"divided by {item!r}'s purchased count",
+            )
+        qty = evaluate(str(qty_raw), {}, log, source="unit-price-from-total-qty")
+        total = evaluate(
+            f"{qty} * {unit_price}", {}, log, source="unit-price-from-total"
+        )
+        return Answer(
+            "number", total,
+            f"{qty} * {unit_price} — question qty x recovered unit price "
+            f"of {item!r}",
         )
 
     if consumer == "money-left":
