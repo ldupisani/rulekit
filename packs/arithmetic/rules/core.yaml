@@ -1398,6 +1398,52 @@ rules:
         offset: 0.0
         verb: "{verb}"
 
+  - id: arithmetic/affine-times-as-many-possessive-standard
+    phase: read
+    description: >
+      mining candidate affine-nominal-relations: "Ben has 50 more than
+      twice Ana's money" — the AFFINE-PREFIXED sibling of arithmetic/
+      times-as-many-possessive-standard (the general possessive-NP
+      standard, "Carmela has twice Cecil's money"), one offset field over
+      exactly like arithmetic/affine-times-as-much sits beside arithmetic/
+      times-as-much. `std, type: possessed` (see times-as-many-possessive-
+      standard's own comment for the full owner/measure-read mechanism —
+      an ACTUAL "OWNER's NOUN" merge, never a bare common noun) sits
+      directly after the multiplier, same as its non-affine sibling.
+      Structurally disjoint from every 'as many'/'as much' sibling in this
+      file: those all require a literal 'as' immediately after the
+      multiplier (or after an item noun that itself follows the
+      multiplier), and 'as' can never satisfy `std, type: possessed` (a
+      possessive merge, never particle-sensed) — vice versa, a possessed
+      NP directly after `k` can never satisfy any of those rules' own
+      'as'-anchored continuations, so the spans never tie. `who, type:
+      name`: unwidened, matching times-as-many-possessive-standard's own
+      (not-yet-widened) slot type. PROVEN minimal pair on unmodified main:
+      "Ben has 50 more than twice Ana's money. Ana has 600 dollars. How
+      much money does Ben have?" declines outright even though the
+      identical non-affine ratio ("Ben has twice Ana's money") already
+      resolves via arithmetic/times-as-many-possessive-standard.
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: verb, type: verb}
+        - {slot: n, type: number}
+        - {slot: dir, cat: delta}
+        - {lit: than}
+        - {slot: k, type: multiplier}
+        - {slot: std, type: possessed}
+    where:
+      - distinct: [who, std]
+    consumes: [n]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std.owner}"
+        measure: "{std}"
+        factor: "k"
+        offset: "n * sign(dir)"
+        verb: "{verb}"
+
   - id: arithmetic/fraction-delta-relation
     phase: read
     description: >
@@ -1753,6 +1799,64 @@ rules:
                 - {slot: pp_det, type: pronoun}
             - {slot: pp_obj, type: noun}
         - {lit: as}
+        - opt:
+            - {slot: appos_det, type: pronoun}
+            - {slot: appos_role, type: noun}
+        - {slot: std, type: entity}
+    where:
+      - distinct: [who, std]
+      - distinct: [item, std]
+    consumes: [n]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: "{item}"
+        factor: "k"
+        offset: "n * sign(dir)"
+        verb: "{verb}"
+        subject_label: "{who.label}"
+        standard_label: "{std.label}"
+
+  - id: arithmetic/affine-frame-relation-clause
+    phase: read
+    description: >
+      mining candidate affine-nominal-relations: "Ben has 3 more than
+      twice the number of pens Ana has" — the BARE-RELATIVE-CLAUSE
+      sibling of arithmetic/affine-frame-relation (mandatory 'that') and
+      arithmetic/affine-frame-relation-as-standard (mandatory 'as'),
+      applying the SAME "N more/fewer than K times the number/amount OF
+      ITEM STD-clause" affine frame that arithmetic/times-frame-relation-
+      clause already carries for the PLAIN (non-affine) multiplier — one
+      offset field over, exactly mirroring how arithmetic/times-frame-
+      relation-clause itself sits beside arithmetic/times-the-number-of's
+      mandatory "as STD". Deliberately does NOT accept 'that' or 'as' here
+      (see times-frame-relation-clause's own comment for why): both are
+      lexiconed senses ('complementizer'/'particle'), never in
+      SKIPPABLE_SENSES, so when either is present this rule's own `std`
+      slot fails to bind on it and the match declines outright, leaving
+      arithmetic/affine-frame-relation ('that') and arithmetic/affine-
+      frame-relation-as-standard ('as') as the only survivors on that
+      text — the three rules' spans never tie. PROVEN minimal pair on
+      unmodified main: "Ben has 3 more than twice the number of pens Ana
+      has. Ana has 6 pens. How many pens does Ben have?" declines outright
+      even though the identical non-affine ratio ("Ben has twice the
+      number of pens Ana has") already resolves via arithmetic/times-
+      frame-relation-clause — this rule closes the affine-offset gap in
+      that same frame.
+    match:
+      sentence:
+        - {slot: who, type: entity}
+        - {slot: verb, type: verb}
+        - {slot: n, type: number}
+        - {slot: dir, cat: delta}
+        - opt:
+            - {slot: item_echo, type: noun}
+        - {lit: than}
+        - {slot: k, type: multiplier}
+        - {slot: frame, cat: aggregate_noun}
+        - {lit: of}
+        - {slot: item, type: noun}
         - opt:
             - {slot: appos_det, type: pronoun}
             - {slot: appos_role, type: noun}
@@ -2424,6 +2528,59 @@ rules:
         subject: "{who}"
         standard: "{std}"
         measure: "{item}"
+        factor: "k"
+        offset: "n * sign(dir)"
+        verb: "{verb}"
+
+  - id: arithmetic/affine-times-as-much-elided
+    phase: read
+    description: >
+      mining candidate affine-nominal-relations: "Ben has 250 dollars less
+      than twice as much as Ana" — the ELIDED-ITEM sibling of arithmetic/
+      affine-times-as-much (no noun between 'much' and 'as'), exactly the
+      additive-elision pairing arithmetic/times-as-much-elided provides
+      for arithmetic/times-as-much, one offset field over. Same
+      `measure: null` UNRESOLVED-sentinel emission and standard-anchored
+      recovery — see arithmetic/anchored-relation-elided's comment.
+      Structurally disjoint from arithmetic/affine-times-as-much: that
+      rule's `item, type: noun` slot sits directly after 'much' and 'as'
+      is lexiconed sense `particle` (never noun-sensed), so an elided-item
+      text ("...twice as much as Ana") fails that rule's own `item` slot
+      and only this rule survives; conversely, a text WITH an item noun
+      present ("...twice as much MONEY as Ana") satisfies affine-times-
+      as-much's `item` slot with 'money' and this rule's own trailing
+      `{lit: as}` would then have to match the token 'money' itself, which
+      fails ('money' is noun-sensed, never the particle 'as') — the two
+      spans never tie. `who`/`std, type: name`: unwidened, matching
+      arithmetic/times-as-much-elided's own (not-yet-widened) slot type.
+      PROVEN minimal pair on unmodified main: "Ben has 250 dollars less
+      than twice as much as Ana. Ana has 600 dollars. How much money does
+      Ben have?" declines outright even though the identical AFFINE ratio
+      under the count-noun 'as many' frame (arithmetic/affine-times-as-
+      many) already answers correctly on a parallel text.
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: verb, type: verb}
+        - {slot: n, type: number}
+        - {slot: dir, cat: delta}
+        - {lit: than}
+        - {slot: k, type: multiplier}
+        - {lit: as}
+        - {lit: much}
+        - {lit: as}
+        - opt:
+            - {slot: appos_det, type: pronoun}
+            - {slot: appos_role, type: noun}
+        - {slot: std, type: name}
+    where:
+      - distinct: [who, std]
+    consumes: [n]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: null
         factor: "k"
         offset: "n * sign(dir)"
         verb: "{verb}"
@@ -4297,6 +4454,33 @@ asks:
       # unchanged. This is the fallback the single-entity consumer retries
       # when the bare entity comes back empty.
       entity_owner: "{who.owner}"
+
+  - id: ask/what-is-the-number-of-possessed
+    # mining candidate affine-nominal-relations: "What is the number of
+    # Ana's siblings?" — a NOMINAL single-entity ask with no verb/aux at
+    # all, the question-side counterpart to arithmetic/affine-frame-
+    # relation-clause's premise frame (and every other rule that emits a
+    # possessive-standard Relation — arithmetic/times-as-many-possessive-
+    # standard, arithmetic/affine-times-as-many-possessive-standard). The
+    # OWNER is the entity being asked about ('ana'), the possessed noun's
+    # own bare lemma is the measure ('sibling') — the exact `{who.owner}`/
+    # `{who}` split arithmetic/times-as-many-possessive-standard's own
+    # `emits:` block already uses for `standard`/`measure` one field over.
+    # No `verb` slot is bound (the question has none) — answer.py's
+    # single-entity consumer defaults an absent `verb` to 'have'
+    # (`query.get("verb", "have")`), the same fallback every entity-less
+    # verb ask in this file already relies on.
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {slot: frame, cat: aggregate_noun}
+        - {lit: of}
+        - {slot: who, type: possessed}
+    resolves:
+      consumer: single-entity
+      entity: "{who.owner}"
+      measure: "{who}"
 
   - id: ask/how-many-entity-qualified
     match:

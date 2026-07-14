@@ -5835,3 +5835,45 @@ Also open: the mixed-time refusals treat `None` as a distinct moment, so "In Mar
 12 apples. He found 5 more." still declines (`{march, None}`). Relaxing that to ignore
 untimed facts is a COVERAGE move that could create wrongs — it needs its own gated
 increment, not a free ride on this one.
+
+## Increment 126: affine relation offsets in the NOMINAL and AMOUNT-OF-MONEY frames
+
+**Class**: "N more/less than K times THE NUMBER/AMOUNT OF X" and "$N less than twice AS
+MUCH AS WHO" — the affine-offset siblings that increment 46 (count frame, "as many...as")
+and increment 114 (bare nominal relations) left uncrossed. Four new, structurally disjoint
+additive pattern rules in `packs/arithmetic/rules/core.yaml`:
+
+- `arithmetic/affine-frame-relation-clause` — the NOMINAL frame's bare relative-clause
+  standard ("Ben has 3 more than twice the number of pens Ana has"), the affine sibling of
+  `arithmetic/times-frame-relation-clause`.
+- `arithmetic/affine-times-as-much-elided` — the AMOUNT-OF-MONEY frame's elided-item
+  standard ("$250 less than twice as much as Ana"), the affine sibling of
+  `arithmetic/times-as-much-elided`.
+- `arithmetic/affine-times-as-many-possessive-standard` — the affine prefix onto the
+  possessive-NP standard ("$50 more than twice Ana's money"), the affine sibling of
+  `arithmetic/times-as-many-possessive-standard`.
+- `ask/what-is-the-number-of-possessed` — the nominal single-entity ask "What is the
+  number of Ana's siblings?", resolving via the existing single-entity consumer.
+
+Each rule proven structurally disjoint from its existing siblings (a literal token
+immediately after the shared prefix that only one variant's slot type can satisfy) — no
+shadowing, no double-emit. **No kernel change was needed**: the brief's proposed
+owner-keyed collision re-key (mechanism (c)) was found already fully landed in
+`facts.py`/`model.py`/`learn.py` (`Quantity.owner` populated by `learn.py`'s `_owner()` on
+every SVO subject, consulted at `FactStore.admit`'s collision time), so this increment
+stays pack-only.
+
+Deliberately not attempted (scope discipline): the brief's third structural sample
+(possessed-COLLECTION subject on both sides of the relation plus an elided-item locative
+"in X's class") and its "how many Y are in X's Z" ask sibling — flagged in the brief's own
+risk section as optional; and a fraction-typed sibling of `affine-times-as-much-elided`
+("twice as much" only, not "half as much").
+
+**Files**: `packs/arithmetic/rules/core.yaml`, `tests/test_mining_increment_126.py`.
+
+**Gate** (integrated on staging tip): dev-train diff SHIP (+1 SOLVED, 0 BROKE, 0
+DECL->WRONG, 100 -> 101; SOLVED: `bacb0d512ef7`). dev-holdout diff SHIP (+1 SOLVED, 0
+BROKE, 0 DECL->WRONG, 39 -> 40; SOLVED: `59c12e7e796c`). pytest 979 -> 989 (+10 synthetic).
+suite 52/52. lint 0 errors, 1 pre-existing known-good warning.
+
+TEST look: pending — spent manually.
