@@ -917,11 +917,25 @@ rules:
     description: >
       "has four times the number of sharks as Newport" — the times-as-many
       ratio in its 'the number of' frame ('number'/'amount' are the frame's
-      skeleton, like 'total of').
+      skeleton, like 'total of'). `who`/`std, type: entity` (mining
+      candidate relation-count-frames): "Dana Point beach has four times
+      the number of sharks as Newport Beach" — the subject/standard are
+      common-noun-headed place names, not bare proper names, the same
+      widening arithmetic/times-as-many already carries (see its comment);
+      `distinct: [item, std]` added alongside for the same self-referential
+      guard increment 65 paired with every other widened rule. An OPTIONAL
+      `verb_prep` (cat: preposition) between `verb` and `k` tolerates a
+      particle/preposition sitting between the verb and the multiplier
+      ("traveled TO twice the number of...", "throws IN 3 times the
+      number of..." — the same proven sub-gap that blocks the canonical
+      'as many' frame on identical surfaces); unread structurally, never
+      emitted.
     match:
       sentence:
-        - {slot: who, type: name}
+        - {slot: who, type: entity}
         - {slot: verb, type: verb}
+        - opt:
+            - {slot: verb_prep, cat: preposition}
         - {slot: k, type: multiplier}
         - {slot: frame, cat: aggregate_noun}
         - {lit: of}
@@ -935,9 +949,10 @@ rules:
         - opt:
             - {slot: appos_det, type: pronoun}
             - {slot: appos_role, type: noun}
-        - {slot: std, type: name}
+        - {slot: std, type: entity}
     where:
       - distinct: [who, std]
+      - distinct: [item, std]
     emits:
       - fact: relation
         subject: "{who}"
@@ -946,18 +961,107 @@ rules:
         factor: "k"
         offset: 0.0
         verb: "{verb}"
+        subject_label: "{who.label}"
+        standard_label: "{std.label}"
+
+  - id: arithmetic/times-frame-relation-clause
+    phase: read
+    description: >
+      mining candidate relation-count-frames: "Zack has traveled to twice
+      the number of countries Patrick traveled to" — the PLAIN multiplier
+      ratio in the frame form, ending in a bare RELATIVE-CLAUSE standard
+      instead of arithmetic/times-the-number-of's mandatory "as STD"
+      continuation: the standard NP is read directly off "STD" with NO
+      complementizer at all — the minimal pair the candidate's own
+      evidence proves ("Zara has twice the number of marbles Bob has"
+      declines today even though the ask is already recognized; only the
+      Relation is missing). Deliberately does NOT accept a 'that' here
+      (unlike its affine/fraction frame siblings): 'that' is lexiconed
+      sense `complementizer`, never in SKIPPABLE_SENSES, so when 'that'
+      IS present this rule's own `std` slot simply fails to bind (no
+      token to skip it with) and the match declines outright rather than
+      reading past it — this is deliberate, not an oversight:
+      "Mark has double the number of birds THAT Wendy has" (an unrelated
+      measure, no ask ever names it) must keep declining exactly as
+      before this candidate, the invariant
+      tests/test_mining_increment_94.py's
+      test_partitive_frame_noun_never_misread_as_anaphor already locks
+      in — a plain multiplier frame ending in an explicit "that STD"
+      relative clause is arithmetic/affine-frame-relation's and
+      arithmetic/fraction-frame-relation's own territory (both require an
+      "N more/fewer than" prefix or a fraction respectively), never this
+      rule's. Structurally disjoint from times-the-number-of: that rule
+      requires a literal 'as' token immediately after the item noun (or
+      its own optional locative PP first), and 'as' is lexiconed sense
+      `particle` — never noun/name-sensed — so it can never satisfy this
+      rule's own `std, type: entity` slot; the two rules' spans never tie
+      on the same text. `std, type: entity` and the OPTIONAL `verb_prep`
+      preposition-tolerant head mirror arithmetic/times-the-number-of's
+      own widening (see its comment) exactly, including for chained
+      relations ("Patrick traveled to three times the number of countries
+      Joseph traveled to") where the existing saturate.py relation
+      fixpoint (increment 48) walks the chain to whichever sentence
+      anchors it with a stated count.
+    match:
+      sentence:
+        - {slot: who, type: entity}
+        - {slot: verb, type: verb}
+        - opt:
+            - {slot: verb_prep, cat: preposition}
+        - {slot: k, type: multiplier}
+        - {slot: frame, cat: aggregate_noun}
+        - {lit: of}
+        - {slot: item, type: noun}
+        - opt:
+            - {slot: appos_det, type: pronoun}
+            - {slot: appos_role, type: noun}
+        - {slot: std, type: entity}
+    where:
+      - distinct: [who, std]
+      - distinct: [item, std]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: "{item}"
+        factor: "k"
+        offset: 0.0
+        verb: "{verb}"
+        subject_label: "{who.label}"
+        standard_label: "{std.label}"
 
   - id: arithmetic/affine-frame-relation
     phase: read
     description: >
       "Greg has read 9 more than twice the number of books that Kelcie has
-      read" — the AFFINE frame: subject = k·standard + n·sign(dir).
+      read" — the AFFINE frame: subject = k·standard + n·sign(dir). mining
+      candidate relation-count-frames widens two independent things, each
+      individually additive/optional so the ORIGINAL span still matches
+      byte-identically when neither is present: (1) an OPTIONAL repeated
+      item noun right after `dir` ("Seth sold 6 more CANDY BARS than 3
+      times the number of candy bars that Max sold" — anchored-relation's
+      own "N more ITEM than..." headword, restated before the frame
+      continuation; unread, never emitted — the `item` slot after 'of'
+      still supplies the measure); (2) `std, type: entity` (same widening
+      as arithmetic/times-as-many, plus its `distinct: [item, std]` guard)
+      so a common-noun standard anchors too. The complementizer `c` stays
+      MANDATORY, unwidened — every proven item for this rule already
+      states 'that' explicitly, and loosening it to optional is unproven
+      surface this candidate does not need (arithmetic/times-frame-
+      relation-clause's own comment documents why a plain, non-affine
+      frame with no 'that' is deliberately this rule's sibling's territory,
+      never this one's). Neither of these two widenings touches the
+      rule's own literal skeleton (n/dir/than/k/frame/of), so they cannot
+      introduce a new false-positive span that wasn't already gated on
+      the multiplier immediately preceding 'the number of'.
     match:
       sentence:
-        - {slot: who, type: name}
+        - {slot: who, type: entity}
         - {slot: verb, type: verb}
         - {slot: n, type: number}
         - {slot: dir, cat: delta}
+        - opt:
+            - {slot: item_echo, type: noun}
         - {lit: than}
         - {slot: k, type: multiplier}
         - {slot: frame, cat: aggregate_noun}
@@ -967,9 +1071,10 @@ rules:
         - opt:
             - {slot: appos_det, type: pronoun}
             - {slot: appos_role, type: noun}
-        - {slot: std, type: name}
+        - {slot: std, type: entity}
     where:
       - distinct: [who, std]
+      - distinct: [item, std]
     consumes: [n]
     emits:
       - fact: relation
@@ -979,27 +1084,43 @@ rules:
         factor: "k"
         offset: "n * sign(dir)"
         verb: "{verb}"
+        subject_label: "{who.label}"
+        standard_label: "{std.label}"
 
   - id: arithmetic/fraction-frame-relation
     phase: read
     description: >
       "Kelcie has read 1/4 the amount of books that Megan has read" — a
-      pure-fraction ratio in the frame form.
+      pure-fraction ratio in the frame form. mining candidate relation-
+      count-frames: complementizer `c` is now OPTIONAL ("...half the
+      number of countries George traveled to", no 'that'); `std, type:
+      entity` (same widening as arithmetic/fraction-as-many, plus its
+      `distinct: [item, std]` guard) so a common-noun standard anchors
+      too; an OPTIONAL `verb_prep` (cat: preposition) between `verb` and
+      `f` tolerates "Joseph traveled TO half the number of countries..."
+      — the same proven sub-gap arithmetic/times-the-number-of's own
+      comment names. None of these widenings touch the rule's own literal
+      skeleton (f/frame/of), so a bare "the number of X" with no preceding
+      fraction still never matches.
     match:
       sentence:
-        - {slot: who, type: name}
+        - {slot: who, type: entity}
         - {slot: verb, type: verb}
+        - opt:
+            - {slot: verb_prep, cat: preposition}
         - {slot: f, type: fraction}
         - {slot: frame, cat: aggregate_noun}
         - {lit: of}
         - {slot: item, type: noun}
-        - {slot: c, cat: complementizer}
+        - opt:
+            - {slot: c, cat: complementizer}
         - opt:
             - {slot: appos_det, type: pronoun}
             - {slot: appos_role, type: noun}
-        - {slot: std, type: name}
+        - {slot: std, type: entity}
     where:
       - distinct: [who, std]
+      - distinct: [item, std]
     consumes: [f]
     emits:
       - fact: relation
@@ -1009,6 +1130,8 @@ rules:
         factor: "f"
         offset: 0.0
         verb: "{verb}"
+        subject_label: "{who.label}"
+        standard_label: "{std.label}"
 
   - id: arithmetic/fraction-as-many
     phase: read

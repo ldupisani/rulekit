@@ -5004,3 +5004,43 @@ Lint 0 errors (1 pre-existing warning: fraction-of-remnant/fraction-of-pool over
 known-good). pytest 830 -> 840 (+10 new synthetic tests,
 tests/test_mining_increment_103.py).
 **TEST look: pending — spent manually.**
+
+## Increment 104 — relation standards in count-noun frames ("K times / half THE
+NUMBER OF ITEM (that) STANDARD VERBs", "the amount of ITEM as STANDARD")
+
+CLASS: relation STANDARDS expressed through a count-noun frame ("Zara has twice THE NUMBER
+OF marbles Bob has", "A threw in three times as many pebbles as B" with a preposition between
+verb and multiplier) rather than the canonical bare-plural "as many X as Y" surface. A direct
+sibling of increment 102 (relation standards in un-read frames — possessive-NP standards,
++2 dev-train / +3 dev-holdout): relations carry the sentence's verb, and all state verbs are
+one equivalence class (HANDOFF invariant). MINIMAL PAIR: "Zara has twice as many marbles as
+Bob. Bob has 6 marbles." resolves to 12.0; "Zara has twice THE NUMBER OF marbles Bob has. Bob
+has 6 marbles." declined "no quantity known for zara of marble (ask ask/how-many-entity)" —
+the ask was already recognized and only the Relation fact was missing. Second proven
+sub-gap: a preposition between the verb and the multiplier killed even the canonical frame
+("Zack traveled TO twice as many countries as Patrick", "throws IN 3 times as many pebbles as
+Candy" emitted only a Predication, no Relation) — both heads needed to be preposition-tolerant.
+
+MECHANISM: YAML-ONLY, packs/arithmetic/rules/core.yaml. Four additive changes to the existing
+relation rule family (siblings of `arithmetic/times-as-many`, `arithmetic/affine-times-as-many`,
+`arithmetic/fraction-as-many`): (1) `arithmetic/times-the-number-of` widens `who`/`std` from
+`type: name` to `type: entity` plus a `distinct: [item, std]` self-reference guard; (2) the
+count-noun standard NP itself, read via the EXISTING `aggregate_noun` category (already used by
+ratio rules for "the number/amount of X" — no new category declared, zero lexicon admission);
+(3) an OPTIONAL `verb_prep` (cat: preposition) slot between `verb` and the multiplier on the
+relation heads, so "traveled TO twice…" and "throws IN 3 times…" parse; (4) all four new/widened
+rules emit the SAME Relation fact shape the canonical rules emit (subject, standard, measure,
+factor, offset, verb), so every downstream consumer (synth/relation, chained relation
+resolution, combined asks, entity-less there-asks) is reused unchanged. `patterns.subsumes` is
+declared against the existing times-as-many rules for identical spans, following the
+increment-102 precedent.
+
+FILES: packs/arithmetic/rules/core.yaml, tests/test_mining_increment_104.py.
+
+GATE (integrated, staging tip): dev-train diff SOLVED 3 / BROKE 0 / DECL->WRONG 0 / NET +3,
+VERDICT SHIP (70898572e248, 9465dd134d79, b307b7dbc3c0; correct 79 -> 82, 3772 items, 100%
+precision). dev-holdout diff SOLVED 1 / BROKE 0 / DECL->WRONG 0 / NET +1, VERDICT SHIP
+(8ff1ac81a759; correct 32 -> 33, 3701 items, 100% precision). Suite 52/52. Lint 0 errors (1
+pre-existing warning: fraction-of-remnant/fraction-of-pool overlap, known-good). pytest 840 ->
+848 (+8 new synthetic tests, tests/test_mining_increment_104.py).
+**TEST look: pending — spent manually.**
