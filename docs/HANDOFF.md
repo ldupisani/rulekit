@@ -14,13 +14,13 @@ swing under the constitution (no lexicon in Python, no per-problem parsing,
 every increment through the gates).
 
 **Current numbers (all verified at head):**
-- dev-train: 95 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
+- dev-train: **100 correct / 0 wrong** (3,772 items, 100% precision) — **GOAL REACHED**
 - dev-holdout: 39 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 912 · lint: 0 errors, 1 intended warning
+- curated suite: 52/52 · pytest: 927 · lint: 0 errors, 1 intended warning
 - bench wall: dev-train 16.6s -> 9.0s (trace opt-out) -> 1.7s at `--jobs 12`.
   `--jobs` defaults to 1; spend it in the SERIAL integration tail, never in the
   implementers' gates (they already run concurrently). See the two infra notes below.
-- TEST ledger (107 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- TEST ledger (109 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -5516,3 +5516,50 @@ FAILED (goal-mode) with two named kernel gaps, both worth their own increment:
    mice" all bare-fold to lemma 'mouse' with only the qualifier differing, and
    `PartitionQuantity.key()` covers only (collection, attribute, verb) — so they COLLIDE at
    FactStore admission. Same shape as the GroupTotal.key() limit recorded in batch 40.
+
+# ════════ GOAL REACHED: dev-train 100/100 (2026-07-14) ════════
+
+**dev-train: 100 correct / 0 wrong — 100% precision on committed answers.**
+dev-holdout 39/0 · suite 52/52 · pytest 927 · lint 0 errors · TEST 11/1 (91.7%), 109 looks.
+
+## Batch 52 — the last two increments
+
+- **114 — relation standards in NOMINAL frames** (count-noun / amount-of-money NPs,
+  possessive-kinship NPs): the second holder of a combined ask whose amount is stated only as
+  a relation. **+4** (95 -> 99). Look #108 HELD.
+- **115 — percent-modified values**: a stated value changed by a percentage (raise / discount /
+  increase / "P% more than"), and the new-value asks that cash them in. **+1** (99 -> 100).
+  Look #109 HELD.
+
+## The goal run: 39 -> 100
+
+Precision went UP while coverage tripled: TEST 88.9% -> 91.7% across 109 looks, and dev-train
+wrongs stayed at ZERO throughout. The goal was 100 CORRECT, never 100 committed.
+
+WHAT THE STANDARDS ACTUALLY BOUGHT:
+- **1 increment reverted at TEST** (81, gifted-budget money-left). It gated immaculately on
+  7,473 DEV items — SHIP, 0 BROKE, 0 DECL->WRONG, review passed — and introduced a NEW
+  CONFIDENT-WRONG on TEST. A clean DEV gate is necessary and NEVER sufficient.
+- **4 latent correctness bugs killed on main**, EVERY ONE from a candidate that FAILED or was
+  KILLED: weekday names read as proper nouns (88), relations anchored on a stale state fact
+  (99 — a confident wrong: 6 where the truth was 18), coordinated clauses losing their second
+  subject (101), number-phrase merges stopping after the first hit (107). None was findable by
+  coverage mining: all four were correct on everything we measure.
+- **Constitution violations blocked**: word lists in Python ("year" TWICE, "person", "change"),
+  a VERBATIM GSM8K TRAIN ITEM in tests/, undeclared edits to the most-shared scan functions.
+- **4 re-cuts landed after a review kill** (71, 73, 102, 106) — worth +13 dev-train between
+  them. A kill with a NAMED fix is a one-batch delay, not a dead candidate.
+
+THE METHOD THAT GOT THERE (docs/methodology.md §9):
+1. Mine the ADDRESSABLE POOL (fully-read AND declining) — not surface phrase frequency, which
+   twice pointed at classes resolving NOTHING (327, 444).
+2. Cluster by SEMANTIC ask family, never lexical frame. By frame the pool looked like 616
+   clusters of ~1 item; by family it was per-unit 100 / total 90 / money-cost 78 / partitive 70.
+   Same items, opposite conclusion — and that illusion cost several batches.
+3. WALK 8-12 items; the bar is >= 3 RESOLVING, not perfection. minItems=3 with a bar of 3 was
+   silently demanding a PERFECT class and killed a 354-item family at 2-of-3.
+4. PROSE DOES NOT ENFORCE. Every rule that mattered had to become a gate: shape, yield,
+   goal-mode, infra bar, dead-class. A twice-caught "year" literal and a stop-rule the scout
+   ignored the very next batch both taught the same lesson.
+5. AN INCREMENT YOU CANNOT REVERT INDEPENDENTLY IS NOT AN INCREMENT. Every TEST look buys the
+   right to revert exactly one thing.
