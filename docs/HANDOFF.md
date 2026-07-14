@@ -16,11 +16,11 @@ every increment through the gates).
 **Current numbers (all verified at head):**
 - dev-train: **100 correct / 0 wrong** (3,772 items, 100% precision) — **GOAL REACHED**
 - dev-holdout: 39 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 940 · lint: 0 errors, 1 intended warning
+- curated suite: 52/52 · pytest: 960 · lint: 0 errors, 1 intended warning
 - bench wall: dev-train 16.6s -> 9.0s (trace opt-out) -> 1.7s at `--jobs 12`.
   `--jobs` defaults to 1; spend it in the SERIAL integration tail, never in the
   implementers' gates (they already run concurrently). See the two infra notes below.
-- TEST ledger (110 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- TEST ledger (111 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -5611,3 +5611,78 @@ field on the ask query) must land BEFORE the month fix.** The generalised rule:
 
 REMAINING: 13 more sites to migrate (one increment each, 0-diff), then phases 2/4/5 switch on
 the temporal, spatial and person metrics — each its own gate, each its own TEST look.
+
+## Increment 117: the deixis journal + the deictic field viewer (`a105cef`)
+
+**The gap this closes.** The Decision trace records MUTATIONS (`target/before/after`, via
+`Reading.record`). A DECLINE mutates nothing, so it is STRUCTURALLY INVISIBLE to it — the
+designer could show every binding that succeeded and not one that failed. At 13 of the 15
+resolution sites the entire candidate set is discarded with no record kept anywhere (not in
+the ArithmeticLog, not in Gaps), and nothing computes distance, because modulo obligations.py
+nothing has an origo to measure from. The declines are where all the information is.
+
+`deixis.resolve(..., journal=None, source="...")` is the parallel observational channel.
+
+**Why it is 0-diff BY CONSTRUCTION.** `journal=None` is the default and is bench's only path
+(`solve(tracing=False)` builds no journal), and that branch does exactly what the function did
+before the journal existed. Strict dominance is factored into a single `_arbitrate()` that BOTH
+paths call: a fast path that RE-IMPLEMENTS the decision is a 0-diff hope, not a 0-diff
+property. Recording may call `distance`/`filters` for candidates the silent path
+short-circuits past, so their PURITY is now a documented contract (both shipped metrics are
+pure; a call-counting test pins that the silent path gains no calls).
+
+**The plumbing choice that matters.** The journal rides on `ArithmeticLog`, not on a new
+parameter. The log is ALREADY the third positional argument of every `SynthPlugin`, so the
+eight saturate.py sites can each migrate later with ZERO signature changes (14 otherwise).
+Rejected: a ContextVar (makes "can this change the reading?" non-local, forfeiting the
+0-diff-by-inspection argument) and hanging it off `Reading` (obligations.py deepcopies trial
+readings up to |senses|^4 times — that is the 61%-of-wall-clock trap we already paid for once).
+
+**Recorded per resolution:** origo, every candidate with its measured distance, which filter
+eliminated which candidate, and a machine-readable decline reason — `no-candidates` |
+`dimension-mismatch` | `filtered-out` | `tie`. **`dimension-mismatch` is the fingerprint of
+cross-dimension pollution** (a TIME word competing to be a PERSON antecedent): deixis.md §4's
+month bug, and the only observable that has ever named it.
+
+**The repeat rule.** `resolve()` runs inside document.py's round loop. A SUCCESS is skipped on
+later rounds; a DECLINE is retried every round — so every INTERESTING resolution is the
+repeated one. Identical repeats collapse to one row with an `attempts` count. A CHANGED
+candidate set is a NEW row, because "two candidates in round 1, one in round 3" is the exact
+moment the reading happened, and deduping on the call site alone would erase it. (When
+obligations.py migrates: `disambiguate`/`_coverage_score` MUST pass `journal=None` — a trial's
+candidate set reflects a sense assignment that was REJECTED, and rendering it would be a lie.)
+
+### The viewer (`rulekit serve` → the "deictic field" toggle)
+
+Narrative spine, the four axes, and each resolution drawn as origo → candidates → verdict.
+
+**THE HONESTY RULE — non-negotiable, and the whole design constraint.** Three of the four
+dimensions have no coordinates, and the view renders that absence AS an absence:
+- **TIME** gets labels but NO AXIS. `Quantity.time` is an opaque surface string, never parsed,
+  never ordered; its only use anywhere is equality, and only to REFUSE to combine facts.
+  `Before(earlier, later)` is a registered fact class nothing constructs and nothing reads.
+- **PLACE** gets an empty strip. `locus` appears nowhere in the tree but its own declaration.
+- **Bare-string candidates get no position.** Most sites resolve over measure/entity strings.
+
+Drawing a plausible timeline out of "in january"/"in march" would put a fabricated ordering ONE
+COPY-PASTE from the kernel — which is precisely the experiment that already failed the gate
+(`DECL->WRONG 1`, deixis.md §4). A viewer's job is to show the hole, not to paper it.
+
+**What it shows that nothing else could:**
+1. **The field is FLAT.** Every candidate at d=0, so strict dominance is unsatisfiable and the
+   site can only decline. The thesis, drawn. When a real metric lands, they SPREAD — and 100%
+   `arbitration: "unique"` (never `"dominant"`) is the live proof that none has yet.
+2. **"March" standing in the PERSON pool**, tied with Sam, blocking the pronoun and dropping
+   Sam's quantity. §4's bug, visible for the first time.
+3. **The ask floating off the time spine with no edge** — which is WHY §4's fix failed: the
+   store held `time="in january"`, the question asked about March, and nothing compared them.
+
+**Not in this increment:** no metric switched on (`token_distance` still wired to nothing); no
+migration of the remaining 12 sites (each is its own gated increment, and each now lights up
+the viewer for free); **the month fix stays BLOCKED on phase 2**; no corpus-wide aggregation
+(bench runs `tracing=False`, and a traced bench path would risk the 9.6x speedup — worth doing
+later, since a decline REASON is a mining candidate class ranked by frequency).
+
+**Gate:** dev-train AND dev-holdout snapshots **BYTE-IDENTICAL** to main (`cmp`, 7,473 items);
+diff NEUTRAL (0 BROKE, 0 DECL->WRONG); suite 52/52; pytest 940 -> 960 (+20 synthetic); lint 0
+errors. **TEST look #111: 11/1 (91.7%) — HELD**, as a 0-diff refactor must.
