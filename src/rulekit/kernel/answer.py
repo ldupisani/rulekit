@@ -258,13 +258,34 @@ def _verb_total(
     ("how many did X sell"). Derived relation facts carry the verb too, so
     they participate; the by-verb resolution block prevents an event and
     its own re-derivation from both existing."""
-    matching = [
+    scoped = [
         q for q in store.by_kind(Quantity)
-        if q.entity == entity and q.measure == measure and q.verb == verb
+        if q.entity == entity and q.measure == measure
     ]
+    matching = [q for q in scoped if q.verb == verb]
     if not matching:
         return None
-    if len({q.time for q in matching}) > 1:
+    # THE CROSS-VERB TIME HOLE (docs/deixis.md §4's confident-wrong).
+    #
+    # This check used to run over `matching` — i.e. AFTER the verb filter — so it could
+    # only ever see time-mixing WITHIN one verb. Cross-verb evidence was structurally
+    # invisible to it:
+    #
+    #   "In January Benny adds $19 ... By the end of March he has $46.
+    #    How many dollars did he add in March?"
+    #
+    #   matching = [add $19 @january]        <- the only 'add' fact
+    #   the $46 @march state is verb='have', so it was FILTERED OUT BEFORE THIS LINE
+    #   len({'january'}) == 1                <- no refusal
+    #   => COMMITS 19. Gold is 8.
+    #
+    # Widening the set to every fact about this entity/measure makes the document's
+    # timestamping visible: a document that speaks about MORE THAN ONE MOMENT cannot be
+    # folded under a single verb without knowing WHICH moment is asked about. Until the
+    # ask can say (see `reference_time`), the honest answer is to decline.
+    #
+    # Strictly a precision move: it can only turn a commit into a decline.
+    if len({q.time for q in scoped}) > 1:
         return None
     return evaluate(
         " + ".join(str(q.value) for q in matching), {}, log, source="verb-fold"
