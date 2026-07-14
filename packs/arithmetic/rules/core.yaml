@@ -1467,6 +1467,73 @@ rules:
         offset: 0.0
         verb: "{verb}"
 
+  - id: arithmetic/percent-change-event
+    phase: read
+    description: >
+      mining candidate percent-change-values: "Susie puts 20% MORE money
+      into her piggy bank" — a stated percent INCREASE/DECREASE on the
+      SUBJECT'S OWN existing currency holding (self-referential: unlike
+      fraction-delta-relation's "20% more pines THAN Ann", there is no
+      second entity — `who` names the SAME holder the change applies to).
+      Emits a PercentChange fact (model.py) that `_entity_total`
+      (answer.py) multiplies into that entity's state+event fold, USE-
+      gated for value accounting exactly like Discount — see PercentChange's
+      own docstring for the full mechanism.
+
+      `item, cat: currency` (never `type: noun`) is what keeps this rule
+      structurally scoped to MONEY changes only: "Tom gets 20% more candy"
+      never matches (no currency-category dobj), so a non-monetary percent
+      delta can never reach this fact kind or contaminate an unrelated
+      entity's currency fold — the whole reason `_entity_total`'s own
+      percent-change application could safely be made UNCONDITIONAL
+      instead of opt-in (see its docstring).
+
+      The trailing `opt: [..., than, ..., std_seen]` group mirrors
+      arithmetic/times-as-many-elided's own `unbound: [std_seen]`
+      negative-lookahead guard (schemas.py's own comment on `unbound`):
+      without it, "Tom has 20% more money than Ann" — a genuine percent-
+      COMPARATIVE, already owned by fraction-delta-relation above — would
+      ALSO satisfy this rule's own shorter prefix match (who/verb/f/dir/
+      item, with nothing yet requiring 'than' to be ABSENT) and wrongly
+      emit a self-referential PercentChange for Tom's own money on top of
+      the correct cross-entity Relation, corrupting Tom's fold with a
+      spurious multiplier. Binding the "than STANDARD" continuation into
+      `std_seen` and rejecting whenever it binds means this rule only ever
+      survives when no comparative continuation is grammatically present
+      at all — exactly the self-referential case it exists for. `who,
+      type: entity`: resolves a pronoun subject ("she puts...") the same
+      way every other widened rule in this file already does, once
+      discourse binding resolves it (document.py's re-run-after-binding
+      round).
+    match:
+      sentence:
+        - {slot: who, type: entity}
+        - {slot: verb, type: verb}
+        - {slot: f, type: fraction}
+        - {slot: dir, cat: delta}
+        - {slot: item, cat: currency}
+        - opt:
+            - opt:
+                - {slot: pp_prep, cat: preposition}
+                - opt:
+                    - {slot: pp_det, type: pronoun}
+                - {slot: pp_obj, type: noun}
+            - {lit: than}
+            - opt:
+                - {slot: appos_det, type: pronoun}
+                - {slot: appos_role, type: noun}
+            - {slot: std_seen, type: name}
+    where:
+      - unbound: [std_seen]
+    consumes: [f]
+    emits:
+      - fact: percent_change
+        entity: "{who}"
+        value: "f"
+        sign: "sign(dir)"
+        measure: currency
+        verb: "{verb}"
+
   - id: arithmetic/times-the-number-of
     phase: read
     description: >
@@ -4893,6 +4960,37 @@ asks:
       measure: "{item}"
       verb: "{verb}"
       req_unit: "{req_unit}"
+
+  - id: ask/how-much-noun-entity-uninverted
+    # mining candidate percent-change-values: "how much money SHE WILL
+    # have?" — the NON-inverted embedded-question word order (who BEFORE
+    # aux, the ordinary declarative-clause order), sibling of ask/how-much-
+    # noun-entity's own subject-aux-inverted "how much money WILL SHE
+    # have?". A genuinely different, general clause-order CLASS (not a
+    # one-off for any single problem) — GSM8K's own generated questions
+    # use both orders interchangeably after "how much ITEM". Routed to the
+    # SAME 'single-entity' consumer, so this can never commit anything the
+    # inverted form couldn't also commit; it only widens WHICH SURFACE
+    # ORDER reaches that consumer. Cannot collide with ask/how-much-noun-
+    # entity: that ask's very next token after `item` must satisfy
+    # `type: future_modal` (auxiliary/will/would), which 'she'/'he'/a name
+    # never does, and this ask's next token must satisfy `type: entity`,
+    # which 'will'/'would' never does — the two match sequences are
+    # mutually exclusive at the SAME position, never a specificity
+    # tie-break.
+    match:
+      question:
+        - {lit: how}
+        - {lit: much}
+        - {slot: item, type: noun}
+        - {slot: who, type: entity}
+        - {slot: aux, type: future_modal}
+        - {slot: verb, type: verb}
+    resolves:
+      consumer: single-entity
+      entity: "{who}"
+      measure: "{item}"
+      verb: "{verb}"
 
   - id: ask/how-much-combined
     # "how much money do they have in total/altogether?" — the how-much

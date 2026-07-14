@@ -5428,6 +5428,36 @@ SOLVED 0 / BROKE 0 / DECL->WRONG 0 / NET +0 / NEUTRAL (39 -> 39). pytest 912 pas
 + 6 new synthetic tests). suite 52/52. lint 0 errors, 1 warning (pre-existing known-good
 fraction-of-remnant/fraction-of-pool overlap). TEST look: pending — spent manually.
 
+## Increment 115 — percent-change events on a stated currency holding (batch 2026-07-14f)
+
+CLASS: percent-modified values — a stated value changed by a percentage (raise / discount /
+increase / decrease / "P% more than"), and the new-value asks that cash it in. This increment
+lands the self-referential percent-change-EVENT half: "VALUE is increased/decreased by P%",
+"receives a P% raise", "puts P% more money in", scaling an already-anchored currency holding.
+Probe-verified on main: "Ruiz has a monthly salary of $500. If he received a 6 percent raise,
+how much will be his new salary?" -> `no ask shape`.
+
+MECHANISM: new `PercentChange` premise fact (`src/rulekit/data/schemas.py`/model.py) scaling an
+entity's existing currency total by (1 +/- P/100), USE-gated for value accounting (per the look
+#4-#7 invariant: existence alone does not count as "read" — the arithmetic log must actually
+consume it), chained in ascending sentence order across multiple events (reusing the fraction/
+rest ordering convention so chained changes compose) via `saturate.py`. Consumed by the existing
+`_entity_total` (answer.py) unconditional percent-change fold. A new ask id
+(`ask/how-much-noun-entity-uninverted`) covers the non-inverted "how much MEASURE WHO will have"
+question order alongside the existing inverted form. `raise`, `discount`, `increase`, `decrease`
+and the percent tokens are pre-existing lexicon/category members (increment 92's `Discount` fact
+proves it) — no new word list in Python. The percent-COMPARATIVE half ("P% more than STANDARD",
+riding the existing Relation fact + `synth/relation` + `combined`/`difference` consumers) was
+scoped out of this increment per the brief's risk note to keep the gate narrow; it remains
+available as a follow-on candidate.
+
+GATE (integrated on staging tip, dev-train 95 baseline before this increment): dev-train diff
+SOLVED 1 (434b4e7ad7f1), BROKE 0, DECL->WRONG 0, WRONG->DECL 0, NET +1, SHIP (95 -> 96).
+dev-holdout diff SOLVED 0, BROKE 0, DECL->WRONG 0, WRONG->DECL 0, NET +0, NEUTRAL (unchanged).
+pytest 927 passed (920 baseline + 7 new synthetic tests in tests/test_mining_increment_115.py).
+suite 52/52. lint 0 errors, 1 warning (pre-existing known-good fraction-of-remnant/
+fraction-of-pool overlap). TEST look: pending — spent manually.
+
 ## Increment 114 — relation STANDARDS in nominal frames (batch 2026-07-14f)
 
 CLASS: relation standards in nominal frames (count-noun / amount-of-money NPs, and

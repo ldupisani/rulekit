@@ -260,6 +260,7 @@ class FactEmit(StrictModel):
         "quantity", "relation", "membership", "subset", "predication",
         "before", "fraction_quantity", "rest_quantity", "partition_quantity",
         "ratio_quantity", "goal", "group_total", "rate", "discount",
+        "percent_change",
     ]
     # remaining fields are fact-kind specific; templated strings "{slot}" or
     # expressions evaluated by the safe evaluator.

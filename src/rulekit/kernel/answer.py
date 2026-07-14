@@ -21,6 +21,7 @@ from .model import (
     GroupTotal,
     Membership,
     PartitionQuantity,
+    PercentChange,
     Predication,
     Price,
     Quantity,
@@ -346,7 +347,31 @@ def _entity_total(
     store: FactStore, reg: Registry, entity: str, measure: str, log: ArithmeticLog
 ) -> float | None:
     """The single-entity fold: state quantities anchor, event quantities
-    accumulate signed by the verb's category polarity."""
+    accumulate signed by the verb's category polarity.
+
+    PERCENT CHANGE (mining candidate percent-change-values): an in-play
+    PercentChange fact (model.PercentChange, USE-gated for value
+    accounting like Discount/Rate/Price/Goal/GroupTotal) for this SAME
+    entity scales the state+event total by (1 +/- its stated fraction),
+    applied in ASCENDING SENTENCE ORDER — the same strict-sentence-order
+    chaining convention the fraction/rest machinery already uses, so a
+    "decreased by 15%, increased by 40%" pair composes correctly instead
+    of arbitrarily. This is UNCONDITIONAL, not an opt-in parameter: the
+    fact kind is brand new, so no PercentChange fact could ever have
+    existed for ANY pre-increment caller — every existing call site's
+    behavior is untouched by construction, and only a genuinely NEW
+    percent-change event for this exact entity ever changes the answer
+    (the HANDOFF shared-function-blast-radius discipline, satisfied here
+    by the new fact's own non-existence everywhere else rather than by a
+    threaded flag). Scoped to 'currency'-category measures only — every
+    structural sample this increment targets is monetary, and the
+    emitting pattern rule itself gates its dobj to `cat: currency`, so a
+    non-currency fold never even has a PercentChange fact to find. Two
+    percent-change events for the SAME entity in the SAME sentence share
+    one `occurrence` and collide at facts.py's ordinary same-key path
+    (quarantined) — checked here exactly like Discount's own compounding
+    guard, so an unmodeled same-sentence pair declines rather than
+    silently picking one."""
     state: list[Quantity] = []
     events: list[Quantity] = []
     for q in store.by_kind(Quantity):
@@ -393,6 +418,19 @@ def _entity_total(
             expr = "0 " + " ".join(
                 f"{'+' if _sign(q.verb, reg) > 0 else '-'} {q.value}" for q in events
             )
+    if reg.word_in_category(measure, "currency"):
+        changes = [pc for pc in store.by_kind(PercentChange) if pc.entity == entity]
+        if changes:
+            if any(
+                isinstance(f, PercentChange) and f.entity == entity
+                for f in store.quarantined
+            ):
+                return None  # a same-sentence compounding pair — ambiguous, decline
+            for pc in sorted(
+                changes, key=lambda p: p.occurrence if p.occurrence is not None else 0
+            ):
+                op = "+" if pc.sign > 0 else "-"
+                expr = f"({expr}) * (1 {op} {pc.value})"
     return evaluate(expr, {}, log, source="fold")
 
 

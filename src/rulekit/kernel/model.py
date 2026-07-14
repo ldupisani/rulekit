@@ -748,6 +748,77 @@ class Discount(Fact):
 
 
 @dataclass(frozen=True)
+class PercentChange(Fact):
+    """'Susie puts 20% MORE money into her piggy bank' — a stated percent
+    INCREASE or DECREASE applied to an entity's own EXISTING currency
+    holding (mining candidate percent-change-values). Self-referential by
+    construction: unlike Relation's percent-comparative family ("20% more
+    pines THAN Ann"), there is no second entity here — the subject scales
+    its OWN prior total, so `entity` names the SAME holder `_entity_total`
+    (answer.py) folds state/event Quantity facts for, and the consumer
+    multiplies that fold's total by (1 + `sign` * `value`) rather than
+    comparing two different holders' totals.
+
+    `value` is the RAW stated fraction (0.20 for '20%' — never
+    pre-multiplied by `sign`), read directly off the `type: percent`
+    token exactly like Discount.value; `sign` is +1 for an INCREASE
+    direction word ('more', `more_dir`/delta polarity) or -1 for a
+    DECREASE direction word ('fewer'/'less', `less_dir`), computed at
+    emit time via the same `sign(dir)` numeric-field mechanism the
+    percent-comparative Relation rules already use — never a hardcoded
+    Python constant. `measure` is always the 'currency' CATEGORY name
+    (never a specific denomination, the SAME `measure: currency`
+    convention ask/how-much-bare-entity's query already uses): this
+    increment scopes to monetary percent-change events only — every
+    structural sample in the brief is a price/salary/money change — so
+    the pattern rule gates its own dobj slot to `cat: currency`
+    (dollar/dollars/money/pound/pounds), never a bare noun, which is what
+    keeps an unrelated non-money event ("20% more pines") from ever
+    reaching this fact kind at all.
+
+    USE-GATED for value accounting, like Discount/Rate/Price/Goal/
+    GroupTotal (the look #4-#7 invariant every new fact kind must decide
+    explicitly): a percent-change that merely EXISTS has not been read —
+    only `_entity_total` (answer.py) actually multiplying a committed
+    fold by it counts as use. In practice the stated percent TOKEN is
+    also part of this rule's own pattern-match span, so it is marked
+    `pattern_consumed` regardless (guards.py) — USE-gating is declared
+    here anyway, for the SAME reason Discount's docstring declares it:
+    consistency with every sibling premise-adjustment fact kind, and
+    defense-in-depth for any future consumer of this fact that does NOT
+    happen to hold the matching token.
+
+    `occurrence` is the emitting sentence's index (mirrors Quantity's own
+    EVENT convention, auto-assigned by patterns.py's `_build_fact` — a
+    percent-change is inherently an event, never a state) — this is what
+    lets TWO percent-change events on the SAME entity, stated in two
+    DIFFERENT sentences, key apart and both admit (`_entity_total` applies
+    them in ascending sentence order, chaining: decreased-then-increased
+    composes correctly). Two percent-change events for the same entity
+    stated in the SAME sentence (a same-sentence compounding pair, e.g. a
+    conjoined "decreased by 15% and then increased by 40%") share one
+    `occurrence` and so COLLIDE at facts.py's ordinary same-key path —
+    exactly like Discount's own compounding-discount scope note, this is a
+    genuinely different, out-of-scope arithmetic shape (conjunction
+    recovery for a new verb category — a further hop, not this
+    increment's mechanism) that quarantines-and-declines rather than
+    silently picking one of the two."""
+
+    entity: str
+    value: float
+    sign: float
+    measure: str = "currency"
+    verb: str = "change"
+    occurrence: int | None = None
+
+    def key(self) -> tuple:
+        return ("percent_change", self.entity, self.occurrence)
+
+    def value_part(self) -> Any:
+        return (self.value, self.sign)
+
+
+@dataclass(frozen=True)
 class Before(Fact):
     earlier: str
     later: str

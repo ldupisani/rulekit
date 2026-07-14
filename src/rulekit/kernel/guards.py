@@ -34,21 +34,23 @@ def _fact_values_by_sentence(store: FactStore) -> dict[int, set[float]]:
     a value is only accounted by facts its OWN sentence produced (a same
     number appearing in another sentence's fact must not mask an unread).
 
-    RATE, PRICE, GOAL, GROUP_TOTAL and DISCOUNT facts are excluded: a rate,
-    price, goal, group total, or discount that merely EXISTS has not been
-    used — "makes $18 an hour" must not unlock a fold that ignores the
-    wage, "$10 each" must not unlock one that ignores the price, "wants to
-    collect 30 stamps" must not unlock one that ignores the goal, "there
-    are 160 toys altogether" must not unlock one that ignores the stated
-    total, and "gets a 15% discount" must not unlock one that ignores the
-    discount. Their values count as read only when the arithmetic consumed
-    them (the caller checks the log for rate/price/goal/group-total/
-    discount values)."""
-    from .model import Discount, Goal, GroupTotal, Price, Rate
+    RATE, PRICE, GOAL, GROUP_TOTAL, DISCOUNT and PERCENT_CHANGE facts are
+    excluded: a rate, price, goal, group total, discount, or percent-change
+    that merely EXISTS has not been used — "makes $18 an hour" must not
+    unlock a fold that ignores the wage, "$10 each" must not unlock one
+    that ignores the price, "wants to collect 30 stamps" must not unlock
+    one that ignores the goal, "there are 160 toys altogether" must not
+    unlock one that ignores the stated total, "gets a 15% discount" must
+    not unlock one that ignores the discount, and "puts 20% more money in"
+    (mining candidate percent-change-values) must not unlock one that
+    ignores the percent change. Their values count as read only when the
+    arithmetic consumed them (the caller checks the log for rate/price/
+    goal/group-total/discount/percent-change values)."""
+    from .model import Discount, Goal, GroupTotal, PercentChange, Price, Rate
 
     out: dict[int, set[float]] = {}
     for fact in store.facts:
-        if isinstance(fact, (Rate, Price, Goal, GroupTotal, Discount)):
+        if isinstance(fact, (Rate, Price, Goal, GroupTotal, Discount, PercentChange)):
             continue
         values = out.setdefault(fact.provenance.sentence, set())
         for field_name in _NUMERIC_FACT_FIELDS:
@@ -92,12 +94,12 @@ def check(
         # "half as many", "twice", "40% more" or the question's "in 10
         # years" is exactly the confident-wrong this guard exists to stop.
         fact_values = _fact_values_by_sentence(store) if store is not None else {}
-        from .model import Discount, Goal, GroupTotal, Price, Rate
+        from .model import Discount, Goal, GroupTotal, PercentChange, Price, Rate
 
         # values from USE-GATED fact kinds (Rate, Price, Goal, GroupTotal,
-        # Discount): existence alone doesn't count as read, but the
-        # arithmetic log having consumed the value does. A COMPOUND Rate
-        # ("8 pages in 20 minutes") additionally offers its own raw
+        # Discount, PercentChange): existence alone doesn't count as read,
+        # but the arithmetic log having consumed the value does. A COMPOUND
+        # Rate ("8 pages in 20 minutes") additionally offers its own raw
         # numerator/denominator here — the text stated TWO numbers, not the
         # derived quotient `value`, so a consumer that actually divides/
         # multiplies by those two raw numbers (rather than by the bare
@@ -111,6 +113,7 @@ def check(
             | {float(g.value) for g in store.by_kind(Goal)}
             | {float(t.value) for t in store.by_kind(GroupTotal)}
             | {float(d.value) for d in store.by_kind(Discount)}
+            | {float(pc.value) for pc in store.by_kind(PercentChange)}
             if store is not None else set()
         )
         for reading in readings:

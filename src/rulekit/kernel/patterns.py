@@ -26,6 +26,7 @@ from .model import (
     GroupTotal,
     Membership,
     PartitionQuantity,
+    PercentChange,
     Predication,
     Provenance,
     Quantity,
@@ -55,6 +56,7 @@ _FACT_CLASSES = {
     "group_total": GroupTotal,
     "rate": Rate,
     "discount": Discount,
+    "percent_change": PercentChange,
 }
 
 
@@ -444,6 +446,12 @@ _NUMERIC_FIELDS = {
     # numeric-field discipline `offset` itself already gets, never a
     # template string.
     "subject_offset", "standard_offset",
+    # mining candidate percent-change-values: PercentChange's own signed
+    # direction, resolved via the SAME `sign(dir)` numeric-expression
+    # mechanism the percent-comparative Relation rules already use for
+    # `factor` — no rule anywhere else emits a field literally named
+    # `sign`, so this addition changes zero existing rule's resolution.
+    "sign",
 }
 
 
@@ -460,6 +468,15 @@ def _build_fact(
         verb = kwargs.get("verb", "have")
         if not reg.word_in_category(verb, "state") and verb not in ("have", "be"):
             kwargs["occurrence"] = provenance.sentence
+    elif cls is PercentChange and "occurrence" not in kwargs:
+        # mining candidate percent-change-values: a percent-change is
+        # ALWAYS an event (never a state, unlike Quantity/FractionQuantity/
+        # RestQuantity above, which branch on verb category) — this is
+        # what lets two percent-change events on the SAME entity in two
+        # DIFFERENT sentences key apart (PercentChange.key() includes
+        # `occurrence`) so `_entity_total` (answer.py) can chain them in
+        # ascending sentence order instead of colliding.
+        kwargs["occurrence"] = provenance.sentence
     return cls(provenance=provenance, **kwargs)
 
 
