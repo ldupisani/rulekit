@@ -14,13 +14,13 @@ swing under the constitution (no lexicon in Python, no per-problem parsing,
 every increment through the gates).
 
 **Current numbers (all verified at head):**
-- dev-train: **102 correct / 0 wrong** (3,772 items, 100% precision)
+- dev-train: **103 correct / 0 wrong** (3,772 items, 100% precision)
 - dev-holdout: 40 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 995 · lint: 0 errors, 1 intended warning
+- curated suite: 52/52 · pytest: 998 · lint: 0 errors, 1 intended warning
 - bench wall: dev-train 16.6s -> 9.0s (trace opt-out) -> 1.7s at `--jobs 12`.
   `--jobs` defaults to 1; spend it in the SERIAL integration tail, never in the
   implementers' gates (they already run concurrently). See the two infra notes below.
-- TEST ledger (122 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- TEST ledger (124 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →

@@ -264,3 +264,43 @@ This is the second increment killed at TEST after a spotless DEV gate (increment
 first, batch 2026-07-12). Both had a correctness argument that was *sound about the thing it
 addressed* and *silent about the thing that killed them*. When a change's safety case names
 only one of the two failure modes, assume the other is live.
+
+## The infrastructure trap: 0 SOLVED on DEV, a WRONG on TEST (increments 128-retry, 129)
+
+**Two consecutive TEST kills, same shape.** Both were "infrastructure" increments — a
+widening of shared kernel machinery, justified not by items solved but by classes it would
+unblock later. Both passed a spotless DEV gate. Both manufactured a confident-wrong on TEST.
+
+| | dev-train | TEST | verdict |
+|---|---|---|---|
+| 128-retry (retry-on-decline premise reorder) | **0 SOLVED**, 0 BROKE, 0 DECL->WRONG | 11/1 -> **11/2** (91.7% -> 84.6%) | REVERTED |
+| 129 (unbound event-verb themes, +230 lines in obligations.py) | **0 SOLVED**, 0 BROKE, 0 DECL->WRONG | 11/1 -> **12/2** (91.7% -> **85.7%**) | REVERTED |
+
+129 is the more instructive of the two: **it gained a correct answer AND a wrong one.**
+Coverage went UP. Precision went DOWN. Under "precision before coverage" that is a revert,
+and it must be, because the +1 correct is visible and the +1 wrong is the one that
+compounds — on unseen text there is no gold to tell you which is which.
+
+### Why 0 SOLVED is a WARNING SIGN, not a neutral fact
+
+An increment that widens what the engine will READ, and converts **nothing** on 3,772
+dev-train items, has demonstrated exactly one thing: **its new bindings do not fire on text
+we can check.** It has NOT demonstrated that they are harmless — only that DEV cannot see
+them. TEST is where they fire, and there is no gold there to catch them.
+
+A widening with 0 measured yield is not "safe because it changed nothing." It is
+**unmeasured**, and the DEV gate's silence is the absence of evidence, not evidence of
+absence.
+
+### The rule
+
+> **An infrastructure increment must be BOUGHT, not promised.** If it converts nothing on
+> DEV, the only evidence for it is an argument — and every one of these had a sound
+> argument that was silent about the failure mode that killed it.
+>
+> Do not land a shared-kernel widening on the strength of what it will unblock. **Land it
+> together with the increment that cashes it in**, so its yield and its risk are measured in
+> the same gate. If nothing can cash it in yet, it is not ready.
+
+This retires the old infra bar (`unblocks` + >= 3 `resolves_after_unblocks`), which asked
+for a PREDICTION and got one every time. Both of these cleared it. Neither survived.
