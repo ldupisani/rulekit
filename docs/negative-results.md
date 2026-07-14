@@ -224,3 +224,43 @@ tuned the threshold (3) and left the sample size at its minimum (3), which quiet
 turned a reasonable-sounding bar into an impossible one. Whenever a gate reads "N of the
 sample", ask what the sample size actually is in practice — the schema's `minItems` IS
 the sample size, because an agent will supply exactly the minimum.
+
+## Increment 128 — retry-on-decline (REVERTED at TEST look #122)
+
+**What it did.** A clause promoted out of the question ("If Nils has 80 marbles, ...")
+reads two ways and the surface order never says which: a CONDITION on the whole document
+(belongs first) or the next EVENT in the narrative (belongs last). Reordering
+unconditionally regressed 5 dev-train items, so the candidate instead **solved twice**:
+today's order first, and — only if that DECLINED — again with the clause promoted to the
+front.
+
+**Why it looked safe.** `0 BROKE` was structural, not empirical: a committed answer is
+returned untouched, so no previously-correct item can regress. The dev gate agreed —
+**0 BROKE, 0 DECL->WRONG across 3,772 dev-train items**, 0 on dev-holdout.
+
+**Why it was not.** *The safety proof covered the wrong failure mode.* `0 BROKE` says
+nothing about **DECLINE -> WRONG**, and retry-on-decline hands every declining item — ~97%
+of the corpus — a SECOND CHANCE TO COMMIT. TEST look #122: **11/1 (91.7%) -> 11/2
+(84.6%)**. A new confident-wrong. Reverted; `main` fast-forwarded to increment 127 only.
+
+**The tells, all visible BEFORE the look was spent:**
+1. **0 SOLVED.** It bought nothing measurable and was justified purely as infrastructure
+   for future classes — and `stated-total-complement-parts`, the very class it claimed to
+   unblock, ALSO failed (0 SOLVED) in the same batch. Nothing cashed it in.
+2. **A 32% bench tax** (dev-train 13.3s -> 17.5s), because it re-solves every declining
+   item. Cost with no yield.
+3. **A brand-new control-flow shape** — backtracking — introduced into `solve()`, whose
+   whole character until now was a single deterministic pass.
+
+**The lesson, and it is a general one:**
+
+> **"0 BROKE by construction" is not "0 wrongs by construction."** A mechanism that only
+> fires where the engine ALREADY declined cannot break a correct answer — but the declines
+> are exactly where the engine has the least evidence, and giving them a second, weaker
+> reading is a confident-wrong factory. **Precision-safety must be argued against
+> DECLINE->WRONG, not against BROKE.**
+
+This is the second increment killed at TEST after a spotless DEV gate (increment 81 was the
+first, batch 2026-07-12). Both had a correctness argument that was *sound about the thing it
+addressed* and *silent about the thing that killed them*. When a change's safety case names
+only one of the two failure modes, assume the other is live.
