@@ -245,6 +245,18 @@ categories:
   remnant_adj:
     parent: adjective
     notes: "'the REMAINING pages' / 'pages LEFT' — remainder-anchored fractions defer to the rest machinery"
+  mean_cue:
+    parent: aggregate
+    notes: >
+      the MEAN reading of an aggregation cue ('average'), split out from the SUM
+      reading ('total'/'altogether'/'combined'/'together'). Both carry the
+      `aggregate` sense — which is correct, they ARE both aggregations — but they
+      select DIFFERENT consumers (average vs combined), and kernel/askframe.py's
+      compositional frame routes on the distinction. The 79 template asks never
+      needed it (an average ask is headed "what is the average…", a sum ask
+      "how many … in total", so their SURFACES never collided); a frame that reads
+      by ROLE rather than by template sees only the shared `aggregate` sense and
+      would silently sum an average. Scoped to exactly the mean words.
   more_dir: {parent: delta, antonym: less_dir, polarity: 1}
   less_dir: {parent: delta, antonym: more_dir, polarity: -1}
   desire:
@@ -632,6 +644,7 @@ members:
   currency: [dollar]
   partitive: [of]
   remnant_adj: [left]
+  mean_cue: [average]
   animal: [dog, cat, fish, bird, rabbit, hamster]
   pet: [dog, cat, hamster]
   state: [has, have, had, is, are, was, were, own, owns]

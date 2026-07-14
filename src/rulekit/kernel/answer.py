@@ -29,6 +29,7 @@ from .model import (
     Rate,
     Reading,
 )
+from .askframe import compose as compose_ask
 from .patterns import match_ask
 
 
@@ -956,6 +957,13 @@ def answer(
         )
 
     matched = match_ask(question, reg)
+    if matched is None:
+        # THE COMPOSITIONAL FALLBACK (kernel/askframe.py). Reached ONLY when no
+        # template matched, so every question the 79 asks already answer takes
+        # the identical path it took before: 0 BROKE by construction. It still
+        # COMMITS, so it argues DECL->WRONG, not BROKE — and declines on any
+        # ambiguity rather than guess.
+        matched = compose_ask(question, reg)
     if matched is None:
         return Answer("decline", None, "no ask shape recognizes this question")
     ask, query, _match = matched

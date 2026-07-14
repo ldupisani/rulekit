@@ -88,10 +88,18 @@ from .schemas import (
 # question mark), so this only permits a NEW category to root here; it
 # changes no existing word's sense or any other imperative-sensed word's
 # behavior.
+# 'aggregate' joins on the same purely-additive terms as 'imperative' above:
+# 'total'/'altogether'/'combined'/'together'/'average' already carry it as their
+# ONLY sense (packs/core-english/lexicon/core.yaml), so it is a root in practice
+# and merely was not declared one. Rooting it lets `mean_cue` (the MEAN reading,
+# 'average') be split from the SUM reading as a proper subcategory — a distinction
+# kernel/askframe.py's compositional frame must make and the 79 template asks never
+# had to (their SURFACES never collided). Adds no sense to any word and changes no
+# existing category's chain; it only permits a NEW category to root here.
 ROOT_SENSES = (
     "noun", "verb", "adjective", "quantifier", "preposition", "comparative",
     "negator", "conjunction", "modal", "particle", "adverb", "time",
-    "article", "pronoun", "imperative",
+    "article", "pronoun", "imperative", "aggregate",
 )
 
 
