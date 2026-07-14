@@ -56,7 +56,60 @@ after  the frame:  item blocked on {premise}        -> ONE fix converts it
 The items it parses are the **only place in the corpus where a premise fix can convert
 anything.** They are the seed pool for every dual brief below.
 
-## 3. THE SEED INCREMENT — superordinate aggregation
+## 3. ~~THE SEED INCREMENT — superordinate aggregation~~ **RETRACTED — IT IS ALREADY BUILT, AND THE EXTENSION WAS ALREADY REJECTED**
+
+**Do not build this. Read this section as a WARNING, not a brief.**
+
+The mechanism below already exists: `answer.py::_superordinate_total` ("mining candidate
+subtype-total-asks"), reached from the `single-entity` decline site. It already carries the
+exact guard derived from first principles here (*fires ONLY when EVERY measure the entity holds
+is a declared member of the asked category, AND ≥2 distinct subtypes are held*).
+
+And the specific extension this section proposed — admitting `animal` — **was already tried and
+rejected on measured evidence.** From the code:
+
+> `'animal'/'pet' also have members (a deliberately PARTIAL list) and reading them here would
+> silently sum only the CAPTURED subset while an uncaptured subtype drops out unaccounted —
+> **a genuine confident-wrong the dev-train gate caught.**`
+
+### The principle that actually matters (and it IS general)
+
+```
+superordinate: true  ->  child <- (daughter, son)             CLOSED class
+                         fish  <- (angelfish, goldfish, guppy)
+                         toy   <- (car, soldier)
+
+animal               ->  47 members, UNBOUNDED                OPEN class  -> EXCLUDED
+```
+
+> **Superordinate totalling is sound only for CLOSED-CLASS categories.**
+
+The guard is `held_measures ⊆ members`. Its safety rests on being able to reason about
+COMPLETENESS. With `child = {son, daughter}` the subtypes are exhaustively enumerable. With
+`animal` they are not: if a text names three animal subtypes and only two of them become
+`Quantity` facts (one arrives via a relation that never folds), the check passes on the captured
+two and **silently sums a subset**. Open-class hypernymy converts an incomplete lexicon into a
+confident wrong instead of a decline.
+
+Closed vs open class is a real, canonical linguistic distinction, and here it is load-bearing
+for precision. **Do not admit an open class to `superordinate: true`.**
+
+### The meta-lesson, which cost this brief
+
+**GREP BEFORE YOU PROPOSE.** This seed was written from the failure symptom without checking
+whether the mechanism existed. It did. Three times in one session a "gap" turned out to be a
+deliberate GUARD with a recorded reason (the `coordinated-qty` fold-conflict cluster; `cost`,
+already in `price_verb` and deliberately polarity-free; and this).
+
+> **The remaining declines in this engine are mostly not gaps. They are GUARDS.** The engine
+> declines because, given what it can prove, declining is CORRECT. That is what a converged
+> system looks like — and it is why every intervention measures 0 SOLVED with a wrong lurking
+> behind any relaxation. Any future brief must first establish that its target is a gap and
+> not a guard, **by reading the code**, before a line is written.
+
+---
+
+## 3b. (superseded) the original seed text — superordinate aggregation
 
 The dominant premise failure among frame-parsed items (5 of 10) is one mechanism:
 
