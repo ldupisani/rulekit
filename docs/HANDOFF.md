@@ -1,5 +1,22 @@
 # Session handoff — 2026-07-11
 
+> ## ➡ NEXT SESSION STARTS HERE: `docs/reading-gap.md`
+>
+> The mining campaign has **converged**, not failed: dev-train 39 → **103** at 100%
+> precision, zero wrongs ever. What is exhausted is the ASK-SHAPE seam — the only half
+> mining can see.
+>
+> **The engine's ceiling is READING.** 81% of the addressable pool (1,164 items) never
+> extracts the numbers at all. That is the one remaining lever, and the next task is to
+> MEASURE it — is it a handful of premise surfaces, or a long tail? Both answers are real
+> results. **`docs/reading-gap.md` is a self-contained brief; start there.**
+>
+> Already measured and CLOSED — do not restart (all in `docs/negative-results.md`):
+> ask-shape mining (5 batches, +2 net), the 481-item per-unit seam (mechanism already
+> exists), **composition** (`docs/composition.md` — ABANDONED at Phase 0, typed ceiling ~13),
+> the month/time seam (0 SOLVED), the GroupTotal consumer fix (correct, 0 SOLVED, not landed).
+
+
 Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
 State below is committed through `da76539` on `main` (github.com/ldupisani/rulekit;
 check `git status`/`git log origin/main..HEAD` before assuming push parity).
