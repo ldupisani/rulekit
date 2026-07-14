@@ -14,12 +14,14 @@ from __future__ import annotations
 
 import json
 import multiprocessing
+import re
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
 from ..data.registry import Registry
 from ..kernel.engine import solve
+from .firewall import TypedGold
 
 TOL = 1e-6
 
@@ -132,7 +134,72 @@ class BenchReport:
         }
 
 
+def _judge_typed(gold, result) -> tuple[str, object]:
+    """Per-type comparator (docs/difg-corpus-plan.md, Phase 0).
+
+    Reached ONLY when the item's gold is a `TypedGold` — which only a `gold:
+    typed` project's loader ever builds. GSM8K's loader emits a bare float and
+    never enters here, so `_judge`'s float path below stays byte-identical.
+
+    Comparison is difg's own `eval.py::agrees` discipline, with its ONE unsafe
+    move removed: difg falls back to normalized-string CONTAINMENT, which
+    false-positives on short numeric answers (gold "5" is "contained in" a trace
+    ending "...the answer is 15"). Measured on difg's 167 corroborated golds,
+    containment reported 1 conflict where a strict numeric compare also reports
+    1 — but naive string equality reports 63, all of them pure FORMATTING. The
+    comparator decides which golds we are willing to trust, so it never guesses:
+    numbers compare NUMERICALLY, verdicts as booleans, and containment is allowed
+    only for a non-numeric gold long enough that a match cannot be coincidental.
+    """
+    answer = result.answer
+    if answer.kind == "decline":
+        return ("correct", None) if gold.kind == "decline" else ("declined", None)
+    got = answer.value
+
+    if gold.kind in ("number", "money", "percent", "quantity"):
+        # A quantity gold ALSO carries a unit; the unit is checked only when the
+        # engine actually produced one (answer kinds that carry units do not
+        # exist yet — this is the seam Phase 4+ fills, and it must not silently
+        # score a unit-less answer as if the unit had matched).
+        if not isinstance(got, (int, float)):
+            return "wrong", got
+        if abs(float(got) - float(gold.value)) > TOL + 0.01 * abs(float(gold.value)):
+            return "wrong", got
+        want_unit = gold.unit
+        got_unit = getattr(answer, "unit", None)
+        if want_unit and got_unit is not None and got_unit != want_unit:
+            return "wrong", got
+        return "correct", got
+
+    if gold.kind == "verdict":
+        if isinstance(got, bool) or got in ("yes", "no", "true", "false"):
+            return ("correct", got) if _as_bool(got) == _as_bool(gold.value) else ("wrong", got)
+        return "wrong", got
+
+    if gold.kind == "set":
+        want = tuple(sorted(str(x).strip().lower() for x in gold.value))
+        if not isinstance(got, (list, tuple, set)):
+            return "wrong", got
+        return ("correct", got) if tuple(sorted(str(x).strip().lower() for x in got)) == want else ("wrong", got)
+
+    # text / entity — exact after normalization, never containment (see above)
+    norm = lambda s: re.sub(r"[^a-z0-9]", "", str(s).lower())
+    return ("correct", got) if norm(got) == norm(gold.value) else ("wrong", got)
+
+
+def _as_bool(v) -> bool:
+    if isinstance(v, bool):
+        return v
+    return str(v).strip().lower() in ("yes", "true")
+
+
 def _judge(expected: object, result) -> tuple[str, object]:
+    # TYPED GOLD (docs/difg-corpus-plan.md Phase 0) — additive, and unreachable
+    # for GSM8K: only a `gold: typed` project's loader constructs a TypedGold.
+    # Everything below this line is byte-for-byte the pre-Phase-0 float path.
+    if isinstance(expected, TypedGold):
+        return _judge_typed(expected, result)
+
     answer = result.answer
     if answer.kind == "number":
         got = answer.value

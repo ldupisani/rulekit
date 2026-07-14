@@ -24,10 +24,31 @@ _GOLD = re.compile(r"####\s*([-+]?[\d,]*\.?\d+)")
 
 
 @dataclass(frozen=True)
+class TypedGold:
+    """A gold that is not a bare float (docs/difg-corpus-plan.md, Phase 0).
+
+    Only 44.5% of the difg corpus's answers are bare numbers; the rest are
+    quantity+unit ("68.04 kg"), verdicts, money, percents, entities and sets. A
+    float-only gold deletes physics, logic, clock_arithmetic and most of
+    unit_conversion as SCORABLE domains — i.e. it abandons the goal.
+
+    PURELY ADDITIVE, and that is the whole Phase 0 argument: GSM8K's loader emits
+    a bare `float` exactly as it does today and `_judge` keeps its float path
+    byte-for-byte. No GSM8K item can construct one of these, so no GSM8K item can
+    take the typed branch. Byte-identity of the GSM8K snapshot is therefore a
+    property of the SHAPE of this change, not a lucky outcome — which is exactly
+    what Phase 0 exists to verify rather than assume."""
+
+    kind: str            # number | quantity | verdict | money | percent | text | set
+    value: object        # float | str | bool | tuple[str, ...]
+    unit: str | None = None
+
+
+@dataclass(frozen=True)
 class BenchItem:
     id: str
     text: str
-    expect: float
+    expect: float | TypedGold
 
 
 def item_id(question: str) -> str:
