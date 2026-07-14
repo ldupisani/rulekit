@@ -901,10 +901,24 @@ def _anchor_quantity_synth(store: FactStore, reg: Registry, log: ArithmeticLog) 
         identity = (anchor.entity, anchor.verb, anchor.occurrence, anchor.time)
         if identity in resolved:
             continue
-        candidates = measures_by_entity.get(anchor.entity, set())
-        if len(candidates) != 1:
+        # A REFERENTIAL origo (the entity), not a positional one, over bare measure
+        # strings that carry no coordinates — sorted, so the set's iteration order can
+        # never decide the binding. Constant metric => byte-identical to the
+        # `len(candidates) != 1` it replaces.
+        winner = deixis.resolve(
+            [
+                deixis.Referent(dimension=deixis.DISCOURSE, key=m)
+                for m in sorted(measures_by_entity.get(anchor.entity, set()))
+            ],
+            deixis.Origo(sentence=anchor.provenance.sentence),
+            deixis.constant,
+            dimension=deixis.DISCOURSE,
+            journal=log.journal,
+            source="synth/anchor-quantity",
+        )
+        if winner is None:
             continue
-        (measure,) = candidates
+        measure = winner.key
         if (anchor.entity, measure, anchor.verb) in known_by_verb:
             continue  # already has a quantity under this verb — would double it
         out.append(
@@ -983,13 +997,23 @@ def _fraction_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> list
         if base is None:
             # "half OF IT": the measure word has no facts of its own — the
             # unique-measure principle resolves it when ONE pool is in play
-            in_play = {
-                q.measure for q in store.by_kind(Quantity)
-                if q.provenance.sentence < fq.provenance.sentence
-                and q.provenance.source != "synth/rest"
-            }
-            if len(in_play) == 1:
-                (measure,) = in_play
+            in_play = deixis.resolve(
+                [
+                    deixis.Referent(dimension=deixis.DISCOURSE, key=m)
+                    for m in sorted({
+                        q.measure for q in store.by_kind(Quantity)
+                        if q.provenance.sentence < fq.provenance.sentence
+                        and q.provenance.source != "synth/rest"
+                    })
+                ],
+                deixis.Origo(sentence=fq.provenance.sentence),
+                deixis.constant,
+                dimension=deixis.DISCOURSE,
+                journal=log.journal,
+                source="synth/fraction",
+            )
+            if in_play is not None:
+                measure = in_play.key
                 base = _pool_before(
                     store, reg, fq.provenance.sentence, measure, log, "synth/fraction"
                 )
@@ -1014,13 +1038,30 @@ def _rest_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> list[Fac
     from .model import FractionQuantity, RestQuantity
 
     out: list[Fact] = []
-    measures = {
-        q.measure for q in store.by_kind(Quantity)
-        if q.provenance.source != "synth/rest"
-    }
-    if len(measures) != 1:
+    # THE MOST ORIGO-LESS SITE IN THE TREE, and it is worth naming as such: "the rest"
+    # of WHAT is answered by "whatever the document's only measure is" — no sentence
+    # filter, no ordering, no reference point whatsoever. Hence the empty Origo(): the
+    # field view will show this resolution standing nowhere, which is the truth.
+    #
+    # Its decline is also the only GLOBAL one: a two-measure document turns _rest_synth
+    # off for EVERY RestQuantity in it, not just this one. Preserved exactly.
+    winner = deixis.resolve(
+        [
+            deixis.Referent(dimension=deixis.DISCOURSE, key=m)
+            for m in sorted({
+                q.measure for q in store.by_kind(Quantity)
+                if q.provenance.source != "synth/rest"
+            })
+        ],
+        deixis.Origo(),
+        deixis.constant,
+        dimension=deixis.DISCOURSE,
+        journal=log.journal,
+        source="synth/rest",
+    )
+    if winner is None:
         return out
-    (measure,) = measures
+    measure = winner.key
     resolved_fractions = {
         (q.entity, q.verb, q.occurrence)
         for q in store.by_kind(Quantity)
@@ -1118,12 +1159,28 @@ def _partition_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
     known_measures = {q.measure for q in store.by_kind(Quantity)}
 
     def _candidate_measure(sentence: int) -> str | None:
-        candidates = {
-            q.measure for q in store.by_kind(Quantity)
-            if q.provenance.sentence < sentence
-            and q.provenance.source != "synth/partition-membership"
-        }
-        return next(iter(candidates)) if len(candidates) == 1 else None
+        # "Ten of THEM" — a PLURAL pronoun, deliberately routed around _bind_discourse
+        # (which refuses plurals, because group referents are unbuilt) and resolved by
+        # unique-pool-in-play instead. This is precisely the site deixis.md phase 5 is
+        # aimed at. The old `next(iter(candidates))` was safe ONLY because it was gated
+        # on len == 1; deixis.resolve sorts first, so the set's iteration order can
+        # never decide a binding even once a real metric lands.
+        winner = deixis.resolve(
+            [
+                deixis.Referent(dimension=deixis.DISCOURSE, key=m)
+                for m in sorted({
+                    q.measure for q in store.by_kind(Quantity)
+                    if q.provenance.sentence < sentence
+                    and q.provenance.source != "synth/partition-membership"
+                })
+            ],
+            deixis.Origo(sentence=sentence),
+            deixis.constant,
+            dimension=deixis.DISCOURSE,
+            journal=log.journal,
+            source="synth/partition",
+        )
+        return winner.key if winner is not None else None
 
     for pq in store.by_kind(PartitionQuantity):
         if pq.collection in known_measures:
@@ -1241,10 +1298,27 @@ def _partition_membership_synth(
     for p in store.by_kind(PartitionQuantity):
         if p.kind != "membership" or p.collection not in known_measures:
             continue
-        holders = {q.entity for q in store.by_kind(Quantity) if q.measure == p.collection}
-        if len(holders) != 1:
+        # The only saturate site whose candidates are HOLDERS — a PERSON-shaped question
+        # ("who holds the collection?"), with a REFERENTIAL origo (the collection
+        # measure). Typing it PERSON is not cosmetic: it is what stops a measure
+        # referent ever competing to be a holder.
+        winner = deixis.resolve(
+            [
+                deixis.Referent(dimension=deixis.PERSON, key=e)
+                for e in sorted({
+                    q.entity for q in store.by_kind(Quantity)
+                    if q.measure == p.collection
+                })
+            ],
+            deixis.Origo(sentence=p.provenance.sentence),
+            deixis.constant,
+            dimension=deixis.PERSON,
+            journal=log.journal,
+            source="synth/partition-membership",
+        )
+        if winner is None:
             continue
-        (holder,) = holders
+        holder = winner.key
         out.append(
             Quantity(
                 provenance=Provenance(
