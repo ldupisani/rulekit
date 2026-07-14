@@ -2636,6 +2636,82 @@ rules:
         numerator: "{item.value}"
         denominator: "{span.value}"
 
+  - id: arithmetic/periodic-rate-every-span
+    phase: read
+    description: >
+      "A wheel makes 6 turns every 30 seconds" (mining candidate
+      rate-every-span-asks) — a PERIODIC rate premise: the SVO-direct
+      twin of the compound-rate fold already read for "reads 8 pages in
+      20 minutes" (`_compound_rate_span`, learn.py), just marked with a
+      quantifier ('every') instead of the `span_preposition` category
+      ('in'). `{slot: freq, cat: quantifier}` is the SAME word class
+      arithmetic/existential-premise-distributive's own `{slot: q, cat:
+      quantifier}` already gates on for "in EACH row" — 'every'/'each'
+      carry the `quantifier` sense in the lexicon directly (a root-sense
+      degenerate category, registry.py's `word_in_category` fallback),
+      so no lexicon or category change. Emits the SAME Rate fact shape
+      as arithmetic/extraposed-duration-rate above (a COMPOUND rate,
+      numerator/denominator preserved for value-accounting), read by the
+      existing rate-span/rate-span-inverse consumers unchanged.
+
+      Fixes a LATENT PRECISION hazard, not only a coverage gap: today
+      this exact sentence shape never satisfies `_compound_rate_span`
+      (whose forward scan requires a `preposition`-sense word, and
+      'every' is sensed `quantifier`), so the general SVO fold instead
+      reads the dobj as a bare Quantity (entity=wheel, measure=turns,
+      value=6) and SEPARATELY reads the "every 30 seconds" span as a
+      second, unrelated Quantity (measure=seconds, value=30) — two junk
+      facts in the store instead of one Rate. Because this rule's own
+      match span covers `verb` and `item` (and `span`), ALL of them are
+      marked `pattern_consumed` at document.py round 0, and learn.py's
+      general fold explicitly skips any verb whose dobj is
+      `pattern_consumed` (the same short-circuit arithmetic/extraposed-
+      duration-rate already relies on for its own infinitive clause) —
+      so the moment this rule matches, both junk Quantities disappear
+      and only the Rate fact remains. A sentence that does NOT match
+      this shape (no quantifier immediately after the counted item, or
+      no counted noun immediately after the quantifier) is completely
+      unaffected — the general fold runs exactly as before.
+
+      `consumes: [item, span]` documents the two directly-read counted
+      slots for value-accounting, mirroring arithmetic/extraposed-
+      duration-rate's own convention (the field itself is informational;
+      the actual pattern_consumed marking comes from the match span).
+
+      `opt: [{slot: aux, type: modal}]` between `who` and `verb`: a
+      CAPACITY-marked premise ("Priya CAN produce 8 pages every 4
+      minutes") states the same periodic rate with a modal auxiliary
+      between subject and verb — the general SVO fold already binds
+      subject/dobj through this via OBLIGATIONS regardless of the
+      intervening token (learn.py's `_bound` reads the dependency graph,
+      not surface adjacency), but this rule matches raw TOKEN sequence,
+      so without the optional slot a modal premise fails to match at all
+      and falls through to the same junk distributive-multiply reading
+      this rule exists to subsume. The slot binds nothing downstream
+      (never referenced in `emits`) — it exists purely so the token is
+      consumed (and the match still succeeds) when present; an ordinary
+      non-modal premise is unaffected, the opt group simply matching
+      zero tokens.
+    match:
+      sentence:
+        - {slot: who, type: entity}
+        - opt:
+            - {slot: aux, type: modal}
+        - {slot: verb, type: verb}
+        - {slot: item, type: counted}
+        - {slot: freq, cat: quantifier}
+        - {slot: span, type: counted}
+    consumes: [item, span]
+    emits:
+      - fact: rate
+        entity: "{who}"
+        measure: "{item}"
+        per: "{span}"
+        value: "item / span"
+        verb: "{verb}"
+        numerator: "{item.value}"
+        denominator: "{span.value}"
+
   - id: arithmetic/discount-percent-off
     phase: read
     description: >
@@ -4028,6 +4104,77 @@ asks:
         - {lit: how}
         - {lit: much}
         - {slot: aux, type: auxiliary}
+        - {slot: who, type: entity}
+        - {slot: verb, type: verb}
+        - {lit: in}
+        - {slot: span, type: counted}
+    resolves:
+      consumer: rate-span
+      entity: "{who}"
+      measure: currency
+      span_unit: "{span}"
+      span_value: "{span.value}"
+
+  - id: ask/how-many-rate-span-modal
+    # mining candidate rate-every-span-asks: the MODAL twin of
+    # ask/how-many-rate-span above — "how many apples CAN he eat in 2
+    # hours?" instead of "how many apples DOES he eat in 2 hours?". An
+    # EXACT copy of that ask with `{slot: aux, cat: capacity_modal}` in
+    # place of `type: auxiliary`; `capacity_modal` (declared alongside
+    # `future_modal` in packs/core-english/categories/core.yaml) covers
+    # the six capacity/hypothetical modals (can/could/should/may/might/
+    # must) and DELIBERATELY EXCLUDES will/would — a future-tense
+    # question is a different semantic commitment (see that category's
+    # own comment: dev-train's "Adam teaches 50 students a year... in
+    # the first year he only teaches 40" is a future-tense rate question
+    # the rate-span consumer answers WRONG because it cannot read the
+    # stated exception, whereas the genuinely hypothetical "Bob can eat
+    # 10 apples in 5 minutes; how many CAN he eat in 2 hours?" has no
+    # such trap and is dev-train's own SOLVED evidence for this ask).
+    #
+    # Overlap risk (this candidate's own hardest-gated concern):
+    # ask/how-many-capacity ALSO claims a `{slot: modal, type: modal}`
+    # token (a strict superset of `capacity_modal`), but its own `verb`
+    # slot is narrowed to `cat: purchase` (increment 96's capacity-
+    # overmatch fix) and its trailing clause is an OPTIONAL "with
+    # BUDGET", never a required "in SPAN". The two asks can only tie on
+    # the SAME sentence if it is BOTH a purchase-verb question AND
+    # carries a trailing "in COUNTED-NOUN" clause after the verb — a
+    # shape no genuine capacity question in dev-train/holdout exhibits
+    # (verified via the full diff this candidate's gate ran); an
+    # ordinary "how many cookies can she buy with $5?" has no "in SPAN"
+    # tail at all, so this ask simply fails to match it, leaving
+    # ask/how-many-capacity as the only candidate exactly as before.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {slot: aux, cat: capacity_modal}
+        - {slot: who, type: entity}
+        - {slot: verb, type: verb}
+        - {lit: in}
+        - {slot: span, type: counted}
+    resolves:
+      consumer: rate-span
+      entity: "{who}"
+      measure: "{item}"
+      span_unit: "{span}"
+      span_value: "{span.value}"
+
+  - id: ask/how-much-rate-span-modal
+    # mining candidate rate-every-span-asks: the MODAL twin of
+    # ask/how-much-rate-span above, the same widening
+    # ask/how-many-rate-span-modal applies to its how-many sibling — see
+    # that ask's comment for the `cat: capacity_modal` and overlap-risk
+    # reasoning (identical here: currency measure, no purchase-verb
+    # narrowing on this side either, and still no "in SPAN" tail on any
+    # genuine capacity question to tie against).
+    match:
+      question:
+        - {lit: how}
+        - {lit: much}
+        - {slot: aux, cat: capacity_modal}
         - {slot: who, type: entity}
         - {slot: verb, type: verb}
         - {lit: in}

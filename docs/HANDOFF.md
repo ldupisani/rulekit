@@ -5044,3 +5044,44 @@ precision). dev-holdout diff SOLVED 1 / BROKE 0 / DECL->WRONG 0 / NET +1, VERDIC
 pre-existing warning: fraction-of-remnant/fraction-of-pool overlap, known-good). pytest 840 ->
 848 (+8 new synthetic tests, tests/test_mining_increment_104.py).
 **TEST look: pending — spent manually.**
+
+## Increment 105 — periodic-rate premises ("N ITEM every K TIMEUNIT") plus
+modal/capability rate-span asks ("how many ITEM can WHO VERB in K TIMEUNIT")
+
+CLASS: two surfaces the live rate-span consumer (increments 13/51/55/58) cannot read. (1)
+PERIODIC RATE PREMISE: "A wheel makes 6 turns every 30 seconds" was emitting no Rate at all —
+just two junk Quantities (a latent precision hazard, not only a coverage gap) — while the
+canonical "makes 6 turns in 30 seconds" already built the Rate correctly. (2) MODAL RATE-SPAN
+ASK: "Bob can eat 10 apples in 5 minutes. How many apples CAN he eat in 2 hours?" built the
+Rate fine but declined at the ask, while the identical question with "does he eat" resolved to
+240.0 via the live consumer. BUNDLED ON PURPOSE per the mining brief: the modal ask alone
+measured only 1 SOLVED across the 159-item modal pool (rewriting can/will/would -> does/do
+flips exactly one item end-to-end) — not a class by itself — but paired with the periodic-rate
+premise it reaches a second, independent item non-modally. The single dev-train SOLVED item
+(6bd410094a08) is the modal-ask flip; the periodic-rate premise's own item (dec731e373e8) was
+plausible-but-unproven per the brief and did not itself land as a SOLVED in this gate.
+
+MECHANISM: YAML-ONLY, packs/arithmetic/rules/core.yaml. (a) `arithmetic/periodic-rate-every-span`
+mirrors the existing "VERB n ITEM in k TIMEUNIT" rate rule with `{lit: every}` (`cat:
+distributive`) in place of the preposition, emitting the same Rate fact (value = n/k, per =
+timeunit); `patterns.subsumes` is declared against the general distributive-multiply fold so the
+junk Quantity reading disappears once this rule matches. (b) `ask/how-many-rate-span-modal` and
+`ask/how-much-rate-span-modal` are exact copies of the existing `ask/how-many-rate-span` /
+`ask/how-much-rate-span` with `{slot: aux, cat: capacity_modal}` instead of `type: auxiliary` —
+`capacity_modal` groups the pre-existing `modal` sense (increment 14) with `future_modal`
+(already used by `ask/how-many-combined`); no new lexicon, no kernel change. New ask ids only;
+no existing ask edited — the brief flagged this as the hardest thing to gate, since a modal ask
+widening could tie with or steal from `ask/how-many-capacity` (increment 19/96, which itself
+fixed a modal overmatch). Lint's overlap check and both full diffs came back clean of any such
+collision.
+
+FILES: packs/arithmetic/rules/core.yaml, tests/test_mining_increment_105.py.
+
+GATE (integrated, staging tip): dev-train diff SOLVED 1 / BROKE 0 / DECL->WRONG 0 / NET +1,
+VERDICT SHIP (6bd410094a08; correct 82 -> 83, 3772 items, 100% precision). dev-holdout diff
+NEUTRAL (0 SOLVED / 0 BROKE / 0 DECL->WRONG, 33/33 correct unchanged, 3701 items, 100%
+precision). Suite 52/52. Lint 0 errors (1 pre-existing warning: fraction-of-remnant/
+fraction-of-pool overlap, known-good; no new overlap flagged for the two new asks or the new
+`capacity_modal` category). pytest 848 -> 855 (+7 new synthetic tests,
+tests/test_mining_increment_105.py).
+**TEST look: pending — spent manually.**

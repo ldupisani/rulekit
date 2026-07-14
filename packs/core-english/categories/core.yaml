@@ -192,6 +192,33 @@ categories:
       NO members here; they live in packs/difg-mined/categories/
       semantic.yaml. A core-english-only registry (no difg-mined) compiles
       with this category simply empty.
+  capacity_modal:
+    parent: modal
+    notes: >
+      mining candidate rate-every-span-asks: the six CAPACITY/
+      HYPOTHETICAL modals (can/could/should/may/might/must) — the
+      general 'modal' sense with the future-tense pair (will/would, the
+      sibling 'future_modal' category above) explicitly EXCLUDED. Gates
+      ask/how-many-rate-span-modal / ask/how-much-rate-span-modal's
+      `aux` slot: those two asks read a Rate fact as a straightforward
+      "how many CAN WHO do" capacity question (dev-train: "Bob can eat
+      10 apples in 5 minutes. How many apples can he eat in 2 hours?"
+      -> 240.0), which is a DIFFERENT semantic commitment from a
+      future-tense factual question ("how many WILL WHO do") — a
+      future-tense question can carry an unrelated, un-modeled exception
+      clause (dev-train: "Adam teaches 50 students a year... in the
+      first year he only teaches 40" — the rate-span consumer has no
+      way to read that override, so answering it at all is a confident-
+      wrong) that a genuinely hypothetical-capacity question does not.
+      `future_modal` already documents this exact split as "a wanted/
+      hypothetical purchase is not a purchase" (its own comment, one
+      slot type over) — this category is that same split applied to the
+      rate-span consumer's aux slot instead of a factual ask's. Both
+      members are difg-mined-only words (no core-english word carries
+      'modal' sense), so, mirroring 'future_modal'/'negation' above,
+      this category has NO members here; they live in packs/difg-mined/
+      categories/semantic.yaml. A core-english-only registry (no
+      difg-mined) compiles with this category simply empty.
   duration_verb:
     parent: verb
     notes: >

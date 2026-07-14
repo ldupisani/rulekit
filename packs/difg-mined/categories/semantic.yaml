@@ -410,6 +410,17 @@ members:
   future_modal:
   - will
   - would
+  # mining candidate rate-every-span-asks: 'capacity_modal' is declared
+  # (parent: modal) in packs/core-english/categories/core.yaml with NO
+  # members there — all six are difg-mined-only words, the same
+  # 'future_modal'/'will'/'would' split precedent immediately above.
+  capacity_modal:
+  - can
+  - could
+  - may
+  - might
+  - must
+  - should
   higher:
   - bigger
   - faster
