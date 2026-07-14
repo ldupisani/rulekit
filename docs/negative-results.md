@@ -692,3 +692,75 @@ and NEVER sufficient, demonstrated one more time.
 clean dev gate on 0 SOLVED and shipped wrongs to TEST. This one stays on its branch. The
 architecture is sound and the code is safe; it is simply not worth anything until the premise
 half of the same items is fixed too, and that is the whole point of the finding above.
+
+## ⚠ THE 100% PRECISION IS AN ARTIFACT OF GSM8K (2026-07-14)
+
+**The claim this project rests on is that its rules are GENERAL machinery, not
+benchmark-shaped solvers (constitution rule 2). That claim had never been tested against
+text from a DIFFERENT SOURCE. It has now. It fails.**
+
+ASDiv (2,305 grade-school arithmetic word problems, different authors, per-item
+`solution_type`, unit-bearing golds) split DEV/TEST first (salted, stratified — TEST never
+touched), then the UNMODIFIED 103-rule engine run on ASDiv-DEV, zero tuning:
+
+```
+                          correct  wrong  precision   coverage
+GSM8K dev-train  (seen)       103      0     100.0%       2.7%
+GSM8K TEST       (held out)    11      1      91.7%          —
+ASDiv-DEV        (DIFFERENT SOURCE)  37      9      80.4%       2.2%
+```
+
+**Coverage is UNCHANGED (2.2% vs 2.7%). The rules fire at the same rate on unseen text —
+they are simply WRONG 20% of the time.** This is a generalization GRADIENT: the further from
+the corpus the rules were mined on, the worse precision gets. 100% → 91.7% → 80.4%.
+
+### All 9 wrongs are genuine, and they are on TRIVIAL text
+
+Verified by hand (ASDiv-DEV is readable; no gold-parsing artifacts):
+
+```
+"Gino has 15 brown bears, 24 white bears, and 27 black bears. How many bears?"
+   gold 66     ENGINE SAID 27      <- returned the LAST conjunct
+"There were 150 book shelves. Each book shelf had 15 books. How many books?"
+   gold 2250   ENGINE SAID 15      <- returned the per-unit RATE
+"Jerry walked nine miles on Monday and nine more on Tuesday. How many miles?"
+   gold 18     ENGINE SAID 9       <- returned ONE of two identical quantities
+"Maria took sixteen fish out of her tank. Now there are three fish. How many were there?"
+   gold 19     ENGINE SAID 3       <- returned the remainder, not the total
+"Beth has 4 packs of crayons. Each pack has 10. She also has 6 extra. How many crayons?"
+   gold 46     ENGINE SAID 6       <- returned the ADDEND
+```
+
+**Every one is the same failure: the engine COMMITS A PARTIAL READING.** It extracts one
+number and answers with it instead of combining. It does not decline — it confidently returns
+a premise.
+
+### The guard hole this exposes, which GSM8K could never show
+
+**Value accounting checks NUMBERS → FACTS ("a stated number that reached no fact declines the
+item"). It does NOT check FACTS → ANSWER.** A fact can be extracted perfectly and then
+silently ignored by the consumer, and no guard objects. On GSM8K's phrasing the ask shapes
+happen to consume everything; on ASDiv's phrasing they do not, and nothing notices.
+
+Worse, `Jerry walked nine miles ... and nine more`: two identical `Quantity(jerry, mile, 9)`
+facts DEDUPE by frozen-dataclass equality, so the second nine disappears before any guard can
+see it. (`model.py`'s conjunct-index comment anticipates exactly this hazard; it is not firing
+on this surface.)
+
+> **THE GENERAL FIX, and it is the highest-value work available:** extend value accounting to
+> the ANSWER. If the answering entity holds facts the consumer did not consume, the reading is
+> PARTIAL and the item must DECLINE. A confident-wrong is worse than a decline (rule 4) — and
+> right now the engine cannot even tell it produced one.
+
+### What this means for the campaign
+
+- **"103 correct / 0 wrong at 100% precision" is a statement about GSM8K, not about the
+  engine.** It must never again be quoted as a precision claim without this caveat.
+- The mining loop optimized precision against a corpus whose surface conventions the rules had
+  already absorbed. That is the `vocab_singles` disease at the level of the RULE SET rather
+  than the solver — the exact thing the constitution was written to prevent, and the gates did
+  not catch it because **every gate reads from the same corpus.**
+- **A cross-corpus gate is now mandatory.** ASDiv-DEV precision belongs in the ship gate
+  beside dev-train, or the next 100% will be just as hollow.
+- The 9 wrongs are a WORKLIST, not a disaster: each is diagnosable, and they cluster on ONE
+  mechanism (partial reading), which is a general fix, not 9 patches.
