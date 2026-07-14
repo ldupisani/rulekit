@@ -13,6 +13,7 @@ import copy
 import itertools
 
 from ..data.registry import Registry
+from . import deixis
 from .model import Obligation, Reading, Unit
 
 # Which sense classes can satisfy each need. Structural knowledge (what KIND
@@ -247,11 +248,39 @@ def _candidates(reading: Reading, holder: Unit, ob: Obligation, reg: Registry) -
                     out.append(sibling)
                 return out
     if len(out) > 1:
-        # Adjacency arbitration: the nearest candidate wins ONLY if strictly
-        # nearer than all others; equal distance stays ambiguous.
-        out.sort(key=lambda u: (abs(u.span[0] - holder.span[0]), u.span[0]))
-        if abs(out[0].span[0] - holder.span[0]) < abs(out[1].span[0] - holder.span[0]):
-            return [out[0]]
+        # Adjacency arbitration: the nearest candidate wins ONLY if strictly nearer than
+        # all others; equal distance stays ambiguous.
+        #
+        # THE ONE SITE IN THE TREE THAT ALREADY RANKED. deixis.resolve was generalised
+        # FROM this code, so migrating it uses the REAL metric (token_distance from the
+        # holder's span) rather than `constant` — and is still 0-diff, because the
+        # hand-written sort-then-strictly-dominate below is byte-for-byte what resolve
+        # does. This is the only migration in phase 6 where the origo is a genuine
+        # POSITION rather than an empty placeholder.
+        #
+        # journal is deliberately NOT threaded here. `_candidates` runs inside
+        # `disambiguate`'s deepcopied TRIAL readings (up to |senses|^4 of them), and a
+        # trial's candidate set reflects a sense assignment that was REJECTED —
+        # recording it would render a discarded hypothesis as a real resolution. No log
+        # reaches this far anyway, so `journal=None` falls out for free; journaling it
+        # would need an explicit trial guard first.
+        winner = deixis.resolve(
+            [
+                deixis.Referent(
+                    dimension=deixis.SYNTAX,
+                    key=unit.uid,
+                    payload=unit,
+                    sentence=reading.sentence_index,
+                    span=unit.span,
+                )
+                for unit in out
+            ],
+            deixis.Origo(sentence=reading.sentence_index, span=holder.span),
+            deixis.token_distance,
+            dimension=deixis.SYNTAX,
+        )
+        if winner is not None:
+            return [winner.payload]
     return out
 
 

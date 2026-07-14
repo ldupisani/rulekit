@@ -58,7 +58,16 @@ DISCOURSE = "discourse"
 TIME = "time"
 PLACE = "place"
 
-DIMENSIONS = (PERSON, DISCOURSE, TIME, PLACE)
+# NOT a Bühler deictic dimension. It is the same ARBITRATION MACHINE (rank by distance
+# from an origo, strict dominance, ties decline) applied to intra-sentential argument
+# attachment — which unit fills this obligation's role. obligations.py has always done
+# exactly this, by hand, and is the seed the rest of this module was generalised from.
+#
+# It is typed separately for the same reason the deictic dimensions are typed at all: a
+# syntactic candidate must never be able to compete with a discourse antecedent.
+SYNTAX = "syntax"
+
+DIMENSIONS = (PERSON, DISCOURSE, TIME, PLACE, SYNTAX)
 
 
 @dataclass(frozen=True)
