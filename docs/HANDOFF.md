@@ -14,13 +14,13 @@ swing under the constitution (no lexicon in Python, no per-problem parsing,
 every increment through the gates).
 
 **Current numbers (all verified at head):**
-- dev-train: 83 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
-- dev-holdout: 33 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 855 · lint: 0 errors, 1 intended warning
+- dev-train: 87 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
+- dev-holdout: 37 correct / 0 wrong (3,701 items)
+- curated suite: 52/52 · pytest: 862 · lint: 0 errors, 1 intended warning
 - bench wall: dev-train 16.6s -> 9.0s (trace opt-out) -> 1.7s at `--jobs 12`.
   `--jobs` defaults to 1; spend it in the SERIAL integration tail, never in the
   implementers' gates (they already run concurrently). See the two infra notes below.
-- TEST ledger (100 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- TEST ledger (101 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -5153,3 +5153,29 @@ fraction-of-pool overlap, known-good). pytest 855 -> 862 (+7 new synthetic tests
 tests/test_mining_increment_106.py; one pre-existing test in tests/test_mining_increment_60.py
 updated decline->number, a genuine decline->correct move this candidate enables).
 **TEST look: pending — spent manually.**
+
+## Batch 48 (2026-07-14) — increment 106. dev-train 87, holdout 37. Biggest single increment.
+
+LANDED (look #101: 11/1, 91.7%, HELD):
+- **106 — leading-temporal-offset equative age relations** ("In N years, A will be K times as
+  old as B" / "N years ago, A was K times as old as B"). **+4 dev-train, +4 dev-holdout** —
+  the biggest single increment of the campaign.
+
+**THE FOURTH RE-CUT TO LAND.** 106 is `temporal-offset-age-relations`, killed by review in
+batch 41 for putting a VERBATIM GSM8K TRAIN ITEM into tests/. The re-cut synthesized its test
+items properly — re-audited main afterwards, no GSM8K train strings in tests/.
+
+Re-cuts after a review kill: 71 (age-equative), 73 (rest-partitions), 102 (relation-standard-
+frames), 106 (temporal-offset-age). **Four for four.** The reviewer's precision about WHAT is
+wrong and WHERE the compliant path already exists is what makes the second attempt cheap. A
+kill with a named fix is a one-batch delay, not a dead candidate.
+
+FAILED (goal-mode) but surfaced two named follow-ons: `subtype-chain-sum-constraints` found (1)
+`ask/how-many-entity`'s `who` slot only accepts `type: name` — widening it to a resolved
+common-noun antecedent needs a real fix to the tie-break collision with
+`ask/how-many-entity-possessed/-qualified` (a prior widening was reverted for exactly that);
+(2) bare-qualifier partition questions ("how many of them were purple?") with no holder noun at
+all need their own ask shape.
+
+NOTE: one implementer (`percent-change-value-events`) died on an API transport error, not a
+gate. Its branch is absent; re-scout if wanted.
