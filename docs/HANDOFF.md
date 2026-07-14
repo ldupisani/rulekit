@@ -5116,3 +5116,40 @@ lesson the twice-caught `"year"` literal taught.
 is spent. `equal-share-division` is the first entry, with its four failure modes and its three
 NAMED blockers recorded. A class leaves the list when its blockers LAND — not because a scout
 feels differently about it.
+
+### Increment 106 — leading-temporal-offset equative age relations
+
+CLASS: "In N years, A will be K times as old as B" / "N years ago, A was K times as old as B" —
+future- and past-offset equative age relations, including the sibling where the standard's age
+is pinned to the present ("...as STD is now/today") and the leading-conditional-clause premise
+split for the projected-age ask.
+
+MECHANISM: three new pattern rules in `packs/arithmetic/rules/core.yaml`
+(`temporal-offset-times-as-old-as-future`, `-future-std-now`, `-past`) emit the existing
+`Relation` fact plus two new signed-year fields, `subject_offset`/`standard_offset`
+(`src/rulekit/kernel/model.py`, default 0.0, mirrors `subject_label` into `key()` so every
+zero-offset relation stays byte-identical). `patterns.py`'s `_NUMERIC_FIELDS` gains both fields
+so they evaluate arithmetically. `saturate.py`'s `_relations_synth` solves
+`age(subject)+subject_offset = factor*(age(standard)+standard_offset)+offset` in either
+direction, declining (never guessing) on a negative resolved age, scoped to offset-bearing
+relations only. `"now"` joins the existing `temporal_marker` category (already-lexiconed word,
+no vocabulary admission).
+
+RE-LANDING NOTE: this is a re-cut of a batch-46 candidate that was DEFERRED at
+integrate-conflict against the batch-46 staging tip (increments 102/104 had moved under it).
+Cut fresh from the current `main` tip, it cherry-picked clean onto batch-47 staging with no
+conflict, and re-gated to the identical numbers as its own branch measurement.
+
+FILES: packs/arithmetic/rules/core.yaml, src/rulekit/kernel/model.py,
+src/rulekit/kernel/patterns.py, src/rulekit/kernel/saturate.py,
+tests/test_mining_increment_106.py.
+
+GATE (integrated, staging tip): dev-train diff SOLVED 4 / BROKE 0 / DECL->WRONG 0 / NET +4,
+VERDICT SHIP (91fb5257d8c1, d28002b003d6, fa95e0106219, ffc4b6f39d39; correct 83 -> 87, 3772
+items, 100% precision). dev-holdout diff SOLVED 4 / BROKE 0 / DECL->WRONG 0 / NET +4, VERDICT
+SHIP (262cb437fe45, 2bae895751a7, 4f9cb2d9a32d, 9e0c046daf6a; correct 33 -> 37, 3701 items,
+100% precision). Suite 52/52. Lint 0 errors (1 pre-existing warning: fraction-of-remnant/
+fraction-of-pool overlap, known-good). pytest 855 -> 862 (+7 new synthetic tests,
+tests/test_mining_increment_106.py; one pre-existing test in tests/test_mining_increment_60.py
+updated decline->number, a genuine decline->correct move this candidate enables).
+**TEST look: pending — spent manually.**

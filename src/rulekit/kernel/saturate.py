@@ -318,6 +318,21 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
         )
 
     for rel in store.by_kind(Relation):
+        # mining candidate temporal-offset-age-recut: a genuinely SELF-
+        # referential relation ("he will be 3 times as old as he was 11
+        # years ago" — the SAME entity on both sides at two DIFFERENT time
+        # offsets) needs a linear solve this synth does not do — decline
+        # rather than guess. No existing rule can construct one (every
+        # relation-emitting rule gates `distinct: [who, std]`, which —
+        # mining candidate labeled-entity-relations — compares (lemma,
+        # label) PAIRS, not bare lemma alone: "Jar B has 12 more than jar
+        # A" bare-folds subject=standard='jar' but carries two DIFFERENT
+        # labels, and is not self-referential at all). Mirroring that same
+        # (lemma, label) comparison here, so this is pure defense-in-depth
+        # for the genuine bare-lemma-AND-label match — it changes no
+        # existing (labeled or unlabeled) relation's resolution.
+        if rel.subject == rel.standard and rel.subject_label == rel.standard_label:
+            continue
         if rel.standard in (_ANAPHOR_QUANTITY_STANDARD, _ANAPHOR_PRICE_STANDARD):
             # mining candidate anaphoric-multiplier-standards: "twice that
             # much"/"twice this many"/"3 times that price" — a DEMONSTRATIVE
@@ -461,10 +476,26 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
                 else (rel.subject, measure, verb_key(rel.verb)) in by_verb
             )
             if not already:
+                # mining candidate temporal-offset-age-recut: general form
+                # age(subject)+subject_offset = factor*(age(standard)+
+                # standard_offset)+offset, solved for the subject. Every
+                # pre-existing relation defaults both offsets to 0.0, so
+                # this reduces to EXACTLY the prior `factor*known+offset`
+                # arithmetic (adding/subtracting a literal 0.0 changes no
+                # float result) — byte-identical output for every relation
+                # that predates this mechanism.
                 value = evaluate(
-                    f"{rel.factor} * {known.value} + {rel.offset}", {}, log,
+                    f"{rel.factor} * ({known.value} + {rel.standard_offset}) "
+                    f"+ {rel.offset} - {rel.subject_offset}", {}, log,
                     source=f"relation:{rel.provenance.source}",
                 )
+                # decline (never guess) a negative resolved age — scoped
+                # to OFFSET-BEARING relations only, so a zero-offset
+                # relation's behavior (today's) is untouched even for a
+                # malformed premise that already produces a negative value
+                # today.
+                if (rel.subject_offset or rel.standard_offset) and value < 0:
+                    continue
                 out.append(
                     Quantity(
                         provenance=Provenance(source="synth/relation", sentence=rel.provenance.sentence),
@@ -676,10 +707,17 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
                 else (rel.standard, measure, verb_key(rel.verb)) in by_verb
             )
             if not already:
+                # mining candidate temporal-offset-age-recut: the same
+                # general equation, solved for the standard — see the
+                # forward branch's comment above for the byte-identical-
+                # at-zero-offsets argument.
                 value = evaluate(
-                    f"({known.value} - {rel.offset}) / {rel.factor}", {}, log,
+                    f"(({known.value} + {rel.subject_offset}) - {rel.offset}) "
+                    f"/ {rel.factor} - {rel.standard_offset}", {}, log,
                     source=f"relation-inverse:{rel.provenance.source}",
                 )
+                if (rel.subject_offset or rel.standard_offset) and value < 0:
+                    continue
                 out.append(
                     Quantity(
                         provenance=Provenance(source="synth/relation", sentence=rel.provenance.sentence),

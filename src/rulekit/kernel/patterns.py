@@ -405,7 +405,15 @@ def _resolve_field(
     return evaluate(expr, env, log, source=rule_id)
 
 
-_NUMERIC_FIELDS = {"value", "factor", "offset", "fraction", "numerator", "denominator"}
+_NUMERIC_FIELDS = {
+    "value", "factor", "offset", "fraction", "numerator", "denominator",
+    # mining candidate temporal-offset-age-recut: Relation's two new
+    # signed-year offset fields (model.py) — a pattern rule emits them as
+    # arithmetic expressions over bound slot values ("n", "-n"), the SAME
+    # numeric-field discipline `offset` itself already gets, never a
+    # template string.
+    "subject_offset", "standard_offset",
+}
 
 
 def _build_fact(

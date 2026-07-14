@@ -366,12 +366,33 @@ class Relation(Fact):
     # existed.
     measure_qualifier: str | None = None
     standard_qualifier: str | None = None
+    # mining candidate temporal-offset-age-recut: "In N years, A will be K
+    # times as old as B" states the ratio at a FUTURE (or past) point in
+    # time, not today — `subject_offset`/`standard_offset` are the signed
+    # year offsets (0 = today, the default every pre-existing relation
+    # keeps) applied to each side's age BEFORE the factor/offset equation
+    # is evaluated: age(subject)+subject_offset = factor*(age(standard)+
+    # standard_offset)+offset. Purely additive like `subject_label`/
+    # `standard_label` above: every relation that never sets them keeps
+    # value 0.0 on both, so `_relations_synth`'s general formula (always
+    # written in terms of these two fields) reduces to EXACTLY today's
+    # arithmetic for every existing relation (adding/subtracting 0.0
+    # changes no float result). Included in `key()`, mirroring `subject_
+    # label`/`standard_label`'s own precedent: two relations for the same
+    # (subject, standard, measure, verb) that state the ratio at DIFFERENT
+    # time offsets are not a restatement of one fact, they are two
+    # distinct facts — folding them to one key would make the second
+    # either an agreement-dedupe false-positive or a spurious value
+    # conflict, depending on which offset happened to be typed first.
+    subject_offset: float = 0.0
+    standard_offset: float = 0.0
 
     def key(self) -> tuple:
         return (
             "relation", self.subject, self.subject_label,
             self.standard, self.standard_label, self.measure,
             self.measure_qualifier, self.standard_qualifier, self.verb,
+            self.subject_offset, self.standard_offset,
         )
 
     def value_part(self) -> Any:

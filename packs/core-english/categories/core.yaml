@@ -295,6 +295,15 @@ categories:
       pattern, this category has NO members here; it lives in
       packs/difg-mined/categories/semantic.yaml. A core-english-only
       registry (no difg-mined) compiles with this category simply empty.
+
+      'now' joined this category (mining candidate temporal-offset-age-
+      recut): a leading-temporal-offset equative relation ("In N years, A
+      will be K times as old as B is NOW/TODAY") uses the SAME deictic
+      word here to pin the standard's age to the CURRENT moment (offset
+      0) rather than the sentence's own future/past offset — the
+      positive mirror of this category's original absent-gate use above.
+      Both members already carry the 'time' sense, so no lexicon change
+      rides along with the membership widening.
   age_measure:
     parent: noun
     notes: >

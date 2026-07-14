@@ -527,9 +527,17 @@ members:
   - older
   # 'temporal_marker' itself is declared in core-english/categories/core.yaml
   # (parent: time, ROOT_SENSES-additive) — this pack only supplies the word,
-  # since 'today' is a difg-mined-only lexicon entry (sensed 'time').
+  # since 'today'/'now' are difg-mined-only lexicon entries (both sensed
+  # 'time'). 'now' joined (mining candidate temporal-offset-age-recut) so
+  # arithmetic/temporal-offset-times-as-old-as-future-std-now's trailing
+  # standard-marker slot ("as old as B is NOW", "as old as B TODAY") reads
+  # either deictic word the same way — purely additive: 'now' already
+  # carried the 'time' sense, so this only lets it satisfy a NEW category,
+  # changing no existing word's sense or any other time-sensed word's
+  # behavior.
   temporal_marker:
   - today
+  - now
   # 'age_measure' itself is declared in core-english/categories/core.yaml
   # (parent: noun) — this pack only supplies the word, since 'year' is a
   # difg-mined-only lexicon entry (sensed 'noun').

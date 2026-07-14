@@ -70,14 +70,23 @@ def test_offset_age_chains_through_existing_relation(full_registry):
 def test_relational_marker_in_same_clause_declines(full_registry):
     # "twice as old" is a MULTIPLICATIVE age relation, not a plain stated
     # age — the same-sentence relational_marker/multiplier_marker gate
-    # must abort emission rather than read the bare "30" as a plain
-    # current-minus-offset age.
+    # must abort THIS rule's emission rather than read the bare "30" as a
+    # plain current-minus-offset age (arithmetic/temporal-offset-age-future
+    # itself still declines this sentence unchanged). Mining candidate
+    # temporal-offset-age-recut later gave a DIFFERENT rule (arithmetic/
+    # temporal-offset-times-as-old-as-future-std-now) the machinery to
+    # resolve exactly this "in N years, A will be K times as old as B is
+    # now" shape correctly — a genuine decline -> correct move, so the
+    # overall answer is a number now, not a decline. 13.0 is 2*(9+0)-5,
+    # the offset-aware RELATION resolution (Talia's "is now" age 9, pinned
+    # to today; Oskar's stated future point 5 years out).
     r = solve(
         "In 5 years, Oskar will be twice as old as Talia is now. Talia is "
         "9 now. How old is Oskar now?",
         full_registry,
     )
-    assert r.answer.kind == "decline"
+    assert r.answer.kind == "number"
+    assert r.answer.value == pytest.approx(13.0)
 
 
 def test_bare_future_statement_without_years_old_declines(full_registry):

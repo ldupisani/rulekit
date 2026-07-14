@@ -451,6 +451,175 @@ rules:
         offset: 0.0
         verb: "{verb}"
 
+  - id: arithmetic/temporal-offset-times-as-old-as-future
+    phase: read
+    description: >
+      "In four years, Annika will be three times as old as Hans" (mining
+      candidate temporal-offset-age-recut) — the FUTURE-offset sibling of
+      arithmetic/times-as-old-as: the ratio is stated at a point N years
+      from now, not today, and — per this candidate's stated convention —
+      a BARE comparative (no explicit "is now"/"today" marker on the
+      standard) inherits the sentence's own offset on BOTH sides. Emits
+      the SAME Relation shape times-as-old-as does, plus the two new
+      `subject_offset`/`standard_offset` fields (model.py, default 0.0 —
+      "today" — on every relation that predates this candidate) set to
+      the stated `n`, so `_relations_synth`'s general offset-aware
+      formula resolves EITHER direction with zero further kernel change:
+      the standard's stated current age resolving the subject, or the
+      subject's stated current age resolving the standard (the inverse
+      direction `_relations_synth` already supports for a plain
+      relation). ask/how-old-is answers off the resulting Quantity
+      exactly as it does for a plain relation — no new consumer. `{lit:
+      be}` (not `cat: state`) mirrors arithmetic/temporal-offset-age-
+      future's own reasoning: English always uses the bare infinitive
+      after a modal ("will be"), never 'is'/'was' — structure, not
+      lexicon.
+
+      Decline-safety: `absent: {cat: temporal_marker}` blocks this BARE
+      form the instant the clause ALSO carries a trailing "is now"/
+      "today" standard-marker — the sibling -future-std-now rule below
+      handles that shape with a DIFFERENT `standard_offset`. Without this
+      gate both rules would match the same clause and emit two Relation
+      facts that disagree only in `standard_offset` (now part of `key()`,
+      so they would NOT dedupe as one restated fact); `_relations_synth`
+      would then derive two conflicting Quantity values for the same
+      entity, and facts.py's collision handling quarantines both —
+      silently losing the correct answer instead of committing it.
+      `distinct: [who, std]` blocks the genuinely self-referential
+      reading ("he will be... as he was... years ago") the same way
+      every other relation rule does; `_relations_synth` additionally
+      declines that shape defense-in-depth (saturate.py), since a self-
+      reference could in principle reach this synth some OTHER way in
+      the future.
+    match:
+      sentence:
+        - {lit: in}
+        - {slot: n, type: counted}
+        - {slot: who, type: name}
+        - {slot: aux, type: future_modal}
+        - {lit: be}
+        - {slot: k, type: multiplier}
+        - {lit: as}
+        - {lit: old}
+        - {lit: as}
+        - opt:
+            - {slot: appos_det, type: pronoun}
+            - {slot: appos_role, type: noun}
+        - {slot: std, type: name}
+    where:
+      - distinct: [who, std]
+      - absent: {cat: temporal_marker}
+    consumes: [n]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: year
+        factor: "k"
+        offset: 0.0
+        verb: be
+        subject_offset: "n"
+        standard_offset: "n"
+
+  - id: arithmetic/temporal-offset-times-as-old-as-future-std-now
+    phase: read
+    description: >
+      "In 7 years, Kaylee will be 3 times as old as Matt IS NOW" / "In
+      twenty years, Ramon will be twice as old as Loui TODAY" (mining
+      candidate temporal-offset-age-recut) — the STANDARD-PINNED sibling
+      of -future above: an explicit trailing "is now"/"today" marker on
+      the standard (`cat: temporal_marker` — widened this increment to
+      also cover 'now' alongside its pre-existing 'today' member, packs/
+      difg-mined/categories/semantic.yaml) states that THAT side of the
+      ratio is evaluated at the CURRENT moment, not the sentence's own
+      future offset — so `standard_offset` is 0.0 while `subject_offset`
+      still carries the stated `n`. `opt: [{lit: is}]` covers both the
+      copula form ("Matt IS now") and the bare trailing-adverb form
+      ("Loui TODAY", no copula) in one rule, since English drops 'is'
+      before 'today' far more often than before 'now'. A separate rule id
+      (not a widened optional slot on -future) because the two forms
+      emit GENUINELY DIFFERENT `standard_offset` values for the same
+      clause shape — one rule per distinct equation, mirroring every
+      other relation-rule-family split in this file (e.g. times-
+      comparative-age-relation vs. times-as-old-as itself). No `absent`
+      gate needed here: -future's OWN `absent: {cat: temporal_marker}` is
+      what keeps the two rules from ever double-firing on the same
+      clause (see that rule's docstring).
+    match:
+      sentence:
+        - {lit: in}
+        - {slot: n, type: counted}
+        - {slot: who, type: name}
+        - {slot: aux, type: future_modal}
+        - {lit: be}
+        - {slot: k, type: multiplier}
+        - {lit: as}
+        - {lit: old}
+        - {lit: as}
+        - opt:
+            - {slot: appos_det, type: pronoun}
+            - {slot: appos_role, type: noun}
+        - {slot: std, type: name}
+        - opt:
+            - {lit: is}
+        - {slot: mark, cat: temporal_marker}
+    where:
+      - distinct: [who, std]
+    consumes: [n]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: year
+        factor: "k"
+        offset: 0.0
+        verb: be
+        subject_offset: "n"
+        standard_offset: 0.0
+
+  - id: arithmetic/temporal-offset-times-as-old-as-past
+    phase: read
+    description: >
+      "N years ago, WHO was K times as old as STD" — the PAST-offset
+      mirror of -future above (mining candidate temporal-offset-age-
+      recut), exactly like arithmetic/temporal-offset-age-past mirrors
+      arithmetic/temporal-offset-age-future: same bare-comparative-
+      inherits-the-sentence's-own-offset convention, just NEGATIVE (N
+      years ago = -n from today) and the ordinary state verb ('was'/
+      'were', already `cat: state`) instead of a bare infinitive after a
+      modal — a past tense needs no modal at all. Symmetric completion of
+      the same class, not a guess: shipped once the full dev-train/
+      holdout diff (0 BROKE, 0 DECL->WRONG) confirmed it, the same gate
+      every increment in this file goes through.
+    match:
+      sentence:
+        - {slot: n, type: counted}
+        - {lit: ago}
+        - {slot: who, type: name}
+        - {slot: verb, cat: state}
+        - {slot: k, type: multiplier}
+        - {lit: as}
+        - {lit: old}
+        - {lit: as}
+        - opt:
+            - {slot: appos_det, type: pronoun}
+            - {slot: appos_role, type: noun}
+        - {slot: std, type: name}
+    where:
+      - distinct: [who, std]
+      - absent: {cat: temporal_marker}
+    consumes: [n]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: year
+        factor: "k"
+        offset: 0.0
+        verb: "{verb}"
+        subject_offset: "-n"
+        standard_offset: "-n"
+
   - id: arithmetic/times-as-old-as-possessive-standard
     phase: read
     description: >
