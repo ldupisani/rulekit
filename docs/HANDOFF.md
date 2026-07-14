@@ -5942,3 +5942,62 @@ was structural and passed.
   Quantity, so the dividend has no holder; (c) a trailing "...if they divide X amongst
   themselves?" fuses the division premise INTO the question sentence, and read-phase
   pattern rules only run over premise readings. **Land those first, or stop drawing it.**
+
+## THE RETARGET (2026-07-14) — measured worklist, replaces surface-frequency scouting
+
+Three consecutive batches yielded +1, +1, **0**. The last one had all five candidates killed
+at the shape gate (0-2 of 9-12 items resolving) despite surface frequencies of 70/46/18/16/10.
+The gate was right every time. The scout was drawing from an exhausted seam.
+
+**The factorization says where the ceiling is:**
+
+```
+coverage 2.7%  =  fully-read 39.0%  ×  hit-rate 6.9%
+```
+
+**The measured addressable pool: 733 items** that are FULLY READ (every word known — a rule
+*could* fire) and decline with `no ask shape recognizes this question`. The other 1,503
+no-ask-shape items contain unknown words and are unreachable by any rule; **never scout them.**
+
+### The pool, clustered by UNMATCHED QUESTION OPENING (dev-train, fully-read only)
+
+| n | opening | note |
+|---|---|---|
+| 50 | `calculate the total` / `calculate the number` | imperative asks |
+| 40 | `how many more` | comparative / deficit |
+| 36 | `what is the` | copular |
+| 25 | `how much money` | |
+| 15 | `how much more` | |
+| 12 each | `how much did/will/does`, `how many people/hours` | |
+
+### THE LESSON THAT MUST GO IN EVERY BRIEF FROM NOW ON
+
+**An ask shape without its premise machinery is a DEAD BRIEF.** This is why `imperative-asks`
+scored 1-of-12 and was correctly killed: the ask shape is genuinely missing, but adding it
+alone converts NOTHING, because the premises do not derive the quantity the ask would fold.
+
+```
+"Calculate the total time the eight runners took to finish the race."
+  facts today: Quantity(world, runner, 8.0, have)   Quantity(runner, hour, 2.0, finish)
+  gold:        8 x 2 = 16
+  missing:     recognise (runner, hour, 2) as a PER-RUNNER RATE and (world, runner, 8) as
+               the COUNT, then fold — which is what the existing Rate x span machinery
+               already does, merely unrecognised in this surface.
+```
+
+So a candidate in this pool must brief **BOTH HALVES**:
+1. the ask shape (what the question surface is), AND
+2. the premise mechanism that derives the quantity it folds (usually: a distributive/per-unit
+   rate, or an intermediate derived total).
+
+A brief naming only (1) will pass a naive frequency check and fail the shape gate. That is not
+the gate being strict — it is the gate being CORRECT.
+
+### Measured negatives (do not re-scout these)
+
+- **The month/time seam is NOT a cheap win.** 220 dev-train items mention a month or weekday;
+  **all 220 decline.** Relaxing the mixed-time refusal to ignore untimed facts (the guard that
+  looked like the blocker) measures **0 SOLVED, 0 BROKE** — it buys nothing. Those items need
+  real temporal arithmetic, not a guard relaxation.
+- **The 502-item `no 'X' events known` bucket is NOT a class.** It is the hard multi-step tail
+  (overtime tiers, multi-leg commutes, itemised purchases). Do not brief it as one class.
