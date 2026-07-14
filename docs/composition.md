@@ -1,5 +1,15 @@
 # Composition: derived facts are terminal
 
+> ## ⛔ VERDICT: ABANDONED (2026-07-14, same day)
+>
+> Phase 0 ran. **The composition ceiling is ~13 items, not 271.** The 271 was a
+> measurement artifact — see §0 below, which was written after the rest of this note and
+> overrides it. The design in §2 is sound and the hazard in §3 is real; neither is worth
+> building for 13 items. **The engine's ceiling is READING, not composition.**
+>
+> This note is kept in full, with its wrong conclusion intact, because the *way* it was
+> wrong is the most useful thing in it.
+
 Research pass, 2026-07-14. Measured on dev-train at 103 correct / 0 wrong.
 Nothing in this note is built. Two things in it are *measured*, and they disagree
 with the hypothesis that prompted the investigation.
@@ -38,7 +48,69 @@ subtraction away and unreachable.
 
 ---
 
+## §0 — PHASE 0 RAN. THE PROJECT IS DEAD. (written last; overrides everything below)
+
+Phase 0 asked: of the 271 items whose gold an unconstrained ≤3-op search could reach from
+the extracted facts, how many are reachable by a **TYPED** composition — a rate × a count, a
+total ± an event, a total × a price — i.e. something rulekit could principledly do?
+
+```
+TYPED-REACHABLE:  13        vs   the ≤3-op oracle's   271
+  12  "sum of same-measure holdings"  <- not even composition; the `combined`
+                                         consumer already does this, and those items
+                                         decline for unrelated reasons
+   1  the GroupTotal simply IS the gold
+```
+
+13 < the ~20 stop-threshold recorded in §5. **Abandon.** But the interesting part is WHY the
+two numbers disagree by 20×, and it is a methodological failure worth more than the project.
+
+### The null control: the oracle was measuring nothing
+
+An unconstrained `+ - × ÷` search to depth 3 over ~8 numbers explores a combinatorial space
+large enough to hit almost any target by coincidence. So: run it against **another item's**
+gold and see how often it "succeeds".
+
+| ≤3-op oracle, 1,143 addressable declining items with ≥1 numeric fact | | |
+|---|---|---|
+| reaches the **TRUE** gold | 439 | 38% |
+| reaches a **WRONG** (randomly reassigned) gold | 373 | **33%** ← the null |
+| **signal above chance** | **+66** | **+6%** |
+
+**The oracle reaches a wrong answer almost as often as the right one.** "19% of items have
+facts that suffice" was never a fact about the corpus; it was a fact about the size of the
+search space. The true signal is ~66 items at the absolute most, and the principled probe
+finds 13.
+
+### The lesson, which is general and was nearly expensive
+
+> **A reachability bound without a null control is not evidence.**
+>
+> I ran the oracle, believed it, and wrote a roadmap around it — for the most dangerous
+> mechanism ever proposed in this project, the one whose failure mode is a silent
+> MULTIPLICATION rather than a decline. It survived only because the typed probe disagreed
+> by 20× and I asked why instead of averaging them.
+>
+> Any "the information is already there, we just can't use it" claim must be tested against
+> a shuffled target. If the method finds the answer when there is no answer to find, it has
+> told you nothing.
+
+### What is actually true, then
+
+- **The composition gap is real but small** (~13-66 items). The architecture diagnosis in §2
+  stands — `GroupTotal` genuinely is a terminal fact and the engine genuinely does derive
+  numbers it cannot use. It is simply not where the corpus lives.
+- **The engine's ceiling is READING.** 81% of the addressable pool never extracts the numbers
+  at all ("*5 less than half as many coconut trees*" → the engine got `[60]`). That is the
+  real project, it is much larger, and no amount of composition machinery touches it.
+- **dev-train 150 is not reachable** by composition, by mining, or by consumer fixes. It
+  requires closing the reading gap.
+
+---
+
 ## §1 — The measurement that reframes this (do not skip)
+
+*(Written before §0. Its 271 figure is the artifact §0 debunks — kept for the record.)*
 
 The investigation started from a different hypothesis: that 481 addressable items carry an
 `each`/`every`/`per` premise the engine fails to read as a rate, and that building per-unit

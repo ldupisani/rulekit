@@ -368,3 +368,41 @@ recorded here; it lands WITH the class that cashes it in, or not at all.
 **What this means for the ceiling.** The per-unit "seam" was a ceiling, not a yield. The
 mechanism exists and works; the items are blocked further downstream, on multi-step
 composition. **481 was the size of the hole, not the size of the fix.**
+
+## A reachability bound without a null control is not evidence (2026-07-14)
+
+Chasing the composition ceiling, I measured: *for each addressable declining item, can the
+gold be reached from the numeric facts the engine already extracted, combining them with
+`+ - × ÷` in ≤ 3 operations?* **271 of 1,435 (19%)** came back yes. That looked like a
+well-bounded prize — 2.6× everything the campaign had built — and I wrote a four-phase
+roadmap around it, for the most dangerous mechanism ever proposed here (the one whose failure
+mode is a silent MULTIPLICATION, not a decline).
+
+Then the TYPED probe — the same question restricted to compositions rulekit could
+*principledly* perform — returned **13**. A 20× disagreement.
+
+**The control that settles it:** run the same oracle against **another item's** gold.
+
+| ≤3-op oracle, 1,143 items | | |
+|---|---|---|
+| reaches the TRUE gold | 439 | 38% |
+| reaches a WRONG, randomly reassigned gold | 373 | **33%** |
+| signal above chance | +66 | **+6%** |
+
+**The oracle reaches a wrong answer almost as often as the right one.** An unconstrained
+4-operator search to depth 3 over ~8 numbers explores a space big enough to hit nearly any
+target by coincidence. The 271 was not a fact about the corpus. It was a fact about the size
+of the search space.
+
+> **Any "the information is already there, we just can't use it" claim must be tested against
+> a shuffled target. If the method finds the answer when there is no answer to find, it has
+> told you nothing.**
+
+The composition project was abandoned before a line of kernel code was written
+(`docs/composition.md`). It survived that long only because the typed probe disagreed and I
+asked why rather than averaging the two numbers.
+
+This is the same shape as every TEST kill in this campaign: **a measurement that was sound
+about the thing it addressed and silent about the thing that mattered.** Here the unexamined
+question was "would this method also succeed on a false hypothesis?" — and it would have,
+33% of the time.
