@@ -16,11 +16,11 @@ every increment through the gates).
 **Current numbers (all verified at head):**
 - dev-train: **100 correct / 0 wrong** (3,772 items, 100% precision) — **GOAL REACHED**
 - dev-holdout: 39 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 927 · lint: 0 errors, 1 intended warning
+- curated suite: 52/52 · pytest: 940 · lint: 0 errors, 1 intended warning
 - bench wall: dev-train 16.6s -> 9.0s (trace opt-out) -> 1.7s at `--jobs 12`.
   `--jobs` defaults to 1; spend it in the SERIAL integration tail, never in the
   implementers' gates (they already run concurrently). See the two infra notes below.
-- TEST ledger (109 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- TEST ledger (110 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -5563,3 +5563,51 @@ THE METHOD THAT GOT THERE (docs/methodology.md §9):
    ignored the very next batch both taught the same lesson.
 5. AN INCREMENT YOU CANNOT REVERT INDEPENDENTLY IS NOT AN INCREMENT. Every TEST look buys the
    right to revert exactly one thing.
+
+## Increment 116 (2026-07-14) — THE DEIXIS SEAM. Phase 1 + the first two migrations.
+
+Acting on `docs/deixis.md`. Its central claim, verified at source before acting: rulekit
+resolves referents at ~15 sites and every one hand-writes the SAME rule — *exactly one
+candidate, or decline*. That was never CHOSEN as a precision policy; it is the only policy
+available with no origo, because unranked candidates can be COUNTED but not COMPARED.
+`obligations.py::_candidates` is the sole site that ranks (token distance, strict
+dominance, ties decline) — the seed of the design.
+
+**NEW: `src/rulekit/kernel/deixis.py`** — `Origo` (sentence, span; reserved moment/locus),
+`Referent` (TYPED: person | discourse | time | place), and
+`resolve(candidates, origo, distance, *, filters, dimension)` with strict-dominance
+arbitration. Filters are precision-only: they may only SHRINK a candidate set, so no filter
+can turn a decline into a commit.
+
+**WHY THIS IS SAFE — the property everything rests on:**
+
+> Under a CONSTANT distance every candidate is equidistant, so strict dominance can never
+> be satisfied with 2+ survivors, and `resolve()` degenerates EXACTLY to "unique candidate,
+> or decline" — byte-for-byte what the fifteen sites already do.
+
+So a site migrates 0-DIFF, and its real metric is switched on later as its OWN gated
+increment. **The refactor and the behaviour change never ride in the same commit.** That is
+the answer to the shared-kernel blast radius this repo keeps getting bitten by.
+
+MIGRATED (phase 6, first two): `document.py::_bind_discourse` (PERSON) and
+`_bind_measure_anaphor` (DISCOURSE). Typing them is not cosmetic — a TIME word competing to
+be a PERSON antecedent is EXACTLY the bug increment 88 fixed by hand for weekdays, and
+deixis.md §4 shows months are the same bug in a new costume. Typed candidate sets make that
+class UNREPRESENTABLE instead of fixed one word-family at a time.
+
+PROOF: dev-train / dev-holdout / suite snapshots **BYTE-IDENTICAL** to main (`cmp`), diff
+NEUTRAL, pytest 927 -> 940, lint clean. TEST look #110: 11/1 (91.7%) — HELD.
+
+### STILL BLOCKED, deliberately: the month fix
+
+deixis.md §4 ran it, gated it, and REVERTED it (`DECL->WRONG 1`). Making a time expression
+READABLE before the ask can name a point in time converts declines into WRONGS: once `March`
+became a time-noun an ask finally matched, and the consumer returned the JANUARY amount
+because no ask can express a reference time. **Phase 2 (the temporal origo + a reference-time
+field on the ask query) must land BEFORE the month fix.** The generalised rule:
+
+> **Do not make a deictic dimension readable before the ask can name a point along it.**
+> Doing so converts declines into wrongs.
+
+REMAINING: 13 more sites to migrate (one increment each, 0-diff), then phases 2/4/5 switch on
+the temporal, spatial and person metrics — each its own gate, each its own TEST look.
