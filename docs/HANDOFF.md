@@ -14,13 +14,13 @@ swing under the constitution (no lexicon in Python, no per-problem parsing,
 every increment through the gates).
 
 **Current numbers (all verified at head):**
-- dev-train: 87 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
-- dev-holdout: 38 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 868 · lint: 0 errors, 1 intended warning
+- dev-train: 93 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
+- dev-holdout: 39 correct / 0 wrong (3,701 items)
+- curated suite: 52/52 · pytest: 899 · lint: 0 errors, 1 intended warning
 - bench wall: dev-train 16.6s -> 9.0s (trace opt-out) -> 1.7s at `--jobs 12`.
   `--jobs` defaults to 1; spend it in the SERIAL integration tail, never in the
   implementers' gates (they already run concurrently). See the two infra notes below.
-- TEST ledger (102 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- TEST ledger (105 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -5331,3 +5331,22 @@ design): dev-train diff SOLVED 0 / BROKE 0 / DECL->WRONG 0 / NET +0 / NEUTRAL (9
 dev-holdout diff SOLVED 0 / BROKE 0 / DECL->WRONG 0 / NET +0 / NEUTRAL (39 -> 39). pytest 899
 passed (894 baseline + 5 new synthetic tests). suite 52/52. lint 0 errors (1 pre-existing
 known-good warning). TEST look: pending — spent manually.
+
+## Batch 50 (2026-07-14) — FOUR landed. dev-train 87 -> 93. Best batch of the campaign.
+
+LANDED (looks #103, #104, #105 — all 11/1, 91.7%, HELD):
+- **108 — conjoined comparative quantities**: a later conjunct of a verb's object/existential
+  list states "K times / half as many Z as STANDARD", or elides the standard ("and twice as
+  many at night"). Bundled with the bare-common-noun holder ask that cashes two of them in. +2.
+- **109 — combined/totality asks whose HOLDER SET is a cardinal** ("the three of them", "the 3
+  children", "the two"), or whose totality tail is the unlexicalized "in all". +2, +1 holdout.
+- **110 — comparative-DIFFERENCE asks** over a dimension or an age ("how many inches taller is
+  A than B", "how many years older is A than B"). +2.
+- **111 — the elided measure-noun anaphor 'ones'** ("12 yellow ones", "twice as many green ones
+  as blue ones") — a counted NP whose head noun is the anaphor 'one(s)', resolving to the
+  collection's head noun. 0 SOLVED, infrastructure; rode with its payoff.
+
+Increment 108 is the shape the methodology has been pushing toward all along: it BUNDLES the
+enabler (the conjunct comparative premise) with the ask that cashes it in, in ONE increment —
+so it solves >= 1 by construction, needs no infra slot, and costs one TEST look for real
+coverage. That is what §9 asks for, and it is now happening without being told.
