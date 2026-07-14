@@ -2806,6 +2806,59 @@ rules:
         kind: membership
         is_rest: true
 
+  - id: arithmetic/ratio-split-of-to
+    phase: read
+    description: >
+      "the ratio of BOYS to GIRLS is 3:2" (mining candidate ratio-split-
+      premises) — a collection split by a STATED two-part ratio between
+      two labels. Emits a RatioQuantity per label (`fraction` = each
+      label's own share of the unnamed collection, m/(m+n) and n/(m+n));
+      the ratio synthesizer (saturate.py's `_ratio_split_synth`) resolves
+      the collection anchor. That synth deliberately does NOT reuse
+      `_pool_before`/`_partition_synth`: a ratio clause typically shares
+      its OWN sentence with its anchor ("There are 100 students in class
+      AND the ratio of boys to girls is 3:2" — one sentence, joined by
+      'and'), unlike the fraction/partition pool machinery, which only
+      ever looks at STRICTLY PRIOR sentences (a load-bearing invariant
+      elsewhere) — widening that shared scan to also look at the CURRENT
+      sentence would be exactly the kind of global tightening
+      docs/HANDOFF.md's `_is_rate`/`_price_each_value` lesson warns
+      against, so this candidate gives RatioQuantity its own fact kind
+      and its own synth instead, leaving every existing pool caller
+      byte-for-byte untouched. `verb, cat: state` — a ratio is always a
+      stated copular fact ("is"/"was" 3:2), never any other verb.
+
+      No leading 'the'/'a' token: SKIPPABLE_SENSES already auto-skips any
+      article before 'ratio', so both "THE ratio of..." and "A ratio
+      of..." match identically, same convention every other rule in this
+      file relies on instead of hardcoding an article literal.
+
+      The colon in "3:2" needs no explicit match token either: tokenize.py
+      already splits it into its own punctuation unit (senses.py's PUNCT
+      set marks ':' as sense 'punct'), which SKIPPABLE_SENSES auto-skips
+      between the two adjacent number slots — checked first, per this
+      candidate's own brief, before touching the tokenizer at all; no
+      kernel touch was needed there.
+    match:
+      sentence:
+        - {lit: ratio}
+        - {lit: of}
+        - {slot: a, type: plural}
+        - {lit: to}
+        - {slot: b, type: plural}
+        - {slot: verb, cat: state}
+        - {slot: m, type: number}
+        - {slot: n, type: number}
+    emits:
+      - fact: ratio_quantity
+        attribute: "{a}"
+        fraction: "m / (m + n)"
+        verb: "{verb}"
+      - fact: ratio_quantity
+        attribute: "{b}"
+        fraction: "n / (m + n)"
+        verb: "{verb}"
+
   - id: arithmetic/stated-age
     phase: read
     description: >
@@ -3765,6 +3818,37 @@ asks:
       measure_qualifier: "{qual}"
       measure_substance: "{qual}"
       verb: "{verb}"
+
+  - id: ask/how-many-more-label-comparative
+    # "how many more BOYS than GIRLS are there?" (mining candidate
+    # ratio-split-premises) — an ENTITY-LESS existential comparative
+    # between TWO MEASURE LABELS, never two named holders (ask/how-many-
+    # more's own territory: `a`/`b, type: name` there, completely
+    # untouched by this ask). Routed to a BRAND-NEW consumer
+    # (`label-difference`, answer.py) rather than widening the shared
+    # `difference` branch's own name-comparand slots — the exact
+    # shared-function blast-radius invariant docs/HANDOFF.md's
+    # `_is_rate`/`_price_each_value` lesson and this candidate's own
+    # brief both call out. `a`/`b, type: plural`: plain common nouns, not
+    # names — the consumer resolves each independently to its unique
+    # holder (the SAME exactly-one-holder discipline the pre-existing
+    # 'unique-entity' consumer already uses for "how many X are there?"),
+    # then requires them to share exactly ONE holder, the shape a
+    # ratio-derived label pair always has by construction.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: dir, cat: delta}
+        - {slot: a, type: plural}
+        - {lit: than}
+        - {slot: b, type: plural}
+        - {slot: verb, cat: state}
+        - {lit: there}
+    resolves:
+      consumer: label-difference
+      a: "{a}"
+      b: "{b}"
 
   - id: ask/how-many-entity
     # NOTE (mining candidate pronoun-entity-asks): a widening of `who` to

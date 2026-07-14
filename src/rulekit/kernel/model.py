@@ -499,6 +499,42 @@ class PartitionQuantity(Fact):
 
 
 @dataclass(frozen=True)
+class RatioQuantity(Fact):
+    """'the ratio of BOYS to GIRLS is 3:2' (mining candidate ratio-split-
+    premises) — an UNRESOLVED share of an unnamed collection. `fraction`
+    is this label's own portion (m/(m+n) for a two-part ratio) of
+    whatever measure the ratio synthesizer (saturate.py's
+    `_ratio_split_synth`) resolves as the collection anchor: the UNIQUE
+    Quantity measure known as of this fact's OWN sentence — INCLUSIVE,
+    not strictly prior. A ratio clause typically shares its sentence with
+    its own anchor ("There are 100 students in class AND the ratio of
+    boys to girls is 3:2" — one sentence, joined by 'and'), unlike the
+    fraction/partition pool machinery's prior-sentence-only convention
+    ("pools = signed sum of PRIOR-sentence facts" is load-bearing
+    elsewhere), which is why this is its own fact kind with its own synth
+    rather than a reuse of FractionQuantity/PartitionQuantity and
+    `_pool_before` — the shared pool scan stays byte-for-byte untouched.
+
+    Resolved into a real Quantity for `attribute` on the collection's
+    unique holder once resolved. Unresolved ones (no unique non-ratio
+    anchor measure known, or the only known measure is itself another
+    label of the SAME ratio — a part is never its own whole) never
+    commit anything: the downstream ask simply finds no Quantity for that
+    label and declines, the same safety net every other "premise read but
+    not yet computed" shape in this codebase relies on."""
+
+    attribute: str
+    fraction: float
+    verb: str = "be"
+
+    def key(self) -> tuple:
+        return ("ratio_quantity", self.attribute, self.verb)
+
+    def value_part(self) -> Any:
+        return self.fraction
+
+
+@dataclass(frozen=True)
 class AnchorQuantity(Fact):
     """A bare numeral stated for an entity whose MEASURE NOUN is elided
     entirely — mining candidate elided-measure-anchors: "Quinn catches

@@ -1284,6 +1284,72 @@ def _partition_complement_synth(store: FactStore, reg: Registry, log: Arithmetic
     return out
 
 
+def _ratio_split_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> list[Fact]:
+    """Resolves RatioQuantity facts (mining candidate ratio-split-
+    premises): the collection anchor is the UNIQUE Quantity measure known
+    as of the ratio fact's own sentence — INCLUSIVE of that same sentence
+    (see RatioQuantity's own docstring, model.py, for why this differs
+    from `_pool_before`'s strictly-prior convention; `_pool_before`/
+    `_partition_synth` stay byte-for-byte untouched by this candidate).
+
+    Two exclusions from the candidate set, both decline-safety, never a
+    guess: (a) every measure this very synthesizer has already derived,
+    so a SECOND, independent ratio statement later in the same document
+    never treats the FIRST one's derived labels as a candidate
+    collection (mirrors `_partition_synth`'s own exclusion of its
+    `synth/partition-membership` derivations); (b) every label named by
+    ANY RatioQuantity in the document — a ratio's own part is a SHARE,
+    never the whole, so "There are 30 boys. The ratio of boys to girls is
+    3:2." must not treat the already-known 'boy' count as the collection
+    total and back out a wrong 'girl' share from it. Declining that shape
+    is deliberate; it needs a different anchor (the part's own ratio
+    number, not a collection total) that this candidate does not build.
+
+    Fires only once the resolved collection measure has EXACTLY one
+    holder (mirrors `_partition_membership_synth`'s own guard) and the
+    label itself has no Quantity of its own yet (never overwrite or
+    double-emit)."""
+    from .answer import _entity_total
+    from .model import RatioQuantity
+
+    out: list[Fact] = []
+    known_measures = {q.measure for q in store.by_kind(Quantity)}
+    ratio_attributes = {rq.attribute for rq in store.by_kind(RatioQuantity)}
+    derived = {
+        q.measure for q in store.by_kind(Quantity)
+        if q.provenance.source == "synth/ratio-split"
+    }
+    for rq in store.by_kind(RatioQuantity):
+        if rq.attribute in known_measures:
+            continue  # already has its own Quantity — never overwrite
+        candidates = {
+            q.measure for q in store.by_kind(Quantity)
+            if q.provenance.sentence <= rq.provenance.sentence
+            and q.measure not in derived
+            and q.measure not in ratio_attributes
+        }
+        if len(candidates) != 1:
+            continue
+        (measure,) = candidates
+        holders = {q.entity for q in store.by_kind(Quantity) if q.measure == measure}
+        if len(holders) != 1:
+            continue
+        (holder,) = holders
+        total = _entity_total(store, reg, holder, measure, log)
+        if total is None or total <= 0:
+            continue
+        value = evaluate(f"{rq.fraction} * {total}", {}, log, source="synth/ratio-split")
+        out.append(
+            Quantity(
+                provenance=Provenance(
+                    source="synth/ratio-split", sentence=rq.provenance.sentence
+                ),
+                entity=holder, measure=rq.attribute, value=value, verb="have",
+            )
+        )
+    return out
+
+
 def _sum_constraint_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> list[Fact]:
     """sum-constraint linear systems (mining candidate sum-constraint-
     relations): "Anais has 30 more toys than Kamari. There are 160 toys
@@ -1627,6 +1693,7 @@ PLUGINS: dict[str, Synthesizer] = {
     "synth/partition-of-collection": _partition_synth,
     "synth/partition-membership-quantity": _partition_membership_synth,
     "synth/partition-complement-quantity": _partition_complement_synth,
+    "synth/ratio-split-quantity": _ratio_split_synth,
     "synth/sum-constraint": _sum_constraint_synth,
     "synth/container-contents": _container_contents_synth,
     "synth/distributive-container-total": _distributive_container_total_synth,

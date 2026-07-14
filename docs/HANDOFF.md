@@ -5387,3 +5387,43 @@ SOLVED 1 (506be374bc9b) / BROKE 0 / DECL->WRONG 0 / NET +1 / SHIP (93 -> 94). de
 SOLVED 0 / BROKE 0 / DECL->WRONG 0 / NET +0 / NEUTRAL (39 -> 39). pytest 906 passed (899 baseline
 + 7 new synthetic tests). suite 52/52. lint 0 errors (1 pre-existing known-good warning). TEST
 look: pending — spent manually.
+
+## Increment 113 — collections split by a STATED RATIO (batch 2026-07-14e)
+
+CLASS: collections split by a stated RATIO ("the ratio of A to B is 3:2", "divided in the ratio
+4:6", "mixing X, Y and Z in a 1:2:5 ratio"), cashed in by the existing difference / total
+consumers. Fresh stats on the 694-item fully-read/no-ask-shape pool found 4 items whose premise
+is a stated ratio — the engine previously read NOTHING from a ':' ratio clause (for "100
+students, ratio of boys to girls is 3:2" the only fact emitted was the bare collection total).
+It is a standard GSM8K premise family, so the dev count understates the holdout/TEST yield.
+
+MECHANISM (bundle: premise + ask):
+- `packs/arithmetic/rules/core.yaml`: pattern rules for the ratio premise — "the ratio of {A} to
+  {B} is {m}:{n}", "{collection} (was|were) divided … in the ratio {m}:{n}", "{A}, {B} and {C} in
+  a {m}:{n}:{p} ratio" — emitting one label-keyed Quantity per part once a scaling anchor is known
+  (either the collection's stated total, or one component's stated amount). Decline-safe: no
+  anchor, or two conflicting anchors, emits nothing.
+- `src/rulekit/data/schemas.py`: new `RatioQuantity` premise fact type.
+- `src/rulekit/kernel/saturate.py`: `_ratio_split_synth` resolves the ratio fact against the
+  UNIQUE known collection measure as of the ratio clause's own sentence (inclusive, unlike the
+  fraction/partition pool machinery's strictly-prior-sentence convention).
+- `src/rulekit/kernel/answer.py`: one new entity-less existential label-vs-label comparative ask
+  ("how many more {A} than {B} are there?") routed to a brand-new `label-difference` consumer,
+  scoped to the new ask id only — the pre-existing `difference` consumer's name-comparand slots
+  are untouched.
+- No tokenizer change was needed: 'm:n' ratio literals tokenize cleanly under the existing
+  numbers/tokenize machinery, so the increment-107 atomicity concern did not apply.
+
+Of the 8 pool items sampled, 3abe6580 (percent-of-collection ask family), 8a2aad15 (nested
+fraction/percent partitions), cf89732a (event-updated labelled counts), 9bd3133e (conjoined-
+measure ask + sum-constraint), and 207a7a67 (container x count product) do not resolve under this
+mechanism and are left for future increments; 5d47aa5a, 14a52a04, and 7412c11e were the intended
+targets (14a52a04 and 7412c11e depend on increment 73's rest-partition synth and the pre-existing
+`combined` consumer respectively, and were not independently re-verified as solved by this gate —
+only 5d47aa5a's SOLVED is confirmed by the diff below).
+
+GATE (integrated on staging tip, dev-train 94 baseline before this increment): dev-train diff
+SOLVED 1 (5d47aa5acef3) / BROKE 0 / DECL->WRONG 0 / NET +1 / SHIP (94 -> 95). dev-holdout diff
+SOLVED 0 / BROKE 0 / DECL->WRONG 0 / NET +0 / NEUTRAL (39 -> 39). pytest 912 passed (906 baseline
++ 6 new synthetic tests). suite 52/52. lint 0 errors, 1 warning (pre-existing known-good
+fraction-of-remnant/fraction-of-pool overlap). TEST look: pending — spent manually.
