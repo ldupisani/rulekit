@@ -1206,6 +1206,24 @@ def answer(
                     f"{singular!r}; found {entities}",
                 )
             a, b = entities
+        # mining candidate partitive-measure-asks: the SAME opt-in
+        # decline-safety guard `single-entity`/`unique-entity`/`combined`
+        # already call (answer.py's `_measure_substance_guard`,
+        # partitive-measure-ask-slot) — a partitive-tail difference ask
+        # ("how many more PAIRS OF SHOES does Ann have than Bob?") binds
+        # `measure_substance` only per its own ask id (every existing,
+        # non-partitive `difference` ask leaves it unset, so this call is
+        # a no-op for them — `measure_substance` is never truthy). Scoped
+        # to exactly the two resolved holders: Bob's own quantity being a
+        # DIFFERENT substance under the same bare measure noun ("Bob has 5
+        # pairs of SOCKS") must decline rather than silently answer a
+        # 'shoes' question from Bob's sock count — the identical sibling-
+        # borrow hazard `_measure_substance_guard`'s own docstring names.
+        measure_substance = query.get("measure_substance")
+        if measure_substance:
+            guard = _measure_substance_guard(store, singular, measure_substance, entities=[a, b])
+            if guard is not None:
+                return guard
         ask_verb = query.get("verb", "have")
         if ask_verb in ("have", "be") or reg.word_in_category(ask_verb, "state"):
             ta = _entity_total(store, reg, a, singular, log)

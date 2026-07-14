@@ -2706,6 +2706,54 @@ asks:
       # decline-safety docstring.
       sum_measure_variants: "true"
 
+  - id: ask/how-many-in-place-partitive
+    # "how many CUPS OF FLOUR are/were left in the bowl?" (mining candidate
+    # partitive-measure-asks) — the PARTITIVE-NP sibling of
+    # ask/how-many-in-place: that ask's `item` slot binds only a BARE
+    # measure noun immediately followed by verb/prep/place; no ask in this
+    # file could bind a POSTNOMINAL "of SUBSTANCE" qualifier on an
+    # entity-less in-place read at all (postnominal partitives were only
+    # ever wired to the entity-less "there"/"left" siblings' DECLINE-SAFETY
+    # guard via `measure_substance`, never to a real qualified-key lookup).
+    # Here `qual` instead feeds `measure_qualifier`, the SAME field
+    # condense.py's merge-attribute/merge-compound already writes for
+    # adjective-qualified measures ("12 white marbles") and learn.py's
+    # `_measure_substance` mirrors for partitive substances (see
+    # `_measure_substance`'s own docstring) — so "how many cups of flour"
+    # resolves the exact premise key `cup[flour]` the single-entity
+    # consumer's `measure_qualifier` branch already knows how to retry
+    # (answer.py, increment 70's qualified-measure-keys), not a bare
+    # 'cup' fold across every substance in the document.
+    #
+    # `of`/`qual` are REQUIRED (not optional): this is a NEW ask id, not a
+    # widening of ask/how-many-in-place's own match, so it consumes 2 MORE
+    # units (item/of/qual/verb/prep/place = 6) than that ask's own
+    # (item/verb/prep/place = 4) whenever both could apply — but in fact
+    # they never both apply to the same text: ask/how-many-in-place
+    # requires `verb` immediately after `item` with no token in between, so
+    # a genuine partitive tail ("of flour") fails THAT ask's match outright
+    # (not a partial/tied match) the moment the literal 'of' appears where
+    # `verb` was expected. Symmetrically, non-partitive text has no 'of'
+    # token here for this ask to consume, so this ask simply fails to
+    # match it. Never a tie either direction.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {lit: of}
+        - {slot: qual, type: noun}
+        - {slot: verb, type: verb}
+        - {slot: prep, cat: preposition}
+        - {slot: place, type: noun}
+    resolves:
+      consumer: single-entity
+      entity: "{place}"
+      measure: "{item}"
+      measure_qualifier: "{qual}"
+      verb: have
+      place_fallback_entity: world
+
   - id: ask/how-many-combined
     match:
       question:
@@ -2763,6 +2811,91 @@ asks:
       measure: "{item}"
       verb: "{verb}"
 
+  - id: ask/how-many-combined-partitive
+    # "how many CUPS OF FLOUR do they have altogether?" (mining candidate
+    # partitive-measure-asks) — the partitive-NP sibling of
+    # ask/how-many-combined, mirroring ask/how-many-in-place-partitive's
+    # `measure_qualifier` mechanism one consumer over: `qual` feeds
+    # `measure_qualifier` in the query, but `_combined_holder_totals`
+    # itself never reads that key for the FOLD — `measure: "{item}"`
+    # resolving the bare 'cup' measure across the enumerated holders is
+    # what actually drives the total, exactly as ask/how-many-combined
+    # already does.
+    #
+    # `qual` ALSO feeds `measure_substance` (the SAME field ask/how-many-
+    # there-combined and ask/how-many-passive-combined already bind,
+    # partitive-measure-ask-slot's `_measure_substance_guard`, wired into
+    # `_combined_holder_totals` unconditionally): this enumerate-ALL-
+    # holders consumer is the widest-surface case for the sibling-borrow
+    # hazard (a DIFFERENT substance under the same bare measure noun on
+    # some OTHER holder — "Nita has 9 pairs of SOCKS" — would otherwise
+    # silently join the sum for a "pairs of SHOES" question) so the guard
+    # is load-bearing here, not just symmetry.
+    #
+    # `of`/`qual` REQUIRED, inserted right after `item` and before the
+    # existing optional aux/who/verb group: a partitive tail fails ask/
+    # how-many-combined's own match outright (that ask's first token after
+    # `item` must satisfy its opt group's `aux` or fall through to `p`/
+    # `agg`; 'of' satisfies none of them) so there is no partial match to
+    # tie against, in either direction.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {lit: of}
+        - {slot: qual, type: noun}
+        - opt:
+            - {slot: aux, type: future_modal}
+            - {slot: who, type: pronoun}
+            - {slot: verb, type: verb}
+        - opt:
+            - {slot: p, cat: preposition}
+        - {slot: agg, cat: aggregate}
+    resolves:
+      consumer: combined
+      measure: "{item}"
+      measure_qualifier: "{qual}"
+      measure_substance: "{qual}"
+      verb: "{verb}"
+
+  - id: ask/how-many-combined-named-partitive
+    # named-pair sibling of ask/how-many-combined-partitive, mirroring
+    # ask/how-many-combined-named exactly the same way that ask mirrors
+    # ask/how-many-combined (a/b bound directly instead of enumerated) —
+    # see that ask's own comment for the non-tie argument against its
+    # pronoun sibling, which applies here unchanged (a proper name can
+    # never satisfy `who, type: pronoun`, so the two partitive siblings
+    # never compete for the same text either). Binds `measure_substance`
+    # the same way its pronoun sibling does — `_measure_substance_guard`
+    # runs unconditionally inside `_combined_holder_totals` regardless of
+    # whether a/b were named directly or enumerated, so a named pair
+    # holding DIFFERENT substances under the same bare measure still
+    # declines rather than mixing them.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {lit: of}
+        - {slot: qual, type: noun}
+        - {slot: aux, type: auxiliary}
+        - {slot: a, type: name}
+        - {lit: and}
+        - {slot: b, type: name}
+        - {slot: verb, type: verb}
+        - opt:
+            - {slot: p, cat: preposition}
+        - {slot: agg, cat: aggregate}
+    resolves:
+      consumer: combined
+      a: "{a}"
+      b: "{b}"
+      measure: "{item}"
+      measure_qualifier: "{qual}"
+      measure_substance: "{qual}"
+      verb: "{verb}"
+
   - id: ask/how-many-more
     match:
       question:
@@ -2780,6 +2913,55 @@ asks:
       a: "{a}"
       b: "{b}"
       measure: "{item}"
+      verb: "{verb}"
+
+  - id: ask/how-many-more-partitive
+    # "how many more PAIRS OF SHOES does Ann have than Bob?" (mining
+    # candidate partitive-measure-asks) — the partitive-NP sibling of
+    # ask/how-many-more: `qual` feeds `measure_qualifier` in the query, but
+    # the `difference` consumer's TOTAL still comes from `measure:
+    # "{item}"` resolved bare and folded per named holder, exactly as
+    # ask/how-many-more already does — sufficient for the class this
+    # candidate evidences ("Ann has 7 pairs of shoes. Bob has 5 pairs of
+    # shoes...") because each holder states only ONE substance under that
+    # measure, so no qualified key is even needed to find it.
+    #
+    # `qual` ALSO feeds `measure_substance` — this candidate's own new
+    # opt-in guard in the `difference` branch of answer.py (mirroring the
+    # pre-existing `single-entity`/`unique-entity`/`combined` call sites of
+    # `_measure_substance_guard`, never called before for this consumer):
+    # a `difference` ask previously had NO decline-safety against Bob
+    # holding a DIFFERENT substance under the same bare measure ("Bob has
+    # 5 pairs of SOCKS") — the guard, scoped to exactly the two resolved
+    # holders, catches that and declines instead of silently answering a
+    # 'shoes' question from Bob's sock count. Every EXISTING (non-
+    # partitive) `difference` ask never binds `measure_substance`, so the
+    # new guard call is a no-op for all of them — zero behavior change.
+    #
+    # `of`/`qual` REQUIRED, inserted right after `item` and before `aux`:
+    # ask/how-many-more's own match requires `aux` immediately after
+    # `item`, so a partitive tail ("of shoes") fails that ask's match
+    # outright — never a partial match to tie against.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: dir, cat: delta}
+        - {slot: item, type: noun}
+        - {lit: of}
+        - {slot: qual, type: noun}
+        - {slot: aux, type: auxiliary}
+        - {slot: a, type: name}
+        - {slot: verb, type: verb}
+        - {lit: than}
+        - {slot: b, type: name}
+    resolves:
+      consumer: difference
+      a: "{a}"
+      b: "{b}"
+      measure: "{item}"
+      measure_qualifier: "{qual}"
+      measure_substance: "{qual}"
       verb: "{verb}"
 
   - id: ask/how-many-entity
@@ -2961,6 +3143,35 @@ asks:
       # unchanged. This is the fallback the single-entity consumer retries
       # when the bare entity comes back empty.
       entity_qualifier: "{who.qualifier}"
+
+  # NOTE (mining candidate partitive-measure-asks): a single-holder
+  # partitive sibling of ask/how-many-entity ("how many PAIRS OF SHOES does
+  # Ann have?", routed to the `single-entity` consumer with `measure` +
+  # `measure_qualifier` bound to the exact "{item}[{qual}]" key) was
+  # DRAFTED and DROPPED — the dev-train gate caught TWO confident wrongs
+  # the moment it started matching questions this ask family had always
+  # declined before: (1) gsm8k item b2d02b893826, "how many OUNCES of milk
+  # does James have left?" over premises stated in a DIFFERENT, non-
+  # interchangeable measure ("3 gallons... 128 ounces in a gallon") — the
+  # EXACT same wrong ask/how-many-entity's own "NOT given a partitive tail"
+  # comment above already documents for a widened match; a brand-new ask
+  # id with a REQUIRED tail hits the identical failure because the root
+  # cause is the single-entity consumer's conversion-blind bare-measure
+  # fallback, not which ask id reaches it. (2) gsm8k item 2cd6de761c9f,
+  # "John buys 4 pounds of beef... twice as many pounds of vegetables...
+  # how many pounds of vegetables did he use?" — the vegetables total is a
+  # RELATION (twice the beef total), never a Quantity of its own, so no
+  # "pound[vegetable]" key exists; the qualified lookup falls through to a
+  # bare 'pound' fold that mixes beef and vegetable events and commits 1.0
+  # instead of declining. Both are single-entity-consumer fallback-chain
+  # failures, not YAML-fixable without either a kernel-side decline guard
+  # (out of scope: this candidate is YAML-only) or a real relation/
+  # conversion consumer (a different candidate's job). The `combined`/
+  # `difference`/single-entity-in-place siblings below do NOT read
+  # `measure_qualifier` for their totals (or, for in-place, matched neither
+  # dev-train item above) and gated clean — scope stays exactly at what
+  # gated, the single-holder partitive-NP class is left for follow-up work
+  # with its own decline-safety guard.
 
   - id: ask/how-many-left-entityless
     match:

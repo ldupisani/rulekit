@@ -4955,3 +4955,52 @@ DEFERRED: `temporal-offset-age-recut` at integrate-conflict (another candidate i
 batch touched the same core.yaml age-relation region — it was cut from main, and the merge-base
 is behind the staging tip). Re-cut against the current tip. `qualified-variant-partitions` (1
 of 9) and `percent-change-relations` (1 of 8) dropped at the shape gate on honest walks.
+
+## Increment 103 — partitive-qualified measure asks ("how many CUPS OF FLOUR /
+PAIRS OF SHOES / POUNDS OF X does WHO have?")
+
+CLASS: partitive-qualified measure asks — a question phrased through a partitive NP ("how
+many pairs of shoes does Ann have?", "how many more pairs of shoes does Ann have than Bob?",
+"how many cups of flour do they have altogether?", "how many cups of flour remain") where no
+existing ask could bind the postnominal "of ITEM" tail at all outside the entity-less
+"there"/"left"/"combined" siblings wired up by the earlier `partitive-measure-ask-slot`
+candidate (increment 84). Every such question declined with "no ask shape recognizes this
+question" before any consumer was ever consulted, even though the premise layer already
+emits `Quantity(measure=<measure>, measure_qualifier=<item>)` for these NPs. MINIMAL PAIR:
+"Ann has 7 pairs of shoes. Bob has 5 pairs of shoes. How many more pairs of shoes does Ann
+have than Bob?" declines, while the same text with the ask's qualifier dropped ("how many
+more pairs...") resolves to `|ann - bob| of pair` = 2 — proving the gap is the ASK layer, not
+the premise layer.
+
+MECHANISM: YAML-ONLY, packs/arithmetic/rules/core.yaml. Four NEW ask ids, siblings of
+existing asks whose `item` slot is now followed by `{lit: of}` + `{slot: qual, type: noun}`,
+each emitting BOTH `measure: "{item}"` and `measure_qualifier: "{qual}"` in its `resolves:`
+block — exactly the pair the premise layer already stores on `Quantity` (condense.py's
+`measure_qualifier`, live since increment 97): `ask/how-many-in-place-partitive`
+(entity-less container/place reads, single-entity consumer), `ask/how-many-more-partitive`
+(named-pair difference consumer), `ask/how-many-combined-partitive` /
+`ask/how-many-combined-named-partitive` (pronoun and named-pair totality reads, combined
+consumer). No existing ask is edited — nothing that matches today can start matching
+differently. Each new ask consumes 2 extra tokens versus its non-partitive sibling, so
+ask-specificity ordering routes a partitive question to it without a tie; the tie analysis
+against `ask/how-many-entity-qualified` and `ask/how-many-entity-possessed` is documented in
+the rule comments, following the pattern established by `ask/how-many-plural-combined`.
+
+INFRASTRUCTURE — measured 0 SOLVED on its own (rewriting the whole pool's partitive NPs away,
+question and premises together, as a deliberately optimistic proxy flips 0 items to correct:
+every partitive item in the mined pool carries a SECOND blocker on top of the unreadable
+ask — an un-bound comparative standard, an un-read "the number of" relation frame, a missing
+per-share/coverage-rate/consumption-rate consumer, etc). This lands as the enabler the next
+batch is expected to cash in (partitive comparative / combined / remainder asks pairing with
+the difference, combined, and in-place consumers already proven complete on several pool
+items).
+
+FILES: packs/arithmetic/rules/core.yaml, tests/test_mining_increment_103.py.
+
+GATE (integrated, staging tip): dev-train diff NEUTRAL (0 SOLVED / 0 BROKE / 0 DECL->WRONG,
+79/79 correct unchanged, 3772 items, 100% precision). dev-holdout diff NEUTRAL (0 SOLVED / 0
+BROKE / 0 DECL->WRONG, 32/32 correct unchanged, 3701 items, 100% precision). Suite 52/52.
+Lint 0 errors (1 pre-existing warning: fraction-of-remnant/fraction-of-pool overlap,
+known-good). pytest 830 -> 840 (+10 new synthetic tests,
+tests/test_mining_increment_103.py).
+**TEST look: pending — spent manually.**
