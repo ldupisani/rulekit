@@ -15,12 +15,12 @@ every increment through the gates).
 
 **Current numbers (all verified at head):**
 - dev-train: 87 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
-- dev-holdout: 37 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 862 · lint: 0 errors, 1 intended warning
+- dev-holdout: 38 correct / 0 wrong (3,701 items)
+- curated suite: 52/52 · pytest: 868 · lint: 0 errors, 1 intended warning
 - bench wall: dev-train 16.6s -> 9.0s (trace opt-out) -> 1.7s at `--jobs 12`.
   `--jobs` defaults to 1; spend it in the SERIAL integration tail, never in the
   implementers' gates (they already run concurrently). See the two infra notes below.
-- TEST ledger (101 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- TEST ledger (102 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -5179,3 +5179,34 @@ all need their own ask shape.
 
 NOTE: one implementer (`percent-change-value-events`) died on an API transport error, not a
 gate. Its branch is absent; re-scout if wanted.
+
+## Batch 49 + increment 107 (2026-07-14) — a FOURTH latent bug, and a new rule about atomicity
+
+Batch 49 landed nothing: 4 candidates dropped at the shape gate (2/10, 2/12, 1/12, 1/12), and
+`relclause-subject-relations` was killed on SCOPE — a `yaml_only` brief that also rewrote three
+merge passes in `numbers.py::annotate_numbers` (+132/-52 in a frozen kernel scan function).
+
+**THE REVIEWER'S ARGUMENT IS A NEW INVARIANT.** It did not object merely because the edit was
+undeclared. It objected because *"a TEST-precision revert of this commit would silently revert
+the kernel fix too, or vice versa"*. That is about the **ATOMICITY OF TEST-LOOK ACCOUNTING**:
+
+  **An increment you cannot revert independently is not an increment.**
+
+Every TEST look buys the right to revert exactly one thing. Two unrelated changes in one commit
+destroy that, and the whole firewall rests on it.
+
+INCREMENT 107 — the fix, cut on its own and landed. **A FOURTH latent reading bug:**
+`annotate_numbers` ran its word-fraction / "N times" / "N percent" merges as single-shot
+`for ...: break`. Only the FIRST matching phrase in a sentence merged:
+
+  "Sam ate one half of the pie and one third of the cake."
+    main:  [('one half', 0.5), ('one', 1.0), ('third', 0.333)]   <- 'one third' NEVER merged
+    now:   [('one half', 0.5), ('one third', 0.333)]
+
+Any sentence with two such phrases was misread, and every downstream rule saw wrong units. Fixed
+by running each pass to a fixpoint. GATE: dev-train NEUTRAL, dev-holdout **SHIP +1 (37 -> 38)**,
+0 BROKE, 0 DECL->WRONG, suite 52/52, pytest 868. TEST look #102: 11/1 (91.7%) — HELD.
+
+FOUR latent bugs found this session, ALL from candidates that failed or were killed: weekday
+names (88), stale relation anchor (99), coordinated-clause binding (101), number-merge fixpoint
+(107). None was findable by coverage mining.
