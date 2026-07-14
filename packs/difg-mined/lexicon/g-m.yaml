@@ -738,8 +738,15 @@ entries:
     senses:
     - noun
   january:
+    # mining candidate month-qualified-events: was sensed 'time' — an INERT sense
+    # (nothing in the kernel reads it for this word; only 'today'/'now' use 'time',
+    # via the `temporal_marker` category). Because it was not a `timeperiod`, senses.py's
+    # capitalisation override read a mid-sentence "March" as a proper NAME, which put it
+    # in the PERSON antecedent pool as a rival to the actual person and broke the next
+    # sentence's pronoun binding (docs/deixis.md §4 — the same bug increment 88 fixed for
+    # weekdays). Retagged 'noun' so it can join `timeperiod`, exactly as the weekdays did.
     senses:
-    - time
+    - noun
   jar:
     senses:
     - noun
@@ -812,8 +819,15 @@ entries:
     - noun
     plural: juices
   july:
+    # mining candidate month-qualified-events: was sensed 'time' — an INERT sense
+    # (nothing in the kernel reads it for this word; only 'today'/'now' use 'time',
+    # via the `temporal_marker` category). Because it was not a `timeperiod`, senses.py's
+    # capitalisation override read a mid-sentence "March" as a proper NAME, which put it
+    # in the PERSON antecedent pool as a rival to the actual person and broke the next
+    # sentence's pronoun binding (docs/deixis.md §4 — the same bug increment 88 fixed for
+    # weekdays). Retagged 'noun' so it can join `timeperiod`, exactly as the weekdays did.
     senses:
-    - time
+    - noun
   jump:
     senses:
     - verb
@@ -826,8 +840,15 @@ entries:
     verb:
       lemma: jump
   june:
+    # mining candidate month-qualified-events: was sensed 'time' — an INERT sense
+    # (nothing in the kernel reads it for this word; only 'today'/'now' use 'time',
+    # via the `temporal_marker` category). Because it was not a `timeperiod`, senses.py's
+    # capitalisation override read a mid-sentence "March" as a proper NAME, which put it
+    # in the PERSON antecedent pool as a rival to the actual person and broke the next
+    # sentence's pronoun binding (docs/deixis.md §4 — the same bug increment 88 fixed for
+    # weekdays). Retagged 'noun' so it can join `timeperiod`, exactly as the weekdays did.
     senses:
-    - time
+    - noun
   junk:
     senses:
     - noun
@@ -1383,8 +1404,15 @@ entries:
     senses:
     - noun
   march:
+    # mining candidate month-qualified-events: was sensed 'time' — an INERT sense
+    # (nothing in the kernel reads it for this word; only 'today'/'now' use 'time',
+    # via the `temporal_marker` category). Because it was not a `timeperiod`, senses.py's
+    # capitalisation override read a mid-sentence "March" as a proper NAME, which put it
+    # in the PERSON antecedent pool as a rival to the actual person and broke the next
+    # sentence's pronoun binding (docs/deixis.md §4 — the same bug increment 88 fixed for
+    # weekdays). Retagged 'noun' so it can join `timeperiod`, exactly as the weekdays did.
     senses:
-    - time
+    - noun
   mark:
     senses:
     - noun

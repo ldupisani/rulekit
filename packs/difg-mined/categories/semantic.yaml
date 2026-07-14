@@ -768,18 +768,34 @@ members:
   # the SAME category as the pre-existing period nouns above (not a new
   # one) — see the 'monday' lexicon entry (packs/difg-mined/lexicon/
   # g-m.yaml) for why weekday names were retagged 'noun' to join it.
+  #
+  # january..december added by mining candidate month-qualified-events: the SAME
+  # bug in a new costume (docs/deixis.md §4). `may` is DELIBERATELY ABSENT — it is
+  # genuinely modal/month ambiguous, and a second sense would trigger the
+  # obligations.disambiguate() race registry.py documents for 'ones'.
   - afternoon
+  - april
+  - august
   - day
   - decade
+  - december
   - evening
+  - february
   - friday
+  - january
+  - july
+  - june
+  - march
   - monday
   - month
   - morning
   - night
+  - november
+  - october
   - saturday
   - season
   - semester
+  - september
   - sunday
   - thursday
   - tuesday
