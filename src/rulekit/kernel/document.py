@@ -21,6 +21,7 @@ from ..data.registry import Registry
 from .evaluate import ArithmeticLog
 from .facts import FactStore
 from .learn import learn
+from . import deixis
 from .model import Fact, Obligation, Reading, Unit
 from .patterns import RuleMatchResult, run_rules
 from .saturate import saturate
@@ -96,9 +97,24 @@ def _bind_discourse(readings: list[Reading]) -> set[int]:
             for i, ob in enumerate(obligations):
                 if ob.need != "refers" or ob.met:
                     continue
+                # deixis.resolve with the CONSTANT metric is exactly the rule this
+                # site hand-wrote ("unique antecedent, or leave unmet"): under a
+                # constant distance no candidate can strictly dominate another, so
+                # two-or-more always declines. Migrating is provably 0-diff; the
+                # PERSON metric is switched on later as its own gated increment
+                # (docs/deixis.md phase 5).
                 candidates = _discourse_candidates(readings, reading.sentence_index)
-                if len(candidates) == 1:
-                    (lemma, target), = candidates.items()
+                winner = deixis.resolve(
+                    [
+                        deixis.Referent(dimension=deixis.PERSON, key=lemma, payload=target)
+                        for lemma, target in candidates.items()
+                    ],
+                    deixis.Origo(sentence=reading.sentence_index, span=unit.span),
+                    deixis.constant,
+                    dimension=deixis.PERSON,
+                )
+                if winner is not None:
+                    lemma, target = winner.key, winner.payload
                     new = list(obligations)
                     new[i] = Obligation(ob.role, ob.need, target=target, optional=ob.optional)
                     reading.record(
@@ -157,8 +173,23 @@ def _bind_measure_anaphor(readings: list[Reading]) -> set[int]:
                     lemma = _measure_anaphor_candidate_lemma(cand)
                     if lemma is not None:
                         candidates.add(lemma)
-            if len(candidates) == 1:
-                (lemma,) = candidates
+            # Same primitive, DISCOURSE dimension: this resolves WHAT is counted, not
+            # WHO holds it. Typing the candidates is the point — a person antecedent
+            # can never be mistaken for a measure-noun antecedent, and vice versa.
+            # Constant metric => byte-identical to the `len(candidates) == 1` it
+            # replaces. Sorted for a deterministic candidate order (the set's
+            # iteration order must never be able to decide a binding).
+            winner = deixis.resolve(
+                [
+                    deixis.Referent(dimension=deixis.DISCOURSE, key=lemma)
+                    for lemma in sorted(candidates)
+                ],
+                deixis.Origo(sentence=reading.sentence_index, span=unit.span),
+                deixis.constant,
+                dimension=deixis.DISCOURSE,
+            )
+            if winner is not None:
+                lemma = winner.key
                 reading.record(
                     "bind-measure-anaphor", unit,
                     {"antecedent_lemma": lemma},
