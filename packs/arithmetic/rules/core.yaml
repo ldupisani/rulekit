@@ -120,6 +120,60 @@ rules:
         subject_label: "{who.label}"
         standard_label: "{std.label}"
 
+  - id: arithmetic/anchored-relation-possessive-kinship-standard
+    phase: read
+    description: >
+      mining candidate relation-standard-frames: "Her sister has 8 more
+      pencils than their grandmother" — the POSSESSIVE-KINSHIP sibling of
+      arithmetic/anchored-relation: the standard is a bare POSSESSIVE-
+      DETERMINER + common-noun NP ("their grandmother") with NO trailing
+      name at all, unlike the appositive prefix documented at the top of
+      this file ("than his friend Sam") which always expects a NAME to
+      follow the [pronoun, noun] pair. `std_det, type: pronoun`
+      (unconditional, same sense gate as every other appositive-prefix use
+      in this file) is mandatory here, never optional — this rule exists
+      ONLY for the determiner+noun shape. `standard: "{std}"` reads
+      `std`'s own default lemma ('grandmother') off the bare noun —
+      exactly the entity key the general SVO fold already uses for "Their
+      grandmother has 4 pencils" (no new consumer, no new fact kind). When
+      a name DOES follow ("than their grandmother Rosa"), arithmetic/
+      anchored-relation's own longer appositive-prefix match consumes MORE
+      tokens (through the name) and this rule's shorter match is dropped
+      by `subsumes` (facts.py) exactly the way the file's other "bare vs.
+      fuller" sibling pairs already rely on (e.g. arithmetic/times-as-
+      many-elided-standard vs. arithmetic/times-as-many).
+    match:
+      sentence:
+        - {slot: who, type: entity}
+        - {slot: verb, type: verb}
+        - {slot: n, type: number}
+        - {slot: dir, cat: delta}
+        - {slot: item, type: plural}
+        - opt:
+            - {slot: pp_prep, cat: preposition}
+            - opt:
+                - {slot: pp_det, type: pronoun}
+            - {slot: pp_obj, type: noun}
+        - {lit: than}
+        - {slot: std_det, type: pronoun}
+        - {slot: std, type: noun}
+    where:
+      - distinct: [who, std]
+      - distinct_measure: [item, std]
+    consumes: [n]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: "{item}"
+        measure_qualifier: "{item.qualifier}"
+        standard_qualifier: "{std.qualifier}"
+        factor: 1.0
+        offset: "n * sign(dir)"
+        verb: "{verb}"
+        subject_label: "{who.label}"
+        standard_label: "{std.label}"
+
   - id: arithmetic/anchored-relation-conjoined-anchor
     phase: read
     description: >
@@ -846,6 +900,64 @@ rules:
         verb: "{verb}"
         subject_label: "{who.label}"
 
+  - id: arithmetic/times-as-many-possessive-kinship-standard
+    phase: read
+    description: >
+      mining candidate relation-standard-frames: "Deka has three times as
+      many pencils as her sister" — the POSSESSIVE-KINSHIP sibling of
+      arithmetic/times-as-many: the standard is a bare POSSESSIVE-
+      DETERMINER + common-noun NP ("her sister") with NO trailing name at
+      all, unlike the appositive prefix documented at the top of this file
+      ("than his friend Sam") which always expects a NAME to follow the
+      [pronoun, noun] pair. `std_det, type: pronoun` (unconditional, same
+      sense gate as every other appositive-prefix use in this file) is
+      mandatory here, never optional — this rule exists ONLY for the
+      determiner+noun shape. `standard: "{std}"` reads `std`'s own default
+      lemma ('sister') off the bare noun — exactly the entity key the
+      general SVO fold already uses for "Her sister has 8 pencils" (no new
+      consumer, no new fact kind). PROVEN minimal pair on unmodified main:
+      "...as her sister. Her sister has 8 pencils..." declines outright
+      (the only Relation that fires there is arithmetic/times-as-many-
+      elided-standard's own spurious `$elided:standard$` reading of the
+      truncated "as many pencils" prefix — `std_seen` fails to bind "her"
+      as a resolved entity, so the `unbound: [std_seen]` guard lets that
+      shorter match through, and it then itself declines for lack of a
+      resolvable same-measure pool); this rule's LONGER match (it also
+      consumes the determiner and the kinship noun) is what wins by
+      `subsumes` (facts.py) and closes the gap. When a name DOES follow
+      ("as her sister Gigi"), arithmetic/times-as-many's own longer
+      appositive-prefix match consumes even more tokens (through the name)
+      and THIS rule's match is in turn dropped by the same mechanism.
+    match:
+      sentence:
+        - {slot: who, type: entity}
+        - {slot: verb, type: verb}
+        - {slot: k, type: multiplier}
+        - {lit: as}
+        - {lit: many}
+        - {slot: item, type: plural}
+        - opt:
+            - {slot: pp_prep, cat: preposition}
+            - opt:
+                - {slot: pp_det, type: pronoun}
+            - {slot: pp_obj, type: noun}
+        - {lit: as}
+        - {slot: std_det, type: pronoun}
+        - {slot: std, type: noun}
+    where:
+      - distinct: [who, std]
+      - distinct: [item, std]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: "{item}"
+        factor: "k"
+        offset: 0.0
+        verb: "{verb}"
+        subject_label: "{who.label}"
+        standard_label: "{std.label}"
+
   # mining candidate conjunct-comparative-quantities: the four rules below
   # read a comparative multiplier standing as the SECOND conjunct of a
   # verb's object list — "Sam has 21 pens and twice as many pencils (as
@@ -1514,6 +1626,125 @@ rules:
         - opt:
             - {slot: appos_det, type: pronoun}
             - {slot: appos_role, type: noun}
+        - {slot: std, type: entity}
+    where:
+      - distinct: [who, std]
+      - distinct: [item, std]
+    consumes: [n]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: "{item}"
+        factor: "k"
+        offset: "n * sign(dir)"
+        verb: "{verb}"
+        subject_label: "{who.label}"
+        standard_label: "{std.label}"
+
+  - id: arithmetic/affine-frame-relation-as-standard
+    phase: read
+    description: >
+      mining candidate relation-standard-frames: "Priya sold 4 more
+      stickers than 2 times the number of stickers AS Omar sold" — the
+      'as'-continuation sibling of arithmetic/affine-frame-relation,
+      mirroring the SAME 'that' vs. 'as' vs. bare-relative-clause split
+      arithmetic/times-the-number-of / arithmetic/times-frame-relation-
+      clause already carry for the PLAIN (non-affine) multiplier frame —
+      applied here to the AFFINE frame instead. `std, type: entity` (same
+      widening as every sibling in this family, plus `distinct: [item,
+      std]`). Structurally disjoint from arithmetic/affine-frame-relation:
+      that rule's `c, cat: complementizer` slot only matches 'that' ('as'
+      is lexiconed sense `particle`, never `complementizer`), so the two
+      rules' spans never tie on the same text — exactly the disjointness
+      arithmetic/times-the-number-of's own comment documents for its
+      'that'-vs-'as' sibling. Also disjoint from arithmetic/times-the-
+      number-of: that rule has no n/dir/than affine prefix at all, so it
+      never matches when one is present, and this rule's own `n`+`dir`+
+      `than` prefix is mandatory. PROVEN minimal pair on unmodified main:
+      "Priya sold 4 more stickers than 2 times the number of stickers as
+      Omar sold. If Omar sold 15 stickers..." declines outright even
+      though the identical arithmetic under the plain 'as many ITEM as Y'
+      frame (arithmetic/anchored-relation) already answers correctly; this
+      rule is what closes the frame-specific gap.
+    match:
+      sentence:
+        - {slot: who, type: entity}
+        - {slot: verb, type: verb}
+        - {slot: n, type: number}
+        - {slot: dir, cat: delta}
+        - opt:
+            - {slot: item_echo, type: noun}
+        - {lit: than}
+        - {slot: k, type: multiplier}
+        - {slot: frame, cat: aggregate_noun}
+        - {lit: of}
+        - {slot: item, type: noun}
+        - opt:
+            - {slot: pp_prep, cat: preposition}
+            - opt:
+                - {slot: pp_det, type: pronoun}
+            - {slot: pp_obj, type: noun}
+        - {lit: as}
+        - opt:
+            - {slot: appos_det, type: pronoun}
+            - {slot: appos_role, type: noun}
+        - {slot: std, type: entity}
+    where:
+      - distinct: [who, std]
+      - distinct: [item, std]
+    consumes: [n]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: "{item}"
+        factor: "k"
+        offset: "n * sign(dir)"
+        verb: "{verb}"
+        subject_label: "{who.label}"
+        standard_label: "{std.label}"
+
+  - id: arithmetic/affine-item-relation-clause
+    phase: read
+    description: >
+      mining candidate relation-standard-frames: "Priya has $25 less than
+      twice the money Omar has" — the BARE-ITEM sibling of arithmetic/
+      times-frame-relation-clause, applied to the AFFINE frame: no 'the
+      number/amount OF' framing at all (a MONEY-NP directly, "the money
+      Omar has"), ending in a bare RELATIVE-CLAUSE standard with no
+      complementizer, mirroring times-frame-relation-clause's own
+      deliberate absence of 'that'/'as' (see its comment) one frame level
+      up from the aggregate-noun form. `item, type: noun` (any common
+      noun, never gated on `aggregate_noun` — 'money' is the MEASURE
+      itself here, not a frame noun like 'number'/'amount') sits directly
+      after the multiplier — no explicit `{lit: the}` token: 'the' is
+      sense `article`, already in `SKIPPABLE_SENSES`, so the shared
+      pattern-matcher (patterns.py's `_try_match_at`) silently steps past
+      it before ANY token check runs, the same way every other rule in
+      this file already relies on (none of them spell out a literal
+      'the' either). This can NEVER collide with the 'the number of'/'the
+      amount of' frame rules: on that text, `item`
+      would instead bind the FRAME noun ('number'/'amount') and the very
+      next token would be the literal 'of' — never noun/name-sensed — so
+      `std, type: entity` fails to bind there and this rule declines
+      outright, leaving the dedicated frame rules (which DO consume 'of')
+      as the only survivors on that text. Same anchor-measure resolution
+      as arithmetic/times-as-much already relies on for a 'money'-measured
+      relation (saturate.py resolves it against the anchor's own currency
+      holding) — no saturate.py change. PROVEN minimal pair on unmodified
+      main: "Priya has $25 less than twice the money Omar has. If Omar has
+      40 dollars, how much money do they have together?" declines outright
+      before this rule.
+    match:
+      sentence:
+        - {slot: who, type: entity}
+        - {slot: verb, type: verb}
+        - {slot: n, type: number}
+        - {slot: dir, cat: delta}
+        - {lit: than}
+        - {slot: k, type: multiplier}
+        - {slot: item, type: noun}
         - {slot: std, type: entity}
     where:
       - distinct: [who, std]

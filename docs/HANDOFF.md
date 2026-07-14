@@ -5428,6 +5428,42 @@ SOLVED 0 / BROKE 0 / DECL->WRONG 0 / NET +0 / NEUTRAL (39 -> 39). pytest 912 pas
 + 6 new synthetic tests). suite 52/52. lint 0 errors, 1 warning (pre-existing known-good
 fraction-of-remnant/fraction-of-pool overlap). TEST look: pending — spent manually.
 
+## Increment 114 — relation STANDARDS in nominal frames (batch 2026-07-14f)
+
+CLASS: relation standards in nominal frames (count-noun / amount-of-money NPs, and
+possessive-kinship NPs) — the second holder of a combined ask whose amount is stated only as a
+RELATION whose standard never bound. Fresh `stats` (dev-train 95 correct, 3772 items) found the
+largest addressable decline reason to be "a combined ask needs at least two holders of X" at 90
+fully-read items; of those, 34 enumerate exactly ONE holder because the ask has already matched
+but the second holder's amount is a relation whose standard is stated as a count-noun/money-NP
+affine frame ("4 more than twice the number of pencils as X", "$25 less than twice the money X
+has") or a bare possessive-kinship NP ("as her sister", "than their grandmother") with no
+trailing name, keyed off the sentinel `$elided:standard$` today.
+
+MECHANISM (YAML-only, `packs/arithmetic/rules/core.yaml`): four new sibling rules, each additive
+and structurally disjoint from its base rule —
+1. `arithmetic/times-as-many-possessive-kinship-standard`: possessive-kinship sibling of
+   `arithmetic/times-as-many`; the standard is a bare `[possessive-determiner, common-noun]` NP
+   with no trailing name (`std_det, type: pronoun` mandatory, unlike the pre-existing appositive
+   prefix which always expects a name). `standard: "{std}"` keys off the noun's own lemma — the
+   same entity key the general SVO fold already uses for "Her sister has 8 marbles."
+2. `arithmetic/anchored-relation-possessive-kinship-standard`: the anchored-relation-chain
+   counterpart of (1).
+3/4. count-noun / amount-of-money frame siblings of increment 46's affine comparative rules —
+   "c more/less than k times {the number of|the amount of} ITEM {as|than} STANDARD" and "N dollars
+   less than twice the money STANDARD has" — reusing increment 104's count-noun-frame slots so the
+   standard head can sit behind "the number/amount of" or a relative clause.
+No new consumer, no new fact kind, no kernel edit: `synth/relation` resolves both the affine and
+possessive-kinship standards, and the existing `combined` consumer sums the holders. Widening
+was applied to the SPECIFIC rule ids above only — never a blanket find-replace on `standard`.
+
+GATE (integrated on staging tip, dev-train 95 baseline before this increment): dev-train diff
+SOLVED 4 (af2909139386, c60a8ee874b4, f325779c365e, fb7793f4d3fd) / BROKE 0 / DECL->WRONG 0 /
+NET +4 / SHIP (95 -> 99). dev-holdout diff SOLVED 0 / BROKE 0 / DECL->WRONG 0 / NET +0 / NEUTRAL
+(39 -> 39, unchanged). pytest 920 passed (912 baseline + 8 new synthetic tests in
+tests/test_mining_increment_114.py). suite 52/52. lint 0 errors, 1 warning (pre-existing
+known-good fraction-of-remnant/fraction-of-pool overlap). TEST look: pending — spent manually.
+
 ## Batch 51 (2026-07-14) — increments 112, 113. dev-train 95. FIVE FROM THE GOAL.
 
 LANDED (looks #106, #107 — both 11/1, 91.7%, HELD):
