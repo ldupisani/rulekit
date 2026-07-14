@@ -124,6 +124,20 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
             return sense == "noun" and unit.features.get("qualifier") is not None
         if t == "plural":
             return sense == "noun" and unit.features.get("number") == "plural"
+        if t == "common_noun":
+            # mining candidate conjunct-comparative-quantities: a BARE
+            # common-noun holder — sense noun, no `owner` (never a
+            # possessive-merged noun, `possessed`'s own tag), no
+            # `qualifier` (never an attribute-merged noun, `qualified`'s
+            # own tag), not plural (the plural-combined ask family's own
+            # territory). Structurally disjoint from `possessed`/
+            # `qualified`/`name` by construction — see SLOT_TYPES' comment.
+            return (
+                sense == "noun"
+                and unit.features.get("owner") is None
+                and unit.features.get("qualifier") is None
+                and unit.features.get("number") != "plural"
+            )
         if t == "counted":
             return sense == "noun" and kind == "count"
         if t == "verb":

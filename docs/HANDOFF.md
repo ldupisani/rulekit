@@ -5210,3 +5210,28 @@ by running each pass to a fixpoint. GATE: dev-train NEUTRAL, dev-holdout **SHIP 
 FOUR latent bugs found this session, ALL from candidates that failed or were killed: weekday
 names (88), stale relation anchor (99), coordinated-clause binding (101), number-merge fixpoint
 (107). None was findable by coverage mining.
+
+## Increment 108 — conjoined comparative quantities (batch 2026-07-14d)
+
+CLASS: a later conjunct of a verb's object/existential list states "K times / half as many Z as
+STANDARD" (or elides the standard: "and twice as many at night"), bundled with a bare-common-noun
+holder ask that cashes two of these in. 22 dev-train declines carried this surface; the tell was
+that the ASK already fired and only the conjunct's own quantity was missing.
+
+MECHANISM (two coordinated pieces, landed as one increment because the ask is what cashes the
+premise rule in):
+- `packs/arithmetic/rules/core.yaml`: four new pattern rules reading a comparative conjunct in a
+  verb's object list — `times-as-many-conjunct` (explicit standard, emits a Relation),
+  `times-as-many-conjunct-elided-standard` / `times-as-many-conjunct-elided-item` (standard is the
+  preceding conjunct's own quantity, emits a Quantity directly), and
+  `anaphoric-multiplier-conjunct-many` ("K times this/that many"). Gated on existing state/event
+  verb categories and existing multiplier words — no new vocabulary.
+- `src/rulekit/kernel/patterns.py` + `src/rulekit/data/schemas.py`: a new slot type `common_noun`
+  (sense `noun`, no `owner`/`qualifier` feature, singular-only) plus
+  `ask/how-many-entity-common-noun`, disjoint from `ask/how-many-entity`'s existing `possessed`/
+  `qualified` types so no tie-break collision is possible. Used ONLY on the new ask id.
+
+GATE (integrated on staging tip, dev-train 87 -> 89 baseline): dev-train diff SOLVED 2
+(cb266dff020c, d3cf31c730c1) / BROKE 0 / DECL->WRONG 0 / NET +2 / SHIP. dev-holdout diff SOLVED 0
+/ BROKE 0 / DECL->WRONG 0 / NET +0 / NEUTRAL (38 -> 38). pytest 877 passed. suite 52/52. lint 0
+errors (1 pre-existing known-good warning). TEST look: pending — spent manually.

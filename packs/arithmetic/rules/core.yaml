@@ -846,6 +846,280 @@ rules:
         verb: "{verb}"
         subject_label: "{who.label}"
 
+  # mining candidate conjunct-comparative-quantities: the four rules below
+  # read a comparative multiplier standing as the SECOND conjunct of a
+  # verb's object list — "Sam has 21 pens and twice as many pencils (as
+  # Jamie)", "a truck holds 20 large boxes and twice as many small ones",
+  # "the bird caught 8 fish by day and twice this many by night" — a shape
+  # the general verb->dobj binding cannot reach at all: it only ever
+  # captures the FIRST conjunct (HANDOFF's own invariant; increment 11/35
+  # closed the gap for purchase/state BARE-NOUN second conjuncts only — a
+  # comparative conjunct is a different, unbuilt shape neither one covers).
+  # Each rule below matches the WHOLE conjoined clause structurally, the
+  # same "read the full span, emit every fact the general fold would have"
+  # design arithmetic/anchored-relation-conjoined-anchor already uses for a
+  # relation-bearing trailing clause: because the match necessarily spans
+  # the verb and the FIRST conjunct's own dobj too, `pattern_consumed`
+  # (document.py) marks them consumed and learn.py's general fold (its own
+  # `verb.features.get("pattern_consumed")` check) skips this verb
+  # ENTIRELY — so every rule here re-emits the first conjunct's own
+  # Quantity (`item1`) byte-identical to what the general fold would have
+  # produced alone, alongside whatever the second conjunct contributes.
+  # `item1, type: counted` (not a separate number+plural pair): condense.py
+  # merges a bare "NUMBER NOUN" span into ONE unit ("20 parts") carrying
+  # both the lemma and the numeric `value` — the same merged shape
+  # arithmetic/anchored-relation-postfix's own item slot and arithmetic/
+  # anchored-relation-conjoined-anchor's own `std_echo` slot already use.
+  # Unlike every demonstrative/elided-standard sibling ELSEWHERE in this
+  # file (which recover an unknown antecedent via a reserved sentinel
+  # resolved in saturate.py, because the antecedent is a genuinely separate
+  # sentence), the antecedent here is `item1`'s own bound `value` — a
+  # literal ALREADY BOUND in this SAME clause — so the "implicit standard"
+  # rules below emit the second conjunct's Quantity DIRECTLY (`k *
+  # item1`), no Relation, no saturate.py change, no sentinel at all.
+  # `who`/`std, type: entity`: same widening as every other relation rule
+  # in this file. Only the 'many'/plural-countable surface is covered (not
+  # 'much'/mass nouns) — none of this candidate's structural samples used
+  # a mass noun; that sibling is left for follow-up.
+  - id: arithmetic/times-as-many-conjunct
+    phase: read
+    description: >
+      "Sam has 21 pens and twice as many pencils as Jamie has erasers" — the
+      full "as many ITEM as STD" continuation is present, so this emits an
+      ordinary Relation for the second conjunct (the SAME shape and
+      saturate.py resolution as arithmetic/times-as-many, just read from a
+      conjunct position). See the family header comment above for the
+      shared consumption/re-emission mechanism.
+    match:
+      sentence:
+        - {slot: who, type: entity}
+        - {slot: verb, type: verb}
+        - {slot: item1, type: counted}
+        - opt:
+            - {slot: pp_prep, cat: preposition}
+            - opt:
+                - {slot: pp_det, type: pronoun}
+            - {slot: pp_obj, type: noun}
+        - {lit: and}
+        - {slot: k, type: multiplier}
+        - {lit: as}
+        - {lit: many}
+        - {slot: item2, type: plural}
+        - {lit: as}
+        - opt:
+            - {slot: appos_det, type: pronoun}
+            - {slot: appos_role, type: noun}
+        - {slot: std, type: entity}
+    where:
+      - distinct: [who, std]
+    emits:
+      - fact: quantity
+        entity: "{who}"
+        measure: "{item1}"
+        measure_qualifier: "{item1.qualifier}"
+        value: "item1"
+        verb: "{verb}"
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: "{item2}"
+        factor: "k"
+        offset: 0.0
+        verb: "{verb}"
+        subject_label: "{who.label}"
+        standard_label: "{std.label}"
+
+  - id: arithmetic/times-as-many-conjunct-elided-standard
+    phase: read
+    description: >
+      "A truck holds 20 large boxes and twice as many small boxes" — the
+      second conjunct names its own ITEM but no "as STD" continuation
+      follows at all: the standard is the IMMEDIATELY PRECEDING conjunct's
+      own quantity (`item1`'s own bound value), already bound in this same
+      clause, so this emits the second conjunct's Quantity DIRECTLY (`k *
+      item1`) — see the family header comment. `where: unbound:
+      [std_seen]` is the same general negative-lookahead mirror
+      arithmetic/times-as-many-elided-standard's own comment documents: an
+      "as STD" continuation, when actually present, is claimed by
+      arithmetic/times-as-many-conjunct instead — this rule only ever
+      survives when no such continuation is grammatically present, so the
+      two rules never both fire on the same clause.
+    match:
+      sentence:
+        - {slot: who, type: entity}
+        - {slot: verb, type: verb}
+        - {slot: item1, type: counted}
+        - opt:
+            - {slot: pp_prep, cat: preposition}
+            - opt:
+                - {slot: pp_det, type: pronoun}
+            - {slot: pp_obj, type: noun}
+        - {lit: and}
+        - {slot: k, type: multiplier}
+        - {lit: as}
+        - {lit: many}
+        - {slot: item2, type: plural}
+        - opt:
+            - {lit: as}
+            - opt:
+                - {slot: appos_det, type: pronoun}
+                - {slot: appos_role, type: noun}
+            - {slot: std_seen, type: entity}
+    where:
+      - unbound: [std_seen]
+    emits:
+      - fact: quantity
+        entity: "{who}"
+        measure: "{item1}"
+        measure_qualifier: "{item1.qualifier}"
+        value: "item1"
+        verb: "{verb}"
+      - fact: quantity
+        entity: "{who}"
+        measure: "{item2}"
+        measure_qualifier: "{item2.qualifier}"
+        value: "k * item1"
+        verb: "{verb}"
+        # mining candidate conjunct-comparative-quantities: a within-
+        # sentence CONJUNCT index (model.py's `segment`, the increment
+        # 11/35 "conjoined-event-conjuncts" mirror) — when item1 and item2
+        # bare-fold to the SAME (measure, measure_qualifier) pair ("20
+        # parts... twice as many parts"), this fact would otherwise
+        # collide at facts.py's admission time with the sibling fact
+        # above, sharing an identical key(). Any non-None value distinct
+        # from the first fact's (implicit) 0 makes facts.py's fifth
+        # collision mirror admit BOTH facts as-is (no rename, unlike the
+        # qualifier/owner/label mirrors) so the ordinary single-entity
+        # fold sums them — exactly the established discipline, just
+        # applied to a genuinely additive COMPARATIVE conjunct (never an
+        # accidental restatement) rather than a bare repeated count. A
+        # cross-measure pair (different lemma or qualifier) never even
+        # reaches this comparison (keys already differ), so `segment` is
+        # inert there — harmless on every path that doesn't need it.
+        segment: 1
+
+  - id: arithmetic/times-as-many-conjunct-elided-item
+    phase: read
+    description: >
+      "A vehicle holds 20 parts on one side and twice as many on the other"
+      — the second conjunct names NEITHER its own item noun NOR a standard:
+      "and K times as many" with nothing structurally meaningful following
+      ('on the other side' is a bare adjunct, not a measure noun or an
+      entity). The elided item is the SAME measure as the first conjunct,
+      and (exactly like the elided-standard sibling above) the antecedent
+      count is already bound in this same clause (`item1`'s own `value`),
+      so this emits the SAME-measure Quantity DIRECTLY (`k * item1`) — see
+      the family header comment. `where: unbound: [item2_seen, std_seen]`
+      rejects this match whenever either an explicit item noun
+      (arithmetic/times-as-many-conjunct-elided-standard's own territory)
+      or an explicit "as STD" continuation (arithmetic/times-as-many-
+      conjunct's territory) is actually present immediately after 'many' —
+      the same general negative-lookahead mirror used throughout this
+      family, keeping all three rules mutually exclusive on any one clause.
+    match:
+      sentence:
+        - {slot: who, type: entity}
+        - {slot: verb, type: verb}
+        - {slot: item1, type: counted}
+        - opt:
+            - {slot: pp_prep, cat: preposition}
+            - opt:
+                - {slot: pp_det, type: pronoun}
+            - {slot: pp_obj, type: noun}
+        - {lit: and}
+        - {slot: k, type: multiplier}
+        - {lit: as}
+        - {lit: many}
+        - opt:
+            - {slot: item2_seen, type: plural}
+        - opt:
+            - {lit: as}
+            - opt:
+                - {slot: appos_det, type: pronoun}
+                - {slot: appos_role, type: noun}
+            - {slot: std_seen, type: entity}
+    where:
+      - unbound: [item2_seen, std_seen]
+    emits:
+      - fact: quantity
+        entity: "{who}"
+        measure: "{item1}"
+        measure_qualifier: "{item1.qualifier}"
+        value: "item1"
+        verb: "{verb}"
+      - fact: quantity
+        entity: "{who}"
+        measure: "{item1}"
+        measure_qualifier: "{item1.qualifier}"
+        value: "k * item1"
+        verb: "{verb}"
+        # mining candidate conjunct-comparative-quantities: same-measure
+        # by construction (the item noun is elided, reusing item1's own
+        # measure) — this fact ALWAYS shares its key() with the sibling
+        # fact above, so `segment` (see the elided-standard sibling's own
+        # comment for the full mechanism) always applies here.
+        segment: 1
+
+  - id: arithmetic/anaphoric-multiplier-conjunct-many
+    phase: read
+    description: >
+      "The bird caught 8 fish by day and twice this many by night" — the
+      DEMONSTRATIVE-anaphor sibling (arithmetic/anaphoric-multiplier-
+      standard-many's own "twice THAT/THIS MANY" shape — no `{lit: as}`
+      anywhere in that idiom, 'this'/'these'/'those' are sensed `article`
+      and already SKIPPABLE, 'that' takes an explicit optional literal
+      here, same as that rule) read from a CONJUNCT position instead of a
+      fresh sentence: the antecedent is the IMMEDIATELY PRECEDING
+      conjunct's own literal count (`item1`'s own bound value), not a
+      document-wide unique prior Quantity, so — exactly like the
+      elided-item sibling above — this emits the second conjunct's
+      Quantity DIRECTLY (`k * item1`) under the SAME measure as the first
+      conjunct. Structurally disjoint from every 'as many' sibling above:
+      this sequence has no `{lit: as}` token at all, so it can never match
+      where 'as' actually appears in the text (patterns.py's matcher does
+      not auto-skip a `particle`-sensed token the way it does
+      'article'/'punct'). `where: unbound: [item2_seen]` guards the rarer
+      case where an explicit item noun DOES follow the demonstrative
+      ("twice this many fish") — declining here defers to general
+      machinery rather than risk mis-eliding a stated noun.
+    match:
+      sentence:
+        - {slot: who, type: entity}
+        - {slot: verb, type: verb}
+        - {slot: item1, type: counted}
+        - opt:
+            - {slot: pp_prep, cat: preposition}
+            - opt:
+                - {slot: pp_det, type: pronoun}
+            - {slot: pp_obj, type: noun}
+        - {lit: and}
+        - {slot: k, type: multiplier}
+        - opt:
+            - {lit: that}
+        - {lit: many}
+        - opt:
+            - {slot: item2_seen, type: plural}
+    where:
+      - unbound: [item2_seen]
+    emits:
+      - fact: quantity
+        entity: "{who}"
+        measure: "{item1}"
+        measure_qualifier: "{item1.qualifier}"
+        value: "item1"
+        verb: "{verb}"
+      - fact: quantity
+        entity: "{who}"
+        measure: "{item1}"
+        measure_qualifier: "{item1.qualifier}"
+        value: "k * item1"
+        verb: "{verb}"
+        # mining candidate conjunct-comparative-quantities: same-measure by
+        # construction (the item noun is elided, anaphoric to item1's own
+        # measure) — see arithmetic/times-as-many-conjunct-elided-item's
+        # comment for the full `segment` mechanism.
+        segment: 1
+
   - id: arithmetic/times-as-much
     phase: read
     description: >
@@ -3511,6 +3785,43 @@ asks:
       # unchanged. This is the fallback the single-entity consumer retries
       # when the bare entity comes back empty.
       entity_qualifier: "{who.qualifier}"
+
+  - id: ask/how-many-entity-common-noun
+    # mining candidate conjunct-comparative-quantities: sibling of
+    # ask/how-many-entity for a BARE common-noun holder ("how many parts
+    # does the vehicle have?") — a NEW slot type `common_noun` (schemas.py
+    # SLOT_TYPES, gated in patterns.py's `_slot_ok`), never a widening of
+    # ask/how-many-entity's own `who, type: name` (that widening to `type:
+    # entity` was tried and reverted right there — see its own comment: it
+    # ties on consumed-unit count with ask/how-many-entity-possessed and
+    # ask/how-many-entity-qualified, and the alphabetical id tie-break then
+    # wrongly routes a possessive/qualified subject HERE instead, dropping
+    # their entity_owner/entity_qualifier fallback). `common_noun` is
+    # structurally DISJOINT from both `possessed` (requires an `owner`
+    # feature) and `qualified` (requires a `qualifier` feature) — no unit
+    # can ever satisfy two of the three, so no tie-break collision is
+    # possible in either direction; a bare holder ("the vehicle") only ever
+    # matches here, a possessive/qualified one only ever matches its own
+    # existing ask, exactly as before this candidate. Singular-only (never
+    # plural) so this cannot steal a plural common-noun subject from
+    # ask/how-many-plural-combined ("these three boys") — measured 1 BROKE
+    # during development with a plural-inclusive gate; the number check
+    # inside `common_noun` itself is the fix.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {slot: aux, type: future_modal}
+        - {slot: who, type: common_noun}
+        - {slot: verb, type: verb}
+    resolves:
+      consumer: single-entity
+      entity: "{who}"
+      measure: "{item}"
+      verb: "{verb}"
+      measure_qualifier: "{item.qualifier}"
+      sum_measure_variants: "true"
 
   # NOTE (mining candidate partitive-measure-asks): a single-holder
   # partitive sibling of ask/how-many-entity ("how many PAIRS OF SHOES does

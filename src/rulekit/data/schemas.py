@@ -152,6 +152,19 @@ SLOT_TYPES = (
     "number", "fraction", "multiplier", "name", "noun", "plural", "counted",
     "entity", "verb", "auxiliary", "modal", "future_modal", "pronoun", "word",
     "adjective", "possessed", "qualified", "percent",
+    # mining candidate conjunct-comparative-quantities: a BARE common-noun
+    # holder ("the vehicle", "the animal") — sense noun, no `owner` feature
+    # (never a possessive-merged noun, see `possessed`), no `qualifier`
+    # feature (never an attribute-merged noun, see `qualified`), singular
+    # only. Structurally DISJOINT from both `possessed` and `qualified` (no
+    # unit can carry BOTH a bare identity and either merge tag), and from
+    # `name` (a name's sense is never `noun`) — so a new ask built on this
+    # type can never tie-break collide with ask/how-many-entity-possessed or
+    # ask/how-many-entity-qualified the way widening `who` to `type: entity`
+    # on ask/how-many-entity itself already tried and reverted (see that
+    # ask's own comment). Singular-only so it cannot steal a plural
+    # common-noun subject from the plural-combined ask family.
+    "common_noun",
 )
 
 
