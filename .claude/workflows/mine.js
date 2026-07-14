@@ -39,7 +39,7 @@ const SCOUT_BRIEF = {
     class_name: { type: 'string' },
     evidence: {
       type: 'object',
-      required: ['pool_frequency', 'structural_sample', 'premise_mechanism'],
+      required: ['pool_frequency', 'structural_sample', 'premise_mechanism', 'same_items'],
       properties: {
         // AN ASK SHAPE WITHOUT ITS PREMISE MACHINERY IS A DEAD BRIEF.
         //
@@ -59,6 +59,34 @@ const SCOUT_BRIEF = {
         premise_mechanism: {
           type: 'string',
           description: 'REQUIRED. For a walked item that does NOT resolve today: name the PREMISE-side mechanism that must exist for the ask to have anything to fold — the fact(s) the premises must yield, and whether they already do. If the premises already produce them and only the ask is missing, say so explicitly ("premises already yield Quantity(x, y, N); the ask shape is the only gap") — that is the ONE case where an ask-only brief is legitimate. If they do not, this brief must build BOTH, or it is a dead brief and you should not propose it.',
+        },
+        // ────────────────────────────────────────────────────────────────────
+        // THE MUTUAL BLOCK (docs/negative-results.md; docs/dual-brief.md §1).
+        //
+        // MEASURED, from both directions:
+        //   Fix the READING -> the items die at the ASK wall  (67% of the reading gap).
+        //   Fix the ASK     -> the items die at the READING gap (a working compositional
+        //                      parser reads 24 questions correctly; all 24 die on facts).
+        //   => THE TWO GAPS ARE MUTUALLY BLOCKING. Neither side alone converts anything.
+        //
+        // This is why EVERY single-sided increment measured 0 SOLVED: the 481 per-unit
+        // seam, GroupTotal, month/time, save->acquire, the future_modal widening, and the
+        // compositional ask frame. Not bad luck; not exhausted seams. A declining item is
+        // blocked on SEVERAL COORDINATES AT ONCE, and fixing one leaves it on the next.
+        //
+        // `premise_mechanism` above says which halves are missing. It is NOT enough: a
+        // brief can name both halves plausibly and still convert nothing, because the two
+        // halves are missing on DIFFERENT items. The only proof a brief is real is the set
+        // of items where its halves are JOINTLY SUFFICIENT — where these fixes, together,
+        // are the LAST blockers.
+        //
+        // PROSE DOES NOT ENFORCE. This is a schema field, not a note in HANDOFF, because
+        // the last retargeting written into prose was correctly ignored by the scout.
+        same_items: {
+          type: 'array',
+          minItems: 3,
+          items: { type: 'string' },
+          description: 'REQUIRED. Item IDs (dev-train) where BOTH halves of this brief are the LAST remaining blockers — i.e. items this increment actually CONVERTS declined->correct. You must have WALKED these items and verified that nothing else blocks them: read the premises, check the facts the engine already has, check the ask parses (or that this brief supplies it). A frequency count is a CEILING, not a yield (the 481 lesson) — this list is the yield. If you cannot name 3 such items, the two halves are missing on DIFFERENT items and this brief converts nothing: DO NOT PROPOSE IT.',
         },
         // THE YIELD ESTIMATE (methodology §9). Matches for this class's ASK FAMILY
         // within the ADDRESSABLE POOL — items that are fully-read (no unknown words)
