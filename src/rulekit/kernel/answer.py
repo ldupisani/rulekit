@@ -13,6 +13,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from ..data.registry import Registry
+from . import deixis
 from .evaluate import ArithmeticLog, evaluate
 from .facts import FactStore
 from .model import (
@@ -42,7 +43,9 @@ class Answer:
         return self.kind == "number"
 
 
-def _resolve_measure_against(measure: str, candidates: set[str], reg: Registry) -> str | None:
+def _resolve_measure_against(
+    measure: str, candidates: set[str], reg: Registry, journal=None
+) -> str | None:
     """Resolve a measure word against a CANDIDATE set of in-play measures.
 
     - a word matching a candidate resolves to itself ('pounds' in a pounds
@@ -72,21 +75,39 @@ def _resolve_measure_against(measure: str, candidates: set[str], reg: Registry) 
         m for m in candidates
         if any(reg.word_in_category(m, c) for c in categories)
     )
-    if len(present) == 1:
-        return present[0]
+    # THE WEAKEST ORIGO OF ALL THE SITES: no sentence, no span, no entity — an empty
+    # Origo(), because "which measure does this ask mean?" is asked from nowhere at all.
+    # Note the site is TRI-STATE, and only this branch is a deictic resolution: zero
+    # candidates PASSES THROUGH unchanged (a soft non-decline), while two-or-more is a
+    # hard decline. Constant metric => byte-identical to the `len(present) == 1` it
+    # replaces.
+    winner = deixis.resolve(
+        [deixis.Referent(dimension=deixis.DISCOURSE, key=m) for m in present],
+        deixis.Origo(),
+        deixis.constant,
+        dimension=deixis.DISCOURSE,
+        journal=journal,
+        source="answer/resolve-measure",
+    )
+    if winner is not None:
+        return winner.key
     if present:
         return None  # mixed measures of the category — ambiguous
     return singular
 
 
-def _resolve_measure(measure: str, store: FactStore, reg: Registry) -> str | None:
+def _resolve_measure(
+    measure: str, store: FactStore, reg: Registry, journal=None
+) -> str | None:
     """Resolve the ask's measure word against the FACTS (see
     `_resolve_measure_against` for the category-fallback rules)."""
     in_store = {q.measure for q in store.by_kind(Quantity)}
-    return _resolve_measure_against(measure, in_store, reg)
+    return _resolve_measure_against(measure, in_store, reg, journal=journal)
 
 
-def _resolve_dimension_measure(measure: str, store: FactStore, reg: Registry) -> str | None:
+def _resolve_dimension_measure(
+    measure: str, store: FactStore, reg: Registry, journal=None
+) -> str | None:
     """mining candidate dimension-aggregate-asks: resolve a DIMENSION word
     ('height'/'weight'/'age'/'distance'/'balance'/'earnings'/'cost' — an
     aggregate ask's measure named by WHAT is measured, not by the unit) or
@@ -121,17 +142,31 @@ def _resolve_dimension_measure(measure: str, store: FactStore, reg: Registry) ->
         ]
     if not families:
         return None
-    present = sorted(
-        m for m in in_store
-        if any(reg.word_in_category(m, f) for f in families)
+    # Another site docs/deixis.md's inventory of fifteen missed: the same degenerate
+    # rule again, over a DIFFERENT registry set (dimension_categories, never
+    # interchangeable_categories). Same empty Origo() — a dimension ask asks from
+    # nowhere too. Unlike _resolve_measure_against this one is BINARY, not tri-state:
+    # zero candidates declines rather than passing through.
+    winner = deixis.resolve(
+        [
+            deixis.Referent(dimension=deixis.DISCOURSE, key=m)
+            for m in sorted(
+                m for m in in_store
+                if any(reg.word_in_category(m, f) for f in families)
+            )
+        ],
+        deixis.Origo(),
+        deixis.constant,
+        dimension=deixis.DISCOURSE,
+        journal=journal,
+        source="answer/resolve-dimension-measure",
     )
-    if len(present) == 1:
-        return present[0]
-    return None  # zero or ambiguous family members in the facts — never guess
+    # zero or ambiguous family members in the facts — never guess
+    return winner.key if winner is not None else None
 
 
 def _check_req_unit(
-    req_unit: str | None, singular: str, store: FactStore, reg: Registry
+    req_unit: str | None, singular: str, store: FactStore, reg: Registry, journal=None
 ) -> bool:
     """Decline-safety for a parenthetical unit qualifier ("how much money,
     in dollars, ...", mining candidate unit-parenthetical-asks): the
@@ -148,7 +183,7 @@ def _check_req_unit(
     if req_unit is None:
         return True
     in_store = {q.measure for q in store.by_kind(Quantity)}
-    return _resolve_measure_against(req_unit, in_store, reg) == singular
+    return _resolve_measure_against(req_unit, in_store, reg, journal=journal) == singular
 
 
 def _measure_substance_guard(
@@ -663,9 +698,9 @@ def _combined_holder_totals(
     # never sets this key and keeps calling `_resolve_measure` exactly as
     # before. See `_resolve_dimension_measure`'s own docstring.
     if query.get("dimension_measure"):
-        singular = _resolve_dimension_measure(measure, store, reg)
+        singular = _resolve_dimension_measure(measure, store, reg, journal=log.journal)
     else:
-        singular = _resolve_measure(measure, store, reg)
+        singular = _resolve_measure(measure, store, reg, journal=log.journal)
     if singular is None:
         return Answer("decline", None,
                       f"measure {measure!r} is ambiguous across the facts")
@@ -801,12 +836,12 @@ def answer(
         # `measure_qualifier: "{item.qualifier}"` — a no-op empty string
         # everywhere else), never the entity-level `entity_qualifier`.
         measure_qualifier = query.get("measure_qualifier")
-        singular = _resolve_measure(measure, store, reg)
+        singular = _resolve_measure(measure, store, reg, journal=log.journal)
         if singular is None:
             return Answer("decline", None,
                           f"measure {measure!r} is ambiguous across the facts")
         req_unit = query.get("req_unit")
-        if not _check_req_unit(req_unit, singular, store, reg):
+        if not _check_req_unit(req_unit, singular, store, reg, journal=log.journal):
             return Answer(
                 "decline", None,
                 f"asked unit {req_unit!r} does not match resolved measure {singular!r}",
@@ -1277,7 +1312,7 @@ def answer(
         # an ENTITY-LESS ask ("how many balloons are left?") resolves iff
         # exactly one entity holds the measure — definitive-or-decline
         measure = query["measure"]
-        singular = _resolve_measure(measure, store, reg)
+        singular = _resolve_measure(measure, store, reg, journal=log.journal)
         if singular is None:
             return Answer("decline", None,
                           f"measure {measure!r} is ambiguous across the facts")
@@ -1289,7 +1324,18 @@ def answer(
         entities = sorted(
             {q.entity for q in store.by_kind(Quantity) if q.measure == singular}
         )
-        if len(entities) != 1:
+        # An ENTITY-LESS ask ("how many balloons are left?") has, by construction, no
+        # reference point: the origo it wants is the narrative present, and there is
+        # none. Hence the empty Origo(). Constant metric => byte-identical to the
+        # `len(entities) != 1` it replaces; the decline reason is preserved verbatim.
+        if deixis.resolve(
+            [deixis.Referent(dimension=deixis.PERSON, key=e) for e in entities],
+            deixis.Origo(),
+            deixis.constant,
+            dimension=deixis.PERSON,
+            journal=log.journal,
+            source="answer/unique-entity",
+        ) is None:
             return Answer(
                 "decline", None,
                 f"{len(entities)} entities hold {singular!r} — an entity-less "
@@ -1381,7 +1427,7 @@ def answer(
 
     if consumer == "difference":
         measure = query["measure"]
-        singular = _resolve_measure(measure, store, reg)
+        singular = _resolve_measure(measure, store, reg, journal=log.journal)
         if singular is None:
             return Answer("decline", None,
                           f"measure {measure!r} is ambiguous across the facts")
@@ -1521,7 +1567,16 @@ def answer(
         entities = sorted(
             {q.entity for q in store.by_kind(Quantity) if q.measure == item}
         )
-        if len(entities) != 1:
+        # A THIRD unique-holder site the deixis.md inventory missed. Same shape, same
+        # empty origo, same rule.
+        if deixis.resolve(
+            [deixis.Referent(dimension=deixis.PERSON, key=e) for e in entities],
+            deixis.Origo(),
+            deixis.constant,
+            dimension=deixis.PERSON,
+            journal=log.journal,
+            source="answer/partition-total-holder",
+        ) is None:
             return Answer(
                 "decline", None,
                 f"{len(entities)} entities hold {item!r} — the partition "
@@ -1760,12 +1815,12 @@ def answer(
         # appears once, here.
         entity = query["entity"]
         measure = query.get("measure", "currency")
-        singular = _resolve_measure(measure, store, reg)
+        singular = _resolve_measure(measure, store, reg, journal=log.journal)
         if singular is None:
             return Answer("decline", None,
                           f"measure {measure!r} is ambiguous across the facts")
         req_unit = query.get("req_unit")
-        if not _check_req_unit(req_unit, singular, store, reg):
+        if not _check_req_unit(req_unit, singular, store, reg, journal=log.journal):
             return Answer(
                 "decline", None,
                 f"asked unit {req_unit!r} does not match resolved measure {singular!r}",
@@ -1885,7 +1940,7 @@ def answer(
         # risking it). Commits only when EXACTLY one Goal fact and exactly
         # one current holding resolve; anything else is a genuine ambiguity.
         entity, measure = query["entity"], query["measure"]
-        singular = _resolve_measure(measure, store, reg)
+        singular = _resolve_measure(measure, store, reg, journal=log.journal)
         if singular is None:
             return Answer("decline", None,
                           f"measure {measure!r} is ambiguous across the facts")

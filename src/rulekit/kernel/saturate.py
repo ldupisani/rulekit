@@ -279,7 +279,9 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
         exact = quantities.get((entity, measure))
         if exact is not None:
             return measure, exact
-        candidate = _resolve_measure_against(measure, measures_by_entity.get(entity, set()), reg)
+        candidate = _resolve_measure_against(
+            measure, measures_by_entity.get(entity, set()), reg, journal=log.journal
+        )
         if candidate is None or candidate == measure:
             return None
         candidate_known = quantities.get((entity, candidate))
@@ -990,7 +992,7 @@ def _fraction_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> list
             continue
         # "40% of the MONEY" — the pool's measure resolves through the same
         # category machinery as the asks (money → the unique currency in play)
-        measure = _resolve_measure(fq.measure, store, reg)
+        measure = _resolve_measure(fq.measure, store, reg, journal=log.journal)
         if measure is None:
             continue
         base = _pool_before(store, reg, fq.provenance.sentence, measure, log, "synth/fraction")
@@ -1552,7 +1554,7 @@ def _sum_constraint_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -
         bridged_rels = [
             r for r in all_relations
             if r.measure != measure
-            and _resolve_measure_against(r.measure, {measure}, reg) == measure
+            and _resolve_measure_against(r.measure, {measure}, reg, journal=log.journal) == measure
         ]
         rels = exact_rels + bridged_rels
         if len(rels) != 1:
