@@ -491,8 +491,16 @@ Stop condition 1 of `docs/reading-gap.md`, met exactly as written:
 **GSM8K coverage is DONE at 103/0 (100% precision), 40/0 dev-holdout, 91.7% TEST.** Not
 failed — *converged*. Both halves of the engine are now measured and closed: the ask-shape
 seam is exhausted, and the premise seam behind it is a long tail with no class big enough or
-coherent enough to justify general machinery. Further GSM8K coverage would require exactly
-what constitution rules 1 and 2 forbid: word lists and per-problem branches.
+coherent enough to justify general machinery.
+
+**The binding constraint is rule 2, NOT rule 1.** (An earlier draft of this entry said
+"further coverage would require word lists and per-problem branches" — the "word lists" half
+was **wrong** and is retracted. Word-specific facts in YAML packs are the *sanctioned*
+architecture; rule 1 forbids them only in *Python*.) The reason coverage is closed is that
+**no class is large or coherent enough to justify a rule at all** — a rule written for the
+residual would be justified by a handful of items each, which is rule 2 and is difg's
+`vocab_singles` sin. Where the words live is not the problem; there being no shared mechanism
+is.
 
 **The next lever is a different corpus, not a deeper one:** `docs/difg-corpus-plan.md`.
 
@@ -506,3 +514,47 @@ survived until someone asked *"would this number also appear if my hypothesis we
 > 200 sentences has told you about your regex.** Cluster-by-structure was necessary and was
 > not sufficient — the structural clusters were still surfaces. The only thing that
 > distinguishes a class from a surface is a null control.
+
+### Finding 3 — the SECOND axis (grammatical near-miss) is a long tail too
+
+The first write-up of this result clustered only by **decline reason**. That misses any item
+whose rule dies *before* it ever reaches a decline reason — such an item scatters across
+reasons while sharing one cause. Fair challenge, and a real hole. So the second axis was
+measured: **does a fold die on grammatical SKELETON?** (This would be a legal, general fix —
+an `opt` particle slot, a noun-modifier slot — not a word list and not a per-problem branch.)
+
+The motivating pair, both fully-read, no unknown words:
+
+```
+Jake baked twice as many cookies as Clementine.        -> Relation (arithmetic/times-as-many)
+Tom filled up 3 times as many water balloons as Luke.  -> bare Predication, number DROPPED
+```
+
+`arithmetic/times-as-many` wants `ENTITY VERB MULT 'as' 'many' PLURAL 'as' ENTITY`. `filled`
+is followed by the particle `up`, so the MULT slot misses; and `item (type: plural)` hits
+`water` (singular) before `balloons`. Two clean structural deaths. It looked like a class.
+
+**It is not.** Over the 332 premise-blocked items:
+
+| | |
+|---|---|
+| carrying the `as many/much … as` frame at all | 51 |
+| killed by a **phrasal-verb particle** | **1** |
+| killed by a **compound item noun** | 12 |
+| killed by something else | 38 |
+
+**The phrasal-verb theory was a class of ONE** — generalized from a single hand-picked
+example and asserted confidently before it was counted. The `vocab_singles` sin, committed
+*while writing the document warning against it.* And the 38 "something else" scatter across at
+least six distinct shapes: the affine offset (`5 less than half as many`), a relative-clause
+standard (`as were in Beatrice's box`), common-noun entities (`house 4 has twice as many…`),
+an elided head noun (`3 times as many pink as orange balls`), `half times as many`,
+`3/4 times as many`. Largest coherent structural cause in the whole pool: **12 items.**
+
+> **Two independent axes — decline reason and grammatical skeleton — both return a long tail.**
+> That is what closes GSM8K. Not "we'd need word lists" (we wouldn't, and they'd be legal);
+> **there is no mechanism left that enough items share.**
+
+**And the meta-lesson, earned twice in one session:** a structural hypothesis built from ONE
+example is not a hypothesis, it is an anecdote. Count it *before* you believe it — even when
+the mechanism is so clean you can see it in the YAML.
