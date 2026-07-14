@@ -18,6 +18,7 @@ from typing import Callable, Protocol
 
 from ..data.registry import Registry
 from ..data.schemas import SynthRule
+from . import deixis
 from .evaluate import ArithmeticLog, EvaluationError, evaluate
 from .facts import FactStore
 from .model import (
@@ -353,13 +354,34 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
             # to the SUM of two counts stated separately) leaves TWO prior
             # facts in play, not one, so it correctly declines rather than
             # guessing which one (or that their sum) is meant.
+            #
+            # deixis.resolve with the CONSTANT metric is exactly the rule these two
+            # branches hand-wrote ("the unique prior fact, or decline"): no candidate
+            # can strictly dominate another, so two-or-more always declines. 0-diff by
+            # construction. The origo carries only a sentence — the store has no spans
+            # — and the RECENCY metric this site obviously wants (the docstring above
+            # says so: a two-candidate case is genuinely unresolved) is switched on
+            # later as its own gated increment, never here.
             if rel.standard == _ANAPHOR_QUANTITY_STANDARD:
-                prior_q = [
-                    q for q in store.by_kind(Quantity)
-                    if q.provenance.sentence < rel.provenance.sentence
-                ]
-                if len(prior_q) == 1:
-                    (anchor_q,) = prior_q
+                anchor = deixis.resolve(
+                    [
+                        deixis.Referent(
+                            dimension=deixis.DISCOURSE,
+                            key=f"{q.entity}·{q.measure}",
+                            payload=q,
+                            sentence=q.provenance.sentence,
+                        )
+                        for q in store.by_kind(Quantity)
+                        if q.provenance.sentence < rel.provenance.sentence
+                    ],
+                    deixis.Origo(sentence=rel.provenance.sentence),
+                    deixis.constant,
+                    dimension=deixis.DISCOURSE,
+                    journal=log.journal,
+                    source="relation-anaphor-quantity",
+                )
+                if anchor is not None:
+                    anchor_q = anchor.payload
                     if (rel.subject, anchor_q.measure, verb_key(rel.verb)) not in by_verb:
                         value = evaluate(
                             f"{rel.factor} * {anchor_q.value} + {rel.offset}", {}, log,
@@ -375,12 +397,25 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
                             )
                         )
             else:
-                prior_p = [
-                    p for p in store.by_kind(Price)
-                    if p.provenance.sentence < rel.provenance.sentence
-                ]
-                if len(prior_p) == 1:
-                    (anchor_p,) = prior_p
+                anchor = deixis.resolve(
+                    [
+                        deixis.Referent(
+                            dimension=deixis.DISCOURSE,
+                            key=str(p.item),
+                            payload=p,
+                            sentence=p.provenance.sentence,
+                        )
+                        for p in store.by_kind(Price)
+                        if p.provenance.sentence < rel.provenance.sentence
+                    ],
+                    deixis.Origo(sentence=rel.provenance.sentence),
+                    deixis.constant,
+                    dimension=deixis.DISCOURSE,
+                    journal=log.journal,
+                    source="relation-anaphor-price",
+                )
+                if anchor is not None:
+                    anchor_p = anchor.payload
                     already_priced = any(
                         p.item == rel.subject and p.verb == rel.verb
                         for p in store.by_kind(Price)
@@ -420,14 +455,36 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
             # and declines this round rather than guessing which one is
             # meant — a document with two independent prior holders of the
             # same measure leaves the antecedent genuinely unresolved.
-            candidates = [
-                q for (ent, meas), q in quantities.items()
-                if meas == rel.measure
-                and ent != rel.subject
-                and q.provenance.sentence < rel.provenance.sentence
-            ]
-            if len(candidates) == 1:
-                (anchor_q,) = candidates
+            #
+            # "never the relation's own subject" is a PRECISION FILTER, not part of the
+            # candidate set — so it is expressed as one. deixis.Filter may only SHRINK a
+            # candidate set, so no filter can turn a decline into a commit; and stating
+            # it this way is what lets the field view show WHICH candidate it removed
+            # and why, instead of silently never mentioning it.
+            def not_the_subject(referent, _origo, _subject=rel.subject):
+                return referent.payload.entity != _subject
+
+            anchor = deixis.resolve(
+                [
+                    deixis.Referent(
+                        dimension=deixis.DISCOURSE,
+                        key=f"{ent}·{meas}",
+                        payload=q,
+                        sentence=q.provenance.sentence,
+                    )
+                    for (ent, meas), q in quantities.items()
+                    if meas == rel.measure
+                    and q.provenance.sentence < rel.provenance.sentence
+                ],
+                deixis.Origo(sentence=rel.provenance.sentence),
+                deixis.constant,
+                filters=[not_the_subject],
+                dimension=deixis.DISCOURSE,
+                journal=log.journal,
+                source="relation-elided-standard",
+            )
+            if anchor is not None:
+                anchor_q = anchor.payload
                 already = (rel.subject, rel.measure, verb_key(rel.verb)) in by_verb
                 if not already:
                     value = evaluate(
@@ -458,11 +515,24 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
             # extra loop here: saturate() reruns this whole function every
             # round from the fixpoint driver, rebuilding `measures_by_entity`
             # from the then-current store each time.
-            std_candidates = measures_by_entity.get(rel.standard, set())
-            if len(std_candidates) != 1:
+            # Bare measure STRINGS: no span, no sentence — the origo here is REFERENTIAL
+            # (the standard entity), not positional, and the candidates carry no
+            # coordinates at all. Sorted so the set's iteration order can never decide a
+            # binding. Constant metric => byte-identical to the `len(...) != 1` it replaces.
+            recovered = deixis.resolve(
+                [
+                    deixis.Referent(dimension=deixis.DISCOURSE, key=measure)
+                    for measure in sorted(measures_by_entity.get(rel.standard, set()))
+                ],
+                deixis.Origo(sentence=rel.provenance.sentence),
+                deixis.constant,
+                dimension=deixis.DISCOURSE,
+                journal=log.journal,
+                source="relation-elided-measure",
+            )
+            if recovered is None:
                 continue
-            (recovered,) = std_candidates
-            rel = replace(rel, measure=recovered)
+            rel = replace(rel, measure=recovered.key)
         # resolution is blocked when the target already has a quantity UNDER
         # THE RELATION'S OWN VERB — "Zig wrote 4× as many" plus "Zig wrote
         # 60" describe the SAME writing (re-deriving doubles it); a lose
