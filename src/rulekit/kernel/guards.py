@@ -147,6 +147,120 @@ def check(
                     "wrong commit",
                 )
 
+    if _enabled(reg, "answer-accounting") and store is not None and question is not None:
+        # ANSWER ACCOUNTING — the FACTS -> ANSWER half of value accounting.
+        #
+        # `value-accounting` above checks NUMBERS -> FACTS: every stated value must
+        # reach a fact. It does NOT check that the ANSWER then USED those facts. A
+        # fact can be extracted perfectly and silently ignored by the consumer, and
+        # nothing objects. On GSM8K the ask shapes happen to consume everything, so
+        # the hole is invisible; on ASDiv (same task, different authors) it produced
+        # 9 confident wrongs out of 46 commits — 80.4% precision against GSM8K's
+        # 100%. See docs/negative-results.md, "THE 100% PRECISION IS AN ARTIFACT".
+        #
+        #   "Gino has 15 brown bears, 24 white bears, and 27 black bears."   gold 66
+        #     facts: bear[brown]=15  bear[white]=24  bear=27
+        #     answer: 27          <- the bare key shadowed its qualified siblings
+        #
+        #   "Maria took sixteen fish out. Now there are three fish."         gold 19
+        #     facts: maria/fish=16  tank/fish=3
+        #     answer: 3           <- the other fish fact was never consumed
+        #
+        # THE RULE: if the ANSWERING HOLDER owns another fact of the SAME BASE MEASURE
+        # that the arithmetic never used, the reading is PARTIAL. A partial reading
+        # DECLINES rather than commit a subset (rule 4: a confident-wrong is worse
+        # than a decline). This can only ever turn a COMMIT into a DECLINE.
+        #
+        # SCOPED TO THE ANSWERING HOLDER — not merely to the measure. A first cut
+        # scoped only by measure and BROKE 4 correct GSM8K items:
+        #
+        #   "Tapanga and Corey have 66 candies. Tapanga has 8 more than Corey.
+        #    How many candies does COREY have?"     corey=29 (used)  tapanga=37 (unused)
+        #
+        # Tapanga's 37 is a DIFFERENT HOLDER. A question about Corey correctly ignores
+        # it — that is not a partial reading, and vetoing it is a coverage loss for
+        # nothing. The sibling that matters is the one the SAME holder owns:
+        # `gino/bear[brown]` beside `gino/bear`.
+        #
+        # GroupTotal (holder-less, synth-derived) is DELIBERATELY NOT CHECKED. The
+        # other 3 of those 4 breaks were unused GroupTotals carrying GARBAGE values
+        # (60x60=3600 toys, 8x8=64 dolls, 50x50=2500 dolls) — a real synth bug this
+        # guard surfaced, logged in docs/negative-results.md. Vetoing on a fact the
+        # engine should never have emitted would punish the reading for a defect
+        # elsewhere; fix the synth, do not launder it into a decline here.
+        #
+        # The ask is re-derived rather than threaded through `answer()`: match_ask is
+        # deterministic, so it yields exactly the ask `answer()` used, and this runs
+        # only for already-committed answers (~103 of 3,772 on dev-train).
+        from .model import Quantity
+        from .patterns import match_ask
+
+        matched = match_ask(question, reg)
+        if matched is not None:
+            _ask, query, _m = matched
+            asked = query.get("measure")
+            holder = query.get("entity")
+            qualifier = query.get("measure_qualifier")
+            # ONLY a BARE (unqualified) ask can be partially read.
+            #
+            # "How many cups of FLOUR are in the kitchen?" — the kitchen also holds
+            # cup[sugar]=9, and it is CORRECT to ignore it: the question asked for a
+            # PART, and the other parts are out of scope, not dropped. A first cut
+            # missed this and broke four guard tests (increments 70, 103, 108) that
+            # exist precisely to pin qualified-key resolution.
+            #
+            # The partial reading is the OPPOSITE shape: the question asks for the
+            # WHOLE ("how many bears does Gino have?") while the holder's qualified
+            # PARTS (bear[brown], bear[white]) sit unconsumed. Asking for the whole
+            # and answering with one part is the confident-wrong; asking for a part
+            # and ignoring the others is just reading the question.
+            if qualifier:
+                asked = None
+            if asked and holder:
+                base = lambda m: str(m).split("[")[0]
+                target = base(asked)
+                if target != str(asked):
+                    # the ask itself resolved to a qualified key — a PART, as above
+                    target = None
+            if asked and holder and target:
+                answer_value = (
+                    float(proposed.value)
+                    if isinstance(proposed.value, (int, float))
+                    else None
+                )
+                asked_verb = query.get("verb")
+                unused: list[str] = []
+                for fact in store.by_kind(Quantity):
+                    if fact.entity != holder:
+                        continue
+                    if base(fact.measure) != target:
+                        continue
+                    # SCOPED TO THE ASKED EVENT as well as the holder and measure.
+                    #
+                    # "Tom bought 6 eggs. Tom ate 2 eggs. How many eggs did Tom EAT?"
+                    # The bought 6 is not an ignored fact — it belongs to a DIFFERENT
+                    # EVENT. Demanding the answer account for it declines a correct
+                    # item (it broke exactly this curated suite case). A fact is only
+                    # "ignored" if the question was actually about it: same holder,
+                    # same measure, SAME VERB. A verb-less (state) fact is in scope
+                    # for any ask, since a holding is what every ask ultimately reads.
+                    fact_verb = getattr(fact, "verb", None)
+                    if fact_verb is not None and asked_verb and fact_verb != asked_verb:
+                        continue
+                    value = float(fact.value)
+                    if answer_value is not None and abs(value - answer_value) < 1e-9:
+                        continue  # the answer itself is trivially used
+                    if log.uses_value(value):
+                        continue
+                    unused.append(f"{fact.measure!r}={value:g}")
+                if unused:
+                    return GuardVeto(
+                        "answer-accounting",
+                        f"{holder!r} also holds {', '.join(sorted(unused))} of the asked "
+                        f"measure {target!r}, and no arithmetic consumed them — a PARTIAL "
+                        "reading declines rather than commit a subset",
+                    )
+
     if _enabled(reg, "unresolved-derivation") and store is not None:
         # a FractionQuantity/RestQuantity the synthesizers could NOT resolve
         # means part of the text was read but not computed — committing
