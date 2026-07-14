@@ -1135,6 +1135,29 @@ def answer(
         if isinstance(holders, Answer):
             return holders
         entities, totals = holders
+        # `holder_count` (mining candidate combined-ask-holder-surfaces):
+        # bound ONLY by the cardinal-pronoun-holder-set asks (ask/how-
+        # many-combined-cardinal-pronoun, ask/how-much-combined-cardinal-
+        # pronoun — "the three of them have ... in total") via
+        # `holder_count: "{n.value}"`; a no-op for every other 'combined'
+        # ask, which never sets this key. Those two asks bind no a/b, so
+        # `_combined_holder_totals` falls back to enumerating EVERY
+        # holder of the measure the same way the pronoun-only ask/how-
+        # many-combined does — the ask's stated cardinal never selects
+        # which entities are summed, it only ASSERTS how many there
+        # should be. When the premises under-read a holder (a relation
+        # left one of three named holders unresolved — the residual
+        # blocker this candidate's brief documents), the enumeration
+        # comes back short of the stated cardinal and silently summing
+        # that subset would be a confident wrong ("the ask names 3
+        # holders; the premises give 2") — decline instead.
+        holder_count = query.get("holder_count")
+        if holder_count is not None and int(float(holder_count)) != len(entities):
+            return Answer(
+                "decline", None,
+                f"ask names {holder_count} holders; premises give "
+                f"{len(entities)} ({entities})",
+            )
         combined = evaluate(" + ".join(str(t) for t in totals), {}, log, source="combined")
         return Answer("number", combined, f"Σ over {entities}")
 

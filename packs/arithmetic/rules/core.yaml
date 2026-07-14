@@ -3418,6 +3418,38 @@ asks:
       measure: "{item}"
       verb: "{verb}"
 
+  - id: ask/how-many-combined-in-all
+    # mining candidate combined-ask-holder-surfaces (parked-pile reland,
+    # originally mined as mining/parked/in-all-totality-tails): sibling
+    # of ask/how-many-combined for the "in all" totality tail, which the
+    # matcher cannot express as an alternative WITHIN that ask (there is
+    # no OR primitive over match tokens — `all` also carries the
+    # unrelated `quantifier` sense, so it cannot simply join the
+    # `aggregate` category the way 'total'/'altogether'/'combined'/
+    # 'together' do without also flipping the `absent: {cat: aggregate}`
+    # premise gates in arithmetic/existential-premise(-bare) for every
+    # quantifier-'all' sentence). A literal [in, all] tail, scoped to
+    # this ask id only, is the constitution-clean fix: literals are
+    # grammatical skeleton. Never a tie/shadow risk with ask/how-many-
+    # combined: 'all' fails that ask's required `agg, cat: aggregate`
+    # token outright (no partial match), so the two asks never compete
+    # for the same question.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - opt:
+            - {slot: aux, type: future_modal}
+            - {slot: who, type: pronoun}
+            - {slot: verb, type: verb}
+        - {lit: in}
+        - {lit: all}
+    resolves:
+      consumer: combined
+      measure: "{item}"
+      verb: "{verb}"
+
   - id: ask/how-many-combined-named
     # "how many ITEM do/does/did NAME and NAME have together/in total/
     # altogether?" (mining candidate named-pair-combined) — the named-pair
@@ -3446,6 +3478,34 @@ asks:
         - opt:
             - {slot: p, cat: preposition}
         - {slot: agg, cat: aggregate}
+    resolves:
+      consumer: combined
+      a: "{a}"
+      b: "{b}"
+      measure: "{item}"
+      verb: "{verb}"
+
+  - id: ask/how-many-combined-named-in-all
+    # mining candidate combined-ask-holder-surfaces (parked-pile reland):
+    # sibling of ask/how-many-combined-named for the "in all" totality
+    # tail — see ask/how-many-combined-in-all's comment for the class
+    # rationale (no OR primitive over match tokens; a literal [in, all]
+    # tail scoped to this ask id is the constitution-clean fix). Never a
+    # tie/shadow risk with ask/how-many-combined-named for the same
+    # reason documented there: 'all' fails that ask's required `agg`
+    # token outright.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {slot: aux, type: auxiliary}
+        - {slot: a, type: name}
+        - {lit: and}
+        - {slot: b, type: name}
+        - {slot: verb, type: verb}
+        - {lit: in}
+        - {lit: all}
     resolves:
       consumer: combined
       a: "{a}"
@@ -3501,6 +3561,36 @@ asks:
       measure_substance: "{qual}"
       verb: "{verb}"
 
+  - id: ask/how-many-combined-partitive-in-all
+    # mining candidate combined-ask-holder-surfaces: the "in all" tail
+    # sibling of ask/how-many-combined-partitive ("how many pairs of
+    # shoes do they have in all?") — same class rationale as ask/how-
+    # many-combined-in-all (no OR primitive over match tokens; a literal
+    # [in, all] tail scoped to this ask id, no lexicon change to 'all').
+    # Never a tie with ask/how-many-combined-partitive: that ask's
+    # required trailing `agg, cat: aggregate` token fails outright
+    # against 'all' (a `quantifier`-sense word, not `aggregate`), so the
+    # two never compete for the same question.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {lit: of}
+        - {slot: qual, type: noun}
+        - opt:
+            - {slot: aux, type: future_modal}
+            - {slot: who, type: pronoun}
+            - {slot: verb, type: verb}
+        - {lit: in}
+        - {lit: all}
+    resolves:
+      consumer: combined
+      measure: "{item}"
+      measure_qualifier: "{qual}"
+      measure_substance: "{qual}"
+      verb: "{verb}"
+
   - id: ask/how-many-combined-named-partitive
     # named-pair sibling of ask/how-many-combined-partitive, mirroring
     # ask/how-many-combined-named exactly the same way that ask mirrors
@@ -3537,6 +3627,76 @@ asks:
       measure_qualifier: "{qual}"
       measure_substance: "{qual}"
       verb: "{verb}"
+
+  - id: ask/how-many-combined-cardinal-pronoun
+    # "how many ITEM do/does/did the CARDINAL of them have TOTAL-MARKER?"
+    # (mining candidate combined-ask-holder-surfaces) — the holder set is
+    # a bare cardinal ("the three") with an optional "of them" tail,
+    # instead of a pronoun (ask/how-many-combined) or an explicit named
+    # pair (ask/how-many-combined-named). Routes to the SAME 'combined'
+    # consumer, entity-less: no a/b bound, so `_combined_holder_totals`
+    # enumerates every holder of the measure exactly as the pronoun ask
+    # does — the cardinal only ASSERTS the group size, it never selects
+    # which entities are summed (that's what `holder_count` below checks).
+    #
+    # `{lit: of}, {lit: them}` are grammatical-skeleton LITERALS, not a
+    # `type: pronoun` slot: "them"/"us" carry no lexicon entry (the base
+    # lexicon only registers 'they' — packs/core-english/lexicon/core.yaml
+    # comment on 'i': "GSM8K narratives are almost always third-person"),
+    # so matching the raw case-folded token avoids any lexicon change
+    # (constitution: literals are grammatical skeleton only).
+    #
+    # `holder_count: "{n.value}"` does double duty: (1) the `.value`
+    # template is what marks the cardinal's own unit CONSUMED for value-
+    # accounting (engine.py's ask-consume scan keys off any
+    # `{slot.value}` reference in `resolves` — the `who_value` precedent
+    # on ask/how-many-plural-combined) — without it, the stated cardinal
+    # would sit unaccounted and a value-accounting guard would veto the
+    # answer outright; (2) `answer.py`'s `combined` branch checks it
+    # against the number of holders actually enumerated from the
+    # premises and declines on a mismatch — "the ask names 3 holders; the
+    # premises give 2" — the precision guard for every story where the
+    # premises under-read a holder (see this candidate's brief risk
+    # note).
+    #
+    # Never a tie with ask/how-many-combined: that ask's own opt group
+    # binds [aux(future_modal), who(pronoun), verb] as ONE atomic
+    # subsequence, and a bare cardinal ("three") satisfies neither
+    # `type: future_modal` nor `type: pronoun`, so it fails outright
+    # rather than partially matching. Never a tie/mismatch risk with
+    # ask/how-many-combined-named ({type: name} pair): a cardinal number
+    # is never `type: name`. May TIE (same consumed-unit count) with the
+    # marked siblings of ask/how-many-plural-combined-cardinal-subject's
+    # OWN family when the subject is a cardinal-merged NOUN carrying an
+    # aggregate marker too (e.g. "the 3 children ... in total" — a
+    # cardinal-merged noun's `value_kind` is also `count`, so it can
+    # satisfy this ask's bare `n, type: number` slot the same way it
+    # satisfies `who, type: plural`/`type: counted` elsewhere): resolved
+    # by the SAME consumer performing the SAME entity-less enumeration
+    # either way, so the computed total is identical regardless of which
+    # ask wins the id-order tie-break, and `holder_count` still checks
+    # out (the cardinal names the same group either family reads it as).
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {slot: aux, type: auxiliary}
+        - opt:
+            - {lit: the}
+        - {slot: n, type: number}
+        - opt:
+            - {lit: of}
+            - {lit: them}
+        - {slot: verb, type: verb}
+        - opt:
+            - {slot: p, cat: preposition}
+        - {slot: agg, cat: aggregate}
+    resolves:
+      consumer: combined
+      measure: "{item}"
+      verb: "{verb}"
+      holder_count: "{n.value}"
 
   - id: ask/how-many-more
     match:
@@ -4450,6 +4610,30 @@ asks:
       measure: "{item}"
       verb: "{verb}"
 
+  - id: ask/how-much-combined-in-all
+    # mining candidate combined-ask-holder-surfaces (parked-pile reland):
+    # sibling of ask/how-much-combined for the "in all" totality tail —
+    # see ask/how-many-combined-in-all's comment for the class rationale
+    # (no OR primitive over match tokens; a literal [in, all] tail scoped
+    # to this ask id is the constitution-clean fix). Never a tie with
+    # ask/how-much-combined for the same reason documented there: 'all'
+    # fails that ask's required `agg` token outright.
+    match:
+      question:
+        - {lit: how}
+        - {lit: much}
+        - {slot: item, type: noun}
+        - opt:
+            - {slot: aux, type: auxiliary}
+            - {slot: who, type: pronoun}
+            - {slot: verb, type: verb}
+        - {lit: in}
+        - {lit: all}
+    resolves:
+      consumer: combined
+      measure: "{item}"
+      verb: "{verb}"
+
   - id: ask/how-much-combined-named
     # "how much ITEM do/does/did NAME and NAME have together/in total/
     # altogether?" — the how-much sibling of ask/how-many-combined-named,
@@ -4483,6 +4667,64 @@ asks:
       b: "{b}"
       measure: "{item}"
       verb: "{verb}"
+
+  - id: ask/how-much-combined-named-in-all
+    # mining candidate combined-ask-holder-surfaces (parked-pile reland):
+    # sibling of ask/how-much-combined-named for the "in all" totality
+    # tail — see ask/how-many-combined-in-all's comment for the class
+    # rationale (no OR primitive over match tokens; a literal [in, all]
+    # tail scoped to this ask id is the constitution-clean fix). Never a
+    # tie with ask/how-much-combined-named for the same reason documented
+    # there: 'all' fails that ask's required `agg` token outright.
+    match:
+      question:
+        - {lit: how}
+        - {lit: much}
+        - {slot: item, type: noun}
+        - {slot: aux, type: auxiliary}
+        - {slot: a, type: name}
+        - {lit: and}
+        - {slot: b, type: name}
+        - {slot: verb, type: verb}
+        - {lit: in}
+        - {lit: all}
+    resolves:
+      consumer: combined
+      a: "{a}"
+      b: "{b}"
+      measure: "{item}"
+      verb: "{verb}"
+
+  - id: ask/how-much-combined-cardinal-pronoun
+    # how-much sibling of ask/how-many-combined-cardinal-pronoun — see
+    # that ask's comment for the full class rationale (bare cardinal
+    # holder set, literal "of them" tail, `holder_count` double duty).
+    # Never a tie with ask/how-much-combined: same non-tie argument as
+    # ask/how-many-combined-cardinal-pronoun vs ask/how-many-combined
+    # (the pronoun sibling's opt group requires `type: auxiliary` +
+    # `type: pronoun` + verb as one atomic subsequence; a cardinal
+    # satisfies neither).
+    match:
+      question:
+        - {lit: how}
+        - {lit: much}
+        - {slot: item, type: noun}
+        - {slot: aux, type: auxiliary}
+        - opt:
+            - {lit: the}
+        - {slot: n, type: number}
+        - opt:
+            - {lit: of}
+            - {lit: them}
+        - {slot: verb, type: verb}
+        - opt:
+            - {slot: p, cat: preposition}
+        - {slot: agg, cat: aggregate}
+    resolves:
+      consumer: combined
+      measure: "{item}"
+      verb: "{verb}"
+      holder_count: "{n.value}"
 
   - id: ask/how-much-noun-more-than
     match:

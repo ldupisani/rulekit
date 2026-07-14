@@ -5235,3 +5235,32 @@ GATE (integrated on staging tip, dev-train 87 -> 89 baseline): dev-train diff SO
 (cb266dff020c, d3cf31c730c1) / BROKE 0 / DECL->WRONG 0 / NET +2 / SHIP. dev-holdout diff SOLVED 0
 / BROKE 0 / DECL->WRONG 0 / NET +0 / NEUTRAL (38 -> 38). pytest 877 passed. suite 52/52. lint 0
 errors (1 pre-existing known-good warning). TEST look: pending — spent manually.
+
+## Increment 109 — combined/totality asks with cardinal or "in all" holder surfaces (batch 2026-07-14d)
+
+CLASS: combined/totality asks whose HOLDER SET is a cardinal ("the three of them", "the 3
+children") or whose totality tail is the unlexicalized "in all". Rebuilt fully-read/no-ask-shape
+pool = 721 items; semantic family "total/altogether/in all" = 99, of which 17 carry one of these
+two surfaces (7 cardinal holder set, 10 "in all" tail).
+
+MECHANISM (YAML-first, one small kernel guard):
+- `packs/arithmetic/rules/core.yaml`: two new ask siblings
+  (`ask/how-many-combined-cardinal-pronoun`, `ask/how-much-combined-cardinal-pronoun`) whose
+  holder set is a bare cardinal with an optional "of them" tail ({slot: n, type: number} +
+  opt[lit of + pronoun]), routed to the EXISTING `combined` consumer — no new consumer. The
+  cardinal is threaded through as `holder_count: "{n.value}"`; the `.value` template marks it
+  consumed for value-accounting (same convention as `who_value`). Also re-lands four "in all"
+  literal-tail sibling asks (one per existing `combined` ask: pronoun/named-pair x
+  how-many/how-much; no lexicon change to "all") plus one partitive sibling for "pairs of X ...
+  in all".
+- `src/rulekit/kernel/answer.py`, `combined` branch only (~10 lines): when `holder_count` is
+  bound, DECLINE if the enumerated holder count differs from it — precision guard against
+  silently summing a subset when the story under-reads a holder, and what keeps the cardinal-ask
+  from outbidding `ask/how-many-plural-combined-cardinal-subject` on "the 3 children" (regression
+  guard item 1cd6e3e8a4a7 stays correct).
+
+GATE (integrated on staging tip, dev-train 87 -> 89 baseline before this increment, now 91):
+dev-train diff SOLVED 2 (4c008446e1ba, 6250534bf73e) / BROKE 0 / DECL->WRONG 0 / NET +2 / SHIP.
+dev-holdout diff SOLVED 1 (653176f25389) / BROKE 0 / DECL->WRONG 0 / NET +1 / SHIP (38 -> 39).
+pytest 888 passed. suite 52/52. lint 0 errors (1 pre-existing known-good warning). TEST look:
+pending — spent manually.
