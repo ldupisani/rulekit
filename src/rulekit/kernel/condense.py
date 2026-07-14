@@ -169,6 +169,71 @@ def _nominal_pass(reading: Reading, reg: Registry) -> bool:
                    f"adjective {a.surface!r} restricts {b.surface!r}",
                    {"attributes": attrs, "qualifier": qualifier})
             return True
+        # adjective + elided measure-noun anaphor -> a qualified but
+        # UNRESOLVED anaphoric noun ("12 yellow ONES", "twice as many
+        # green ONES as yellow ones" — mining candidate measure-noun-
+        # anaphor, infrastructure for the conjunct-comparative class). The
+        # anaphor word itself never denotes the real measure — only its
+        # qualifier is genuine — so this is NOT merge-attribute's ordinary
+        # case (b stays sensed 'pronoun', never 'noun', up to this point;
+        # see the measure_anaphor category's own notes in packs/core-
+        # english/categories/core.yaml for why 'ones' is never given a
+        # second, ambiguous 'noun' sense). Explicitly re-declares the
+        # compound's own `senses` to `["noun"]` so every EXISTING generic
+        # noun-consumption path (count-merge below, dobj/subject Quantity-
+        # building in learn.py) picks it up unchanged, exactly like any
+        # other restricted noun; `qualifier` stays LOCAL to this adjective
+        # (never inherited from whatever the anaphor eventually resolves
+        # to). `measure_anaphor: True` is the marker document.py's
+        # `_bind_measure_anaphor` and learn.py's `_lemma` both read: zero
+        # or two-or-more antecedent candidates leaves the compound
+        # unresolved, and `_lemma` then returns a reserved sentinel no ask
+        # can ever match — a silent, harmless decline, never a guess.
+        #
+        # Gated OUT whenever an article sits immediately left of the
+        # adjective ("the yellow ones", "half of THE yellow ones"): that
+        # DEFINITE shape names a subset of an already-established pool —
+        # PartitionQuantity/FractionQuantity territory, whose synthesizers
+        # (saturate.py) resolve a bare, UNQUALIFIED collection reference
+        # against the unique prior pool and have no qualifier-matching
+        # logic at all. Left admitted, "half of the yellow ones" would
+        # satisfy fraction-of-pool's collection slot (now that this
+        # compound presents as an ordinary noun) and resolve against the
+        # WHOLE unqualified pool, silently dropping the 'yellow' qualifier
+        # — a confident wrong the dev-holdout gate caught (item
+        # 06dbd5d03f40: expected 84, got 336 — half of ALL balloons
+        # instead of half of the yellow quarter). This candidate's own
+        # target shapes are all INDEFINITE ("12 yellow ones", "twice as
+        # many green ones as yellow ones", "as blue ones") — none carry a
+        # preceding article — so excluding the definite form costs this
+        # candidate nothing while closing that hole structurally.
+        if (
+            a.sense() == "adjective"
+            and b.sense() == "pronoun"
+            and reg.word_in_category(b.features.get("fold", ""), "measure_anaphor")
+            and (i == 0 or units[i - 1].sense() != "article")
+        ):
+            attrs = list(b.features.get("attributes", []))
+            attrs.append(a.features.get("lemma", a.features["fold"]))
+            qualifier = a.features.get("qualifier") or a.features.get(
+                "lemma", a.features["fold"]
+            )
+            _merge(
+                reading, i, b, "merge-measure-anaphor",
+                f"{a.surface!r} qualifies anaphoric head {b.surface!r} "
+                f"(unresolved measure noun)",
+                {
+                    "attributes": attrs, "qualifier": qualifier,
+                    "senses": ["noun"], "measure_anaphor": True,
+                    # the compound is a NOUN now, not a pronoun — drop the
+                    # inherited unmet 'refers' obligation (it would
+                    # otherwise report a stale, misleading "needs a
+                    # refers" deficiency; resolution is tracked purely via
+                    # `antecedent_lemma`, never this obligation)
+                    "obligations": [],
+                },
+            )
+            return True
         # noun + noun -> compound, head = the RIGHT noun ("mango trees")
         if (
             a.sense() == "noun" and b.sense() == "noun"

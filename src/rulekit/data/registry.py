@@ -61,11 +61,27 @@ from .schemas import (
 # distinct from 'the' -- purely additive: 'article' was already a known
 # lexicon sense (a/an/the), so this only permits a NEW category to root
 # here; it changes no existing word's sense or any other article-sensed
-# word's behavior.
+# word's behavior. 'pronoun' was added the same way again (mining candidate
+# measure-noun-anaphor) so a `measure_anaphor` category can name the closed
+# set of elided measure-noun anaphor heads ('ones', "12 yellow ONES") --
+# purely additive: 'pronoun' was already a known lexicon sense ('ones' has
+# carried it unaccompanied since it entered the lexicon), so this only
+# permits a NEW category to root here; it changes no existing word's sense
+# (no second sense is added to 'ones' or anything else) or any other
+# pronoun-sensed word's behavior. Deliberately NOT rooted at 'noun': giving
+# 'ones' a second, genuinely ambiguous 'noun' sense would make it always
+# win obligations.disambiguate()'s coverage race (a pronoun's mandatory,
+# never-locally-bindable 'refers' obligation is strictly worse-covering
+# than a noun's none), silently reinterpreting EVERY 'ones' in the corpus
+# -- including the unrelated relative-clause/definite forms ("the ones she
+# didn't do") -- as a noun from round 0 on. Rooting at 'pronoun' instead
+# keeps 'ones' single-sensed and behavior-identical everywhere except the
+# one condense.py merge (adjective + measure_anaphor pronoun) that opts in
+# by category membership, narrowly, exactly as the invariant demands.
 ROOT_SENSES = (
     "noun", "verb", "adjective", "quantifier", "preposition", "comparative",
     "negator", "conjunction", "modal", "particle", "adverb", "time",
-    "article",
+    "article", "pronoun",
 )
 
 

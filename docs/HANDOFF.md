@@ -5296,3 +5296,38 @@ GATE (integrated on staging tip, dev-train 91 -> 93 baseline before this increme
 diff SOLVED 2 (cf5a2cc7b0b9, efdb037f7387) / BROKE 0 / DECL->WRONG 0 / NET +2 / SHIP. dev-holdout
 diff SOLVED 0 / BROKE 0 / DECL->WRONG 0 / NET +0 / NEUTRAL (39 -> 39). pytest 894 passed. suite
 52/52. lint 0 errors (1 pre-existing known-good warning). TEST look: pending — spent manually.
+
+## Increment 111 — the elided measure-noun anaphor 'ones' (infrastructure, batch 2026-07-14d)
+
+CLASS: the elided measure-noun anaphor 'ones' ("12 yellow ones", "twice as many green ones as
+blue ones") — a counted NP whose head noun is the anaphor 'one(s)', resolving to the collection's
+already-established head noun. Walked out of the conjoined-comparative class's fully-read
+declines: three items build NO Quantity at all for their listed counts because the measure noun
+is the anaphor 'ones' — verified by fact dumps ("12 yellow ones" -> no Quantity, while "6 blue
+balls" in the same story -> Quantity(box/ball, qualifier=blue)). Declared INFRASTRUCTURE: it
+cannot move a number alone (SOLVED 0 by design) — it unblocks the qualified-variant sub-family of
+conjunct-comparative-quantities, which the existing `sum_measure_variants` fold already knows how
+to total once the Quantities exist.
+
+MECHANISM (pack-first anaphora, condense/document machinery, no lexicon in Python):
+- `packs/core-english/lexicon/core.yaml` / `packs/difg-mined/categories/semantic.yaml`: 'one'/
+  'ones' gains a measure-anaphor sense/category — the sibling of the existing `quantity_anaphor`
+  category (already carried for 'amount'/'number'). 'one' stays quarantine-clean; this is a SENSE
+  addition to an already-lexiconed word, not a vocabulary admission.
+- `src/rulekit/kernel/condense.py`: `merge-measure-anaphor` recognizes an adjective immediately
+  left of an indefinite 'ones' (never when an article sits between them — that DEFINITE shape is
+  fraction/partition territory, a different rule's job) as a qualified but UNRESOLVED noun.
+- `document.py`'s `_bind_measure_anaphor` then binds it, cross-sentence, to the UNIQUE prior
+  plural counted-noun lemma in the document — zero or two-or-more candidates leaves it
+  unresolved, and `learn.py`/`patterns.py`'s `_lemma` helpers return a reserved sentinel no ask
+  can ever match: a silent, harmless decline, never a guess (definitive-or-decline).
+
+RISK: HIGH blast radius by design (one of the commonest words in the corpus, sense
+disambiguation is global) — gated on full dev-train AND dev-holdout diffs, both NEUTRAL, zero
+BROKE, zero DECL->WRONG.
+
+GATE (integrated on staging tip, dev-train 93 baseline before this increment, unchanged by
+design): dev-train diff SOLVED 0 / BROKE 0 / DECL->WRONG 0 / NET +0 / NEUTRAL (93 -> 93).
+dev-holdout diff SOLVED 0 / BROKE 0 / DECL->WRONG 0 / NET +0 / NEUTRAL (39 -> 39). pytest 899
+passed (894 baseline + 5 new synthetic tests). suite 52/52. lint 0 errors (1 pre-existing
+known-good warning). TEST look: pending — spent manually.

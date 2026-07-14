@@ -459,6 +459,45 @@ categories:
       known document-wide rather than a Quantity — kept a SEPARATE
       category from 'quantity_anaphor' (never folded together) because
       the two anchor against two entirely different fact kinds.
+  measure_anaphor:
+    parent: pronoun
+    notes: >
+      mining candidate measure-noun-anaphor (infrastructure): the measure-
+      NOUN sibling of 'quantity_anaphor' — where 'amount'/'number' stand in
+      for a whole prior QUANTITY (a demonstrative standard, "twice THAT
+      NUMBER"), this category's member ('ones', difg-mined-only — extends
+      from packs/difg-mined/categories/semantic.yaml) is the elided HEAD
+      NOUN of a counted, qualified NP ("12 yellow ONES", "twice as many
+      green ONES as yellow ones"): the word itself never denotes the real
+      measure, only its color/qualifier is genuine. Rooted at 'pronoun',
+      never 'noun' — 'ones' already carries the 'pronoun' sense alone (its
+      `refers` obligation simply goes unmet today, same decline discipline
+      every unresolved pronoun has), and giving it a SECOND, ambiguous
+      'noun' sense would make 'noun' always win obligations.disambiguate()'s
+      coverage race (a pronoun's mandatory, never-locally-bindable 'refers'
+      need is strictly worse-covering than a noun's none), silently
+      reinterpreting EVERY 'ones' in the corpus — including the unrelated
+      relative-clause/definite forms ("the ones she didn't do") — as a
+      noun from round 0 on, corpus-wide, for a change meant to touch only
+      this one counted-NP shape. Rooting at 'pronoun' keeps 'ones' single-
+      sensed everywhere except the one condense.py merge (adjective +
+      measure_anaphor pronoun) that opts in by category membership: that
+      merge explicitly re-declares the compound's own `senses` to
+      `[noun]` (so every EXISTING generic noun-consumption path — count-
+      merge, dobj/subject Quantity-building — picks it up unchanged,
+      untouched by this pack) while keeping the adjective's qualifier
+      LOCAL and marking the compound `measure_anaphor: true`. Resolution
+      of WHAT it stands for is a separate, later step — document.py's
+      `_bind_measure_anaphor` binds it to the UNIQUE prior counted-noun
+      lemma in the document (never a name, never a quantity — the
+      measure-noun sibling of `_bind_discourse`'s antecedent search),
+      exactly as the ordinary pronoun binder resolves "he" to its
+      antecedent: zero or two-or-more candidates leaves it unresolved, and
+      learn.py's `_lemma` then returns a reserved sentinel no ask can ever
+      match — a silent, harmless decline, never a guess. THIS CATEGORY
+      CANNOT MOVE A NUMBER ALONE: it only makes the anaphor resolvable;
+      summing the qualified variants it produces is the conjunct-
+      comparative class's job, built on top of this.
 members:
   currency: [dollar]
   partitive: [of]

@@ -266,7 +266,20 @@ def _clause_negated(reading: Reading, verb: Unit, reg: Registry) -> bool:
     return False
 
 
+_MEASURE_ANAPHOR_UNRESOLVED = "$anaphor:measure-unresolved$"
+
+
 def _lemma(unit: Unit) -> str:
+    # an elided measure-noun anaphor ("12 yellow ONES" — mining candidate
+    # measure-noun-anaphor, condense.py's merge-measure-anaphor) speaks AS
+    # the antecedent document.py's `_bind_measure_anaphor` resolved it to;
+    # unresolved (zero or ambiguous candidates) returns a reserved sentinel
+    # no ask can ever match — this compound's OWN fold ("yellow ones") is
+    # never a real measure name, so falling through to it below would be a
+    # silent wrong, not a decline.
+    if unit.features.get("measure_anaphor"):
+        antecedent_lemma = unit.features.get("antecedent_lemma")
+        return antecedent_lemma if antecedent_lemma is not None else _MEASURE_ANAPHOR_UNRESOLVED
     # a pronoun whose `refers` obligation bound cross-sentence speaks AS its
     # antecedent — the document loop's whole point
     if unit.sense() == "pronoun":

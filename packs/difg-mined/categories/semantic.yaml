@@ -689,6 +689,13 @@ members:
   quantity_anaphor:
   - amount
   - number
+  measure_anaphor:
+  # mining candidate measure-noun-anaphor (infrastructure): the elided
+  # measure-noun anaphor head — see the category's own notes (packs/
+  # core-english/categories/core.yaml) for the full mechanism. 'ones'
+  # keeps its pre-existing lone 'pronoun' sense (n-s.yaml) unchanged; this
+  # membership is what lets the category root there instead of at 'noun'.
+  - ones
   price_anaphor:
   - price
   - cost

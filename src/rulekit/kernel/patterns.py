@@ -181,7 +181,22 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
     )
 
 
+_MEASURE_ANAPHOR_UNRESOLVED = "$anaphor:measure-unresolved$"
+
+
 def _lemma_of(unit: Unit) -> str:
+    # an elided measure-noun anaphor ("12 yellow ONES" — mining candidate
+    # measure-noun-anaphor, condense.py's merge-measure-anaphor) speaks AS
+    # the antecedent document.py's `_bind_measure_anaphor` resolved it to;
+    # unresolved leaves the SAME reserved sentinel learn.py's own `_lemma`
+    # falls back to — this compound's own fold ("yellow ones") is never a
+    # real measure name, and its stale `lemma` feature (senses.py's
+    # fallback assignment for every lexicon word, pronouns included) is
+    # the anaphor's OWN word, not the antecedent — using either would be a
+    # silent wrong, not a decline.
+    if unit.features.get("measure_anaphor"):
+        antecedent_lemma = unit.features.get("antecedent_lemma")
+        return antecedent_lemma if antecedent_lemma is not None else _MEASURE_ANAPHOR_UNRESOLVED
     # a pronoun whose `refers` bound cross-sentence speaks AS its antecedent
     if unit.sense() == "pronoun":
         for ob in unit.obligations():

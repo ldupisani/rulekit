@@ -110,6 +110,64 @@ def _bind_discourse(readings: list[Reading]) -> set[int]:
     return changed
 
 
+def _measure_anaphor_candidate_lemma(unit: Unit) -> str | None:
+    if unit.sense() != "noun" or unit.features.get("measure_anaphor"):
+        return None
+    if unit.features.get("number") != "plural":
+        return None
+    lemma = unit.features.get("lemma") or unit.features.get("fold")
+    return lemma or None
+
+
+def _bind_measure_anaphor(readings: list[Reading]) -> set[int]:
+    """Bind unresolved measure-noun anaphors (mining candidate measure-
+    noun-anaphor: 'ones'-headed counted NPs, condense.py's merge-measure-
+    anaphor) to the UNIQUE prior counted-noun lemma in the document — the
+    measure-noun sibling of `_bind_discourse` above, resolving WHAT is
+    being counted rather than WHO holds it. Candidates are PLURAL noun-
+    sensed units only, drawn from every sentence up to and including this
+    one (same-sentence mentions BEFORE the anaphor's own position count
+    too — "6 blue balls, ... blue ONES" resolves within one sentence, no
+    document round needed for that shape). Zero or two-or-more distinct
+    candidate lemmas leaves it unresolved this round (learn.py's `_lemma`
+    then returns a reserved sentinel no ask can ever match); a later round
+    can still resolve it once a sibling sentence's own anaphor binding
+    (rerun_rules) or an unrelated fact narrows the candidate set — the
+    same reason `_bind_discourse` re-tries every round instead of once.
+    Returns the sentence indexes that gained a binding this round."""
+    changed: set[int] = set()
+    for reading in readings:
+        for unit in reading.units:
+            if not unit.features.get("measure_anaphor"):
+                continue
+            if unit.features.get("antecedent_lemma") is not None:
+                continue
+            candidates: set[str] = set()
+            for other in readings:
+                if other.sentence_index > reading.sentence_index:
+                    continue
+                for cand in other.units:
+                    if cand.uid == unit.uid:
+                        continue
+                    if (
+                        other.sentence_index == reading.sentence_index
+                        and cand.span[0] >= unit.span[0]
+                    ):
+                        continue
+                    lemma = _measure_anaphor_candidate_lemma(cand)
+                    if lemma is not None:
+                        candidates.add(lemma)
+            if len(candidates) == 1:
+                (lemma,) = candidates
+                reading.record(
+                    "bind-measure-anaphor", unit,
+                    {"antecedent_lemma": lemma},
+                    f"{unit.surface!r} -> {lemma!r} (unique prior counted-noun lemma)",
+                )
+                changed.add(reading.sentence_index)
+    return changed
+
+
 def run_document(premises: list[Reading], reg: Registry) -> Document:
     log = ArithmeticLog()
     doc = Document(readings=premises, store=FactStore(), log=log)
@@ -164,6 +222,7 @@ def run_document(premises: list[Reading], reg: Registry) -> Document:
     for round_no in range(1, MAX_ROUNDS + 1):
         doc.rounds = round_no
         changed = _bind_discourse(premises)
+        changed |= _bind_measure_anaphor(premises)
         if not changed:
             break
         rerun_rules(changed)
