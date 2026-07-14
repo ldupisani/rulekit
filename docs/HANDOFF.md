@@ -5264,3 +5264,35 @@ dev-train diff SOLVED 2 (4c008446e1ba, 6250534bf73e) / BROKE 0 / DECL->WRONG 0 /
 dev-holdout diff SOLVED 1 (653176f25389) / BROKE 0 / DECL->WRONG 0 / NET +1 / SHIP (38 -> 39).
 pytest 888 passed. suite 52/52. lint 0 errors (1 pre-existing known-good warning). TEST look:
 pending — spent manually.
+
+## Increment 110 — comparative-DIFFERENCE asks over a dimension or an age (batch 2026-07-14d)
+
+CLASS: comparative-DIFFERENCE asks over a dimension or an age ("how many inches taller is A than
+B", "how many years older is A than B", "how much older is A than B"). The RELATION half of this
+family (dimension_more/dimension_less/age_comparative categories) landed at increment 68; the ASK
+side never existed — probe-verified "Mike is 70 inches tall. Mark is 62 inches tall. How many
+inches taller is Mike than Mark?" declined with "no ask shape" on main. Pool (fully-read /
+no-ask-shape, 721 items): 6 items ask this family.
+
+MECHANISM (YAML-first, with a conversion fold in the shared `difference` consumer):
+- `packs/arithmetic/rules/core.yaml`: `ask/how-many-unit-dimension-more-than` /
+  `-less-than` ("how many UNIT {dimension_more|dimension_less} is A than B", measure from the
+  unit slot) and `ask/how-much-age-comparative-than` ("how much {age_comparative} is A than B",
+  measure pinned to `year`), both routed to the EXISTING `difference` consumer. The copula in
+  these questions is gated as a VERB sense, not an auxiliary — probe-verified: with
+  `type: auxiliary` the ask never matches. An opt-in leading-possessive-pronoun slot lets the
+  standard be "than his sister" without rebinding the standard back to the subject's own pronoun
+  antecedent.
+- `src/rulekit/kernel/answer.py`: new `_entity_total_convertible` helper, opt-in via a
+  `fold_units` query flag on the new ask ids only. Folds an entity's quantities across
+  CONVERTIBLE SIBLING UNITS (e.g. "6 feet, 3 inches" as two separate Quantity facts) through
+  `reg.conversions` before differencing, and DECLINES rather than commits when a holder carries
+  an unconsumed sibling-unit quantity it cannot convert to the asked measure. This is the
+  precision fix for the one confident-wrong the naive prototype produced (differencing raw inch
+  components while ignoring the feet component). Scoped to the new ask ids only — the shared
+  `difference` branch's existing callers (how-many-more, what-is-the-difference) are unaffected.
+
+GATE (integrated on staging tip, dev-train 91 -> 93 baseline before this increment): dev-train
+diff SOLVED 2 (cf5a2cc7b0b9, efdb037f7387) / BROKE 0 / DECL->WRONG 0 / NET +2 / SHIP. dev-holdout
+diff SOLVED 0 / BROKE 0 / DECL->WRONG 0 / NET +0 / NEUTRAL (39 -> 39). pytest 894 passed. suite
+52/52. lint 0 errors (1 pre-existing known-good warning). TEST look: pending — spent manually.

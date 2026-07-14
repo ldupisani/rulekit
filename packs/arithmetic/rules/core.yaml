@@ -4802,6 +4802,146 @@ asks:
       measure: "{item}"
       verb: "{verb}"
 
+  - id: ask/how-many-unit-dimension-comparative-than
+    # mining candidate dimension-difference-asks: "How many inches taller
+    # is Vlad than his sister?" — the ASK side of the dimension-comparative
+    # family (arithmetic/anchored-relation-postfix-dimension shipped the
+    # RELATION half in increment 68; this class never had an ask at all,
+    # so the question declined with "no ask shape" no matter how the
+    # premises read). One rule for BOTH directions ('taller'/'shorter',
+    # 'heavier'/'lighter', ...): `dir, cat: dimension_comparative` is the
+    # SHARED PARENT of `dimension_more`/`dimension_less` (packs/core-
+    # english/categories/core.yaml) and the `difference` consumer always
+    # takes `abs(ta - tb)` — direction never changes a difference's sign,
+    # so there is no reason to split this into a `-more-than`/`-less-than`
+    # pair the way the RELATION rules must (those add a signed offset).
+    #
+    # `aux, type: verb` (NOT `type: auxiliary`): the copula in "... is Vlad
+    # than ..." is sensed `[verb]` with lemma 'be' in this lexicon (core-
+    # english/lexicon/core.yaml), never `auxiliary` — probe-verified; the
+    # ask never matches with `type: auxiliary` here (unlike ask/how-many-
+    # more's "does ... have", where the auxiliary genuinely IS an
+    # auxiliary). `verb: "{aux}"` renders that unit's lemma ('be'),
+    # accepted by the `difference` consumer's own `ask_verb in ("have",
+    # "be")` branch with no consumer change needed.
+    #
+    # `a`/`b, type: entity`: this is a BRAND NEW ask id, so widening past
+    # `type: name` here does not touch any of the ~18 other name-only asks
+    # (the HANDOFF invariant is about blanket find-replace on EXISTING
+    # slots, not about a new rule's own first choice). `entity` is what
+    # lets a common-noun standard ("his sister") resolve at all.
+    #
+    # `opt: [{slot: poss, type: pronoun}]` right before `b`: "than his
+    # sister" is TWO units (a bare possessive pronoun + a noun; there is no
+    # merged "OWNER's NOUN" compound here, unlike the 's-clitic case
+    # condense.py's merge-possessive already handles) — without this, `b`
+    # (a single-unit slot) binds the FIRST thing satisfying `type: entity`
+    # after "than", which is the pronoun ITSELF (a resolved pronoun also
+    # satisfies `entity`), silently resolving the standard back to the
+    # pronoun's antecedent — the ask's OWN subject ("Vlad than Vlad" — a
+    # confident-wrong the dev-train prototype actually committed). `poss`
+    # is matched and discarded (never referenced by `resolves`); with it
+    # consumed first, `b` reaches the NOUN ("sister") instead, the bare
+    # entity lemma the premise fold already keys the fact on (model.py's
+    # `entity` identity note: bare lemma stays identity everywhere it
+    # already worked). A bare-name standard ("than Mark") is unaffected —
+    # the opt sub-sequence simply doesn't fire when nothing pronoun-shaped
+    # follows "than".
+    #
+    # `measure: "{item}"` + `fold_units: "true"`: the difference consumer's
+    # opt-in convertible-sibling-units fold (`_entity_total_convertible`) —
+    # "Vlad is 6 feet, 3 inches tall" is TWO Quantity facts (foot=6, inch=3)
+    # for one entity; asked in inches, the fold must see 75, not the bare
+    # inch component 3 (the naive prototype's OTHER confident-wrong on
+    # this same class, dev-train efdb037f7387).
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {slot: dir, cat: dimension_comparative}
+        - {slot: aux, type: verb}
+        - {slot: a, type: entity}
+        - {lit: than}
+        - opt:
+            - {slot: poss, type: pronoun}
+        - {slot: b, type: entity}
+    resolves:
+      consumer: difference
+      a: "{a}"
+      b: "{b}"
+      measure: "{item}"
+      verb: "{aux}"
+      fold_units: "true"
+
+  - id: ask/how-much-dimension-comparative-than-unit
+    # mining candidate dimension-difference-asks: the TRAILING-unit sibling
+    # of ask/how-many-unit-dimension-comparative-than — "Mark is 5 feet 3
+    # inches tall and Mike is 6 feet and 1 inch tall. How much taller is
+    # Mike than Mark IN INCHES ...?" states the unit AFTER the standard
+    # instead of before the comparative; both orderings are ordinary
+    # English and read the same fact shape, so this is the same CLASS
+    # under a second, common word order — not a per-problem rule. Same
+    # `dir`/`aux`/`a`/`poss`/`b` shape and reasoning as the sibling rule
+    # (see its comment for the `type: verb` copula note and the possessive-
+    # standard guard); only the trailing `{lit: in}, {slot: item, type:
+    # noun}` differs, and anything further in the sentence (a stated
+    # "if 1 foot is equal to 12 inches" conversion clause) is simply left
+    # unconsumed — reg.conversions already declares foot/inch statically,
+    # so nothing needs to be LEARNED from that clause for this ask to
+    # answer correctly.
+    match:
+      question:
+        - {lit: how}
+        - {lit: much}
+        - {slot: dir, cat: dimension_comparative}
+        - {slot: aux, type: verb}
+        - {slot: a, type: entity}
+        - {lit: than}
+        - opt:
+            - {slot: poss, type: pronoun}
+        - {slot: b, type: entity}
+        - {lit: in}
+        - {slot: item, type: noun}
+    resolves:
+      consumer: difference
+      a: "{a}"
+      b: "{b}"
+      measure: "{item}"
+      verb: "{aux}"
+      fold_units: "true"
+
+  - id: ask/how-much-age-comparative-than
+    # mining candidate dimension-difference-asks: the AGE sibling —
+    # "How much older is Andy than Rahim, right now, in years?" — of the
+    # same ask class, gated on `age_comparative` (older/younger) instead of
+    # `dimension_comparative`. `measure: year` is a pack-owned DATA constant
+    # (constitution rule 1), exactly like arithmetic/times-comparative-age-
+    # relation's own hardcoded 'year' and ask/how-old-is's — 'old' is
+    # implicit in the comparative itself, never a stated noun, so there is
+    # no `item` slot to read a measure from the way the dimension asks do.
+    # No `fold_units` here: ages are never stated as a feet+inches-style
+    # compound, so the bare `_entity_total` is sufficient — this ask simply
+    # never sets the flag, leaving `difference`'s pre-existing behavior
+    # untouched for it too.
+    match:
+      question:
+        - {lit: how}
+        - {lit: much}
+        - {slot: dir, cat: age_comparative}
+        - {slot: aux, type: verb}
+        - {slot: a, type: entity}
+        - {lit: than}
+        - opt:
+            - {slot: poss, type: pronoun}
+        - {slot: b, type: entity}
+    resolves:
+      consumer: difference
+      a: "{a}"
+      b: "{b}"
+      measure: year
+      verb: "{aux}"
+
   - id: ask/how-many-rate-span
     match:
       question:

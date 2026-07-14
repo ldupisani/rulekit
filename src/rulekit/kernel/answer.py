@@ -352,6 +352,79 @@ def _entity_total(
     return evaluate(expr, {}, log, source="fold")
 
 
+def _conversion_factor(reg: Registry, from_unit: str, to_unit: str) -> float | None:
+    """mining candidate dimension-difference-asks: a MULTI-HOP factor
+    from_unit -> to_unit over the `reg.conversions` graph (BFS; the table
+    itself is small — a handful of declared pairs, both directions already
+    stored by the registry build). Handles chains reg.conversions never
+    states directly ("yard" -> "foot" -> "inch": the pack declares
+    yard/foot and foot/inch, never yard/inch) without inventing a second
+    conversions table. Returns None when NO declared path connects the two
+    units at all (e.g. 'dog' has no relationship to 'inch') — the caller's
+    signal that the units are simply unrelated, not that a conversion is
+    missing."""
+    if from_unit == to_unit:
+        return 1.0
+    seen = {from_unit}
+    frontier = [(from_unit, 1.0)]
+    while frontier:
+        next_frontier = []
+        for unit, factor in frontier:
+            for (a, b), f in reg.conversions.items():
+                if a == unit and b not in seen:
+                    total = factor * f
+                    if b == to_unit:
+                        return total
+                    seen.add(b)
+                    next_frontier.append((b, total))
+        frontier = next_frontier
+    return None
+
+
+def _entity_total_convertible(
+    store: FactStore, reg: Registry, entity: str, measure: str, log: ArithmeticLog
+) -> float | None:
+    """mining candidate dimension-difference-asks: the opt-in sibling of
+    `_entity_total` for a difference ask whose measure is a UNIT ("inches")
+    that a compound-stated holder splits across TWO OR MORE separate
+    Quantity facts for the SAME entity ("Vlad is 6 feet, 3 inches tall" —
+    foot=6 and inch=3, two facts, one entity). The bare `_entity_total
+    (entity, 'inch')` fold only ever sees the 3, discarding the feet
+    entirely — the naive prototype's confident-wrong (75/34 read as
+    3/10 — a 41-inch gap answered as 7). Folds every STATE quantity this
+    entity holds whose measure has a declared `_conversion_factor` path to
+    the target measure into one total; a quantity under a measure with NO
+    such path (an unrelated holding, e.g. "has 3 dogs") is left OUT of the
+    fold entirely rather than guessed at. Declines (returns None) the
+    instant NOTHING this entity holds converts to the target measure at
+    all — the same definitive-or-decline discipline `_entity_total` itself
+    keeps, now over the WHOLE convertible family rather than one bare
+    measure, so a holder whose only stated quantity is genuinely
+    unconvertible to what's asked stays declined rather than committing a
+    wrong from an empty fold.
+
+    Never called except when a caller opts in (`difference`'s
+    `fold_units` query flag, set only by the NEW unit-qualified
+    dimension/age-comparative asks) — every PRE-EXISTING `difference` ask
+    keeps calling the bare `_entity_total` exactly as before (the shared-
+    function blast-radius invariant: this fold is felt by nobody who
+    didn't ask for it)."""
+    state = [q for q in store.by_kind(Quantity) if q.entity == entity and q.is_state]
+    if not state:
+        return None
+    if len({q.time for q in state}) > 1:
+        return None  # facts from DIFFERENT times — time arithmetic is unbuilt
+    parts: list[str] = []
+    for q in state:
+        factor = _conversion_factor(reg, q.measure, measure)
+        if factor is None:
+            continue  # unrelated to this measure entirely — never folded
+        parts.append(str(q.value) if factor == 1.0 else f"{q.value} * {factor}")
+    if not parts:
+        return None
+    return evaluate(" + ".join(parts), {}, log, source="dimension-fold")
+
+
 def _superordinate_total(
     store: FactStore, reg: Registry, entity: str, measure: str, log: ArithmeticLog,
     verb: str | None = None,
@@ -1248,9 +1321,22 @@ def answer(
             if guard is not None:
                 return guard
         ask_verb = query.get("verb", "have")
+        # mining candidate dimension-difference-asks: opt-in fold across
+        # convertible sibling units (see `_entity_total_convertible`'s own
+        # docstring) — set ONLY by the new unit-qualified dimension/age-
+        # comparative asks. Every pre-existing `difference` ask (how-many-
+        # more, what-is-the-difference-named/-pronoun, the partitive
+        # sibling) never binds `fold_units`, so this branch is dead code
+        # for all of them — zero behavior change (shared-function
+        # blast-radius invariant).
+        fold_units = query.get("fold_units") == "true"
         if ask_verb in ("have", "be") or reg.word_in_category(ask_verb, "state"):
-            ta = _entity_total(store, reg, a, singular, log)
-            tb = _entity_total(store, reg, b, singular, log)
+            if fold_units:
+                ta = _entity_total_convertible(store, reg, a, singular, log)
+                tb = _entity_total_convertible(store, reg, b, singular, log)
+            else:
+                ta = _entity_total(store, reg, a, singular, log)
+                tb = _entity_total(store, reg, b, singular, log)
         else:
             # "how many more did Quincy SELL than Jake" — activity totals,
             # never the signed holdings fold (selling is not owning)
