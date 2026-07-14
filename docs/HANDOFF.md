@@ -16,11 +16,11 @@ every increment through the gates).
 **Current numbers (all verified at head):**
 - dev-train: **100 correct / 0 wrong** (3,772 items, 100% precision) — **GOAL REACHED**
 - dev-holdout: 39 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 960 · lint: 0 errors, 1 intended warning
+- curated suite: 52/52 · pytest: 967 · lint: 0 errors, 1 intended warning
 - bench wall: dev-train 16.6s -> 9.0s (trace opt-out) -> 1.7s at `--jobs 12`.
   `--jobs` defaults to 1; spend it in the SERIAL integration tail, never in the
   implementers' gates (they already run concurrently). See the two infra notes below.
-- TEST ledger (111 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- TEST ledger (115 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -5686,3 +5686,73 @@ later, since a decline REASON is a mining candidate class ranked by frequency).
 **Gate:** dev-train AND dev-holdout snapshots **BYTE-IDENTICAL** to main (`cmp`, 7,473 items);
 diff NEUTRAL (0 BROKE, 0 DECL->WRONG); suite 52/52; pytest 940 -> 960 (+20 synthetic); lint 0
 errors. **TEST look #111: 11/1 (91.7%) — HELD**, as a 0-diff refactor must.
+
+## Increments 118-121: PHASE 6 COMPLETE — the fifteen sites are one primitive
+
+Every hand-written "exactly one candidate in scope, or decline" in the kernel now routes
+through `deixis.resolve`. Four increments, each independently revertable, each proven
+**BYTE-IDENTICAL** on dev-train AND dev-holdout (`cmp`, 7,473 items).
+
+- **118** (`af8296f`) — the four `_relations_synth` sites: anaphoric-quantity sentinel,
+  anaphoric-price sentinel, elided standard, elided measure. **Zero signature changes** —
+  `log` is already the third positional arg of every SynthPlugin, which is exactly what
+  landing the carrier on ArithmeticLog in 117 bought.
+- **119** (`49ceefb`) — the five synths: `_anchor_quantity`, `_fraction`, `_rest`,
+  `_partition`, `_partition_membership`.
+- **120** (`c3837ea`) — `answer.py`: `_resolve_measure_against`, `_resolve_dimension_measure`,
+  the unique-entity consumer, the partition-total holder check.
+- **121** (`241510e`) — `obligations._candidates`, the one site that already RANKED.
+
+**TEST looks #112-115: 11/1 (91.7%) — ALL HELD**, as 0-diff refactors must.
+
+### The one migration whose 0-diff is NOT a tautology
+
+Twelve sites migrate under the CONSTANT metric, where 0-diff is definitional (every
+candidate equidistant => strict dominance unsatisfiable => "unique or decline", which is
+what they already did). **`obligations._candidates` migrates under the REAL metric** —
+`token_distance` from the holder's span — because it already ranked; `deixis.resolve` was
+generalised FROM it. That its snapshots are STILL byte-identical is independent evidence
+that resolve()'s strict dominance is behaviourally identical to the adjacency arbitration
+it was abstracted from, not merely plausible.
+
+### What the migration FOUND
+
+**docs/deixis.md's inventory of fifteen sites is an UNDERCOUNT — the real number is at
+least eighteen.** Three more identical unique-or-decline sites turned up while migrating:
+`_partition_complement_synth`, `_ratio_split_synth` (both still hand-written — a follow-up
+increment), and `_resolve_dimension_measure` + the partition-total holder check (both
+migrated in 120). That is the thesis in miniature: the pattern is so pervasive it was
+miscounted by the very document written to catalogue it.
+
+### Deliberately NOT migrated, and why
+
+- **The `difference` consumer** needs EXACTLY TWO holders. `resolve()` returns a single
+  Referent and genuinely cannot express arity-2. It is not a degenerate unique-or-decline;
+  it is a GROUP reference wearing a cardinality check, and it needs phase 5's group
+  referent. Forcing it through resolve() would be a worse lie than leaving it by hand.
+- **The conjoined-subject veto** (`obligations.py`) still returns BEFORE arbitration.
+  "Frankie and Carla played..." keeps both conjuncts and FORBIDS adjacency from picking
+  the nearer — the subject is the GROUP, and collapsing it to one name is a
+  confident-wrong, not a decline. Another hand-written group referent; another phase-5 hole.
+
+### New dimension: SYNTAX
+
+Not a Bühler deictic dimension. It is the same ARBITRATION MACHINE (rank by distance from
+an origo, strict dominance, ties decline) applied to intra-sentential argument attachment.
+Typed separately for exactly the reason the deictic dimensions are typed at all: **a
+syntactic candidate must never be able to compete with a discourse antecedent.**
+
+### The trial-journaling trap (recorded before it bites)
+
+`obligations._candidates` runs inside `disambiguate`'s deepcopied TRIAL readings (up to
+|senses|^4 per sentence). A trial's candidate set reflects a sense assignment that was
+**REJECTED** — journaling it would render a discarded hypothesis as a real resolution in
+the field view. No log reaches that far, so `journal=None` falls out for free today. **Any
+future attempt to journal it needs an explicit trial guard first.**
+
+### Where phase 6 leaves the roadmap
+
+The seam is now the single point of change. Switching on a real metric for any dimension is
+a ONE-LINE edit at one site (`constant` -> the metric) — which is precisely why each must be
+its own gated increment with its own TEST look. `token_distance` is live at exactly one site
+(obligations) and wired to nothing else. **The month fix remains BLOCKED on phase 2.**
