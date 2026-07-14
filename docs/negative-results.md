@@ -329,3 +329,42 @@ one of them survives someone checking.
 FROM THE MAIN CHECKOUT (`git checkout <commit>` in the main repo, never in a worktree), and
 mandates a post-batch reconciliation — `wc -l test-ledger.jsonl` must equal the looks spent
 to date, or a look has leaked into a worktree.
+
+## The 481-item per-unit seam: a CEILING, not a yield (2026-07-14)
+
+**The measurement.** 481 dev-train items in the addressable pool (34% of it — 4.7x
+everything the campaign has solved) contain an `each`/`every`/`per` premise that yields no
+`Rate` fact. It looked like the single biggest missing mechanism in the engine.
+
+**It is not missing.** `saturate.py::_distributive_container_total_synth` already composes
+"each box has 8 pens" with "there are 20 boxes" into `GroupTotal(pen, 160)`. Probing eight
+distributive surfaces, the engine derives the CORRECT total on five of them — and then the
+entity-less consumer **declines in front of the answer it just computed**:
+
+```
+"There are 9 hands. Each hand has 14 bananas. How many bananas are there?"
+  facts:  Quantity(world|hand|9)  Quantity(hand|banana|14)  GroupTotal(banana|126)
+  answer: DECLINE — "'banana' has both a lone holder and a group total"
+```
+
+The guard's own comment refutes it: it establishes that the lone Quantity IS a per-unit rate
+and the GroupTotal IS the total, then declines as if the ambiguity remained. An entity-less
+ask ("how many bananas are there?") wants precisely the group's whole.
+
+**Returning the GroupTotal fixes all five surfaces. It converts ZERO dev-train items.**
+The guard fires on **0** real items. And the 182 declining items that DO carry a GroupTotal
+die elsewhere — 110 on `no ask shape`, 26 on `no events known` — with golds that are not the
+GroupTotal (one sample: GroupTotal=100, gold=16). They are multi-step.
+
+**NOT LANDED, and that is the point.** The fix is correct, the argument is sound, and it is
+0 SOLVED — which is precisely increment 129's shape, and 129's argument was sound too. A
+change that makes a consumer COMMIT where it used to DECLINE, and that fires on nothing we
+can check, is unmeasured, not safe. It would fire on TEST, unobserved, in the exact direction
+that manufactures wrongs.
+
+*A rule enforced on the scout and suspended for oneself is not a rule.* The patch is
+recorded here; it lands WITH the class that cashes it in, or not at all.
+
+**What this means for the ceiling.** The per-unit "seam" was a ceiling, not a yield. The
+mechanism exists and works; the items are blocked further downstream, on multi-step
+composition. **481 was the size of the hole, not the size of the fix.**
