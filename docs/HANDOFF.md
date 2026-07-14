@@ -1,20 +1,33 @@
 # Session handoff — 2026-07-11
 
-> ## ➡ NEXT SESSION STARTS HERE: `docs/reading-gap.md`
+> ## ➡ NEXT SESSION STARTS HERE: `docs/difg-corpus-plan.md`
 >
-> The mining campaign has **converged**, not failed: dev-train 39 → **103** at 100%
-> precision, zero wrongs ever. What is exhausted is the ASK-SHAPE seam — the only half
-> mining can see.
+> ### GSM8K IS DONE. The campaign CONVERGED — it did not fail.
 >
-> **The engine's ceiling is READING.** 81% of the addressable pool (1,164 items) never
-> extracts the numbers at all. That is the one remaining lever, and the next task is to
-> MEASURE it — is it a handful of premise surfaces, or a long tail? Both answers are real
-> results. **`docs/reading-gap.md` is a self-contained brief; start there.**
+> dev-train 39 → **103 at 100% precision**, zero wrongs ever. dev-holdout 40/0. TEST 91.7%.
+>
+> **Both halves of the engine are now measured and CLOSED.** The ask-shape seam is exhausted
+> (5 batches, +2 net). And as of 2026-07-14 the READING gap behind it — the last remaining
+> lever, the one this handoff used to point at — **measured out as a LONG TAIL**:
+>
+> - **67% of it isn't a reading gap at all.** 670 of 1,002 items decline because the *ask
+>   never fired*; reading their premises converts zero of them. Premise-blocked sub-pool: 332
+>   — a **ceiling, not a yield**.
+> - **The structural clusters don't predict their own mechanism.** Under a null control the
+>   three largest score **+0%, +1%, +1%**. The flagship `affine-comparative` family scores
+>   **−3% on 14 items**. Largest coherent class in the whole corpus: **~18 items**.
+>
+> Further GSM8K coverage would need exactly what constitution rules 1 & 2 forbid — word lists
+> and per-problem branches. **The next lever is a different corpus, not a deeper one.**
+>
+> Full result: `docs/negative-results.md` → "The reading gap is a LONG TAIL".
+> The executed brief, preserved: `docs/reading-gap.md` (CLOSED — do not re-run).
 >
 > Already measured and CLOSED — do not restart (all in `docs/negative-results.md`):
 > ask-shape mining (5 batches, +2 net), the 481-item per-unit seam (mechanism already
 > exists), **composition** (`docs/composition.md` — ABANDONED at Phase 0, typed ceiling ~13),
-> the month/time seam (0 SOLVED), the GroupTotal consumer fix (correct, 0 SOLVED, not landed).
+> the month/time seam (0 SOLVED), the GroupTotal consumer fix (correct, 0 SOLVED, not landed),
+> **the reading gap** (long tail — the measurement above).
 
 
 Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.

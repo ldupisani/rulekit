@@ -1,4 +1,36 @@
-# NEXT SESSION: measure the reading gap
+# The reading gap — ANSWERED (2026-07-14). It is a LONG TAIL.
+
+> ## ⛔ THIS BRIEF IS CLOSED. DO NOT RE-RUN IT.
+>
+> It ran exactly as written. The measurement came back **long tail**, hitting stop condition 1
+> (§7 below). **GSM8K coverage is DONE** at 103/0 dev-train, 40/0 dev-holdout, 91.7% TEST —
+> converged, not failed. Nothing was built; nothing was broken.
+>
+> **Two findings, both in `docs/negative-results.md` ("The reading gap is a LONG TAIL"):**
+>
+> 1. **67% of the "reading gap" is not a reading gap.** 670 of the 1,002 items decline because
+>    *the ask shape never fired* (`no ask shape recognizes this question`, `no 'X' events
+>    known`). Reading their premises converts **zero** of them — they sit behind the
+>    ask-shape wall, the seam already closed. The premise-blocked sub-pool is 332, and 332 is
+>    a **ceiling, not a yield**.
+>
+> 2. **The structural clusters do not predict their own mechanism.** Under a null control
+>    (does the cluster's decline reason concentrate above a random subset of the same size?),
+>    the three largest clusters score **+0%, +1%, +1%**. `affine-comparative` — the
+>    Randy-the-mango-trees family this brief called "the reason to be hopeful" — scores
+>    **−3% on 14 items**. *The hypothesis was falsified by its own headline example.*
+>
+> And the trap that §5 warned about caught one more: `coordinated-qty`, the strongest-looking
+> cluster (+16%), turned out to be **11/30 fold-CONFLICT declines** — the engine reading the
+> sentence correctly and a *precision guard* firing. It would have been the obvious first
+> mining brief, and "fixing" it would have broken a guard.
+>
+> **The next lever is a different corpus, not a deeper one → `docs/difg-corpus-plan.md`.**
+>
+> The rest of this file is preserved as the brief that was executed — the method in §4 and the
+> traps in §5–6 are sound and are why the answer is trustworthy.
+
+---
 
 **Self-contained brief. Read `CLAUDE.md` (the constitution) and this file. You do not need
 to read the rest of `HANDOFF.md` to start.**

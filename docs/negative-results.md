@@ -406,3 +406,103 @@ This is the same shape as every TEST kill in this campaign: **a measurement that
 about the thing it addressed and silent about the thing that mattered.** Here the unexamined
 question was "would this method also succeed on a false hypothesis?" — and it would have,
 33% of the time.
+
+---
+
+## The reading gap is a LONG TAIL — GSM8K coverage is DONE (2026-07-14)
+
+`docs/reading-gap.md` asked one question: of the ~1,164 declining items whose numbers the
+engine never extracts, **is the reading gap a handful of premise surfaces, or a long tail?**
+
+It ran. **It is a long tail.** Two independent findings kill it, and the second kills it twice.
+
+### Finding 1 — two-thirds of the "reading gap" is not a reading gap
+
+The brief assumed reading was the blocker. It is not. Bucketing the reading-gap pool by the
+engine's own decline reason:
+
+| reading-gap pool (≥1 unread numeric premise, fully-read, addressable) | 1,002 | |
+|---|---|---|
+| `no ask shape recognizes this question` | 496 | 49% |
+| `no 'X' events known for 'X'/'X'` | 169 | 17% |
+| **ask never fired → reading the premise converts NOTHING** | **670** | **67%** |
+| premise-blocked (the ask FIRED and found nothing to consume) | 332 | 33% |
+
+**The reading gap sits behind the ask-shape wall** — the seam already closed (5 batches,
++2 net). Fixing the reading on those 670 items converts zero of them. The convertible
+sub-pool is 332, and — as always — **332 is a CEILING, not a yield.**
+
+### Finding 2 — the structural clusters do not predict their own mechanism
+
+The brief's central instruction was *cluster by STRUCTURE, never by lexical frame*, because
+that inversion had flipped a conclusion three times. It was followed. It did not save the
+hypothesis.
+
+**The null control for clustering:** a structural cluster is a real mechanism class only if it
+PREDICTS the missing fold. Operationalized — within a cluster, the engine's decline reason
+should CONCENTRATE. Null = a random subset of the same size drawn from the same pool.
+
+| cluster | n | top-share | null | signal |
+|---|---|---|---|---|
+| UNCLASSIFIED | 159 | 17% | 17% | **+0%** |
+| partitive | 60 | 30% | 18% | +12% |
+| distributive-each | 55 | 20% | 19% | **+1%** |
+| mult-comparative | 53 | 19% | 18% | **+1%** |
+| coordinated-qty | 30 | 37% | 20% | +16% |
+| additive-comparative | 18 | 33% | 22% | +11% |
+| **affine-comparative** | **14** | 21% | 24% | **−3%** |
+| aggregate | 11 | 18% | 25% | −7% |
+
+Read that table carefully:
+
+- **`affine-comparative` — the flagship — has NEGATIVE signal and 14 items.** This is the
+  Randy-the-mango-trees family (`5 less than half as many coconut trees as mango trees`) that
+  the brief called "the reason to be hopeful." Its items share a surface and nothing else.
+  **The hypothesis was falsified by its own headline example.**
+- The three biggest clusters (`UNCLASSIFIED` 159, `distributive-each` 55, `mult-comparative`
+  53) are at **+0%, +1%, +1%** — indistinguishable from random subsets. They are surfaces.
+- `UNCLASSIFIED`, at 159, is the **largest bucket in the premise-blocked pool** (48%). A
+  long tail announcing itself.
+
+### The strongest cluster was a GUARD DOING ITS JOB
+
+`coordinated-qty` (+16%, top-share 37%) looked like the most promising seam in the corpus and
+would have been the obvious first mining brief. Its dominant member — **11 of 30** — is:
+
+```
+conflict: fold and fold disagree about ('quantity', 'james', 'week', 'sell', …)
+```
+
+That is **not a reading gap.** That is the engine reading the sentence *successfully* and the
+collision guard firing on a precision conflict. The cluster's entire apparent signal is a
+precision guard — **the worst possible thing to have "fixed."**
+
+After removing it, the largest genuinely-coherent, reading-blocked, mechanism-sharing cluster
+in the whole corpus is `partitive ∩ value-accounting-miss` ≈ **18 items** — and even
+"value-accounting miss" is a SYMPTOM (a number reached no fact), not a shared MECHANISM.
+
+### The verdict
+
+Stop condition 1 of `docs/reading-gap.md`, met exactly as written:
+
+> **The top 5 structural clusters cover < ~150 items, or fail hand-verification at 10/10.**
+> → long tail. GSM8K coverage is done. Record it and move to the difg corpus.
+
+**GSM8K coverage is DONE at 103/0 (100% precision), 40/0 dev-holdout, 91.7% TEST.** Not
+failed — *converged*. Both halves of the engine are now measured and closed: the ask-shape
+seam is exhausted, and the premise seam behind it is a long tail with no class big enough or
+coherent enough to justify general machinery. Further GSM8K coverage would require exactly
+what constitution rules 1 and 2 forbid: word lists and per-problem branches.
+
+**The next lever is a different corpus, not a deeper one:** `docs/difg-corpus-plan.md`.
+
+### The lesson (the third time this exact shape has appeared)
+
+The 481 was a ceiling read as a yield. The 271 was a search artifact read as an opportunity.
+**The `coordinated-qty` cluster was a precision guard read as a reading gap.** All three
+survived until someone asked *"would this number also appear if my hypothesis were false?"*
+
+> **A cluster is not a class until it predicts the missing mechanism. A regex that matches
+> 200 sentences has told you about your regex.** Cluster-by-structure was necessary and was
+> not sufficient — the structural clusters were still surfaces. The only thing that
+> distinguishes a class from a surface is a null control.
