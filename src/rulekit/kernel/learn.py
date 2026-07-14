@@ -814,7 +814,27 @@ def _flat_purchase_price(reading: Reading, item: Unit, reg: Registry) -> float |
 def _sentence_time(reading: Reading, reg: Registry) -> str | None:
     """A sentence-initial time adjunct ('Last year he made…', 'This year…')
     scopes every fact the sentence yields. The time words are the
-    `timeperiod` category — data. Returns the adjunct's fold, or None."""
+    `timeperiod` category — data. Returns a NORMALISED label, or None.
+
+    NORMALISATION — a leading PREPOSITION is stripped; anything else is kept.
+
+    A preposition MARKS the adjunct; it does not name a different time. So "on
+    Monday", "by Monday" and a bare "Monday" are the SAME moment, and used to be
+    three different labels — and because `time` is part of `Quantity.key()`, three
+    different FACT IDENTITIES. That is a latent bug: two facts about one Monday
+    could neither dedupe nor be recognised as same-time.
+
+    A DETERMINER is not noise and is NOT stripped: "last year" and "this year" are
+    genuinely different moments that share the timeperiod noun `year`. Collapsing
+    them (e.g. by keying on the lemma) would make the mixed-time refusals stop
+    firing and turn a decline into a WRONG. The distinction is structural — a
+    sense, not a word list.
+
+    This is still an opaque LABEL, comparable only for equality. It is not ordered,
+    and nothing here makes it so: `Before` remains unproduced (docs/deixis.md §1.3).
+    Equality is all the temporal origo needs to REFUSE the wrong month, which is
+    the precision half of the month fix.
+    """
     for unit in reading.units:
         sense = unit.sense()
         if sense == "verb":
@@ -827,12 +847,13 @@ def _sentence_time(reading: Reading, reg: Registry) -> str | None:
             )
         ):
             idx = reading.units.index(unit)
-            words = [
-                u.features.get("fold", "")
-                for u in reading.units[max(0, idx - 1) : idx + 1]
-                if u.sense() not in ("punct",)
-            ]
-            return " ".join(words)
+            fold = unit.features.get("fold", "")
+            prev = reading.units[idx - 1] if idx > 0 else None
+            if prev is not None and prev.sense() in ("punct", "preposition"):
+                prev = None
+            if prev is None:
+                return fold
+            return f"{prev.features.get('fold', '')} {fold}"
     return None
 
 
