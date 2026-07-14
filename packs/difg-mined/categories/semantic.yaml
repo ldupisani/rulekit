@@ -129,6 +129,51 @@ members:
   # mirroring 'child'/'toy'/'fish' below.
   age_noun:
   - age
+  # mining candidate dimension-aggregate-asks: the difg-mined-only member
+  # words of the core-english categories `compute_verb`/`dimension_noun`/
+  # `length_measure`/`mass_measure`/`time_measure`/`currency_measure`
+  # (packs/core-english/categories/core.yaml — see that file's notes for
+  # the full mechanism, mirroring `age_noun`'s own sibling pattern above).
+  compute_verb:
+  - calculate
+  - determine
+  dimension_noun:
+  - height
+  - weight
+  - age
+  - distance
+  - balance
+  - earnings
+  - cost
+  length_measure:
+  - foot
+  - inch
+  - yard
+  - meter
+  - centimeter
+  - kilometer
+  - mile
+  - height
+  - distance
+  mass_measure:
+  - pound
+  - ounce
+  - kilogram
+  - gram
+  - weight
+  time_measure:
+  - minute
+  - hour
+  - day
+  - week
+  - month
+  - year
+  - age
+  currency_measure:
+  - cent
+  - balance
+  - earnings
+  - cost
   # subtype-total-asks (mining candidate): the difg-mined-only member words
   # of the core-english superordinate categories 'child'/'toy'/'fish'
   # (packs/core-english/categories/core.yaml — see that file's notes for

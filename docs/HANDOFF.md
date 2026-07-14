@@ -5350,3 +5350,40 @@ Increment 108 is the shape the methodology has been pushing toward all along: it
 enabler (the conjunct comparative premise) with the ask that cashes it in, in ONE increment —
 so it solves >= 1 by construction, needs no infra slot, and costs one TEST look for real
 coverage. That is what §9 asks for, and it is now happening without being told.
+
+## Increment 112 — aggregate asks whose measure is a DIMENSION NOUN, not a unit (batch 2026-07-14e)
+
+CLASS: aggregate asks whose measure is named by a DIMENSION NOUN or dimension adjective, not by
+the unit (combined/total/average height, weight, age, distance, duration — "calculate their
+combined height", "what is the average weight of the three", "how long is the total tape?").
+The engine keys quantities by UNIT lemma (foot/pound/year/minute/dollar), so no ask could
+previously resolve a measure named 'height' or 'weight'. Rebuilt fully-read/no-ask-shape POOL
+(694 items): 17 items ask this family; fact dumps on 13 walked items showed 3 resolve cleanly
+with existing Quantity facts (the rest need premise-side machinery — equation solves, overlap
+subtraction, per-item products — out of scope for this increment).
+
+MECHANISM (YAML-first; `answer.py` touched only in the existing `combined`/`average` branches):
+- `packs/core-english/categories/core.yaml` / `packs/difg-mined/categories/semantic.yaml`: new
+  `dimension_noun`/`dimension` unit-family categories (`length_measure`, `mass_measure`,
+  `time_measure`, `currency_measure`) — each dimension noun/adjective ('height', 'weight', 'long')
+  declares which unit FAMILY it measures. Pack data only, no Python word list.
+- `packs/arithmetic/rules/core.yaml`: new imperative-headed ask siblings of `what-total-combined`
+  / `what-average-combined`, gated on a new `compute_verb` category ('calculate'/'determine'/
+  'find' — already-lexiconed, quarantine-clean) plus a possessive-pronoun or cardinal holder set
+  (reusing increment 109's cardinal slot), with the measure supplied by a `dimension_noun` slot
+  instead of a unit noun. Plus one dimension-adjective copular totality sibling ("how long is the
+  total X?").
+- `src/rulekit/kernel/answer.py`: new `_resolve_dimension_measure` helper, opt-in via a
+  `dimension_measure: true` query flag carried only by the new ask ids. Looks up the unit FAMILY
+  the dimension noun belongs to, then finds the UNIQUE in-store unit of that family across the
+  holder set — UNIQUE-OR-DECLINE, zero or two distinct unit families across holders declines,
+  never guesses. Also generalizes the pre-existing `holder_count` cardinal-holder-set guard
+  (previously 'combined'-only) to the 'average' branch via the shared `_combined_holder_totals`
+  helper. Every existing caller of `combined`/`average` binds a unit noun and never a dimension
+  noun, so the new path is inert for them — byte-unchanged behavior on all prior ask ids.
+
+GATE (integrated on staging tip, dev-train 93 baseline before this increment): dev-train diff
+SOLVED 1 (506be374bc9b) / BROKE 0 / DECL->WRONG 0 / NET +1 / SHIP (93 -> 94). dev-holdout diff
+SOLVED 0 / BROKE 0 / DECL->WRONG 0 / NET +0 / NEUTRAL (39 -> 39). pytest 906 passed (899 baseline
++ 7 new synthetic tests). suite 52/52. lint 0 errors (1 pre-existing known-good warning). TEST
+look: pending — spent manually.

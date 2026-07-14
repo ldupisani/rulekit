@@ -88,6 +88,127 @@ categories:
       difg-mined lexicon entry, so its membership lives in packs/difg-
       mined/categories/semantic.yaml, not here (the shared core-english +
       arithmetic-only test registry never sees it and must not need to).
+  compute_verb:
+    parent: imperative
+    notes: >
+      mining candidate dimension-aggregate-asks: the closed set of
+      IMPERATIVE task-cue verbs ('compute'/'calculate'/'determine') that
+      head the new imperative aggregate asks ("Calculate their combined
+      height", "Determine the average weight of the three"). Rooted at
+      'imperative' (added to registry.ROOT_SENSES the same way 'time'/
+      'article'/'pronoun' were — purely additive, see that file's own
+      comment), NOT 'verb': 'compute' carries ONLY the `imperative` sense
+      (packs/core-english/lexicon/core.yaml — it is never used as an
+      ordinary verb in this grammar), so a category rooted at 'verb'
+      could never admit it as a member (the "member carries the root
+      sense" compile invariant). 'calculate'/'determine' carry BOTH
+      `verb` and `imperative` senses and satisfy either root; rooting
+      here keeps all three members in one category. A separate category
+      from the bare `imperative` SENSE itself (which `cat: imperative`
+      would also match directly via the degenerate-sense fallback): this
+      ask family names its own precondition explicitly so a FUTURE
+      imperative-sensed word admitted for an unrelated purpose never
+      silently widens it too. 'compute' is core-english (tagged in this
+      file's own `members:` below); 'calculate'/'determine' are
+      difg-mined words, so their membership lives in packs/difg-mined/
+      categories/semantic.yaml.
+  dimension_noun:
+    parent: noun
+    notes: >
+      mining candidate dimension-aggregate-asks: nouns that name a
+      MEASURE by the DIMENSION being measured rather than by the unit
+      itself ('height'/'weight'/'age'/'distance'/'balance'/'earnings'/
+      'cost' — "their combined HEIGHT", "the average WEIGHT of the
+      three"). Gates the `item` slot on the new imperative-headed
+      aggregate asks (packs/arithmetic/rules/core.yaml,
+      ask/imperative-combined-dimension and ask/imperative-average-
+      dimension) — a PURE PATTERN-MATCHING gate, structurally analogous
+      to `age_noun`/`dimension_adjective` above, never itself consulted
+      for measure RESOLUTION (that is `length_measure`/`mass_measure`/
+      `time_measure`/`currency_measure` below, a deliberately SEPARATE
+      set of categories — see `dimension` in data/schemas.py's
+      CategoryDef for why resolution needs its own opt-in flag rather
+      than reusing `interchangeable`). Every member word is a difg-mined
+      lexicon entry, so membership lives in packs/difg-mined/categories/
+      semantic.yaml, not here (mirrors `age_noun`'s own sibling pattern).
+  length_measure:
+    parent: noun
+    dimension: true
+    notes: >
+      mining candidate dimension-aggregate-asks: the physical-LENGTH
+      unit family — concrete units ('foot'/'inch'/'yard'/'meter'/
+      'centimeter'/'kilometer'/'mile') AND the dimension nouns that name
+      the same family without naming a unit ('height'/'distance') are
+      members of this ONE category (both kinds are noun-sensed, so both
+      satisfy this category's root sense — see CategoryDef's `dimension`
+      field docstring). `answer.py`'s `_resolve_dimension_measure`
+      (called ONLY by the 'combined'/'average' consumers when an ask
+      opts in via `dimension_measure: true`) resolves a dimension-noun
+      ask like "their combined height" to whichever concrete length
+      unit is UNIQUELY present in the facts — the same UNIQUE-OR-DECLINE
+      discipline `currency`'s `interchangeable` resolution already uses,
+      via a SEPARATE registry set (`dimension_categories`, never
+      `interchangeable_categories`) so this never widens
+      `_resolve_measure`/`_resolve_measure_against`, which every OTHER
+      consumer keeps calling unchanged. Every member word is a
+      difg-mined lexicon entry; membership lives in packs/difg-mined/
+      categories/semantic.yaml.
+  mass_measure:
+    parent: noun
+    dimension: true
+    notes: >
+      sibling of `length_measure` for WEIGHT — concrete units
+      ('pound'/'ounce'/'kilogram'/'gram') plus the dimension noun
+      'weight'. See `length_measure`'s note for the shared mechanism.
+      'pound' is ALSO a member of the pre-existing `currency` category
+      (British pounds sterling) — harmless multi-category membership,
+      exactly like 'older'/'younger' already carrying two category tags
+      elsewhere in this file; the two categories are consulted by
+      entirely separate resolution paths (`interchangeable_categories`
+      vs `dimension_categories`) and never interact.
+  time_measure:
+    parent: noun
+    dimension: true
+    notes: >
+      sibling of `length_measure`/`mass_measure` for DURATION and AGE —
+      concrete units ('minute'/'hour'/'day'/'week'/'month'/'year') plus
+      the dimension noun 'age' (an age total always folds to 'year'
+      elsewhere in this grammar — arithmetic/stated-age, ask/how-old-is
+      — so resolving 'age' against whichever time unit is uniquely
+      in-store lands on the same place; "calculate their combined age" /
+      "determine the average age of the three" reuse the SAME
+      ask/imperative-*-dimension asks `length_measure`/`mass_measure`
+      already gate). A dimension-ADJECTIVE totality sibling ("how long
+      is the total X?", binding this category's OWN NAME directly as
+      `measure` — the same move `currency`'s `measure: currency`
+      precedent makes) was PROTOTYPED and DROPPED: dev-train's
+      "Bart makes a mixtape... How long is the total tape?" exposed a
+      pre-existing latent oversum in the entity-less 'combined' consumer
+      — a bare rate-defining sentence ("Each song is 4 minutes") leaves
+      its OWN raw Quantity(entity='song', measure='minute', value=4)
+      fact behind ALONGSIDE the container-contents synth's bridged
+      per-side totals, and enumerating every 'minute' holder summed all
+      three (44 instead of gold 40). Fixing that oversum is a separate,
+      general fix to `_combined_holder_totals`'s entity enumeration, out
+      of scope here — 'long' is deliberately NOT a member of this
+      category (adjective-sensed; this category is noun-rooted, so it
+      could never join anyway) and no ask currently binds this
+      category's name directly.
+  currency_measure:
+    parent: noun
+    dimension: true
+    notes: >
+      sibling of `length_measure`/`mass_measure`/`time_measure` for
+      MONEY — the concrete unit 'dollar' (tagged in this file's own
+      `members:` below, a core-english word) plus 'cent' and the
+      dimension nouns 'balance'/'earnings'/'cost' (difg-mined words,
+      membership in that pack). Deliberately a SEPARATE category from
+      the pre-existing `currency` (`interchangeable: true`): adding
+      'balance'/'earnings'/'cost' to `currency` itself would widen
+      `_resolve_measure_against`, consulted by every OTHER consumer
+      (single-entity, difference, ...), not just 'combined'/'average' —
+      exactly the shared-function blast radius `length_measure`'s note
+      above avoids.
   count_intensifier:
     parent: comparative
     notes: >
@@ -516,6 +637,8 @@ members:
   relational_marker: [than]
   span_preposition: [in]
   indefinite_article: [a, an]
+  compute_verb: [compute]  # 'calculate'/'determine' extend this from packs/difg-mined
+  currency_measure: [dollar]  # 'cent'/'balance'/'earnings'/'cost' extend this from packs/difg-mined
 context_synonyms:
   appendage:
     gate: animal

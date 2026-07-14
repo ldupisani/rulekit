@@ -5924,3 +5924,77 @@ asks:
       consumer: average
       measure: "{item}"
       verb: "{verb}"
+
+  - id: ask/imperative-combined-dimension
+    # mining candidate dimension-aggregate-asks: "Calculate their combined
+    # height." / "Determine the combined weight of the three." — an
+    # IMPERATIVE task-cue verb (`compute_verb`: compute/calculate/
+    # determine, packs/core-english/categories/core.yaml) heads the
+    # sentence instead of "what is/was" (ask/what-total-combined's own
+    # shape); the aggregate marker is the literal 'combined' (never `cat:
+    # aggregate` — that also matches 'average', which needs the DIFFERENT
+    # 'average' consumer below, and this match engine has no NOT-gate to
+    # exclude it, so the two asks stay mutually exclusive by construction,
+    # exactly like ask/what-total-combined/ask/what-average-combined
+    # already are via their own literal 'total'/'average' tokens); the
+    # measure is a `dimension_noun` ('height'/'weight'/'age'/'distance'/
+    # 'balance'/'earnings'/'cost' — NAMES the dimension, not the unit),
+    # resolved by `answer.py`'s `_resolve_dimension_measure` (opt-in via
+    # `dimension_measure: true` — see that function's own docstring for
+    # the family-membership mechanism and why it can never affect any
+    # OTHER ask).
+    #
+    # The holder set is EITHER a leading possessive pronoun ("THEIR
+    # combined height", optional — 'their' is sense=pronoun, same lexicon
+    # entry as 'they') OR a trailing cardinal ("of the THREE", optional —
+    # reuses ask/how-many-combined-cardinal-pronoun's own `{slot: n, type:
+    # number}` + `holder_count` mechanism, packs/arithmetic/rules/
+    # core.yaml's own comment on that ask explains the double duty). Both
+    # are optional and independent, so either surface (or neither, "the
+    # combined height" alone) matches the same ask; `_combined_holder_
+    # totals` enumerates every holder of the resolved measure exactly as
+    # ask/how-many-combined's own pronoun path does — entity-less, never
+    # named/counted-subject binding. No event-verb slot: a dimension total
+    # is always a STATE quantity (copula/possession-anchored — 'is'/'has'
+    # tall/heavy/old/...), so the consumer's own default verb ('have')
+    # applies unchanged, the same fallback ask/what-total-combined already
+    # relies on for its own unbound `{verb}`.
+    match:
+      question:
+        - {slot: verb, cat: compute_verb}
+        - opt:
+            - {slot: who, type: pronoun}
+        - {lit: combined}
+        - {slot: item, cat: dimension_noun}
+        - opt:
+            - {lit: of}
+            - {slot: n, type: number}
+    resolves:
+      consumer: combined
+      measure: "{item}"
+      dimension_measure: "true"
+      holder_count: "{n.value}"
+
+  - id: ask/imperative-average-dimension
+    # mining candidate dimension-aggregate-asks: sibling of
+    # ask/imperative-combined-dimension for 'average' — IDENTICAL shape,
+    # 'average' in place of 'combined', routed to the 'average' consumer
+    # (reuses `_combined_holder_totals` unchanged, then divides by holder
+    # count, exactly like ask/what-average-combined mirrors ask/what-
+    # total-combined). Mutually exclusive with ask/imperative-combined-
+    # dimension by construction — see that ask's own comment.
+    match:
+      question:
+        - {slot: verb, cat: compute_verb}
+        - opt:
+            - {slot: who, type: pronoun}
+        - {lit: average}
+        - {slot: item, cat: dimension_noun}
+        - opt:
+            - {lit: of}
+            - {slot: n, type: number}
+    resolves:
+      consumer: average
+      measure: "{item}"
+      dimension_measure: "true"
+      holder_count: "{n.value}"

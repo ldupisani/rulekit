@@ -87,6 +87,24 @@ class CategoryDef(StrictModel):
     # single mandatory guard against that: a category must be explicitly
     # author-vetted as exhaustive before this consumer will touch it.
     superordinate: bool = False
+    # mining candidate dimension-aggregate-asks: a UNIT-FAMILY category —
+    # members are EITHER a concrete unit lemma ('foot'/'pound'/'minute'/...)
+    # OR a DIMENSION word that names the same family without naming a unit
+    # ('height'/'weight'/'age' — all noun-sensed, so they can share a
+    # `parent: noun` category with the concrete units without breaking the
+    # "member carries the root sense" invariant below) OR the CATEGORY
+    # NAME ITSELF, bound directly by an ask that already knows which family
+    # it wants (mirrors `currency`'s own `measure: currency` precedent — a
+    # bare ask noun the fact store has no literal match for still resolves
+    # against the family's UNIQUE in-store member). A SEPARATE opt-in flag
+    # from `interchangeable`: `answer.py`'s `_resolve_dimension_measure` is
+    # consulted ONLY by the 'combined'/'average' consumers when an ask
+    # opts in via `dimension_measure: true` — every other consumer keeps
+    # calling `_resolve_measure`/`_resolve_measure_against`
+    # (`interchangeable_categories`) exactly as before, so a dimension
+    # family can never silently widen what an UNRELATED existing ask
+    # resolves (the shared-function blast-radius HANDOFF invariant).
+    dimension: bool = False
     notes: str | None = None
 
 

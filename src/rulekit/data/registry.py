@@ -78,10 +78,20 @@ from .schemas import (
 # keeps 'ones' single-sensed and behavior-identical everywhere except the
 # one condense.py merge (adjective + measure_anaphor pronoun) that opts in
 # by category membership, narrowly, exactly as the invariant demands.
+# 'imperative' was added the same way again (mining candidate dimension-
+# aggregate-asks) so a `compute_verb` category can name the closed set of
+# imperative task-cue verbs ('compute'/'calculate'/'determine') that gate
+# the new imperative-headed aggregate asks -- purely additive: 'imperative'
+# was already a known lexicon sense (packs/core-english/lexicon/core.yaml's
+# 'compute' entry, difg-mined's 'calculate'/'determine' entries, used today
+# only by engine.py's ASK_CUE_SENSES to detect a task sentence with no
+# question mark), so this only permits a NEW category to root here; it
+# changes no existing word's sense or any other imperative-sensed word's
+# behavior.
 ROOT_SENSES = (
     "noun", "verb", "adjective", "quantifier", "preposition", "comparative",
     "negator", "conjunction", "modal", "particle", "adverb", "time",
-    "article", "pronoun",
+    "article", "pronoun", "imperative",
 )
 
 
@@ -110,6 +120,7 @@ class Registry:
     category_polarity: Mapping[str, int]
     interchangeable_categories: frozenset[str]
     superordinate_categories: frozenset[str]
+    dimension_categories: frozenset[str]
     context_synonyms: Mapping[str, tuple[str, tuple[str, ...]]]  # concept -> (gate, forms)
     attrs: Mapping[str, Mapping[str, float]]
     part_counts: Mapping[str, str]
@@ -225,6 +236,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
     category_polarity: dict[str, int] = {}
     interchangeable_categories: set[str] = set()
     superordinate_categories: set[str] = set()
+    dimension_categories: set[str] = set()
     category_members: dict[str, list[str]] = {}
     context_synonyms: dict[str, tuple[str, tuple[str, ...]]] = {}
     attrs: dict[str, dict[str, float]] = {}
@@ -243,6 +255,8 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                     interchangeable_categories.add(name)
                 if cdef.superordinate:
                     superordinate_categories.add(name)
+                if cdef.dimension:
+                    dimension_categories.add(name)
             for cat, words in doc.members.items():
                 category_members.setdefault(cat, []).extend(words)
             for concept, syn in doc.context_synonyms.items():
@@ -390,6 +404,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
         category_polarity=_freeze(category_polarity),
         interchangeable_categories=frozenset(interchangeable_categories),
         superordinate_categories=frozenset(superordinate_categories),
+        dimension_categories=frozenset(dimension_categories),
         context_synonyms=_freeze(context_synonyms),
         attrs=_freeze({k: _freeze(v) for k, v in attrs.items()}),
         part_counts=_freeze(part_counts),

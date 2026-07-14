@@ -85,6 +85,50 @@ def _resolve_measure(measure: str, store: FactStore, reg: Registry) -> str | Non
     return _resolve_measure_against(measure, in_store, reg)
 
 
+def _resolve_dimension_measure(measure: str, store: FactStore, reg: Registry) -> str | None:
+    """mining candidate dimension-aggregate-asks: resolve a DIMENSION word
+    ('height'/'weight'/'age'/'distance'/'balance'/'earnings'/'cost' — an
+    aggregate ask's measure named by WHAT is measured, not by the unit) or
+    a unit-family CATEGORY NAME BOUND DIRECTLY ('time_measure', the way
+    ask/how-long-is-total-dimension binds its `measure` field — mirrors
+    `currency`'s own `measure: currency` precedent one level up) against
+    the FACTS, by declared FAMILY membership (packs/core-english/
+    categories/core.yaml's `length_measure`/`mass_measure`/`time_measure`/
+    `currency_measure`, each `dimension: true`) — UNIQUE-OR-DECLINE exactly
+    like `_resolve_measure_against`'s own currency-category discipline:
+    zero or >=2 distinct family members present among the in-store
+    measures is unresolvable and returns None, never a guess.
+
+    Deliberately a SEPARATE function from `_resolve_measure`/
+    `_resolve_measure_against`, consulting a SEPARATE registry set
+    (`reg.dimension_categories`, never `interchangeable_categories`) —
+    called ONLY from `_combined_holder_totals` when the ask opts in via
+    `dimension_measure: true` (the new imperative-headed / dimension-
+    adjective totality asks). Every OTHER consumer (single-entity,
+    unique-entity, difference, ...) keeps calling `_resolve_measure`
+    unchanged, so a question that happens to bind 'height'/'weight' as a
+    measure through any OTHER, PRE-EXISTING ask id is completely
+    unaffected (the shared-function blast-radius HANDOFF invariant)."""
+    in_store = {q.measure for q in store.by_kind(Quantity)}
+    if measure in reg.dimension_categories:
+        families = [measure]
+    else:
+        singular = reg.plural_to_singular.get(measure, measure)
+        families = [
+            c for c in reg.word_categories.get(singular, ())
+            if c in reg.dimension_categories
+        ]
+    if not families:
+        return None
+    present = sorted(
+        m for m in in_store
+        if any(reg.word_in_category(m, f) for f in families)
+    )
+    if len(present) == 1:
+        return present[0]
+    return None  # zero or ambiguous family members in the facts — never guess
+
+
 def _check_req_unit(
     req_unit: str | None, singular: str, store: FactStore, reg: Registry
 ) -> bool:
@@ -574,7 +618,16 @@ def _combined_holder_totals(
     scene-level restatement, not an independent holding, and summing it
     alongside a real named entity is a confident-wrong."""
     measure = query["measure"]
-    singular = _resolve_measure(measure, store, reg)
+    # `dimension_measure` (mining candidate dimension-aggregate-asks):
+    # bound ONLY by the new imperative-headed / dimension-adjective
+    # totality asks ("calculate their combined height", "how long is the
+    # total X") — a no-op for every other 'combined'/'average' ask, which
+    # never sets this key and keeps calling `_resolve_measure` exactly as
+    # before. See `_resolve_dimension_measure`'s own docstring.
+    if query.get("dimension_measure"):
+        singular = _resolve_dimension_measure(measure, store, reg)
+    else:
+        singular = _resolve_measure(measure, store, reg)
     if singular is None:
         return Answer("decline", None,
                       f"measure {measure!r} is ambiguous across the facts")
@@ -628,6 +681,35 @@ def _combined_holder_totals(
     if any(t is None for t in totals):
         missing = entities[totals.index(None)]
         return Answer("decline", None, f"{missing!r} has no resolvable total")
+    # `holder_count` (mining candidate combined-ask-holder-surfaces,
+    # widened by mining candidate dimension-aggregate-asks to cover the
+    # 'average' consumer too): bound ONLY by the cardinal-holder-set asks
+    # ("the three of them have ... in total", "the average height of the
+    # four people") via `holder_count: "{n.value}"`; a no-op for every
+    # other 'combined'/'average' ask, which never sets this key. Those
+    # asks bind no a/b, so entities above enumerates EVERY holder of the
+    # measure — the ask's stated cardinal never selects which entities are
+    # summed, it only ASSERTS how many there should be. When the premises
+    # under-read a holder (a relation left one of N named holders
+    # unresolved), the enumeration comes back short of the stated
+    # cardinal and silently summing/averaging that subset would be a
+    # confident wrong — decline instead. Checked HERE, in the SHARED
+    # helper, rather than duplicated per consumer: 'combined' already had
+    # this exact check inline; 'average' never did (a pre-existing gap —
+    # no 'average' ask ever bound `holder_count` before this candidate's
+    # own cardinal-holder-set ask, ask/imperative-average-dimension,
+    # which is what surfaced it on dev-holdout: "average height of the
+    # FOUR people" over premises that only resolve three holders averaged
+    # the wrong three instead of declining). Moving the check here is
+    # BEHAVIOR-PRESERVING for every existing 'combined' caller (same
+    # condition, same decline) and closes the gap for 'average' for free.
+    holder_count = query.get("holder_count")
+    if holder_count is not None and int(float(holder_count)) != len(entities):
+        return Answer(
+            "decline", None,
+            f"ask names {holder_count} holders; premises give "
+            f"{len(entities)} ({entities})",
+        )
     return entities, totals
 
 
@@ -1208,29 +1290,9 @@ def answer(
         if isinstance(holders, Answer):
             return holders
         entities, totals = holders
-        # `holder_count` (mining candidate combined-ask-holder-surfaces):
-        # bound ONLY by the cardinal-pronoun-holder-set asks (ask/how-
-        # many-combined-cardinal-pronoun, ask/how-much-combined-cardinal-
-        # pronoun — "the three of them have ... in total") via
-        # `holder_count: "{n.value}"`; a no-op for every other 'combined'
-        # ask, which never sets this key. Those two asks bind no a/b, so
-        # `_combined_holder_totals` falls back to enumerating EVERY
-        # holder of the measure the same way the pronoun-only ask/how-
-        # many-combined does — the ask's stated cardinal never selects
-        # which entities are summed, it only ASSERTS how many there
-        # should be. When the premises under-read a holder (a relation
-        # left one of three named holders unresolved — the residual
-        # blocker this candidate's brief documents), the enumeration
-        # comes back short of the stated cardinal and silently summing
-        # that subset would be a confident wrong ("the ask names 3
-        # holders; the premises give 2") — decline instead.
-        holder_count = query.get("holder_count")
-        if holder_count is not None and int(float(holder_count)) != len(entities):
-            return Answer(
-                "decline", None,
-                f"ask names {holder_count} holders; premises give "
-                f"{len(entities)} ({entities})",
-            )
+        # `holder_count` is checked inside `_combined_holder_totals`
+        # itself (see that function's own comment) — shared by this
+        # branch and 'average' below.
         combined = evaluate(" + ".join(str(t) for t in totals), {}, log, source="combined")
         return Answer("number", combined, f"Σ over {entities}")
 
