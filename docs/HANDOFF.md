@@ -14,13 +14,13 @@ swing under the constitution (no lexicon in Python, no per-problem parsing,
 every increment through the gates).
 
 **Current numbers (all verified at head):**
-- dev-train: **100 correct / 0 wrong** (3,772 items, 100% precision) — **GOAL REACHED**
-- dev-holdout: 39 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 979 · lint: 0 errors, 1 intended warning
+- dev-train: **101 correct / 0 wrong** (3,772 items, 100% precision) — **GOAL REACHED**
+- dev-holdout: 40 correct / 0 wrong (3,701 items)
+- curated suite: 52/52 · pytest: 989 · lint: 0 errors, 1 intended warning
 - bench wall: dev-train 16.6s -> 9.0s (trace opt-out) -> 1.7s at `--jobs 12`.
   `--jobs` defaults to 1; spend it in the SERIAL integration tail, never in the
   implementers' gates (they already run concurrently). See the two infra notes below.
-- TEST ledger (119 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- TEST ledger (120 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -5877,3 +5877,31 @@ BROKE, 0 DECL->WRONG, 39 -> 40; SOLVED: `59c12e7e796c`). pytest 979 -> 989 (+10 
 suite 52/52. lint 0 errors, 1 pre-existing known-good warning.
 
 TEST look: pending — spent manually.
+
+### Batch 2026-07-14 outcome (increment 126)
+
+**TEST look #120: 11/1 (91.7%) — HELD.** dev-train 100 -> **101**, dev-holdout 39 -> **40**.
+Pack-only (four pattern/ask rules, zero Python).
+
+**The constitution reviewer earned its keep again.** It killed `elided-comparative-standards`
+for a **GSM8K item in `tests/`** — "Billy made 40 sandwiches; Katelyn made 12 more than
+that" — a benchmark train item transcribed with the numerals swapped. It verified the
+claim against `gsm8k_train.parquet` rather than asserting it, and found the SAME item
+also quoted (with its real number, 47) in a rule description in
+`packs/arithmetic/rules/core.yaml`. Both proper nouns, the measure noun and the phrasing
+were lifted verbatim. Every other test in that file used synthetic names, so the author
+knew the rule and slipped once — which is exactly why the check is a GATE and not a
+docstring. The candidate is worth re-cutting with synthetic names; the machinery itself
+was structural and passed.
+
+**Three scout-gate kills**, all correctly reasoned:
+- `dimension-adverb-relations` and `imperative-asks` — 1-of-12 walked items resolve
+  (bar is >= 3). Their frequencies (53, 63) are SURFACE counts: a surface count does not
+  show the mechanism can READ those items.
+- `equal-share-division` — declared a **DEAD CLASS** after 4 failures through 4 different
+  gates. Its blockers are NAMED and none have landed: (a) "each one" — `one` senses only
+  as a value, never a noun, so it cannot fill a recipient-noun slot; (b) elided-measure
+  events ("Priya collected 29") fold as a Predication with a string dobj, never a
+  Quantity, so the dividend has no holder; (c) a trailing "...if they divide X amongst
+  themselves?" fuses the division premise INTO the question sentence, and read-phase
+  pattern rules only run over premise readings. **Land those first, or stop drawing it.**
