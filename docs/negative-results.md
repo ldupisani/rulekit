@@ -600,3 +600,95 @@ Half a compositional parser buys exactly what was measured above: nothing, plus 
 confident wrong from a single line of YAML. Any compositional work must be a FALLBACK behind
 the existing 79 asks (0 BROKE by construction) and must still argue DECL->WRONG, never BROKE
 (`0 BROKE by construction is not 0 wrongs by construction`).
+
+## THE MUTUAL BLOCK: the premise gap and the ask gap block EACH OTHER (2026-07-14)
+
+**The experiment.** A complete compositional ask parser (`kernel/askframe.py`, branch
+`experiment/compositional-ask`) — the fix the previous entry argued for. It reads a question
+BY ROLE (wh-operator, measure, entity, aggregation) instead of matching it against one of 79
+whole-question templates, and maps onto the SAME consumers `answer.py` already implements.
+Coordinates declared once each; the product becomes a sum. Runs as a strict FALLBACK behind
+the templates (0 BROKE by construction).
+
+**It works. It is safe. It converts NOTHING.**
+
+```
+dev-train  103 / 0     dev-holdout 40 / 0     suite 52/52     pytest 998
+SOLVED 0   BROKE 0   DECL->WRONG 0            VERDICT: NEUTRAL
+```
+
+### Why: the frame parses the question correctly and the FACTS AREN'T THERE
+
+Of the declining items no template claims, the frame successfully reads 24. **All 24 then die
+on the PREMISE side:**
+
+```
+How many Buicks does Jim have?         -> no quantity known for 'jim' of 'buicks'
+How many dresses can Alex make?        -> no 'make' events known for 'alex'/'dress'
+How many cups of lemonade did Tonya sell? -> no 'sell' events known for 'tonya'/'cup'
+```
+
+Put that beside this session's FIRST finding — *67% of the reading gap declines because no ask
+shape fires* — and the law appears:
+
+> **Fix the READING → the items die at the ASK wall.**
+> **Fix the ASK → the items die at the READING gap.**
+> **The two gaps are MUTUALLY BLOCKING. Neither side alone converts anything.**
+
+This is why EVERY single-sided intervention in this campaign measured 0 SOLVED: the 481
+per-unit seam, the GroupTotal consumer fix, the month/time guard, verb categorization
+(`save`->`acquire`), the `future_modal` widening, and now a working compositional ask parser.
+It is not a coincidence and it was never bad luck. **An item that declines is blocked on
+several coordinates at once, and a fix to one coordinate leaves it declining on the next.**
+
+To convert an item you must fix BOTH halves FOR THE SAME ITEM. A brief naming only one half
+is a dead brief — which is what `evidence.premise_mechanism` in `.claude/workflows/mine.js`
+was reaching for, and it is now measured rather than intuited.
+
+### Three sharp lessons, each bought with a wrong
+
+**1. A permissive parser must pay for its flexibility with a stricter refusal rule.**
+A template that does not match simply declines: ITS RIGIDITY IS ITS SAFETY. A role-based frame
+is permissive by nature, so every operator it fails to model becomes a CONFIDENT WRONG:
+
+```
+Q: "how many ounces of milk does James have LEFT?"   gold 371  -> frame answered -13.0
+```
+
+It silently dropped `left`. The fix is not a blacklist of known operators (that just
+re-enumerates the product from the other side and still misses what nobody thought of) but
+QUESTION ACCOUNTING: every content word must be read, or decline. This is the premise side's
+value-accounting invariant, applied to the question.
+
+**2. "Read" is not "used". A vacuously-satisfiable safety check is WORSE than none.**
+
+```
+Q: "How many pounds of vegetables did he use?"   gold 6  -> frame answered 1.0 (the BEEF)
+```
+
+The frame marked `vegetables` read, then dropped it — so pounds-of-vegetables and
+pounds-of-beef collapsed to the key `pound`. Question accounting was satisfied VACUOUSLY:
+touched, never used. **A safety invariant that can be satisfied without using the information
+launders a guess as a checked answer.**
+
+**3. TAM is NOT uniformly orthogonal — and only the UNIT TESTS caught it.**
+The premise that motivated the whole experiment ("tense/aspect/modality say WHEN, not WHAT, so
+strip them") is FALSE for one class:
+
+```
+'will' / 'would'  (future)         factually transparent: same facts, later time
+'can' / 'could' / 'must' / 'may'   CHANGE THE QUESTION
+```
+
+"How many CAN he buy" is a CAPACITY question (budget ÷ unit price), not a factual one. Listing
+`modal` as inert made the frame answer hypotheticals as facts, committing numbers on items the
+engine had DELIBERATELY declined (the increment-14 kirsty lesson). **The dev diff said NEUTRAL
+— 3,772 items saw nothing. Two synthetic unit tests caught it.** A clean DEV gate is necessary
+and NEVER sufficient, demonstrated one more time.
+
+### Disposition: NOT LANDED
+
+0 SOLVED. **An enabler must be BOUGHT, not promised** — two increments (128, 129) passed a
+clean dev gate on 0 SOLVED and shipped wrongs to TEST. This one stays on its branch. The
+architecture is sound and the code is safe; it is simply not worth anything until the premise
+half of the same items is fixed too, and that is the whole point of the finding above.
