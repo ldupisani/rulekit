@@ -10,6 +10,7 @@ from __future__ import annotations
 import ast
 import operator
 from dataclasses import dataclass, field
+from typing import Any
 
 _BIN_OPS = {
     ast.Add: operator.add,
@@ -39,6 +40,16 @@ class LogEntry:
 @dataclass
 class ArithmeticLog:
     entries: list[LogEntry] = field(default_factory=list)
+    # The deictic journal (kernel.deixis.Journal), or None when tracing is off.
+    #
+    # It rides HERE rather than on its own parameter because this object is already
+    # threaded to every deep site in the kernel — notably it is the third positional
+    # argument of every SynthPlugin, so the eight saturate.py resolution sites can each
+    # migrate onto deixis.resolve() with ZERO signature changes. Nothing reads it yet;
+    # that is the point of landing it now.
+    #
+    # Typed loosely to keep evaluate.py free of a kernel.deixis import.
+    journal: Any = None
 
     def uses_value(self, value: float, tol: float = 1e-9) -> bool:
         """Did any logged expression literally contain this value (as a

@@ -12,6 +12,7 @@ import re
 from dataclasses import dataclass, field
 
 from ..data.registry import Registry
+from . import deixis
 from .answer import Answer, answer as run_answer
 from .condense import condense
 from .document import Document, _bind_discourse, run_document
@@ -466,6 +467,9 @@ def solve(text: str, reg: Registry, tracing: bool = True) -> Result:
     `tracing=False` skips snapshotting the reversible feature diffs in every
     Decision. Only the designer (`engine.trace`) and `Reading.undo` read those;
     a bench run does not, and the snapshotting is 61% of its wall-clock.
+
+    It also skips the deictic journal, for the same reason and with the same effect:
+    `deixis.resolve` takes the silent path when handed None, so bench pays nothing.
     """
     premise_texts, question_text = split_question(text, reg)
     expanded_premise_texts: list[str] = []
@@ -475,7 +479,8 @@ def solve(text: str, reg: Registry, tracing: bool = True) -> Result:
         analyze(sentence, reg, sentence_index=i, tracing=tracing)
         for i, sentence in enumerate(expanded_premise_texts)
     ]
-    doc = run_document(premises, reg)
+    journal = deixis.Journal() if tracing else None
+    doc = run_document(premises, reg, journal=journal)
 
     if question_text is None:
         result = Result(
@@ -490,7 +495,7 @@ def solve(text: str, reg: Registry, tracing: bool = True) -> Result:
     )
     # the question's own pronouns resolve against the document's discourse
     # exactly like premise pronouns: unique antecedent or stay unmet
-    _bind_discourse(premises + [question])
+    _bind_discourse(premises + [question], journal=journal)
     # only slots whose VALUE the consumer uses ({slot.value} templates)
     # count as read — matching "four-minute songs" as an item does NOT read
     # the four, and value accounting must still decline it

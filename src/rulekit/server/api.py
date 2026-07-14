@@ -113,6 +113,136 @@ def _fact_json(fact) -> dict[str, Any]:
     }
 
 
+def _observation_json(obs) -> dict[str, Any]:
+    """One deictic resolution: who asked, from where, over what, and what happened.
+
+    This is the channel that records what the engine THREW AWAY. A decline mutates
+    nothing, so it is invisible to the Decision trace — but the declines are where all
+    the information is.
+    """
+    return {
+        "source": obs.source,  # shares vocabulary with fact.source AND decision.kind
+        "dimension": obs.dimension,
+        "metric": obs.metric,
+        "round": obs.round,
+        "attempts": obs.attempts,
+        "origo": {
+            "sentence": obs.origo.sentence,
+            "span": list(obs.origo.span) if obs.origo.span else None,
+            "moment": obs.origo.moment,  # always null — the temporal origo is unbuilt
+            "locus": obs.origo.locus,  # always null — the spatial origo is unbuilt
+        },
+        "filters": list(obs.filters),
+        "candidates": [
+            {
+                "key": c.key,
+                "dimension": c.dimension,
+                # null whenever the candidate genuinely has no coordinate. Most sites
+                # resolve over bare measure/entity strings; the viewer must draw those
+                # unanchored rather than invent a position for them.
+                "sentence": c.sentence,
+                "span": list(c.span) if c.span else None,
+                "ref": f"unit:{c.uid}" if c.uid is not None else None,
+                "data_uid": (
+                    f"{c.sentence}:{c.uid}"
+                    if c.uid is not None and c.sentence is not None
+                    else None
+                ),
+                "distance": c.distance,
+                "eliminated_by": c.eliminated_by,
+            }
+            for c in obs.candidates
+        ],
+        "outcome": obs.outcome,
+        "winner": obs.winner,
+        "arbitration": obs.arbitration,
+        "reason": obs.reason,
+    }
+
+
+def _field_json(result) -> dict[str, Any]:
+    """The deictic field itself: what coordinates EXIST, per dimension.
+
+    A pure projection of the Result — no kernel machinery. Each axis reports its own
+    degeneracy honestly, because three of the four are degenerate and a viewer that
+    hid that would be drawing a field the engine does not have.
+    """
+    readings = result.premises + ([result.question] if result.question else [])
+    quantities = [
+        f for f in result.store.facts if type(f).__name__ == "Quantity"
+    ]
+
+    # PERSON — the only axis with true positional coordinates. This is also where the
+    # capitalisation heuristic dumps any capitalised mid-sentence word that is not
+    # timeperiod-exempt, so a month can appear here as a rival person (deixis.md §4).
+    person = [
+        {
+            "key": u.features.get("lemma", u.features.get("fold")),
+            "surface": u.surface,
+            "uid": u.uid,
+            "sentence": r.sentence_index,
+            "span": list(u.span),
+            "data_uid": f"{r.sentence_index}:{u.uid}",
+        }
+        for r in readings
+        for u in r.units
+        if u.sense() == "name"
+    ]
+
+    # DISCOURSE — measures and entities are bare strings. Their ONLY coordinate is the
+    # sentence their facts came from, so they render as sentence BANDS, never spans.
+    def _bands(attr: str) -> list[dict[str, Any]]:
+        bands: dict[str, set[int]] = {}
+        for q in quantities:
+            key = getattr(q, attr, None)
+            if key is None:
+                continue
+            bands.setdefault(str(key), set()).add(q.provenance.sentence)
+        return [
+            {"key": k, "sentences": sorted(v)} for k, v in sorted(bands.items())
+        ]
+
+    # TIME — labels exist; ORDER DOES NOT. Quantity.time is an opaque surface string
+    # that is never parsed or normalised, and whose only use anywhere is equality, and
+    # only ever to REFUSE to combine facts. `Before` is a registered fact class nothing
+    # constructs. So we hand the viewer the labels and an explicit "ordered: false",
+    # and it must not draw an axis through them.
+    time_labels = sorted({q.time for q in quantities if getattr(q, "time", None)})
+
+    return {
+        "narrative": [
+            {
+                "sentence": r.sentence_index,
+                "is_question": result.question is r,
+                "text": r.text,
+            }
+            for r in readings
+        ],
+        "person": {"candidates": person},
+        "discourse": {
+            "measures": _bands("measure"),
+            "entities": _bands("entity"),
+        },
+        "time": {
+            "labels": time_labels,
+            "ordered": False,
+            "note": (
+                "time is an opaque label: never parsed, never ordered. Its only use is "
+                "equality, and only to REFUSE to combine facts. No ask can name a "
+                "point in time (docs/deixis.md §1.3, §4)."
+            ),
+        },
+        "place": {
+            "loci": [],
+            "note": (
+                "the spatial origo is unbuilt: prepositions are matched and discarded, "
+                "and a container is an entity string indistinguishable from a person "
+                "(docs/deixis.md §1.4, phase 4)."
+            ),
+        },
+    }
+
+
 def build_router(state: ServerState) -> APIRouter:
     router = APIRouter(prefix="/api")
 
@@ -224,6 +354,13 @@ def build_router(state: ServerState) -> APIRouter:
                 if result.document else []
             ),
             "deficiencies": result.deficiencies(),
+            "deixis": {
+                "observations": (
+                    [_observation_json(o) for o in result.log.journal.observations]
+                    if result.log.journal is not None else []
+                ),
+                "field": _field_json(result),
+            },
         }
 
     def _target_items(target: str) -> list[dict] | None:

@@ -42,7 +42,7 @@ NOTHING IN THIS MODULE ENUMERATES A WORD. Dimensions are structure, not lexicon
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Callable, Iterable, Sequence
 
 # ---------------------------------------------------------------------------
@@ -130,6 +130,146 @@ def token_distance(referent: Referent, origo: Origo) -> int:
 Filter = Callable[[Referent, Origo], bool]
 
 
+# ---------------------------------------------------------------------------
+# The journal — what the engine THREW AWAY
+#
+# The Decision trace records mutations: target, before, after. A DECLINE mutates
+# nothing, so it is structurally invisible to it — the designer can show every binding
+# that succeeded and not one that failed. But the declines are where the information is:
+# at most sites the entire candidate set is discarded with no record kept anywhere, and
+# nothing computes distance because, modulo obligations.py, nothing has an origo to
+# measure from.
+#
+# This is the parallel, observational channel that keeps it. It rides on ArithmeticLog
+# (which is already threaded to every deep site) and is None whenever tracing is off, so
+# bench pays nothing.
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class CandidateRecord:
+    """One candidate as it was SEEN at resolve() time.
+
+    Every coordinate is optional and is None when the candidate genuinely HAS none.
+    That honesty is load-bearing: most sites resolve over bare measure/entity strings
+    with no span and no sentence, and a viewer that invented (0, 0) for them would draw
+    a field that does not exist.
+    """
+
+    key: str
+    dimension: str
+    sentence: int | None = None
+    span: tuple[int, int] | None = None
+    uid: int | None = None
+    # None => never measured (eliminated before ranking, or the lone survivor).
+    distance: Any = None
+    # None => survived. Otherwise "dimension" or "filter:<name>".
+    eliminated_by: str | None = None
+
+
+@dataclass
+class Observation:
+    """One resolve() call, whole: who asked, from where, over what, and what happened.
+
+    Not frozen — `attempts` counts identical repeats (see Journal.record).
+    """
+
+    source: str
+    dimension: str | None
+    origo: Origo
+    metric: str
+    candidates: tuple[CandidateRecord, ...]
+    filters: tuple[str, ...]
+    outcome: str  # "bound" | "declined"
+    winner: str | None
+    arbitration: str | None  # "unique" | "dominant" | None
+    reason: str | None  # "no-candidates" | "dimension-mismatch" | "filtered-out" | "tie"
+    round: int = 0
+    attempts: int = 1
+
+    def identity(self) -> tuple:
+        """What makes two observations THE SAME observation.
+
+        Deliberately excludes `round` and `attempts`: a resolution re-attempted in a
+        later round with an identical candidate set and an identical outcome is the
+        same deictic event, not a new one.
+        """
+        return (
+            self.source,
+            self.dimension,
+            self.origo.sentence,
+            self.origo.span,
+            tuple((c.key, c.eliminated_by) for c in self.candidates),
+            self.outcome,
+            self.winner,
+            self.reason,
+        )
+
+
+@dataclass
+class Journal:
+    """Append-only, insertion-ordered, deduped by identity.
+
+    resolve() runs inside fixpoints: document.py re-reads up to MAX_ROUNDS times, and
+    saturate.py's own loop re-runs every plugin every round. A binding that SUCCEEDS is
+    skipped on later rounds — but a DECLINE is retried every single round, so every
+    interesting resolution is the repeated one, and naive appending would bury the
+    reader in identical rows.
+
+    So: an identical repeat bumps `attempts` and appends nothing (it carries literally
+    zero information — same inputs, same verdict, same reason). But a resolution whose
+    candidate set CHANGED is a new row, because that transition — "two candidates in
+    round 1, one in round 3" — is the exact moment the reading happened, and collapsing
+    it would erase the only thing worth watching.
+    """
+
+    observations: list[Observation] = field(default_factory=list)
+    round: int = 0
+    _index: dict[tuple, Observation] = field(default_factory=dict, repr=False)
+
+    def record(self, obs: Observation) -> Observation:
+        seen = self._index.get(obs.identity())
+        if seen is not None:
+            seen.attempts += 1
+            return seen
+        self._index[obs.identity()] = obs
+        self.observations.append(obs)
+        return obs
+
+
+def _arbitrate(
+    survivors: list[Referent], origo: Origo, distance: Distance
+) -> tuple[Referent | None, str | None, str | None]:
+    """The acceptance test proper: (winner, arbitration, decline_reason).
+
+    THE ONLY implementation of strict dominance in the tree. Both `resolve` paths — the
+    silent one and the journalling one — arbitrate through this function, so they cannot
+    drift apart no matter what is edited later. A "0-diff fast path" that re-implements
+    the decision is a 0-diff *hope*; this makes it a property.
+
+    `arbitration` is how the winner won: "unique" (a lone survivor) or "dominant"
+    (strictly nearest). Under `constant` every win is "unique" — a journal showing 100%
+    "unique" is the visual proof that no real metric is live yet, and the first
+    "dominant" row is the moment one is.
+    """
+    if not survivors:
+        return None, None, None  # the caller knows WHY the set is empty; it says so
+    if len(survivors) == 1:
+        return survivors[0], "unique", None
+
+    # Deterministic order first — the store's iteration order must never decide a
+    # binding. Sort by (distance, then a stable tiebreak) exactly as obligations.py does.
+    survivors.sort(key=lambda c: (distance(c, origo), _stable(c)))
+    if distance(survivors[0], origo) < distance(survivors[1], origo):
+        return survivors[0], "dominant", None
+    # Strictly-equal nearest candidates: ambiguous. DECLINE.
+    #
+    # This is the one genuinely new precision surface in the design (deixis.md §6), and
+    # the rule is absolute: any change that makes arbitration LESS strict is a
+    # confident-wrong factory.
+    return None, None, "tie"
+
+
 def resolve(
     candidates: Iterable[Referent],
     origo: Origo,
@@ -137,6 +277,8 @@ def resolve(
     *,
     filters: Sequence[Filter] = (),
     dimension: str | None = None,
+    journal: Journal | None = None,
+    source: str = "?",
 ) -> Referent | None:
     """The single acceptance test. Returns the winning Referent, or None to decline.
 
@@ -150,27 +292,110 @@ def resolve(
 
     With `distance=constant` (the default) step 3 reduces to "exactly one survivor, or
     decline" — the behaviour every migrating site already has.
+
+    `journal` is OBSERVATIONAL ONLY and cannot change the return value: it is what the
+    designer renders (a decline mutates nothing, so it is invisible to the Decision
+    trace — see the Journal docstring). It is None on every bench path, and the
+    `journal is None` branch below does exactly the work this function did before the
+    journal existed. `source` names the call site, in `Provenance.source` vocabulary, so
+    an observation can be cross-linked to the facts and decisions it produced.
+
+    CONTRACT — `distance` and `filters` MUST BE PURE. When a journal is attached,
+    `resolve` calls `distance` for candidates the silent path short-circuits past (it
+    has to, to record what it saw). Both shipped metrics are pure; keep it that way.
     """
-    survivors = [c for c in candidates if dimension is None or c.dimension == dimension]
-    for keep in filters:
-        survivors = [c for c in survivors if keep(c, origo)]
+    if journal is None:
+        # The silent path. Statement-for-statement what this function has always done.
+        survivors = [
+            c for c in candidates if dimension is None or c.dimension == dimension
+        ]
+        for keep in filters:
+            survivors = [c for c in survivors if keep(c, origo)]
+        winner, _, _ = _arbitrate(survivors, origo, distance)
+        return winner
 
-    if not survivors:
-        return None
-    if len(survivors) == 1:
-        return survivors[0]
+    # The recording path. Same predicates, same call counts per (filter, survivor) — it
+    # only remembers WHICH candidate each verdict fell on, and why.
+    pool = list(candidates)
+    eliminated: dict[int, str] = {}
 
-    # Deterministic order first — the store's iteration order must never decide a
-    # binding. Sort by (distance, then a stable tiebreak) exactly as obligations.py does.
-    survivors.sort(key=lambda c: (distance(c, origo), _stable(c)))
-    if distance(survivors[0], origo) < distance(survivors[1], origo):
-        return survivors[0]
-    # Strictly-equal nearest candidates: ambiguous. DECLINE.
-    #
-    # This is the one genuinely new precision surface in the design (deixis.md §6), and
-    # the rule is absolute: any change that makes arbitration LESS strict is a
-    # confident-wrong factory.
-    return None
+    survivors = []
+    for cand in pool:
+        if dimension is None or cand.dimension == dimension:
+            survivors.append(cand)
+        else:
+            eliminated[id(cand)] = "dimension"
+
+    for index, keep in enumerate(filters):
+        kept = []
+        for cand in survivors:
+            if keep(cand, origo):
+                kept.append(cand)
+            else:
+                eliminated[id(cand)] = f"filter:{_filter_name(keep, index)}"
+        survivors = kept
+
+    winner, arbitration, reason = _arbitrate(survivors, origo, distance)
+
+    if winner is not None:
+        outcome = "bound"
+    else:
+        outcome = "declined"
+        if not pool:
+            reason = "no-candidates"
+        elif not survivors:
+            # Every candidate was thrown out. WHICH filter did it matters enormously:
+            # "dimension-mismatch" is the fingerprint of cross-dimension pollution — a
+            # TIME word competing to be a PERSON antecedent — which is the bug class
+            # deixis.md §4 documents and nothing in the engine can currently observe.
+            causes = set(eliminated.values())
+            reason = "dimension-mismatch" if causes == {"dimension"} else "filtered-out"
+        # else: reason is already "tie" from _arbitrate.
+
+    survivor_ids = {id(c) for c in survivors}
+    journal.record(
+        Observation(
+            source=source,
+            dimension=dimension,
+            origo=origo,
+            metric=getattr(distance, "__name__", "?"),
+            candidates=tuple(
+                CandidateRecord(
+                    key=str(cand.key),
+                    dimension=cand.dimension,
+                    sentence=cand.sentence,
+                    span=cand.span,
+                    # Duck-typed so deixis.py need not import model.Unit — a bare
+                    # string candidate simply has no uid, and says so.
+                    uid=getattr(cand.payload, "uid", None),
+                    # Distance is only meaningful for a candidate that survived to be
+                    # measured. An eliminated one was never ranked; None says that,
+                    # rather than implying it lost on distance.
+                    distance=(
+                        distance(cand, origo) if id(cand) in survivor_ids else None
+                    ),
+                    eliminated_by=eliminated.get(id(cand)),
+                )
+                for cand in pool
+            ),
+            filters=tuple(
+                _filter_name(keep, i) for i, keep in enumerate(filters)
+            ),
+            outcome=outcome,
+            winner=str(winner.key) if winner is not None else None,
+            arbitration=arbitration,
+            reason=reason,
+            round=journal.round,
+        )
+    )
+    return winner
+
+
+def _filter_name(keep: Filter, index: int) -> str:
+    name = getattr(keep, "__name__", "")
+    if not name or name == "<lambda>":
+        return f"#{index}"
+    return name
 
 
 def _stable(referent: Referent) -> tuple:

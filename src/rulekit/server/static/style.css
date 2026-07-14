@@ -192,3 +192,71 @@ body.impact-busy #impact-btn {
 #impact-summary .ship { color: var(--green); font-weight: 700; }
 #impact-summary .revert { color: var(--red); font-weight: 700; }
 #impact-summary .neutral { color: var(--amber); font-weight: 700; }
+
+/* ---------- the deictic field ----------
+   Three of the four dimensions have no coordinates. The styling makes that visible
+   rather than hiding it: `degenerate` axes are dimmed and annotated, `unanchored`
+   candidates are dashed (they have no position in the text), and `floating` ones are
+   drawn with no axis line through them, because there is no ordering to draw. */
+
+.toggle { display: inline-flex; margin-left: 10px; border: 1px solid var(--border); border-radius: 5px; overflow: hidden; }
+.toggle button {
+  background: var(--panel); color: var(--dim); border: 0; cursor: pointer;
+  padding: 3px 10px; font: inherit; font-size: 11px;
+}
+.toggle button.on { background: var(--panel2); color: var(--accent); }
+
+#field { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+
+.axis { border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; background: var(--panel); }
+.axis.degenerate { border-style: dashed; opacity: .8; }
+.axis.empty .axis-row { min-height: 18px; background: repeating-linear-gradient(45deg, transparent, transparent 5px, var(--border) 5px, var(--border) 6px); border-radius: 4px; }
+.axis-name { font-size: 10px; letter-spacing: .1em; font-weight: 700; color: var(--dim); margin-bottom: 6px; }
+.axis-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.axis-note { margin-top: 6px; font-size: 11px; color: var(--dim); font-style: italic; }
+
+.d-person { color: var(--accent); }
+.d-discourse { color: var(--green); }
+.d-time { color: var(--amber); }
+.d-place { color: var(--dim); }
+
+.spine { display: flex; gap: 0; align-items: stretch; }
+.snode { flex: 1; border-left: 2px solid var(--border); padding: 2px 8px; min-width: 0; }
+.snode.ask { border-left-color: var(--accent); }
+.snode-id { display: block; font-size: 10px; color: var(--dim); }
+.snode-text { display: block; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.cand {
+  display: inline-flex; align-items: baseline; gap: 5px;
+  border: 1px solid currentColor; border-radius: 4px; padding: 2px 6px;
+  background: var(--panel2); font-size: 12px;
+}
+.cand.linked { cursor: crosshair; }
+.cand.unanchored { border-style: dashed; }
+.cand.floating { opacity: .85; }
+.cand.out { opacity: .45; text-decoration: line-through; border-color: var(--border); color: var(--dim); }
+.cand-key { color: var(--text); }
+.cand-meta { font-size: 10px; color: var(--dim); }
+
+.resolutions { display: flex; flex-direction: column; gap: 8px; }
+.res { border: 1px solid var(--border); border-left: 3px solid var(--border); border-radius: 6px; padding: 8px 10px; background: var(--panel); }
+.res.bound { border-left-color: var(--green); }
+.res.declined { border-left-color: var(--red); }
+.res-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+.dim-tag { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.res-src { font-size: 12px; }
+.res-metric { font-size: 10px; color: var(--dim); border: 1px solid var(--border); border-radius: 3px; padding: 0 4px; }
+.res-attempts { font-size: 10px; color: var(--amber); }
+.res-origo { display: flex; gap: 8px; font-size: 11px; margin-bottom: 6px; }
+.res-origo .lbl { color: var(--dim); text-transform: uppercase; font-size: 10px; letter-spacing: .08em; }
+
+.track { display: flex; align-items: center; gap: 8px; padding: 4px 0; border-top: 1px dashed var(--border); }
+.track-origin { color: var(--accent); font-size: 11px; }
+.lane { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; align-items: center; }
+
+.flat-note { margin-top: 6px; font-size: 11px; color: var(--amber); font-style: italic; }
+
+.res-out { display: flex; align-items: baseline; gap: 8px; margin-top: 6px; font-size: 11px; }
+.res-out .verdict { font-weight: 700; font-size: 10px; letter-spacing: .08em; }
+.res-out.ok .verdict { color: var(--green); }
+.res-out.no .verdict { color: var(--red); }

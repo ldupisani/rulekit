@@ -119,8 +119,14 @@ async function runTrace() {
   renderDecisions();
   renderFacts(t);
   renderGaps(t);
+  renderField(t);
   selectDecision(state.cursor, false);
-  setStatus(`read in ${t.rounds} round(s) · ${state.decisions.length} decisions`, "ok");
+  const declines = (t.deixis?.observations || []).filter((o) => o.outcome === "declined").length;
+  setStatus(
+    `read in ${t.rounds} round(s) · ${state.decisions.length} decisions` +
+    (declines ? ` · ${declines} deictic decline(s)` : ""),
+    "ok",
+  );
 }
 
 function renderAnswer(t) {
@@ -275,6 +281,212 @@ function renderGaps(t) {
   if (!box.children.length) box.append(el("div", "dim", "none — the reading is saturated"));
 }
 
+/* ---------- the deictic field ----------
+
+   A deictic expression ("she", "the rest", "that many", "in the jar") denotes nothing
+   until you know the reference point it is measured from — the ORIGO. This view draws
+   that: where the engine was standing, what it could see from there, how far away each
+   candidate was, and what it decided.
+
+   The engine's Decision trace cannot show any of this, because a DECLINE mutates
+   nothing and is therefore invisible to it. The declines are where the information is.
+
+   THE HONESTY RULE. Three of the four dimensions have no coordinates at all, and this
+   view renders that absence AS an absence: time labels get no axis (there is no
+   ordering to draw one through), place gets an empty strip, and candidates that are
+   bare strings get no position. Drawing a plausible timeline out of "in january" /
+   "in march" would put a fabricated ordering one copy-paste from the kernel — which is
+   precisely the experiment that already failed the gate (docs/deixis.md §4). */
+
+const DIM_CLASS = {
+  person: "d-person", discourse: "d-discourse", time: "d-time", place: "d-place",
+};
+
+function crossLink(node, dataUid) {
+  if (!dataUid) return node;
+  node.classList.add("linked");
+  const chip = () => document.querySelector(`.chip[data-uid="${dataUid}"]`);
+  node.addEventListener("mouseenter", () => chip()?.classList.add("hl"));
+  node.addEventListener("mouseleave", () => chip()?.classList.remove("hl"));
+  return node;
+}
+
+function renderResolution(obs) {
+  const card = el("div", `res ${obs.outcome}`);
+
+  const head = el("div", "res-head");
+  head.append(el("span", `dim-tag ${DIM_CLASS[obs.dimension] || ""}`, obs.dimension || "—"));
+  head.append(el("span", "res-src", obs.source));
+  head.append(el("span", "res-metric mono", obs.metric));
+  if (obs.attempts > 1) {
+    head.append(el("span", "res-attempts",
+      `×${obs.attempts} — retried every round, never got any better`));
+  }
+  card.append(head);
+
+  const origo = el("div", "res-origo");
+  origo.append(el("span", "lbl", "origo"));
+  origo.append(el("span", "mono",
+    `sentence ${obs.origo.sentence}` + (obs.origo.span ? ` · token ${obs.origo.span[0]}` : "")));
+  card.append(origo);
+
+  // The distance track. Candidates sit at their measured distance from the origo — so
+  // under the constant metric, where every candidate is equidistant, they all collapse
+  // onto the origin. That collapse IS the thesis: with nothing to rank by, "more than
+  // one" can only mean "ambiguous".
+  const survivors = obs.candidates.filter((c) => !c.eliminated_by);
+  const dists = survivors.map((c) => c.distance ?? 0);
+  const maxD = Math.max(0, ...dists);
+  const flat = survivors.length > 1 && maxD === 0;
+
+  const track = el("div", "track");
+  track.append(el("div", "track-origin", "▲"));
+  const lane = el("div", "lane");
+  for (const c of obs.candidates) {
+    const pill = el("span", `cand ${DIM_CLASS[c.dimension] || ""}`);
+    pill.append(el("span", "cand-key", c.key));
+    if (c.eliminated_by) {
+      pill.classList.add("out");
+      pill.append(el("span", "cand-meta", c.eliminated_by));
+    } else {
+      pill.append(el("span", "cand-meta mono", `d=${c.distance ?? "—"}`));
+      if (maxD > 0) pill.style.marginLeft = `${(c.distance / maxD) * 60}%`;
+    }
+    if (c.span === null) {
+      // A bare measure/entity string. It has no position in the text, and we refuse to
+      // invent one — the site that produced it threw the position away (or never had it).
+      pill.classList.add("unanchored");
+      pill.title = "no span — this site's candidates are bare strings, not units";
+    }
+    lane.append(crossLink(pill, c.data_uid));
+  }
+  if (!obs.candidates.length) lane.append(el("span", "dim", "no candidates in scope"));
+  track.append(lane);
+  card.append(track);
+
+  if (flat) {
+    card.append(el("div", "flat-note",
+      `${survivors.length} candidates, all at d=0 — the field is flat. Strict dominance ` +
+      `is unsatisfiable, so this can only decline. Switch on a real metric and they spread.`));
+  }
+
+  const out = el("div", "res-out");
+  if (obs.outcome === "bound") {
+    out.classList.add("ok");
+    out.append(el("span", "verdict", "BOUND"));
+    out.append(el("span", "mono", obs.winner));
+    out.append(el("span", "dim", `(${obs.arbitration})`));
+  } else {
+    out.classList.add("no");
+    out.append(el("span", "verdict", "DECLINE"));
+    out.append(el("span", "mono", obs.reason || "—"));
+    out.append(el("span", "dim", DECLINE_GLOSS[obs.reason] || ""));
+  }
+  card.append(out);
+  return card;
+}
+
+const DECLINE_GLOSS = {
+  "tie": "two or more candidates, none strictly nearer — ambiguity declines",
+  "no-candidates": "nothing in scope to bind to",
+  "filtered-out": "every candidate removed by a precision filter",
+  "dimension-mismatch":
+    "candidates existed, but none of the right KIND — cross-dimension pollution",
+};
+
+function renderField(t) {
+  const box = $("field");
+  box.replaceChildren();
+  const d = t.deixis;
+  if (!d) return;
+  const f = d.field;
+
+  // --- the narrative spine: the ONE real temporal coordinate the engine has ---
+  const spineWrap = el("div", "axis");
+  spineWrap.append(el("div", "axis-name", "NARRATIVE"));
+  const spine = el("div", "spine");
+  for (const n of f.narrative) {
+    const node = el("div", `snode${n.is_question ? " ask" : ""}`);
+    node.append(el("span", "snode-id mono", n.is_question ? "ASK" : `s${n.sentence}`));
+    node.append(el("span", "snode-text", n.text));
+    spine.append(node);
+  }
+  spineWrap.append(spine);
+  box.append(spineWrap);
+
+  // --- PERSON: the only axis with true positional coordinates ---
+  const person = el("div", "axis");
+  person.append(el("div", "axis-name d-person", "PERSON"));
+  const prow = el("div", "axis-row");
+  for (const c of f.person.candidates) {
+    const pill = el("span", "cand d-person");
+    pill.append(el("span", "cand-key", c.surface));
+    pill.append(el("span", "cand-meta mono", `s${c.sentence}·t${c.span[0]}`));
+    prow.append(crossLink(pill, c.data_uid));
+  }
+  if (!f.person.candidates.length) prow.append(el("span", "dim", "no name units"));
+  person.append(prow);
+  box.append(person);
+
+  // --- DISCOURSE: bare strings. Sentence BANDS, never spans. ---
+  const disc = el("div", "axis");
+  disc.append(el("div", "axis-name d-discourse", "DISCOURSE"));
+  const drow = el("div", "axis-row");
+  for (const [label, items] of [["measure", f.discourse.measures], ["entity", f.discourse.entities]]) {
+    for (const b of items) {
+      const pill = el("span", "cand d-discourse unanchored");
+      pill.append(el("span", "cand-key", b.key));
+      pill.append(el("span", "cand-meta mono", b.sentences.map((s) => `s${s}`).join(",")));
+      pill.title = `${label} — a bare string. Its only coordinate is the sentence its facts came from: a band, not a position.`;
+      drow.append(pill);
+    }
+  }
+  if (!drow.children.length) drow.append(el("span", "dim", "no measures or entities"));
+  disc.append(drow);
+  box.append(disc);
+
+  // --- TIME: labels, but NO ORDERING. No axis is drawn, deliberately. ---
+  const time = el("div", "axis degenerate");
+  time.append(el("div", "axis-name d-time", "TIME"));
+  const trow = el("div", "axis-row");
+  for (const label of f.time.labels) {
+    const pill = el("span", "cand d-time unanchored floating");
+    pill.append(el("span", "cand-key", label));
+    trow.append(pill);
+  }
+  if (!f.time.labels.length) trow.append(el("span", "dim", "no time labels in this document"));
+  time.append(trow);
+  time.append(el("div", "axis-note", "⚠ no ordering exists — " + f.time.note));
+  box.append(time);
+
+  // --- PLACE: does not exist. An empty strip, and it says so. ---
+  const place = el("div", "axis degenerate empty");
+  place.append(el("div", "axis-name d-place", "PLACE"));
+  place.append(el("div", "axis-row", ""));
+  place.append(el("div", "axis-note", "∅ " + f.place.note));
+  box.append(place);
+
+  // --- the resolutions ---
+  const res = el("div", "resolutions");
+  res.append(el("div", "pane-title", `Resolutions (${d.observations.length})`));
+  if (!d.observations.length) {
+    res.append(el("div", "dim",
+      "no deictic resolution was attempted. Only two of the fifteen sites route through " +
+      "deixis.resolve() so far — the rest still hand-write the acceptance test and are " +
+      "invisible here (docs/deixis.md phase 6)."));
+  }
+  for (const obs of d.observations) res.append(renderResolution(obs));
+  box.append(res);
+}
+
+function setView(which) {
+  const field = which === "field";
+  $("field").classList.toggle("hidden", !field);
+  document.querySelector(".cols").classList.toggle("hidden", field);
+  $("view-field").classList.toggle("on", field);
+  $("view-reading").classList.toggle("on", !field);
+}
+
 /* ---------- impact ---------- */
 
 function impactBody() {
@@ -373,6 +585,8 @@ $("editor").addEventListener("keydown", (e) => {
 });
 $("impact-btn").onclick = runImpact;
 $("baseline-btn").onclick = setBaseline;
+$("view-reading").onclick = () => setView("reading");
+$("view-field").onclick = () => setView("field");
 document.addEventListener("keydown", (e) => {
   if (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT") return;
   if (e.key === "ArrowDown" || e.key === "j") { e.preventDefault(); selectDecision(state.cursor + 1); }

@@ -69,19 +69,28 @@ def collect_gaps(readings: list[Reading]) -> list[Gap]:
     return gaps
 
 
-def _discourse_candidates(readings: list[Reading], upto: int) -> dict[str, Unit]:
-    """Name units introduced in sentences before `upto`, keyed by lemma."""
-    out: dict[str, Unit] = {}
+def _discourse_candidates(
+    readings: list[Reading], upto: int
+) -> dict[str, tuple[int, Unit]]:
+    """Name units introduced in sentences before `upto`, keyed by lemma.
+
+    Carries each candidate's sentence index alongside the unit: a Unit knows its span
+    but not which sentence it is in, and the PERSON axis needs both to be locatable.
+    """
+    out: dict[str, tuple[int, Unit]] = {}
     for reading in readings:
         if reading.sentence_index >= upto:
             continue
         for unit in reading.units:
             if unit.sense() == "name":
-                out[unit.features.get("lemma", unit.features["fold"])] = unit
+                lemma = unit.features.get("lemma", unit.features["fold"])
+                out[lemma] = (reading.sentence_index, unit)
     return out
 
 
-def _bind_discourse(readings: list[Reading]) -> set[int]:
+def _bind_discourse(
+    readings: list[Reading], journal: deixis.Journal | None = None
+) -> set[int]:
     """Bind unmet pronoun `refers` obligations to a UNIQUE prior name.
     Returns the sentence indexes that gained a binding this round."""
     changed: set[int] = set()
@@ -106,12 +115,25 @@ def _bind_discourse(readings: list[Reading]) -> set[int]:
                 candidates = _discourse_candidates(readings, reading.sentence_index)
                 winner = deixis.resolve(
                     [
-                        deixis.Referent(dimension=deixis.PERSON, key=lemma, payload=target)
-                        for lemma, target in candidates.items()
+                        # sentence/span are INERT under the constant metric (nothing
+                        # ranks yet), so filling them in is 0-diff — but it is what
+                        # makes each candidate locatable in the text, both for the
+                        # designer's field view and for the day the PERSON metric is
+                        # switched on (docs/deixis.md phase 5).
+                        deixis.Referent(
+                            dimension=deixis.PERSON,
+                            key=lemma,
+                            payload=target,
+                            sentence=sentence,
+                            span=target.span,
+                        )
+                        for lemma, (sentence, target) in candidates.items()
                     ],
                     deixis.Origo(sentence=reading.sentence_index, span=unit.span),
                     deixis.constant,
                     dimension=deixis.PERSON,
+                    journal=journal,
+                    source="bind-discourse",
                 )
                 if winner is not None:
                     lemma, target = winner.key, winner.payload
@@ -135,7 +157,9 @@ def _measure_anaphor_candidate_lemma(unit: Unit) -> str | None:
     return lemma or None
 
 
-def _bind_measure_anaphor(readings: list[Reading]) -> set[int]:
+def _bind_measure_anaphor(
+    readings: list[Reading], journal: deixis.Journal | None = None
+) -> set[int]:
     """Bind unresolved measure-noun anaphors (mining candidate measure-
     noun-anaphor: 'ones'-headed counted NPs, condense.py's merge-measure-
     anaphor) to the UNIQUE prior counted-noun lemma in the document — the
@@ -187,6 +211,8 @@ def _bind_measure_anaphor(readings: list[Reading]) -> set[int]:
                 deixis.Origo(sentence=reading.sentence_index, span=unit.span),
                 deixis.constant,
                 dimension=deixis.DISCOURSE,
+                journal=journal,
+                source="bind-measure-anaphor",
             )
             if winner is not None:
                 lemma = winner.key
@@ -199,8 +225,14 @@ def _bind_measure_anaphor(readings: list[Reading]) -> set[int]:
     return changed
 
 
-def run_document(premises: list[Reading], reg: Registry) -> Document:
+def run_document(
+    premises: list[Reading], reg: Registry, journal: deixis.Journal | None = None
+) -> Document:
     log = ArithmeticLog()
+    # The journal rides on the log because the log is already threaded everywhere the
+    # remaining resolution sites live (every SynthPlugin takes it as its third
+    # argument). None whenever tracing is off — bench never builds one.
+    log.journal = journal
     doc = Document(readings=premises, store=FactStore(), log=log)
 
     # round 0: pattern rules per sentence (their matches never change across
@@ -252,8 +284,10 @@ def run_document(premises: list[Reading], reg: Registry) -> Document:
     doc.store = rebuild_store()
     for round_no in range(1, MAX_ROUNDS + 1):
         doc.rounds = round_no
-        changed = _bind_discourse(premises)
-        changed |= _bind_measure_anaphor(premises)
+        if journal is not None:
+            journal.round = round_no
+        changed = _bind_discourse(premises, journal=journal)
+        changed |= _bind_measure_anaphor(premises, journal=journal)
         if not changed:
             break
         rerun_rules(changed)

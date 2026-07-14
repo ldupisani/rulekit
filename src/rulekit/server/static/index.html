@@ -11,6 +11,10 @@
   <span class="logo">rulekit</span><span class="sub">designer</span>
   <span id="project-name" class="pill"></span>
   <span id="fingerprint" class="pill mono"></span>
+  <span id="view-toggle" class="toggle">
+    <button id="view-reading" class="on">reading</button
+    ><button id="view-field">deictic field</button>
+  </span>
   <span id="status" class="status"></span>
 </header>
 
@@ -52,6 +56,11 @@
         <div id="gaps"></div>
       </div>
     </div>
+
+    <!-- The deictic field. Every axis reports its own degeneracy: three of the four
+         have no coordinates at all, and drawing them as if they did would be a lie
+         the engine cannot back up (docs/deixis.md §4). -->
+    <div id="field" class="hidden"></div>
   </section>
 </main>
 
