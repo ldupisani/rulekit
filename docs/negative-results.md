@@ -304,3 +304,28 @@ absence.
 
 This retires the old infra bar (`unblocks` + >= 3 `resolves_after_unblocks`), which asked
 for a PREDICTION and got one every time. Both of these cleared it. Neither survived.
+
+## Process bug: five TEST looks spent, ledger rows LOST (2026-07-14)
+
+Looks #120-124 were spent by checking out each staging commit **inside the staging
+worktree** and running `--spend-test-look` there. Every git worktree has its OWN gitignored
+`projects/gsm8k/snapshots/` directory, so each ledger row was written into the worktree —
+and then deleted with it during cleanup.
+
+The RESULTS survived (docs/HANDOFF.md and the commit messages). The LEDGER did not: 119
+rows for 124 spent looks.
+
+**Why this matters more than it looks.** The ledger is not a convenience — it is the
+tamper-evident record of a deliberately RATIONED budget, and the only thing that makes "one
+look per increment" auditable after the fact. A budget whose spend can silently vanish is
+not rationed; it is merely believed to be.
+
+**The rows were NOT reconstructed.** A `reconciliation` entry was appended disclosing the
+gap, the five commits, and their results. An audit log with invented entries is strictly
+worse than one with a disclosed hole — the hole is honest, the invention is not, and only
+one of them survives someone checking.
+
+**Fixed in the gate, not in prose:** `.claude/skills/mine/SKILL.md` now says looks are spent
+FROM THE MAIN CHECKOUT (`git checkout <commit>` in the main repo, never in a worktree), and
+mandates a post-batch reconciliation — `wc -l test-ledger.jsonl` must equal the looks spent
+to date, or a look has leaked into a worktree.

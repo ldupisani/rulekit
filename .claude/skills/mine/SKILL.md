@@ -75,11 +75,26 @@ and the staging branch name. Then the exact manual steps:
 
 ```
 # per landed increment, in order (one TEST look each — methodology step 8):
-git checkout mining/batch-<date> && git checkout <commit-of-increment-N>
+#
+# *** RUN THIS FROM THE MAIN CHECKOUT. NEVER FROM A STAGING WORKTREE. ***
+# Every worktree has its OWN gitignored projects/gsm8k/snapshots/, so a look spent
+# inside one writes its ledger row THERE — and that row dies with the worktree.
+# On 2026-07-14 five looks (#120-124) were spent from staging worktrees and their
+# rows were lost; see the `reconciliation` entry in test-ledger.jsonl. The results
+# survived in HANDOFF, but the LEDGER is the tamper-evident record of a rationed
+# budget, and a budget whose spend can silently vanish is not rationed at all.
+#
+cd <repo>                     # the MAIN checkout — check this before every look
+git checkout <commit-of-increment-N>
 uv run rulekit --project projects/gsm8k bench --slice test --spend-test-look
 # precision holds vs last look -> keep; drops -> revert that commit (methodology §8)
+git checkout main
 # after walking all increments: fast-forward main past the survivors and push
 ```
+
+Sanity-check the ledger after every batch — `wc -l projects/gsm8k/snapshots/test-ledger.jsonl`
+must equal the number of looks spent to date. If it does not, a look leaked into a
+worktree. Disclose it; never reconstruct the missing rows.
 
 After the TEST-look walk and HANDOFF records are committed, `git push
 origin main` — every processed batch ends pushed (standing user

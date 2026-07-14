@@ -93,7 +93,7 @@ const SCOUT_BRIEF = {
     overlaps_with: { type: 'array', items: { type: 'string' } },
     infrastructure: {
       type: 'boolean',
-      description: 'true ONLY for an enabler that cannot itself move the number. Exempts the shape gate and the SOLVED>=1 goal-mode gate — so it is the ONE way to land an increment that solves nothing, and it is NOT a free pass: it requires `unblocks` plus >= 3 structural_sample items with resolves_after_unblocks=true. At most one per batch.',
+      description: 'RETIRED — always leave false. A standalone 0-SOLVED enabler can no longer land: increments 128-retry and 129 both cleared the old infra bar with an honest prediction, passed a spotless DEV gate, and each manufactured a CONFIDENT-WRONG on TEST (see docs/negative-results.md, "the infrastructure trap"). An enabler must be BOUGHT, not promised: fold it into the increment that cashes it in, so its yield and its risk are measured in the SAME gate. If nothing can cash it in yet, it is not ready.',
     },
     unblocks: {
       type: 'string',
@@ -224,12 +224,16 @@ const SMOKE_BRIEF = {
   // A no-op brief proves no class and solves nothing BY CONSTRUCTION, so every
   // coverage gate would kill it — the shape gate (no resolving samples), the
   // pre-review `doomed` filter and the post-pipeline goal-mode loop (SOLVED=0).
-  // All three already exempt `infrastructure`, so declaring it here makes the
-  // smoke candidate legal by the EXISTING rule instead of needing an `if (SMOKE)`
-  // in each gate — and any gate added later inherits the carve-out for free.
-  // (Before this, the goal-mode gate silently demoted the smoke candidate and
-  // /mine --smoke stopped exercising the Integrate stage while still reporting
-  // green. Three separate carve-outs is how that happens twice.)
+  // Each of those three now carves SMOKE out EXPLICITLY (`!SMOKE`), because the
+  // `infrastructure` flag they used to ride on is retired (the infra trap — see the
+  // shape gate). The flag below is kept only so the brief still validates against the
+  // schema; it no longer grants anything.
+  //
+  // WHEN YOU ADD OR CHANGE A GATE, ENUMERATE ITS READERS AND CARVE SMOKE OUT OF IT.
+  // This brief is a no-op BY CONSTRUCTION and can never solve anything, so every
+  // coverage gate will kill it by default. That has already broken the self-test twice
+  // — once silently, with /mine --smoke still reporting green while no longer
+  // exercising the Integrate stage at all.
   infrastructure: true,
   evidence_note: 'no-op self-test: proves the pipeline, not a class',
 }
@@ -423,6 +427,22 @@ const deadClass = (slug) => Object.keys(DEAD_CLASSES).find((k) => slug.includes(
 // being routed around. So the escape hatch stays; the free pass does not.
 const unproven = []
 candidates = candidates.filter((c) => {
+  // THE SMOKE CARVE-OUT — ONE PLACE, ABOVE EVERY GATE, ON PURPOSE.
+  //
+  // The self-test's brief is a no-op BY CONSTRUCTION: it solves nothing, matches
+  // nothing, and has a pool_frequency of 0. EVERY coverage gate will therefore kill it
+  // by default, and each new gate kills it again.
+  //
+  // It used to survive by riding the `infrastructure` flag, whose early-return happened
+  // to short-circuit past the yield gate as a SIDE EFFECT. Retiring that flag exposed
+  // smoke to a gate that never read it, and the self-test died — the SECOND time a gate
+  // change has silently broken /mine --smoke (see SMOKE_BRIEF). Enumerating the readers
+  // of a FLAG is not enough when the flag is also acting as a control-flow BYPASS.
+  //
+  // So: one carve-out, here, before anything else. Any gate added below inherits it for
+  // free, and no future gate can break the self-test by forgetting about it.
+  if (SMOKE) return true
+
   const dead = deadClass(c.slug)
   if (dead) {
     unproven.push({ slug: c.slug, phase: 'scout-dead-class', reason: `DEAD CLASS: ${DEAD_CLASSES[dead]}` })
@@ -430,15 +450,29 @@ candidates = candidates.filter((c) => {
     return false
   }
   const walked = c.evidence?.structural_sample ?? []
+  // THE INFRASTRUCTURE TRAP (docs/negative-results.md). The old bar let a 0-SOLVED
+  // enabler land if it NAMED what it would unblock and showed >= 3 items that WOULD
+  // resolve once that class arrived. It asked for a PREDICTION — and got an honest,
+  // well-argued one every time. Increments 128-retry and 129 both cleared it, both
+  // passed a spotless DEV gate (0 BROKE, 0 DECL->WRONG on 3,772 items), and both
+  // manufactured a confident-wrong on TEST. 129 gained a correct answer AND a wrong
+  // one: coverage up, precision DOWN.
+  //
+  // 0 SOLVED is not a neutral fact. A widening that converts nothing on DEV has proved
+  // exactly one thing — its new bindings DO NOT FIRE ON TEXT WE CAN CHECK. TEST is
+  // where they fire, and there is no gold there to catch them. The DEV gate's silence
+  // was the absence of evidence, not evidence of absence.
+  //
+  // So the hatch is closed. An enabler is BOUGHT, not promised: it lands folded into
+  // the increment that cashes it in, where its yield and its risk are measured in the
+  // SAME gate. If nothing can cash it in, it is not ready.
   if (c.infrastructure) {
-    const wouldResolve = walked.filter((s) => s.resolves_after_unblocks).length
-    if (c.unblocks && wouldResolve >= 3) return true
     unproven.push({
       slug: c.slug,
-      phase: 'scout-shape-gate',
-      reason: `infrastructure brief unproven: ${!c.unblocks ? 'no `unblocks` class named' : `names "${c.unblocks}" but only ${wouldResolve} of ${walked.length} walked items would resolve once it lands (need >= 3)`}. An enabler that cannot move the number must show what it unblocks — infrastructure is a different bar, not an exemption.`,
+      phase: 'scout-infra-retired',
+      reason: 'INFRASTRUCTURE BRIEFS ARE RETIRED. A standalone 0-SOLVED enabler cannot land: increments 128-retry and 129 both cleared the old bar with an honest prediction, passed a spotless DEV gate, and each shipped a confident-wrong to TEST (docs/negative-results.md, "the infrastructure trap"). Re-cut this as ONE increment that includes the class it unblocks, so the enabler is bought rather than promised — or drop it until something can cash it in.',
     })
-    log(`${c.slug}: DROPPED at the shape gate — infrastructure brief without a proven payoff (${!c.unblocks ? 'no unblocks class' : `${wouldResolve}/${walked.length} would-resolve`}).`)
+    log(`${c.slug}: DROPPED — infrastructure briefs are retired (the enabler must be bought, not promised; see negative-results.md).`)
     return false
   }
   // YIELD GATE (methodology §9): pool_frequency is the candidate's ceiling — matches
@@ -489,7 +523,10 @@ const solvedCount = (r) =>
 //     here after the other two were carved out.
 const doomed = (item) => {
   const solved = solvedCount(item.result)
-  return Number.isFinite(solved) && solved === 0 && !item.brief.infrastructure
+  // `infrastructure` no longer rescues a 0-SOLVED candidate (the infra trap — see the
+  // shape gate above). SMOKE still does, and only SMOKE: its brief is a no-op by
+  // construction and CANNOT solve anything, so demoting it would kill the self-test.
+  return Number.isFinite(solved) && solved === 0 && !SMOKE
 }
 
 // ---------- Phase 2+3: Implement then Review (pipelined per candidate) ----------
@@ -531,18 +568,17 @@ const reviewed = await pipeline(
 // shows 0 SOLVED is demoted to failed unless its brief declared
 // infrastructure. Prose directives in HANDOFF were being routed around; this
 // is the hard version. At most ONE infrastructure landing per batch.
-let infraBudget = 1
+// THE INFRA SLOT IS GONE. It let exactly one 0-SOLVED enabler land per batch, and both
+// times it was used the increment shipped a confident-wrong to TEST after a spotless DEV
+// gate (128-retry, 129 — docs/negative-results.md). An enabler is BOUGHT, not promised.
+// SMOKE remains exempt, and is the ONLY exemption.
 const enforced = reviewed.filter(Boolean).map((i) => {
   if (!i.result || i.result.status !== 'gated') return i
+  if (SMOKE) return i
   const solved = solvedCount(i.result)
   if (Number.isFinite(solved) && solved > 0) return i
-  if (i.brief.infrastructure && infraBudget > 0) {
-    infraBudget -= 1
-    log(`${i.brief.slug}: 0 SOLVED, declared infrastructure — using the batch's one infra slot`)
-    return i
-  }
-  log(`${i.brief.slug}: GATED but 0 dev-train SOLVED and no infra slot — demoted to failed (goal mode)`)
-  return { ...i, result: { ...i.result, status: 'failed', notes: `goal-mode demotion: dev-train SOLVED=0 (${i.brief.infrastructure ? 'infra slot already used this batch' : 'brief not declared infrastructure'}). ${i.result.notes ?? ''}` } }
+  log(`${i.brief.slug}: GATED but 0 dev-train SOLVED — demoted to failed (the enabler must be bought, not promised)`)
+  return { ...i, result: { ...i.result, status: 'failed', notes: `goal-mode demotion: dev-train SOLVED=0. Infrastructure briefs are retired — an enabler lands folded into the increment that cashes it in, so its yield and its risk are measured in the same gate (docs/negative-results.md, "the infrastructure trap"). ${i.result.notes ?? ''}` } }
 })
 
 const items = enforced.filter((i) => i.result)
