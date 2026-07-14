@@ -1,6 +1,9 @@
 # Deixis: a design note
 
 *Research pass, 2026-07-14. Analysis + one experiment (run, gated, reverted).*
+*All measurements taken at `744973f` (dev-train 93/0, 100% precision). The
+§4 gate result is reproducible from that base; increments 112–113 landed
+concurrently and moved dev-train to 95, which does not affect the argument.*
 
 **Deixis** is the linguistic phenomenon of expressions whose referent is fixed only
 relative to a *reference point* — Bühler's **origo**. "She", "the rest", "that many",
