@@ -14,13 +14,13 @@ swing under the constitution (no lexicon in Python, no per-problem parsing,
 every increment through the gates).
 
 **Current numbers (all verified at head):**
-- dev-train: 93 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
+- dev-train: 95 correct / 0 wrong (3,772 items, 100% precision) — GOAL: 100
 - dev-holdout: 39 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 899 · lint: 0 errors, 1 intended warning
+- curated suite: 52/52 · pytest: 912 · lint: 0 errors, 1 intended warning
 - bench wall: dev-train 16.6s -> 9.0s (trace opt-out) -> 1.7s at `--jobs 12`.
   `--jobs` defaults to 1; spend it in the SERIAL integration tail, never in the
   implementers' gates (they already run concurrently). See the two infra notes below.
-- TEST ledger (105 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
+- TEST ledger (107 looks spent, `projects/gsm8k/snapshots/test-ledger.jsonl`):
   0/1 (0%) → 4/1 (80%) → 5/1 (83.3%) → 5/2 REVERTED → 5/1 → 5/2 bisect →
   5/1 (83.3%) → 5/1 (look #8) → 5/1 (look #9) → 5/1 (look #10) →
   6/1 (85.7%, look #11 — a genuine COVERAGE GAIN) → 6/1 (#12) → 6/1 (#13) →
@@ -5427,3 +5427,26 @@ SOLVED 1 (5d47aa5acef3) / BROKE 0 / DECL->WRONG 0 / NET +1 / SHIP (94 -> 95). de
 SOLVED 0 / BROKE 0 / DECL->WRONG 0 / NET +0 / NEUTRAL (39 -> 39). pytest 912 passed (906 baseline
 + 6 new synthetic tests). suite 52/52. lint 0 errors, 1 warning (pre-existing known-good
 fraction-of-remnant/fraction-of-pool overlap). TEST look: pending — spent manually.
+
+## Batch 51 (2026-07-14) — increments 112, 113. dev-train 95. FIVE FROM THE GOAL.
+
+LANDED (looks #106, #107 — both 11/1, 91.7%, HELD):
+- **112 — aggregate asks whose measure is a DIMENSION NOUN, not a unit** (combined/total/average
+  height, weight, age, distance, duration). New `dimension_noun`/unit-family categories in packs;
+  an opt-in `_resolve_dimension_measure` (UNIQUE-OR-DECLINE across holders' unit families), inert
+  for all existing callers. +1.
+- **113 — collections split by a STATED RATIO** ("the ratio of A to B is 3:2", "divided in the
+  ratio 4:6", "mixing X, Y and Z in a 1:2:5 ratio"), cashed in by the EXISTING difference/total
+  consumers. +1.
+
+FAILED (goal-mode) with two named kernel gaps, both worth their own increment:
+1. **Sentence-order invariant blocks promoted clauses.** `_split_trailing_clause` always appends
+   the promoted "if TOTAL, how many...?" clause as the LAST premise sentence — but
+   `_pool_before`/`_candidate_measure` in saturate.py require a collection's total to come from a
+   STRICTLY EARLIER sentence ("fractions/rest resolve strictly in sentence order"). Verified by
+   diagnosing the same text in normal vs reversed order. The promoted clause can therefore never
+   supply a pool total.
+2. **PartitionQuantity has no qualifier field.** "wireless mice" / "optical mice" / "trackball
+   mice" all bare-fold to lemma 'mouse' with only the qualifier differing, and
+   `PartitionQuantity.key()` covers only (collection, attribute, verb) — so they COLLIDE at
+   FactStore admission. Same shape as the GroupTotal.key() limit recorded in batch 40.
