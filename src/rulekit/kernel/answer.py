@@ -251,6 +251,53 @@ def _sign(verb: str, reg: Registry, strict: bool = False) -> int | None:
     return None if strict else 1
 
 
+def _question_reference_time(question: Reading, reg: Registry, match) -> list:
+    """The moment the QUESTION asks about — the ask's origo on the TIME dimension.
+
+    docs/deixis.md §4 proved this field's absence is a confident-wrong factory: with
+    no way to name a point in time, a matched ask will happily answer a March question
+    with the January amount, and nothing anywhere compares them. This is the field that
+    lets the ask say WHEN.
+
+    A reference time is a `timeperiod` noun GOVERNED BY A PREPOSITION ("in March", "on
+    Monday") that the ask's own slots did not take. Both tests are structural, and both
+    are load-bearing:
+
+      - the PREPOSITION test keeps a measure out. "How many MONTHS are there?" — `month`
+        is what is being COUNTED, not when. A bare timeperiod noun is subject matter; a
+        prepositional one is an adjunct.
+      - the CONSUMED test keeps the ask's own bound slots out, for the same reason: a
+        slot the ask read is what the question is ABOUT, never where it is asked FROM.
+
+    Returns the candidate Referents (TIME-dimension), for `deixis.resolve` to arbitrate.
+    A question naming two times is ambiguous and must decline — time arbitration (which
+    of two moments is nearer) needs an ORDER, and there is none (deixis.md §1.3).
+    """
+    taken = set(match.consumed) | {u.uid for u in match.slots.values()}
+    out = []
+    for i, unit in enumerate(question.units):
+        if unit.uid in taken:
+            continue
+        if unit.sense() != "noun" or "value" in unit.features:
+            continue
+        lemma = unit.features.get("lemma", unit.features.get("fold", ""))
+        if not reg.word_in_category(lemma, "timeperiod"):
+            continue
+        prev = question.units[i - 1] if i > 0 else None
+        if prev is None or prev.sense() != "preposition":
+            continue
+        out.append(
+            deixis.Referent(
+                dimension=deixis.TIME,
+                key=unit.features.get("fold", ""),
+                payload=unit,
+                sentence=question.sentence_index,
+                span=unit.span,
+            )
+        )
+    return out
+
+
 def _verb_total(
     store: FactStore, entity: str, measure: str, verb: str, log: ArithmeticLog
 ) -> float | None:
@@ -826,6 +873,44 @@ def answer(
         return Answer("decline", None, "no ask shape recognizes this question")
     ask, query, _match = matched
     consumer = query.get("consumer")
+
+    # ------------------------------------------------------------------
+    # THE TEMPORAL ORIGO (docs/deixis.md phase 2).
+    #
+    # Applied ONCE, here, before any consumer runs — not bolted onto individual ask
+    # shapes. The moment a question asks about is a property of the QUESTION, not of
+    # whichever ask happened to match it, so a per-ask `{slot: when}` would be exactly
+    # the per-problem parsing the constitution forbids. One scan; every consumer, every
+    # ask shape, for free.
+    #
+    # The scope rule: a fact stamped with a DIFFERENT moment is not evidence about this
+    # one and is dropped. An UNTIMED fact (time=None) is kept — it asserts nothing about
+    # when, so it is not contrary evidence, and dropping it would lose the base state
+    # that a timed event modifies ("Sam has 10 apples. In March he ate 3.").
+    # ------------------------------------------------------------------
+    time_candidates = _question_reference_time(question, reg, _match)
+    if time_candidates:
+        origo = deixis.resolve(
+            time_candidates,
+            deixis.Origo(sentence=question.sentence_index),
+            deixis.constant,
+            dimension=deixis.TIME,
+            journal=log.journal,
+            source="ask/reference-time",
+        )
+        if origo is None:
+            # Two moments named, and no way to choose: arbitrating between times needs
+            # an ORDER, and `time` is an opaque label with none (deixis.md §1.3).
+            # Declining is the only honest move.
+            return Answer(
+                "decline", None,
+                "the question names more than one time, and time arbitration is unbuilt",
+            )
+        reference_time = origo.key
+        store = FactStore(facts=[
+            f for f in store.facts
+            if getattr(f, "time", None) in (None, reference_time)
+        ])
 
     if consumer == "single-entity":
         entity, measure = query["entity"], query["measure"]
