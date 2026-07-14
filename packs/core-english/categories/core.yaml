@@ -181,19 +181,28 @@ categories:
       already gate). A dimension-ADJECTIVE totality sibling ("how long
       is the total X?", binding this category's OWN NAME directly as
       `measure` — the same move `currency`'s `measure: currency`
-      precedent makes) was PROTOTYPED and DROPPED: dev-train's
-      "Bart makes a mixtape... How long is the total tape?" exposed a
-      pre-existing latent oversum in the entity-less 'combined' consumer
-      — a bare rate-defining sentence ("Each song is 4 minutes") leaves
-      its OWN raw Quantity(entity='song', measure='minute', value=4)
-      fact behind ALONGSIDE the container-contents synth's bridged
-      per-side totals, and enumerating every 'minute' holder summed all
-      three (44 instead of gold 40). Fixing that oversum is a separate,
-      general fix to `_combined_holder_totals`'s entity enumeration, out
-      of scope here — 'long' is deliberately NOT a member of this
-      category (adjective-sensed; this category is noun-rooted, so it
-      could never join anyway) and no ask currently binds this
-      category's name directly.
+      precedent makes) was PROTOTYPED and DROPPED, then RE-LANDED
+      (mining candidate distributive-holder-enum) once its blocker was
+      fixed: dev-train's "Bart makes a mixtape... How long is the total
+      tape?" exposed a pre-existing latent oversum in the entity-less
+      'combined' consumer — a bare rate-defining sentence ("Each song is
+      4 minutes") left its OWN raw Quantity(entity='song',
+      measure='minute', value=4) fact behind ALONGSIDE the
+      container-contents synth's bridged per-side totals, and
+      enumerating every 'minute' holder summed all three (44 instead of
+      gold 40). `_combined_holder_totals`'s entity enumeration
+      (answer.py) now drops any entity whose Quantity was CONSUMED by a
+      bridging synth (synth/container-contents,
+      synth/distributive-container-total) to derive some other holder's
+      total — ArithmeticLog.consumed_rate_keys, populated at the synth's
+      own emission site, never guessed from the sentence's shape. The
+      ask itself is `ask/how-long-is-total-dimension` (packs/arithmetic/
+      rules/core.yaml), binding `measure: time_measure` directly and
+      `dimension_measure: true` — 'long' is deliberately NOT a member of
+      this category (adjective-sensed; this category is noun-rooted, so
+      it could never join anyway); the ask names the category directly
+      instead, exactly the `_resolve_dimension_measure` docstring already
+      anticipated.
   currency_measure:
     parent: noun
     dimension: true

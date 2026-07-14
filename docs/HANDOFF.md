@@ -5915,6 +5915,39 @@ errors, 1 pre-existing known-good warning. TEST look: pending — spent manually
 
 TEST look: pending — spent manually.
 
+## Increment 128: entity-less and in-place totality asks over a distributive container premise
+
+**Class**: entity-less/"combined" totality asks (e.g. "how many X in total/altogether")
+whose premise is a distributive container structure (an existential count of containers
+plus a per-container content rate, possibly attribute-partitioned or relation-derived) —
+the container-contents synth already bridges the correct per-holder totals, but
+`_combined_holder_totals`'s entity enumeration counted the rate-defining sentence's own
+raw `Quantity` as a THIRD independent holder alongside the bridged totals it was actually
+consumed to derive, oversumming (e.g. 44 instead of gold 40) or wrongly declining
+("an entity-less ask needs exactly one" / "found []"). Fixes the exact oversum that
+`packs/core-english/categories/core.yaml`'s `time_measure` note had documented and
+deliberately deferred.
+
+**Mechanism**: `_combined_holder_totals` (`src/rulekit/kernel/answer.py`) now excludes any
+Quantity whose (entity, measure) key appears in a new `ArithmeticLog.consumed_rate_keys`
+set — populated only at the container-contents synth's own emission site when it consumes
+a per-unit rate Quantity to derive a bridged holder total. This is the same
+USE-vs-EXISTENCE distinction the look-#4 invariant already forces on value accounting for
+Rate/Price/GroupTotal facts, applied here to holder ENUMERATION instead of value
+accounting — no new ask shape, no heuristic on sentence shape, opt-in and keyed strictly
+on a logged consumption fact. Also re-lands the dimension-adjective totality ask
+("How long is the total tape?") that the same oversum had blocked, per the brief.
+
+**Files**: `src/rulekit/kernel/answer.py`, `packs/arithmetic/rules/core.yaml`,
+`packs/core-english/categories/core.yaml`, `tests/test_mining_increment_128.py`.
+
+**Gate** (integrated on staging tip): dev-train diff SHIP (+1 SOLVED, 0 BROKE, 0
+DECL->WRONG; SOLVED: `ec2912882cfa`). dev-holdout diff NEUTRAL (0 SOLVED, 0 BROKE, 0
+DECL->WRONG). pytest 995 -> 998 (+3 synthetic). suite 52/52. lint 0 errors, 1 pre-existing
+known-good warning.
+
+TEST look: pending — spent manually.
+
 ### Batch 2026-07-14 outcome (increment 126)
 
 **TEST look #120: 11/1 (91.7%) — HELD.** dev-train 100 -> **101**, dev-holdout 39 -> **40**.

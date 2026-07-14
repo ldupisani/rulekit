@@ -6644,3 +6644,52 @@ asks:
       measure: "{item}"
       dimension_measure: "true"
       holder_count: "{n.value}"
+
+  - id: ask/how-long-is-total-dimension
+    # mining candidate distributive-holder-enum: "How long is the total
+    # tape?" — a dimension-ADJECTIVE totality sibling of
+    # ask/imperative-combined-dimension above, PROTOTYPED and DROPPED
+    # (packs/core-english/categories/core.yaml's time_measure note) until
+    # this candidate fixed its blocker: `_combined_holder_totals`'s
+    # entity enumeration used to oversum a bare per-unit rate fact
+    # ALONGSIDE the bridged totals it was consumed to derive ("Each song
+    # is 4 minutes" summed in on top of the two side-totals it fed,
+    # 44 instead of gold 40).
+    #
+    # 'long' is deliberately NOT admitted into `dimension_adjective`
+    # (adjective-sensed; that category's OTHER members — tall/heavy/
+    # wide/high/large/small/short — are noun-rooted and could join, but
+    # 'long' is the standard English DURATION idiom as much as a
+    # physical-length one, and admitting it there would let it drift
+    # into ask/how-many-unit-dimension-is's own `dimension_adjective`
+    # gate for an UNRELATED bare-adjective ask, risking the exact
+    # DECL->WRONG that ask's own comment records for "how long is
+    # their combined experience"). Here 'long' is a LITERAL, this ask's
+    # own skeleton — never a category member — bound directly to
+    # `measure: time_measure` (a category NAME, not a word; the same
+    # move `currency`'s `measure: currency` precedent makes,
+    # `_resolve_dimension_measure`'s own docstring already anticipates
+    # this exact ask id) rather than resolved from any slot value. The
+    # required literal 'total' is the totality marker: it is what
+    # licenses summing every rate-net holder of `time_measure` rather
+    # than reading a single stated duration, and it is what keeps this
+    # ask from ever colliding with a bare, non-aggregate "how long is
+    # X?" (not admitted anywhere in this grammar — see the
+    # `dimension_adjective` bare-ask drop above).
+    #
+    # `item` is skeletal only (never referenced by `resolves`, exactly
+    # like `adj` in ask/how-many-unit-dimension-is) — it exists so "the
+    # total TAPE" consumes the head noun rather than leaving it dangling
+    # mid-question.
+    match:
+      question:
+        - {lit: how}
+        - {lit: long}
+        - {slot: verb, cat: state}
+        - {lit: total}
+        - {slot: item, type: noun}
+    resolves:
+      consumer: combined
+      measure: time_measure
+      dimension_measure: "true"
+      verb: "{verb}"

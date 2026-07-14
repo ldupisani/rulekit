@@ -1705,6 +1705,13 @@ def _container_contents_synth(store: FactStore, reg: Registry, log: ArithmeticLo
                     verb=holder.verb, occurrence=holder.occurrence, time=holder.time,
                 )
             )
+            # mining candidate distributive-holder-enum: `rate` (CR) just
+            # got composed into `holder`'s own bridged total above — its
+            # (entity, measure) key is a per-unit RATE, not an independent
+            # holding, so a downstream holder-enumeration consumer must not
+            # sum it ALONGSIDE the bridged total it was consumed to derive
+            # (see ArithmeticLog.consumed_rate_keys's own docstring).
+            log.consumed_rate_keys.add((rate.entity, rate.measure))
     return out
 
 
@@ -1827,6 +1834,21 @@ def _distributive_container_total_synth(store: FactStore, reg: Registry, log: Ar
                 measure=content, value=value, verb=rate.verb,
             )
         )
+        # NOTE (mining candidate distributive-holder-enum): deliberately
+        # NOT marking `rate` in `log.consumed_rate_keys` here, unlike
+        # synth/container-contents below. This synth's `container`
+        # pairing is keyed by measure-NAME coincidence across the WHOLE
+        # store (`counts_by_container`, built from every Quantity/
+        # GroupTotal regardless of what noun the entity itself is), not
+        # by an actual container-noun structural role — dev-train proved
+        # this fires on unrelated collisions (e.g. a stated "Bill has 60
+        # toys" got paired as a bogus per-'bill' rate whenever some other
+        # fact's measure happened to read 'bill'), which is harmless today
+        # only because nothing downstream reads `consumed_rate_keys` yet.
+        # Marking it here demoted three genuinely independent holders
+        # (BROKE on dev-train: 9a46ef7a9e2e, af2909139386, f325779c365e)
+        # the moment `_combined_holder_totals` started consuming the set.
+        # Left as a documented non-fix, not silently dropped.
     return out
 
 

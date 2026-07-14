@@ -51,6 +51,22 @@ class ArithmeticLog:
     # Typed loosely to keep evaluate.py free of a kernel.deixis import.
     journal: Any = None
 
+    # mining candidate distributive-holder-enum: (entity, measure) keys of
+    # Quantity facts a bridging synth (saturate.py's synth/container-
+    # contents, synth/distributive-container-total) has CONSUMED as a
+    # per-unit RATE to derive some OTHER holder's total ("each row holds 5
+    # chairs" bridging into "20 rows -> 100 chairs"). Populated ONLY at the
+    # synth's own emission site — never guessed from a sentence shape — so
+    # a downstream holder-enumeration consumer (answer.py's
+    # `_combined_holder_totals`) can tell a rate-defining artifact apart
+    # from an independent holding: the same USE-vs-EXISTENCE distinction
+    # the look #4-#7 invariant already forces for value accounting
+    # (Rate/Price/GroupTotal), applied here to holder ENUMERATION instead.
+    # Rides on the log for the same reason `journal` does (doc above):
+    # this object is already threaded to every synth call and every
+    # answer.py consumer, so no new parameter needs to be added anywhere.
+    consumed_rate_keys: set[tuple[str, str]] = field(default_factory=set)
+
     def uses_value(self, value: float, tol: float = 1e-9) -> bool:
         """Did any logged expression literally contain this value (as a
         constant or bound variable)? The dropped-multiplier guard's probe."""

@@ -857,6 +857,22 @@ def _combined_holder_totals(
         )
         if exclude_entity is not None:
             entities = [e for e in entities if e != exclude_entity]
+        # mining candidate distributive-holder-enum: an entity whose OWN
+        # Quantity(measure=singular) was CONSUMED by a bridging synth
+        # (synth/container-contents, synth/distributive-container-total —
+        # see ArithmeticLog.consumed_rate_keys's own docstring) to derive
+        # some OTHER holder's total is a per-unit RATE-DEFINING artifact,
+        # not an independent holding — "each row holds 5 chairs" must not
+        # be summed alongside the bridged per-holder totals it was
+        # composed into (the documented oversum: packs/core-english/
+        # categories/core.yaml's time_measure note, gold 40 vs 44). This
+        # can only ever DROP a spurious extra holder the synth already
+        # proved was consumed elsewhere — it never adds one, and a holder
+        # set that falls below two still hits the exact same decline below
+        # exactly as before this fix.
+        entities = [
+            e for e in entities if (e, singular) not in log.consumed_rate_keys
+        ]
         if len(entities) < 2:
             # "how many do THEY have ALTOGETHER" asserts plurality — a
             # one-entity sum usually means a mangled parse (the permissive
