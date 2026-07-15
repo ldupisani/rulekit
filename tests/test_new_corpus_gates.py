@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-CORPORA = ["mawps", "scibench"]
+CORPORA = ["mawps", "scibench", "difg"]
 
 
 def _load_builder(name):

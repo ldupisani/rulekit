@@ -1,0 +1,24 @@
+format: rulekit/project@1
+name: difg
+# THE MULTI-DOMAIN COVERAGE CORPUS — NOT a precision gate (docs/difg-corpus-plan.md).
+#
+# Extracted from difg's own test corpus (~/Development/experiments/difg). This is
+# the NUMERIC SLICE only: the 202 items whose gold is a bare number, across 58
+# reasoning domains (geometry, list_statistic, number_theory, probability, ...).
+# The 55.5% of difg answers that are TYPED (quantity+unit, verdict, set, percent,
+# money) are OUT until the kernel gains a non-numeric commit path — until then
+# they have no mining signal.
+#
+# THE METRIC IS `domain coverage`, NEVER `precision`. 79.3% of difg's items are
+# its orchestrators' own advertised example_queries — the questions it published
+# to show off — so a held-out score over this set measures nothing about unseen
+# text (docs/difg-corpus-plan.md, "The finding that shapes everything"). A real
+# precision number needs a genuinely independent TEST set difg never saw (Phase
+# 6). If this number is ever quoted next to the GSM8K/ASDiv precision numbers
+# without that caveat, the caveat has failed. `--slice dev` is a domain-coverage
+# WORKLIST; the salted TEST half is a regression guard, not a benchmark.
+packs: [core-english, arithmetic, difg-mined]
+datasets:
+  difg:
+    train: {parquet: data/difg_dev.parquet, question: question, answer: answer}
+    test: {parquet: data/difg_test.parquet, question: question, answer: answer}
