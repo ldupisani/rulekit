@@ -179,6 +179,7 @@ entries:
   bird: {senses: [noun], plural: birds}
   rabbit: {senses: [noun], plural: rabbits}
   hamster: {senses: [noun], plural: hamsters}
+  litter: {senses: [noun], plural: litter}
 
   # adjectives
   red: {senses: [adjective]}
