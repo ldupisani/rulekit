@@ -49,7 +49,9 @@
 >    answer.py's distributive-container path now COMMITS them instead of declining. GSM8K byte-neutral
 >    (dev-train + dev-holdout); **GSM8K TEST look SPENT — 11/1 = 91.7% HELD** (new commit path fired
 >    no wrong). This LANDS the "GroupTotal consumer fix" that was parked as 0-SOLVED-not-landed. The
->    entity-less (`unique-entity`) path — apple=629, flower=17408 — is the analogous follow-up SOLVE.
+>    entity-less (`unique-entity`) path then landed the same way (apple=629, flower=17408, +2 SOLVE,
+>    GSM8K byte-neutral) — same mechanism, shipped without a second look as covered by the first.
+>    ASDiv-DEV is now **87.2%, 41 correct, 6 wrongs**.
 >
 > Full result: `docs/negative-results.md` → "The reading gap is a LONG TAIL".
 > The executed brief, preserved: `docs/reading-gap.md` (CLOSED — do not re-run).

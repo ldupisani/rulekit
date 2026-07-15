@@ -139,8 +139,9 @@ uv run rulekit --project projects/asdiv diff asdiv-before.json asdiv-after.json 
 **The bar is the same as everywhere: never move an item → wrong.** ASDiv-DEV carries a handful of wrongs
 (a characterized worklist, not a target — 82.2% → **86.7%** across fixes this gate *bought*, each invisible
 to every GSM8K gate: the distributive-container guard, then value-accounting multiplicity (a same-value
-blind spot), then the synth-GroupTotal fix + consumer that turned the shelf-2250 class from a decline into
-a SOLVE — a coverage win validated by a spent GSM8K TEST look, 91.7% HELD); the gate is that a change adds
+blind spot), then the synth-GroupTotal fix + consumer that turned the container-total class from a decline
+into a SOLVE (+3: shelf 2250, apples 629, flowers 17408) — a coverage win validated by a spent GSM8K TEST
+look, 91.7% HELD); the gate is that a change adds
 **no** ASDiv-DEV wrong (BROKE == 0, DECL→WRONG == 0). WRONG→DECL is a win; SOLVE is a bigger one. Run it on **any kernel or pack change**, not just GSM8K-motivated
 ones — the whole point is that it catches what the GSM8K gates structurally cannot.
 

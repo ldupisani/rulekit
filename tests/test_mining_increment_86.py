@@ -48,18 +48,20 @@ def full_registry():
     )
 
 
-def test_distributive_container_total_declines_instead_of_wrong(full_registry):
-    # BEFORE this increment this committed the CONFIDENT WRONG 12 (the
-    # per-crate rate) instead of the true total 360 — it must now decline
-    # rather than guess, never silently keep committing the per-container
-    # value.
+def test_distributive_container_total_now_commits_the_whole(full_registry):
+    # Increment 86 shipped the SYNTH (the GroupTotal fact) and made the
+    # unique-entity consumer DECLINE this rather than commit the confident-wrong
+    # 12 (the per-box rate). The "separate, later increment" its docstring names
+    # has now landed: with saturate tightened so the total is trustworthy
+    # (Provenance.distributive), the entity-less consumer COMMITS the whole 360.
+    # Never the per-box rate 12.
     r = solve(
         "There are 30 boxes of apples. There are 12 apples in each box. "
         "How many apples are there?",
         full_registry,
     )
-    assert r.answer.kind == "decline"
-    assert r.answer.value != 12
+    assert r.answer.kind == "number"
+    assert r.answer.value == 360
 
 
 def test_sibling_container_ask_is_unaffected(full_registry):

@@ -67,6 +67,21 @@ def test_specific_instance_count_is_not_a_rate(reg):
         "a specific instance's count must not derive a distributive group total"
 
 
+def test_entity_less_ask_commits_the_group_total(reg):
+    """The entity-less mirror. 'How many pens are there IN ALL?' names no holder;
+    the lone holder ('each box has 8 pens' -> box/pen=8) is a per-container rate
+    and the trustworthy whole is the group total. The unique-entity consumer
+    commits it (40), not the lone rate (8)."""
+    r = solve(
+        "There are 6 boxes. Each box has 8 pens. How many pens are there in all?",
+        reg, tracing=False,
+    )
+    assert any(g.measure == "pen" and g.value == 48.0 for g in r.store.by_kind(GroupTotal))
+    assert r.answer.committed, (r.answer.reason or "")
+    assert r.answer.value == 48.0
+    assert "group total" in (r.answer.reason or "")
+
+
 def test_named_holder_with_unrelated_total_still_commits(reg):
     """THE TIGHTNESS INVARIANT. A GroupTotal for the asked measure coexists, but
     the named holder is NOT a counted container — its own fold is correct and must

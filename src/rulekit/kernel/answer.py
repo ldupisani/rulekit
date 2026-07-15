@@ -1575,21 +1575,32 @@ def answer(
                 f"{len(entities)} entities hold {singular!r} — an entity-less "
                 "ask needs exactly one",
             )
-        if any(gt.measure == singular for gt in store.by_kind(GroupTotal)):
-            # mining candidate distributive-each-totals (the precision fix):
-            # a GroupTotal for this SAME measure means the lone entity's own
-            # Quantity is a PER-CONTAINER rate ("each row has 20 chairs"),
-            # not the group's whole — saturate.py's
-            # synth/distributive-container-total (or a stated "N X
-            # altogether" premise) already says so. Folding the single
-            # entity's raw value here would be exactly the confident wrong
-            # that GroupTotal exists to prevent ("20 chairs in each row"
-            # read as the total 20 instead of composing with the row count
-            # for 800) — decline rather than guess which one the ask means.
+        entity_less_totals = [gt for gt in store.by_kind(GroupTotal) if gt.measure == singular]
+        if entity_less_totals:
+            # mining candidate distributive-each-totals: a GroupTotal for this
+            # SAME measure means the lone entity's own Quantity is a PER-CONTAINER
+            # rate ("20 chairs in each row"), not the group's whole. An entity-less
+            # ask ("how many chairs are there IN ALL?") wants the whole — the
+            # GroupTotal is exactly it, so COMMIT it. This shipped first as a
+            # DECLINE (folding the lone rate as the total is the confident wrong
+            # GroupTotal exists to prevent); the entity-less mirror of the
+            # single-entity container consumer above, it can commit now for the
+            # SAME reason that path can: saturate's synth was tightened
+            # (Provenance.distributive) so a specific instance's count no longer
+            # masquerades as a per-container rate, so the surviving total is
+            # trustworthy. Two rival totals stay a decline.
+            if len(entity_less_totals) == 1:
+                total = evaluate(
+                    f"{entity_less_totals[0].value}", {}, log, source="group-total"
+                )
+                return Answer(
+                    "number", total,
+                    f"group total of {singular!r} over the counted containers",
+                )
             return Answer(
                 "decline", None,
-                f"{singular!r} has both a lone holder and a group total — "
-                "an entity-less ask cannot tell which one is meant",
+                f"{singular!r} has several rival group totals — "
+                "an entity-less ask cannot tell which whole is meant",
             )
         total = _entity_total(store, reg, entities[0], singular, log)
         if total is None:
