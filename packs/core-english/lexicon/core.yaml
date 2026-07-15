@@ -155,7 +155,7 @@ entries:
 
   # common nouns
   apple: {senses: [noun], plural: apples}
-  plums: {senses: [noun], plural: plum}
+  plum: {senses: [noun], plural: plums}
   marble: {senses: [noun], plural: marbles}
   book: {senses: [noun], plural: books}
   cookie: {senses: [noun], plural: cookies}
