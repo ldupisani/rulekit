@@ -358,6 +358,22 @@ class ConversionsDoc(StrictModel):
     conversions: list[ConversionDef]
 
 
+class FormulaDef(StrictModel):
+    # a geometry formula: (shape, quantity) -> an expression over named dimensions
+    # and the constant `pi`, e.g. shape=circle quantity=area expr="pi * radius**2".
+    # DECLARATIVE DATA, never a Python branch (constitution: formulas ->
+    # synthesizers with category gates). The `geometry` consumer binds the named
+    # dimensions from the ask and evaluates expr.
+    shape: str
+    quantity: str
+    expr: str
+
+
+class GeometryDoc(StrictModel):
+    format: Literal["rulekit/geometry@1"]
+    formulas: list[FormulaDef]
+
+
 class QuarantineEntry(StrictModel):
     tags: list[str] = Field(default_factory=list)
     reason: str
@@ -418,6 +434,7 @@ KIND_MODELS: dict[str, type[BaseModel]] = {
     "rulekit/lexicon@1": LexiconDoc,
     "rulekit/categories@1": CategoriesDoc,
     "rulekit/conversions@1": ConversionsDoc,
+    "rulekit/geometry@1": GeometryDoc,
     "rulekit/quarantine@1": QuarantineDoc,
     "rulekit/numbers@1": NumbersDoc,
     "rulekit/obligations@1": ObligationsDoc,

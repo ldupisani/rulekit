@@ -1,0 +1,14 @@
+format: rulekit/lexicon@1
+# Geometry shape/quantity/dimension nouns the difg geometry domain needs and
+# core-english lacks (area/perimeter/length/width/side/base/height/rectangle/
+# triangle already exist). Plain nouns; the geometry categories + formula table
+# (geometry-categories.yaml, geometry.yaml) do the domain work.
+entries:
+  circle: {senses: [noun], plural: circles}
+  cube: {senses: [noun], plural: cubes}
+  sphere: {senses: [noun], plural: spheres}
+  cylinder: {senses: [noun], plural: cylinders}
+  radius: {senses: [noun], plural: radii}
+  volume: {senses: [noun], plural: volumes}
+  circumference: {senses: [noun], plural: circumferences}
+  diagonal: {senses: [noun], plural: diagonals}

@@ -1,0 +1,38 @@
+format: rulekit/rules@1
+# The difg geometry domain (subtype-total-asks sibling): formula-selection asks.
+# Lives in difg-mined with its category members (geometry-*.yaml here) so a
+# core-english / arithmetic-only registry compiles with no geometry at all.
+rules: []
+asks:
+  - id: ask/geometry-formula
+    # "What is the AREA of a CIRCLE with RADIUS 5?" / "...RECTANGLE with LENGTH 4
+    # and WIDTH 6?" — gates on the geometry_quantity / geometry_shape /
+    # geometry_dimension categories (categories/geometry.yaml); the `geometry`
+    # consumer (answer.py) looks up (shape, quantity) in the declarative formula
+    # table (geometry.yaml) and binds the named dimensions. One or two dimensions
+    # (the second optional). Everything is in the QUESTION — there is no premise —
+    # so this ask carries the values itself.
+    match:
+      question:
+        # articles ('the'/'a') and the trailing '?' are auto-skipped
+        # (patterns.SKIPPABLE_SENSES), so they are NOT listed here.
+        - {lit: what}
+        - {lit: is}
+        - {slot: quantity, cat: geometry_quantity}
+        - {lit: of}
+        - {slot: shape, cat: geometry_shape}
+        - {lit: with}
+        - {slot: dim1, cat: geometry_dimension}
+        - {slot: val1, type: number}
+        - opt:
+            - {lit: and}
+            - {slot: dim2, cat: geometry_dimension}
+            - {slot: val2, type: number}
+    resolves:
+      consumer: geometry
+      shape: "{shape}"
+      quantity: "{quantity}"
+      dim1: "{dim1}"
+      val1: "{val1.value}"
+      dim2: "{dim2}"
+      val2: "{val2.value}"

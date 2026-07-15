@@ -19,6 +19,7 @@ from .schemas import (
     KIND_MODELS,
     CategoriesDoc,
     ConversionsDoc,
+    GeometryDoc,
     GuardsDoc,
     LexiconDoc,
     NumbersDoc,
@@ -52,6 +53,7 @@ class LoadedPack:
     requirements: list[RequirementsDoc] = field(default_factory=list)
     guards: list[GuardsDoc] = field(default_factory=list)
     conversions: list[ConversionsDoc] = field(default_factory=list)
+    geometry: list[GeometryDoc] = field(default_factory=list)
     quarantine: list[QuarantineDoc] = field(default_factory=list)
     fingerprint: str = ""
 
@@ -112,6 +114,8 @@ def load_pack(root: Path) -> LoadedPack:
             pack.guards.append(doc)
         elif isinstance(doc, ConversionsDoc):
             pack.conversions.append(doc)
+        elif isinstance(doc, GeometryDoc):
+            pack.geometry.append(doc)
         elif isinstance(doc, QuarantineDoc):
             pack.quarantine.append(doc)
 

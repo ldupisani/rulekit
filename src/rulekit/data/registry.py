@@ -125,6 +125,7 @@ class Registry:
     attrs: Mapping[str, Mapping[str, float]]
     part_counts: Mapping[str, str]
     conversions: Mapping[tuple[str, str], float]
+    geometry_formulas: Mapping[tuple[str, str], str]  # (shape, quantity) -> expr
     quarantine: Mapping[str, str]  # word -> reason (never vocabulary)
     rules: tuple[PatternRule, ...]
     asks: tuple[AskRule, ...]
@@ -333,6 +334,18 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                         )
                     conversions[pair] = factor
 
+    # geometry formulas: (shape, quantity) -> expression over named dimensions
+    geometry_formulas: dict[tuple[str, str], str] = {}
+    for pack in packs:
+        for doc in pack.geometry:
+            for f in doc.formulas:
+                key = (f.shape, f.quantity)
+                if key in geometry_formulas and geometry_formulas[key] != f.expr:
+                    raise CompileError(
+                        f"geometry formula {key} declared twice with different expressions"
+                    )
+                geometry_formulas[key] = f.expr
+
     # quarantine: documentation only, and it must not contradict the lexicon
     quarantine: dict[str, str] = {}
     for pack in packs:
@@ -409,6 +422,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
         attrs=_freeze({k: _freeze(v) for k, v in attrs.items()}),
         part_counts=_freeze(part_counts),
         conversions=_freeze(conversions),
+        geometry_formulas=_freeze(geometry_formulas),
         quarantine=_freeze(quarantine),
         rules=tuple(sorted(rules, key=lambda r: r.id)),
         asks=tuple(sorted(asks, key=lambda a: a.id)),
