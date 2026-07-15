@@ -148,6 +148,15 @@ class Provenance:
     source: str  # rule id, "fold", or synthesizer name
     sentence: int  # sentence index within the document
     decision_seq: int | None = None
+    # Was the fact's SUBJECT scoped by a distributive determiner ('each'/'every'
+    # box has 8 pens)? Metadata only — NOT part of any Fact.key(), so it never
+    # affects dedup/conflict. saturate's distributive-container-total synth reads
+    # it to tell a genuine PER-CONTAINER rate ('each box has 8 pens') from a
+    # SPECIFIC instance's count ('bucket B has 30 seeds', 'the first warehouse
+    # has 400 boxes') that folds to the identical (container, content) shape —
+    # the conflation that produced garbage group totals (bucket seed=90,
+    # warehouse box=800). Defaulted False: every non-fold provenance is unchanged.
+    distributive: bool = False
 
 
 @dataclass(frozen=True)

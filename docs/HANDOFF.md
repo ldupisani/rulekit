@@ -40,6 +40,16 @@
 >    Removed masked wrongs from two root causes (elided "N more"; a same-value conjunct dropped at
 >    fact-admit). The *SOLVEs* (read "N more" as an additive event; keep the dropped conjunct) stay
 >    on the worklist — both are reading-layer changes with double-count risk.
+> 3. **synth GroupTotal fix + the GroupTotal consumer** (model/learn/saturate/answer.py) — a
+>    COVERAGE increment, the first SOLVE the gate bought (ASDiv-DEV +1, the shelf 2250). The synth
+>    conflated a distributive rate ("EACH shelf had 15 books") with a specific instance's count
+>    ("bucket B has 30", "the first warehouse has 400"), deriving garbage totals (seed=90, box=800).
+>    Fixed by persisting `Provenance.distributive` (learn.py tags the subject's `each`/`every`) and
+>    gating saturate's rate on it — the garbage is gone, so the surviving totals are trustworthy and
+>    answer.py's distributive-container path now COMMITS them instead of declining. GSM8K byte-neutral
+>    (dev-train + dev-holdout); **GSM8K TEST look SPENT — 11/1 = 91.7% HELD** (new commit path fired
+>    no wrong). This LANDS the "GroupTotal consumer fix" that was parked as 0-SOLVED-not-landed. The
+>    entity-less (`unique-entity`) path — apple=629, flower=17408 — is the analogous follow-up SOLVE.
 >
 > Full result: `docs/negative-results.md` → "The reading gap is a LONG TAIL".
 > The executed brief, preserved: `docs/reading-gap.md` (CLOSED — do not re-run).
@@ -47,8 +57,9 @@
 > Already measured and CLOSED — do not restart (all in `docs/negative-results.md`):
 > ask-shape mining (5 batches, +2 net), the 481-item per-unit seam (mechanism already
 > exists), **composition** (`docs/composition.md` — ABANDONED at Phase 0, typed ceiling ~13),
-> the month/time seam (0 SOLVED), the GroupTotal *consumer* fix (prefer-the-total — still not landed,
-> needs a distributive-role signal; the *guard* half IS landed 2026-07-15, see FIRST PAYOFF above),
+> the month/time seam (0 SOLVED); the GroupTotal *consumer* fix is now **LANDED** (2026-07-15,
+> PAYOFF 3 above — the synth was tightened so the totals are trustworthy, then the single-entity
+> container path commits them; the entity-less path is the remaining follow-up SOLVE),
 > **the reading gap** (long tail — the measurement above).
 
 

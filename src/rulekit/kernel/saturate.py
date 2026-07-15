@@ -1781,14 +1781,28 @@ def _distributive_container_total_synth(store: FactStore, reg: Registry, log: Ar
     # 'chairs' as the container of 'rows') and, via the unique-entity
     # guard below, wrongly decline the ordinary, already-correct "how many
     # rows are there?" reading of the very same two sentences.
-    _RATE_SOURCES = {"fold", "arithmetic/existential-premise-distributive"}
+    # A per-container RATE must come from a genuinely DISTRIBUTIVE surface, not
+    # any container-entity fold. 'Each box has 8 pens' and 'bucket B has 30 seeds'
+    # both fold to entity=container/measure=content with source='fold' — identical
+    # shape, opposite meaning. Reading a specific instance's count as a per-unit
+    # rate derived garbage totals (bucket seed=90, warehouse box=800) that then
+    # made the GroupTotal-reading guards decline the surrounding item. The
+    # existential-distributive rule ('20 chairs IN EACH row') is inherently
+    # distributive; a plain fold qualifies only when learn.py tagged its subject's
+    # distributive determiner ('EACH'/'every') onto the provenance.
     out: list[Fact] = []
     known_group_totals = {gt.measure for gt in store.by_kind(GroupTotal)}
+
+    def _is_rate_source(q: Quantity) -> bool:
+        p = q.provenance
+        if p.source == "arithmetic/existential-premise-distributive":
+            return True
+        return p.source == "fold" and p.distributive
 
     rate_facts: set[int] = set()
     rates_by_pair: dict[tuple[str, str], list[Quantity]] = {}
     for q in store.by_kind(Quantity):
-        if q.provenance.source not in _RATE_SOURCES or q.entity == q.measure:
+        if not _is_rate_source(q) or q.entity == q.measure:
             continue
         rates_by_pair.setdefault((q.entity, q.measure), []).append(q)
         rate_facts.add(id(q))

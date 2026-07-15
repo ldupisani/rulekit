@@ -8,6 +8,8 @@ didn't bind yields nothing (definitive-or-decline, localized).
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 from ..data.registry import Registry
 from .model import (
     AnchorQuantity,
@@ -859,7 +861,7 @@ def _sentence_time(reading: Reading, reg: Registry) -> str | None:
 
 def learn(reading: Reading, reg: Registry) -> list[Fact]:
     facts: list[Fact] = []
-    prov = Provenance(source="fold", sentence=reading.sentence_index)
+    base_prov = Provenance(source="fold", sentence=reading.sentence_index)
     time_label = _sentence_time(reading, reg)
 
     # value units that found what they quantify: value -> noun. Units a
@@ -887,6 +889,13 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
         # unmet refers obligation stays a reportable gap instead
         if subject.sense() == "pronoun" and _bound(subject, "refers") is None:
             continue
+        # Tag every fact this clause emits with whether its SUBJECT is scoped by
+        # a distributive determiner ('EACH box has 8 pens' -> a genuine
+        # per-container rate) vs a specific instance ('bucket B has 30 seeds' ->
+        # one bucket's count). saturate's distributive-container-total synth
+        # reads this to stop conflating the two into a garbage group total
+        # (metadata only; Provenance is not part of any Fact.key()).
+        prov = replace(base_prov, distributive=_has_distributive_determiner(reading, subject))
         polarity = not _negated(reading, verb)
         negated_clause = _clause_negated(reading, verb, reg)
         verb_lemma = _lemma(verb)

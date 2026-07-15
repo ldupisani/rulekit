@@ -1046,22 +1046,26 @@ def answer(
             )
             if guard is not None:
                 return guard
-        # distributive-container guard — the single-entity mirror of the
-        # unique-entity GroupTotal guard below (line ~1548). A `GroupTotal`
-        # for this SAME measure means saturate (or a stated "N X altogether")
-        # already read a distributive whole; when the NAMED entity is itself a
-        # counted container ("there were 150 shelves" -> a Quantity whose
-        # MEASURE is this entity) that also HOLDS the asked measure directly
-        # ("each shelf had 15 books"), its own Quantity is the PER-CONTAINER
-        # RATE, not the group's whole. Folding it commits the rate as the total
-        # (the confident wrong the GroupTotal exists to prevent). Unlike the
-        # entity-less guard, this stays TIGHT: it fires ONLY on that container
-        # signature, so a named holder whose fold is genuinely correct and
-        # merely coexists with an unrelated document total ("Tom has 15 books"
-        # + a stated 2250-book total) is untouched — `tom` is not a counted
-        # measure. Decline (not prefer the total): "the shelves" (all -> 2250)
-        # vs "a shelf" (one -> 15) is a real ambiguity this fold cannot read.
-        if any(gt.measure == singular for gt in store.by_kind(GroupTotal)):
+        # distributive-container consumer — the single-entity mirror of the
+        # unique-entity GroupTotal branch below (line ~1548). A `GroupTotal`
+        # for this SAME measure is a distributive WHOLE ("150 shelves, each with
+        # 15 books" -> saturate's book=2250). When the NAMED entity is itself a
+        # counted container ("there were 150 shelves" -> a Quantity whose MEASURE
+        # is this entity) that also HOLDS the asked measure directly ("each shelf
+        # had 15 books"), its own Quantity is the PER-CONTAINER RATE, and the ask
+        # ("how many books were on the shelves") wants the WHOLE — the GroupTotal
+        # is exactly it. Commit it. This is SAFE ONLY because the group total is
+        # now trustworthy: saturate's distributive-container-total synth was
+        # tightened (learn.py provenance.distributive gate) so a SPECIFIC
+        # instance's count ("bucket B has 30", "the first warehouse has 400") no
+        # longer masquerades as a per-container rate — those garbage totals are
+        # gone, so preferring the total no longer risks committing one. Stays
+        # TIGHT: fires ONLY on the container signature, so a named holder whose
+        # fold is genuinely correct and merely coexists with an unrelated
+        # document total ("Tom has 15 books" + a stated total) is untouched —
+        # `tom` is not a counted measure. Two rival totals stay a decline.
+        matching_totals = [gt for gt in store.by_kind(GroupTotal) if gt.measure == singular]
+        if matching_totals:
             holds_rate = any(
                 q.entity == entity and q.measure == singular
                 for q in store.by_kind(Quantity)
@@ -1070,11 +1074,18 @@ def answer(
                 q.measure == entity for q in store.by_kind(Quantity)
             )
             if holds_rate and entity_is_counted:
+                if len(matching_totals) == 1:
+                    total = evaluate(
+                        f"{matching_totals[0].value}", {}, log, source="group-total"
+                    )
+                    return Answer(
+                        "number", total,
+                        f"group total of {singular!r} over the counted {entity!r} containers",
+                    )
                 return Answer(
                     "decline", None,
-                    f"{entity!r} is a counted container holding a per-container "
-                    f"rate of {singular!r} while a group total exists — a "
-                    "single-entity fold cannot tell the rate from the whole",
+                    f"{entity!r} holds a per-container rate of {singular!r} but "
+                    "several rival group totals exist — cannot tell which whole is meant",
                 )
         owner_store = store
         if owner:

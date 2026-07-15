@@ -1,4 +1,4 @@
-"""The distributive-container guard on the `single-entity` consumer.
+"""The distributive-container consumer on the `single-entity` path.
 
 SYNTHETIC ONLY (constitution rule 3). No GSM8K or ASDiv string appears here — the
 mechanism is exercised on invented containers (tables/plates, boxes/pens), never
@@ -8,11 +8,17 @@ WHY IT EXISTS. A cross-corpus (ASDiv) confident-wrong: "There were 150 shelves.
 Each shelf had 15 books. How many books were on the shelves?" The engine
 synthesizes the correct group total (2250) AND folds the resolved container's own
 per-container rate (15) — and committed the RATE. GSM8K could not reveal it (its
-ask shapes happen not to resolve a counted container as the fold entity). The
-sibling `unique-entity` consumer already declines this exact GroupTotal collision;
-`single-entity` lacked the guard.
+ask shapes happen not to resolve a counted container as the fold entity).
 
-THE TIGHTNESS INVARIANT (the second test) is the load-bearing one: the guard must
+TWO STAGES, both pinned here. First this shipped as a DECLINE (a counted container
++ a group total is ambiguous: "the shelves" all -> 2250 vs "a shelf" one -> 15).
+Then saturate's synth was tightened so a SPECIFIC instance's count ("bucket B has
+30", "the first warehouse has 400") no longer masquerades as a per-container rate
+(learn.py provenance.distributive gate) — with the garbage totals gone, the
+surviving group total is trustworthy and IS the answer, so the consumer now COMMITS
+it. The distinct-value test below proves the specific-instance garbage is gone.
+
+THE TIGHTNESS INVARIANT (the named-holder test) is load-bearing: the consumer must
 NOT fire for a NAMED holder whose own fold is correct and merely coexists with an
 unrelated document total — else it would break every legitimate named fold. The
 container signature (the entity is itself a counted thing) is what keeps it tight.
@@ -32,20 +38,33 @@ def reg():
     return load_project(Path("projects/gsm8k")).registry
 
 
-def test_counted_container_with_group_total_declines(reg):
+def test_counted_container_commits_the_group_total(reg):
     """The core case. A counted container ('20 tables') holds a per-container
-    rate ('each table had 6 plates') and saturate synthesizes the whole
-    (GroupTotal plate=120). Folding the container's own 6 is a confident wrong —
-    the guard declines instead."""
+    rate ('each table had 6 plates') and saturate synthesizes the trustworthy
+    whole (GroupTotal plate=120). The ask ('how many plates were on the tables')
+    wants that whole — the consumer commits 120, not the per-container 6."""
     r = solve(
         "There were 20 tables. Each table had 6 plates. How many plates were on the tables?",
         reg, tracing=False,
     )
-    # the mechanism actually engaged: the whole was synthesized...
     assert any(g.measure == "plate" and g.value == 120.0 for g in r.store.by_kind(GroupTotal))
-    # ...and the per-container rate was NOT committed as the answer.
-    assert not r.answer.committed, f"committed {r.answer.value!r} (the per-container rate)"
-    assert "counted container" in (r.answer.reason or "")
+    assert r.answer.committed, (r.answer.reason or "")
+    assert r.answer.value == 120.0
+    assert "group total" in (r.answer.reason or "")
+
+
+def test_specific_instance_count_is_not_a_rate(reg):
+    """The synth-tightening invariant. A SPECIFIC instance's count ('crate 2 had
+    9 apples') is NOT a per-container rate, so no group total is derived from it —
+    the garbage that this whole line of work removed. With no trustworthy whole,
+    the consumer does not fire and the item declines rather than commit a bogus
+    N x N total."""
+    r = solve(
+        "There were 5 crates. Crate 2 had 9 apples. How many apples were on the crates?",
+        reg, tracing=False,
+    )
+    assert not any(g.measure == "apple" for g in r.store.by_kind(GroupTotal)), \
+        "a specific instance's count must not derive a distributive group total"
 
 
 def test_named_holder_with_unrelated_total_still_commits(reg):
