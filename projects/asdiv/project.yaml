@@ -1,0 +1,24 @@
+format: rulekit/project@1
+name: asdiv
+# THE CROSS-CORPUS PRECISION GATE.
+#
+# Same packs as gsm8k — deliberately. ASDiv (Miao et al. 2020) is 2,305
+# grade-school arithmetic word problems by DIFFERENT authors than GSM8K. The
+# rules here were mined entirely on GSM8K and have never seen ASDiv, so running
+# them on ASDiv-DEV measures precision against text the engine was not tuned on.
+# That is the whole point: every GSM8K gate reads the same corpus, so a 100% can
+# sit there meaning nothing (docs/negative-results.md, "THE 100% PRECISION IS AN
+# ARTIFACT OF GSM8K"). This corpus is where confident-wrongs that GSM8K's own ask
+# shapes happen to hide become visible.
+#
+# FIREWALL. The train/test parquets ARE the ASDiv DEV/TEST split, cut by the
+# salt in build_corpus.py. `--slice dev` is the standing cross-corpus check;
+# `--slice test` is one-look-only and ledgered, exactly like gsm8k.
+#
+# No `suite:` — the suite is a curated-item concept; a cross-corpus gate has no
+# hand-curated items, only the held-in DEV pool.
+packs: [core-english, arithmetic, difg-mined]
+datasets:
+  asdiv:
+    train: {parquet: data/asdiv_dev.parquet, question: question, answer: answer}
+    test: {parquet: data/asdiv_test.parquet, question: question, answer: answer}

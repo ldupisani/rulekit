@@ -114,6 +114,46 @@ a drop means revert, full stop.
 
 ---
 
+## 3b. The cross-corpus gate (ASDiv) — the standing defense against §3a's ❌
+
+The ❌ above is the load-bearing limit: **no gate that reads GSM8K can see a shape GSM8K doesn't
+contain.** For a whole campaign, GSM8K DEV, dev-holdout, TEST, *and* the curated suite all read the same
+corpus — so a 100% precision could sit there meaning nothing, and it did (`docs/negative-results.md`,
+"THE 100% PRECISION IS AN ARTIFACT OF GSM8K"). The first time the GSM8K rules were run on **ASDiv** — 2,305
+grade-school word problems by *different authors*, zero tuning — precision was **80.4%, not 100%**: nine
+confident-wrongs GSM8K's own ask shapes happened to hide (a fact extracted perfectly, then silently
+dropped by a consumer — the `answer-accounting` guard, which took it to 82.2%, is the fix that discovery
+bought). GSM8K could not have surfaced any of them.
+
+So ASDiv is now a **standing project** (`projects/asdiv/`) with its own DEV/TEST firewall, run through the
+**same** snapshot/diff ship gate — no new gate code, just a corpus the rules were never mined on:
+
+```
+uv run --with datasets python projects/asdiv/build_corpus.py      # once — (re)builds the DEV/TEST split
+uv run rulekit --project projects/asdiv bench --slice dev --jobs 8 --snapshot asdiv-before.json
+# ... make the change ...
+uv run rulekit --project projects/asdiv bench --slice dev --jobs 8 --snapshot asdiv-after.json
+uv run rulekit --project projects/asdiv diff asdiv-before.json asdiv-after.json   # 0 BROKE, 0 DECL->WRONG
+```
+
+**The bar is the same as everywhere: never move an item → wrong.** ASDiv-DEV already carries ~8 wrongs (a
+characterized worklist, not a target); the gate is that a change adds **no** ASDiv-DEV wrong (BROKE == 0,
+DECL→WRONG == 0). WRONG→DECL is a win. Run it on **any kernel or pack change**, not just GSM8K-motivated
+ones — the whole point is that it catches what the GSM8K gates structurally cannot.
+
+Two honesty caveats, both real:
+- ASDiv-DEV is now **inspectable**, so over time it can itself be overfit. That is why **ASDiv-TEST**
+  (`--slice test`, one-look-only, ledgered) is reserved exactly as GSM8K-TEST is — it is the honest
+  cross-corpus number, spent rarely.
+- ASDiv is still *a* fixed corpus. It is a **broader** net than GSM8K, not an infinite one; a third corpus
+  would widen it again. Cross-corpus is a defense-in-depth against §3a's ❌, not a repeal of it.
+
+The split is defined by the salt in `build_corpus.py` (committed **infrastructure** — a throwaway script
+would make the TEST firewall non-reproducible). Golds are floats (ASDiv's leading answer number); typed
+golds are a later tightening (`docs/difg-corpus-plan.md`).
+
+---
+
 ## 4. The diagnostic harnesses (surfacing candidates)
 
 These answer different "what's next?" questions. The durable one is the bench; the rest are small,
@@ -160,6 +200,9 @@ inspectable slice, before they can bite on TEST.
 5. **`dev-train`**: tuned to 0 new wrongs, ideally +correct.
 6. **`dev-holdout`**: zero new-wrong **delta** (§3). If it fails, fix the gate's *logic* on `dev-train`,
    don't tune to the holdout items.
+6b. **Cross-corpus (ASDiv-DEV)** (§3b): snapshot before/after and `diff` — **0 BROKE, 0 DECL→WRONG** on
+   `projects/asdiv --slice dev`. This is the only gate that can see a shape GSM8K doesn't contain; run it
+   on any kernel/pack change. A new ASDiv wrong → the change is unsafe even if every GSM8K gate was clean.
 7. **Unit test**: synthetic only — *never* a GSM8K string in `test_reading.py` (the firewall: the parser
    is never tuned to the benchmark's individual items).
 8. **TEST look** (single, aggregate): precision must hold. A drop → **revert**.

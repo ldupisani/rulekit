@@ -20,6 +20,13 @@
 > Further GSM8K coverage would need exactly what constitution rules 1 & 2 forbid — word lists
 > and per-problem branches. **The next lever is a different corpus, not a deeper one.**
 >
+> **CROSS-CORPUS GATE IS NOW WIRED (2026-07-15).** `projects/asdiv/` is a standing project —
+> 2,305 grade-school problems by different authors, run through the *same* snapshot/diff ship
+> gate on packs mined only on GSM8K. Baseline: **ASDiv-DEV 82.2% precision, ~8 wrongs** (a
+> characterized worklist, not a target). It is the ONLY gate that can see a shape GSM8K doesn't
+> contain — run it on any kernel/pack change (§3b of methodology). Build once with
+> `uv run --with datasets python projects/asdiv/build_corpus.py`; ASDiv-TEST stays reserved.
+>
 > Full result: `docs/negative-results.md` → "The reading gap is a LONG TAIL".
 > The executed brief, preserved: `docs/reading-gap.md` (CLOSED — do not re-run).
 >

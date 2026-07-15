@@ -43,6 +43,7 @@ uv run pytest                                            # unit tests (synthetic
 uv run rulekit --project projects/gsm8k bench --slice suite|dev-train|dev-holdout
 uv run rulekit --project projects/gsm8k bench --slice dev-train --snapshot before.json
 uv run rulekit --project projects/gsm8k diff before.json after.json    # ship gate
+uv run rulekit --project projects/asdiv bench --slice dev --jobs 8      # CROSS-CORPUS gate (§3b) — packs mined only on GSM8K, run on ASDiv
 uv run rulekit --project projects/gsm8k stats                          # the mining worklists
 uv run rulekit --project projects/gsm8k lint [--category NAME]         # overlaps, blast radius
 uv run rulekit --project projects/gsm8k serve                          # visual designer
@@ -56,6 +57,10 @@ uv run rulekit --project projects/gsm8k serve                          # visual 
   deliberately withheld (holdout poison) — CHECK IT before admitting new vocabulary
 - `packs/arithmetic/` — pattern rules, ask shapes, synthesizers (the general solver families)
 - `projects/gsm8k/` — the benchmark project (data + snapshots gitignored; suite = curated)
+- `projects/asdiv/` — the CROSS-CORPUS precision gate: same packs, DIFFERENT authors' problems, run
+  through the same ship gate to catch confident-wrongs GSM8K structurally can't see (methodology §3b).
+  `build_corpus.py` (committed) defines the DEV/TEST firewall; data gitignored, rebuild once with
+  `uv run --with datasets python projects/asdiv/build_corpus.py`
 
 Mining scripts are throwaway: keep them in the session scratchpad, never the repo — recreate
 from `docs/methodology.md` §4.
