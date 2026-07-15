@@ -149,12 +149,19 @@ Two honesty caveats, both real:
 - ASDiv-DEV is now **inspectable**, so over time it can itself be overfit. That is why **ASDiv-TEST**
   (`--slice test`, one-look-only, ledgered) is reserved exactly as GSM8K-TEST is — it is the honest
   cross-corpus number, spent rarely.
-- ASDiv is still *a* fixed corpus. It is a **broader** net than GSM8K, not an infinite one; a third corpus
-  would widen it again. Cross-corpus is a defense-in-depth against §3a's ❌, not a repeal of it.
+- ASDiv is still *a* fixed corpus. It is a **broader** net than GSM8K, not an infinite one; each added
+  corpus widens it again. Cross-corpus is a defense-in-depth against §3a's ❌, not a repeal of it.
 
-The split is defined by the salt in `build_corpus.py` (committed **infrastructure** — a throwaway script
-would make the TEST firewall non-reproducible). Golds are floats (ASDiv's leading answer number); typed
-golds are a later tightening (`docs/difg-corpus-plan.md`).
+**Widening the net — `projects/svamp/` (the second gate).** SVAMP (Patel et al. 2021) is 1,000 problems
+built as **adversarial variations** of existing ones — same numbers, perturbed structure — explicitly to
+break models that pattern-match instead of read. Same shape, same firewall, same `bench --slice dev` +
+`diff` check; it is *harder* by design (baseline **80.0%** vs ASDiv's 89.4%), so it catches surface
+shortcuts the others don't. Run it alongside ASDiv on any kernel/pack change. More corpora = more of §3a's
+blind spot lit up; the marginal one is cheap (a `build_corpus.py` + a project.yaml).
+
+The split is defined by the salt in each `build_corpus.py` (committed **infrastructure** — a throwaway
+script would make the TEST firewall non-reproducible). Golds are floats (the corpus's leading answer
+number); typed golds are a later tightening (`docs/difg-corpus-plan.md`).
 
 ---
 
@@ -204,9 +211,10 @@ inspectable slice, before they can bite on TEST.
 5. **`dev-train`**: tuned to 0 new wrongs, ideally +correct.
 6. **`dev-holdout`**: zero new-wrong **delta** (§3). If it fails, fix the gate's *logic* on `dev-train`,
    don't tune to the holdout items.
-6b. **Cross-corpus (ASDiv-DEV)** (§3b): snapshot before/after and `diff` — **0 BROKE, 0 DECL→WRONG** on
-   `projects/asdiv --slice dev`. This is the only gate that can see a shape GSM8K doesn't contain; run it
-   on any kernel/pack change. A new ASDiv wrong → the change is unsafe even if every GSM8K gate was clean.
+6b. **Cross-corpus (ASDiv-DEV *and* SVAMP-DEV)** (§3b): snapshot before/after and `diff` — **0 BROKE,
+   0 DECL→WRONG** on `projects/asdiv --slice dev` AND `projects/svamp --slice dev`. These are the only
+   gates that can see a shape GSM8K doesn't contain; run both on any kernel/pack change. A new wrong on
+   either → the change is unsafe even if every GSM8K gate was clean (SVAMP is the harsher of the two).
 7. **Unit test**: synthetic only — *never* a GSM8K string in `test_reading.py` (the firewall: the parser
    is never tuned to the benchmark's individual items).
 8. **TEST look** (single, aggregate): precision must hold. A drop → **revert**.

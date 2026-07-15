@@ -44,6 +44,7 @@ uv run rulekit --project projects/gsm8k bench --slice suite|dev-train|dev-holdou
 uv run rulekit --project projects/gsm8k bench --slice dev-train --snapshot before.json
 uv run rulekit --project projects/gsm8k diff before.json after.json    # ship gate
 uv run rulekit --project projects/asdiv bench --slice dev --jobs 8      # CROSS-CORPUS gate (§3b) — packs mined only on GSM8K, run on ASDiv
+uv run rulekit --project projects/svamp bench --slice dev --jobs 8      # 2nd CROSS-CORPUS gate — SVAMP (adversarial variations, harder)
 uv run rulekit --project projects/gsm8k stats                          # the mining worklists
 uv run rulekit --project projects/gsm8k lint [--category NAME]         # overlaps, blast radius
 uv run rulekit --project projects/gsm8k serve                          # visual designer
@@ -61,6 +62,9 @@ uv run rulekit --project projects/gsm8k serve                          # visual 
   through the same ship gate to catch confident-wrongs GSM8K structurally can't see (methodology §3b).
   `build_corpus.py` (committed) defines the DEV/TEST firewall; data gitignored, rebuild once with
   `uv run --with datasets python projects/asdiv/build_corpus.py`
+- `projects/svamp/` — the SECOND cross-corpus gate: SVAMP (adversarial variations, built to punish
+  surface pattern-matching), a sharper precision check. Same shape as asdiv; rebuild once with
+  `uv run --with datasets python projects/svamp/build_corpus.py`
 
 Mining scripts are throwaway: keep them in the session scratchpad, never the repo — recreate
 from `docs/methodology.md` §4.

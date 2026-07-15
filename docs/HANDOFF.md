@@ -21,6 +21,12 @@
 > Further GSM8K coverage would need exactly what constitution rules 1 & 2 forbid — word lists
 > and per-problem branches. **The next lever is a different corpus, not a deeper one.**
 >
+> **SECOND CROSS-CORPUS GATE (2026-07-15): `projects/svamp/`** — SVAMP (1,000 adversarial-variation
+> problems, built to punish surface pattern-matching). Baseline **SVAMP-DEV 80.0%, 3 wrongs** — harder
+> than ASDiv by design, a sharper precision check. Same shape/firewall as asdiv; run both on any
+> kernel/pack change (methodology §3b, lifecycle 6b). Build:
+> `uv run --with datasets python projects/svamp/build_corpus.py`.
+>
 > **CROSS-CORPUS GATE IS NOW WIRED (2026-07-15).** `projects/asdiv/` is a standing project —
 > 2,305 grade-school problems by different authors, run through the *same* snapshot/diff ship
 > gate on packs mined only on GSM8K. Baseline: **ASDiv-DEV 86.0% precision, 6 wrongs** (was

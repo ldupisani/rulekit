@@ -1,0 +1,22 @@
+format: rulekit/project@1
+name: svamp
+# THE SECOND CROSS-CORPUS PRECISION GATE (sibling of projects/asdiv).
+#
+# Same packs as gsm8k — deliberately. SVAMP (Patel et al. 2021, "Are NLP Models
+# really able to Solve Simple Math Word Problems?") is 1,000 grade-school
+# arithmetic problems built as ADVERSARIAL VARIATIONS of existing ones — same
+# numbers, perturbed structure/question — specifically to break models that
+# pattern-match rather than read. The rules here were mined only on GSM8K and
+# have never seen SVAMP, so it is a second corpus the engine was not tuned on,
+# and a harder one: its whole design goal is to punish surface shortcuts, which
+# makes it a sharp precision check. See docs/methodology.md §3b.
+#
+# FIREWALL. train/test ARE the SVAMP DEV/TEST split cut by the salt in
+# build_corpus.py (its OWN split, not SVAMP's, so DEV is a controlled inspectable
+# pool and TEST stays reserved). `--slice dev` is the standing check; `--slice
+# test` is one-look-only and ledgered, exactly like gsm8k and asdiv.
+packs: [core-english, arithmetic, difg-mined]
+datasets:
+  svamp:
+    train: {parquet: data/svamp_dev.parquet, question: question, answer: answer}
+    test: {parquet: data/svamp_test.parquet, question: question, answer: answer}
