@@ -53,14 +53,18 @@ def test_how_much_combined_over_event_verb(full_registry):
     assert r.answer.value == 18
 
 
-def test_how_much_combined_declines_single_entity(full_registry):
-    # combined asserts plurality; one holder is not a valid combined ask —
-    # decline, never guess (the combined consumer's own guard)
+def test_how_much_combined_singular_subject_folds_the_one_holder(full_registry):
+    # A SINGULAR subject ("does SHE have in total") sums that ONE holder's own
+    # holdings — the aggregate marker is not a multi-holder combination there.
+    # (Was an over-conservative decline; the subject-gapping work surfaced real
+    # single-holder cases where the lone-holder answer is correct — see the
+    # combined consumer's `subject_number` branch.) A PLURAL subject still needs
+    # two holders (test_how_much_combined_declines_mixed_currency below).
     r = solve(
         "Priya earns 10 dollars. How much money does she have in total?",
         full_registry,
     )
-    assert r.answer.kind == "decline"
+    assert r.answer.value == 10
 
 
 def test_how_much_combined_declines_mixed_currency(full_registry):

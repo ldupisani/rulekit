@@ -5206,6 +5206,11 @@ asks:
       consumer: combined
       measure: "{item}"
       verb: "{verb}"
+      # a SINGULAR subject ("how much does HE have total") sums that ONE
+      # holder's own state+event holdings, not a multi-holder combination — the
+      # combined consumer reads this to accept a lone holder there (see its
+      # comment). Empty for a subjectless/plural ask, keeping the >=2 guard.
+      subject_number: "{who.number}"
 
   - id: ask/how-much-combined-in-all
     # mining candidate combined-ask-holder-surfaces (parked-pile reland):

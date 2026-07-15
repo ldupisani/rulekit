@@ -873,11 +873,23 @@ def _combined_holder_totals(
         entities = [
             e for e in entities if (e, singular) not in log.consumed_rate_keys
         ]
-        if len(entities) < 2:
+        if len(entities) < 2 and not (
+            len(entities) == 1 and query.get("subject_number") == "singular"
+        ):
             # "how many do THEY have ALTOGETHER" asserts plurality — a
             # one-entity sum usually means a mangled parse (the permissive
             # scan's Σ-over-one artifact), and declining costs no real
-            # coverage
+            # coverage.
+            #
+            # EXCEPT a SINGULAR subject ("how much does HE have total"): the
+            # aggregate marker there sums that ONE holder's OWN state+event
+            # holdings (Henry had $54 and got $2 -> $56), never a multi-holder
+            # combination, so exactly one holder is correct, not a mangled
+            # parse. The >=2 guard's missed-second-holder rationale is a PLURAL
+            # concern. Surfaced by the subject-gapping fix: with the second
+            # clause's subject correctly attributed to Henry (not the object
+            # 'toys'), the lucky two-holder sum that used to answer this
+            # collapses to the real single holder.
             return Answer(
                 "decline", None,
                 f"a combined ask needs at least two holders of {singular!r}; "

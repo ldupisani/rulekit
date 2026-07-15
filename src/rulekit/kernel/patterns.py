@@ -390,6 +390,13 @@ def _slot_value(unit: Unit, attr: str | None) -> str:
         # instead of an arbitrary same-lemma one. Mirrors `owner`/
         # `qualifier` above, one field over (increment 74's field).
         return unit.features.get("label", "") or ""
+    if attr == "number":
+        # grammatical number of a pronoun/noun slot ('singular'/'plural') — a
+        # combined ask's `subject_number: "{who.number}"` reads this to tell a
+        # SINGULAR subject ("how much does HE have total"; one holder IS the
+        # answer) from a PLURAL one ("...do THEY have altogether"; one holder
+        # means a missed second). A structural feature (senses.py), no lexicon.
+        return unit.features.get("number", "") or ""
     return _lemma_of(unit)
 
 

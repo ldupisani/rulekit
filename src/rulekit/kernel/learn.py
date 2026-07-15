@@ -33,6 +33,34 @@ def _bound(unit: Unit, need: str) -> Unit | None:
     return None
 
 
+def _followed_by_comparative(reading: Reading, noun: Unit, reg: Registry) -> bool:
+    """'7 years OLDER than Jessica' — a counted measure immediately followed by a
+    DIMENSION or AGE comparative ('older'/'younger'/'taller'/'longer'/...) is a
+    comparative DIFFERENCE (an offset relation), never an absolute holding of the
+    subject. The general comparative rules emit the Relation when they match;
+    where they don't — e.g. the comparative sits in a GAPPED conjoined clause
+    ('James is a brother and is 7 years older than Jessica'), which the
+    subject-gapping fix now binds a real subject to — the fold must still not mint
+    a bogus absolute Quantity ('7 years') from the difference. A safe DECLINE.
+
+    Scoped to age_comparative/dimension_comparative — the families that actually
+    form a 'N UNIT COMP than Y' magnitude difference — NEVER a general comparative
+    ('5 apples FASTER than Mia' is a spurious manner comparative that must leave
+    the ordinary '5 apples' fold intact; tests/test_mining_increment_68.py)."""
+    units = reading.units
+    try:
+        i = units.index(noun)
+    except ValueError:
+        return False
+    j = i + 1
+    if j >= len(units) or units[j].sense() != "comparative":
+        return False
+    word = units[j].features.get("lemma", units[j].features.get("fold", units[j].surface.lower()))
+    return reg.word_in_category(word, "age_comparative") or reg.word_in_category(
+        word, "dimension_comparative"
+    )
+
+
 def _has_distributive_determiner(reading: Reading, noun: Unit) -> bool:
     """'Each pen costs $3' — a quantifier ('each'/'every'/...) whose own
     `collection` obligation resolves to THIS noun is a distributive
@@ -1171,7 +1199,12 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
             # total == each); qty > 1 stays unbuilt (total-vs-each is
             # genuinely ambiguous there).
             flat_price_value = _flat_purchase_price(reading, dobj, reg)
-        if dobj_is_count:
+        if dobj_is_count and _followed_by_comparative(reading, dobj, reg):
+            # "7 years older than Jessica" — a comparative difference, not an
+            # absolute holding. Emit nothing here; the comparative rules own the
+            # Relation, and where they don't fire this stays a safe decline.
+            pass
+        elif dobj_is_count:
             # condensed counted noun ("3 apples") — a negated clause ("Tom
             # does NOT have 5 apples") declines this contribution entirely
             # rather than fold the stated count as a real holding.

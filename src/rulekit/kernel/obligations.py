@@ -48,6 +48,45 @@ def _unit_sense_class(unit: Unit) -> str | None:
     return sense
 
 
+_SUBJECT_GAP_SKIP = frozenset({"adverb", "auxiliary", "modal", "punct"})
+
+
+def _gapped_subject_antecedent(reading: Reading, verb: Unit) -> Unit | None:
+    """Subject gapping / conjunction reduction: 'Tom gave 3 apples TO SAM and
+    [] BOUGHT 5 apples' — the second coordinated verb has an ELIDED subject, a
+    zero anaphor whose antecedent is the subject of the FIRST coordinated verb
+    ('gave' -> Tom), never the nearest noun (the recipient 'Sam', which the
+    SYNTAX adjacency metric would otherwise pick). This is an anaphoric
+    resolution — the same kind the document loop runs for pronouns, scoped here
+    to the intra-clausal gap — not a distance arbitration.
+
+    Fires ONLY when `verb` is a BARE conjoined verb: the first non-function token
+    to its left is a coordinator ('and' / comma), with NO subject noun of its
+    own between them. An explicit second subject ('...and SAM ate') or any other
+    shape returns None, so ordinary subject resolution is completely untouched.
+    Returns the first verb's already-bound subject (the fixpoint discharges the
+    earlier clause's subject first), or None."""
+    units = reading.units
+    try:
+        i = units.index(verb)
+    except ValueError:
+        return None
+    j = i - 1
+    while j >= 0 and units[j].sense() in _SUBJECT_GAP_SKIP:
+        j -= 1
+    if j < 0 or not (units[j].sense() == "conjunction" or units[j].surface == ","):
+        return None  # not a bare-conjoined verb — an explicit subject or no coordinator
+    k = j - 1
+    while k >= 0 and units[k].sense() != "verb":
+        k -= 1
+    if k < 0:
+        return None
+    for ob in units[k].obligations():
+        if ob.need == "subject" and ob.met and isinstance(ob.target, Unit):
+            return ob.target
+    return None
+
+
 def _conjoined_sibling(reading: Reading, unit: Unit) -> Unit | None:
     """Another name conjoined to `unit`: '<name> and <name>' or a comma
     list '<name>, <name>, and <name>' — a comma between names IS the list
@@ -236,6 +275,19 @@ def _candidates(reading: Reading, holder: Unit, ob: Obligation, reg: Registry) -
         uncounted = [u for u in out if u.features.get("value_kind") != "count"]
         if uncounted:
             out = uncounted
+    # Subject gapping: a bare conjoined verb inherits the FIRST clause's subject
+    # anaphorically, overriding the nearest-noun adjustment below (which would
+    # mis-attribute it to the first clause's object). Tightly scoped — see
+    # `_gapped_subject_antecedent` — so no ordinary subject is affected.
+    if ob.need == "subject":
+        antecedent = _gapped_subject_antecedent(reading, holder)
+        if antecedent is not None:
+            # Authoritative: the anaphoric antecedent OVERRIDES the distance
+            # window that otherwise scoped `out` to the nearest clause (which is
+            # exactly why the first clause's subject was out of reach). The
+            # fixpoint in bind() discharges the earlier clause's subject before
+            # this one, so the antecedent is already resolved when this fires.
+            return [antecedent]
     # A conjoined name ("Frankie AND Carla played…") is not a lone subject —
     # the subject is the GROUP. Keep both conjuncts in play and FORBID
     # adjacency from arbitrating between them: the binding stays non-unique
