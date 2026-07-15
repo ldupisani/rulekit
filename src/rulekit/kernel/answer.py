@@ -1007,6 +1007,54 @@ def answer(
     ask, query, _match = matched
     consumer = query.get("consumer")
 
+    if consumer == "list-statistic":
+        # "What is the AVERAGE of 4, 8, 15, 16, and 42?" — read every number in
+        # the question and apply the named statistic. The statistic WORDS live in
+        # the statistic sub-categories (categories/statistics.yaml); this branch
+        # holds only the general math OPERATIONS (mean/median/max/min/product/
+        # mode), dispatched by which sub-category the word is in — no word list
+        # in Python (constitution rule 1). Definitive-or-decline.
+        stat = query.get("stat", "")
+        nums = [
+            float(u.features["value"])
+            for u in question.units
+            if u.features.get("value_kind") == "count"
+        ]
+        if not nums:
+            return Answer("decline", None, f"no numbers to take the {stat!r} of")
+        # register every operand in the arithmetic log — they ARE all inputs to
+        # the statistic, so value-accounting must see them consumed (else it
+        # vetoes the commit for "stated count reached no fact"). The sum is just
+        # the logging vehicle; the actual statistic is computed below.
+        evaluate(" + ".join(f"{x:g}" for x in nums), {}, log, source="list-statistic")
+        if reg.word_in_category(stat, "stat_mean"):
+            result = sum(nums) / len(nums)
+        elif reg.word_in_category(stat, "stat_median"):
+            s = sorted(nums)
+            n = len(s)
+            result = s[n // 2] if n % 2 else (s[n // 2 - 1] + s[n // 2]) / 2
+        elif reg.word_in_category(stat, "stat_max"):
+            result = max(nums)
+        elif reg.word_in_category(stat, "stat_min"):
+            result = min(nums)
+        elif reg.word_in_category(stat, "stat_product"):
+            result = 1.0
+            for x in nums:
+                result *= x
+        elif reg.word_in_category(stat, "stat_mode"):
+            from collections import Counter
+
+            counts = Counter(nums)
+            top = counts.most_common()
+            if len(top) > 1 and top[0][1] == top[1][1]:
+                return Answer("decline", None, f"{stat!r} is not unique")
+            result = top[0][0]
+        else:
+            return Answer("decline", None, f"unsupported statistic {stat!r}")
+        return Answer(
+            "number", round(result, 4), f"list {stat} of {len(nums)} values"
+        )
+
     if consumer == "geometry":
         # Formula-selection (difg geometry domain): "what is the AREA of a CIRCLE
         # with RADIUS 5?" -> look up the (shape, quantity) formula in the pack's

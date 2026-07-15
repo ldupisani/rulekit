@@ -1,0 +1,39 @@
+format: rulekit/rules@1
+# The difg list_statistic domain: "What is the AVERAGE of 4, 8, 15, 16, and 42?"
+rules: []
+asks:
+  - id: ask/list-statistic
+    # Matches the PREFIX "what is <statistic> of <first number>"; the variable-
+    # length number list is read from the question by the `list-statistic`
+    # consumer (match_ask does not require full consumption). The <statistic> slot
+    # gates on the parent `statistic` category (categories/statistics.yaml), so
+    # only a real statistic word triggers it. `first` (type: number) guarantees at
+    # least one operand and keeps the match specific.
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {slot: stat, cat: statistic}
+        - {lit: of}
+        - {slot: first, type: number}
+    resolves:
+      consumer: list-statistic
+      stat: "{stat}"
+
+  - id: ask/list-statistic-average
+    # 'average' is the AGGREGATE marker word (not a noun), so it cannot be a
+    # statistic-category member without a noun sense that broke the `average`
+    # consumer (mining increments 52/112). Matched here as a LITERAL and mapped
+    # to the mean — the only overloaded stat word; every other one is a clean
+    # category member above. Never a tie: the `average` consumer's ask needs an
+    # item noun + holders ("the average HEIGHT of the four people"), absent here.
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {lit: average}
+        - {lit: of}
+        - {slot: first, type: number}
+    resolves:
+      consumer: list-statistic
+      stat: mean

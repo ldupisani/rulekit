@@ -1,0 +1,14 @@
+format: rulekit/lexicon@1
+# Statistic names the difg list_statistic domain needs (average is already the
+# 'aggregate' word; maximum/minimum are adjectives — all reused via the statistic
+# sub-categories in categories/statistics.yaml, membership only needs the word in
+# the lexicon). These are the missing ones, as nouns.
+entries:
+  mean: {senses: [noun]}
+  median: {senses: [noun]}
+  mode: {senses: [noun]}
+  product: {senses: [noun]}
+  highest: {senses: [noun]}
+  lowest: {senses: [noun]}
+  max: {senses: [noun]}
+  min: {senses: [noun]}

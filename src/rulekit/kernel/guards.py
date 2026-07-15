@@ -124,7 +124,21 @@ def check(
             | {float(pc.value) for pc in store.by_kind(PercentChange)}
             if store is not None else set()
         )
+        # A consumer that reads the WHOLE question number list by construction
+        # (list-statistic: "the average of 4, 8, 15, 16, and 42") accounts for
+        # every count in the question — but only the FIRST binds an ask slot, so
+        # the per-count fact check below would wrongly veto the rest. Exempt the
+        # question reading for that consumer (the ask is re-derived, as
+        # answer-accounting does). Every arithmetic ask still checks its question.
+        exempt_question = None
+        if question is not None:
+            from .patterns import match_ask
+            qm = match_ask(question, reg)
+            if qm is not None and qm[1].get("consumer") == "list-statistic":
+                exempt_question = question
         for reading in readings:
+            if reading is exempt_question:
+                continue
             used = consumed_uids.get(reading.sentence_index, set())
             # a MUTABLE per-reading copy: each stated mention CLAIMS one fact of
             # its value, so a sentence supplying value V once cannot account for

@@ -1,0 +1,22 @@
+format: rulekit/categories@1
+# The difg list_statistic domain. ask/list-statistic gates its statistic slot on
+# the parent `statistic`; the `list-statistic` consumer (answer.py) dispatches on
+# the per-OPERATION sub-category (word_in_category is transitive through parents,
+# so a stat_mean member is also `statistic`). The WORDS live here (YAML); the
+# consumer holds only the general math operations (mean/median/max/min/product/
+# mode), never a word list (constitution rule 1). Synonyms group under one op.
+categories:
+  statistic: {parent: noun}
+  stat_mean: {parent: statistic}
+  stat_median: {parent: statistic}
+  stat_max: {parent: statistic}
+  stat_min: {parent: statistic}
+  stat_product: {parent: statistic}
+  stat_mode: {parent: statistic}
+members:
+  stat_mean: [mean]
+  stat_median: [median]
+  stat_max: [highest, maximum, max]
+  stat_min: [minimum, lowest, min]
+  stat_product: [product]
+  stat_mode: [mode]
