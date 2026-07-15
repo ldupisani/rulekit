@@ -152,12 +152,19 @@ Two honesty caveats, both real:
 - ASDiv is still *a* fixed corpus. It is a **broader** net than GSM8K, not an infinite one; each added
   corpus widens it again. Cross-corpus is a defense-in-depth against §3a's ❌, not a repeal of it.
 
-**Widening the net — `projects/svamp/` (the second gate).** SVAMP (Patel et al. 2021) is 1,000 problems
-built as **adversarial variations** of existing ones — same numbers, perturbed structure — explicitly to
-break models that pattern-match instead of read. Same shape, same firewall, same `bench --slice dev` +
-`diff` check; it is *harder* by design (baseline **80.0%** vs ASDiv's 89.4%), so it catches surface
-shortcuts the others don't. Run it alongside ASDiv on any kernel/pack change. More corpora = more of §3a's
-blind spot lit up; the marginal one is cheap (a `build_corpus.py` + a project.yaml).
+**Widening the net — four gates now, each a different angle.** All share the shape/firewall/`bench
+--slice dev` + `diff` check; adding one is cheap (a `build_corpus.py` + a project.yaml). More corpora = more
+of §3a's blind spot lit up.
+- `projects/asdiv/` — different authors, same task. Baseline **89.4%**.
+- `projects/svamp/` — **adversarial variations** (same numbers, perturbed structure) built to break
+  pattern-matchers. Baseline **80.0%** — the harshest in-domain check.
+- `projects/mawps/` — the classic MAWPS repository, a third arithmetic source. Baseline **100% (9/0)** —
+  low coverage, clean; confirms precision holds on yet another source.
+- `projects/scibench/` — a DIFFERENT kind of gate: **out-of-domain safety**. College physics/chemistry
+  with LaTeX and formulas — NOT the engine's task, so coverage is ~0 by design. It measures whether the
+  engine correctly **declines** material it cannot read rather than over-committing. Baseline: **0 commits
+  across 524** (all safe declines) — the "know what you don't know" property, held. A rising wrong count
+  here means the engine is guessing on text it does not understand.
 
 The split is defined by the salt in each `build_corpus.py` (committed **infrastructure** — a throwaway
 script would make the TEST firewall non-reproducible). Golds are floats (the corpus's leading answer
@@ -211,10 +218,11 @@ inspectable slice, before they can bite on TEST.
 5. **`dev-train`**: tuned to 0 new wrongs, ideally +correct.
 6. **`dev-holdout`**: zero new-wrong **delta** (§3). If it fails, fix the gate's *logic* on `dev-train`,
    don't tune to the holdout items.
-6b. **Cross-corpus (ASDiv-DEV *and* SVAMP-DEV)** (§3b): snapshot before/after and `diff` — **0 BROKE,
-   0 DECL→WRONG** on `projects/asdiv --slice dev` AND `projects/svamp --slice dev`. These are the only
-   gates that can see a shape GSM8K doesn't contain; run both on any kernel/pack change. A new wrong on
-   either → the change is unsafe even if every GSM8K gate was clean (SVAMP is the harsher of the two).
+6b. **Cross-corpus** (§3b): snapshot before/after and `diff` — **0 BROKE, 0 DECL→WRONG** on each of
+   `projects/{asdiv,svamp,mawps,scibench} --slice dev`. These are the only gates that can see a shape
+   GSM8K doesn't contain; run them on any kernel/pack change. A new wrong on ANY → the change is unsafe
+   even if every GSM8K gate was clean (SVAMP is the harshest in-domain; SciBench catches over-commitment
+   on out-of-domain text — it should stay at 0 commits).
 7. **Unit test**: synthetic only — *never* a GSM8K string in `test_reading.py` (the firewall: the parser
    is never tuned to the benchmark's individual items).
 8. **TEST look** (single, aggregate): precision must hold. A drop → **revert**.

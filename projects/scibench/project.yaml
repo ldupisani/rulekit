@@ -1,0 +1,18 @@
+format: rulekit/project@1
+name: scibench
+# THE OUT-OF-DOMAIN SAFETY GATE (a DIFFERENT kind of cross-corpus check).
+#
+# SciBench (Wang et al. 2023) is college-level science: physics/chemistry word
+# problems with LaTeX, formulas, and unit-bearing answers. This is NOT the
+# engine's task — it is grade-school arithmetic, mined on GSM8K — so coverage is
+# expected to be ~0. The point is PRECISION on OUT-OF-DOMAIN text: does the engine
+# correctly DECLINE material it cannot read, or does it over-commit confident
+# wrongs? A rising wrong count here means the engine is guessing on text it does
+# not understand — a distinct precision failure from the in-domain corpora, and
+# exactly the "know what you don't know" property a deterministic reader should
+# have. Same shape/firewall as asdiv/svamp/mawps.
+packs: [core-english, arithmetic, difg-mined]
+datasets:
+  scibench:
+    train: {parquet: data/scibench_dev.parquet, question: question, answer: answer}
+    test: {parquet: data/scibench_test.parquet, question: question, answer: answer}

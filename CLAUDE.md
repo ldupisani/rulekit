@@ -45,6 +45,8 @@ uv run rulekit --project projects/gsm8k bench --slice dev-train --snapshot befor
 uv run rulekit --project projects/gsm8k diff before.json after.json    # ship gate
 uv run rulekit --project projects/asdiv bench --slice dev --jobs 8      # CROSS-CORPUS gate (§3b) — packs mined only on GSM8K, run on ASDiv
 uv run rulekit --project projects/svamp bench --slice dev --jobs 8      # 2nd CROSS-CORPUS gate — SVAMP (adversarial variations, harder)
+uv run rulekit --project projects/mawps bench --slice dev --jobs 8      # 3rd — MAWPS (classic arithmetic repository)
+uv run rulekit --project projects/scibench bench --slice dev --jobs 8   # 4th — SciBench OUT-OF-DOMAIN safety (want 0 commits)
 uv run rulekit --project projects/gsm8k stats                          # the mining worklists
 uv run rulekit --project projects/gsm8k lint [--category NAME]         # overlaps, blast radius
 uv run rulekit --project projects/gsm8k serve                          # visual designer
@@ -62,9 +64,10 @@ uv run rulekit --project projects/gsm8k serve                          # visual 
   through the same ship gate to catch confident-wrongs GSM8K structurally can't see (methodology §3b).
   `build_corpus.py` (committed) defines the DEV/TEST firewall; data gitignored, rebuild once with
   `uv run --with datasets python projects/asdiv/build_corpus.py`
-- `projects/svamp/` — the SECOND cross-corpus gate: SVAMP (adversarial variations, built to punish
-  surface pattern-matching), a sharper precision check. Same shape as asdiv; rebuild once with
-  `uv run --with datasets python projects/svamp/build_corpus.py`
+- `projects/svamp/`, `projects/mawps/`, `projects/scibench/` — the 2nd–4th cross-corpus gates. SVAMP
+  (adversarial variations, harshest in-domain), MAWPS (classic arithmetic repository), and SciBench
+  (out-of-domain college science — an over-commitment/safety check, expected 0 commits). Same shape as
+  asdiv; each rebuilt once with `uv run --with datasets python projects/<name>/build_corpus.py`
 
 Mining scripts are throwaway: keep them in the session scratchpad, never the repo — recreate
 from `docs/methodology.md` §4.

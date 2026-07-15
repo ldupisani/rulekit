@@ -1,0 +1,13 @@
+format: rulekit/project@1
+name: mawps
+# THIRD CROSS-CORPUS PRECISION GATE (sibling of projects/asdiv, projects/svamp).
+#
+# MAWPS (Koncel-Kedziorski et al. 2016, "A Math Word Problem Repository") is the
+# classic aggregation of grade-school arithmetic word problems — a DIFFERENT
+# source again, same task. The packs were mined only on GSM8K, so it is another
+# corpus the engine was not tuned on. Same shape/firewall as asdiv/svamp.
+packs: [core-english, arithmetic, difg-mined]
+datasets:
+  mawps:
+    train: {parquet: data/mawps_dev.parquet, question: question, answer: answer}
+    test: {parquet: data/mawps_test.parquet, question: question, answer: answer}
