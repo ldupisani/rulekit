@@ -1035,6 +1035,44 @@ def answer(
             return Answer("decline", None, f"{op!r} not defined for the given inputs")
         return Answer("number", float(result), f"number-theory: {op} = {result}")
 
+    if consumer == "arithmetic":
+        # The difg `arithmetic` domain: a NAMED operator applied to one or two
+        # literal operands — "25 plus 17", "7 times 8", "2 to the power of 10",
+        # "the square root of 144", "17 percent of 240". The operator was chosen
+        # by the ask (rules/arithmetic-ops.yaml) and arrives as a structural
+        # opcode in query['op']; this branch holds only the general FUNCTIONS, no
+        # English word (constitution rule 1 — the operator words are YAML literals,
+        # never enumerated here). Definitive-or-decline: divide-by-zero and the
+        # square root of a negative decline rather than error.
+        import math
+
+        op = query.get("op", "")
+        try:
+            x = float(query.get("x"))
+            y_raw = query.get("y")
+            y = float(y_raw) if y_raw not in (None, "") else None
+        except (TypeError, ValueError):
+            return Answer("decline", None, f"{op!r} needs numeric inputs")
+        if op == "add":
+            result = x + y if y is not None else None
+        elif op == "subtract":
+            result = x - y if y is not None else None
+        elif op == "multiply":
+            result = x * y if y is not None else None
+        elif op == "divide":
+            result = x / y if y not in (None, 0.0) else None
+        elif op == "power":
+            result = x ** y if y is not None else None
+        elif op == "sqrt":
+            result = math.sqrt(x) if x >= 0 else None
+        elif op == "percent":
+            result = x * y if y is not None else None
+        else:
+            return Answer("decline", None, f"unsupported operation {op!r}")
+        if result is None:
+            return Answer("decline", None, f"{op!r} not defined for the given inputs")
+        return Answer("number", float(result), f"arithmetic: {op} = {result}")
+
     if consumer == "list-statistic":
         # "What is the AVERAGE of 4, 8, 15, 16, and 42?" — read every number in
         # the question and apply the named statistic. The statistic WORDS live in

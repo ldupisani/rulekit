@@ -22,8 +22,8 @@
 > difg reads a LOCAL difg checkout (`uv run python projects/difg/build_corpus.py`, no `--with datasets`).
 > The gate discipline paid off: this session's kernel fixes were BOUGHT by these corpora (below).
 >
-> ### FRONTIER 1 (active): difg domain-mining — `projects/difg/`, difg-DEV 0 → 17 correct, 0 wrong
-> The numeric slice (197 items, 58 domains). THREE domains solved via one reusable **template**
+> ### FRONTIER 1 (active): difg domain-mining — `projects/difg/`, difg-DEV 0 → 23 correct, 0 wrong
+> The numeric slice (197 items, 58 domains). FOUR domains solved via one reusable **template**
 > ("select an operation/formula by NAME via a category-gated ask, bind the operands, apply a general
 > operation" — words in YAML, operations in a consumer branch, no per-domain Python):
 > - **geometry** (188ac03, 11/12) — new pack kind `rulekit/geometry@1`: a declarative
@@ -31,9 +31,17 @@
 > - **list_statistic** (bb9e99d, 6 ops) — per-op sub-categories; consumer reads the whole question
 >   number list. Needed a scoped `value-accounting` exemption (only the first list number binds a slot).
 > - **number_theory** (bf22837, gcd/lcm/factorial/choose) — per-op sub-categories → math.gcd/lcm/etc.
+> - **arithmetic** (THIS SESSION, +6: plus/minus/times/divide/power/sqrt/percent) — the LOWEST-cost
+>   variant of the template: operator words are grammatical-skeleton LITERALS in the ask (or the
+>   multiplier/percent unit numbers.py already folds "N times"/"N percent" into), so ZERO new
+>   categories and only two admitted nouns ('power','root'); the `arithmetic` consumer dispatches on a
+>   structural OPCODE ("add"/"multiply"/…), never an English word. Gotchas learned: `{lit: the}` never
+>   matches (article is an auto-skipped sense); "square root" merges to one compound noun (match it as
+>   one literal `{lit: square root}`); the unknown-word guard blocks commit until 'power'/'root' are
+>   admitted. Byte-neutral on all 5 word-problem corpora + GSM8K dev, no TEST look.
 > Each domain is now just DATA (lexicon + categories + rules + a consumer branch). Next domains reuse it
-> verbatim: base_conversion, trigonometry, probability, arithmetic (plus/times/power/sqrt). Small
-> follow-ups: geometry's right-triangle ("legs 3 and 4" pattern), std-dev/variance/geometric-mean.
+> verbatim: base_conversion, trigonometry, probability (HETEROGENEOUS — 8 unrelated formulas, a §2 trap,
+> defer). Small follow-ups: geometry's right-triangle ("legs 3 and 4" pattern), std-dev/variance/geometric-mean.
 > IMPORTANT: difg reports **coverage, NEVER precision** (79.3% of it is difg's own example_queries) —
 > never quote its number beside the GSM8K/ASDiv precision numbers (docs/difg-corpus-plan.md).
 >
@@ -79,7 +87,7 @@ every increment through the gates).
 - GSM8K dev-train: **104 correct / 0 wrong** (100% precision) · dev-holdout: 40/0 · TEST 92.3% (12/1)
 - curated suite: 52/52 · pytest: **1068** · lint: 0 errors, 1 intended warning
 - Cross-corpus DEV (packs mined only on GSM8K): ASDiv 89.4% (42/5) · SVAMP 80.0% (12/3) ·
-  MAWPS 100% (9/0) · SciBench 0/0 (out-of-domain) · difg 17 correct/0 wrong (coverage, 3 domains)
+  MAWPS 100% (9/0) · SciBench 0/0 (out-of-domain) · difg 23 correct/0 wrong (coverage, 4 domains)
 - bench wall: dev-train 16.6s -> 9.0s (trace opt-out) -> 1.7s at `--jobs 12`.
   `--jobs` defaults to 1; spend it in the SERIAL integration tail, never in the
   implementers' gates (they already run concurrently). See the two infra notes below.

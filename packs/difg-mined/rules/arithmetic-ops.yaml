@@ -1,0 +1,104 @@
+format: rulekit/rules@1
+# The difg `arithmetic` domain: direct binary/unary arithmetic operation asks —
+# "What is 25 plus 17?", "What is 7 times 8?", "What is 2 to the power of 10?",
+# "What is the square root of 144?", "What is 17 percent of 240?". One general
+# class (a NAMED operator applied to one or two literal operands), the same
+# "select an operation, bind the operands, apply a general function" template as
+# geometry / list_statistic / number_theory.
+#
+# CONSTITUTION: the operator WORDS are grammatical skeleton, matched as literals
+# ('plus'/'minus'/'divided by'/'to the power of'/'square root of') — or, for
+# 'times'/'percent', as the multiplier/percent unit numbers.py already folds them
+# into ("7 times" -> one multiplier of value 7; "17 percent" -> a percent-flagged
+# fraction of value 0.17). NO new lexicon and NO new categories: literals match on
+# a token's fold regardless of admission, and the `multiplier`/`percent` slot
+# types already exist. The FUNCTIONS live in answer.py's `arithmetic` consumer,
+# selected by a structural opcode (op:), never by an English word — no word list
+# in Python. Both operands bind ask slots, so value-accounting is satisfied with
+# no exemption (as with number_theory).
+rules: []
+asks:
+  - id: ask/arith-plus
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {slot: x, type: number}
+        - {lit: plus}
+        - {slot: y, type: number}
+    resolves: {consumer: arithmetic, op: add, x: "{x.value}", y: "{y.value}"}
+
+  - id: ask/arith-minus
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {slot: x, type: number}
+        - {lit: minus}
+        - {slot: y, type: number}
+    resolves: {consumer: arithmetic, op: subtract, x: "{x.value}", y: "{y.value}"}
+
+  - id: ask/arith-times
+    # "7 times 8": numbers.py folds "7 times" to ONE multiplier unit (value 7), so
+    # the operator is never a standalone token — match the multiplier, then the
+    # trailing count.
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {slot: x, type: multiplier}
+        - {slot: y, type: number}
+    resolves: {consumer: arithmetic, op: multiply, x: "{x.value}", y: "{y.value}"}
+
+  - id: ask/arith-divide
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {slot: x, type: number}
+        - {lit: divided}
+        - {lit: by}
+        - {slot: y, type: number}
+    resolves: {consumer: arithmetic, op: divide, x: "{x.value}", y: "{y.value}"}
+
+  - id: ask/arith-power
+    # "2 to the power of 10" — the article 'the' is an auto-skipped sense
+    # (SKIPPABLE_SENSES), so it is NOT a literal here; 'to'/'of' (prepositions)
+    # are not skipped and anchor the shape.
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {slot: x, type: number}
+        - {lit: to}
+        - {lit: power}
+        - {lit: of}
+        - {slot: y, type: number}
+    resolves: {consumer: arithmetic, op: power, x: "{x.value}", y: "{y.value}"}
+
+  - id: ask/arith-sqrt
+    # unary: "the square root of 144" — one number, still fully consumed. Once
+    # 'root' is admitted (lexicon/arithmetic-ops.yaml), condense merges "square
+    # root" into ONE compound noun (fold "square root"), so it anchors the shape
+    # as a single literal; 'the' is auto-skipped (see arith-power).
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {lit: square root}
+        - {lit: of}
+        - {slot: x, type: number}
+    resolves: {consumer: arithmetic, op: sqrt, x: "{x.value}"}
+
+  - id: ask/arith-percent-of
+    # "17 percent of 240" / "15% of 200": numbers.py folds "N percent"/"N%" to a
+    # percent-flagged fraction (value already scaled by 0.01), so x.value is 0.17
+    # and the answer is simply x.value * y.value.
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {slot: x, type: percent}
+        - {lit: of}
+        - {slot: y, type: number}
+    resolves: {consumer: arithmetic, op: percent, x: "{x.value}", y: "{y.value}"}
