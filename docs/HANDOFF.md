@@ -58,8 +58,13 @@
 
 
 Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
-State below is committed through `bf22837` on `main` (github.com/ldupisani/rulekit;
+State below is committed through `a833fea` on `main` (github.com/ldupisani/rulekit;
 check `git status`/`git log origin/main..HEAD` before assuming push parity).
+GATE HAZARD (learned the hard way, a833fea): a stash-based before/after gate is
+UNSOUND when an increment adds NEW pack files — `git stash push -- <files>` does not
+revert UNTRACKED files, so the "before" baseline is contaminated and a real
+regression reads as NEUTRAL (this masked a 104→103 GSM8K drop). When an increment
+adds new files, `git add -A` first, or checkout the prior commit to snapshot before.
 
 ## Where the project is
 
