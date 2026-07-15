@@ -51,7 +51,13 @@
 >    no wrong). This LANDS the "GroupTotal consumer fix" that was parked as 0-SOLVED-not-landed. The
 >    entity-less (`unique-entity`) path then landed the same way (apple=629, flower=17408, +2 SOLVE,
 >    GSM8K byte-neutral) — same mechanism, shipped without a second look as covered by the first.
->    ASDiv-DEV is now **87.2%, 41 correct, 6 wrongs**.
+> 4. **container-contents + loose composition** (answer.py single-entity consumer) — "4 packs of
+>    crayons, each 10, plus 6 loose -> 46". A distinct ADDITIVE mechanism: the fold gives the holder's
+>    loose amount, and when the holder owns containers whose contents equal a GroupTotal (gated on
+>    G == holder's container-count x per-container rate, so it attributes the holder-less total AND
+>    rules out a restated whole via G != loose fold), it adds them. Solved a confident-WRONG (crayons
+>    was got=6), so wrong 6->5 AND correct +1. GSM8K byte-neutral; **2nd GSM8K TEST look SPENT — 11/1
+>    = 91.7% HELD** (no double-count on TEST). ASDiv-DEV is now **89.4%, 42 correct, 5 wrongs**.
 >
 > Full result: `docs/negative-results.md` → "The reading gap is a LONG TAIL".
 > The executed brief, preserved: `docs/reading-gap.md` (CLOSED — do not re-run).

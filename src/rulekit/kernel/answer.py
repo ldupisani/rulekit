@@ -1235,6 +1235,38 @@ def answer(
                 "decline", None,
                 f"no quantity known for {entity!r} of {singular!r} (ask {ask.id})",
             )
+        # container-contents + loose composition ("Beth has 4 packs of crayons.
+        # Each pack has 10 crayons. She also has 6 extra crayons. How many crayons
+        # altogether?" -> 4*10 + 6 = 46). The fold above gave the holder's LOOSE
+        # amount of the measure; if the holder ALSO owns containers whose contents
+        # are exactly a synthesized GroupTotal for this measure, that whole is a
+        # DISJOINT part the loose fold missed — add it. TIGHT on two counts: the
+        # group total must equal THIS holder's own container-count times the
+        # per-container rate (G == N*r), which both attributes the holder-less
+        # total to this holder and confirms it is the containers' contents; and it
+        # never fires when the loose fold already equals the whole (G == total),
+        # so a fold that already absorbed the container contents (via
+        # synth/container-contents, when the holder held no loose amount) is not
+        # double-counted. Only the container-contents family reaches here.
+        group_totals = [gt for gt in store.by_kind(GroupTotal) if gt.measure == singular]
+        if len(group_totals) == 1 and abs(group_totals[0].value - total) > 1e-9:
+            g = group_totals[0].value
+            for c_fact in store.by_kind(Quantity):
+                if c_fact.entity != entity or c_fact.measure == singular:
+                    continue
+                rates = [
+                    q for q in store.by_kind(Quantity)
+                    if q.entity == c_fact.measure and q.measure == singular
+                ]
+                if len(rates) == 1 and abs(c_fact.value * rates[0].value - g) < 1e-9:
+                    composed = evaluate(
+                        f"{total} + {g}", {}, log, source="container-plus-loose"
+                    )
+                    return Answer(
+                        "number", composed,
+                        f"{entity!r}'s loose {singular!r} ({total:g}) plus its "
+                        f"{c_fact.measure!r} contents (group total {g:g})",
+                    )
         return Answer("number", total, f"fold over {entity!r}/{singular!r}")
 
     if consumer == "single-entity-elided-measure":

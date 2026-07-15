@@ -82,6 +82,33 @@ def test_entity_less_ask_commits_the_group_total(reg):
     assert "group total" in (r.answer.reason or "")
 
 
+def test_container_contents_plus_loose_composes(reg):
+    """The composition. A holder owns containers of X (3 boxes x 8 markers = 24)
+    AND some loose X (5) — the total is the containers' contents plus the loose
+    amount (29), not either part alone."""
+    r = solve(
+        "Mia has 3 boxes of markers. Each box has 8 markers. She also has 5 loose "
+        "markers. How many markers does Mia have altogether?",
+        reg, tracing=False,
+    )
+    assert r.answer.committed, (r.answer.reason or "")
+    assert r.answer.value == 29.0
+    assert "loose" in (r.answer.reason or "")
+
+
+def test_container_contents_without_loose_is_not_double_counted(reg):
+    """THE DOUBLE-COUNT INVARIANT. With NO loose amount, the fold already is the
+    containers' contents (24) — the composition must NOT add the group total again.
+    The G == fold guard is what prevents it."""
+    r = solve(
+        "Mia has 3 boxes of markers. Each box has 8 markers. "
+        "How many markers does Mia have altogether?",
+        reg, tracing=False,
+    )
+    assert r.answer.committed, (r.answer.reason or "")
+    assert r.answer.value == 24.0
+
+
 def test_named_holder_with_unrelated_total_still_commits(reg):
     """THE TIGHTNESS INVARIANT. A GroupTotal for the asked measure coexists, but
     the named holder is NOT a counted container — its own fold is correct and must
