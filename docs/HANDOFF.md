@@ -4,7 +4,8 @@
 >
 > ### GSM8K IS DONE. The campaign CONVERGED — it did not fail.
 >
-> dev-train 39 → **103 at 100% precision**, zero wrongs ever. dev-holdout 40/0. TEST 91.7%.
+> dev-train 39 → **104 at 100% precision**, zero wrongs ever. dev-holdout 40/0. **TEST 92.3%** (12/1,
+> new high — the subject-gapping fix, commit 22623ee, solved a "gave X to Y and bought Z" TEST item).
 >
 > **Both halves of the engine are now measured and CLOSED.** The ask-shape seam is exhausted
 > (5 batches, +2 net). And as of 2026-07-14 the READING gap behind it — the last remaining
@@ -58,6 +59,13 @@
 >    rules out a restated whole via G != loose fold), it adds them. Solved a confident-WRONG (crayons
 >    was got=6), so wrong 6->5 AND correct +1. GSM8K byte-neutral; **2nd GSM8K TEST look SPENT — 11/1
 >    = 91.7% HELD** (no double-count on TEST). ASDiv-DEV is now **89.4%, 42 correct, 5 wrongs**.
+> 6. **subject gapping** (obligations.py, commit 22623ee) — the elided subject of a coordinated verb
+>    ("Tom gave 3 apples to Sam and [] bought 5") is an ANAPHOR to the first clause's subject (Tom),
+>    not the nearest noun (the recipient Sam). A core-binding fix the codebase had only ever worked
+>    around per-shape. Byte-neutral on all dev; **GSM8K TEST look SPENT — 12/1 = 92.3%** (new high,
+>    +1 SOLVED, 0 new wrongs). Guarded two exposures it surfaced: a dimension/age comparative is a
+>    difference not an absolute fold ("7 years older than"); a singular-subject aggregate sums the one
+>    holder ("how much does HE have total"). This is the deixis/anaphora insight, implemented properly.
 >
 > Full result: `docs/negative-results.md` → "The reading gap is a LONG TAIL".
 > The executed brief, preserved: `docs/reading-gap.md` (CLOSED — do not re-run).
