@@ -12,3 +12,10 @@ entries:
   volume: {senses: [noun], plural: volumes}
   circumference: {senses: [noun], plural: circumferences}
   diagonal: {senses: [noun], plural: diagonals}
+  # 'surface' as an ADJECTIVE so "surface area" merges (condense.py merge-
+  # attribute) into one quantity unit (lemma 'area', qualifier 'surface') the
+  # geometry_quantity slot matches; a sphere's plain 'area' IS its surface area,
+  # so the (sphere, area) formula answers both phrasings.
+  surface: {senses: [adjective]}
+  # NOTE: 'square' gains its shape NOUN sense in n-s.yaml (it already had the
+  # adjective there); it is a geometry_shape member in categories/geometry.yaml.

@@ -8,6 +8,6 @@ categories:
   geometry_quantity: {parent: noun}
   geometry_dimension: {parent: noun}
 members:
-  geometry_shape: [circle, rectangle, triangle, cube, sphere, cylinder]
+  geometry_shape: [circle, rectangle, triangle, square, cube, sphere, cylinder]
   geometry_quantity: [area, perimeter, volume, circumference, diagonal]
   geometry_dimension: [radius, length, width, side, base, height]

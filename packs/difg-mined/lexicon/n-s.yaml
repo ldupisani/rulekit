@@ -2453,6 +2453,8 @@ entries:
   square:
     senses:
     - adjective
+    - noun  # geometry shape ("a square with side N"); geometry_shape member
+    plural: squares
   stack:
     senses:
     - noun

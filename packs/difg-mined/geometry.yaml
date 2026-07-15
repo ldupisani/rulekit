@@ -14,3 +14,5 @@ formulas:
   - {shape: cube, quantity: volume, expr: "side**3"}
   - {shape: sphere, quantity: volume, expr: "(4.0 / 3.0) * pi * radius**3"}
   - {shape: cylinder, quantity: volume, expr: "pi * radius**2 * height"}
+  - {shape: sphere, quantity: area, expr: "4 * pi * radius**2"}
+  - {shape: square, quantity: area, expr: "side**2"}
