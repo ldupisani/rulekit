@@ -1007,6 +1007,34 @@ def answer(
     ask, query, _match = matched
     consumer = query.get("consumer")
 
+    if consumer == "number-theory":
+        # "What is the GCD of 24 and 36?" / "7 factorial" / "8 choose 3" — dispatch
+        # on the operation sub-category to a general math function. Integer inputs;
+        # both bind ask slots (value-accounting satisfied). Definitive-or-decline:
+        # a binary op with no second operand, or a non-integer input, declines.
+        import math
+
+        op = query.get("op", "")
+        try:
+            x = int(float(query.get("x")))
+            y_raw = query.get("y")
+            y = int(float(y_raw)) if y_raw not in (None, "") else None
+        except (TypeError, ValueError):
+            return Answer("decline", None, f"{op!r} needs integer inputs")
+        if reg.word_in_category(op, "op_gcd"):
+            result = math.gcd(x, y) if y is not None else None
+        elif reg.word_in_category(op, "op_lcm"):
+            result = math.lcm(x, y) if y is not None else None
+        elif reg.word_in_category(op, "op_factorial"):
+            result = math.factorial(x) if x >= 0 else None
+        elif reg.word_in_category(op, "op_choose"):
+            result = math.comb(x, y) if (y is not None and 0 <= y <= x) else None
+        else:
+            return Answer("decline", None, f"unsupported operation {op!r}")
+        if result is None:
+            return Answer("decline", None, f"{op!r} not defined for the given inputs")
+        return Answer("number", float(result), f"number-theory: {op} = {result}")
+
     if consumer == "list-statistic":
         # "What is the AVERAGE of 4, 8, 15, 16, and 42?" — read every number in
         # the question and apply the named statistic. The statistic WORDS live in

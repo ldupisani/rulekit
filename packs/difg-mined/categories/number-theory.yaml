@@ -1,0 +1,17 @@
+format: rulekit/categories@1
+# The difg number_theory domain. `number_op` gates the "what is the OP of X [and
+# Y]" ask (gcd/lcm/factorial); the per-operation sub-categories let the
+# `number-theory` consumer (answer.py) dispatch to the general math function
+# (math.gcd/lcm/factorial/comb) — the WORDS live here, the functions in the
+# consumer (constitution rule 1). 'choose' is a verb, so op_choose roots at verb.
+categories:
+  number_op: {parent: noun}
+  op_gcd: {parent: number_op}
+  op_lcm: {parent: number_op}
+  op_factorial: {parent: number_op}
+  op_choose: {parent: verb}
+members:
+  op_gcd: [gcd]
+  op_lcm: [lcm]
+  op_factorial: [factorial]
+  op_choose: [choose]

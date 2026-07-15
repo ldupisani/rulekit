@@ -1,0 +1,9 @@
+format: rulekit/lexicon@1
+# number_theory operation names (difg). gcd/lcm/factorial are nouns; 'choose' is
+# the binomial-coefficient verb ("8 choose 3"). The categories + consumer
+# (categories/number-theory.yaml, answer.py) do the domain work.
+entries:
+  gcd: {senses: [noun]}
+  lcm: {senses: [noun]}
+  factorial: {senses: [noun]}
+  choose: {senses: [verb]}

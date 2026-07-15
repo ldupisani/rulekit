@@ -1,0 +1,53 @@
+format: rulekit/rules@1
+# The difg number_theory domain: gcd/lcm (of X and Y), factorial (of X / X
+# factorial), choose (X choose Y).
+rules: []
+asks:
+  - id: ask/number-theory-of
+    # "What is the GCD of 24 and 36?" / "What is the factorial of 5?" — one or two
+    # integer inputs (the second optional, like geometry's second dimension). Both
+    # numbers bind ask slots, so value-accounting is satisfied without exemption.
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {slot: op, cat: number_op}
+        - {lit: of}
+        - {slot: x, type: number}
+        - opt:
+            - {lit: and}
+            - {slot: y, type: number}
+    resolves:
+      consumer: number-theory
+      op: "{op}"
+      x: "{x.value}"
+      y: "{y.value}"
+
+  - id: ask/number-theory-factorial-postfix
+    # "What is 7 factorial?" — "7 factorial" condenses to ONE counted-noun unit
+    # (merge-count, like "7 apples"), so it is matched as a single op_factorial
+    # slot and its count is the operand.
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {slot: xf, cat: op_factorial}
+    resolves:
+      consumer: number-theory
+      op: factorial
+      x: "{xf.value}"
+
+  - id: ask/number-theory-choose
+    # "What is 8 choose 3?"
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {slot: x, type: number}
+        - {lit: choose}
+        - {slot: y, type: number}
+    resolves:
+      consumer: number-theory
+      op: choose
+      x: "{x.value}"
+      y: "{y.value}"
