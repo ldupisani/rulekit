@@ -873,6 +873,40 @@ def _combined_holder_totals(
         entities = [
             e for e in entities if (e, singular) not in log.consumed_rate_keys
         ]
+        # SUPERORDINATE fallback (subtype-total over an aggregate ask): "how many
+        # pieces of litter did they pick up altogether?" — no entity holds the
+        # asked measure ('piece', or 'litter' itself) DIRECTLY, but that measure
+        # or its partitive substance is a pack-declared SUPERORDINATE whose
+        # subtypes (bottle, can) ARE held. The aggregate marker means "all of
+        # it", which for a superordinate is the subtype sum, so reuse the
+        # single-entity `_superordinate_total` per subtype-holder (verb-scoped,
+        # definitive-or-decline). This is the ONLY path that reads a superordinate
+        # through the combined/aggregate ask — `_superordinate_total` was
+        # otherwise reachable only from the single-entity consumer.
+        if not entities:
+            super_measure = next(
+                (c for c in (singular, measure_substance)
+                 if c and c in reg.superordinate_categories),
+                None,
+            )
+            if super_measure is not None:
+                members = set(reg.category_members.get(super_measure, ()))
+                sub_holders = sorted(
+                    {q.entity for q in store.by_kind(Quantity) if q.measure in members}
+                )
+                v = query.get("verb", "have")
+                verb_arg = None if (
+                    v in ("have", "be") or reg.word_in_category(v, "state")
+                ) else v
+                sub_totals: list[float] | None = []
+                for e in sub_holders:
+                    t = _superordinate_total(store, reg, e, super_measure, log, verb=verb_arg)
+                    if t is None:
+                        sub_totals = None
+                        break
+                    sub_totals.append(t)
+                if sub_totals:
+                    return sub_holders, sub_totals
         if len(entities) < 2 and not (
             len(entities) == 1 and query.get("subject_number") == "singular"
         ):

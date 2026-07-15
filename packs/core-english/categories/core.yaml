@@ -535,6 +535,19 @@ categories:
       Catriona have?"). Same structural-only definition; members (difg-
       mined-only) live in packs/difg-mined/categories/semantic.yaml. See
       child's note for the full mechanism.
+  litter:
+    parent: noun
+    superordinate: true
+    notes: >
+      sibling of 'child'/'toy'/'fish' (subtype-total-asks) — a discarded-item
+      superordinate whose subtypes are the container nouns a cleanup problem
+      counts as litter ("picked up 10 bottles and 8 cans... how many pieces of
+      litter altogether?" -> 18). Members 'bottle'/'can' are difg-mined-only
+      words, so (mirroring child/toy/fish above) they live in packs/difg-mined/
+      categories/semantic.yaml, and a core-english-only registry compiles with
+      this category simply empty (decline-safe). Same _superordinate_total guard
+      (fires only when EVERY held measure is a subtype and >=2 are held), so a
+      lone "5 bottles of water" never reads as a litter total.
   indefinite_article:
     parent: article
     notes: >

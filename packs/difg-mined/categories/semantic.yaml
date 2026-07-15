@@ -180,6 +180,9 @@ members:
   # the full mechanism). Each list is exhaustive over ONLY the subtype
   # words actually seen in dev-train evidence for this class — adding a
   # sibling subtype later is a separate, author-vetted data increment.
+  litter:
+  - bottle
+  - can
   child:
   - daughter
   - son
