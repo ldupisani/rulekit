@@ -22,18 +22,24 @@
 >
 > **CROSS-CORPUS GATE IS NOW WIRED (2026-07-15).** `projects/asdiv/` is a standing project —
 > 2,305 grade-school problems by different authors, run through the *same* snapshot/diff ship
-> gate on packs mined only on GSM8K. Baseline: **ASDiv-DEV 84.1% precision, 7 wrongs** (was
-> 82.2%/8; a characterized worklist, not a target). It is the ONLY gate that can see a shape
+> gate on packs mined only on GSM8K. Baseline: **ASDiv-DEV 86.0% precision, 6 wrongs** (was
+> 82.2%/8 at wiring; a characterized worklist, not a target). It is the ONLY gate that can see a shape
 > GSM8K doesn't contain — run it on any kernel/pack change (§3b of methodology). Build once with
 > `uv run --with datasets python projects/asdiv/build_corpus.py`; ASDiv-TEST stays reserved.
 >
-> **FIRST PAYOFF (2026-07-15):** the `distributive-container` guard in `answer.py`'s single-entity
-> consumer — a decline-only precision fix bought *entirely* by this gate (WRONG→DECL 1 on ASDiv,
-> byte-neutral on all 143 GSM8K dev items, no TEST look needed since it can never commit a wrong).
-> The counted-container/GroupTotal collision ("150 shelves × 15 books, how many books on the
-> shelves") was a confident-wrong invisible to every GSM8K gate. The *SOLVE* (prefer the group
-> total 2250, not just decline) remains a future enabler — it needs a distributive-role signal the
-> consumer can't read here, and rule 4 forbids guessing.
+> **PAYOFFS SO FAR (2026-07-15)** — two decline-only precision fixes bought *entirely* by this gate,
+> each byte-neutral on all 143 GSM8K dev items (both slices) and needing no TEST look (a guard that
+> only declines can never commit a wrong):
+> 1. `distributive-container` guard (answer.py single-entity consumer, commit 5537d10): the
+>    counted-container/GroupTotal collision ("150 shelves x 15 books, how many books on the
+>    shelves") committed the per-container rate. The *SOLVE* (prefer the group total 2250) stays a
+>    future enabler — needs a distributive-role signal, and rule 4 forbids guessing.
+> 2. `value-accounting` **multiplicity** (guards.py): the same-value blind spot — the guard kept a
+>    per-sentence *set* of fact values, so two mentions of one number ("nine miles ... and nine
+>    more") were both satisfied by a single fact. A Counter closes it: each mention claims one fact.
+>    Removed masked wrongs from two root causes (elided "N more"; a same-value conjunct dropped at
+>    fact-admit). The *SOLVEs* (read "N more" as an additive event; keep the dropped conjunct) stay
+>    on the worklist — both are reading-layer changes with double-count risk.
 >
 > Full result: `docs/negative-results.md` → "The reading gap is a LONG TAIL".
 > The executed brief, preserved: `docs/reading-gap.md` (CLOSED — do not re-run).

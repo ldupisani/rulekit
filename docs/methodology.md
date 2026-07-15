@@ -137,9 +137,10 @@ uv run rulekit --project projects/asdiv diff asdiv-before.json asdiv-after.json 
 ```
 
 **The bar is the same as everywhere: never move an item → wrong.** ASDiv-DEV carries a handful of wrongs
-(a characterized worklist, not a target — 82.2% → **84.1%** after the distributive-container guard, which
-this gate is what *bought*: a decline-only precision fix invisible to every GSM8K gate); the gate is that a
-change adds **no** ASDiv-DEV wrong (BROKE == 0, DECL→WRONG == 0). WRONG→DECL is a win. Run it on **any kernel or pack change**, not just GSM8K-motivated
+(a characterized worklist, not a target — 82.2% → **86.0%** across two decline-only precision fixes this
+gate *bought*, each invisible to every GSM8K gate: the distributive-container guard, then value-accounting
+multiplicity — a same-value blind spot where two mentions of one number were satisfied by a single fact);
+the gate is that a change adds **no** ASDiv-DEV wrong (BROKE == 0, DECL→WRONG == 0). WRONG→DECL is a win. Run it on **any kernel or pack change**, not just GSM8K-motivated
 ones — the whole point is that it catches what the GSM8K gates structurally cannot.
 
 Two honesty caveats, both real:

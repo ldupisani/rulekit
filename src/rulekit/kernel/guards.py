@@ -7,6 +7,7 @@ tune a guard but cannot reference rules; that entanglement class is banned.
 
 from __future__ import annotations
 
+from collections import Counter
 from dataclasses import dataclass
 
 from ..data.registry import Registry
@@ -29,10 +30,17 @@ def _enabled(reg: Registry, name: str) -> bool:
     return bool(cfg.get("enabled", True)) if cfg is not None else True
 
 
-def _fact_values_by_sentence(store: FactStore) -> dict[int, set[float]]:
+def _fact_values_by_sentence(store: FactStore) -> dict[int, "Counter[float]"]:
     """Numeric fields of admitted facts, keyed by originating sentence —
     a value is only accounted by facts its OWN sentence produced (a same
     number appearing in another sentence's fact must not mask an unread).
+
+    A MULTISET (Counter), not a set: N stated mentions of the same value need
+    N facts carrying it. "walked nine miles on Monday and nine more on Tuesday"
+    states 'nine' twice but the elided second mention forms no fact, so the
+    sentence supplies value 9 ONCE — the caller decrements per mention and vetoes
+    the unmatched second, exactly as the distinct-value sibling ("...seven more...")
+    already declines. Set membership masked this: a single 9 fact satisfied both.
 
     RATE, PRICE, GOAL, GROUP_TOTAL, DISCOUNT and PERCENT_CHANGE facts are
     excluded: a rate, price, goal, group total, discount, or percent-change
@@ -48,15 +56,15 @@ def _fact_values_by_sentence(store: FactStore) -> dict[int, set[float]]:
     goal/group-total/discount/percent-change values)."""
     from .model import Discount, Goal, GroupTotal, PercentChange, Price, Rate
 
-    out: dict[int, set[float]] = {}
+    out: dict[int, "Counter[float]"] = {}
     for fact in store.facts:
         if isinstance(fact, (Rate, Price, Goal, GroupTotal, Discount, PercentChange)):
             continue
-        values = out.setdefault(fact.provenance.sentence, set())
+        values = out.setdefault(fact.provenance.sentence, Counter())
         for field_name in _NUMERIC_FACT_FIELDS:
             v = getattr(fact, field_name, None)
             if isinstance(v, (int, float)):
-                values.add(float(v))
+                values[float(v)] += 1
     return out
 
 
@@ -118,7 +126,10 @@ def check(
         )
         for reading in readings:
             used = consumed_uids.get(reading.sentence_index, set())
-            own_values = fact_values.get(reading.sentence_index, set())
+            # a MUTABLE per-reading copy: each stated mention CLAIMS one fact of
+            # its value, so a sentence supplying value V once cannot account for
+            # two mentions of V (the same-value blind spot the Counter closes).
+            own_values = Counter(fact_values.get(reading.sentence_index, ()))
             for unit in reading.units:
                 kind = unit.features.get("value_kind")
                 if kind not in ("count", "multiplier", "fraction"):
@@ -127,13 +138,14 @@ def check(
                 # NO global arithmetic-log fallback here: the fold's own sum
                 # would mask a same-number unread from another sentence.
                 # Facts-from-own-sentence and explicit consumption are the
-                # only honest evidence.
-                if (
-                    unit.uid in used
-                    or unit.features.get("pattern_consumed")
-                    or value in own_values
-                    or (value in rate_values and log.uses_value(value))
-                ):
+                # only honest evidence. Independently-accounted mentions (a
+                # consumed uid, a pattern-consumed unit) never claim a fact slot.
+                if unit.uid in used or unit.features.get("pattern_consumed"):
+                    continue
+                if own_values.get(value, 0) > 0:
+                    own_values[value] -= 1
+                    continue
+                if value in rate_values and log.uses_value(value):
                     continue
                 where = (
                     "the question"
