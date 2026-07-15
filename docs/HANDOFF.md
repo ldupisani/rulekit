@@ -1,93 +1,64 @@
-# Session handoff — 2026-07-11
+# Session handoff — 2026-07-15
 
-> ## ➡ NEXT SESSION STARTS HERE: `docs/difg-corpus-plan.md`
+> ## ➡ NEXT SESSION: two live frontiers — difg domain-mining (active) and the typed-gold kernel change (the big lever)
 >
-> ### GSM8K IS DONE. The campaign CONVERGED — it did not fail.
+> ### GSM8K is DONE and stays a regression floor.
+> dev-train **104/0 (100%)**, dev-holdout **40/0**, curated suite **52/52**. **TEST 92.3%** (12/1,
+> the session high — the subject-gapping fix solved a "gave X to Y and bought Z" TEST item). Both
+> engine halves (ask-shape, reading) measured out as a LONG TAIL — GSM8K coverage is closed; the next
+> lever was always a DIFFERENT corpus. That is now the whole game. (Long-tail proof:
+> `docs/negative-results.md` → "The reading gap is a LONG TAIL"; brief `docs/reading-gap.md` CLOSED.)
 >
-> dev-train 39 → **104 at 100% precision**, zero wrongs ever. dev-holdout 40/0. **TEST 92.3%** (12/1,
-> new high — the subject-gapping fix, commit 22623ee, solved a "gave X to Y and bought Z" TEST item).
+> ### FIVE cross-corpus gates now stand (methodology §3b, lifecycle step 6b — run on ANY kernel/pack change)
+> Each is a `project.yaml` + a committed salt-split `build_corpus.py`; data gitignored, flows through
+> the existing harness with zero new code. Adding one is a two-file recipe.
+> - `projects/asdiv/` — different authors, same task. **89.4%** (42/5). A characterized worklist.
+> - `projects/svamp/` — **adversarial variations**, harshest in-domain. **80.0%** (12/3 — a fresh worklist).
+> - `projects/mawps/` — classic arithmetic repo. **100%** (9/0), low coverage.
+> - `projects/scibench/` — **out-of-domain** college science; expected ~0 commits. Baseline **0/0** —
+>   the "know what you don't know" safety check. A rising wrong = the engine guessing on unfamiliar text.
+> - `projects/difg/` — the multi-domain reasoning corpus (see below). A COVERAGE corpus, NOT precision.
+> The four HF-backed ones rebuild with `uv run --with datasets python projects/<name>/build_corpus.py`;
+> difg reads a LOCAL difg checkout (`uv run python projects/difg/build_corpus.py`, no `--with datasets`).
+> The gate discipline paid off: this session's kernel fixes were BOUGHT by these corpora (below).
 >
-> **Both halves of the engine are now measured and CLOSED.** The ask-shape seam is exhausted
-> (5 batches, +2 net). And as of 2026-07-14 the READING gap behind it — the last remaining
-> lever, the one this handoff used to point at — **measured out as a LONG TAIL**:
+> ### FRONTIER 1 (active): difg domain-mining — `projects/difg/`, difg-DEV 0 → 17 correct, 0 wrong
+> The numeric slice (197 items, 58 domains). THREE domains solved via one reusable **template**
+> ("select an operation/formula by NAME via a category-gated ask, bind the operands, apply a general
+> operation" — words in YAML, operations in a consumer branch, no per-domain Python):
+> - **geometry** (188ac03, 11/12) — new pack kind `rulekit/geometry@1`: a declarative
+>   `(shape,quantity)→expr` formula table; `geometry` consumer evaluates.
+> - **list_statistic** (bb9e99d, 6 ops) — per-op sub-categories; consumer reads the whole question
+>   number list. Needed a scoped `value-accounting` exemption (only the first list number binds a slot).
+> - **number_theory** (bf22837, gcd/lcm/factorial/choose) — per-op sub-categories → math.gcd/lcm/etc.
+> Each domain is now just DATA (lexicon + categories + rules + a consumer branch). Next domains reuse it
+> verbatim: base_conversion, trigonometry, probability, arithmetic (plus/times/power/sqrt). Small
+> follow-ups: geometry's right-triangle ("legs 3 and 4" pattern), std-dev/variance/geometric-mean.
+> IMPORTANT: difg reports **coverage, NEVER precision** (79.3% of it is difg's own example_queries) —
+> never quote its number beside the GSM8K/ASDiv precision numbers (docs/difg-corpus-plan.md).
 >
-> - **67% of it isn't a reading gap at all.** 670 of 1,002 items decline because the *ask
->   never fired*; reading their premises converts zero of them. Premise-blocked sub-pool: 332
->   — a **ceiling, not a yield**.
-> - **The structural clusters don't predict their own mechanism.** Under a null control the
->   three largest score **+0%, +1%, +1%**. The flagship `affine-comparative` family scores
->   **−3% on 14 items**. Largest coherent class in the whole corpus: **~18 items**.
+> ### FRONTIER 2 (the big lever): the TYPED-GOLD kernel change
+> 55.5% of difg answers are NON-numeric (quantity+unit, verdict, set, boolean, percent) and the kernel
+> STILL cannot commit them: `Answer.committed == (kind == "number")` (answer.py). No commit → no score →
+> no mining signal for physics/logic/clock/unit_conversion. Phase 0 (harness-side `TypedGold` + `_judge`)
+> is landed byte-neutral (commit 23ccbac); the KERNEL commit-path change is the deferred, higher-risk
+> work that unlocks the majority of difg. Plan + phases: `docs/difg-corpus-plan.md`.
 >
-> Further GSM8K coverage would need exactly what constitution rules 1 & 2 forbid — word lists
-> and per-problem branches. **The next lever is a different corpus, not a deeper one.**
+> ### Bought by the cross-corpus gates this session (all on main; details in commit messages)
+> distributive-container guard (5537d10) · value-accounting multiplicity (b49659e) · synth-GroupTotal
+> fix + consumer both paths (2439b82, ab878ad) · container+loose composition (6dffe56) · subject-gapping
+> anaphora (22623ee, GSM8K TEST 91.7%→92.3%) · superordinate-via-combined (1466051, "pieces of litter").
+> Every kernel change went through the full gate; two GSM8K TEST looks spent this session, both HELD/gained.
 >
-> **FOUR CROSS-CORPUS GATES NOW (2026-07-15)** — asdiv (89.4%), svamp (80.0%, adversarial, harshest),
-> mawps (100% 9/0, classic arithmetic), scibench (**out-of-domain** college science — 0 commits across
-> 524, the "know what you don't know" safety check). Each is a `project.yaml` + committed `build_corpus.py`
-> (salt-defined firewall); data gitignored, rebuild `uv run --with datasets python projects/<name>/
-> build_corpus.py`. Run all four `--slice dev` on any kernel/pack change (methodology §3b, lifecycle 6b).
-> Adding a corpus is a two-file recipe now. Fresh worklists: svamp 3 wrongs (mawps/scibench clean).
->
-> **CROSS-CORPUS GATE IS NOW WIRED (2026-07-15).** `projects/asdiv/` is a standing project —
-> 2,305 grade-school problems by different authors, run through the *same* snapshot/diff ship
-> gate on packs mined only on GSM8K. Baseline: **ASDiv-DEV 86.0% precision, 6 wrongs** (was
-> 82.2%/8 at wiring; a characterized worklist, not a target). It is the ONLY gate that can see a shape
-> GSM8K doesn't contain — run it on any kernel/pack change (§3b of methodology). Build once with
-> `uv run --with datasets python projects/asdiv/build_corpus.py`; ASDiv-TEST stays reserved.
->
-> **PAYOFFS SO FAR (2026-07-15)** — two decline-only precision fixes bought *entirely* by this gate,
-> each byte-neutral on all 143 GSM8K dev items (both slices) and needing no TEST look (a guard that
-> only declines can never commit a wrong):
-> 1. `distributive-container` guard (answer.py single-entity consumer, commit 5537d10): the
->    counted-container/GroupTotal collision ("150 shelves x 15 books, how many books on the
->    shelves") committed the per-container rate. The *SOLVE* (prefer the group total 2250) stays a
->    future enabler — needs a distributive-role signal, and rule 4 forbids guessing.
-> 2. `value-accounting` **multiplicity** (guards.py): the same-value blind spot — the guard kept a
->    per-sentence *set* of fact values, so two mentions of one number ("nine miles ... and nine
->    more") were both satisfied by a single fact. A Counter closes it: each mention claims one fact.
->    Removed masked wrongs from two root causes (elided "N more"; a same-value conjunct dropped at
->    fact-admit). The *SOLVEs* (read "N more" as an additive event; keep the dropped conjunct) stay
->    on the worklist — both are reading-layer changes with double-count risk.
-> 3. **synth GroupTotal fix + the GroupTotal consumer** (model/learn/saturate/answer.py) — a
->    COVERAGE increment, the first SOLVE the gate bought (ASDiv-DEV +1, the shelf 2250). The synth
->    conflated a distributive rate ("EACH shelf had 15 books") with a specific instance's count
->    ("bucket B has 30", "the first warehouse has 400"), deriving garbage totals (seed=90, box=800).
->    Fixed by persisting `Provenance.distributive` (learn.py tags the subject's `each`/`every`) and
->    gating saturate's rate on it — the garbage is gone, so the surviving totals are trustworthy and
->    answer.py's distributive-container path now COMMITS them instead of declining. GSM8K byte-neutral
->    (dev-train + dev-holdout); **GSM8K TEST look SPENT — 11/1 = 91.7% HELD** (new commit path fired
->    no wrong). This LANDS the "GroupTotal consumer fix" that was parked as 0-SOLVED-not-landed. The
->    entity-less (`unique-entity`) path then landed the same way (apple=629, flower=17408, +2 SOLVE,
->    GSM8K byte-neutral) — same mechanism, shipped without a second look as covered by the first.
-> 4. **container-contents + loose composition** (answer.py single-entity consumer) — "4 packs of
->    crayons, each 10, plus 6 loose -> 46". A distinct ADDITIVE mechanism: the fold gives the holder's
->    loose amount, and when the holder owns containers whose contents equal a GroupTotal (gated on
->    G == holder's container-count x per-container rate, so it attributes the holder-less total AND
->    rules out a restated whole via G != loose fold), it adds them. Solved a confident-WRONG (crayons
->    was got=6), so wrong 6->5 AND correct +1. GSM8K byte-neutral; **2nd GSM8K TEST look SPENT — 11/1
->    = 91.7% HELD** (no double-count on TEST). ASDiv-DEV is now **89.4%, 42 correct, 5 wrongs**.
-> 6. **subject gapping** (obligations.py, commit 22623ee) — the elided subject of a coordinated verb
->    ("Tom gave 3 apples to Sam and [] bought 5") is an ANAPHOR to the first clause's subject (Tom),
->    not the nearest noun (the recipient Sam). A core-binding fix the codebase had only ever worked
->    around per-shape. Byte-neutral on all dev; **GSM8K TEST look SPENT — 12/1 = 92.3%** (new high,
->    +1 SOLVED, 0 new wrongs). Guarded two exposures it surfaced: a dimension/age comparative is a
->    difference not an absolute fold ("7 years older than"); a singular-subject aggregate sums the one
->    holder ("how much does HE have total"). This is the deixis/anaphora insight, implemented properly.
->
-> Full result: `docs/negative-results.md` → "The reading gap is a LONG TAIL".
-> The executed brief, preserved: `docs/reading-gap.md` (CLOSED — do not re-run).
->
-> Already measured and CLOSED — do not restart (all in `docs/negative-results.md`):
-> ask-shape mining (5 batches, +2 net), the 481-item per-unit seam (mechanism already
-> exists), **composition** (`docs/composition.md` — ABANDONED at Phase 0, typed ceiling ~13),
-> the month/time seam (0 SOLVED); the GroupTotal *consumer* fix is now **LANDED** (2026-07-15,
-> PAYOFF 3 above — the synth was tightened so the totals are trustworthy, then the single-entity
-> container path commits them; the entity-less path is the remaining follow-up SOLVE),
-> **the reading gap** (long tail — the measurement above).
+> ### Closed — do NOT restart (all in `docs/negative-results.md`)
+> ask-shape mining (5 batches, +2 net) · the 481-item per-unit seam (mechanism exists) · composition
+> (`docs/composition.md`, abandoned Phase 0, typed ceiling ~13) · month/time seam (0 SOLVED) · the reading
+> gap (long tail) · the GroupTotal consumer fix (now LANDED, both paths) · the partitive-entity ask
+> (reverted — reintroduces confident-wrongs on event-laden problems; the ROOT was subject-gapping, fixed).
 
 
 Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
-State below is committed through `da76539` on `main` (github.com/ldupisani/rulekit;
+State below is committed through `bf22837` on `main` (github.com/ldupisani/rulekit;
 check `git status`/`git log origin/main..HEAD` before assuming push parity).
 
 ## Where the project is
@@ -99,10 +70,11 @@ targets, TEST gated behind a checkbox). The GSM8K mining campaign is in full
 swing under the constitution (no lexicon in Python, no per-problem parsing,
 every increment through the gates).
 
-**Current numbers (all verified at head):**
-- dev-train: **103 correct / 0 wrong** (3,772 items, 100% precision)
-- dev-holdout: 40 correct / 0 wrong (3,701 items)
-- curated suite: 52/52 · pytest: 998 · lint: 0 errors, 1 intended warning
+**Current numbers (all verified at head, commit bf22837):**
+- GSM8K dev-train: **104 correct / 0 wrong** (100% precision) · dev-holdout: 40/0 · TEST 92.3% (12/1)
+- curated suite: 52/52 · pytest: **1068** · lint: 0 errors, 1 intended warning
+- Cross-corpus DEV (packs mined only on GSM8K): ASDiv 89.4% (42/5) · SVAMP 80.0% (12/3) ·
+  MAWPS 100% (9/0) · SciBench 0/0 (out-of-domain) · difg 17 correct/0 wrong (coverage, 3 domains)
 - bench wall: dev-train 16.6s -> 9.0s (trace opt-out) -> 1.7s at `--jobs 12`.
   `--jobs` defaults to 1; spend it in the SERIAL integration tail, never in the
   implementers' gates (they already run concurrently). See the two infra notes below.

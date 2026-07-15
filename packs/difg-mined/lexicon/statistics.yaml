@@ -10,5 +10,6 @@ entries:
   product: {senses: [noun]}
   highest: {senses: [noun]}
   lowest: {senses: [noun]}
-  max: {senses: [noun]}
-  min: {senses: [noun]}
+  # NOT 'max'/'min': the abbreviations collide with the NAME "Max" (a common
+  # GSM8K/word-problem person), which broke "Max sold 24 candy bars" (dev-train
+  # b307b7dbc3c0). difg uses 'highest'/'minimum' anyway.

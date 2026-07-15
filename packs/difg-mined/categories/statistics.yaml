@@ -16,7 +16,7 @@ categories:
 members:
   stat_mean: [mean]
   stat_median: [median]
-  stat_max: [highest, maximum, max]
-  stat_min: [minimum, lowest, min]
+  stat_max: [highest, maximum]
+  stat_min: [minimum, lowest]
   stat_product: [product]
   stat_mode: [mode]
