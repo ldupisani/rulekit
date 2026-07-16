@@ -6019,9 +6019,26 @@ asks:
       measure: "{item}"
       verb: "{verb}"
 
-  # ask/is-membership MOVED to packs/logic/rules/logic.yaml (the FOLIO Phase 1
-  # increment): after the move no pack an arithmetic corpus loads produces a
-  # verdict, which is the containment proof for widening Answer.committed.
+  - id: ask/is-membership
+    # `at_start` marks this 'is' as the FRONTED AUXILIARY, and it is load-bearing
+    # grammar, not tuning. English inverts subject and auxiliary to ask ("IS Mary
+    # a student?"), so here the subject FOLLOWS the copula — which is the only
+    # reason `is <name> <noun>` reads a membership question at all.
+    #
+    # An EMBEDDED DECLARATIVE leaves the copula in place ("...that Jim is a
+    # Knicks player"), so its subject PRECEDES it. Unanchored, this shape floated
+    # onto that construction and bound the complement's proper-noun modifier
+    # ('Knicks') as the member, dropping the real subject entirely — answering
+    # about the Knicks a question asked about Jim. Two grammars, one token run.
+    match:
+      question:
+        - {lit: is, at_start: true}
+        - {slot: member, type: name}
+        - {slot: coll, type: noun}
+    resolves:
+      consumer: membership-verdict
+      member: "{member}"
+      collection: "{coll}"
 
   - id: ask/how-many-capacity
     # `verb, cat: purchase` (mining candidate capacity-ask-overmatch): the

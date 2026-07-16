@@ -215,21 +215,6 @@ class MatchToken(StrictModel):
     # identical (the "opt-in parameter, defaulted to old behavior" rule for any
     # change to a shared matcher).
     bare: bool = False
-    # OPT-IN phrase capture: this slot binds a RUN of units (greedy-longest,
-    # backtracking against the rest of the sequence; a FINAL span must reach
-    # the sentence end). Its value is the canonical phrase — per-token lemma
-    # normalization, articles/punct dropped, NOTHING looser: logic prose
-    # distinguishes classes one NP-internal word apart, and a phrase key is
-    # what keeps "opera singer" from answering for "singer" (patterns.
-    # _canonical_phrase, model.Atom). Defaults False: every existing slot
-    # binds exactly one unit, byte-identical.
-    span: bool = False
-    # OPT-IN, span-only: name a CATEGORY whose members may never be swallowed
-    # into the captured phrase (e.g. packs/logic's `negation`) — a polarity
-    # word hidden inside a phrase key would bury the negation where no
-    # consumer can see it, so the match FAILS instead. Category name only;
-    # the members live in the pack (constitution rule 1).
-    span_blocks: str | None = None
     # OPT-IN: this token may only match with NOTHING MEANINGFUL BEFORE IT — every
     # preceding unit must be skippable. A match sequence is contiguous (modulo
     # SKIPPABLE_SENSES) but FLOATS: match_all retries at every start offset, so a
@@ -257,17 +242,8 @@ class MatchToken(StrictModel):
         forms = [self.lit is not None, self.slot is not None, self.opt is not None]
         if sum(forms) != 1:
             raise ValueError("a match token is exactly one of lit/slot/opt")
-        if self.span:
-            # a span slot captures a RUN of units; it is gated by span_blocks
-            # (and by what the surrounding tokens demand), never by type/cat
-            if self.slot is None:
-                raise ValueError("`span` only qualifies a slot")
-            if self.type is not None or self.cat is not None or self.bare:
-                raise ValueError("a span slot takes no type/cat/bare")
-        elif self.slot is not None and (self.type is None) == (self.cat is None):
+        if self.slot is not None and (self.type is None) == (self.cat is None):
             raise ValueError("a slot needs exactly one of type/cat")
-        if self.span_blocks is not None and not self.span:
-            raise ValueError("`span_blocks` only qualifies a span slot")
         if self.bare and self.slot is None:
             raise ValueError("`bare` only qualifies a slot")
         if self.bare and self.type in ("possessed", "qualified"):
@@ -340,7 +316,7 @@ class FactEmit(StrictModel):
         "quantity", "relation", "membership", "subset", "predication",
         "before", "fraction_quantity", "rest_quantity", "partition_quantity",
         "ratio_quantity", "goal", "group_total", "rate", "discount",
-        "percent_change", "atom", "quantified",
+        "percent_change",
     ]
     # remaining fields are fact-kind specific; templated strings "{slot}" or
     # expressions evaluated by the safe evaluator.

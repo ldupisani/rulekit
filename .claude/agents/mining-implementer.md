@@ -92,7 +92,7 @@ uv run rulekit --project projects/gsm8k lint
   word (or one tight family) per increment so a TEST drop identifies its
   culprit; a "vocab batch" brief should be deferred, not implemented.
 - pytest: all pass, and the test count must be ≥ your step-2 baseline count.
-- suite: `correct 48`, `wrong 0`.
+- suite: `correct 52`, `wrong 0`.
 - lint: 0 errors (exactly one intended warning is known-good).
 - Save each command's output verbatim; it becomes your `gate_evidence`.
 

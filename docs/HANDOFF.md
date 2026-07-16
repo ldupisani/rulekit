@@ -4,33 +4,6 @@ Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touchi
 State is committed through `95571e6` on `main` (github.com/ldupisani/rulekit).
 Always check `git status` / `git log origin/main..HEAD` before assuming push parity.
 
-> ## ⚡ THE FOLIO CAMPAIGN OPENED (this session, after `95571e6`) — folio is a MINING TARGET now.
-> **Phase 0**: story-grouped internal holdout (`group:` dataset column; folio dev-train 494 /
-> dev-holdout 425, 0 stories straddling; gsm8k byte-identical) + a full DEV taxonomy
-> (scratchpad `PHASE0A-FINDINGS.md`): the ground-fact class measured **0 even at the permissive
-> vocab ceiling**; the buyer is the **quantifier-only syllogism class** (71 items, T28/F5/U38).
-> **Phase 1 landed**: `Answer.committed` admits verdict yes/no ('undetermined' NEVER); both judge
-> paths flip verdict-vs-non-verdict-gold to WRONG (the old ⚠ REVISIT honored); guards split
-> per answer kind (verdicts get the supported-fragment guard — monotonicity, not value-accounting);
-> `packs/logic` (folio-ONLY — pack scoping is the cross-corpus containment proof): span-capture
-> phrase-keyed extraction (`span:`/`span_blocks:` MatchToken flags), Horn synth
-> (universal-instantiation + chain), embedded-declarative asks; `ask/is-membership` MOVED there
-> (the arithmetic corpora now have ZERO verdict producers — that is the proof). The 4 curated
-> membership suite items moved to pytest under the logic registry → **suite is 48/48 now**.
-> folio dev **1 correct / 0 wrong** (the essayist syllogism, derivation chain in the answer
-> reason, null controls pass: answer moves with subject AND predicate). pytest 1231.
-> **Named next increments**: (1) the 'citizens' plural-head family — 4 items, needs `plural:` on
-> difg-mined's GLOBAL 'citizen' entry, so it must budget a gsm8k TEST look (the containment proof
-> does not cover global lexicon changes); (2) more syllogism surface forms ('any' is an ARTICLE
-> sense so `{lit: any}` can never match — needs a sense, measured carefully); (3) quantified
-> conclusions (counterexample refutation, 13+16 items, False-heavy).
-> **Traps found and pinned**: 'true' must be an ADJECTIVE (as a noun, ask/is-membership parses the
-> wrapper itself — an answer invariant to its own question); the generic SVO fold DROPS QUALIFIERS
-> and mints junk from passives, so `logic-verdict` reads ONLY phrase-keyed `Atom` facts; the
-> clause pre-split erases its boundary word, so any split story vetoes verdicts (a promoted
-> disjunct reads as an asserted fact); a bound quantifier is ATTACHED, not UNDERSTOOD (only
-> negators get the obligation-met exemption in the fragment guard).
-
 > ## ➡ FOLIO IS BUILT, BENCHED AND LANDED — **919 DEV items, 0 correct / 0 WRONG** (`f7b059c`).
 > ## **It caught a real confident-answer on its first run**; the fix took TWO passes (`b1db917` was the WITNESS fix, `b5655ca` the class).
 > ## Frontier 2 is REOPENED but is NOT a `committed` widening: see "what FOLIO actually buys".
