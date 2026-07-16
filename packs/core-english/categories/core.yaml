@@ -62,6 +62,29 @@ categories:
       forms), not a member of it: an ask needs the base form only, never
       'taller'/'shorter' etc. Most members are difg-mined words; 'small'/
       'large' are core-english, tagged in this file's own `members:`.
+  pool_pronoun:
+    parent: pronoun
+    notes: >
+      A pronoun that DENOTES A POOL — "she lost one fourth OF IT", "half OF
+      THEM". Gates arithmetic/fraction-of-pronoun, whose synthesizer sizes the
+      fraction against the definite pool.
+
+      It exists to keep that rule off the POSSESSIVE determiners, which sense
+      as plain 'pronoun' too and are a different construction: in "Ben gave
+      half of HIS marbles", 'his' does not denote the pool — it modifies
+      'marbles' and names a possessor whose holdings are the intended base.
+      Ungated, the rule read "half of his marbles" as half of THE POOL and, in
+      a two-holder document, sized Ben's half against Ben's 18 PLUS John's 17.
+
+      MEMBERSHIP IS MEASURED, not intuited (all six corpora, the word after
+      "<fraction> of"): them 100 · it 23 are pool-denoting; his 78 · her 73 ·
+      its 18 · their 15 are possessive and deliberately EXCLUDED. 'her' is the
+      one to think twice about — it is a possessive determiner here ("half of
+      her cookies"), never the object pronoun.
+
+      Members split by LEXICON HOME, not by taste: 'it' is core-english and is
+      tagged in this file's own `members:`; 'them' is a difg-mined word, so it
+      is tagged there (a core-only registry must still compile).
   currency:
     parent: noun
     interchangeable: true
@@ -644,6 +667,7 @@ categories:
 members:
   currency: [dollar]
   partitive: [of]
+  pool_pronoun: [it]
   remnant_adj: [left]
   animal: [dog, cat, fish, bird, rabbit, hamster]
   pet: [dog, cat, hamster]

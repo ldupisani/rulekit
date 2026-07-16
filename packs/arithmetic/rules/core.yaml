@@ -2960,16 +2960,28 @@ rules:
   - id: arithmetic/fraction-of-pronoun
     phase: read
     description: >
-      "She spent one-half OF IT" — the pronoun denotes the pool itself; the
+      "She spent one-half OF IT" — the pronoun DENOTES THE POOL itself; the
       synthesizer resolves it by the unique-measure principle (one measure
       in play, else unresolved and the guard declines).
+
+      `cat: pool_pronoun` (not `type: pronoun`) is load-bearing, and the
+      category's own notes carry the measurement. A POSSESSIVE determiner
+      senses as 'pronoun' too but is a DIFFERENT CONSTRUCTION: in "Ben gave
+      half of HIS marbles", 'his' does not denote the pool — it modifies
+      'marbles' and names a possessor whose holdings are the intended base.
+      Ungated, this rule matched it and the synth sized `half` against the
+      whole pool, so with two holders Ben gave away half of Ben's 18 PLUS
+      John's 17. A possessive fraction needs a rule that BINDS THE POSSESSOR;
+      until one exists the fraction stays unconsumed and the value-accounting
+      guard declines, which is the honest outcome and costs nothing (all 78
+      GSM8K dev-train and 76 dev-holdout possessive items already declined).
     match:
       sentence:
         - {slot: who, type: name}
         - {slot: verb, type: verb}
         - {slot: f, type: fraction}
         - {lit: of}
-        - {slot: ref, type: pronoun}
+        - {slot: ref, cat: pool_pronoun}
     consumes: [f]
     emits:
       - fact: fraction_quantity
