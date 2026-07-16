@@ -1322,3 +1322,69 @@ Fixed by gating the slot to a MEASURED `pool_pronoun` category (`a874887`).
    dev-train + 76 dev-holdout 'fraction of <possessive>' items ALL already
    declined, so restricting the rule could not break anything. Do that count
    FIRST — it decides guard-vs-capability before a line is written.
+
+## Start-state: "no events means decline" is WRONG; the predicate is a narrated change (2026-07-16)
+
+The last two start-state confident-wrongs ("Rachel picked 3 apples FROM HER TREE.
+Now the tree has 4. How many did the tree have to begin with?" → 4, gold 7) had
+TWO independent defects, and only fixing both stops the guessing:
+
+1. **The base asks ignored the marker.** `ask/how-many-entity-common-noun` and
+   `ask/how-many-in-place` matched those questions and answered the CURRENT state
+   — the exact bug `rules/start-state.yaml` was created to fix for "in the
+   beginning", one shape over. A file that fixes a bug for one shape is a
+   standing invitation to check the siblings.
+2. **Consuming the marker is not enough.** Inverting *nothing* returns the same
+   wrong answer — which that file explicitly warned about. The tree holds no
+   event (the pick folds as rachel/apple/3), so `invert_events` is a no-op.
+
+### The guard that was tried, and why the suite rejected it
+
+The obvious predicate — **`invert_events` and no events → decline** — passed
+every corpus and broke a pinned unit test:
+
+```python
+"Tomas has 30 red grapes. Tomas has 6 green grapes.
+ How many red grapes did Tomas have in the beginning?"   → 30
+```
+
+**A document that narrates NO change has start == current, so answering IS
+correct.** "The question presupposes a change" is true of the *question* and not
+of the *document*.
+
+The right predicate is that an event of the same MEASURE exists on **another
+entity** — a change WAS narrated and this entity's fold never received it:
+
+| case | events on entity | same-measure events elsewhere | correct |
+|---|---|---|---|
+| Tomas (nothing happened) | — | — | answer 30 |
+| Rachel / Maria (source transfer) | — | `picked 3 apples` | **decline** |
+| Paco (own events) | `ate 19` | — | invert → 54 |
+
+Deliberately conservative: it also declines a genuinely irrelevant foreign event
+("Mary ate 2 apples" while asking Tom's start). Without source-reading the two
+are indistinguishable, and 333 of 336 marker items already decline, so the
+coverage cost is ~0.
+
+### The lessons
+
+1. **THE SECOND TIME IN ONE SESSION A GUARD PASSED ALL SIX CORPORA AND WAS
+   WRONG** (the other: the holder-count fraction guard). Both were caught only by
+   a unit test encoding a contract no corpus phrases. **"All gates green" is not
+   a verdict on a shared-kernel change** — the corpora are a sample, the tests are
+   the specification.
+2. **A latent confident-wrong is worth pinning the moment you walk past it.** The
+   `place_fallback_entity` branch calls `_entity_total` WITHOUT `invert_events`,
+   so an in-place start-state ask binding that field would answer the fallback
+   entity's CURRENT total under the start-state name. Unreachable today — which
+   is exactly why a comment would not have held. `not invert` mirrors the
+   superordinate fallback beside it.
+3. **Measure the marker's TEST exposure before choosing which to admit.** 'to
+   begin with'/'to start with' have ZERO GSM8K TEST occurrences; 'originally'
+   (4), 'in the beginning' (2), 'initially' (2), 'at first' (1) do. Landing the
+   two with no exposure bought both wrongs at no TEST risk — the trig 'tan'/'cos'
+   discipline, applied to markers.
+4. 336 marker items across six corpora, **333 already decline**. The family is
+   unread, not half-read — so any new shape here can only turn a decline into a
+   decline or a WRONG into a decline. That measurement is what made this a
+   precision increment rather than a gamble.

@@ -1,7 +1,7 @@
 # Session handoff — 2026-07-16
 
 Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
-State is committed through `a874887` on `main` (github.com/ldupisani/rulekit).
+State is committed through `89dde5a` on `main` (github.com/ldupisani/rulekit).
 Always check `git status` / `git log origin/main..HEAD` before assuming push parity.
 
 > ## ➡ FOLIO IS BUILT, BENCHED AND LANDED — **919 DEV items, 0 correct / 0 WRONG** (`f7b059c`).
@@ -19,17 +19,18 @@ Always check `git status` / `git log origin/main..HEAD` before assuming push par
    serializable`), so the `rulekit diff` ship gate was silently unavailable for difg — the ACTIVE
    frontier — and folio. Fixed in `d0a818e`; GSM8K snapshots verified byte-identical.
 
-### ➡ THE PRECISION WORKLIST — all 5 remaining confident-wrongs are ASDiv, and they are TRIAGED
+### ➡ THE PRECISION WORKLIST — **2 confident-wrongs left in the whole system**, and 1 is UNWINNABLE
 
 **"The hard tail" was FALSE** (this file said so; reading the items refuted it — full table in
-`docs/negative-results.md` → "The 7 confident-wrongs triaged"). SVAMP's two were ONE mechanism and
-are FIXED (`2b8430b`, → **100% precision**). These 5 are what is left in the whole system —
-GSM8K 104/0, MAWPS 9/0, difg 44/0, folio 0/0 and SciBench 0/0 have none.
+`docs/negative-results.md` → "The 7 confident-wrongs triaged"). **Five of the seven are now gone**
+(`2b8430b` SVAMP ×2 → 100% · `a874887` ASDiv ×1 · `89dde5a` ASDiv ×2), NONE of which needed a TEST
+look and none of which cost a single correct answer. GSM8K 104/0, SVAMP 13/0, MAWPS 9/0, difg 44/0,
+folio 0/0 and SciBench 0/0 have no wrongs at all; the 2 below are the entire remaining worklist.
 
 | item | exp → got | class | next |
 |---|---|---|---|
-| "apples **to begin with**" | 7→4 | **start-state** | known class (`d46484d`); commits the CURRENT state |
-| "fish **to start with**" | 19→3 | **start-state** | same class — brief the two together |
+| ~~"apples **to begin with**"~~ | ~~7→4~~ | start-state | **DECLINES** `89dde5a` — 7 needs source-marked transfer, still unbuilt |
+| ~~"fish **to start with**"~~ | ~~19→3~~ | start-state | **DECLINES** `89dde5a` — same |
 | ~~Ben/John marbles~~ | ~~17→16.5~~ | possessive fraction | **FIXED** `a874887` — the brief below was WRONG about the mechanism |
 | "9 books **and 1 book**" | 170→155 | conjunct dobj | first-conjunct-only, said to be CLOSED for purchase verbs — an intervening PP re-opens it |
 | London/Blair age | 6→11 | **POISONED GOLD** | ⚠ **UNWINNABLE — never chase** |
@@ -464,7 +465,7 @@ new code. **Adding one is a two-file recipe.**
 | Project | Role | Baseline |
 |---|---|---|
 | `projects/gsm8k/` | the mined corpus; now a regression floor | 104/0 dev-train, TEST 92.3% |
-| `projects/asdiv/` | different authors, same task | **91.5%** (43/4) — the only corpus with wrongs left |
+| `projects/asdiv/` | different authors, same task | **95.6%** (43/2) — the only corpus with wrongs left |
 | `projects/svamp/` | **adversarial variations**, harshest in-domain | **100%** (13/0) — self-comparison guard `2b8430b` |
 | `projects/mawps/` | classic arithmetic repo | **100%** (9/0), low coverage |
 | `projects/scibench/` | **out-of-domain** college science; safety check | **0/0** — a rising wrong = the engine guessing |
@@ -484,8 +485,8 @@ synth-GroupTotal fix + consumer both paths (`2439b82`, `ab878ad`) · container+l
 
 - GSM8K dev-train **104/0** · dev-holdout **40/0** · TEST **92.3%** (12/1, unchanged — no look spent
   this session; see the proof under the FOLIO section) · curated suite **52/52**
-- pytest **1196** · lint: 0 errors, 1 intended warning (fraction-of-remnant subsumption — documentation, not a bug)
-- Cross-corpus DEV: **ASDiv 91.5% (43/4)** · **SVAMP 100% (13/0)** · MAWPS 100% (9/0) · SciBench 0/0 ·
+- pytest **1200** · lint: 0 errors, 1 intended warning (fraction-of-remnant subsumption — documentation, not a bug)
+- Cross-corpus DEV: **ASDiv 95.6% (43/2)** · **SVAMP 100% (13/0)** · MAWPS 100% (9/0) · SciBench 0/0 ·
   difg 44/0 of 342 (typed gold) · **folio 0/0 of 919** (typed gold)
 - bench wall: dev-train 16.6s → 9.0s (trace opt-out) → 1.7s at `--jobs 12`. `--jobs` defaults to 1;
   spend it in the SERIAL integration tail, never in the implementers' gates (they already run concurrently).
