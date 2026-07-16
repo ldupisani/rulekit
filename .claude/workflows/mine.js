@@ -455,6 +455,14 @@ Return the ScoutOutput structured output.`,
 // differently about it.
 const DEAD_CLASSES = {
   'equal-share-division': `blocked, 4 failures through 4 different gates (goal-mode 0 SOLVED x2, a rule-1 review kill, and 1-of-12 on an honest walk). Its blockers are NAMED and none have landed: (a) "each one" — the word 'one' senses only as a value, never a noun, so it cannot fill a recipient-noun slot; (b) elided-measure events ("Priya collected 29") fold as a Predication with a string dobj, never a Quantity, so the dividend has no holder; (c) a trailing "...if they divide X amongst themselves?" fuses the division premise INTO the question sentence, and read-phase pattern rules only run over premise readings. Land those first.`,
+
+  // difg. NOT blocked-by-machinery — blocked by CONSTITUTION §2. `probability` is a
+  // difg ORCHESTRATOR ID, not a mechanism: its 6 DEV items want ~8 unrelated formulas
+  // wearing one domain label. Shipping "the probability domain" ships 8 one-off branches
+  // — `vocab_singles` with a domain label stapled on, which the reviewer kills on rule 2.
+  // It leaves this list only if a walk proves >= 3 items under ONE mechanism (in which
+  // case brief THAT sub-class under its own slug, not the domain).
+  'probability': `DEAD on constitution §2 (heterogeneous domain, not a class). difg's domain labels are orchestrator ids, not mechanisms; probability's items need ~8 unrelated formulas, so the honest mechanism is 8 one-off branches. Named a §2 trap in docs/HANDOFF.md and deferred at the arithmetic landing. If a walk finds >= 3 items sharing ONE formula/opcode, brief that SUB-CLASS under its own slug — the domain itself stays dead.`,
 }
 const deadClass = (slug) => Object.keys(DEAD_CLASSES).find((k) => slug.includes(k))
 
