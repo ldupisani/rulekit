@@ -1,5 +1,26 @@
 # difg-domains — corpus extraction plan
 
+> ## ⚠ STATUS 2026-07-16: EXECUTED. Read `docs/HANDOFF.md` for the live state — this
+> ## file is the PLAN AS WRITTEN, kept for its reasoning, and two of its central
+> ## claims are now DISPROVED. Do not take a phase from here without reading this box.
+>
+> - **Phases 0–5 are DONE.** `projects/difg/` exists (342 DEV / 107 TEST), `gold: typed`
+>   is landed (`a241f38`), and 8 domains are mined (difg-DEV 41/0).
+> - **DISPROVED — "typed gold is a KERNEL question" (the section below).** It is a
+>   LOADER question. 29.5% of the "55.5% non-numeric" was quantity+unit, and a quantity
+>   gold is a NUMBER under a formatting wrapper ("68.04 kg") that the judge already
+>   compares numerically. 284 of 342 items (83%) are now scorable and **none of them
+>   needed the kernel change.** The corpus half was the whole prize.
+> - **DISPROVED — "the kernel commit-path change unlocks the majority of difg".** It
+>   buys ~10 items (2.9%) and manufactures confident-wrongs doing it; the prose yes/no
+>   golds it would reach are **8 of 8 'Yes'**, so the measurement cannot tell a working
+>   engine from an always-yes one. **Frontier 2 is CLOSED** — full evidence in
+>   `docs/negative-results.md`, and the `verdict`/`typed-gold` entries in
+>   `.claude/workflows/mine.js`'s DEAD_CLASSES enforce it.
+> - **STILL TRUE and load-bearing:** "The finding that shapes everything" below (79.3%
+>   is difg's own example_queries → this corpus reports COVERAGE, never precision).
+>   That is why the numbers above are quoted as coverage and never beside GSM8K/ASDiv.
+
 Extracting difg's multi-domain reasoning corpus into a rulekit project that the
 mining loop can work, the way GSM8K is worked today. Planned 2026-07-12.
 Source: `~/Development/experiments/difg` (read-only).
@@ -36,7 +57,15 @@ number without that caveat, the caveat has failed.
 opened until Phase 0 passes (below). So no runnable difg project exists until
 the pause. Phases 1, 2 and 6 are available now and are all reversible.
 
-## Why typed gold is a KERNEL question, not a harness one
+## Why typed gold is a KERNEL question, not a harness one — ⚠ DISPROVED (see the status box)
+
+> This section's reasoning is preserved because it is *almost* right and the error is
+> instructive: it is true that `Answer.committed == (kind == "number")` blocks a
+> non-numeric answer, and false that difg's non-numeric GOLDS need one. A gold's
+> FORMATTING and an answer's KIND are different things. "68.04 kg" is scored by
+> comparing 68.04 — the engine never has to produce the unit. That gap between
+> "the gold looks non-numeric" and "the engine cannot answer it" is the whole error,
+> and it cost this plan its headline.
 
 `src/rulekit/kernel/answer.py:24-30`:
 

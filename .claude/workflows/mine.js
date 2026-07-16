@@ -463,6 +463,21 @@ const DEAD_CLASSES = {
   // It leaves this list only if a walk proves >= 3 items under ONE mechanism (in which
   // case brief THAT sub-class under its own slug, not the domain).
   'probability': `DEAD on constitution §2 (heterogeneous domain, not a class). difg's domain labels are orchestrator ids, not mechanisms; probability's items need ~8 unrelated formulas, so the honest mechanism is 8 one-off branches. Named a §2 trap in docs/HANDOFF.md and deferred at the arithmetic landing. If a walk finds >= 3 items sharing ONE formula/opcode, brief that SUB-CLASS under its own slug — the domain itself stays dead.`,
+
+  // difg. POISONED GOLD — the corpus cannot score a correct answer, so no
+  // mechanism can win these. Surveyed 2026-07-16; the numbers are in
+  // docs/HANDOFF.md. This is not a hard class, it is an UNWINNABLE one, which is
+  // worse: a walk shows 7 plausible items and every gate downstream looks sane.
+  'base_conversion': `DEAD on POISONED GOLD + missing operand machinery (surveyed 2026-07-16, docs/HANDOFF.md). 2 of its 7 DEV items are UNWINNABLE: the builder coerced the binary digit-string to a float, so "Convert 255 to binary" golds as 1.11111e+07 (i.e. 11111100) and a CORRECT 11111111 scores WRONG (TOL is 1e-6 ABSOLUTE). No mechanism can win those — do not count them as coverage or chase them. The other 5 need operand binding the template does NOT supply: "Convert hexadecimal FF to decimal" needs an ALPHANUMERIC literal read as a digit-string ('FF' is not a number token), and "Convert 1010 from binary to decimal" needs a number token REINTERPRETED in a NAMED base. It leaves this list only when a real operand-binding increment for those two mechanisms is briefed on its own — never as "a copy of the arithmetic template".`,
+
+  // difg. Blocked by a lever that is itself CLOSED — so this is dead twice over.
+  'clock_arithmetic': `DEAD: its golds are TEXT, and the kernel lever that would commit them is CLOSED as measured dead (docs/negative-results.md, "The typed-gold KERNEL change is NOT the big lever"). 7 of its 8 DEV items gold as TIMES ("12:45 PM", "15:45", "9 hours and 30 minutes") — kind 'text', which Answer.committed cannot commit. Only ONE item is numerically scorable. It is the joint-second-largest unsolved domain by ITEM COUNT (8), which is exactly why it needs a mechanism and not a paragraph: the count invites a scout every time. It leaves this list only if the corpus grows numeric-gold clock items, or if some OTHER motivation reopens the commit path (and read _judge_typed's in-code warning first).`,
+
+  // difg. The frontier itself, killed with evidence. Slug-matched broadly on
+  // purpose ('typed-gold', 'verdict', 'committed', 'non-numeric' all hit).
+  'verdict': `DEAD — this is Frontier 2, CLOSED 2026-07-16 with measurement (docs/negative-results.md). The plan's "55.5% of difg is non-numeric, the kernel commit-path change unlocks the majority" was a claim about GOLD FORMATTING, not about blockers: 29.5% of it was quantity+unit, which is a NUMBER under a wrapper ("68.04 kg") and came FREE with the loader. 284 of 342 DEV items (83%) are already scorable and none needed the kernel change. Widening Answer.committed buys ~10 items (2.9%) AND manufactures confident-wrongs: "Is 17 a prime number?" golds as the SENTENCE 'Yes, 17 is prime.', so a committed (CORRECT) 'yes' scores WRONG. The prose-verdict comparator that would fix that is unbuildable — ALL 8 of 8 prose yes/no golds in DEV answer 'Yes', so an always-yes engine scores 8/8 (null control). The remaining 43 text items are SymPy answers (integrals, topology, quaternions) — a different engine.`,
+  'typed-gold': `DEAD — see the 'verdict' entry: the CORPUS half landed (a241f38, difg-DEV 148 -> 342 scorable) and the KERNEL half is measured dead. There is nothing left to mine here.`,
+  'string_operation': `DEAD: golds are TEXT ('dlrow olleh', 'HELLO WORLD', 'quick'), so they need the kernel commit-path change that Frontier 2 closed as dead (see the 'verdict' entry). The items are tractable-LOOKING (reverse/uppercase/capitalize/longest-word) and that is the trap — the mechanism is easy and the SCORE is unreachable. It leaves this list only if the commit path reopens for some other reason.`,
 }
 const deadClass = (slug) => Object.keys(DEAD_CLASSES).find((k) => slug.includes(k))
 
