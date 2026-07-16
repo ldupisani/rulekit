@@ -544,6 +544,15 @@ class DatasetDef(StrictModel):
     # GSM8K item can take the typed branch — byte-identity is a property of the
     # SHAPE of the change, not a lucky outcome.
     gold: Literal["typed"] | None = None
+    # HOLDOUT GROUPING. Absent (the default) => the dev-train/dev-holdout cut
+    # buckets on the item's own text, byte-identical to before this field
+    # existed. Set to a parquet column name => items sharing that column's value
+    # land on the SAME side of the internal cut. FOLIO needs this because its
+    # items share premise blocks (340 stories -> 1,001 items): a per-item hash
+    # puts one story's conclusions on both sides, so dev-holdout stops being a
+    # tuning-overfit proxy — the story was already visible from dev-train.
+    # Item IDENTITY (item_id) stays on the question text regardless.
+    group: str | None = None
 
 
 class SplitDef(StrictModel):

@@ -49,6 +49,9 @@ class BenchItem:
     id: str
     text: str
     expect: float | TypedGold
+    # holdout-grouping key (schemas.DatasetDef.group): items sharing it land on
+    # the same side of the dev-train/dev-holdout cut. None => bucket on text.
+    group: str | None = None
 
 
 def item_id(question: str) -> str:
@@ -116,20 +119,33 @@ def parse_typed_gold(answer: str) -> TypedGold | None:
 
 
 def load_dataset(
-    parquet_path: Path, question_col: str, answer_col: str, gold: str | None = None
+    parquet_path: Path,
+    question_col: str,
+    answer_col: str,
+    gold: str | None = None,
+    group_col: str | None = None,
 ) -> list[BenchItem]:
     import pyarrow.parquet as pq
 
-    table = pq.read_table(parquet_path, columns=[question_col, answer_col])
+    columns = [question_col, answer_col] + ([group_col] if group_col else [])
+    table = pq.read_table(parquet_path, columns=columns)
+    groups = table.column(group_col).to_pylist() if group_col else None
     items: list[BenchItem] = []
-    for question, answer in zip(
-        table.column(question_col).to_pylist(), table.column(answer_col).to_pylist()
+    for row, (question, answer) in enumerate(
+        zip(table.column(question_col).to_pylist(), table.column(answer_col).to_pylist())
     ):
         # `gold is None` is the DEFAULT and the pre-existing path, unchanged.
         expect = parse_typed_gold(answer) if gold == "typed" else parse_gold(answer)
         if expect is None:
             continue
-        items.append(BenchItem(id=item_id(question), text=question, expect=expect))
+        items.append(
+            BenchItem(
+                id=item_id(question),
+                text=question,
+                expect=expect,
+                group=groups[row] if groups else None,
+            )
+        )
     return items
 
 
@@ -139,7 +155,10 @@ def slice_items(
     if slice_name == "dev":
         return train
     if slice_name in ("dev-train", "dev-holdout"):
-        return [i for i in train if holdout_bucket(i.text) == slice_name]
+        # bucket on the grouping key when the dataset declares one, so items
+        # sharing a premise block never straddle the internal cut; item id and
+        # text are untouched — only WHICH side an item lands on can differ.
+        return [i for i in train if holdout_bucket(i.group or i.text) == slice_name]
     if slice_name == "test":
         return test
     raise ValueError(f"unknown slice {slice_name!r} (one of {ALL_SLICES})")

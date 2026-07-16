@@ -124,7 +124,7 @@ def main() -> None:
     ds = load_dataset("tasksource/folio")
     rows = list(ds["train"]) + list(ds["validation"])
 
-    dev_q, dev_a, test_q, test_a = [], [], [], []
+    dev_q, dev_a, dev_s, test_q, test_a, test_s = [], [], [], [], [], []
     dropped = 0
     for r in rows:
         label = _LABELS.get(str(r["label"]).strip().lower())
@@ -133,14 +133,23 @@ def main() -> None:
             continue
         text = phrase(r["premises"], r["conclusion"])
         answer = f"#### {label}"
+        story = story_key(r["premises"])
         if bucket(str(r["premises"])) == "test":
-            test_q.append(text); test_a.append(answer)
+            test_q.append(text); test_a.append(answer); test_s.append(story)
         else:
-            dev_q.append(text); dev_a.append(answer)
+            dev_q.append(text); dev_a.append(answer); dev_s.append(story)
 
     (HERE / "data").mkdir(exist_ok=True)
-    for name, qs, ans in (("folio_dev", dev_q, dev_a), ("folio_test", test_q, test_a)):
-        table = pa.table({"question": qs, "answer": ans})
+    for name, qs, ans, st in (
+        ("folio_dev", dev_q, dev_a, dev_s),
+        ("folio_test", test_q, test_a, test_s),
+    ):
+        # `story` is the holdout-grouping column (project.yaml `group: story`):
+        # the INTERNAL dev-train/dev-holdout cut must bucket by premise block
+        # for the same reason the DEV/TEST cut does — 340 stories share 1,001
+        # rows, and a per-item hash puts one story's conclusions on both sides.
+        # DEV/TEST membership itself still comes from bucket() above, untouched.
+        table = pa.table({"question": qs, "answer": ans, "story": st})
         out = HERE / "data" / f"{name}.parquet"
         pq.write_table(table, out)
         print(f"  {name:10} {len(qs):5d} items -> {out}")

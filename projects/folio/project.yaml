@@ -40,5 +40,9 @@ datasets:
     # 'Uncertain' lands as kind='text'. Uncertain is deliberately NOT a `decline`
     # gold: that would score an always-decline engine 'correct' on ~32% of the
     # corpus for zero reasoning. See build_corpus.py's gold-mapping note.
-    train: {parquet: data/folio_dev.parquet, question: question, answer: answer, gold: typed}
+    # `group: story` — the INTERNAL dev-train/dev-holdout cut buckets by premise
+    # block (the `story` parquet column), for the same reason the DEV/TEST cut
+    # does: items sharing a story must never straddle a firewall. Only the train
+    # split needs it; test items never enter the internal cut.
+    train: {parquet: data/folio_dev.parquet, question: question, answer: answer, gold: typed, group: story}
     test: {parquet: data/folio_test.parquet, question: question, answer: answer, gold: typed}

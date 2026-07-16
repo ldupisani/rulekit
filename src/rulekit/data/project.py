@@ -54,6 +54,7 @@ class Project:
             self.root / splits["train"].parquet,
             splits["train"].question, splits["train"].answer,
             gold=splits["train"].gold,
+            group_col=splits["train"].group,
         )
         test = load_dataset(
             self.root / splits["test"].parquet,
