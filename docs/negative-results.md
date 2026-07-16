@@ -1264,3 +1264,61 @@ crashed ship gate) — and so was this one. A worklist described as a hard tail 
 a 2-item mechanical class sitting in it, fixable by one condition, worth a corpus
 going to 100% precision. Re-read a tail before believing it; the read is cheap and
 the description is a memory of someone else's session.
+
+## The holder-count fraction guard: BUILT, BROKE a pinned contract, REVERTED (2026-07-16)
+
+Chasing ASDiv's `17 → 16.5` ("Ben gave half of his marbles to John"), the root
+looked like this: `_fraction_synth` sizes a fraction against `_pool_before` —
+the signed sum across EVERY entity — then attributes the result to `fq.entity`
+alone. With one holder those are the same number, which is why it hid. So the
+guard wrote itself: **when the pool spans >1 holder it is not this entity's
+pool → leave unresolved → decline.**
+
+It worked on the witness. ASDiv went 43/5 → 43/4, GSM8K stayed byte-neutral at
+104/0, all six corpora clean. **And it was wrong.** pytest failed:
+
+```python
+def test_fraction_pool_spans_entities(registry):
+    # "THE eggs" is the definite pool — everyone's eggs (12 + 10)
+    "Tom found 12 eggs. Mary found 10 eggs. Tom ate half of the eggs."  → 11
+```
+
+**A DEFINITE pool legitimately SPANS ENTITIES.** "Half of *the eggs*" IS half of
+everyone's eggs — correct English, pinned since increment 5. Holder count was a
+SYMPTOM of the witness, not the defect.
+
+### What the defect actually was
+
+Two constructions, one rule:
+
+| phrasing | base | rule |
+|---|---|---|
+| "half of **the** eggs" | the definite pool, spans entities | `fraction-of-pool` ✓ |
+| "half of **it**" | the unique pool | `fraction-of-pronoun` ✓ |
+| "half of **his** marbles" | the POSSESSOR's holdings | `fraction-of-pronoun` ✗ |
+
+`fraction-of-pronoun` was written for a pronoun that DENOTES THE POOL. A
+possessive determiner senses as 'pronoun' too, so it floated onto a different
+construction — **the third instance of that exact shape in one session**
+(ask/is-membership's fronted auxiliary, the event-vs-entity comparative, this).
+Fixed by gating the slot to a MEASURED `pool_pronoun` category (`a874887`).
+
+### The lessons
+
+1. **Guarding on the witness's SYMPTOM breaks the class the symptom belongs to.**
+   Holder count correlated perfectly with the bug ON THE WITNESS and was causally
+   irrelevant. This is [[fix-the-class-not-the-witness]] wearing a third face in
+   one session: the first fix keyed on the witness's value KIND, this one on its
+   incidental SHAPE. Both passed a six-corpus gate.
+2. **The corpus gate cannot see a contract no corpus phrases.** All six were
+   clean through the broken version — ASDiv even IMPROVED. Only the unit test,
+   written by someone who had thought about "the eggs" deliberately, knew. That
+   is what synthetic tests are FOR, and it is why "all gates green" is not a
+   verdict on a shared-kernel change.
+3. **A test's NAME can be the whole review.** `test_fraction_pool_spans_entities`
+   states the contract in five words. Grepping the tests for the behavior being
+   changed — before writing the guard — would have cost one command.
+4. The measurement that made the real fix safe was cheap and came LATE: 78 GSM8K
+   dev-train + 76 dev-holdout 'fraction of <possessive>' items ALL already
+   declined, so restricting the rule could not break anything. Do that count
+   FIRST — it decides guard-vs-capability before a line is written.

@@ -1,7 +1,7 @@
 # Session handoff — 2026-07-16
 
 Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
-State is committed through `2b8430b` on `main` (github.com/ldupisani/rulekit).
+State is committed through `a874887` on `main` (github.com/ldupisani/rulekit).
 Always check `git status` / `git log origin/main..HEAD` before assuming push parity.
 
 > ## ➡ FOLIO IS BUILT, BENCHED AND LANDED — **919 DEV items, 0 correct / 0 WRONG** (`f7b059c`).
@@ -30,7 +30,7 @@ GSM8K 104/0, MAWPS 9/0, difg 44/0, folio 0/0 and SciBench 0/0 have none.
 |---|---|---|---|
 | "apples **to begin with**" | 7→4 | **start-state** | known class (`d46484d`); commits the CURRENT state |
 | "fish **to start with**" | 19→3 | **start-state** | same class — brief the two together |
-| Ben/John marbles | 17→16.5 | **transfer conservation** | the best brief left — see below |
+| ~~Ben/John marbles~~ | ~~17→16.5~~ | possessive fraction | **FIXED** `a874887` — the brief below was WRONG about the mechanism |
 | "9 books **and 1 book**" | 170→155 | conjunct dobj | first-conjunct-only, said to be CLOSED for purchase verbs — an intervening PP re-opens it |
 | London/Blair age | 6→11 | **POISONED GOLD** | ⚠ **UNWINNABLE — never chase** |
 
@@ -41,12 +41,27 @@ WRONG — the base_conversion situation exactly. Do not count it as addressable.
 still a guess — it ignored "several years ago" — but fixing that is worth 0 items HERE and must be
 justified by its class, not this row.)
 
-**TRANSFER CONSERVATION is the brief worth writing.** "Ben had 18 marbles and John had 17. Ben gave
-half of **his** marbles to John." The giver loses **9** (half of 18); the receiver gains **8.5**
-(half of *17* — `his` resolved to JOHN on that leg) → `25.5 − 9 = 16.5`. **A transfer must move ONE
-amount.** No numeric guard can see this: each leg's arithmetic is impeccable on its own, and only
-their DISAGREEMENT is the bug. Same family as the three mis-bindings this session (self-comparison,
-the membership subject): the sum is right *given* a wrong binding.
+**⚠ THE "TRANSFER CONSERVATION" BRIEF THAT STOOD HERE WAS WRONG — I inferred the mechanism from the
+arithmetic instead of reading the fact store.** It claimed the giver loses 9 and the receiver gains
+8.5, so "a transfer must move ONE amount". **Neither number exists.** The store says: ONE leg,
+`Quantity(ben, marble, 17.5, give)` — 17.5 is half of **35** (Ben's 18 + John's 17 pooled) — and NO
+receive leg at all, so `|17 − 0.5| = 16.5`. Two defects, both different from the brief. A plausible
+arithmetic story is not a diagnosis; dump the facts.
+
+**FIXED (`a874887`)**: `fraction-of-pronoun` (written for "half OF IT", a pronoun that DENOTES THE
+POOL) was matching "half of **HIS** marbles", where 'his' is a possessive determiner naming a
+POSSESSOR whose holdings are the base. Gated to a measured `pool_pronoun` category.
+
+**WHAT IS STILL OPEN, and it is a real capability brief:** a FRACTIONAL TRANSFER has no rule.
+`arithmetic/transfer-prepositional` (packs/arithmetic/rules/transfer.yaml) already models transfers
+correctly — two legs, signing from CATEGORY DATA — but its amount slot is `type: counted`, so a
+fraction cannot match and the sentence falls through to the consumption rules, which have no
+recipient slot. Building it needs BOTH halves: (1) the rule binding possessor + recipient, and
+(2) a synth sizing the fraction against the POSSESSOR's holdings rather than `_pool_before`. Do not
+brief half of it — sizing against the pool is not a weaker version of (2), it is a different and
+wrong quantity. Worth: 1 ASDiv item today; the 78 GSM8K dev-train + 76 dev-holdout possessive items
+are mostly hard multi-step ("uses 16 of them and then gives half of what is left"), so **count the
+convertible ones before believing the capability is bought.**
 
 ### GSM8K is DONE and stays a regression floor
 dev-train **104/0 (100%)**, dev-holdout **40/0**, curated suite **52/52**, **TEST 92.3%** (12/1 —
@@ -449,7 +464,7 @@ new code. **Adding one is a two-file recipe.**
 | Project | Role | Baseline |
 |---|---|---|
 | `projects/gsm8k/` | the mined corpus; now a regression floor | 104/0 dev-train, TEST 92.3% |
-| `projects/asdiv/` | different authors, same task | **89.4%** (42/5), characterized worklist |
+| `projects/asdiv/` | different authors, same task | **91.5%** (43/4) — the only corpus with wrongs left |
 | `projects/svamp/` | **adversarial variations**, harshest in-domain | **100%** (13/0) — self-comparison guard `2b8430b` |
 | `projects/mawps/` | classic arithmetic repo | **100%** (9/0), low coverage |
 | `projects/scibench/` | **out-of-domain** college science; safety check | **0/0** — a rising wrong = the engine guessing |
@@ -469,8 +484,8 @@ synth-GroupTotal fix + consumer both paths (`2439b82`, `ab878ad`) · container+l
 
 - GSM8K dev-train **104/0** · dev-holdout **40/0** · TEST **92.3%** (12/1, unchanged — no look spent
   this session; see the proof under the FOLIO section) · curated suite **52/52**
-- pytest **1191** · lint: 0 errors, 1 intended warning (fraction-of-remnant subsumption — documentation, not a bug)
-- Cross-corpus DEV: ASDiv 89.6% (43/5) · **SVAMP 100% (13/0)** · MAWPS 100% (9/0) · SciBench 0/0 ·
+- pytest **1196** · lint: 0 errors, 1 intended warning (fraction-of-remnant subsumption — documentation, not a bug)
+- Cross-corpus DEV: **ASDiv 91.5% (43/4)** · **SVAMP 100% (13/0)** · MAWPS 100% (9/0) · SciBench 0/0 ·
   difg 44/0 of 342 (typed gold) · **folio 0/0 of 919** (typed gold)
 - bench wall: dev-train 16.6s → 9.0s (trace opt-out) → 1.7s at `--jobs 12`. `--jobs` defaults to 1;
   spend it in the SERIAL integration tail, never in the implementers' gates (they already run concurrently).
@@ -533,6 +548,16 @@ See `.claude/skills/mine/SKILL.md`. **Standing instruction: push `main` after ev
   transfer whose two legs move different amounts. Value-accounting checks that digits were READ, not
   that they were read as the RIGHT thing. When a consumer binds two things, ask what happens when
   they collapse onto one.
+- **A PLAUSIBLE ARITHMETIC STORY IS NOT A DIAGNOSIS — DUMP THE FACT STORE.** "17 vs 16.5" was
+  briefed as a transfer whose legs disagree (giver −9, receiver +8.5). Neither number existed: the
+  store had ONE leg of 17.5 (half of the POOLED 35) and no receive leg. Inferring a mechanism from
+  the output number reconstructs *a* story that produces it, not *the* one. `solve()` + printing
+  `store.facts` is one script.
+- **THE CORPUS GATE CANNOT SEE A CONTRACT NO CORPUS PHRASES.** A holder-count fraction guard passed
+  ALL SIX corpora (ASDiv even improved) and was still wrong: it broke "Tom ate half of THE eggs"
+  (= 11, the DEFINITE pool legitimately spans entities), caught only by a unit test whose NAME states
+  the contract — `test_fraction_pool_spans_entities`. Before changing shared kernel behavior, GREP
+  THE TESTS for the behavior you are about to change; "all gates green" is not a verdict.
 - **A MATCH SEQUENCE FLOATS: `match_all` retries at every start offset**, so a shape mined on one
   construction lands on any later one containing the same token run. `is <name> <noun>` was written
   for the FRONTED interrogative ("IS Mary a student?" — the subject follows the copula) and drifted
