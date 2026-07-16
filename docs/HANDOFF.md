@@ -1,7 +1,7 @@
 # Session handoff — 2026-07-16
 
 Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
-State is committed through `b5655ca` on `main` (github.com/ldupisani/rulekit).
+State is committed through `2b8430b` on `main` (github.com/ldupisani/rulekit).
 Always check `git status` / `git log origin/main..HEAD` before assuming push parity.
 
 > ## ➡ FOLIO IS BUILT, BENCHED AND LANDED — **919 DEV items, 0 correct / 0 WRONG** (`f7b059c`).
@@ -18,6 +18,35 @@ Always check `git status` / `git log origin/main..HEAD` before assuming push par
 3. **`bench --snapshot` CRASHED on every `gold: typed` project** (`TypedGold is not JSON
    serializable`), so the `rulekit diff` ship gate was silently unavailable for difg — the ACTIVE
    frontier — and folio. Fixed in `d0a818e`; GSM8K snapshots verified byte-identical.
+
+### ➡ THE PRECISION WORKLIST — all 5 remaining confident-wrongs are ASDiv, and they are TRIAGED
+
+**"The hard tail" was FALSE** (this file said so; reading the items refuted it — full table in
+`docs/negative-results.md` → "The 7 confident-wrongs triaged"). SVAMP's two were ONE mechanism and
+are FIXED (`2b8430b`, → **100% precision**). These 5 are what is left in the whole system —
+GSM8K 104/0, MAWPS 9/0, difg 44/0, folio 0/0 and SciBench 0/0 have none.
+
+| item | exp → got | class | next |
+|---|---|---|---|
+| "apples **to begin with**" | 7→4 | **start-state** | known class (`d46484d`); commits the CURRENT state |
+| "fish **to start with**" | 19→3 | **start-state** | same class — brief the two together |
+| Ben/John marbles | 17→16.5 | **transfer conservation** | the best brief left — see below |
+| "9 books **and 1 book**" | 170→155 | conjunct dobj | first-conjunct-only, said to be CLOSED for purchase verbs — an intervening PP re-opens it |
+| London/Blair age | 6→11 | **POISONED GOLD** | ⚠ **UNWINNABLE — never chase** |
+
+**⚠ The age item's gold is WRONG, and the arithmetic is not close.** The gap is invariant at 5, so
+`B_then = 2·L_then` with `B_then − L_then = 5` → London was **5**, six years ago. **The gold (6)
+answers "how many years ago"; the text asks "how old was London then".** A correct engine scores
+WRONG — the base_conversion situation exactly. Do not count it as addressable. (The engine's 11 is
+still a guess — it ignored "several years ago" — but fixing that is worth 0 items HERE and must be
+justified by its class, not this row.)
+
+**TRANSFER CONSERVATION is the brief worth writing.** "Ben had 18 marbles and John had 17. Ben gave
+half of **his** marbles to John." The giver loses **9** (half of 18); the receiver gains **8.5**
+(half of *17* — `his` resolved to JOHN on that leg) → `25.5 − 9 = 16.5`. **A transfer must move ONE
+amount.** No numeric guard can see this: each leg's arithmetic is impeccable on its own, and only
+their DISAGREEMENT is the bug. Same family as the three mis-bindings this session (self-comparison,
+the membership subject): the sum is right *given* a wrong binding.
 
 ### GSM8K is DONE and stays a regression floor
 dev-train **104/0 (100%)**, dev-holdout **40/0**, curated suite **52/52**, **TEST 92.3%** (12/1 —
@@ -421,7 +450,7 @@ new code. **Adding one is a two-file recipe.**
 |---|---|---|
 | `projects/gsm8k/` | the mined corpus; now a regression floor | 104/0 dev-train, TEST 92.3% |
 | `projects/asdiv/` | different authors, same task | **89.4%** (42/5), characterized worklist |
-| `projects/svamp/` | **adversarial variations**, harshest in-domain | **86.7%** (13/2) — start-state fix `d46484d` |
+| `projects/svamp/` | **adversarial variations**, harshest in-domain | **100%** (13/0) — self-comparison guard `2b8430b` |
 | `projects/mawps/` | classic arithmetic repo | **100%** (9/0), low coverage |
 | `projects/scibench/` | **out-of-domain** college science; safety check | **0/0** — a rising wrong = the engine guessing |
 | `projects/difg/` | multi-domain COVERAGE corpus (not precision); `gold: typed` | 44/0 of **342**, 9 domains |
@@ -440,8 +469,8 @@ synth-GroupTotal fix + consumer both paths (`2439b82`, `ab878ad`) · container+l
 
 - GSM8K dev-train **104/0** · dev-holdout **40/0** · TEST **92.3%** (12/1, unchanged — no look spent
   this session; see the proof under the FOLIO section) · curated suite **52/52**
-- pytest **1188** · lint: 0 errors, 1 intended warning (fraction-of-remnant subsumption — documentation, not a bug)
-- Cross-corpus DEV: ASDiv 89.6% (43/5) · SVAMP 86.7% (13/2) · MAWPS 100% (9/0) · SciBench 0/0 ·
+- pytest **1191** · lint: 0 errors, 1 intended warning (fraction-of-remnant subsumption — documentation, not a bug)
+- Cross-corpus DEV: ASDiv 89.6% (43/5) · **SVAMP 100% (13/0)** · MAWPS 100% (9/0) · SciBench 0/0 ·
   difg 44/0 of 342 (typed gold) · **folio 0/0 of 919** (typed gold)
 - bench wall: dev-train 16.6s → 9.0s (trace opt-out) → 1.7s at `--jobs 12`. `--jobs` defaults to 1;
   spend it in the SERIAL integration tail, never in the implementers' gates (they already run concurrently).
@@ -492,6 +521,18 @@ See `.claude/skills/mine/SKILL.md`. **Standing instruction: push `main` after ev
   one kind over, gate clean, commit message claiming it "closes the class" (`b5655ca` is the real
   fix). Before writing a guard, ask *what is this witness an INSTANCE of, and what else fits that
   position?* — one probe, cheaper than the gate and tests that follow.
+- **"CHARACTERIZED" IS NOT "MEASURED" — re-read a tail before believing it.** This file called the
+  7 remaining confident-wrongs "the hard tail"; reading them found a 2-item mechanical class fixable
+  by ONE condition, worth SVAMP going to 100% precision, plus an UNWINNABLE poisoned gold nobody
+  should ever chase. Four inherited claims failed on contact this session (untracked files, a stale
+  baseline, a crashed ship gate, this). A worklist description is a memory of someone else's
+  session; the read is cheap.
+- **A MIS-BINDING IS INVISIBLE TO EVERY NUMERIC GUARD** — the arithmetic is impeccable *given* the
+  wrong binding. Three of this session's bugs are this one shape: `|josh - josh|` (both ask slots
+  resolved to one person), the membership subject ('Knicks' bound instead of 'Jim'), and the
+  transfer whose two legs move different amounts. Value-accounting checks that digits were READ, not
+  that they were read as the RIGHT thing. When a consumer binds two things, ask what happens when
+  they collapse onto one.
 - **A MATCH SEQUENCE FLOATS: `match_all` retries at every start offset**, so a shape mined on one
   construction lands on any later one containing the same token run. `is <name> <noun>` was written
   for the FRONTED interrogative ("IS Mary a student?" — the subject follows the copula) and drifted

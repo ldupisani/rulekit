@@ -1198,3 +1198,69 @@ every fact needed to refuse was already computed and simply unconsulted.
    a mechanism are for.
 
 Landed `b5655ca`. All six corpora byte-neutral; pytest 1179 → 1188.
+
+## The 7 confident-wrongs triaged: "the hard tail" was FALSE (2026-07-16)
+
+The handoff recorded the remaining ASDiv/SVAMP wrongs as "the hard tail:
+age-algebra, multi-step transfer, a '9 books about plants' parse error,
+same-value/cross-holder reads". Reading all seven says otherwise: **five fall
+into three real classes, two of which need no new capability at all, and one of
+the seven is not winnable by anyone.** Triage cost one script.
+
+| item | expected → got | class |
+|---|---|---|
+| SVAMP ×2 | 1→0, 2→0 | **self-comparison** — FIXED (`2b8430b`) |
+| ASDiv "apples to begin with" | 7→4 | **start-state** |
+| ASDiv "fish to start with" | 19→3 | **start-state** (same class) |
+| ASDiv marbles | 17→16.5 | **transfer conservation** |
+| ASDiv "9 books and 1 book" | 170→155 | conjunct dobj (known) |
+| ASDiv age-algebra | 6→11 | **POISONED GOLD — unwinnable** |
+
+### ⚠ The age item's GOLD IS WRONG — never chase it
+
+*"London is 11 years old and Blair is 16 years old. Several years ago, Blair was
+twice as old as London. How old was London then?"* — **gold 6.0**.
+
+The age gap is invariant at 5, so `B_then = 2·L_then` with `B_then − L_then = 5`
+gives `L_then = 5` (Blair 10), six years ago. **The gold answers "how many years
+ago"; the text asks "how old was London then".** Six is the wrong question's
+answer. Like base_conversion's coerced binary strings, a correct engine scores
+WRONG here — do not count it as addressable, and do not tune toward it. (The
+engine's 11 is still a guess: it ignored "several years ago" entirely and
+answered London's CURRENT age, so it should decline regardless. Fixing that is
+worth 0 items on this corpus and should be justified by the class, not this row.)
+
+### The two SVAMP wrongs were ONE mechanism, and the `0.0` was the tell
+
+Both committed exactly `0.0`, which is what prompted reading them together — but
+"both end in 0" is a shared SURFACE, and a shared surface is not a shared
+mechanism ([[a-cluster-is-not-a-class]]). The reason string is what proved it:
+`|josh - josh| of 'marble'` on both. An EVENT comparative ("how many more did he
+FIND than those he LOST") read as an ENTITY comparative. Fixed by declining
+`a == b` — see the commit; the verb-vs-verb consumer stays unbuilt.
+
+### What is left, and what it is worth
+
+- **start-state ×2** — a KNOWN class (`d46484d` fixed a SVAMP one; the pools
+  collapsed 177→5). Both commit the CURRENT state ("Now the tree has four") where
+  the question asks the START. These are wrongs, not declines, so they are worth
+  more than their count.
+- **transfer conservation ×1** — a real invariant and the most interesting one
+  left: Ben gives half his marbles to John, the giver loses **9** (half of 18) but
+  the receiver gains **8.5** (half of 17 — `his` resolved to JOHN on that leg), so
+  `25.5 − 9 = 16.5`. **A transfer must move ONE amount**; that both legs may
+  disagree is a conservation hole no numeric guard sees, because each leg's
+  arithmetic is impeccable on its own.
+- **conjunct dobj ×1** — "bought 9 books about plants **and 1 book about fish**"
+  reads only the first conjunct (155 = 9×15+20, dropping the fish book). The
+  handoff's standing note says the first-conjunct-only binding is CLOSED for
+  purchase verbs; this item says it is not closed when a PP intervenes.
+
+### The lesson
+
+**"Characterized" is not "measured".** Three of this session's findings were
+inherited claims that failed on contact (untracked files, a stale baseline, a
+crashed ship gate) — and so was this one. A worklist described as a hard tail had
+a 2-item mechanical class sitting in it, fixable by one condition, worth a corpus
+going to 100% precision. Re-read a tail before believing it; the read is cheap and
+the description is a memory of someone else's session.
