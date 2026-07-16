@@ -832,3 +832,56 @@ non-numeric") is a claim about GOLD FORMATTING, not about the engine's blockers.
 Classify the golds and ask "what would actually score?" before believing a
 percentage names a lever. The 29.5% that made the number impressive was already
 free.
+
+## The `_TOKEN` compound-unit change is SAFE but UNBUYABLE — physics stops at 3/14 (2026-07-16)
+
+**The plan** (HANDOFF, after physics landed at 3/14): "the next physics increment is the `_TOKEN`
+change (compound units as ONE token), BOUGHT by the 6 rows it unblocks." Built it, measured it,
+reverted it. The change works and is safe; there is nothing that can pay for it.
+
+**The change itself is fine, and that is the surprising half.** Adding a compound-unit alternative to
+`tokenize.py`'s `_TOKEN` (`[A-Za-z]+(?:\^\d+)?(?:[/·][A-Za-z]+(?:\^\d+)?)+`) makes "m/s", "m/s^2",
+"cm^3" ONE token and kills the phantom-exponent hazard ("3 m/s^2" reading as the numbers [3, 2]).
+Measured, not argued:
+- **All five word-problem corpora gate byte-neutral** (GSM8K dev-train + dev-holdout, ASDiv, SVAMP,
+  MAWPS, SciBench).
+- It DOES fuse slashed word-pairs — "blondies/brownies", "installed/hung", "feet/minute" — into one
+  unknown token, and the tokenizer **cannot** tell them from units: `tokenize()` takes no registry, so
+  it cannot ask whether the parts are unit words. But **51 GSM8K-train items contain the pattern and
+  ZERO of them commit** (they are the hard multi-step tail), so it changes nothing that works.
+
+**It buys nothing, because every formula it unblocks needs a word with GSM8K TEST exposure:**
+
+| formula | the word it needs | GSM8K TEST | verdict |
+|---|---|---|---|
+| `force = mass * acceleration` | 'force' | **1 item** | refuse |
+| `kinetic energy = ½mv²` | 'energy' | **2 items** | refuse |
+| `momentum = mass * velocity` | **'moving'** | **1 item** | refuse |
+| `density = mass / volume` | — | — | **scale-blocked** |
+
+'momentum' itself is SciBench-only and looked like the safe buyer — until the item turned out to need
+'moving' ("a 4 kg object MOVING at 8 m/s"), an ordinary verb absent from the lexicon and present in 1
+GSM8K TEST item. The unknown-word guard checks the whole reading, so the ask cannot route around it.
+
+**`density` is blocked by something better than a policy — a real contradiction the SCHEMA caught.**
+Its gold is "3 g/cm³" (300 g / 100 cm^3), so `mass` would have to be in GRAMS; `weight`'s gold is
+"98 N" (10 kg × 9.8), so `mass` must be in KILOGRAMS. `rulekit/formulas@1` permits ONE canonical unit
+per dimension, so the two cannot coexist — and the alternative (listing gram AND kilogram under `mass`)
+is exactly the silent scale-mix that validator exists to stop: "the weight of a 300 g object" would
+answer 2940 N instead of 2.94. A per-scale dimension would be the honest fix and is not worth 2 items.
+
+**The trade, stated plainly:** ~4 items on a corpus that reports COVERAGE (79.3% of it is difg's own
+example_queries) against lifting decline guards on 4 GSM8K TEST items, on a TEST corpus at a hard-won
+92.3% that cannot be re-measured without spending a look. That is the same trade already refused for
+'line' (`720c071`), 'find' and 'tan' (`4ed9956`). Refusing it again is consistency, not timidity.
+
+**Action: physics stays at 3/14. Do not re-propose the `_TOKEN` change on its own.** The measurement
+is banked — if a FUTURE increment ever has an independent reason to admit 'force'/'energy'/'moving'
+(and buys that admission with a TEST look), the tokenizer change lands with it in one step and needs no
+re-litigating: it is byte-neutral on all five corpora and 0/51 of the pattern's GSM8K items commit.
+
+**The transferable lesson:** an enabler is not "safe therefore land it". `_TOKEN` passed every gate —
+the reason to revert was not risk, it was that **nothing could pay for it**. A byte-neutral change with
+no buyer is the infrastructure trap wearing a clean gate (`docs/negative-results.md`, "The
+infrastructure trap: 0 SOLVED on DEV, a WRONG on TEST"). Measure the BUYER before building the enabler,
+not after.

@@ -76,12 +76,22 @@ pins both word orders at 15.0. **Do not "simplify" this to reading the number li
 - **2 items** are the PE/KE pair: "kinetic energy" merges to ONE compound noun whose lemma is the head
   'energy', so telling KE from PE needs the qualifier (the `bare:` gate lesson).
 
-**The next physics increment is the `_TOKEN` change** (compound units as ONE token), BOUGHT by the 6
-rows it unblocks — not the rows alone, and not the tokenizer alone. Read the `_DIGIT` invariant below
-first. 'energy'/'force'/'density'/'momentum'/'newton' stay UNADMITTED until then: they are the
-collision-heavy words (2 GSM8K **TEST** items for 'energy', 1 for 'force', 4 train for 'density', 1
-TEST for 'newton' — the NAME), and admitting a word for a formula that cannot fire is strictly a
-downside.
+**The `_TOKEN` compound-unit change was BUILT, MEASURED and REVERTED — physics stays at 3/14. Do not
+re-propose it on its own** (`docs/negative-results.md`, "The `_TOKEN` compound-unit change is SAFE but
+UNBUYABLE"). The change WORKS and is byte-neutral on all five word-problem corpora; 51 GSM8K-train
+items contain the slashed-pair shape it also fuses ("blondies/brownies") and **zero of them commit**,
+so it breaks nothing. It was reverted because **nothing can pay for it** — every formula it unblocks
+needs a word with GSM8K **TEST** exposure: force→'force' (1 TEST), kinetic energy→'energy' (2 TEST),
+momentum→**'moving'** (1 TEST — the item says "a 4 kg object MOVING at 8 m/s", and the unknown-word
+guard checks the whole reading, so no ask can route around it). `density` is blocked by a real
+CONTRADICTION the schema caught: its gold needs mass in GRAMS ("3 g/cm³") while `weight`'s needs
+KILOGRAMS ("98 N"), and one-canonical-unit-per-dimension rightly forbids both.
+
+The measurement is BANKED: if a future increment ever has an independent reason to admit
+'force'/'energy'/'moving' and buys it with a TEST look, the tokenizer change lands with it in one step
+and needs no re-litigating. **The lesson: an enabler is not "safe therefore land it".** `_TOKEN` passed
+every gate; the reason to revert was that it had no BUYER. Measure the buyer BEFORE building the
+enabler.
 
 **⚠ Three confident-wrongs the constitution review caught here, ALL invisible to the difg gate** — the
 gate was clean and the review was not, which is the whole argument for the review existing:
