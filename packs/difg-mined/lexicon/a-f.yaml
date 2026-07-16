@@ -1729,6 +1729,20 @@ entries:
   convert:
     senses:
     - verb
+    # IMPERATIVE TASK CUE — "Convert 5 kilometers to meters" is a question even
+    # with no question mark (engine.ASK_CUE_SENSES; the same sense
+    # 'compute'/'calculate'/'determine' already carry). Without it the sentence
+    # dies at "no question found" before any ask is tried, which is what blocked
+    # 26 difg items.
+    #
+    # Admitted because the blast radius is MEASURED and tiny: exactly 2 sentences
+    # across GSM8K/ASDiv/SVAMP/MAWPS begin with 'convert' (asdiv-dev 1, mawps-dev
+    # 1), both in gated dev slices. The other imperatives in difg are NOT
+    # admitted for the opposite reason — 'find' opens 76 ASDiv-dev, 69
+    # SciBench-dev and 4 GSM8K **TEST** sentences, so making it a task cue would
+    # reach TEST unmeasured; 'evaluate'/'solve' appear only in SciBench, which
+    # must hold at 0 commits. Each needs its own increment and its own gate.
+    - imperative
   convertible:
     senses:
     - noun

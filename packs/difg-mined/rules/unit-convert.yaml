@@ -23,10 +23,12 @@ format: rulekit/rules@1
 # declines). See that category's comment. When the nouns are not units, no member
 # matches and that ask keeps the question exactly as it does today.
 #
-# NOT COVERED — the IMPERATIVE form ("Convert 5 kilometers to meters"). It is not
-# a question ("no question found"): Q-detection wants a '?' or a Q-word, and an
-# imperative has neither. That is a document-level change, not an ask, and it is
-# the single biggest unlock left in this domain (8 of its 18 items).
+# THE IMPERATIVE FORM needed no kernel change after all: `imperative` is already
+# an ASK_CUE_SENSE (engine.py), so "Convert 5 kilometers to meters" becomes a
+# question the moment 'convert' carries that sense in the LEXICON — data, exactly
+# as 'compute'/'calculate'/'determine' already do. See lexicon/a-f.yaml's
+# 'convert' entry for why the other difg imperatives ('find'/'evaluate'/'solve')
+# are deliberately NOT admitted.
 rules: []
 asks:
   - id: ask/unit-convert-how-many-in
@@ -55,6 +57,23 @@ asks:
         - {slot: to, cat: measure_unit}
         - {lit: is}
         - {slot: qty, cat: measure_unit}
+    resolves:
+      consumer: unit-convert
+      value: "{qty.value}"
+      from: "{qty}"
+      to: "{to}"
+
+  - id: ask/unit-convert-imperative
+    # "Convert 5 kilometers to meters" / "Convert 500 grams to kilograms" — the
+    # imperative frame. Reachable only because 'convert' carries the `imperative`
+    # sense (lexicon/a-f.yaml); the ask itself is the same shape as the
+    # interrogative ones, one frame over.
+    match:
+      question:
+        - {lit: convert}
+        - {slot: qty, cat: measure_unit}
+        - {lit: to}
+        - {slot: to, cat: measure_unit}
     resolves:
       consumer: unit-convert
       value: "{qty.value}"

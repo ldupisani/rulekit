@@ -39,3 +39,41 @@ conversions:
 - from: pound
   to: ounce
   factor: 16.0
+# --- difg unit_conversion pairs (added with the unit-convert ask family) ------
+# Metric<->imperial and metric-prefix factors difg's unit_conversion domain asks
+# for. DATA, like every pair above. The registry stores both directions and
+# ERRORS on a pair declared twice with a different factor, so these cannot
+# silently contradict the existing table — and none of them duplicates a pair it
+# already held (checked: centimeter/inch, meter/foot, gallon/liter and
+# liter/milliliter were all absent in both directions).
+#
+# BLAST RADIUS IS REAL and is why these ship in their own increment: this same
+# table drives the word-problem convertible-sibling fold
+# (`_entity_total_convertible`, "3 GALLONS of milk... 128 ounces"), so a new pair
+# lets two units that never folded before fold now. Gated on all five
+# word-problem corpora.
+#
+# The SYMBOL forms need no new mechanism — a symbol is a number-form of its unit,
+# and the plural map already handles it ('kg' was ALREADY listed among kilogram's
+# plurals; 'km' was simply missing from kilometer's and is now added, mirroring
+# it). An earlier draft of this comment claimed symbols needed an abbreviation
+# mechanism of their own: that was WRONG, and the constitution review caught it.
+# Check `plural_to_singular` before believing a symbol is unreachable.
+- from: centimeter
+  to: inch
+  factor: 0.3937007874015748
+- from: meter
+  to: foot
+  factor: 3.280839895013123
+- from: gallon
+  to: liter
+  factor: 3.785411784
+- from: liter
+  to: milliliter
+  factor: 1000.0
+- from: pound
+  to: kilogram
+  factor: 0.45359237
+- from: mile
+  to: kilometer
+  factor: 1.609344

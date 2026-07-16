@@ -893,7 +893,16 @@ entries:
   kilometer:
     senses:
     - noun
-    plural: kilometers
+    plural:
+    # 'km' is the SYMBOL, and a symbol is a number-form of its unit exactly as
+    # 'kg' already is for kilogram two entries up — that entry is the precedent,
+    # this one just lacked the mirror. Without it 'km' keeps its own standalone
+    # lemma and no conversion keyed on 'kilometer' can ever be reached from it
+    # ("How many km is 5 miles?"). The plural map canonicalizes even when the
+    # surface has its own entry (senses.py), which is why 'km' can stay listed
+    # elsewhere without conflicting.
+    - km
+    - kilometers
   kilowatts:
     senses:
     - noun
@@ -1564,9 +1573,14 @@ entries:
   milk:
     senses:
     - noun
-  milliliters:
+  milliliter:
+    # The SINGULAR was missing while 'milliliters' had its own entry, so the
+    # plural never canonicalized (lemma stayed 'milliliters') and no conversion
+    # could key on it. `plural:` restores the one-identity invariant every other
+    # unit noun already has — a noun's number-forms share ONE lemma.
     senses:
     - noun
+    plural: milliliters
   million:
     senses:
     - noun

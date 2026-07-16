@@ -14,7 +14,7 @@ engine halves (ask-shape, reading) measured out as a LONG TAIL — GSM8K coverag
 next lever was always a DIFFERENT corpus. That is now the whole game. Proof: `docs/negative-results.md`
 → "The reading gap is a LONG TAIL"; brief `docs/reading-gap.md` is CLOSED.
 
-### FRONTIER 1 (active): difg domain-mining — `projects/difg/`, difg-DEV 0 → 34 correct, 0 wrong (of 342 items)
+### FRONTIER 1 (active): difg domain-mining — `projects/difg/`, difg-DEV 0 → 41 correct, 0 wrong (of 342 items)
 EIGHT domains are solved via one reusable **template**:
 *select an operation/formula by NAME via a category-gated ask, bind the operands, apply a general
 operation* — words in YAML, operations in a consumer branch, no per-domain Python.
@@ -28,7 +28,7 @@ operation* — words in YAML, operations in a consumer branch, no per-domain Pyt
 | trigonometry | `4ed9956` | 4/4 | one `angle_degrees` gate; two asks (`sine`/`sin`) → ONE opcode |
 | coordinate | `720c071` | 3/4 | a `point` slot type: "(3,4)" stops reading as the scalar 34 |
 | vector | `7145a89` | 2/2 | whole-list read of a SPACED tuple; forced the `bare:` compound gate |
-| unit_conversion | (this session) | 2/18 | the FIRST typed-gold domain; asks the conversions table |
+| unit_conversion | `a241f38`+ | 11/18 | the FIRST typed-gold domain; imperative frame; asks the conversions table |
 
 `arithmetic` is the lowest-cost variant of the template and the one to imitate: operator words are
 skeleton LITERALS in the ask (or the multiplier/percent unit numbers.py already folds), so it needed
@@ -69,20 +69,31 @@ identical token stream. Any such pass would break every statistic list. If a spa
 be a real `point`, the ONLY route is teaching `tokenize.py` to preserve parens — a change under every
 corpus, almost certainly not worth it.
 
-**`unit_conversion` is 2/18 and the rest is CHEAP — the blockers are named, in yield order:**
-1. **The IMPERATIVE form (8 items): "Convert 5 kilometers to meters" is not a question** — `reason: no
-   question found`. Q-detection wants a '?' or a Q-word and an imperative has neither. This is a
-   DOCUMENT-level change, the single biggest unlock left here, and it is shared machinery → gate hard.
-2. **Missing conversion PAIRS (6 items):** mile↔km, meter↔foot, centimeter↔inch, gallon↔liter,
-   liter↔milliliter, kilobyte↔byte/gigabyte↔megabyte. Pure DATA (`conversions.yaml`) — but that table
-   also drives word-problem convertible-unit folds ("3 gallons of milk... 128 ounces"), so a new pair
-   has real blast radius. Its own increment, its own gate.
-3. **`second` is an ADJECTIVE in the lexicon** (the ordinal, not the time unit), so it cannot join the
+**`unit_conversion` is 11/18. What is LEFT, and why:**
+1. **Temperature (2 items) is AFFINE** — `rulekit/conversions@1` holds a FACTOR only, no offset.
+   Needs a schema change for 2 items; probably not worth it.
+2. **Digital units (4 items)**: byte/kilobyte/megabyte/gigabyte/terabyte are not in the lexicon at all,
+   and "60 miles per hour to kilometers per hour" is a COMPOUND unit (km/h) — a per-unit rate, not a
+   member of `measure_unit`.
+3. **`second` is an ADJECTIVE in the lexicon** (the ordinal, not the time unit) so it cannot join the
    noun-rooted `measure_unit` category — the registry rejects it outright. Costs 1 item. Do NOT add a
-   noun sense: that is the exact trap that broke the `average` consumer (pytest caught it, not the dev
-   gate). A literal-variant ask is the sanctioned fix.
-4. Temperature (2 items) is AFFINE and `rulekit/conversions@1` holds a FACTOR only — no offset. Needs
-   a schema change; probably not worth it for 2 items.
+   noun sense: that is the trap that broke the `average` consumer (pytest caught it, not the dev gate).
+   A literal-variant ask is the sanctioned fix.
+
+**IMPERATIVES: the mechanism already existed — `imperative` is an ASK_CUE_SENSE (`engine.py`), so a
+task sentence with no '?' is a question the moment its verb carries that sense in the LEXICON. Data,
+not a kernel change.** `compute`/`calculate`/`determine` already had it; `convert` now does. **50 of
+342 difg-DEV items die at "no question found"** and this is how each is unlocked — but ONE WORD AT A
+TIME, measured: `convert` opens exactly 2 word-problem sentences, whereas **`find` opens 76 ASDiv-dev,
+69 SciBench-dev and 4 GSM8K TEST** sentences, and `evaluate`/`solve` appear only in SciBench (which
+must hold 0 commits). Never admit an imperative cue without counting its sentence-initial hits per
+corpus first.
+
+**A UNIT SYMBOL needs no new mechanism** — it is a number-form, carried by the ordinary plural map
+('kg' was already among kilogram's plurals; 'km' was missing from kilometer's and now mirrors it).
+A comment here once claimed symbols needed an abbreviation mechanism of their own; the constitution
+review caught that it was WRONG and it was worth +2 items. **Check `plural_to_singular` before
+believing a symbol is unreachable.**
 
 **ASK RANKING CHANGED (this session), and it is shared machinery:** `match_ask` ranked ONLY by consumed
 units, with **alphabetical id order** as the tie-break — which encodes nothing. "How many inches are in
@@ -102,7 +113,7 @@ a bigger, more honest denominator, not a regression. See `docs/difg-corpus-plan.
 **What landed.** difg now declares `gold: typed` and its builder keeps every typed gold verbatim, so
 the loader classifies the payload STRUCTURALLY (`firewall.parse_typed_gold`) instead of dropping it.
 difg-DEV **148 → 342 items** (TEST 49 → 107, still reserved). 194 previously-invisible items now have
-a mining signal. Firewall re-verified on the rebuild: 0 pre-existing items missing, 0 golds changed,
+a mining signal; `unit_conversion` has since gone 0 → 11 of 18 on the back of it. Firewall re-verified on the rebuild: 0 pre-existing items missing, 0 golds changed,
 **0 dev/test crossings** — the bucket is `md5(SALT + question)`, per-question, so admitting items
 cannot move an old one. `gold` defaults absent = today's float path, so no other corpus can even
 reach the typed branch.
@@ -144,7 +155,7 @@ new code. **Adding one is a two-file recipe.**
 | `projects/svamp/` | **adversarial variations**, harshest in-domain | **80.0%** (12/3), fresh worklist |
 | `projects/mawps/` | classic arithmetic repo | **100%** (9/0), low coverage |
 | `projects/scibench/` | **out-of-domain** college science; safety check | **0/0** — a rising wrong = the engine guessing |
-| `projects/difg/` | multi-domain COVERAGE corpus (not precision); `gold: typed` | 34/0 of **342**, 8 domains |
+| `projects/difg/` | multi-domain COVERAGE corpus (not precision); `gold: typed` | 41/0 of **342**, 8 domains |
 
 The four HF-backed ones rebuild with `uv run --with datasets python projects/<name>/build_corpus.py`;
 difg reads a LOCAL difg checkout (`uv run python projects/difg/build_corpus.py`, no `--with datasets`).
@@ -158,8 +169,8 @@ synth-GroupTotal fix + consumer both paths (`2439b82`, `ab878ad`) · container+l
 ## Current numbers (verified at `a241f38`)
 
 - GSM8K dev-train **104/0** · dev-holdout **40/0** · TEST **92.3%** (12/1) · curated suite **52/52**
-- pytest **1135** (verified 2026-07-16) · lint: 0 errors, 1 intended warning (fraction-of-remnant subsumption — documentation, not a bug)
-- Cross-corpus DEV: ASDiv 89.4% (43/5) · SVAMP 80.0% · MAWPS 100% · SciBench 0/0 · difg 34/0 of 342 (typed gold)
+- pytest **1142** (verified 2026-07-16) · lint: 0 errors, 1 intended warning (fraction-of-remnant subsumption — documentation, not a bug)
+- Cross-corpus DEV: ASDiv 89.4% (43/5) · SVAMP 80.0% · MAWPS 100% · SciBench 0/0 · difg 41/0 of 342 (typed gold)
 - bench wall: dev-train 16.6s → 9.0s (trace opt-out) → 1.7s at `--jobs 12`. `--jobs` defaults to 1;
   spend it in the SERIAL integration tail, never in the implementers' gates (they already run concurrently).
 

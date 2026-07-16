@@ -21,6 +21,7 @@ members:
     - meter
     - centimeter
     - kilometer
+    - mile
     - foot
     - inch
     - yard
@@ -29,6 +30,8 @@ members:
     - ounce
     - pound
     - gallon
+    - liter
+    - milliliter
     - pint
     - quart
     # 'second' is DELIBERATELY ABSENT. In the lexicon it is an ADJECTIVE — the
