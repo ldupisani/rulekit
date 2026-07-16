@@ -170,6 +170,12 @@ SLOT_TYPES = (
     "number", "fraction", "multiplier", "name", "noun", "plural", "counted",
     "entity", "verb", "auxiliary", "modal", "future_modal", "pronoun", "word",
     "adjective", "possessed", "qualified", "percent",
+    # a COORDINATE TUPLE ("(3,4)", "(1,2)") — numbers.py's _TUPLE gives it
+    # value_kind "tuple" and a `components` feature; senses.py gives it the
+    # `tuple` sense. Structurally disjoint from every other slot type: no
+    # scalar-valued unit is ever a tuple and vice versa, so a `point` slot can
+    # never tie-break collide with a `number` slot.
+    "point",
     # mining candidate conjunct-comparative-quantities: a BARE common-noun
     # holder ("the vehicle", "the animal") — sense noun, no `owner` feature
     # (never a possessive-merged noun, see `possessed`), no `qualifier`

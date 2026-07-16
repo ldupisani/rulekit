@@ -1,0 +1,82 @@
+format: rulekit/rules@1
+# The difg coordinate-geometry domain: a NAMED quantity over two POINTS —
+# "What is the distance between the points (0,0) and (3,4)?", "What is the
+# distance from (0,0) to (5,12)?", "What is the slope between (2,3) and (5,3)?".
+# The same "select an operation by NAME, bind the operands, apply a general
+# function" template as geometry / list_statistic / number_theory / arithmetic /
+# trigonometry, with the quantity names as grammatical-skeleton literals (the
+# arithmetic variant), so each ask carries its own structural opcode and no
+# quantity category is needed.
+#
+# THE OPERAND IS THE POINT OF THIS INCREMENT. "(3,4)" used to read as the SCALAR
+# 34: the tokenizer strips the parens and numbers.py's _DIGIT accepted any comma
+# placement as a thousands separator. That was a latent confident-wrong. _DIGIT
+# now requires a real thousands grouping and _TUPLE claims what is left, giving a
+# `point`-typed unit with a `components` feature — so these asks bind a POINT,
+# not a flattened number. The enabler and this payoff ship together on purpose
+# (an enabler must be bought).
+#
+# SHAPE NOTES:
+#   - 'the' is auto-skipped (SKIPPABLE_SENSES), as is the trailing '?'.
+#   - 'points' needs no lexicon entry — it already resolves through the plural
+#     map to 'point'.
+#   - There is deliberately NO "slope of the line through ..." ask: 'line' is
+#     not admitted (see lexicon/coordinate-ops.yaml), so that item declines.
+rules: []
+asks:
+  - id: ask/coord-distance-between
+    # "the distance between the points (0,0) and (3,4)" — 'points' is optional
+    # so "the distance between (0,0) and (3,4)" reads identically.
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {lit: distance}
+        - {lit: between}
+        - opt:
+            - {lit: points}
+        - {slot: p1, type: point}
+        - {lit: and}
+        - {slot: p2, type: point}
+    resolves:
+      consumer: coordinate
+      op: distance
+      p1: "{p1.components}"
+      p2: "{p2.components}"
+
+  - id: ask/coord-distance-from
+    # "the distance from (0,0) to (5,12)" — the from/to frame instead of
+    # between/and. Same opcode.
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {lit: distance}
+        - {lit: from}
+        - {slot: p1, type: point}
+        - {lit: to}
+        - {slot: p2, type: point}
+    resolves:
+      consumer: coordinate
+      op: distance
+      p1: "{p1.components}"
+      p2: "{p2.components}"
+
+  - id: ask/coord-slope-between
+    # "the slope between (2,3) and (5,3)"
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {lit: slope}
+        - {lit: between}
+        - opt:
+            - {lit: points}
+        - {slot: p1, type: point}
+        - {lit: and}
+        - {slot: p2, type: point}
+    resolves:
+      consumer: coordinate
+      op: slope
+      p1: "{p1.components}"
+      p2: "{p2.components}"

@@ -1,0 +1,24 @@
+format: rulekit/lexicon@1
+# The ONE word the `coordinate` ask family (rules/coordinate-ops.yaml) needs the
+# unknown-word guard to admit: "the SLOPE between (2,3) and (5,3)". 'distance'
+# and 'point' were already admitted, and 'points' already resolves through the
+# plural map (points -> point), so nothing else is needed — and an explicit
+# 'points' entry would be a redundant second identity for a word that already
+# has one (the 'average' lesson: adding a noun sense to an already-resolved word
+# broke its consumer, and pytest caught it, not the dev gate).
+#
+# Collision-grepped across every corpus before admission (admitting a word
+# REMOVES a decline guard, so its blast radius is a confident-wrong — the lesson
+# 'tan' taught in lexicon/trig-ops.yaml): 'slope' appears in ZERO items outside
+# difg. Not quarantined.
+#
+# DELIBERATELY NOT ADMITTED — 'line'. It would buy exactly ONE difg coverage
+# item ("the slope of the LINE through (1,2) and (3,6)"), and it appears in 46
+# word-problem items ("waiting in line", "a line of cars") including 4 in GSM8K
+# TEST. Admitting it lifts the decline guard on all of them, so the downside is
+# a TEST precision drop against a corpus sitting at a hard-won 92.3%, and the
+# upside is one item on a corpus that reports COVERAGE and not precision at all.
+# Precision before coverage (rule 4): the item stays declined. If it is ever
+# wanted, it must be bought with a full gate + a deliberate TEST look.
+entries:
+  slope: {senses: [noun]}

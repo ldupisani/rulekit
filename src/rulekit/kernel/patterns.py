@@ -98,6 +98,11 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
             return kind == "fraction" and bool(unit.features.get("percent"))
         if t == "multiplier":
             return kind == "multiplier"
+        if t == "point":
+            # a COORDINATE TUPLE ("(3,4)") — numbers.py's _TUPLE. Disjoint from
+            # every scalar slot type by construction: a tuple unit carries no
+            # `value`, and a valued unit is never value_kind "tuple".
+            return kind == "tuple"
         if t == "name":
             # a RESOLVED pronoun satisfies a name slot (it denotes its
             # antecedent); an unresolved one never does (definitive-or-decline)
@@ -367,6 +372,12 @@ def _slot_value(unit: Unit, attr: str | None) -> str:
     if attr == "value":
         v = unit.features.get("value")
         return str(v) if v is not None else ""
+    if attr == "components":
+        # the comma-separated components of a `point`-typed slot (numbers.py
+        # _TUPLE) — an ask's `p1: "{p1.components}"` template reads this and the
+        # `coordinate` consumer splits it. A tuple has no scalar `value`, so
+        # this is the only way to read one.
+        return unit.features.get("components", "") or ""
     if attr == "owner":
         # the possessive owner of a `possessed`-typed slot (condense.py
         # merge-possessive) — an ask's `entity_owner: "{who.owner}"`

@@ -15,7 +15,33 @@ import re
 from ..data.registry import Registry
 from .model import Reading, Word
 
-_DIGIT = re.compile(r"^\$?(\d[\d,]*(?:\.\d+)?)(%?)$")
+# A comma inside a digit token is a THOUSANDS SEPARATOR, and a thousands
+# separator always groups exactly three digits ("1,234", "12,345,678"). The
+# original pattern here was `\d[\d,]*`, which accepted ANY comma placement and
+# then stripped the commas — so "3,4" silently read as the number 34. No English
+# text means that; every real misread was a COORDINATE PAIR ("(3,4)") being
+# flattened into a bogus scalar. Measured blast radius of the tightening: ZERO
+# items across GSM8K / ASDiv / SVAMP / MAWPS (no word problem contains the
+# pattern) — it only ever fired on difg coordinates and SciBench LaTeX.
+#
+# The two alternatives are ORDERED, and the order IS the ambiguity resolution:
+# a validly-grouped token is a number first ("1,234" -> 1234, which GSM8K money
+# depends on), and only a token that CANNOT be a thousands-separated number is
+# offered to _TUPLE below. So "(1,234)" as a coordinate pair would read as the
+# scalar 1234 — accepted and documented; no corpus item has that shape.
+# The trailing `,?` is PUNCTUATION, not a separator, and it is load-bearing: in
+# a spaced list ("the highest of 12, 45, 7, and 33") the tokenizer keeps the
+# comma on the fold ("12,"), and the old permissive pattern absorbed it by
+# accident. Dropping it broke three list_statistic items — the difg gate caught
+# it (0 BROKE is the gate, and it earned its keep here).
+_DIGIT = re.compile(r"^\$?(\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?)(%?),?$")
+# A COORDINATE TUPLE: comma-separated numbers that are NOT a valid thousands
+# grouping — "0,0", "3,4", "1,2". Structural (digit morphology), never a lexicon
+# fact, exactly like _DIGIT and _ORDINAL. The surrounding parens are already
+# stripped by the tokenizer, so the comma grouping is the only signal there is.
+# Carries no `value`: a tuple is not a scalar, so guards.py's value-accounting
+# never demands it be consumed as a quantity (the `ordinal` precedent above).
+_TUPLE = re.compile(r"^(\d+(?:\.\d+)?(?:,\d+(?:\.\d+)?)+)$")
 _SLASH_FRACTION = re.compile(r"^(\d+)/(\d+)$")
 # Fused ordinal ("5th", "21st", "3rd") — productive digit+suffix morphology,
 # structural like digit parsing itself, not a lexicon fact. An ordinal is an
@@ -60,6 +86,17 @@ def annotate_numbers(reading: Reading, reg: Registry) -> Reading:
             if fold.startswith("$"):
                 changes["currency"] = True
             reading.record("annotate-number", unit, changes, f"digit token {unit.surface!r}")
+        elif _TUPLE.match(fold):
+            # Reached ONLY when _DIGIT declined, i.e. the commas are not a valid
+            # thousands grouping — see _TUPLE. Components stay a STRING because
+            # every ask template interpolates to text (_slot_value); the
+            # `coordinate` consumer splits them back out.
+            comps = _TUPLE.match(fold).group(1)
+            reading.record(
+                "annotate-number", unit,
+                {"value_kind": "tuple", "components": comps},
+                f"coordinate tuple {unit.surface!r}",
+            )
         elif fold in reg.numbers:
             value = reg.numbers[fold]
             # word-number compounds: "twenty five" -> 25 (merge right unit)

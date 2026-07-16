@@ -32,7 +32,11 @@ def annotate_senses(reading: Reading, reg: Registry) -> Reading:
         if surface in PUNCT:
             reading.record("annotate-sense", unit, {"senses": ["punct"]}, "punctuation")
             continue
-        if "value" in unit.features:
+        # The `or` is ADDITIVE, not a widening of the shared gate: every other
+        # number annotation sets `value` and `value_kind` together, so this
+        # cannot pull any pre-existing unit down a new path. A coordinate tuple
+        # is the one annotation with a kind but no scalar (numbers.py _TUPLE).
+        if "value" in unit.features or unit.features.get("value_kind") == "tuple":
             # a currency amount IS a counted noun ("$5" ≡ "5 dollars"); its
             # measure word comes from the currencies map (data, not code)
             if unit.features.get("currency") and "$" in reg.currencies:
@@ -51,6 +55,10 @@ def annotate_senses(reading: Reading, reg: Registry) -> Reading:
             sense = {
                 "count": "value", "multiplier": "multiplier", "fraction": "fraction",
                 "ordinal": "ordinal",
+                # a coordinate tuple ("(3,4)" -> numbers.py's _TUPLE): its own
+                # sense, so it is never an unknown word and never a `value` (it
+                # carries no scalar and demands no `quantifies` obligation).
+                "tuple": "tuple",
             }[kind]
             reading.record("annotate-sense", unit, {"senses": [sense]}, f"value token ({kind})")
             continue
