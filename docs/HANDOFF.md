@@ -13,8 +13,8 @@ engine halves (ask-shape, reading) measured out as a LONG TAIL — GSM8K coverag
 next lever was always a DIFFERENT corpus. That is now the whole game. Proof: `docs/negative-results.md`
 → "The reading gap is a LONG TAIL"; brief `docs/reading-gap.md` is CLOSED.
 
-### FRONTIER 1 (active): difg domain-mining — `projects/difg/`, difg-DEV 0 → 27 correct, 0 wrong
-The numeric slice is 197 items over 58 domains. FIVE domains are solved via one reusable **template**:
+### FRONTIER 1 (active): difg domain-mining — `projects/difg/`, difg-DEV 0 → 30 correct, 0 wrong
+The numeric slice is 197 items over 58 domains. SIX domains are solved via one reusable **template**:
 *select an operation/formula by NAME via a category-gated ask, bind the operands, apply a general
 operation* — words in YAML, operations in a consumer branch, no per-domain Python.
 
@@ -25,6 +25,7 @@ operation* — words in YAML, operations in a consumer branch, no per-domain Pyt
 | number_theory | `bf22837` | 4 ops | per-op sub-categories → `math.gcd`/`lcm`/`factorial`/`comb` |
 | arithmetic | `6bdd361` | 7 ops | operator words are grammatical-skeleton literals → ZERO new categories |
 | trigonometry | `4ed9956` | 4/4 | one `angle_degrees` gate; two asks (`sine`/`sin`) → ONE opcode |
+| coordinate | `720c071` | 3/4 | a `point` slot type: "(3,4)" stops reading as the scalar 34 |
 
 `arithmetic` is the lowest-cost variant of the template and the one to imitate: operator words are
 skeleton LITERALS in the ask (or the multiplier/percent unit numbers.py already folds), so it needed
@@ -52,6 +53,16 @@ That is a real operand-binding increment, not a fifth copy of the template — b
 `counted` unit via merge-count, so `{slot: x, type: number}` + `{lit: degrees}` CANNOT match — the
 unit token does not survive the merge. Bind one category-gated slot instead. Confirm any new shape
 with `rulekit solve --trace` BEFORE writing the ask; the trace prints the merge.
+
+**The `point` slot type (`720c071`) is now available and half-spent.** It cost a `numbers.py` change,
+so REUSE it rather than rebuild it. What is still open, in the SAME family (~3 more items):
+`magnitude of the vector (3, 4)`, `dot product of (1, 2, 3) and (4, 5, 6)`, difg-TEST's
+`correlation between [1,2,3] and [2,4,6]`. They need ONE thing: the **SPACED** tuple form. Tokenization
+is inconsistent and this is the whole job — `(1,2)` is ONE token (`1,2` → `_TUPLE` → a point), but
+`(1, 2, 3)` is THREE tokens (`1,` `2,` `3`, each a plain number, because the tokenizer splits on
+whitespace). A merge pass folding adjacent trailing-comma numbers into one point would close it —
+but that pass is in shared code, so gate it hard (see below). Brackets (`[1,2,3]`) also need checking:
+unknown whether the tokenizer strips them as it does parens.
 
 **difg reports COVERAGE, NEVER precision** (79.3% of it is difg's own `example_queries`). Never quote
 its number beside the GSM8K/ASDiv precision numbers. See `docs/difg-corpus-plan.md`.
@@ -92,8 +103,8 @@ synth-GroupTotal fix + consumer both paths (`2439b82`, `ab878ad`) · container+l
 ## Current numbers (verified at `6bdd361`)
 
 - GSM8K dev-train **104/0** · dev-holdout **40/0** · TEST **92.3%** (12/1) · curated suite **52/52**
-- pytest **1090** (verified 2026-07-16) · lint: 0 errors, 1 intended warning (fraction-of-remnant subsumption — documentation, not a bug)
-- Cross-corpus DEV: ASDiv 89.4% (43/5) · SVAMP 80.0% · MAWPS 100% · SciBench 0/0 · difg 27/0
+- pytest **1102** (verified 2026-07-16) · lint: 0 errors, 1 intended warning (fraction-of-remnant subsumption — documentation, not a bug)
+- Cross-corpus DEV: ASDiv 89.4% (43/5) · SVAMP 80.0% · MAWPS 100% · SciBench 0/0 · difg 30/0
 - bench wall: dev-train 16.6s → 9.0s (trace opt-out) → 1.7s at `--jobs 12`. `--jobs` defaults to 1;
   spend it in the SERIAL integration tail, never in the implementers' gates (they already run concurrently).
 
@@ -139,6 +150,12 @@ See `.claude/skills/mine/SKILL.md`. **Standing instruction: push `main` after ev
 - A shared clause-boundary scan (`_is_rate` / `_price_each_value`, used by EVERY verb's rate-marker
   detection) must never be widened globally to fix one caller — the fix is an opt-in parameter,
   defaulted to old behavior. Any tightening of a shared scan needs a FULL dev diff.
+- **`numbers.py` `_DIGIT` is the number reader for EVERY corpus, not "the parser for the thing you are
+  fixing."** Tightening it to reject "3,4" (a coordinate misread as 34) also silently dropped its
+  ACCIDENTAL tolerance of a trailing comma — and in a spaced list the tokenizer keeps the comma on the
+  fold ("12,"), so three unrelated `list_statistic` items BROKE (`720c071`, caught as 3 SOLVED / 3
+  BROKE = REVERT). The pattern's incidental behaviors ARE its contract. Both directions are now pinned
+  in `tests/test_coordinate.py`; keep them there.
 - A widened slot TYPE (e.g. `entity` vs `name`) must be applied to the SPECIFIC ask/rule ids that need
   it, never via blanket find-replace — most `who: name` slots are intentionally name-only. (Caught with
   `replace_all` during the population re-land.)
@@ -157,6 +174,10 @@ See `.claude/skills/mine/SKILL.md`. **Standing instruction: push `main` after ev
   admission needs a collision grep across ALL corpora FIRST. `4ed9956` withheld 'tan' (a surname in
   GSM8K TEST, a verb in train) and 'cos' (LaTeX in SciBench) on exactly this basis; the class was
   fully served without them. Withholding a colliding word costs nothing when no ask needs it.
+  `720c071` withheld 'line' the same way and PAID one difg item for it — the right trade: one item on
+  a COVERAGE corpus is never worth risking GSM8K TEST at 92.3%. Check the plural map before admitting
+  a plural: 'points' already resolved via points→point, and a redundant second identity is the bug
+  that broke 'average'.
 - Asks match by specificity (max consumed units); ask templates referencing unbound optional slots omit
   the key; only `{slot.value}` slots count as consumed.
 - The verb→dobj binding captures only the FIRST conjunct in "buys X and Y" for verbs outside
