@@ -75,6 +75,14 @@ class RuleMatchResult:
 
 
 def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
+    if token.bare and (
+        unit.features.get("qualifier") is not None or unit.features.get("owner") is not None
+    ):
+        # OPT-IN (schemas.MatchToken.bare, default False — every pre-existing
+        # slot is byte-identical): a compound noun keeps its HEAD's lemma, so a
+        # category gate cannot tell "the dot product" from "the product". An
+        # operation-naming slot sets `bare: true` to demand the head itself.
+        return False
     if token.type is not None:
         t = token.type
         sense = unit.sense()

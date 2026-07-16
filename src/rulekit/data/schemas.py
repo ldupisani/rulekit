@@ -199,6 +199,22 @@ class MatchToken(StrictModel):
     slot: str | None = None
     type: str | None = None  # builtin slot type
     cat: str | None = None  # category gate (slot form)
+    # OPT-IN: require the slot's noun to be BARE — no compound modifier
+    # (condense merge-compound) and no possessive owner. A category gate matches
+    # on the unit's LEMMA, and a compound noun keeps its HEAD's lemma, so "the
+    # dot product" satisfies a `statistic`-gated slot exactly as "the product"
+    # does — and answers 720 (the product of all six components) for a dot
+    # product whose answer is 32.
+    #
+    # This is deliberately NOT the default, because for most categories a
+    # compound IS its head: a "guard dog" is a dog, a "school bus" is a bus, and
+    # every entity/superordinate gate depends on that staying true. It is only
+    # the OPERATION-NAMING categories where the head is a false friend — a dot
+    # product is not a product, a cross product is not a product. Set it there
+    # and nowhere else; defaulting to False keeps every existing slot byte-
+    # identical (the "opt-in parameter, defaulted to old behavior" rule for any
+    # change to a shared matcher).
+    bare: bool = False
     opt: list["MatchToken"] | None = None  # optional sub-sequence
 
     @model_validator(mode="after")
@@ -208,6 +224,13 @@ class MatchToken(StrictModel):
             raise ValueError("a match token is exactly one of lit/slot/opt")
         if self.slot is not None and (self.type is None) == (self.cat is None):
             raise ValueError("a slot needs exactly one of type/cat")
+        if self.bare and self.slot is None:
+            raise ValueError("`bare` only qualifies a slot")
+        if self.bare and self.type in ("possessed", "qualified"):
+            # `possessed`/`qualified` are DEFINED by carrying an owner/qualifier,
+            # which is exactly what `bare` forbids — the combination is always
+            # false, so it is a authoring mistake, not a narrow gate.
+            raise ValueError(f"`bare` contradicts type {self.type!r} (always false)")
         if self.type is not None and self.type not in SLOT_TYPES:
             raise ValueError(f"unknown slot type {self.type!r}")
         return self

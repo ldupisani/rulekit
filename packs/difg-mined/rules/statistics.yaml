@@ -9,11 +9,19 @@ asks:
     # gates on the parent `statistic` category (categories/statistics.yaml), so
     # only a real statistic word triggers it. `first` (type: number) guarantees at
     # least one operand and keeps the match specific.
+    #
+    # `bare: true` — a compound noun keeps its HEAD's lemma, so without it this
+    # gate reads "the DOT PRODUCT of (1, 2, 3) and (4, 5, 6)" as "the product of
+    # ..." and answers 720 (the product of all six components) instead of 32.
+    # A statistic's name is the head itself; a modified one ("dot product",
+    # "cross product") names a DIFFERENT operation, so it must not match here.
+    # Verified: every difg list_statistic item names its statistic bare, so this
+    # is decline-only for anything it newly rejects.
     match:
       question:
         - {lit: what}
         - {lit: is}
-        - {slot: stat, cat: statistic}
+        - {slot: stat, cat: statistic, bare: true}
         - {lit: of}
         - {slot: first, type: number}
     resolves:

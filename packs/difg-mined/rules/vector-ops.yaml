@@ -1,0 +1,51 @@
+format: rulekit/rules@1
+# The difg vector domain: "What is the magnitude of the vector (3, 4)?" -> 5,
+# "What is the dot product of (1, 2, 3) and (4, 5, 6)?" -> 32.
+#
+# THE LIST_STATISTIC VARIANT of the template, not the coordinate one. A SPACED
+# tuple "(1, 2, 3)" is THREE tokens ('1,' '2,' '3' — the tokenizer splits on
+# whitespace and drops the parens entirely), unlike "(1,2)" which is ONE token
+# and reads as a `point`. Since the parens are gone before annotation, "(1, 2, 3)"
+# and the list_statistic list "1, 2, 3" are INDISTINGUISHABLE — so no merge pass
+# can fold spaced tuples into points without breaking every statistic list. The
+# way through is the list_statistic template instead: match a PREFIX anchored on
+# the operation name, and let the consumer read the question's whole number list.
+# Arity is therefore free — magnitude works in any dimension, dot product for any
+# two equal-length vectors.
+#
+# CONSTITUTION: the operation names are grammatical-skeleton literals (the
+# arithmetic variant), each ask carrying its own structural opcode; the FUNCTIONS
+# live in answer.py's `vector` consumer, dispatched on op — never an English word.
+rules: []
+asks:
+  - id: ask/vector-magnitude
+    # "the magnitude of the vector (3, 4)" — 'vector' is optional so "the
+    # magnitude of (3, 4)" reads identically. 'the' is auto-skipped.
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {lit: magnitude}
+        - {lit: of}
+        - opt:
+            - {lit: vector}
+        - {slot: first, type: number}
+    resolves: {consumer: vector, op: magnitude}
+
+  - id: ask/vector-dot
+    # "the dot product of (1, 2, 3) and (4, 5, 6)". condense merges "dot product"
+    # into ONE compound noun (head 'product'), so it anchors as a single literal —
+    # the same fold "square root" taught in rules/arithmetic-ops.yaml.
+    #
+    # This ask is why ask/list-statistic's stat slot now carries `bare: true`: a
+    # compound keeps its HEAD's lemma, so that ask matched "the dot product of..."
+    # as "the product of..." and committed 720 (the product of all six components)
+    # the moment 'dot' was admitted. A dot product is not a product.
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {lit: dot product}
+        - {lit: of}
+        - {slot: first, type: number}
+    resolves: {consumer: vector, op: dot}

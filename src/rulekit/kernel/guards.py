@@ -17,6 +17,12 @@ from .facts import FactStore
 from .model import Reading
 
 _NUMERIC_FACT_FIELDS = ("value", "factor", "offset", "fraction")
+# Consumers that read the WHOLE question number list by construction and log
+# every count as an operand — so value-accounting must not demand that each
+# count bind its own ask slot (only the first does). A CONSUMER name is
+# structure, never an English word (constitution rule 1). See the use site for
+# the contract a member must satisfy.
+_WHOLE_LIST_CONSUMERS = ("list-statistic", "vector")
 
 
 @dataclass
@@ -125,16 +131,22 @@ def check(
             if store is not None else set()
         )
         # A consumer that reads the WHOLE question number list by construction
-        # (list-statistic: "the average of 4, 8, 15, 16, and 42") accounts for
-        # every count in the question — but only the FIRST binds an ask slot, so
-        # the per-count fact check below would wrongly veto the rest. Exempt the
-        # question reading for that consumer (the ask is re-derived, as
-        # answer-accounting does). Every arithmetic ask still checks its question.
+        # (list-statistic: "the average of 4, 8, 15, 16, and 42"; vector: "the dot
+        # product of (1, 2, 3) and (4, 5, 6)") accounts for every count in the
+        # question — but only the FIRST binds an ask slot, so the per-count fact
+        # check below would wrongly veto the rest. Exempt the question reading for
+        # those consumers (the ask is re-derived, as answer-accounting does).
+        # Every arithmetic ask still checks its question.
+        #
+        # Membership is the CONSUMER's contract, not a convenience: a consumer
+        # belongs here only if it reads every count in the question and logs them
+        # all as operands. Both do (each calls `evaluate` over its whole list).
+        # Adding one that does NOT would silently disable the guard for its asks.
         exempt_question = None
         if question is not None:
             from .patterns import match_ask
             qm = match_ask(question, reg)
-            if qm is not None and qm[1].get("consumer") == "list-statistic":
+            if qm is not None and qm[1].get("consumer") in _WHOLE_LIST_CONSUMERS:
                 exempt_question = question
         for reading in readings:
             if reading is exempt_question:

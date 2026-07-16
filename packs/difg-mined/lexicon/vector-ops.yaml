@@ -1,0 +1,15 @@
+format: rulekit/lexicon@1
+# Vocabulary for the difg vector domain (rules/vector-ops.yaml): "the magnitude
+# of the vector (3, 4)", "the dot product of (1, 2, 3) and (4, 5, 6)".
+#
+# Collision-grepped across every corpus before admission (admitting a word
+# REMOVES a decline guard — see lexicon/trig-ops.yaml):
+#   - 'vector' / 'magnitude' — ZERO occurrences in GSM8K / ASDiv / SVAMP / MAWPS,
+#     so no word-problem TEST exposure. They DO appear in SciBench (39 items,
+#     physics LaTeX), which must hold at 0 commits — that gate is the arbiter.
+#   - 'dot' — 2 GSM8K train items, both covered by the dev gate.
+# None quarantined.
+entries:
+  vector: {senses: [noun]}
+  magnitude: {senses: [noun]}
+  dot: {senses: [noun]}
