@@ -967,3 +967,35 @@ collapse on contact (difg's 243-item pool into a long tail; 177 -> 5; 508 -> 8).
 The walk is cheap and the brief is expensive — walk FIRST, and walk by DECLINE
 REASON, which names the blocker, rather than by surface, which names only the
 shape.
+
+### Addendum: the 5 start-state items are TWO mechanisms, not one (walked by FACT STRUCTURE)
+
+The recommendation above — "3 confident-wrongs, one class: invert the fold" — is
+WRONG at the mechanism level, and only reading the FACTS showed it. Surface said
+one class. Decline reason could not help: these items COMMIT, so they have no
+decline reason. The fact store settles it:
+
+```
+Paco:    paco/cookie/19 (eat)   paco/cookie/35 (have)   <- SAME entity
+Rachel:  rachel/apple/3 (pick)  tree/apple/4 (have)     <- DIFFERENT entities
+Maria:   maria/fish/16 (take)   tank/fish/3 (have)      <- DIFFERENT entities
+```
+
+- **SAME-ENTITY INVERSION (3 items):** the asked entity holds BOTH the events and
+  the anchor, so `_entity_total` already folds `anchor + Σ(signed events)` and the
+  start state is `anchor − Σ(signed events)`. Paco: 35 − (−19) = 54. The 2 ASDiv
+  declines whose premises yield Quantity+Quantity are also same-entity ('person',
+  'rachel'), so they join THIS group, not the one they look like.
+- **SOURCE-TRANSFER (2 items):** the asked entity (tree/tank) holds ONLY the
+  anchor. The removal is an event on the AGENT — "Rachel picked 3 apples FROM HER
+  TREE" folds as `rachel/apple/3`, and the tree never loses anything. There is
+  nothing to invert. These need the source-marked transfer ("from X" / "out of X"
+  debits X) — a different, larger mechanism, and NOT a start-state fix at all: the
+  tree's CURRENT total is equally unread.
+
+**The lesson, one grain finer than "a cluster is not a class":** walking by
+DECLINE REASON is better than walking by surface, and still not enough for
+CONFIDENT-WRONGS — a wrong answer has no decline reason to cluster on. Walk those
+by FACT STRUCTURE (which entity holds what), because that is what the consumer
+actually reads. Two items can share a question shape, a marker, a gold arithmetic
+(a + b) and an error direction, and still be two mechanisms.
