@@ -1,7 +1,7 @@
 # Session handoff — 2026-07-16
 
 Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
-State is committed through `89dde5a` on `main` (github.com/ldupisani/rulekit).
+State is committed through `95571e6` on `main` (github.com/ldupisani/rulekit).
 Always check `git status` / `git log origin/main..HEAD` before assuming push parity.
 
 > ## ➡ FOLIO IS BUILT, BENCHED AND LANDED — **919 DEV items, 0 correct / 0 WRONG** (`f7b059c`).
@@ -19,50 +19,47 @@ Always check `git status` / `git log origin/main..HEAD` before assuming push par
    serializable`), so the `rulekit diff` ship gate was silently unavailable for difg — the ACTIVE
    frontier — and folio. Fixed in `d0a818e`; GSM8K snapshots verified byte-identical.
 
-### ➡ THE PRECISION WORKLIST — **2 confident-wrongs left in the whole system**, and 1 is UNWINNABLE
+### ✅ THE PRECISION WORKLIST IS EMPTY — **zero confident-wrongs in the whole system**
 
-**"The hard tail" was FALSE** (this file said so; reading the items refuted it — full table in
-`docs/negative-results.md` → "The 7 confident-wrongs triaged"). **Five of the seven are now gone**
-(`2b8430b` SVAMP ×2 → 100% · `a874887` ASDiv ×1 · `89dde5a` ASDiv ×2), NONE of which needed a TEST
-look and none of which cost a single correct answer. GSM8K 104/0, SVAMP 13/0, MAWPS 9/0, difg 44/0,
-folio 0/0 and SciBench 0/0 have no wrongs at all; the 2 below are the entire remaining worklist.
-
-| item | exp → got | class | next |
+| corpus | | corpus | |
 |---|---|---|---|
-| ~~"apples **to begin with**"~~ | ~~7→4~~ | start-state | **DECLINES** `89dde5a` — 7 needs source-marked transfer, still unbuilt |
-| ~~"fish **to start with**"~~ | ~~19→3~~ | start-state | **DECLINES** `89dde5a` — same |
-| ~~Ben/John marbles~~ | ~~17→16.5~~ | possessive fraction | **FIXED** `a874887` — the brief below was WRONG about the mechanism |
-| "9 books **and 1 book**" | 170→155 | conjunct dobj | first-conjunct-only, said to be CLOSED for purchase verbs — an intervening PP re-opens it |
-| London/Blair age | 6→11 | **POISONED GOLD** | ⚠ **UNWINNABLE — never chase** |
+| gsm8k dev-train | **104/0** | asdiv | **43/0 (100%)** |
+| gsm8k dev-holdout | **40/0** | svamp | **13/0 (100%)** |
+| gsm8k suite | **52/52** | mawps | **9/0 (100%)** |
+| gsm8k **TEST** | **12/1 (92.3%)** | difg · folio · scibench | 44/0 · 0/0 · 0/0 |
 
-**⚠ The age item's gold is WRONG, and the arithmetic is not close.** The gap is invariant at 5, so
+**All 7 triaged wrongs are gone** (`2b8430b` `a874887` `89dde5a` `a9184d7` `95571e6`) — the handoff
+called them "the hard tail"; reading them refuted it (`docs/negative-results.md` → "The 7
+confident-wrongs triaged"). ONE TEST look was spent in the whole run, and it HELD. **The 1 gsm8k
+TEST wrong is the stable §3a unseen shape, present since look #1** — it is not addressable from DEV.
+
+**What this does NOT mean.** Six of the seven were fixed by DECLINING, not by reading better:
+source-marked transfer, fractional transfer and temporal arithmetic all remain unbuilt, and the
+items that needed them (7 · 19 · 170 · 17) are unreachable, not solved. Precision is now a
+CEILING, not a floor: the next increment is a coverage one, and the first wrong it ships will
+come from here.
+
+**⚠ Two of the five fixes were the SECOND-attempt version. Both first attempts passed ALL SIX
+CORPORA and were still wrong** (the holder-count fraction guard; "start-state + no events →
+decline"), caught only by unit tests encoding contracts no corpus phrases. **The corpora are a
+SAMPLE; the tests are the SPECIFICATION.** Grep the tests for the behavior you are about to change.
+
+**Still unbuilt, and each is now the only route to its items** (do not re-brief them as guards —
+the guards are landed and the reading is what is left):
+- **source-marked transfer** — "Rachel picked 3 apples FROM HER TREE" must debit the tree. Worth
+  2 ASDiv items (7, 19), which now DECLINE. See `packs/arithmetic/rules/start-state.yaml`.
+- **fractional transfer** — `transfer-prepositional` models transfers correctly (two legs, signing
+  from category data) but its amount slot is `type: counted`. Needs the rule AND a possessor-based
+  synth; sizing against the pool is a different, wrong quantity. Worth 1 ASDiv item (17).
+- **noun-after-preposition arbitration** — "books about plants" stays AMBIGUOUS, so it declines
+  rather than reading 170. Solving it means core sense machinery under every corpus.
+- **temporal arithmetic** — the closed month/time seam. The Blair/London item ALSO has a POISONED
+  GOLD (below), so it is worth 0 even if built.
+
+**⚠ ASDiv's London/Blair age gold is WRONG — never chase it.** The gap is invariant at 5, so
 `B_then = 2·L_then` with `B_then − L_then = 5` → London was **5**, six years ago. **The gold (6)
 answers "how many years ago"; the text asks "how old was London then".** A correct engine scores
-WRONG — the base_conversion situation exactly. Do not count it as addressable. (The engine's 11 is
-still a guess — it ignored "several years ago" — but fixing that is worth 0 items HERE and must be
-justified by its class, not this row.)
-
-**⚠ THE "TRANSFER CONSERVATION" BRIEF THAT STOOD HERE WAS WRONG — I inferred the mechanism from the
-arithmetic instead of reading the fact store.** It claimed the giver loses 9 and the receiver gains
-8.5, so "a transfer must move ONE amount". **Neither number exists.** The store says: ONE leg,
-`Quantity(ben, marble, 17.5, give)` — 17.5 is half of **35** (Ben's 18 + John's 17 pooled) — and NO
-receive leg at all, so `|17 − 0.5| = 16.5`. Two defects, both different from the brief. A plausible
-arithmetic story is not a diagnosis; dump the facts.
-
-**FIXED (`a874887`)**: `fraction-of-pronoun` (written for "half OF IT", a pronoun that DENOTES THE
-POOL) was matching "half of **HIS** marbles", where 'his' is a possessive determiner naming a
-POSSESSOR whose holdings are the base. Gated to a measured `pool_pronoun` category.
-
-**WHAT IS STILL OPEN, and it is a real capability brief:** a FRACTIONAL TRANSFER has no rule.
-`arithmetic/transfer-prepositional` (packs/arithmetic/rules/transfer.yaml) already models transfers
-correctly — two legs, signing from CATEGORY DATA — but its amount slot is `type: counted`, so a
-fraction cannot match and the sentence falls through to the consumption rules, which have no
-recipient slot. Building it needs BOTH halves: (1) the rule binding possessor + recipient, and
-(2) a synth sizing the fraction against the POSSESSOR's holdings rather than `_pool_before`. Do not
-brief half of it — sizing against the pool is not a weaker version of (2), it is a different and
-wrong quantity. Worth: 1 ASDiv item today; the 78 GSM8K dev-train + 76 dev-holdout possessive items
-are mostly hard multi-step ("uses 16 of them and then gives half of what is left"), so **count the
-convertible ones before believing the capability is bought.**
+WRONG. It now declines (`95571e6`), which is the only available win.
 
 ### GSM8K is DONE and stays a regression floor
 dev-train **104/0 (100%)**, dev-holdout **40/0**, curated suite **52/52**, **TEST 92.3%** (12/1 —
@@ -465,7 +462,7 @@ new code. **Adding one is a two-file recipe.**
 | Project | Role | Baseline |
 |---|---|---|
 | `projects/gsm8k/` | the mined corpus; now a regression floor | 104/0 dev-train, TEST 92.3% |
-| `projects/asdiv/` | different authors, same task | **95.6%** (43/2) — the only corpus with wrongs left |
+| `projects/asdiv/` | different authors, same task | **100%** (43/0) |
 | `projects/svamp/` | **adversarial variations**, harshest in-domain | **100%** (13/0) — self-comparison guard `2b8430b` |
 | `projects/mawps/` | classic arithmetic repo | **100%** (9/0), low coverage |
 | `projects/scibench/` | **out-of-domain** college science; safety check | **0/0** — a rising wrong = the engine guessing |
@@ -485,8 +482,8 @@ synth-GroupTotal fix + consumer both paths (`2439b82`, `ab878ad`) · container+l
 
 - GSM8K dev-train **104/0** · dev-holdout **40/0** · TEST **92.3%** (12/1, unchanged — no look spent
   this session; see the proof under the FOLIO section) · curated suite **52/52**
-- pytest **1200** · lint: 0 errors, 1 intended warning (fraction-of-remnant subsumption — documentation, not a bug)
-- Cross-corpus DEV: **ASDiv 95.6% (43/2)** · **SVAMP 100% (13/0)** · MAWPS 100% (9/0) · SciBench 0/0 ·
+- pytest **1209** · lint: 0 errors, 1 intended warning (fraction-of-remnant subsumption — documentation, not a bug)
+- Cross-corpus DEV: **ASDiv 100% (43/0)** · **SVAMP 100% (13/0)** · MAWPS 100% (9/0) · SciBench 0/0 ·
   difg 44/0 of 342 (typed gold) · **folio 0/0 of 919** (typed gold)
 - bench wall: dev-train 16.6s → 9.0s (trace opt-out) → 1.7s at `--jobs 12`. `--jobs` defaults to 1;
   spend it in the SERIAL integration tail, never in the implementers' gates (they already run concurrently).
@@ -659,13 +656,15 @@ All recorded in `docs/negative-results.md`:
 - the partitive-entity ask (REVERTED — reintroduces confident-wrongs on event-laden problems; the ROOT
   was subject-gapping, since fixed)
 
-## TEST ledger (124 looks spent)
+## TEST ledger (125 looks spent)
 
 The live ledger is `projects/gsm8k/snapshots/test-ledger.jsonl` (gitignored — this file and the archive
 are the only committed record). The walk, condensed:
 
 `0/1 → 4/1 (80%) → 5/1 (83.3%) → 6/1 (85.7%, look #11 — first genuine coverage gain) → 7/1 (87.5%,
-#56) → 8/1 (88.9%, #64) → 11/1 (91.7%) → 12/1 (92.3%, current floor)`
+#56) → 8/1 (88.9%, #64) → 11/1 (91.7%) → 12/1 (92.3%, current floor; re-confirmed at look #125,
+the 'plants' sense fix — the only look this session, and the only one of six precision fixes that
+could not be proven TEST-neutral by construction)`
 
 Three reverts, all caught by the firewall, all documented in `docs/negative-results.md`:
 - **look #20** — the 12-word vocab batch, 6/2. Reverted; culprit later identified as `fruit`.

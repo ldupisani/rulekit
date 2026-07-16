@@ -1388,3 +1388,63 @@ coverage cost is ~0.
    unread, not half-read — so any new shape here can only turn a decline into a
    decline or a WRONG into a decline. That measurement is what made this a
    precision increment rather than a gamble.
+
+## Zero confident-wrongs: what the last two ASDiv fixes actually cost (2026-07-16)
+
+ASDiv 43/2 → **43/0**, and with it every corpus reaches zero confident-wrongs.
+Both fixes are worth recording for what they were NOT.
+
+### "conjunct dobj" was a SENSE bug, and the handoff's label sent me the wrong way
+
+`170 → 155` was recorded as "a '9 books about plants' parse error (verb
+mis-tag)" and listed under conjunct-dobj binding. The fact store:
+
+```
+Quantity(maggie, book,  9.0, verb='buy')
+Quantity(maggie, book,  1.0, verb='plants')   ← 'plants' sensed as a VERB
+Quantity(maggie, magazine, 10.0, verb='buy')
+```
+
+The conjunct binding is FINE. `plants` was in difg-mined as `senses: [verb]`
+ALONE while `plant` already declared `plural: plants` — a **redundant second
+identity shadowing the plural map**, the exact failure the 'average' invariant
+names. The cascade: 'about' could not bind a verb as its object, so it reached
+past 'plants' to '1 book'; 'plants' then took '1 book' as its own dobj; the fish
+book landed under a verb no category tags and the purchase total dropped it.
+
+It now DECLINES (arbitration cannot choose between the two senses). **Solving it
+(170) needs arbitration to prefer a noun after a preposition — core sense
+machinery, deliberately not attempted for one item.**
+
+This is the third handoff label this session that did not survive the fact store
+("transfer conservation", "the hard tail", this). **A label is a compressed
+memory of a diagnosis; dump the facts.**
+
+### The relation guard: the naive version would have broken SIX correct items
+
+"London is 11 and Blair is 16. Several years ago, Blair was twice as old as
+London" committed 11. A Relation over-determined by two stated states is DROPPED
+by saturate ("only an existing STATE for the subject blocks resolution") — right
+for a consistent restatement, silent for a contradiction (16 ≠ 2×11).
+
+The obvious guard — *violated over-determined relation → decline* — was measured
+BEFORE being written, and the measurement killed two versions of it:
+
+| guard version | correct items it would break |
+|---|---|
+| violated relation | **6** — the "in 5 years, X will be 4× as old as Y" family is violated at t=0 BY DESIGN |
+| + same-time only | **2** — three jars bare-fold to lemma 'jar', so bare-lemma comparison reads them as ONE entity |
+| + label-keyed | **0** — exactly 1 item in five corpora: the wrong |
+
+Both conditions are pinned as tests. **The labeled-entity trap caught my
+MEASUREMENT SCRIPT before it could catch the guard** — the same bare-lemma error
+the `distinct: [who, std]` comment documents, now three-for-three this session.
+
+### The lesson
+
+**Measure the guard's false positives before writing it, not after.** Both
+versions above would have passed a naive review and been caught only by the dev
+gate — or, for the offsets, possibly not at all if the family had been slightly
+smaller. The script that finds them is the same one that sizes the class, so it
+costs nothing extra: enumerate every item the guard WOULD fire on, and read their
+current outcomes. A guard is a claim about a class; the class is countable.
