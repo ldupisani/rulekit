@@ -885,3 +885,85 @@ the reason to revert was not risk, it was that **nothing could pay for it**. A b
 no buyer is the infrastructure trap wearing a clean gate (`docs/negative-results.md`, "The
 infrastructure trap: 0 SOLVED on DEV, a WRONG on TEST"). Measure the BUYER before building the enabler,
 not after.
+
+## Two walked levers, two collapses: start-state 177→5, elided-measure 508→8 (2026-07-16)
+
+Walked after difg's tail thinned, looking for the next real class on the corpora
+that measure PRECISION (ASDiv/SVAMP/MAWPS) rather than difg's coverage. Both
+candidates looked large by surface count. Both collapsed for the SAME documented
+reason. Recording the numbers so neither is re-proposed on its count.
+
+### Start-state reconstruction ("how many did X have to begin with?")
+
+Surface: 177 DEV items with a question-position marker (MAWPS 134, ASDiv 30,
+SVAMP 13). Walked:
+
+| | ASDiv | SVAMP | MAWPS |
+|---|---|---|---|
+| genuine start-state ask | 24 | 9 | 134 |
+| **commits WRONG** (inversion is the LAST blocker) | **2** | **1** | **0** |
+| declines (blocked on something else) | 22 | 8 | **134** |
+| `if`-clause premise — NOT this class at all | 6 | 4 | 0 |
+
+**Real yield: 5** — 3 confident-wrongs (inversion is genuinely last: the engine
+folds, it just folds the wrong direction) plus 2 ASDiv declines whose premises DO
+yield `Quantity + Quantity`. Ten of the 177 are not the class at all: the marker
+sits in an `if`-clause PREMISE ("If she had $36 in the beginning, how much did
+Andrea save?"), not in the ask.
+
+**MAWPS's 134 convert ZERO**, and the reason is already in DEAD_CLASSES:
+```
+Predication      <- "Elizabeth had some cherry"
+Predication      <- "Don took 74 from him"      <- the ELIDED-MEASURE event
+AnchorQuantity   <- "Now Elizabeth has 74 cherry"
+```
+The event folds as a Predication with a string dobj, never a Quantity — clause (b)
+of `equal-share-division`'s blockers. No ask can fold what was never a Quantity.
+
+### Elided-measure events ("Don took 74 from him")
+
+Surface: 508 (MAWPS 427, GSM8K-train 49, ASDiv 25, SVAMP 7). **Note the first
+count was wrong and inflated** — a regex matching `verb + N + more` also caught
+"added 2 MORE ACTION FIGURES", where the measure is PRESENT. Only `from`/`to`/
+clause-end are true elision. SVAMP fell 47 -> 7 on the correction.
+
+Walked by decline reason — `value-accounting: stated count 'N' reached no fact` is
+the elision's signature (the ask fired, the fold ran, only the bare number never
+became a Quantity):
+
+| | MAWPS | GSM8K | ASDiv | SVAMP |
+|---|---|---|---|---|
+| **blocked BY the elision** | **2** | **2** | **2** | **2** |
+| blocked at `no ask shape` TOO (mutual block) | 423 | 27 | 17 | 4 |
+
+**Real yield: 8 of 508.** Confirmed by rewrite probe: "Sarah had 51 trucks. She
+gave 13 to Jeff" declines on value-accounting and answers 38 correctly the moment
+the measure is explicit — but "Cade had 87 marbles. He gave 8 to Dylan" declines
+at `no ask shape` and STILL declines when made explicit. The elision is the last
+blocker on the first and irrelevant on the second.
+
+**MAWPS's 423 are not merely blocked — they are UNGRAMMATICAL template junk**:
+"Now How many fig Joseph have minus?", "How many blueberry Paul have left over?",
+"How many cherry Elizabeth had in the beginning?" (no `did`). ~84% of the pool is
+one auto-generated template with substituted nouns ('some Beg', 'some Box'), much
+of it not English. No ask will ever match it, and fitting one to it would be
+measuring the generator, not reading.
+
+### The finding
+
+Both walks reproduce the MUTUAL BLOCK exactly as documented ("The ask layer is a
+PRODUCT, and single-dimension fixes buy ZERO"; the 481-item per-unit seam). A
+declining item is blocked on SEVERAL coordinates at once; fixing one leaves it on
+the next. Surface counts of 177 and 508 yielded 5 and 8.
+
+**Action:** the 3 start-state CONFIDENT-WRONGS remain worth fixing — not for
+coverage, but because they are precision failures on two independent corpora and a
+wrong->correct move is the metric that matters. Do NOT brief either class on its
+surface count. Do NOT chase MAWPS coverage: 84% of its elided pool and 100% of its
+start-state pool is one ungrammatical template.
+
+**The transferable lesson:** this is the third large surface count this session to
+collapse on contact (difg's 243-item pool into a long tail; 177 -> 5; 508 -> 8).
+The walk is cheap and the brief is expensive — walk FIRST, and walk by DECLINE
+REASON, which names the blocker, rather than by surface, which names only the
+shape.
