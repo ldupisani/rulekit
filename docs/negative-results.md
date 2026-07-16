@@ -1139,3 +1139,62 @@ Landed: gate `f7b059c`, fix `b1db917`. folio 1/0 → **0/0**. GSM8K byte-neutral
 - Related: `conj-train.json` is not "identical to head behavior" — it is the
   original ~14-correct baseline and reads 90 SOLVED against head. A stale baseline
   still floors 0-BROKE correctly, but its NET is noise.
+
+## The unread-name guard was the WITNESS fix; the class was grammar (2026-07-16)
+
+The FOLIO catch above was fixed with a consumer guard: *an unread NAME is a
+decline*. It shipped with a clean 6-corpus gate, a null-control test, and a
+commit message claiming it "closes the CLASS (any un-bound name), not the
+witness."
+
+**That claim was false, and the counter-example took one probe to find:**
+
+```
+Is it true that Jim is a Knicks player?         -> decline   (guard fires)
+Is it true that THE PILOT is a Knicks player?   -> verdict: no    ← still committing
+```
+
+A common-noun subject has **no name to be unread**, so the guard is inert and the
+engine still answered about the Knicks. Same confident answer, **one value-kind
+over** — the precise shape of the failure already recorded as *fix the class, not
+the witness*. Writing "this closes the class" in a commit message does not close
+the class. The guard's own framing hid it: keyed on the witness's value KIND
+(a name), it inherited the witness's blind spot.
+
+### The actual defect was grammar, and the engine already knew the answer
+
+English **fronts the auxiliary** to ask — "IS Mary a student?" (subject-auxiliary
+inversion), so the subject FOLLOWS the copula. That is the *only* reason
+`is <name> <noun>` reads a membership question. An **embedded declarative**
+leaves the copula in place — "...that Jim is a Knicks player" — so its subject
+PRECEDES it. A match sequence is contiguous but **FLOATS** (`match_all` retries at
+every start offset), so the shape landed on the second construction and bound the
+complement's proper-noun modifier as the member.
+
+The engine had bound `is.subject -> jim` **correctly all along** (`u5` in the unit
+dump). The ask never looked. A misreading is not always missing information — here
+every fact needed to refuse was already computed and simply unconsulted.
+
+### Lessons
+
+1. **A guard keyed on the witness's value KIND inherits the witness's blind
+   spot.** Ask what the witness is an *instance* of before choosing the level to
+   fix at. The question "what else could be in this position?" would have found
+   the common-noun case in one probe — cheaper than the gate, the tests and the
+   commit that followed.
+2. **When a shape misfires, suspect the CONSTRUCTION before the guard.** A pattern
+   mined on one grammar floats onto any other containing the same token run;
+   guarding downstream treats the symptom and leaves the shape wrong for the next
+   consumer that reuses it.
+3. **Two mechanisms, two levels, neither subsuming the other** — the ask decides
+   WHICH construction it may read (`at_start`); the consumer decides whether the
+   reading used everything the question said (unread-name). "Is Mary a student AT
+   YALE?" still needs the second. Checking whether the earlier fix had become dead
+   code is what proved they were different classes rather than one patched twice.
+4. A test can be wrong in a load-bearing way: the first anchor test asserted an
+   unanchored token floats inside `_try_match_at`. It does not — `_try_match_at`
+   is contiguous from where it is told to start; the floating is `match_all`'s
+   retry loop. The failing test corrected the mental model, which is what tests of
+   a mechanism are for.
+
+Landed `b5655ca`. All six corpora byte-neutral; pytest 1179 → 1188.

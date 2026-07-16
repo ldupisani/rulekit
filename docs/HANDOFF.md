@@ -1,11 +1,11 @@
 # Session handoff — 2026-07-16
 
 Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
-State is committed through `b1db917` on `main` (github.com/ldupisani/rulekit).
+State is committed through `b5655ca` on `main` (github.com/ldupisani/rulekit).
 Always check `git status` / `git log origin/main..HEAD` before assuming push parity.
 
 > ## ➡ FOLIO IS BUILT, BENCHED AND LANDED — **919 DEV items, 0 correct / 0 WRONG** (`f7b059c`).
-> ## **It caught a real confident-answer on its first run** and the fix is landed (`b1db917`).
+> ## **It caught a real confident-answer on its first run**; the fix took TWO passes (`b1db917` was the WITNESS fix, `b5655ca` the class).
 > ## Frontier 2 is REOPENED but is NOT a `committed` widening: see "what FOLIO actually buys".
 
 ### ⚠ Three things the last handoff asserted that turned out to be FALSE — check, don't inherit
@@ -224,11 +224,29 @@ returned the same 'no', and *"Jim is a Knicks player. Is it true that Jim is a K
 returned **undetermined**. An answer invariant to its own question is not an answer. It scored
 `correct` only because that row's gold is False.
 
-The fix is **"an unread NAME is a decline"** — value-accounting's *BINDABLE is not READ* contract
-applied to the one value kind this consumer binds. **A dropped name carries no digits, so no
-numeric guard can ever see it**; that is why this class needs its own guard and why 5 arithmetic
-corpora sat on it silently. Guarded the CONSUMER, not the ask's shape (the shape is right for the
-prose it was mined on), and `undetermined` still survives where nothing is unread.
+The fix took TWO passes, and **the first one was the witness fix** — read this before writing any
+guard. Pass 1 (`b1db917`) declined on an unread NAME: value-accounting's *BINDABLE is not READ* for
+a kind with no digits (which is why 5 arithmetic corpora sat on it silently — verdicts are not
+`Answer.committed`, so each scored it a harmless decline). It shipped with a clean 6-corpus gate, a
+null-control test, and a commit claiming it "closes the CLASS". **It did not.** A common-noun
+subject has no name to be unread, so `"Is it true that THE PILOT is a Knicks player?"` still
+committed `no` about the Knicks — the same confident answer, **one value-kind over**, which is
+exactly the failure `fix-the-class-not-the-witness` records. A guard keyed on the witness's value
+KIND inherits the witness's blind spot.
+
+Pass 2 (`b5655ca`) fixed the actual defect, which is GRAMMAR: English **fronts the auxiliary** to
+ask ("IS Mary a student?" — subject-auxiliary inversion, subject FOLLOWS the copula), and leaves it
+in place in an **embedded declarative** ("…that Jim is a Knicks player" — subject PRECEDES it). A
+match sequence is contiguous but **FLOATS** (`match_all` retries at every start offset), so the
+shape landed on the second construction. New opt-in `at_start` MatchToken flag pins a token to the
+front (structure, never lexicon; defaults False so every other rule is byte-identical; an anchor on
+a non-first token can never fire, so `AskRule` rejects it at LOAD — a dead rule reads as a clean
+0 SOLVED). **The engine had bound `is.subject -> jim` correctly all along — the ask never looked.
+A misreading is not always missing information.**
+
+Both are live at different levels and neither subsumes the other: the ask decides WHICH
+construction it may read; the guard decides whether the reading used everything the question said
+("Is Mary a student AT YALE?" still declines). `undetermined` still survives where nothing is unread.
 
 **No GSM8K TEST look was spent, and that is a PROOF, not an oversight:** the guard only ever turns
 a `verdict` into a `decline`, and `_judge` already scored a verdict against a float gold as
@@ -422,7 +440,7 @@ synth-GroupTotal fix + consumer both paths (`2439b82`, `ab878ad`) · container+l
 
 - GSM8K dev-train **104/0** · dev-holdout **40/0** · TEST **92.3%** (12/1, unchanged — no look spent
   this session; see the proof under the FOLIO section) · curated suite **52/52**
-- pytest **1179** · lint: 0 errors, 1 intended warning (fraction-of-remnant subsumption — documentation, not a bug)
+- pytest **1188** · lint: 0 errors, 1 intended warning (fraction-of-remnant subsumption — documentation, not a bug)
 - Cross-corpus DEV: ASDiv 89.6% (43/5) · SVAMP 86.7% (13/2) · MAWPS 100% (9/0) · SciBench 0/0 ·
   difg 44/0 of 342 (typed gold) · **folio 0/0 of 919** (typed gold)
 - bench wall: dev-train 16.6s → 9.0s (trace opt-out) → 1.7s at `--jobs 12`. `--jobs` defaults to 1;
@@ -469,6 +487,18 @@ See `.claude/skills/mine/SKILL.md`. **Standing instruction: push `main` after ev
   anyway (`b1db917`). Five arithmetic corpora sat on it silently because verdicts are not
   `Answer.committed`. Ask of any consumer: *which kinds does it BIND, and which of those can go
   unread without a guard noticing?*
+- **A GUARD KEYED ON THE WITNESS'S VALUE KIND INHERITS THE WITNESS'S BLIND SPOT.** The guard above
+  keyed on an unread NAME and sailed past the same confident answer with a common-noun subject —
+  one kind over, gate clean, commit message claiming it "closes the class" (`b5655ca` is the real
+  fix). Before writing a guard, ask *what is this witness an INSTANCE of, and what else fits that
+  position?* — one probe, cheaper than the gate and tests that follow.
+- **A MATCH SEQUENCE FLOATS: `match_all` retries at every start offset**, so a shape mined on one
+  construction lands on any later one containing the same token run. `is <name> <noun>` was written
+  for the FRONTED interrogative ("IS Mary a student?" — the subject follows the copula) and drifted
+  onto the EMBEDDED DECLARATIVE ("…that Jim is a Knicks player" — the subject precedes it), binding
+  the complement's name-modifier as the subject. Opt-in `at_start` (schemas.MatchToken) pins a token
+  to the front. **When a shape misfires, suspect the CONSTRUCTION before the guard** — and note
+  `_try_match_at` itself is contiguous; only `match_all` floats.
 - **On a SAFETY gate (scibench/folio), a nonzero `correct` is as suspicious as a nonzero `wrong`** —
   and it is harder to act on because it looks like progress. FOLIO's first run scored 1 correct: a
   verdict invariant to its own question that drew the ~39% of the label distribution which hides a
