@@ -1,4 +1,4 @@
-"""Materialize the difg NUMERIC-slice coverage corpus into GSM8K-shaped parquet.
+"""Materialize the difg multi-domain coverage corpus into GSM8K-shaped parquet.
 
     uv run python projects/difg/build_corpus.py
 
@@ -7,8 +7,16 @@ read-only dependency, not on HuggingFace. INFRASTRUCTURE (committed, salt-define
 firewall), like the other build_corpus.py scripts.
 
 HONESTY SCAFFOLDING (docs/difg-corpus-plan.md, Phase 2 — none optional):
-  - NUMERIC ONLY. Keep only bare-number golds (202 of 454); typed golds
-    (quantity+unit / verdict / set / percent / money) have no commit path yet.
+  - TYPED GOLD IS NOW KEPT. The gold payload is written through VERBATIM as difg
+    wrote it ("68.04 kg", "$215.14", "50%", "134 days"), and the harness loader
+    classifies it structurally (firewall.parse_typed_gold) because project.yaml
+    declares `gold: typed`. Previously 252 of 454 items were DROPPED here for
+    having a non-numeric gold, which is what left physics / logic /
+    unit_conversion with no mining signal at all.
+  - This changes NO existing item's split. The bucket is md5(SALT + question), a
+    per-question function — admitting new items cannot move an old one across the
+    firewall, and the numeric items keep the identical `#### <n>` payload they
+    already had.
   - EXCLUDE `expression` (5 raw calculator strings — not natural language).
   - The metric this corpus reports is COVERAGE, not precision (the set is 79.3%
     difg's own example_queries — see project.yaml). We do not draw a
@@ -62,12 +70,20 @@ def main() -> None:
             dropped += 1
             continue
         g = str(answer).strip().replace(",", "")
-        if not _BARE.match(g):  # numeric slice only
-            dropped += 1
-            continue
-        gold = float(g)
         q = str(query).strip()
-        row_a = f"#### {gold:g}"
+        if _BARE.match(g):
+            # A bare-number gold keeps its EXACT pre-existing payload, so every
+            # item already in the corpus is byte-identical and no snapshot moves.
+            row_a = f"#### {float(g):g}"
+        else:
+            # A typed gold goes through VERBATIM; firewall.parse_typed_gold
+            # classifies it. Written from the raw `answer`, not the
+            # comma-stripped `g`, so nothing about difg's own formatting is lost.
+            payload = str(answer).strip()
+            if not payload:
+                dropped += 1
+                continue
+            row_a = f"#### {payload}"
         kept += 1
         if bucket(q) == "test":
             test_q.append(q); test_a.append(row_a)
@@ -80,7 +96,7 @@ def main() -> None:
         out = HERE / "data" / f"{name}.parquet"
         pq.write_table(table, out)
         print(f"  {name:10} {len(qs):5d} items -> {out}")
-    print(f"kept {kept} numeric items, dropped {dropped} (typed golds + excluded domains)")
+    print(f"kept {kept} items (numeric + typed), dropped {dropped} (excluded domains)")
     print(f"COVERAGE corpus; DEV is the mining worklist, TEST ({len(test_q)}) reserved.")
 
 

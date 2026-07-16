@@ -156,6 +156,31 @@ def _judge_typed(gold, result) -> tuple[str, object]:
         return ("correct", None) if gold.kind == "decline" else ("declined", None)
     got = answer.value
 
+    # 'undetermined' is the epistemic square's "I DON'T KNOW" — it arrives as a
+    # verdict-KIND answer, so it is not kind 'decline', but it is not a
+    # commitment either. A non-commitment is never a WRONG; that is the whole
+    # decline/precision firewall. The typed path was written without this rule
+    # (the float `_judge` below has always had it) and scored three such answers
+    # as confident-wrongs the first time this path was exercised on real data.
+    if isinstance(got, str) and got == "undetermined":
+        return ("correct", None) if gold.kind == "decline" else ("declined", got)
+
+    # A verdict answer against a NON-verdict gold is a decline, not a wrong,
+    # mirroring the float path's own rule verbatim ("a verdict where a number was
+    # expected is a decline, not a commit"). The rule holds ONLY because
+    # `Answer.committed` is still `kind == "number"`: a verdict is not a
+    # commitment today, and a non-commitment is never a wrong.
+    #
+    # ⚠ REVISIT THIS THE DAY THE KERNEL COMMITS VERDICTS (docs/difg-corpus-plan.md,
+    # Frontier 2's remaining half). Once a verdict IS a commitment, a verdict
+    # asserted against a numeric question becomes a genuine confident-wrong, and
+    # this line would HIDE it. The asymmetry below is deliberate for the same
+    # reason and is already correct: a committed NUMBER against a text/set gold
+    # scores WRONG, because the engine did assert an answer and the answer is not
+    # of the asked shape.
+    if answer.kind == "verdict" and gold.kind != "verdict":
+        return "declined", got
+
     if gold.kind in ("number", "money", "percent", "quantity"):
         # A quantity gold ALSO carries a unit; the unit is checked only when the
         # engine actually produced one (answer kinds that carry units do not

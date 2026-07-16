@@ -20,5 +20,11 @@ name: difg
 packs: [core-english, arithmetic, difg-mined]
 datasets:
   difg:
-    train: {parquet: data/difg_dev.parquet, question: question, answer: answer}
-    test: {parquet: data/difg_test.parquet, question: question, answer: answer}
+    # `gold: typed` — the loader classifies the gold payload structurally into a
+    # TypedGold (harness/firewall.py) instead of parsing "#### <n>" to a float.
+    # This is what makes difg's NON-numeric golds ("68.04 kg", "$215.14", "50%")
+    # scorable at all; without it they were dropped at build time and their
+    # domains had no mining signal. No other project sets it, so every other
+    # corpus keeps the float path byte-for-byte.
+    train: {parquet: data/difg_dev.parquet, question: question, answer: answer, gold: typed}
+    test: {parquet: data/difg_test.parquet, question: question, answer: answer, gold: typed}

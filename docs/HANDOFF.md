@@ -1,10 +1,11 @@
 # Session handoff — 2026-07-16
 
 Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
-State is committed and pushed through `7145a89` on `main` (github.com/ldupisani/rulekit).
+State is committed and pushed through `b37e4e2` on `main` (github.com/ldupisani/rulekit).
 Always check `git status` / `git log origin/main..HEAD` before assuming push parity.
 
-> ## ➡ NEXT SESSION: two live frontiers — difg domain-mining (active) and the typed-gold kernel change (the big lever)
+> ## ➡ NEXT SESSION: difg domain-mining (active). Typed gold's CORPUS half is landed (342 items scorable);
+> ## the remaining kernel half is verdict/text/set only (~78 items) — read Frontier 2 before touching it.
 
 ### GSM8K is DONE and stays a regression floor
 dev-train **104/0 (100%)**, dev-holdout **40/0**, curated suite **52/52**, **TEST 92.3%** (12/1 —
@@ -13,8 +14,8 @@ engine halves (ask-shape, reading) measured out as a LONG TAIL — GSM8K coverag
 next lever was always a DIFFERENT corpus. That is now the whole game. Proof: `docs/negative-results.md`
 → "The reading gap is a LONG TAIL"; brief `docs/reading-gap.md` is CLOSED.
 
-### FRONTIER 1 (active): difg domain-mining — `projects/difg/`, difg-DEV 0 → 32 correct, 0 wrong
-The numeric slice is 197 items over 58 domains. SEVEN domains are solved via one reusable **template**:
+### FRONTIER 1 (active): difg domain-mining — `projects/difg/`, difg-DEV 0 → 34 correct, 0 wrong (of 342 items)
+EIGHT domains are solved via one reusable **template**:
 *select an operation/formula by NAME via a category-gated ask, bind the operands, apply a general
 operation* — words in YAML, operations in a consumer branch, no per-domain Python.
 
@@ -27,6 +28,7 @@ operation* — words in YAML, operations in a consumer branch, no per-domain Pyt
 | trigonometry | `4ed9956` | 4/4 | one `angle_degrees` gate; two asks (`sine`/`sin`) → ONE opcode |
 | coordinate | `720c071` | 3/4 | a `point` slot type: "(3,4)" stops reading as the scalar 34 |
 | vector | `7145a89` | 2/2 | whole-list read of a SPACED tuple; forced the `bare:` compound gate |
+| unit_conversion | (this session) | 2/18 | the FIRST typed-gold domain; asks the conversions table |
 
 `arithmetic` is the lowest-cost variant of the template and the one to imitate: operator words are
 skeleton LITERALS in the ask (or the multiplier/percent unit numbers.py already folds), so it needed
@@ -67,15 +69,65 @@ identical token stream. Any such pass would break every statistic list. If a spa
 be a real `point`, the ONLY route is teaching `tokenize.py` to preserve parens — a change under every
 corpus, almost certainly not worth it.
 
-**difg reports COVERAGE, NEVER precision** (79.3% of it is difg's own `example_queries`). Never quote
-its number beside the GSM8K/ASDiv precision numbers. See `docs/difg-corpus-plan.md`.
+**`unit_conversion` is 2/18 and the rest is CHEAP — the blockers are named, in yield order:**
+1. **The IMPERATIVE form (8 items): "Convert 5 kilometers to meters" is not a question** — `reason: no
+   question found`. Q-detection wants a '?' or a Q-word and an imperative has neither. This is a
+   DOCUMENT-level change, the single biggest unlock left here, and it is shared machinery → gate hard.
+2. **Missing conversion PAIRS (6 items):** mile↔km, meter↔foot, centimeter↔inch, gallon↔liter,
+   liter↔milliliter, kilobyte↔byte/gigabyte↔megabyte. Pure DATA (`conversions.yaml`) — but that table
+   also drives word-problem convertible-unit folds ("3 gallons of milk... 128 ounces"), so a new pair
+   has real blast radius. Its own increment, its own gate.
+3. **`second` is an ADJECTIVE in the lexicon** (the ordinal, not the time unit), so it cannot join the
+   noun-rooted `measure_unit` category — the registry rejects it outright. Costs 1 item. Do NOT add a
+   noun sense: that is the exact trap that broke the `average` consumer (pytest caught it, not the dev
+   gate). A literal-variant ask is the sanctioned fix.
+4. Temperature (2 items) is AFFINE and `rulekit/conversions@1` holds a FACTOR only — no offset. Needs
+   a schema change; probably not worth it for 2 items.
 
-### FRONTIER 2 (the big lever): the TYPED-GOLD kernel change
-55.5% of difg answers are NON-numeric (quantity+unit, verdict, set, boolean, percent) and the kernel
-still cannot commit them: `Answer.committed == (kind == "number")` in `answer.py`. No commit → no
-score → no mining signal for physics / logic / clock / unit_conversion. Phase 0 (harness-side
-`TypedGold` + `_judge`) is landed byte-neutral (`23ccbac`); the KERNEL commit-path change is the
-deferred, higher-risk work that unlocks the majority of difg. Plan + phases: `docs/difg-corpus-plan.md`.
+**ASK RANKING CHANGED (this session), and it is shared machinery:** `match_ask` ranked ONLY by consumed
+units, with **alphabetical id order** as the tie-break — which encodes nothing. "How many inches are in
+3 feet?" lost to `ask/how-many-in-place` (which reads "3 feet" as a PLACE and declines) purely because
+'h' < 'u'. It now ranks `(consumed units, Σ category-gate depth)`, the same second key
+`rule_specificity` has always used for RULES; id order remains the final tie-break. Only TIES are
+affected, and all five word-problem corpora measured byte-neutral. If a future ask mysteriously loses,
+this is the ranking to read.
+
+**difg reports COVERAGE, NEVER precision** (79.3% of it is difg's own `example_queries`). Never quote
+its number beside the GSM8K/ASDiv precision numbers. And note the denominator MOVED this session
+(148 → 342 items), so the coverage % is not comparable across that line: 18.2% before vs 9.9% after is
+a bigger, more honest denominator, not a regression. See `docs/difg-corpus-plan.md`.
+
+### FRONTIER 2: TYPED GOLD — the corpus half is LANDED; the kernel half remains
+
+**What landed.** difg now declares `gold: typed` and its builder keeps every typed gold verbatim, so
+the loader classifies the payload STRUCTURALLY (`firewall.parse_typed_gold`) instead of dropping it.
+difg-DEV **148 → 342 items** (TEST 49 → 107, still reserved). 194 previously-invisible items now have
+a mining signal. Firewall re-verified on the rebuild: 0 pre-existing items missing, 0 golds changed,
+**0 dev/test crossings** — the bucket is `md5(SALT + question)`, per-question, so admitting items
+cannot move an old one. `gold` defaults absent = today's float path, so no other corpus can even
+reach the typed branch.
+
+**The decomposition that made it safe — and it is NOT what this file used to say.** A quantity/money/
+percent gold is a NUMBER under a formatting wrapper, and `_judge_typed` already compares those
+numerically (with the 1% relative tolerance difg's rounded golds need). So **127 of the typed items
+needed NO kernel change at all** — `Answer.committed` was never their blocker. Do not conflate the two
+halves again.
+
+**What is still blocked, and it is the smaller half:** `Answer.committed == (kind == "number")` still
+gates **verdict / text / set** (~78 items: logic, string_operation, some discrete_math). THAT is the
+remaining kernel change. Two things to do FIRST, both cheap and both load-bearing:
+- `committed` must keep excluding the verdict **'undetermined'** — the epistemic square's "I don't
+  know" is not a commitment, and if it ever counts as one every honest decline becomes a wrong.
+- **`_judge_typed`'s verdict rule must be revisited IN THE SAME INCREMENT** (it is flagged in-code).
+  "a verdict against a non-verdict gold is a decline" holds only *because* a verdict is not a
+  commitment today. Once verdicts commit, that line would HIDE genuine confident-wrongs. The
+  asymmetry beside it is already correct and should stay: a committed NUMBER against a text/set gold
+  scores WRONG, because the engine did assert an answer of the wrong shape. ~78 items ride on this.
+
+**Measured before building (`docs/methodology.md` §4 discipline):** all 127 numerically-valued typed
+items DECLINE today — 0 solved, **0 wrong**. So the wiring was a pure enabler and had to be bought;
+`unit_conversion` bought it (+2). The 0-wrong is the reassuring half: no confident-wrongs were hiding
+behind the drop.
 
 ---
 
@@ -92,7 +144,7 @@ new code. **Adding one is a two-file recipe.**
 | `projects/svamp/` | **adversarial variations**, harshest in-domain | **80.0%** (12/3), fresh worklist |
 | `projects/mawps/` | classic arithmetic repo | **100%** (9/0), low coverage |
 | `projects/scibench/` | **out-of-domain** college science; safety check | **0/0** — a rising wrong = the engine guessing |
-| `projects/difg/` | multi-domain COVERAGE corpus (not precision) | 32 correct / 0 wrong, 7 domains |
+| `projects/difg/` | multi-domain COVERAGE corpus (not precision); `gold: typed` | 34/0 of **342**, 8 domains |
 
 The four HF-backed ones rebuild with `uv run --with datasets python projects/<name>/build_corpus.py`;
 difg reads a LOCAL difg checkout (`uv run python projects/difg/build_corpus.py`, no `--with datasets`).
@@ -103,11 +155,11 @@ synth-GroupTotal fix + consumer both paths (`2439b82`, `ab878ad`) · container+l
 (`6dffe56`) · subject-gapping anaphora (`22623ee`, GSM8K TEST 91.7%→92.3%) · superordinate-via-combined
 (`1466051`, "pieces of litter").
 
-## Current numbers (verified at `7145a89`)
+## Current numbers (verified at `b37e4e2`)
 
 - GSM8K dev-train **104/0** · dev-holdout **40/0** · TEST **92.3%** (12/1) · curated suite **52/52**
-- pytest **1111** (verified 2026-07-16) · lint: 0 errors, 1 intended warning (fraction-of-remnant subsumption — documentation, not a bug)
-- Cross-corpus DEV: ASDiv 89.4% (43/5) · SVAMP 80.0% · MAWPS 100% · SciBench 0/0 · difg 32/0
+- pytest **1135** (verified 2026-07-16) · lint: 0 errors, 1 intended warning (fraction-of-remnant subsumption — documentation, not a bug)
+- Cross-corpus DEV: ASDiv 89.4% (43/5) · SVAMP 80.0% · MAWPS 100% · SciBench 0/0 · difg 34/0 of 342 (typed gold)
 - bench wall: dev-train 16.6s → 9.0s (trace opt-out) → 1.7s at `--jobs 12`. `--jobs` defaults to 1;
   spend it in the SERIAL integration tail, never in the implementers' gates (they already run concurrently).
 

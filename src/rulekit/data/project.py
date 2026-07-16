@@ -48,13 +48,17 @@ class Project:
         if not self.doc.datasets:
             raise ValueError("project has no datasets")
         _name, splits = next(iter(sorted(self.doc.datasets.items())))
+        # `gold` is None for every project but difg's typed corpus, and None is
+        # load_dataset's pre-existing float path (schemas.DatasetDef.gold).
         train = load_dataset(
             self.root / splits["train"].parquet,
             splits["train"].question, splits["train"].answer,
+            gold=splits["train"].gold,
         )
         test = load_dataset(
             self.root / splits["test"].parquet,
             splits["test"].question, splits["test"].answer,
+            gold=splits["test"].gold,
         )
         return [
             {"id": i.id, "text": i.text, "expect": i.expect}

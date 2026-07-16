@@ -1111,6 +1111,30 @@ def answer(
             return Answer("decline", None, f"{op!r} not defined for the given inputs")
         return Answer("number", float(result), f"trigonometry: {op} = {result}")
 
+    if consumer == "unit-convert":
+        # The difg `unit_conversion` domain: "How many inches are in 3 feet?" —
+        # multiply by the factor the CONVERSIONS TABLE already holds
+        # (rulekit/conversions@1; the registry stores both directions). The unit
+        # words arrive as slot lemmas from a `measure_unit`-gated ask
+        # (rules/unit-convert.yaml) and are looked up as DATA — no unit is named
+        # in Python (constitution rule 1), so a pair the table does not know
+        # declines rather than guessing.
+        src, dst = query.get("from", ""), query.get("to", "")
+        try:
+            value = float(query.get("value"))
+        except (TypeError, ValueError):
+            return Answer("decline", None, "a conversion needs a numeric quantity")
+        if src == dst:
+            # A unit converts to itself by 1, but the ask shape only reaches here
+            # via two DISTINCT unit mentions; treat it as unread rather than
+            # inventing an identity conversion.
+            return Answer("decline", None, f"{src!r} is already the target unit")
+        factor = reg.conversions.get((src, dst))
+        if factor is None:
+            return Answer("decline", None, f"no known conversion from {src!r} to {dst!r}")
+        result = value * factor
+        return Answer("number", float(result), f"unit-convert: {value} {src} -> {dst} = {result}")
+
     if consumer == "vector":
         # The difg vector domain: "the magnitude of the vector (3, 4)" -> 5, "the
         # dot product of (1, 2, 3) and (4, 5, 6)" -> 32. A SPACED tuple is just

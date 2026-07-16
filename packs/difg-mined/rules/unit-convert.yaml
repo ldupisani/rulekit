@@ -1,0 +1,62 @@
+format: rulekit/rules@1
+# The difg `unit_conversion` domain: "How many inches are in 3 feet?" -> 36,
+# "How many seconds are in 5 minutes?" -> 300, "How many ounces are in 2
+# pounds?" -> 32.
+#
+# THE FIRST TYPED-GOLD DOMAIN. Its golds are quantities ("36 in", "300 s", "32
+# oz"), not bare numbers, so before `gold: typed` (project.yaml) these items were
+# DROPPED at build time and this domain had no mining signal at all. The engine
+# answers the VALUE; the value is what is scored (harness/bench.py
+# `_judge_typed`), and for a conversion the value encodes the unit — you cannot
+# get 36 from "3 feet" without having converted to inches.
+#
+# THE CONVERSION FACTORS ARE DATA the engine already had: `conversions.yaml`
+# (pack kind rulekit/conversions@1), which the registry stores in BOTH
+# directions. This family adds no factor and no unit word — it only asks the
+# table a question it could already answer. Adding new PAIRS is a separate
+# increment with its own blast radius: the same table drives word-problem
+# convertible-unit folds ("3 gallons of milk... 128 ounces").
+#
+# SPECIFICITY: both unit slots gate on `measure_unit` (categories/units.yaml)
+# so this ask outranks ask/how-many-in-place, which otherwise claims the shape
+# and reads "3 feet" as a PLACE ("how many inches does the foot have" — it
+# declines). See that category's comment. When the nouns are not units, no member
+# matches and that ask keeps the question exactly as it does today.
+#
+# NOT COVERED — the IMPERATIVE form ("Convert 5 kilometers to meters"). It is not
+# a question ("no question found"): Q-detection wants a '?' or a Q-word, and an
+# imperative has neither. That is a document-level change, not an ask, and it is
+# the single biggest unlock left in this domain (8 of its 18 items).
+rules: []
+asks:
+  - id: ask/unit-convert-how-many-in
+    # "How many inches are in 3 feet?" — 'are'/'in' are skeleton literals here,
+    # where ask/how-many-in-place has generic verb/preposition slots.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: to, cat: measure_unit}
+        - {lit: are}
+        - {lit: in}
+        - {slot: qty, cat: measure_unit}
+    resolves:
+      consumer: unit-convert
+      value: "{qty.value}"
+      from: "{qty}"
+      to: "{to}"
+
+  - id: ask/unit-convert-how-many-is
+    # "How many km is 5 miles?" — the singular-copula variant of the same shape.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: to, cat: measure_unit}
+        - {lit: is}
+        - {slot: qty, cat: measure_unit}
+    resolves:
+      consumer: unit-convert
+      value: "{qty.value}"
+      from: "{qty}"
+      to: "{to}"

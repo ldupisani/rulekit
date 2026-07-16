@@ -574,9 +574,18 @@ def match_ask(
     reading: Reading, reg: Registry
 ) -> tuple[AskRule, dict[str, str], Match] | None:
     """Match question shapes; the MOST SPECIFIC matching ask wins (max
-    consumed units — a longer match read more of the question), with id
-    order as the deterministic tie-break. Re-landed alone from the reverted
-    increment 8 per docs/negative-results.md."""
+    consumed units — a longer match read more of the question), then Σ CATEGORY
+    GATE DEPTH, with id order as the deterministic tie-break. Re-landed alone
+    from the reverted increment 8 per docs/negative-results.md.
+
+    The gate-depth term is the same second key `rule_specificity` has always used
+    for RULES, brought to asks: a category-gated slot read MORE than a bare typed
+    one, so on an equal-length match it is the more specific reading. Without it
+    the tie fell to ALPHABETICAL ID ORDER, which encodes nothing — "How many
+    inches are in 3 feet?" went to ask/how-many-in-place (which reads "3 feet" as
+    a PLACE and declines) purely because 'h' < 'u'. Ties are the only matches
+    affected; any match that already won on length still wins.
+    """
     best: tuple[AskRule, dict[str, str], Match] | None = None
     for ask in reg.asks:  # sorted by id — deterministic tie-break
         seq = ask.match["question"]
@@ -594,6 +603,19 @@ def match_ask(
                 # ("verb: {verb}" with the opt-group absent) — omit the key
                 # and let the consumer's default apply
                 continue
-        if best is None or len(m.consumed) > len(best[2].consumed):
+        if best is None or _ask_rank(m, ask, reg) > _ask_rank(best[2], best[0], reg):
             best = (ask, resolved, m)
     return best
+
+
+def _ask_rank(m: Match, ask: AskRule, reg: Registry) -> tuple[int, int]:
+    """(consumed units, Σ category-gate depth) — see match_ask. Strictly `>`
+    keeps id order as the final tie-break, exactly as before."""
+    gate_depth = 0
+    for tok in ask.match["question"]:
+        if getattr(tok, "opt", None) is not None:
+            continue
+        cat = getattr(tok, "cat", None)
+        if cat:
+            gate_depth += len(reg.cat_ancestors(cat)) if cat in reg.category_parents else 1
+    return (len(m.consumed), gate_depth)

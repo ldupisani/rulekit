@@ -113,3 +113,33 @@ def test_set_gold_is_order_insensitive_and_membership_exact():
     assert _judge_of(TypedGold("set", ("b", "a")), "set", ["A", "B"])[0] == "correct"
     assert _judge_of(TypedGold("set", ("a", "b")), "set", ["a"])[0] == "wrong"
     assert _judge_of(TypedGold("set", ("a",)), "set", ["a", "b"])[0] == "wrong"
+
+
+# --- 7. a NON-COMMITMENT is never a wrong ----------------------------------
+
+def test_undetermined_is_a_decline_not_a_wrong():
+    """REGRESSION, found the first time this path met real data. 'undetermined'
+    is the epistemic square's "I don't know". It arrives as a verdict-KIND
+    answer, so it is not kind 'decline' — and the typed judge, which tested only
+    `kind == "decline"`, scored it WRONG. That invented three confident-wrongs
+    out of three honest declines, i.e. it reported the engine guessing where the
+    engine had explicitly refused to guess. The float path below has always had
+    this rule; the typed path was written without it."""
+    assert _judge_of(TypedGold("number", 8.0), "verdict", "undetermined") == ("declined", "undetermined")
+    assert _judge_of(TypedGold("text", "x**3"), "verdict", "undetermined") == ("declined", "undetermined")
+    # against a DECLINE gold it is the right answer, exactly as on the float path
+    assert _judge_of(TypedGold("decline", None), "verdict", "undetermined") == ("correct", None)
+
+
+def test_a_verdict_against_a_non_verdict_gold_is_a_decline():
+    """Kind mismatch: the engine answered a different question than the one being
+    scored. The float path's own rule, mirrored — "a verdict where a number was
+    expected is a decline, not a commit"."""
+    assert _judge_of(TypedGold("number", 3.0), "verdict", "yes") == ("declined", "yes")
+
+
+def test_a_real_verdict_against_a_verdict_gold_is_still_judged():
+    """The non-commitment rules above must not swallow a genuine verdict — that
+    would defeat the whole point of typed gold for the boolean domains."""
+    assert _judge_of(TypedGold("verdict", True), "verdict", "yes")[0] == "correct"
+    assert _judge_of(TypedGold("verdict", True), "verdict", "no")[0] == "wrong"

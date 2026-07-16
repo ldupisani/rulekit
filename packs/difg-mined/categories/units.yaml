@@ -1,0 +1,45 @@
+format: rulekit/categories@1
+# The measure-unit gate for the difg `unit_conversion` domain. Membership is
+# exactly the unit set that `conversions.yaml` knows how to convert — a category
+# name is structure; the words are DATA here, never a list in Python.
+#
+# The gate is what makes a conversion ask WIN over ask/how-many-in-place, which
+# otherwise claims "How many inches are in 3 feet?" and reads it as "how many
+# inches does the place 'foot' have" (it declines: no such quantity). Ask
+# specificity ranks by (required tokens, Σ category-gate DEPTHS, where-count), so
+# a two-cat-gated conversion ask outranks that one-gate ask on the SAME token
+# count. The gate is therefore load-bearing, not decoration.
+#
+# It is also the honest reading: "how many X are in N Y" is a CONVERSION question
+# exactly when X and Y are both units. When they are not ("how many apples are in
+# the bowl"), no member matches, the conversion ask cannot fire, and
+# ask/how-many-in-place keeps the question unchanged.
+categories:
+  measure_unit: {parent: noun}
+members:
+  measure_unit:
+    - meter
+    - centimeter
+    - kilometer
+    - foot
+    - inch
+    - yard
+    - gram
+    - kilogram
+    - ounce
+    - pound
+    - gallon
+    - pint
+    - quart
+    # 'second' is DELIBERATELY ABSENT. In the lexicon it is an ADJECTIVE — the
+    # ordinal ("the second box"), not the time unit — so it cannot be a member of
+    # a noun-rooted category (the registry rejects it outright: "member 'second'
+    # lacks the root sense 'noun'"). Giving it a noun sense to force it in is the
+    # documented trap that broke the `average` consumer, and pytest caught that
+    # one, NOT the dev gate. The cost is one declined item ("How many seconds are
+    # in 5 minutes?"); the fix, if ever wanted, is a literal-variant ask, never a
+    # second sense on an overloaded word.
+    - minute
+    - hour
+    - day
+    - week

@@ -68,7 +68,56 @@ def parse_gold(answer: str) -> float | None:
     return float(m.group(1).replace(",", ""))
 
 
-def load_dataset(parquet_path: Path, question_col: str, answer_col: str) -> list[BenchItem]:
+# TYPED-GOLD payload shapes, classified STRUCTURALLY — by punctuation and digit
+# morphology, never by a unit word list. A harness that enumerated units would be
+# smuggling a lexicon into Python (constitution rule 1) AND would silently drop
+# any gold whose unit it had not been taught. "$5" is money because of the '$';
+# "50%" is a percent because of the '%'; "68.04 kg" is a quantity because a
+# number is followed by a non-numeric run — whatever that run says.
+_MONEY = re.compile(r"^\$\s*([-+]?[\d,]*\.?\d+)$")
+_PERCENT = re.compile(r"^([-+]?[\d,]*\.?\d+)\s*%$")
+_QUANTITY = re.compile(r"^([-+]?[\d,]*\.?\d+)\s*([^\d\s].*)$")
+_NUMBER = re.compile(r"^([-+]?[\d,]*\.?\d+)$")
+
+
+def parse_typed_gold(answer: str) -> TypedGold | None:
+    """Classify a `#### <payload>` gold into a TypedGold, or None if unreadable.
+
+    Only a `gold: typed` dataset reaches this (schemas.DatasetDef.gold); every
+    other project keeps `parse_gold`'s float path byte-for-byte.
+
+    An UNREADABLE payload returns None and the row is dropped, exactly as a
+    malformed float row is today — a gold we cannot classify is not a gold we
+    are willing to score against.
+    """
+    payload = answer.split("####", 1)[-1].strip() if "####" in answer else answer.strip()
+    if not payload:
+        return None
+    flat = payload.replace(",", "")
+    m = _NUMBER.match(flat)
+    if m:
+        return TypedGold(kind="number", value=float(m.group(1)))
+    m = _MONEY.match(flat)
+    if m:
+        return TypedGold(kind="money", value=float(m.group(1)))
+    m = _PERCENT.match(flat)
+    if m:
+        return TypedGold(kind="percent", value=float(m.group(1)))
+    if flat.strip().lower() in ("true", "false", "yes", "no"):
+        return TypedGold(kind="verdict", value=flat.strip().lower())
+    m = _QUANTITY.match(flat)
+    if m:
+        return TypedGold(kind="quantity", value=float(m.group(1)), unit=m.group(2).strip())
+    # text / entity / set — a bare non-numeric payload. Kept as text; the set
+    # shape is not split here because a comma is not reliably a set separator
+    # (it is also a thousands mark and a clause break), and guessing would
+    # manufacture golds rather than read them.
+    return TypedGold(kind="text", value=payload)
+
+
+def load_dataset(
+    parquet_path: Path, question_col: str, answer_col: str, gold: str | None = None
+) -> list[BenchItem]:
     import pyarrow.parquet as pq
 
     table = pq.read_table(parquet_path, columns=[question_col, answer_col])
@@ -76,10 +125,11 @@ def load_dataset(parquet_path: Path, question_col: str, answer_col: str) -> list
     for question, answer in zip(
         table.column(question_col).to_pylist(), table.column(answer_col).to_pylist()
     ):
-        gold = parse_gold(answer)
-        if gold is None:
+        # `gold is None` is the DEFAULT and the pre-existing path, unchanged.
+        expect = parse_typed_gold(answer) if gold == "typed" else parse_gold(answer)
+        if expect is None:
             continue
-        items.append(BenchItem(id=item_id(question), text=question, expect=gold))
+        items.append(BenchItem(id=item_id(question), text=question, expect=expect))
     return items
 
 

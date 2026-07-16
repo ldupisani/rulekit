@@ -440,6 +440,15 @@ class DatasetDef(StrictModel):
     parquet: str
     question: str = "question"
     answer: str = "answer"
+    # TYPED GOLD (docs/difg-corpus-plan.md). Absent (the default) => today's
+    # float path, byte-identical: the loader parses "#### <n>" to a bare float and
+    # skips any row it cannot. `typed` => the loader classifies the gold payload
+    # STRUCTURALLY into a harness.firewall.TypedGold, so a gold like "68.04 kg",
+    # "$215.14" or "50%" becomes scorable instead of being dropped at build time.
+    # GSM8K does NOT set this, so no GSM8K item can construct a TypedGold and no
+    # GSM8K item can take the typed branch — byte-identity is a property of the
+    # SHAPE of the change, not a lucky outcome.
+    gold: Literal["typed"] | None = None
 
 
 class SplitDef(StrictModel):
