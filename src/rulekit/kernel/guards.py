@@ -318,6 +318,62 @@ def check(
                         "reading declines rather than commit a subset",
                     )
 
+    if _enabled(reg, "contradicted-relation") and store is not None:
+        # AN OVER-DETERMINED DOCUMENT THAT DOES NOT ADD UP IS NOT READ.
+        #
+        # A Relation whose subject AND standard BOTH already hold a stated state
+        # is redundant — the document says the same thing twice. saturate.py
+        # DROPS it silently ("only an existing STATE for the subject blocks
+        # resolution"), which is right for a CONSISTENT restatement and hides a
+        # contradiction: "London is 11 and Blair is 16. SEVERAL YEARS AGO, Blair
+        # was twice as old as London" committed London's current 11, because
+        # 16 != 2*11 was never checked against anything.
+        #
+        # The contradiction is real but its CAUSE is temporal — the relation
+        # holds at some other time, and 'several years ago' states an offset the
+        # rule cannot capture (it is not a number). With no time model the engine
+        # cannot tell "inconsistent document" from "relation at another time",
+        # and both mean the same thing here: it has not read what the question
+        # turns on. Decline.
+        #
+        # TWO CONDITIONS, and dropping either one breaks correct items —
+        # MEASURED across all five word-problem corpora:
+        #   * SAME TIME ONLY. `subject_offset`/`standard_offset` carry the stated
+        #     temporal shift ("in 5 years, Raven will be 4 times as old as
+        #     Phoebe"). Those relations are VIOLATED at t=0 by design and are
+        #     answered correctly today — 12 of them across gsm8k dev, 4 known
+        #     correct. Ignoring the offsets flags every one.
+        #   * LABEL-KEYED. "Jar A has 28 marbles. Jar B has 12 more than jar A.
+        #     Jar C has twice as many as jar B" bare-folds every holder to lemma
+        #     'jar'; comparing on bare lemma reads three jars as one and flags 2
+        #     more correct items. The label lives in a separate feature — the
+        #     same trap `distinct: [who, std]` documents.
+        # With both conditions the class is EXACTLY ONE item in five corpora, and
+        # it is the confident-wrong this exists for. Anything else it ever fires
+        # on is a document that genuinely does not add up.
+        from .model import Quantity as _Q
+        from .model import Relation as _Rel
+
+        stated: dict[tuple, float] = {}
+        for q in store.by_kind(_Q):
+            if q.is_state:
+                stated.setdefault((q.entity, q.label, q.measure), q.value)
+        for rel in store.by_kind(_Rel):
+            if (rel.subject_offset or 0) or (rel.standard_offset or 0):
+                continue  # asserted at ANOTHER time — not a contradiction at t=0
+            subj = stated.get((rel.subject, rel.subject_label, rel.measure))
+            std = stated.get((rel.standard, rel.standard_label, rel.measure))
+            if subj is None or std is None:
+                continue  # not over-determined — saturate DERIVES this one
+            if abs(subj - (rel.factor * std + rel.offset)) > 1e-6:
+                return GuardVeto(
+                    "contradicted-relation",
+                    f"the stated {rel.measure!r} of {rel.subject!r} ({subj}) "
+                    f"contradicts the relation to {rel.standard!r} ({std}): "
+                    f"{rel.factor}x + {rel.offset} — the document is "
+                    "over-determined and does not add up at one time",
+                )
+
     if _enabled(reg, "unresolved-derivation") and store is not None:
         # a FractionQuantity/RestQuantity the synthesizers could NOT resolve
         # means part of the text was read but not computed — committing
