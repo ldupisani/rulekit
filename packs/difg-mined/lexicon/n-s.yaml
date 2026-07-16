@@ -820,7 +820,10 @@ entries:
       lemma: plant
   plants:
     senses:
+    - noun
     - verb
+    verb:
+      lemma: plant
   plate:
     senses:
     - noun
