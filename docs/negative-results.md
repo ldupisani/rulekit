@@ -1448,3 +1448,43 @@ gate — or, for the offsets, possibly not at all if the family had been slightl
 smaller. The script that finds them is the same one that sizes the class, so it
 costs nothing extra: enumerate every item the guard WOULD fire on, and read their
 current outcomes. A guard is a claim about a class; the class is countable.
+
+## FOLIO Phase 1 (verdict commitment + phrase-keyed syllogisms): REVERTED at folio TEST look #1 (2026-07-16)
+
+The full increment — `Answer.committed` admitting verdict yes/no, both judge flips,
+per-kind guards (supported-fragment), `packs/logic` (span-capture phrase-keyed
+extraction, Horn instantiation/chaining, embedded-declarative asks, is-membership
+moved in) — passed EVERYTHING: folio dev-train diff SOLVED 1 / 0 BROKE / 0
+DECL→WRONG across 919 DEV items, null controls proving the one solve was a real
+derivation (the answer moved with both subject and predicate), pytest 1231, all six
+cross-corpus gates clean, gsm8k byte-neutral by pack-scoping proof + measurement.
+
+**folio TEST look #1: 0 correct / 1 WRONG → revert** (`88f6382` reverted by its
+successor). The failing shape exists only in TEST's distribution — the §3a case the
+look exists to catch, and the reason the look is spent BEFORE trusting an increment.
+DEV showed zero wrongs, so the culprit cannot be diagnosed from DEV; TEST is
+aggregate-only and stays that way.
+
+What re-landing must do differently (narrow first, one look per piece):
+1. **Drop the verbal-universal rules** — a known-verb participle missplits the
+   cls/pred boundary ("All students TRAINED by Yale are…" → v='trained'), the
+   likeliest unsound reader of the lot.
+2. **Drop "All X are not Y"** — read as ∀¬ on one Phase 0a gold, but the English is
+   genuinely ambiguous (¬∀ vs ∀¬) and FOLIO annotators decide per item; one
+   mis-scoped item is exactly one TEST wrong.
+3. **Drop ground-verbal** (widest ground rule; the 'be'-twin redundancy came from it).
+4. Keep: copular universals (all/every/no), copular grounds ± not, instantiation +
+   chain synths, the embedded copular asks. The Robert-Zimmer-class item this bought
+   used ONLY these.
+5. The kernel half (committed/judges/guards/span machinery) was NOT shown unsound —
+   but it is unbuyable without rules, so it re-lands WITH the narrowed pack, one
+   revertible commit, one fresh look.
+
+Also banked from the increment (all still true, re-derivable from `88f6382`):
+'true' must be an ADJECTIVE (noun sense makes ask/is-membership parse the wrapper
+itself — an answer invariant to its own question); the generic SVO fold drops
+qualifiers and mints junk from passives, so a verdict consumer may only read
+phrase-keyed logic facts; the clause pre-split erases its boundary word (any split
+story must veto verdicts); a bound quantifier is attached, not understood; moving
+is-membership out of arithmetic costs the 4 curated membership suite items (they
+must move to pytest under a logic registry — suite 52→48 while the move holds).
