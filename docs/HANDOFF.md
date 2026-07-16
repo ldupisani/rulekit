@@ -1,11 +1,23 @@
 # Session handoff — 2026-07-16
 
 Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
-State is committed and pushed through `a241f38` on `main` (github.com/ldupisani/rulekit).
+State is committed through `b1db917` on `main` (github.com/ldupisani/rulekit).
 Always check `git status` / `git log origin/main..HEAD` before assuming push parity.
 
-> ## ➡ NEXT SESSION: FIND A REAL LOGIC CORPUS (brief below). It is the only thing that can reopen
-> ## Frontier 2 — difg's own logic is 10 demo questions and 8/8 of its yes/no golds say 'Yes'.
+> ## ➡ FOLIO IS BUILT, BENCHED AND LANDED — **919 DEV items, 0 correct / 0 WRONG** (`f7b059c`).
+> ## **It caught a real confident-answer on its first run** and the fix is landed (`b1db917`).
+> ## Frontier 2 is REOPENED but is NOT a `committed` widening: see "what FOLIO actually buys".
+
+### ⚠ Three things the last handoff asserted that turned out to be FALSE — check, don't inherit
+1. **"the two files are WRITTEN and committed"** — they were UNTRACKED. Nothing was lost, but the
+   gate did not exist in the repo. `git status` before believing a handoff's push claims.
+2. **`conj-train.json` is NOT "identical to head behavior"** — it is the ORIGINAL ~14-correct
+   baseline and reads **90 SOLVED** against head's 104/0. It is a fine floor (0 BROKE still means
+   what it says) but `NET +90` is drift, not your increment. For a true before/after, snapshot the
+   prior commit — do not trust the committed baseline as "current".
+3. **`bench --snapshot` CRASHED on every `gold: typed` project** (`TypedGold is not JSON
+   serializable`), so the `rulekit diff` ship gate was silently unavailable for difg — the ACTIVE
+   frontier — and folio. Fixed in `d0a818e`; GSM8K snapshots verified byte-identical.
 
 ### GSM8K is DONE and stays a regression floor
 dev-train **104/0 (100%)**, dev-holdout **40/0**, curated suite **52/52**, **TEST 92.3%** (12/1 —
@@ -189,13 +201,100 @@ its number beside the GSM8K/ASDiv precision numbers. And note the denominator MO
 (148 → 342 items), so the coverage % is not comparable across that line: 18.2% before vs 9.9% after is
 a bigger, more honest denominator, not a regression. See `docs/difg-corpus-plan.md`.
 
-### ➡ NEXT SESSION'S TASK: find a REAL logic corpus (a 6th cross-corpus gate)
+### ✅ DONE: the logic corpus is FOLIO — `projects/folio/` — BUILT, BENCHED, LANDED (`f7b059c`)
 
-**Goal:** wire an independently-authored natural-language LOGIC corpus as
-`projects/<name>/`, the same two-file recipe as asdiv/svamp/mawps/scibench. If one
-exists with the properties below, it **legitimately reopens Frontier 2** (the
-verdict commit path), which is currently CLOSED — not because the kernel change is
-hard, but because nothing could BUY it. A real logic corpus is the buyer.
+**Measured 2026-07-16: 919 DEV / 285 TEST, 0 rows dropped. Baseline `0 correct / 0 wrong`
+(919 declined).** Rebuild with `uv run --with datasets python projects/folio/build_corpus.py`.
+The DEV label split lands **37.6% True / 32.9% Uncertain / 29.5% False**, so the majority-class
+null scores 37.6% — the balance check holds on the ACTUAL built slice, not just the dataset card.
+
+**⚠ IT SHIPPED AT `1 correct / 0 wrong` AND THE 1 WAS LUCK — this is the whole lesson.** The
+prediction "expect 0/0, the WRONG column is what matters" was right about the wrong column and
+would have MISSED this: the gate's first run scored a `correct`, and a `correct` on a safety gate
+reads like good news. It was a guess that landed. **On a safety gate, treat a nonzero `correct`
+exactly as seriously as a nonzero `wrong` until you have read the item.** It is now 0/0 because
+the bug it exposed is fixed (`b1db917`), not because nothing happened.
+
+**What it caught (the gate paying for itself on its first run, as predicted):**
+`ask/is-membership` matches `is <name> <noun>` as a SUBSEQUENCE, so on *"Is it true that Jim is a
+**Knicks player**?"* the proper noun QUALIFYING the collection bound the member slot and the real
+subject was dropped: member='knicks', 'jim' never read, answered from a Membership fact about the
+Knicks. **The null control is what convicts it** — swapping in a name absent from the premises
+returned the same 'no', and *"Jim is a Knicks player. Is it true that Jim is a Knicks player?"*
+returned **undetermined**. An answer invariant to its own question is not an answer. It scored
+`correct` only because that row's gold is False.
+
+The fix is **"an unread NAME is a decline"** — value-accounting's *BINDABLE is not READ* contract
+applied to the one value kind this consumer binds. **A dropped name carries no digits, so no
+numeric guard can ever see it**; that is why this class needs its own guard and why 5 arithmetic
+corpora sat on it silently. Guarded the CONSUMER, not the ask's shape (the shape is right for the
+prose it was mined on), and `undetermined` still survives where nothing is unread.
+
+**No GSM8K TEST look was spent, and that is a PROOF, not an oversight:** the guard only ever turns
+a `verdict` into a `decline`, and `_judge` already scored a verdict against a float gold as
+`declined` (a verdict is not `Answer.committed`). Both states score `declined`, so every GSM8K TEST
+outcome is unchanged by construction. Prefer a proof to a look whenever the change cannot reach a
+commit path — looks are the scarcest thing here.
+
+**The scoring path was TRACED through `_judge_typed`, not assumed** (the builder is
+unrun, but this part is settled by reading): `#### True`/`#### False` miss
+`_NUMBER`/`_MONEY`/`_PERCENT` and hit the `("true","false","yes","no")` test →
+`kind='verdict'`; `#### Uncertain` misses `_QUANTITY` (it needs leading digits) →
+`kind='text'`. There are **three** routes to a WRONG, all live TODAY with no kernel
+change:
+1. a committed NUMBER vs a **verdict** gold — fails `got in ("yes","no",...)` → wrong;
+2. a committed NUMBER vs the **text** gold — `norm("15.0") != norm("Uncertain")` → wrong;
+3. a **verdict** answer vs a True/False gold — hits the boolean comparator and scores
+   correct/wrong outright. Verdict asks ALREADY EXIST (difg's is-prime), so an existing
+   one misfiring on logic prose is caught immediately. Note this route can score
+   CORRECT too — a lucky verdict is a 50/50 coin flip, so treat any nonzero correct
+   here as suspect until the item is read, not as coverage.
+
+These premises are full of bindable numbers ("published a book in 1946"), and no
+other corpus can see route 1 or 2 — all five others ask for a number.
+
+**The four checks, all MEASURED before wiring** (full table + the ProofWriter
+rejection: `docs/negative-results.md` → "The logic-corpus search"). Do not re-derive:
+
+| check | FOLIO | verdict |
+|---|---|---|
+| independent authors | Yale-LILY, human-written (arxiv:2209.00840) | pass |
+| **balanced labels** | True 38.8% / Uncertain 32.4% / False 28.9% → **null = 38.8%** | pass |
+| natural English | 1,662 skeletons / 5,286 premise sentences; top = **0.2%** | pass |
+| verifiable golds | premises-FOL + conclusion-FOL on 100% of rows | pass, caveated |
+
+- **ProofWriter/RuleTaker REJECTED** on natural English, and it is not close:
+  292,776 questions drawn from a **52-word vocabulary** ("Gary is furry", "Bob is
+  not blue"). Size is not independence — 292K rows of a generator carry less
+  information than 1K rows of human prose. LogiQA/ReClor unmeasured: MCQ golds are
+  option labels, so the shape is wrong regardless of the text.
+- **The FOL is NOT an executable oracle** — 3.2% of `conclusion-FOL` strings do not
+  have balanced parens. It is human annotation, carried for AUDITING a
+  disagreement; the gold is FOLIO's human-verified label. The dataset card cannot
+  tell you this; testing it can.
+
+**⚠ WHAT FOLIO ACTUALLY BUYS — Frontier 2 is reopened, but it is NOT a
+`Answer.committed` widening.** The old brief implied the corpus was the only
+missing piece. It was not. Widening `committed` to admit verdicts buys nothing on
+its own, because **there is no inference engine behind it** — FOLIO needs universal
+quantification, implication chaining, negation and XOR over human prose. Worse,
+`engine.split_question` splits a leading premise off and `answer()` only receives
+the QUESTION reading (the physics `power` lesson), so **the premises never reach the
+consumer at all**. Mining FOLIO means building a premise-reading consumer AND an
+inference engine. That is a frontier, not an increment. Brief it honestly or the
+first candidate against it will be a dead brief.
+
+**Two traps caught before landing (both in `negative-results.md`):**
+1. **'Uncertain' is a `text` gold, NEVER a `decline` gold.** `_judge_typed` scores a
+   declining engine `correct` against a decline gold — so that mapping would hand an
+   always-decline engine ~32% of this corpus for zero reasoning. That is difg's
+   always-yes disease reappearing **in the corpus chosen to escape it**: the null
+   control must be re-run on every design decision, not just on corpus selection.
+2. **The firewall buckets on the PREMISE BLOCK, not the item.** 1,001 rows share only
+   **340 stories**; asdiv's per-item hash would have leaked **661 of 1,001** across
+   the cut. The "two-file recipe" hid this — copying the builder verbatim was wrong.
+
+**The old brief (kept — the reasoning below is still the standard for a 7th gate):**
 
 **Why difg's own logic cannot be that buyer — measured 2026-07-16, do not re-derive:**
 - difg's entire logic domain is **10 `example_queries`** in a 64-line orchestrator
@@ -308,6 +407,7 @@ new code. **Adding one is a two-file recipe.**
 | `projects/mawps/` | classic arithmetic repo | **100%** (9/0), low coverage |
 | `projects/scibench/` | **out-of-domain** college science; safety check | **0/0** — a rising wrong = the engine guessing |
 | `projects/difg/` | multi-domain COVERAGE corpus (not precision); `gold: typed` | 44/0 of **342**, 9 domains |
+| `projects/folio/` | **LOGIC** safety gate (6th); `gold: typed`; the only NON-arithmetic gate | **0/0** of 919 — caught the unread-name verdict on run #1 |
 
 The four HF-backed ones rebuild with `uv run --with datasets python projects/<name>/build_corpus.py`;
 difg reads a LOCAL difg checkout (`uv run python projects/difg/build_corpus.py`, no `--with datasets`).
@@ -318,18 +418,24 @@ synth-GroupTotal fix + consumer both paths (`2439b82`, `ab878ad`) · container+l
 (`6dffe56`) · subject-gapping anaphora (`22623ee`, GSM8K TEST 91.7%→92.3%) · superordinate-via-combined
 (`1466051`, "pieces of litter").
 
-## Current numbers (verified at `a241f38`)
+## Current numbers (re-measured at `b1db917`, 2026-07-16 — every one of these was run, not carried over)
 
-- GSM8K dev-train **104/0** · dev-holdout **40/0** · TEST **92.3%** (12/1) · curated suite **52/52**
-- pytest **1172** (verified 2026-07-16) · lint: 0 errors, 1 intended warning (fraction-of-remnant subsumption — documentation, not a bug)
-- Cross-corpus DEV: ASDiv 89.4% (43/5) · SVAMP 86.7% (13/2) · MAWPS 100% · SciBench 0/0 · difg 44/0 of 342 (typed gold)
+- GSM8K dev-train **104/0** · dev-holdout **40/0** · TEST **92.3%** (12/1, unchanged — no look spent
+  this session; see the proof under the FOLIO section) · curated suite **52/52**
+- pytest **1179** · lint: 0 errors, 1 intended warning (fraction-of-remnant subsumption — documentation, not a bug)
+- Cross-corpus DEV: ASDiv 89.6% (43/5) · SVAMP 86.7% (13/2) · MAWPS 100% (9/0) · SciBench 0/0 ·
+  difg 44/0 of 342 (typed gold) · **folio 0/0 of 919** (typed gold)
 - bench wall: dev-train 16.6s → 9.0s (trace opt-out) → 1.7s at `--jobs 12`. `--jobs` defaults to 1;
   spend it in the SERIAL integration tail, never in the implementers' gates (they already run concurrently).
 
 ## The mining loop (how work ships)
 
-1. Baselines live in `projects/gsm8k/snapshots/` — CURRENT are `conj-train.json` / `conj-holdout.json`
-   (identical to head behavior; they supersede `price-*` / `pop-*` / `conv-*` / `narrow2-*`).
+1. Baselines live in `projects/gsm8k/snapshots/` — `conj-train.json` / `conj-holdout.json` supersede
+   `price-*` / `pop-*` / `conv-*` / `narrow2-*`. **They are NOT "identical to head behavior"** (this
+   file claimed that; measured 2026-07-16 it is false): `conj-train.json` is the original ~14-correct
+   baseline and reads **90 SOLVED / 0 BROKE** against head's 104/0. Still a valid FLOOR — 0 BROKE and
+   0 DECL→WRONG mean exactly what they say — but `NET` against it is meaningless. For a real
+   before/after, snapshot the PRIOR COMMIT. `--snapshot` now works on typed-gold projects (`d0a818e`).
 2. Mine with throwaway scripts in the session scratchpad (never the repo); `rulekit stats` also works.
 3. Build the tightest GENERAL mechanism (YAML rules/categories first; kernel only for structure).
    One class per increment, named at ship time.
@@ -357,6 +463,18 @@ See `.claude/skills/mine/SKILL.md`. **Standing instruction: push `main` after ev
   rests on it. (Increment 107 — a `yaml_only` brief that also rewrote three `numbers.py` merge passes.)
 - Every new FACT KIND must decide explicitly whether existence or USE constitutes "read" for value
   accounting (the look #4–#7 lesson).
+- **VALUE-ACCOUNTING IS NUMERIC, so every NON-numeric value a consumer binds needs its own read
+  guard.** A dropped NAME carries no digits, so no numeric guard can see it: `membership-verdict`
+  bound a collection's proper-noun qualifier as its subject, ignored the real one, and answered
+  anyway (`b1db917`). Five arithmetic corpora sat on it silently because verdicts are not
+  `Answer.committed`. Ask of any consumer: *which kinds does it BIND, and which of those can go
+  unread without a guard noticing?*
+- **On a SAFETY gate (scibench/folio), a nonzero `correct` is as suspicious as a nonzero `wrong`** —
+  and it is harder to act on because it looks like progress. FOLIO's first run scored 1 correct: a
+  verdict invariant to its own question that drew the ~39% of the label distribution which hides a
+  guess. Read the item before calling it coverage. **A guess and a capability are indistinguishable
+  at n=1** — the null control (swap the subject for one the premises never mention; does the answer
+  move?) is what tells them apart.
 - A new derived-total consumer must check for UNCONSUMED QUALITATIVE predicates on the same entity
   before committing, not just unaccounted NUMBERS — value-accounting only catches missing digits;
   "splits the cost with his brother" has none and slipped past every numeric guard.

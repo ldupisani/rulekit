@@ -1068,3 +1068,74 @@ card.
    already mined in DEV. Copying the existing builder verbatim was the wrong move
    and the two-file recipe hid it; a corpus with a one-to-many story→item relation
    needs the story as the key.
+
+## The FOLIO gate paid for itself on run #1 — and the payment arrived as a `correct` (2026-07-16)
+
+The logic gate was wired the previous session with an explicit prediction: *"expect
+0 correct / 0 wrong … the number that matters is the WRONG column. If it is >0,
+that is the gate paying for itself on its first run."*
+
+**The first run returned `1 correct / 0 wrong`.** The prediction was right that the
+gate would pay immediately and wrong about the column it would pay in. The WRONG
+column — the one the corpus was designed around, the one the docstring, the
+project.yaml comment and the handoff all pointed at — was **0 and stayed 0**. The
+bug came in as a *correct*, which on a safety gate reads like good news.
+
+### What it was
+
+`ask/is-membership` matches `is <name> <noun>` as a SUBSEQUENCE. On *"Is it true
+that Jim is a **Knicks player**?"* the proper noun QUALIFYING the collection binds
+the member slot and the real subject is dropped — `member='knicks'`, `'jim'` never
+read — and the consumer answered from a `Membership(knicks, player, False)` fact
+folded out of an unrelated premise. Gold was `False`. It scored **correct**.
+
+### The null control is what convicted it, and nothing else would have
+
+A single `correct` is indistinguishable from luck by inspection. Three probes:
+
+| probe | before | should be |
+|---|---|---|
+| swap `Jim` → `Zoe` (absent from the premises) | still `no` | undetermined |
+| `Jim is a Knicks player. Is it true that Jim is a Knicks player?` | **`undetermined`** | yes |
+| `Mary is a student. Is Mary a student?` (the mined shape) | `yes` | yes |
+
+**The verdict did not depend on who was asked about.** An answer invariant to its
+own question is not an answer — it is a constant with a reason string. The second
+row is the tell that it was not merely over-eager: the one phrasing that *should*
+have answered `yes` was the one that declined.
+
+### The lessons
+
+1. **On a safety gate, a nonzero `correct` is exactly as suspicious as a nonzero
+   `wrong`, and it is harder to act on because it looks like progress.** The
+   handoff DID say "treat any nonzero correct here as suspect until the item is
+   read" — that line was worth the whole session. Keep it.
+2. **A guess and a capability are indistinguishable at n=1.** With a 3-label corpus
+   a wrong guess had a ~61% chance of showing up as a WRONG and being obvious. It
+   drew the other ~39%. The gate did not get lucky — *the bug* did.
+3. **Value-accounting is numeric, so a dropped NAME is invisible to every guard we
+   have.** This is the physics *"BINDABLE is not READ"* lesson in a kind with no
+   digits: five arithmetic corpora sat on this silently because verdicts are not
+   `Answer.committed`, so each scored it a harmless decline. Every new value kind
+   a consumer BINDS needs its own read-accounting; the numeric guard does not
+   generalize for free.
+4. The fix guards the CONSUMER, not the ask's shape — the shape is right for the
+   prose it was mined on — and closes the CLASS (any un-bound name), not the
+   witness. `undetermined` still survives where nothing is unread; a decline there
+   would cannibalize the epistemic square's "I don't know".
+
+Landed: gate `f7b059c`, fix `b1db917`. folio 1/0 → **0/0**. GSM8K byte-neutral.
+
+### Two false claims inherited from the previous handoff (both cost real time)
+
+- **"the two files are WRITTEN and committed"** — they were UNTRACKED. A handoff's
+  push claims are a memory of intent; `git status` is the fact.
+- **`bench --snapshot` crashed on EVERY `gold: typed` project** (`TypedGold is not
+  JSON serializable`), so the `rulekit diff` ship gate had been quietly unavailable
+  for difg — the ACTIVE frontier — and for folio. Nothing announced it, because
+  nothing had run it. Fixed in `d0a818e`. **A gate you have never executed is not a
+  gate**; the same sentence explains why FOLIO's own bug sat unwritten until a
+  bench actually ran.
+- Related: `conj-train.json` is not "identical to head behavior" — it is the
+  original ~14-correct baseline and reads 90 SOLVED against head. A stale baseline
+  still floors 0-BROKE correctly, but its NET is noise.
