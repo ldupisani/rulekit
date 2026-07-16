@@ -533,10 +533,25 @@ def _revenue_total(
 
 
 def _entity_total(
-    store: FactStore, reg: Registry, entity: str, measure: str, log: ArithmeticLog
+    store: FactStore, reg: Registry, entity: str, measure: str, log: ArithmeticLog,
+    invert_events: bool = False,
 ) -> float | None:
     """The single-entity fold: state quantities anchor, event quantities
     accumulate signed by the verb's category polarity.
+
+    `invert_events` (OPT-IN, default False — every existing caller is
+    byte-identical) folds the START state instead of the current one: the stated
+    quantity is the END state, so the events are UNDONE rather than applied.
+    "Paco ate 19 cookies and had 35 cookies left" folds to 35 + (-19) = 16 today,
+    which is the right answer to "how many does he have" and the WRONG answer to
+    "how many did he have IN THE BEGINNING" (54 = 35 - (-19)). Only an ask that
+    consumes a start-state marker binds it (rules/start-state.yaml); every other
+    ask leaves it unset, exactly as `place_fallback_entity` is bound by one ask.
+
+    It applies ONLY where the asked entity holds the events itself. "Rachel picked
+    3 apples FROM HER TREE" folds as rachel/apple/3 — the TREE has no event, so
+    there is nothing to undo and inverting returns the same wrong answer. That is
+    source-marked transfer, a different mechanism (docs/negative-results.md).
 
     PERCENT CHANGE (mining candidate percent-change-values): an in-play
     PercentChange fact (model.PercentChange, USE-gated for value
@@ -573,6 +588,11 @@ def _entity_total(
         return None  # facts from DIFFERENT times — time arithmetic is unbuilt
     if any(_sign(q.verb, reg, strict=True) is None for q in events):
         return None  # an event with UNKNOWN polarity cannot be signed — decline
+    # UNDOING an event is negating its polarity; nothing else about the fold
+    # changes, so the anchor/ordering/percent-change machinery below is shared.
+    def _esign(verb: str) -> int:
+        s_ = _sign(verb, reg)
+        return -s_ if invert_events else s_
     if state and events:
         earliest_event = min(q.provenance.sentence for q in events)
         if any(q.provenance.sentence > earliest_event for q in state):
@@ -592,23 +612,38 @@ def _entity_total(
     for q in state:
         parts.append(str(q.value))
     for q in events:
-        parts.append(f"{'+' if _sign(q.verb, reg) > 0 else '-'} {q.value}")
+        parts.append(f"{'+' if _esign(q.verb) > 0 else '-'} {q.value}")
     if state:
         expr = " + ".join(str(q.value) for q in state)
         if events:
             expr += " " + " ".join(
-                f"{'+' if _sign(q.verb, reg) > 0 else '-'} {q.value}" for q in events
+                f"{'+' if _esign(q.verb) > 0 else '-'} {q.value}" for q in events
             )
     else:
         expr = " ".join(
-            f"{'+' if _sign(q.verb, reg) > 0 else '-'} {q.value}" for q in events
+            f"{'+' if _esign(q.verb) > 0 else '-'} {q.value}" for q in events
         ).lstrip("+ ")
         if expr.startswith("- "):
             expr = "0 " + " ".join(
-                f"{'+' if _sign(q.verb, reg) > 0 else '-'} {q.value}" for q in events
+                f"{'+' if _esign(q.verb) > 0 else '-'} {q.value}" for q in events
             )
     if reg.word_in_category(measure, "currency"):
         changes = [pc for pc in store.by_kind(PercentChange) if pc.entity == entity]
+        if changes and invert_events:
+            # A PercentChange is an EVENT — it SCALES the running total by
+            # (1 +/- fraction). `invert_events` negates the polarity of event
+            # QUANTITIES; it says nothing about a multiplicative event, and
+            # undoing one is a DIVISION, not a sign flip. Applying it forward on
+            # top of an inverted fold would be a confident-wrong, so a start-state
+            # question over an entity carrying a percent change declines.
+            #
+            # This is the same call as `_qualified_variant_total` and
+            # `_superordinate_total` — opt out of a path that folds an EVENT in
+            # ignorance of the flag — and deliberately NOT the call made for the
+            # container-plus-loose composition, which touches only STATES and is
+            # therefore already correct. What a helper FOLDS decides it, not
+            # whether it has heard of the flag.
+            return None
         if changes:
             if any(
                 isinstance(f, PercentChange) and f.entity == entity
@@ -1622,22 +1657,32 @@ def answer(
                 "decline", None,
                 f"no {ask_verb!r} events known for {entity!r}/{singular!r}",
             )
-        total = _entity_total(store, reg, f"{entity}[{owner}]", singular, log) if owner else None
+        # START STATE (opt-in, bound only by the start-state asks —
+        # rules/start-state.yaml): the question asks what the entity held BEFORE
+        # the narrated events, so the fold UNDOES them instead of applying them.
+        # Unset for every other ask, which therefore folds byte-identically (the
+        # `place_fallback_entity` precedent: a shared consumer widened for one
+        # caller via a defaulted-off parameter, never globally).
+        invert = query.get("start_state") == "true"
+        total = (
+            _entity_total(store, reg, f"{entity}[{owner}]", singular, log, invert_events=invert)
+            if owner else None
+        )
         if total is None and qualifier:
-            total = _entity_total(store, reg, f"{entity}[{qualifier}]", singular, log)
+            total = _entity_total(store, reg, f"{entity}[{qualifier}]", singular, log, invert_events=invert)
         if total is None and measure_qualifier:
             # mining candidate qualified-measure-keys: the exact qualified
             # key first (the conflict-split case) — mirrors the owner/
             # entity_qualifier two-lookup shape above, keyed on the
             # MEASURE's own qualifier instead of the entity's.
-            total = _entity_total(store, reg, entity, f"{singular}[{measure_qualifier}]", log)
+            total = _entity_total(store, reg, entity, f"{singular}[{measure_qualifier}]", log, invert_events=invert)
         if total is None:
             scoped = (
                 owner_store if owner
                 else qualifier_store if qualifier
                 else measure_qualifier_store
             )
-            total = _entity_total(scoped, reg, entity, singular, log)
+            total = _entity_total(scoped, reg, entity, singular, log, invert_events=invert)
         if total is None and query.get("sum_measure_variants") and not measure_qualifier:
             # gap (c), mining candidate qualified-measure-keys: "Sam has 30
             # red balls. Sam has 36 green balls. How many balls does Sam
@@ -1674,11 +1719,19 @@ def answer(
             holders = {q.entity for q in store.by_kind(Quantity) if q.measure == singular}
             if holders == {fallback_entity}:
                 total = _entity_total(store, reg, fallback_entity, singular, log)
-        if total is None:
+        if total is None and not invert:
             # superordinate-totality fallback (mining candidate subtype-
             # total-asks): the asked measure has ZERO facts of its own but
             # every measure this entity holds is a pack-declared subtype of
             # it — see `_superordinate_total`'s own docstring for the guard.
+            #
+            # NOT taken for a START-STATE ask: this helper sums subtype
+            # holdings and knows nothing of `invert_events`, so it would
+            # return a confidently UN-inverted total under a question asking
+            # for the start. Declining is the safe half of that trade, and is
+            # the same call made for `sum_measure_variants` in
+            # rules/start-state.yaml. Threading the inversion through here
+            # first is what it would take to widen this.
             total = _superordinate_total(store, reg, entity, singular, log)
         if total is None:
             return Answer(
@@ -1698,6 +1751,13 @@ def answer(
         # so a fold that already absorbed the container contents (via
         # synth/container-contents, when the holder held no loose amount) is not
         # double-counted. Only the container-contents family reaches here.
+        # DELIBERATELY NOT gated on `invert` — the composition is ALREADY correct
+        # for a start-state ask, and gating it here was a confident-wrong I had to
+        # revert: a GroupTotal is a STATE (an anchor), and the inversion only ever
+        # negates EVENTS, so "Beth has 4 packs of 10 crayons. Beth ate 6 and had 6
+        # left. How many did she have in the beginning?" composes 40 + 12 = 52,
+        # which is right. Dropping the packs answered 12. Not every path needs the
+        # opt-out — only those that fold events without knowing about it.
         group_totals = [gt for gt in store.by_kind(GroupTotal) if gt.measure == singular]
         if len(group_totals) == 1 and abs(group_totals[0].value - total) > 1e-9:
             g = group_totals[0].value

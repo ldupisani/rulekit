@@ -1,0 +1,84 @@
+format: rulekit/rules@1
+# START-STATE ASKS: "How many cookies did he have IN THE BEGINNING?"
+#
+# "Paco ate 19 cookies and had 35 cookies left" folds to 35 + (-19) = 16. That is
+# the correct answer to "how many does he have" and a CONFIDENT-WRONG for "how
+# many did he have in the beginning" (54). The stated quantity is the END state;
+# the question asks for the START, so the events must be UNDONE. The mechanism is
+# `_entity_total(invert_events=True)` (answer.py) — a defaulted-off parameter on
+# the shared fold, bound ONLY here.
+#
+# WHY A SEPARATE ASK RATHER THAN AN OPTIONAL TRAILING GROUP: the marker must be
+# REQUIRED. `match_ask` ranks by consumed units first, so an ask that CONSUMES the
+# marker outranks the base ask (ask/how-many-entity, 6 units) on exactly the
+# questions that carry one, and cannot match anything else. An optional group
+# would tie with the base ask on every question WITHOUT a marker and be settled by
+# alphabetical id order — which encodes nothing.
+#
+# THE MARKERS ARE LITERALS, not a category, and that is forced rather than chosen:
+# they span four parts of speech — 'before' (preposition), 'beginning' (noun),
+# 'originally' (adverb), 'begin' (verb) — and a category roots at exactly ONE
+# sense. Literals match on a token's fold regardless of POS. 'the' is auto-skipped
+# (SKIPPABLE_SENSES), so "in THE beginning" is {lit: in}{lit: beginning}.
+#
+# SCOPE — this lands the ONE marker + ONE shape a confident-wrong proves. Adding a
+# (base shape x marker) pair is a one-line data change here, and each new one is a
+# new ask that must be gated: 9 GSM8K TEST items carry a question-position marker,
+# and most are `if`-clause PREMISES ("If she had $36 in the beginning, how much
+# did Andrea save?") which must NEVER match — they state a start, they do not ask
+# for one. The shapes below cannot match those: an if-clause is split off as a
+# premise before the ask is tried.
+#
+# NOT COVERED, deliberately (docs/negative-results.md): SOURCE-TRANSFER items —
+# "Rachel picked 3 apples FROM HER TREE. Now the tree has 4." The tree holds NO
+# event (the pick folds as rachel/apple/3), so there is nothing to undo and
+# inverting returns the same wrong answer. Those need source-marked transfer, a
+# different mechanism. Do not reach for this parameter to fix them.
+rules: []
+asks:
+  - id: ask/how-many-entity-start-state
+    # ask/how-many-entity's slots, plus the required marker — but NOT a blind
+    # copy of it, and the differences are all deliberate. An earlier version of
+    # this ask claimed to "mirror it exactly" and did not; the constitution review
+    # found the two confident-wrongs that claim was hiding. Each line below is
+    # therefore justified against the base ask, not assumed from it.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {slot: aux, type: future_modal}
+        - {slot: who, type: name}
+        # `cat: state`, NOT the base ask's `type: verb`. The base ask binds
+        # `verb: "{verb}"` and routes a non-state verb to the verb-SCOPED fold
+        # ("how many grapes did Tomas EAT?" = 12, the eating). A start state is
+        # by definition a STATE — "what did X HAVE before" — and this consumer
+        # is only given the `have` fold, so accepting any verb here answered a
+        # have-question for an eat-question ("...did Tomas eat in the beginning?"
+        # committed 42, the have-fold, instead of 12). Gating the slot means such
+        # a question never reaches this ask at all and falls through to the base
+        # ask, which reads it correctly. All state verbs are one equivalence
+        # class, so resolving them to `have` below is exact, not a flattening.
+        - {slot: verb, cat: state}
+        - {lit: in}
+        - {lit: beginning}
+    resolves:
+      consumer: single-entity
+      entity: "{who}"
+      measure: "{item}"
+      verb: have
+      start_state: "true"
+      # REQUIRED, and its absence was a confident-wrong: without it
+      # `measure_qualifier` is permanently empty, the qualified-key retry is
+      # skipped, and the consumer rolls up every variant — "how many RED grapes
+      # did Tomas have in the beginning?" answered 36 (red + green) where the
+      # same question WITHOUT the marker correctly answers 30. The base ask's own
+      # comment forbids exactly that: a question naming one SPECIFIC variant must
+      # never silently roll up every colour.
+      measure_qualifier: "{item.qualifier}"
+      # `sum_measure_variants` is DELIBERATELY NOT bound, unlike the base ask.
+      # It routes to `_qualified_variant_total`, which does not know about
+      # `invert_events` and would return an UN-inverted total — a wrong answer
+      # wearing this ask's name. Opting out means a multi-variant start-state
+      # question declines instead, which is the safe half of the trade. Binding
+      # it requires threading the inversion through that helper first.
