@@ -1,7 +1,7 @@
 # Session handoff — 2026-07-16
 
 Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
-State is committed and pushed through `6bdd361` on `main` (github.com/ldupisani/rulekit).
+State is committed and pushed through `7145a89` on `main` (github.com/ldupisani/rulekit).
 Always check `git status` / `git log origin/main..HEAD` before assuming push parity.
 
 > ## ➡ NEXT SESSION: two live frontiers — difg domain-mining (active) and the typed-gold kernel change (the big lever)
@@ -13,8 +13,8 @@ engine halves (ask-shape, reading) measured out as a LONG TAIL — GSM8K coverag
 next lever was always a DIFFERENT corpus. That is now the whole game. Proof: `docs/negative-results.md`
 → "The reading gap is a LONG TAIL"; brief `docs/reading-gap.md` is CLOSED.
 
-### FRONTIER 1 (active): difg domain-mining — `projects/difg/`, difg-DEV 0 → 30 correct, 0 wrong
-The numeric slice is 197 items over 58 domains. SIX domains are solved via one reusable **template**:
+### FRONTIER 1 (active): difg domain-mining — `projects/difg/`, difg-DEV 0 → 32 correct, 0 wrong
+The numeric slice is 197 items over 58 domains. SEVEN domains are solved via one reusable **template**:
 *select an operation/formula by NAME via a category-gated ask, bind the operands, apply a general
 operation* — words in YAML, operations in a consumer branch, no per-domain Python.
 
@@ -26,6 +26,7 @@ operation* — words in YAML, operations in a consumer branch, no per-domain Pyt
 | arithmetic | `6bdd361` | 7 ops | operator words are grammatical-skeleton literals → ZERO new categories |
 | trigonometry | `4ed9956` | 4/4 | one `angle_degrees` gate; two asks (`sine`/`sin`) → ONE opcode |
 | coordinate | `720c071` | 3/4 | a `point` slot type: "(3,4)" stops reading as the scalar 34 |
+| vector | `7145a89` | 2/2 | whole-list read of a SPACED tuple; forced the `bare:` compound gate |
 
 `arithmetic` is the lowest-cost variant of the template and the one to imitate: operator words are
 skeleton LITERALS in the ask (or the multiplier/percent unit numbers.py already folds), so it needed
@@ -54,15 +55,17 @@ That is a real operand-binding increment, not a fifth copy of the template — b
 unit token does not survive the merge. Bind one category-gated slot instead. Confirm any new shape
 with `rulekit solve --trace` BEFORE writing the ask; the trace prints the merge.
 
-**The `point` slot type (`720c071`) is now available and half-spent.** It cost a `numbers.py` change,
-so REUSE it rather than rebuild it. What is still open, in the SAME family (~3 more items):
-`magnitude of the vector (3, 4)`, `dot product of (1, 2, 3) and (4, 5, 6)`, difg-TEST's
-`correlation between [1,2,3] and [2,4,6]`. They need ONE thing: the **SPACED** tuple form. Tokenization
-is inconsistent and this is the whole job — `(1,2)` is ONE token (`1,2` → `_TUPLE` → a point), but
-`(1, 2, 3)` is THREE tokens (`1,` `2,` `3`, each a plain number, because the tokenizer splits on
-whitespace). A merge pass folding adjacent trailing-comma numbers into one point would close it —
-but that pass is in shared code, so gate it hard (see below). Brackets (`[1,2,3]`) also need checking:
-unknown whether the tokenizer strips them as it does parens.
+**Tuples: TWO forms, and they are read by two DIFFERENT mechanisms. This is settled — do not redesign it.**
+- `(1,2)` **unspaced** is ONE token → `numbers.py` `_TUPLE` → a `point` slot (`720c071`, distance/slope).
+- `(1, 2, 3)` **spaced** is THREE tokens (`1,` `2,` `3`, each a plain number) → read as a whole-question
+  number list by the `vector` consumer (`7145a89`, magnitude/dot product).
+
+**A merge pass folding spaced tuples into points CANNOT EXIST** — an earlier version of this file
+proposed one; that was WRONG. The tokenizer's `_TOKEN` regex has no paren alternative, so parens are
+**dropped outright** before annotation: `(1, 2, 3)` and the `list_statistic` list `1, 2, 3` are the
+identical token stream. Any such pass would break every statistic list. If a spaced tuple ever needs to
+be a real `point`, the ONLY route is teaching `tokenize.py` to preserve parens — a change under every
+corpus, almost certainly not worth it.
 
 **difg reports COVERAGE, NEVER precision** (79.3% of it is difg's own `example_queries`). Never quote
 its number beside the GSM8K/ASDiv precision numbers. See `docs/difg-corpus-plan.md`.
@@ -89,7 +92,7 @@ new code. **Adding one is a two-file recipe.**
 | `projects/svamp/` | **adversarial variations**, harshest in-domain | **80.0%** (12/3), fresh worklist |
 | `projects/mawps/` | classic arithmetic repo | **100%** (9/0), low coverage |
 | `projects/scibench/` | **out-of-domain** college science; safety check | **0/0** — a rising wrong = the engine guessing |
-| `projects/difg/` | multi-domain COVERAGE corpus (not precision) | 23 correct / 0 wrong, 4 domains |
+| `projects/difg/` | multi-domain COVERAGE corpus (not precision) | 32 correct / 0 wrong, 7 domains |
 
 The four HF-backed ones rebuild with `uv run --with datasets python projects/<name>/build_corpus.py`;
 difg reads a LOCAL difg checkout (`uv run python projects/difg/build_corpus.py`, no `--with datasets`).
@@ -100,11 +103,11 @@ synth-GroupTotal fix + consumer both paths (`2439b82`, `ab878ad`) · container+l
 (`6dffe56`) · subject-gapping anaphora (`22623ee`, GSM8K TEST 91.7%→92.3%) · superordinate-via-combined
 (`1466051`, "pieces of litter").
 
-## Current numbers (verified at `6bdd361`)
+## Current numbers (verified at `7145a89`)
 
 - GSM8K dev-train **104/0** · dev-holdout **40/0** · TEST **92.3%** (12/1) · curated suite **52/52**
-- pytest **1102** (verified 2026-07-16) · lint: 0 errors, 1 intended warning (fraction-of-remnant subsumption — documentation, not a bug)
-- Cross-corpus DEV: ASDiv 89.4% (43/5) · SVAMP 80.0% · MAWPS 100% · SciBench 0/0 · difg 30/0
+- pytest **1111** (verified 2026-07-16) · lint: 0 errors, 1 intended warning (fraction-of-remnant subsumption — documentation, not a bug)
+- Cross-corpus DEV: ASDiv 89.4% (43/5) · SVAMP 80.0% · MAWPS 100% · SciBench 0/0 · difg 32/0
 - bench wall: dev-train 16.6s → 9.0s (trace opt-out) → 1.7s at `--jobs 12`. `--jobs` defaults to 1;
   spend it in the SERIAL integration tail, never in the implementers' gates (they already run concurrently).
 
@@ -159,6 +162,13 @@ See `.claude/skills/mine/SKILL.md`. **Standing instruction: push `main` after ev
 - A widened slot TYPE (e.g. `entity` vs `name`) must be applied to the SPECIFIC ask/rule ids that need
   it, never via blanket find-replace — most `who: name` slots are intentionally name-only. (Caught with
   `replace_all` during the population re-land.)
+- **A COMPOUND NOUN KEEPS ITS HEAD'S LEMMA, and a `cat:` gate matches on lemma** — so a category-gated
+  slot cannot tell "the dot product" from "the product" (it committed 720 for a dot product the moment
+  'dot' was admitted). `bare: true` on a slot (`7145a89`) demands the head itself. It is OPT-IN and must
+  stay that way: for most categories a compound IS its head (a chocolate cake is a cake, and every
+  entity/superordinate gate rests on that). Set it ONLY on operation-naming slots, where the head is a
+  false friend. Any admission of a modifier that can precede an operation name ("cross", "scalar", "inner")
+  re-opens this — the gate is now the mechanism, not a note.
 
 **Reading / grammar**
 - Polarity, stateness, and plurality are DATA (categories: acquire/lose ±1, state, produce/receive +1;
