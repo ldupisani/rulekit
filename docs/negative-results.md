@@ -999,3 +999,72 @@ CONFIDENT-WRONGS — a wrong answer has no decline reason to cluster on. Walk th
 by FACT STRUCTURE (which entity holds what), because that is what the consumer
 actually reads. Two items can share a question shape, a marker, a gold arithmetic
 (a + b) and an error direction, and still be two mechanisms.
+
+## The logic-corpus search: ProofWriter REJECTED, FOLIO wired (2026-07-16)
+
+The task was the previous session's brief: find an independently-authored logic
+corpus, since difg's own logic cannot buy Frontier 2 (8 of 8 prose yes/no golds
+say 'Yes' — the always-yes null scores 8/8). All four HANDOFF checks were
+MEASURED before any wiring. Do not re-derive these.
+
+### ProofWriter / RuleTaker — REJECTED on check #3 (natural English)
+
+`tasksource/proofwriter`, 292,776 rows, labels near-balanced (Unknown 135,774 /
+True 78,501 / False 78,501 — it passes check #2 easily). It fails on the text,
+and the number is not close:
+
+```
+distinct question skeletons: 1,428 of 292,776   (top skeleton 2.5%)
+distinct WORD TYPES in ALL 292,776 questions: 52
+vocab: is the not does bob charlie harry gary dave mouse squirrel cat bear
+       bald eagle tiger cow dog nice round rabbit lion young cold blue big
+       green red kind rough fiona anne erin furry quiet smart white ...
+theory: "Gary is furry. Gary is nice. Gary is red. Gary is not smart."
+```
+
+A 52-word vocabulary over template-generated triples IS the MAWPS trap (84% one
+auto-generated template), and it is worse: MAWPS at least had human nouns. Any
+rule fitted to this measures the generator. **Size is not independence** — 292K
+rows of a generator carry less information than 1K rows of human prose. LogiQA /
+ReClor were not measured: the HANDOFF's prediction is structural and correct —
+they are multiple-choice, so the gold is an option LABEL, not a verdict, and the
+shape is wrong regardless of the text.
+
+### FOLIO — PASSES 4/4, wired as `projects/folio/`
+
+`tasksource/folio` (ungated mirror of Yale-LILY's FOLIO, arxiv:2209.00840;
+`yale-nlp/FOLIO` itself is gated). 1,204 rows.
+
+| check | measurement | verdict |
+|---|---|---|
+| 1 independent authors | Yale NLP annotators, human-written | pass |
+| 2 balanced labels | True 38.8% / Uncertain 32.4% / False 28.9% → **null = 38.8%** | pass |
+| 3 natural English | 1,662 skeletons / 5,286 premise sentences; top skeleton **0.2%** | pass |
+| 4 verifiable golds | premises-FOL + conclusion-FOL on 100% of rows | pass, with a caveat |
+
+**Check #4's caveat, found by testing it instead of trusting the schema:** the FOL
+is human-written ANNOTATION, not an executable oracle — **3.2% of conclusion-FOL
+strings do not have balanced parens** (one sample also references a free `Studen(x)`
+in a bonnie-grounded formula). It is carried for AUDITING a disagreement; the gold
+is FOLIO's human-verified label. "Mechanically checkable in principle" is not the
+same as "runnable", and the difference would have been invisible from the dataset
+card.
+
+### Two traps this corpus set, both caught BEFORE landing
+
+1. **'Uncertain' must NOT be a `decline` gold.** `_judge_typed` scores a declining
+   engine `correct` against `gold.kind == "decline"`. FOLIO is 32% Uncertain, so
+   that mapping would hand an ALWAYS-DECLINE engine ~32% of the corpus for zero
+   reasoning — difg's degenerate-measurement disease, reappearing in a corpus
+   picked specifically to avoid it. The null control has to be re-run on every
+   design decision, not just on corpus selection. 'Uncertain' is a **text** gold,
+   where a decline scores `declined`. FOLIO's 'Uncertain' is the POSITIVE claim
+   "this does not follow"; failing to read a sentence is not concluding
+   uncertainty, and the harness must never conflate them.
+2. **The firewall bucket is the PREMISE BLOCK, not the item.** FOLIO's 1,001 train
+   rows share only **340 distinct premise blocks** (mean 2.94 examples/story, one
+   reused 10×). asdiv's per-item `md5(SALT + text)` would have split stories across
+   the cut and **leaked 661 of 1,001 rows** — a TEST item whose premises were
+   already mined in DEV. Copying the existing builder verbatim was the wrong move
+   and the two-file recipe hid it; a corpus with a one-to-many story→item relation
+   needs the story as the key.
