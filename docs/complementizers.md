@@ -182,7 +182,8 @@ rather than an accident of which packs are loaded, as constitution rule 1 intend
 
 ### (b) A live ordering bug — a promoted clause can never supply a pool total
 
-Named at `HANDOFF.md:5443`. `_split_trailing_clause` appends the promoted clause as the
+Named at `HANDOFF-archive-2026-07-16.md:5443` (batch 39 finding #2). `_split_trailing_clause`
+appends the promoted clause as the
 **LAST** premise, but `_pool_before` / `_candidate_measure` (`saturate.py`) require a
 pool total to come from a **strictly earlier** sentence.
 

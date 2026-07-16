@@ -16,9 +16,13 @@ parallel, so candidate quality and *disjointness* are your whole job.
 2. `docs/methodology.md` §4–§5 — the diagnostic harnesses and the selection
    criteria: frequency (largest clean class), semantic typing over raw
    number-accounting, specific-over-common surface patterns, zero regression.
-3. `docs/HANDOFF.md` — "The next mining worklist" (the annotated backlog) and
-   "Hard-won invariants (do not relearn these)". The worklist's counts are
-   stale by its own admission; treat it as hypotheses, not evidence.
+3. `docs/HANDOFF.md` — the live frontiers and "Hard-won invariants (do not
+   relearn these)". NOTE: the old "next mining worklist" section is GONE — GSM8K
+   coverage is closed (dev-train 104/0; both engine halves measured out as a long
+   tail), so there is no GSM8K backlog to scout. The live frontier is difg
+   domain-mining; `rulekit stats` on the TARGET project is your only authoritative
+   frequency evidence. The pre-2026-07-16 backlog is archived (stale by design) in
+   `docs/HANDOFF-archive-2026-07-16.md`.
 4. `docs/negative-results.md` — never re-propose a recorded negative result
    without new evidence that the failure mode no longer applies.
 
@@ -33,7 +37,7 @@ parallel, so candidate quality and *disjointness* are your whole job.
 - **A re-cut is pending and pre-approved**: `age-equative-relations` (branch
   `mining/cand-age-equative-relations`) gated clean and failed review ONLY because
   `_bare_age_anchor_synth` hardcodes `"year"` in `src/rulekit/kernel/saturate.py`.
-  The fix is stated in HANDOFF: declare an `age_measure` category in a pack and
+  The fix: declare an `age_measure` category in a pack and
   gate on `reg.word_in_category(...)` (`currency` is the reference
   implementation). If you propose it, say MUST-FIX in the mechanism.
 - You may probe grammar behavior with

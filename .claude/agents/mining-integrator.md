@@ -74,8 +74,14 @@ increment number to assign is NOT an input — you derive it in step 4.
    `git mv tests/test_mining_<slug>.py tests/test_mining_increment_<N>.py`,
    update the docstring's increment number if it has one, and re-run
    `uv run pytest -q` (rename must not break collection). Append the increment
-   record to `docs/HANDOFF.md` in the established per-increment style (class,
+   record to `docs/mining-log.md` in the established per-increment style (class,
    mechanism, files, gate numbers, "TEST look: pending — spent manually").
+   **NEVER append increment records to `docs/HANDOFF.md`** — HANDOFF is a
+   hand-curated index of current state and invariants, and it is kept SHORT on
+   purpose (appending is what grew it to 6,107 lines before the 2026-07-16
+   split). The one exception: if your increment establishes a GENERAL invariant
+   (a blast radius, an accounting rule, a gate hazard), add that ONE line to
+   HANDOFF's "Hard-won invariants" — the lesson, never the narrative.
 5. **Squash.** Collapse the pick + finalization into ONE commit:
    `git reset --soft $PRE && git commit -m "Mining increment <N>: <class_name>"`
    with a body carrying mechanism + gate numbers. Stage finalization edits by
@@ -91,7 +97,7 @@ increment number to assign is NOT an input — you derive it in step 4.
    git diff --name-only $PRE HEAD        # every path must be under tests/, docs/, or packs|src (the pick itself)
    ```
    Confirm nothing changed under `packs/` or `src/` AFTER the step-2 snapshot
-   (i.e. the only post-gate edits are the test rename and the HANDOFF record).
+   (i.e. the only post-gate edits are the test rename and the mining-log record).
    If so: `cp <slug>-int-train.json staging-base-train.json` and the holdout
    equivalent. If ANY pack or kernel file was touched after the gate ran, the
    snapshots are stale — re-snapshot both slices with a real `bench` run.
@@ -120,7 +126,7 @@ re-prove the full gate against main before any of it is a landing candidate.
 ## FORBIDDEN — no exceptions
 
 - **Writing ANY file in `$MAIN`.** Every edit you make lands in `$STAGING`. The
-  two checkouts have identically-named files (`docs/HANDOFF.md` above all), so a
+  two checkouts have identically-named files (`docs/mining-log.md` above all), so a
   relative path or a stale cwd silently edits the wrong tree. Before every edit,
   confirm the path starts with `$STAGING`. If you catch yourself having written
   to `$MAIN`: revert that file immediately (`git -C "$MAIN" checkout -- <path>`),
