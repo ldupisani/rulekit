@@ -62,6 +62,24 @@ categories:
       forms), not a member of it: an ask needs the base form only, never
       'taller'/'shorter' etc. Most members are difg-mined words; 'small'/
       'large' are core-english, tagged in this file's own `members:`.
+  start_marker_verb:
+    parent: verb
+    notes: >
+      The VERB inside a trailing start-state marker — "to BEGIN with", "to
+      START with". Gates the start-state asks (packs/arithmetic/rules/
+      start-state.yaml), whose consumer UNDOES the narrated events.
+
+      That file explains why the markers there are LITERALS rather than a
+      category: they span four parts of speech ('before' preposition,
+      'beginning' noun, 'originally' adverb), and a category roots at exactly
+      ONE sense. That reasoning still holds and this does not contradict it —
+      it is the SUBSET that happens to share a sense. 'begin' and 'start' are
+      both `verb`, and "to _ with" is one frame around them, so one category
+      turns what would be (2 markers x N shapes) asks into (1 x N). Any marker
+      whose word is not a verb still needs its own literal ask.
+
+      Members live in difg-mined — both words are difg-mined lexicon entries,
+      so a core-only registry must still compile (the litter/age_noun rule).
   pool_pronoun:
     parent: pronoun
     notes: >

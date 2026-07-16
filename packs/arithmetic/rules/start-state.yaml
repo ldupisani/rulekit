@@ -29,11 +29,29 @@ format: rulekit/rules@1
 # for one. The shapes below cannot match those: an if-clause is split off as a
 # premise before the ask is tried.
 #
-# NOT COVERED, deliberately (docs/negative-results.md): SOURCE-TRANSFER items —
+# SOURCE-TRANSFER items are STILL NOT READ, and that is still deliberate —
 # "Rachel picked 3 apples FROM HER TREE. Now the tree has 4." The tree holds NO
 # event (the pick folds as rachel/apple/3), so there is nothing to undo and
 # inverting returns the same wrong answer. Those need source-marked transfer, a
 # different mechanism. Do not reach for this parameter to fix them.
+#
+# What CHANGED (this session): they no longer answer 4. The base asks
+# (ask/how-many-entity-common-noun for "did the TREE have", ask/how-many-in-place
+# for "were in the TANK") matched those questions and SILENTLY IGNORED the
+# trailing marker — the identical bug this file was created to fix for "in the
+# beginning", one shape over. The two shapes below consume the marker, and
+# `_entity_total` now returns None when `invert_events` is set and the entity
+# holds NO events: nothing to undo is not a start state, it is the current one.
+# So they DECLINE. That is the honest outcome and the whole of what was bought;
+# the reading itself is untouched and 7/19 stay unreachable.
+#
+# MEASURED before building (all six corpora, question-position markers): 336
+# items carry one and 333 already DECLINE — the engine cannot read this family
+# at all. The only two that committed were these, both wrong. So the shapes below
+# can only convert a decline into a decline, or a WRONG into a decline. 'to begin
+# with'/'to start with' have ZERO GSM8K TEST exposure (TEST carries only
+# originally 4, in the beginning 2, at first 1, initially 2) — which is why these
+# two markers, and not the others, are the ones that landed.
 rules: []
 asks:
   - id: ask/how-many-entity-start-state
@@ -82,3 +100,80 @@ asks:
       # wearing this ask's name. Opting out means a multi-variant start-state
       # question declines instead, which is the safe half of the trade. Binding
       # it requires threading the inversion through that helper first.
+
+  - id: ask/how-many-entity-common-noun-start-state
+    # ask/how-many-entity-common-noun's slots + the required marker. Checked
+    # against that ask LINE BY LINE, not copied — the sibling above carries the
+    # scar from a "mirrors it exactly" claim that did not, and the review found
+    # the two confident-wrongs the claim was hiding.
+    #
+    #   who, type: common_noun  — KEPT verbatim. The base ask's own comment
+    #     explains why this is its own slot type rather than a widening of
+    #     `type: name`, and none of that reasoning changes here.
+    #   verb, cat: state        — CHANGED from the base ask's `type: verb`, for
+    #     the same reason the sibling above changed it: a start state IS a state,
+    #     and this consumer is only handed the `have` fold, so accepting any verb
+    #     would answer a have-question for an eat-question. A non-state verb now
+    #     falls through to the base ask, which reads it correctly.
+    #   sum_measure_variants    — DELIBERATELY DROPPED (the base ask binds it).
+    #     It routes to `_qualified_variant_total`, which knows nothing of
+    #     `invert_events` and would return an UN-inverted total wearing this
+    #     ask's name. A multi-variant start-state question declines instead.
+    #   measure_qualifier       — KEPT, and required: without it the qualified
+    #     retry is skipped and the consumer rolls up every variant ("how many RED
+    #     grapes ... to begin with" answering red + green).
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {slot: aux, type: future_modal}
+        - {slot: who, type: common_noun}
+        - {slot: verb, cat: state}
+        - {lit: to}
+        - {slot: marker, cat: start_marker_verb}
+        - {lit: with}
+    resolves:
+      consumer: single-entity
+      entity: "{who}"
+      measure: "{item}"
+      verb: have
+      start_state: "true"
+      measure_qualifier: "{item.qualifier}"
+
+  - id: ask/how-many-in-place-start-state
+    # ask/how-many-in-place's slots + the required marker. Two of that ask's
+    # three resolve-fields are deliberately NOT carried over, and both would have
+    # been silent confident-wrongs:
+    #
+    #   place_fallback_entity: world — DROPPED. Its branch in the consumer calls
+    #     `_entity_total` WITHOUT `invert_events`, so it would answer `world`'s
+    #     CURRENT total under this ask's name. answer.py now also refuses that
+    #     branch when `invert` is set, so this is belt AND braces — the field is
+    #     dropped here because this ask has no business asking for it, and the
+    #     consumer refuses it because prose does not enforce.
+    #   sum_measure_variants — DROPPED, same reason as the sibling above.
+    #   verb, cat: state — the base ask binds `type: verb` but RESOLVES `verb:
+    #     have` regardless, which is exactly the mismatch the sibling's comment
+    #     warns about: "how many fish did Maria EAT in the tank to start with"
+    #     would be handed the have-fold. Gating the slot means it never reaches
+    #     here. ("were in the tank" binds 'were' — a state verb — so the class
+    #     this ships for is unaffected.)
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {slot: verb, cat: state}
+        - {slot: prep, cat: preposition}
+        - {slot: place, type: noun}
+        - {lit: to}
+        - {slot: marker, cat: start_marker_verb}
+        - {lit: with}
+    resolves:
+      consumer: single-entity
+      entity: "{place}"
+      measure: "{item}"
+      verb: have
+      start_state: "true"
+      measure_qualifier: "{item.qualifier}"

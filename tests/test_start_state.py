@@ -189,3 +189,63 @@ def test_source_transfer_is_NOT_this_mechanism(reg):
     # 7 is the right answer; the point is that inversion cannot produce it.
     # Asserted unconditionally, not behind `if committed`.
     assert r.answer.value != pytest.approx(7.0)
+
+
+# --- a narrated change the fold cannot see ---------------------------------
+#
+# Two shapes were added (common-noun holder, in-place) because the BASE asks
+# matched their questions and SILENTLY IGNORED the marker — the same bug this
+# file's first increment fixed for "in the beginning", one shape over.
+#
+# The guard behind them is NOT "no events means decline". That premise is wrong
+# and the test above (`test_a_specific_variant_is_not_rolled_up`) proves it: a
+# document that narrates no change at all has start == current, and answering is
+# correct. The predicate is that an event of the same MEASURE exists on ANOTHER
+# entity — a change was narrated that this entity's fold never received.
+
+def test_a_common_noun_holder_start_state_declines_a_source_transfer(reg):
+    """"Rachel picked 3 apples FROM HER TREE" folds as rachel/apple/3, so the
+    TREE holds no event to undo and inverting returns the CURRENT state. The base
+    ask used to answer exactly that, ignoring the marker."""
+    r = solve(
+        "Dana picked three plums from her bush. Now the bush has four plums still on it. "
+        "How many plums did the bush have to begin with?",
+        reg, tracing=False,
+    )
+    assert not r.answer.committed, r.answer.value
+
+
+def test_an_in_place_start_state_declines_a_source_transfer(reg):
+    """The in-place shape ("how many X were in the TANK to start with"), and the
+    other marker verb — both route through the one `start_marker_verb` category."""
+    r = solve(
+        "Nadia took sixteen newts out of her pond. Now there are three newts in the pond. "
+        "How many newts were in the pond to start with?",
+        reg, tracing=False,
+    )
+    assert not r.answer.committed, r.answer.value
+
+
+def test_a_changeless_document_still_answers_its_start_state(reg):
+    """THE BOUNDARY, and a first attempt got it wrong: with NO change narrated
+    anywhere, start == current and the ask must still answer. Guarding on "this
+    entity has no events" declined this and was rejected by the suite."""
+    r = solve(
+        "Ivo has 30 red marbles. Ivo has 6 green marbles. "
+        "How many red marbles did Ivo have to begin with?",
+        reg, tracing=False,
+    )
+    assert (r.answer.kind, r.answer.value) == ("number", 30.0)
+
+
+def test_the_marker_verbs_share_one_category_not_two_asks(reg):
+    """'begin' and 'start' are both `verb`, so "to _ with" is ONE ask per shape
+    rather than (2 markers x N shapes). If a future marker word is not a verb it
+    needs its own literal ask — see the category's notes."""
+    for marker in ("to begin with", "to start with"):
+        r = solve(
+            f"Ivo has 30 red marbles. Ivo has 6 green marbles. "
+            f"How many red marbles did Ivo have {marker}?",
+            reg, tracing=False,
+        )
+        assert (r.answer.kind, r.answer.value) == ("number", 30.0), marker

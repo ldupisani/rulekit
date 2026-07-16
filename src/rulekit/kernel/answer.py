@@ -584,6 +584,38 @@ def _entity_total(
         (state if q.is_state else events).append(q)
     if not state and not events:
         return None
+    if invert_events and not events and any(
+        q.measure == measure and q.entity != entity and not q.is_state
+        for q in store.by_kind(Quantity)
+    ):
+        # A NARRATED CHANGE THIS FOLD CANNOT SEE.
+        #
+        # Undoing nothing returns the CURRENT state. That is the right answer
+        # when the document narrates no change at all ("Tomas has 30 red grapes
+        # ... how many did he have in the beginning?" — nothing happened, so the
+        # start IS 30), and a confident-wrong when a change WAS narrated and this
+        # entity's fold simply did not receive it: "Rachel picked 3 apples FROM
+        # HER TREE. Now the tree has 4" answers 4 (true: 7) because the pick
+        # folds as rachel/apple/3 and the TREE holds no event to undo.
+        #
+        # So the test is not "this entity has no events" — that would decline the
+        # legitimately-changeless case above, and it did (it broke
+        # test_a_specific_variant_is_not_rolled_up). It is: an event of this
+        # MEASURE exists on ANOTHER entity, so a change was narrated that this
+        # fold cannot account for. Being unable to tell whether it was sourced
+        # from this entity is exactly the reason to refuse — reading that is
+        # SOURCE-MARKED TRANSFER ("from her tree" must debit the tree), a
+        # mechanism that does not exist (rules/start-state.yaml).
+        #
+        # Deliberately conservative: it also declines a foreign event that is
+        # genuinely irrelevant ("Mary ate 2 apples" while asking about Tom's
+        # start). Without source-reading the two are indistinguishable, and a
+        # decline is the safe half of that trade — 333 of the 336 marker items
+        # across all six corpora already decline, so the coverage cost is ~0.
+        #
+        # Scoped by the opt-in parameter: unreachable for every non-start-state
+        # caller, so the shared fold stays byte-identical.
+        return None
     if len({q.time for q in state + events}) > 1:
         return None  # facts from DIFFERENT times — time arithmetic is unbuilt
     if any(_sign(q.verb, reg, strict=True) is None for q in events):
@@ -1695,7 +1727,17 @@ def answer(
             # roll up every colour instead.
             total = _qualified_variant_total(store, reg, entity, singular, log)
         fallback_entity = query.get("place_fallback_entity")
-        if total is None and fallback_entity:
+        # `not invert` mirrors the superordinate fallback below, and it is a
+        # MECHANISM rather than a note because the failure is silent: this branch
+        # calls `_entity_total` WITHOUT `invert_events`, so under a start-state
+        # ask it would answer the fallback entity's CURRENT total while wearing
+        # that ask's name — the same defect `sum_measure_variants` is opted out
+        # of in rules/start-state.yaml. It is unreachable today (only
+        # ask/how-many-in-place binds `place_fallback_entity`, and it sets no
+        # `start_state`), and that is exactly why it needed pinning: the next
+        # in-place start-state ask to bind the field would ship a confident-wrong
+        # with nothing to stop it. Prose does not enforce.
+        if total is None and fallback_entity and not invert:
             # decline-safe fallback (mining candidate complement-labeled-
             # subsets), bound ONLY by ask/how-many-in-place — the HANDOFF
             # opt-in-parameter discipline for widening a shared consumer
