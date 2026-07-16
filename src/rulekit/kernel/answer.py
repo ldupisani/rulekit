@@ -2807,6 +2807,32 @@ def answer(
     if consumer == "membership-verdict":
         member, collection = query["member"], query["collection"]
         singular = reg.plural_to_singular.get(collection, collection)
+        # AN UNREAD NAME IS A DECLINE — "BINDABLE is not READ", for names.
+        #
+        # `ask/is-membership` matches `is <name> <noun>` as a SUBSEQUENCE, so a
+        # proper noun QUALIFYING the collection binds the member slot and the
+        # real subject is silently dropped: "Is it true that Jim is a Knicks
+        # player?" bound member='knicks', never read 'jim', and answered from a
+        # fact about the Knicks. The verdict did not depend on WHO was asked
+        # about — swapping in a name absent from the premises returned the same
+        # 'no' — which is the null control failing: an answer invariant to the
+        # question is not an answer. It was found by folio (the logic gate) on
+        # its first run, where it scored CORRECT by luck, the gold being False.
+        #
+        # Guarding here rather than tightening the ask's shape is deliberate:
+        # the shape is right for the prose it was mined on ("Is Mary a
+        # student?"), and value-accounting already declines on an unread NUMBER.
+        # A dropped name carries no digits, so no numeric guard can see it —
+        # this is that same contract, for the one kind of value this consumer
+        # binds. It closes the CLASS (any un-bound name), not the witness.
+        named = {u.features["fold"] for u in question.units if u.sense() == "name"}
+        unread = named - {member}
+        if unread:
+            return Answer(
+                "decline", None,
+                f"question names {sorted(unread)!r} but the membership query is "
+                f"about {member!r} — an unread name",
+            )
         for f in store.by_kind(Membership):
             if f.member == member and f.collection == singular:
                 return Answer("verdict", "yes" if f.polarity else "no", "membership fact")
