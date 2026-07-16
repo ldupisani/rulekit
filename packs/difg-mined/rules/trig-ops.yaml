@@ -1,0 +1,76 @@
+format: rulekit/rules@1
+# The difg `trigonometry` domain: a NAMED trigonometric function applied to one
+# angle in degrees — "What is the sine of 30 degrees?", "the cosine of 60
+# degrees", "the tangent of 45 degrees", "the sin of 30 degrees". The same
+# "select an operation by NAME, bind the operands, apply a general function"
+# template as geometry / list_statistic / number_theory / arithmetic, and the
+# same LOWEST-cost variant as arithmetic: the function NAMES are grammatical
+# skeleton, matched as literals, so each ask carries its opcode and no
+# function-name category is needed.
+#
+# CONSTITUTION: the function words live here as YAML literals; the FUNCTIONS live
+# in answer.py's `trigonometry` consumer, selected by a structural opcode (op:) —
+# 'sin'/'cos'/'tan' as opcodes are structure, never English words being
+# enumerated in Python (rule 1). The single operand binds an ask slot, so
+# value-accounting is satisfied with no exemption (as with arithmetic).
+#
+# SHAPE NOTES (learned the hard way on the arithmetic domain):
+#   - 'the' is NEVER a literal — the article is an auto-skipped sense
+#     (patterns.SKIPPABLE_SENSES), as is the trailing '?'.
+#   - "30 degrees" is ONE unit, not a number followed by a noun: merge-count
+#     folds it to a `counted` unit. So the operand is a single category-gated
+#     slot ({slot: x, cat: angle_degrees}) and there is NO {lit: degrees} — a
+#     {slot: x, type: number} + {lit: degrees} shape CANNOT match, because the
+#     'degrees' token no longer exists on its own after the merge.
+#   - The angle_degrees gate (categories/trig.yaml) is load-bearing: it rejects
+#     "the sine of 30 apples" and pins the operand's unit to the degrees the
+#     consumer converts from.
+rules: []
+asks:
+  - id: ask/trig-sine
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {lit: sine}
+        - {lit: of}
+        - {slot: x, cat: angle_degrees}
+    resolves: {consumer: trigonometry, op: sin, x: "{x.value}"}
+
+  - id: ask/trig-sin
+    # The abbreviated name — "What is the sin of 30 degrees?". A separate ask
+    # (not a lexicon alias) so the abbreviation is grammatical skeleton like
+    # every other operator word in this family.
+    #
+    # 'tan' and 'cos' get NO ask: both are collisions ('tan' is the name "Mr.
+    # Tan" in GSM8K TEST and a verb in train; 'cos' is LaTeX in SciBench), so
+    # neither is admitted to the lexicon — see lexicon/trig-ops.yaml. The
+    # full-name asks below cover every DEV/TEST item.
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {lit: sin}
+        - {lit: of}
+        - {slot: x, cat: angle_degrees}
+    resolves: {consumer: trigonometry, op: sin, x: "{x.value}"}
+
+  - id: ask/trig-cosine
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {lit: cosine}
+        - {lit: of}
+        - {slot: x, cat: angle_degrees}
+    resolves: {consumer: trigonometry, op: cos, x: "{x.value}"}
+
+  - id: ask/trig-tangent
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {lit: tangent}
+        - {lit: of}
+        - {slot: x, cat: angle_degrees}
+    resolves: {consumer: trigonometry, op: tan, x: "{x.value}"}

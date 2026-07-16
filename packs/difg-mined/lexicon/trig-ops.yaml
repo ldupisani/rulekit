@@ -1,0 +1,26 @@
+format: rulekit/lexicon@1
+# The trigonometric function names the unknown-word guard needs admitted so the
+# `trigonometry` ask family (rules/trig-ops.yaml) can commit: "What is the SINE
+# of 30 degrees?", "the COSINE of 60 degrees", "the TANGENT of 45 degrees", "the
+# SIN of 30 degrees". All plain nouns; the functions themselves live in
+# answer.py's `trigonometry` consumer, keyed by a structural opcode — no
+# word-specific trigonometric fact in Python (constitution rule 1).
+#
+# DELIBERATELY NOT ADMITTED — 'tan' and 'cos'. Both are collisions of exactly the
+# kind that silently cost a GSM8K item at a833fea ('max'/'min' vs the name "Max"):
+#   - 'tan' is a SURNAME in GSM8K TEST and a VERB (to sunbathe) in GSM8K train.
+#   - 'cos' appears only as LaTeX in SciBench, the out-of-domain corpus that must
+#     hold at 0 commits.
+# (Stated without the corpus sentences on purpose: `projects/*/data` is gitignored
+# to keep benchmark text out of the tree, and a TEST item least of all belongs in
+# a tracked file. Re-derive with a collision grep if ever in doubt.)
+# Admitting a word REMOVES a decline guard, so the blast radius of either is a
+# confident-wrong, and no DEV/TEST item needs them to anchor an ask. The
+# abbreviated-name half of the class is served by 'sin' alone. If a future item
+# ever needs "tan of 45", it must be bought with a full cross-corpus gate + a
+# GSM8K TEST look, not admitted on the way past.
+entries:
+  sine: {senses: [noun]}
+  cosine: {senses: [noun]}
+  tangent: {senses: [noun]}
+  sin: {senses: [noun]}
