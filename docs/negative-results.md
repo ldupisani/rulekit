@@ -764,3 +764,71 @@ on this surface.)
   beside dev-train, or the next 100% will be just as hollow.
 - The 9 wrongs are a WORKLIST, not a disaster: each is diagnosable, and they cluster on ONE
   mechanism (partial reading), which is a general fix, not 9 patches.
+
+## The typed-gold KERNEL change is NOT the big lever — Frontier 2 is CLOSED (2026-07-16)
+
+**The claim under test** (`docs/difg-corpus-plan.md`, and every HANDOFF since):
+"55.5% of difg answers are NON-numeric and the kernel cannot commit them
+(`Answer.committed == (kind == "number")`). No commit → no score → no mining
+signal for physics / logic / clock / unit_conversion. The KERNEL commit-path
+change unlocks the majority of difg."
+
+**It does not.** Measured on difg-DEV (342 items) after the corpus half of typed
+gold landed (`a241f38`), by classifying every gold:
+
+| gold kind | count | scorable today? |
+|---|---|---|
+| number | 145 | yes |
+| quantity (+unit) | 108 | **yes** |
+| money | 21 | yes |
+| percent | 10 | yes |
+| verdict (bare True/False) | 2 | no — needs the kernel change |
+| text | 56 | no |
+
+**284 of 342 (83%) are already scorable and NONE of them needed the kernel
+change.** The plan's "55.5% non-numeric" headline counted quantity+unit (29.5%)
+— but a quantity gold is a NUMBER under a formatting wrapper ("68.04 kg"), and
+`_judge_typed` compares it numerically. `Answer.committed` was never its blocker.
+The two halves were conflated, and the smaller half was mistaken for the lever.
+
+**What the kernel change would actually buy: ~10 items (2.9%), and it would ship
+CONFIDENT-WRONGS doing it.**
+
+1. **2 bare verdicts.** That is the entire `verdict`-gold population of DEV.
+2. **8 prose yes/no golds** — `Is 17 a prime number?` golds as **`'Yes, 17 is
+   prime.'`**, a SENTENCE. Widening `committed` makes the engine commit `yes`,
+   which is CORRECT, and `_judge_typed` then scores it WRONG
+   (`norm('Yes, 17 is prime.') != norm('yes')`). The kernel change manufactures
+   confident-wrongs out of right answers unless a prose-verdict comparator lands
+   with it.
+3. **The prose-verdict comparator must NOT be built either — the signal is
+   degenerate.** All **8 of 8** prose yes/no golds in DEV answer **'Yes'**. There
+   is not one 'No'. A comparator over that set cannot distinguish a working
+   engine from one that answers 'yes' unconditionally: a stuck engine scores 8/8.
+   This is [[measure-with-a-null-control]] exactly — the null (always-yes) scores
+   as well as the real thing, so the measurement carries no information.
+4. **The remaining 43 text items are a DIFFERENT ENGINE.** Integrals (`x**3/3`),
+   Taylor series, power sets, topology closure/interior/exterior, subgroups of
+   Z_6, quaternion inverses, Cantor normal form, residues, RSA keys. These are
+   symbolic-algebra answers (difg produced them with SymPy). A grammar-driven
+   reading engine does not have a road to them, and no rule pack makes one.
+
+**Also measured, so it is not re-proposed:** 5 further items are money with a
+trailing qualifier (`'$71.71 each'`) that the loader classifies as text. That is a
+CLASSIFIER gap, not a kernel gap — and it is worth nothing today: all 5 decline at
+`no ask shape` (they are compound multi-step: 17% off, then 8% tax, then split 3
+ways). Fixing the classifier alone would be an unbought enabler
+([[enabler-must-be-bought]]).
+
+**Action: Frontier 2 is CLOSED. Do not widen `Answer.committed` for difg's sake.**
+The corpus half (`gold: typed`) was the whole prize and it has landed. If the
+kernel ever grows a non-numeric commit path, let a DIFFERENT motivation drive it —
+and re-read `_judge_typed`'s in-code ⚠ first, because its "a verdict against a
+non-verdict gold is a decline" rule is correct ONLY while verdicts are
+non-commitments.
+
+**The transferable lesson:** a corpus-composition headline ("55.5% is
+non-numeric") is a claim about GOLD FORMATTING, not about the engine's blockers.
+Classify the golds and ask "what would actually score?" before believing a
+percentage names a lever. The 29.5% that made the number impressive was already
+free.

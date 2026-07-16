@@ -4,8 +4,8 @@ Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touchi
 State is committed and pushed through `a241f38` on `main` (github.com/ldupisani/rulekit).
 Always check `git status` / `git log origin/main..HEAD` before assuming push parity.
 
-> ## ➡ NEXT SESSION: difg domain-mining (active). Typed gold's CORPUS half is landed (342 items scorable);
-> ## the remaining kernel half is verdict/text/set only (~78 items) — read Frontier 2 before touching it.
+> ## ➡ NEXT SESSION: difg domain-mining is the ONLY live frontier. Typed gold is DONE — its corpus half
+> ## landed (342 items scorable) and its KERNEL half is CLOSED as measured dead (Frontier 2 + negative-results).
 
 ### GSM8K is DONE and stays a regression floor
 dev-train **104/0 (100%)**, dev-holdout **40/0**, curated suite **52/52**, **TEST 92.3%** (12/1 —
@@ -108,37 +108,40 @@ its number beside the GSM8K/ASDiv precision numbers. And note the denominator MO
 (148 → 342 items), so the coverage % is not comparable across that line: 18.2% before vs 9.9% after is
 a bigger, more honest denominator, not a regression. See `docs/difg-corpus-plan.md`.
 
-### FRONTIER 2: TYPED GOLD — the corpus half is LANDED; the kernel half remains
+### FRONTIER 2: TYPED GOLD — corpus half LANDED; the KERNEL half is CLOSED (measured, not skipped)
 
-**What landed.** difg now declares `gold: typed` and its builder keeps every typed gold verbatim, so
-the loader classifies the payload STRUCTURALLY (`firewall.parse_typed_gold`) instead of dropping it.
-difg-DEV **148 → 342 items** (TEST 49 → 107, still reserved). 194 previously-invisible items now have
-a mining signal; `unit_conversion` has since gone 0 → 11 of 18 on the back of it. Firewall re-verified on the rebuild: 0 pre-existing items missing, 0 golds changed,
-**0 dev/test crossings** — the bucket is `md5(SALT + question)`, per-question, so admitting items
-cannot move an old one. `gold` defaults absent = today's float path, so no other corpus can even
-reach the typed branch.
+**What landed** (`a241f38`). difg declares `gold: typed`; its builder keeps every typed gold verbatim
+and the loader classifies the payload STRUCTURALLY (`firewall.parse_typed_gold`) instead of dropping
+it. difg-DEV **148 → 342 items** (TEST 49 → 107, reserved). Firewall re-verified on the rebuild: 0
+pre-existing items missing, 0 golds changed, **0 dev/test crossings** (bucket = `md5(SALT + question)`,
+per-question). `gold` defaults absent = today's float path, so no other corpus can reach the typed
+branch.
 
-**The decomposition that made it safe — and it is NOT what this file used to say.** A quantity/money/
-percent gold is a NUMBER under a formatting wrapper, and `_judge_typed` already compares those
-numerically (with the 1% relative tolerance difg's rounded golds need). So **127 of the typed items
-needed NO kernel change at all** — `Answer.committed` was never their blocker. Do not conflate the two
-halves again.
+**The kernel half is CLOSED — do NOT widen `Answer.committed` for difg's sake.** Full evidence in
+`docs/negative-results.md` → "The typed-gold KERNEL change is NOT the big lever". The short version,
+measured over all 342 DEV golds:
 
-**What is still blocked, and it is the smaller half:** `Answer.committed == (kind == "number")` still
-gates **verdict / text / set** (~78 items: logic, string_operation, some discrete_math). THAT is the
-remaining kernel change. Two things to do FIRST, both cheap and both load-bearing:
-- `committed` must keep excluding the verdict **'undetermined'** — the epistemic square's "I don't
-  know" is not a commitment, and if it ever counts as one every honest decline becomes a wrong.
-- **`_judge_typed`'s verdict rule must be revisited IN THE SAME INCREMENT** (it is flagged in-code).
-  "a verdict against a non-verdict gold is a decline" holds only *because* a verdict is not a
-  commitment today. Once verdicts commit, that line would HIDE genuine confident-wrongs. The
-  asymmetry beside it is already correct and should stay: a committed NUMBER against a text/set gold
-  scores WRONG, because the engine did assert an answer of the wrong shape. ~78 items ride on this.
+| gold kind | count | scorable today? |
+|---|---|---|
+| number 145 · quantity 108 · money 21 · percent 10 | **284 (83%)** | **yes — none needed the kernel change** |
+| verdict (bare) | 2 | no |
+| text | 56 | no |
 
-**Measured before building (`docs/methodology.md` §4 discipline):** all 127 numerically-valued typed
-items DECLINE today — 0 solved, **0 wrong**. So the wiring was a pure enabler and had to be bought;
-`unit_conversion` bought it (+2). The 0-wrong is the reassuring half: no confident-wrongs were hiding
-behind the drop.
+- The plan's **"55.5% non-numeric" headline counted quantity+unit (29.5%)** — but a quantity gold is a
+  NUMBER under a formatting wrapper ("68.04 kg") and `_judge_typed` compares it numerically.
+  `Answer.committed` was never its blocker. The two halves were conflated; the smaller was mistaken
+  for the lever.
+- The change would buy **~10 items (2.9%)** and would **manufacture confident-wrongs**: `Is 17 a prime
+  number?` golds as the SENTENCE `'Yes, 17 is prime.'`, so a committed (correct!) `yes` scores WRONG.
+- And the prose-verdict comparator that would fix that **must not be built either**: **8 of 8** prose
+  yes/no golds in DEV answer **'Yes'** — an always-yes engine scores 8/8. The null scores as well as
+  the real thing, so the measurement carries no information (the null-control lesson).
+- The other **43 text items are a different engine**: integrals, Taylor series, power sets, topology,
+  quaternions, Cantor normal form. SymPy answers; no rule pack reaches them.
+
+**If the kernel ever grows a non-numeric commit path for some OTHER reason, read `_judge_typed`'s
+in-code ⚠ first:** its "a verdict against a non-verdict gold is a decline" rule is correct ONLY while
+verdicts are non-commitments, and would hide real wrongs the day they commit.
 
 ---
 
@@ -275,6 +278,10 @@ See `.claude/skills/mine/SKILL.md`. **Standing instruction: push `main` after ev
 All recorded in `docs/negative-results.md`:
 - ask-shape mining (5 batches, +2 net) · the 481-item per-unit seam (mechanism exists) · composition
   (`docs/composition.md`, abandoned Phase 0, typed ceiling ~13) · the reading gap (long tail)
+- **the typed-gold KERNEL change** (2026-07-16) — buys ~10 of 342 difg items and manufactures
+  confident-wrongs doing it; the prose yes/no golds it would unlock are **8 of 8 'Yes'**, so the
+  measurement cannot tell a working engine from an always-yes one. The corpus half was the whole
+  prize and it LANDED. Frontier 2 above has the table.
 - **the month/time seam** — 220 dev-train items mention a month or weekday; all 220 decline. Relaxing
   the mixed-time refusal measures **0 SOLVED, 0 BROKE**. They need real temporal arithmetic.
 - **the 502-item `no 'X' events known` bucket is NOT a class** — it is the hard multi-step tail
