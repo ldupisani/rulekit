@@ -1,0 +1,23 @@
+format: rulekit/categories@1
+# The quantity-selection gate for the difg `physics` domain. ask/physics-quantity
+# (rules/physics.yaml) gates its slot on this, and the `physics` consumer looks
+# the name up in the declarative formula table (formulas.yaml) — a structural
+# category name, never a word list in Python (constitution rule 1).
+#
+# Members are exactly the quantities formulas.yaml can compute. A quantity whose
+# formula is absent cannot match the gate, so it declines at the ask rather than
+# reaching a consumer that would decline anyway — the same shape as
+# `measure_unit`/`angle_degrees`.
+#
+# 'work' is DELIBERATELY ABSENT even though difg asks for it ("How much work is
+# done by a force of 20 N over a distance of 4 meters?"). In the lexicon 'work'
+# is a VERB only, so it cannot be a member of a noun-rooted category — the
+# registry rejects it outright ("lacks the root sense 'noun'"). Giving it a noun
+# sense is the trap that broke the `average` consumer (pytest caught that, not
+# the dev gate). The sanctioned fix is a literal-variant ask, and it is not worth
+# building yet: work = force * distance needs 'N' as a force unit, and 'N' is a
+# single capital letter that the name-merge rule would fight over.
+categories:
+  physics_quantity: {parent: noun}
+members:
+  physics_quantity: [speed, weight, voltage]

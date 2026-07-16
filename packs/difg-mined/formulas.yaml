@@ -1,0 +1,66 @@
+format: rulekit/formulas@1
+# The difg `physics` domain: a NAMED physical quantity computed from the
+# parameters the question states. Same template as geometry.yaml — declarative
+# formulas as DATA, ONE general ask family and ONE general consumer, no
+# per-domain Python (constitution rule 1). This table is the geometry table with
+# the SHAPE dropped: a physical quantity names its formula on its own.
+#
+# THE DIMENSIONS MAP IS THE POINT. It binds each number by the DIMENSION OF ITS
+# OWN UNIT, so binding is ORDER-INDEPENDENT. The cheap alternative — fill the
+# formula's parameters from the question's numbers positionally — reads difg's
+# phrasing perfectly and is WRONG on English: "an object that took 5 SECONDS to
+# travel 100 METERS" would answer 0.05 m/s with total confidence. That is a
+# confident-wrong on unseen text, which rule 4 forbids, and it is exactly the
+# difference between a mechanism and a fit to one corpus's word order.
+#
+# ONE CANONICAL UNIT PER DIMENSION, deliberately. Listing 'gram' beside
+# 'kilogram' under `mass` would silently scale-mix: "the weight of a 300 g
+# object" would answer 2940 N instead of 2.94. An unlisted unit binds nothing,
+# the formula's name goes unbound, and `evaluate` raises NameError -> the
+# consumer DECLINES. Precision before coverage: a unit we cannot scale is a unit
+# we refuse to guess with. (The registry also ERRORS if one unit is mapped to two
+# dimensions — that would make binding order-dependent again.)
+dimensions:
+  # The unit as it reaches the consumer: the counted unit's LEMMA ("100 meters"
+  # -> 'meter'), or its QUALIFIER when the noun itself is not a unit ("a 2 kg
+  # object" -> lemma 'object', qualifier 'kilogram').
+  distance: [meter]
+  # 'seconds', not 'second': in the lexicon 'second' is an ADJECTIVE (the
+  # ordinal), so the time unit's only noun form is the plural. Forcing a noun
+  # sense onto it is the trap that broke the `average` consumer.
+  time: [seconds]
+  mass: [kilogram]
+  resistance: [ohm]
+  current: [amp]
+formulas:
+  - {quantity: speed, expr: "distance / time"}
+  # g = 9.8 m/s^2 is a CONSTANT of the formula, so it lives in the expression
+  # (data) exactly as `pi` does for geometry — not in the consumer.
+  - {quantity: weight, expr: "mass * 9.8"}
+  - {quantity: voltage, expr: "resistance * current"}
+
+# DELIBERATELY ABSENT — the compound-unit quantities. Their operands are units
+# the tokenizer SHREDS ("3 m/s^2" -> the numbers [3, 2]; "100 cm^3" -> [100, 3] —
+# the EXPONENT becomes a free-standing number), so their dimension never binds
+# and they DECLINE. That is the correct outcome and it needs no guard here: the
+# NameError path is the guard.
+#   force    = mass * acceleration   (m/s^2)
+#   density  = mass / volume         (cm^3)
+#   momentum = mass * velocity       (m/s)
+#   kinetic energy   = 0.5 * mass * velocity**2   (m/s; and "kinetic energy"
+#     merges to ONE compound noun whose lemma is the head 'energy', so telling it
+#     from "potential energy" needs the qualifier — see the `bare:` gate lesson)
+#   potential energy = mass * 9.8 * height        (needs 'm' as a distance unit)
+#
+# ALSO ABSENT, for a DIFFERENT reason — `power = energy / time`. Its formula is
+# expressible and its units ('joule', 'seconds') are clean, but the question is
+# "What is the power IF 100 joules of work is done in 5 seconds?" and the leading
+# `if`-clause SPLITS INTO A PREMISE (engine.split_question). The consumer sees
+# only the question reading, so the operands are not there to bind. Landing the
+# formula and admitting 'joule' anyway would be dead weight for a formula that
+# cannot fire — exactly what lexicon/physics-ops.yaml refuses to do for
+# 'energy'/'force'. It costs 2 DEV items and comes back if the consumer ever
+# reads premise readings.
+# Adding them is a `tokenize.py` `_TOKEN` change (compound units as ONE token) —
+# the shared reader under EVERY corpus. Do it as its own increment, bought by
+# these rows, and read the `_DIGIT` invariant in docs/HANDOFF.md first.

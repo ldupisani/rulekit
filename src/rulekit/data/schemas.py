@@ -387,6 +387,56 @@ class ConversionsDoc(StrictModel):
     conversions: list[ConversionDef]
 
 
+class QuantityFormulaDef(StrictModel):
+    # a named physical quantity -> an expression over DIMENSION names, e.g.
+    # quantity=speed expr="distance / time". Sibling of FormulaDef below: that
+    # one keys on (shape, quantity) because a geometry formula needs the shape to
+    # disambiguate; a physical quantity names its formula on its own.
+    quantity: str
+    expr: str
+
+
+class FormulasDoc(StrictModel):
+    """A quantity->formula table plus the unit->dimension map that binds it.
+
+    The dimensions map is what makes operand binding ORDER-INDEPENDENT, and that
+    is the whole point of it. The alternative — filling the formula's parameters
+    from the question's numbers positionally — reads difg's phrasing correctly
+    and is WRONG on English: "an object that took 5 seconds to travel 100 meters"
+    would answer 0.05 m/s with total confidence. Binding each number by the
+    DIMENSION of its own unit cannot be fooled by word order.
+
+    ONE canonical unit per dimension, on purpose. Listing both 'kilogram' and
+    'gram' under `mass` would silently scale-mix: "the weight of a 300 g object"
+    would answer 2940 N instead of 2.94. An unlisted unit binds nothing and the
+    formula declines (a NameError in `evaluate`), which is the honest outcome —
+    precision before coverage.
+    """
+
+    format: Literal["rulekit/formulas@1"]
+    dimensions: dict[str, list[str]]
+    formulas: list[QuantityFormulaDef]
+
+    @model_validator(mode="after")
+    def _one_unit_per_dimension(self) -> "FormulasDoc":
+        # The docstring's "ONE canonical unit per dimension" is ENFORCED here,
+        # because prose does not enforce: a second unit is a second SCALE, and
+        # the consumer multiplies whatever it binds ("the weight of a 300 g
+        # object" -> 2940 N instead of 2.94). A list is still the shape because
+        # the field reads as a set of units, but exactly one is admissible.
+        #
+        # Surface VARIANTS are not a reason to widen this — the map is keyed on
+        # LEMMAS, and canonicalising 'metres'/'meters' -> 'meter' is the
+        # lexicon's job (its `plural:` field), not this table's.
+        for dim, units in self.dimensions.items():
+            if len(units) != 1:
+                raise ValueError(
+                    f"dimension {dim!r} must list exactly one canonical unit "
+                    f"(got {units!r}) — a second unit is a second scale"
+                )
+        return self
+
+
 class FormulaDef(StrictModel):
     # a geometry formula: (shape, quantity) -> an expression over named dimensions
     # and the constant `pi`, e.g. shape=circle quantity=area expr="pi * radius**2".
@@ -473,6 +523,7 @@ KIND_MODELS: dict[str, type[BaseModel]] = {
     "rulekit/categories@1": CategoriesDoc,
     "rulekit/conversions@1": ConversionsDoc,
     "rulekit/geometry@1": GeometryDoc,
+    "rulekit/formulas@1": FormulasDoc,
     "rulekit/quarantine@1": QuarantineDoc,
     "rulekit/numbers@1": NumbersDoc,
     "rulekit/obligations@1": ObligationsDoc,

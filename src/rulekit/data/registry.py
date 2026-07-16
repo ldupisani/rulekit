@@ -126,6 +126,8 @@ class Registry:
     part_counts: Mapping[str, str]
     conversions: Mapping[tuple[str, str], float]
     geometry_formulas: Mapping[tuple[str, str], str]  # (shape, quantity) -> expr
+    quantity_formulas: Mapping[str, str]  # quantity -> expr over dimension names
+    unit_dimension: Mapping[str, str]  # unit lemma -> dimension name
     quarantine: Mapping[str, str]  # word -> reason (never vocabulary)
     rules: tuple[PatternRule, ...]
     asks: tuple[AskRule, ...]
@@ -346,6 +348,32 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                     )
                 geometry_formulas[key] = f.expr
 
+    # quantity formulas: quantity -> expression over DIMENSION names, plus the
+    # unit -> dimension map that binds them. Same conflict discipline as the
+    # geometry table above: a redeclaration with a different expression ERRORS
+    # rather than letting one silently win.
+    quantity_formulas: dict[str, str] = {}
+    unit_dimension: dict[str, str] = {}
+    for pack in packs:
+        for doc in pack.formulas:
+            for f in doc.formulas:
+                if f.quantity in quantity_formulas and quantity_formulas[f.quantity] != f.expr:
+                    raise CompileError(
+                        f"quantity formula {f.quantity!r} declared twice with different expressions"
+                    )
+                quantity_formulas[f.quantity] = f.expr
+            for dim, units in doc.dimensions.items():
+                for unit in units:
+                    if unit in unit_dimension and unit_dimension[unit] != dim:
+                        # One unit cannot denominate two dimensions: that would
+                        # make binding order-dependent again, which is the exact
+                        # thing the map exists to prevent.
+                        raise CompileError(
+                            f"unit {unit!r} mapped to two dimensions: "
+                            f"{unit_dimension[unit]!r} and {dim!r}"
+                        )
+                    unit_dimension[unit] = dim
+
     # quarantine: documentation only, and it must not contradict the lexicon
     quarantine: dict[str, str] = {}
     for pack in packs:
@@ -423,6 +451,8 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
         part_counts=_freeze(part_counts),
         conversions=_freeze(conversions),
         geometry_formulas=_freeze(geometry_formulas),
+        quantity_formulas=_freeze(quantity_formulas),
+        unit_dimension=_freeze(unit_dimension),
         quarantine=_freeze(quarantine),
         rules=tuple(sorted(rules, key=lambda r: r.id)),
         asks=tuple(sorted(asks, key=lambda a: a.id)),

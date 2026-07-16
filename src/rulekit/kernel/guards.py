@@ -11,7 +11,7 @@ from collections import Counter
 from dataclasses import dataclass
 
 from ..data.registry import Registry
-from .answer import Answer
+from .answer import _ACCOUNTED_VALUE_KINDS, Answer
 from .evaluate import ArithmeticLog
 from .facts import FactStore
 from .model import Reading
@@ -22,7 +22,22 @@ _NUMERIC_FACT_FIELDS = ("value", "factor", "offset", "fraction")
 # count bind its own ask slot (only the first does). A CONSUMER name is
 # structure, never an English word (constitution rule 1). See the use site for
 # the contract a member must satisfy.
-_WHOLE_LIST_CONSUMERS = ("list-statistic", "vector")
+#
+# MEMBERSHIP IS A TRADE, NOT A CONVENIENCE: a member takes this guard's
+# protection and therefore OWNS the accounting itself — ALL of it, meaning every
+# kind in `_ACCOUNTED_VALUE_KINDS`, not just the counts. `list-statistic` and
+# `vector` earn it by folding every count into their result. `physics` earns it
+# differently — it binds counts by unit, so a value it cannot read is not an
+# operand at all; it discharges the duty by DECLINING on any unread accounted
+# value rather than committing a number that ignored one.
+#
+# The two cases that proved this, both invisible to every corpus gate: "travels
+# 60 meters in 4 seconds and 3 MINUTES" committed 15 (an unread COUNT), and then
+# "travels HALF of 60 meters in 4 seconds" still committed 15 (an unread
+# FRACTION) after the first fix re-implemented only the count third. That is why
+# the kind tuple is imported rather than re-listed: a contract with two copies
+# has already drifted.
+_WHOLE_LIST_CONSUMERS = ("list-statistic", "vector", "physics")
 
 
 @dataclass
@@ -158,7 +173,11 @@ def check(
             own_values = Counter(fact_values.get(reading.sentence_index, ()))
             for unit in reading.units:
                 kind = unit.features.get("value_kind")
-                if kind not in ("count", "multiplier", "fraction"):
+                # SINGLE DEFINITION, shared with answer.py: a consumer that takes
+                # the _WHOLE_LIST_CONSUMERS exemption below inherits exactly this
+                # duty, and re-listing the kinds there let one copy drift (the
+                # `physics` consumer discharged only the `count` third).
+                if kind not in _ACCOUNTED_VALUE_KINDS:
                     continue
                 value = float(unit.features["value"])
                 # NO global arithmetic-log fallback here: the fold's own sum

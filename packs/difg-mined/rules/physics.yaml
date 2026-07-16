@@ -1,0 +1,36 @@
+format: rulekit/rules@1
+# The difg `physics` domain: "What is the speed of an object that travels 100
+# meters in 5 seconds?" -> 20, "What is the power if 100 joules of work is done
+# in 5 seconds?" -> 20, "What is the weight of a 10 kg object on Earth?" -> 98,
+# "What is the voltage across a 5 ohm resistor with a current of 2 amps?" -> 10.
+#
+# ONE ask for the whole domain, because the CONNECTIVE varies and carries no
+# meaning here — "the speed OF an object...", "the power IF 100 joules...", "the
+# voltage ACROSS a 5 ohm resistor...". Matching a PREFIX and letting the consumer
+# read the operands (the list_statistic template) is what makes one shape cover
+# all four; enumerating of/if/across would be fitting the corpus's phrasing, not
+# reading English.
+#
+# The operands are NOT bound here on purpose. The `physics` consumer binds each
+# number by the DIMENSION OF ITS UNIT (formulas.yaml's `dimensions` map), which
+# is order-independent — see that file for why positional binding is a
+# confident-wrong generator. So this ask carries only the quantity NAME.
+#
+# SPECIFICITY: this consumes just 3 units, which is deliberately weak — it must
+# never outrank a longer, more specific reading. "What is 2 to the power of 10?"
+# is the case to watch: 'power' is a physics_quantity member AND the arithmetic
+# operator word. That question cannot match here (the 3rd unit is the number '2',
+# not a quantity noun), and ask/arith-power consumes 7 units anyway. And "What is
+# the power of 2?" DOES match here — then declines, because `energy`/`time` never
+# bind. Definitive-or-decline does the disambiguating that the ask shape cannot.
+rules: []
+asks:
+  - id: ask/physics-quantity
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {slot: q, cat: physics_quantity}
+    resolves:
+      consumer: physics
+      quantity: "{q}"

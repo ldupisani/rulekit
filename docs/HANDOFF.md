@@ -14,8 +14,8 @@ engine halves (ask-shape, reading) measured out as a LONG TAIL — GSM8K coverag
 next lever was always a DIFFERENT corpus. That is now the whole game. Proof: `docs/negative-results.md`
 → "The reading gap is a LONG TAIL"; brief `docs/reading-gap.md` is CLOSED.
 
-### FRONTIER 1 (active): difg domain-mining — `projects/difg/`, difg-DEV 0 → 41 correct, 0 wrong (of 342 items)
-EIGHT domains are solved via one reusable **template**:
+### FRONTIER 1 (active): difg domain-mining — `projects/difg/`, difg-DEV 0 → 44 correct, 0 wrong (of 342 items)
+NINE domains are solved via one reusable **template**:
 *select an operation/formula by NAME via a category-gated ask, bind the operands, apply a general
 operation* — words in YAML, operations in a consumer branch, no per-domain Python.
 
@@ -29,6 +29,7 @@ operation* — words in YAML, operations in a consumer branch, no per-domain Pyt
 | coordinate | `720c071` | 3/4 | a `point` slot type: "(3,4)" stops reading as the scalar 34 |
 | vector | `7145a89` | 2/2 | whole-list read of a SPACED tuple; forced the `bare:` compound gate |
 | unit_conversion | `a241f38`+ | 11/18 | the FIRST typed-gold domain; imperative frame; asks the conversions table |
+| physics | (this session) | 3/14 | pack kind `rulekit/formulas@1`: quantity→expr + a unit→DIMENSION map |
 
 `arithmetic` is the lowest-cost variant of the template and the one to imitate: operator words are
 skeleton LITERALS in the ask (or the multiplier/percent unit numbers.py already folds), so it needed
@@ -43,40 +44,72 @@ Gotchas learned building it (they will bite again):
 Small follow-ups: geometry's right-triangle ("legs 3 and 4"), std-dev / variance / geometric-mean.
 **DEFER `probability`** — 8 unrelated formulas is HETEROGENEOUS, a constitution §2 trap.
 
-### ➡ THE NEXT INCREMENT IS `physics` (14 items, the largest class left) — BRIEFED, NOT STARTED
+### `physics` — LANDED at 3/14, and the 11 declines are the interesting part
 
-Measured 2026-07-16 over the whole DEV worklist. The addressable pool is **243 items across 80
-domains** (numeric-valued gold, still declining); 196 of them sit in domains with ≥3 items, so it is
-NOT all singletons. Ranked: **physics 14** · chemistry 8 · clock_arithmetic 8 · unit_conversion 7 ·
-base_conversion 7 (poisoned, above) · probability 7 (§2 trap) · logistics 7 · optics 6.
+The addressable pool (measured 2026-07-16): **243 items across 80 domains** (numeric gold, still
+declining); 196 sit in domains with ≥3 items. Ranked: physics 14 · chemistry 8 · clock_arithmetic 8 ·
+unit_conversion 7 · base_conversion 7 · probability 7 · logistics 7 · optics 6.
 
-**Why physics is a real class and not `vocab_singles`:** its items are the GEOMETRY TEMPLATE with the
-shape omitted — "What is the {quantity} of a {thing} with {param} {value}?" → speed=d/t, force=m·a,
-KE=½mv², PE=mgh, work=F·d, power=W/t, density=m/V, V=I·R, p=mv, W=mg. The sanctioned shape is already
-proven: `packs/difg-mined/geometry.yaml` is **11 declarative rows solving 11 items**, ONE general ask
-and ONE general consumer. Rule 1 puts the formulas in YAML; a lookup table is not parsing. Each row
-generalizes over ANY values of its params. Its golds are quantities ("30 N", "100 J") — **already
-scorable** since `gold: typed` landed.
+**What landed:** pack kind **`rulekit/formulas@1`** — a `dimensions` map (dimension → its ONE canonical
+unit) plus `formulas` (quantity → expr over dimension names). The geometry table with the SHAPE
+dropped; `answer.py`'s `physics` consumer is the generic evaluator. 3 formulas: speed=distance/time,
+weight=mass*9.8 (g lives in the EXPR as data, like `pi`), voltage=resistance*current.
 
-**⚠ THE BLOCKER, and it is a TRAP — measure it before writing a line.** The tokenizer SHREDS compound
-units, and their EXPONENTS become PHANTOM OPERANDS:
+**THE DESIGN CLAIM, and it is the whole increment:** operands bind by the **DIMENSION OF THEIR UNIT**,
+never positionally. The unit is the counted unit's LEMMA ("100 meters" → 'meter') **or its QUALIFIER**
+when the noun is not a unit ("a 2 kg object" → lemma 'object', qualifier 'kilogram' — the unit survives
+ONLY there). Positional binding was rejected because *"an object that took 5 seconds to travel 100
+meters"* would confidently answer 0.05 — a rule-4 confident-wrong on unseen text. `test_physics.py`
+pins both word orders at 15.0. **Do not "simplify" this to reading the number list in order.**
 
-```
-"10 kg accelerating at 3 m/s^2"   -> the engine sees [10, 3, 2]     <- the 2 is s^2's exponent
-"mass 300 g and volume 100 cm^3"  -> the engine sees [300, 100, 3]  <- the 3 is cm^3's exponent
-"4 kg object moving at 8 m/s"     -> the engine sees [4, 8]         <- clean: no exponent
-```
+**Why only 3 of 14, and each reason is a different lesson:**
+- **6 items** (force, density, momentum, kinetic energy) need units the tokenizer SHREDS — see the
+  phantom-exponent invariant below. Their dimension never binds → `evaluate` NameErrors → decline. The
+  decline path IS the guard; no extra code.
+- **2 items** (`power`): "What is the power **IF** 100 joules of work is done in 5 seconds?" — the
+  leading `if`-clause SPLITS INTO A PREMISE (`engine.split_question`) and `answer()` only receives the
+  QUESTION reading, so the operands are not there to bind. The formula and 'joule' were REMOVED rather
+  than left as dead weight for something that cannot fire. Reopens if a consumer ever reads premises.
+- **1 item** (`work`): 'work' is a VERB in the lexicon, so it cannot join a noun-rooted category (the
+  registry rejects it — the `average`/`second` trap). Needs a literal-variant ask, and `work = force *
+  distance` needs 'N' as a force unit, which is a single capital the name-merge rule would fight over.
+- **2 items** are the PE/KE pair: "kinetic energy" merges to ONE compound noun whose lemma is the head
+  'energy', so telling KE from PE needs the qualifier (the `bare:` gate lesson).
 
-So the whole-question-number-list template (`list-statistic` / `vector`) **CANNOT be used here** — it
-would bind `2` from `s^2` as an operand and ship confident-wrongs. physics needs compound units to
-tokenize as ONE unit, which is a `tokenize.py` `_TOKEN` change: the shared reader under EVERY corpus.
-Read the `_DIGIT` invariant below first — that pattern's *incidental* behaviours were its contract, and
-tightening it broke 3 unrelated items. Gate hard, and expect the increment to be the tokenizer change
-BOUGHT by the physics rows, not the rows alone.
+**The next physics increment is the `_TOKEN` change** (compound units as ONE token), BOUGHT by the 6
+rows it unblocks — not the rows alone, and not the tokenizer alone. Read the `_DIGIT` invariant below
+first. 'energy'/'force'/'density'/'momentum'/'newton' stay UNADMITTED until then: they are the
+collision-heavy words (2 GSM8K **TEST** items for 'energy', 1 for 'force', 4 train for 'density', 1
+TEST for 'newton' — the NAME), and admitting a word for a formula that cannot fire is strictly a
+downside.
 
-Physics also wants: the params bound by UNIT (kg→mass, m/s→velocity, ohm→resistance) as much as by
-name — a unit→dimension map, which is DATA; the constant g (weight/PE need 9.8); and 'force' /
-'accelerating' / 'joules' admitted (collision-grep first).
+**⚠ Three confident-wrongs the constitution review caught here, ALL invisible to the difg gate** — the
+gate was clean and the review was not, which is the whole argument for the review existing:
+1. An **unread count**: "60 meters in 4 seconds and 3 MINUTES" committed 15.0 (true: 0.33). 'minute'
+   denominates no dimension, so it bound nothing, was never logged, and value-accounting is EXEMPT for
+   this consumer. **Taking the `_WHOLE_LIST_CONSUMERS` exemption means OWNING the accounting** — the
+   consumer now declines on any count it cannot read.
+2. The **same-value blind spot**: the guard read `env[dim] != value`, so "60 meters then 60 meters"
+   committed 15.0 (true: 30) while "60 then 50" declined. Now ANY second value for a dimension
+   declines. Same-value collisions defeat accounting guards — the lesson `guards.py`'s Counter exists
+   for — and a test written with 60-then-50 passes straight over it.
+3. The schema permitted MANY units per dimension while the docstring insisted on one. Now a
+   `model_validator` rejects it: a second unit is a second SCALE ("the weight of a 300 g object" →
+   2940 N, not 2.94). Prose does not enforce.
+4. **BINDABLE is not READ** — the subtlest, and the one to carry forward. "the weight of a 3 kg object
+   THAT TRAVELS 60 METERS IN 4 SECONDS" bound distance and time, `mass * 9.8` never referenced them,
+   nothing declined, and it committed 29.4 while ignoring two stated quantities. The read set is now
+   derived from the EXPRESSION's own names. It was LATENT for these three formulas (travel really is
+   irrelevant to weight) and goes LIVE with the `_TOKEN` increment's velocity/acceleration dimensions.
+   The log records what was READ, not what was bindable — logging the merely-bindable would launder an
+   ignored value into `log.uses_value()`, which other guards consult as evidence.
+
+**And the meta-lesson, which cost two review rounds:** the first fix closed the reported WITNESS
+("...and 3 minutes", an unread count) and left the CLASS open — the guard accounts for
+count/multiplier/fraction, so "travels HALF of 60 meters" still committed. `_ACCOUNTED_VALUE_KINDS` now
+has ONE definition (`answer.py`) that `guards.py` imports, because a contract with two copies has
+already drifted. **Fix the class the witness belongs to, and reason from the shared definition, not
+from the example you were handed.**
 
 **`clock_arithmetic` (8) is NOT next** despite its size: its golds are TIMES ("12:45 PM", "15:45") =
 `text` kind, so they are blocked by the CLOSED kernel lever (Frontier 2). Only 1 of its 8 is numeric.
@@ -196,7 +229,7 @@ new code. **Adding one is a two-file recipe.**
 | `projects/svamp/` | **adversarial variations**, harshest in-domain | **80.0%** (12/3), fresh worklist |
 | `projects/mawps/` | classic arithmetic repo | **100%** (9/0), low coverage |
 | `projects/scibench/` | **out-of-domain** college science; safety check | **0/0** — a rising wrong = the engine guessing |
-| `projects/difg/` | multi-domain COVERAGE corpus (not precision); `gold: typed` | 41/0 of **342**, 8 domains |
+| `projects/difg/` | multi-domain COVERAGE corpus (not precision); `gold: typed` | 44/0 of **342**, 9 domains |
 
 The four HF-backed ones rebuild with `uv run --with datasets python projects/<name>/build_corpus.py`;
 difg reads a LOCAL difg checkout (`uv run python projects/difg/build_corpus.py`, no `--with datasets`).
@@ -210,8 +243,8 @@ synth-GroupTotal fix + consumer both paths (`2439b82`, `ab878ad`) · container+l
 ## Current numbers (verified at `a241f38`)
 
 - GSM8K dev-train **104/0** · dev-holdout **40/0** · TEST **92.3%** (12/1) · curated suite **52/52**
-- pytest **1142** (verified 2026-07-16) · lint: 0 errors, 1 intended warning (fraction-of-remnant subsumption — documentation, not a bug)
-- Cross-corpus DEV: ASDiv 89.4% (43/5) · SVAMP 80.0% · MAWPS 100% · SciBench 0/0 · difg 41/0 of 342 (typed gold)
+- pytest **1161** (verified 2026-07-16) · lint: 0 errors, 1 intended warning (fraction-of-remnant subsumption — documentation, not a bug)
+- Cross-corpus DEV: ASDiv 89.4% (43/5) · SVAMP 80.0% · MAWPS 100% · SciBench 0/0 · difg 44/0 of 342 (typed gold)
 - bench wall: dev-train 16.6s → 9.0s (trace opt-out) → 1.7s at `--jobs 12`. `--jobs` defaults to 1;
   spend it in the SERIAL integration tail, never in the implementers' gates (they already run concurrently).
 

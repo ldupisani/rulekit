@@ -1,0 +1,28 @@
+format: rulekit/lexicon@1
+# The words the difg `physics` domain's three LANDED formulas need admitted
+# (packs/difg-mined/formulas.yaml): speed = distance/time, weight = mass * 9.8,
+# voltage = resistance * current. EVERY entry here is load-bearing for a formula
+# that FIRES — 'joule' was dropped with the `power` formula for exactly the
+# reason the note below gives.
+#
+# 'speed', 'power', 'weight', 'meter', 'seconds' and 'kilogram' were already
+# admitted, so this is only the four that were missing. Collision-grepped across
+# every corpus first (admitting a word REMOVES a decline guard — the lesson 'tan'
+# taught in lexicon/trig-ops.yaml): all four appear ONLY in SciBench, and only
+# 1-4 items each. ZERO exposure in GSM8K / ASDiv / SVAMP / MAWPS. SciBench must
+# hold at 0 commits, and that gate is the arbiter. None are quarantined.
+#
+# DELIBERATELY NOT ADMITTED — 'energy', 'force', 'density', 'momentum', 'newton'.
+# They belong to the formulas this increment does NOT land (their operands are
+# compound units the tokenizer shreds), and they are the collision-heavy ones:
+# 'energy' appears in 2 GSM8K **TEST** items and 8 in train, 'force' in 1 TEST,
+# 'density' in 4 train, 'newton' in 1 TEST (as the NAME). Admitting a word for a
+# formula that cannot fire would lift those decline guards and buy nothing —
+# strictly a downside. They come with the tokenizer increment or not at all.
+entries:
+  voltage: {senses: [noun]}
+  # not a unit — admitted only so the unknown-word guard stops blocking the
+  # voltage item ("a 5 OHM RESISTOR"), whose operands both bind. 1 SciBench item.
+  resistor: {senses: [noun], plural: resistors}
+  ohm: {senses: [noun], plural: ohms}
+  amp: {senses: [noun], plural: amps}
