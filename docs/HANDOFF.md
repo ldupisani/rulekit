@@ -13,8 +13,8 @@ engine halves (ask-shape, reading) measured out as a LONG TAIL — GSM8K coverag
 next lever was always a DIFFERENT corpus. That is now the whole game. Proof: `docs/negative-results.md`
 → "The reading gap is a LONG TAIL"; brief `docs/reading-gap.md` is CLOSED.
 
-### FRONTIER 1 (active): difg domain-mining — `projects/difg/`, difg-DEV 0 → 23 correct, 0 wrong
-The numeric slice is 197 items over 58 domains. FOUR domains are solved via one reusable **template**:
+### FRONTIER 1 (active): difg domain-mining — `projects/difg/`, difg-DEV 0 → 27 correct, 0 wrong
+The numeric slice is 197 items over 58 domains. FIVE domains are solved via one reusable **template**:
 *select an operation/formula by NAME via a category-gated ask, bind the operands, apply a general
 operation* — words in YAML, operations in a consumer branch, no per-domain Python.
 
@@ -24,6 +24,7 @@ operation* — words in YAML, operations in a consumer branch, no per-domain Pyt
 | list_statistic | `bb9e99d` | 6 ops | per-op sub-categories; consumer reads the question's whole number list |
 | number_theory | `bf22837` | 4 ops | per-op sub-categories → `math.gcd`/`lcm`/`factorial`/`comb` |
 | arithmetic | `6bdd361` | 7 ops | operator words are grammatical-skeleton literals → ZERO new categories |
+| trigonometry | `4ed9956` | 4/4 | one `angle_degrees` gate; two asks (`sine`/`sin`) → ONE opcode |
 
 `arithmetic` is the lowest-cost variant of the template and the one to imitate: operator words are
 skeleton LITERALS in the ask (or the multiplier/percent unit numbers.py already folds), so it needed
@@ -35,9 +36,22 @@ Gotchas learned building it (they will bite again):
 - "square root" merges into one compound noun; match it as a single `{lit: square root}`.
 - The unknown-word guard blocks commit until new nouns are admitted to the lexicon.
 
-**Next domains reuse the template verbatim:** `base_conversion`, `trigonometry`. Small follow-ups:
-geometry's right-triangle ("legs 3 and 4"), std-dev / variance / geometric-mean.
+Small follow-ups: geometry's right-triangle ("legs 3 and 4"), std-dev / variance / geometric-mean.
 **DEFER `probability`** — 8 unrelated formulas is HETEROGENEOUS, a constitution §2 trap.
+
+**`base_conversion` is NOT the next easy domain — it was surveyed and is worth less than it looks.**
+Of its 7 DEV items, **2 have POISONED GOLD**: the builder coerced the binary digit-string to a float,
+so `Convert 255 to binary` golds as `1.11111e+07` (i.e. `11111100`) — a CORRECT answer of `11111111`
+scores WRONG against it (`TOL` is 1e-6 absolute). Those two are unwinnable; never count them as
+coverage or chase them. The other 5 also need machinery the template does NOT supply: `Convert
+hexadecimal FF to decimal` needs an ALPHANUMERIC literal read as a digit-string (`FF` is not a number
+token), and `Convert 1010 from binary to decimal` needs a number token REINTERPRETED in a named base.
+That is a real operand-binding increment, not a fifth copy of the template — brief it as such or skip it.
+
+**The trig increment's transferable lesson:** a unit-bearing operand ("30 degrees") folds into ONE
+`counted` unit via merge-count, so `{slot: x, type: number}` + `{lit: degrees}` CANNOT match — the
+unit token does not survive the merge. Bind one category-gated slot instead. Confirm any new shape
+with `rulekit solve --trace` BEFORE writing the ask; the trace prints the merge.
 
 **difg reports COVERAGE, NEVER precision** (79.3% of it is difg's own `example_queries`). Never quote
 its number beside the GSM8K/ASDiv precision numbers. See `docs/difg-corpus-plan.md`.
@@ -78,8 +92,8 @@ synth-GroupTotal fix + consumer both paths (`2439b82`, `ab878ad`) · container+l
 ## Current numbers (verified at `6bdd361`)
 
 - GSM8K dev-train **104/0** · dev-holdout **40/0** · TEST **92.3%** (12/1) · curated suite **52/52**
-- pytest **1078** (verified 2026-07-16) · lint: 0 errors, 1 intended warning (fraction-of-remnant subsumption — documentation, not a bug)
-- Cross-corpus DEV: ASDiv 89.4% · SVAMP 80.0% · MAWPS 100% · SciBench 0/0 · difg 23/0
+- pytest **1090** (verified 2026-07-16) · lint: 0 errors, 1 intended warning (fraction-of-remnant subsumption — documentation, not a bug)
+- Cross-corpus DEV: ASDiv 89.4% (43/5) · SVAMP 80.0% · MAWPS 100% · SciBench 0/0 · difg 27/0
 - bench wall: dev-train 16.6s → 9.0s (trace opt-out) → 1.7s at `--jobs 12`. `--jobs` defaults to 1;
   spend it in the SERIAL integration tail, never in the implementers' gates (they already run concurrently).
 
@@ -139,6 +153,10 @@ See `.claude/skills/mine/SKILL.md`. **Standing instruction: push `main` after ev
   of prior-sentence facts, synth/rest excluded.
 - Name merging: only single capitalized WORDS join names; merged units never do. (Watch collisions:
   'max'/'min' vs the name "Max" silently cost a GSM8K item — `a833fea`.)
+- **Admitting a word REMOVES a decline guard** — its blast radius is a confident-wrong, so every
+  admission needs a collision grep across ALL corpora FIRST. `4ed9956` withheld 'tan' (a surname in
+  GSM8K TEST, a verb in train) and 'cos' (LaTeX in SciBench) on exactly this basis; the class was
+  fully served without them. Withholding a colliding word costs nothing when no ask needs it.
 - Asks match by specificity (max consumed units); ask templates referencing unbound optional slots omit
   the key; only `{slot.value}` slots count as consumed.
 - The verb→dobj binding captures only the FIRST conjunct in "buys X and Y" for verbs outside
