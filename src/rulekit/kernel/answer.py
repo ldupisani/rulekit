@@ -2809,22 +2809,22 @@ def answer(
         singular = reg.plural_to_singular.get(collection, collection)
         # AN UNREAD NAME IS A DECLINE — "BINDABLE is not READ", for names.
         #
-        # `ask/is-membership` matches `is <name> <noun>` as a SUBSEQUENCE, so a
-        # proper noun QUALIFYING the collection binds the member slot and the
-        # real subject is silently dropped: "Is it true that Jim is a Knicks
-        # player?" bound member='knicks', never read 'jim', and answered from a
-        # fact about the Knicks. The verdict did not depend on WHO was asked
-        # about — swapping in a name absent from the premises returned the same
-        # 'no' — which is the null control failing: an answer invariant to the
-        # question is not an answer. It was found by folio (the logic gate) on
-        # its first run, where it scored CORRECT by luck, the gold being False.
+        # Value-accounting already declines on an unread NUMBER. A dropped name
+        # carries no digits, so no numeric guard can see it; this is that same
+        # contract for the one kind of value this consumer binds. It fires when
+        # the question STATES something the query never read — "Is Mary a student
+        # AT YALE?" binds member='mary'/coll='student' and would otherwise answer
+        # about Mary-as-student-generally, ignoring the restriction.
         #
-        # Guarding here rather than tightening the ask's shape is deliberate:
-        # the shape is right for the prose it was mined on ("Is Mary a
-        # student?"), and value-accounting already declines on an unread NUMBER.
-        # A dropped name carries no digits, so no numeric guard can see it —
-        # this is that same contract, for the one kind of value this consumer
-        # binds. It closes the CLASS (any un-bound name), not the witness.
+        # It is NOT what keeps the member slot honest — `at_start` on the ask's
+        # fronted auxiliary does that (see ask/is-membership). This guard was
+        # written first, against the witness "Is it true that Jim is a Knicks
+        # player?", and it was INCOMPLETE: keyed on an unread NAME, it sailed
+        # straight past "...that THE PILOT is a Knicks player", which has no name
+        # to be unread and still committed 'no' about the Knicks. The witness was
+        # closed and the class left open, one value-kind over. The two now sit at
+        # the right levels — the ask decides WHICH construction it may read, this
+        # decides whether the reading used everything the question said.
         named = {u.features["fold"] for u in question.units if u.sense() == "name"}
         unread = named - {member}
         if unread:

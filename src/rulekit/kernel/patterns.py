@@ -249,6 +249,14 @@ def _try_match_at(
             i += 1
         if i >= len(units):
             return None
+        if token.at_start and any(
+            u.sense() not in SKIPPABLE_SENSES for u in units[:i]
+        ):
+            # OPT-IN anchor (schemas.MatchToken.at_start): nothing MEANINGFUL may
+            # precede. Skippables stay invisible here exactly as they are to the
+            # loop above — an anchor that tripped on a leading article would be a
+            # different rule than the one the author wrote.
+            return None
         unit = units[i]
         if token.lit is not None:
             if unit.features.get("fold") != token.lit:

@@ -215,6 +215,26 @@ class MatchToken(StrictModel):
     # identical (the "opt-in parameter, defaulted to old behavior" rule for any
     # change to a shared matcher).
     bare: bool = False
+    # OPT-IN: this token may only match with NOTHING MEANINGFUL BEFORE IT — every
+    # preceding unit must be skippable. A match sequence is contiguous (modulo
+    # SKIPPABLE_SENSES) but FLOATS: match_all retries at every start offset, so a
+    # shape mined on one construction will happily land on another that merely
+    # contains the same token run.
+    #
+    # That is a grammar bug, not a tuning knob. English fronts the auxiliary to
+    # ask a question ("IS Mary a student?" — subject-auxiliary inversion, so the
+    # subject FOLLOWS the copula), but leaves it in place in an embedded
+    # declarative ("…that Jim is a Knicks player" — the subject PRECEDES it).
+    # `is <name> <noun>` reads the first correctly and, floating onto the second,
+    # binds the complement's proper-noun modifier ('Knicks') as the subject and
+    # drops the real one. Anchoring says: this literal is the FRONTED auxiliary,
+    # not any copula that happens to appear.
+    #
+    # Structure, never lexicon — it constrains WHERE a token may match, not which
+    # words exist. Defaults False so every existing ask and pattern rule stays
+    # byte-identical (the "opt-in parameter, defaulted to old behavior" rule for
+    # any change to a shared matcher).
+    at_start: bool = False
     opt: list["MatchToken"] | None = None  # optional sub-sequence
 
     @model_validator(mode="after")
@@ -231,6 +251,13 @@ class MatchToken(StrictModel):
             # which is exactly what `bare` forbids — the combination is always
             # false, so it is a authoring mistake, not a narrow gate.
             raise ValueError(f"`bare` contradicts type {self.type!r} (always false)")
+        if self.at_start and self.opt is not None:
+            # An OPTIONAL sub-sequence that must sit at the start is either not
+            # optional or not at the start — the anchor belongs on a token inside
+            # the group, where it says something. Same rule as `bare` above: a
+            # combination that can never mean what it looks like is an authoring
+            # mistake, so it fails loudly at load rather than matching nothing.
+            raise ValueError("`at_start` does not qualify an `opt` group")
         if self.type is not None and self.type not in SLOT_TYPES:
             raise ValueError(f"unknown slot type {self.type!r}")
         return self
@@ -319,6 +346,24 @@ class AskRule(StrictModel):
     id: str
     match: dict[Literal["question"], list[MatchToken]]
     resolves: dict[str, str]  # consumer + query fields, templated
+
+    @model_validator(mode="after")
+    def _anchor_is_first(self) -> "AskRule":
+        """`at_start` on any token but the first can never match.
+
+        Token N>0 anchored to the start would need tokens 0..N-1 to match BEFORE
+        the start, so the ask silently matches nothing — a dead rule that a dev
+        gate reports as a clean 0 SOLVED. Fail at load instead: an anchor that
+        cannot fire is an authoring mistake, and prose does not enforce.
+        """
+        for seq in self.match.values():
+            for i, tok in enumerate(seq):
+                if tok.at_start and i != 0:
+                    raise ValueError(
+                        f"ask {self.id!r}: `at_start` is only meaningful on the "
+                        f"FIRST token of a match sequence (found at index {i})"
+                    )
+        return self
 
 
 class RulesDoc(StrictModel):
