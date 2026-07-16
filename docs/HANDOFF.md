@@ -43,6 +43,44 @@ Gotchas learned building it (they will bite again):
 Small follow-ups: geometry's right-triangle ("legs 3 and 4"), std-dev / variance / geometric-mean.
 **DEFER `probability`** — 8 unrelated formulas is HETEROGENEOUS, a constitution §2 trap.
 
+### ➡ THE NEXT INCREMENT IS `physics` (14 items, the largest class left) — BRIEFED, NOT STARTED
+
+Measured 2026-07-16 over the whole DEV worklist. The addressable pool is **243 items across 80
+domains** (numeric-valued gold, still declining); 196 of them sit in domains with ≥3 items, so it is
+NOT all singletons. Ranked: **physics 14** · chemistry 8 · clock_arithmetic 8 · unit_conversion 7 ·
+base_conversion 7 (poisoned, above) · probability 7 (§2 trap) · logistics 7 · optics 6.
+
+**Why physics is a real class and not `vocab_singles`:** its items are the GEOMETRY TEMPLATE with the
+shape omitted — "What is the {quantity} of a {thing} with {param} {value}?" → speed=d/t, force=m·a,
+KE=½mv², PE=mgh, work=F·d, power=W/t, density=m/V, V=I·R, p=mv, W=mg. The sanctioned shape is already
+proven: `packs/difg-mined/geometry.yaml` is **11 declarative rows solving 11 items**, ONE general ask
+and ONE general consumer. Rule 1 puts the formulas in YAML; a lookup table is not parsing. Each row
+generalizes over ANY values of its params. Its golds are quantities ("30 N", "100 J") — **already
+scorable** since `gold: typed` landed.
+
+**⚠ THE BLOCKER, and it is a TRAP — measure it before writing a line.** The tokenizer SHREDS compound
+units, and their EXPONENTS become PHANTOM OPERANDS:
+
+```
+"10 kg accelerating at 3 m/s^2"   -> the engine sees [10, 3, 2]     <- the 2 is s^2's exponent
+"mass 300 g and volume 100 cm^3"  -> the engine sees [300, 100, 3]  <- the 3 is cm^3's exponent
+"4 kg object moving at 8 m/s"     -> the engine sees [4, 8]         <- clean: no exponent
+```
+
+So the whole-question-number-list template (`list-statistic` / `vector`) **CANNOT be used here** — it
+would bind `2` from `s^2` as an operand and ship confident-wrongs. physics needs compound units to
+tokenize as ONE unit, which is a `tokenize.py` `_TOKEN` change: the shared reader under EVERY corpus.
+Read the `_DIGIT` invariant below first — that pattern's *incidental* behaviours were its contract, and
+tightening it broke 3 unrelated items. Gate hard, and expect the increment to be the tokenizer change
+BOUGHT by the physics rows, not the rows alone.
+
+Physics also wants: the params bound by UNIT (kg→mass, m/s→velocity, ohm→resistance) as much as by
+name — a unit→dimension map, which is DATA; the constant g (weight/PE need 9.8); and 'force' /
+'accelerating' / 'joules' admitted (collision-grep first).
+
+**`clock_arithmetic` (8) is NOT next** despite its size: its golds are TIMES ("12:45 PM", "15:45") =
+`text` kind, so they are blocked by the CLOSED kernel lever (Frontier 2). Only 1 of its 8 is numeric.
+
 **`base_conversion` is NOT the next easy domain — it was surveyed and is worth less than it looks.**
 Of its 7 DEV items, **2 have POISONED GOLD**: the builder coerced the binary digit-string to a float,
 so `Convert 255 to binary` golds as `1.11111e+07` (i.e. `11111100`) — a CORRECT answer of `11111111`
@@ -219,6 +257,11 @@ See `.claude/skills/mine/SKILL.md`. **Standing instruction: push `main` after ev
 - A shared clause-boundary scan (`_is_rate` / `_price_each_value`, used by EVERY verb's rate-marker
   detection) must never be widened globally to fix one caller — the fix is an opt-in parameter,
   defaulted to old behavior. Any tightening of a shared scan needs a FULL dev diff.
+- **A COMPOUND UNIT's EXPONENT is a PHANTOM OPERAND.** `tokenize.py`'s `_TOKEN` has no compound-unit
+  alternative, so "3 m/s^2" tokenizes as `3` … `2` and "100 cm^3" as `100` … `3` — the exponent
+  becomes a free-standing number. Any consumer that reads the question's whole number list
+  (`list-statistic`, `vector`, and anything copying them) will bind it as an operand. Harmless today
+  only because no ask reaches those items; it is the first thing physics must fix.
 - **`numbers.py` `_DIGIT` is the number reader for EVERY corpus, not "the parser for the thing you are
   fixing."** Tightening it to reject "3,4" (a coordinate misread as 34) also silently dropped its
   ACCIDENTAL tolerance of a trailing comma — and in a spaced list the tokenizer keeps the comma on the
