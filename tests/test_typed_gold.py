@@ -17,9 +17,10 @@ What is being pinned:
      non-numeric gold long enough that a match cannot be coincidental.
 """
 
+import json
 from dataclasses import dataclass
 
-from rulekit.harness.bench import _judge
+from rulekit.harness.bench import _gold_json, _judge
 from rulekit.harness.firewall import TypedGold
 
 
@@ -143,3 +144,38 @@ def test_a_real_verdict_against_a_verdict_gold_is_still_judged():
     would defeat the whole point of typed gold for the boolean domains."""
     assert _judge_of(TypedGold("verdict", True), "verdict", "yes")[0] == "correct"
     assert _judge_of(TypedGold("verdict", True), "verdict", "no")[0] == "wrong"
+
+
+# --- 5. the snapshot renders every gold kind ------------------------------
+#
+# `to_snapshot` fed the gold straight to json.dumps, so a `gold: typed` project
+# raised TypeError and `bench --snapshot` — the input to the `rulekit diff` SHIP
+# GATE — was unavailable for difg and folio. It failed silently in the sense
+# that nothing announced the gate was missing; it was found by running it.
+
+def test_a_typed_gold_survives_json_round_trip():
+    """The regression itself: every typed kind must reach the snapshot."""
+    for gold in (
+        TypedGold("verdict", "true"),
+        TypedGold("text", "Uncertain"),
+        TypedGold("quantity", 68.04, unit="kg"),
+        TypedGold("number", 7.0),
+    ):
+        rendered = _gold_json(gold)
+        assert json.loads(json.dumps(rendered)) == rendered
+
+
+def test_a_float_gold_renders_as_the_bare_float():
+    """Byte-identity of the GSM8K snapshot is the constraint here, not taste: a
+    stale-looking diff against a committed baseline is indistinguishable from a
+    real regression. A float must not become a string or a wrapper dict."""
+    assert _gold_json(7.0) == 7.0
+    assert json.dumps(_gold_json(7.0)) == "7.0"
+
+
+def test_a_typed_gold_renders_its_fields_not_its_repr():
+    """The snapshot is a DIFF INPUT, so the rendering must stay stable if the
+    dataclass ever gains a field — repr() would re-write every line of it."""
+    assert _gold_json(TypedGold("quantity", 68.04, unit="kg")) == {
+        "kind": "quantity", "value": 68.04, "unit": "kg",
+    }

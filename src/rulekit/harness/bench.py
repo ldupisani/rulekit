@@ -26,6 +26,24 @@ from .firewall import TypedGold
 TOL = 1e-6
 
 
+def _gold_json(expected: object) -> object:
+    """Render a gold for the snapshot. A float stays a float — BYTE-IDENTICALLY.
+
+    `to_snapshot` fed `expected` straight to `json.dumps`, which is fine for
+    GSM8K's bare-float golds and raises TypeError for every `gold: typed`
+    project. That took `bench --snapshot` — and therefore the `rulekit diff`
+    SHIP GATE — off the table for difg and folio without ever announcing it.
+
+    A TypedGold renders as its three fields rather than repr(): the snapshot is
+    a DIFF INPUT, so the rendering has to be stable under a dataclass gaining a
+    field. Returning the float unchanged (not str(), not a wrapper dict) is what
+    keeps every existing GSM8K snapshot comparable to a new one.
+    """
+    if isinstance(expected, TypedGold):
+        return {"kind": expected.kind, "value": expected.value, "unit": expected.unit}
+    return expected
+
+
 @dataclass
 class ItemResult:
     id: str
@@ -123,7 +141,7 @@ class BenchReport:
             "items": {
                 r.id: {
                     "outcome": r.outcome,
-                    "expected": r.expected,
+                    "expected": _gold_json(r.expected),
                     "got": r.got,
                     "reason": r.reason,
                     "rules": r.rules,
