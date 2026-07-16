@@ -217,7 +217,7 @@ const COMPOSE_SCHEMA = {
   type: 'object',
   required: ['verdict', 'evidence'],
   properties: {
-    verdict: { enum: ['pass', 'fail'], description: 'pass ONLY if both diffs vs main show 0 BROKE and 0 DECL->WRONG, suite 52/52, pytest green, lint 0 errors' },
+    verdict: { enum: ['pass', 'fail'], description: 'pass ONLY if both diffs vs main show 0 BROKE and 0 DECL->WRONG, suite 48/48, pytest green, lint 0 errors' },
     solved_vs_main: { type: 'number', description: "the batch's TRUE dev-train coverage delta, enabler included — the number the TEST look is spent against" },
     evidence: { type: 'string', description: 'the raw diff verdicts vs main for both slices, plus suite/pytest/lint' },
     notes: { type: 'string' },
@@ -363,7 +363,7 @@ clean against their own baseline, and can still interact.
 Re-prove the FULL dev gate for the staging tip against MAIN's baselines:
 build fresh main baselines (bench dev-train and dev-holdout at main, --jobs 8),
 then bench the staging tip and diff against those. 0 BROKE and 0 DECL->WRONG on
-BOTH slices, suite 52/52, pytest green, lint 0 errors.
+BOTH slices, suite 48/48, pytest green, lint 0 errors.
 
 Report SOLVED vs main too — that is the batch's TRUE coverage delta, enabler
 included, and it is the number the TEST look will be spent against.
@@ -473,10 +473,14 @@ const DEAD_CLASSES = {
   // difg. Blocked by a lever that is itself CLOSED — so this is dead twice over.
   'clock_arithmetic': `DEAD: its golds are TEXT, and the kernel lever that would commit them is CLOSED as measured dead (docs/negative-results.md, "The typed-gold KERNEL change is NOT the big lever"). 7 of its 8 DEV items gold as TIMES ("12:45 PM", "15:45", "9 hours and 30 minutes") — kind 'text', which Answer.committed cannot commit. Only ONE item is numerically scorable. It is the joint-second-largest unsolved domain by ITEM COUNT (8), which is exactly why it needs a mechanism and not a paragraph: the count invites a scout every time. It leaves this list only if the corpus grows numeric-gold clock items, or if some OTHER motivation reopens the commit path (and read _judge_typed's in-code warning first).`,
 
-  // difg. The frontier itself, killed with evidence. Slug-matched broadly on
-  // purpose ('typed-gold', 'verdict', 'committed', 'non-numeric' all hit).
-  'verdict': `DEAD — this is Frontier 2, CLOSED 2026-07-16 with measurement (docs/negative-results.md). The plan's "55.5% of difg is non-numeric, the kernel commit-path change unlocks the majority" was a claim about GOLD FORMATTING, not about blockers: 29.5% of it was quantity+unit, which is a NUMBER under a wrapper ("68.04 kg") and came FREE with the loader. 284 of 342 DEV items (83%) are already scorable and none needed the kernel change. Widening Answer.committed buys ~10 items (2.9%) AND manufactures confident-wrongs: "Is 17 a prime number?" golds as the SENTENCE 'Yes, 17 is prime.', so a committed (CORRECT) 'yes' scores WRONG. The prose-verdict comparator that would fix that is unbuildable — ALL 8 of 8 prose yes/no golds in DEV answer 'Yes', so an always-yes engine scores 8/8 (null control). The remaining 43 text items are SymPy answers (integrals, topology, quaternions) — a different engine.`,
-  'typed-gold': `DEAD — see the 'verdict' entry: the CORPUS half landed (a241f38, difg-DEV 148 -> 342 scorable) and the KERNEL half is measured dead. There is nothing left to mine here.`,
+  // difg. NARROWED (FOLIO Phase 1, 2026-07-16): verdict COMMITMENT itself is no
+  // longer dead — Answer.committed admits yes/no, bought by the folio syllogism
+  // class, with pack scoping (packs/logic loads ONLY for folio) as the
+  // containment proof. What stays dead is the DIFG half: mining difg's own
+  // prose-verdict golds. The slug is difg-specific now so folio verdict briefs
+  // are not auto-killed.
+  'difg-verdict': `DEAD — difg's prose-verdict golds are a degenerate measurement, and the kernel widening was never their lever (docs/negative-results.md, Frontier 2). "Is 17 a prime number?" golds as the SENTENCE 'Yes, 17 is prime.', so even a committed CORRECT 'yes' scores WRONG on exact-compare; the prose comparator that would fix that is unbuildable because ALL 8 of 8 prose yes/no golds in difg-DEV answer 'Yes' — an always-yes engine scores 8/8 (the null control carries no information). 284 of 342 difg DEV items (83%) were already scorable without any kernel change; the remaining 43 text items are SymPy answers (integrals, topology, quaternions) — a different engine. Do NOT "fix" difg's prose golds to make them pass. FOLIO verdicts are NOT this class: bare True/False golds, balanced labels, own pack.`,
+  'typed-gold': `DEAD — the CORPUS half landed (a241f38, difg-DEV 148 -> 342 scorable) and the difg KERNEL claim was measured dead (see 'difg-verdict'). Verdict commitment itself has since landed via the FOLIO campaign (packs/logic, folio-only); there is still nothing to mine here for difg.`,
   // difg physics. NOT dead as a domain — physics LANDED at 3/14 (c4b70d5) and a
   // 4th formula is welcome. What is dead is the ENABLER a scout will reach for
   // to unblock the other 11, because it was built, measured and reverted.

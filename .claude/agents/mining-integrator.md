@@ -57,7 +57,7 @@ increment number to assign is NOT an input — you derive it in step 4.
    uv run rulekit --project projects/gsm8k diff staging-base-train.json <slug>-int-train.json
    uv run rulekit --project projects/gsm8k diff staging-base-holdout.json <slug>-int-holdout.json
    uv run pytest -q
-   uv run rulekit --project projects/gsm8k bench --slice suite   # 52/52
+   uv run rulekit --project projects/gsm8k bench --slice suite   # 48/48
    uv run rulekit --project projects/gsm8k lint                  # 0 errors
    ```
    Both diffs must exit 0 (SHIP or NEUTRAL; 0 BROKE, 0 DECL→WRONG). The diff
@@ -116,7 +116,7 @@ re-prove the full gate against main before any of it is a landing candidate.
 1. Build FRESH main baselines in the staging worktree (check out main into a temp
    worktree, or bench main directly): dev-train and dev-holdout, `--jobs 8`.
 2. Bench the staging TIP and diff it against those main baselines.
-3. PASS requires: 0 BROKE and 0 DECL→WRONG on BOTH slices, suite 52/52, pytest
+3. PASS requires: 0 BROKE and 0 DECL→WRONG on BOTH slices, suite 48/48, pytest
    green, lint 0 errors. Report `solved_vs_main` — the batch's TRUE coverage
    delta, enabler included. That is the number the TEST look is spent against,
    and it is NOT the sum of the per-increment SOLVED counts.

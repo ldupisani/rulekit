@@ -36,7 +36,8 @@ MAX_ROUNDS = 50
 
 _FIELD_ALIASES = {"entity", "measure", "value", "verb", "subject", "standard",
                   "factor", "offset", "part", "whole", "fraction", "member",
-                  "collection", "earlier", "later", "polarity", "dobj", "time"}
+                  "collection", "earlier", "later", "polarity", "dobj", "time",
+                  "cls", "pred"}
 
 
 class Synthesizer(Protocol):
