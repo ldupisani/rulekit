@@ -1,7 +1,7 @@
 # Session handoff — 2026-07-16
 
 Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
-State is committed and pushed through `b37e4e2` on `main` (github.com/ldupisani/rulekit).
+State is committed and pushed through `a241f38` on `main` (github.com/ldupisani/rulekit).
 Always check `git status` / `git log origin/main..HEAD` before assuming push parity.
 
 > ## ➡ NEXT SESSION: difg domain-mining (active). Typed gold's CORPUS half is landed (342 items scorable);
@@ -155,7 +155,7 @@ synth-GroupTotal fix + consumer both paths (`2439b82`, `ab878ad`) · container+l
 (`6dffe56`) · subject-gapping anaphora (`22623ee`, GSM8K TEST 91.7%→92.3%) · superordinate-via-combined
 (`1466051`, "pieces of litter").
 
-## Current numbers (verified at `b37e4e2`)
+## Current numbers (verified at `a241f38`)
 
 - GSM8K dev-train **104/0** · dev-holdout **40/0** · TEST **92.3%** (12/1) · curated suite **52/52**
 - pytest **1135** (verified 2026-07-16) · lint: 0 errors, 1 intended warning (fraction-of-remnant subsumption — documentation, not a bug)
