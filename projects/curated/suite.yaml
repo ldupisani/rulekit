@@ -67,21 +67,13 @@ items:
     text: Tom has 3 apples. Mary has 7 apples. How many more apples does Mary have than Tom?
     expect: 4
 
-  # ---- membership & the epistemic square ------------------------------------
-  - id: member-yes
-    text: Bob is a student. Is Bob a student?
-    expect: "yes"
-  - id: member-no
-    text: Bob is not a student. Is Bob a student?
-    expect: "no"
-  - id: member-undetermined
-    text: The rose wilted. Is Bob a student?
-    expect: "undetermined"
-
-  # ---- sense ambiguity (coverage arbitration) --------------------------------
-  - id: ambig-rose-noun
-    text: The rose wilted. Is Rose a teacher?
-    expect: "undetermined"
+  # ---- membership & the epistemic square: MOVED to tests/test_logic_verdict.py
+  # (the FOLIO Phase 1 increment). ask/is-membership lives in packs/logic now,
+  # which this suite's arithmetic pack list deliberately does not load — pack
+  # scoping is the proof that committed verdicts cannot reach the arithmetic
+  # corpora. The four pins (member-yes / member-no / member-undetermined /
+  # ambig-rose-noun) survive verbatim as pytest cases against the logic
+  # registry, where the capability actually lives. Suite is 48 items now.
 
   # ---- money: currency amounts are counted nouns -----------------------------
   - id: money-holdings

@@ -183,21 +183,17 @@ def _judge_typed(gold, result) -> tuple[str, object]:
     if isinstance(got, str) and got == "undetermined":
         return ("correct", None) if gold.kind == "decline" else ("declined", got)
 
-    # A verdict answer against a NON-verdict gold is a decline, not a wrong,
-    # mirroring the float path's own rule verbatim ("a verdict where a number was
-    # expected is a decline, not a commit"). The rule holds ONLY because
-    # `Answer.committed` is still `kind == "number"`: a verdict is not a
-    # commitment today, and a non-commitment is never a wrong.
-    #
-    # ⚠ REVISIT THIS THE DAY THE KERNEL COMMITS VERDICTS (docs/difg-corpus-plan.md,
-    # Frontier 2's remaining half). Once a verdict IS a commitment, a verdict
-    # asserted against a numeric question becomes a genuine confident-wrong, and
-    # this line would HIDE it. The asymmetry below is deliberate for the same
-    # reason and is already correct: a committed NUMBER against a text/set gold
-    # scores WRONG, because the engine did assert an answer and the answer is not
-    # of the asked shape.
+    # THE KERNEL COMMITS VERDICTS NOW (Answer.committed admits yes/no — the
+    # FOLIO campaign's Phase 1), so the old "a verdict against a non-verdict
+    # gold is a decline" rule flipped in the same increment, exactly as its
+    # in-code ⚠ demanded: a committed verdict asserted where a number/text was
+    # asked is a genuine confident-wrong, and scoring it 'declined' would HIDE
+    # it. 'undetermined' never reaches here (caught above — a non-commitment
+    # is never a wrong). The mirror asymmetry below is unchanged and correct:
+    # a committed NUMBER against a text/verdict gold scores WRONG too — the
+    # engine asserted an answer of the wrong shape.
     if answer.kind == "verdict" and gold.kind != "verdict":
-        return "declined", got
+        return "wrong", got
 
     if gold.kind in ("number", "money", "percent", "quantity"):
         # A quantity gold ALSO carries a unit; the unit is checked only when the
@@ -255,9 +251,14 @@ def _judge(expected: object, result) -> tuple[str, object]:
             return "correct", got
         if expected == "decline" and got == "undetermined":
             return "correct", got
-        # a verdict where a number was expected is a decline, not a commit
-        if isinstance(expected, (int, float)):
+        if got == "undetermined":
+            # the epistemic "I don't know" — a non-commitment, never a wrong
             return "declined", got
+        # a COMMITTED verdict (yes/no) where a number was expected is a
+        # confident-wrong since Answer.committed admits verdicts (the FOLIO
+        # Phase 1 flip; this float path can only be reached by a float-gold
+        # project growing a verdict-producing ask, which pack scoping
+        # prevents today — but the judge must not depend on that staying true)
         return "wrong", got
     # decline
     if expected == "decline":

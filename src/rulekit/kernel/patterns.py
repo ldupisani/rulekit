@@ -21,11 +21,13 @@ from .model import (
     Before,
     Discount,
     Fact,
+    Atom,
     FractionQuantity,
     Goal,
     GroupTotal,
     Membership,
     PartitionQuantity,
+    Quantified,
     PercentChange,
     Predication,
     Provenance,
@@ -45,6 +47,8 @@ _FACT_CLASSES = {
     "quantity": Quantity,
     "relation": Relation,
     "membership": Membership,
+    "atom": Atom,
+    "quantified": Quantified,
     "subset": Subset,
     "predication": Predication,
     "before": Before,
@@ -235,7 +239,7 @@ def _try_match_at(
     """Match tokens against units from `start`; returns the next unit index
     after the match, or None. Skippable units may sit between tokens."""
     i = start
-    for token in tokens:
+    for k, token in enumerate(tokens):
         if token.opt is not None:
             sub_slots = dict(slots)
             sub_consumed = list(consumed)
@@ -248,6 +252,48 @@ def _try_match_at(
         while i < len(units) and units[i].sense() in SKIPPABLE_SENSES:
             i += 1
         if i >= len(units):
+            return None
+        if token.span:
+            # OPT-IN phrase capture (schemas.MatchToken.span): bind a RUN of
+            # units, GREEDY-LONGEST with backtracking — the longest capture
+            # whose remainder still matches wins, so an inner copula stays
+            # inside the phrase ("buildings that are tall" under a
+            # `... {lit: are} ...` rule) unless the trailing tokens need it.
+            # A FINAL span (nothing after it) must therefore run to the
+            # sentence end: shorter captures only survive when the rest of
+            # the sequence consumes what they leave, and an empty rest
+            # consumes nothing — silently dropping a phrase TAIL would turn
+            # exact-phrase matching into prefix matching, which is the
+            # overclaim this flag exists to prevent.
+            rest = tokens[k + 1:]
+            for end in range(len(units), i, -1):
+                captured = tuple(units[i:end])
+                if not any(u.sense() not in SKIPPABLE_SENSES for u in captured):
+                    continue  # a span must capture something meaningful
+                if not rest and any(
+                    u.sense() not in SKIPPABLE_SENSES for u in units[end:]
+                ):
+                    continue  # final span: nothing meaningful may trail it
+                if token.span_blocks and any(
+                    reg.word_in_category(_lemma_of(u), token.span_blocks)
+                    for u in captured
+                ):
+                    # a blocked word (e.g. a negation) may NEVER be swallowed
+                    # into a phrase — negation is read structurally by an
+                    # explicit token or not at all. No shorter fallback that
+                    # silently drops the tail: the guard above already keeps
+                    # final spans full-length, and a non-final shorter capture
+                    # still re-checks this condition on ITS OWN contents.
+                    continue
+                sub_slots = dict(slots)
+                sub_consumed = list(consumed) + [u.uid for u in captured]
+                tail = _try_match_at(units, end, rest, reg, sub_slots, sub_consumed)
+                if tail is None:
+                    continue
+                sub_slots[token.slot] = captured  # type: ignore[assignment]
+                slots.update(sub_slots)
+                consumed[:] = sub_consumed
+                return tail
             return None
         if token.at_start and any(
             u.sense() not in SKIPPABLE_SENSES for u in units[:i]
@@ -265,7 +311,10 @@ def _try_match_at(
             if not _slot_ok(unit, token, reg):
                 return None
             name = token.slot
-            if name in slots and _lemma_of(slots[name]) != _lemma_of(unit):
+            if name in slots and (
+                isinstance(slots[name], tuple)  # a span slot never re-binds
+                or _lemma_of(slots[name]) != _lemma_of(unit)
+            ):
                 return None  # repeated slot must bind the same lemma
             slots[name] = unit
         consumed.append(unit.uid)
@@ -311,7 +360,13 @@ def _check_where(
 ) -> bool:
     for pred in rule.where:
         if pred.same_lemma is not None:
-            lemmas = {_lemma_of(slots[s]) for s in pred.same_lemma if s in slots}
+            # span slots (tuple-valued) have no single lemma; they cannot
+            # participate in where-predicates and are simply skipped
+            lemmas = {
+                _lemma_of(slots[s])
+                for s in pred.same_lemma
+                if s in slots and not isinstance(slots[s], tuple)
+            }
             if len(lemmas) > 1:
                 return False
         if pred.distinct is not None:
@@ -382,7 +437,23 @@ _TEMPLATE = re.compile(r"\{(\w+)(?:\.(\w+))?\}")
 _SIGN = re.compile(r"sign\((\w+)\)")
 
 
+def _canonical_phrase(units: tuple[Unit, ...]) -> str:
+    """A span slot's value: per-token lemma normalization ONLY (plurals and
+    known inflections fold to their lexicon lemma; unknown words stay
+    verbatim), articles/punct dropped because they are already skippable
+    senses. NO semantic loosening — 'opera singer' never becomes 'singer';
+    a mismatch is a decline, never a guess (the phrase-key discipline,
+    model.Atom docstring)."""
+    return " ".join(
+        _lemma_of(u) for u in units if u.sense() not in SKIPPABLE_SENSES
+    )
+
+
 def _slot_value(unit: Unit, attr: str | None) -> str:
+    if isinstance(unit, tuple):
+        # a span slot (MatchToken.span) binds a RUN of units; its only
+        # rendering is the canonical phrase, whatever attr the template asks
+        return _canonical_phrase(unit)
     if attr == "surface":
         return unit.surface
     if attr == "value":

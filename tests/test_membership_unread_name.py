@@ -46,7 +46,13 @@ def full_registry():
     if not mined.exists():
         pytest.skip("difg-mined not generated")
     return compile_registry(
-        load_packs([REPO / "packs/core-english", REPO / "packs/arithmetic", mined])
+        load_packs([
+            REPO / "packs/core-english", REPO / "packs/arithmetic", mined,
+            # ask/is-membership MOVED to packs/logic (the FOLIO Phase 1
+            # increment) — these contracts are pinned against the pack list
+            # that actually loads it (folio's)
+            REPO / "packs/logic",
+        ])
     )
 
 
@@ -80,7 +86,12 @@ def test_no_verdict_is_committed_about_a_subject_the_engine_never_read(full_regi
     shape = "Every Rovers player is a captain. Is it true that {who} is a Rovers player?"
     for who in ("Ana", "Zoe"):
         a = solve(shape.format(who=who), full_registry).answer
-        assert a.kind == "decline" and not a.committed, who
+        # since the FOLIO Phase 1 increment the embedded declarative is a
+        # RECOGNIZED construction (ask/logic-embedded-copular), so the honest
+        # non-answer is an uncommitted 'undetermined' rather than a no-ask
+        # decline — the pinned property is exactly what the docstring says:
+        # NEITHER subject may yield a commitment
+        assert not a.committed, who
 
 
 def test_an_embedded_declarative_is_not_a_membership_question(full_registry):
@@ -101,16 +112,18 @@ def test_an_embedded_declarative_is_not_a_membership_question(full_registry):
 
 
 def test_the_anchor_declines_at_the_ask_layer_not_the_consumer(full_registry):
-    """WHERE it declines is the assertion. An embedded declarative must fail to
-    MATCH — if it reached the consumer and declined there, the shape would still
-    be misreading the sentence and any future consumer reusing it inherits the
-    bug. The reason string is the only evidence of which layer refused."""
+    """WHERE the non-answer comes from is the assertion. An embedded
+    declarative must never reach membership-verdict — `at_start` keeps
+    ask/is-membership off the construction. Since the FOLIO Phase 1 increment
+    the construction has its own CORRECT reader (ask/logic-embedded-copular,
+    which binds the true subject), so the evidence is the reason string: the
+    logic path spoke, and no 'membership fact' ever did."""
     r = solve(
         "Every Rovers player is a captain. Is it true that Ana is a Rovers player?",
         full_registry,
     )
-    assert r.answer.kind == "decline"
-    assert "no ask shape" in r.answer.reason
+    assert not r.answer.committed
+    assert "membership fact" not in r.answer.reason
 
 
 def test_undetermined_survives_when_nothing_is_unread(full_registry):

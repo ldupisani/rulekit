@@ -6,12 +6,16 @@ name: folio
 # language first-order logic. Same packs as gsm8k, deliberately — they were mined
 # on arithmetic word problems and have never seen a logic item.
 #
-# ITS ROLE IS SAFETY, LIKE SciBench — expect 0 commits, and a rising number is
-# the engine GUESSING. Every other gate asks for a number, so not one of them can
-# catch the engine asserting a NUMBER at logic prose. These premises are full of
-# bindable numbers ("published a book in 1946"), and _judge_typed scores a
-# committed number against a verdict/text gold WRONG. That asymmetry is what this
-# corpus buys, and it costs no kernel change.
+# ⚡ ROLE CHANGE (FOLIO Phase 1, 2026-07-16): this is now a MINING TARGET, not a
+# 0-commit safety gate. Verdicts commit (Answer.committed admits yes/no), the
+# packs list below includes `logic` (phrase-keyed extraction + Horn synth +
+# embedded asks — loaded by NO other project; pack scoping is the containment
+# proof), and the standing expectation is GROWING correct with wrong PINNED AT
+# 0. The number-asymmetry safety role survives unchanged: a committed number
+# against a verdict/text gold still scores WRONG, and on a target corpus a
+# nonzero `wrong` is now a live precision failure, not just a smell. On any
+# suspicious `correct`, run the null control (swap the conclusion's subject for
+# an unmentioned one; the answer must move) before calling it coverage.
 #
 # WHY THIS CORPUS AND NOT ANOTHER: the four checks in docs/HANDOFF.md, all
 # measured before wiring (build_corpus.py has the numbers). The one that matters
@@ -21,11 +25,13 @@ name: folio
 # Frontier 2 and this corpus can. ProofWriter was REJECTED on natural English:
 # 292,776 questions over a 52-word vocabulary is the MAWPS generator trap.
 #
-# NOT A MINING WORKLIST YET. The engine has no inference machinery, so DEV is a
-# precision/safety gate first. Mining it means reading PREMISES, which today are
-# split off by engine.split_question and never reach answer() (the physics
-# 'power' lesson) — that is the real cost of Frontier 2, and it is much larger
-# than widening Answer.committed.
+# THE MINING WORKLIST lives in the Phase 0a taxonomy (quantifier-only
+# syllogisms first: 71 dev items, ~25-30 addressable by instantiation+chaining;
+# the named next class is the 'citizens'-family plural-head morphology, 4
+# items, which needs a plural on difg-mined's global 'citizen' entry and
+# therefore a gsm8k TEST look — see HANDOFF). Premises reach consumers via the
+# fact store; the logic-verdict consumer reads ONLY phrase-keyed Atom facts
+# (packs/logic provenance), never the generic fold's head-lemma facts.
 #
 # FIREWALL. The bucket key is the PREMISE BLOCK, not the item — 1,001 rows share
 # 340 stories, so a per-item hash would leak 661 of them across the cut. See
@@ -33,7 +39,7 @@ name: folio
 # one-look-only and ledgered, exactly like gsm8k.
 #
 # No `suite:` — a cross-corpus gate has no hand-curated items, only the DEV pool.
-packs: [core-english, arithmetic, difg-mined]
+packs: [core-english, arithmetic, difg-mined, logic]
 datasets:
   folio:
     # `gold: typed` — True/False land as kind='verdict' (compared as booleans);

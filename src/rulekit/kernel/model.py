@@ -201,6 +201,54 @@ class Membership(Fact):
 
 
 @dataclass(frozen=True)
+class Atom(Fact):
+    """A ground proposition keyed by its FULL canonical phrase, never a lemma
+    head. "Tom is a citizen of Lawton Park" -> ('tom', 'citizen of lawton
+    park'), NOT ('tom', 'citizen'): FOLIO-style logic prose distinguishes
+    classes one NP-internal word apart ("devices belonging to the company" vs
+    "... to employees"), and a head-lemma key would make them one class — the
+    Fiedler trap ("Czech mathematician" premise silently answering a "French
+    mathematician" question). The phrase is per-token lemma-normalized only;
+    no semantic loosening.
+
+    Read semantics (the every-new-fact-kind decision): the emitting rule
+    CONSUMES the span's units, so consumption — not existence or use — is
+    what marks the sentence read; the fragment guard (guards.py) audits the
+    units no logic rule consumed."""
+
+    entity: str
+    pred: str
+    polarity: bool = True
+
+    def key(self) -> tuple:
+        return ("logic-atom", self.entity, self.pred)
+
+    def value_part(self) -> Any:
+        return self.polarity
+
+
+@dataclass(frozen=True)
+class Quantified(Fact):
+    """A universally quantified statement over a class phrase: "All citizens
+    of Lawton Park use the zip code 98199" -> Quantified('citizen of lawton
+    park', 'use the zip code 98199', True); "No X are Y" is the same shape
+    with polarity False. Same phrase-key discipline as LogicAtom. Contradictory
+    universals ("All X are Y" / "No X are Y") share a key and differ in
+    value_part -> the store's collision machinery quarantines both, which is
+    the correct reading of contradictory premises: decline."""
+
+    cls: str
+    pred: str
+    polarity: bool = True
+
+    def key(self) -> tuple:
+        return ("quantified", self.cls, self.pred)
+
+    def value_part(self) -> Any:
+        return self.polarity
+
+
+@dataclass(frozen=True)
 class Subset(Fact):
     part: str
     whole: str

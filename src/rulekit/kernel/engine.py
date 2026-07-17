@@ -511,6 +511,8 @@ def solve(text: str, reg: Registry, tracing: bool = True) -> Result:
             for m in _re.finditer(r"\{(\w+)\.value\}", raw)
         }
         for slot_name, unit in matched_ask[2].slots.items():
+            if isinstance(unit, tuple):
+                continue  # a span slot carries no scalar value to consume
             if slot_name in value_slots:
                 question.record(
                     "ask-consume", unit, {"pattern_consumed": True},
@@ -518,7 +520,11 @@ def solve(text: str, reg: Registry, tracing: bool = True) -> Result:
                 )
     proposed = run_answer(question, doc.store, reg, doc.log)
     veto = run_guards(
-        premises, doc.consumed_uids, doc.log, reg, proposed, doc.store, question
+        premises, doc.consumed_uids, doc.log, reg, proposed, doc.store, question,
+        # the clause pre-split erases its boundary word from the readings, so
+        # the verdict fragment guard must be told it happened (guards.py
+        # _check_verdict — a promoted disjunct reads as an asserted fact)
+        clause_split=len(expanded_premise_texts) != len(premise_texts),
     )
     if veto is not None:
         proposed = Answer("decline", None, f"[{veto.guard}] {veto.reason}")

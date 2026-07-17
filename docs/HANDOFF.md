@@ -1,8 +1,36 @@
-# Session handoff — 2026-07-16
+# Session handoff — 2026-07-17
 
 Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
 State is committed through `95571e6` on `main` (github.com/ldupisani/rulekit).
 Always check `git status` / `git log origin/main..HEAD` before assuming push parity.
+
+> ## ⚡ THE FOLIO CAMPAIGN IS OPEN — folio is a MINING TARGET (verdicts COMMIT), and the first
+> ## landing was REVERTED BY THE FIREWALL before the narrowed version stuck. Read in order:
+> 1. **Phase 0 landed** (`d8d41c3`): story-grouped internal holdout — generic `group:` dataset
+>    column; folio dev-train 494 / dev-holdout 425, 0 stories straddling; gsm8k byte-identical.
+>    Phase 0a taxonomy (scratchpad `PHASE0A-FINDINGS.md`): the ground-fact class measured **0
+>    even at the permissive vocab ceiling**; the buyer is the quantifier-only syllogism class
+>    (71 items, T28/F5/U38). The fold DROPS QUALIFIERS and mints junk from passives — no verdict
+>    may ever read fold facts.
+> 2. **Phase 1 v1 (`88f6382`) passed EVERYTHING and was reverted anyway** (`5616608`): 919 DEV
+>    items clean, six corpora clean, null controls proving a real derivation — then folio TEST
+>    look #1 came back **0 correct / 1 WRONG** and the rule is absolute. The culprit is TEST-only
+>    and stays undiagnosed (aggregate-only firewall). `docs/negative-results.md` → "FOLIO Phase 1
+>    … REVERTED" has the full autopsy.
+> 3. **Phase 1 v2 re-landed NARROWED (copular-only)**: dropped verbal universals (participle
+>    missplit), "All X are not Y" (∀¬/¬∀ per-item ambiguity), ground-verbal + verbal asks. Kernel
+>    half unchanged: `Answer.committed` admits verdict yes/no ('undetermined' NEVER), both judge
+>    paths score a committed verdict at a non-verdict gold WRONG, verdicts get the
+>    supported-fragment guard (monotonicity, not value-accounting; only bound NEGATORS exempt;
+>    clause-split stories veto). `packs/logic` is folio-ONLY — the pack list is the containment
+>    proof (ask/is-membership moved there; arithmetic corpora have ZERO verdict producers; the 4
+>    curated membership suite items moved to pytest → **suite is 48/48 now**). folio dev
+>    1 correct / 0 wrong (the essayist syllogism; the answer's reason carries its derivation).
+>    TEST look #2 spent after the v2 commit — see the ledger + the commit after it for the verdict.
+> 4. **Named next increments**: 'citizens' plural-head family (4 items — needs `plural:` on
+>    difg-mined's GLOBAL 'citizen' entry ⇒ budget a gsm8k TEST look); 'any' (ARTICLE sense, so
+>    `{lit: any}` can never match); quantified conclusions (counterexample refutation, False-heavy);
+>    the dropped rule families, EACH alone with its own look. 'true' must stay an ADJECTIVE.
 
 > ## ➡ FOLIO IS BUILT, BENCHED AND LANDED — **919 DEV items, 0 correct / 0 WRONG** (`f7b059c`).
 > ## **It caught a real confident-answer on its first run**; the fix took TWO passes (`b1db917` was the WITNESS fix, `b5655ca` the class).

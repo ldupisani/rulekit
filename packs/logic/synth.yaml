@@ -1,0 +1,29 @@
+format: rulekit/synth@1
+# The inference layer: Horn-clause closure over phrase-keyed logic facts,
+# saturated to a fixpoint by the SAME machinery as synth/transitive-before.
+# Soundness rests on the phrase keys being exact (patterns._canonical_phrase)
+# and on monotonicity: derived True/False can only grow, never flip, as more
+# premises are read (guards._check_verdict's docstring).
+rules:
+  # x ∈ C, ∀C→P  ⊢  P(x)   (both polarities of the universal propagate;
+  # the atom feeding it must itself be POSITIVE — "Tom is NOT a citizen"
+  # licenses nothing about citizens' properties)
+  - id: synth/universal-instantiation
+    when:
+      - {fact: atom, entity: X, pred: C, polarity: true}
+      - {fact: quantified, cls: C, pred: P, polarity: POL}
+    unless:
+      - {fact: atom, entity: X, pred: P}
+    emit:
+      - {fact: atom, entity: X, pred: P, polarity: POL}
+
+  # ∀A→B, ∀B→C  ⊢  ∀A→C   (the first hop must be positive: "no A are B"
+  # says nothing about what B's are)
+  - id: synth/universal-chain
+    when:
+      - {fact: quantified, cls: A, pred: B, polarity: true}
+      - {fact: quantified, cls: B, pred: C, polarity: POL}
+    unless:
+      - {fact: quantified, cls: A, pred: C}
+    emit:
+      - {fact: quantified, cls: A, pred: C, polarity: POL}
