@@ -247,6 +247,21 @@ def _lemma_of(unit: Unit) -> str:
     return unit.features.get("lemma", unit.features.get("fold", unit.surface.lower()))
 
 
+def qualified_render(words: list[str], lemma: str) -> str:
+    """THE one definition of the qualified-phrase render: a unit's fold words
+    with the head canonicalized to the lemma ('chocolate dogs' -> 'chocolate
+    dog'). A multi-word lemma is a WHOLE-UNIT lemma, never a head replacement
+    — merge-name (condense.py) sets a merged name's lemma to its full fold,
+    and prepending the fold's other words again duplicated them ('Emmet
+    Building' -> 'emmet emmet building') in every phrase key and query built
+    from one. Four call sites shared the broken idiom (span capture, atom
+    decomposition's lead nominal, {slot.qualified}, the fold's Membership);
+    they all call this now."""
+    if len(words) > 1 and " " not in lemma:
+        return " ".join(words[:-1] + [lemma])
+    return lemma
+
+
 def _try_match_at(
     units: list[Unit],
     start: int,
@@ -521,7 +536,7 @@ def _canonical_phrase(units: tuple[Unit, ...]) -> str:
             continue
         words = (u.features.get("fold") or "").split()
         lemma = _lemma_of(u)
-        parts.append(" ".join(words[:-1] + [lemma]) if len(words) > 1 else lemma)
+        parts.append(qualified_render(words, lemma))
     return " ".join(parts)
 
 
@@ -615,7 +630,7 @@ def atom_variants(fact: Fact, emit_fields: dict, slots: dict, reg: Registry) -> 
     lead = units[0]
     words = (lead.features.get("fold") or "").split()
     lemma = _lemma_of(lead)
-    lead_qualified = " ".join(words[:-1] + [lemma]) if len(words) > 1 else lemma
+    lead_qualified = qualified_render(words, lemma)
     inter, rest = intersective_split(words, lemma, reg) if len(words) > 1 else ([], [])
     stripped_lead = " ".join(rest + [lemma]) if inter else None
     tail_units = tuple(units[1:])
@@ -746,10 +761,7 @@ def _slot_value(unit: Unit, attr: str | None) -> str:
         # answered 'yes'; a compound keeps its head's lemma by design, so the
         # collapse is correct for entity gates and loose for membership).
         words = (unit.features.get("fold") or "").split()
-        lemma = _lemma_of(unit)
-        if len(words) > 1:
-            return " ".join(words[:-1] + [lemma])
-        return lemma
+        return qualified_render(words, _lemma_of(unit))
     return _lemma_of(unit)
 
 

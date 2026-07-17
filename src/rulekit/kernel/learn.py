@@ -1459,7 +1459,8 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
             member = _lemma(subject)
             head = _lemma(dobj)
             words = (dobj.features.get("fold") or "").split()
-            qualified = " ".join(words[:-1] + [head]) if len(words) > 1 else head
+            from .patterns import qualified_render
+            qualified = qualified_render(words, head)
             def _member_fact(collection: str, pol: bool) -> Membership:
                 return Membership(
                     provenance=prov, member=member,
