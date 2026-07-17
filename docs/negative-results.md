@@ -1488,3 +1488,27 @@ phrase-keyed logic facts; the clause pre-split erases its boundary word (any spl
 story must veto verdicts); a bound quantifier is attached, not understood; moving
 is-membership out of arithmetic costs the 4 curated membership suite items (they
 must move to pytest under a logic registry — suite 52→48 while the move holds).
+
+## FOLIO Phase 1 v2 (COPULAR-ONLY): ALSO REVERTED — TEST look #2 was again 0 correct / 1 WRONG (2026-07-17)
+
+The narrowed re-landing (verbal universals, "All X are not Y", ground-verbal and the
+verbal asks all dropped) still scored 0/1 on folio TEST. **The culprit commits through
+the copular-only surface**: copular universals (all/every/no × is/are), copular
+grounds (± not), instantiation/chain, the embedded copular asks, or the Atom fallback
+in membership-verdict. v2 survives in `bbfc03c` (reverted by its successor).
+
+**The real lesson is the BUYER, not the rule set.** DEV coverage was 1/494 (0.2%), so
+TEST's expected commit count is ~1 — the two looks were coin flips on n≈1, and both
+came up wrong. Two looks are now spent for zero information about WHICH rule is
+unsound. DO NOT re-land a third thin variant: the next landing must first widen the
+buyer on DEV (the 'citizens' plural-head family + more syllogism morphology — enough
+for ~10-30 DEV commits, all null-controlled) so a TEST look measures a CLASS, not a
+coin. Candidate unsoundness to probe on DEV first, cheapest first:
+1. **Tense collapse**: ground-copular-was emits the same Atom as -is, and the was/is
+   asks query one pred — a "was a Y" premise answers an "is a Y" conclusion. FOLIO
+   annotators may treat those as distinct predicates. Key the atom (or gate the ask)
+   on tense and measure what DEV loses.
+2. The membership-verdict Atom fallback (added when logic rules stole the fold's
+   copular facts) — drop it; nothing on DEV needs it.
+3. Indefinite conclusion subjects ("A Czech published...") binding as names.
+4. Chain/instantiation polarity interactions with 'no' universals.
