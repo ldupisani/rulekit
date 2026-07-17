@@ -491,22 +491,37 @@ def intersective_split(
     return inter, rest
 
 
-def atom_variants(fact: Fact, emit_fields: dict, slots: dict, reg: Registry) -> list[Fact]:
-    """Intersective decomposition of a rule-emitted Atom — intersection-
-    elimination at the predicate's TOP LEVEL only.
+# Relative markers heading a restrictive relative clause inside a predicate
+# span ('who'/'that'/'which'). Sense NAMES as kernel structure (the
+# SKIPPABLE_SENSES pattern); the words live in the packs.
+_RELATIVE_MARKER_SENSES = ("interrogative", "complementizer", "wh_which")
 
-    A positive atom whose pred span leads with a merged nominal ("czech
-    choral conductor who specialized in X") additionally yields the entailed
-    variants: the span with the leading nominal's intersective modifiers
-    stripped ("choral conductor who specialized in x") and each stripped
-    modifier as its own single-word predicate ("czech" — no tail: the
-    modifier predicates the subject directly). Everything after the leading
-    nominal is untouched: stripping inside an ARGUMENT position ("specialized
-    in czech music" -> "specialized in music") is not structurally provable —
-    predicate positions are not uniformly monotone — so only the top-level
-    nominal decomposes. NEGATIVE atoms never decompose (neg(A and B) licenses
-    neither neg(A) nor neg(B)), and quantified cls NEVER strips anywhere (a
-    universal's antecedent is downward-monotone; widening it is unsound)."""
+
+def atom_variants(fact: Fact, emit_fields: dict, slots: dict, reg: Registry) -> list[Fact]:
+    """Decomposition of a rule-emitted Atom — intersection-elimination at the
+    predicate's TOP LEVEL only. Two constructions decompose (each an
+    entailment English licenses structurally):
+
+    - INTERSECTIVE MODIFIERS on the leading nominal (Stage A, category-gated):
+      "czech choral conductor who ..." additionally yields the span with the
+      gated modifiers stripped, and each stripped modifier as its own
+      single-word predicate ("czech" — no tail: the modifier predicates the
+      subject directly). No bare-head variant unless every modifier stripped
+      as intersective (the 'former president' safety).
+    - A RESTRICTIVE RELATIVE CLAUSE immediately after the leading nominal
+      (Stage 2.1, structural — no category): a predicate-position relative is
+      a restriction, so "conductor who specialized in X" entails "conductor".
+      The marker must sit ADJACENT to the lead (unambiguous attachment); a
+      deeper marker decomposes nothing. The clause's INTERNAL content is
+      irrelevant to the entailment ("who is not a smoker" still restricts),
+      and negation cannot occur inside a span anyway (span_blocks).
+
+    Everything else in the span is untouched: stripping inside an ARGUMENT
+    position ("specialized in czech music" -> "specialized in music") is not
+    structurally provable — predicate positions are not uniformly monotone.
+    NEGATIVE atoms never decompose (neg(A and B) licenses neither neg(A) nor
+    neg(B)), and quantified cls NEVER strips anywhere (a universal's
+    antecedent is downward-monotone; widening it is unsound)."""
     if not isinstance(fact, Atom) or fact.polarity is not True:
         return []
     raw = emit_fields.get("pred")
@@ -523,25 +538,34 @@ def atom_variants(fact: Fact, emit_fields: dict, slots: dict, reg: Registry) -> 
         return []
     lead = units[0]
     words = (lead.features.get("fold") or "").split()
-    if len(words) < 2:
-        return []
-    inter, rest = intersective_split(words, _lemma_of(lead), reg)
-    if not inter:
-        return []
-    tail = _canonical_phrase(tuple(units[1:]))
-    stripped_lead = " ".join(rest + [_lemma_of(lead)])
+    lemma = _lemma_of(lead)
+    lead_qualified = " ".join(words[:-1] + [lemma]) if len(words) > 1 else lemma
+    inter, rest = intersective_split(words, lemma, reg) if len(words) > 1 else ([], [])
+    stripped_lead = " ".join(rest + [lemma]) if inter else None
+    tail_units = tuple(units[1:])
+    tail = _canonical_phrase(tail_units)
+    tail_droppable = bool(tail_units) and tail_units[0].sense() in _RELATIVE_MARKER_SENSES
+
+    preds: list[str] = []
+    if inter:
+        preds.append(f"{stripped_lead} {tail}".strip())
+        preds.extend(inter)
+    if tail_droppable:
+        preds.append(lead_qualified)
+        if inter:
+            preds.append(stripped_lead)
+    seen = {fact.pred}
     prov = Provenance(
         source=f"{fact.provenance.source}/intersective",
         sentence=fact.provenance.sentence,
     )
-    variants = [
-        Atom(provenance=prov, entity=fact.entity,
-             pred=f"{stripped_lead} {tail}".strip(), polarity=True)
-    ]
-    for w in inter:
-        variants.append(
-            Atom(provenance=prov, entity=fact.entity, pred=w, polarity=True)
-        )
+    variants = []
+    for p in preds:
+        if p and p not in seen:
+            seen.add(p)
+            variants.append(
+                Atom(provenance=prov, entity=fact.entity, pred=p, polarity=True)
+            )
     return variants
 
 

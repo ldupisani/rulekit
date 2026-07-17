@@ -317,3 +317,43 @@ def test_passive_junk_cannot_reach_a_verdict(logic_reg):
         "Rex is trained by dogs. Is it true that Rex is a dog?", logic_reg
     )
     assert got in ("undetermined", "decline")
+
+
+# ---- Stage 2.1: restrictive relative clauses drop (structural) ----------------
+
+def test_relative_clause_drops_to_the_lead_nominal(logic_reg):
+    from rulekit.kernel.model import Atom
+
+    r = engine.solve("Rex is a dog who barks.", logic_reg, tracing=False)
+    assert {f.pred for f in r.store.by_kind(Atom)} == {"dog who barks", "dog"}
+
+
+def test_relative_drop_composes_with_instantiation(logic_reg):
+    got = _verdict(
+        "Bob is a tree that grows in the park. Every tree is a plant. "
+        "Is it true that Bob is a plant?", logic_reg)
+    assert got == "yes"
+
+
+def test_relative_drop_composes_with_intersective_strip(intersective_logic_reg):
+    from rulekit.kernel.model import Atom
+
+    r = engine.solve(
+        "Miroslav was a Czech choral conductor who specialized in music.",
+        intersective_logic_reg, tracing=False)
+    preds = {f.pred for f in r.store.by_kind(Atom)}
+    # the four lead variants x {with tail, without tail}, minus bare head
+    # ('choral' is ungated so 'conductor' alone must NEVER appear)
+    assert "czech choral conductor" in preds       # relative dropped
+    assert "choral conductor" in preds             # both dropped
+    assert "czech" in preds
+    assert "conductor" not in preds
+
+
+def test_negative_atom_gets_no_relative_drop(logic_reg):
+    from rulekit.kernel.model import Atom
+
+    r = engine.solve("Rex is not a dog who barks.", logic_reg, tracing=False)
+    assert [(f.pred, f.polarity) for f in r.store.by_kind(Atom)] == [
+        ("dog who barks", False)
+    ]
