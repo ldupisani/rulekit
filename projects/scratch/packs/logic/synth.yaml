@@ -27,3 +27,16 @@ rules:
       - {fact: quantified, cls: A, pred: C}
     emit:
       - {fact: quantified, cls: A, pred: C, polarity: POL}
+
+  # x ∈ C, P(x), ∀C: P→[¬]Q  ⊢  [¬]Q(x)   (Stage 1: conditional
+  # instantiation — BOTH antecedent atoms must be POSITIVE; a negative atom
+  # licenses nothing, exactly as universal-instantiation's gate)
+  - id: synth/conditional-instantiation
+    when:
+      - {fact: atom, entity: X, pred: C, polarity: true}
+      - {fact: atom, entity: X, pred: P, polarity: true}
+      - {fact: conditional, cls: C, pred: P, then_pred: Q, polarity: POL}
+    unless:
+      - {fact: atom, entity: X, pred: Q}
+    emit:
+      - {fact: atom, entity: X, pred: Q, polarity: POL}

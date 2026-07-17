@@ -19,6 +19,7 @@ from ..data.schemas import AskRule, MatchToken, PatternRule
 from .evaluate import ArithmeticLog, EvaluationError, evaluate
 from .model import (
     Before,
+    Conditional,
     Discount,
     Fact,
     Atom,
@@ -49,6 +50,7 @@ _FACT_CLASSES = {
     "membership": Membership,
     "atom": Atom,
     "quantified": Quantified,
+    "conditional": Conditional,
     "subset": Subset,
     "predication": Predication,
     "before": Before,

@@ -141,6 +141,118 @@ rules:
     emits:
       - {fact: atom, entity: "{subj}", pred: "{pred}", polarity: false}
 
+  # ---- Stage 1: copular if-then conditionals (ROADMAP.md) --------------------
+  # "If a X is P, then it/they is/are [not] Q" -> conditional(cls, pred,
+  # then_pred, polarity): a class-scoped implication, instantiated by
+  # synth/conditional-instantiation over TWO positive atoms. Design rules:
+  #   - `at_start` on 'if': an embedded or trailing conditional never fires.
+  #   - whole-construction or nothing: 'then' + the pronoun are mandatory
+  #     literals, so "unless"/"only if"/comma-only variants leave the WHOLE
+  #     sentence unread — monotone-safe (an ignored premise can only miss
+  #     entailments, never invent them).
+  #   - span_blocks: negation on the ANTECEDENT spans: "If a X is not P ..."
+  #     matches nothing (negated antecedents need case analysis — Stage 3).
+  #     The consequent's negation is read structurally by the -not variants.
+  #   - the indefinite article before cls is auto-skipped (articles are
+  #     skippable); a name-subject conditional therefore reads the name as a
+  #     CLASS phrase — inert unless a premise asserts membership in it (see
+  #     model.Conditional's docstring).
+  - id: logic/conditional-is-then-it-is
+    phase: read
+    match:
+      sentence:
+        - {lit: if, at_start: true}
+        - {slot: cls, span: true, span_blocks: negation}
+        - {lit: is}
+        - {slot: p, span: true, span_blocks: negation}
+        - {lit: then}
+        - {lit: it}
+        - {lit: is}
+        - {slot: q, span: true, span_blocks: negation}
+    emits:
+      - {fact: conditional, cls: "{cls}", pred: "{p}", then_pred: "{q}", polarity: true}
+
+  - id: logic/conditional-is-then-it-is-not
+    phase: read
+    match:
+      sentence:
+        - {lit: if, at_start: true}
+        - {slot: cls, span: true, span_blocks: negation}
+        - {lit: is}
+        - {slot: p, span: true, span_blocks: negation}
+        - {lit: then}
+        - {lit: it}
+        - {lit: is}
+        - {lit: not}
+        - {slot: q, span: true, span_blocks: negation}
+    emits:
+      - {fact: conditional, cls: "{cls}", pred: "{p}", then_pred: "{q}", polarity: false}
+
+  - id: logic/conditional-is-then-they-are
+    phase: read
+    match:
+      sentence:
+        - {lit: if, at_start: true}
+        - {slot: cls, span: true, span_blocks: negation}
+        - {lit: is}
+        - {slot: p, span: true, span_blocks: negation}
+        - {lit: then}
+        - {lit: they}
+        - {lit: are}
+        - {slot: q, span: true, span_blocks: negation}
+    emits:
+      - {fact: conditional, cls: "{cls}", pred: "{p}", then_pred: "{q}", polarity: true}
+
+  - id: logic/conditional-is-then-they-are-not
+    phase: read
+    match:
+      sentence:
+        - {lit: if, at_start: true}
+        - {slot: cls, span: true, span_blocks: negation}
+        - {lit: is}
+        - {slot: p, span: true, span_blocks: negation}
+        - {lit: then}
+        - {lit: they}
+        - {lit: are}
+        - {lit: not}
+        - {slot: q, span: true, span_blocks: negation}
+    emits:
+      - {fact: conditional, cls: "{cls}", pred: "{p}", then_pred: "{q}", polarity: false}
+
+  # "If someone is P, then they are [not] Q" — the 1-antecedent degenerate
+  # form IS a universal (∀x P(x) → [¬]Q(x)); emit quantified directly so the
+  # EXISTING instantiation synth serves it, no new machinery
+  - id: logic/conditional-someone-is-then-they-are
+    phase: read
+    match:
+      sentence:
+        - {lit: if, at_start: true}
+        - {lit: someone}
+        - {lit: is}
+        - {slot: p, span: true, span_blocks: negation}
+        - {lit: then}
+        - {lit: they}
+        - {lit: are}
+        - {slot: q, span: true, span_blocks: negation}
+    emits:
+      - {fact: quantified, cls: "{p}", pred: "{q}", polarity: true}
+
+  - id: logic/conditional-someone-is-then-they-are-not
+    phase: read
+    match:
+      sentence:
+        - {lit: if, at_start: true}
+        - {lit: someone}
+        - {lit: is}
+        - {slot: p, span: true, span_blocks: negation}
+        - {lit: then}
+        - {lit: they}
+        - {lit: are}
+        - {lit: not}
+        - {slot: q, span: true, span_blocks: negation}
+    emits:
+      - {fact: quantified, cls: "{p}", pred: "{q}", polarity: false}
+
 asks:
   # ---- asks: the FOLIO wrapper + an embedded declarative -------------------
   # The wrapper tokens are matched as literals — 'true' needs no sense for

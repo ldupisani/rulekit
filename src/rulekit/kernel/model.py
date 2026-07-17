@@ -228,6 +228,41 @@ class Atom(Fact):
 
 
 @dataclass(frozen=True)
+class Conditional(Fact):
+    """A class-scoped implication read from a copular if-then sentence:
+    "If a X is P, then it is [not] Q" -> Conditional(cls='x', pred='p',
+    then_pred='q', polarity). Semantics: ∀e. e∈cls ∧ pred(e) → [¬]then_pred(e).
+
+    Soundness boundaries (Stage 1, projects/scratch/ROADMAP.md):
+    - Both antecedent conjuncts are queried POSITIVELY by the synth
+      (synth/conditional-instantiation, packs/logic) — a negated-antecedent
+      surface never matches an extraction rule, so its sentence stays whole-
+      unread, which is monotone-safe.
+    - cls and pred sit in DOWNWARD-monotone positions: they never decompose
+      and never loosen; only exact atom phrases satisfy them. then_pred is
+      the upward-monotone consequent and inherits Atom's phrase discipline.
+    - A name-subject conditional ("If Rex is hungry, then it is ...") reads
+      the name as a CLASS phrase — inert unless some premise asserts
+      membership in that class, which is the compositional reading of that
+      (unusual) English.
+
+    Read semantics (the every-new-fact-kind decision): as Atom — the
+    emitting rule consumes the whole construction's units or matches
+    nothing; the fragment guard audits what no rule consumed."""
+
+    cls: str
+    pred: str
+    then_pred: str
+    polarity: bool = True
+
+    def key(self) -> tuple:
+        return ("logic-conditional", self.cls, self.pred, self.then_pred)
+
+    def value_part(self) -> Any:
+        return self.polarity
+
+
+@dataclass(frozen=True)
 class Quantified(Fact):
     """A universally quantified statement over a class phrase: "All citizens
     of Lawton Park use the zip code 98199" -> Quantified('citizen of lawton
