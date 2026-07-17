@@ -13,10 +13,16 @@ from .model import Reading, Word
 
 _SENT_SPLIT = re.compile(r"(?<=[.!?])\s+")
 _TOKEN = re.compile(
+    # `[^\W\d_]` = any Unicode LETTER: an ASCII-only class SHREDS a word at
+    # its first diacritic ('Sūduva' -> 's' + 'duva', 'Léa' -> 'L' + 'a' —
+    # and the fragments can be KNOWN words: that 'a' annotated as an
+    # ARTICLE). Real names carry diacritics in three DEV corpora (gsm8k 9
+    # items, scibench 7, folio 17 — measured 2026-07-17; all 9 gsm8k items
+    # decline before and after, the fix can only join what was shredded).
     r"\d+/\d+"                                  # slash fraction ("1/4")
-    r"|\d[\d,]*(?:st|nd|rd|th)(?![A-Za-z])"     # fused ordinal ("5th", "21st")
+    r"|\d[\d,]*(?:st|nd|rd|th)(?![^\W\d_])"     # fused ordinal ("5th", "21st")
     r"|\$?\d[\d,]*(?:\.\d+)?%?"                 # numbers/currency/percent
-    r"|[A-Za-z]+(?:'[A-Za-z]+)?"                 # words (with contractions)
+    r"|[^\W\d_]+(?:'[^\W\d_]+)?"                 # words (with contractions)
     r"|'s"                                       # bare possessive clitic
     r"|[.,!?;:]"
 )
