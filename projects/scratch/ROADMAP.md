@@ -143,6 +143,16 @@ annotation error, counted neither as a wrong nor as coverage.
 
 ## Stage 5 — the gate back to FOLIO (only if/when wanted)
 
+**Precondition 1 is BUILT** (the indefinite-existential gate): every
+name-subject slot in the logic pack + arithmetic's ask/is-membership carries
+`blocks_skipped: indefinite_article` (REUSING core-english's existing
+category — same a/an-vs-the distinction, minted for generic unit prices).
+The kernel flag checks the token's PHYSICAL predecessor, not the match
+attempt's own skip walk — match_all floats, and a retry starting after the
+article would otherwise never see it. Premise side ("A Kliner is a spy"
+mints nothing) and ask side ("...that A Kliner is a spy?" refuses) both
+pinned; 'the' passes (definite reference).
+
 Preconditions from the closure, all still binding:
 1. **The indefinite-article gate FIRST** (the one real hazard the campaign
    probes found; design banked in negative-results §3: split 'a/an' to an

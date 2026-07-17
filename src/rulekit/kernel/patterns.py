@@ -269,6 +269,21 @@ def _try_match_at(
             i += 1
         if i >= len(units):
             return None
+        if (
+            token.blocks_skipped
+            and i > 0
+            and units[i - 1].sense() in SKIPPABLE_SENSES
+            and reg.word_in_category(
+                units[i - 1].features.get("fold", ""), token.blocks_skipped
+            )
+        ):
+            # the token's PHYSICAL predecessor is a skippable unit of the
+            # blocked category — the construction is not the one this rule
+            # reads (the indefinite-existential gate). Checked against the
+            # predecessor, NOT this attempt's own skip walk: match_all
+            # floats, and a retry that starts AFTER the article would
+            # otherwise never see it.
+            return None
         if token.span:
             # OPT-IN phrase capture (schemas.MatchToken.span): bind a RUN of
             # units, GREEDY-LONGEST with backtracking — the longest capture

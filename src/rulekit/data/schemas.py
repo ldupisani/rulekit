@@ -258,6 +258,15 @@ class MatchToken(StrictModel):
     # and a sentence without the word fails the match exactly as any lit
     # does. Default False — every existing rule is byte-identical.
     consume_skipped: bool = False
+    # OPT-IN: fail the match when a unit of the named CATEGORY was skipped
+    # IMMEDIATELY before this token. The auto-skip makes articles invisible,
+    # so "...that A Czech is a European?" binds subj='czech' as if the
+    # existential were a name — the campaign closure's one real hazard
+    # (negative-results §3). `blocks_skipped: indefinite_article` on a subj
+    # slot refuses the indefinite while 'the' (definite reference, "The USS
+    # Lyon") passes. Category name as structure; members live in packs; a
+    # registry without the category is a NO-OP by construction.
+    blocks_skipped: str | None = None
     opt: list["MatchToken"] | None = None  # optional sub-sequence
 
     @model_validator(mode="after")

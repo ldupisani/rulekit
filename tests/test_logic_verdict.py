@@ -471,3 +471,43 @@ def test_conditional_then_pred_decomposes(intersective_logic_reg):
         "If a dog is hungry, then it is a czech conductor. "
         "Is it true that Rex is a conductor?", intersective_logic_reg)
     assert got == "yes"
+
+
+# ---- Stage 5.1: the indefinite-existential gate (the closure's banked hazard) --
+
+def test_indefinite_premise_mints_no_atom(logic_reg):
+    from rulekit.kernel.model import Atom
+
+    # "A Kliner is ..." is an EXISTENTIAL: 'Kliner' (unknown, capitalized)
+    # reads as a name and at_start ignores the skipped article, so before
+    # the gate this minted atom('kliner', 'spy') — an existential asserted
+    # as a ground fact about an entity
+    r = engine.solve("A Kliner is a spy.", logic_reg, tracing=False)
+    assert not list(r.store.by_kind(Atom))
+
+
+def test_indefinite_conclusion_subject_declines(logic_reg):
+    # "...that A Kliner is a spy?" bound subj='kliner' before the gate; the
+    # ask now refuses the construction outright
+    got = _verdict(
+        "Rex is a spy. Is it true that A Kliner is a spy?", logic_reg)
+    assert got in ("undetermined", "decline")
+
+
+def test_definite_reference_passes_the_gate(logic_reg):
+    # 'the' is a REFERENCE, not an existential — the gate must let the ask
+    # MATCH (the consumer runs). It stays undetermined for a PRE-EXISTING
+    # reason unrelated to the gate: sentence-initial "The Kliner" reads
+    # article+name (entity 'kliner') while the mid-sentence question
+    # name-merges ('the kliner') — inconsistent keys, decline-safe, present
+    # since v2. The assertion is the REASON: the logic consumer ran, so the
+    # ask was not refused the way the indefinite is.
+    r = engine.solve(
+        "The Kliner is a ship. Is it true that The Kliner is a ship?",
+        logic_reg, tracing=False)
+    assert "logic" in r.answer.reason
+
+
+def test_bare_name_subject_unchanged(logic_reg):
+    got = _verdict("Rex is a dog. Is it true that Rex is a dog?", logic_reg)
+    assert got == "yes"

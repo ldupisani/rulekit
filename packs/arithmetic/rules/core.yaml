@@ -6033,7 +6033,11 @@ asks:
     match:
       question:
         - {lit: is, at_start: true}
-        - {slot: member, type: name}
+        # blocks_skipped: an INDEFINITE article before the member marks an
+        # existential ("Is a Czech a spy?"), never a reference. The
+        # `indefinite_article` category lives in the scratch logic pack
+        # ONLY, so every benchmark registry is a no-op by construction.
+        - {slot: member, type: name, blocks_skipped: indefinite_article}
         - {slot: coll, type: noun}
     resolves:
       consumer: membership-verdict

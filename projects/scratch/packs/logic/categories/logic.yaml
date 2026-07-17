@@ -23,6 +23,10 @@ categories:
     # packs may not redefine words; the category names the existing entry.
     either_marker:
         parent: pronoun
+    # Stage 5.1 note: the indefinite-existential gate (blocks_skipped:
+    # indefinite_article on every name-subject slot) reuses CORE-ENGLISH's
+    # existing `indefinite_article` category (created for generic unit-price
+    # premises — the same a/an-vs-the distinction). No definition here.
 members:
     conjunctive_marker: [and]
     disjunctive_marker: [or]
