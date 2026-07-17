@@ -1,8 +1,25 @@
-# Session handoff — 2026-07-16
+# Session handoff — 2026-07-17
 
 Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
-State is committed through `95571e6` on `main` (github.com/ldupisani/rulekit).
 Always check `git status` / `git log origin/main..HEAD` before assuming push parity.
+
+> ## ⚡ THE FOLIO CAMPAIGN: OPENED, TWICE LANDED, TWICE REVERTED BY THE FIREWALL — read
+> ## `docs/negative-results.md` → the two "FOLIO Phase 1 … REVERTED" sections BEFORE any folio work.
+> - **Landed and LIVE** (`d8d41c3`): the story-grouped internal holdout (`group:` dataset column;
+>   folio dev-train 494 / dev-holdout 425, 0 stories straddling; gsm8k byte-identical) + folio
+>   baseline snapshots. Phase 0a taxonomy is in the session scratchpad's PHASE0A-FINDINGS.md and
+>   condensed in auto-memory: ground-fact class = 0 even at the permissive vocab ceiling; the
+>   buyer is the quantifier-only syllogism class (71 items); the SVO fold drops qualifiers and
+>   mints junk from passives, so a verdict consumer may only read phrase-keyed logic facts.
+> - **Reverted twice**: the full verdict-commitment increment (`88f6382`, v1) and its copular-only
+>   narrowing (`bbfc03c`, v2) each passed EVERY DEV gate (919 items, six corpora, null controls,
+>   pytest) and each scored **0 correct / 1 WRONG** on its folio TEST look. Two looks spent, zero
+>   attribution — DEV coverage was 1/494, so each look was a coin flip on n≈1.
+> - **The standing instruction for the next attempt**: widen the BUYER first (the 'citizens'
+>   plural-head family needs a GLOBAL lexicon plural ⇒ budget a gsm8k TEST look; more syllogism
+>   morphology; target ~10-30 null-controlled DEV commits) and probe the suspect list on DEV
+>   (tense collapse was/is; the membership Atom fallback; indefinite subjects; 'no'-universal
+>   chains) BEFORE spending folio look #3. Both increments survive intact in git for re-landing.
 
 > ## ➡ FOLIO IS BUILT, BENCHED AND LANDED — **919 DEV items, 0 correct / 0 WRONG** (`f7b059c`).
 > ## **It caught a real confident-answer on its first run**; the fix took TWO passes (`b1db917` was the WITNESS fix, `b5655ca` the class).
