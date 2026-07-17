@@ -164,3 +164,61 @@ def test_distribution_lifts_the_fragment_veto(logic_reg):
         "Is it true that Oxford Circus is designed by a British architect?",
         logic_reg,
     ) == "yes"
+
+
+# ---- S1: active relative-clause predication + the negated PP-object ask -------
+
+def test_relative_clause_emits_the_verbal_relation(logic_reg):
+    r = engine.solve("Rex is a dog who plays for Ann.", logic_reg, tracing=False)
+    vrs = [(f.entity, f.verb, f.prep, f.obj) for f in r.store.by_kind(VerbalRelation)]
+    assert vrs == [("rex", "play", "for", "ann")]
+    # the copular atom keeps reading the sentence beside it
+    assert any("dog who play for ann" in f.pred for f in r.store.by_kind(Atom))
+
+
+def test_passive_relative_stays_unread_here(logic_reg):
+    # 'who was …' fails the nonstate_verb slot — the passive-relative form
+    # is its own deferred increment; the copular atom still reads
+    r = engine.solve("Rex is a dog who was trained by Ann.", logic_reg, tracing=False)
+    assert list(r.store.by_kind(VerbalRelation)) == []
+
+
+def test_negated_pp_object_claim_refuted_by_witness(logic_reg):
+    assert _verdict(
+        "Rex is a dog who plays for Ann. Ann is a farmer. "
+        "Is it true that Rex does not play for a farmer?", logic_reg
+    ) == "no"
+
+
+def test_pp_object_null_control_class_swapped(logic_reg):
+    got = _verdict(
+        "Rex is a dog who plays for Ann. Ann is a farmer. "
+        "Is it true that Rex does not play for a musician?", logic_reg
+    )
+    assert got in ("undetermined", "decline")
+
+
+def test_pp_object_null_control_membership_cut(logic_reg):
+    got = _verdict(
+        "Rex is a dog who plays for Ann. "
+        "Is it true that Rex does not play for a farmer?", logic_reg
+    )
+    assert got in ("undetermined", "decline")
+
+
+def test_pp_object_null_control_relation_cut(logic_reg):
+    got = _verdict(
+        "Ann is a farmer. "
+        "Is it true that Rex does not play for a farmer?", logic_reg
+    )
+    assert got in ("undetermined", "decline")
+
+
+def test_absence_never_proves_the_negation(logic_reg):
+    # ¬∃ from silence would be closed-world — the one thing this consumer
+    # must never do
+    got = _verdict(
+        "Rex is a dog. Is it true that Rex does not play for a farmer?",
+        logic_reg,
+    )
+    assert got in ("undetermined", "decline")

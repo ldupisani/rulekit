@@ -135,6 +135,8 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
             return sense == "name"
         if t == "noun":
             return sense == "noun"
+        if t == "preposition":
+            return sense == "preposition"
         if t == "proper_name":
             # NAME sense only — no resolved-pronoun path (schemas.SLOT_TYPES:
             # a pronoun subject is definite reference, and the bare-plural

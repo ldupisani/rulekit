@@ -555,6 +555,30 @@ rules:
       - {fact: atom, entity: "{s1}", pred: "{pred}", polarity: true}
       - {fact: atom, entity: "{s2}", pred: "{pred}", polarity: true}
 
+  # ---- S1 (composition-design.md): ACTIVE relative-clause predication ------
+  # "Ailton Silva is a Brazilian footballer WHO PLAYS FOR Náutico" — the
+  # restrictive relative also PREDICATES of the subject: VR('ailton silva',
+  # 'play', 'for', 'náutico'). Fires BESIDE ground-copular-is (which still
+  # emits the full phrase-keyed atom + Stage 2.1's drops). Active clauses
+  # only: 'was/is' after 'who' fails the nonstate_verb slot, so PASSIVE
+  # relatives ("who was loaned out to Braga") stay unread here — the
+  # passive-relative form is its own deferred increment (phrasal particles
+  # + a recipient bridge). A second PP in the obj span refuses (whole-
+  # construction-or-nothing; the copular atom still reads the sentence).
+  - id: logic/relative-verbal-pp
+    phase: read
+    match:
+      sentence:
+        - {slot: subj, type: name, at_start: true, blocks_skipped: indefinite_article}
+        - {lit: is}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
+        - {lit: who}
+        - {slot: v, type: nonstate_verb}
+        - {slot: prep, type: preposition}
+        - {slot: obj, span: true, span_blocks: [negation, disjunctive_marker, preposition], span_blocks_counted: true}
+    emits:
+      - {fact: verbal_relation, entity: "{subj}", verb: "{v}", prep: "{prep}", obj: "{obj}", polarity: true}
+
   # ---- S2 (composition-design.md): the structured verbal relation ----------
   # Emitted BESIDE ground-verbal's flat atom (both rules fire; the flat key
   # stays echo-exact and untouched). The obj span additionally blocks
@@ -891,6 +915,60 @@ asks:
       entity: "{subj}"
       verb: "{v}"
       cls: "{cls}"
+
+  # ---- S1: the do-support-negated PP-object conclusion ----------------------
+  # "Is it true that Ailton Silva does not play for a football club?" — the
+  # question CLAIMS ¬∃; a stored VerbalRelation whose PP object is in the
+  # class (saturated + decomposed — 'football club along with Braga' drops
+  # to 'football club' via Stage 2.2) is the ∃ witness that contradicts it
+  # -> 'no'. Open world: absence of a relation is never 'yes'. NO positive
+  # twin ask yet ("…that X plays for a CLS?"): that surface ties with
+  # ask/logic-embedded-verbal on consumed units and would fall to id order
+  # — the ranking lesson says exclusion-or-nothing, and the negative form
+  # has no contest ('does' fails the verbal ask's nonstate v slot).
+  - id: ask/logic-verbal-obj-class-does-not-a
+    match:
+      question:
+        - {lit: is, at_start: true}
+        - {lit: it}
+        - {lit: 'true'}
+        - {lit: that}
+        - {slot: subj, type: name, blocks_skipped: indefinite_article}
+        - {lit: does}
+        - {lit: not}
+        - {slot: v, type: nonstate_verb}
+        - {slot: prep, type: preposition}
+        - {lit: a, consume_skipped: true}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
+    resolves:
+      consumer: verbal-obj-class-verdict
+      entity: "{subj}"
+      verb: "{v}"
+      prep: "{prep}"
+      cls: "{cls}"
+      polarity: "false"
+
+  - id: ask/logic-verbal-obj-class-does-not-an
+    match:
+      question:
+        - {lit: is, at_start: true}
+        - {lit: it}
+        - {lit: 'true'}
+        - {lit: that}
+        - {slot: subj, type: name, blocks_skipped: indefinite_article}
+        - {lit: does}
+        - {lit: not}
+        - {slot: v, type: nonstate_verb}
+        - {slot: prep, type: preposition}
+        - {lit: an, consume_skipped: true}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
+    resolves:
+      consumer: verbal-obj-class-verdict
+      entity: "{subj}"
+      verb: "{v}"
+      prep: "{prep}"
+      cls: "{cls}"
+      polarity: "false"
 
   - id: ask/logic-disj-embedded-bare
     match:

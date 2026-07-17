@@ -180,6 +180,10 @@ SLOT_TYPES = (
     # ("They are dogs" states a fact about the antecedents) — admitting it
     # would mint a universal from a ground statement.
     "proper_name",
+    # a PREPOSITION-sensed unit — the composition rules capture the PP's
+    # preposition as its own slot (VerbalRelation.prep) so the relation's
+    # segmentation is match-token work, never key surgery
+    "preposition",
     # a plural common noun that can head a GENERIC: sense noun, number
     # plural, no `owner` (a possessive subject is definite reference), no
     # `qualifier` (compound generics stay unread — monotone-safe), and NO
