@@ -2932,6 +2932,72 @@ def answer(
                 )
         return Answer("verdict", "undetermined", "no logic fact decides it")
 
+    if consumer == "logic-disjunction-verdict":
+        # A disjunctive conclusion, semantics MEASURED from folio DEV golds
+        # (Stage 3): bare 'or' is INCLUSIVE, 'either...or' is EXCLUSIVE (the
+        # James minimal pair — both disjuncts true golds the bare form True
+        # and the either form False). Open-world throughout: an unknown
+        # disjunct truth yields 'undetermined', never a guess. Same full-read
+        # contract as logic-verdict above.
+        from .model import Atom, Disjunction
+        from .patterns import SKIPPABLE_SENSES
+
+        unread = [
+            u.surface
+            for u in question.units
+            if u.sense() not in SKIPPABLE_SENSES and u.uid not in _match.consumed
+        ]
+        if unread:
+            return Answer(
+                "decline", None,
+                f"question states {unread!r} but the disjunction query never read it",
+            )
+        entity = query["entity"]
+        left, right = query["left"], query["right"]
+        exclusive = query.get("exclusive", "false") == "true"
+        # a premise ECHO decides it outright when the surface form matches
+        for f in store.by_kind(Disjunction):
+            if (
+                f.entity == entity and f.left == left and f.right == right
+                and f.exclusive == exclusive
+            ):
+                return Answer(
+                    "verdict", "yes",
+                    f"disjunction {entity!r} {left!r}/{right!r} stated "
+                    f"({'either' if exclusive else 'or'}) via {f.provenance.source}",
+                )
+        lt = rt = None
+        for f in store.by_kind(Atom):
+            if f.entity == entity and f.pred == left:
+                lt = f.polarity
+            elif f.entity == entity and f.pred == right:
+                rt = f.polarity
+        if exclusive:
+            if lt is not None and rt is not None:
+                return Answer(
+                    "verdict", "yes" if lt != rt else "no",
+                    f"xor over atoms {left!r}={lt} {right!r}={rt}",
+                )
+            return Answer(
+                "verdict", "undetermined",
+                "exclusive-or needs BOTH disjunct truths; open world has "
+                f"{left!r}={lt} {right!r}={rt}",
+            )
+        if lt is True or rt is True:
+            return Answer(
+                "verdict", "yes",
+                f"inclusive-or over atoms {left!r}={lt} {right!r}={rt}",
+            )
+        if lt is False and rt is False:
+            return Answer(
+                "verdict", "no",
+                f"inclusive-or over atoms {left!r}=False {right!r}=False",
+            )
+        return Answer(
+            "verdict", "undetermined",
+            f"inclusive-or undecided; open world has {left!r}={lt} {right!r}={rt}",
+        )
+
     if consumer == "membership-verdict":
         member, collection = query["member"], query["collection"]
         singular = reg.plural_to_singular.get(collection, collection)

@@ -3,6 +3,7 @@ name: logic
 version: 0.1.0
 requires:
 - core-english
+- difg-mined  # 'or'/'either' (disjunctive_marker/either_marker members) live there
 description: >
   The FOLIO logic campaign's pack: phrase-keyed universal/ground extraction,
   Horn-clause synth (instantiation + chaining), and the embedded-declarative

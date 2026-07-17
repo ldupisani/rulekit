@@ -37,9 +37,9 @@ rules:
     match:
       sentence:
         - {lit: all, at_start: true}
-        - {slot: cls, span: true, span_blocks: negation}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
         - {lit: are}
-        - {slot: pred, span: true, span_blocks: negation}
+        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
     emits:
       - {fact: quantified, cls: "{cls}", pred: "{pred}", polarity: true}
 
@@ -48,9 +48,9 @@ rules:
     match:
       sentence:
         - {lit: all, at_start: true}
-        - {slot: cls, span: true, span_blocks: negation}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
         - {lit: is}
-        - {slot: pred, span: true, span_blocks: negation}
+        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
     emits:
       - {fact: quantified, cls: "{cls}", pred: "{pred}", polarity: true}
 
@@ -59,9 +59,9 @@ rules:
     match:
       sentence:
         - {lit: every, at_start: true}
-        - {slot: cls, span: true, span_blocks: negation}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
         - {lit: is}
-        - {slot: pred, span: true, span_blocks: negation}
+        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
     emits:
       - {fact: quantified, cls: "{cls}", pred: "{pred}", polarity: true}
 
@@ -70,9 +70,9 @@ rules:
     match:
       sentence:
         - {lit: every, at_start: true}
-        - {slot: cls, span: true, span_blocks: negation}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
         - {lit: are}
-        - {slot: pred, span: true, span_blocks: negation}
+        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
     emits:
       - {fact: quantified, cls: "{cls}", pred: "{pred}", polarity: true}
 
@@ -81,9 +81,9 @@ rules:
     match:
       sentence:
         - {lit: no, at_start: true}
-        - {slot: cls, span: true, span_blocks: negation}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
         - {lit: are}
-        - {slot: pred, span: true, span_blocks: negation}
+        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
     emits:
       - {fact: quantified, cls: "{cls}", pred: "{pred}", polarity: false}
 
@@ -92,9 +92,9 @@ rules:
     match:
       sentence:
         - {lit: no, at_start: true}
-        - {slot: cls, span: true, span_blocks: negation}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
         - {lit: is}
-        - {slot: pred, span: true, span_blocks: negation}
+        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
     emits:
       - {fact: quantified, cls: "{cls}", pred: "{pred}", polarity: false}
 
@@ -105,7 +105,7 @@ rules:
       sentence:
         - {slot: subj, type: name, at_start: true}
         - {lit: is}
-        - {slot: pred, span: true, span_blocks: negation}
+        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
     emits:
       - {fact: atom, entity: "{subj}", pred: "{pred}", polarity: true}
 
@@ -115,7 +115,7 @@ rules:
       sentence:
         - {slot: subj, type: name, at_start: true}
         - {lit: was}
-        - {slot: pred, span: true, span_blocks: negation}
+        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
     emits:
       - {fact: atom, entity: "{subj}", pred: "{pred}", polarity: true}
 
@@ -126,7 +126,7 @@ rules:
         - {slot: subj, type: name, at_start: true}
         - {lit: is}
         - {lit: not}
-        - {slot: pred, span: true, span_blocks: negation}
+        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
     emits:
       - {fact: atom, entity: "{subj}", pred: "{pred}", polarity: false}
 
@@ -137,7 +137,7 @@ rules:
         - {slot: subj, type: name, at_start: true}
         - {lit: was}
         - {lit: not}
-        - {slot: pred, span: true, span_blocks: negation}
+        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
     emits:
       - {fact: atom, entity: "{subj}", pred: "{pred}", polarity: false}
 
@@ -162,7 +162,7 @@ rules:
     match:
       sentence:
         - {lit: if, at_start: true}
-        - {slot: cls, span: true, span_blocks: negation}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
         - {lit: is}
         - {slot: p, span: true, span_blocks: negation}
         - {lit: then}
@@ -177,7 +177,7 @@ rules:
     match:
       sentence:
         - {lit: if, at_start: true}
-        - {slot: cls, span: true, span_blocks: negation}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
         - {lit: is}
         - {slot: p, span: true, span_blocks: negation}
         - {lit: then}
@@ -193,7 +193,7 @@ rules:
     match:
       sentence:
         - {lit: if, at_start: true}
-        - {slot: cls, span: true, span_blocks: negation}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
         - {lit: is}
         - {slot: p, span: true, span_blocks: negation}
         - {lit: then}
@@ -208,7 +208,7 @@ rules:
     match:
       sentence:
         - {lit: if, at_start: true}
-        - {slot: cls, span: true, span_blocks: negation}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
         - {lit: is}
         - {slot: p, span: true, span_blocks: negation}
         - {lit: then}
@@ -253,6 +253,92 @@ rules:
     emits:
       - {fact: quantified, cls: "{p}", pred: "{q}", polarity: false}
 
+  # ---- Stage 3: disjunction (ROADMAP.md). Exclusivity is SURFACE-DECIDED,
+  # measured from folio DEV golds: bare 'or' is INCLUSIVE ("German or
+  # Russian or both" golds True), 'either...or' is EXCLUSIVE (the James
+  # minimal pair + the TikTok witness). Negated disjunctive surfaces are
+  # UNREAD (scope-ambiguous); disjuncts never decompose (XOR is
+  # non-monotone). 'or' is consumed as a LITERAL, so the fragment guard's
+  # conjunction-sense veto is satisfied by reading, exactly as designed.
+  - id: logic/disj-ground-bare
+    phase: read
+    match:
+      sentence:
+        - {slot: subj, type: name, at_start: true}
+        - {lit: is}
+        - {slot: l, span: true, span_blocks: [negation, conjunction, preposition, either_marker]}
+        - {lit: or}
+        - {slot: r, span: true, span_blocks: [negation, conjunction, preposition]}
+    emits:
+      - {fact: disjunction, entity: "{subj}", left: "{l}", right: "{r}", exclusive: false}
+
+  - id: logic/disj-ground-either
+    phase: read
+    match:
+      sentence:
+        - {slot: subj, type: name, at_start: true}
+        - {lit: is}
+        - {lit: either}
+        - {slot: l, span: true, span_blocks: [negation, conjunction, preposition, either_marker]}
+        - {lit: or}
+        - {slot: r, span: true, span_blocks: [negation, conjunction, preposition]}
+    emits:
+      - {fact: disjunction, entity: "{subj}", left: "{l}", right: "{r}", exclusive: true}
+
+  - id: logic/qdisj-all-are-bare
+    phase: read
+    match:
+      sentence:
+        - {lit: all, at_start: true}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
+        - {lit: are}
+        - {slot: l, span: true, span_blocks: [negation, conjunction, preposition, either_marker]}
+        - {lit: or}
+        - {slot: r, span: true, span_blocks: [negation, conjunction, preposition]}
+    emits:
+      - {fact: quantified_disjunction, cls: "{cls}", left: "{l}", right: "{r}", exclusive: false}
+
+  - id: logic/qdisj-all-are-either
+    phase: read
+    match:
+      sentence:
+        - {lit: all, at_start: true}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
+        - {lit: are}
+        - {lit: either}
+        - {slot: l, span: true, span_blocks: [negation, conjunction, preposition, either_marker]}
+        - {lit: or}
+        - {slot: r, span: true, span_blocks: [negation, conjunction, preposition]}
+    emits:
+      - {fact: quantified_disjunction, cls: "{cls}", left: "{l}", right: "{r}", exclusive: true}
+
+  - id: logic/qdisj-every-is-bare
+    phase: read
+    match:
+      sentence:
+        - {lit: every, at_start: true}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
+        - {lit: is}
+        - {slot: l, span: true, span_blocks: [negation, conjunction, preposition, either_marker]}
+        - {lit: or}
+        - {slot: r, span: true, span_blocks: [negation, conjunction, preposition]}
+    emits:
+      - {fact: quantified_disjunction, cls: "{cls}", left: "{l}", right: "{r}", exclusive: false}
+
+  - id: logic/qdisj-every-is-either
+    phase: read
+    match:
+      sentence:
+        - {lit: every, at_start: true}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
+        - {lit: is}
+        - {lit: either}
+        - {slot: l, span: true, span_blocks: [negation, conjunction, preposition, either_marker]}
+        - {lit: or}
+        - {slot: r, span: true, span_blocks: [negation, conjunction, preposition]}
+    emits:
+      - {fact: quantified_disjunction, cls: "{cls}", left: "{l}", right: "{r}", exclusive: true}
+
 asks:
   # ---- asks: the FOLIO wrapper + an embedded declarative -------------------
   # The wrapper tokens are matched as literals — 'true' needs no sense for
@@ -262,6 +348,51 @@ asks:
   # must reach the sentence end), and the consumer verifies full consumption,
   # so "Is it true that Mary is a student AT YALE?" can never answer about
   # Mary-the-student-generally.
+  # ---- Stage 3: disjunctive conclusions. The copular asks' pred spans REFUSE
+  # the disjunctive marker (span_blocks), so an or-question is matched by
+  # these asks ALONE — no ranking contest. (An id-order tie-break was tried
+  # first and was the wrong mechanism: the copular span consumes MORE units
+  # (articles/punct), so it OUTRANKED rather than tied. Exclusion beats
+  # ordering.) Pinned by test_disjunctive_question_routes_to_its_consumer.
+  - id: ask/logic-disj-embedded-bare
+    match:
+      question:
+        - {lit: is, at_start: true}
+        - {lit: it}
+        - {lit: 'true'}
+        - {lit: that}
+        - {slot: subj, type: name}
+        - {lit: is}
+        - {slot: l, span: true, span_blocks: [negation, conjunction, preposition, either_marker]}
+        - {lit: or}
+        - {slot: r, span: true, span_blocks: [negation, conjunction, preposition]}
+    resolves:
+      consumer: logic-disjunction-verdict
+      entity: "{subj}"
+      left: "{l}"
+      right: "{r}"
+      exclusive: "false"
+
+  - id: ask/logic-disj-embedded-either
+    match:
+      question:
+        - {lit: is, at_start: true}
+        - {lit: it}
+        - {lit: 'true'}
+        - {lit: that}
+        - {slot: subj, type: name}
+        - {lit: is}
+        - {lit: either}
+        - {slot: l, span: true, span_blocks: [negation, conjunction, preposition, either_marker]}
+        - {lit: or}
+        - {slot: r, span: true, span_blocks: [negation, conjunction, preposition]}
+    resolves:
+      consumer: logic-disjunction-verdict
+      entity: "{subj}"
+      left: "{l}"
+      right: "{r}"
+      exclusive: "true"
+
   - id: ask/logic-embedded-copular
     match:
       question:
@@ -271,7 +402,7 @@ asks:
         - {lit: that}
         - {slot: subj, type: name}
         - {lit: is}
-        - {slot: pred, span: true, span_blocks: negation}
+        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
     resolves:
       consumer: logic-verdict
       entity: "{subj}"
@@ -287,7 +418,7 @@ asks:
         - {lit: that}
         - {slot: subj, type: name}
         - {lit: was}
-        - {slot: pred, span: true, span_blocks: negation}
+        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
     resolves:
       consumer: logic-verdict
       entity: "{subj}"
@@ -304,7 +435,7 @@ asks:
         - {slot: subj, type: name}
         - {lit: is}
         - {lit: not}
-        - {slot: pred, span: true, span_blocks: negation}
+        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
     resolves:
       consumer: logic-verdict
       entity: "{subj}"
@@ -321,7 +452,7 @@ asks:
         - {slot: subj, type: name}
         - {lit: was}
         - {lit: not}
-        - {slot: pred, span: true, span_blocks: negation}
+        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
     resolves:
       consumer: logic-verdict
       entity: "{subj}"

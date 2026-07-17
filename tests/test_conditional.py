@@ -150,6 +150,7 @@ def intersective_logic_reg(tmp_path_factory):
         load_packs([
             ROOT / "packs/core-english",
             ROOT / "packs/arithmetic",
+            ROOT / "packs/difg-mined",
             root,
             ROOT / "projects/scratch/packs/logic",
         ])

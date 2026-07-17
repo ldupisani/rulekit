@@ -21,6 +21,7 @@ from .model import (
     Before,
     Conditional,
     Discount,
+    Disjunction,
     Fact,
     Atom,
     FractionQuantity,
@@ -29,6 +30,7 @@ from .model import (
     Membership,
     PartitionQuantity,
     Quantified,
+    QuantifiedDisjunction,
     PercentChange,
     Predication,
     Provenance,
@@ -51,6 +53,8 @@ _FACT_CLASSES = {
     "atom": Atom,
     "quantified": Quantified,
     "conditional": Conditional,
+    "disjunction": Disjunction,
+    "quantified_disjunction": QuantifiedDisjunction,
     "subset": Subset,
     "predication": Predication,
     "before": Before,
@@ -276,9 +280,20 @@ def _try_match_at(
                     u.sense() not in SKIPPABLE_SENSES for u in units[end:]
                 ):
                     continue  # final span: nothing meaningful may trail it
-                if token.span_blocks and any(
-                    reg.word_in_category(_lemma_of(u), token.span_blocks)
-                    for u in captured
+                blocked_cats = (
+                    [token.span_blocks] if isinstance(token.span_blocks, str)
+                    else (token.span_blocks or [])
+                )
+                # both the lemma AND the fold are checked: an anaphora-
+                # RESOLVED pronoun's lemma is its antecedent ('either' ->
+                # 'rex'), so a lemma-only check waves the blocked word
+                # through; the fold is the folded SURFACE and survives
+                # resolution. (Every negation-block user has fold == lemma,
+                # so this widening changes nothing for them.)
+                if blocked_cats and any(
+                    reg.word_in_category(_lemma_of(u), c)
+                    or reg.word_in_category(u.features.get("fold", ""), c)
+                    for u in captured for c in blocked_cats
                 ):
                     # a blocked word (e.g. a negation) may NEVER be swallowed
                     # into a phrase — negation is read structurally by an

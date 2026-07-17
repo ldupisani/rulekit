@@ -52,6 +52,7 @@ def test_negation_is_an_obligation_not_a_flag(registry):
     repo = Path(__file__).resolve().parents[1]
     logic_reg = compile_registry(load_packs([
         repo / "packs/core-english", repo / "packs/arithmetic",
+        repo / "packs/difg-mined",
         repo / "projects/scratch/packs/logic",
     ]))
     r = solve("Bob is not a student. Is Bob a student?", logic_reg)

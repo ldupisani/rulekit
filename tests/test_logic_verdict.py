@@ -254,6 +254,7 @@ def intersective_logic_reg(tmp_path_factory):
         load_packs([
             ROOT / "packs/core-english",
             ROOT / "packs/arithmetic",
+            ROOT / "packs/difg-mined",
             root,
             ROOT / "projects/scratch/packs/logic",
         ])
@@ -403,13 +404,17 @@ def test_conjunct_feeds_instantiation(logic_reg):
 
 
 def test_disjunction_asserts_neither_side(logic_reg):
-    from rulekit.kernel.model import Atom
+    from rulekit.kernel.model import Atom, Disjunction
 
-    # 'or' carries no conjunction sense: the span stays ONE opaque phrase —
-    # a disjunctive premise asserts neither disjunct (Stage 3 is case
-    # analysis, never a split)
+    # a disjunctive premise asserts NEITHER disjunct. Stage 2.3 pinned this
+    # as an opaque or-atom; Stage 3 reads the construction properly — the
+    # copular rules refuse the disjunctive marker and the store holds ONE
+    # Disjunction fact and ZERO atoms (case analysis derives, never splits)
     r = engine.solve("Rex is a dog or a cat.", logic_reg, tracing=False)
-    assert {f.pred for f in r.store.by_kind(Atom)} == {"dog or cat"}
+    assert not [f for f in r.store.by_kind(Atom) if f.entity == "rex"]
+    assert [(f.left, f.right, f.exclusive) for f in r.store.by_kind(Disjunction)] == [
+        ("dog", "cat", False)
+    ]
 
 
 def test_negative_conjunction_stays_whole(logic_reg):

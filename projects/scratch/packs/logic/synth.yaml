@@ -40,3 +40,66 @@ rules:
       - {fact: atom, entity: X, pred: Q}
     emit:
       - {fact: atom, entity: X, pred: Q, polarity: POL}
+
+  # ---- Stage 3: disjunction (exclusivity measured from DEV golds) ----------
+  # x ∈ C, ∀C: L∨R  ⊢  x ∈ L∨R  (instantiation; exclusivity carried through)
+  - id: synth/qdisj-instantiation
+    when:
+      - {fact: atom, entity: X, pred: C, polarity: true}
+      - {fact: quantified_disjunction, cls: C, left: L, right: R, exclusive: E}
+    unless:
+      - {fact: disjunction, entity: X, left: L, right: R}
+    emit:
+      - {fact: disjunction, entity: X, left: L, right: R, exclusive: E}
+
+  # x ∈ L∨R, L⊆T, R⊆T  ⊢  x ∈ T   (case analysis — sound for BOTH readings:
+  # ⊕ implies ∨, and ∨ suffices for the union)
+  - id: synth/case-analysis
+    when:
+      - {fact: disjunction, entity: X, left: L, right: R}
+      - {fact: quantified, cls: L, pred: T, polarity: true}
+      - {fact: quantified, cls: R, pred: T, polarity: true}
+    unless:
+      - {fact: atom, entity: X, pred: T}
+    emit:
+      - {fact: atom, entity: X, pred: T, polarity: true}
+
+  # x ∈ L∨R, x ∉ L  ⊢  x ∈ R   (disjunctive syllogism — sound for both
+  # readings; both mirrors)
+  - id: synth/disjunctive-syllogism-left
+    when:
+      - {fact: disjunction, entity: X, left: L, right: R}
+      - {fact: atom, entity: X, pred: L, polarity: false}
+    unless:
+      - {fact: atom, entity: X, pred: R}
+    emit:
+      - {fact: atom, entity: X, pred: R, polarity: true}
+
+  - id: synth/disjunctive-syllogism-right
+    when:
+      - {fact: disjunction, entity: X, left: L, right: R}
+      - {fact: atom, entity: X, pred: R, polarity: false}
+    unless:
+      - {fact: atom, entity: X, pred: L}
+    emit:
+      - {fact: atom, entity: X, pred: L, polarity: true}
+
+  # x ∈ L⊕R, x ∈ L  ⊢  x ∉ R   (XOR-elimination — EXCLUSIVE facts only,
+  # bought by the James minimal pair + the TikTok witness; both mirrors)
+  - id: synth/xor-elimination-left
+    when:
+      - {fact: disjunction, entity: X, left: L, right: R, exclusive: true}
+      - {fact: atom, entity: X, pred: L, polarity: true}
+    unless:
+      - {fact: atom, entity: X, pred: R}
+    emit:
+      - {fact: atom, entity: X, pred: R, polarity: false}
+
+  - id: synth/xor-elimination-right
+    when:
+      - {fact: disjunction, entity: X, left: L, right: R, exclusive: true}
+      - {fact: atom, entity: X, pred: R, polarity: true}
+    unless:
+      - {fact: atom, entity: X, pred: L}
+    emit:
+      - {fact: atom, entity: X, pred: L, polarity: false}

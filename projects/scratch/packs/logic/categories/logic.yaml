@@ -8,5 +8,22 @@ format: rulekit/categories@1
 categories:
     conjunctive_marker:
         parent: conjunction
+    # Stage 3: names the disjunction word so copular pred spans can REFUSE
+    # disjunctive surfaces (span_blocks) — match subsumption ranks by
+    # consumed units, and the copular rules' greedy spans (articles, punct)
+    # otherwise swallow and silently subsume the narrower disjunction match.
+    disjunctive_marker:
+        parent: conjunction
+    # 'either' is a difg-mined PRONOUN, which is doubly poisonous inside a
+    # span: the bare-or rule's span swallows it (and then strictly SUBSUMES
+    # the narrower either-rule match), and the anaphora resolver renders a
+    # captured pronoun as its ANTECEDENT ('either a dog' rendered 'rex
+    # dog'). Blocking it from the bare-form disjunct spans hands
+    # either-surfaces to the either-rules alone. No lexicon shadowing —
+    # packs may not redefine words; the category names the existing entry.
+    either_marker:
+        parent: pronoun
 members:
     conjunctive_marker: [and]
+    disjunctive_marker: [or]
+    either_marker: [either]

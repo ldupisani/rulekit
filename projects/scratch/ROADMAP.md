@@ -38,13 +38,18 @@ the 0/0 safety gate, and folio TEST remains governed by the closure rules.
 | **Stage 2.1: restrictive relative clauses drop** (structural, marker adjacent to lead) | `60b0e76` |
 | **Stage 2.2: PP restrictions drop** (quantifier-guarded — 'a friend of no person' never drops) + the fold's negated-PP suppression | `87e4b2e` |
 | **Stage 2.3: conjunctive predicates assert both conjuncts** — `conjunctive_marker` category gate ('or' is ALSO conjunction-sensed; a sense gate split disjunctions — caught by test before ship) | `1813bfe` |
-| **Stage 2.4: Quantified.pred / Conditional.then_pred decompose** — `_DECOMPOSABLE_FIELDS`, upward-monotone consequents only, cls pinned unstrippable | this commit |
+| **Stage 2.4: Quantified.pred / Conditional.then_pred decompose** — `_DECOMPOSABLE_FIELDS`, upward-monotone consequents only, cls pinned unstrippable | `fd088a2` |
+| **Stage 3: disjunction, case analysis, exclusivity** — Disjunction/QuantifiedDisjunction facts; exclusivity MEASURED (bare 'or' = ∨, 'either…or' = ⊕, the James minimal pair); 6 synths (case analysis + disjunctive syllogism sound under both readings; XOR-elimination exclusive-only); disjunctive-conclusion asks + consumer | this commit |
 
-Folio dev-train through the scratch registry after Stage 2: still **1 commit /
-0 wrong / 494** — the remaining vetoes are CLAUSE-level conjunctions ("X is a
-Y, and it is Z") and disjunctive universals, i.e. Stage 3's material. The
-compounding thesis is unrefuted but also unproven until then; every stage so
-far is bought by its synthetic contracts, not by folio yield.
+Folio dev-train after Stage 3: still **1 commit / 0 wrong / 494** (declines
+359→369: or-surfaces the disjunction rules cannot soundly read are now
+REFUSED and fragment-vetoed instead of opaquely swallowed). The honest
+blocker: FOLIO's real disjunctive premises are mostly VERBAL ("have chat
+features or video features"), and verbal reading is the explicitly-deferred
+family (its own increment + its own look, per the v1 revert record). The
+copular set-logic core is COMPLETE and contract-proven; folio yield now
+waits on Stage 4 morphology + the verbal frontier, not on more copular
+machinery.
 
 ## Stage 1 — copular conditionals (the largest measured premise family) — DONE
 
@@ -90,7 +95,7 @@ Each is the A pattern in a different construction, each its own increment:
    ("czech mammal") is not decomposed (coverage gap, not unsoundness).
    Extend the same helper into saturate.py's emission path.
 
-## Stage 3 — disjunction, case analysis, exclusivity ("branching")
+## Stage 3 — disjunction, case analysis, exclusivity ("branching") — DONE
 
 The FOLIO witness (TikTok story) requires all three; 75 dev-train stories
 carry disjunctive premises:

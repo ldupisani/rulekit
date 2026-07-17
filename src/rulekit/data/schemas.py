@@ -229,7 +229,7 @@ class MatchToken(StrictModel):
     # word hidden inside a phrase key would bury the negation where no
     # consumer can see it, so the match FAILS instead. Category name only;
     # the members live in the pack (constitution rule 1).
-    span_blocks: str | None = None
+    span_blocks: str | list[str] | None = None
     # OPT-IN: this token may only match with NOTHING MEANINGFUL BEFORE IT — every
     # preceding unit must be skippable. A match sequence is contiguous (modulo
     # SKIPPABLE_SENSES) but FLOATS: match_all retries at every start offset, so a
@@ -341,6 +341,7 @@ class FactEmit(StrictModel):
         "before", "fraction_quantity", "rest_quantity", "partition_quantity",
         "ratio_quantity", "goal", "group_total", "rate", "discount",
         "percent_change", "atom", "quantified", "conditional",
+        "disjunction", "quantified_disjunction",
     ]
     # remaining fields are fact-kind specific; templated strings "{slot}" or
     # expressions evaluated by the safe evaluator.

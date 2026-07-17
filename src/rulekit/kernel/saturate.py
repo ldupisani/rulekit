@@ -69,8 +69,14 @@ def _apply_synth_rule(
     from .patterns import _FACT_CLASSES  # shared fact-kind table
 
     emitted: list[Fact] = []
+    # kinds resolve through the SAME table the emit side uses — the previous
+    # lowercased-class-name convention silently matched nothing for any
+    # multi-word kind (QuantifiedDisjunction != 'quantified_disjunction'),
+    # which read as a clean 0 SOLVED instead of an error
     kind_facts = {
-        shape.fact: [f for f in store.facts if type(f).__name__.lower() == shape.fact]
+        shape.fact: [
+            f for f in store.facts if type(f) is _FACT_CLASSES.get(shape.fact)
+        ]
         for shape in itertools.chain(rule.when, rule.unless)
     }
     # join the `when` clauses over all combinations (stores are small)

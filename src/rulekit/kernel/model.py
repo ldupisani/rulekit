@@ -263,6 +263,52 @@ class Conditional(Fact):
 
 
 @dataclass(frozen=True)
+class Disjunction(Fact):
+    """A ground disjunction: x ∈ left ∨ right (inclusive) or left ⊕ right
+    (exclusive). The `exclusive` flag is SURFACE-DECIDED, and the mapping is
+    MEASURED from folio DEV golds (Stage 3, ROADMAP.md): bare 'or' is
+    INCLUSIVE ("Heinrich Schmidt was German or Russian or both" golds True);
+    'either...or' is EXCLUSIVE (the James minimal pair: same story, same
+    disjuncts, bare-or conclusion golds True while the either-or conclusion
+    golds False — both disjuncts hold; also the banked TikTok witness).
+
+    Disjuncts are NOT in _DECOMPOSABLE_FIELDS and never decompose: XOR is
+    non-monotone in both arguments, so stripping inside a disjunct is
+    unsound for exclusive facts and stays off for both. Negated disjunctive
+    surfaces are unread entirely (scope-ambiguous English)."""
+
+    entity: str
+    left: str
+    right: str
+    exclusive: bool = False
+
+    def key(self) -> tuple:
+        return ("logic-disj", self.entity, self.left, self.right)
+
+    def value_part(self) -> Any:
+        return self.exclusive
+
+
+@dataclass(frozen=True)
+class QuantifiedDisjunction(Fact):
+    """A class-scoped disjunction: ∀e ∈ cls. e ∈ left ∨/⊕ right ("Every pet
+    is a dog or a cat"). Instantiates to a ground Disjunction per member
+    (synth/qdisj-instantiation). Same surface-decided exclusivity and the
+    same no-decomposition rule as Disjunction."""
+
+    cls: str
+    left: str
+    right: str
+    exclusive: bool = False
+
+    def key(self) -> tuple:
+        return ("logic-qdisj", self.cls, self.left, self.right)
+
+    def value_part(self) -> Any:
+        return self.exclusive
+
+
+@dataclass(frozen=True)
 class Quantified(Fact):
     """A universally quantified statement over a class phrase: "All citizens
     of Lawton Park use the zip code 98199" -> Quantified('citizen of lawton
