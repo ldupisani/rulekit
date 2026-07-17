@@ -1,0 +1,224 @@
+format: rulekit/rules@1
+# The FOLIO campaign's extraction + ask layer. Design rules this file lives by:
+#
+# - PHRASE-KEYED: class/predicate slots are `span:` captures — the fact's key
+#   is the whole canonical phrase, so "opera singer" can never answer for
+#   "singer" (the Fiedler trap, Phase 0a) and one-word-apart distractor
+#   classes ("belonging to the company" vs "... to employees") stay distinct.
+# - `span_blocks: negation` EVERYWHERE a span appears: polarity is read by an
+#   explicit {lit: not} token or not at all; a negation swallowed into a
+#   phrase key would be invisible to every consumer.
+# - `at_start` on every premise rule's first token: an embedded clause (an
+#   if-antecedent, a disjunct, a complement) must NEVER emit a ground fact —
+#   `match_all` floats, and the FOLIO gate's first catch (b5655ca) was
+#   exactly such a drift. The subject/quantifier sits at the sentence start
+#   or the rule does not fire.
+# - The generic SVO fold still runs beside these rules, but the
+#   `logic-verdict` consumer reads ONLY `atom` facts — fold facts (which drop
+#   qualifiers and mint junk from passives, Phase 0a) cannot reach a verdict.
+#
+# ⚠ COPULAR-ONLY, DELIBERATELY (the TEST-look-#1 narrowing — docs/
+# negative-results.md, "FOLIO Phase 1 ... REVERTED"). The first landing also
+# carried verbal universals, "All X are not Y", ground-verbal and the verbal
+# asks; it passed every DEV gate and 919 items clean, then folio TEST look #1
+# scored 0 correct / 1 WRONG. The culprit is TEST-only and undiagnosable by
+# design, so the re-landing keeps only the narrowest readers:
+#   - verbal universals DROPPED: a known-verb PARTICIPLE missplits the
+#     cls/pred boundary ("All students TRAINED by Yale are..." -> v='trained')
+#   - "All X are not Y" DROPPED: genuinely ambiguous scope (∀¬ vs ¬∀) that
+#     FOLIO annotators decide per item — one mis-scoped item is one wrong
+#   - ground-verbal + verbal asks DROPPED: the widest ground surface
+# Each returns only as its own increment with its own TEST look.
+
+rules:
+  # ---- universals: "All/Every CLS are PRED" -> quantified(cls, pred, ±) ----
+  - id: logic/universal-copular-all-are
+    phase: read
+    match:
+      sentence:
+        - {lit: all, at_start: true}
+        - {slot: cls, span: true, span_blocks: negation}
+        - {lit: are}
+        - {slot: pred, span: true, span_blocks: negation}
+    emits:
+      - {fact: quantified, cls: "{cls}", pred: "{pred}", polarity: true}
+
+  - id: logic/universal-copular-all-is
+    phase: read
+    match:
+      sentence:
+        - {lit: all, at_start: true}
+        - {slot: cls, span: true, span_blocks: negation}
+        - {lit: is}
+        - {slot: pred, span: true, span_blocks: negation}
+    emits:
+      - {fact: quantified, cls: "{cls}", pred: "{pred}", polarity: true}
+
+  - id: logic/universal-copular-every-is
+    phase: read
+    match:
+      sentence:
+        - {lit: every, at_start: true}
+        - {slot: cls, span: true, span_blocks: negation}
+        - {lit: is}
+        - {slot: pred, span: true, span_blocks: negation}
+    emits:
+      - {fact: quantified, cls: "{cls}", pred: "{pred}", polarity: true}
+
+  - id: logic/universal-copular-every-are
+    phase: read
+    match:
+      sentence:
+        - {lit: every, at_start: true}
+        - {slot: cls, span: true, span_blocks: negation}
+        - {lit: are}
+        - {slot: pred, span: true, span_blocks: negation}
+    emits:
+      - {fact: quantified, cls: "{cls}", pred: "{pred}", polarity: true}
+
+  - id: logic/universal-no-are
+    phase: read
+    match:
+      sentence:
+        - {lit: no, at_start: true}
+        - {slot: cls, span: true, span_blocks: negation}
+        - {lit: are}
+        - {slot: pred, span: true, span_blocks: negation}
+    emits:
+      - {fact: quantified, cls: "{cls}", pred: "{pred}", polarity: false}
+
+  - id: logic/universal-no-is
+    phase: read
+    match:
+      sentence:
+        - {lit: no, at_start: true}
+        - {slot: cls, span: true, span_blocks: negation}
+        - {lit: is}
+        - {slot: pred, span: true, span_blocks: negation}
+    emits:
+      - {fact: quantified, cls: "{cls}", pred: "{pred}", polarity: false}
+
+  # ---- ground atoms: "<Name> is/was [not] [a] PRED", "<Name> <verb> REST" --
+  - id: logic/ground-copular-is
+    phase: read
+    match:
+      sentence:
+        - {slot: subj, type: name, at_start: true}
+        - {lit: is}
+        - {slot: pred, span: true, span_blocks: negation}
+    emits:
+      - {fact: atom, entity: "{subj}", pred: "{pred}", polarity: true}
+
+  - id: logic/ground-copular-was
+    phase: read
+    match:
+      sentence:
+        - {slot: subj, type: name, at_start: true}
+        - {lit: was}
+        - {slot: pred, span: true, span_blocks: negation}
+    emits:
+      - {fact: atom, entity: "{subj}", pred: "{pred}", polarity: true}
+
+  - id: logic/ground-copular-is-not
+    phase: read
+    match:
+      sentence:
+        - {slot: subj, type: name, at_start: true}
+        - {lit: is}
+        - {lit: not}
+        - {slot: pred, span: true, span_blocks: negation}
+    emits:
+      - {fact: atom, entity: "{subj}", pred: "{pred}", polarity: false}
+
+  - id: logic/ground-copular-was-not
+    phase: read
+    match:
+      sentence:
+        - {slot: subj, type: name, at_start: true}
+        - {lit: was}
+        - {lit: not}
+        - {slot: pred, span: true, span_blocks: negation}
+    emits:
+      - {fact: atom, entity: "{subj}", pred: "{pred}", polarity: false}
+
+asks:
+  # ---- asks: the FOLIO wrapper + an embedded declarative -------------------
+  # The wrapper tokens are matched as literals — 'true' needs no sense for
+  # that (it is in this pack's lexicon as an ADJECTIVE purely so no noun
+  # sense can ever resurrect the is-membership shadow parse, Phase 0a).
+  # The final span runs to the question's end BY CONSTRUCTION (a final span
+  # must reach the sentence end), and the consumer verifies full consumption,
+  # so "Is it true that Mary is a student AT YALE?" can never answer about
+  # Mary-the-student-generally.
+  - id: ask/logic-embedded-copular
+    match:
+      question:
+        - {lit: is, at_start: true}
+        - {lit: it}
+        - {lit: 'true'}
+        - {lit: that}
+        - {slot: subj, type: name}
+        - {lit: is}
+        - {slot: pred, span: true, span_blocks: negation}
+    resolves:
+      consumer: logic-verdict
+      entity: "{subj}"
+      pred: "{pred}"
+      polarity: "true"
+
+  - id: ask/logic-embedded-copular-was
+    match:
+      question:
+        - {lit: is, at_start: true}
+        - {lit: it}
+        - {lit: 'true'}
+        - {lit: that}
+        - {slot: subj, type: name}
+        - {lit: was}
+        - {slot: pred, span: true, span_blocks: negation}
+    resolves:
+      consumer: logic-verdict
+      entity: "{subj}"
+      pred: "{pred}"
+      polarity: "true"
+
+  - id: ask/logic-embedded-copular-not
+    match:
+      question:
+        - {lit: is, at_start: true}
+        - {lit: it}
+        - {lit: 'true'}
+        - {lit: that}
+        - {slot: subj, type: name}
+        - {lit: is}
+        - {lit: not}
+        - {slot: pred, span: true, span_blocks: negation}
+    resolves:
+      consumer: logic-verdict
+      entity: "{subj}"
+      pred: "{pred}"
+      polarity: "false"
+
+  - id: ask/logic-embedded-copular-was-not
+    match:
+      question:
+        - {lit: is, at_start: true}
+        - {lit: it}
+        - {lit: 'true'}
+        - {lit: that}
+        - {slot: subj, type: name}
+        - {lit: was}
+        - {lit: not}
+        - {slot: pred, span: true, span_blocks: negation}
+    resolves:
+      consumer: logic-verdict
+      entity: "{subj}"
+      pred: "{pred}"
+      polarity: "false"
+
+  # NOTE (scratch resurrection, 2026-07-17): ask/is-membership is NOT here —
+  # it stayed in packs/arithmetic (with the {coll.qualified} collection fix),
+  # and this project loads both packs, so a second copy would be a duplicate
+  # ask id. The fronted-membership question routes through arithmetic's ask
+  # and answer.py's membership-verdict (whose Atom fallback reads this
+  # pack's ground facts when they consume the copular premise).

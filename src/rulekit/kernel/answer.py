@@ -55,7 +55,17 @@ class Answer:
 
     @property
     def committed(self) -> bool:
-        return self.kind == "number"
+        # A verdict COMMITS only when it takes a side. 'undetermined' is the
+        # epistemic square's "I don't know" and must never count as a
+        # commitment — the day it does, every honest decline becomes a
+        # scoreable wrong (HANDOFF, Frontier 2). The judge half of this
+        # contract lives in harness/bench.py (_judge_typed / _judge): a
+        # committed verdict at a non-verdict gold now scores WRONG there, in
+        # the same increment that widened this — the two halves drift apart
+        # or land together.
+        return self.kind == "number" or (
+            self.kind == "verdict" and self.value in ("yes", "no")
+        )
 
 
 def _resolve_measure_against(
@@ -288,7 +298,11 @@ def _question_reference_time(question: Reading, reg: Registry, match) -> list:
     A question naming two times is ambiguous and must decline — time arbitration (which
     of two moments is nearer) needs an ORDER, and there is none (deixis.md §1.3).
     """
-    taken = set(match.consumed) | {u.uid for u in match.slots.values()}
+    taken = set(match.consumed) | {
+        u.uid
+        for v in match.slots.values()
+        for u in (v if isinstance(v, tuple) else (v,))  # span slots bind runs
+    }
     out = []
     for i, unit in enumerate(question.units):
         if unit.uid in taken:
@@ -2876,6 +2890,48 @@ def answer(
             f"{goal.value} goal - {holding.value} current {singular!r}",
         )
 
+    if consumer == "logic-verdict":
+        # The FOLIO-style embedded-declarative verdict: "Is it true that
+        # <subject> <predicate phrase>?" — answered ONLY from phrase-keyed
+        # logic facts (model.Atom, emitted by packs/logic extraction rules and
+        # the packs/logic synth chain), never from the generic SVO fold, whose
+        # head-lemma facts drop qualifiers ("opera singer" -> 'singer') and
+        # would make this consumer a confident-wrong machine (Phase 0a).
+        #
+        # FULL READ IS VERIFIED, NOT ASSUMED: the ask's final span runs to the
+        # sentence end by construction, but the wrapper tokens and subject sit
+        # outside it — every meaningful question unit must be in the match's
+        # consumed set, the b1db917/b5655ca lesson generalized from names to
+        # ALL value kinds ("Is Mary a student AT YALE?" declines).
+        from .model import Atom
+        from .patterns import SKIPPABLE_SENSES
+
+        unread = [
+            u.surface
+            for u in question.units
+            if u.sense() not in SKIPPABLE_SENSES and u.uid not in _match.consumed
+        ]
+        if unread:
+            return Answer(
+                "decline", None,
+                f"question states {unread!r} but the logic query never read it",
+            )
+        entity = query["entity"]
+        pred = query["pred"]
+        pol = query.get("polarity", "true") == "true"
+        for f in store.by_kind(Atom):
+            if f.entity == entity and f.pred == pred:
+                # open-world, polarity-aware: a stored negative answers 'no'
+                # to the positive question and 'yes' to the negated one; the
+                # ABSENCE of a fact is never falsity — that is 'undetermined'
+                return Answer(
+                    "verdict",
+                    "yes" if f.polarity == pol else "no",
+                    f"logic atom {f.entity!r} {f.pred!r} "
+                    f"({'+' if f.polarity else '-'}) via {f.provenance.source}",
+                )
+        return Answer("verdict", "undetermined", "no logic fact decides it")
+
     if consumer == "membership-verdict":
         member, collection = query["member"], query["collection"]
         singular = reg.plural_to_singular.get(collection, collection)
@@ -2908,6 +2964,18 @@ def answer(
         for f in store.by_kind(Membership):
             if f.member == member and f.collection == singular:
                 return Answer("verdict", "yes" if f.polarity else "no", "membership fact")
+        # packs/logic's ground rules CONSUME a copular premise, which
+        # suppresses the fold's Membership fact for that sentence — the same
+        # statement now lives as a phrase-keyed Atom instead. A single-noun
+        # collection is a one-token phrase, so reading it here keeps the
+        # exact-phrase discipline (a qualified atom like 'rovers player' can
+        # never satisfy a bare 'player' query). Registries without
+        # packs/logic have no Atom facts and skip this loop entirely.
+        from .model import Atom
+
+        for f in store.by_kind(Atom):
+            if f.entity == member and f.pred == singular:
+                return Answer("verdict", "yes" if f.polarity else "no", "logic atom")
         return Answer("verdict", "undetermined", "no membership fact either way")
 
     return Answer("decline", None, f"ask {ask.id} names unknown consumer {consumer!r}")

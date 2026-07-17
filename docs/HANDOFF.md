@@ -29,6 +29,17 @@ Always check `git status` / `git log origin/main..HEAD` before assuming push par
 >   likeliest TEST culprit, inside both reverted surfaces, dormant on main only because
 >   verdicts don't commit. Any re-landing must first build the indefinite-article gate
 >   (sense split + opt-in skipped-sense match flag; design in negative-results §3).
+> - **The v2 KERNEL half is RE-LANDED for the scratch sandbox** (post-closure): Atom/Quantified,
+>   span capture, verdict commitment + both judge flips + the fragment guard are on main again,
+>   but `packs/logic` lives ONLY in `projects/scratch/` (ask/is-membership stayed in arithmetic)
+>   — no benchmark project loads a verdict-producing rule, folio stays logic-free at 0/0, and
+>   every gate re-measured NEUTRAL. This does NOT reopen the campaign: folio TEST is untouched
+>   and the indefinite-subject gate is still unbuilt. En route the resurrection caught a REAL
+>   kernel unsoundness: `_canonical_phrase` rendered merged compounds by bare head lemma, so
+>   ADMITTING a modifier word silently loosened phrase keys ("X is a Czech conductor"
+>   confidently yes'd "Is it true that X is a CHORAL conductor?"). Fixed + pinned
+>   (test_qualified_phrase_survives_KNOWN_vocabulary) — the Fiedler discipline had been
+>   resting on vocabulary ignorance.
 
 > ## ➡ FOLIO IS BUILT, BENCHED AND LANDED — **919 DEV items, 0 correct / 0 WRONG** (`f7b059c`).
 > ## **It caught a real confident-answer on its first run**; the fix took TWO passes (`b1db917` was the WITNESS fix, `b5655ca` the class).

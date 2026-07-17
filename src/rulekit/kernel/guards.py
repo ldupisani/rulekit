@@ -97,13 +97,97 @@ def check(
     proposed: Answer,
     store: FactStore | None = None,
     question: Reading | None = None,
+    clause_split: bool = False,
 ) -> GuardVeto | None:
     """Run all enabled guards against a proposed committed answer.
-    Returns the first veto, or None. Only 'number' answers are guarded —
-    a decline is already safe."""
+    Returns the first veto, or None. A decline is already safe, so only
+    commitments are guarded — and each answer KIND gets its own guard set:
+
+    - `number` answers get the numeric guards below (unknown-word,
+      value-accounting, unresolved-derivation, ...), unchanged.
+    - `verdict` answers get `_check_verdict` INSTEAD. Value-accounting is
+      deliberately NOT applied to verdict premises: FOL entailment is
+      MONOTONIC — a premise correctly read but unused can never invalidate a
+      derived True/False — so "every stated number reached the output" is the
+      wrong contract. What a verdict must prove instead is that no
+      TRUTH-SCOPING operator (quantifier / conjunction / negator) in the
+      premises went unread by a logic rule, because an operator the reading
+      ignored is exactly how a disjunct or an antecedent gets asserted as a
+      ground fact (the FOLIO if-antecedent leak, Phase 0a).
+    """
     if not proposed.committed:
         return None
+    if proposed.kind == "verdict":
+        return _check_verdict(premises, consumed_uids, reg, clause_split)
     readings = premises + ([question] if question is not None else [])
+    return _check_number(
+        readings, consumed_uids, log, reg, store, question, premises, proposed
+    )
+
+
+# senses that SCOPE truth. Sense NAMES are kernel structure (constitution rule
+# 1 allows exactly this); the words carrying them live in the packs.
+_TRUTH_SCOPING_SENSES = ("quantifier", "conjunction", "negator")
+
+
+def _check_verdict(
+    premises: list[Reading],
+    consumed_uids: dict[int, set[int]],
+    reg: Registry,
+    clause_split: bool,
+) -> GuardVeto | None:
+    """The supported-fragment guard: a verdict may only commit when every
+    truth-scoping operator in the premises was CONSUMED by a rule that
+    understood it. Introduced deliberately WEAK — each new logic extraction
+    rule consumes its own operator words, which widens the commit pool
+    without touching this guard (capability relaxes it, never edits)."""
+    if clause_split:
+        # the textual clause pre-split promotes coordinated clauses to
+        # stand-alone premises and the boundary word is no longer visible to
+        # this guard — a promoted DISJUNCT would read as an asserted fact.
+        # Coarse and safe: decline the whole story.
+        return GuardVeto(
+            "verdict-fragment",
+            "premises were clause-split before reading; a promoted disjunct "
+            "is indistinguishable from an asserted fact",
+        )
+    for reading in premises:
+        consumed = consumed_uids.get(reading.sentence_index, set())
+        for unit in reading.units:
+            if unit.sense() not in _TRUTH_SCOPING_SENSES or unit.uid in consumed:
+                continue
+            obligations = unit.obligations()
+            if (
+                unit.sense() == "negator"
+                and obligations
+                and all(o.met for o in obligations)
+            ):
+                # a NEGATOR that bound what it scopes was read structurally
+                # (the difg #26 negation-is-an-obligation contract — the same
+                # binding that flips the fold's polarity). ONLY negators get
+                # this exemption: a bound quantifier/conjunction has been
+                # attached, not UNDERSTOOD — nothing propagates its scope into
+                # a fact a verdict consumer reads, so it must still veto.
+                continue
+            return GuardVeto(
+                "verdict-fragment",
+                f"{unit.surface!r} (sentence {reading.sentence_index}) "
+                f"scopes truth but no logic rule read it",
+            )
+    return None
+
+
+def _check_number(
+    readings: list[Reading],
+    consumed_uids: dict[int, set[int]],
+    log: ArithmeticLog,
+    reg: Registry,
+    store: FactStore | None,
+    question: Reading | None,
+    premises: list[Reading],
+    proposed: Answer | None = None,
+) -> GuardVeto | None:
+    """The pre-existing numeric guard chain, byte-identical."""
 
     if _enabled(reg, "unknown-word"):
         for reading in readings:

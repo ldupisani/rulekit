@@ -132,11 +132,15 @@ def test_undetermined_is_a_decline_not_a_wrong():
     assert _judge_of(TypedGold("decline", None), "verdict", "undetermined") == ("correct", None)
 
 
-def test_a_verdict_against_a_non_verdict_gold_is_a_decline():
-    """Kind mismatch: the engine answered a different question than the one being
-    scored. The float path's own rule, mirrored — "a verdict where a number was
-    expected is a decline, not a commit"."""
-    assert _judge_of(TypedGold("number", 3.0), "verdict", "yes") == ("declined", "yes")
+def test_a_committed_verdict_against_a_non_verdict_gold_is_WRONG():
+    """The FOLIO Phase 1 flip, exactly as the old ⚠ REVISIT comment demanded:
+    Answer.committed now admits yes/no, so a verdict asserted where a number
+    was asked is a genuine confident-wrong — scoring it 'declined' would hide
+    it. 'undetermined' stays a non-commitment and still declines."""
+    assert _judge_of(TypedGold("number", 3.0), "verdict", "yes") == ("wrong", "yes")
+    assert _judge_of(TypedGold("text", "x"), "verdict", "no") == ("wrong", "no")
+    assert _judge_of(TypedGold("number", 3.0), "verdict", "undetermined") == (
+        "declined", "undetermined")
 
 
 def test_a_real_verdict_against_a_verdict_gold_is_still_judged():
