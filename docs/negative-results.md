@@ -1512,3 +1512,91 @@ coin. Candidate unsoundness to probe on DEV first, cheapest first:
    copular facts) — drop it; nothing on DEV needs it.
 3. Indefinite conclusion subjects ("A Czech published...") binding as names.
 4. Chain/instantiation polarity interactions with 'no' universals.
+
+## The FOLIO buyer is UNWIDENABLE — campaign CLOSED, look #3 not spent (2026-07-17)
+
+All four suspects above were probed on DEV (v2 restored on a throwaway branch;
+nothing landed). Then the buyer-widening instruction itself was measured — and
+refuted. Numbers first, all on folio dev-train (494 items):
+
+**The widening ladder, simulated faithfully (rules + fragment-guard veto model +
+phrase-key discipline), with a FULLY-STOCKED plural map approximated by naive
+s/es-stripping on every phrase token — a generous ceiling, not an estimate:**
+
+| surface | commits |
+|---|---|
+| copular-only v2 (today) | **1** |
+| + every plural admitted ('citizens' family and all others) | **1** |
+| + consume-only readers (relative/disjunctive universals, 'some', everyone-who) | **1** (vetoes 102→84) |
+| + conjunctive grounds ("X is a Y, and it is Z" → two atoms) | **1** |
+| + copular if-then universals ("If a X is P, then it is Q", 2-antecedent Horn) | **1** |
+| + quantified-conclusion consumer ("All X are Y" ← chain) + 'some' + ∃-intro | **1** |
+
+Every rung commits the SAME single item (the Robert-Zimmer class). The
+'citizens' plural-head family — the handoff's named lever — buys ZERO commits:
+"characterized is not measured" fired against the handoff's own prescription.
+v1's dev diff (SOLVED 1) independently confirms the verbal surface also bought
+~nothing on DEV. **The ~10-30-commit precondition for look #3 is unreachable by
+any sound increment, so look #3 is not spent and verdict commitment stays
+reverted.**
+
+**Why the ladder is flat — FOLIO entailment is a FRONTIER, with a witness.** The
+TikTok story (dev-train) needs, for ONE conclusion: a relative-clause universal
+read as a RESTRICTED CLASS ("All social media applications CONTAINING CHAT
+FEATURES are software" — participial restriction), a disjunctive universal
+("...have chat features or video features"), and CASE ANALYSIS over that
+disjunction. And its sibling item golds "TikTok either has chat features or is
+a computer program" as **False because BOTH disjuncts are true — FOLIO's
+'either...or' is EXCLUSIVE**. A naive inclusive-or reader manufactures a
+confident-wrong on exactly that shape. Restricted classes + XOR + case analysis
++ definite descriptions ("The pilot...") + anaphora is an inference engine, not
+a rule increment. 371 of 494 conclusions aren't even bare-copular.
+
+**The suspect probes (banked for any future re-landing — do not re-derive):**
+1. **Tense collapse: EXONERATED — FOLIO's FOL is tenseless.** DEV golds prove
+   it: "Zaha Hadid IS a British-Iraqi architect" ⊢ "Zaha Hadid WAS a citizen of
+   Britain and Iraq" golds **True**; "Islip IS either demolished..." ⊢ "Islip
+   WAS demolished" golds **True**. Keying atoms on tense would BREAK both.
+   Every Uncertain in the 21 cross-tense DEV items is driven by predicate
+   content, which phrase keys already handle. Do not "fix" this.
+2. **The membership-verdict Atom fallback: EXONERATED BY CONSTRUCTION —
+   unreachable on every folio item, DEV and TEST.** All 1,204 rows are built by
+   the same `phrase()` wrapper "Is it true that ...?"; `ask/is-membership`
+   anchors its fronted `is` with `at_start` followed by a `type: name` slot,
+   and the wrapper's next token is always `it` (a pronoun). Measured: 0 of 494
+   dev-train items reach the consumer (the 7 whose reason mentions
+   'membership' are fact-store fold CONFLICTS, vetoed before any consumer).
+   It cannot have caused either TEST wrong. It also cannot be dropped for
+   free: the four suite membership pins in test_logic_verdict.py are answered
+   BY the fallback (logic ground rules consume the copular premise, so the
+   fold's Membership fact never exists).
+3. **Indefinite subjects: THE ONE REAL HAZARD FOUND — and the likeliest TEST
+   culprit still standing.** 'a/an' is a skippable article, so "A Czech is a
+   European?" binds subj='czech' (capitalized ⇒ name) and reaches logic-verdict
+   (measured: the synthetic case returns a verdict). Premise-side is worse:
+   `at_start` ignores skippables, so a premise "A Kelly bag is ..." MINTS
+   `atom('kelly bag', ...)` — an existential asserted as a ground fact. A
+   colliding pair (one bare-capitalized-subject premise + one indefinite
+   conclusion on the same key) commits a wrong; DEV's 16 indefinite
+   conclusions all escaped by phrasing luck (an intervening noun between the
+   capitalized word and 'is'), which is exactly the kind of luck TEST need not
+   repeat — and it is inside the copular-only surface, present in BOTH
+   reverted landings. **Any re-landing must gate it structurally**: split
+   'a/an' to an `indefinite-article` sense (kept in SKIPPABLE_SENSES so all
+   skipping is byte-identical) + an opt-in MatchToken flag that fails the
+   match when a unit of a named sense was skipped immediately before the
+   token (sense names as kernel structure — constitution rule 1 allows
+   exactly this) on the ground rules' and embedded asks' subj slots.
+4. **'no'-universal polarity: EXONERATED.** Five synthetic interaction cases
+   (negative first hop blocked; negative second hop propagates; disjointness
+   never instantiates; double-negative chains blocked; derived-negative vs
+   negated conclusion) all return the sound verdict — synth.yaml's
+   "first hop must be positive" gates ARE the ∀-semantics.
+
+**Disposition.** folio stays what main already has: the 0/0 logic SAFETY gate
+(it caught a real bug on run #1 — that is its job and its justification).
+Both landings stay archived (`88f6382` v1, `bbfc03c` v2). Re-opening FOLIO
+coverage requires a designed inference frontier (restricted-class universals,
+exclusive disjunction, case analysis, definite descriptions) with this
+section's ladder as its baseline measurement — not a third thin re-landing,
+and not before the indefinite-subject gate exists.

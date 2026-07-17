@@ -3,23 +3,32 @@
 Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
 Always check `git status` / `git log origin/main..HEAD` before assuming push parity.
 
-> ## ⚡ THE FOLIO CAMPAIGN: OPENED, TWICE LANDED, TWICE REVERTED BY THE FIREWALL — read
-> ## `docs/negative-results.md` → the two "FOLIO Phase 1 … REVERTED" sections BEFORE any folio work.
+> ## ⚡ THE FOLIO CAMPAIGN IS CLOSED (2026-07-17): the buyer was MEASURED UNWIDENABLE, so
+> ## look #3 was NOT spent — read `docs/negative-results.md` → "The FOLIO buyer is
+> ## UNWIDENABLE" (the ladder table + the four suspect probes) BEFORE any folio work.
 > - **Landed and LIVE** (`d8d41c3`): the story-grouped internal holdout (`group:` dataset column;
 >   folio dev-train 494 / dev-holdout 425, 0 stories straddling; gsm8k byte-identical) + folio
->   baseline snapshots. Phase 0a taxonomy is in the session scratchpad's PHASE0A-FINDINGS.md and
->   condensed in auto-memory: ground-fact class = 0 even at the permissive vocab ceiling; the
->   buyer is the quantifier-only syllogism class (71 items); the SVO fold drops qualifiers and
->   mints junk from passives, so a verdict consumer may only read phrase-keyed logic facts.
-> - **Reverted twice**: the full verdict-commitment increment (`88f6382`, v1) and its copular-only
->   narrowing (`bbfc03c`, v2) each passed EVERY DEV gate (919 items, six corpora, null controls,
->   pytest) and each scored **0 correct / 1 WRONG** on its folio TEST look. Two looks spent, zero
->   attribution — DEV coverage was 1/494, so each look was a coin flip on n≈1.
-> - **The standing instruction for the next attempt**: widen the BUYER first (the 'citizens'
->   plural-head family needs a GLOBAL lexicon plural ⇒ budget a gsm8k TEST look; more syllogism
->   morphology; target ~10-30 null-controlled DEV commits) and probe the suspect list on DEV
->   (tense collapse was/is; the membership Atom fallback; indefinite subjects; 'no'-universal
->   chains) BEFORE spending folio look #3. Both increments survive intact in git for re-landing.
+>   baseline snapshots. folio stays the 0/0 logic SAFETY gate — that is its job, and it has
+>   already paid (it caught a real bug on its first run).
+> - **Reverted twice, stays reverted**: the full verdict-commitment increment (`88f6382`, v1) and
+>   its copular-only narrowing (`bbfc03c`, v2) each passed EVERY DEV gate and each scored
+>   **0 correct / 1 WRONG** on its folio TEST look (looks #1–#2, no attribution possible).
+> - **Why closed**: every widening rung — full plural map (the 'citizens' family buys ZERO),
+>   consume-only readers, conjunctive grounds, copular if-then universals, quantified/'some'
+>   conclusion consumers with ∃-intro — simulates to the SAME 1 commit / 494 on dev-train.
+>   FOLIO entailment needs restricted-class universals, EXCLUSIVE 'either...or' (a naive
+>   inclusive-or reader manufactures a confident-wrong), case analysis, definite descriptions —
+>   an inference-engine FRONTIER, not increments. The ~10-30-commit precondition for look #3 is
+>   unreachable, so a third landing is forbidden by the same rule that forbade a thin one.
+> - **The suspect probes are BANKED** (negative-results has the full evidence): tense collapse
+>   EXONERATED (FOLIO's FOL is tenseless — keying on tense breaks two real DEV Trues); the
+>   membership Atom fallback EXONERATED BY CONSTRUCTION (unreachable on wrapped items; the
+>   pytest suite pins depend on it — do not drop it); 'no'-universal polarity SOUND (five
+>   synthetic interaction cases). **ONE real hazard found: indefinite subjects** ("A Kelly bag
+>   is ..." mints a ground atom; "...that A Czech is a European?" binds subj='czech') — the
+>   likeliest TEST culprit, inside both reverted surfaces, dormant on main only because
+>   verdicts don't commit. Any re-landing must first build the indefinite-article gate
+>   (sense split + opt-in skipped-sense match flag; design in negative-results §3).
 
 > ## ➡ FOLIO IS BUILT, BENCHED AND LANDED — **919 DEV items, 0 correct / 0 WRONG** (`f7b059c`).
 > ## **It caught a real confident-answer on its first run**; the fix took TWO passes (`b1db917` was the WITNESS fix, `b5655ca` the class).
