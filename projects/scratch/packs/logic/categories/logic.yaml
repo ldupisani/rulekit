@@ -35,8 +35,20 @@ categories:
     # from the other side).
     definite_article:
         parent: article
+    # S2 (composition-design.md): 'by' as the PASSIVE-AGENT marker. The
+    # embedded-copular ASKS' pred spans refuse it (span_blocks) so a
+    # passive-agent conclusion ("…is designed by a British architect?")
+    # routes to the passive-agent asks ALONE — the Stage 3 lesson,
+    # exclusion beats ordering (the copular span would otherwise swallow
+    # the construction and win the ranking on id order). ASK SIDE ONLY:
+    # premise rules keep reading copular preds containing 'by' ("a
+    # business run and owned by Edwin Smith") — a blocked conclusion
+    # declines either way, but an unread premise would lose real atoms.
+    agent_marker:
+        parent: preposition
 members:
     conjunctive_marker: [and]
     disjunctive_marker: [or]
     either_marker: [either]
     definite_article: [the]
+    agent_marker: [by]

@@ -2996,6 +2996,47 @@ def answer(
                     )
         return Answer("verdict", "undetermined", "no witness and no refuting universal")
 
+    if consumer == "passive-agent-verdict":
+        # S2 (composition-design.md): "Is it true that X is <participle> by
+        # a CLS?" — the MEMBERSHIP BRIDGE, ∃-intro over the agent: a
+        # VerbalRelation whose obj is the question's subject and whose agent
+        # holds the class atom (saturated + decomposed variants included,
+        # so 'a British architect who…' still counts). Sound for ANY verb —
+        # the premise itself supplies the witness; no monotonicity
+        # assumption. Open world: no relation found is 'undetermined',
+        # never 'no' (¬∃ is unprovable from absence). An indefinite-object
+        # relation ("designed a tower") never matches the question's
+        # definite subject (indef_obj). Full-read as the consumers above.
+        from .model import Atom, VerbalRelation
+        from .patterns import SKIPPABLE_SENSES
+
+        unread = [
+            u.surface
+            for u in question.units
+            if u.sense() not in SKIPPABLE_SENSES and u.uid not in _match.consumed
+        ]
+        if unread:
+            return Answer(
+                "decline", None,
+                f"question states {unread!r} but the passive query never read it",
+            )
+        entity, verb, cls_p = query["entity"], query["verb"], query["cls"]
+        for f in store.by_kind(VerbalRelation):
+            if (
+                f.verb == verb and f.obj == entity
+                and f.polarity and not f.indef_obj
+            ):
+                for a in store.by_kind(Atom):
+                    if a.entity == f.entity and a.pred == cls_p and a.polarity:
+                        return Answer(
+                            "verdict", "yes",
+                            f"agent {f.entity!r} ({verb!r} -> {entity!r}) "
+                            f"is {cls_p!r} via {a.provenance.source}",
+                        )
+        return Answer(
+            "verdict", "undetermined", "no agent relation decides it"
+        )
+
     if consumer == "universal-verdict":
         # "Is it true that all/no CLS are PRED?" — read the SATURATED
         # Quantified closure (synth/universal-chain materializes

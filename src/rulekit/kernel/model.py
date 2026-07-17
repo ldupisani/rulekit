@@ -239,6 +239,35 @@ class Atom(Fact):
 
 
 @dataclass(frozen=True)
+class VerbalRelation(Fact):
+    """A verbal predication whose DIRECT OBJECT is held structurally —
+    the composition frontier's premise form (composition-design.md §2.2):
+    "John Nash designed Oxford Circus" -> ('john nash', 'design', obj=
+    'oxford circus'). Emitted BESIDE the flat Atom (whose one phrase key
+    stays echo-exact and untouched); segmentation happens only in the
+    emitting rule's match tokens, never by splitting a key string. `prep`
+    is reserved for the PP form ("plays for Náutico") and stays '' for
+    direct objects. Bridges (membership on the agent, later containment)
+    run at QUERY time in consumers — no derived facts, no key surgery."""
+
+    entity: str
+    verb: str
+    obj: str
+    prep: str = ""
+    polarity: bool = True
+    # same contract as Atom.indef_obj: the obj span swallowed an 'a'/'an',
+    # so the object is SOME thing, never a particular referent — it must
+    # not match a question's definite entity
+    indef_obj: bool = False
+
+    def key(self) -> tuple:
+        return ("verbal-rel", self.entity, self.verb, self.prep, self.obj)
+
+    def value_part(self) -> Any:
+        return self.polarity
+
+
+@dataclass(frozen=True)
 class Conditional(Fact):
     """A class-scoped implication read from a copular if-then sentence:
     "If a X is P, then it is [not] Q" -> Conditional(cls='x', pred='p',

@@ -19,6 +19,7 @@ from ..data.schemas import AskRule, MatchToken, PatternRule
 from .evaluate import ArithmeticLog, EvaluationError, evaluate
 from .model import (
     Before,
+    VerbalRelation,
     Conditional,
     Discount,
     Disjunction,
@@ -69,6 +70,7 @@ _FACT_CLASSES = {
     "rate": Rate,
     "discount": Discount,
     "percent_change": PercentChange,
+    "verbal_relation": VerbalRelation,
 }
 
 
@@ -920,12 +922,15 @@ def _build_fact(
     kwargs = {}
     for key, raw in emit_fields.items():
         kwargs[key] = _resolve_field(raw, slots, reg, key in _NUMERIC_FIELDS, log, rule_id)
-    if cls is Atom and "indef_obj" not in kwargs:
-        # composition-design.md Phase 0: record whether the pred's span
+    _indef_field = {Atom: "pred", VerbalRelation: "obj"}.get(cls)
+    if _indef_field is not None and "indef_obj" not in kwargs:
+        # composition-design.md Phase 0: record whether the pred/obj span
         # swallowed an INDEFINITE article (skippable, so it drops out of the
         # phrase key) — 'plays for a football club' must not later answer
-        # "…plays for THE football club?" (model.Atom.indef_obj)
-        pred_tpl = emit_fields.get("pred")
+        # "…plays for THE football club?", and an indefinite direct object
+        # ("designed a tower") is never a particular referent
+        # (model.Atom.indef_obj / model.VerbalRelation.indef_obj)
+        pred_tpl = emit_fields.get(_indef_field)
         if isinstance(pred_tpl, str):
             kwargs["indef_obj"] = any(
                 span_swallowed_indefinite(slots[mm.group(1)], reading, reg)

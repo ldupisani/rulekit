@@ -384,6 +384,7 @@ class FactEmit(StrictModel):
         "ratio_quantity", "goal", "group_total", "rate", "discount",
         "percent_change", "atom", "quantified", "conditional",
         "disjunction", "quantified_disjunction", "existential",
+        "verbal_relation",
     ]
     # remaining fields are fact-kind specific; templated strings "{slot}" or
     # expressions evaluated by the safe evaluator.
