@@ -47,7 +47,7 @@ uv run rulekit --project projects/asdiv bench --slice dev --jobs 8      # CROSS-
 uv run rulekit --project projects/svamp bench --slice dev --jobs 8      # 2nd CROSS-CORPUS gate — SVAMP (adversarial variations, harder)
 uv run rulekit --project projects/mawps bench --slice dev --jobs 8      # 3rd — MAWPS (classic arithmetic repository)
 uv run rulekit --project projects/scibench bench --slice dev --jobs 8   # 4th — SciBench OUT-OF-DOMAIN safety (want 0 commits)
-uv run rulekit --project projects/folio bench --slice dev --jobs 8      # 5th — FOLIO: a MINING TARGET since Phase 1 (verdicts commit via folio-only packs/logic); wrong must stay 0
+uv run rulekit --project projects/folio bench --slice dev --jobs 8      # 5th — FOLIO LOGIC safety, the only NON-arithmetic gate (want 0 commits)
 uv run rulekit --project projects/gsm8k stats                          # the mining worklists
 uv run rulekit --project projects/gsm8k lint [--category NAME]         # overlaps, blast radius
 uv run rulekit --project projects/gsm8k serve                          # visual designer
@@ -69,16 +69,11 @@ uv run rulekit --project projects/gsm8k serve                          # visual 
   (adversarial variations, harshest in-domain), MAWPS (classic arithmetic repository), and SciBench
   (out-of-domain college science — an over-commitment/safety check, expected 0 commits). Same shape as
   asdiv; each rebuilt once with `uv run --with datasets python projects/<name>/build_corpus.py`
-- `projects/folio/` — the only NON-ARITHMETIC corpus: human-written first-order logic (Yale-LILY).
-  A MINING TARGET since the FOLIO Phase 1 increment (verdict commitment + `packs/logic`, loaded by
-  folio ALONE — that pack list is the cross-corpus containment proof; never widen it casually).
-  `wrong` stays pinned at 0, and the committed-number-vs-verdict/text asymmetry still scores WRONG
-  (the safety role survives). Firewall buckets by PREMISE BLOCK, not per-item (340 stories → 1,001
-  items; the internal dev-train/dev-holdout cut buckets by story too via `group:`), and 'Uncertain'
-  is a `text` gold, never `decline` — see `docs/negative-results.md` → "The logic-corpus search".
-- `packs/logic/` — the FOLIO campaign's pack: phrase-keyed COPULAR-ONLY extraction (span slots),
-  Horn synth (instantiation/chaining), embedded-declarative verdict asks. v1's wider surface was
-  reverted at folio TEST look #1 — each dropped family returns only with its own TEST look.
+- `projects/folio/` — the 5th and only NON-ARITHMETIC gate: human-written first-order logic (Yale-LILY).
+  Every other gate asks for a number, so none can catch the engine ASSERTING a number at logic prose;
+  a committed number against its verdict/text golds scores WRONG. Expect 0 commits. Its firewall buckets
+  by PREMISE BLOCK, not per-item (340 stories → 1,001 items), and its 'Uncertain' gold is `text`, never
+  `decline` — see `docs/negative-results.md` → "The logic-corpus search" before touching either.
 
 Mining scripts are throwaway: keep them in the session scratchpad, never the repo — recreate
 from `docs/methodology.md` §4.
