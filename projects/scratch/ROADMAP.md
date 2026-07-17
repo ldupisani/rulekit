@@ -158,10 +158,69 @@ cheap" reads cls='book sell by school'); the arithmetic clash ->
 Folio dev-train: commits unchanged (1 + the poisoned gold) but the READING
 moved: declines 362->322, undetermined 124->170 — 40+ more stories reach
 the consumer. Conversion needs paraphrase bridging (verbal keys are
-echo-exact); next levers: participial restriction drops on verbal preds
-('book in 1946 CALLED X' -> 'book in 1946'), verbal PP drops, and
-experiment-vocabulary admission (unknown verbs read as nothing — the pack
-model working as designed).
+echo-exact).
+
+**⚠ The "next levers" this file named after Stage 6 were MEASURED AT ZERO
+(2026-07-17) — do not build them.** Participial restriction drops and
+verbal PP drops bridge **0 of the 170 undetermined** items: no conclusion
+key is a word-prefix of any premise atom pred for the right entity,
+directly or through one instantiation step (prefix covers ANY number of
+tail drops, so this is not a depth artifact). The measured gap taxonomy
+instead (scratchpad classifier, both directions checked):
+
+| class | n | what it needs |
+|---|---|---|
+| entity-atoms-unrelated | 52 | mostly honest Uncertain golds + deep inference |
+| entity-raw-other | 37 | constructions the pack cannot read (participial, passives, bare plurals) |
+| paraphrase-gap (≥50% overlap, no containment) | 28 | multi-premise composition ("attended the University of Edinburgh" + "Edinburgh is in the UK" ⊢ "attended university in the UK") — a frontier |
+| entity-in-raw-or | 23 | conjunctive disjuncts ("either P and Q, or ¬P and R") — Stage 3 extension |
+| entity-absent | 13 | definite descriptions / anaphora |
+| entity-in-raw-if | 10 | conditional forms Stage 1 refuses (negated antecedents etc.) |
+| substring-bridge (mid-atom) | 2 | subject-relative predication ("a politician WHO SAT in the House of Commons" ⊢ sat...) — sound but only 2 buyers, one on a corrupt premise |
+
+Also: only **100 of the 170** have verdict golds — the 70 'Uncertain' rows
+can never convert (undetermined is a non-commitment BY DESIGN), so every
+lever must be priced against the verdict-gold subset.
+
+## Stage 7 — quantified conclusions (2026-07-17) — DONE, and the misbinding it closed
+
+Three commits, each gate-clean and independently revertible:
+1. `974dea2` **qualified_render**: a merged NAME rendered TWICE in every
+   phrase key ('Emmet Building' -> 'work at emmet emmet building') — four
+   call sites shared the words[:-1]+[lemma] idiom, one helper owns it now.
+   SYMMETRIC (premise and query keys share the renderer), so no verdict
+   test could see it; the new tests pin FACT KEYS. Folio item-level NEUTRAL.
+2. `4211b2f` **capitalized quantifiers never name**: the FOLIO wrapper
+   preserves the conclusion's sentence-initial capital, so 'No plants are
+   mushrooms' read as name('No') + verb('plants') — three stacked
+   misreadings behind one undetermined. Structural sense exemption in
+   senses.py beside the timeperiod one. Trade measured first: ONE real
+   quantifier-headed name in all seven DEV corpora ('All Goods Available
+   store', declines before and after) vs 78 wrapper-capitalized quantifier
+   conclusions in folio dev-train (32 No / 23 Some / 23 All).
+3. `b313980` **all/no conclusion asks + universal-verdict consumer** over
+   the saturated Quantified closure; 'no' only from a counterexample
+   witness — NO existential import in either direction (saturation
+   instantiates the witness whenever the class is nonempty, so the sound
+   path is complete). "All X are not Y" stays unread (scope ambiguity).
+
+Folio dev-train after Stage 7: commits unchanged (1 + the poisoned gold);
+301 no-ask / 179 undetermined — 9 quantified conclusions moved from
+opaque decline to the new consumer, honestly undetermined. **Conversion
+blockers, in buying order** (each is its own increment; measure first):
+- **Bare-plural universal premises**: "Mushrooms are fungi" is FOLIO's ∀
+  (its FOL says so) and is UNREAD — worse, sentence-initial unknown
+  'Mushrooms' name-annotates. This blocks the one derivable witness item
+  ("No plants are fungi. Mushrooms are fungi. ⊢ No plants are mushrooms"
+  gold True) and is the gate on the next blocker:
+- **The negative-chain synth**: quantified(M,F,+) ∧ quantified(P,F,-) ⊢
+  quantified(P,M,-) — sound FOL, but its ONLY measured buyer needs bare
+  plurals read first. An unbought enabler until then; do not land alone.
+- **Verbal universal conclusions** ("All species of Ambiortus live in
+  Mongolia") — the Stage 6 ask family, conclusion side.
+- **Unknown-plural morphology**: 'barkers' (unknown) stays verbatim while
+  the premise's 'a barker' is singular — echo-exact keys miss. A general
+  lever (affects every span key), price it as one.
 
 ## Stage 5 — the gate back to FOLIO (only if/when wanted)
 
