@@ -1472,11 +1472,11 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
             elif polarity:
                 facts.append(_member_fact(head, True))
                 facts.append(_member_fact(qualified, True))
-                inter = [
-                    w for w in words[:-1]
-                    if reg.word_in_category(w, "intersective_modifier")
-                ]
-                rest = [w for w in words[:-1] if w not in inter]
+                # ONE definition of intersectivity, shared with the Atom
+                # variant emission (patterns.intersective_split)
+                from .patterns import intersective_split
+
+                inter, rest = intersective_split(words, head, reg)
                 if inter and rest:
                     facts.append(_member_fact(" ".join(rest + [head]), True))
                 for w in inter:

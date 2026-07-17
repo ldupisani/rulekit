@@ -218,3 +218,102 @@ def test_is_membership_cannot_shadow_the_wrapper(logic_reg):
     r = engine.solve("Rex is a dog. Is it true that Rex is a dog?", logic_reg,
                      tracing=False)
     assert "logic" in r.answer.reason  # answered by logic-verdict, not membership
+
+
+# ---- intersective decomposition of atoms (option A) ---------------------------
+# Intersection-elimination at the predicate's top level, gated on the opt-in
+# `intersective_modifier` category. ONE shared contract definition
+# (patterns.intersective_split) serves both the copular fold and this layer.
+
+@pytest.fixture(scope="module")
+def intersective_logic_reg(tmp_path_factory):
+    root = tmp_path_factory.mktemp("intersective-logic-pack")
+    (root / "pack.yaml").write_text(
+        "format: rulekit/pack@1\nname: intersective-logic-test\nversion: 0.0.1\n"
+        "description: synthetic intersective members for the atom layer\n"
+    )
+    (root / "categories").mkdir()
+    (root / "categories" / "c.yaml").write_text(
+        "format: rulekit/categories@1\n"
+        "categories:\n"
+        "    intersective_modifier: {parent: noun}\n"
+        "    nationality_noun: {parent: intersective_modifier}\n"
+        "members:\n"
+        "    nationality_noun: [czech]\n"
+    )
+    (root / "lexicon").mkdir()
+    (root / "lexicon" / "l.yaml").write_text(
+        "format: rulekit/lexicon@1\n"
+        "entries:\n"
+        "    czech: {senses: [noun]}\n"
+        "    conductor: {senses: [noun], plural: conductors}\n"
+        "    choral: {senses: [adjective]}\n"
+        "    european: {senses: [noun], plural: europeans}\n"
+    )
+    return compile_registry(
+        load_packs([
+            ROOT / "packs/core-english",
+            ROOT / "packs/arithmetic",
+            root,
+            ROOT / "projects/scratch/packs/logic",
+        ])
+    )
+
+
+def test_atom_decomposes_only_the_gated_modifier(intersective_logic_reg):
+    from rulekit.kernel.model import Atom
+
+    r = engine.solve("Miroslav was a Czech choral conductor.",
+                     intersective_logic_reg, tracing=False)
+    preds = {f.pred for f in r.store.by_kind(Atom)}
+    # full phrase + stripped-intersective variant + the modifier alone;
+    # NEVER a bare head — 'choral' is ungated, so it pins the head qualified
+    # (the 'former president' safety: head-entailment is not free here)
+    assert preds == {"czech choral conductor", "choral conductor", "czech"}
+
+
+def test_decomposition_composes_with_instantiation(intersective_logic_reg):
+    got = _verdict(
+        "Miroslav was a Czech choral conductor. Every Czech is a European. "
+        "Is it true that Miroslav is a European?",
+        intersective_logic_reg,
+    )
+    assert got == "yes"
+
+
+def test_negative_atom_never_decomposes(intersective_logic_reg):
+    from rulekit.kernel.model import Atom
+
+    r = engine.solve("Miroslav was not a Czech choral conductor.",
+                     intersective_logic_reg, tracing=False)
+    facts = [(f.pred, f.polarity) for f in r.store.by_kind(Atom)]
+    assert facts == [("czech choral conductor", False)]
+
+
+def test_no_category_means_no_atom_decomposition(logic_reg):
+    from rulekit.kernel.model import Atom
+
+    r = engine.solve("Rex is a coconut tree.", logic_reg, tracing=False)
+    assert {f.pred for f in r.store.by_kind(Atom)} == {"coconut tree"}
+
+
+# ---- the fold's laxities still cannot reach a verdict (no-bridge pins) --------
+
+def test_if_antecedent_cannot_reach_a_verdict(logic_reg):
+    # `at_start` keeps the ground rules off the embedded antecedent, and no
+    # bridge lifts fold facts into the atom layer — a hypothetical must
+    # never answer as an assertion
+    got = _verdict(
+        "If Rex is a dog, then Rex is a barker. Is it true that Rex is a dog?",
+        logic_reg,
+    )
+    assert got in ("undetermined", "decline")
+
+
+def test_passive_junk_cannot_reach_a_verdict(logic_reg):
+    # the fold's be+noun laxity on passives ("mints junk", Phase 0a) stays
+    # quarantined below the verdict layer; the atom's phrase key is exact
+    got = _verdict(
+        "Rex is trained by dogs. Is it true that Rex is a dog?", logic_reg
+    )
+    assert got in ("undetermined", "decline")

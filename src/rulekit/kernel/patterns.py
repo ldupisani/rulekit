@@ -465,6 +465,84 @@ def _canonical_phrase(units: tuple[Unit, ...]) -> str:
     return " ".join(parts)
 
 
+def intersective_split(
+    words: list[str], head_lemma: str, reg: Registry
+) -> tuple[list[str], list[str]]:
+    """THE one definition of the intersectivity contract — learn.py's copular
+    fold and the Atom variant emission below both call this, because a
+    contract with two copies has already drifted (the _ACCOUNTED_VALUE_KINDS
+    lesson).
+
+    `words` is a merged nominal's fold words; returns (intersective, rest)
+    where `intersective` are the modifier words in the opt-in
+    `intersective_modifier` category (a structural NAME — the members live in
+    packs; an empty category means nothing ever splits) and `rest` are the
+    remaining modifiers. Dropping a modifier from a predicate, or asserting
+    it alone, is sound ONLY for intersective ones: "Czech choral conductor"
+    entails "a Czech", but "guard dog" does not entail "a guard" and "former
+    president" does not entail "a president" — which is also why callers
+    must never emit a bare-head variant unless every modifier was stripped
+    as intersective."""
+    mods = words[:-1]
+    inter = [w for w in mods if reg.word_in_category(w, "intersective_modifier")]
+    rest = [w for w in mods if w not in inter]
+    return inter, rest
+
+
+def atom_variants(fact: Fact, emit_fields: dict, slots: dict, reg: Registry) -> list[Fact]:
+    """Intersective decomposition of a rule-emitted Atom — intersection-
+    elimination at the predicate's TOP LEVEL only.
+
+    A positive atom whose pred span leads with a merged nominal ("czech
+    choral conductor who specialized in X") additionally yields the entailed
+    variants: the span with the leading nominal's intersective modifiers
+    stripped ("choral conductor who specialized in x") and each stripped
+    modifier as its own single-word predicate ("czech" — no tail: the
+    modifier predicates the subject directly). Everything after the leading
+    nominal is untouched: stripping inside an ARGUMENT position ("specialized
+    in czech music" -> "specialized in music") is not structurally provable —
+    predicate positions are not uniformly monotone — so only the top-level
+    nominal decomposes. NEGATIVE atoms never decompose (neg(A and B) licenses
+    neither neg(A) nor neg(B)), and quantified cls NEVER strips anywhere (a
+    universal's antecedent is downward-monotone; widening it is unsound)."""
+    if not isinstance(fact, Atom) or fact.polarity is not True:
+        return []
+    raw = emit_fields.get("pred")
+    if not isinstance(raw, str):
+        return []
+    m = _TEMPLATE.fullmatch(raw.strip())
+    if not m or m.group(2) is not None:
+        return []
+    span = slots.get(m.group(1))
+    if not isinstance(span, tuple):
+        return []
+    units = [u for u in span if u.sense() not in SKIPPABLE_SENSES]
+    if not units or units[0].sense() != "noun":
+        return []
+    lead = units[0]
+    words = (lead.features.get("fold") or "").split()
+    if len(words) < 2:
+        return []
+    inter, rest = intersective_split(words, _lemma_of(lead), reg)
+    if not inter:
+        return []
+    tail = _canonical_phrase(tuple(units[1:]))
+    stripped_lead = " ".join(rest + [_lemma_of(lead)])
+    prov = Provenance(
+        source=f"{fact.provenance.source}/intersective",
+        sentence=fact.provenance.sentence,
+    )
+    variants = [
+        Atom(provenance=prov, entity=fact.entity,
+             pred=f"{stripped_lead} {tail}".strip(), polarity=True)
+    ]
+    for w in inter:
+        variants.append(
+            Atom(provenance=prov, entity=fact.entity, pred=w, polarity=True)
+        )
+    return variants
+
+
 def _slot_value(unit: Unit, attr: str | None) -> str:
     if isinstance(unit, tuple):
         # a span slot (MatchToken.span) binds a RUN of units; its only
@@ -672,10 +750,15 @@ def run_rules(
             if not _check_where(rule, m.slots, reading, reg):
                 continue
             provenance = Provenance(source=rule.id, sentence=reading.sentence_index)
-            facts = [
-                _build_fact(e.fields, e.fact, m.slots, reg, provenance, log, rule.id)
-                for e in rule.emits
-            ]
+            facts = []
+            for e in rule.emits:
+                fact = _build_fact(e.fields, e.fact, m.slots, reg, provenance, log, rule.id)
+                facts.append(fact)
+                # intersective decomposition (atom_variants): a no-op unless
+                # the registry declares the opt-in category AND the emitted
+                # fact is a positive span-pred Atom — no benchmark pack does
+                # either, so every benchmark corpus is byte-identical
+                facts.extend(atom_variants(fact, e.fields, m.slots, reg))
             results.append(RuleMatchResult(match=m, facts=facts))
     return results
 
