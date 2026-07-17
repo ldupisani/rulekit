@@ -33,9 +33,20 @@ the 0/0 safety gate, and folio TEST remains governed by the closure rules.
 | v2 kernel half resurrected; pack scoped to scratch | `ed45811` |
 | `_canonical_phrase` Fiedler fix (admitting a word must never loosen a key) | `ed45811` |
 | Qualified-compound membership (fold): loose-match + negated-compound fixes, intersective split | `ce90fa5` |
-| **A. Intersective decomposition of atoms** — shared `intersective_split` contract, top-level-nominal-only, composes with instantiation | this commit |
+| **A. Intersective decomposition of atoms** — shared `intersective_split` contract, top-level-nominal-only, composes with instantiation | `4d57816` |
+| **Stage 1: copular if-then conditionals** — Conditional fact + 3-antecedent synth; someone-form emits `quantified`; fail-closed variants pinned | `3afae6f` |
+| **Stage 2.1: restrictive relative clauses drop** (structural, marker adjacent to lead) | `60b0e76` |
+| **Stage 2.2: PP restrictions drop** (quantifier-guarded — 'a friend of no person' never drops) + the fold's negated-PP suppression | `87e4b2e` |
+| **Stage 2.3: conjunctive predicates assert both conjuncts** — `conjunctive_marker` category gate ('or' is ALSO conjunction-sensed; a sense gate split disjunctions — caught by test before ship) | `1813bfe` |
+| **Stage 2.4: Quantified.pred / Conditional.then_pred decompose** — `_DECOMPOSABLE_FIELDS`, upward-monotone consequents only, cls pinned unstrippable | this commit |
 
-## Stage 1 — copular conditionals (the largest measured premise family)
+Folio dev-train through the scratch registry after Stage 2: still **1 commit /
+0 wrong / 494** — the remaining vetoes are CLAUSE-level conjunctions ("X is a
+Y, and it is Z") and disjunctive universals, i.e. Stage 3's material. The
+compounding thesis is unrefuted but also unproven until then; every stage so
+far is bought by its synthetic contracts, not by folio yield.
+
+## Stage 1 — copular conditionals (the largest measured premise family) — DONE
 
 83 of the 170 copular-conclusion folio dev-train stories contain an if-then
 premise (the ladder simulation's histogram). Shapes, narrowest first:
@@ -60,7 +71,7 @@ Soundness notes settled in advance:
   sentence-level unread-monotonicity covers it; write the argument down in
   the rules header when landing.
 
-## Stage 2 — decomposition siblings (more intersection-elimination)
+## Stage 2 — decomposition siblings (more intersection-elimination) — DONE
 
 Each is the A pattern in a different construction, each its own increment:
 

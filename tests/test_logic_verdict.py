@@ -419,3 +419,47 @@ def test_negative_conjunction_stays_whole(logic_reg):
     assert [(f.pred, f.polarity) for f in r.store.by_kind(Atom)] == [
         ("dog and cat", False)
     ]
+
+
+# ---- Stage 2.4: Quantified.pred / Conditional.then_pred decompose -------------
+# (upward-monotone consequents only; cls NEVER strips — downward-monotone)
+
+def test_quantified_pred_decomposes(intersective_logic_reg):
+    got = _verdict(
+        "Ann is a european. Every european is a czech conductor. "
+        "Is it true that Ann is a conductor?", intersective_logic_reg)
+    assert got == "yes"
+
+
+def test_quantified_cls_never_decomposes(intersective_logic_reg):
+    # widening the antecedent is unsound: a conductor is not thereby a
+    # czech conductor
+    got = _verdict(
+        "Ann is a conductor. Every czech conductor is a european. "
+        "Is it true that Ann is a european?", intersective_logic_reg)
+    assert got in ("undetermined", "decline")
+
+
+def test_negative_quantified_pred_stays_whole(intersective_logic_reg):
+    from rulekit.kernel.model import Quantified
+
+    r = engine.solve("No european is a czech conductor.",
+                     intersective_logic_reg, tracing=False)
+    assert [(f.pred, f.polarity) for f in r.store.by_kind(Quantified)] == [
+        ("czech conductor", False)
+    ]
+
+
+def test_quantified_pred_relative_drop_chains(logic_reg):
+    got = _verdict(
+        "Rex is a student. Every student is a person who studies. "
+        "Is it true that Rex is a person?", logic_reg)
+    assert got == "yes"
+
+
+def test_conditional_then_pred_decomposes(intersective_logic_reg):
+    got = _verdict(
+        "Rex is a dog. Rex is hungry. "
+        "If a dog is hungry, then it is a czech conductor. "
+        "Is it true that Rex is a conductor?", intersective_logic_reg)
+    assert got == "yes"

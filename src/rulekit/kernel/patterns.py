@@ -497,10 +497,27 @@ def intersective_split(
 _RELATIVE_MARKER_SENSES = ("interrogative", "complementizer", "wh_which")
 
 
+# Which fact kinds decompose, and on WHICH field. Only UPWARD-monotone
+# positions may ever appear here: Atom.pred (a ground predicate),
+# Quantified.pred and Conditional.then_pred (consequents). Quantified.cls and
+# Conditional.cls/pred are ANTECEDENTS — downward-monotone; stripping there
+# WIDENS the quantification and is unsound everywhere, forever.
+_DECOMPOSABLE_FIELDS = {Atom: "pred", Quantified: "pred", Conditional: "then_pred"}
+
+
 def atom_variants(fact: Fact, emit_fields: dict, slots: dict, reg: Registry) -> list[Fact]:
-    """Decomposition of a rule-emitted Atom — intersection-elimination at the
-    predicate's TOP LEVEL only. Two constructions decompose (each an
-    entailment English licenses structurally):
+    """Decomposition of a rule-emitted fact's PREDICATE field —
+    intersection-elimination at the predicate's TOP LEVEL only, for the
+    upward-monotone positions in _DECOMPOSABLE_FIELDS (Stage 2.4 widened
+    this from Atom.pred to Quantified.pred and Conditional.then_pred: "Every
+    european is a czech conductor" also quantifies 'conductor' and 'czech',
+    and synth-derived atoms inherit the decomposition transitively because
+    every variant quantified/conditional instantiates separately).
+    POSITIVE-polarity facts only — under negation the consequent position
+    flips downward ("no dog is a czech mammal" says nothing about mammals).
+
+    Two constructions decompose (each an entailment English licenses
+    structurally):
 
     - INTERSECTIVE MODIFIERS on the leading nominal (Stage A, category-gated):
       "czech choral conductor who ..." additionally yields the span with the
@@ -522,9 +539,10 @@ def atom_variants(fact: Fact, emit_fields: dict, slots: dict, reg: Registry) -> 
     NEGATIVE atoms never decompose (neg(A and B) licenses neither neg(A) nor
     neg(B)), and quantified cls NEVER strips anywhere (a universal's
     antecedent is downward-monotone; widening it is unsound)."""
-    if not isinstance(fact, Atom) or fact.polarity is not True:
+    field_name = _DECOMPOSABLE_FIELDS.get(type(fact))
+    if field_name is None or getattr(fact, "polarity", None) is not True:
         return []
-    raw = emit_fields.get("pred")
+    raw = emit_fields.get(field_name)
     if not isinstance(raw, str):
         return []
     m = _TEMPLATE.fullmatch(raw.strip())
@@ -596,7 +614,9 @@ def atom_variants(fact: Fact, emit_fields: dict, slots: dict, reg: Registry) -> 
                     # modifier was stripped as intersective
                     preds.append(" ".join(s_rest + [lm]))
                     preds.extend(s_inter)
-    seen = {fact.pred}
+    import dataclasses
+
+    seen = {getattr(fact, field_name)}
     prov = Provenance(
         source=f"{fact.provenance.source}/intersective",
         sentence=fact.provenance.sentence,
@@ -606,7 +626,7 @@ def atom_variants(fact: Fact, emit_fields: dict, slots: dict, reg: Registry) -> 
         if p and p not in seen:
             seen.add(p)
             variants.append(
-                Atom(provenance=prov, entity=fact.entity, pred=p, polarity=True)
+                dataclasses.replace(fact, provenance=prov, **{field_name: p})
             )
     return variants
 
