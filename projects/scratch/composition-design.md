@@ -166,6 +166,22 @@ conversions null-controlled. Folio-with-logic dev-train: 3 → 5 correct.
 Lesson for S1: **walk the buyer's WHOLE story before sizing a stack —
 the fragment guard prices every unread sentence into the item.**
 
+**S1a is BUILT (`e2b2aed`) — the ACTIVE half of S1, chosen by walking the
+Ailton story first.** The story has two gold-False conclusions; the
+"does not play for a football club" one needed only the active
+relative-clause VR (`logic/relative-verbal-pp`, new `preposition` slot
+type) + the negated PP-object ask/consumer — the membership side
+('Náutico ∈ football club' through "…along with Braga") was ALREADY
+derivable via Stage 2.2's PP drop. Folio-with-logic dev-train 5 → 6
+correct, null-controlled ×3. The PASSIVE half ("who was loaned out to
+Braga" → the second Ailton conclusion) stays deferred: it needs phrasal
+particles ('loaned OUT to'), a passive-relative reading, and 'along
+with' distribution for Braga's own clubhood — three pieces for one
+item. No positive-form PP ask either (ranking tie with embedded-verbal;
+exclusion-or-nothing). Top-level VR-PP premises ("X plays for Náutico"
+unembedded) also stay unbuilt — no measured buyer yet; the rule is
+five minutes of work the day one appears.
+
 ## 4. Hazards designed out in advance (each becomes a pinned test)
 
 1. **Definite/indefinite conflation** — Phase 0 above; pin both directions.
