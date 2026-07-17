@@ -28,6 +28,22 @@ rules:
     emit:
       - {fact: quantified, cls: A, pred: C, polarity: POL}
 
+  # M⊆F, P∩F=∅  ⊢  P∩M=∅   (Stage 8: negative chain through the
+  # SUPERCLASS — anything in both P and M would be in F. The contraposed
+  # sibling of universal-chain: there the negative rides in the SECOND
+  # hop's pred position (A⊆B, no B are C); here the two universals SHARE
+  # the pred ("Mushrooms are fungi. No plants are fungi." ⊢ no plants are
+  # mushrooms). Not derivable from universal-chain: its first hop must be
+  # positive and nothing chains FROM a ∀¬ fact.)
+  - id: synth/negative-chain
+    when:
+      - {fact: quantified, cls: M, pred: F, polarity: true}
+      - {fact: quantified, cls: P, pred: F, polarity: false}
+    unless:
+      - {fact: quantified, cls: P, pred: M}
+    emit:
+      - {fact: quantified, cls: P, pred: M, polarity: false}
+
   # x ∈ C, P(x), ∀C: P→[¬]Q  ⊢  [¬]Q(x)   (Stage 1: conditional
   # instantiation — BOTH antecedent atoms must be POSITIVE; a negative atom
   # licenses nothing, exactly as universal-instantiation's gate)

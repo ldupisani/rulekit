@@ -98,6 +98,71 @@ rules:
     emits:
       - {fact: quantified, cls: "{cls}", pred: "{pred}", polarity: false}
 
+  # ---- Stage 8: BARE-PLURAL universals — "CLS are [not] PRED" ---------------
+  # FOLIO's FOL reads a bare-plural copular generic as ∀ ("Mushrooms are
+  # fungi" ⇒ ∀x mushroom(x)→fungus(x)); 57 dev-train premises carry the
+  # shape (measured 2026-07-17). The subject is ONE unit, two variants:
+  #   - type: bare_plural — a KNOWN plural noun that can head a generic
+  #     ('Dogs are animals'): refuses possessive-merged subjects ("Bob's
+  #     dogs are friendly" is definite reference), compound generics
+  #     ("Guard dogs are protective" stays unread — monotone-safe), and
+  #     COUNT-merged subjects ("Three dogs are pets" is three particular
+  #     dogs — merge-count leaves exactly a plural noun unit, caught by an
+  #     adversarial probe after the first test round passed clean).
+  #   - type: proper_name — an UNKNOWN capitalized subject ('Mushrooms')
+  #     annotates as a name; proper_name (NOT `name`) so a resolved pronoun
+  #     can never mint a universal from "They are dogs".
+  # Both refuse a skipped DEFINITE article (blocks_skipped: "The dogs are
+  # hungry" is ground, not generic) and negation in the subject position by
+  # construction (a single unit carries none). The -not variants are
+  # UNAMBIGUOUS ∀¬ — unlike "All X are not Y" (dropped for ∀¬-vs-¬∀ scope),
+  # a bare plural has no quantifier for negation to out-scope: "Mushrooms
+  # are not plants" reads only as ∀¬ (19 such premises measured).
+  # The quantifier-led forms cannot reach these rules: 'all'/'no'/'every'
+  # are not skippable senses, so at_start fails on them and the quantified
+  # rules above keep their territory.
+  - id: logic/universal-bare-plural-noun
+    phase: read
+    match:
+      sentence:
+        - {slot: cls, type: bare_plural, at_start: true, blocks_skipped: definite_article}
+        - {lit: are}
+        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
+    emits:
+      - {fact: quantified, cls: "{cls}", pred: "{pred}", polarity: true}
+
+  - id: logic/universal-bare-plural-noun-not
+    phase: read
+    match:
+      sentence:
+        - {slot: cls, type: bare_plural, at_start: true, blocks_skipped: definite_article}
+        - {lit: are}
+        - {lit: not}
+        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
+    emits:
+      - {fact: quantified, cls: "{cls}", pred: "{pred}", polarity: false}
+
+  - id: logic/universal-bare-plural-name
+    phase: read
+    match:
+      sentence:
+        - {slot: cls, type: proper_name, at_start: true, blocks_skipped: definite_article}
+        - {lit: are}
+        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
+    emits:
+      - {fact: quantified, cls: "{cls}", pred: "{pred}", polarity: true}
+
+  - id: logic/universal-bare-plural-name-not
+    phase: read
+    match:
+      sentence:
+        - {slot: cls, type: proper_name, at_start: true, blocks_skipped: definite_article}
+        - {lit: are}
+        - {lit: not}
+        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
+    emits:
+      - {fact: quantified, cls: "{cls}", pred: "{pred}", polarity: false}
+
   # ---- ground atoms: "<Name> is/was [not] [a] PRED", "<Name> <verb> REST" --
   - id: logic/ground-copular-is
     phase: read

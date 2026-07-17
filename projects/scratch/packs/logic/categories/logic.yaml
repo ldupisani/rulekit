@@ -27,7 +27,16 @@ categories:
     # indefinite_article on every name-subject slot) reuses CORE-ENGLISH's
     # existing `indefinite_article` category (created for generic unit-price
     # premises — the same a/an-vs-the distinction). No definition here.
+    # Stage 8: the bare-plural universal rules refuse a DEFINITE subject —
+    # "The dogs are hungry" / "The Beatles are a band" are GROUND statements
+    # about particular referents, not generics, and 'the' is auto-skipped
+    # (article sense) so only a blocks_skipped gate can see it. Mirror of
+    # core-english's indefinite_article (the same a/an-vs-the distinction,
+    # from the other side).
+    definite_article:
+        parent: article
 members:
     conjunctive_marker: [and]
     disjunctive_marker: [or]
     either_marker: [either]
+    definite_article: [the]

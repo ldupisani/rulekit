@@ -133,6 +133,23 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
             return sense == "name"
         if t == "noun":
             return sense == "noun"
+        if t == "proper_name":
+            # NAME sense only — no resolved-pronoun path (schemas.SLOT_TYPES:
+            # a pronoun subject is definite reference, and the bare-plural
+            # universal rule must never read "They are dogs" as a generic)
+            return sense == "name"
+        if t == "bare_plural":
+            # a plural noun that can head a GENERIC (schemas.SLOT_TYPES):
+            # possessive-merged, attribute-merged and COUNT-merged units all
+            # refuse — "Three dogs are pets" is three particular dogs, and
+            # merge-count leaves exactly a plural noun unit behind
+            return (
+                sense == "noun"
+                and unit.features.get("number") == "plural"
+                and unit.features.get("owner") is None
+                and unit.features.get("qualifier") is None
+                and kind != "count"
+            )
         if t == "entity":
             # anything that can HOLD a quantity: a name, a common noun
             # ("the factory"), or a resolved pronoun

@@ -174,6 +174,19 @@ SLOT_TYPES = (
     # verbal logic rules gate on this so 'is'/'was' sentences stay the
     # copular rules' territory (the v1 'be'-twin lesson)
     "nonstate_verb",
+    # a NAME-SENSED unit ONLY — unlike `name`, a resolved pronoun never
+    # satisfies it. The bare-plural universal rule reads "Mushrooms are
+    # fungi" as a GENERIC (∀), and a pronoun subject is definite reference
+    # ("They are dogs" states a fact about the antecedents) — admitting it
+    # would mint a universal from a ground statement.
+    "proper_name",
+    # a plural common noun that can head a GENERIC: sense noun, number
+    # plural, no `owner` (a possessive subject is definite reference), no
+    # `qualifier` (compound generics stay unread — monotone-safe), and NO
+    # count value — merge-count folds "Three dogs" into one plural NOUN
+    # unit, and "Three dogs are pets" is about three particular dogs, not
+    # dogkind (caught by an adversarial probe, not the first test round).
+    "bare_plural",
     # a COORDINATE TUPLE ("(3,4)", "(1,2)") — numbers.py's _TUPLE gives it
     # value_kind "tuple" and a `components` feature; senses.py gives it the
     # `tuple` sense. Structurally disjoint from every other slot type: no
