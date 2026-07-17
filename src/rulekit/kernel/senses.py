@@ -95,6 +95,17 @@ def annotate_senses(reading: Reading, reg: Registry) -> Reading:
             and surface[1:].islower()
             and unit.words[0].index > 0
             and not reg.word_in_category(fold, "timeperiod")
+            # a QUANTIFIER's capital is never a naming signal: an embedded
+            # clause keeps its sentence-initial capital ("Is it true that No
+            # plants are mushrooms?" — the FOLIO wrapper construction), and a
+            # name-annotated 'No' binds ground-ask subject slots while the
+            # quantifier meaning vanishes. Same structural shape as the
+            # timeperiod exemption above; sense reference, never a word list.
+            # Measured trade: quantifier-headed REAL names are one item across
+            # all seven DEV corpora ('All Goods Available store', declines
+            # before and after) vs 78 wrapper-capitalized quantifier
+            # conclusions in folio dev-train alone.
+            and "quantifier" not in entry.senses
         ):
             prev = _previous_word_unit(reading, unit)
             prev_fold = prev.features.get("fold") if prev is not None else None
