@@ -2919,7 +2919,16 @@ def answer(
         entity = query["entity"]
         pred = query["pred"]
         pol = query.get("polarity", "true") == "true"
+        # Phase 0 (composition-design.md): a definite-DESCRIPTION question
+        # ('…the football club?') is never satisfied by an indefinite
+        # premise ('…a football club') — the shared flat key hides the
+        # article, so the bit rides on the atom and the ask field
+        from .patterns import field_definite_common
+
+        q_defcom = field_definite_common(ask, "pred", _match, question, reg)
         for f in store.by_kind(Atom):
+            if q_defcom and f.indef_obj:
+                continue
             if f.entity == entity and f.pred == pred:
                 # open-world, polarity-aware: a stored negative answers 'no'
                 # to the positive question and 'yes' to the negated one; the
@@ -2962,8 +2971,15 @@ def answer(
                     f"existential {cls_p!r}/{pred!r} "
                     f"({'+' if f.polarity else '-'}) via {f.provenance.source}",
                 )
+        # Phase 0: an indefinite-premise atom never witnesses a definite-
+        # description pred (same contract as logic-verdict above)
+        from .patterns import field_definite_common
+
+        q_defcom = field_definite_common(ask, "pred", _match, question, reg)
         in_cls = {f.entity for f in store.by_kind(Atom) if f.pred == cls_p and f.polarity}
         for f in store.by_kind(Atom):
+            if q_defcom and f.indef_obj:
+                continue
             if f.entity in in_cls and f.pred == pred and f.polarity == pol:
                 return Answer(
                     "verdict", "yes",
@@ -3014,8 +3030,15 @@ def answer(
                     f"universal {cls_p!r}/{pred!r} "
                     f"({'+' if pol else '-'}) via {f.provenance.source}",
                 )
+        # Phase 0: an indefinite-premise atom is no counterexample to a
+        # definite-description pred (composition-design.md)
+        from .patterns import field_definite_common
+
+        q_defcom = field_definite_common(ask, "pred", _match, question, reg)
         in_cls = {f.entity for f in store.by_kind(Atom) if f.pred == cls_p and f.polarity}
         for f in store.by_kind(Atom):
+            if q_defcom and f.indef_obj:
+                continue
             if f.entity in in_cls and f.pred == pred and f.polarity == (not pol):
                 return Answer(
                     "verdict", "no",

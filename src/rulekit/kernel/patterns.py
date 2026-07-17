@@ -264,6 +264,73 @@ def _lemma_of(unit: Unit) -> str:
     return unit.features.get("lemma", unit.features.get("fold", unit.surface.lower()))
 
 
+def _span_article_units(span: tuple, reading) -> list[tuple]:
+    """(article_unit, successors) pairs for a span — its INTERNAL articles
+    plus any article on its physical LEADING EDGE. The pre-token skip loop
+    advances past leading skippables before a span starts capturing ("is A
+    dog" — the article sits between the consumed lit and span[0]), so a
+    span-internal scan alone misses exactly the copular construction; the
+    walk-back over skippable predecessors is the blocks_skipped precedent."""
+    pairs = []
+    for i, u in enumerate(span):
+        if u.sense() == "article":
+            pairs.append((u, span[i + 1:]))
+    if reading is not None and span:
+        first = span[0]
+        idx = next(
+            (k for k, u in enumerate(reading.units) if u is first), None
+        )
+        j = (idx or 0) - 1
+        while idx is not None and j >= 0:
+            u = reading.units[j]
+            if u.sense() not in SKIPPABLE_SENSES:
+                break
+            if u.sense() == "article":
+                pairs.append((u, span))
+                break
+            j -= 1
+    return pairs
+
+
+def span_swallowed_indefinite(span: tuple, reading, reg: Registry) -> bool:
+    """The span's phrase was INDEFINITE — an 'a'/'an' rode inside it or on
+    its leading edge (dropped from the key either way, being skippable)."""
+    return any(
+        reg.word_in_category(u.features.get("fold", ""), "indefinite_article")
+        for u, _tail in _span_article_units(span, reading)
+    )
+
+
+def field_definite_common(ask, field: str, match, reading, reg: Registry) -> bool:
+    """True when the ask FIELD's span carries a DEFINITE article (internal
+    or leading-edge) whose next nominal — past adjectives and skippables —
+    is a COMMON noun: the question phrase is a definite DESCRIPTION ('the
+    football club'), which must never be satisfied by an indefinite premise
+    (composition-design.md Phase 0). A definite-surfaced NAME ('the Emmet
+    Building', 'the United Kingdom') is NOT a description — the article is
+    part of the name's surface — so a name successor passes. Scoped to the
+    one field: a definite article in the question's OTHER spans must not
+    poison unrelated matches."""
+    tpl = ask.resolves.get(field, "")
+    for mm in _TEMPLATE.finditer(tpl):
+        span = match.slots.get(mm.group(1))
+        if not isinstance(span, tuple):
+            continue
+        for art, successors in _span_article_units(span, reading):
+            if not reg.word_in_category(
+                art.features.get("fold", ""), "definite_article"
+            ):
+                continue
+            for nxt in successors:
+                s = nxt.sense()
+                if s in SKIPPABLE_SENSES or s == "adjective":
+                    continue
+                if s == "noun":
+                    return True
+                break
+    return False
+
+
 def qualified_render(words: list[str], lemma: str) -> str:
     """THE one definition of the qualified-phrase render: a unit's fold words
     with the head canonicalized to the lemma ('chocolate dogs' -> 'chocolate
@@ -847,11 +914,24 @@ _NUMERIC_FIELDS = {
 def _build_fact(
     emit_fields: dict, fact_kind: str, slots: dict[str, Unit], reg: Registry,
     provenance: Provenance, log: ArithmeticLog | None, rule_id: str,
+    reading=None,
 ) -> Fact:
     cls = _FACT_CLASSES[fact_kind]
     kwargs = {}
     for key, raw in emit_fields.items():
         kwargs[key] = _resolve_field(raw, slots, reg, key in _NUMERIC_FIELDS, log, rule_id)
+    if cls is Atom and "indef_obj" not in kwargs:
+        # composition-design.md Phase 0: record whether the pred's span
+        # swallowed an INDEFINITE article (skippable, so it drops out of the
+        # phrase key) — 'plays for a football club' must not later answer
+        # "…plays for THE football club?" (model.Atom.indef_obj)
+        pred_tpl = emit_fields.get("pred")
+        if isinstance(pred_tpl, str):
+            kwargs["indef_obj"] = any(
+                span_swallowed_indefinite(slots[mm.group(1)], reading, reg)
+                for mm in _TEMPLATE.finditer(pred_tpl)
+                if isinstance(slots.get(mm.group(1)), tuple)
+            )
     if cls in (Quantity, FractionQuantity, RestQuantity) and "occurrence" not in kwargs:
         # a rule-emitted quantity is an event unless its verb is stative
         verb = kwargs.get("verb", "have")
@@ -927,7 +1007,10 @@ def run_rules(
             provenance = Provenance(source=rule.id, sentence=reading.sentence_index)
             facts = []
             for e in rule.emits:
-                fact = _build_fact(e.fields, e.fact, m.slots, reg, provenance, log, rule.id)
+                fact = _build_fact(
+                    e.fields, e.fact, m.slots, reg, provenance, log, rule.id,
+                    reading=reading,
+                )
                 facts.append(fact)
                 # intersective decomposition (atom_variants): a no-op unless
                 # the registry declares the opt-in category AND the emitted

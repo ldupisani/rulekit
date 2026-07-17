@@ -219,6 +219,17 @@ class Atom(Fact):
     entity: str
     pred: str
     polarity: bool = True
+    # True when the emitting span swallowed an INDEFINITE article ('a'/'an')
+    # — the pred describes SOME object, not a particular one. Articles are
+    # skippable senses and drop out of the phrase key, so 'plays for a
+    # football club' and 'plays for THE football club' share one key; this
+    # bit is what lets a consumer refuse the unsound cell of that matrix
+    # (indefinite premise answering a definite-description question —
+    # composition-design.md Phase 0). Deliberately NOT part of key() or
+    # value_part(): two atoms differing only here are one fact, and either
+    # dedup survivor is safe — a definite survivor answers (sound), an
+    # indefinite survivor makes the definite question decline (monotone).
+    indef_obj: bool = False
 
     def key(self) -> tuple:
         return ("logic-atom", self.entity, self.pred)
