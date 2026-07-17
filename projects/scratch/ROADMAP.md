@@ -319,6 +319,33 @@ bridge alone converts ~nothing: shortest complete stack is S2
 S1 (adds relative-clause predication, the Stage 7 substring-bridge
 class). Build in that order; nothing lands without its stack's buyer.
 
+## FOLIO TEST look #3 — SPENT 2026-07-17 (user-directed, below the closure threshold)
+
+**1 correct / 1 wrong / 283 declined of 285** (ledger row 3; the harness
+withholds items on TEST — aggregate-only, so nothing was mined). Spent at
+6 null-controlled DEV commits, below the closure's ~10–30 precondition,
+by explicit user direction. What it says and does not say:
+
+- **Precision vs the last look ROSE (0% → 50%), so the revert rule does
+  not trigger** — and this is the first folio TEST look ever to score a
+  correct (looks #1–#2: 0/1 each, surfaces reverted).
+- **It mostly measured a coin, as the closure predicted.** At ~2 commits
+  on a corpus whose verdict golds are near-binary, 1-right-1-wrong is
+  consistent with guessing AND with one real capability plus one bad
+  item. The information bought is small; the 6 DEV null controls remain
+  the real evidence for the stack.
+- **The 1 wrong is a standing liability, deliberately undiagnosed.**
+  Candidate explanations that cannot be distinguished without mining
+  TEST (forbidden): a TEST-side poisoned gold (DEV carries 1 FOL-verified
+  annotation error in 494 → ~0.6 expected per 285 — entirely plausible),
+  or a real unsoundness no DEV item phrases. Unlike looks #1–#2 the
+  machinery now explains every verdict with a provenance reason string,
+  so IF a future in-DEV witness of the same shape appears it will be
+  attributable.
+- **Next look waits for a CLASS**: keep building (S1, locative on
+  re-measure) with per-commit null controls; re-look only when the DEV
+  commit count is a multiple of what a coin can imitate.
+
 ## Stage 5 — the gate back to FOLIO (only if/when wanted)
 
 **Precondition 1 is BUILT** (the indefinite-existential gate): every
