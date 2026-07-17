@@ -222,6 +222,30 @@ blockers, in buying order** (each is its own increment; measure first):
   the premise's 'a barker' is singular — echo-exact keys miss. A general
   lever (affects every span key), price it as one.
 
+## Stage 8 — bare-plural universals + negative chain (2026-07-17) — DONE
+
+`a0f98b9`. "Mushrooms are fungi" read as ∀ (FOLIO's FOL convention; 57
+dev-train premises + 19 negated, measured). Four premise rules, subject =
+ONE unit: new slot types `bare_plural` (plural noun, no owner/qualifier/
+COUNT — "Three dogs are pets" passed the first test round and was caught
+by an adversarial probe; the tests are the specification, but only of what
+they phrase) and `proper_name` (name sense only — `name` admits resolved
+pronouns, and "They are dogs" must never mint a generic). Definite
+subjects refused via the pack's `definite_article` category. The -not
+variants are unambiguous ∀¬ (no quantifier to out-scope, unlike the
+dropped "All X are not Y"). synth/negative-chain (M⊆F ∧ P∩F=∅ ⊢ P∩M=∅)
+landed WITH its buyer: folio dev-train 1 → **2 correct** (+1 SOLVED /
+0 BROKE), the exact predicted plants/mushrooms derivation, all four null
+controls move. Compound generics ("Guard dogs are protective") stay
+unread — a measured coverage hole, not a hazard.
+
+Still open from the Stage 7 blocker list: verbal universal conclusions,
+unknown-plural morphology, the ∀¬-symmetry synth (q(A,B,-) ⊢ q(B,A,-) —
+sound, pinned as deliberately unbuilt in
+test_negative_chain_wrong_direction_stays_open until a buyer is measured),
+and bare-plural DISJUNCTIVE premises ("Surprises are either fun or
+dreadful" — the qdisj rules' cls is quantifier-led only).
+
 ## Stage 5 — the gate back to FOLIO (only if/when wanted)
 
 **Precondition 1 is BUILT** (the indefinite-existential gate): every
