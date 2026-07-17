@@ -139,3 +139,39 @@ def test_all_are_not_stays_unread(logic_reg):
         logic_reg,
     )
     assert got in ("undetermined", "decline")
+
+
+# ---- Stage 8b: the verbal 'some' conclusion (existential witness) -------------
+
+def test_some_verbal_conclusion_by_witness(logic_reg):
+    assert _verdict(
+        "Rex eats mice. Rex is a dog. "
+        "Is it true that some dog eats mice?", logic_reg
+    ) == "yes"
+
+
+def test_some_verbal_null_control(logic_reg):
+    got = _verdict(
+        "Rex eats mice. Rex is a dog. "
+        "Is it true that some mouse eats mice?", logic_reg
+    )
+    assert got in ("undetermined", "decline")
+
+
+def test_some_verbal_wrapper_capitalized(logic_reg):
+    # the FOLIO wrapper capitalizes 'Some'; the quantifier exemption
+    # (senses.py) keeps it a quantifier and the lit matches its fold
+    assert _verdict(
+        "Rex eats mice. Rex is a dog. "
+        "Is it true that Some dog eats mice?", logic_reg
+    ) == "yes"
+
+
+def test_do_support_negation_stays_unread(logic_reg):
+    # "Some pets do not have fur": 'do' is not verb-sensed, so the verbal
+    # 'some' ask cannot claim it — the do-support family is its own
+    # increment, and half-reading it here would mint pred='do ...' keys
+    got = _verdict(
+        "Rex is a pet. Is it true that some pets do not have fur?", logic_reg
+    )
+    assert got in ("undetermined", "decline")

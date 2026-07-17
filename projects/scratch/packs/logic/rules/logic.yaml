@@ -737,6 +737,31 @@ asks:
       pred: "{pred}"
       polarity: "false"
 
+  # ---- Stage 8b: the VERBAL 'some' conclusion — "Is it true that Some CLS
+  # <verb> P?" ("Some soccer team holds the Lithuanian Super Cup", gold True
+  # — the measured buyer; its witness is a ground-verbal atom + a copular
+  # membership). Reuses the Stage 4 existential-verdict consumer verbatim:
+  # yes from a WITNESS entity holding atom(e, cls) ∧ atom(e, 'v p'), no only
+  # from a refuting negative universal, else undetermined. The v slot's
+  # nonstate_verb gate keeps do-support negation OUT ("Some pets DO not have
+  # fur" — 'do' is not verb-sensed, the sentence stays unread; pinned).
+  - id: ask/logic-existential-some-verbal
+    match:
+      question:
+        - {lit: is, at_start: true}
+        - {lit: it}
+        - {lit: 'true'}
+        - {lit: that}
+        - {lit: some}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
+        - {slot: v, type: nonstate_verb}
+        - {slot: p, span: true, span_blocks: [negation, disjunctive_marker], span_blocks_counted: true}
+    resolves:
+      consumer: existential-verdict
+      cls: "{cls}"
+      pred: "{v} {p}"
+      polarity: "true"
+
   - id: ask/logic-disj-embedded-bare
     match:
       question:
