@@ -239,12 +239,39 @@ landed WITH its buyer: folio dev-train 1 → **2 correct** (+1 SOLVED /
 controls move. Compound generics ("Guard dogs are protective") stay
 unread — a measured coverage hole, not a hazard.
 
-Still open from the Stage 7 blocker list: verbal universal conclusions,
-unknown-plural morphology, the ∀¬-symmetry synth (q(A,B,-) ⊢ q(B,A,-) —
-sound, pinned as deliberately unbuilt in
-test_negative_chain_wrong_direction_stays_open until a buyer is measured),
-and bare-plural DISJUNCTIVE premises ("Surprises are either fun or
-dreadful" — the qdisj rules' cls is quantifier-led only).
+Still open from the Stage 7 blocker list: unknown-plural morphology, the
+∀¬-symmetry synth (q(A,B,-) ⊢ q(B,A,-) — sound, pinned as deliberately
+unbuilt in test_negative_chain_wrong_direction_stays_open until a buyer is
+measured), and bare-plural DISJUNCTIVE premises ("Surprises are either fun
+or dreadful" — the qdisj rules' cls is quantifier-led only).
+
+## Stage 8c — tokenizer Unicode + the verbal 'some' conclusion (2026-07-17) — DONE
+
+- `2dd5eb8` **_TOKEN letter class is Unicode**: the ASCII class shredded a
+  word at its first diacritic ('Sūduva' -> 's' + 'duva', 'Léa' -> 'L' +
+  phantom ARTICLE 'a'). Exposure measured first: gsm8k 9 DEV items (all
+  decline before AND after), scibench 7, folio 17, zero elsewhere; ASCII
+  tokenization pinned byte-identical. This unlocked the Sūduva premises
+  (previously ZERO facts) and surfaced Stage 8's second conversion on
+  folio dev-HOLDOUT (sports cars / family automobiles via negative-chain,
+  null-controlled — first measurement of holdout with the pack).
+- `6e20158` **ask/logic-existential-some-verbal**: "Some CLS <verb> P?"
+  reusing the Stage 4 consumer's witness path verbatim. Buyer measured
+  BEFORE building (the Super Cup item, gold True), converted on landing:
+  folio dev-train 2 -> **3 correct** (+1 SOLVED / 0 BROKE), all four null
+  controls move. do-support negation pinned unread ('do' is not
+  verb-sensed — its own increment).
+
+**Verbal universal conclusion asks (all/no × verbal) were MEASURED AND
+DEFERRED, not built**: every unmatched verdict-gold item needs machinery
+beyond the ask — Ambiortus/live needs the definite description "the ONLY
+known species", "All birds swim" (gold False) needs a never-generic
+premise ("A hawk never swims") + refutation of ∀ by ∃¬, Turing/sergeants/
+business-owner need relative-clause predication or list-membership
+distribution. An ask family with zero convertible buyers is an unbought
+enabler; the misbinding Stage 7 closed does not recur here (these
+conclusions currently just decline). Re-measure after the witness-side
+machinery lands.
 
 ## Stage 5 — the gate back to FOLIO (only if/when wanted)
 
