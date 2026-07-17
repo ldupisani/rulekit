@@ -125,10 +125,13 @@ def test_negative_atom_licenses_nothing(logic_reg):
 # ---- the fragment guard --------------------------------------------------------
 
 def test_unconsumed_quantifier_vetoes_verdict(logic_reg):
-    # 'some' has quantifier sense but NO logic rule reads it -> the story is
-    # only partially supported and no verdict may commit, even though a ground
-    # fact matches the question
-    text = ("Rex is a dog. Some dogs are pets. "
+    # the fragment guard's contract: a truth-scoping word NO rule reads
+    # vetoes the story. Stage 4 gave 'some' a reader (the sentence that
+    # originally pinned this now commits — test_some_premise_no_longer_vetoes),
+    # so the pin moves to a quantifier surface that remains UNREAD: every
+    # reader is at_start-anchored, so a MID-SENTENCE quantifier has no rule
+    # and must still veto (readers are construction-scoped, not word-scoped)
+    text = ("Rex is a dog. Bob owns all the cats. "
             "Is it true that Rex is a dog?")
     r = engine.solve(text, logic_reg, tracing=False)
     assert not r.answer.committed

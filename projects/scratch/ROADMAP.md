@@ -114,7 +114,25 @@ carry disjunctive premises:
    form from DEV gold evidence BEFORE emitting either — a wrong default
    manufactures confident-wrongs in both directions.
 
-## Stage 4 — quantifier morphology and existentials
+## Stage 4 — quantifier morphology and existentials — DONE
+
+Landed: 'any' universals (via the opt-in `consume_skipped` lit flag — 'any'
+is an article, auto-skipped, so no ordinary lit could see it; 'the'/'a'
+still never match, pinned), 'each' universals, "Everyone who is P is [not]
+Q", and 'some' existentials (Existential fact; premises consume the
+quantifier, relaxing the fragment veto by capability; conclusions answered
+by echo, query-time WITNESS, or a refuting NEGATIVE universal — no
+existential import from positive universals).
+
+**Folio dev-train after Stage 4: 2 commits — 1 correct + 1 vs a
+FOL-VERIFIED POISONED GOLD (never chase it).** Story 266 / example 710:
+"All CD players are delicate mechanisms. No delicate mechanisms are
+suitable toys for children. ⊢ Some CD players are suitable toys?" — our
+'no' (chain + ∀¬-refutes-∃) is entailed by the item's OWN premises-FOL,
+and its conclusion-FOL (∃ two distinct suitable CD-player toys) is
+likewise refuted by it; the 'Uncertain' label contradicts the dataset's
+own formalization. The ASDiv London/Blair precedent: a documented
+annotation error, counted neither as a wrong nor as coverage.
 
 - `any`-universals ("Any choral conductor is a musician") — 'any' carries
   the article sense, so the rule needs its own reading; v2's named-next list.

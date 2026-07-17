@@ -250,6 +250,14 @@ class MatchToken(StrictModel):
     # byte-identical (the "opt-in parameter, defaulted to old behavior" rule for
     # any change to a shared matcher).
     at_start: bool = False
+    # OPT-IN: this LITERAL may match a unit whose sense is SKIPPABLE. The
+    # auto-skip loop normally walks straight past articles, so `{lit: any}`
+    # can never see 'any' (an article-sensed word, difg-mined) — with this
+    # flag the skip stops AT the matching word and consumes it as the token.
+    # Only the named word is affected: other skippables are still skipped,
+    # and a sentence without the word fails the match exactly as any lit
+    # does. Default False — every existing rule is byte-identical.
+    consume_skipped: bool = False
     opt: list["MatchToken"] | None = None  # optional sub-sequence
 
     @model_validator(mode="after")
@@ -275,6 +283,8 @@ class MatchToken(StrictModel):
             # which is exactly what `bare` forbids — the combination is always
             # false, so it is a authoring mistake, not a narrow gate.
             raise ValueError(f"`bare` contradicts type {self.type!r} (always false)")
+        if self.consume_skipped and self.lit is None:
+            raise ValueError("`consume_skipped` only qualifies a lit")
         if self.at_start and self.opt is not None:
             # An OPTIONAL sub-sequence that must sit at the start is either not
             # optional or not at the start — the anchor belongs on a token inside
@@ -341,7 +351,7 @@ class FactEmit(StrictModel):
         "before", "fraction_quantity", "rest_quantity", "partition_quantity",
         "ratio_quantity", "goal", "group_total", "rate", "discount",
         "percent_change", "atom", "quantified", "conditional",
-        "disjunction", "quantified_disjunction",
+        "disjunction", "quantified_disjunction", "existential",
     ]
     # remaining fields are fact-kind specific; templated strings "{slot}" or
     # expressions evaluated by the safe evaluator.

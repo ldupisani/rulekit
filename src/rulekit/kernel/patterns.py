@@ -22,6 +22,7 @@ from .model import (
     Conditional,
     Discount,
     Disjunction,
+    Existential,
     Fact,
     Atom,
     FractionQuantity,
@@ -54,6 +55,7 @@ _FACT_CLASSES = {
     "quantified": Quantified,
     "conditional": Conditional,
     "disjunction": Disjunction,
+    "existential": Existential,
     "quantified_disjunction": QuantifiedDisjunction,
     "subset": Subset,
     "predication": Predication,
@@ -256,6 +258,14 @@ def _try_match_at(
                 i = end
             continue
         while i < len(units) and units[i].sense() in SKIPPABLE_SENSES:
+            if (
+                token.lit is not None
+                and token.consume_skipped
+                and units[i].features.get("fold") == token.lit
+            ):
+                # a consume_skipped lit CLAIMS its skippable unit — the skip
+                # stops here and the normal lit match below consumes it
+                break
             i += 1
         if i >= len(units):
             return None

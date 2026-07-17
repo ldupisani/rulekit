@@ -339,6 +339,108 @@ rules:
     emits:
       - {fact: quantified_disjunction, cls: "{cls}", left: "{l}", right: "{r}", exclusive: true}
 
+  # ---- Stage 4: quantifier morphology + existentials (ROADMAP.md) -----------
+  # 'any' is an ARTICLE (difg-mined) — auto-skipped, so an ordinary lit can
+  # never see it; `consume_skipped` (schemas.MatchToken) stops the skip AT
+  # the word and claims it. 'each' is a plain quantifier lit. 'everyone' is
+  # a difg pronoun, matched as a lit (never in a span — a captured pronoun
+  # renders as its antecedent). 'some' rules CONSUME the quantifier, which
+  # relaxes the fragment guard's veto for exactly these sentences — by
+  # capability, never by editing the guard.
+  - id: logic/universal-any-is
+    phase: read
+    match:
+      sentence:
+        - {lit: any, at_start: true, consume_skipped: true}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
+        - {lit: is}
+        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
+    emits:
+      - {fact: quantified, cls: "{cls}", pred: "{pred}", polarity: true}
+
+  - id: logic/universal-any-are
+    phase: read
+    match:
+      sentence:
+        - {lit: any, at_start: true, consume_skipped: true}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
+        - {lit: are}
+        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
+    emits:
+      - {fact: quantified, cls: "{cls}", pred: "{pred}", polarity: true}
+
+  - id: logic/universal-each-is
+    phase: read
+    match:
+      sentence:
+        - {lit: each, at_start: true}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
+        - {lit: is}
+        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
+    emits:
+      - {fact: quantified, cls: "{cls}", pred: "{pred}", polarity: true}
+
+  - id: logic/universal-each-are
+    phase: read
+    match:
+      sentence:
+        - {lit: each, at_start: true}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
+        - {lit: are}
+        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
+    emits:
+      - {fact: quantified, cls: "{cls}", pred: "{pred}", polarity: true}
+
+  - id: logic/universal-everyone-who-is
+    phase: read
+    match:
+      sentence:
+        - {lit: everyone, at_start: true}
+        - {lit: who}
+        - {lit: is}
+        - {slot: p, span: true, span_blocks: [negation, disjunctive_marker]}
+        - {lit: is}
+        - {slot: q, span: true, span_blocks: [negation, disjunctive_marker]}
+    emits:
+      - {fact: quantified, cls: "{p}", pred: "{q}", polarity: true}
+
+  - id: logic/universal-everyone-who-is-not
+    phase: read
+    match:
+      sentence:
+        - {lit: everyone, at_start: true}
+        - {lit: who}
+        - {lit: is}
+        - {slot: p, span: true, span_blocks: [negation, disjunctive_marker]}
+        - {lit: is}
+        - {lit: not}
+        - {slot: q, span: true, span_blocks: [negation, disjunctive_marker]}
+    emits:
+      - {fact: quantified, cls: "{p}", pred: "{q}", polarity: false}
+
+  - id: logic/existential-some-are
+    phase: read
+    match:
+      sentence:
+        - {lit: some, at_start: true}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
+        - {lit: are}
+        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
+    emits:
+      - {fact: existential, cls: "{cls}", pred: "{pred}", polarity: true}
+
+  - id: logic/existential-some-are-not
+    phase: read
+    match:
+      sentence:
+        - {lit: some, at_start: true}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
+        - {lit: are}
+        - {lit: not}
+        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
+    emits:
+      - {fact: existential, cls: "{cls}", pred: "{pred}", polarity: false}
+
 asks:
   # ---- asks: the FOLIO wrapper + an embedded declarative -------------------
   # The wrapper tokens are matched as literals — 'true' needs no sense for
@@ -354,6 +456,42 @@ asks:
   # first and was the wrong mechanism: the copular span consumes MORE units
   # (articles/punct), so it OUTRANKED rather than tied. Exclusion beats
   # ordering.) Pinned by test_disjunctive_question_routes_to_its_consumer.
+  # ---- Stage 4: existential conclusions --------------------------------------
+  - id: ask/logic-existential-some-are
+    match:
+      question:
+        - {lit: is, at_start: true}
+        - {lit: it}
+        - {lit: 'true'}
+        - {lit: that}
+        - {lit: some}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
+        - {lit: are}
+        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
+    resolves:
+      consumer: existential-verdict
+      cls: "{cls}"
+      pred: "{pred}"
+      polarity: "true"
+
+  - id: ask/logic-existential-some-are-not
+    match:
+      question:
+        - {lit: is, at_start: true}
+        - {lit: it}
+        - {lit: 'true'}
+        - {lit: that}
+        - {lit: some}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
+        - {lit: are}
+        - {lit: not}
+        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
+    resolves:
+      consumer: existential-verdict
+      cls: "{cls}"
+      pred: "{pred}"
+      polarity: "false"
+
   - id: ask/logic-disj-embedded-bare
     match:
       question:

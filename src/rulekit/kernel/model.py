@@ -290,6 +290,29 @@ class Disjunction(Fact):
 
 
 @dataclass(frozen=True)
+class Existential(Fact):
+    """∃e. e ∈ cls ∧ [¬]pred(e) — "Some dogs are [not] pets". Emitted by the
+    'some' extraction rules (which CONSUME the quantifier, relaxing the
+    fragment guard's veto by capability, exactly as its docstring promises).
+    The consumer answers 'yes' from an echo or a WITNESS (an entity holding
+    both atoms — ∃-introduction at query time, no synth); 'no' ONLY from a
+    matching NEGATIVE universal (∀¬ refutes ∃ soundly); everything else is
+    'undetermined' — open world, no existential import from positive
+    universals (classical FOL: "all dogs are animals" does not prove a dog
+    exists)."""
+
+    cls: str
+    pred: str
+    polarity: bool = True
+
+    def key(self) -> tuple:
+        return ("logic-exis", self.cls, self.pred)
+
+    def value_part(self) -> Any:
+        return self.polarity
+
+
+@dataclass(frozen=True)
 class QuantifiedDisjunction(Fact):
     """A class-scoped disjunction: ∀e ∈ cls. e ∈ left ∨/⊕ right ("Every pet
     is a dog or a cat"). Instantiates to a ground Disjunction per member

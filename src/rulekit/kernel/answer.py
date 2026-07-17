@@ -2932,6 +2932,54 @@ def answer(
                 )
         return Answer("verdict", "undetermined", "no logic fact decides it")
 
+    if consumer == "existential-verdict":
+        # "Is it true that some CLS are [not] PRED?" — ∃-introduction at
+        # query time (Stage 4): 'yes' from a stated Existential echo or from
+        # a WITNESS entity holding both atoms; 'no' ONLY from a matching
+        # NEGATIVE universal (∀¬ soundly refutes ∃); otherwise undetermined —
+        # open world, and no existential import from positive universals
+        # ("all dogs are animals" proves no dog exists). Full-read as the
+        # verdict consumers above.
+        from .model import Atom, Existential, Quantified
+        from .patterns import SKIPPABLE_SENSES
+
+        unread = [
+            u.surface
+            for u in question.units
+            if u.sense() not in SKIPPABLE_SENSES and u.uid not in _match.consumed
+        ]
+        if unread:
+            return Answer(
+                "decline", None,
+                f"question states {unread!r} but the existential query never read it",
+            )
+        cls_p, pred = query["cls"], query["pred"]
+        pol = query.get("polarity", "true") == "true"
+        for f in store.by_kind(Existential):
+            if f.cls == cls_p and f.pred == pred:
+                return Answer(
+                    "verdict", "yes" if f.polarity == pol else "undetermined",
+                    f"existential {cls_p!r}/{pred!r} "
+                    f"({'+' if f.polarity else '-'}) via {f.provenance.source}",
+                )
+        in_cls = {f.entity for f in store.by_kind(Atom) if f.pred == cls_p and f.polarity}
+        for f in store.by_kind(Atom):
+            if f.entity in in_cls and f.pred == pred and f.polarity == pol:
+                return Answer(
+                    "verdict", "yes",
+                    f"witness {f.entity!r}: {cls_p!r} and "
+                    f"{'not ' if not pol else ''}{pred!r}",
+                )
+        if pol:
+            for f in store.by_kind(Quantified):
+                if f.cls == cls_p and f.pred == pred and f.polarity is False:
+                    return Answer(
+                        "verdict", "no",
+                        f"negative universal {cls_p!r}/{pred!r} refutes the "
+                        f"existential via {f.provenance.source}",
+                    )
+        return Answer("verdict", "undetermined", "no witness and no refuting universal")
+
     if consumer == "logic-disjunction-verdict":
         # A disjunctive conclusion, semantics MEASURED from folio DEV golds
         # (Stage 3): bare 'or' is INCLUSIVE, 'either...or' is EXCLUSIVE (the
