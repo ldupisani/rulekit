@@ -424,6 +424,21 @@ def _slot_value(unit: Unit, attr: str | None) -> str:
         # answer) from a PLURAL one ("...do THEY have altogether"; one holder
         # means a missed second). A structural feature (senses.py), no lexicon.
         return unit.features.get("number", "") or ""
+    if attr == "qualified":
+        # the FULL qualified phrase of a (possibly compound) noun: its fold
+        # words with the head canonicalized to the lemma ('chocolate dogs' ->
+        # 'chocolate dog'); a bare noun falls through to its lemma unchanged.
+        # ask/is-membership queries THIS instead of the bare head lemma, so a
+        # qualified question can never be satisfied by a bare-head fact —
+        # "Rex is a dog" must not answer "Is Rex a CHOCOLATE dog?" (the
+        # default `_lemma_of` render collapsed the compound to 'dog' and
+        # answered 'yes'; a compound keeps its head's lemma by design, so the
+        # collapse is correct for entity gates and loose for membership).
+        words = (unit.features.get("fold") or "").split()
+        lemma = _lemma_of(unit)
+        if len(words) > 1:
+            return " ".join(words[:-1] + [lemma])
+        return lemma
     return _lemma_of(unit)
 
 

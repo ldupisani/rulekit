@@ -6038,7 +6038,11 @@ asks:
     resolves:
       consumer: membership-verdict
       member: "{member}"
-      collection: "{coll}"
+      # `.qualified` (patterns._slot_value): the full modifier+head phrase,
+      # falling back to the bare lemma for a plain noun — a qualified
+      # question ("Is Rex a CHOCOLATE dog?") queries the qualified fact key
+      # and can never be satisfied by the bare-head fact alone.
+      collection: "{coll.qualified}"
 
   - id: ask/how-many-capacity
     # `verb, cat: purchase` (mining candidate capacity-ask-overmatch): the

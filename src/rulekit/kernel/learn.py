@@ -1441,14 +1441,48 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                     )
                 )
         elif verb_lemma == "be" and dobj is not None and dobj.sense() == "noun":
-            facts.append(
-                Membership(
-                    provenance=prov,
-                    member=_lemma(subject),
-                    collection=_lemma(dobj),
-                    polarity=polarity,
+            # A QUALIFIED compound complement ("a Czech choral conductor") is a
+            # CONJUNCTION of predicates, and only some conjuncts survive under
+            # each polarity:
+            #   positive: the full phrase holds, the bare head holds (a
+            #     chocolate cake IS a cake — the compound-keeps-head contract),
+            #     and a modifier may be split out ALONE, or dropped from the
+            #     phrase, only when it is INTERSECTIVE ("Czech" ⊨ a Czech;
+            #     "guard" in 'guard dog' ⊭ a guard) — opt-in via the
+            #     `intersective_modifier` category (a structural NAME; the
+            #     member words live in packs; a registry that never declares
+            #     it gets full-phrase + head, nothing split).
+            #   negative: ¬(A ∧ B) licenses neither ¬A nor ¬B — ONLY the full
+            #     phrase is denied. The old code emitted ¬head ("Rex is not a
+            #     chocolate dog" minted ¬dog), a latent wrong no benchmark
+            #     could see because verdicts never commit.
+            member = _lemma(subject)
+            head = _lemma(dobj)
+            words = (dobj.features.get("fold") or "").split()
+            qualified = " ".join(words[:-1] + [head]) if len(words) > 1 else head
+
+            def _member_fact(collection: str, pol: bool) -> Membership:
+                return Membership(
+                    provenance=prov, member=member,
+                    collection=collection, polarity=pol,
                 )
-            )
+
+            if qualified == head:
+                facts.append(_member_fact(head, polarity))
+            elif polarity:
+                facts.append(_member_fact(head, True))
+                facts.append(_member_fact(qualified, True))
+                inter = [
+                    w for w in words[:-1]
+                    if reg.word_in_category(w, "intersective_modifier")
+                ]
+                rest = [w for w in words[:-1] if w not in inter]
+                if inter and rest:
+                    facts.append(_member_fact(" ".join(rest + [head]), True))
+                for w in inter:
+                    facts.append(_member_fact(w, True))
+            else:
+                facts.append(_member_fact(qualified, False))
         elif (
             dobj is not None
             and dobj.sense() == "value"
