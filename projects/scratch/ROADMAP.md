@@ -273,6 +273,40 @@ enabler; the misbinding Stage 7 closed does not recur here (these
 conclusions currently just decline). Re-measure after the witness-side
 machinery lands.
 
+## The cheap-increment frontier is EXHAUSTED (measured 2026-07-17, three zeros)
+
+Three candidate families were measured after Stage 8c and every one is
+DEFERRED with zero convertible buyers — do not build them from this list;
+re-measure only after the composition machinery below exists:
+
+1. **Unknown-plural morphology**: naive-singularization of unknown words
+   bridges **0** conclusion↔premise key pairs on the entire undetermined
+   set (the synthetic 'barkers' witness exists; no real item is blocked on
+   exactly that).
+2. **Bare-plural disjunctive premises**: 9 items, conclusions are mostly
+   compound conditionals or Uncertain golds. No clean class.
+3. **Do-support negation** ("Is it true that X does not V ...?"): the
+   biggest surface — 29 conclusions, 15 in the simple form — and ZERO
+   convert: 7 are 'have' (a STATE verb, excluded from nonstate_verb by
+   the be-twin discipline — possession lives in the fold's Predications,
+   which the verdict layer deliberately cannot read), 3 are 'live'
+   (unknown vocabulary), and the 5 known-nonstate candidates each need
+   composition (Ailton plays for Náutico + Náutico is a football club ⊢
+   plays for A football club) or sit on corpus defects (the Hoffmann/
+   Hoffman TYPO — different entity keys; the Captain America missing-
+   period mega-sentence).
+
+**The one recurring blocker across all three (and both Stage 8c
+deferrals) is COMPOSITION**: substituting a class or containment fact
+into a verbal pred's OBJECT position — 'lives in Manhattan' + 'Manhattan
+is in New York City' ⊢ 'lives in New York City'; 'plays for Náutico' +
+'Náutico is a football club' ⊢ 'plays for a football club' (∃-intro over
+the object). Upward-monotone object substitution is sound where the
+embedded relation is containment/membership, but it is a DESIGNED
+inference-frontier stage (phrase keys stop being echo-exact; every
+derived key needs provenance), not an increment. Design it before
+building anything else here.
+
 ## Stage 5 — the gate back to FOLIO (only if/when wanted)
 
 **Precondition 1 is BUILT** (the indefinite-existential gate): every
