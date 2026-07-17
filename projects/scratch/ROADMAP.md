@@ -141,6 +141,28 @@ annotation error, counted neither as a wrong nor as coverage.
   (`atom(e,P) ∧ atom(e,Q) ⊢ "some P are Q"`), which also relaxes the
   fragment guard's 'some' veto for read sentences.
 
+## Stage 6 — the VERBAL frontier — DONE (re-landed from v1, hazards designed out)
+
+Ground-verbal, verbal universals, verbal embedded asks, and the
+existential-verbal form ("Is it true that A dog eats apples?" — witness
+search via the Stage 4 consumer, `consume_skipped` stopping the article
+skip). The three v1 hazards each have a structural fix, all pinned:
+'be'-twin -> `nonstate_verb` slot type (fold AND lemma checked against
+`state` — the lemma-only draft let 'is' through); participle missplit ->
+the verbal pred span blocks verb-sensed words, so participial-cls
+sentences fall to the copular rule ("All books sold by the school are
+cheap" reads cls='book sell by school'); the arithmetic clash ->
+`span_blocks_counted` keeps merged counted nouns the fold's ('Tom bought
+3 apples' keeps its Quantity; bare dates ride in verbal spans).
+
+Folio dev-train: commits unchanged (1 + the poisoned gold) but the READING
+moved: declines 362->322, undetermined 124->170 — 40+ more stories reach
+the consumer. Conversion needs paraphrase bridging (verbal keys are
+echo-exact); next levers: participial restriction drops on verbal preds
+('book in 1946 CALLED X' -> 'book in 1946'), verbal PP drops, and
+experiment-vocabulary admission (unknown verbs read as nothing — the pack
+model working as designed).
+
 ## Stage 5 — the gate back to FOLIO (only if/when wanted)
 
 **Precondition 1 is BUILT** (the indefinite-existential gate): every

@@ -441,6 +441,51 @@ rules:
     emits:
       - {fact: existential, cls: "{cls}", pred: "{pred}", polarity: false}
 
+  # ---- Stage 6: the VERBAL frontier (re-landed from v1, hazards designed out)
+  # - v slot `type: nonstate_verb`: 'is'/'was' stay copular (the 'be'-twin).
+  # - the verbal universal's pred span BLOCKS verb-sensed words, so a
+  #   participial cls ("All students TRAINED by Yale are smart") fails here
+  #   and falls to the copular rule, which reads cls='students trained by
+  #   yale' as a phrase key — the v1 missplit is structurally impossible.
+  # - `span_blocks_counted`: merged counted nouns ('3 apples') stay the
+  #   FOLD's — a consumed sentence suppresses fold facts, and arithmetic in
+  #   the scratch registry must keep its Quantities. Bare values pass
+  #   ('published a book in 1946').
+  # - atom preds are 'v-lemma + span' ('publish book in 1946') — tense
+  #   collapses via the verb lemma, matching FOLIO's tenseless FOL
+  #   (measured, the campaign's tense probe).
+  - id: logic/ground-verbal
+    phase: read
+    match:
+      sentence:
+        - {slot: subj, type: name, at_start: true, blocks_skipped: indefinite_article}
+        - {slot: v, type: nonstate_verb}
+        - {slot: p, span: true, span_blocks: [negation, disjunctive_marker], span_blocks_counted: true}
+    emits:
+      - {fact: atom, entity: "{subj}", pred: "{v} {p}", polarity: true}
+
+  - id: logic/universal-verbal-all
+    phase: read
+    match:
+      sentence:
+        - {lit: all, at_start: true}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
+        - {slot: v, type: nonstate_verb}
+        - {slot: p, span: true, span_blocks: [negation, disjunctive_marker, verb], span_blocks_counted: true}
+    emits:
+      - {fact: quantified, cls: "{cls}", pred: "{v} {p}", polarity: true}
+
+  - id: logic/universal-verbal-every
+    phase: read
+    match:
+      sentence:
+        - {lit: every, at_start: true}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
+        - {slot: v, type: nonstate_verb}
+        - {slot: p, span: true, span_blocks: [negation, disjunctive_marker, verb], span_blocks_counted: true}
+    emits:
+      - {fact: quantified, cls: "{cls}", pred: "{v} {p}", polarity: true}
+
 asks:
   # ---- asks: the FOLIO wrapper + an embedded declarative -------------------
   # The wrapper tokens are matched as literals — 'true' needs no sense for
@@ -457,6 +502,62 @@ asks:
   # (articles/punct), so it OUTRANKED rather than tied. Exclusion beats
   # ordering.) Pinned by test_disjunctive_question_routes_to_its_consumer.
   # ---- Stage 4: existential conclusions --------------------------------------
+  # ---- Stage 6: verbal conclusions -------------------------------------------
+  - id: ask/logic-embedded-verbal
+    match:
+      question:
+        - {lit: is, at_start: true}
+        - {lit: it}
+        - {lit: 'true'}
+        - {lit: that}
+        - {slot: subj, type: name, blocks_skipped: indefinite_article}
+        - {slot: v, type: nonstate_verb}
+        - {slot: p, span: true, span_blocks: [negation, disjunctive_marker], span_blocks_counted: true}
+    resolves:
+      consumer: logic-verdict
+      entity: "{subj}"
+      pred: "{v} {p}"
+      polarity: "true"
+
+  # the user-example form: "Is it true that A Czech published a book in
+  # 1946?" — an EXISTENTIAL (the indefinite marks it; consume_skipped stops
+  # the article skip at 'a'/'an'), answered by the existential-verdict
+  # consumer's WITNESS search: an entity holding atom(e, cls) and
+  # atom(e, 'v p'). Reuses the Stage 4 consumer verbatim.
+  - id: ask/logic-existential-verbal-a
+    match:
+      question:
+        - {lit: is, at_start: true}
+        - {lit: it}
+        - {lit: 'true'}
+        - {lit: that}
+        - {lit: a, consume_skipped: true}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
+        - {slot: v, type: nonstate_verb}
+        - {slot: p, span: true, span_blocks: [negation, disjunctive_marker], span_blocks_counted: true}
+    resolves:
+      consumer: existential-verdict
+      cls: "{cls}"
+      pred: "{v} {p}"
+      polarity: "true"
+
+  - id: ask/logic-existential-verbal-an
+    match:
+      question:
+        - {lit: is, at_start: true}
+        - {lit: it}
+        - {lit: 'true'}
+        - {lit: that}
+        - {lit: an, consume_skipped: true}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
+        - {slot: v, type: nonstate_verb}
+        - {slot: p, span: true, span_blocks: [negation, disjunctive_marker], span_blocks_counted: true}
+    resolves:
+      consumer: existential-verdict
+      cls: "{cls}"
+      pred: "{v} {p}"
+      polarity: "true"
+
   - id: ask/logic-existential-some-are
     match:
       question:

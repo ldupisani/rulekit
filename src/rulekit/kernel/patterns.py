@@ -171,6 +171,17 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
             return sense == "noun" and kind == "count"
         if t == "verb":
             return sense == "verb"
+        if t == "nonstate_verb":
+            # an EVENT verb: verb-sensed and not in the `state` category (a
+            # structural category name). BOTH the fold and the lemma are
+            # checked: the category lists SURFACE forms (is/are/was/has...),
+            # so a lemma-only check let 'is' (lemma 'be', not a member)
+            # through and the v1 'be'-twin returned — caught by
+            # test_copular_sentences_stay_copular.
+            return sense == "verb" and not (
+                reg.word_in_category(unit.features.get("fold", ""), "state")
+                or reg.word_in_category(unit.features.get("lemma", ""), "state")
+            )
         if t == "auxiliary":
             return sense == "auxiliary"
         if t == "modal":
@@ -305,6 +316,13 @@ def _try_match_at(
                     u.sense() not in SKIPPABLE_SENSES for u in units[end:]
                 ):
                     continue  # final span: nothing meaningful may trail it
+                if token.span_blocks_counted and any(
+                    u.sense() == "noun" and "value" in u.features
+                    for u in captured
+                ):
+                    # a merged counted noun may not ride inside this span
+                    # (schemas.MatchToken.span_blocks_counted)
+                    continue
                 blocked_cats = (
                     [token.span_blocks] if isinstance(token.span_blocks, str)
                     else (token.span_blocks or [])

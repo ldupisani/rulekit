@@ -170,6 +170,10 @@ SLOT_TYPES = (
     "number", "fraction", "multiplier", "name", "noun", "plural", "counted",
     "entity", "verb", "auxiliary", "modal", "future_modal", "pronoun", "word",
     "adjective", "possessed", "qualified", "percent",
+    # an EVENT verb: verb-sensed and NOT in the `state` category — the
+    # verbal logic rules gate on this so 'is'/'was' sentences stay the
+    # copular rules' territory (the v1 'be'-twin lesson)
+    "nonstate_verb",
     # a COORDINATE TUPLE ("(3,4)", "(1,2)") — numbers.py's _TUPLE gives it
     # value_kind "tuple" and a `components` feature; senses.py gives it the
     # `tuple` sense. Structurally disjoint from every other slot type: no
@@ -267,6 +271,12 @@ class MatchToken(StrictModel):
     # Lyon") passes. Category name as structure; members live in packs; a
     # registry without the category is a NO-OP by construction.
     blocks_skipped: str | None = None
+    # OPT-IN (span slots): the span may not capture a MERGED COUNTED NOUN
+    # ('3 apples' — sense noun carrying a value feature). The verbal logic
+    # rules set this so arithmetic material stays the fold's: a consumed
+    # sentence suppresses fold facts, and 'Tom bought 3 apples' must keep
+    # its Quantity. Bare values ('in 1946') pass — dates are logic prose.
+    span_blocks_counted: bool = False
     opt: list["MatchToken"] | None = None  # optional sub-sequence
 
     @model_validator(mode="after")
