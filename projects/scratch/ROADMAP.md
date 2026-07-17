@@ -304,8 +304,20 @@ is in New York City' ⊢ 'lives in New York City'; 'plays for Náutico' +
 the object). Upward-monotone object substitution is sound where the
 embedded relation is containment/membership, but it is a DESIGNED
 inference-frontier stage (phrase keys stop being echo-exact; every
-derived key needs provenance), not an increment. Design it before
-building anything else here.
+derived key needs provenance), not an increment.
+
+**The design is WRITTEN: `composition-design.md`** (2026-07-17). Core
+decisions: no string surgery ever (a structured `VerbalRelation` fact
+beside the flat atom; segmentation only by match tokens); bridges run at
+QUERY time in the consumer; membership bridge sound for any verb,
+locative bridge double-gated and Phase 2. It also surfaced a LIVE
+measured unsoundness — flat keys drop articles, so "plays for A club"
+confidently answers "plays for THE club?" today — fixed first as Phase 0
+(`span_blocks_skipped: definite_article`). The stack table shows the
+bridge alone converts ~nothing: shortest complete stack is S2
+(active↔passive linking + membership bridge, one measured buyer), then
+S1 (adds relative-clause predication, the Stage 7 substring-bridge
+class). Build in that order; nothing lands without its stack's buyer.
 
 ## Stage 5 — the gate back to FOLIO (only if/when wanted)
 
