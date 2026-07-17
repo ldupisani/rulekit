@@ -145,6 +145,40 @@ def _nominal_pass(reading: Reading, reg: Registry) -> bool:
                 {"label": label},
             )
             return True
+    # timeperiod noun + trailing integer -> one period-identified noun ("the
+    # year 1946", "week 3", "January 1946") — the numeric twin of the
+    # single-letter label above. A number immediately FOLLOWING a timeperiod
+    # noun is an IDENTIFIER, never a quantity of it ("year 1946" is not 1946
+    # years — that construction is count+noun, handled by merge-count and
+    # unreachable from here since nominal merges run first). Gated on the
+    # CATEGORY name (structural; the members — 'year', months, weekdays —
+    # live in packs), and on the number NOT being claimable as a count for a
+    # noun that follows it: "Every year 500 people visit" must leave 500 to
+    # quantify 'people', so a following noun blocks the merge outright —
+    # the ambiguous "In the year 1946 books were sold" stays unmerged and
+    # decline-safe (precision before coverage).
+    for i in range(len(units) - 1):
+        a, b = units[i], units[i + 1]
+        lemma = a.features.get("lemma", a.features.get("fold", ""))
+        if (
+            a.sense() == "noun"
+            and a.features.get("number") != "plural"
+            and reg.word_in_category(lemma, "timeperiod")
+            and b.sense() == "value"
+            and b.features.get("value_kind") == "count"
+            and not b.features.get("pattern_consumed")
+            and float(b.features["value"]).is_integer()
+            and float(b.features["value"]) > 0
+            and not (i + 2 < len(units) and units[i + 2].sense() == "noun")
+        ):
+            label = str(int(b.features["value"]))
+            _merge(
+                reading, i, a, "merge-period-index",
+                f"{a.surface!r} + period index {b.surface!r} — one "
+                f"period-identified noun (label {label!r})",
+                {"label": label},
+            )
+            return True
     for i in range(len(units) - 1):
         a, b = units[i], units[i + 1]
         # adjective + noun -> restricted noun ("red apple")
