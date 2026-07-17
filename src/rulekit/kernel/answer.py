@@ -2980,6 +2980,52 @@ def answer(
                     )
         return Answer("verdict", "undetermined", "no witness and no refuting universal")
 
+    if consumer == "universal-verdict":
+        # "Is it true that all/no CLS are PRED?" — read the SATURATED
+        # Quantified closure (synth/universal-chain materializes
+        # transitivity, so an echo test covers chains too). Open-world and
+        # WITHOUT existential import in either direction: "No A are B" never
+        # falsifies "All A are B" by itself — over an empty class both are
+        # vacuously true in FOL, and FOLIO golds are FOL-verified. 'no' comes
+        # ONLY from a counterexample witness (an entity in the class holding
+        # the pred at the opposite polarity); when the class has a member,
+        # saturation instantiates the opposite universal into exactly that
+        # witness atom, so the witness path is complete without the unsound
+        # shortcut. Full-read contract as the verdict consumers above.
+        from .model import Atom, Quantified
+        from .patterns import SKIPPABLE_SENSES
+
+        unread = [
+            u.surface
+            for u in question.units
+            if u.sense() not in SKIPPABLE_SENSES and u.uid not in _match.consumed
+        ]
+        if unread:
+            return Answer(
+                "decline", None,
+                f"question states {unread!r} but the universal query never read it",
+            )
+        cls_p, pred = query["cls"], query["pred"]
+        pol = query.get("polarity", "true") == "true"  # True = ∀, False = ∀¬
+        for f in store.by_kind(Quantified):
+            if f.cls == cls_p and f.pred == pred and f.polarity == pol:
+                return Answer(
+                    "verdict", "yes",
+                    f"universal {cls_p!r}/{pred!r} "
+                    f"({'+' if pol else '-'}) via {f.provenance.source}",
+                )
+        in_cls = {f.entity for f in store.by_kind(Atom) if f.pred == cls_p and f.polarity}
+        for f in store.by_kind(Atom):
+            if f.entity in in_cls and f.pred == pred and f.polarity == (not pol):
+                return Answer(
+                    "verdict", "no",
+                    f"counterexample {f.entity!r}: {cls_p!r} and "
+                    f"{'not ' if pol else ''}{pred!r}",
+                )
+        return Answer(
+            "verdict", "undetermined", "no universal fact and no counterexample"
+        )
+
     if consumer == "logic-disjunction-verdict":
         # A disjunctive conclusion, semantics MEASURED from folio DEV golds
         # (Stage 3): bare 'or' is INCLUSIVE, 'either...or' is EXCLUSIVE (the

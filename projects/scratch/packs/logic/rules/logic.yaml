@@ -593,6 +593,85 @@ asks:
       pred: "{pred}"
       polarity: "false"
 
+  # ---- universal conclusions: "Is it true that all/no CLS are PRED?" ---------
+  # The consumer (universal-verdict) reads the SATURATED Quantified closure:
+  # yes from an echo or synth/universal-chain fact at the claimed polarity;
+  # no ONLY from a counterexample WITNESS (an entity in the class holding the
+  # pred at the opposite polarity) — never from the opposite universal alone,
+  # which would smuggle existential import into FOL-verified golds (both
+  # universals are vacuously true over an empty class). "All X are not Y"
+  # stays unread by span_blocks: negation — ∀¬-vs-¬∀ scope is genuinely
+  # per-item in FOLIO (the v1 revert's 'All X are not Y' lesson).
+  # The quantifier lits match the wrapper's CAPITALIZED 'All'/'No' because a
+  # quantifier-sensed word is exempt from capitalization-naming (senses.py).
+  - id: ask/logic-universal-all-are
+    match:
+      question:
+        - {lit: is, at_start: true}
+        - {lit: it}
+        - {lit: 'true'}
+        - {lit: that}
+        - {lit: all}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
+        - {lit: are}
+        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
+    resolves:
+      consumer: universal-verdict
+      cls: "{cls}"
+      pred: "{pred}"
+      polarity: "true"
+
+  - id: ask/logic-universal-all-is
+    match:
+      question:
+        - {lit: is, at_start: true}
+        - {lit: it}
+        - {lit: 'true'}
+        - {lit: that}
+        - {lit: all}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
+        - {lit: is}
+        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
+    resolves:
+      consumer: universal-verdict
+      cls: "{cls}"
+      pred: "{pred}"
+      polarity: "true"
+
+  - id: ask/logic-universal-no-are
+    match:
+      question:
+        - {lit: is, at_start: true}
+        - {lit: it}
+        - {lit: 'true'}
+        - {lit: that}
+        - {lit: 'no'}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
+        - {lit: are}
+        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
+    resolves:
+      consumer: universal-verdict
+      cls: "{cls}"
+      pred: "{pred}"
+      polarity: "false"
+
+  - id: ask/logic-universal-no-is
+    match:
+      question:
+        - {lit: is, at_start: true}
+        - {lit: it}
+        - {lit: 'true'}
+        - {lit: that}
+        - {lit: 'no'}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
+        - {lit: is}
+        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
+    resolves:
+      consumer: universal-verdict
+      cls: "{cls}"
+      pred: "{pred}"
+      polarity: "false"
+
   - id: ask/logic-disj-embedded-bare
     match:
       question:
