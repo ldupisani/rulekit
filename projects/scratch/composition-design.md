@@ -110,16 +110,24 @@ share one key — **measured today, committing a verdict**:
     football club?"  ->  yes   (via flat-key echo 'play for football club')
 
 An indefinite premise answering a definite question is a wrong-in-waiting
-(the definite asks about a particular club). The article sits INSIDE the
-ask's pred span (`blocks_skipped` guards a token's predecessor, not a
-span's interior), so the mechanism is a new opt-in span flag —
-`span_blocks_skipped: definite_article`, mirroring `span_blocks_counted`:
-the span refuses to swallow a skipped definite article, so the definite
-question matches no ask and DECLINES (reference resolution is unbuilt).
-The pinned contract, both directions: *an indefinite premise never
-answers a definite question*; the symmetric direction ("a club?"
-answered by a "plays for the club" premise) IS sound — ∃-intro from a
-definite witness — and stays.
+(the definite asks about a particular club).
+
+**BUILT (`725dd2c`) — and the built mechanism is deliberately NOT the
+draft's.** The draft proposed a span flag making every definite question
+decline; implementation analysis showed that kills two SOUND cells —
+definite echo ("plays for the club" ×2) and definite-surfaced NAMES
+("works at the Emmet Building", "holds the Lithuanian Super Cup") —
+which folio conclusions use constantly. What landed instead enforces the
+full matrix: `Atom.indef_obj` (emission-time bit, outside key(),
+inherited by decomposition variants) × `patterns.field_definite_common`
+(per ask FIELD; a 'the' whose next nominal past adjectives is a COMMON
+noun — a name successor passes). Only the one unsound cell refuses.
+Both checks cover the span's interior AND its physical leading edge —
+the pre-token skip loop advances past leading skippables before a span
+captures, so an internal scan alone misses exactly the copular
+construction ("is A dog"); the walk-back is the blocks_skipped
+precedent. Pinned in tests/test_article_compatibility.py (8 tests);
+folio-with-logic item-level NEUTRAL, all 3 conversions survive.
 
 ## 3. What it buys — the measured stack table
 
