@@ -151,3 +151,23 @@ def test_non_intersective_modifier_never_splits(intersective_registry):
         intersective_registry,
     )
     assert got == "yes"
+
+
+# ---- Stage 2.2: the fold's negated-PP denial is suppressed --------------------
+
+def test_negated_pp_restriction_emits_no_membership(full_registry):
+    from rulekit.kernel.model import Membership
+
+    # neg('student at yale') licenses no neg('student'); the fold cannot
+    # rebuild the restricted phrase from flat bindings, so it emits nothing
+    r = solve("Bob is not a student at the school.", full_registry,
+              tracing=False)
+    assert not list(r.store.by_kind(Membership))
+    assert _verdict("Bob is not a student at the school. Is Bob a student?",
+                    full_registry) in ("undetermined", "decline")
+
+
+def test_positive_pp_restriction_still_entails_the_head(full_registry):
+    # dropping a restriction from a POSITIVE assertion is sound
+    assert _verdict("Bob is a student at the school. Is Bob a student?",
+                    full_registry) == "yes"

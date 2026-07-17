@@ -1460,14 +1460,27 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
             head = _lemma(dobj)
             words = (dobj.features.get("fold") or "").split()
             qualified = " ".join(words[:-1] + [head]) if len(words) > 1 else head
-
             def _member_fact(collection: str, pol: bool) -> Membership:
                 return Membership(
                     provenance=prov, member=member,
                     collection=collection, polarity=pol,
                 )
 
-            if qualified == head:
+            if not polarity and any(
+                u.sense() == "preposition" and _bound(u, "anchor") is dobj
+                for u in reading.units
+            ):
+                # Stage 2.2: "Bob is not a student AT YALE" denies the
+                # RESTRICTED predicate, and the restriction lives outside the
+                # dobj unit where the qualified-compound fix cannot see it —
+                # a bare (or compound-qualified) denial would claim more than
+                # the sentence said (neg of the restricted phrase licenses no
+                # neg of the head). The fold's flat bindings cannot rebuild
+                # the full restricted phrase reliably, so it emits NOTHING:
+                # decline-safe, and the span-keyed atom layer reads the
+                # construction exactly where it is loaded.
+                pass
+            elif qualified == head:
                 facts.append(_member_fact(head, polarity))
             elif polarity:
                 facts.append(_member_fact(head, True))

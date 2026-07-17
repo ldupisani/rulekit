@@ -544,7 +544,21 @@ def atom_variants(fact: Fact, emit_fields: dict, slots: dict, reg: Registry) -> 
     stripped_lead = " ".join(rest + [lemma]) if inter else None
     tail_units = tuple(units[1:])
     tail = _canonical_phrase(tail_units)
-    tail_droppable = bool(tail_units) and tail_units[0].sense() in _RELATIVE_MARKER_SENSES
+    tail_droppable = bool(tail_units) and (
+        tail_units[0].sense() in _RELATIVE_MARKER_SENSES
+        # Stage 2.2: a PP immediately after the lead nominal is a restrictive
+        # modifier — "student at yale" entails "student" — UNLESS the PP
+        # contains a QUANTIFIER: "a friend of no one" is not a friend-of
+        # anyone ('no' flips the surface restriction into a denial; the
+        # quantifier sense is the structural signal for every such flip).
+        # Relative clauses need no such guard: "a man who knows every
+        # senator" is still a man — the clause's finite verb scopes its own
+        # quantifiers; a PP has no verb to scope them.
+        or (
+            tail_units[0].sense() == "preposition"
+            and not any(u.sense() == "quantifier" for u in tail_units)
+        )
+    )
 
     preds: list[str] = []
     if inter:

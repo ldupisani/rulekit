@@ -357,3 +357,30 @@ def test_negative_atom_gets_no_relative_drop(logic_reg):
     assert [(f.pred, f.polarity) for f in r.store.by_kind(Atom)] == [
         ("dog who barks", False)
     ]
+
+
+# ---- Stage 2.2: PP restrictions drop (with the quantifier guard) --------------
+
+def test_pp_restriction_drops_to_the_lead_nominal(logic_reg):
+    got = _verdict(
+        "Bob is a tree in the park. Every tree is a plant. "
+        "Is it true that Bob is a plant?", logic_reg)
+    assert got == "yes"
+
+
+def test_pp_with_a_quantifier_never_drops(logic_reg):
+    from rulekit.kernel.model import Atom
+
+    # 'no' flips the surface restriction into a denial — the drop is blocked
+    r = engine.solve("Bob is a friend of no person.", logic_reg, tracing=False)
+    assert {f.pred for f in r.store.by_kind(Atom)} == {"friend of no person"}
+
+
+def test_relative_with_a_quantifier_still_drops(logic_reg):
+    from rulekit.kernel.model import Atom
+
+    # a relative's finite verb scopes its own quantifiers: "a man who knows
+    # every senator" is still a man
+    r = engine.solve("Bob is a man who knows every senator.", logic_reg,
+                     tracing=False)
+    assert "man" in {f.pred for f in r.store.by_kind(Atom)}
