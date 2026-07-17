@@ -152,6 +152,20 @@ linking (S2, lands with its buyer) → relative-clause predication (S1's
 last piece, lands against S1's item) → locative bridge only if a
 post-S1/S2 re-measure shows a stack it completes.
 
+**S2 is BUILT (`f192441`) and converted 2, not 1.** The stack needed a
+piece the table missed: the buyer's story carried "Oxford Street and
+Regent Street are in London" — an unread conjoined-subject copular whose
+'and' made the fragment guard veto every verdict in the story. The fix
+is `logic/ground-copular-conj-subjects` (distribution over both
+conjuncts; the collective gate is the collective's own signal — 'are A
+team' takes the indefinite article, refused on both the leading-edge and
+interior article routes), which lifts the veto BY READING. That rule
+then converted the story's second conclusion outright ("Regent Street is
+not in London?" gold False, 'no' from the distributed atom). Both
+conversions null-controlled. Folio-with-logic dev-train: 3 → 5 correct.
+Lesson for S1: **walk the buyer's WHOLE story before sizing a stack —
+the fragment guard prices every unread sentence into the item.**
+
 ## 4. Hazards designed out in advance (each becomes a pinned test)
 
 1. **Definite/indefinite conflation** — Phase 0 above; pin both directions.
