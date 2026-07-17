@@ -568,6 +568,34 @@ def atom_variants(fact: Fact, emit_fields: dict, slots: dict, reg: Registry) -> 
         preds.append(lead_qualified)
         if inter:
             preds.append(stripped_lead)
+    # Stage 2.3: a TOP-LEVEL conjunctive predicate — exactly [nominal,
+    # conjunction, nominal] — asserts BOTH conjuncts ("a singer and an
+    # actor" is a singer and is an actor), each with its own intersective
+    # variants. Gated on the opt-in `conjunctive_marker` CATEGORY, not the
+    # conjunction sense: 'or' ALSO carries the conjunction sense
+    # (difg-mined), and a sense gate would split a DISJUNCTION into two
+    # asserted disjuncts — a confident-wrong machine
+    # (test_disjunction_asserts_neither_side caught it pre-ship). A
+    # disjunction asserts NEITHER side; case analysis is Stage 3's
+    # machinery, never a split. Longer spans stay whole — a deeper 'and'
+    # has ambiguous scope.
+    if (
+        len(units) == 3
+        and units[1].sense() == "conjunction"
+        and reg.word_in_category(units[1].features.get("fold", ""), "conjunctive_marker")
+        and units[2].sense() == "noun"
+    ):
+        for side in (units[0], units[2]):
+            w = (side.features.get("fold") or "").split()
+            lm = _lemma_of(side)
+            preds.append(" ".join(w[:-1] + [lm]) if len(w) > 1 else lm)
+            if len(w) > 1:
+                s_inter, s_rest = intersective_split(w, lm, reg)
+                if s_inter:
+                    # may be the bare lemma — sound exactly then: every
+                    # modifier was stripped as intersective
+                    preds.append(" ".join(s_rest + [lm]))
+                    preds.extend(s_inter)
     seen = {fact.pred}
     prov = Provenance(
         source=f"{fact.provenance.source}/intersective",

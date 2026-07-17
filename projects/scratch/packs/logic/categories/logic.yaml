@@ -1,0 +1,12 @@
+format: rulekit/categories@1
+# The conjunctive-predicate split gate (Stage 2.3). A SENSE gate cannot do
+# this job: difg-mined lexicons 'or' as `conjunction` too, so sense alone
+# would split a DISJUNCTION into two asserted disjuncts — caught by
+# test_disjunction_asserts_neither_side before it shipped. Only words listed
+# here license the both-conjuncts split; 'or' must never join ('either...or'
+# is Stage 3's case-analysis machinery, and FOLIO's golds read it as XOR).
+categories:
+    conjunctive_marker:
+        parent: conjunction
+members:
+    conjunctive_marker: [and]

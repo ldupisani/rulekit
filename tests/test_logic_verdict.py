@@ -384,3 +384,38 @@ def test_relative_with_a_quantifier_still_drops(logic_reg):
     r = engine.solve("Bob is a man who knows every senator.", logic_reg,
                      tracing=False)
     assert "man" in {f.pred for f in r.store.by_kind(Atom)}
+
+
+# ---- Stage 2.3: top-level conjunctive predicates assert both conjuncts --------
+
+def test_conjunctive_predicate_asserts_both_sides(logic_reg):
+    from rulekit.kernel.model import Atom
+
+    r = engine.solve("Rex is a dog and a cat.", logic_reg, tracing=False)
+    assert {f.pred for f in r.store.by_kind(Atom)} == {"dog and cat", "dog", "cat"}
+
+
+def test_conjunct_feeds_instantiation(logic_reg):
+    got = _verdict(
+        "Rex is a dog and a pet. Every pet is loved. "
+        "Is it true that Rex is loved?", logic_reg)
+    assert got == "yes"
+
+
+def test_disjunction_asserts_neither_side(logic_reg):
+    from rulekit.kernel.model import Atom
+
+    # 'or' carries no conjunction sense: the span stays ONE opaque phrase —
+    # a disjunctive premise asserts neither disjunct (Stage 3 is case
+    # analysis, never a split)
+    r = engine.solve("Rex is a dog or a cat.", logic_reg, tracing=False)
+    assert {f.pred for f in r.store.by_kind(Atom)} == {"dog or cat"}
+
+
+def test_negative_conjunction_stays_whole(logic_reg):
+    from rulekit.kernel.model import Atom
+
+    r = engine.solve("Rex is not a dog and a cat.", logic_reg, tracing=False)
+    assert [(f.pred, f.polarity) for f in r.store.by_kind(Atom)] == [
+        ("dog and cat", False)
+    ]
