@@ -1,0 +1,23 @@
+format: rulekit/lexicon@1
+entries:
+    conductor: {senses: [noun], plural: conductors}
+    employer: {senses: [noun], plural: employers}
+    choral: {senses: [adjective]}
+    # noun ONLY, deliberately: the [noun, adjective] pair fails sense
+    # arbitration in bare contexts ("Is X a Czech?" left the unit senseless
+    # and the ask declined), and no current reading consumes a predicative
+    # adjective — the second sense bought nothing and cost the question.
+    czech: {senses: [noun]}
+    american: {senses: [noun, adjective]}
+    british: {senses: [noun, adjective]}
+    english: {senses: [noun, adjective]}
+    musician: {senses: [noun], plural: musicians}
+    # each inflection is its own entry sharing the lemma (the 'owns'/'own'
+    # pattern in core-english) — the map IS the morphology
+    specialize: {senses: [verb], verb: {lemma: specialize}}
+    specializes: {senses: [verb], verb: {lemma: specialize}}
+    specialized: {senses: [verb], verb: {lemma: specialize}}
+    love: {senses: [verb]}
+    published: {senses: [verb], verb: {lemma: publish}}
+
+

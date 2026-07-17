@@ -1,0 +1,14 @@
+format: rulekit/project@1
+name: scratch
+# A SANDBOX for manual experiments — no datasets, no suite, no gate.
+#
+# The user pack lives INSIDE this project (./packs/user) and is loaded by no
+# other project, so words admitted here are invisible to every benchmark
+# corpus: admitting a word removes a decline guard, and this is the place
+# where that blast radius is zero. If an experiment graduates, its words move
+# to a shared pack THROUGH the normal gate (collision grep across corpora +
+# quarantine check + full dev diff), never by wiring this pack into a
+# benchmark project.
+#
+#   uv run rulekit --project projects/scratch solve --trace "<sentence>"
+packs: [core-english, arithmetic, difg-mined, ./packs/user]

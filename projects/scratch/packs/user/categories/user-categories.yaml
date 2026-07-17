@@ -1,0 +1,19 @@
+format: rulekit/categories@1
+# Manual-test categories. NOTE: members may extend categories declared in other
+# packs (core-english's `state`) — that is how a pack tags its own verbs' fold
+# behavior without touching core.
+categories:
+    agent_noun: {parent: noun}
+    # `intersective_modifier` is the OPT-IN gate the kernel fold reads by NAME
+    # (learn.py's copular-compound branch): a modifier in this category may be
+    # split out of a positive compound as its own Membership fact ("a Czech
+    # choral conductor" ⊨ a Czech). Nationalities are intersective; 'guard',
+    # 'opera', 'toy' must never join — "a guard dog" is not a guard.
+    intersective_modifier: {parent: noun}
+    nationality_noun: {parent: intersective_modifier}
+members:
+    agent_noun: [employer, conductor, musician]
+    # 'specialize' is STATIVE: "who specialized in X" asserts a property of the
+    # subject, not an event that accumulates — same fold class as have/own/be.
+    state: [specialize, specializes, specialized]
+    nationality_noun: [czech, american, british, english]

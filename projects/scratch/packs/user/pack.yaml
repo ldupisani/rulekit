@@ -1,0 +1,5 @@
+format: rulekit/pack@1
+name: user-pack
+version: 0.1.0
+description: >
+    A user pack included to do manual tests
