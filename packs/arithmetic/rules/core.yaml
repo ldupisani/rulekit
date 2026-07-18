@@ -2730,8 +2730,6 @@ rules:
       it): the two match disjoint literal skeletons and never tie.
     match:
       sentence:
-        - opt:
-            - {lit: a}
         - {lit: total}
         - {lit: of}
         - {slot: item, type: counted}
@@ -2881,8 +2879,6 @@ rules:
       guard every sibling GroupTotal rule here already relies on.
     match:
       sentence:
-        - opt:
-            - {lit: the}
         - {lit: sum}
         - {lit: of}
         - opt:
@@ -2920,8 +2916,6 @@ rules:
       does not depend on capturing that trailing unit word at all).
     match:
       sentence:
-        - opt:
-            - {lit: a}
         - {slot: agg, cat: aggregate}
         - {slot: noun, cat: age_noun}
         - {lit: of}
@@ -4202,8 +4196,6 @@ asks:
         - {lit: many}
         - {slot: item, type: noun}
         - {slot: aux, type: auxiliary}
-        - opt:
-            - {lit: the}
         - {slot: n, type: number}
         - opt:
             - {lit: of}
@@ -4719,8 +4711,6 @@ asks:
         - {slot: agg, cat: aggregate}
         - opt:
             - {slot: p2, cat: preposition}
-            - opt:
-                - {lit: the}
             - {slot: grp, type: plural}
     resolves:
       consumer: combined
@@ -4815,8 +4805,6 @@ asks:
         - {slot: agg, cat: aggregate}
         - opt:
             - {slot: p2, cat: preposition}
-            - opt:
-                - {lit: the}
             - {slot: grp, type: plural}
     resolves:
       consumer: combined
@@ -4862,8 +4850,6 @@ asks:
         - {lit: many}
         - {slot: item, type: noun}
         - {slot: aux, type: auxiliary}
-        - opt:
-            - {lit: the}
         - {slot: who, type: plural}
         - {slot: verb, type: verb}
         - opt:
@@ -4946,8 +4932,6 @@ asks:
         - {slot: pre, cat: aggregate}
         - {slot: item, type: noun}
         - {slot: aux, type: auxiliary}
-        - opt:
-            - {lit: the}
         - {slot: who, type: plural}
         - {slot: verb, type: verb}
     resolves:
@@ -5324,8 +5308,6 @@ asks:
         - {lit: much}
         - {slot: item, type: noun}
         - {slot: aux, type: auxiliary}
-        - opt:
-            - {lit: the}
         - {slot: n, type: number}
         - opt:
             - {lit: of}
@@ -5780,8 +5762,6 @@ asks:
         - {lit: all}
         - opt:
             - {lit: of}
-        - opt:
-            - {lit: the}
         - {slot: item, type: noun}
     resolves:
       consumer: rate-span-inverse
@@ -5865,8 +5845,6 @@ asks:
         - {lit: all}
         - opt:
             - {lit: of}
-        - opt:
-            - {lit: the}
         - {slot: item, type: noun}
     resolves:
       consumer: rate-span-inverse
@@ -6224,8 +6202,6 @@ asks:
         - {lit: how}
         - {lit: many}
         - {lit: of}
-        - opt:
-            - {lit: the}
         - {slot: collection, type: noun}
         - {slot: verb, cat: state}
         - {slot: label, type: noun}
