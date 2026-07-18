@@ -691,3 +691,33 @@ def test_a_universal_from_a_ground_sentence_cannot_be_instantiated(logic_reg):
         "Rochelle lives in Europe. Alfonso is a Rochelle. "
         "Is it true that Alfonso lives in Europe?", logic_reg,
     ) in ("undetermined", "decline")
+
+
+# ---- the a/an alternation: one ask reads both articles ----
+
+def test_both_indefinite_articles_reach_the_existential_ask(logic_reg):
+    # 'a'/'an' is ALLOMORPHY — one article, two surfaces chosen by the
+    # following sound — so it is one alternation, not two asks.
+    #
+    # It is also the case a CATEGORY cannot serve: both are article-sensed,
+    # but `article` is a SKIPPABLE sense, so a gated slot would be skipped past
+    # rather than matched. Only `consume_skipped` on the literal stops the skip
+    # AT the article, which is why the skip loop had to learn membership.
+    from rulekit.kernel import condense, numbers, senses, tokenize
+    from rulekit.kernel.patterns import match_all
+
+    # verbs chosen from THIS fixture's pack set — 'published'/'chases' are
+    # senseless here (they live in the scratch user pack), and a senseless verb
+    # fails the `nonstate_verb` slot before the article is ever reached
+    for text in ("Is it true that a dog attends school?",
+                 "Is it true that an athlete attends school?"):
+        r = tokenize.tokenize(text)
+        numbers.annotate_numbers(r, logic_reg)
+        senses.annotate_senses(r, logic_reg)
+        condense.condense(r, logic_reg)
+        hits = [
+            a.id for a in logic_reg.asks
+            if a.match.get("question")
+            and any(True for _ in match_all(r, a.match["question"], logic_reg))
+        ]
+        assert hits == ["ask/logic-existential-verbal"], text

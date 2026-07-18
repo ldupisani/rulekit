@@ -751,31 +751,21 @@ asks:
   # the article skip at 'a'/'an'), answered by the existential-verdict
   # consumer's WITNESS search: an entity holding atom(e, cls) and
   # atom(e, 'v p'). Reuses the Stage 4 consumer verbatim.
-  - id: ask/logic-existential-verbal-a
+  #
+  # 'a'/'an' is ALLOMORPHY — one article with two surfaces chosen by the
+  # following sound — so it is one alternation, not two asks. It is also the
+  # case a category could not serve: both are article-sensed, but `article` is
+  # a SKIPPABLE sense, so a gated slot would be skipped past rather than
+  # matched. `consume_skipped` on the literal is the only thing that can stop
+  # the skip AT the article, and it now claims whichever surface is present.
+  - id: ask/logic-existential-verbal
     match:
       question:
         - {lit: is, at_start: true}
         - {lit: it}
         - {lit: 'true'}
         - {lit: that}
-        - {lit: a, consume_skipped: true}
-        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
-        - {slot: v, type: nonstate_verb}
-        - {slot: p, span: true, span_blocks: [negation, disjunctive_marker], span_blocks_counted: true}
-    resolves:
-      consumer: existential-verdict
-      cls: "{cls}"
-      pred: "{v} {p}"
-      polarity: "true"
-
-  - id: ask/logic-existential-verbal-an
-    match:
-      question:
-        - {lit: is, at_start: true}
-        - {lit: it}
-        - {lit: 'true'}
-        - {lit: that}
-        - {lit: an, consume_skipped: true}
+        - {lit: [a, an], consume_skipped: true}
         - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
         - {slot: v, type: nonstate_verb}
         - {slot: p, span: true, span_blocks: [negation, disjunctive_marker], span_blocks_counted: true}
@@ -1020,7 +1010,9 @@ asks:
   # ask/logic-embedded-verbal on consumed units and would fall to id order
   # — the ranking lesson says exclusion-or-nothing, and the negative form
   # has no contest ('does' fails the verbal ask's nonstate v slot).
-  - id: ask/logic-verbal-obj-class-does-not-a
+  # 'a'/'an' allomorphy folded into one alternation — see
+  # ask/logic-existential-verbal above for why a category cannot serve.
+  - id: ask/logic-verbal-obj-class-does-not
     match:
       question:
         - {lit: is, at_start: true}
@@ -1032,29 +1024,7 @@ asks:
         - {lit: not}
         - {slot: v, type: nonstate_verb}
         - {slot: prep, type: preposition}
-        - {lit: a, consume_skipped: true}
-        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
-    resolves:
-      consumer: verbal-obj-class-verdict
-      entity: "{subj}"
-      verb: "{v}"
-      prep: "{prep}"
-      cls: "{cls}"
-      polarity: "false"
-
-  - id: ask/logic-verbal-obj-class-does-not-an
-    match:
-      question:
-        - {lit: is, at_start: true}
-        - {lit: it}
-        - {lit: 'true'}
-        - {lit: that}
-        - {slot: subj, type: name, blocks_skipped: indefinite_article}
-        - {lit: does}
-        - {lit: not}
-        - {slot: v, type: nonstate_verb}
-        - {slot: prep, type: preposition}
-        - {lit: an, consume_skipped: true}
+        - {lit: [a, an], consume_skipped: true}
         - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
     resolves:
       consumer: verbal-obj-class-verdict
