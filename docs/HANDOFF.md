@@ -25,6 +25,63 @@ Thirteen commits, every one gate-clean across all eight slices, pytest
 | `e580297` | difg calendar spelled dates | 62 -> **63** |
 | `c298c1b` | **refactor**: spelled dates READ in condense, not parsed in an ask | 63, -1 ask |
 
+### ARCHITECTURE REVIEW of everything after Stage 9c (done 2026-07-18)
+
+Two refactors landed from it (`c298c1b`, `9f1a146`): **-6 asks, -1 consumer
+op, -1 helper, -198 lines, zero behaviour change on all 8 slices.** The
+recurring error was reaching for a second ASK whenever a second SURFACE FORM
+appeared. Three cures, in order of preference:
+
+1. **Read lower.** Spelled dates became a `condense` merge pass, so every
+   date-consuming ask got them free (`c298c1b`).
+2. **Gate wider.** Four percent-change asks became one via two categories --
+   `percent_word` (nouns) and `change_direction` (VERBS; verb-parented
+   categories already existed) (`9f1a146`).
+3. **Check the gate you have.** `type: number` tests the VALUE KIND and never
+   the sense, so it ALREADY matches count-merged '4 meter'. Three
+   `type: counted` twins were strictly narrower and DEAD from birth
+   (`9f1a146`). Pinned in test_measure_cost.py.
+
+**An ask should enumerate STRUCTURE, never the ways English spells it.**
+
+### The remaining generalisation, NOT built — it needs a decision
+
+**Three data tables are the same table**, split by who READS them, not by what
+they mean:
+
+| table | shape | really |
+|---|---|---|
+| `conversions@1` | factor | `v * f` |
+| `affine-conversions@1` | offset + factor | `(v + o) * f` |
+| `calendar@1 span_units` | days-per-unit | `v * (1/f)` |
+
+An affine map with `offset: 0` IS a pure factor, so **affine subsumes all
+three**. And four consumers are the same consumer: `unit-convert` (`v*f`),
+`affine-convert` (`(v+o)*f`), `rate-cost` (`(v+o)*f*rate`), and calendar's
+span (`v/f`).
+
+The split was NOT arbitrary -- `conversions@1` is read PAIRWISE by the
+word-problem convertible-unit fold in every arithmetic corpus, which is why
+calendar and affine got their own tables (a 'month -> day' or an offset row
+there would change unit folding everywhere). **The right unification is one
+`rulekit/scales@1` with a required `scope:` field**, so the fold reads
+`scope: unit` rows only and the others are invisible to it. That is the
+infrastructure this session kept working around.
+
+**Cost/benefit, honestly:** it touches shared machinery under all 8 corpora
+and buys ZERO new items. Do it when a FIFTH scale-shaped table is about to be
+written -- that is the point where the workaround costs more than the fix.
+
+**What does NOT generalise, and why the obvious move is wrong:** the five new
+consumers are 152 lines with 16 decline paths, and only ~4 lines EACH are
+arithmetic. Pushing that arithmetic into declarative `expr` strings (the
+`geometry@1` model) would absorb the trivial part and LOSE the guards --
+"decline if discount >= 1", "decline if a measure is <= 0", "decline if the
+month is impossible". The real duplication is in the GUARDS, which repeat
+three shapes 16 times: operand-is-numeric, operand-in-range, data-lookup-hit.
+**A declarative guard vocabulary would pay; a declarative expression table
+would not.**
+
 ### The seam lesson, because it cost a commit to learn twice
 
 `e580297` shipped a spelled-date ASK with six slots plus a consumer branch to
