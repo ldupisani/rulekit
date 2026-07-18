@@ -1163,6 +1163,14 @@ def answer(
             result = math.sqrt(x) if x >= 0 else None
         elif op == "percent":
             result = x * y if y is not None else None
+        elif op == "percent_change":
+            # SIGNED relative change from x to y, as a percentage. One formula
+            # serves both directions -- an 'increase' and a 'decrease' ask
+            # differ only in which sign the answer comes out with, so there is
+            # no second opcode and no English word in this branch. x == 0 has
+            # no relative change to report and declines (None) rather than
+            # dividing.
+            result = (y - x) / x * 100.0 if y is not None and x != 0.0 else None
         else:
             return Answer("decline", None, f"unsupported operation {op!r}")
         if result is None:

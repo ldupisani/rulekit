@@ -18,6 +18,65 @@ format: rulekit/rules@1
 # no exemption (as with number_theory).
 rules: []
 asks:
+  # ---- RELATIVE CHANGE: "What is the percentage increase from 50 to 75?" ----
+  # ONE formula, (y-x)/x*100, signed -- so 'increase' and 'decrease' are the
+  # same opcode and differ only in the sign the answer comes out with. They
+  # are grammatical skeleton literals like 'plus'/'minus' above, not a
+  # semantic choice, and the consumer never sees an English word.
+  # Four spellings because English has two words for each half; writing them
+  # out beats minting a category for what is skeleton.
+  - id: ask/arith-percentage-increase
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {lit: percentage}
+        - {lit: increase}
+        - {lit: from}
+        - {slot: x, type: number}
+        - {lit: to}
+        - {slot: y, type: number}
+    resolves: {consumer: arithmetic, op: percent_change, x: "{x.value}", y: "{y.value}"}
+
+  - id: ask/arith-percentage-decrease
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {lit: percentage}
+        - {lit: decrease}
+        - {lit: from}
+        - {slot: x, type: number}
+        - {lit: to}
+        - {slot: y, type: number}
+    resolves: {consumer: arithmetic, op: percent_change, x: "{x.value}", y: "{y.value}"}
+
+  - id: ask/arith-percent-increase
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {lit: percent}
+        - {lit: increase}
+        - {lit: from}
+        - {slot: x, type: number}
+        - {lit: to}
+        - {slot: y, type: number}
+    resolves: {consumer: arithmetic, op: percent_change, x: "{x.value}", y: "{y.value}"}
+
+  - id: ask/arith-percent-decrease
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {lit: percent}
+        - {lit: decrease}
+        - {lit: from}
+        - {slot: x, type: number}
+        - {lit: to}
+        - {slot: y, type: number}
+    resolves: {consumer: arithmetic, op: percent_change, x: "{x.value}", y: "{y.value}"}
+
   - id: ask/arith-plus
     match:
       question:
