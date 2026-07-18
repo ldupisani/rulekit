@@ -64,3 +64,25 @@ def test_unrelated_what_is_question_declines(reg):
     question with no trig function must not spuriously commit."""
     r = solve("What is the capital of France?", reg, tracing=False)
     assert not r.answer.committed
+
+
+def test_both_spellings_of_sine_resolve_identically(reg):
+    # ONE ask via a `lit` alternation, replacing the two it used to take.
+    # Byte-identical resolves is what made the collapse a no-op.
+    assert solve("What is the sine of 30 degrees?", reg).answer.value == pytest.approx(0.5)
+    assert solve("What is the sin of 30 degrees?", reg).answer.value == pytest.approx(0.5)
+
+
+def test_the_other_trig_functions_keep_their_own_opcodes(reg):
+    # the reason a `trig_fn` CATEGORY over all four would be wrong: the opcode
+    # is per-word, so collapsing them would erase cos and tan
+    assert solve("What is the cosine of 60 degrees?", reg).answer.value == pytest.approx(0.5)
+    assert solve("What is the tangent of 45 degrees?", reg).answer.value == pytest.approx(1.0)
+
+
+def test_the_excluded_abbreviations_are_still_excluded(reg):
+    # 'tan'/'cos' collide with a GSM8K TEST name ("Mr. Tan") and SciBench
+    # LaTeX, so they are deliberately unlexicalised. An alternation makes it
+    # one keystroke to sweep them in — pin that nobody did.
+    assert solve("What is the tan of 45 degrees?", reg).answer.kind == "decline"
+    assert solve("What is the cos of 60 degrees?", reg).answer.kind == "decline"
