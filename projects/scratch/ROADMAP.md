@@ -273,6 +273,49 @@ enabler; the misbinding Stage 7 closed does not recur here (these
 conclusions currently just decline). Re-measure after the witness-side
 machinery lands.
 
+## Stage 8d — unknown-plural morphology, the `.singular` fold (2026-07-18) — DONE
+
+**The "measured at zero" claim below was true of the WRONG JOIN.** The zero
+measured naive-singularization over conclusion↔premise key pairs; the buyer
+lives in the premise↔premise join that measurement never covered — an
+unknown-plural universal instantiating against the SINGULAR copular atom
+("Tyga is a rapper" + "Rappers are not opera singers" ⊢ no). Re-measured
+over the 95 consumer-reached verdict-gold declines: **3 conversions to
+gold, 0 manufactured wrongs** ([386] Tyga needs only this; [426]
+Lewandowski additionally needs a verbal conditional read — its derivation
+now exists but the fragment guard correctly vetoes on the unread
+"If a player leaves a team…"; [185] Douglas Adams additionally needs the
+relative-clause drop to fire on an unknown-word lead).
+
+**What landed:** a `.singular` TEMPLATE ATTR (patterns.py `_naive_singular`
++ `_slot_value`/`_canonical_phrase`/`atom_variants`) — naive plural→singular
+for words the lexicon cannot fold, opt-in per rule. Applied to the whole
+PLURAL-AGREEING key family, premises AND asks together (17 templates:
+all/every/no/any/each-ARE universals, bare-plural ×4, some-are ±not,
+qdisj-all-are ×2, and the all-are/no-are/some-are conclusion asks) — the
+-is/-was variants are singular constructions and never fold (their keys
+join ground atom preds verbatim: the 'lens' hazard). Decomposition sees
+through the attr (else Stage 2.4 pred variants silently die on those
+rules — caught at design time). Known lemmas byte-identical, names keep
+surface keys, -ss/short words guarded; all pinned
+(test_bare_plural_universals.py, 8 new tests; the two verbatim-'wugs' pins
+updated as the deliberate contract change).
+
+**Gates:** pytest 1397; all 8 benchmark slices snapshot-diffed NEUTRAL;
+folio-with-logic dev-train **6 → 7 correct** (+1 SOLVED / 0 BROKE — the
+Tyga buyer, provenance `synth/universal-instantiation`), dev-holdout
+1/0 unchanged (the sports-cars conversion survives under folded keys —
+the fold is symmetric); four live null controls move (absent entity,
+absent class, cut premise ×2).
+
+**What it un-blocks next (each was one-piece-away in the walk):**
+- **[426]**: a VERBAL conditional premise read ("If a player leaves a
+  team they no longer play for that team") — the instantiation chain is
+  ready; only the fragment veto stands.
+- **[185]+[186]**: the relative-clause drop's lead gate (`units[0].sense()
+  != "noun"` refuses an unknown-word lead — 'author who created …' drops
+  nothing), then bare-plural VERBAL universals for [186].
+
 ## The cheap-increment frontier is EXHAUSTED (measured 2026-07-17, three zeros)
 
 Three candidate families were measured after Stage 8c and every one is

@@ -41,7 +41,7 @@ rules:
         - {lit: are}
         - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
     emits:
-      - {fact: quantified, cls: "{cls}", pred: "{pred}", polarity: true}
+      - {fact: quantified, cls: "{cls.singular}", pred: "{pred.singular}", polarity: true}
 
   - id: logic/universal-copular-all-is
     phase: read
@@ -74,7 +74,7 @@ rules:
         - {lit: are}
         - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
     emits:
-      - {fact: quantified, cls: "{cls}", pred: "{pred}", polarity: true}
+      - {fact: quantified, cls: "{cls.singular}", pred: "{pred.singular}", polarity: true}
 
   - id: logic/universal-no-are
     phase: read
@@ -85,7 +85,7 @@ rules:
         - {lit: are}
         - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
     emits:
-      - {fact: quantified, cls: "{cls}", pred: "{pred}", polarity: false}
+      - {fact: quantified, cls: "{cls.singular}", pred: "{pred.singular}", polarity: false}
 
   - id: logic/universal-no-is
     phase: read
@@ -97,6 +97,20 @@ rules:
         - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
     emits:
       - {fact: quantified, cls: "{cls}", pred: "{pred}", polarity: false}
+
+  # ⚠ THE `.singular` TEMPLATE ATTR (the unknown-plural-morphology increment):
+  # every cls/pred key in the PLURAL-AGREEING family (quantifier + 'are',
+  # bare-plural subjects, 'some ... are') renders with unknown-word plurals
+  # naively folded to singular (patterns._naive_singular — lexicon words keep
+  # their lemma path, names keep their surface). The construction's own
+  # plural agreement licenses the fold, and it must stay SYMMETRIC: premise
+  # rules and conclusion asks fold together or echo breaks. The -is/-was
+  # variants are SINGULAR constructions and must never fold — their keys join
+  # ground-copular atom preds verbatim ("X is a lens" / "Every lens is ...").
+  # Measured buyer at landing: an unknown-plural universal joining the
+  # singular copular atom ("T is a rapper" + "Rappers are not opera singers"
+  # ⊢ no), a premise↔premise join the zero-measurement of this family never
+  # covered (it checked conclusion↔premise pairs only).
 
   # ---- Stage 8: BARE-PLURAL universals — "CLS are [not] PRED" ---------------
   # FOLIO's FOL reads a bare-plural copular generic as ∀ ("Mushrooms are
@@ -129,7 +143,7 @@ rules:
         - {lit: are}
         - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
     emits:
-      - {fact: quantified, cls: "{cls}", pred: "{pred}", polarity: true}
+      - {fact: quantified, cls: "{cls.singular}", pred: "{pred.singular}", polarity: true}
 
   - id: logic/universal-bare-plural-noun-not
     phase: read
@@ -140,7 +154,7 @@ rules:
         - {lit: not}
         - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
     emits:
-      - {fact: quantified, cls: "{cls}", pred: "{pred}", polarity: false}
+      - {fact: quantified, cls: "{cls.singular}", pred: "{pred.singular}", polarity: false}
 
   - id: logic/universal-bare-plural-name
     phase: read
@@ -150,7 +164,7 @@ rules:
         - {lit: are}
         - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
     emits:
-      - {fact: quantified, cls: "{cls}", pred: "{pred}", polarity: true}
+      - {fact: quantified, cls: "{cls.singular}", pred: "{pred.singular}", polarity: true}
 
   - id: logic/universal-bare-plural-name-not
     phase: read
@@ -161,7 +175,7 @@ rules:
         - {lit: not}
         - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
     emits:
-      - {fact: quantified, cls: "{cls}", pred: "{pred}", polarity: false}
+      - {fact: quantified, cls: "{cls.singular}", pred: "{pred.singular}", polarity: false}
 
   # ---- ground atoms: "<Name> is/was [not] [a] PRED", "<Name> <verb> REST" --
   - id: logic/ground-copular-is
@@ -361,7 +375,7 @@ rules:
         - {lit: or}
         - {slot: r, span: true, span_blocks: [negation, conjunction, preposition]}
     emits:
-      - {fact: quantified_disjunction, cls: "{cls}", left: "{l}", right: "{r}", exclusive: false}
+      - {fact: quantified_disjunction, cls: "{cls.singular}", left: "{l.singular}", right: "{r.singular}", exclusive: false}
 
   - id: logic/qdisj-all-are-either
     phase: read
@@ -375,7 +389,7 @@ rules:
         - {lit: or}
         - {slot: r, span: true, span_blocks: [negation, conjunction, preposition]}
     emits:
-      - {fact: quantified_disjunction, cls: "{cls}", left: "{l}", right: "{r}", exclusive: true}
+      - {fact: quantified_disjunction, cls: "{cls.singular}", left: "{l.singular}", right: "{r.singular}", exclusive: true}
 
   - id: logic/qdisj-every-is-bare
     phase: read
@@ -432,7 +446,7 @@ rules:
         - {lit: are}
         - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
     emits:
-      - {fact: quantified, cls: "{cls}", pred: "{pred}", polarity: true}
+      - {fact: quantified, cls: "{cls.singular}", pred: "{pred.singular}", polarity: true}
 
   - id: logic/universal-each-is
     phase: read
@@ -454,7 +468,7 @@ rules:
         - {lit: are}
         - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
     emits:
-      - {fact: quantified, cls: "{cls}", pred: "{pred}", polarity: true}
+      - {fact: quantified, cls: "{cls.singular}", pred: "{pred.singular}", polarity: true}
 
   - id: logic/universal-everyone-who-is
     phase: read
@@ -492,7 +506,7 @@ rules:
         - {lit: are}
         - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
     emits:
-      - {fact: existential, cls: "{cls}", pred: "{pred}", polarity: true}
+      - {fact: existential, cls: "{cls.singular}", pred: "{pred.singular}", polarity: true}
 
   - id: logic/existential-some-are-not
     phase: read
@@ -504,7 +518,7 @@ rules:
         - {lit: not}
         - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
     emits:
-      - {fact: existential, cls: "{cls}", pred: "{pred}", polarity: false}
+      - {fact: existential, cls: "{cls.singular}", pred: "{pred.singular}", polarity: false}
 
   # ---- Stage 6: the VERBAL frontier (re-landed from v1, hazards designed out)
   # - v slot `type: nonstate_verb`: 'is'/'was' stay copular (the 'be'-twin).
@@ -704,8 +718,8 @@ asks:
         - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
     resolves:
       consumer: existential-verdict
-      cls: "{cls}"
-      pred: "{pred}"
+      cls: "{cls.singular}"
+      pred: "{pred.singular}"
       polarity: "true"
 
   - id: ask/logic-existential-some-are-not
@@ -722,8 +736,8 @@ asks:
         - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
     resolves:
       consumer: existential-verdict
-      cls: "{cls}"
-      pred: "{pred}"
+      cls: "{cls.singular}"
+      pred: "{pred.singular}"
       polarity: "false"
 
   # ---- universal conclusions: "Is it true that all/no CLS are PRED?" ---------
@@ -750,8 +764,8 @@ asks:
         - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
     resolves:
       consumer: universal-verdict
-      cls: "{cls}"
-      pred: "{pred}"
+      cls: "{cls.singular}"
+      pred: "{pred.singular}"
       polarity: "true"
 
   - id: ask/logic-universal-all-is
@@ -784,8 +798,8 @@ asks:
         - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
     resolves:
       consumer: universal-verdict
-      cls: "{cls}"
-      pred: "{pred}"
+      cls: "{cls.singular}"
+      pred: "{pred.singular}"
       polarity: "false"
 
   - id: ask/logic-universal-no-is

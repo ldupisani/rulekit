@@ -600,7 +600,25 @@ _TEMPLATE = re.compile(r"\{(\w+)(?:\.(\w+))?\}")
 _SIGN = re.compile(r"sign\((\w+)\)")
 
 
-def _canonical_phrase(units: tuple[Unit, ...]) -> str:
+def _naive_singular(word: str) -> str:
+    """Naive English plural -> singular, for words the LEXICON CANNOT FOLD.
+    Reached only through the opt-in `.singular` template attr, and there only
+    for unknown-word folds — a lexicon word's plural already folds to its
+    lemma. The rules that opt in are constructions whose GRAMMAR marks the
+    position plural (a bare-plural generic subject, a span after plural-
+    agreeing 'are'), so the fold is morphology licensed by the construction,
+    never a loose match: keys are still materialized at emission and compared
+    exactly. 'ss'/short words stay verbatim ('chess', 'gas')."""
+    if len(word) > 3 and word.endswith("ies"):
+        return word[:-3] + "y"
+    if len(word) > 3 and word.endswith("es") and word[-3] in "sxz":
+        return word[:-2]
+    if len(word) > 3 and word.endswith("s") and not word.endswith("ss"):
+        return word[:-1]
+    return word
+
+
+def _canonical_phrase(units: tuple[Unit, ...], singularize_unknown: bool = False) -> str:
     """A span slot's value: per-token lemma normalization ONLY (plurals and
     known inflections fold to their lexicon lemma; unknown words stay
     verbatim), articles/punct dropped because they are already skippable
@@ -624,7 +642,13 @@ def _canonical_phrase(units: tuple[Unit, ...]) -> str:
             continue
         words = (u.features.get("fold") or "").split()
         lemma = _lemma_of(u)
-        parts.append(qualified_render(words, lemma))
+        rendered = qualified_render(words, lemma)
+        if singularize_unknown and not u.senses():
+            # only the SENSELESS unknown folds naively — a lexicon word's
+            # plural already folded to its lemma above, and a name-sensed
+            # unit mid-span ('Knicks players') keeps its surface key
+            rendered = " ".join(_naive_singular(w) for w in rendered.split())
+        parts.append(rendered)
     return " ".join(parts)
 
 
@@ -707,8 +731,13 @@ def atom_variants(fact: Fact, emit_fields: dict, slots: dict, reg: Registry) -> 
     if not isinstance(raw, str):
         return []
     m = _TEMPLATE.fullmatch(raw.strip())
-    if not m or m.group(2) is not None:
+    # `.singular` is the ONE attr decomposition sees through: it renames the
+    # same span's render (unknown plurals folded), so variants must fold the
+    # same way or their keys drift from the primary's. Any other attr means
+    # the field is not a plain span key — no decomposition.
+    if not m or m.group(2) not in (None, "singular"):
         return []
+    singularize = m.group(2) == "singular"
     span = slots.get(m.group(1))
     if not isinstance(span, tuple):
         return []
@@ -722,7 +751,7 @@ def atom_variants(fact: Fact, emit_fields: dict, slots: dict, reg: Registry) -> 
     inter, rest = intersective_split(words, lemma, reg) if len(words) > 1 else ([], [])
     stripped_lead = " ".join(rest + [lemma]) if inter else None
     tail_units = tuple(units[1:])
-    tail = _canonical_phrase(tail_units)
+    tail = _canonical_phrase(tail_units, singularize_unknown=singularize)
     tail_droppable = bool(tail_units) and (
         tail_units[0].sense() in _RELATIVE_MARKER_SENSES
         # Stage 2.2: a PP immediately after the lead nominal is a restrictive
@@ -794,9 +823,23 @@ def atom_variants(fact: Fact, emit_fields: dict, slots: dict, reg: Registry) -> 
 
 def _slot_value(unit: Unit, attr: str | None) -> str:
     if isinstance(unit, tuple):
-        # a span slot (MatchToken.span) binds a RUN of units; its only
-        # rendering is the canonical phrase, whatever attr the template asks
-        return _canonical_phrase(unit)
+        # a span slot (MatchToken.span) binds a RUN of units; its rendering
+        # is the canonical phrase — `.singular` additionally folds unknown-
+        # word plurals (the plural-agreeing-construction attr, see
+        # _naive_singular); every other attr renders the plain phrase
+        return _canonical_phrase(unit, singularize_unknown=(attr == "singular"))
+    if attr == "singular":
+        # a single-unit key in a construction whose grammar marks it PLURAL
+        # (a bare-plural generic subject): the lemma render, then the naive
+        # fold for a unit the lexicon cannot fold — the senseless unknown
+        # and the sentence-initial capitalized unknown senses.py fell back
+        # to naming (the universal-bare-plural-name rules' subject; a real
+        # name cannot reach these slots — plural copular agreement). A
+        # lexicon word keeps its untouched lemma path.
+        rendered = _lemma_of(unit)
+        if not unit.senses() or unit.sense() == "name":
+            rendered = " ".join(_naive_singular(w) for w in rendered.split())
+        return rendered
     if attr == "surface":
         return unit.surface
     if attr == "value":
