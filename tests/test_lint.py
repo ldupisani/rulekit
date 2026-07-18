@@ -143,9 +143,13 @@ def _codes(reg):
     return {f.code for f in lint_checks(reg)}
 
 
-def test_a_bare_skippable_literal_is_reported_dead(tmp_path):
-    reg = _mk(tmp_path, LIT_LEX, _lit_ask("        - {lit: the}\n"))
-    assert "dead-literal" in _codes(reg)
+def test_a_bare_skippable_literal_cannot_even_be_LOADED(tmp_path):
+    # see test_a_dead_literal_fails_at_LOAD below — the registry refuses it, so
+    # there is no lint finding to make and no registry for lint to run on
+    from rulekit.data.registry import CompileError
+
+    with pytest.raises(CompileError):
+        _mk(tmp_path, LIT_LEX, _lit_ask("        - {lit: the}\n"))
 
 
 def test_consume_skipped_makes_it_live(tmp_path):
@@ -161,27 +165,22 @@ def test_an_unlexicalised_word_is_not_dead(tmp_path):
     assert "dead-literal" not in _codes(reg)
 
 
-def test_the_check_recurses_into_nested_opt_groups(tmp_path):
-    # every dead literal in the real packs lives inside `opt:`, and two are an
-    # opt nested inside an opt — a single-level walk misses those silently
-    reg = _mk(tmp_path, LIT_LEX, _lit_ask(
-        "        - opt:\n"
-        "            - opt:\n"
-        "                - {lit: the}\n"
-        "        - {lit: dog}\n"))
-    assert "dead-literal" in _codes(reg)
 
 
-def test_an_alternation_is_dead_only_if_EVERY_option_is(tmp_path):
-    (tmp_path / "a").mkdir()
-    (tmp_path / "b").mkdir()
-    live = _mk(tmp_path / "a", LIT_LEX, _lit_ask("        - {lit: [the, some]}\n"))
-    codes = _codes(live)
-    assert "dead-literal" not in codes          # 'some' is live
-    assert "partially-dead-alternation" in codes  # ...but 'the' can never fire
 
-    dead = _mk(tmp_path / "b", LIT_LEX, _lit_ask("        - {lit: [the, a]}\n"))
-    assert "dead-literal" in _codes(dead)
+def test_a_partly_dead_alternation_loads_but_warns(tmp_path):
+    # 'some' keeps the token live, so the registry builds — but 'the' can never
+    # fire, silently narrowing the alternation. That is the case only lint can
+    # catch, which is why this finding survives the load-time promotion.
+    live = _mk(tmp_path, LIT_LEX, _lit_ask("        - {lit: [the, some]}\n"))
+    assert "partially-dead-alternation" in _codes(live)
+
+
+def test_an_alternation_with_EVERY_option_dead_is_refused_at_load(tmp_path):
+    from rulekit.data.registry import CompileError
+
+    with pytest.raises(CompileError):
+        _mk(tmp_path, LIT_LEX, _lit_ask("        - {lit: [the, a]}\n"))
 
 
 def test_a_same_sense_alternation_suggests_a_category(tmp_path):
@@ -198,3 +197,36 @@ def test_an_article_alternation_is_skeleton_not_a_missing_category(tmp_path):
     reg = _mk(tmp_path, LIT_LEX,
               _lit_ask("        - {lit: [a, an], consume_skipped: true}\n"))
     assert "alternation-should-be-category" not in _codes(reg)
+
+
+def test_a_dead_literal_fails_at_LOAD(tmp_path):
+    # The lint check reports it; the registry REFUSES it. Same argument as
+    # AskRule._anchor_is_first: a token that can never match makes a dead rule,
+    # and a dev gate reports a dead rule as a clean 0 SOLVED — so the failure
+    # has to happen where it cannot be read past.
+    from rulekit.data.registry import CompileError
+
+    with pytest.raises(CompileError) as exc:
+        _mk(tmp_path, LIT_LEX, _lit_ask("        - {lit: the}\n"))
+    assert "can never match" in str(exc.value)
+
+
+def test_load_time_refusal_recurses_into_opt(tmp_path):
+    from rulekit.data.registry import CompileError
+
+    with pytest.raises(CompileError):
+        _mk(tmp_path, LIT_LEX, _lit_ask(
+            "        - opt:\n"
+            "            - opt:\n"
+            "                - {lit: the}\n"
+            "        - {lit: dog}\n"))
+
+
+def test_load_time_refusal_spares_a_live_or_claimed_literal(tmp_path):
+    (tmp_path / "a").mkdir()
+    (tmp_path / "b").mkdir()
+    # consume_skipped makes it live...
+    _mk(tmp_path / "a", LIT_LEX,
+        _lit_ask("        - {lit: the, consume_skipped: true}\n"))
+    # ...and an alternation is only dead if EVERY option is
+    _mk(tmp_path / "b", LIT_LEX, _lit_ask("        - {lit: [the, some]}\n"))

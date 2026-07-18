@@ -34,13 +34,13 @@ def _all_tokens(rule) -> list:
 def _literal_checks(reg: Registry) -> list[Finding]:
     """Hygiene for `lit` tokens and `lit` ALTERNATIONS.
 
-    Three findings, and the split matters:
+    Two findings, and the split matters:
 
-    - `dead-literal`: EVERY option is a skippable-sense word (article/punct)
-      and `consume_skipped` is not set, so the token can never match. The
-      auto-skip loop walks straight past it. An `opt:` group containing one is
-      a silent no-op; a REQUIRED one makes the whole rule unmatchable, which a
-      dev gate reports as a clean 0 SOLVED.
+    A WHOLLY dead literal — every option skippable-sensed, no `consume_skipped`
+    — is NOT a finding here: `compile_registry` refuses such a pack outright,
+    so this module can never see one. That is the stronger enforcement and the
+    only one, which is why nothing duplicates it.
+
     - `partially-dead-alternation`: SOME but not all options are dead. The
       token still fires, silently narrowed to its live options — a mistake the
       alternation primitive newly makes possible.
@@ -64,14 +64,11 @@ def _literal_checks(reg: Registry) -> list[Finding]:
                 o for o, e in entries.items()
                 if e is not None and set(e.senses) <= SKIPPABLE_SENSES
             }
+            # NOTE: a WHOLLY dead literal is not reported here. `compile_registry`
+            # refuses to build a registry containing one, and `rulekit lint`
+            # needs a compiled registry — so a check for it could never fire.
+            # One enforcement point, at load.
             if dead == set(opts):
-                findings.append(
-                    Finding("error", "dead-literal",
-                            f"{rule.id} matches {list(opts)} but every option is a "
-                            "SKIPPABLE sense (article/punct) — the skip loop walks "
-                            "past it, so this token can never match. Add "
-                            "`consume_skipped: true` or delete it")
-                )
                 continue
             if dead:
                 findings.append(

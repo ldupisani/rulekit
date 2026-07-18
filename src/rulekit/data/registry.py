@@ -462,6 +462,46 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                     if cat and cat not in valid_gates:
                         raise CompileError(f"rule {rule.id!r} gates on unknown category {cat!r}")
 
+    # A LITERAL THAT CAN NEVER MATCH is an authoring mistake, and it fails at
+    # LOAD for the same reason AskRule._anchor_is_first does: the auto-skip
+    # loop walks past a skippable-sense word, so the token matches nothing and
+    # a dev gate reports a clean 0 SOLVED. Inside an `opt:` group that is a
+    # silent no-op; on a required token it makes the whole rule unmatchable.
+    # Twelve of these had accumulated before the check existed.
+    #
+    # This lives here rather than on the MatchToken schema because it needs
+    # SENSES, which only the compiled lexicon has. The import is deferred: this
+    # module is imported BY kernel.patterns, so a module-level import would be
+    # circular. One definition, borrowed — not a second copy.
+    from ..kernel.patterns import SKIPPABLE_SENSES
+
+    def _every_token(rule):
+        out: list = []
+
+        def walk(tokens):
+            for tok in tokens:
+                out.append(tok)
+                walk(getattr(tok, "opt", None) or ())
+
+        for seq in rule.match.values():
+            flat = seq if seq and not isinstance(seq[0], list) else [t for s in seq for t in s]
+            walk(flat)
+        return out
+
+    for rule in list(rules) + list(asks):
+        for tok in _every_token(rule):
+            opts = tok.lit_options
+            if not opts or tok.consume_skipped:
+                continue
+            entries = [lexicon.get(o) for o in opts]
+            # a word the lexicon does not know has no sense to BE skippable
+            if all(e is not None and set(e.senses) <= SKIPPABLE_SENSES for e in entries):
+                raise CompileError(
+                    f"{rule.id!r} matches {list(opts)} but every option is a SKIPPABLE "
+                    f"sense — the skip loop walks past it, so this token can never "
+                    f"match. Add `consume_skipped: true` or delete it"
+                )
+
     fingerprint = hashlib.sha256(
         "|".join(p.fingerprint for p in packs).encode()
     ).hexdigest()
