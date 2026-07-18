@@ -46,9 +46,21 @@ categories:
     # declines either way, but an unread premise would lose real atoms.
     agent_marker:
         parent: preposition
+    # Stage 9b: 'neither' is a difg-mined ADJECTIVE, so no span_blocks entry
+    # could see it and "Tom is neither a Merriam's turkey nor a Rio Grande
+    # turkey" minted a POSITIVE atom keyed on the whole negated phrase --
+    # a negation swallowed into a phrase key, which this pack's header
+    # forbids everywhere. Exact mirror of `either_marker`: naming the word
+    # lets the plain copular spans REFUSE the construction, handing it to
+    # the neither/nor rule alone. 'nor' needs no category (it is already
+    # conjunction-sensed, so `span_blocks: conjunction` terminates the
+    # left disjunct on it).
+    neither_marker:
+        parent: adjective
 members:
     conjunctive_marker: [and]
     disjunctive_marker: [or]
     either_marker: [either]
     definite_article: [the]
     agent_marker: [by]
+    neither_marker: [neither]

@@ -606,3 +606,44 @@ def test_verbal_and_copular_all_fold_their_restrictor_alike(logic_reg):
     copular = engine.solve("All blickets are gleebs.", logic_reg, tracing=False)
     assert {f.cls for f in verbal.store.by_kind(Quantified)} == {"blicket"}
     assert {f.cls for f in copular.store.by_kind(Quantified)} == {"blicket"}
+
+
+# ---- Stage 9b: a negation is never swallowed into a phrase key ----
+
+def test_neither_nor_mints_no_positive_atom(logic_reg):
+    # "X is neither A nor B" asserts ¬A ∧ ¬B. Keying an atom on the whole
+    # negated phrase asserts the OPPOSITE of the sentence, and no consumer
+    # can see a negation hiding inside a key ('neither' is an ADJECTIVE, so
+    # `span_blocks: negation` never caught it).
+    from rulekit.kernel.model import Atom
+
+    r = engine.solve("Rex is neither a dog nor a cat.", logic_reg, tracing=False)
+    assert list(r.store.by_kind(Atom)) == []
+
+
+def test_neither_nor_conclusion_is_not_echo_answered(logic_reg):
+    # the live hazard the atom above would have created: a conclusion of the
+    # same shape echo-matching the junk key and committing a verdict that
+    # was never reasoned
+    assert _verdict(
+        "Rex is neither a dog nor a cat. "
+        "Is it true that Rex is neither a dog nor a cat?", logic_reg,
+    ) in ("undetermined", "decline")
+
+
+def test_plain_copular_reading_is_untouched(logic_reg):
+    # the marker is scoped to the construction it names -- an ordinary
+    # copular premise still mints its atom
+    from rulekit.kernel.model import Atom
+
+    r = engine.solve("Rex is a dog.", logic_reg, tracing=False)
+    assert {f.pred for f in r.store.by_kind(Atom)} == {"dog"}
+
+
+def test_a_predicate_merely_containing_neither_still_refuses(logic_reg):
+    # fail-closed: any surface carrying the marker is refused rather than
+    # read partially, whatever the rest of the construction looks like
+    from rulekit.kernel.model import Atom
+
+    r = engine.solve("Rex is neither happy.", logic_reg, tracing=False)
+    assert list(r.store.by_kind(Atom)) == []

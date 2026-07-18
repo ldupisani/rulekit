@@ -242,13 +242,22 @@ rules:
       - {fact: conditional, cls: "{cls}", pred: "{v} {p}", then_pred: "{v2} {p2}", polarity: false}
 
   # ---- ground atoms: "<Name> is/was [not] [a] PRED", "<Name> <verb> REST" --
+  # `neither_marker` in the pred span (Stage 9b) enforces this file's own
+  # header rule -- a negation may never be swallowed into a phrase key.
+  # 'neither' is a difg-mined ADJECTIVE, so no span_blocks entry could see
+  # it and "Tom is neither a Merriam's turkey nor a Rio Grande turkey" minted
+  # a POSITIVE atom keyed on the whole negated phrase. Refusing it leaves the
+  # sentence unread at the atom layer (monotone-safe: the atom it replaced
+  # was junk). The sound De Morgan READER -- two negative atoms, ¬A ∧ ¬B --
+  # is written and measured NEUTRAL but is NOT landed: it has zero buyers on
+  # dev-train, and an enabler must be bought (the _TOKEN precedent).
   - id: logic/ground-copular-is
     phase: read
     match:
       sentence:
         - {slot: subj, type: name, at_start: true, blocks_skipped: indefinite_article}
         - {lit: is}
-        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
+        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker, neither_marker]}
     emits:
       - {fact: atom, entity: "{subj}", pred: "{pred}", polarity: true}
 
