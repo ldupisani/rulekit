@@ -18,6 +18,7 @@ from ruamel.yaml import YAML
 from .schemas import (
     AffineConversionsDoc,
     CalendarDoc,
+    ElementsDoc,
     KIND_MODELS,
     CategoriesDoc,
     ConversionsDoc,
@@ -59,6 +60,7 @@ class LoadedPack:
     geometry: list[GeometryDoc] = field(default_factory=list)
     formulas: list[FormulasDoc] = field(default_factory=list)
     calendar: list[CalendarDoc] = field(default_factory=list)
+    elements: list[ElementsDoc] = field(default_factory=list)
     affine: list[AffineConversionsDoc] = field(default_factory=list)
     quarantine: list[QuarantineDoc] = field(default_factory=list)
     fingerprint: str = ""
@@ -126,6 +128,8 @@ def load_pack(root: Path) -> LoadedPack:
             pack.formulas.append(doc)
         elif isinstance(doc, CalendarDoc):
             pack.calendar.append(doc)
+        elif isinstance(doc, ElementsDoc):
+            pack.elements.append(doc)
         elif isinstance(doc, AffineConversionsDoc):
             pack.affine.append(doc)
         elif isinstance(doc, QuarantineDoc):

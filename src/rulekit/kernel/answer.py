@@ -1251,6 +1251,28 @@ def answer(
             + (f" +{raw_tax} tax" if raw_tax not in (None, "") else ""),
         )
 
+    if consumer == "molar-mass":
+        # Sum the atomic masses of a formula's symbols, each times its
+        # subscript. Masses are DATA (`rulekit/elements@1`); no element is
+        # named here. numbers.py has already validated every symbol against
+        # that same table, so an unknown symbol cannot reach this consumer —
+        # but it is re-checked rather than assumed, because the reader and the
+        # consumer are reached by different paths and a table loaded without
+        # the other is a real configuration.
+        import re as _re
+
+        raw = str(query.get("formula", ""))
+        parts = _re.findall(r"([A-Z][a-z]?)(\d*)", raw)
+        if not raw or not parts:
+            return Answer("decline", None, f"{raw!r} is not a readable formula")
+        total = 0.0
+        for sym, count in parts:
+            mass = reg.atomic_masses.get(sym)
+            if mass is None:
+                return Answer("decline", None, f"no atomic mass known for {sym!r}")
+            total += mass * (int(count) if count else 1)
+        return Answer("number", total, f"molar-mass: {raw} = {total}")
+
     if consumer == "calendar":
         # Date arithmetic over ISO dates read as WHOLE tokens (tokenize.py's
         # date alternative + numbers.py `_ISO_DATE`). Two ops, both structural

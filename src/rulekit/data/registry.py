@@ -130,6 +130,7 @@ class Registry:
     unit_dimension: Mapping[str, str]  # unit lemma -> dimension name
     calendar_span_days: Mapping[str, float]  # span unit lemma -> days per unit
     month_numbers: Mapping[str, int]  # month name/abbreviation -> 1..12
+    atomic_masses: Mapping[str, float]  # element symbol -> g/mol
     affine_scales: Mapping[tuple[str, str], tuple[float, float]]  # (from,to) -> (offset,factor)
     quarantine: Mapping[str, str]  # word -> reason (never vocabulary)
     rules: tuple[PatternRule, ...]
@@ -369,6 +370,18 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                 affine_scales[fwd] = pair
                 affine_scales[rev] = (-sc.offset * sc.factor, 1.0 / sc.factor)
 
+    # atomic masses: element symbol -> g/mol. Same conflict discipline as the
+    # tables above — a redeclaration with a different mass ERRORS.
+    atomic_masses: dict[str, float] = {}
+    for pack in packs:
+        for doc in pack.elements:
+            for sym, mass in doc.masses.items():
+                if atomic_masses.get(sym, mass) != mass:
+                    raise CompileError(
+                        f"element {sym!r} declared twice with different masses"
+                    )
+                atomic_masses[sym] = mass
+
     # calendar spans: span unit lemma -> days per unit. Same conflict
     # discipline as the tables above -- a redeclaration with a different
     # divisor ERRORS rather than letting one silently win.
@@ -533,6 +546,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
         conversions=_freeze(conversions),
         calendar_span_days=_freeze(calendar_span_days),
         month_numbers=_freeze(month_numbers),
+        atomic_masses=_freeze(atomic_masses),
         affine_scales=_freeze(affine_scales),
         geometry_formulas=_freeze(geometry_formulas),
         quantity_formulas=_freeze(quantity_formulas),

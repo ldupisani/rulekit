@@ -11,6 +11,7 @@ values to the completed nominals.
 from __future__ import annotations
 
 import datetime
+import re
 
 from ..data.registry import Registry
 from .learn import _has_event_polarity
@@ -437,6 +438,83 @@ def _date_pass(reading: Reading, reg: Registry) -> bool:
     return False
 
 
+_FORMULA = re.compile(r"^(?:[A-Z][a-z]?\d*)+$")
+_FORMULA_PART = re.compile(r"([A-Z][a-z]?)(\d*)")
+
+
+def _formula_pass(reading: Reading, reg: Registry) -> bool:
+    """Fuse a shredded chemical formula — "H2O" as H,2,O — back into ONE unit.
+
+    THE TOKENIZER CANNOT DO THIS, and that is the whole reason the pass lives
+    here. "CO2" and "MP3" are structurally identical: capitals then a digit.
+    Only the ELEMENT TABLE separates a compound from an MP3 player, and the
+    tokenizer has no registry. A tokenizer-level pattern was tried and it
+    fused 'MP3', costing two GSM8K items.
+
+    So the run is reassembled from the SURFACES and validated as a whole:
+    every symbol must be a key in `reg.atomic_masses` (pack data), and at least
+    two element groups must be present. A project declaring no elements cannot
+    reach this pass at all.
+
+    Only SENSELESS letter units join a run, which is what keeps element symbols
+    that are also English words out of it: 'He', 'I', 'In', 'As', 'At', 'No'
+    and 'Be' are all real symbols AND lexicon words, and the lexicon wins.
+
+    The merged unit carries NO `value` — a formula is not a scalar, the same
+    contract as a date or a coordinate tuple.
+    """
+    if not reg.atomic_masses:
+        return False
+    units = reading.units
+
+    def is_digit(u) -> bool:
+        return u.surface.isdigit() and u.features.get("value_kind") == "count"
+
+    def eligible(u) -> bool:
+        return is_digit(u) or u.surface.isalpha()
+
+    for i in range(len(units)):
+        if not eligible(units[i]) or is_digit(units[i]):
+            continue  # a formula starts with a symbol, never a subscript
+        for j in range(len(units), i, -1):        # longest run first
+            run = units[i:j]
+            if not all(eligible(u) for u in run):
+                continue
+            # THE LEXICON WINS, but only where there is nothing else to go on.
+            # A LONE unit must be senseless, so 'He'/'I'/'As'/'At'/'No' stay
+            # the English words they are. A MULTI-unit run must instead carry a
+            # SUBSCRIPT — that digit is the structural evidence a formula is
+            # meant, and it is what lets 'SO' in "H2SO4" be sulfur+oxygen even
+            # though 'so' is a conjunction.
+            if len(run) == 1:
+                if run[0].senses():
+                    continue
+            elif not any(is_digit(u) for u in run):
+                continue
+            text = "".join(u.surface for u in run)
+            if not _FORMULA.match(text):
+                continue
+            parts = _FORMULA_PART.findall(text)
+            if len(parts) < 2 or not all(sym in reg.atomic_masses for sym, _ in parts):
+                continue
+            if len(run) == 1 and units[i].features.get("value_kind") == "formula":
+                continue  # already merged
+            merged = reading.new_unit(tuple(w for u in run for w in u.words), {})
+            units[i:j] = [merged]
+            reading.record(
+                "merge-formula", merged,
+                {
+                    "fold": text.lower(),
+                    "senses": ["formula"],
+                    "value_kind": "formula",
+                    "components": text,
+                },
+                f"chemical formula {text!r} is one unit",
+            )
+            return True
+    return False
+
+
 def condense(reading: Reading, reg: Registry) -> Reading:
     # joint fixpoint with nominal priority: a count merge can expose a new
     # nominal merge ("Tom's [3 apples]"), so alternate until neither fires
@@ -445,6 +523,11 @@ def condense(reading: Reading, reg: Registry) -> Reading:
         # month noun ("1 March" -> one counted nominal) and the date would
         # never be seen
         if _date_pass(reading, reg):
+            continue
+        # formulas before the count merge, for the same reason as dates: the
+        # count merge would otherwise claim the subscript ("2 O" -> one counted
+        # nominal) and the formula would never be seen
+        if _formula_pass(reading, reg):
             continue
         if _nominal_pass(reading, reg):
             continue

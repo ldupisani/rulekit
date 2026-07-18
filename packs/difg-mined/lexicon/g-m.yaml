@@ -1669,6 +1669,19 @@ entries:
   models:
     senses:
     - noun
+  # ADJECTIVE, not noun, and the choice is load-bearing. As a noun it would
+  # merge with the following noun into ONE compound ("molar mass" -> a single
+  # unit whose fold is 'molar mass'), which the two-literal ask cannot match --
+  # the 'square root' gotcha. Admitted only so the unknown-word guard stops
+  # blocking; the ask matches it as grammatical skeleton either way, since a
+  # literal matches on fold regardless of sense.
+  #
+  # Zero occurrences in gsm8k (TEST included), asdiv, svamp, mawps and folio;
+  # 28 in SciBench dev, which is the out-of-domain gate that must hold 0
+  # commits -- re-measured at 0/0 after this landed.
+  molar:
+    senses:
+    - adjective
   mom:
     senses:
     - noun

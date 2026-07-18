@@ -202,6 +202,10 @@ SLOT_TYPES = (
     # Disjoint from every scalar slot type on the same argument as `point`: a
     # date carries no scalar, so it can never collide with a `number` slot.
     "date",
+    # a CHEMICAL FORMULA ("H2O", "NaCl") — numbers.py's `_FORMULA`, gated on
+    # every symbol being a key in the element table so an acronym-shaped word
+    # cannot masquerade as a compound.
+    "formula",
     # mining candidate conjunct-comparative-quantities: a BARE common-noun
     # holder ("the vehicle", "the animal") — sense noun, no `owner` feature
     # (never a possessive-merged noun, see `possessed`), no `qualifier`
@@ -600,6 +604,38 @@ class AffineConversionsDoc(StrictModel):
     scales: list[AffineScaleDef]
 
 
+class ElementsDoc(StrictModel):
+    """Standard atomic weights, element symbol -> g/mol.
+
+    An atomic mass keyed on a SYMBOL is a word-specific fact, so it is pack
+    data and no element is ever named in a consumer.
+
+    The table doubles as the VALIDATOR for the formula reader: a token is read
+    as a chemical formula only when EVERY symbol in it is a key here. Without
+    that, an acronym-shaped word would parse as a compound — 'FBI' is F+B+I and
+    all three are real symbols, which is exactly why the reader ALSO requires a
+    digit and why the formula slot only appears in a chemistry ask.
+    """
+
+    format: Literal["rulekit/elements@1"]
+    masses: dict[str, float]
+
+    @model_validator(mode="after")
+    def _symbols_are_well_formed(self) -> "ElementsDoc":
+        # A symbol is one capital plus an optional lowercase — the shape the
+        # tokenizer and the reader both assume. A malformed key would sit in
+        # the table matching nothing, which is the dead-rule failure mode this
+        # repo fails loudly on rather than tolerating.
+        import re
+        for sym in self.masses:
+            if not re.fullmatch(r"[A-Z][a-z]?", sym):
+                raise ValueError(
+                    f"element symbol {sym!r} must be one capital plus an "
+                    "optional lowercase letter"
+                )
+        return self
+
+
 class CalendarDoc(StrictModel):
     """How many DAYS make one unit of each calendar span.
 
@@ -771,6 +807,7 @@ KIND_MODELS: dict[str, type[BaseModel]] = {
     "rulekit/geometry@1": GeometryDoc,
     "rulekit/formulas@1": FormulasDoc,
     "rulekit/calendar@1": CalendarDoc,
+    "rulekit/elements@1": ElementsDoc,
     "rulekit/affine-conversions@1": AffineConversionsDoc,
     "rulekit/quarantine@1": QuarantineDoc,
     "rulekit/numbers@1": NumbersDoc,

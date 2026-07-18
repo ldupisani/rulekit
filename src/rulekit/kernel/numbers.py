@@ -47,6 +47,7 @@ _TUPLE = re.compile(r"^(\d+(?:\.\d+)?(?:,\d+(?:\.\d+)?)+)$")
 # tuple it carries NO `value`: a date is not a scalar, so guards.py's
 # value-accounting never demands it be consumed as a quantity.
 _ISO_DATE = re.compile(r"^(\d{4})-(\d{2})-(\d{2})$")
+
 _SLASH_FRACTION = re.compile(r"^(\d+)/(\d+)$")
 # Fused ordinal ("5th", "21st", "3rd") — productive digit+suffix morphology,
 # structural like digit parsing itself, not a lexicon fact. An ordinal is an
@@ -63,6 +64,8 @@ def annotate_numbers(reading: Reading, reg: Registry) -> Reading:
     while i < len(units):
         unit = units[i]
         fold = unit.features.get("fold", "")
+        # the SURFACE, not the fold: symbols are case-significant ('Co' the
+        # element vs 'CO' carbon monoxide), and the fold is lower-cased
         dm = _ISO_DATE.match(fold)
         if dm:
             reading.record(

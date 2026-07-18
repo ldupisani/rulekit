@@ -36,7 +36,7 @@ def annotate_senses(reading: Reading, reg: Registry) -> Reading:
         # number annotation sets `value` and `value_kind` together, so this
         # cannot pull any pre-existing unit down a new path. A coordinate tuple
         # is the one annotation with a kind but no scalar (numbers.py _TUPLE).
-        if "value" in unit.features or unit.features.get("value_kind") in ("tuple", "date"):
+        if "value" in unit.features or unit.features.get("value_kind") in ("tuple", "date", "formula"):
             # a currency amount IS a counted noun ("$5" ≡ "5 dollars"); its
             # measure word comes from the currencies map (data, not code)
             if unit.features.get("currency") and "$" in reg.currencies:
@@ -62,6 +62,9 @@ def annotate_senses(reading: Reading, reg: Registry) -> Reading:
                 # an ISO date: its own sense for the same reason as a tuple --
                 # it carries no scalar and demands no `quantifies` obligation
                 "date": "date",
+                # a chemical formula: its own sense for the same reason as a
+                # tuple or a date — no scalar, no `quantifies` obligation
+                "formula": "formula",
             }[kind]
             reading.record("annotate-sense", unit, {"senses": [sense]}, f"value token ({kind})")
             continue

@@ -1,0 +1,42 @@
+format: rulekit/elements@1
+# Standard atomic weights (IUPAC conventional values), symbol -> g/mol.
+#
+# DATA, not code: an atomic mass keyed on a SYMBOL is a word-specific fact, so
+# it lives here and the `molar-mass` consumer names no element (constitution
+# rule 1). The table is also the VALIDATOR — numbers.py reads a token as a
+# formula only when EVERY symbol in it appears here, which is what stops an
+# acronym-shaped word being parsed as a compound.
+#
+# Deliberately not the whole periodic table: these are the elements the
+# measured corpus questions use, plus the common light elements a neighbouring
+# question would reach for. Adding a row is a one-line data change.
+masses:
+  H: 1.008
+  He: 4.0026
+  Li: 6.94
+  B: 10.81
+  C: 12.011
+  N: 14.007
+  O: 15.999
+  F: 18.998
+  Ne: 20.180
+  Na: 22.990
+  Mg: 24.305
+  Al: 26.982
+  Si: 28.085
+  P: 30.974
+  S: 32.06
+  Cl: 35.45
+  Ar: 39.948
+  K: 39.098
+  Ca: 40.078
+  Fe: 55.845
+  Cu: 63.546
+  Zn: 65.38
+  Br: 79.904
+  Ag: 107.87
+  I: 126.90
+  Ba: 137.33
+  Au: 196.97
+  Hg: 200.59
+  Pb: 207.2

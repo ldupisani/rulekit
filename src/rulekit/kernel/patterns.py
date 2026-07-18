@@ -150,6 +150,11 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
             return kind == "fraction" and bool(unit.features.get("percent"))
         if t == "multiplier":
             return kind == "multiplier"
+        if t == "formula":
+            # a CHEMICAL FORMULA token (numbers.py `_FORMULA`, validated
+            # against the element table). Disjoint from every scalar slot type
+            # on the same argument as `point` and `date`: it carries no value.
+            return kind == "formula"
         if t == "date":
             # an ISO date token (numbers.py _ISO_DATE). Disjoint from every
             # scalar slot type by construction: a date unit carries no `value`,
