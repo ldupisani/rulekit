@@ -8,6 +8,7 @@ digit-comma stripping handled later by numbers.py reading the raw surface.
 from __future__ import annotations
 
 import re
+from collections.abc import Sequence
 
 from .model import Reading, Word
 
@@ -33,28 +34,40 @@ _TOKEN = re.compile(
     r"|[.,!?;:]"
 )
 
-_CONTRACTIONS = {
-    "n't": "not",
-    "'s": "'s",  # kept as its own token (possessive/copula resolved later)
-    "'re": "are",
-    "'ll": "will",
-    "'ve": "have",
-}
-
-
 def split_sentences(text: str) -> list[str]:
     parts = [p.strip() for p in _SENT_SPLIT.split(text.strip())]
     return [p for p in parts if p]
 
 
-def tokenize(sentence: str, sentence_index: int = 0, tracing: bool = True) -> Reading:
+def tokenize(
+    sentence: str,
+    sentence_index: int = 0,
+    tracing: bool = True,
+    contractions: Sequence[tuple[str, str]] = (),
+) -> Reading:
+    """Text -> one Unit per token.
+
+    `contractions` is the clitic table (`rulekit/contractions@1`, reached as
+    `reg.contractions`), passed in rather than read from a Registry so this
+    stage stays what it is: pure text -> tokens with no lexicon lookups. It
+    used to be a dict in this module, which made it the one place the kernel
+    enumerated WORDS.
+
+    It must arrive sorted LONGEST CLITIC FIRST — `compile_registry` guarantees
+    that — because matching is by suffix and a shorter clitic could otherwise
+    shadow a longer one.
+
+    Passing nothing means no expansion, which is deliberate and visible in the
+    call: `engine` always supplies the table, and a caller that wants raw
+    tokenization says so by omitting it.
+    """
     reading = Reading(sentence, sentence_index, tracing=tracing)
     index = 0
     for match in _TOKEN.finditer(sentence):
         surface = match.group()
         # split contractions ("isn't" -> "is" + "not")
         pieces = [surface]
-        for suffix, expansion in _CONTRACTIONS.items():
+        for suffix, expansion in contractions:
             if surface.lower().endswith(suffix) and len(surface) > len(suffix):
                 stem = surface[: -len(suffix)]
                 pieces = [stem, expansion]

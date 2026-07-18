@@ -1,0 +1,27 @@
+format: rulekit/contractions@1
+# Clitic -> the word it stands for, applied at TOKENIZATION: "doesn't" becomes
+# 'does' + 'not', so every rule downstream matches `{lit: not}` without also
+# having to know the contracted spelling.
+#
+# WHY THIS IS A PACK AND NOT PYTHON. It was a dict in `kernel/tokenize.py`,
+# which made it the one place the kernel enumerated WORDS — constitution rule
+# 1 says every word-specific fact lives in a pack, and "'re" -> "are" is a
+# word-specific fact. The nearby morphology helpers (`_naive_singular`,
+# `_ORDINAL`) are genuinely structural, deriving a form from a SHAPE; this
+# derives one word from another, and only a table can say which.
+#
+# Being data also makes the set auditable and changeable without touching the
+# frozen kernel — the point of rule 1.
+#
+# ⚠ ORDER OF APPLICATION IS LONGEST-SUFFIX-FIRST, not file order. "n't" and
+# "'t" would both match "doesn't" and only the longer one is right; the loader
+# sorts so a YAML reordering can never change a reading.
+expansions:
+  "n't": not
+  # kept as its OWN token rather than expanded: the possessive and the copular
+  # "'s" are the same surface, and which one it is gets resolved later from
+  # context. Expanding it here would force that choice at the wrong layer.
+  "'s": "'s"
+  "'re": are
+  "'ll": will
+  "'ve": have

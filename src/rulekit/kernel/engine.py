@@ -62,7 +62,8 @@ def _leading_temporal_marker(question: str, reg: Registry) -> str | None:
 def analyze(
     sentence: str, reg: Registry, sentence_index: int = 0, tracing: bool = True
 ) -> Reading:
-    reading = tokenize(sentence, sentence_index, tracing=tracing)
+    reading = tokenize(sentence, sentence_index, tracing=tracing,
+                       contractions=reg.contractions)
     annotate_numbers(reading, reg)
     annotate_senses(reading, reg)
     disambiguate(reading, reg)

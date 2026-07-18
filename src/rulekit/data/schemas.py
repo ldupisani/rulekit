@@ -604,6 +604,31 @@ class AffineConversionsDoc(StrictModel):
     scales: list[AffineScaleDef]
 
 
+class ContractionsDoc(StrictModel):
+    """Clitic -> the word it stands for, applied at tokenization.
+
+    A word-specific fact, so it is pack data (constitution rule 1) rather than
+    the dict it used to be in `kernel/tokenize.py`. The morphology helpers next
+    to it there (`_naive_singular`, `_ORDINAL`) derive a form from a SHAPE and
+    are legitimately structural; this derives one WORD from another, and only a
+    table can say which.
+    """
+
+    format: Literal["rulekit/contractions@1"]
+    expansions: dict[str, str]
+
+    @model_validator(mode="after")
+    def _clitics_are_suffixes(self) -> "ContractionsDoc":
+        for clitic in self.expansions:
+            if not clitic:
+                raise ValueError("a contraction clitic must not be empty")
+            if clitic != clitic.lower():
+                # matching is done on a lower-cased surface, so an upper-case
+                # key would sit in the table matching nothing
+                raise ValueError(f"contraction clitic {clitic!r} must be lower-case")
+        return self
+
+
 class ElementsDoc(StrictModel):
     """Standard atomic weights, element symbol -> g/mol.
 
@@ -808,6 +833,7 @@ KIND_MODELS: dict[str, type[BaseModel]] = {
     "rulekit/formulas@1": FormulasDoc,
     "rulekit/calendar@1": CalendarDoc,
     "rulekit/elements@1": ElementsDoc,
+    "rulekit/contractions@1": ContractionsDoc,
     "rulekit/affine-conversions@1": AffineConversionsDoc,
     "rulekit/quarantine@1": QuarantineDoc,
     "rulekit/numbers@1": NumbersDoc,

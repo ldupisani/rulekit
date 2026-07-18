@@ -131,6 +131,8 @@ class Registry:
     calendar_span_days: Mapping[str, float]  # span unit lemma -> days per unit
     month_numbers: Mapping[str, int]  # month name/abbreviation -> 1..12
     atomic_masses: Mapping[str, float]  # element symbol -> g/mol
+    # clitic -> expansion, LONGEST CLITIC FIRST (see compile_registry)
+    contractions: tuple[tuple[str, str], ...]
     affine_scales: Mapping[tuple[str, str], tuple[float, float]]  # (from,to) -> (offset,factor)
     quarantine: Mapping[str, str]  # word -> reason (never vocabulary)
     rules: tuple[PatternRule, ...]
@@ -370,6 +372,23 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                 affine_scales[fwd] = pair
                 affine_scales[rev] = (-sc.offset * sc.factor, 1.0 / sc.factor)
 
+    # contractions: clitic -> expansion. Stored as an ordered TUPLE sorted by
+    # DESCENDING clitic length, because matching is longest-suffix-first: "n't"
+    # and a hypothetical "'t" both match "doesn't" and only the longer is
+    # right. Sorting here means a YAML reordering can never change a reading.
+    contraction_map: dict[str, str] = {}
+    for pack in packs:
+        for doc in pack.contractions:
+            for clitic, expansion in doc.expansions.items():
+                if contraction_map.get(clitic, expansion) != expansion:
+                    raise CompileError(
+                        f"contraction {clitic!r} declared twice with different expansions"
+                    )
+                contraction_map[clitic] = expansion
+    contractions = tuple(
+        sorted(contraction_map.items(), key=lambda kv: (-len(kv[0]), kv[0]))
+    )
+
     # atomic masses: element symbol -> g/mol. Same conflict discipline as the
     # tables above — a redeclaration with a different mass ERRORS.
     atomic_masses: dict[str, float] = {}
@@ -547,6 +566,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
         calendar_span_days=_freeze(calendar_span_days),
         month_numbers=_freeze(month_numbers),
         atomic_masses=_freeze(atomic_masses),
+        contractions=contractions,
         affine_scales=_freeze(affine_scales),
         geometry_formulas=_freeze(geometry_formulas),
         quantity_formulas=_freeze(quantity_formulas),

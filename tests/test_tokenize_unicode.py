@@ -7,11 +7,27 @@ phantom unit in every downstream pass). Real names carry diacritics in
 three DEV corpora (gsm8k, scibench, folio — measured 2026-07-17).
 """
 
+from pathlib import Path
+
+import pytest
+
+from rulekit.data.project import load_project
 from rulekit.kernel.tokenize import tokenize
 
+ROOT = Path(__file__).resolve().parents[1]
 
-def _surfaces(sentence):
-    return [u.surface for u in tokenize(sentence, tracing=False).units]
+
+@pytest.fixture(scope="module")
+def contractions():
+    # the clitic table is PACK DATA now (rulekit/contractions@1), so a caller
+    # that wants "Léa's" split has to supply it — `engine` always does. These
+    # cases assert the possessive split, so they pass it too.
+    return load_project(ROOT / "projects" / "gsm8k").registry.contractions
+
+
+def _surfaces(sentence, contractions=()):
+    return [u.surface for u in tokenize(sentence, tracing=False,
+                                        contractions=contractions).units]
 
 
 def test_diacritic_word_is_one_token():
@@ -26,16 +42,16 @@ def test_accented_common_word_is_one_token():
     ]
 
 
-def test_diacritic_name_takes_the_possessive_clitic():
-    assert _surfaces("Léa's dog barked.") == [
+def test_diacritic_name_takes_the_possessive_clitic(contractions):
+    assert _surfaces("Léa's dog barked.", contractions) == [
         "Léa", "'s", "dog", "barked", ".",
     ]
 
 
-def test_ascii_tokenization_unchanged():
+def test_ascii_tokenization_unchanged(contractions):
     # the incidental-behaviors-are-contract pin: plain ASCII text must
     # tokenize byte-identically to the old class
-    assert _surfaces("John's 3 dogs ate 1/4 of the 5th cake, quickly!") == [
+    assert _surfaces("John's 3 dogs ate 1/4 of the 5th cake, quickly!", contractions) == [
         "John", "'s", "3", "dogs", "ate", "1/4", "of", "the", "5th",
         "cake", ",", "quickly", "!",
     ]
