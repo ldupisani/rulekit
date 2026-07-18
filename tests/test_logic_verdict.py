@@ -354,6 +354,52 @@ def test_relative_drop_composes_with_intersective_strip(intersective_logic_reg):
     assert "conductor" not in preds
 
 
+def test_relative_drop_fires_on_an_unknown_word_lead(logic_reg):
+    # 'blicket' is in no lexicon. The decomposable fields are all copular
+    # predicate positions, so the construction (copula + article + span)
+    # guarantees a nominal lead where the lexicon is silent — the sense
+    # gate alone refused every unknown-word lead, which was exactly the
+    # class whose keys the lexicon cannot fold (the Stage 8d family).
+    from rulekit.kernel.model import Atom
+
+    r = engine.solve("Rex is a blicket who runs.", logic_reg, tracing=False)
+    assert "blicket" in {f.pred for f in r.store.by_kind(Atom)}
+
+
+def test_unknown_lead_drop_composes_with_the_singular_fold(logic_reg):
+    assert _verdict(
+        "Rex is a blicket who runs. Blickets are gleebs. "
+        "Is it true that Rex is a gleeb?", logic_reg,
+    ) == "yes"
+
+
+def test_unknown_lead_drop_null_control(logic_reg):
+    got = _verdict(
+        "Rex is a blicket who runs. Blickets are gleebs. "
+        "Is it true that Rex is a zorp?", logic_reg,
+    )
+    assert got in ("undetermined", "decline")
+
+
+def test_unknown_lead_pp_tail_drops_too(logic_reg):
+    # the Stage 2.2 sibling under the same gate: a PP after an unknown
+    # lead is a restriction — "is a blicket at Yale" is a blicket
+    from rulekit.kernel.model import Atom
+
+    r = engine.solve("Rex is a blicket at Yale.", logic_reg, tracing=False)
+    assert "blicket" in {f.pred for f in r.store.by_kind(Atom)}
+
+
+def test_verb_sensed_lead_still_refuses(logic_reg):
+    # only the lexicon's SILENCE defers to the construction — a unit with
+    # a different sense keeps refusing (a misparse must not decompose)
+    from rulekit.kernel.model import Atom
+
+    r = engine.solve("Rex is a dog who runs fast.", logic_reg, tracing=False)
+    preds = {f.pred for f in r.store.by_kind(Atom)}
+    assert "runs fast" not in preds and "run" not in preds
+
+
 def test_negative_atom_gets_no_relative_drop(logic_reg):
     from rulekit.kernel.model import Atom
 

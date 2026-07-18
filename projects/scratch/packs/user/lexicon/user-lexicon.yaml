@@ -18,6 +18,7 @@ entries:
     specializes: {senses: [verb], verb: {lemma: specialize}}
     specialized: {senses: [verb], verb: {lemma: specialize}}
     love: {senses: [verb]}
+    loved: {senses: [verb], verb: {lemma: love}}
     published: {senses: [verb], verb: {lemma: publish}}
     # S2 buyer vocabulary (the Oxford Circus passive-agent item): admitted
     # HERE because this pack is loaded by no benchmark project — zero

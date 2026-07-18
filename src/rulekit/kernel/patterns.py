@@ -742,7 +742,16 @@ def atom_variants(fact: Fact, emit_fields: dict, slots: dict, reg: Registry) -> 
     if not isinstance(span, tuple):
         return []
     units = [u for u in span if u.sense() not in SKIPPABLE_SENSES]
-    if not units or units[0].sense() != "noun":
+    # The lead must head a nominal: a KNOWN noun, or a SENSELESS unknown —
+    # the decomposable fields are all copular predicate positions (pred /
+    # then_pred), where the construction (copula + article + span) puts a
+    # nominal at the lead whether or not the lexicon knows the word ("is an
+    # AUTHOR who created X" ⊨ 'author'; the sense gate alone refused every
+    # unknown-word lead, so the drop never fired on exactly the items whose
+    # keys the lexicon cannot fold). A unit with a DIFFERENT sense (verb,
+    # adjective, name) still refuses — only the lexicon's silence defers to
+    # the construction's evidence.
+    if not units or not (units[0].sense() == "noun" or not units[0].senses()):
         return []
     lead = units[0]
     words = (lead.features.get("fold") or "").split()

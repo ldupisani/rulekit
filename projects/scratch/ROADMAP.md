@@ -315,8 +315,47 @@ absent class, cut premise ×2).
 - **[185]+[186]**: the relative-clause drop's lead gate — but see the
   BANKED measurement below; the drop alone is NOT enough.
 
+## Stage 8e — the titular-name stack (2026-07-18) — DONE; the banked drop RE-LANDED with its buyer
+
+**Folio-with-logic dev-train 7 → 8 correct (+1 SOLVED / 0 BROKE — [185]
+Douglas Adams/writer), holdout unchanged, all 8 benchmark slices
+snapshot-diffed NEUTRAL, pytest 1409 (+12 pins), three null controls
+move (absent subject, absent pred, cut universal).** Three pieces, one
+stack, one commit:
+
+1. **The titular name merge** (condense.py): NAME + partitive + NAME →
+   ONE name ("Salmon of Doubt", "University of Edinburgh"). Gated on the
+   `partitive` CATEGORY (core-english already held 'of' as its member —
+   kernel references the category name only). The left part may also be a
+   mid-sentence CAPITALIZED known word (the pairwise "Tall Tuna" signal —
+   'Salmon' is a lexicon fish and never falls back to the name sense), but
+   NEVER sentence-initial ("Members of Pappy's have starred" is a plural
+   description). Head features come from the NAME side (inheriting the
+   left noun's sense left the title unable to bind any name slot —
+   measured live before the fix).
+2. **The article capitalization exemption** (senses.py): the mid-sentence
+   naming rule now exempts article-sensed words, beside the Stage 7
+   quantifier exemption and for the same wrapper reason — "Is it true
+   that The <Title> is …" embeds the sentence-initial capital, and a
+   name-annotated 'The' pairwise-merged into the title while the premise
+   side keyed without it: the same text stopped echoing itself (caught by
+   this increment's own echo test, not by any corpus). 'The Hague'-style
+   names stay symmetric (the article is skippable on both sides).
+3. **The unknown-lead relative drop re-landed** (patterns.py, from the
+   bank below) — with the titular sentence now READ, the fragment veto
+   lifts and the drop + Stage 8d fold convert the buyer.
+
+Next in this story: [186] ("Douglas Adams created innovative ideas") still
+needs bare-plural VERBAL universals ("Writers create innovative ideas" —
+today a ground atom on entity 'writers'). [426] still needs the verbal
+conditional read. The other titular stories ([3]/[4] Blake McFall — needs
+identity/aliasing; [6]/[8]/[9] Dickinson — needs coordination or sits on
+the run-on corpus defect) keep their own blockers.
+
 **⚠ The unknown-lead relative drop was BUILT, MEASURED and REVERTED
-(2026-07-18) — an unbought enabler; do not re-land it alone.** The change
+(2026-07-18) — an unbought enabler; do not re-land it alone.**
+*(RESOLVED same day: re-landed as piece 3 of Stage 8e above, with the
+buyer the bank predicted. Kept for the record:)* The change
 (accept a SENSELESS lead in `atom_variants` — the decomposable fields are
 copular predicate positions, so the construction guarantees a nominal
 lead where the lexicon is silent; a verb/adjective/name-sensed lead still

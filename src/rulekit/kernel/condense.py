@@ -303,6 +303,58 @@ def _nominal_pass(reading: Reading, reg: Registry) -> bool:
                             f"consecutive names {a.surface!r} {b.surface!r} = one name")
             merged.features["lemma"] = merged.features["fold"]
             return True
+    # NAME + partitive + NAME -> one TITULAR name ("Salmon of Doubt",
+    # "University of Edinburgh", "House of Commons"): an English title
+    # embeds its particle between capitalized parts, and pairwise merging
+    # can never see across it — the single-unit name slots downstream then
+    # fail on every titular subject and the sentence goes unread. Gated on
+    # the `partitive` CATEGORY (the word lives in core-english's pack data;
+    # the kernel references only the category name) and on BOTH neighbors
+    # being NAME-sensed already — a noun/quantifier/number left of 'of'
+    # never merges ("half of Boston", "the cost of Ann", "All of Emily's
+    # friends" — 'All' is quantifier-sensed, 'cost' noun-sensed), so every
+    # partitive arithmetic reading is byte-identical by construction.
+    for i in range(len(units) - 2):
+        a, b, c = units[i], units[i + 1], units[i + 2]
+        if (
+            (
+                a.sense() == "name"
+                # ... or a CAPITALIZED known word — the same signal the
+                # pairwise "Tall Tuna" case reads: 'Salmon' in "The Salmon
+                # of Doubt" is a lexicon fish, and a known word never falls
+                # back to the name sense, so name-only left sides would
+                # skip every title whose first word the lexicon knows
+                or (
+                    a.sense() in ("adjective", "noun")
+                    and len(a.words) == 1
+                    and a.surface[:1].isupper()
+                    and a.words[0].index > 0  # sentence-initial caps are
+                    # weak evidence ("Members of Pappy's have ..." is a
+                    # plural description, not a title); mid-sentence
+                    # capitalization is senses.py's own naming signal
+                    and "value" not in a.features
+                )
+            )
+            and reg.word_in_category(b.features.get("fold", ""), "partitive")
+            and c.sense() == "name"
+        ):
+            # head features from the NAME side (the pairwise capitalized
+            # case's own choice): the left word may be a known noun, and
+            # inheriting its noun sense would leave the title unable to
+            # bind any name slot
+            merged = reading.new_unit(
+                a.words + b.words + c.words, dict(c.features)
+            )
+            merged.features["fold"] = (
+                f"{a.features['fold']} {b.features['fold']} {c.features['fold']}"
+            )
+            merged.features["lemma"] = merged.features["fold"]
+            units[i : i + 3] = [merged]
+            reading.record(
+                "merge-name", merged, {},
+                f"titular name {a.surface!r} {b.surface!r} {c.surface!r} = one name",
+            )
+            return True
     return False
 
 

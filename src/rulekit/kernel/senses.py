@@ -106,6 +106,15 @@ def annotate_senses(reading: Reading, reg: Registry) -> Reading:
             # before and after) vs 78 wrapper-capitalized quantifier
             # conclusions in folio dev-train alone.
             and "quantifier" not in entry.senses
+            # ... and neither is an ARTICLE's: the same wrapper construction
+            # embeds "The <Title> is ..." with its sentence-initial capital
+            # intact, and a name-annotated 'The' pairwise-merges into the
+            # title ('the dog of zar') while the premise side — where 'The'
+            # IS sentence-initial and stays an article — keys 'dog of zar':
+            # the same text stops echoing itself. 'The Hague'-style names
+            # survive: the article is skippable on both sides, so both
+            # renders key 'hague' symmetrically.
+            and "article" not in entry.senses
         ):
             prev = _previous_word_unit(reading, unit)
             prev_fold = prev.features.get("fold") if prev is not None else None
