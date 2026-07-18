@@ -312,9 +312,28 @@ absent class, cut premise ×2).
 - **[426]**: a VERBAL conditional premise read ("If a player leaves a
   team they no longer play for that team") — the instantiation chain is
   ready; only the fragment veto stands.
-- **[185]+[186]**: the relative-clause drop's lead gate (`units[0].sense()
-  != "noun"` refuses an unknown-word lead — 'author who created …' drops
-  nothing), then bare-plural VERBAL universals for [186].
+- **[185]+[186]**: the relative-clause drop's lead gate — but see the
+  BANKED measurement below; the drop alone is NOT enough.
+
+**⚠ The unknown-lead relative drop was BUILT, MEASURED and REVERTED
+(2026-07-18) — an unbought enabler; do not re-land it alone.** The change
+(accept a SENSELESS lead in `atom_variants` — the decomposable fields are
+copular predicate positions, so the construction guarantees a nominal
+lead where the lexicon is silent; a verb/adjective/name-sensed lead still
+refuses) is SOUND and passed everything: pytest 1397+5, all 8 benchmark
+slices snapshot-diffed NEUTRAL, folio-with-logic dev-train AND holdout
+**item-level neutral — 0 buyers**. The isolated [185] chain works
+("…author who created X" → 'author' → the folded universal → yes), but
+the REAL item is fragment-vetoed by a DIFFERENT sentence: "The Salmon of
+Doubt is about life experiences AND technology" — the TITULAR multi-word
+name ('Salmon of Doubt', lowercase 'of' blocks name-merging) keeps every
+copular rule from reading it, and its unread 'and' prices the item (the
+S2 lesson: walk the buyer's WHOLE story before sizing a stack — this
+walk was done for the stack's first piece and not re-done for the
+second). Re-lands in one step WITH the titular-name copular read (or any
+future buyer): the diff is one condition + five pinned tests, recorded
+in this repo's history at the Stage 8d commit's immediate successor
+attempt — recreate from this paragraph.
 
 ## The cheap-increment frontier is EXHAUSTED (measured 2026-07-17, three zeros)
 
