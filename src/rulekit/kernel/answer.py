@@ -1131,6 +1131,44 @@ def answer(
             return Answer("decline", None, f"{op!r} not defined for the given inputs")
         return Answer("number", float(result), f"number-theory: {op} = {result}")
 
+    if consumer == "measure-cost":
+        # cost = (a geometric measure of a W-by-H rectangle) x (a unit rate),
+        # optionally taxed. The operation arrives as a structural OPCODE the
+        # ask named (rules/measure-cost.yaml); no operation WORD reaches here,
+        # and the ask's own rate-unit shape has already cross-checked it.
+        op = query.get("op", "")
+        try:
+            d1 = float(query.get("d1"))
+            d2 = float(query.get("d2"))
+            rate = float(query.get("rate"))
+        except (TypeError, ValueError):
+            return Answer("decline", None, "measure-cost needs two measures and a rate")
+        if d1 <= 0 or d2 <= 0:
+            # a rectangle with a non-positive side is not a shape; decline
+            # rather than return a zero or negative cost
+            return Answer("decline", None, "a measure must be positive")
+        if op == "area":
+            measure = d1 * d2
+        elif op == "perimeter":
+            measure = 2.0 * (d1 + d2)
+        else:
+            return Answer("decline", None, f"unsupported measure operation {op!r}")
+        total = measure * rate
+        raw_tax = query.get("tax")
+        if raw_tax not in (None, ""):
+            try:
+                total *= 1.0 + float(raw_tax)
+            except (TypeError, ValueError):
+                # the ask BOUND a tax and the consumer cannot read it -- decline
+                # rather than silently answering the untaxed total, which is a
+                # confident wrong answer to a question that stated a tax
+                return Answer("decline", None, f"unreadable tax rate {raw_tax!r}")
+        return Answer(
+            "number", total,
+            f"measure-cost: {op} {measure} x {rate}"
+            + (f" +{raw_tax} tax" if raw_tax not in (None, "") else ""),
+        )
+
     if consumer == "calendar":
         # Date arithmetic over ISO dates read as WHOLE tokens (tokenize.py's
         # date alternative + numbers.py `_ISO_DATE`). Two ops, both structural
