@@ -143,15 +143,84 @@ def test_an_impossible_spelled_date_declines(reg):
     ).answer.kind == "decline"
 
 
-def test_a_full_month_name_is_a_KNOWN_GAP(reg):
-    # 'January' is a `timeperiod` NOUN in the lexicon while 'Jan' is unknown
-    # and so annotates as a `name`; this ask's month slots take names. A
-    # timeperiod twin buys zero dev items, so it is deliberately unwritten --
-    # and declining is the safe half of the asymmetry. Flip this test if the
-    # twin ever lands.
+def test_a_full_month_name_reads_too(reg):
+    # this was a documented GAP while the spelled form was read by its own ASK
+    # (whose month slots took names, and 'January' is a `timeperiod` noun).
+    # Moving the reading into condense closed it for free -- the merge gates on
+    # the SENSE being a name or a noun, so both spellings arrive as one date.
     assert solve(
         "How many days are between 1 January 2024 and 31 January 2024?", reg
-    ).answer.kind == "decline"
+    ).answer.value == 30.0
+
+
+def test_the_spelled_form_reaches_EVERY_date_ask(reg):
+    # the point of reading in condense rather than in an ask: `day of year`
+    # never grew a spelled variant and accepts one anyway, because it asks for
+    # a `date` slot and a date is now a date whatever its surface form
+    assert solve("What is the day of the year for 1 Mar 2024?", reg).answer.value == 61.0
+
+
+def test_a_lowercase_modal_month_is_not_a_date(reg):
+    # 'may' is a MODAL in the lexicon. Capitalised after a number it reads as
+    # a name (so "1 May 2024" IS a date), but the bare modal must never look
+    # like one.
+    from rulekit.kernel.condense import condense
+    from rulekit.kernel.numbers import annotate_numbers
+    from rulekit.kernel.senses import annotate_senses
+    from rulekit.kernel.tokenize import tokenize
+
+    r = tokenize("you may 2024 things")
+    annotate_numbers(r, reg)
+    annotate_senses(r, reg)
+    condense(r, reg)
+    assert not any(u.features.get("value_kind") == "date" for u in r.units)
+
+
+def test_a_capitalised_may_after_a_day_is_a_date(reg):
+    assert solve(
+        "How many days are between 1 May 2024 and 11 May 2024?", reg
+    ).answer.value == 10.0
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "He bought 5 March tickets",   # no year follows
+        "Tom has 12 May flowers",      # ditto, and 'May' is capitalised
+        "On 5 Mar 99 he left",         # a year needs FOUR digits
+        "I saw 31 Feb 2024 written",   # an impossible date stays unread
+    ],
+)
+def test_the_merge_leaves_non_dates_alone(reg, text):
+    # a merge pass runs on EVERY corpus, so its refusals are as much a
+    # contract as its merges
+    from rulekit.kernel.condense import condense
+    from rulekit.kernel.numbers import annotate_numbers
+    from rulekit.kernel.senses import annotate_senses
+    from rulekit.kernel.tokenize import tokenize
+
+    r = tokenize(text)
+    annotate_numbers(r, reg)
+    annotate_senses(r, reg)
+    condense(r, reg)
+    assert not any(u.features.get("value_kind") == "date" for u in r.units)
+
+
+def test_a_spelled_date_carries_no_scalar(reg):
+    # the same invariant as an ISO date: not a quantity, so value-accounting
+    # must never demand it be consumed as one
+    from rulekit.kernel.condense import condense
+    from rulekit.kernel.numbers import annotate_numbers
+    from rulekit.kernel.senses import annotate_senses
+    from rulekit.kernel.tokenize import tokenize
+
+    r = tokenize("The 1 Jan 2024 report")
+    annotate_numbers(r, reg)
+    annotate_senses(r, reg)
+    condense(r, reg)
+    date = next(u for u in r.units if u.features.get("value_kind") == "date")
+    assert "value" not in date.features
+    assert date.features["components"] == "2024-01-01"
 
 
 def test_the_month_table_is_pack_data(reg):

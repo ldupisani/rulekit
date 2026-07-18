@@ -10,6 +10,8 @@ values to the completed nominals.
 
 from __future__ import annotations
 
+import datetime
+
 from ..data.registry import Registry
 from .learn import _has_event_polarity
 from .model import Reading, Unit
@@ -377,10 +379,73 @@ def _count_pass(reading: Reading, reg: Registry) -> bool:
     return False
 
 
+def _date_pass(reading: Reading, reg: Registry) -> bool:
+    """Merge a SPELLED date -- "1 Jan 2024" -- into ONE unit carrying the same
+    `date` value-kind that numbers.py gives an ISO date.
+
+    A date is one thing; its surface form is the READER's problem, not the
+    ask's. Without this the spelled form reached asks as three loose units, so
+    every date-consuming ask needed a second shape and every date-consuming
+    consumer a second branch -- date parsing duplicated into two layers that
+    have no business knowing about calendars.
+
+    Data-gated, never a word list: the month must be in `reg.month_numbers`
+    (pack data), which also means a project whose packs declare no months
+    cannot reach this pass at all.
+
+    Structural gates, each load-bearing:
+      - the month's SENSE must be a name or a noun. 'May' is a MODAL in the
+        lexicon, and "you may 2024 ..." must never look like a date; excluding
+        it costs the May-dated form and is the honest half of the trade.
+      - the year must be written with FOUR digits, so "1 Jan 5" is not a date.
+      - an IMPOSSIBLE date (31 Feb) does not merge, leaving the sentence
+        unread rather than rolling over into March -- monotone-safe.
+    """
+    if not reg.month_numbers:
+        return False
+    units = reading.units
+    for i in range(len(units) - 2):
+        day, mon, year = units[i], units[i + 1], units[i + 2]
+        if day.features.get("value_kind") != "count":
+            continue
+        if year.features.get("value_kind") != "count":
+            continue
+        if len(year.features.get("fold", "")) != 4:
+            continue
+        number = reg.month_numbers.get(mon.features.get("fold", ""))
+        if number is None or mon.sense() not in ("name", "noun"):
+            continue
+        try:
+            stamp = datetime.date(
+                int(year.features["value"]), number, int(day.features["value"])
+            )
+        except (TypeError, ValueError):
+            continue
+        merged = reading.new_unit(day.words + mon.words + year.words, {})
+        units[i : i + 3] = [merged]
+        reading.record(
+            "merge-date", merged,
+            {
+                "fold": f"{day.features['fold']} {mon.features['fold']} {year.features['fold']}",
+                "senses": ["date"],
+                "value_kind": "date",
+                "components": stamp.isoformat(),
+            },
+            f"spelled date {stamp.isoformat()!r} is one unit",
+        )
+        return True
+    return False
+
+
 def condense(reading: Reading, reg: Registry) -> Reading:
     # joint fixpoint with nominal priority: a count merge can expose a new
     # nominal merge ("Tom's [3 apples]"), so alternate until neither fires
     while True:
+        # dates FIRST: the count merge would otherwise attach the day to the
+        # month noun ("1 March" -> one counted nominal) and the date would
+        # never be seen
+        if _date_pass(reading, reg):
+            continue
         if _nominal_pass(reading, reg):
             continue
         if _count_pass(reading, reg):
