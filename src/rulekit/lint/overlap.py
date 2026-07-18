@@ -61,10 +61,14 @@ def _type_of_cat(cat: str, reg: Registry) -> str:
 
 
 def _tokens_intersect(a: MatchToken, b: MatchToken, reg: Registry) -> bool:
+    # A `lit` may be an ALTERNATION (schemas.MatchToken), so every test below
+    # is "do ANY of the options intersect" rather than a scalar comparison.
+    # Equality on `.lit` would read False for two overlapping alternations and
+    # silently under-report real overlaps.
     if a.lit is not None and b.lit is not None:
-        return a.lit == b.lit
+        return bool(set(a.lit_options) & set(b.lit_options))
     if a.lit is not None or b.lit is not None:
-        lit, slot = (a.lit, b) if a.lit is not None else (b.lit, a)
+        lits, slot = (a.lit_options, b) if a.lit is not None else (b.lit_options, a)
         if slot.type is not None:
             if slot.type == "word":
                 return True
@@ -73,12 +77,14 @@ def _tokens_intersect(a: MatchToken, b: MatchToken, reg: Registry) -> bool:
                 return True
             if slot.type in ("number", "fraction", "multiplier"):
                 return False  # a fixed literal is never a value slot
-            entry = reg.lexicon.get(lit)
-            ok = entry is not None and bool(set(entry.senses) & senses)
-            if slot.type == "plural":
-                ok = ok and lit in reg.plural_to_singular
-            return ok
-        return reg.word_in_category(lit, slot.cat)
+            def _ok(lit: str) -> bool:
+                entry = reg.lexicon.get(lit)
+                hit = entry is not None and bool(set(entry.senses) & senses)
+                if slot.type == "plural":
+                    hit = hit and lit in reg.plural_to_singular
+                return hit
+            return any(_ok(lit) for lit in lits)
+        return any(reg.word_in_category(lit, slot.cat) for lit in lits)
     # slot vs slot
     ta = a.type or _type_of_cat(a.cat, reg)
     tb = b.type or _type_of_cat(b.cat, reg)
@@ -94,7 +100,9 @@ def _tokens_intersect(a: MatchToken, b: MatchToken, reg: Registry) -> bool:
 
 def _witness_word(token: MatchToken, reg: Registry) -> str:
     if token.lit is not None:
-        return token.lit
+        # the FIRST authored option — deterministic, so a witness string does
+        # not depend on set ordering
+        return token.lit_options[0]
     if token.cat is not None:
         members = reg.cat_members_deep(token.cat)
         return members[0] if members else f"<{token.cat}>"

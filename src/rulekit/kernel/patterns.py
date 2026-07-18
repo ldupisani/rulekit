@@ -410,7 +410,7 @@ def _try_match_at(
             if (
                 token.lit is not None
                 and token.consume_skipped
-                and units[i].features.get("fold") == token.lit
+                and units[i].features.get("fold") in token.lit_options
             ):
                 # a consume_skipped lit CLAIMS its skippable unit — the skip
                 # stops here and the normal lit match below consumes it
@@ -503,7 +503,9 @@ def _try_match_at(
             return None
         unit = units[i]
         if token.lit is not None:
-            if unit.features.get("fold") != token.lit:
+            # `lit_options` is a one-element tuple for a scalar literal, so an
+            # alternation takes the identical path (schemas.MatchToken)
+            if unit.features.get("fold") not in token.lit_options:
                 return None
         else:
             if not _slot_ok(unit, token, reg):
@@ -1046,7 +1048,14 @@ def _build_fact(
 def rule_specificity(rule: PatternRule, reg: Registry) -> tuple[int, int, int]:
     """(required tokens, Σ category gate DEPTHS, where-count). Computed,
     never authored — a narrower category (pet ⊂ animal) scores strictly
-    higher, which is what makes narrowing the conflict lever."""
+    higher, which is what makes narrowing the conflict lever.
+
+    A `lit` ALTERNATION counts as ONE required token and contributes ZERO gate
+    depth — the same as the scalar literal it replaces. That is deliberate, not
+    an oversight: it makes collapsing N sibling rules into one alternation
+    rank-identical to whichever sibling would have fired, so the collapse is a
+    provable no-op rather than a behaviour change wearing a refactor's clothes.
+    Do not "fix" this without re-gating every collapsed family."""
     gate_depth = 0
     required = 0
     for seq in rule.match.values():
@@ -1089,9 +1098,16 @@ def run_rules(
         seq = rule.match.get(key) or rule.match.get("sentence")
         if seq is None or (seq and isinstance(seq[0], list)):
             continue  # multi-sentence rules handled at document level
-        # trigger prefilter: every literal must be present
-        lits = {t.lit for t in seq if t.lit is not None}
-        if not lits <= sentence_folds:
+        # Trigger prefilter: every literal token must be satisfiable, i.e. at
+        # least ONE of its options is present. With alternations this stops
+        # being a flat set-subset test and becomes a conjunction of
+        # DISJUNCTIONS — getting it backwards drops rules silently (no error,
+        # just declines), which is why it has its own test.
+        if any(
+            not (set(t.lit_options) & sentence_folds)
+            for t in seq
+            if t.lit is not None
+        ):
             continue
         for m in match_all(reading, seq, reg):
             m.rule = rule

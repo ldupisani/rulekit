@@ -221,7 +221,27 @@ SLOT_TYPES = (
 class MatchToken(StrictModel):
     """One position in a match sequence: a literal or a typed/gated slot."""
 
-    lit: str | None = None
+    # A literal fold, or an ALTERNATION over folds ("one of these words").
+    #
+    # The alternation exists because a CATEGORY cannot always express the
+    # choice: a category roots at exactly ONE sense (registry: a member lacking
+    # the root sense is a CompileError), so words carrying an off-class sense
+    # can never join one -- 'any' is article-sensed, 'many' is interrogative
+    # (not a root sense at all), 'second'/'average' are the documented lexicon
+    # traps. `packs/arithmetic/rules/core.yaml` names the gap outright: "there
+    # is no OR primitive over match tokens".
+    #
+    # PREFER A CATEGORY WHEN ONE FITS. A category NAME is addressable by
+    # `span_blocks` from other rules and is visible to the blast-radius lint;
+    # an alternation is deliberately neither -- it is grammatical skeleton,
+    # scoped to the rule that writes it. Reach for it only where a category is
+    # structurally impossible. The `alternation-should-be-category` lint check
+    # flags the cases where one would have fitted.
+    #
+    # It contributes ZERO gate depth (see patterns._ask_rank) BY DESIGN: an
+    # alternation must rank exactly as the N separate rules it replaces, or a
+    # collapse stops being a provable no-op.
+    lit: str | list[str] | None = None
     slot: str | None = None
     type: str | None = None  # builtin slot type
     cat: str | None = None  # category gate (slot form)
@@ -280,7 +300,8 @@ class MatchToken(StrictModel):
     # auto-skip loop normally walks straight past articles, so `{lit: any}`
     # can never see 'any' (an article-sensed word, difg-mined) — with this
     # flag the skip stops AT the matching word and consumes it as the token.
-    # Only the named word is affected: other skippables are still skipped,
+    # Only the named word(s) are affected — an ALTERNATION claims whichever
+    # of its options is present: other skippables are still skipped,
     # and a sentence without the word fails the match exactly as any lit
     # does. Default False — every existing rule is byte-identical.
     consume_skipped: bool = False
@@ -309,8 +330,39 @@ class MatchToken(StrictModel):
     bare_form: bool = False
     opt: list["MatchToken"] | None = None  # optional sub-sequence
 
+    @property
+    def lit_options(self) -> tuple[str, ...]:
+        """The folds this token accepts — the ONE definition every caller uses.
+
+        A scalar `lit` is a one-element tuple, so the matcher, the prefilter and
+        the overlap linter all take the identical code path whether or not the
+        author wrote an alternation.
+        """
+        if self.lit is None:
+            return ()
+        return (self.lit,) if isinstance(self.lit, str) else tuple(self.lit)
+
     @model_validator(mode="after")
     def _one_form(self) -> "MatchToken":
+        if isinstance(self.lit, list):
+            # An alternation of one is a scalar written the long way. Refusing
+            # it keeps ONE spelling per meaning, which is what lets a collapse
+            # be diffed as a no-op.
+            if len(self.lit) < 2:
+                raise ValueError(
+                    "a `lit` alternation needs at least two options — "
+                    "write a plain string for one"
+                )
+            if any(not isinstance(x, str) or not x for x in self.lit):
+                # ⚠ YAML 1.1 coerces a bare `no`/`off`/`yes`/`on` to a BOOLEAN,
+                # and inside a list that is far easier to miss than at the
+                # scalar `lit: 'no'` the logic pack already quotes. Name it.
+                raise ValueError(
+                    f"`lit` alternation options must be non-empty strings, got "
+                    f"{self.lit!r} — quote YAML booleans like 'no'/'off'/'yes'"
+                )
+            if len(set(self.lit)) != len(self.lit):
+                raise ValueError(f"`lit` alternation has duplicate options: {self.lit!r}")
         forms = [self.lit is not None, self.slot is not None, self.opt is not None]
         if sum(forms) != 1:
             raise ValueError("a match token is exactly one of lit/slot/opt")
