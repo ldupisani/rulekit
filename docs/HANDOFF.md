@@ -1,7 +1,128 @@
-# Session handoff — 2026-07-17
+# Session handoff — 2026-07-18
 
 Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
 Always check `git status` / `git log origin/main..HEAD` before assuming push parity.
+
+## ⚡ THE ACTIVE FRONTIER IS THE SCRATCH LOGIC CAMPAIGN (projects/scratch/ROADMAP.md)
+
+Six commits landed 2026-07-18, all pushed, every one gate-clean (full 8-slice
+snapshot diff NEUTRAL each time — gsm8k dev-train/dev-holdout, asdiv, svamp,
+mawps, scibench, folio, difg — plus pytest and per-conversion null controls):
+
+| commit | what | folio-with-logic dev-train |
+|---|---|---|
+| `71c903f` | **8d** — the `.singular` fold (unknown-plural keys) | 6 → 7 |
+| `c7fc324` | unknown-lead drop REVERTED at 0 buyers, banked | — |
+| `3bc2119` | **8e** — titular-name stack (merge + article exemption + drop re-landed) | 7 → 8 |
+| `7641e01` | **8f** — bare-plural VERBAL universals (`bare_form` flag) | 8 → 9 |
+| `cecaecc` | **folio TEST look #4** recorded (see below) | — |
+| `49e3e82` | **8g** — verbal generic conditional ('no longer' form) | 9 → 10 |
+
+**Current state:** folio-with-logic dev-train **10 correct / 0 real wrongs**
+of 494 (the 1 "wrong" is item 228's FOL-verified POISONED GOLD — never chase
+it), dev-holdout **1 / 0** of 425. **11 null-controlled conversions total.**
+pytest **1420**. Every benchmark corpus untouched: gsm8k 104/0 dev-train,
+TEST 92.3% (no look spent), folio-the-benchmark still the 0/0 safety gate
+(`packs/logic` loads ONLY in projects/scratch — that containment is the
+whole reason DEV looks here are free).
+
+### FOLIO TEST look #4 — the transfer lesson (drives everything below)
+
+**1 correct / 1 wrong / 283 of 285 — aggregates IDENTICAL to look #3.**
+Precision held (0.5 → 0.5, no revert), but three dev-train conversions
+transferred ZERO TEST items: **conversions are nearly story-specific** (the
+Douglas Adams story bought 2 of that round's 3). Policy, recorded in the
+ROADMAP: **next look only after ~10 MORE conversions, and prefer conversions
+from DIFFERENT stories.** The look stays deliberate and user-directed.
+
+### Next steps, in buying order
+
+1. **The 17-item "is a X who/that" premise pool** — the re-landed unknown-lead
+   drop now serves these; each is a DIFFERENT story (the transfer lesson).
+   Walk each story's WHOLE text before sizing (the veto prices every unread
+   sentence — this lesson has now fired three times). Known idx pairs on the
+   2026-07-18 dev-train ordering: 159/160 (professor), 188/189 (cricketer),
+   202/203 (company), 214/215 (car), 230/231 (function), 262 (archeologist),
+   356/357 (sergeant). Expect most to need one more piece each; land each
+   piece WITH its buyer.
+2. **Blake McFall identity/aliasing** (items 3/4): "The Emmet Building is
+   another name for the Blake McFall Company Building" — an identity fact
+   kind + substitution at query time. Two verdict-gold buyers in one story;
+   conclusion 4 also needs the ask side to survive a 'The'-led name (8e's
+   article exemption already handles the annotation half).
+3. **Top-level VR-PP premise rule** ("X plays for Náutico" unembedded) — five
+   minutes of YAML the day a buyer appears; none measured yet. Do not land
+   without one.
+4. **Ailton passive-relative stack** — 3 pieces for 1 item, same story as
+   S1a's existing conversion (bad transfer economics); stays deferred.
+
+### Do NOT (all measured, all recorded)
+
+- **[427] "plays for Bayern Munchen?"** — needs "Bayern is a team", which no
+  premise states; a sortal-free conditional instantiation fails its own null
+  control. Recorded in the 8g ROADMAP entry.
+- **The locative bridge** — re-measured post-S1a/S2: completes NO stack
+  (item 4 needs identity; item 174 needs junction-specific spatial
+  inference). Re-measure only after new stacks land.
+- **The reductio/case-analysis F/T pairs** (Federer 140/141, Bubbles 128/129,
+  Tom-PhD 96/97, Jim-Knicks 47/48) — assumption-based reasoning, the S4
+  frontier, not increments. 47's story also never mentions Jim (annotation
+  hazard).
+- **Poisoned golds**: dev-train 228 (scored "wrong" forever — it is the
+  proof the judge works), base_conversion's 2, ASDiv London/Blair.
+
+### The measurement harness (scratchpad scripts are GONE — recreate from this)
+
+The folio-with-logic bench does NOT exist as a CLI path (folio-the-project
+must stay logic-free). Recipe, ~20 lines: `load_project(projects/folio)` for
+`dataset_items("dev-train"|"dev-holdout")`, `load_project(projects/scratch)`
+for the registry, `run_suite(items, scratch.registry, jobs=8,
+project_dir=projects/scratch)`. Gotchas that each cost a run this session:
+**the script needs an `if __name__ == "__main__":` guard** (the spawn pool
+re-imports the main module — without it, fork bomb); `ItemResult` fields are
+`id/outcome/expected/got/reason/rules` (no index — enumerate); `report.counts`
+is a PROPERTY, `report.aggregates()` a METHOD. Dump per-item rows to JSON for
+before/after item-level diffs on DEV slices. For a TEST look: aggregates
+ONLY, `record_test_look(projects/folio/snapshots/test-ledger.jsonl,
+registry.fingerprint, report.aggregates())` — never store per-item TEST
+results. Single-item fact-store dumps: `solve(text, reg)` + print
+`result.store.facts` (the dump-the-facts discipline — never infer a
+mechanism from the answer).
+
+### Invariants minted this session (each is pinned by tests — grep before touching)
+
+- **A measured ZERO is scoped to the JOIN it enumerated.** "Unknown-plural
+  morphology bridges 0 pairs" was true of conclusion↔premise; the buyers
+  lived premise↔premise. Before trusting (or re-deriving) a zero, ask which
+  join the simulation ran, then dump one real item's fact store.
+- **The `.singular` fold must stay SYMMETRIC**: the plural-agreeing family
+  (quantifier+'are', bare plurals, 'some…are') folds on premises AND asks
+  together; the -is/-was singular constructions must NEVER fold (their keys
+  join ground atom preds verbatim — the 'lens' hazard). Decomposition sees
+  through the attr (`atom_variants`); any new attr must decide this too.
+- **`bare_form` (fold == lemma) is the verbal generic's agreement signal** —
+  the verbal sibling of the copular rules' `{lit: are}`. Inflected/past
+  verbs stay ground; pinned.
+- **The titular merge takes head features from the NAME side**, accepts a
+  mid-sentence capitalized KNOWN left word ('Salmon' is a lexicon fish), and
+  refuses sentence-initial ones ("Members of Pappy's"). Gated on the
+  `partitive` category — 'of' was already core-english pack data.
+- **Article capitals never name** (senses.py, beside the Stage 7 quantifier
+  exemption): the FOLIO wrapper embeds "The <Title> is…" with its capital,
+  and a name-annotated 'The' made the same text stop echoing itself. Caught
+  by the increment's own echo test — no corpus phrases it; keep the test.
+- **Reading lifts the veto; content can be inert.** Three conversions now
+  ([Regent St], [426], [185]) came from rules whose emitted facts decide
+  nothing in the story — consuming the truth-scoping units IS the payoff.
+  But the read must still be sound in case its keys ever join (8g's
+  conditional is echo-exact flat keys, fail-closed variants pinned).
+
+The full stage-by-stage record: `projects/scratch/ROADMAP.md` (Stages 8d–8g
++ look #4 + the banked-and-resolved drop note). Auto-memory mirrors this
+condensed. Everything below this line is the 2026-07-17 handoff, still
+valid for the difg/benchmark frontiers.
+
+---
 
 > ## ⚡ THE FOLIO CAMPAIGN IS CLOSED (2026-07-17): the buyer was MEASURED UNWIDENABLE, so
 > ## look #3 was NOT spent — read `docs/negative-results.md` → "The FOLIO buyer is
