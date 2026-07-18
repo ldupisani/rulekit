@@ -462,6 +462,30 @@ by explicit user direction. What it says and does not say:
   re-measure) with per-commit null controls; re-look only when the DEV
   commit count is a multiple of what a coin can imitate.
 
+## FOLIO TEST look #4 — SPENT 2026-07-18 (user-directed, at the band's lower edge)
+
+**1 correct / 1 wrong / 283 declined of 285 — precision 0.5, aggregates
+IDENTICAL to look #3** (ledger row 4; aggregate-only, nothing mined).
+Spent at ~10 null-controlled DEV conversions (9 dev-train + 1 holdout),
+the closure band's lower edge, by explicit user direction. What it says:
+
+- **Precision held (0.5 → 0.5) — no revert triggers**; Stages 8d/8e/8f
+  all survive their look.
+- **The three dev-train conversions transferred ZERO new TEST items.**
+  Identical aggregates cannot prove the same items scored (aggregate-only),
+  but there is no evidence of movement. Consistent with the closure's
+  long-tail prediction: conversions are nearly story-specific (the Douglas
+  Adams story bought 2 of this run's 3), so per-increment TEST transfer is
+  thin. The general pieces (the `.singular` fold, titular merge,
+  `bare_form` generics) are real but TEST's story distribution does not
+  phrase them within one-stack reach.
+- **The standing 1 wrong persists** — still undiagnosed by rule
+  (TEST poisoned gold ~0.6 expected per 285 remains the leading
+  hypothesis; a stable unsoundness is not excluded).
+- **Next look: not before the next ~10 conversions**, and prefer
+  conversions from DIFFERENT stories — same-story stacking (2 of 3 this
+  round) buys DEV count without buying transfer.
+
 ## Stage 5 — the gate back to FOLIO (only if/when wanted)
 
 **Precondition 1 is BUILT** (the indefinite-existential gate): every
