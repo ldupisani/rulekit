@@ -222,10 +222,17 @@ directions and none should be counted as coverage:
   (`B x C/A`), but BOTH need PREMISE reading: the leading if-clause splits
   and the premise mints no correspondence fact. Needs a new fact kind.
 - **Inclusion-exclusion (1)** — same premise-reading blocker.
-- **Chemistry molar mass (~8)** — still the biggest cluster and still gated
-  behind a tokenizer change: **`H2O` is SHREDDED into `H`, `2`, `O`**. The
-  ISO-date reader in `64436d7` is the precedent for doing that safely (lead
-  the alternation, anchor fully, pin the neighbours).
+- ~~**Chemistry molar mass**~~ **DONE** (`50bc91a`, `8eed0b3`): difg 63 -> 70.
+  A formula is one unit fused in **`condense`, NOT the tokenizer** — the first
+  attempt used a tokenizer pattern and cost 2 GSM8K items on "an MP3 player",
+  because **`CO2` and `MP3` are structurally identical** and only the element
+  table separates them. The tokenizer has no registry, so no tokenizer-level
+  pattern can be correct there. Reading that needs DATA belongs where the data
+  is.
+  **Still open in that cluster: percent composition** — needs 'composition'
+  admitted (GSM8K dev exposure) AND a bare single-symbol 'O' to read as an
+  element; allowing lone one-group formulas would sweep in 'B'/'C'/'K' wherever
+  they are labels. Neither risk is measured, so the item stays declined.
 - **Finance (3)** — present value, monthly payment, future value.
 
 ### The ambiguity tie: measured at 3 items system-wide, NOT worth fixing
@@ -280,109 +287,7 @@ each declined item, collect units with no senses).
    The HANDOFF has long said "probably not worth it" and that still holds:
    `conversions@1` is read pairwise by the word-problem fold in every
    arithmetic corpus.
-3. **Chemistry molar mass (~8 items)** -- the biggest single cluster, and now
-   the buyer the banked `_TOKEN` change always lacked. **`H2O` is SHREDDED into
-   `H`, `2`, `O`** by the tokenizer, so this is a tokenize.py increment first
-   (the date reader in `64436d7` is the precedent for how to do it safely: lead
-   the alternation, anchor fully, pin the neighbours). Then a
-   `rulekit/elements@1` table and a formula reader. Gate the formula slot on
-   the ask's own literals ('molar mass of'), or element symbols will collide
-   with English words ('No', 'In', 'As', 'At' are all elements).
-
-**DO NOT chase (measured this session):**
-- **`What time is 90 minutes after 11:15 AM?`** and its siblings -- the gold is
-  `value=12.0, unit=':45 PM'`. The payload was mangled at build time, so an
-  engine answering the bare hour scores CORRECT for the wrong reason. That is
-  difg's always-yes disease in gold form.
-- **`How many molecules are in 2 moles?`** -- same class, `value=1.2044,
-  unit='e+24'`. The correct answer scores WRONG.
-- **`What day of the week is 2024-07-15?`**, power set, Cartesian product,
-  "Simplify the ratio", string ops -- `text` golds, a different engine.
-- **A bespoke ask for "maximum heart rate for a 25 year old"** -- it is ONE DEV
-  item and its sibling is blocked on vocabulary ('intensity'). A single-item
-  ask is the `vocab_singles` sin no matter how easy it looks.
-
-### The scratch logic campaign: cheap increments really are exhausted
-
-Stage 9a bought ONE item; **three other general fixes measured ZERO buyers**
-and are banked unlanded (all recorded with recreation notes in
-`projects/scratch/ROADMAP.md`): the De Morgan neither/nor reader,
-`_naive_singular`'s '-se'/'-ce'/'-ze' truncation ('diseases' -> 'diseas'), and
-CamelCase proper nouns getting NO sense at all ('TikTok', 'McFall' -- senses.py
-demands `surface[1:].islower()`).
-
-**The convertible pool is 314, not 483**: 169 dev-train declines have
-'Uncertain' golds, which are `text` golds that can never score correct. Quote
-314 when sizing anything here.
-
-All 146 undecided items were ranked by key-distance; past the top few every one
-needs a designed inference stage -- locative bridging, n-way disjunctive
-elimination, modus tollens + entity aliasing, or reductio (the named S4
-frontier). The next DEV conversions come from `composition-design.md`'s S2
-stack, not from more one-slot rules. **No folio TEST look was spent** (policy
-stands: not before ~10 more conversions, preferring different stories).
-
-Two dev-train items are UNWINNABLE corpus defects: [7]/[8]/[9] William
-Dickinson (the FOLIO source is MISSING A PERIOD after "sat in the House of
-Commons", fusing two sentences into one 30-word atom), and item 228.
-
----
-
-# Session handoff — 2026-07-18
-
-Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
-Always check `git status` / `git log origin/main..HEAD` before assuming push parity.
-
-## ⚡ THE ACTIVE FRONTIER IS THE SCRATCH LOGIC CAMPAIGN (projects/scratch/ROADMAP.md)
-
-Six commits landed 2026-07-18, all pushed, every one gate-clean (full 8-slice
-snapshot diff NEUTRAL each time — gsm8k dev-train/dev-holdout, asdiv, svamp,
-mawps, scibench, folio, difg — plus pytest and per-conversion null controls):
-
-| commit | what | folio-with-logic dev-train |
-|---|---|---|
-| `71c903f` | **8d** — the `.singular` fold (unknown-plural keys) | 6 → 7 |
-| `c7fc324` | unknown-lead drop REVERTED at 0 buyers, banked | — |
-| `3bc2119` | **8e** — titular-name stack (merge + article exemption + drop re-landed) | 7 → 8 |
-| `7641e01` | **8f** — bare-plural VERBAL universals (`bare_form` flag) | 8 → 9 |
-| `cecaecc` | **folio TEST look #4** recorded (see below) | — |
-| `49e3e82` | **8g** — verbal generic conditional ('no longer' form) | 9 → 10 |
-
-**Current state:** folio-with-logic dev-train **10 correct / 0 real wrongs**
-of 494 (the 1 "wrong" is item 228's FOL-verified POISONED GOLD — never chase
-it), dev-holdout **1 / 0** of 425. **11 null-controlled conversions total.**
-pytest **1420**. Every benchmark corpus untouched: gsm8k 104/0 dev-train,
-TEST 92.3% (no look spent), folio-the-benchmark still the 0/0 safety gate
-(`packs/logic` loads ONLY in projects/scratch — that containment is the
-whole reason DEV looks here are free).
-
-### FOLIO TEST look #4 — the transfer lesson (drives everything below)
-
-**1 correct / 1 wrong / 283 of 285 — aggregates IDENTICAL to look #3.**
-Precision held (0.5 → 0.5, no revert), but three dev-train conversions
-transferred ZERO TEST items: **conversions are nearly story-specific** (the
-Douglas Adams story bought 2 of that round's 3). Policy, recorded in the
-ROADMAP: **next look only after ~10 MORE conversions, and prefer conversions
-from DIFFERENT stories.** The look stays deliberate and user-directed.
-
-### Next steps, in buying order
-
-1. **The 17-item "is a X who/that" premise pool** — the re-landed unknown-lead
-   drop now serves these; each is a DIFFERENT story (the transfer lesson).
-   Walk each story's WHOLE text before sizing (the veto prices every unread
-   sentence — this lesson has now fired three times). Known idx pairs on the
-   2026-07-18 dev-train ordering: 159/160 (professor), 188/189 (cricketer),
-   202/203 (company), 214/215 (car), 230/231 (function), 262 (archeologist),
-   356/357 (sergeant). Expect most to need one more piece each; land each
-   piece WITH its buyer.
-2. **Blake McFall identity/aliasing** (items 3/4): "The Emmet Building is
-   another name for the Blake McFall Company Building" — an identity fact
-   kind + substitution at query time. Two verdict-gold buyers in one story;
-   conclusion 4 also needs the ask side to survive a 'The'-led name (8e's
-   article exemption already handles the annotation half).
-3. **Top-level VR-PP premise rule** ("X plays for Náutico" unembedded) — five
-   minutes of YAML the day a buyer appears; none measured yet. Do not land
-   without one.
+3. ~~Chemistry molar mass~~ — **DONE**, see above (difg 63 -> 70).
 4. **Ailton passive-relative stack** — 3 pieces for 1 item, same story as
    S1a's existing conversion (bad transfer economics); stays deferred.
 
