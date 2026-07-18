@@ -1131,6 +1131,43 @@ def answer(
             return Answer("decline", None, f"{op!r} not defined for the given inputs")
         return Answer("number", float(result), f"number-theory: {op} = {result}")
 
+    if consumer == "discounted-total":
+        # total = base x [qty] x (1 - discount) x (1 + tax). The ORDER is
+        # semantic: tax applies to the DISCOUNTED price, which is what the
+        # question says and what every jurisdiction does. Fixed here rather
+        # than left to slot arrival, because the other order is a different
+        # number.
+        def _opt(key):
+            raw = query.get(key)
+            if raw in (None, ""):
+                return None
+            return float(raw)
+
+        try:
+            total = float(query.get("base"))
+            qty = _opt("qty")
+            discount = _opt("discount")
+            tax = _opt("tax")
+        except (TypeError, ValueError):
+            return Answer("decline", None, "discounted-total needs a numeric base")
+        if qty is not None:
+            total *= qty
+        if discount is not None:
+            if not 0.0 <= discount < 1.0:
+                # a discount of 100% or more is not a price reduction, and a
+                # negative one is a surcharge wearing the wrong word --
+                # decline rather than return a zero or negative total
+                return Answer("decline", None, f"{discount!r} is not a usable discount")
+            total *= 1.0 - discount
+        if tax is not None:
+            if tax < 0.0:
+                return Answer("decline", None, f"{tax!r} is not a usable tax rate")
+            total *= 1.0 + tax
+        return Answer(
+            "number", total,
+            f"discounted-total: base x qty={qty} discount={discount} tax={tax}",
+        )
+
     if consumer == "measure-cost":
         # cost = (a geometric measure of a W-by-H rectangle) x (a unit rate),
         # optionally taxed. The operation arrives as a structural OPCODE the
