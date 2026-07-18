@@ -209,6 +209,38 @@ rules:
     emits:
       - {fact: quantified, cls: "{cls.singular}", pred: "{v} {p}", polarity: true}
 
+  # ---- Stage 8g: the VERBAL generic conditional, negated-consequent form --
+  # "If a CLS <v> <obj>[,] they no longer <v2> <rest>" — the Stage 1
+  # someone-form's verbal sibling ("If a player leaves a team they no
+  # longer play for that team"). Whole-construction or nothing: 'they' +
+  # 'no' + 'longer' are mandatory skeleton literals, so every other verbal
+  # conditional surface stays unread (monotone-safe). Both spans block
+  # verbs, which makes the parse deterministic (cls stops before the
+  # antecedent verb; p stops before 'they'). The consequent keeps its
+  # anaphoric surface verbatim ('play for that team' — echo-exact, so the
+  # derived negative can only ever answer a conclusion phrasing the same
+  # bound anaphor; FOLIO conclusions do not, which is honest: "RL left
+  # Bayern Munchen" entails "no longer plays for Bayern" only through the
+  # world knowledge that Bayern IS a team — a premise this corpus never
+  # states, so that conclusion must keep declining). The rule's measured
+  # effect is READING the sentence: the fragment guard stops pricing the
+  # unread 'if'/'no' into every verdict in the story.
+  - id: logic/conditional-verbal-no-longer
+    phase: read
+    match:
+      sentence:
+        - {lit: if, at_start: true}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker, verb]}
+        - {slot: v, type: nonstate_verb}
+        - {slot: p, span: true, span_blocks: [negation, disjunctive_marker, verb], span_blocks_counted: true}
+        - {lit: they}
+        - {lit: 'no'}
+        - {lit: longer}
+        - {slot: v2, type: nonstate_verb}
+        - {slot: p2, span: true, span_blocks: [negation, disjunctive_marker, verb], span_blocks_counted: true}
+    emits:
+      - {fact: conditional, cls: "{cls}", pred: "{v} {p}", then_pred: "{v2} {p2}", polarity: false}
+
   # ---- ground atoms: "<Name> is/was [not] [a] PRED", "<Name> <verb> REST" --
   - id: logic/ground-copular-is
     phase: read

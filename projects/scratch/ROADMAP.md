@@ -462,6 +462,24 @@ by explicit user direction. What it says and does not say:
   re-measure) with per-commit null controls; re-look only when the DEV
   commit count is a multiple of what a coin can imitate.
 
+## Stage 8g — the verbal generic conditional, negated-consequent form (2026-07-18) — DONE
+
+**Folio-with-logic dev-train 9 → 10 correct (+1 SOLVED / 0 BROKE — [426]
+Lewandowski, a NEW story per look #4's lesson), holdout unchanged, all 8
+slices NEUTRAL, pytest 1420 (+4 pins), null controls move.** One YAML
+rule, `logic/conditional-verbal-no-longer`: "If a CLS <v> <obj> they no
+longer <v2> <rest>" → a flat-key Conditional (polarity false), the Stage 1
+someone-form's verbal sibling. Whole-construction or nothing ('they'+'no'+
+'longer' are skeleton literals; 'never' variants stay unread and keep
+vetoing — pinned). Both spans block verbs, making the parse deterministic.
+The buyer's derivation was already complete — the rule's measured effect
+is READING the sentence so the fragment guard stops pricing it (the S2
+veto-lift precedent, third occurrence). The story's second verdict
+conclusion ("plays for Bayern Munchen?", gold False) STAYS DECLINED and
+must: the entailment runs through "Bayern IS a team", which no premise
+states — a sortal-free instantiation would fail its own null control
+(swap 'team'; the answer must move and would not). Do not chase it.
+
 ## FOLIO TEST look #4 — SPENT 2026-07-18 (user-directed, at the band's lower edge)
 
 **1 correct / 1 wrong / 283 declined of 285 — precision 0.5, aggregates

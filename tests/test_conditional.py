@@ -166,3 +166,55 @@ def test_decomposed_atoms_feed_the_antecedent(intersective_logic_reg):
         "If a Czech is a choral conductor, then it is busy. "
         "Is it true that Miroslav is busy?", intersective_logic_reg)
     assert got == "yes"
+
+
+# ---- Stage 8g: the verbal generic conditional, negated-consequent form -------
+# "If a CLS <v> <obj> they no longer <v2> <rest>" — whole-construction or
+# nothing; the consequent keeps its anaphoric surface verbatim (echo-exact).
+
+def test_verbal_no_longer_conditional_reads(logic_reg):
+    from rulekit.kernel import engine
+    from rulekit.kernel.model import Conditional
+
+    r = engine.solve(
+        "If a wug buys a bone they no longer sell that bone.",
+        logic_reg, tracing=False)
+    conds = [(f.cls, f.pred, f.then_pred, f.polarity)
+             for f in r.store.by_kind(Conditional)]
+    assert conds == [("wug", "buy bone", "sell that bone", False)]
+
+
+def test_verbal_no_longer_conditional_instantiates_the_negative(logic_reg):
+    from rulekit.kernel import engine
+    from rulekit.kernel.model import Atom
+
+    r = engine.solve(
+        "Rex is a wug. Rex buys a bone. "
+        "If a wug buys a bone they no longer sell that bone.",
+        logic_reg, tracing=False)
+    assert ("sell that bone", False) in {
+        (f.pred, f.polarity) for f in r.store.by_kind(Atom)
+        if f.entity == "rex"
+    }
+
+
+def test_verbal_conditional_lifts_the_fragment_veto_by_reading(logic_reg):
+    # the buyer's shape: the derivation is INDEPENDENT of the conditional,
+    # which only needs reading so its 'if'/'no' stop vetoing the story
+    got = _verdict(
+        "Rex is a wug. Wugs are gleebs. "
+        "If a wug buys a bone they no longer sell that bone. "
+        "Is it true that Rex is a gleeb?", logic_reg)
+    assert got == "yes"
+
+
+def test_other_verbal_conditional_surfaces_stay_unread_and_veto(logic_reg):
+    # whole-construction or nothing: 'never' is not the matched skeleton,
+    # the sentence stays unread, and its 'if' keeps pricing the story
+    from rulekit.kernel import engine
+
+    r = engine.solve(
+        "Rex is a wug. Wugs are gleebs. "
+        "If a wug buys a bone they never sell that bone. "
+        "Is it true that Rex is a gleeb?", logic_reg, tracing=False)
+    assert not r.answer.committed
