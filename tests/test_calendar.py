@@ -56,7 +56,7 @@ def test_a_longer_digit_run_is_not_a_date():
 def test_a_date_carries_no_scalar(reg):
     # like a tuple, a date is not a quantity -- value-accounting must never
     # demand it be consumed as one
-    units = [u for u in solve("What is the day of the year for 2024-03-01?", reg).question.units]
+    units = [u for u in solve("What is the day of the year for 2019-07-04?", reg).question.units]
     date = next(u for u in units if u.features.get("value_kind") == "date")
     assert "value" not in date.features
 
@@ -119,8 +119,8 @@ def test_the_span_divisors_are_pack_data_not_python(reg):
 
 def test_a_spelled_date_span(reg):
     assert solve(
-        "How many days are between 1 Jan 2024 and 10 Feb 2024?", reg
-    ).answer.value == 40.0
+        "How many days are between 3 Jan 2019 and 13 Feb 2019?", reg
+    ).answer.value == 41.0
 
 
 def test_spelled_and_iso_forms_agree(reg):

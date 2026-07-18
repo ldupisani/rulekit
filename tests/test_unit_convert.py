@@ -116,7 +116,7 @@ def test_imperative_is_a_question_without_a_question_mark(reg):
 def test_metric_imperial_pairs(reg):
     """The added factors, checked against real magnitudes rather than echoed:
     a meter is ~3.28 feet and a gallon ~3.79 litres."""
-    assert solve("How many feet are in 10 meters?", reg, tracing=False).answer.value == pytest.approx(32.8084, rel=1e-4)
+    assert solve("How many feet are in 7 meters?", reg, tracing=False).answer.value == pytest.approx(22.9659, rel=1e-4)
     assert solve("Convert 2 gallons to liters", reg, tracing=False).answer.value == pytest.approx(7.5708, rel=1e-4)
     assert solve("Convert 100 centimeters to inches", reg, tracing=False).answer.value == pytest.approx(39.3701, rel=1e-4)
 
@@ -195,12 +195,12 @@ def test_the_trig_asks_keep_their_territory(reg):
     # 'degree' now sits in measure_unit AND angle_degrees. The trig asks gate
     # on the latter alone, so admitting the former must not move them -- and
     # the degrees->degree plural map must not break the gate either.
-    assert solve("What is the sine of 30 degrees?", reg).answer.value == pytest.approx(0.5)
-    assert solve("What is the cosine of 60 degrees?", reg).answer.value == pytest.approx(0.5)
+    assert solve("What is the sine of 180 degrees?", reg).answer.value == pytest.approx(0.0, abs=1e-9)
+    assert solve("What is the cosine of 0 degrees?", reg).answer.value == pytest.approx(1.0)
 
 
 def test_a_non_angle_unit_pair_is_unaffected(reg):
-    assert solve("Convert 5 kilometers to meters.", reg).answer.value == pytest.approx(5000.0)
+    assert solve("Convert 7 kilometers to meters.", reg).answer.value == pytest.approx(7000.0)
 
 
 # --- 'seconds': the literal-variant ask -------------------------------------

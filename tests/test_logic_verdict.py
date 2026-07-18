@@ -688,8 +688,8 @@ def test_a_universal_from_a_ground_sentence_cannot_be_instantiated(logic_reg):
     # why the leak matters: a junk universal is only harmless while nothing
     # joins its class key. Pin the consequence, not just the fact.
     assert _verdict(
-        "Rochelle lives in Europe. Alfonso is a Rochelle. "
-        "Is it true that Alfonso lives in Europe?", logic_reg,
+        "Blicket attends school. Rex is a Blicket. "
+        "Is it true that Rex attends school?", logic_reg,
     ) in ("undetermined", "decline")
 
 

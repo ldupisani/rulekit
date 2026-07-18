@@ -67,7 +67,7 @@ def test_an_unknown_scale_declines(reg):
 def test_the_ordinary_unit_conversions_are_unaffected(reg):
     # the two families are disjoint by construction: unit-convert gates both
     # slots on `measure_unit`, and a scale name is a NAME, never a member
-    assert solve("Convert 5 kilometers to meters.", reg).answer.value == pytest.approx(5000.0)
-    assert solve("Convert 180 degrees to radians.", reg).answer.value == (
-        pytest.approx(3.141592653589793)
+    assert solve("Convert 7 kilometers to meters.", reg).answer.value == pytest.approx(7000.0)
+    assert solve("Convert 60 degrees to radians.", reg).answer.value == (
+        pytest.approx(1.0471975511965976)
     )

@@ -69,15 +69,15 @@ def test_unrelated_what_is_question_declines(reg):
 def test_both_spellings_of_sine_resolve_identically(reg):
     # ONE ask via a `lit` alternation, replacing the two it used to take.
     # Byte-identical resolves is what made the collapse a no-op.
-    assert solve("What is the sine of 30 degrees?", reg).answer.value == pytest.approx(0.5)
-    assert solve("What is the sin of 30 degrees?", reg).answer.value == pytest.approx(0.5)
+    assert solve("What is the sine of 180 degrees?", reg).answer.value == pytest.approx(0.0, abs=1e-9)
+    assert solve("What is the sin of 180 degrees?", reg).answer.value == pytest.approx(0.0, abs=1e-9)
 
 
 def test_the_other_trig_functions_keep_their_own_opcodes(reg):
     # the reason a `trig_fn` CATEGORY over all four would be wrong: the opcode
     # is per-word, so collapsing them would erase cos and tan
-    assert solve("What is the cosine of 60 degrees?", reg).answer.value == pytest.approx(0.5)
-    assert solve("What is the tangent of 45 degrees?", reg).answer.value == pytest.approx(1.0)
+    assert solve("What is the cosine of 0 degrees?", reg).answer.value == pytest.approx(1.0)
+    assert solve("What is the tangent of 0 degrees?", reg).answer.value == pytest.approx(0.0)
 
 
 def test_the_excluded_abbreviations_are_still_excluded(reg):

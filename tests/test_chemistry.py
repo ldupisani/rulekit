@@ -116,8 +116,8 @@ def test_molar_mass_sums_the_table(reg, formula, want):
 
 
 def test_an_implicit_subscript_is_one(reg):
-    assert solve("What is the molar mass of NaCl?", reg).answer.value == (
-        pytest.approx(22.990 + 35.45)
+    assert solve("What is the molar mass of KCl?", reg).answer.value == (
+        pytest.approx(39.098 + 35.45)
     )
 
 
