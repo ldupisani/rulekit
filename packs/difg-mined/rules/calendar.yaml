@@ -51,3 +51,43 @@ asks:
       consumer: calendar
       op: day_of_year
       d1: "{d1.components}"
+
+  # "How many days are between 1 Jan 2024 and 10 Feb 2024?" -- the SPELLED
+  # date form. No tokenizer work: a month name annotates as a `name` and the
+  # day/year are plain counts, so the date arrives as three ordinary slots and
+  # the month is looked up in the `months` table (pack DATA -- no month is
+  # named in the consumer). Same consumer and same span divisors as the ISO
+  # form above; only the reader differs.
+  # ⚠ ABBREVIATIONS ONLY, and the asymmetry is measured rather than assumed.
+  # A three-letter abbreviation ('Jan', 'Feb') is absent from the lexicon, so
+  # it annotates as a `name`; a FULL month name ('January') is a `timeperiod`
+  # NOUN and this slot refuses it, so "1 January 2024" declines. A
+  # `cat: timeperiod` twin would read it and buys ZERO dev items today, so it
+  # is not written (an enabler must be bought). Note also that 'May' is a
+  # MODAL in the lexicon, so it would need its own handling even then --
+  # a genuine English ambiguity, not an oversight here.
+  - id: ask/calendar-span-between-spelled
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: unit, cat: calendar_span_unit}
+        - {lit: are}
+        - {lit: between}
+        - {slot: day1, type: number}
+        - {slot: mon1, type: name}
+        - {slot: year1, type: number}
+        - {lit: and}
+        - {slot: day2, type: number}
+        - {slot: mon2, type: name}
+        - {slot: year2, type: number}
+    resolves:
+      consumer: calendar
+      op: span_parts
+      unit: "{unit}"
+      day1: "{day1.value}"
+      mon1: "{mon1}"
+      year1: "{year1.value}"
+      day2: "{day2.value}"
+      mon2: "{mon2}"
+      year2: "{year2.value}"

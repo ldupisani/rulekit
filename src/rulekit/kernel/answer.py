@@ -1266,7 +1266,32 @@ def answer(
                 # a malformed date declines rather than guessing a component
                 return None
 
+        def _from_parts(d, mon, y):
+            """A date from (day, month-name, year) slots. The month name is
+            looked up in pack DATA; an unknown month or an impossible date
+            returns None and the caller declines."""
+            number = reg.month_numbers.get(str(mon).lower())
+            if number is None:
+                return None
+            try:
+                return datetime.date(int(float(y)), number, int(float(d)))
+            except (TypeError, ValueError):
+                return None
+
         op = query.get("op", "")
+        if op == "span_parts":
+            a = _from_parts(query.get("day1"), query.get("mon1"), query.get("year1"))
+            b = _from_parts(query.get("day2"), query.get("mon2"), query.get("year2"))
+            if a is None or b is None:
+                return Answer("decline", None, "a spelled date did not read")
+            unit = str(query.get("unit", ""))
+            days_per = reg.calendar_span_days.get(unit)
+            if days_per is None:
+                return Answer("decline", None, f"no calendar span divisor for {unit!r}")
+            return Answer(
+                "number", abs((b - a).days) / days_per,
+                f"calendar: span {a.isoformat()}..{b.isoformat()} in {unit}",
+            )
         d1 = _parse(query.get("d1"))
         if d1 is None:
             return Answer("decline", None, f"{query.get('d1')!r} is not a readable date")

@@ -112,3 +112,49 @@ def test_the_span_divisors_are_pack_data_not_python(reg):
     assert reg.calendar_span_days == {
         "day": 1.0, "week": 7.0, "month": 30.4375, "year": 365.25
     }
+
+
+# --- the SPELLED date form: three slots, month looked up in pack data -------
+
+
+def test_a_spelled_date_span(reg):
+    assert solve(
+        "How many days are between 1 Jan 2024 and 10 Feb 2024?", reg
+    ).answer.value == 40.0
+
+
+def test_spelled_and_iso_forms_agree(reg):
+    a = solve("How many days are between 1 Jan 2024 and 31 Jan 2024?", reg).answer.value
+    b = solve("How many days are between 2024-01-01 and 2024-01-31?", reg).answer.value
+    assert a == b == 30.0
+
+
+def test_an_unknown_month_declines(reg):
+    assert solve(
+        "How many days are between 1 Smorg 2024 and 10 Feb 2024?", reg
+    ).answer.kind == "decline"
+
+
+def test_an_impossible_spelled_date_declines(reg):
+    # 31 February -- the slots are all well-formed, so only building the date
+    # can catch it, and it must decline rather than roll over into March
+    assert solve(
+        "How many days are between 31 Feb 2024 and 10 Mar 2024?", reg
+    ).answer.kind == "decline"
+
+
+def test_a_full_month_name_is_a_KNOWN_GAP(reg):
+    # 'January' is a `timeperiod` NOUN in the lexicon while 'Jan' is unknown
+    # and so annotates as a `name`; this ask's month slots take names. A
+    # timeperiod twin buys zero dev items, so it is deliberately unwritten --
+    # and declining is the safe half of the asymmetry. Flip this test if the
+    # twin ever lands.
+    assert solve(
+        "How many days are between 1 January 2024 and 31 January 2024?", reg
+    ).answer.kind == "decline"
+
+
+def test_the_month_table_is_pack_data(reg):
+    # constitution rule 1 -- no month is named in the consumer
+    assert reg.month_numbers["jan"] == 1
+    assert reg.month_numbers["december"] == 12

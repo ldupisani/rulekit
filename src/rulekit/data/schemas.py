@@ -565,6 +565,11 @@ class CalendarDoc(StrictModel):
 
     format: Literal["rulekit/calendar@1"]
     span_units: dict[str, float]
+    # month NAME (and abbreviation) -> its number. Word-specific facts,
+    # so they live here and not in the consumer -- the same reason as
+    # the span divisors above. English-only by construction: a pack for
+    # another language ships its own table and the consumer is unchanged.
+    months: dict[str, int] = Field(default_factory=dict)
 
 
 class QuantityFormulaDef(StrictModel):
