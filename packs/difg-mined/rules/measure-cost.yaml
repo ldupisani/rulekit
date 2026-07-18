@@ -48,42 +48,11 @@ format: rulekit/rules@1
 # their own.
 rules: []
 asks:
-  # --- AREA: two variants, differing only in whether the FIRST measure
-  # carries its unit ("4 meter by 6 meter floor" vs "4 by 6 meter floor").
-  # The second measure always merges with the shape noun (condense.py), so it
-  # is a counted noun in both.
-  - id: ask/measure-cost-area-counted
-    match:
-      question:
-        - {lit: how}
-        - {lit: much}
-        - opt:
-            - {lit: does}
-            - {lit: it}
-            - {lit: cost}
-        - {lit: to}
-        - {slot: op, cat: area_measure}
-        - {slot: d1, type: counted}
-        - {lit: by}
-        - {slot: d2, type: counted}
-        - {lit: at}
-        - {slot: rate, type: counted}
-        - {lit: per}
-        - {lit: square}
-        - {slot: runit, cat: measure_unit}
-        - opt:
-            - {lit: plus}
-            - {slot: tax, type: percent}
-            - {lit: tax}
-    resolves:
-      consumer: measure-cost
-      op: area
-      d1: "{d1.value}"
-      d2: "{d2.value}"
-      rate: "{rate.value}"
-      tax: "{tax.value}"
-
-  - id: ask/measure-cost-area-bare
+  # ONE ask per operation. `type: number` tests the VALUE KIND and never the
+  # sense, so it already matches BOTH "4 by 6" and "4 meter by 6 meter" -- a
+  # `type: counted` twin for the unit-carrying form would be strictly narrower
+  # and could never uniquely match. (It was written, and it was dead.)
+  - id: ask/measure-cost-area
     match:
       question:
         - {lit: how}
@@ -114,38 +83,8 @@ asks:
       rate: "{rate.value}"
       tax: "{tax.value}"
 
-  # --- PERIMETER: the same two variants, with a LENGTH rate ---------------
-  - id: ask/measure-cost-perimeter-counted
-    match:
-      question:
-        - {lit: how}
-        - {lit: much}
-        - opt:
-            - {lit: does}
-            - {lit: it}
-            - {lit: cost}
-        - {lit: to}
-        - {slot: op, cat: perimeter_measure}
-        - {slot: d1, type: counted}
-        - {lit: by}
-        - {slot: d2, type: counted}
-        - {lit: at}
-        - {slot: rate, type: counted}
-        - {lit: per}
-        - {slot: runit, cat: measure_unit}
-        - opt:
-            - {lit: plus}
-            - {slot: tax, type: percent}
-            - {lit: tax}
-    resolves:
-      consumer: measure-cost
-      op: perimeter
-      d1: "{d1.value}"
-      d2: "{d2.value}"
-      rate: "{rate.value}"
-      tax: "{tax.value}"
-
-  - id: ask/measure-cost-perimeter-bare
+  # --- PERIMETER: the same shape, with a LENGTH rate ---------------------
+  - id: ask/measure-cost-perimeter
     match:
       question:
         - {lit: how}

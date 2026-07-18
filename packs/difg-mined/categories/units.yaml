@@ -17,6 +17,12 @@ format: rulekit/categories@1
 categories:
   measure_unit: {parent: noun}
   calendar_span_unit: {parent: noun}
+  # RELATIVE CHANGE (rules/arithmetic-ops.yaml): English spells the same
+  # computation four ways ('percent'/'percentage' x 'increase'/'decrease').
+  # Naming the two word-classes turns four near-identical asks into one --
+  # and 'increase'/'decrease' are VERB-sensed, hence a verb parent.
+  percent_word: {parent: noun}
+  change_direction: {parent: verb}
   area_measure: {parent: noun}
   perimeter_measure: {parent: noun}
 members:
@@ -70,6 +76,12 @@ members:
   # the lexicon, so a noun-rooted category accepts them. 'paint' is
   # deliberately absent: it is a VERB there, and adding a noun sense to reach
   # a category is the `average`/`second` trap.
+  percent_word:
+    - percent
+    - percentage
+  change_direction:
+    - increase
+    - decrease
   area_measure:
     - tile
     - carpet

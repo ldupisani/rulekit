@@ -112,3 +112,37 @@ def test_the_operation_words_are_pack_data(reg):
     assert reg.word_in_category("carpet", "area_measure")
     assert reg.word_in_category("fence", "perimeter_measure")
     assert not reg.word_in_category("paint", "area_measure")
+
+
+def test_type_number_already_accepts_a_unit_carrying_value(reg):
+    # THE fact that made three asks in this repo dead weight, pinned so it is
+    # not rediscovered the hard way. `_slot_ok` for `type: number` tests the
+    # VALUE KIND and never the sense, so it matches a bare '4' AND a
+    # count-merged '4 meter'. A `type: counted` twin of a `type: number` slot
+    # is therefore strictly NARROWER and can never uniquely match -- writing
+    # one is pure duplication, not coverage.
+    from rulekit.data.schemas import MatchToken
+    from rulekit.kernel.condense import condense
+    from rulekit.kernel.numbers import annotate_numbers
+    from rulekit.kernel.patterns import _slot_ok
+    from rulekit.kernel.senses import annotate_senses
+    from rulekit.kernel.tokenize import tokenize
+
+    r = tokenize("4 meter by 6")
+    annotate_numbers(r, reg)
+    annotate_senses(r, reg)
+    condense(r, reg)
+    valued = [u for u in r.units if u.features.get("value_kind") == "count"]
+    assert len(valued) == 2
+    number = MatchToken(slot="x", type="number")
+    counted = MatchToken(slot="x", type="counted")
+    # both forms satisfy `number`; only the unit-carrying one satisfies `counted`
+    assert [_slot_ok(u, number, reg) for u in valued] == [True, True]
+    assert [_slot_ok(u, counted, reg) for u in valued] == [True, False]
+
+
+def test_both_measure_forms_reach_the_single_area_ask(reg):
+    # the behavioural half of the same fact: one ask, both spellings
+    bare = solve("How much to fence a 10 by 20 yard at $3 per meter?", reg)
+    unit = solve("How much to fence a 10 meter by 20 yard at $3 per meter?", reg)
+    assert bare.answer.value == unit.answer.value == pytest.approx(180.0)

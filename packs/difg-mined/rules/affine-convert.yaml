@@ -8,30 +8,18 @@ format: rulekit/rules@1
 # `rulekit/affine-conversions@1`. No scale is named in this file or in Python,
 # and a pair the table does not hold declines.
 #
-# Two value forms, because the corpus states the amount both ways: "100
-# DEGREES Fahrenheit" merges into a counted unit, while "300 Kelvin" leaves a
-# bare number (the scale name is not a lexicon unit, so nothing merges).
+# ONE ask covers both amount forms. "100 DEGREES Fahrenheit" merges into a
+# counted unit while "300 Kelvin" leaves a bare number, but `type: number`
+# tests the VALUE KIND and never the sense, so it matches either. A
+# `cat: measure_unit` twin was written for the degrees form and was DEAD --
+# strictly narrower, so it could never uniquely match.
 #
 # DISJOINT from ask/unit-convert-imperative by construction: that ask gates
 # both unit slots on `measure_unit`, and a scale name is a NAME, never a
 # member. The two shapes cannot claim each other's questions.
 rules: []
 asks:
-  - id: ask/affine-convert-degrees
-    match:
-      question:
-        - {lit: convert}
-        - {slot: qty, cat: measure_unit}
-        - {slot: src, type: name}
-        - {lit: to}
-        - {slot: dst, type: name}
-    resolves:
-      consumer: affine-convert
-      value: "{qty.value}"
-      from: "{src}"
-      to: "{dst}"
-
-  - id: ask/affine-convert-bare
+  - id: ask/affine-convert
     match:
       question:
         - {lit: convert}
