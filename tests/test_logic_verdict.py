@@ -721,3 +721,48 @@ def test_both_indefinite_articles_reach_the_existential_ask(logic_reg):
             and any(True for _ in match_all(r, a.match["question"], logic_reg))
         ]
         assert hits == ["ask/logic-existential-verbal"], text
+
+
+@pytest.mark.parametrize(
+    "text, want",
+    [
+        ("Is it true that Rex is attended by a dog?", "ask/logic-passive-agent"),
+        ("Is it true that Rex is attended by an athlete?", "ask/logic-passive-agent"),
+        ("Is it true that Rex was attended by a dog?", "ask/logic-passive-agent"),
+        ("Is it true that Rex was attended by an athlete?", "ask/logic-passive-agent"),
+        ("Is it true that Rex is a dog?", "ask/logic-embedded-copular"),
+        ("Is it true that Rex was a dog?", "ask/logic-embedded-copular"),
+        ("Is it true that Rex is not a dog?", "ask/logic-embedded-copular-not"),
+        ("Is it true that Rex was not a dog?", "ask/logic-embedded-copular-not"),
+    ],
+)
+def test_tense_and_article_alternations_route_to_one_ask(logic_reg, text, want):
+    # Eight asks became three. On the ASK side the copula tense is not read by
+    # the consumer, so is/was resolved identically all along — the split was
+    # spelling, not meaning.
+    from rulekit.kernel import condense, numbers, senses, tokenize
+    from rulekit.kernel.patterns import match_all
+
+    r = tokenize.tokenize(text)
+    numbers.annotate_numbers(r, logic_reg)
+    senses.annotate_senses(r, logic_reg)
+    condense.condense(r, logic_reg)
+    hits = [
+        a.id for a in logic_reg.asks
+        if a.match.get("question")
+        and any(True for _ in match_all(r, a.match["question"], logic_reg))
+    ]
+    assert hits == [want], text
+
+
+def test_the_PREMISE_copula_split_is_NOT_merged(logic_reg):
+    # The guard-rail on all of this. On the premise side the copula carries the
+    # Stage 8d `.singular` fold: 'are' folds the restrictor, 'is' does not.
+    # Merging those the way the ASK side was merged would be a soundness
+    # regression, so the two rules must stay distinct with distinct emits.
+    from rulekit.kernel.model import Quantified
+
+    are = engine.solve("All blickets are gleebs.", logic_reg, tracing=False)
+    assert {f.cls for f in are.store.by_kind(Quantified)} == {"blicket"}   # folded
+    is_ = engine.solve("All blickets is gleebs.", logic_reg, tracing=False)
+    assert {f.cls for f in is_.store.by_kind(Quantified)} == {"blickets"}  # NOT folded

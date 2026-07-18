@@ -924,7 +924,31 @@ asks:
   # agent) matches no ask and declines (reference resolution unbuilt).
   # The embedded-copular asks' pred spans refuse agent_marker so this
   # family owns the construction outright (exclusion beats ordering).
-  - id: ask/logic-passive-agent-is-a
+  # "Is it true that X is/was <verb>ed by a/an <cls>?" — ONE ask over BOTH
+  # axes. The four it replaces differed only in the copula tense and the
+  # article surface, and all four resolved byte-identically: the tense is not
+  # read by this consumer, and 'a'/'an' is allomorphy.
+  #
+  # ⚠ THE ASK SIDE ONLY. The PREMISE rules' is/are split is NOT interchangeable
+  # and must never be merged this way: `universal-copular-all-are` emits
+  # `{cls.singular}` while `-all-is` emits `{cls}` — there the copula carries
+  # the Stage 8d `.singular` fold invariant. Here it carries nothing, which is
+  # exactly why the resolves are identical and this collapse is a no-op.
+  #
+  # The id is a PREFIX of all four it replaces, so it still sorts first among
+  # them and cannot lose a tie the earliest sibling previously won
+  # (match_ask's final tie-break is id order).
+  #
+  # ⚠ WHY NOT A `copula` CATEGORY (the `alternation-should-be-category` lint
+  # warns here and this is the answer it demands): 'is'/'was' do share the
+  # `verb` sense, so a category is sense-feasible — they are already both in
+  # `state`. It is still wrong twice over. A `cat` gate is only legal on a
+  # SLOT, so it would bind a slot no consumer reads; and a category CONTRIBUTES
+  # GATE DEPTH to `_ask_rank`, which would raise this ask's rank above the four
+  # it replaces. That turns a provable no-op into a ranking change, which is
+  # the one thing these collapses are built not to be. An alternation says
+  # "these two surfaces and nothing else" and perturbs no key.
+  - id: ask/logic-passive-agent
     match:
       question:
         - {lit: is, at_start: true}
@@ -932,10 +956,10 @@ asks:
         - {lit: 'true'}
         - {lit: that}
         - {slot: subj, type: name, blocks_skipped: indefinite_article}
-        - {lit: is}
+        - {lit: [is, was]}
         - {slot: v, type: nonstate_verb}
         - {lit: by}
-        - {lit: a, consume_skipped: true}
+        - {lit: [a, an], consume_skipped: true}
         - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
     resolves:
       consumer: passive-agent-verdict
@@ -943,75 +967,6 @@ asks:
       verb: "{v}"
       cls: "{cls}"
 
-  - id: ask/logic-passive-agent-is-an
-    match:
-      question:
-        - {lit: is, at_start: true}
-        - {lit: it}
-        - {lit: 'true'}
-        - {lit: that}
-        - {slot: subj, type: name, blocks_skipped: indefinite_article}
-        - {lit: is}
-        - {slot: v, type: nonstate_verb}
-        - {lit: by}
-        - {lit: an, consume_skipped: true}
-        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
-    resolves:
-      consumer: passive-agent-verdict
-      entity: "{subj}"
-      verb: "{v}"
-      cls: "{cls}"
-
-  - id: ask/logic-passive-agent-was-a
-    match:
-      question:
-        - {lit: is, at_start: true}
-        - {lit: it}
-        - {lit: 'true'}
-        - {lit: that}
-        - {slot: subj, type: name, blocks_skipped: indefinite_article}
-        - {lit: was}
-        - {slot: v, type: nonstate_verb}
-        - {lit: by}
-        - {lit: a, consume_skipped: true}
-        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
-    resolves:
-      consumer: passive-agent-verdict
-      entity: "{subj}"
-      verb: "{v}"
-      cls: "{cls}"
-
-  - id: ask/logic-passive-agent-was-an
-    match:
-      question:
-        - {lit: is, at_start: true}
-        - {lit: it}
-        - {lit: 'true'}
-        - {lit: that}
-        - {slot: subj, type: name, blocks_skipped: indefinite_article}
-        - {lit: was}
-        - {slot: v, type: nonstate_verb}
-        - {lit: by}
-        - {lit: an, consume_skipped: true}
-        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
-    resolves:
-      consumer: passive-agent-verdict
-      entity: "{subj}"
-      verb: "{v}"
-      cls: "{cls}"
-
-  # ---- S1: the do-support-negated PP-object conclusion ----------------------
-  # "Is it true that Ailton Silva does not play for a football club?" — the
-  # question CLAIMS ¬∃; a stored VerbalRelation whose PP object is in the
-  # class (saturated + decomposed — 'football club along with Braga' drops
-  # to 'football club' via Stage 2.2) is the ∃ witness that contradicts it
-  # -> 'no'. Open world: absence of a relation is never 'yes'. NO positive
-  # twin ask yet ("…that X plays for a CLS?"): that surface ties with
-  # ask/logic-embedded-verbal on consumed units and would fall to id order
-  # — the ranking lesson says exclusion-or-nothing, and the negative form
-  # has no contest ('does' fails the verbal ask's nonstate v slot).
-  # 'a'/'an' allomorphy folded into one alternation — see
-  # ask/logic-existential-verbal above for why a category cannot serve.
   - id: ask/logic-verbal-obj-class-does-not
     match:
       question:
@@ -1073,6 +1028,10 @@ asks:
       right: "{r}"
       exclusive: "true"
 
+  # is/was is one alternation here: the tense is not read by this consumer,
+  # so the two asks resolved identically. Premise-side is/are is NOT the
+  # same case, and a `copula` CATEGORY is not the right tool either — both
+  # explained at ask/logic-passive-agent.
   - id: ask/logic-embedded-copular
     match:
       question:
@@ -1081,23 +1040,7 @@ asks:
         - {lit: 'true'}
         - {lit: that}
         - {slot: subj, type: name, blocks_skipped: indefinite_article}
-        - {lit: is}
-        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker, agent_marker]}
-    resolves:
-      consumer: logic-verdict
-      entity: "{subj}"
-      pred: "{pred}"
-      polarity: "true"
-
-  - id: ask/logic-embedded-copular-was
-    match:
-      question:
-        - {lit: is, at_start: true}
-        - {lit: it}
-        - {lit: 'true'}
-        - {lit: that}
-        - {slot: subj, type: name, blocks_skipped: indefinite_article}
-        - {lit: was}
+        - {lit: [is, was]}
         - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker, agent_marker]}
     resolves:
       consumer: logic-verdict
@@ -1113,7 +1056,7 @@ asks:
         - {lit: 'true'}
         - {lit: that}
         - {slot: subj, type: name, blocks_skipped: indefinite_article}
-        - {lit: is}
+        - {lit: [is, was]}
         - {lit: not}
         - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker, agent_marker]}
     resolves:
@@ -1122,26 +1065,3 @@ asks:
       pred: "{pred}"
       polarity: "false"
 
-  - id: ask/logic-embedded-copular-was-not
-    match:
-      question:
-        - {lit: is, at_start: true}
-        - {lit: it}
-        - {lit: 'true'}
-        - {lit: that}
-        - {slot: subj, type: name, blocks_skipped: indefinite_article}
-        - {lit: was}
-        - {lit: not}
-        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker, agent_marker]}
-    resolves:
-      consumer: logic-verdict
-      entity: "{subj}"
-      pred: "{pred}"
-      polarity: "false"
-
-  # NOTE (scratch resurrection, 2026-07-17): ask/is-membership is NOT here —
-  # it stayed in packs/arithmetic (with the {coll.qualified} collection fix),
-  # and this project loads both packs, so a second copy would be a duplicate
-  # ask id. The fronted-membership question routes through arithmetic's ask
-  # and answer.py's membership-verdict (whose Atom fallback reads this
-  # pack's ground facts when they consume the copular premise).
