@@ -517,6 +517,37 @@ class ConversionsDoc(StrictModel):
     conversions: list[ConversionDef]
 
 
+class AffineScaleDef(StrictModel):
+    # to_value = (from_value + offset) * factor
+    from_: str = Field(alias="from")
+    to: str
+    offset: float
+    factor: float
+
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+
+class AffineConversionsDoc(StrictModel):
+    """Conversions between scales with a ZERO POINT of their own.
+
+    `rulekit/conversions@1` holds a FACTOR only, which is right for units that
+    share an origin (a kilometre is a thousand metres from the same zero) and
+    wrong for temperature: Celsius and Fahrenheit disagree about where zero is,
+    so no factor can relate them. The form here is affine:
+
+        to_value = (from_value + offset) * factor
+
+    A SEPARATE table, deliberately, for the same reason `rulekit/calendar@1` is
+    separate: `conversions@1` is read PAIRWISE by the word-problem
+    convertible-unit fold in every arithmetic corpus, and teaching that fold
+    about offsets would change unit folding everywhere to serve two questions.
+    Nothing but the `affine-convert` consumer reads this.
+    """
+
+    format: Literal["rulekit/affine-conversions@1"]
+    scales: list[AffineScaleDef]
+
+
 class CalendarDoc(StrictModel):
     """How many DAYS make one unit of each calendar span.
 
@@ -683,6 +714,7 @@ KIND_MODELS: dict[str, type[BaseModel]] = {
     "rulekit/geometry@1": GeometryDoc,
     "rulekit/formulas@1": FormulasDoc,
     "rulekit/calendar@1": CalendarDoc,
+    "rulekit/affine-conversions@1": AffineConversionsDoc,
     "rulekit/quarantine@1": QuarantineDoc,
     "rulekit/numbers@1": NumbersDoc,
     "rulekit/obligations@1": ObligationsDoc,

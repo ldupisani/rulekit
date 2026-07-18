@@ -1,0 +1,46 @@
+format: rulekit/rules@1
+# TEMPERATURE conversion: "Convert 100 degrees Fahrenheit to Celsius." (37.78),
+# "Convert 300 Kelvin to Celsius" (26.85).
+#
+# The scale NAMES are slots, not literals, and that is what keeps this general:
+# a capitalized unknown word annotates as a `name`, so `type: name` captures
+# any scale, and the (from, to) pair is looked up as DATA in
+# `rulekit/affine-conversions@1`. No scale is named in this file or in Python,
+# and a pair the table does not hold declines.
+#
+# Two value forms, because the corpus states the amount both ways: "100
+# DEGREES Fahrenheit" merges into a counted unit, while "300 Kelvin" leaves a
+# bare number (the scale name is not a lexicon unit, so nothing merges).
+#
+# DISJOINT from ask/unit-convert-imperative by construction: that ask gates
+# both unit slots on `measure_unit`, and a scale name is a NAME, never a
+# member. The two shapes cannot claim each other's questions.
+rules: []
+asks:
+  - id: ask/affine-convert-degrees
+    match:
+      question:
+        - {lit: convert}
+        - {slot: qty, cat: measure_unit}
+        - {slot: src, type: name}
+        - {lit: to}
+        - {slot: dst, type: name}
+    resolves:
+      consumer: affine-convert
+      value: "{qty.value}"
+      from: "{src}"
+      to: "{dst}"
+
+  - id: ask/affine-convert-bare
+    match:
+      question:
+        - {lit: convert}
+        - {slot: qty, type: number}
+        - {slot: src, type: name}
+        - {lit: to}
+        - {slot: dst, type: name}
+    resolves:
+      consumer: affine-convert
+      value: "{qty.value}"
+      from: "{src}"
+      to: "{dst}"

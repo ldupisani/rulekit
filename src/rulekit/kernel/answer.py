@@ -1131,6 +1131,29 @@ def answer(
             return Answer("decline", None, f"{op!r} not defined for the given inputs")
         return Answer("number", float(result), f"number-theory: {op} = {result}")
 
+    if consumer == "affine-convert":
+        # A scale with its own ZERO POINT: to = (from + offset) * factor. The
+        # scale names arrive as slot lemmas and the pair is looked up as DATA
+        # (rulekit/affine-conversions@1) -- no scale is named here, so a pair
+        # the table does not hold declines rather than being approximated by a
+        # bare factor, which is the whole reason this is not `conversions@1`.
+        src, dst = query.get("from", ""), query.get("to", "")
+        try:
+            value = float(query.get("value"))
+        except (TypeError, ValueError):
+            return Answer("decline", None, "a conversion needs a numeric quantity")
+        if src == dst:
+            return Answer("decline", None, f"{src!r} is already the target scale")
+        pair = reg.affine_scales.get((src, dst))
+        if pair is None:
+            return Answer("decline", None, f"no known scale conversion from {src!r} to {dst!r}")
+        offset, factor = pair
+        result = (value + offset) * factor
+        return Answer(
+            "number", float(result),
+            f"affine-convert: {value} {src} -> {dst} = {result}",
+        )
+
     if consumer == "rate-cost":
         # cost = quantity x rate, where the quantity must first be converted
         # into the RATE's unit ("10 miles at $3 per km" is 48.27, not 30).

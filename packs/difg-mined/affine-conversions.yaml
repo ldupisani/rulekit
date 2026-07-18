@@ -1,0 +1,11 @@
+format: rulekit/affine-conversions@1
+# Temperature: the scales disagree about where ZERO is, so no factor alone can
+# relate them. `to = (from + offset) * factor`.
+#
+# Only the two pairs sharing Celsius are listed. Fahrenheit <-> Kelvin is a
+# real conversion and is deliberately ABSENT: this table is a PAIR table, not a
+# graph (the same stop `rate-cost` documents), and no measured question asks
+# for it. An absent pair declines.
+scales:
+  - {from: fahrenheit, to: celsius, offset: -32.0, factor: 0.5555555555555556}
+  - {from: kelvin, to: celsius, offset: -273.15, factor: 1.0}

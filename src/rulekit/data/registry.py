@@ -129,6 +129,7 @@ class Registry:
     quantity_formulas: Mapping[str, str]  # quantity -> expr over dimension names
     unit_dimension: Mapping[str, str]  # unit lemma -> dimension name
     calendar_span_days: Mapping[str, float]  # span unit lemma -> days per unit
+    affine_scales: Mapping[tuple[str, str], tuple[float, float]]  # (from,to) -> (offset,factor)
     quarantine: Mapping[str, str]  # word -> reason (never vocabulary)
     rules: tuple[PatternRule, ...]
     asks: tuple[AskRule, ...]
@@ -349,6 +350,24 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                     )
                 geometry_formulas[key] = f.expr
 
+    # affine scale pairs, stored in BOTH directions like `conversions` above:
+    # forward is (x + offset) * factor, so the inverse is x / factor - offset,
+    # which is itself affine with offset' = -offset*factor and factor' = 1/factor.
+    affine_scales: dict[tuple[str, str], tuple[float, float]] = {}
+    for pack in packs:
+        for doc in pack.affine:
+            for sc in doc.scales:
+                if sc.factor == 0:
+                    raise CompileError(f"affine scale {sc.from_!r}->{sc.to!r} has a zero factor")
+                fwd, rev = (sc.from_, sc.to), (sc.to, sc.from_)
+                pair = (sc.offset, sc.factor)
+                if fwd in affine_scales and affine_scales[fwd] != pair:
+                    raise CompileError(
+                        f"affine scale {sc.from_!r}->{sc.to!r} declared twice differently"
+                    )
+                affine_scales[fwd] = pair
+                affine_scales[rev] = (-sc.offset * sc.factor, 1.0 / sc.factor)
+
     # calendar spans: span unit lemma -> days per unit. Same conflict
     # discipline as the tables above -- a redeclaration with a different
     # divisor ERRORS rather than letting one silently win.
@@ -465,6 +484,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
         part_counts=_freeze(part_counts),
         conversions=_freeze(conversions),
         calendar_span_days=_freeze(calendar_span_days),
+        affine_scales=_freeze(affine_scales),
         geometry_formulas=_freeze(geometry_formulas),
         quantity_formulas=_freeze(quantity_formulas),
         unit_dimension=_freeze(unit_dimension),
