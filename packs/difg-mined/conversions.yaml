@@ -1,5 +1,11 @@
 format: rulekit/conversions@1
 conversions:
+# Angle. The ONE irrational factor in this table: pi/180 to full double
+# precision, because the typed-gold comparator is 1% RELATIVE (bench.TOL +
+# 0.01*|gold|) and difg's golds are rounded to 4dp ("3.1416" for pi).
+- from: degree
+  to: radian
+  factor: 0.017453292519943295
 - from: meter
   to: centimeter
   factor: 100.0

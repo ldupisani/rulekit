@@ -2097,6 +2097,13 @@ entries:
   degree:
     senses:
     - noun
+    plural:
+    # 'degrees' has its own entry below (and its own `angle_degrees`
+    # membership), but without the plural MAP the merged count unit keeps
+    # 'degrees' as its lemma, so a category gate on the singular never sees
+    # it -- the same defect 'km'/'kilometer' had. Canonicalizing is safe for
+    # the trig asks: they gate on `angle_degrees`, which 'degree' also holds.
+    - degrees
   degrees:
     senses:
     - noun

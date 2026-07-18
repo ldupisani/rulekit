@@ -18,6 +18,13 @@ categories:
   measure_unit: {parent: noun}
 members:
   measure_unit:
+    # THE ANGLE PAIR (the degrees<->radians increment). 'degree' keeps its
+    # `angle_degrees` membership -- a word may sit in both, and the trig asks
+    # gate on `angle_degrees` alone, so their territory is unchanged. What
+    # this adds is reachability for the conversions table, which is the only
+    # thing that reads `measure_unit` pairwise.
+    - degree
+    - radian
     - meter
     - centimeter
     - kilometer

@@ -1275,6 +1275,14 @@ entries:
     senses:
     - noun
     plural: rats
+  radian:
+    senses:
+    - noun
+    plural:
+    # 'rad' is the SYMBOL, a number-form of its unit exactly as 'km' is for
+    # kilometer (that entry is the precedent).
+    - rad
+    - radians
   rate:
     senses:
     - noun

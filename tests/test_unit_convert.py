@@ -156,3 +156,48 @@ def test_a_non_unit_place_question_is_untouched(reg):
     )
     assert r.answer.committed, (r.answer.reason or "")
     assert r.answer.value == pytest.approx(16.0)
+
+
+# --- the ANGLE pair: degrees <-> radians ------------------------------------
+# SYNTHETIC angles (360/45/720), never the corpus's 180 and 90.
+
+
+def test_degrees_convert_to_radians(reg):
+    assert solve("Convert 360 degrees to radians.", reg).answer.value == pytest.approx(
+        6.283185307179586
+    )
+
+
+def test_radians_convert_back_to_degrees(reg):
+    # the table is stored in BOTH directions, so the reverse needs no entry
+    assert solve("Convert 3.141592653589793 radians to degrees.", reg).answer.value == (
+        pytest.approx(180.0)
+    )
+
+
+def test_the_radian_symbol_is_a_number_form_of_its_unit(reg):
+    # 'rad' folds to 'radian' exactly as 'km' folds to 'kilometer'
+    assert solve("Convert 45 degrees to rad.", reg).answer.value == pytest.approx(
+        0.7853981633974483
+    )
+
+
+def test_the_factor_is_precise_enough_for_the_1_percent_comparator(reg):
+    # difg's golds are rounded to 4dp ("3.1416"), and the typed-gold
+    # comparator is TOL + 1% RELATIVE -- so a 4dp FACTOR would still pass the
+    # bench while being wrong. Pin the full-precision value instead, or the
+    # test cannot tell a correct table from a sloppy one.
+    got = solve("Convert 720 degrees to radians.", reg).answer.value
+    assert abs(got - 12.566370614359172) < 1e-12
+
+
+def test_the_trig_asks_keep_their_territory(reg):
+    # 'degree' now sits in measure_unit AND angle_degrees. The trig asks gate
+    # on the latter alone, so admitting the former must not move them -- and
+    # the degrees->degree plural map must not break the gate either.
+    assert solve("What is the sine of 30 degrees?", reg).answer.value == pytest.approx(0.5)
+    assert solve("What is the cosine of 60 degrees?", reg).answer.value == pytest.approx(0.5)
+
+
+def test_a_non_angle_unit_pair_is_unaffected(reg):
+    assert solve("Convert 5 kilometers to meters.", reg).answer.value == pytest.approx(5000.0)
