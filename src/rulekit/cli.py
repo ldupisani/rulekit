@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -101,20 +102,89 @@ def cmd_bench(args) -> int:
         path = project.snapshots_dir / args.snapshot
         write_snapshot(report, path)
         print(f"snapshot -> {path}")
+    if args.emit_snapshot:
+        Path(args.emit_snapshot).write_text(json.dumps(report.to_snapshot(), sort_keys=True))
+    if args.twice and not inspectable:
+        # a determinism check must never be a reason to touch TEST
+        print("refusing --twice on an aggregate-only slice", file=sys.stderr)
+        return 2
     if args.twice:
-        # With --jobs > 1 the re-run is deliberately SERIAL: that makes --twice a
-        # parallel-vs-serial equivalence proof, which is strictly stronger than
-        # repeating the same parallel run and finding it agrees with itself.
-        second = run_suite(items, reg, jobs=1)
-        if report.to_snapshot() != second.to_snapshot():
-            print(
-                "DETERMINISM FAILURE: two runs disagree"
-                + (f" (--jobs {args.jobs} vs serial)" if args.jobs > 1 else ""),
-                file=sys.stderr,
-            )
+        # TWO INDEPENDENT CHECKS, because one process cannot make the other's
+        # claim.
+        #
+        # (a) IN-PROCESS, and only when it says something. With `--jobs > 1` the
+        #     re-run is deliberately SERIAL, making it a parallel-vs-serial
+        #     equivalence proof. At `--jobs 1` — the DEFAULT — it would be the
+        #     same code re-running under the same conditions in the same
+        #     interpreter, which agrees with itself by construction, so it is
+        #     skipped rather than printed as reassurance.
+        if args.jobs > 1:
+            second = run_suite(items, reg, jobs=1)
+            if report.to_snapshot() != second.to_snapshot():
+                print(
+                    f"DETERMINISM FAILURE: --jobs {args.jobs} disagrees with serial",
+                    file=sys.stderr,
+                )
+                return 3
+            print(f"determinism: --jobs {args.jobs} matches serial (same process)")
+
+        # (b) FRESH PROCESS. This is the check the flag always claimed to be
+        #     making and never was: a second in-process run shares every module
+        #     global, every cache and every import-order effect with the first,
+        #     so it CANNOT see the failures that matter — state that leaks
+        #     across runs, or a result that depends on anything established at
+        #     import. `docs/architecture.md`'s determinism invariant is about
+        #     fresh processes, so the re-run has to be one.
+        fresh = _rerun_in_subprocess(args)
+        if fresh is None:
+            print("DETERMINISM FAILURE: the fresh-process re-run did not complete",
+                  file=sys.stderr)
             return 3
-        print("determinism: two in-process runs identical")
+        if fresh != report.to_snapshot():
+            print("DETERMINISM FAILURE: a fresh process disagrees with this one",
+                  file=sys.stderr)
+            return 3
+        print("determinism: a fresh process produces an identical snapshot")
     return 0 if report.counts["wrong"] == 0 else 1
+
+
+def _rerun_in_subprocess(args) -> dict | None:
+    """Re-run this bench in a FRESH interpreter and return its snapshot.
+
+    Spawned with `-I` (isolated: no user site-packages, no inherited PYTHONPATH)
+    so the second process is not merely a fork of this one's environment. The
+    child writes a canonical snapshot to a temp file rather than to stdout,
+    because stdout carries progress output that would have to be parsed — and a
+    determinism check that depends on parsing is a determinism check with its
+    own failure mode.
+
+    Returns None if the child fails for any reason; the caller treats that as a
+    FAILURE rather than a pass, because "could not verify" is not "verified".
+    """
+    import json
+    import subprocess
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as tmp:
+        out = Path(tmp) / "snapshot.json"
+        cmd = [
+            sys.executable, "-I", "-m", "rulekit.cli",
+            "--project", str(args.project),
+            "bench", "--slice", args.slice or "dev-train",
+            "--jobs", "1",
+            "--emit-snapshot", str(out),
+        ]
+        env = dict(os.environ)
+        env["PYTHONHASHSEED"] = "0"
+        try:
+            proc = subprocess.run(cmd, capture_output=True, env=env, timeout=1800)
+        except (OSError, subprocess.TimeoutExpired):
+            return None
+        if proc.returncode not in (0, 1) or not out.exists():
+            # 1 is "wrong answers present", which is orthogonal to determinism
+            sys.stderr.write(proc.stderr.decode(errors="replace")[-2000:])
+            return None
+        return json.loads(out.read_text())
 
 
 def cmd_stats(args) -> int:
@@ -223,6 +293,10 @@ def main(argv: list[str] | None = None) -> int:
                    help="required for --slice test; the look is recorded in the ledger")
     p.add_argument("--snapshot", help="write snapshot JSON under snapshots/")
     p.add_argument("--twice", action="store_true", help="determinism self-check")
+    p.add_argument(
+        "--emit-snapshot", metavar="PATH",
+        help="write the canonical snapshot to PATH (used by --twice's fresh-process re-run)",
+    )
     p.add_argument("--jobs", type=int, default=1,
                    help="fan items out over N processes (default 1). Output is "
                         "byte-identical to a serial run. Serial BY DEFAULT: a "

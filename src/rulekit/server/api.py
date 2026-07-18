@@ -243,19 +243,71 @@ def _field_json(result) -> dict[str, Any]:
     }
 
 
+def pack_documents(project) -> list[dict]:
+    """THE editable document set — the one definition the UI listing and the
+    read/write allowlist both use.
+
+    Never cached: `ServerState.reload()` can change the pack set, and an
+    allowlist that outlived a reload would be a stale authority.
+    """
+    docs = []
+    for pack in project.packs:
+        root = pack.root.resolve()
+        for path in sorted(pack.root.rglob("*.yaml")):
+            # A SYMLINK OUT OF THE PACK IS NOT A PACK DOCUMENT. `rglob` happily
+            # lists one, and because the request side resolves too, both would
+            # resolve to the same target and membership would pass — so
+            # resolve-and-compare alone does NOT contain the tree. A link
+            # planted in a pack (deliberately or as a convenience) pointing at
+            # `../../data/test.parquet` would otherwise expose TEST golds
+            # through an allowlisted name.
+            #
+            # Membership guards the REQUEST; containment guards the LIST. Both,
+            # and each does a job the other cannot.
+            if not path.resolve().is_relative_to(root):
+                continue
+            docs.append({
+                "pack": pack.name,
+                "path": str(path),
+                "name": str(path.relative_to(pack.root)),
+            })
+    return docs
+
+
+def resolve_editable_doc(raw: str, project) -> Path | None:
+    """The editable path for `raw`, or None if it is out of bounds.
+
+    ⚠ THIS IS A FIREWALL BOUNDARY, not a convenience check, and it is a pure
+    function so it can be tested without an HTTP stack — an unrunnable check on
+    a boundary is no check.
+
+    The previous version admitted anything under a pack root OR under the
+    PROJECT root, and that second disjunct is the whole project directory —
+    including `data/` (the DEV/TEST parquet) and `snapshots/`. The designer
+    could therefore READ TEST items and OVERWRITE datasets and baselines over
+    HTTP, defeating the DEV/TEST firewall `docs/methodology.md` is built around
+    and putting silent corruption of a baseline one request away.
+
+    Now it is an ALLOWLIST of exactly the pack YAML documents the UI is offered,
+    compared on RESOLVED paths so a symlink out of the tree resolves to
+    something not on the list. MEMBERSHIP, not containment: `..` traversal, a
+    dataset, a snapshot, `project.yaml`, a non-YAML file inside a pack, and any
+    not-yet-existing path all fail it.
+
+    This costs the UI nothing: `app.js` only ever opens a path handed to it by
+    `/api/project`, which is this same set.
+    """
+    path = Path(raw).resolve()
+    allowed = {Path(d["path"]).resolve() for d in pack_documents(project)}
+    return path if path in allowed else None
+
+
 def build_router(state: ServerState) -> APIRouter:
     router = APIRouter(prefix="/api")
 
     @router.get("/project")
     def project_info():
-        docs = []
-        for pack in state.project.packs:
-            for path in sorted(pack.root.rglob("*.yaml")):
-                docs.append({
-                    "pack": pack.name,
-                    "path": str(path),
-                    "name": str(path.relative_to(pack.root)),
-                })
+        docs = pack_documents(state.project)
         return {
             "name": state.project.doc.name,
             "packs": [p.name for p in state.project.packs],
@@ -273,11 +325,9 @@ def build_router(state: ServerState) -> APIRouter:
         }
 
     def _resolve_doc_path(raw: str) -> Path:
-        path = Path(raw).resolve()
-        if not any(
-            path.is_relative_to(pack.root) for pack in state.project.packs
-        ) and not path.is_relative_to(state.project.root):
-            raise HTTPException(403, "path outside the project's packs")
+        path = resolve_editable_doc(raw, state.project)
+        if path is None:
+            raise HTTPException(403, "not an editable pack document")
         return path
 
     @router.get("/doc")
