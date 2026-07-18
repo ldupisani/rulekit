@@ -1,0 +1,78 @@
+name: ci
+
+# WHAT THIS CAN AND CANNOT CHECK, stated up front so nobody reads a green tick
+# as more than it is.
+#
+# Benchmark DATA is gitignored — that is the DEV/TEST firewall, not an
+# oversight (`projects/*/data`, `projects/*/snapshots`). So CI can never run
+# the corpus gates that decide whether a change ships: gsm8k dev-train/holdout,
+# asdiv, svamp, mawps, scibench, folio, difg. Those stay a LOCAL step and the
+# ship gate in CLAUDE.md is unchanged.
+#
+# What CI does check is everything that needs no data — which is exactly the
+# set of failures that are cheap to cause and easy to miss:
+#   - the packs still compile (a CompileError is a load-time refusal)
+#   - the lint has no errors
+#   - 1500+ synthetic contract tests, which have caught things all six corpora
+#     missed ("the corpora are a SAMPLE; the tests are the SPECIFICATION")
+#   - the curated suite still scores 52/52, in a FRESH process
+#
+# Data-backed test asserts skip themselves when the parquet is absent, so the
+# suite runs clean here without pretending to have measured a corpus.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Sync the locked environment
+        # --locked, not --frozen: a lockfile that has drifted from pyproject
+        # should FAIL here rather than be silently resolved around
+        run: uv sync --locked --all-extras --dev
+
+      - name: Packs compile
+        # the first thing worth knowing, and the fastest. A dead literal or an
+        # unknown category gate is a CompileError, so this fails before the
+        # slower steps run.
+        run: |
+          for p in curated gsm8k difg asdiv svamp mawps scibench folio scratch; do
+            echo "--- $p"
+            uv run python -c "
+          import sys
+          from pathlib import Path
+          from rulekit.data.project import load_project
+          load_project(Path('projects/$p')).registry
+          print('  ok')
+          "
+          done
+
+      - name: Lint the packs
+        # `lint` exits non-zero on errors. projects/scratch carries 8
+        # PRE-EXISTING overlap-tie errors, so it is linted for information
+        # only until those are resolved — listing it as blocking today would
+        # mean starting red, and a check that is always red is not a check.
+        run: |
+          uv run rulekit --project projects/gsm8k lint
+          uv run rulekit --project projects/difg lint
+          uv run rulekit --project projects/scratch lint || \
+            echo "::warning::projects/scratch has known overlap-ties (not blocking)"
+
+      - name: Tests
+        run: uv run pytest -q
+
+      - name: Curated suite, fresh-process determinism
+        # --twice now re-runs in a SPAWNED interpreter and compares canonical
+        # snapshots, so this is a real determinism check rather than a second
+        # in-process run agreeing with itself.
+        run: uv run rulekit --project projects/gsm8k bench --slice suite --twice
