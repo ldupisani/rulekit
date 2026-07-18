@@ -61,3 +61,36 @@ def test_unknown_shape_quantity_pair_declines(reg):
     """No (circle, perimeter) formula in the table -> decline."""
     r = solve("What is the perimeter of a circle with radius 5?", reg, tracing=False)
     assert not r.answer.committed
+
+
+# --- the right triangle: two SYMMETRIC dimensions ---------------------------
+
+
+def test_hypotenuse_from_two_legs(reg):
+    assert solve(
+        "What is the hypotenuse of a right triangle with legs 5 and 12?", reg
+    ).answer.value == pytest.approx(13.0)
+
+
+def test_the_legs_are_symmetric(reg):
+    # unlike length/width these two roles are interchangeable; swapping them
+    # must not change the answer
+    a = solve("What is the hypotenuse of a right triangle with legs 5 and 12?", reg)
+    b = solve("What is the hypotenuse of a right triangle with legs 12 and 5?", reg)
+    assert a.answer.value == pytest.approx(b.answer.value)
+
+
+def test_a_bare_triangle_has_no_hypotenuse(reg):
+    # a hypotenuse presupposes the right angle. 'right triangle' is ONE merged
+    # compound whose LEMMA is 'triangle', so a category gate could not tell
+    # them apart -- matching the compound literally is what keeps them
+    # distinct.
+    assert solve(
+        "What is the hypotenuse of a triangle with legs 5 and 12?", reg
+    ).answer.kind == "decline"
+
+
+def test_the_existing_triangle_area_ask_is_unaffected(reg):
+    assert solve(
+        "What is the area of a triangle with base 4 and height 6?", reg
+    ).answer.value == pytest.approx(12.0)

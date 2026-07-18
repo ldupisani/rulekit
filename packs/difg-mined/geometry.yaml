@@ -16,3 +16,8 @@ formulas:
   - {shape: cylinder, quantity: volume, expr: "pi * radius**2 * height"}
   - {shape: sphere, quantity: area, expr: "4 * pi * radius**2"}
   - {shape: square, quantity: area, expr: "side**2"}
+  # The two legs are SYMMETRIC roles, unlike length/width, so they are
+  # named leg1/leg2 and the ask binds them positionally. A hypotenuse
+  # presupposes the right angle, which is why its ask matches the merged
+  # compound 'right triangle' exactly and never a bare 'triangle'.
+  - {shape: right triangle, quantity: hypotenuse, expr: "(leg1**2 + leg2**2)**0.5"}

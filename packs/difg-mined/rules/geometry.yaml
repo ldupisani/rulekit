@@ -36,3 +36,31 @@ asks:
       val1: "{val1.value}"
       dim2: "{dim2}"
       val2: "{val2.value}"
+
+  # "What is the hypotenuse of a right triangle with legs 3 and 4?" — the same
+  # declarative table, with two SYMMETRIC dimensions instead of two named ones.
+  # Every content word is a literal because each names a table key rather than
+  # gating a class: 'right triangle' is one merged compound (the 'square root'
+  # precedent), and matching it exactly is what keeps a hypotenuse off a bare
+  # 'triangle', whose lemma the compound shares.
+  - id: ask/geometry-hypotenuse
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {lit: hypotenuse}
+        - {lit: of}
+        - {lit: right triangle}
+        - {lit: with}
+        - {lit: legs}
+        - {slot: a, type: number}
+        - {lit: and}
+        - {slot: b, type: number}
+    resolves:
+      consumer: geometry
+      shape: right triangle
+      quantity: hypotenuse
+      dim1: leg1
+      val1: "{a.value}"
+      dim2: leg2
+      val2: "{b.value}"
