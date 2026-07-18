@@ -3,6 +3,67 @@
 Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
 Always check `git status` / `git log origin/main..HEAD` before assuming push parity.
 
+## GUARDRAIL FIXES + CI (2026-07-18, from an external review)
+
+Four findings verified against the code and fixed; one deferred with reasons.
+
+### The designer could read and overwrite TEST data over HTTP
+
+`/api/doc`'s check admitted any path under a pack root **OR under the PROJECT
+root** — the second disjunct is the whole project directory, `data/` and
+`snapshots/` included. `GET` leaked TEST golds; `PUT` overwrote datasets and
+baselines. Now an ALLOWLIST of exactly the pack YAML the UI is offered, shared
+with the listing endpoint.
+
+⚠ **MEMBERSHIP GUARDS THE REQUEST; CONTAINMENT GUARDS THE LIST — you need
+both.** Resolve-and-compare alone does NOT contain the tree: a symlink planted
+in a pack is listed by `rglob`, and since the request side resolves too, both
+sides resolve to the same target and membership PASSES. `pack_documents` now
+drops any entry resolving outside its pack root. Found by my own test failing.
+
+The boundary is a PURE function (`resolve_editable_doc`) so it is tested with
+no HTTP stack — the first test needed `httpx` and SKIPPED, and a security check
+that runs only when a dependency happens to be installed is no check.
+
+### `bench --twice` claimed a determinism check it could not make
+
+Both runs shared one interpreter, so it could not see module globals, caches or
+import-order effects. At the DEFAULT `--jobs 1` it was near-vacuous. Now: the
+in-process pass runs ONLY at `--jobs > 1` (a real parallel-vs-serial proof),
+and a second pass re-runs in a FRESH isolated interpreter comparing canonical
+snapshots via a temp file. A child that fails for any reason is a FAILURE —
+"could not verify" is not "verified". **Verified by fault injection**: a
+process-dependent difference exits 3, and the old version could not have caught
+it. `--twice` is now refused on aggregate-only slices.
+
+### CI exists (`.github/workflows/ci.yml`)
+
+Compile → lint → pytest → curated suite `--twice`. **It states what it cannot
+check**: data is gitignored BECAUSE of the firewall, so CI can never run the
+corpus gates that decide whether a change ships. Those stay local.
+`projects/scratch` is information-only (8 pre-existing overlap-ties; a check
+that starts red is not a check).
+
+### Contractions are pack data
+
+`_CONTRACTIONS` was the one place the kernel enumerated WORDS. Now
+`rulekit/contractions@1` in core-english, passed to `tokenize(contractions=)`
+rather than looked up, so that stage stays registry-free. **The registry sorts
+longest-clitic-first because matching is by SUFFIX** — the old dict was
+order-dependent on insertion order, which nothing guaranteed.
+
+### DEFERRED: splitting the oversized kernel modules
+
+`answer.py` 3479 lines, `saturate.py` 1903, `learn.py` 1551, against
+`architecture.md`'s "≤ ~400 lines". The finding is real. **But "split by
+consumer behind stable dispatch interfaces" is the highest-risk change
+available here**: `answer.py` is where every guard lives, and this session
+alone produced three cases where a plausible change to shared machinery was
+wrong in a way only one specific test caught. A split with no behavioural gate
+is the exact shape that ships a silent regression. If it happens: one consumer
+at a time, each with the full eight-slice gate, and the honest FIRST step is
+characterisation tests for the consumers that lack them — not the split.
+
 ## ⚡ WHAT CHANGED THIS SESSION — 20 NEW CORRECT ANSWERS, 0 NEW WRONGS
 
 Thirteen commits, every one gate-clean across all eight slices, pytest
