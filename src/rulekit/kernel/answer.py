@@ -1131,6 +1131,28 @@ def answer(
             return Answer("decline", None, f"{op!r} not defined for the given inputs")
         return Answer("number", float(result), f"number-theory: {op} = {result}")
 
+    if consumer == "rate-cost":
+        # cost = quantity x rate, where the quantity must first be converted
+        # into the RATE's unit ("10 miles at $3 per km" is 48.27, not 30).
+        # Units arrive as lemmas from `measure_unit`-gated slots and the factor
+        # is DATA; no unit is named here.
+        src, dst = query.get("from", ""), query.get("to", "")
+        try:
+            value = float(query.get("value"))
+            rate = float(query.get("rate"))
+        except (TypeError, ValueError):
+            return Answer("decline", None, "a rate cost needs a quantity and a rate")
+        # DIRECT lookup only, deliberately -- see the pack header: the one
+        # DEV item a transitive chain would reach has a defective gold.
+        factor = 1.0 if src == dst else reg.conversions.get((src, dst))
+        if factor is None:
+            return Answer("decline", None, f"no known conversion from {src!r} to {dst!r}")
+        total = value * factor * rate
+        return Answer(
+            "number", total,
+            f"rate-cost: {value} {src} -> {dst} (x{factor}) at {rate}",
+        )
+
     if consumer == "discounted-total":
         # total = base x [qty] x (1 - discount) x (1 + tax). The ORDER is
         # semantic: tax applies to the DISCOUNTED price, which is what the

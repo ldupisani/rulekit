@@ -1,0 +1,57 @@
+format: rulekit/rules@1
+# UNIT-CONVERTED RATE COSTING: "What is the total cost of 10 miles at $3 per
+# km?" (48.27), "What is the cost of 5 miles at $2 per km?" (16.1), "What is
+# the total cost of 100 yards at $3 per km?" (0.27).
+#
+# THE CLASS: cost = quantity x rate, where the quantity and the rate are
+# denominated in DIFFERENT units and the quantity must be converted into the
+# rate's unit first. Reading the two numbers and multiplying them gives 30
+# instead of 48.27 -- the conversion is the whole increment.
+#
+# Both unit slots gate on `measure_unit`, so the units arrive as LEMMAS and the
+# factor is looked up as DATA (rulekit/conversions@1). No unit is named in
+# Python; a pair the table cannot reach declines.
+#
+# WHY THIS OUTRANKS THE GENERIC COST ASKS: `match_ask` ranks by (consumed
+# units, sum of category-gate depth). These questions already matched generic
+# money asks, which then declined with "a combined ask needs at least two
+# holders of 'cost'" -- a shape claiming a question it cannot read. This ask
+# consumes the whole question and carries two category gates, so it wins on
+# both keys.
+# ⚠ DIRECT CONVERSIONS ONLY, AND THAT IS A DELIBERATE STOP. The table is a
+# PAIR table, not a graph -- it holds 'mile -> kilometer' and 'yard -> foot'
+# but nothing joining yards to kilometres. A transitive (breadth-first) lookup
+# was BUILT and WORKED, and it is not landed, because its only DEV buyer is an
+# item with a DEFECTIVE GOLD: "What is the total cost of 100 yards at $3 per
+# km?" is exactly $0.27432 (100 yd = 0.09144 km x $3), difg rounded the gold to
+# $0.27, and the typed-gold comparator is TOL + 1% RELATIVE -- which at that
+# magnitude allows only +/-0.0027. So a CORRECT answer scores WRONG. The gate
+# caught it as a confident-wrong on the first run.
+#
+# The same rounding is invisible on the two mile items only because 1% of
+# $48.27 is 48 cents. Small-magnitude money golds in this corpus are
+# unwinnable wherever the true value has sub-cent precision -- do not chase
+# them, and do not "fix" it by rounding the consumer's output to cents, which
+# is fitting the comparator rather than reading the question.
+rules: []
+asks:
+  - id: ask/rate-cost-converted
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - opt:
+            - {lit: total}
+        - {lit: cost}
+        - {lit: of}
+        - {slot: qty, cat: measure_unit}
+        - {lit: at}
+        - {slot: rate, type: counted}
+        - {lit: per}
+        - {slot: runit, cat: measure_unit}
+    resolves:
+      consumer: rate-cost
+      value: "{qty.value}"
+      from: "{qty}"
+      to: "{runit}"
+      rate: "{rate.value}"
