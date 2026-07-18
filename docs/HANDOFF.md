@@ -50,10 +50,36 @@ why in-code. **Do not give alternations gate-depth credit** without re-gating
 every collapsed family: it would break the identity that makes each collapse
 provable.
 
-**Three lint checks ship with it** (`lint/checks.py`): `dead-literal` (error),
-`partially-dead-alternation` and `alternation-should-be-category` (warnings).
-The last one fired on its first real use (the trig merge) and forced the
-answer into the file — which is its job.
+**Enforcement is split, with no overlap.** A WHOLLY dead literal is refused by
+`compile_registry` — it cannot be loaded at all, so `rulekit lint` (which needs
+a compiled registry) could never see one. Two WARNING checks remain in
+`lint/checks.py` for what still loads: `partially-dead-alternation` (some
+options dead, so the token silently narrows) and
+`alternation-should-be-category`.
+
+⚠ Promoting the dead-literal check to a load-time error made the LINT check for
+it unreachable, and it was deleted rather than left. That was caught by two of
+its own tests failing — they could no longer BUILD their fixture. **A test that
+cannot construct its own precondition is telling you the precondition is now
+impossible.**
+
+`alternation-should-be-category` has fired on every alternation landed so far
+(trig `sine`/`sin`, three logic `is`/`was`) and each answer is now written in
+the pack — which is its job. The recurring answer is worth knowing in advance:
+a category CONTRIBUTES GATE DEPTH, so switching an alternation to a `cat` gate
+would raise that ask's rank above the siblings it replaced and turn a provable
+no-op into a ranking change. It also needs a SLOT, binding something no
+consumer reads.
+
+**Collapses landed:** trig `sine`/`sin`; logic `a`/`an` (4 asks → 2); logic
+tense+article (8 asks → 3, including the two-dimensional `passive-agent` 4 → 1).
+Each surviving id is a PREFIX of the siblings it replaced, so it still sorts
+first among them and cannot lose a tie — id order is `match_ask`'s final
+tie-break and is the one genuine non-neutrality of any collapse.
+
+⚠ **ASK SIDE ONLY.** The premise rules' is/are split carries the Stage 8d
+`.singular` fold (`-are` folds the restrictor, `-is` does not) and must never
+be merged this way. Pinned by test.
 
 **Still missing, deliberately: alternation over token SEQUENCES.** The "in all"
 totality tails need a two-token run where a sibling ask has one slot; `lit:`
