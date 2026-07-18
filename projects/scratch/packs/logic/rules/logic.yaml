@@ -684,7 +684,14 @@ rules:
         - {slot: v, type: nonstate_verb}
         - {slot: p, span: true, span_blocks: [negation, disjunctive_marker, verb], span_blocks_counted: true}
     emits:
-      - {fact: quantified, cls: "{cls}", pred: "{v} {p}", polarity: true}
+      # `{cls.singular}` for the same reason universal-copular-all-are folds
+      # (Stage 8d): 'All' + a bare verb is the PLURAL-AGREEING construction, so
+      # its restrictor is plural by grammar ('All CITIZENS of Lawton Park use
+      # ...') while every ground fact naming that class is singular ('Tom is a
+      # CITIZEN of Lawton Park'). The fold is symmetric across the family --
+      # 'every'/'each' below take a SINGULAR restrictor and must never fold
+      # (it would truncate an s-final singular: 'every species' -> 'specie').
+      - {fact: quantified, cls: "{cls.singular}", pred: "{v} {p}", polarity: true}
 
   - id: logic/universal-verbal-every
     phase: read

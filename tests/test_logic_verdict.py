@@ -557,3 +557,52 @@ def test_definite_reference_passes_the_gate(logic_reg):
 def test_bare_name_subject_unchanged(logic_reg):
     got = _verdict("Rex is a dog. Is it true that Rex is a dog?", logic_reg)
     assert got == "yes"
+
+
+# ---- Stage 9a: the 'All CLS <verb>' restrictor folds like its copular twin ----
+
+def test_verbal_all_restrictor_folds_to_the_singular(logic_reg):
+    # 'All' + a bare verb is the PLURAL-AGREEING construction, so its
+    # restrictor is plural by grammar while every ground fact naming the
+    # class is singular. Without the fold the two keys never join and the
+    # instantiation is invisible.
+    assert _verdict(
+        "All blickets visit the park. Rex is a blicket. "
+        "Is it true that Rex visits the park?", logic_reg,
+    ) == "yes"
+
+
+def test_verbal_all_restrictor_fold_null_control(logic_reg):
+    # swap the predicate: the answer must MOVE, or the 'yes' above was
+    # invariant to its own question
+    assert _verdict(
+        "All blickets visit the park. Rex is a blicket. "
+        "Is it true that Rex visits the museum?", logic_reg,
+    ) in ("undetermined", "decline")
+
+
+def test_verbal_all_restrictor_fold_needs_the_ground_membership(logic_reg):
+    assert _verdict(
+        "All blickets visit the park. Rex is a gleeb. "
+        "Is it true that Rex visits the park?", logic_reg,
+    ) in ("undetermined", "decline")
+
+
+def test_verbal_every_restrictor_never_folds(logic_reg):
+    # 'every'/'each' take a SINGULAR restrictor, so folding it would
+    # TRUNCATE an s-final singular ('every species' -> 'specie') and mint a
+    # key nothing can join. The asymmetry is the contract.
+    from rulekit.kernel.model import Quantified
+
+    r = engine.solve("Every blickes visits the park.", logic_reg, tracing=False)
+    assert {f.cls for f in r.store.by_kind(Quantified)} == {"blickes"}
+
+
+def test_verbal_and_copular_all_fold_their_restrictor_alike(logic_reg):
+    # the symmetry the Stage 8d invariant demands: one family, one rule
+    from rulekit.kernel.model import Quantified
+
+    verbal = engine.solve("All blickets visit the park.", logic_reg, tracing=False)
+    copular = engine.solve("All blickets are gleebs.", logic_reg, tracing=False)
+    assert {f.cls for f in verbal.store.by_kind(Quantified)} == {"blicket"}
+    assert {f.cls for f in copular.store.by_kind(Quantified)} == {"blicket"}
