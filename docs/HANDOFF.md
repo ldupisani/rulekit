@@ -23,6 +23,26 @@ Thirteen commits, every one gate-clean across all eight slices, pytest
 | `07faa2d` | difg right-triangle hypotenuse | 59 -> **60** |
 | `52ccf8f` | difg temperature (affine, zero-point scales) | 60 -> **62** |
 | `e580297` | difg calendar spelled dates | 62 -> **63** |
+| `c298c1b` | **refactor**: spelled dates READ in condense, not parsed in an ask | 63, -1 ask |
+
+### The seam lesson, because it cost a commit to learn twice
+
+`e580297` shipped a spelled-date ASK with six slots plus a consumer branch to
+rebuild a date from its parts -- one commit after the ISO-date increment whose
+own message says *"THE INCREMENT IS A READER, not a rule"*. That is date
+parsing duplicated into two layers with no business knowing about calendars,
+and it scales by (date surface forms) x (asks that want a date).
+
+`c298c1b` moved it to a `condense` merge pass, so the existing
+`{slot: d1, type: date}` absorbs both spellings. Net -1 ask, -1 consumer op,
+-1 helper, all 8 slices identical. **Two things fell out for free, which is
+how you know the seam was right**: "1 January 2024" now reads (it was a
+documented GAP -- the deleted ask took `type: name` and 'January' is a
+`timeperiod` NOUN), and `ask/calendar-day-of-year` accepts spelled dates
+though no variant was ever written for it.
+
+**The general rule: if a new SURFACE FORM makes you write a second ask, the
+reading belongs in tokenize/numbers/condense instead.**
 
 **Current numbers:** gsm8k dev-train **104/0**, dev-holdout **40/0**, TEST
 92.3% (untouched). asdiv **43/0**, svamp **13/0**, mawps **9/0**, scibench
