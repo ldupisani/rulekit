@@ -3937,14 +3937,25 @@ asks:
     # originally mined as mining/parked/in-all-totality-tails): sibling
     # of ask/how-many-combined for the "in all" totality tail, which the
     # matcher cannot express as an alternative WITHIN that ask (there is
-    # no OR primitive over match tokens — `all` also carries the
+    # no alternation over token SEQUENCES — `all` also carries the
     # unrelated `quantifier` sense, so it cannot simply join the
     # `aggregate` category the way 'total'/'altogether'/'combined'/
     # 'together' do without also flipping the `absent: {cat: aggregate}`
     # premise gates in arithmetic/existential-premise(-bare) for every
     # quantifier-'all' sentence). A literal [in, all] tail, scoped to
     # this ask id only, is the constitution-clean fix: literals are
-    # grammatical skeleton. Never a tie/shadow risk with ask/how-many-
+    # grammatical skeleton.
+    #
+    # ⚠ THIS COMMENT USED TO READ "there is no OR primitive over match
+    # tokens". There is one now — `lit` accepts a list (schemas.MatchToken) —
+    # and it was built for exactly this shape of blocker: a word whose extra
+    # sense bars it from the category it belongs to. IT STILL DOES NOT SOLVE
+    # THIS CASE, and the distinction is the useful part: what varies here is
+    # not one WORD but a two-token RUN ("in all") standing where
+    # ask/how-many-combined has a single `{slot: agg, cat: aggregate}`. That
+    # needs alternation over token SEQUENCES, which does not exist and is not
+    # planned. Do not "finish the job" by reaching for `lit:` here.
+    # Never a tie/shadow risk with ask/how-many-
     # combined: 'all' fails that ask's required `agg, cat: aggregate`
     # token outright (no partial match), so the two asks never compete
     # for the same question.
@@ -4003,7 +4014,7 @@ asks:
     # mining candidate combined-ask-holder-surfaces (parked-pile reland):
     # sibling of ask/how-many-combined-named for the "in all" totality
     # tail — see ask/how-many-combined-in-all's comment for the class
-    # rationale (no OR primitive over match tokens; a literal [in, all]
+    # rationale (no alternation over token SEQUENCES; a literal [in, all]
     # tail scoped to this ask id is the constitution-clean fix). Never a
     # tie/shadow risk with ask/how-many-combined-named for the same
     # reason documented there: 'all' fails that ask's required `agg`
@@ -4079,7 +4090,7 @@ asks:
     # mining candidate combined-ask-holder-surfaces: the "in all" tail
     # sibling of ask/how-many-combined-partitive ("how many pairs of
     # shoes do they have in all?") — same class rationale as ask/how-
-    # many-combined-in-all (no OR primitive over match tokens; a literal
+    # many-combined-in-all (no alternation over token SEQUENCES; a literal
     # [in, all] tail scoped to this ask id, no lexicon change to 'all').
     # Never a tie with ask/how-many-combined-partitive: that ask's
     # required trailing `agg, cat: aggregate` token fails outright
@@ -5212,7 +5223,7 @@ asks:
     # mining candidate combined-ask-holder-surfaces (parked-pile reland):
     # sibling of ask/how-much-combined for the "in all" totality tail —
     # see ask/how-many-combined-in-all's comment for the class rationale
-    # (no OR primitive over match tokens; a literal [in, all] tail scoped
+    # (no alternation over token SEQUENCES; a literal [in, all] tail scoped
     # to this ask id is the constitution-clean fix). Never a tie with
     # ask/how-much-combined for the same reason documented there: 'all'
     # fails that ask's required `agg` token outright.
@@ -5270,7 +5281,7 @@ asks:
     # mining candidate combined-ask-holder-surfaces (parked-pile reland):
     # sibling of ask/how-much-combined-named for the "in all" totality
     # tail — see ask/how-many-combined-in-all's comment for the class
-    # rationale (no OR primitive over match tokens; a literal [in, all]
+    # rationale (no alternation over token SEQUENCES; a literal [in, all]
     # tail scoped to this ask id is the constitution-clean fix). Never a
     # tie with ask/how-much-combined-named for the same reason documented
     # there: 'all' fails that ask's required `agg` token outright.

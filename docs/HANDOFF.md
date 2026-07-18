@@ -25,6 +25,56 @@ Thirteen commits, every one gate-clean across all eight slices, pytest
 | `e580297` | difg calendar spelled dates | 62 -> **63** |
 | `c298c1b` | **refactor**: spelled dates READ in condense, not parsed in an ask | 63, -1 ask |
 
+### THE `lit` ALTERNATION — new matcher infrastructure (2026-07-18)
+
+`lit` now accepts a LIST: `{lit: [sine, sin]}` matches any option. Six commits,
+every slice byte-neutral throughout.
+
+**Why it exists.** `core.yaml` had said for a long time that "there is no OR
+primitive over match tokens", and worked around it. The blocker it kept hitting
+is structural: **a category roots at exactly ONE sense** (`registry.py` raises
+`CompileError` when a member lacks it), so the words that need alternating are
+precisely the ones that can never join a category — 'any' is article-sensed,
+'many' is interrogative (not a root sense at all), and 'second'/'average'/
+'work'/'paint' are the documented traps where ADDING a sense broke a consumer.
+
+**Categories are still preferred where they fit**, and the field comment says
+so: a category NAME is refusable by `span_blocks` from other rules and visible
+to blast-radius analysis; an alternation is deliberately neither.
+
+**RANK NEUTRALITY is the load-bearing claim, and it is pinned by test.** An
+alternation counts as ONE required token, consumes ONE unit, and contributes
+ZERO gate depth — so collapsing N siblings ranks exactly as whichever sibling
+would have fired. `rule_specificity` and `_ask_rank` are UNCHANGED and now say
+why in-code. **Do not give alternations gate-depth credit** without re-gating
+every collapsed family: it would break the identity that makes each collapse
+provable.
+
+**Three lint checks ship with it** (`lint/checks.py`): `dead-literal` (error),
+`partially-dead-alternation` and `alternation-should-be-category` (warnings).
+The last one fired on its first real use (the trig merge) and forced the
+answer into the file — which is its job.
+
+**Still missing, deliberately: alternation over token SEQUENCES.** The "in all"
+totality tails need a two-token run where a sibling ask has one slot; `lit:`
+does not reach that and is not planned to. The five comments in `core.yaml` that
+used to claim "no OR primitive" now say this precisely.
+
+### The 12 dead literals — and the guard that now catches them
+
+A bare `{lit: the}` / `{lit: a}` can NEVER match: articles are a SKIPPABLE
+sense, so the skip loop walks past them. Twelve had accumulated in
+`packs/arithmetic/rules/core.yaml`, all inside `opt:` groups whose only content
+was the dead token — silent no-ops. **Deleted rather than "fixed"**: adding
+`consume_skipped: true` (plainly the author's intent) would make all 12 START
+matching and CONSUME a unit, and `len(match.consumed)` is the PRIMARY key of
+both `_ask_rank` and `specificity` — a live behavioural change at 12 sites
+dressed as a typo fix.
+
+⚠ The lint walk must be FULLY recursive: a one-level version found 10 of 12,
+because two are an `opt:` nested inside an `opt:`. Caught by diffing against an
+independent measurement, not by reading the code.
+
 ### ARCHITECTURE REVIEW of everything after Stage 9c (done 2026-07-18)
 
 Two refactors landed from it (`c298c1b`, `9f1a146`): **-6 asks, -1 consumer
