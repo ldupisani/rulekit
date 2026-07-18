@@ -321,15 +321,49 @@ def test_the_guards_are_the_bulk_of_the_coverage():
 
 # --- the coverage of this file, measured and enforced ----------------------
 
-_GUARD_FLOOR = 45   # guards WITH a probe: raise as probes are added, never lower
-_GAP_CEILING = 47   # guards WITHOUT one: lower as probes are added, never raise
+_GUARD_FLOOR = 49   # guards WITH a probe: raise as probes are added, never lower
+_GAP_CEILING = 43   # guards WITHOUT one: lower as probes are added, never raise
+
+# Guards with no golden probe because they are UNREACHABLE from text by design
+# (a defensive re-check, or a slot type that cannot bind the bad value). They
+# are covered by direct unit tests on the extracted consumer instead — which is
+# only possible once a consumer IS extracted. Listing them here keeps the
+# coverage figure honest in both directions: they are not gaps, and they are
+# not silently absent either.
+_COVERED_BY_UNIT_TEST = {
+    ("molar-mass", "no atomic mass known for"),
+    ("molar-mass", "a cost needs a numeric rate"),
+    ("molar-mass", "weight needs the gram->kilogram conversi"),
+    ("molar-mass", "weight formula failed"),
+}
 
 
 def _declared_guards() -> dict[str, set[str]]:
-    """Distinct decline messages per consumer, parsed out of answer.py."""
+    """Distinct decline messages per consumer, across the WHOLE consumer surface.
+
+    ⚠ It scans `kernel/consumers/` as well as `answer.py`, and that is not
+    tidiness. If it read only `answer.py`, EXTRACTING a consumer would delete
+    its guards from the denominator and the coverage figure would improve for
+    free — the refactor would launder away its own debt. Guards must stay
+    counted wherever they live.
+    """
     import re
 
-    lines = (ROOT / "src" / "rulekit" / "kernel" / "answer.py").read_text().split("\n")
+    text = (ROOT / "src" / "rulekit" / "kernel" / "answer.py").read_text()
+    extracted = {}
+    consumers_dir = ROOT / "src" / "rulekit" / "kernel" / "consumers"
+    if consumers_dir.is_dir():
+        for mod in sorted(consumers_dir.glob("*.py")):
+            if mod.name == "__init__.py":
+                continue
+            body = mod.read_text()
+            m = re.search(r'@consumer\("([a-z-]+)"\)', body)
+            if not m:
+                continue
+            msgs = re.findall(r'"decline",\s*None,\s*\n?\s*f?"([^"]{6,70})', body)
+            extracted[m.group(1)] = {x.split("{")[0].split(":")[0].strip()[:40] for x in msgs}
+
+    lines = text.split("\n")
     blocks, cur, start = {}, None, 0
     for i, ln in enumerate(lines):
         m = re.match(r'    if consumer == "([a-z-]+)":', ln)
@@ -343,6 +377,7 @@ def _declared_guards() -> dict[str, set[str]]:
     for consumer, body in blocks.items():
         msgs = re.findall(r'"decline",\s*None,\s*\n?\s*f?"([^"]{6,70})', body)
         out[consumer] = {m.split("{")[0].split(":")[0].strip()[:40] for m in msgs}
+    out.update(extracted)
     return out
 
 
@@ -354,6 +389,8 @@ def guard_gaps() -> list[tuple[str, str]]:
     for consumer, guards in sorted(_declared_guards().items()):
         have = covered.get(consumer, set())
         for g in sorted(guards):
+            if (consumer, g) in _COVERED_BY_UNIT_TEST:
+                continue
             if not any(g[:24] in h or h[:24] in g for h in have):
                 gaps.append((consumer, g))
     return gaps
