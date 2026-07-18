@@ -352,6 +352,21 @@ conditional read. The other titular stories ([3]/[4] Blake McFall — needs
 identity/aliasing; [6]/[8]/[9] Dickinson — needs coordination or sits on
 the run-on corpus defect) keep their own blockers.
 
+## Stage 8f — bare-plural VERBAL universals (2026-07-18) — DONE
+
+**Folio-with-logic dev-train 8 → 9 correct (+1 SOLVED / 0 BROKE — [186],
+the Douglas Adams story's second conclusion), holdout unchanged, all 8
+slices NEUTRAL, pytest 1416 (+7 pins), both null controls move.**
+"Writers create innovative ideas" is FOLIO-FOL's ∀ exactly as the copular
+generic is; the Stage 8 subject pair (bare_plural / proper_name, definite
+article refused) applied to the Stage 6 verbal reading. The copular pair's
+plural-agreeing {lit: are} has no verbal counterpart, so a new opt-in
+MatchToken flag **`bare_form`** (fold == lemma, the bare present) is the
+structural generic-vs-ground signal: "Mary CREATES ideas" and "Douglas
+Adams CREATED the book" stay ground (inflection ≠ bare form), pinned. The
+p span deliberately does NOT fold — it must join ask/logic-embedded-
+verbal's unfolded span render symmetrically. cls folds (`.singular`).
+
 **⚠ The unknown-lead relative drop was BUILT, MEASURED and REVERTED
 (2026-07-18) — an unbought enabler; do not re-land it alone.**
 *(RESOLVED same day: re-landed as piece 3 of Stage 8e above, with the

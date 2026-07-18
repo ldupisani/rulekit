@@ -294,6 +294,14 @@ class MatchToken(StrictModel):
     # sentence suppresses fold facts, and 'Tom bought 3 apples' must keep
     # its Quantity. Bare values ('in 1946') pass — dates are logic prose.
     span_blocks_counted: bool = False
+    # OPT-IN: this verb slot only matches the verb's BARE form (fold ==
+    # lemma). English marks plural agreement on the bare present ("Writers
+    # CREATE ideas" vs "Mary CREATES ideas"), so on a verb after a
+    # bare-plural/name-fallback subject this is the structural signal that
+    # the sentence is a GENERIC and not a ground statement — the verbal
+    # sibling of the copular rules' plural-agreeing {lit: are}. Defaults
+    # False: every existing verb slot is byte-identical.
+    bare_form: bool = False
     opt: list["MatchToken"] | None = None  # optional sub-sequence
 
     @model_validator(mode="after")

@@ -177,6 +177,38 @@ rules:
     emits:
       - {fact: quantified, cls: "{cls.singular}", pred: "{pred.singular}", polarity: false}
 
+  # ---- Stage 8f: BARE-PLURAL VERBAL universals — "CLS <verb> REST" ----------
+  # The Stage 8 subject family applied to the Stage 6 verbal reading:
+  # "Writers create innovative ideas" is FOLIO-FOL's ∀ exactly as the
+  # copular generic is. The copular pair's plural-agreement literal {lit:
+  # are} has no verbal counterpart, so the v slot carries `bare_form` —
+  # English marks plural agreement on the bare present, which is the
+  # structural generic-vs-ground signal ("Mary CREATES ideas" stays
+  # ground; "Douglas Adams CREATED the book" stays ground — past tense is
+  # not the bare form). The p span must NOT fold (.singular): it joins
+  # ask/logic-embedded-verbal's UNFOLDED span render, and an asymmetric
+  # fold would break the echo. The ground-verbal atom still emits beside
+  # the universal (all triggered rules run) — echo-inert, byte-identical.
+  - id: logic/universal-verbal-bare-plural-noun
+    phase: read
+    match:
+      sentence:
+        - {slot: cls, type: bare_plural, at_start: true, blocks_skipped: definite_article}
+        - {slot: v, type: nonstate_verb, bare_form: true}
+        - {slot: p, span: true, span_blocks: [negation, disjunctive_marker, verb], span_blocks_counted: true}
+    emits:
+      - {fact: quantified, cls: "{cls.singular}", pred: "{v} {p}", polarity: true}
+
+  - id: logic/universal-verbal-bare-plural-name
+    phase: read
+    match:
+      sentence:
+        - {slot: cls, type: proper_name, at_start: true, blocks_skipped: definite_article}
+        - {slot: v, type: nonstate_verb, bare_form: true}
+        - {slot: p, span: true, span_blocks: [negation, disjunctive_marker, verb], span_blocks_counted: true}
+    emits:
+      - {fact: quantified, cls: "{cls.singular}", pred: "{v} {p}", polarity: true}
+
   # ---- ground atoms: "<Name> is/was [not] [a] PRED", "<Name> <verb> REST" --
   - id: logic/ground-copular-is
     phase: read

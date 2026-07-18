@@ -105,6 +105,56 @@ def test_bare_plural_feeds_instantiation(logic_reg):
     ) == "yes"
 
 
+# ---- Stage 8f: bare-plural VERBAL universals ----------------------------------
+# "Writers create innovative ideas" is the ∀ generic exactly as the copular
+# form is; the plural-agreeing {lit: are} has no verbal counterpart, so the
+# v slot's `bare_form` flag (fold == lemma, the bare present) is the
+# structural generic-vs-ground signal.
+
+def test_verbal_generic_reads_and_instantiates(logic_reg):
+    assert _verdict(
+        "Wugs eat gleebs. Rex is a wug. Is it true that Rex eats gleebs?",
+        logic_reg,
+    ) == "yes"
+
+
+def test_verbal_generic_name_fallback_subject(logic_reg):
+    # 'Zorbs' is unknown-capitalized (name fallback) — the proper_name
+    # variant reads it, and the `.singular` fold joins the copular atom
+    assert _verdict(
+        "Zorbs eat gleebs. Rex is a zorb. Is it true that Rex eats gleebs?",
+        logic_reg,
+    ) == "yes"
+
+
+def test_verbal_generic_null_control(logic_reg):
+    got = _verdict(
+        "Wugs eat gleebs. Rex is a wug. Is it true that Rex eats zorps?",
+        logic_reg,
+    )
+    assert got in ("undetermined", "decline")
+
+
+def test_inflected_verb_stays_ground(logic_reg):
+    # "Mary eats gleebs" / "Mary ate gleebs" — singular agreement and past
+    # tense are not the bare form; neither may mint a universal
+    assert _quants("Mary eats gleebs.", logic_reg) == set()
+    assert _quants("Mary ate gleebs.", logic_reg) == set()
+
+
+def test_definite_verbal_subject_stays_ground(logic_reg):
+    assert _quants("The wugs eat gleebs.", logic_reg) == set()
+
+
+def test_counted_verbal_subject_stays_ground(logic_reg):
+    assert _quants("Three dogs eat gleebs.", logic_reg) == set()
+
+
+def test_pronoun_verbal_subject_stays_ground(logic_reg):
+    got = _quants("Rex owns dogs. They eat gleebs.", logic_reg)
+    assert got == set()
+
+
 # ---- the negative-chain synth ---------------------------------------------------
 
 def test_negative_chain_derives_the_disjointness(logic_reg):

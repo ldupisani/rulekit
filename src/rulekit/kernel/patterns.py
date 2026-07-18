@@ -89,6 +89,11 @@ class RuleMatchResult:
 
 
 def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
+    if token.bare_form and unit.features.get("fold") != _lemma_of(unit):
+        # OPT-IN (schemas.MatchToken.bare_form): only the verb's BARE form —
+        # plural agreement is the structural generic-vs-ground signal after a
+        # bare-plural subject ("Writers CREATE" ∀ vs "Mary CREATES" ground)
+        return False
     if token.bare and (
         unit.features.get("qualifier") is not None or unit.features.get("owner") is not None
     ):
