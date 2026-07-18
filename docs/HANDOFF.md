@@ -3,26 +3,91 @@
 Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
 Always check `git status` / `git log origin/main..HEAD` before assuming push parity.
 
-## ⚡ WHAT CHANGED THIS SESSION — 10 NEW CORRECT ANSWERS, 0 NEW WRONGS ANYWHERE
+## ⚡ WHAT CHANGED THIS SESSION — 20 NEW CORRECT ANSWERS, 0 NEW WRONGS
 
-Six commits, every one gate-clean across all eight slices (gsm8k dev-train/
-dev-holdout, asdiv, svamp, mawps, scibench, folio, difg, plus folio-with-logic
-on the scratch registry), pytest 1420 -> **1461**, lint unchanged.
+Thirteen commits, every one gate-clean across all eight slices, pytest
+1420 -> **1504**, lint unchanged, **no TEST look spent on any corpus**.
 
 | commit | what | effect |
 |---|---|---|
-| `ebfd7df` | **9a** verbal universal's restrictor folds like its copular twin | folio-logic dev-train 10 -> **11** |
-| `9959edc` | **9b** 'neither' can no longer hide a negation in a phrase key | precision; 0 coverage change |
-| `d34e7f7` | **9c** `bare_form` fails closed on the -s agreement suffix | precision; 0 coverage change |
+| `ebfd7df` | **9a** verbal universal's restrictor folds like its copular twin | folio-logic 10 -> **11** |
+| `9959edc` | **9b** 'neither' can no longer hide a negation in a phrase key | precision |
+| `d34e7f7` | **9c** `bare_form` fails closed on the -s agreement suffix | precision |
 | `c1eb77a` | difg angle conversions (degrees <-> radians) | difg 44 -> **47** |
-| `7783c2a` | difg percent change (one signed formula, four spellings) | difg 47 -> **49** |
-| `64436d7` | difg calendar (ISO dates as whole tokens, spans, day-of-year) | difg 49 -> **53** |
+| `7783c2a` | difg percent change (one signed formula, four spellings) | 47 -> **49** |
+| `64436d7` | difg calendar (ISO dates as whole tokens, spans, day-of-year) | 49 -> **53** |
+| `ed76df8` | difg geometric-measure costing (tile/fence) | 53 -> **54** |
+| `17027a0` | difg discounted/taxed totals | 54 -> **56** |
+| `232c384` | difg unit-converted rate costing | 56 -> **58** |
+| `794d3e6` | difg 'seconds' literal-variant conversion ask | 58 -> **59** |
+| `07faa2d` | difg right-triangle hypotenuse | 59 -> **60** |
+| `52ccf8f` | difg temperature (affine, zero-point scales) | 60 -> **62** |
+| `e580297` | difg calendar spelled dates | 62 -> **63** |
 
-**Current numbers:** gsm8k dev-train **104/0**, dev-holdout **40/0**, TEST 92.3%
-(NO look spent this session). asdiv **43/0**, svamp **13/0**, mawps **9/0**,
-scibench **0/0**, folio **0/0**, difg **53/0 of 342**. folio-with-logic
-dev-train **11 correct / 0 real wrongs** (the 1 "wrong" is item 228's
-FOL-verified POISONED GOLD -- never chase it), holdout **1/0**.
+**Current numbers:** gsm8k dev-train **104/0**, dev-holdout **40/0**, TEST
+92.3% (untouched). asdiv **43/0**, svamp **13/0**, mawps **9/0**, scibench
+**0/0**, folio **0/0**, difg **63/0 of 342**. folio-with-logic dev-train
+**11 correct / 0 real wrongs** (the 1 "wrong" is item 228's FOL-verified
+POISONED GOLD), holdout **1/0**.
+
+### THE GATE CAUGHT A CONFIDENT-WRONG, and the fix was to build LESS
+
+`rate-cost`'s first version added a transitive lookup over the conversions
+table (it is a PAIR table: 'mile -> kilometer' and 'yard -> foot', nothing
+joining yards to kilometres). It worked, and it shipped a wrong:
+
+> "What is the total cost of 100 yards at $3 per km?" is EXACTLY $0.27432.
+> difg rounded the gold to $0.27. The typed-gold comparator is TOL + 1%
+> RELATIVE, which at that magnitude allows only ±0.0027. **The correct
+> answer scores WRONG.**
+
+So the chain's only DEV buyer was an item with a defective gold — an enabler
+with no valid buyer. It was REMOVED, not kept-with-an-exception.
+
+**Small-magnitude money golds in this corpus are unwinnable wherever the true
+value has sub-cent precision.** The same rounding is invisible on the mile
+items only because 1% of $48.27 is 48 cents. Do NOT "fix" this by rounding a
+consumer's output to cents — that is fitting the comparator rather than
+reading the question.
+
+### difg's mangled golds — four items score correct for the WRONG reason
+
+difg's builder mangled several typed payloads. These are traps in BOTH
+directions and none should be counted as coverage:
+
+- `What time is 90 minutes after 11:15 AM?` -> `value=12.0, unit=':45 PM'`.
+  An engine answering the bare hour scores CORRECT without doing the
+  arithmetic. Same for `What time is it 5 hours before 1:00 AM?`.
+- `How many molecules are in 2 moles?` -> `value=1.2044, unit='e+24'`. The
+  correct answer scores WRONG.
+- The two `$N each` split-cost items are `text` golds.
+
+### What is left in difg, measured
+
+- **Proportion (2 items)** — "If a recipe for 4 servings needs 2 cups, how
+  much for 6?" / "If 3 apples cost $2, how much do 12 cost?". ONE class
+  (`B x C/A`), but BOTH need PREMISE reading: the leading if-clause splits
+  and the premise mints no correspondence fact. Needs a new fact kind.
+- **Inclusion-exclusion (1)** — same premise-reading blocker.
+- **Chemistry molar mass (~8)** — still the biggest cluster and still gated
+  behind a tokenizer change: **`H2O` is SHREDDED into `H`, `2`, `O`**. The
+  ISO-date reader in `64436d7` is the precedent for doing that safely (lead
+  the alternation, anchor fully, pin the neighbours).
+- **Finance (3)** — present value, monthly payment, future value.
+
+### The ambiguity tie: measured at 3 items system-wide, NOT worth fixing
+
+`obligations.disambiguate` commits only a UNIQUE winner, so a SECOND
+ambiguous unit anywhere in a sentence can tie the arbitration, mark every
+ambiguous unit unresolved, and let the `ambiguity` guard veto before any ask
+is tried. It blocks 2 of the 3 geometric-costing items ('cost' noun/verb,
+'square' adjective/noun join 'much').
+
+**Do not chase it.** Measured across all corpora: difg 2, asdiv 1, gsm8k 0,
+svamp 0 — **3 items total**, against a change to the sense-arbitration core.
+A structural interrogative-after-interrogative pre-filter was built and does
+NOT fix it (reducing 'much' to one option still leaves the other tying two
+ways). Reverted, banked.
 
 ### The one soundness finding worth carrying forward
 
