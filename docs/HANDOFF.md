@@ -1,3 +1,115 @@
+# Session handoff — 2026-07-18 (session 2)
+
+Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
+Always check `git status` / `git log origin/main..HEAD` before assuming push parity.
+
+## ⚡ WHAT CHANGED THIS SESSION — 10 NEW CORRECT ANSWERS, 0 NEW WRONGS ANYWHERE
+
+Six commits, every one gate-clean across all eight slices (gsm8k dev-train/
+dev-holdout, asdiv, svamp, mawps, scibench, folio, difg, plus folio-with-logic
+on the scratch registry), pytest 1420 -> **1461**, lint unchanged.
+
+| commit | what | effect |
+|---|---|---|
+| `ebfd7df` | **9a** verbal universal's restrictor folds like its copular twin | folio-logic dev-train 10 -> **11** |
+| `9959edc` | **9b** 'neither' can no longer hide a negation in a phrase key | precision; 0 coverage change |
+| `d34e7f7` | **9c** `bare_form` fails closed on the -s agreement suffix | precision; 0 coverage change |
+| `c1eb77a` | difg angle conversions (degrees <-> radians) | difg 44 -> **47** |
+| `7783c2a` | difg percent change (one signed formula, four spellings) | difg 47 -> **49** |
+| `64436d7` | difg calendar (ISO dates as whole tokens, spans, day-of-year) | difg 49 -> **53** |
+
+**Current numbers:** gsm8k dev-train **104/0**, dev-holdout **40/0**, TEST 92.3%
+(NO look spent this session). asdiv **43/0**, svamp **13/0**, mawps **9/0**,
+scibench **0/0**, folio **0/0**, difg **53/0 of 342**. folio-with-logic
+dev-train **11 correct / 0 real wrongs** (the 1 "wrong" is item 228's
+FOL-verified POISONED GOLD -- never chase it), holdout **1/0**.
+
+### The one soundness finding worth carrying forward
+
+`bare_form` (Stage 8f) is the WHOLE generic-vs-ground signal and decides by
+reading `fold == lemma` as "uninflected" -- which is only as good as the lemma
+data. **71 s-final verbs in the lexicon are their own lemma** ('lives',
+'leaves', 'agrees', 'consists', ...), so the most inflected form in the
+language passed the test: *"Rochelle lives in Europe"* minted a UNIVERSAL over
+the class 'rochelle'. Fixed in `d34e7f7` by testing the SUFFIX too, fail-closed.
+
+**The COVERAGE half is still open and is a real next increment.** Because
+'lives' has no lemma mapping, its fact keys are still 'lives in europe', which
+can never join the 'live in europe' an ask renders. Adding the 71 lemma
+mappings is pack data, but it **rewrites fact KEYS across all seven corpora** --
+its own increment, its own gate. `d34e7f7` makes it SAFE to do: with a mapping
+in place `fold != lemma` refuses on the first test anyway, so the two compose.
+
+### difg is the productive frontier — and here is how to find work in it
+
+**Rank every decline by VOCABULARY COST** (how many unknown words block it).
+That one measurement explains the whole corpus: the three cheap wins above
+needed ZERO admissions; the chemistry cluster needs 4-5 each, which is why
+`physics` stalled at 3/14. Recreate the script from this paragraph (`solve()`
+each declined item, collect units with no senses).
+
+**MEASURED AND READY, in value order** (each is a named CLASS, not a one-off):
+
+1. **Geometric-measure costing — 3 items, the best remaining.** "How much does
+   it cost to tile a 4 meter by 6 meter floor at $8 per square meter?" (192),
+   "...plus 8% tax?" (207.36), "How much to fence a 4 by 6 yard at $5 per
+   meter?" (100). ONE class: `cost = geometric measure x unit rate`. Needs a
+   "W by H" dimension-pair reader and a word->geometry-quantity mapping in pack
+   data (`area_verb: [tile, carpet, paint]` / `perimeter_verb: [fence]`) so no
+   verb enters Python. Two SIBLINGS have `text` golds ("$64 each") -- not
+   winnable, do not count them.
+2. **Temperature (2 items)** -- affine, needs an `offset` on ConversionDef.
+   The HANDOFF has long said "probably not worth it" and that still holds:
+   `conversions@1` is read pairwise by the word-problem fold in every
+   arithmetic corpus.
+3. **Chemistry molar mass (~8 items)** -- the biggest single cluster, and now
+   the buyer the banked `_TOKEN` change always lacked. **`H2O` is SHREDDED into
+   `H`, `2`, `O`** by the tokenizer, so this is a tokenize.py increment first
+   (the date reader in `64436d7` is the precedent for how to do it safely: lead
+   the alternation, anchor fully, pin the neighbours). Then a
+   `rulekit/elements@1` table and a formula reader. Gate the formula slot on
+   the ask's own literals ('molar mass of'), or element symbols will collide
+   with English words ('No', 'In', 'As', 'At' are all elements).
+
+**DO NOT chase (measured this session):**
+- **`What time is 90 minutes after 11:15 AM?`** and its siblings -- the gold is
+  `value=12.0, unit=':45 PM'`. The payload was mangled at build time, so an
+  engine answering the bare hour scores CORRECT for the wrong reason. That is
+  difg's always-yes disease in gold form.
+- **`How many molecules are in 2 moles?`** -- same class, `value=1.2044,
+  unit='e+24'`. The correct answer scores WRONG.
+- **`What day of the week is 2024-07-15?`**, power set, Cartesian product,
+  "Simplify the ratio", string ops -- `text` golds, a different engine.
+- **A bespoke ask for "maximum heart rate for a 25 year old"** -- it is ONE DEV
+  item and its sibling is blocked on vocabulary ('intensity'). A single-item
+  ask is the `vocab_singles` sin no matter how easy it looks.
+
+### The scratch logic campaign: cheap increments really are exhausted
+
+Stage 9a bought ONE item; **three other general fixes measured ZERO buyers**
+and are banked unlanded (all recorded with recreation notes in
+`projects/scratch/ROADMAP.md`): the De Morgan neither/nor reader,
+`_naive_singular`'s '-se'/'-ce'/'-ze' truncation ('diseases' -> 'diseas'), and
+CamelCase proper nouns getting NO sense at all ('TikTok', 'McFall' -- senses.py
+demands `surface[1:].islower()`).
+
+**The convertible pool is 314, not 483**: 169 dev-train declines have
+'Uncertain' golds, which are `text` golds that can never score correct. Quote
+314 when sizing anything here.
+
+All 146 undecided items were ranked by key-distance; past the top few every one
+needs a designed inference stage -- locative bridging, n-way disjunctive
+elimination, modus tollens + entity aliasing, or reductio (the named S4
+frontier). The next DEV conversions come from `composition-design.md`'s S2
+stack, not from more one-slot rules. **No folio TEST look was spent** (policy
+stands: not before ~10 more conversions, preferring different stories).
+
+Two dev-train items are UNWINNABLE corpus defects: [7]/[8]/[9] William
+Dickinson (the FOLIO source is MISSING A PERIOD after "sat in the House of
+Commons", fusing two sentences into one 30-word atom), and item 228.
+
+---
+
 # Session handoff — 2026-07-18
 
 Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
