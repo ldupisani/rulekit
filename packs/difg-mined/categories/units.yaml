@@ -27,6 +27,10 @@ categories:
   perimeter_measure: {parent: noun}
 members:
   measure_unit:
+    # 'moles' is an AMOUNT-OF-SUBSTANCE unit, so the chemistry asks can gate on
+    # it the same way every other quantity slot does. Plural form only -- see
+    # the lexicon entry for why the singular is deliberately absent.
+    - moles
     # THE ANGLE PAIR (the degrees<->radians increment). 'degree' keeps its
     # `angle_degrees` membership -- a word may sit in both, and the trig asks
     # gate on `angle_degrees` alone, so their territory is unchanged. What

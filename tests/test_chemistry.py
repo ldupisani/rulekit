@@ -126,3 +126,57 @@ def test_the_atomic_masses_are_pack_data(reg):
     # ever moves into Python, this is the test that should start failing.
     assert reg.atomic_masses["H"] == 1.008
     assert reg.atomic_masses["Na"] == 22.990
+
+
+# --- quantities derived from the molar mass --------------------------------
+# SYNTHETIC amounts throughout (never difg's 36 g / 3 mol / 2 mol).
+
+
+def test_moles_from_grams(reg):
+    # 90.075 g of H2O is 5 mol (molar mass 18.015)
+    assert solve("How many moles are in 90.075 grams of H2O?", reg).answer.value == (
+        pytest.approx(5.0)
+    )
+
+
+def test_cost_of_moles(reg):
+    # 4 mol NaCl = 4 * 58.44 g = 233.76 g, at $2/g
+    assert solve(
+        "What is the cost of 4 moles of NaCl at $2 per gram?", reg
+    ).answer.value == pytest.approx(467.52)
+
+
+def test_weight_of_moles(reg):
+    # 5 mol H2O = 90.075 g = 0.090075 kg, x 9.8
+    assert solve("What is the weight of 5 moles of H2O?", reg).answer.value == (
+        pytest.approx(0.090075 * 9.8)
+    )
+
+
+def test_no_constant_lives_in_the_consumer(reg):
+    # THE contract for the weight op: the gram->kilogram factor and g both come
+    # from pack tables the engine already had. If either moved into Python this
+    # test is what should start failing.
+    assert reg.conversions[("gram", "kilogram")] == pytest.approx(0.001)
+    assert reg.quantity_formulas["weight"] == "mass * 9.8"
+
+
+def test_the_derived_ops_still_decline_on_an_unknown_symbol(reg):
+    assert solve(
+        "How many moles are in 90 grams of Xx2O?", reg
+    ).answer.kind == "decline"
+
+
+def test_the_plain_molar_mass_ask_is_unaffected(reg):
+    # the derived ops share one consumer via a structural opcode; the default
+    # op must keep answering the bare question
+    assert solve("What is the molar mass of CO2", reg).answer.value == (
+        pytest.approx(12.011 + 2 * 15.999)
+    )
+
+
+def test_the_mole_SINGULAR_is_deliberately_unknown(reg):
+    # 'mole' the ANIMAL appears in ASDiv; admitting the singular would change
+    # how those items read, and every chemistry question says "moles"
+    assert "mole" not in reg.lexicon
+    assert "moles" in reg.lexicon

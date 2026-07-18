@@ -1265,13 +1265,53 @@ def answer(
         parts = _re.findall(r"([A-Z][a-z]?)(\d*)", raw)
         if not raw or not parts:
             return Answer("decline", None, f"{raw!r} is not a readable formula")
-        total = 0.0
+        molar = 0.0
         for sym, count in parts:
             mass = reg.atomic_masses.get(sym)
             if mass is None:
                 return Answer("decline", None, f"no atomic mass known for {sym!r}")
-            total += mass * (int(count) if count else 1)
-        return Answer("number", total, f"molar-mass: {raw} = {total}")
+            molar += mass * (int(count) if count else 1)
+
+        op = query.get("op", "mass")
+        if op == "mass":
+            return Answer("number", molar, f"molar-mass: {raw} = {molar}")
+
+        try:
+            amount = float(query.get("amount"))
+        except (TypeError, ValueError):
+            return Answer("decline", None, f"{op!r} needs a numeric amount")
+        if molar <= 0:
+            return Answer("decline", None, f"{raw!r} has no usable molar mass")
+
+        if op == "moles_from_grams":
+            return Answer("number", amount / molar,
+                          f"molar-mass: {amount} g of {raw} = {amount / molar} mol")
+        grams = amount * molar          # amount is in MOLES for the ops below
+        if op == "cost_of_moles":
+            try:
+                rate = float(query.get("rate"))
+            except (TypeError, ValueError):
+                return Answer("decline", None, "a cost needs a numeric rate")
+            return Answer("number", grams * rate,
+                          f"molar-mass: {amount} mol of {raw} = {grams} g at {rate}")
+        if op == "weight_of_moles":
+            # NO CONSTANT HERE. The gram->kilogram factor is in the conversions
+            # table and g lives inside `rulekit/formulas@1`'s `weight`
+            # expression, exactly as it does for the physics consumer — so this
+            # branch names neither a unit nor 9.8.
+            factor = reg.conversions.get(("gram", "kilogram"))
+            expr = reg.quantity_formulas.get("weight")
+            if factor is None or expr is None:
+                return Answer("decline", None,
+                              "weight needs the gram->kilogram conversion and the "
+                              "`weight` formula, and this project declares neither")
+            try:
+                value = evaluate(expr, {"mass": grams * factor}, log, source="molar-mass")
+            except EvaluationError as exc:
+                return Answer("decline", None, f"weight formula failed: {exc}")
+            return Answer("number", value,
+                          f"molar-mass: {amount} mol of {raw} = {grams} g -> {value}")
+        return Answer("decline", None, f"unsupported molar-mass operation {op!r}")
 
     if consumer == "calendar":
         # Date arithmetic over ISO dates read as WHOLE tokens (tokenize.py's

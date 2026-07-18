@@ -1669,6 +1669,16 @@ entries:
   models:
     senses:
     - noun
+  # PLURAL FORM ONLY, and deliberately no `mole` singular entry: 'mole' the
+  # ANIMAL appears in 2 ASDiv items, and admitting the singular (or a plural
+  # map pointing at it) would change how those read. 'moles' occurs nowhere in
+  # gsm8k, asdiv, svamp, mawps or folio — only in SciBench, the out-of-domain
+  # gate that must hold 0 commits. Measured before admitting; re-measured at
+  # 0/0 after. The chemistry asks all say "moles", so the singular buys
+  # nothing and costs exposure.
+  moles:
+    senses:
+    - noun
   # ADJECTIVE, not noun, and the choice is load-bearing. As a noun it would
   # merge with the following noun into ONE compound ("molar mass" -> a single
   # unit whose fold is 'molar mass'), which the two-literal ask cannot match --

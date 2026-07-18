@@ -32,3 +32,71 @@ asks:
     resolves:
       consumer: molar-mass
       formula: "{f.components}"
+
+  # --- quantities DERIVED from a formula's molar mass ----------------------
+  # All three go to the same consumer with a structural opcode, because they
+  # are one computation with different tails: moles <-> grams via the molar
+  # mass, then an ordinary rate or the weight formula on top.
+  #
+  # NO CONSTANT ENTERS PYTHON for any of them. The gram->kilogram factor comes
+  # from `rulekit/conversions@1` and g (9.8) from `rulekit/formulas@1`'s
+  # `weight` expression, both already in the packs — so the consumer names no
+  # unit and no constant.
+
+  # "How many moles are in 36 grams of H2O?" -> grams / molar mass
+  - id: ask/chem-moles-from-grams
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {lit: moles}
+        - {lit: are}
+        - {lit: in}
+        - {slot: g, cat: measure_unit}
+        - {lit: of}
+        - {slot: f, type: formula}
+    resolves:
+      consumer: molar-mass
+      op: moles_from_grams
+      formula: "{f.components}"
+      amount: "{g.value}"
+
+  # "What is the cost of 3 moles of NaCl at $0.50 per gram?"
+  #   -> moles * molar mass * rate
+  - id: ask/chem-cost-of-moles
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {lit: cost}
+        - {lit: of}
+        - {slot: n, cat: measure_unit}
+        - {lit: of}
+        - {slot: f, type: formula}
+        - {lit: at}
+        - {slot: rate, type: counted}
+        - {lit: per}
+        - {slot: runit, cat: measure_unit}
+    resolves:
+      consumer: molar-mass
+      op: cost_of_moles
+      formula: "{f.components}"
+      amount: "{n.value}"
+      rate: "{rate.value}"
+
+  # "What is the weight of 2 moles of H2O?" -> grams -> kilograms -> weight
+  - id: ask/chem-weight-of-moles
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {lit: weight}
+        - {lit: of}
+        - {slot: n, cat: measure_unit}
+        - {lit: of}
+        - {slot: f, type: formula}
+    resolves:
+      consumer: molar-mass
+      op: weight_of_moles
+      formula: "{f.components}"
+      amount: "{n.value}"
