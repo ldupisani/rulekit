@@ -63,6 +63,48 @@ asks:
       from: "{qty}"
       to: "{to}"
 
+  # ---- 'seconds': the LITERAL-VARIANT ask, and why it has to be one -------
+  # 'second' is an ADJECTIVE in the lexicon (the ordinal), so it cannot join
+  # the noun-rooted `measure_unit` category -- the registry rejects it, and
+  # adding a noun sense to reach a category is the trap that broke the
+  # `average` consumer. A literal variant is the sanctioned fix (it is why
+  # formulas.yaml already writes `time: [seconds]`).
+  #
+  # Without it "How many seconds are in 5 minutes?" lost to
+  # ask/how-many-in-place, which reads '5 minutes' as a PLACE and declines --
+  # the conversion table has held minute -> second all along.
+  #
+  # The target unit is written as pack DATA in `resolves`, which is exactly
+  # where a word-specific fact belongs.
+  - id: ask/unit-convert-how-many-seconds-in
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {lit: seconds}
+        - {lit: are}
+        - {lit: in}
+        - {slot: qty, cat: measure_unit}
+    resolves:
+      consumer: unit-convert
+      value: "{qty.value}"
+      from: "{qty}"
+      to: second
+
+  - id: ask/unit-convert-how-many-seconds-is
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {lit: seconds}
+        - {lit: is}
+        - {slot: qty, cat: measure_unit}
+    resolves:
+      consumer: unit-convert
+      value: "{qty.value}"
+      from: "{qty}"
+      to: second
+
   - id: ask/unit-convert-imperative
     # "Convert 5 kilometers to meters" / "Convert 500 grams to kilograms" — the
     # imperative frame. Reachable only because 'convert' carries the `imperative`

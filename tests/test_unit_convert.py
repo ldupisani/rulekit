@@ -201,3 +201,25 @@ def test_the_trig_asks_keep_their_territory(reg):
 
 def test_a_non_angle_unit_pair_is_unaffected(reg):
     assert solve("Convert 5 kilometers to meters.", reg).answer.value == pytest.approx(5000.0)
+
+
+# --- 'seconds': the literal-variant ask -------------------------------------
+
+
+def test_seconds_convert_via_the_literal_variant(reg):
+    # 'second' is an ADJECTIVE in the lexicon (the ordinal), so it cannot join
+    # the noun-rooted `measure_unit` category. Without a literal variant the
+    # question lost to ask/how-many-in-place, which reads '5 minutes' as a
+    # PLACE -- while minute -> second sat in the table the whole time.
+    assert solve("How many seconds are in 4 minutes?", reg).answer.value == 240.0
+    assert solve("How many seconds is 2 minutes?", reg).answer.value == 120.0
+
+
+def test_the_seconds_variant_still_needs_a_real_conversion(reg):
+    # the literal only fixes which ask READS the question; the pair must
+    # still exist in the table
+    assert solve("How many seconds are in 3 gallons?", reg).answer.kind == "decline"
+
+
+def test_the_general_conversion_asks_are_unaffected(reg):
+    assert solve("How many minutes are in 5 hours?", reg).answer.value == 300.0
