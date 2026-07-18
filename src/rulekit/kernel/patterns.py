@@ -88,8 +88,33 @@ class RuleMatchResult:
     facts: list[Fact] = field(default_factory=list)
 
 
+def _looks_third_person_singular(fold: str) -> bool:
+    """Does this verb surface carry the -s AGREEMENT suffix?
+
+    `bare_form` reads `fold == lemma` as "uninflected", which is only ever as
+    good as the lemma data: a verb whose 3sg form is registered as its OWN
+    lemma (no mapping to the bare form) passes the test while being the most
+    inflected form there is. 71 such verbs are in the lexicon today -- 'lives'
+    among them -- so "Rochelle lives in Europe" minted a UNIVERSAL over the
+    class 'rochelle' from a ground sentence about one named individual.
+
+    So test the SUFFIX too, and fail closed. An English bare form ending in a
+    single 's' is essentially nonexistent: the real ones double it or sit on a
+    Latin stem ('pass', 'discuss', 'possess', 'focus', 'bus'), both excluded
+    here. Refusing is monotone-safe -- it mints FEWER universals, never more.
+    """
+    return (
+        len(fold) > 3
+        and fold.endswith("s")
+        and not fold.endswith(("ss", "us"))
+    )
+
+
 def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
-    if token.bare_form and unit.features.get("fold") != _lemma_of(unit):
+    if token.bare_form and (
+        unit.features.get("fold") != _lemma_of(unit)
+        or _looks_third_person_singular(unit.features.get("fold") or "")
+    ):
         # OPT-IN (schemas.MatchToken.bare_form): only the verb's BARE form —
         # plural agreement is the structural generic-vs-ground signal after a
         # bare-plural subject ("Writers CREATE" ∀ vs "Mary CREATES" ground)

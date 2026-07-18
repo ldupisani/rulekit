@@ -542,3 +542,131 @@ Preconditions from the closure, all still binding:
   eventual fix if it ever bites.
 - difg's logic domain stays out of scope: its yes/no golds are 8-of-8 'Yes'
   (an always-yes engine aces it — the null-control lesson).
+
+## Stage 9a — the verbal universal's restrictor folds like its copular twin (2026-07-18) — DONE
+
+**Folio-with-logic dev-train 10 → 11 correct (+1 SOLVED / 0 BROKE — [12]
+Tom/Lawton Park, a NEW story per look #4's transfer lesson), holdout
+unchanged, all 8 slices NEUTRAL, pytest 1425 (+5 pins).** One slot in one
+rule: `logic/universal-verbal-all` emitted `{cls}` while its copular twin
+`universal-copular-all-are` has emitted `{cls.singular}` since Stage 8d.
+So "All CITIZENS of Lawton Park use the zip code 98199" keyed a class no
+ground fact could name — every ground fact naming it is singular ("Tom is
+a CITIZEN of Lawton Park"). The derivation was already complete; the two
+keys never met.
+
+Not a widening — the Stage 8d invariant applied consistently. 'every'/
+'each' keep a verbatim restrictor and are PINNED that way: they take a
+SINGULAR restrictor, so folding would truncate an s-final singular
+('every species' → 'specie'). Null controls move on all four swaps.
+
+## Stage 9b — 'neither' can no longer hide a negation in a phrase key — DONE
+
+**All 8 slices NEUTRAL, zero outcome AND zero reason moves, pytest 1429.**
+This file's header says `span_blocks: negation` goes EVERYWHERE, because a
+swallowed negation is invisible to every consumer. 'neither' walked through
+it: a difg-mined ADJECTIVE in no category, so no span_blocks entry could
+see it. "Tom is neither a Merriam's wild turkey nor a Rio Grande wild
+turkey" minted Atom(tom, "neither ... nor ...", polarity=**TRUE**) — a
+positive fact asserting the negation of its own sentence. New
+`neither_marker` category (exact mirror of `either_marker`) lets the
+copular pred span REFUSE the construction. Dormant hazard, now pinned: a
+conclusion of the same shape would have echo-matched that key.
+
+**DELIBERATELY SPLIT — the De Morgan READER is BANKED, NOT LANDED.** "X is
+neither A nor B" → two NEGATIVE atoms (¬A ∧ ¬B) is written, sound, and the
+one disjunction surface needing no exclusivity measurement (unlike the
+Stage 3 'or' pair). It buys ZERO dev-train items, so it waits for a buyer
+(the `_TOKEN` precedent). Recreate: mirror `logic/disj-ground-either` with
+`{lit: neither}` / `{lit: nor}`, both spans blocking `neither_marker`, and
+emit two `atom` facts with `polarity: false`. Its likeliest first buyer is
+[400] (Tom / six wild turkey types), which ALSO needs the "There are six
+types: A, B, C, D, E, and F" enumeration read as a disjunction — two
+pieces, land them together.
+
+## Stage 9c — `bare_form` fails closed on the -s agreement suffix — DONE
+
+**All 8 slices NEUTRAL, pytest 1433 (+4 pins). A PRECISION fix: it mints
+FEWER universals, never more.** `bare_form` (Stage 8f) is the whole
+generic-vs-ground signal, and it reads `fold == lemma` as "uninflected" —
+which is only ever as good as the lemma data. **71 s-final verbs in the
+lexicon are their own lemma** ('lives', 'leaves', 'agrees', 'consists',
+...), so the most inflected form there is passed the bare-form test:
+"Rochelle lives in Europe" minted `Quantified(cls='rochelle', pred='lives
+in europe')` — a UNIVERSAL over a class, from a ground sentence about one
+named individual.
+
+The fix tests the SUFFIX as well and fails closed. An English bare form
+ending in a single 's' is essentially nonexistent — the real ones double it
+or sit on a Latin stem ('pass', 'discuss', 'possess', 'focus', 'bus'), all
+excluded. **Chosen over the lexicon route deliberately:** adding lemma
+mappings for the 71 verbs is "more correct" but rewrites fact KEYS across
+all seven corpora ('lives in europe' → 'live in europe'), so every existing
+join could shift. The kernel guard is precision-only with zero key churn,
+and it makes the lexicon fix SAFE to do later (with the mapping in place,
+`fold != lemma` refuses on the first test anyway).
+
+The junk universal was latent, not live — nothing in DEV is a 'rochelle' —
+so the pin is on the CONSEQUENCE, not just the fact
+(`test_a_universal_from_a_ground_sentence_cannot_be_instantiated`).
+
+## The convertible pool is 314, not 483 (measured 2026-07-18)
+
+dev-train declines by gold kind: **169 'Uncertain' items are `text` golds
+and can NEVER score correct** (an `undetermined` verdict scores declined
+against them — this is the trap negative-results records, and it cuts both
+ways: they are not opportunities, only wrong-hazards). The real convertible
+pool is **314** (137 false-gold + 177 true-gold declines). Quote 314, not
+483, when sizing any future campaign.
+
+## Three general fixes measured at ZERO buyers (banked, do not rebuild blind)
+
+Each is real, each is correct, none is landed — re-measure only after new
+stacks land, and land each WITH its first buyer:
+
+1. **`_naive_singular` truncates '-se'/'-ce'/'-ze' nouns.** It strips 'es'
+   when `word[-3] in "sxz"`, but 'diseases' and 'glasses' share that
+   character while only one is an '-es' plural — so 'diseases' → 'diseas',
+   'houses' → 'hous', and every such key can never join. Testing the STEM
+   (`stem.endswith(("ss","x","z","ch","sh"))`) is correct on 15 hand-checked
+   forms and regresses only 'buses'/'gases'/'lenses'. **0 dev-train buyers.**
+2. **An unknown CamelCase proper noun gets NO SENSE AT ALL.** senses.py
+   demands `surface[1:].islower()`, so 'TikTok', 'McFall', 'LinkedIn',
+   'YouTube' fall through to `unknown` — every `type: name` slot refuses
+   them and no ask shape can read a question about one. Widening to
+   "tail is alphabetic and carries a lowercase letter" admits exactly the
+   CamelCase class (ALL-CAPS acronyms stay out — unit symbols live there).
+   **0 dev-train buyers.**
+3. **The De Morgan neither/nor reader** (Stage 9b above).
+
+## Two dev-train items are UNWINNABLE corpus defects — never chase them
+
+- **[7]/[8]/[9] William Dickinson**: the FOLIO source text is MISSING A
+  PERIOD after "sat in the House of Commons", fusing two sentences into one
+  30-word atom pred. Same class as the Captain America mega-sentence.
+- Item **228** remains the FOL-verified POISONED GOLD (the standing 1
+  "wrong"; it is the proof the judge works).
+
+## The remaining frontier is INFERENCE, not increments (re-measured 2026-07-18)
+
+All 146 undecided items were ranked by key-distance between the conclusion
+and the nearest fact key. Past the top few every one needs a designed
+stage, and the same four names keep coming up:
+
+- **locative bridging** — [218] Alfonso: "lives in a place named Galicia"
+  + "if someone lives in Galicia they live in Spain or Poland" + "Spain is
+  in Europe" ⊢ lives in Europe. Needs the deferred locative bridge AND the
+  verb-lemma half of the 9c defect ('lives in europe' never joins 'live in
+  europe' until the lexicon carries the mapping).
+- **n-way disjunctive elimination** — [400] Tom/turkeys (six types, five
+  refuted).
+- **modus tollens over a universal + entity aliasing** — [99]/[100] Islip:
+  needs 'Islip' ≡ 'Islip Speedway' (the same identity machinery the Blake
+  McFall items want).
+- **reductio / case analysis** — the F/T pairs, already the named S4
+  frontier.
+
+The honest read: **Stage 9a bought one item and three other general fixes
+bought zero.** The cheap-increment frontier really is exhausted; the next
+DEV conversions come from `composition-design.md`'s S2 stack or from S4,
+not from more one-slot rules.

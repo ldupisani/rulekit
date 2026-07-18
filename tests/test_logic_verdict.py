@@ -647,3 +647,47 @@ def test_a_predicate_merely_containing_neither_still_refuses(logic_reg):
 
     r = engine.solve("Rex is neither happy.", logic_reg, tracing=False)
     assert list(r.store.by_kind(Atom)) == []
+
+
+# ---- Stage 9c: `bare_form` fails closed on the -s agreement suffix ----
+
+def test_ground_sentence_with_a_self_lemma_verb_mints_no_universal(logic_reg):
+    # THE leak. `bare_form` reads `fold == lemma` as "uninflected", which is
+    # only as good as the lemma data -- and 'lives' is a lexicon verb with NO
+    # mapping to 'live', so it is its own lemma and the most inflected form
+    # there is passed the bare-form test. A ground sentence about one named
+    # individual was minting a UNIVERSAL over the class 'rochelle'.
+    from rulekit.kernel.model import Quantified
+
+    r = engine.solve("Rochelle lives in Europe.", logic_reg, tracing=False)
+    assert list(r.store.by_kind(Quantified)) == []
+
+
+def test_the_generic_it_guards_still_reads(logic_reg):
+    # the fix must not cost the capability it protects: a REAL bare-plural
+    # generic still mints its universal
+    from rulekit.kernel.model import Quantified
+
+    r = engine.solve("Writers create books.", logic_reg, tracing=False)
+    assert {(f.cls, f.pred) for f in r.store.by_kind(Quantified)} == {
+        ("writer", "create book")
+    }
+
+
+def test_an_agreeing_verb_after_a_name_stays_ground(logic_reg):
+    # the same contract through a verb that DOES carry a lemma mapping --
+    # 'creates' -> 'create'. Both routes must refuse, or the guard only
+    # covers the witness it was written for.
+    from rulekit.kernel.model import Quantified
+
+    r = engine.solve("Mary creates books.", logic_reg, tracing=False)
+    assert list(r.store.by_kind(Quantified)) == []
+
+
+def test_a_universal_from_a_ground_sentence_cannot_be_instantiated(logic_reg):
+    # why the leak matters: a junk universal is only harmless while nothing
+    # joins its class key. Pin the consequence, not just the fact.
+    assert _verdict(
+        "Rochelle lives in Europe. Alfonso is a Rochelle. "
+        "Is it true that Alfonso lives in Europe?", logic_reg,
+    ) in ("undetermined", "decline")
