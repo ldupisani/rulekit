@@ -19,7 +19,13 @@ _TOKEN = re.compile(
     # ARTICLE). Real names carry diacritics in three DEV corpora (gsm8k 9
     # items, scibench 7, folio 17 — measured 2026-07-17; all 9 gsm8k items
     # decline before and after, the fix can only join what was shredded).
-    r"\d+/\d+"                                  # slash fraction ("1/4")
+    # An ISO DATE is ONE token, and it must lead the alternation: the number
+    # branch below would otherwise take "2024" and leave "-01-01" behind, which
+    # is how "2024-01-01" read as the three counts 2024, 1, 1. Fully anchored
+    # (4-2-2 digits, and `(?!\d)` so a longer digit run cannot masquerade), so
+    # a hyphenated NUMBER RANGE ("5-10") and a negative number are untouched.
+    r"\d{4}-\d{2}-\d{2}(?!\d)"                   # ISO date ("2024-01-01")
+    r"|\d+/\d+"                                 # slash fraction ("1/4")
     r"|\d[\d,]*(?:st|nd|rd|th)(?![^\W\d_])"     # fused ordinal ("5th", "21st")
     r"|\$?\d[\d,]*(?:\.\d+)?%?"                 # numbers/currency/percent
     r"|[^\W\d_]+(?:'[^\W\d_]+)?"                 # words (with contractions)

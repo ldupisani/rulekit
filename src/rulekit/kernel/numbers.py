@@ -42,6 +42,11 @@ _DIGIT = re.compile(r"^\$?(\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?)(%?),?$")
 # Carries no `value`: a tuple is not a scalar, so guards.py's value-accounting
 # never demands it be consumed as a quantity (the `ordinal` precedent above).
 _TUPLE = re.compile(r"^(\d+(?:\.\d+)?(?:,\d+(?:\.\d+)?)+)$")
+# An ISO DATE ("2024-01-01"), kept whole by tokenize.py. Structural digit
+# morphology, never a lexicon fact -- the _TUPLE precedent exactly, and like a
+# tuple it carries NO `value`: a date is not a scalar, so guards.py's
+# value-accounting never demands it be consumed as a quantity.
+_ISO_DATE = re.compile(r"^(\d{4})-(\d{2})-(\d{2})$")
 _SLASH_FRACTION = re.compile(r"^(\d+)/(\d+)$")
 # Fused ordinal ("5th", "21st", "3rd") — productive digit+suffix morphology,
 # structural like digit parsing itself, not a lexicon fact. An ordinal is an
@@ -58,6 +63,15 @@ def annotate_numbers(reading: Reading, reg: Registry) -> Reading:
     while i < len(units):
         unit = units[i]
         fold = unit.features.get("fold", "")
+        dm = _ISO_DATE.match(fold)
+        if dm:
+            reading.record(
+                "annotate-number", unit,
+                {"value_kind": "date", "components": fold},
+                f"ISO date {unit.surface!r}",
+            )
+            i += 1
+            continue
         sf = _SLASH_FRACTION.match(fold)
         if sf and int(sf.group(2)) != 0:
             reading.record(

@@ -16,6 +16,7 @@ from pathlib import Path
 from ruamel.yaml import YAML
 
 from .schemas import (
+    CalendarDoc,
     KIND_MODELS,
     CategoriesDoc,
     ConversionsDoc,
@@ -56,6 +57,7 @@ class LoadedPack:
     conversions: list[ConversionsDoc] = field(default_factory=list)
     geometry: list[GeometryDoc] = field(default_factory=list)
     formulas: list[FormulasDoc] = field(default_factory=list)
+    calendar: list[CalendarDoc] = field(default_factory=list)
     quarantine: list[QuarantineDoc] = field(default_factory=list)
     fingerprint: str = ""
 
@@ -120,6 +122,8 @@ def load_pack(root: Path) -> LoadedPack:
             pack.geometry.append(doc)
         elif isinstance(doc, FormulasDoc):
             pack.formulas.append(doc)
+        elif isinstance(doc, CalendarDoc):
+            pack.calendar.append(doc)
         elif isinstance(doc, QuarantineDoc):
             pack.quarantine.append(doc)
 

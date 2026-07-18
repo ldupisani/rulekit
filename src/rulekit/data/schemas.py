@@ -197,6 +197,11 @@ SLOT_TYPES = (
     # scalar-valued unit is ever a tuple and vice versa, so a `point` slot can
     # never tie-break collide with a `number` slot.
     "point",
+    # an ISO DATE ("2024-01-01") — numbers.py's _ISO_DATE gives it value_kind
+    # "date" and a `components` feature; senses.py gives it the `date` sense.
+    # Disjoint from every scalar slot type on the same argument as `point`: a
+    # date carries no scalar, so it can never collide with a `number` slot.
+    "date",
     # mining candidate conjunct-comparative-quantities: a BARE common-noun
     # holder ("the vehicle", "the animal") — sense noun, no `owner` feature
     # (never a possessive-merged noun, see `possessed`), no `qualifier`
@@ -512,6 +517,25 @@ class ConversionsDoc(StrictModel):
     conversions: list[ConversionDef]
 
 
+class CalendarDoc(StrictModel):
+    """How many DAYS make one unit of each calendar span.
+
+    A divisor keyed on a UNIT WORD is a word-specific fact, so it lives in a
+    pack rather than in the `calendar` consumer (constitution rule 1).
+
+    Deliberately NOT `rulekit/conversions@1`, though the shape is similar: that
+    table is read PAIRWISE by the word-problem convertible-unit fold, so a
+    'month -> day' row there would silently rewrite "$5 per month" in every
+    arithmetic corpus. A separate table keeps the blast radius at this one
+    consumer. 'month' and 'year' are averages (365.25/12 and the Julian year) --
+    a calendar month has no fixed length, and a whole-unit span is what this
+    family asks for.
+    """
+
+    format: Literal["rulekit/calendar@1"]
+    span_units: dict[str, float]
+
+
 class QuantityFormulaDef(StrictModel):
     # a named physical quantity -> an expression over DIMENSION names, e.g.
     # quantity=speed expr="distance / time". Sibling of FormulaDef below: that
@@ -658,6 +682,7 @@ KIND_MODELS: dict[str, type[BaseModel]] = {
     "rulekit/conversions@1": ConversionsDoc,
     "rulekit/geometry@1": GeometryDoc,
     "rulekit/formulas@1": FormulasDoc,
+    "rulekit/calendar@1": CalendarDoc,
     "rulekit/quarantine@1": QuarantineDoc,
     "rulekit/numbers@1": NumbersDoc,
     "rulekit/obligations@1": ObligationsDoc,

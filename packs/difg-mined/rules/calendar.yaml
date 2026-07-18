@@ -1,0 +1,53 @@
+format: rulekit/rules@1
+# The difg date-arithmetic family: "How many weeks are between 2024-01-01 and
+# 2024-12-31?", "What is the day of the year for 2024-03-01?".
+#
+# The enabling piece is a READER, not a rule: an ISO date is now ONE token
+# (tokenize.py) carrying value_kind "date" (numbers.py `_ISO_DATE`) and a
+# `date` sense. Before that "2024-01-01" reached the asks as the three counts
+# 2024, 1, 1 -- three free-standing numbers no shape could bind and
+# value-accounting could not account for. Exactly the `point`/_TUPLE
+# precedent, one value-kind over.
+#
+# CONSTITUTION: the SPAN UNIT is a category gate (`calendar_span_unit`), never
+# a literal list, and the consumer converts by looking that unit's divisor up
+# in DATA (calendar.yaml's `span_units`) -- no unit word appears in Python.
+# The consumer computes a real calendar difference via `datetime`; only the
+# unit divisors are pack data, because a divisor is a word-specific fact.
+rules: []
+asks:
+  - id: ask/calendar-span-between
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: unit, cat: calendar_span_unit}
+        - {lit: are}
+        - {lit: between}
+        - {slot: d1, type: date}
+        - {lit: and}
+        - {slot: d2, type: date}
+    resolves:
+      consumer: calendar
+      op: span
+      unit: "{unit}"
+      d1: "{d1.components}"
+      d2: "{d2.components}"
+
+  - id: ask/calendar-day-of-year
+    # 'day'/'year' are ordinary nouns here, not the span unit -- the shape is
+    # fixed by the literals, so no category is involved and this ask cannot
+    # collide with the span family above (different token run entirely).
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {lit: day}
+        - {lit: of}
+        - {lit: year}
+        - {lit: for}
+        - {slot: d1, type: date}
+    resolves:
+      consumer: calendar
+      op: day_of_year
+      d1: "{d1.components}"

@@ -16,6 +16,7 @@ format: rulekit/categories@1
 # ask/how-many-in-place keeps the question unchanged.
 categories:
   measure_unit: {parent: noun}
+  calendar_span_unit: {parent: noun}
 members:
   measure_unit:
     # THE ANGLE PAIR (the degrees<->radians increment). 'degree' keeps its
@@ -53,3 +54,12 @@ members:
     - hour
     - day
     - week
+  # The calendar-span family (ask/calendar-span-between). Deliberately NOT
+  # `measure_unit`: that category is what the conversions table reads pairwise,
+  # and admitting 'month'/'year' there would change unit folding in every
+  # word-problem corpus. These four are only ever a span's unit.
+  calendar_span_unit:
+    - day
+    - week
+    - month
+    - year

@@ -128,6 +128,7 @@ class Registry:
     geometry_formulas: Mapping[tuple[str, str], str]  # (shape, quantity) -> expr
     quantity_formulas: Mapping[str, str]  # quantity -> expr over dimension names
     unit_dimension: Mapping[str, str]  # unit lemma -> dimension name
+    calendar_span_days: Mapping[str, float]  # span unit lemma -> days per unit
     quarantine: Mapping[str, str]  # word -> reason (never vocabulary)
     rules: tuple[PatternRule, ...]
     asks: tuple[AskRule, ...]
@@ -348,6 +349,19 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                     )
                 geometry_formulas[key] = f.expr
 
+    # calendar spans: span unit lemma -> days per unit. Same conflict
+    # discipline as the tables above -- a redeclaration with a different
+    # divisor ERRORS rather than letting one silently win.
+    calendar_span_days: dict[str, float] = {}
+    for pack in packs:
+        for doc in pack.calendar:
+            for unit, days in doc.span_units.items():
+                if unit in calendar_span_days and calendar_span_days[unit] != days:
+                    raise CompileError(
+                        f"calendar span unit {unit!r} declared twice with different divisors"
+                    )
+                calendar_span_days[unit] = days
+
     # quantity formulas: quantity -> expression over DIMENSION names, plus the
     # unit -> dimension map that binds them. Same conflict discipline as the
     # geometry table above: a redeclaration with a different expression ERRORS
@@ -450,6 +464,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
         attrs=_freeze({k: _freeze(v) for k, v in attrs.items()}),
         part_counts=_freeze(part_counts),
         conversions=_freeze(conversions),
+        calendar_span_days=_freeze(calendar_span_days),
         geometry_formulas=_freeze(geometry_formulas),
         quantity_formulas=_freeze(quantity_formulas),
         unit_dimension=_freeze(unit_dimension),

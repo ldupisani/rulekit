@@ -150,6 +150,11 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
             return kind == "fraction" and bool(unit.features.get("percent"))
         if t == "multiplier":
             return kind == "multiplier"
+        if t == "date":
+            # an ISO date token (numbers.py _ISO_DATE). Disjoint from every
+            # scalar slot type by construction: a date unit carries no `value`,
+            # and a valued unit is never value_kind "date".
+            return kind == "date"
         if t == "point":
             # a COORDINATE TUPLE ("(3,4)") — numbers.py's _TUPLE. Disjoint from
             # every scalar slot type by construction: a tuple unit carries no
