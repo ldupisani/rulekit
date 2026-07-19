@@ -230,3 +230,72 @@ def test_load_time_refusal_spares_a_live_or_claimed_literal(tmp_path):
         _lit_ask("        - {lit: the, consume_skipped: true}\n"))
     # ...and an alternation is only dead if EVERY option is
     _mk(tmp_path / "b", LIT_LEX, _lit_ask("        - {lit: [the, some]}\n"))
+
+
+# --- the nonstate_verb blind spot ------------------------------------------
+# `_TYPE_SENSES` had no `nonstate_verb` entry, so the type fell through to
+# None = "matches anything" and every copular `{lit: is}` rule was reported
+# as colliding with a `nonstate_verb` slot — a collision patterns._slot_ok
+# makes impossible ('is' is state-category on its fold, 'be' on its lemma).
+# All 8 projects/scratch lint errors were this one false positive.
+
+NSV_LEX = """format: rulekit/lexicon@1
+entries:
+  is: {senses: [verb], verb: {lemma: be}}
+  was: {senses: [verb], verb: {lemma: be}}
+  be: {senses: [verb]}
+  eats: {senses: [verb], verb: {lemma: eat}}
+  dog: {senses: [noun], plural: dogs}
+  cat: {senses: [noun], plural: cats}
+"""
+
+NSV_CATS = """format: rulekit/categories@1
+categories:
+  animal: {parent: noun}
+  state: {parent: verb}
+members:
+  animal: [dog, cat]
+  state: [be, was]
+"""
+
+NSV_RULE_TMPL = """format: rulekit/rules@1
+rules:
+  - id: {rid}
+    phase: read
+    match:
+      sentence:
+        - {{slot: who, type: name}}
+        - {mid}
+        - {{slot: item, cat: animal}}
+    emits:
+      - {{fact: quantity, entity: "{{who}}", measure: "{{item}}", value: 1.0}}
+"""
+
+
+def _nsv_overlaps(tmp_path, lit_mid):
+    reg = _mk(
+        tmp_path, NSV_LEX, NSV_CATS,
+        NSV_RULE_TMPL.format(rid="r/verbal", mid="{slot: v, type: nonstate_verb}"),
+        NSV_RULE_TMPL.format(rid="r/literal", mid=lit_mid),
+    )
+    return lint_overlaps(reg)
+
+
+def test_a_copular_lit_cannot_collide_with_a_nonstate_verb_slot(tmp_path):
+    # the lemma path: 'is' is not a state MEMBER (only 'be' is) — the check
+    # must look the lemma up, exactly as patterns._slot_ok does
+    assert _nsv_overlaps(tmp_path, "{lit: is}") == []
+
+
+def test_a_state_surface_lit_cannot_collide_either(tmp_path):
+    # the fold path: 'was' is a state member directly
+    assert _nsv_overlaps(tmp_path, "{lit: was}") == []
+
+
+def test_an_event_verb_lit_still_collides(tmp_path):
+    # BOTH directions, or the fix could clear the errors by never reporting
+    # nonstate_verb at all: 'eats' really can fill the slot, so the overlap
+    # is real and must survive
+    findings = _nsv_overlaps(tmp_path, "{lit: eats}")
+    assert findings, "the real overlap disappeared with the false one"
+    assert any("r/verbal" in f.message and "r/literal" in f.message for f in findings)

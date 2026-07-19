@@ -35,6 +35,13 @@ _TYPE_SENSES = {
     "plural": frozenset({"noun"}),
     "counted": frozenset({"noun"}),
     "verb": frozenset({"verb"}),
+    # verb-sensed MINUS the `state` category — the subtraction is applied in
+    # `_ok` below (a sense set alone cannot express it). Without this entry
+    # the type fell through to None = "matches anything", and every copular
+    # `{lit: is}` rule was reported as colliding with a `nonstate_verb` slot
+    # it can never share a match with: patterns._slot_ok refuses 'is' there
+    # ('is' is state-category on its fold; 'be' on its lemma).
+    "nonstate_verb": frozenset({"verb"}),
     "auxiliary": frozenset({"auxiliary"}),
     "pronoun": frozenset({"pronoun"}),
     "word": None,  # anything
@@ -82,6 +89,17 @@ def _tokens_intersect(a: MatchToken, b: MatchToken, reg: Registry) -> bool:
                 hit = entry is not None and bool(set(entry.senses) & senses)
                 if slot.type == "plural":
                     hit = hit and lit in reg.plural_to_singular
+                if slot.type == "nonstate_verb":
+                    # mirror patterns._slot_ok exactly: the state category
+                    # lists SURFACE forms, so BOTH the word and its verb
+                    # lemma are checked — a surface-only test would wave
+                    # 'is' (lemma 'be') through, the very blind spot the
+                    # matcher's own comment records.
+                    lemma = reg.verb_lemmas.get(lit, lit)
+                    hit = hit and not (
+                        reg.word_in_category(lit, "state")
+                        or reg.word_in_category(lemma, "state")
+                    )
                 return hit
             return any(_ok(lit) for lit in lits)
         return any(reg.word_in_category(lit, slot.cat) for lit in lits)

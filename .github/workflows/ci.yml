@@ -58,15 +58,14 @@ jobs:
           done
 
       - name: Lint the packs
-        # `lint` exits non-zero on errors. projects/scratch carries 8
-        # PRE-EXISTING overlap-tie errors, so it is linted for information
-        # only until those are resolved — listing it as blocking today would
-        # mean starting red, and a check that is always red is not a check.
+        # `lint` exits non-zero on errors. All three projects are BLOCKING:
+        # scratch's 8 "pre-existing" overlap-ties turned out to be one false
+        # positive (the linter's nonstate_verb blind spot, fixed in
+        # lint/overlap.py), so there is nothing left to grandfather.
         run: |
           uv run rulekit --project projects/gsm8k lint
           uv run rulekit --project projects/difg lint
-          uv run rulekit --project projects/scratch lint || \
-            echo "::warning::projects/scratch has known overlap-ties (not blocking)"
+          uv run rulekit --project projects/scratch lint
 
       - name: Tests
         run: uv run pytest -q
