@@ -360,11 +360,12 @@ class Alias(Fact):
     both directions — identity is symmetric).
 
     Deliberately narrow (Stage 9e): only the overt 'known as' construction
-    with a PROPER NAME on each side ever mints one. Name-shortening
-    ('Islip' for 'Islip Speedway') and epithets ("known as THE King of
-    Pop" — refused by the definite-article gate on the alias slot) are
-    different, riskier mechanisms and stay unbuilt: an alias here is a
-    stated premise, never an inference."""
+    with a PROPER NAME on each side ever mints one from TEXT. Epithets
+    ("known as THE King of Pop" — refused by the definite-article gate on
+    the alias slot) stay unbuilt. Name-shortening ('Islip' for 'Islip
+    Speedway') is Stage 9j's saturate plugin (synth/name-prefix-alias):
+    an INFERENCE, gated on both names being fact subjects and the long
+    extension being unique — see its docstring for the boundary."""
 
     a: str
     b: str

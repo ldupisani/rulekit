@@ -1228,3 +1228,115 @@ def test_reductio_commits_nothing_about_the_other_disjunct(logic_reg):
              "or a guppy, then Ollie is not also a swimmer. ")
     assert _verdict(story + "Is it true that Ollie is a hawk?",
                     logic_reg) == "undetermined"
+
+
+# ---- Stage 9j: the name-identity stack -------------------------------------
+# Name-shortening alias (a saturate plugin, the inference 9e's reader
+# deliberately excluded), the head-noun sortal (join-driven: a name
+# declares its head's sort only when the story already quantifies over
+# that head), the restricted stative-'have' universal with its do-support
+# denial (anaphoric PP consumed, never keyed), and modus tollens over
+# Conditional. Together with the existing DS synths they close the
+# demolished/still-used pair.
+
+
+def test_the_identity_stack_closes_the_xor(logic_reg):
+    story = ("Rex Velodrome is the largest hall. "
+             "Rex is either closed or still being used. "
+             "Velodromes that are still being used have games held at them. "
+             "Rex does not have games held at it. ")
+    assert _verdict(story + "Is it true that Rex was closed?",
+                    logic_reg) == "yes"
+    assert _verdict(story + "Is it true that Rex is still being used?",
+                    logic_reg) == "no"
+
+
+def test_restricted_have_universal_reads_as_a_conditional(logic_reg):
+    from rulekit.kernel.model import Conditional
+
+    r = engine.solve(
+        "Velodromes that are still being used have games held at them.",
+        logic_reg, tracing=False)
+    facts = list(r.store.by_kind(Conditional))
+    assert len(facts) == 1
+    assert facts[0].cls == "velodrome"
+    assert facts[0].polarity is True
+
+
+def test_do_support_denial_keys_like_the_universal(logic_reg):
+    # the two rules exist as a modus-tollens PAIR: the denial's negative
+    # atom must share the universal's consequent key even though the
+    # anaphors differ ('at them' vs 'at it' — consumed, never keyed)
+    from rulekit.kernel.model import Atom, Conditional
+
+    r = engine.solve(
+        "Velodromes that are still being used have games held at them. "
+        "Rex does not have games held at it.",
+        logic_reg, tracing=False)
+    cond = list(r.store.by_kind(Conditional))[0]
+    neg = [f for f in r.store.by_kind(Atom) if f.entity == "rex"]
+    assert any(f.pred == cond.then_pred and f.polarity is False for f in neg)
+
+
+def test_prefix_alias_needs_a_unique_extension(logic_reg):
+    # 'Rex Velodrome' AND 'Rex Stadium' both present: 'Rex' identifies
+    # neither, so neither long name's fact may transfer to the short one
+    assert _verdict(
+        "Rex Velodrome is a hall. Rex Stadium is not a hall. "
+        "Rex is either open or closed. Is it true that Rex is a hall?",
+        logic_reg) in ("undetermined", "decline")
+
+
+def test_prefix_alias_needs_both_names_in_premises(logic_reg):
+    # the short form appears ONLY in the question — no premise uses it,
+    # so nothing licenses the identification
+    assert _verdict(
+        "Rex Velodrome is a hall. Is it true that Rex is a hall?",
+        logic_reg) in ("undetermined", "decline")
+
+
+def test_prefix_alias_carries_polarity_both_ways(logic_reg):
+    assert _verdict(
+        "Rex Velodrome is not a hall. Rex is either open or closed. "
+        "Is it true that Rex is a hall?", logic_reg) == "no"
+
+
+def test_head_sortal_needs_an_active_class(logic_reg):
+    # no universal ranges over 'velodrome' in this story, so the name
+    # declares no sort — the join-driven gate
+    from rulekit.kernel.model import Atom
+
+    r = engine.solve("Rex Velodrome is a hall.", logic_reg, tracing=False)
+    assert not [f for f in r.store.by_kind(Atom) if f.pred == "velodrome"]
+
+
+def test_head_sortal_refuses_a_partitive_name(logic_reg):
+    # a titular 'of'-name never declares its head's sort ('The Salmon of
+    # Doubt' is not a doubt, whatever the story quantifies over)
+    from rulekit.kernel.model import Atom
+
+    r = engine.solve(
+        "All doubts are feelings. The Wings of Doubt is a book.",
+        logic_reg, tracing=False)
+    assert not [f for f in r.store.by_kind(Atom) if f.pred == "doubt"]
+
+
+def test_conditional_modus_tollens_needs_the_sort(logic_reg):
+    # ¬consequent alone licenses nothing — without membership in the
+    # conditional's class the antecedent stays open
+    assert _verdict(
+        "Velodromes that are still being used have games held at them. "
+        "Rex does not have games held at it. "
+        "Is it true that Rex is still being used?",
+        logic_reg) in ("undetermined", "decline")
+
+
+def test_conditional_modus_tollens_ignores_then_negative(logic_reg):
+    # the then-NEGATIVE conditional never contraposes this way: from
+    # "if a velodrome is old then it is not used" and ¬used(rex),
+    # nothing follows about old(rex)
+    assert _verdict(
+        "If a velodrome is old, then it is not used. "
+        "Rex is a velodrome. Rex is not used. "
+        "Is it true that Rex is old?",
+        logic_reg) in ("undetermined", "decline")

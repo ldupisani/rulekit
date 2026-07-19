@@ -133,6 +133,20 @@ rules:
     emit:
       - {fact: atom, entity: X, pred: A, polarity: false}
 
+  # ---- Stage 9j: modus tollens over a conditional ---------------------------
+  # ∀C: P→Q, x∈C, ¬Q(x)  ⊢  ¬P(x)   (the contrapositive of
+  # conditional-instantiation; only the then-POSITIVE conditional
+  # contraposes — ¬Q against a "then not Q" conditional licenses nothing)
+  - id: synth/conditional-modus-tollens
+    when:
+      - {fact: conditional, cls: C, pred: P, then_pred: Q, polarity: true}
+      - {fact: atom, entity: X, pred: C, polarity: true}
+      - {fact: atom, entity: X, pred: Q, polarity: false}
+    unless:
+      - {fact: atom, entity: X, pred: P}
+    emit:
+      - {fact: atom, entity: X, pred: P, polarity: false}
+
   # (L ∨/⊕ R) → [¬]Q at x, L(x), ¬R(x)  ⊢  [¬]Q(x)  — EXACTLY-ONE
   # established fires under BOTH readings (⊕ needs exactly one; L∧¬R
   # satisfies L∨R), so no exclusivity gate. One true disjunct with the

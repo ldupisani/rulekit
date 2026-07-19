@@ -22,10 +22,14 @@ from . import deixis
 from .evaluate import ArithmeticLog, EvaluationError, evaluate
 from .facts import FactStore
 from .model import (
+    Alias,
     AnchorQuantity,
     Atom,
+    Conditional,
+    Disjunction,
     EnumeratedDisjunction,
     Fact,
+    Quantified,
     GroupTotal,
     Predication,
     Price,
@@ -1944,8 +1948,89 @@ def _enumeration_elimination_synth(
     return out
 
 
+def _name_prefix_alias_synth(
+    store: FactStore, reg: Registry, log: ArithmeticLog
+) -> list[Fact]:
+    """Stage 9j: name-shortening identity — a story that says "Islip
+    Speedway is …" and then "Islip is …" is using one name twice, and the
+    9e alias-copy synths carry every ground atom across once the Alias
+    exists. This is the INFERENCE the 9e reader deliberately excluded
+    (model.Alias's docstring drew the boundary), built as its own gated
+    mechanism:
+
+    - both names must already be FACT SUBJECTS in the story (an entity
+      mentioned only in the question never aliases — no premise uses the
+      short form, so nothing licenses the identification);
+    - the short name's words must be a strict word-PREFIX of the long
+      name's;
+    - the long extension must be UNIQUE for the short form: with 'John
+      Smith' and 'John Jones' both present, 'John' identifies neither.
+    """
+    subjects = {
+        f.entity
+        for f in store.facts
+        if isinstance(f, (Atom, Disjunction))
+    }
+    out: list[Fact] = []
+    have = {(f.a, f.b) for f in store.facts if isinstance(f, Alias)}
+    for short in subjects:
+        sw = short.split()
+        longs = [
+            e for e in subjects
+            if e != short and len(e.split()) > len(sw) and e.split()[: len(sw)] == sw
+        ]
+        if len(longs) == 1 and (short, longs[0]) not in have:
+            out.append(Alias(
+                provenance=Provenance(source="synth/name-prefix-alias", sentence=-1),
+                a=short, b=longs[0],
+            ))
+    return out
+
+
+def _name_head_sortal_synth(
+    store: FactStore, reg: Registry, log: ArithmeticLog
+) -> list[Fact]:
+    """Stage 9j: the head-noun sortal — a multi-word proper name whose
+    FINAL word names a class the story actively quantifies over carries
+    that class as its sort: 'Islip Speedway' is a speedway exactly when
+    some universal/conditional in the story ranges over 'speedway'.
+
+    The join-driven gate is the soundness argument: a free-floating
+    "every name asserts its head" rule is wrong ('The Salmon of Doubt'
+    is not a salmon of anything), so the sortal minted here must (a)
+    come from a ≥2-word entity, (b) contain no partitive word (the
+    titular-name shapes stay out), and (c) have its head ALREADY be a
+    quantified class in this story — the story itself must treat the
+    head as a sort before a name is read as declaring it."""
+    classes = {
+        f.cls
+        for f in store.facts
+        if isinstance(f, (Quantified, Conditional))
+    }
+    if not classes:
+        return []
+    out: list[Fact] = []
+    ents = {f.entity for f in store.facts if isinstance(f, Atom)}
+    decided = {(f.entity, f.pred) for f in store.facts if isinstance(f, Atom)}
+    for e in ents:
+        words = e.split()
+        if len(words) < 2:
+            continue
+        if any(reg.word_in_category(w, "partitive") for w in words):
+            continue
+        head = words[-1]
+        if head in classes and (e, head) not in decided:
+            out.append(Atom(
+                provenance=Provenance(source="synth/name-head-sortal", sentence=-1),
+                entity=e, pred=head, polarity=True,
+            ))
+    return out
+
+
 PLUGINS: dict[str, Synthesizer] = {
     "synth/enumeration-elimination": _enumeration_elimination_synth,
+    "synth/name-prefix-alias": _name_prefix_alias_synth,
+    "synth/name-head-sortal": _name_head_sortal_synth,
     "synth/relation-to-quantity": _relations_synth,
     "synth/bare-age-anchor": _bare_age_anchor_synth,
     "synth/anchor-quantity": _anchor_quantity_synth,

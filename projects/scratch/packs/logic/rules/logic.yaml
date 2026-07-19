@@ -569,6 +569,58 @@ rules:
     emits:
       - {fact: disjunction, entity: "{subj}", left: "{l}", right: "{r}", exclusive: false}
 
+  # Stage 9j: the restricted stative-'have' universal — "CLSs that are
+  # RESTRICTOR have NP PARTICIPLE at them" ("Speedways that are still
+  # being used have races held at them") -> Conditional(cls, restrictor,
+  # 'have NP PARTICIPLE'): ∀e. e∈cls ∧ restrictor(e) → have-np(e). The
+  # verbal-universal family EXCLUDES state verbs (the be-twin
+  # discipline), so stative possession gets its own construction reader
+  # with 'have' as skeleton, exactly as the copular family holds 'is'.
+  # The anaphoric PP tail ('at them') is CONSUMED as skeleton and kept
+  # OUT of the key: the pronoun is grammatically bound to the subject,
+  # and its number differs between the universal ('them') and a ground
+  # denial ('at it') — keying it would unjoin the pair this rule exists
+  # to serve. Both emit keys render through the same path as its ground
+  # sibling below, which is the whole join contract.
+  - id: logic/conditional-restricted-plural-have-at
+    phase: read
+    match:
+      sentence:
+        - {slot: cls, type: proper_name, at_start: true, blocks_skipped: definite_article}
+        - {lit: that}
+        - {lit: are}
+        - {slot: p, span: true, span_blocks: [negation, conjunction, preposition, disjunctive_marker]}
+        - {lit: have}
+        - {slot: q, span: true, span_blocks: [negation, conjunction, preposition, disjunctive_marker]}
+        - {lit: at}
+        - {slot: anaph, type: pronoun}
+        - opt:
+            - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: conditional, cls: "{cls.singular}", pred: "{p}", then_pred: "have {q}", polarity: true}
+
+  # Stage 9j: the do-support stative denial — "NAME does not have NP
+  # PARTICIPLE at it" ("Islip doesn't have races held at it") -> a
+  # NEGATIVE atom whose key echoes the restricted universal's consequent
+  # ('have {q}', anaphor consumed unkeyed, same as above). The ground
+  # sibling of the restricted-'have' universal; together they are the
+  # modus-tollens pair.
+  - id: logic/ground-do-not-have-at
+    phase: read
+    match:
+      sentence:
+        - {slot: subj, type: name, at_start: true, blocks_skipped: indefinite_article}
+        - {lit: does}
+        - {lit: not}
+        - {lit: have}
+        - {slot: q, span: true, span_blocks: [negation, conjunction, preposition, disjunctive_marker]}
+        - {lit: at}
+        - {slot: anaph, type: pronoun}
+        - opt:
+            - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: atom, entity: "{subj}", pred: "have {q}", polarity: false}
+
   # Stage 9i: the ground disjunctive conditional — "If NAME is either A
   # or B, then NAME is not (also) C" -> (A(x) ⊕ B(x)) → ¬C(x). The
   # antecedent subject repeats as a name in the consequent; same_lemma
