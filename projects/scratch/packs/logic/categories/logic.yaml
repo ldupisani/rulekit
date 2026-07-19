@@ -57,6 +57,15 @@ categories:
     # left disjunct on it).
     neither_marker:
         parent: adjective
+    # Stage 9f: verbs whose PASSIVE + 'as' asserts the resulting role as a
+    # fact — "X was appointed as Y" ⊨ X is a Y. Membership is a SOUNDNESS
+    # claim per word, not a syntax class: appointive/resultative verbs
+    # (appoint, name, elect, crown) qualify; DESCRIPTIVE ones (describe,
+    # regard, see, characterize) must NEVER join — "was regarded as the
+    # best" asserts a reputation, not the role. One member today, the
+    # measured buyer's; each addition needs its own measurement.
+    appointive_verb:
+        parent: verb
 members:
     conjunctive_marker: [and]
     disjunctive_marker: [or]
@@ -64,3 +73,4 @@ members:
     definite_article: [the]
     agent_marker: [by]
     neither_marker: [neither]
+    appointive_verb: [appointed]

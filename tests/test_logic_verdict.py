@@ -911,3 +911,68 @@ def test_the_alias_match_is_not_subsumed_by_the_copular_span(logic_reg):
     facts = list(r.store.by_kind(Alias))
     assert len(facts) == 1
     assert (facts[0].a, facts[0].b) == ("mary poppins", "sky danvers")
+
+
+# ---- Stage 9f: the appointive passive + the unmerged lead run ---------------
+# "NAME was APPOINTED as PRED" asserts the resulting role (appointive_verb is
+# a SOUNDNESS category — resultative members only, never 'regarded/described').
+# The buyer's pred carries a temporal PP whose drop needs the lead nominal to
+# extend across an UNMERGED noun run ('museum curator' when the lexicon knows
+# neither word as a compound partner).
+
+
+def test_an_appointive_passive_asserts_the_role(logic_reg):
+    assert _verdict(
+        "Nora Vale was appointed as a museum curator. "
+        "Is it true that Nora Vale is a museum curator?", logic_reg
+    ) == "yes"
+
+
+def test_the_temporal_pp_drops_after_an_unmerged_lead_run(logic_reg):
+    assert _verdict(
+        "Nora Vale was appointed as a museum curator after her promotion. "
+        "Is it true that Nora Vale is a museum curator?", logic_reg
+    ) == "yes"
+
+
+def test_the_asserted_role_refutes_its_negated_conclusion(logic_reg):
+    assert _verdict(
+        "Nora Vale was appointed as a museum curator. "
+        "Is it true that Nora Vale was not a museum curator?", logic_reg
+    ) == "no"
+
+
+def test_a_negated_appointment_asserts_no_role(logic_reg):
+    assert _verdict(
+        "Nora Vale was not appointed as a museum curator. "
+        "Is it true that Nora Vale is a museum curator?", logic_reg
+    ) == "undetermined"
+
+
+def test_the_quantifier_guard_survives_the_lead_run_extension(logic_reg):
+    # "of no gallery" inside the PP: the drop must refuse exactly as it
+    # does after a single-unit lead
+    assert _verdict(
+        "Nora Vale was appointed as a museum curator of no gallery. "
+        "Is it true that Nora Vale is a museum curator?", logic_reg
+    ) == "undetermined"
+
+
+def test_the_appointive_role_never_leaks_to_another_pred(logic_reg):
+    assert _verdict(
+        "Nora Vale was appointed as a museum curator. "
+        "Is it true that Nora Vale is a gardener?", logic_reg
+    ) == "undetermined"
+
+
+def test_a_verbal_some_premise_reads_as_an_existential(logic_reg):
+    # the reading half: 'Some' is consumed (fragment-guard veto lifts) and
+    # the fact is a sound ∃
+    from rulekit.kernel.model import Existential
+
+    r = engine.solve("Some referees become observers.", logic_reg, tracing=False)
+    facts = list(r.store.by_kind(Existential))
+    assert len(facts) == 1
+    assert facts[0].cls == "referee"
+    assert facts[0].pred == "become observers"
+    assert facts[0].polarity is True

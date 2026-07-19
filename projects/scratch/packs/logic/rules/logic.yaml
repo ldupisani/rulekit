@@ -283,6 +283,36 @@ rules:
   # ground-copular rule still reads the same sentence into its (junk,
   # joinless) phrase-key atom — harmless, and its span is what consumes the
   # sentence for the fragment guard.
+  # Stage 9f: the appointive passive — "NAME is/was APPOINTED as PRED"
+  # asserts the resulting role as a fact ("was appointed as a referee
+  # observer" ⊨ is a referee observer). The verb slot is gated on
+  # `appointive_verb` (a SOUNDNESS category: resultative members only,
+  # never descriptive 'regarded/described' — see categories/logic.yaml).
+  # The pred span keeps any trailing PP in its key ('… after his
+  # retirement'); atom_variants' existing PP drop mints the bare role from
+  # it, so no new decomposition machinery. The cat gate also makes this
+  # rule STRICTLY more specific than the general copular reading on equal
+  # consumed units, so the joinless 'appointed as …' phrase-key atom is
+  # subsumed away rather than duplicated.
+  - id: logic/passive-appointive-as
+    phase: read
+    match:
+      sentence:
+        - {slot: subj, type: proper_name, at_start: true, blocks_skipped: indefinite_article}
+        - {lit: [is, was]}
+        - {slot: v, cat: appointive_verb}
+        - {lit: as}
+        # the role's article, claimed on purpose (the 9e trailing-period
+        # lesson, one skippable over): the general copular rule's span
+        # CAPTURES the article while this rule's skip loop jumps it, so
+        # without the claim the copular match consumes a strict superset
+        # and this rule is silently subsumed at admit_rule_results.
+        - opt:
+            - {lit: [a, an, the], consume_skipped: true}
+        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
+    emits:
+      - {fact: atom, entity: "{subj}", pred: "{pred}", polarity: true}
+
   - id: logic/alias-known-as
     phase: read
     match:
@@ -653,6 +683,26 @@ rules:
         - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker]}
     emits:
       - {fact: existential, cls: "{cls.singular}", pred: "{pred.singular}", polarity: false}
+
+  # Stage 9f: the VERBAL existential premise — "Some CLS <v> <obj>" ("Some
+  # football referees become referee observers"). The copular 'some' pair
+  # above already consumed its quantifier; this is the same reading for a
+  # verbal predicate, mirroring the verbal universal's construction
+  # exactly: the cls span blocks verbs (so it cannot swallow the verb and
+  # fall back to a junk copular parse), `bare_form` on the verb is the
+  # plural-agreement signal, and the object span does NOT fold (the 8f
+  # unfolded-render contract — it must mirror the embedded-verbal ask's
+  # render or the keys drift). cls folds, exactly like the copular pair.
+  - id: logic/existential-some-verbal
+    phase: read
+    match:
+      sentence:
+        - {lit: some, at_start: true}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker, verb], span_blocks_counted: true}
+        - {slot: v, type: nonstate_verb, bare_form: true}
+        - {slot: p, span: true, span_blocks: [negation, disjunctive_marker, verb], span_blocks_counted: true}
+    emits:
+      - {fact: existential, cls: "{cls.singular}", pred: "{v} {p}", polarity: true}
 
   # ---- Stage 6: the VERBAL frontier (re-landed from v1, hazards designed out)
   # - v slot `type: nonstate_verb`: 'is'/'was' stay copular (the 'be'-twin).

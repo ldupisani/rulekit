@@ -12,3 +12,7 @@ format: rulekit/lexicon@1
 # so the word is KNOWN (diagnostics) and known-safely.
 entries:
   'true': {senses: [adjective]}
+  # Stage 9f: the appointive passive ("was APPOINTED as X"). Admitted for
+  # the appointive_verb category (categories/logic.yaml) — pack-scoped, so
+  # no benchmark corpus ever sees the word.
+  appointed: {senses: [verb], verb: {lemma: appoint}}

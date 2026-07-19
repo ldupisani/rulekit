@@ -797,13 +797,36 @@ def atom_variants(fact: Fact, emit_fields: dict, slots: dict, reg: Registry) -> 
     # the construction's evidence.
     if not units or not (units[0].sense() == "noun" or not units[0].senses()):
         return []
+    # Stage 9f: the lead nominal may be an UNMERGED run of noun/senseless
+    # units — 'referee observer' stays two units when 'observer' is a word
+    # the lexicon doesn't know, so condense never compounds them. The run
+    # extends through contiguous noun-or-senseless units; the drop's tail
+    # then starts at the first MARKED unit exactly as before. This only
+    # ADDS variants: a second nominal unit can never satisfy any of the
+    # tail_droppable arms below, so every previously-decomposing span had a
+    # one-unit lead and is byte-identical through the single-unit branch.
+    lead_end = 1
+    while lead_end < len(units) and (
+        units[lead_end].sense() == "noun" or not units[lead_end].senses()
+    ):
+        lead_end += 1
     lead = units[0]
-    words = (lead.features.get("fold") or "").split()
-    lemma = _lemma_of(lead)
-    lead_qualified = qualified_render(words, lemma)
-    inter, rest = intersective_split(words, lemma, reg) if len(words) > 1 else ([], [])
-    stripped_lead = " ".join(rest + [lemma]) if inter else None
-    tail_units = tuple(units[1:])
+    if lead_end == 1:
+        words = (lead.features.get("fold") or "").split()
+        lemma = _lemma_of(lead)
+        lead_qualified = qualified_render(words, lemma)
+        inter, rest = intersective_split(words, lemma, reg) if len(words) > 1 else ([], [])
+        stripped_lead = " ".join(rest + [lemma]) if inter else None
+    else:
+        # a multi-unit run renders like the primary key does (canonical
+        # phrase) and keeps NO modifier machinery — the intersective split
+        # reads one merged unit's fold words, and an unmerged run has no
+        # merged fold to split
+        lead_qualified = _canonical_phrase(
+            tuple(units[:lead_end]), singularize_unknown=singularize
+        )
+        inter, rest, stripped_lead = [], [], None
+    tail_units = tuple(units[lead_end:])
     tail = _canonical_phrase(tail_units, singularize_unknown=singularize)
     tail_droppable = bool(tail_units) and (
         tail_units[0].sense() in _RELATIVE_MARKER_SENSES
