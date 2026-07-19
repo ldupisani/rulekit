@@ -3861,6 +3861,14 @@ asks:
       # way ask/how-many-entity does — see `_qualified_variant_total`'s
       # decline-safety docstring.
       sum_measure_variants: "true"
+      # the PLACE's own qualifier ("how many pages are in the FIRST
+      # chapter?") — the entity-side twin of `measure_qualifier` above,
+      # and the same opt-in no-op-when-empty contract: without it this
+      # ask silently WIDENED a qualified place to its bare noun, and the
+      # single-entity fold answered the SECOND chapter's 36 pages for a
+      # question about the FIRST (a live confident-wrong; the consumer's
+      # qualifier_store machinery existed all along — nothing bound it).
+      entity_qualifier: "{place.qualifier}"
 
   - id: ask/how-many-in-place-partitive
     # "how many CUPS OF FLOUR are/were left in the bowl?" (mining candidate

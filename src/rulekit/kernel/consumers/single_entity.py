@@ -89,8 +89,18 @@ def single_entity(ctx: ConsumerContext):
     # `tom` is not a counted measure. Two rival totals stay a decline.
     matching_totals = [gt for gt in ctx.store.by_kind(GroupTotal) if gt.measure == singular]
     if matching_totals:
+        # the held Quantity must genuinely STATE a per-container rate
+        # (saturate's `_distributive_rate_source`, the same gate the two
+        # container synths use): 'The second chapter is 36 pages long'
+        # holds the identical (entity, measure) shape as 'each shelf had
+        # 15 books' but states ONE instance's count, and reading it as a
+        # rate committed a stated whole-total to an ask about one member
+        # ('...how many pages are in the FIRST chapter?' answered 67).
+        from ..saturate import _distributive_rate_source
+
         holds_rate = any(
             q.entity == entity and q.measure == singular
+            and _distributive_rate_source(q)
             for q in ctx.store.by_kind(Quantity)
         )
         entity_is_counted = any(

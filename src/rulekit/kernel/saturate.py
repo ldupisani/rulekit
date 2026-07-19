@@ -1629,6 +1629,23 @@ def _sum_constraint_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -
     return out
 
 
+def _distributive_rate_source(q: Quantity) -> bool:
+    """True when `q` genuinely STATES a per-container rate: the inherently
+    distributive existential rule ('20 chairs IN EACH row'), or a plain
+    fold whose subject carried a distributive determiner that learn.py
+    tagged onto the provenance ('EACH box has 8 pens'). 'The second
+    chapter is 36 pages' / 'bucket B has 30 seeds' fold to the identical
+    (entity, measure) shape but state ONE instance's count — reading one
+    as a rate is the garbage-total class this predicate exists to refuse.
+    Shared by every rate-reading site (both container synths and the
+    single-entity distributive-container branch) so the class has ONE
+    definition, never a drifting mirror."""
+    p = q.provenance
+    if p.source == "arithmetic/existential-premise-distributive":
+        return True
+    return p.source == "fold" and p.distributive
+
+
 def _container_contents_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> list[Fact]:
     """container-content bridge (mining candidate container-content-bridge):
     'Mia bought 3 boxes of pencils. Each box has 10 pencils.' folds to two
@@ -1695,8 +1712,17 @@ def _container_contents_synth(store: FactStore, reg: Registry, log: ArithmeticLo
     for q in store.by_kind(Quantity):
         known_measures_by_entity.setdefault(q.entity, set()).add(q.measure)
 
+    # a CR must genuinely STATE a per-container rate (`_distributive_rate_
+    # source`, the distributive-container-total synth's own gate): 'The
+    # second chapter is 36 pages' folds to the identical (entity, measure)
+    # shape as 'Each box has 10 pencils' but states ONE instance's count —
+    # composing it minted a garbage bridged total (book page = 2 × 36)
+    # beside the genuinely stated one. Filtered BEFORE the uniqueness
+    # check, so a specific instance's fact never blocks a real rate either.
     rates_by_pair: dict[tuple[str, str], list[Quantity]] = {}
     for q in fold_quantities:
+        if not _distributive_rate_source(q):
+            continue
         rates_by_pair.setdefault((q.entity, q.measure), []).append(q)
 
     for (container, content), rates in rates_by_pair.items():
@@ -1808,12 +1834,7 @@ def _distributive_container_total_synth(store: FactStore, reg: Registry, log: Ar
     # distributive determiner ('EACH'/'every') onto the provenance.
     out: list[Fact] = []
     known_group_totals = {gt.measure for gt in store.by_kind(GroupTotal)}
-
-    def _is_rate_source(q: Quantity) -> bool:
-        p = q.provenance
-        if p.source == "arithmetic/existential-premise-distributive":
-            return True
-        return p.source == "fold" and p.distributive
+    _is_rate_source = _distributive_rate_source
 
     rate_facts: set[int] = set()
     rates_by_pair: dict[tuple[str, str], list[Quantity]] = {}

@@ -129,3 +129,68 @@ def test_plain_single_entity_unaffected(reg):
     r = solve("Rina has 5 apples. How many apples does Rina have?", reg, tracing=False)
     assert r.answer.committed
     assert r.answer.value == 5.0
+
+
+def test_qualified_instance_is_not_a_rate_for_the_consumer(reg):
+    """The consumer-side twin of the synth-tightening invariant (the SVAMP
+    campaign's first live wrong). 'The second box has 36 pens' folds to the
+    identical (entity, measure) shape as 'each box has 36 pens' — but it
+    states ONE instance's count (qualifier='second'), so the distributive-
+    container branch must not read it as a per-container rate and commit
+    the stated whole to an ask about ONE member. Before the shared
+    `_distributive_rate_source` gate, this committed 67."""
+    r = solve(
+        "A shelf has 2 boxes. The second box has 36 pens. If there are a "
+        "total of 67 pens on the shelf, how many pens are in the first box?",
+        reg, tracing=False,
+    )
+    assert not r.answer.committed, (
+        f"committed {r.answer.value!r}: {r.answer.reason!r}"
+    )
+
+
+def test_qualified_instance_does_not_bridge_container_contents(reg):
+    """The container-contents synth must apply the same gate: a qualified
+    instance's count ('the second box has 36 pens') composed with the
+    container count (2 boxes) minted a garbage bridged total (72) beside
+    the genuinely stated one. No synth/container-contents fact may exist."""
+    from rulekit.kernel.model import Quantity
+
+    r = solve(
+        "A shelf has 2 boxes. The second box has 36 pens. If there are a "
+        "total of 67 pens on the shelf, how many pens are in the first box?",
+        reg, tracing=False,
+    )
+    bridged = [
+        q for q in r.store.by_kind(Quantity)
+        if q.provenance.source == "synth/container-contents"
+    ]
+    assert not bridged, f"garbage bridged total(s): {bridged}"
+
+
+def test_in_place_ask_reads_the_place_qualifier(reg):
+    """ask/how-many-in-place binds `entity_qualifier` ('{place.qualifier}'):
+    a question about the FIRST box must never be answered from the SECOND
+    box's fact just because the bare lemma matches. The mismatch declines;
+    the match commits; a bare place stays untouched."""
+    mismatch = solve(
+        "The second box has 36 pens. How many pens are in the first box?",
+        reg, tracing=False,
+    )
+    assert not mismatch.answer.committed, (
+        f"committed {mismatch.answer.value!r}: {mismatch.answer.reason!r}"
+    )
+
+    match = solve(
+        "The second box has 36 pens. How many pens are in the second box?",
+        reg, tracing=False,
+    )
+    assert match.answer.committed, (match.answer.reason or "")
+    assert match.answer.value == 36.0
+
+    bare = solve(
+        "There are 25 pens in the box. How many pens are in the box?",
+        reg, tracing=False,
+    )
+    assert bare.answer.committed, (bare.answer.reason or "")
+    assert bare.answer.value == 25.0
