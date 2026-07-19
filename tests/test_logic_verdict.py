@@ -1038,3 +1038,92 @@ def test_a_possessive_enumeration_is_not_a_type_list(logic_reg):
     r = engine.solve("There are three districts of Ruritania: North, South, and East.",
                      logic_reg, tracing=False)
     assert not [f for f in r.store.by_kind(Quantified) if f.pred == "ruritania"]
+
+
+# ---- Stage 9h: the exhaustive counted enumeration + n-way elimination ------
+# "There are N types of CLS: …" with exactly N listed segments mints ONE
+# EnumeratedDisjunction beside the per-item universals — the numeral is what
+# licenses exhaustiveness, so a mismatched count mints nothing (fail
+# closed). Its only consumer is synth/enumeration-elimination: a stated
+# member of the class with every option but one refuted by explicit
+# negative atoms is the last option. INCLUSIVE — membership in one option
+# never denies another.
+
+
+def test_nway_elimination_derives_the_last_open_option(logic_reg):
+    assert _verdict(
+        "There are three types of pets: dogs, cats, and foxes. "
+        "Rex is not a dog. Rex is not a cat. Rex is a pet. "
+        "Is it true that Rex is a fox?", logic_reg
+    ) == "yes"
+
+
+def test_elimination_composes_with_the_de_morgan_reader(logic_reg):
+    # the refutations arrive as ONE neither/nor sentence — the buyer's shape
+    assert _verdict(
+        "There are three types of pets: dogs, cats, and foxes. "
+        "Rex is neither a dog nor a cat. Rex is a pet. "
+        "Is it true that Rex is a fox?", logic_reg
+    ) == "yes"
+
+
+def test_elimination_needs_stated_membership(logic_reg):
+    # no "Rex is a pet" premise — an entity refuted out of two options is
+    # not thereby a member of the enumerated class at all
+    assert _verdict(
+        "There are three types of pets: dogs, cats, and foxes. "
+        "Rex is not a dog. Rex is not a cat. "
+        "Is it true that Rex is a fox?", logic_reg
+    ) == "undetermined"
+
+
+def test_elimination_needs_all_but_one_refuted(logic_reg):
+    # two options still open — nothing follows
+    assert _verdict(
+        "There are three types of pets: dogs, cats, and foxes. "
+        "Rex is not a dog. Rex is a pet. "
+        "Is it true that Rex is a fox?", logic_reg
+    ) == "undetermined"
+
+
+def test_a_count_mismatch_mints_no_disjunction(logic_reg):
+    # stated FOUR, listed three: the numeral's exhaustiveness claim fails
+    # its own arithmetic, so no EnumeratedDisjunction may exist and the
+    # elimination that would need it must stay silent (fail closed); the
+    # per-item subtype universals are still sound and still mint
+    from rulekit.kernel.model import EnumeratedDisjunction
+
+    text = ("There are four types of pets: dogs, cats, and foxes. "
+            "Rex is not a dog. Rex is not a cat. Rex is a pet. ")
+    r = engine.solve(text + "Is it true that Rex is a fox?",
+                     logic_reg, tracing=False)
+    assert not list(r.store.by_kind(EnumeratedDisjunction))
+    assert _verdict(text + "Is it true that Rex is a fox?",
+                    logic_reg) == "undetermined"
+
+
+def test_a_decided_member_blocks_elimination(logic_reg):
+    # Rex already IS a cat: under the inclusive reading a member may
+    # satisfy several options, so the last open option must NOT be
+    # asserted from a positive classification
+    assert _verdict(
+        "There are three types of pets: dogs, cats, and foxes. "
+        "Rex is not a dog. Rex is a cat. Rex is a pet. "
+        "Is it true that Rex is a fox?", logic_reg
+    ) == "undetermined"
+
+
+def test_a_quarantined_option_blocks_elimination(logic_reg):
+    # "is a dog" / "is not a dog" is a contradiction — both atoms
+    # quarantine OUT of store.facts, so the dog option would read as
+    # merely open to a naive elimination; the taint guard must keep it
+    # from minting a fox atom, and the store's conflict machinery then
+    # DECLINES the item outright (contradictory premises never commit)
+    from rulekit.kernel.model import Atom
+
+    r = engine.solve(
+        "There are three types of pets: dogs, cats, and foxes. "
+        "Rex is a dog. Rex is not a dog. Rex is not a cat. Rex is a pet. "
+        "Is it true that Rex is a fox?", logic_reg, tracing=False)
+    assert not [f for f in r.store.by_kind(Atom) if f.pred == "fox"]
+    assert r.answer.kind == "decline"

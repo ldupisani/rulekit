@@ -396,6 +396,37 @@ class QuantifiedDisjunction(Fact):
 
 
 @dataclass(frozen=True)
+class EnumeratedDisjunction(Fact):
+    """An EXHAUSTIVE n-way class disjunction licensed by a COUNTED
+    enumeration: "There are six types of wild turkeys: A, B, …, and F"
+    with exactly six listed segments -> ∀e ∈ cls. e ∈ o₁ ∨ … ∨ oₙ.
+    INCLUSIVE only — the count licenses exhaustiveness ("there are six"
+    + six listed = the list is the whole class), never pairwise
+    exclusivity, so the only sound consumer is n-way elimination
+    (synth/enumeration-elimination: all options but one refuted for a
+    member ⊢ the last), never "member of one ⊢ not the others".
+
+    Minted ONLY when the stated count equals the segment count —
+    patterns.py enforces it at emit and a mismatched enumeration emits
+    nothing (fail closed; a partial list claims nothing). Options carry
+    Atom's phrase-key discipline and sit in a DOWNWARD-monotone position:
+    they never decompose and never loosen (not in _DECOMPOSABLE_FIELDS).
+
+    The key is the CLASS alone: two different exhaustive enumerations of
+    one class are a genuine disagreement, and the store's collision
+    machinery quarantining both is the correct reading (decline)."""
+
+    cls: str
+    options: tuple[str, ...]
+
+    def key(self) -> tuple:
+        return ("logic-enum-disj", self.cls)
+
+    def value_part(self) -> Any:
+        return self.options
+
+
+@dataclass(frozen=True)
 class Quantified(Fact):
     """A universally quantified statement over a class phrase: "All citizens
     of Lawton Park use the zip code 98199" -> Quantified('citizen of lawton

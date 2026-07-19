@@ -24,6 +24,7 @@ from .model import (
     Conditional,
     Discount,
     Disjunction,
+    EnumeratedDisjunction,
     Existential,
     Fact,
     Atom,
@@ -1192,6 +1193,41 @@ def run_rules(
             provenance = Provenance(source=rule.id, sentence=reading.sentence_index)
             facts = []
             for e in rule.emits:
+                if e.options_from is not None:
+                    # Stage 9h: whole-list emission (schemas.FactEmit
+                    # .options_from) — ONE EnumeratedDisjunction over every
+                    # enumeration segment, minted ONLY when the stated
+                    # count equals the segment count: exhaustiveness is
+                    # what the numeral licenses ("There are SIX types …:"
+                    # + six listed = the list is the whole class), and a
+                    # mismatched or countless enumeration emits nothing
+                    # (fail closed — a partial list claims nothing).
+                    # Options render exactly like the sibling per-item
+                    # emit's {item.singular} so the keys join.
+                    span = m.slots.get(e.options_from)
+                    if not isinstance(span, tuple):
+                        continue
+                    options = tuple(
+                        _canonical_phrase(seg, singularize_unknown=True)
+                        for seg in _enumeration_segments(span)
+                    )
+                    count_raw = _resolve_field(
+                        e.fields.get("count", ""), m.slots, reg, False,
+                        log, rule.id,
+                    )
+                    try:
+                        count = int(float(count_raw))
+                    except (TypeError, ValueError):
+                        continue
+                    if len(options) < 2 or count != len(options):
+                        continue
+                    cls_key = _resolve_field(
+                        e.fields["cls"], m.slots, reg, False, log, rule.id,
+                    )
+                    facts.append(EnumeratedDisjunction(
+                        provenance=provenance, cls=cls_key, options=options,
+                    ))
+                    continue
                 if e.each is not None:
                     # Stage 9g: one fact per enumeration segment (see
                     # schemas.FactEmit.each). The segment binds as the

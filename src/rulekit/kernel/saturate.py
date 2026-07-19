@@ -23,6 +23,8 @@ from .evaluate import ArithmeticLog, EvaluationError, evaluate
 from .facts import FactStore
 from .model import (
     AnchorQuantity,
+    Atom,
+    EnumeratedDisjunction,
     Fact,
     GroupTotal,
     Predication,
@@ -1876,7 +1878,74 @@ def _distributive_container_total_synth(store: FactStore, reg: Registry, log: Ar
     return out
 
 
+def _enumeration_elimination_synth(
+    store: FactStore, reg: Registry, log: ArithmeticLog
+) -> list[Fact]:
+    """Stage 9h: n-way disjunctive elimination over an exhaustive counted
+    enumeration. EnumeratedDisjunction(cls, options) says every member of
+    cls is SOME option (inclusive — patterns.py minted it only because the
+    stated count matched the list). For a stated member of cls with all
+    options but exactly one REFUTED by explicit negative atoms, the last
+    option holds.
+
+    Soundness guards, each load-bearing:
+    - the entity must be a POSITIVE stated member of cls (no membership,
+      no elimination — the Joey null control);
+    - a member with any POSITIVE option atom is already decided — emit
+      nothing (dedup would eat a duplicate anyway; a DIFFERENT positive
+      option is consistent under the inclusive reading, so asserting the
+      last undecided one from it would be unsound);
+    - every non-final option must be refuted by an explicit negative atom
+      — exactly one option may lack an atom entirely;
+    - a QUARANTINED atom on (entity, option) means contradictory premises
+      touched the disjunction: the pair vanishes from store.facts, so the
+      option would otherwise read as merely "undecided" and the
+      elimination would assert from a contradiction. Skip the entity.
+    """
+    enums = [f for f in store.facts if isinstance(f, EnumeratedDisjunction)]
+    if not enums:
+        return []
+    out: list[Fact] = []
+    polarity: dict[tuple[str, str], bool] = {}
+    members: dict[str, list[str]] = {}
+    for f in store.facts:
+        if isinstance(f, Atom):
+            polarity[(f.entity, f.pred)] = f.polarity
+            if f.polarity:
+                members.setdefault(f.pred, []).append(f.entity)
+    tainted = {
+        (f.entity, f.pred) for f in store.quarantined if isinstance(f, Atom)
+    }
+    for enum in enums:
+        for entity in members.get(enum.cls, ()):
+            if any((entity, o) in tainted for o in enum.options):
+                continue
+            decided = [polarity.get((entity, o)) for o in enum.options]
+            if any(p is True for p in decided):
+                continue  # already classified — nothing to eliminate toward
+            open_opts = [
+                o for o, p in zip(enum.options, decided) if p is None
+            ]
+            # exactly one open AND every other option explicitly refuted —
+            # redundant given the positive-atom skip above, but the
+            # conjunction is the statement of the inference and must
+            # survive any future edit to that skip
+            if len(open_opts) != 1:
+                continue
+            if sum(1 for p in decided if p is False) != len(enum.options) - 1:
+                continue
+            out.append(Atom(
+                provenance=Provenance(
+                    source="synth/enumeration-elimination", sentence=-1
+                ),
+                entity=entity, pred=open_opts[0], polarity=True,
+                indef_obj=True,
+            ))
+    return out
+
+
 PLUGINS: dict[str, Synthesizer] = {
+    "synth/enumeration-elimination": _enumeration_elimination_synth,
     "synth/relation-to-quantity": _relations_synth,
     "synth/bare-age-anchor": _bare_age_anchor_synth,
     "synth/anchor-quantity": _anchor_quantity_synth,

@@ -457,7 +457,7 @@ class FactEmit(StrictModel):
         "ratio_quantity", "goal", "group_total", "rate", "discount",
         "percent_change", "atom", "quantified", "conditional",
         "disjunction", "quantified_disjunction", "existential",
-        "verbal_relation", "alias",
+        "verbal_relation", "alias", "enumerated_disjunction",
     ]
     # remaining fields are fact-kind specific; templated strings "{slot}" or
     # expressions evaluated by the safe evaluator.
@@ -469,6 +469,14 @@ class FactEmit(StrictModel):
     # listed type). Declared here so it never falls into `fields` via the
     # extra-collector below.
     each: str | None = None
+    # Stage 9h: whole-list emission over an ENUMERATION span. Names a span
+    # slot; the emit fires ONCE with every comma/conjunction-separated
+    # segment of that span rendered as an option key (fact kind
+    # `enumerated_disjunction` only). Requires a `count` field template —
+    # the fact is minted ONLY when the rendered stated count equals the
+    # number of segments (exhaustiveness is what the count licenses;
+    # mismatch emits nothing, fail closed).
+    options_from: str | None = None
 
     model_config = ConfigDict(extra="allow")
 

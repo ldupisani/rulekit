@@ -311,6 +311,15 @@ rules:
       # agreeing generics ("… of pets: dogs, cats"), the same license the
       # Stage 8d fold family carries
       - {fact: quantified, each: list, cls: "{item.singular}", pred: "{cls.singular}", polarity: true}
+      # Stage 9h: the SAME list emitted once as an exhaustive n-way
+      # disjunction — minted only when the stated count ({n.value}, the
+      # counted-merge numeral on 'six types') equals the number of listed
+      # segments; a mismatched or countless enumeration emits nothing
+      # (fail closed — exhaustiveness is exactly what the numeral
+      # licenses, and a partial list claims nothing). Consumed only by
+      # synth/enumeration-elimination (n-way: all but one refuted for a
+      # stated member ⊢ the last).
+      - {fact: enumerated_disjunction, options_from: list, cls: "{cls.singular}", count: "{n.value}"}
 
   # Stage 9g: the De Morgan neither/nor reader — landed WITH its first
   # buyer exactly as the 9b bank prescribed. "X is neither A nor B" asserts
