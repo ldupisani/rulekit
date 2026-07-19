@@ -1,3 +1,42 @@
+# Session 6 (2026-07-19): Stage 9h — the counted enumeration is exhaustive, n-way elimination lands
+
+Two gated commits (`6b2ba94` tokenizer, `18fad9e` 9h), both NEUTRAL on all
+nine DEV slices; folio-with-logic dev-train **15 → 16** (+1/0, [400] — the
+wild-turkey story's gold-TRUE Ocellated item). pytest 1803 → **1812**. Stage
+detail: `projects/scratch/ROADMAP.md` §9h.
+
+**Numbers at HEAD:** folio-with-logic dev-train **16 correct / 1 poisoned**,
+dev-holdout **1/0**. All benchmark baselines unchanged (gsm8k 104/0 + 40/0 +
+suite 52/52, asdiv 43/0, svamp 13/0, mawps 9/0, scibench 0/0, folio 0/0,
+difg 70/0). **TEST look #5 count: 16 dev-train + 1 holdout of ~20-21. Do
+not spend the look.**
+
+#### What shipped (one line each)
+
+- **Tokenizer** (`6b2ba94`): U+2019 folds like ASCII `'` — the curly
+  apostrophe was DROPPED between tokens, so "Gould’s"/"Gould's" minted two
+  different fact keys and two of [400]'s five refutations could never join.
+  Surfaces stay verbatim; only the fold normalizes. gsm8k train has 271
+  curly-apostrophe items, so its NEUTRAL gate was a real measurement.
+- **9h** (`18fad9e`): `EnumeratedDisjunction` (n-way, INCLUSIVE — the
+  numeral licenses exhaustiveness, never exclusivity), minted only when
+  stated count == listed count (fail closed); consumed only by
+  `synth/enumeration-elimination` (a saturate plugin — n-ary is
+  inexpressible in the fixed-arity YAML synths). Guards pinned: no
+  membership → nothing; any positive option → decided; >1 open → nothing;
+  a quarantined option atom taints the entity.
+
+#### Carry-forwards (unchanged from session 5 — still binding)
+
+- **A folio TEST look** — 16+1 of ~20-21; the policy stands.
+- **Islip [99-101]** needs name-shortening identity, its own stage.
+- **[8]/[9] William Dickinson** — corpus defect, unwinnable.
+- The other designed stages ([128/129] XOR reductio, [144/145] do-support
+  negation) remain deliberately unpicked; the session-5 invariants below
+  all still hold.
+
+---
+
 # Session 5 (2026-07-19, second half): FOLIO frontier 9d–9g — four conversions, four new stories
 
 Four commits (`76810e1` 9d, `398e61e` 9e, `490a02c` 9f, `d66a78c` 9g), every
