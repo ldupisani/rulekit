@@ -806,3 +806,38 @@ all nine benchmark slices NEUTRAL, pytest 1812.** The designed stage the
   item outright anyway).
 
 ## Running count after 9h: 16 dev-train + 1 holdout (look #5 at ~20-21)
+
+## Stage 9i — the XOR-conditional reductio — DONE (ea1a266)
+
+**folio-with-logic dev-train 18 (+2/0, [128/129] — the Bubbles gold-false
+AND gold-true pair, one story), all nine benchmark slices NEUTRAL, pytest
+1823. The S4 assumption-based frontier is OPEN.** The key design fact: the
+derivation is LINEAR — no case-splitting tableau needed. Assume goldfish;
+the subset chain gives fish; the ∀¬ universal instantiates ¬bird; MODUS
+TOLLENS (new synth, the contrapositive of universal-instantiation) closes
+¬osprey from osprey⊆bird; the exactly-one antecedent fires ¬fish;
+collision. Four pieces:
+
+- `logic/universal-indefinite-copular` ("A carp is a fish" = generic ∀;
+  SINGULAR-agreeing so keys render PLAIN, the 8d symmetry discipline;
+  negated form deliberately unread).
+- `synth/modus-tollens` (positive universals only; REUSABLE — the Islip
+  [100/101] MT half now exists).
+- `model.DisjunctiveConditional` + reader + fire synths: (A ⊕ B) → ¬C,
+  fired ONLY at exactly-one established (sound under ⊕ AND ∨); one true +
+  other undecided fires NOTHING (Stage 3's exclusivity measurement).
+  ⚠ The fire synths carry NO `unless` ON PURPOSE: the collision IS the
+  reductio's contradiction signal; an unless would suppress it. In main
+  saturation the same collision = genuinely contradictory premises =
+  quarantine -> decline, correct.
+- The reductio engine (consumers/logic_verdict.py): an undecided verdict
+  atom is assumed each way in a throwaway store copy + fresh log,
+  re-saturated; quarantine = hypothesis refuted = negation holds. Both
+  ways refuted -> commit nothing. ⚠ NO reductio under a definite-
+  description question (q_defcom): the Phase 0 gate refuses indefinite
+  atoms in the direct lookup, and the hypothesis would collide with those
+  refused atoms and answer through the back door — caught by
+  test_article_compatibility, NOT by any corpus. The corpora are a
+  sample; the tests are the specification (that memory's third firing).
+
+## Running count after 9i: 18 dev-train + 1 holdout (look #5 at ~20-21)
