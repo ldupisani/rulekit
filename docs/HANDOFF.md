@@ -9,9 +9,21 @@ Bubbles +2, [100/101] Islip +2). pytest 1803 → **1833**. Stage detail:
 **Numbers at HEAD:** folio-with-logic dev-train **20 correct / 1 poisoned**,
 dev-holdout **1/0**. All benchmark baselines unchanged (gsm8k 104/0 + 40/0 +
 suite 52/52, asdiv 43/0, svamp 13/0, mawps 9/0, scibench 0/0, folio 0/0,
-difg 70/0). **TEST look #5 count: 20 dev-train + 1 holdout — AT the ~20-21
-band the look-4 policy set. The look is now AFFORDABLE; it is the user's
-call to spend it, never a session's own.**
+difg 70/0).
+
+**TEST look #5 SPENT (user-directed, 2026-07-19): 1 correct / 1 wrong /
+283 of 285 — aggregates IDENTICAL to looks #3–#4. Precision 0.5 held, no
+revert; but 9 conversions from EIGHT distinct stories (incl. three
+designed inference stages) transferred ZERO TEST items — the look-4
+zero-transfer lesson is now measured twice.** A TEST conversion needs an
+entire story STACK to line up; single-story conversions will not move
+TEST at 285 items. Do not schedule look #6 off conversion count alone —
+TEST movement needs breadth-first premise-reader coverage of the
+convertible pool's common blocker classes, a different campaign. Full
+note: ROADMAP §"TEST look #5".
+⚠ Operational: a TEST-look script MUST be a FILE, not a heredoc — the
+jobs>1 spawn pool re-imports the main module and a stdin script crashes
+every worker (caught before any information leaked; ledger was clean).
 
 #### 9j in one paragraph (the identity stack)
 
@@ -54,7 +66,8 @@ one undecided disjunct (Stage 3's exclusivity measurement).
 
 #### Carry-forwards
 
-- **A folio TEST look** — 20+1: the band is REACHED; the user decides.
+- **Look #5 is SPENT** (see above). No look #6 without a new policy —
+  conversion count is no longer the right precondition.
 - **Islip [99]** (the temporal-existential item) needs event/time
   machinery — not an increment.
 - **[8]/[9] William Dickinson** — corpus defect, unwinnable.
