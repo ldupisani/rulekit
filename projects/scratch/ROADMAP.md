@@ -745,3 +745,29 @@ consume_skipped alternation [a, an, the]). Check both on any new rule
 that shares a surface with the ground-copular family.
 
 ## Running count after 9f: 14 dev-train + 1 holdout (look #5 at ~20-21)
+
+## Stage 9g — the typed enumeration + the De Morgan reader — DONE (d66a78c)
+
+**folio-with-logic dev-train 15 (+1/0, the wild-turkey story — fourth new
+story), pytest 1803.** The 9b bank paid out exactly as written: the De
+Morgan neither/nor reader landed WITH the buyer whose story also needed
+the enumeration. New kernel piece: `schemas.FactEmit.each` — per-item
+emission over an enumeration span ({item} reserved binding, segments
+split at commas/conjunctions, structural only). The enumeration rule is
+gated on `enumeration_type_noun` ('type' only) so possessive
+enumerations ("districts of RUSSIA") stay unread rather than misread.
+Exhaustiveness is NOT captured; [400] (the gold-true Ocellated
+elimination) still needs the n-way disjunction stage and correctly stays
+declined. The 9b pin was updated to its intended invariant (no POSITIVE
+atom, no marker in a key) — its empty-store form was the pre-reader
+snapshot.
+
+## Running count after 9g: 15 dev-train + 1 holdout (look #5 at ~20-21)
+
+Remaining multi-item near stories all need designed inference stages:
+[400] n-way elimination over the (now-read) enumeration; Islip MT+DS
+(blocked on speedway(islip) — no premise states it; needs
+name-shortening identity, a REJECTED-for-now inference); [128/129]
+XOR-conditional reductio; [144/145] do-support negation VR + negative
+restrictor refutation; [96/97] modal swamp. The single-item tail is 50
+stories of one-off shapes.
