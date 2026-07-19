@@ -1,16 +1,27 @@
-# Session 6 (2026-07-19): Stages 9h + 9i — n-way elimination and the XOR-conditional reductio
+# Session 6 (2026-07-19): Stages 9h + 9i + 9j — elimination, reductio, identity
 
-Four gated commits (`6b2ba94` tokenizer, `18fad9e` 9h, `ea1a266` 9i, plus
-ROADMAP records), every one NEUTRAL on all nine DEV slices;
-folio-with-logic dev-train **15 → 18** ([400] Ocellated +1, [128/129]
-Bubbles +2). pytest 1803 → **1823**. Stage detail:
-`projects/scratch/ROADMAP.md` §9h–9i.
+Three stages landed (`6b2ba94` tokenizer + `18fad9e` 9h, `ea1a266` 9i,
+`fc60a2d` 9j), every commit NEUTRAL on all nine DEV slices;
+folio-with-logic dev-train **15 → 20** ([400] Ocellated +1, [128/129]
+Bubbles +2, [100/101] Islip +2). pytest 1803 → **1833**. Stage detail:
+`projects/scratch/ROADMAP.md` §9h–9j.
 
-**Numbers at HEAD:** folio-with-logic dev-train **18 correct / 1 poisoned**,
+**Numbers at HEAD:** folio-with-logic dev-train **20 correct / 1 poisoned**,
 dev-holdout **1/0**. All benchmark baselines unchanged (gsm8k 104/0 + 40/0 +
 suite 52/52, asdiv 43/0, svamp 13/0, mawps 9/0, scibench 0/0, folio 0/0,
-difg 70/0). **TEST look #5 count: 18 dev-train + 1 holdout of ~20-21 —
-close, but not there. Do not spend the look without asking.**
+difg 70/0). **TEST look #5 count: 20 dev-train + 1 holdout — AT the ~20-21
+band the look-4 policy set. The look is now AFFORDABLE; it is the user's
+call to spend it, never a session's own.**
+
+#### 9j in one paragraph (the identity stack)
+
+`synth/name-prefix-alias` (both names must be fact subjects; unique
+extension) + `synth/name-head-sortal` (join-driven: a ≥2-word,
+partitive-free name declares its head's sort ONLY when the story already
+quantifies over that head) + the restricted stative-'have' universal and
+its do-support denial (a modus-tollens pair keying 'have {q}' identically,
+anaphoric PP consumed but never keyed) + `synth/conditional-modus-tollens`.
+The 9e Alias copy synths and Stage 3 DS close the chain.
 
 #### 9i in one paragraph (the S4 frontier is open)
 
@@ -43,9 +54,9 @@ one undecided disjunct (Stage 3's exclusivity measurement).
 
 #### Carry-forwards
 
-- **A folio TEST look** — 18+1 of ~20-21; ask the user before spending.
-- **Islip [99-101]** needs name-shortening identity, its own stage — but
-  its modus-tollens half now exists (9i).
+- **A folio TEST look** — 20+1: the band is REACHED; the user decides.
+- **Islip [99]** (the temporal-existential item) needs event/time
+  machinery — not an increment.
 - **[8]/[9] William Dickinson** — corpus defect, unwinnable.
 - **[144/145] do-support negation VR** remains the last named designed
   stage; the session-5 invariants below all still hold.
