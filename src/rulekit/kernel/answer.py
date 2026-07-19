@@ -1117,118 +1117,6 @@ def answer(
             log=log, match=_match, ask=ask,
         ))
 
-    if consumer == "number-theory":
-        # "What is the GCD of 24 and 36?" / "7 factorial" / "8 choose 3" — dispatch
-        # on the operation sub-category to a general math function. Integer inputs;
-        # both bind ask slots (value-accounting satisfied). Definitive-or-decline:
-        # a binary op with no second operand, or a non-integer input, declines.
-        import math
-
-        op = query.get("op", "")
-        try:
-            x = int(float(query.get("x")))
-            y_raw = query.get("y")
-            y = int(float(y_raw)) if y_raw not in (None, "") else None
-        except (TypeError, ValueError):
-            return Answer("decline", None, f"{op!r} needs integer inputs")
-        if reg.word_in_category(op, "op_gcd"):
-            result = math.gcd(x, y) if y is not None else None
-        elif reg.word_in_category(op, "op_lcm"):
-            result = math.lcm(x, y) if y is not None else None
-        elif reg.word_in_category(op, "op_factorial"):
-            result = math.factorial(x) if x >= 0 else None
-        elif reg.word_in_category(op, "op_choose"):
-            result = math.comb(x, y) if (y is not None and 0 <= y <= x) else None
-        else:
-            return Answer("decline", None, f"unsupported operation {op!r}")
-        if result is None:
-            return Answer("decline", None, f"{op!r} not defined for the given inputs")
-        return Answer("number", float(result), f"number-theory: {op} = {result}")
-
-    if consumer == "arithmetic":
-        # The difg `arithmetic` domain: a NAMED operator applied to one or two
-        # literal operands — "25 plus 17", "7 times 8", "2 to the power of 10",
-        # "the square root of 144", "17 percent of 240". The operator was chosen
-        # by the ask (rules/arithmetic-ops.yaml) and arrives as a structural
-        # opcode in query['op']; this branch holds only the general FUNCTIONS, no
-        # English word (constitution rule 1 — the operator words are YAML literals,
-        # never enumerated here). Definitive-or-decline: divide-by-zero and the
-        # square root of a negative decline rather than error.
-        import math
-
-        op = query.get("op", "")
-        try:
-            x = float(query.get("x"))
-            y_raw = query.get("y")
-            y = float(y_raw) if y_raw not in (None, "") else None
-        except (TypeError, ValueError):
-            return Answer("decline", None, f"{op!r} needs numeric inputs")
-        if op == "add":
-            result = x + y if y is not None else None
-        elif op == "subtract":
-            result = x - y if y is not None else None
-        elif op == "multiply":
-            result = x * y if y is not None else None
-        elif op == "divide":
-            result = x / y if y not in (None, 0.0) else None
-        elif op == "power":
-            result = x ** y if y is not None else None
-        elif op == "sqrt":
-            result = math.sqrt(x) if x >= 0 else None
-        elif op == "percent":
-            result = x * y if y is not None else None
-        elif op == "percent_change":
-            # SIGNED relative change from x to y, as a percentage. One formula
-            # serves both directions -- an 'increase' and a 'decrease' ask
-            # differ only in which sign the answer comes out with, so there is
-            # no second opcode and no English word in this branch. x == 0 has
-            # no relative change to report and declines (None) rather than
-            # dividing.
-            result = (y - x) / x * 100.0 if y is not None and x != 0.0 else None
-        else:
-            return Answer("decline", None, f"unsupported operation {op!r}")
-        if result is None:
-            return Answer("decline", None, f"{op!r} not defined for the given inputs")
-        return Answer("number", float(result), f"arithmetic: {op} = {result}")
-
-    if consumer == "trigonometry":
-        # The difg `trigonometry` domain: a NAMED trig function applied to one
-        # angle — "What is the sine of 30 degrees?", "the tangent of 45 degrees".
-        # The function was chosen by the ask (rules/trig-ops.yaml) and arrives as
-        # a structural opcode in query['op']; this branch holds only the general
-        # FUNCTIONS, no English word (constitution rule 1).
-        #
-        # The operand is ALWAYS in degrees: the ask gates it on the
-        # `angle_degrees` category (categories/trig.yaml), which admits the
-        # degree unit and nothing else, so the conversion below is unconditional
-        # and safe. A radian operand never reaches here — it declines at the ask.
-        import math
-
-        op = query.get("op", "")
-        try:
-            deg = float(query.get("x"))
-        except (TypeError, ValueError):
-            return Answer("decline", None, f"{op!r} needs a numeric angle")
-        rad = math.radians(deg)
-        if op == "sin":
-            result = math.sin(rad)
-        elif op == "cos":
-            result = math.cos(rad)
-        elif op == "tan":
-            # tan is UNDEFINED at 90 + 180k degrees, and math.tan does not raise
-            # there — float error leaves cos(rad) at ~6.1e-17 instead of 0, so
-            # math.tan(math.radians(90)) returns 1.633123935319537e+16.
-            # Definitive-or-decline (constitution rule 4): a question with no
-            # answer gets no commit. The guard tests the COSINE rather than
-            # `deg % 180 == 90` so an operand that is numerically at the pole
-            # (89.99999999999999) declines too, not just a literal 90.
-            result = math.tan(rad) if abs(math.cos(rad)) > 1e-12 else None
-        else:
-            return Answer("decline", None, f"unsupported operation {op!r}")
-        if result is None:
-            return Answer("decline", None, f"{op!r} not defined for the given inputs")
-        return Answer("number", float(result), f"trigonometry: {op} = {result}")
-
     if consumer == "physics":
         # The difg `physics` domain: a NAMED physical quantity computed from the
         # parameters the question states — "the speed of an object that travels
@@ -1331,30 +1219,6 @@ def answer(
             )
         return Answer("number", float(result), f"physics: {quantity} = {expr} = {result}")
 
-    if consumer == "unit-convert":
-        # The difg `unit_conversion` domain: "How many inches are in 3 feet?" —
-        # multiply by the factor the CONVERSIONS TABLE already holds
-        # (rulekit/conversions@1; the registry stores both directions). The unit
-        # words arrive as slot lemmas from a `measure_unit`-gated ask
-        # (rules/unit-convert.yaml) and are looked up as DATA — no unit is named
-        # in Python (constitution rule 1), so a pair the table does not know
-        # declines rather than guessing.
-        src, dst = query.get("from", ""), query.get("to", "")
-        try:
-            value = float(query.get("value"))
-        except (TypeError, ValueError):
-            return Answer("decline", None, "a conversion needs a numeric quantity")
-        if src == dst:
-            # A unit converts to itself by 1, but the ask shape only reaches here
-            # via two DISTINCT unit mentions; treat it as unread rather than
-            # inventing an identity conversion.
-            return Answer("decline", None, f"{src!r} is already the target unit")
-        factor = reg.conversions.get((src, dst))
-        if factor is None:
-            return Answer("decline", None, f"no known conversion from {src!r} to {dst!r}")
-        result = value * factor
-        return Answer("number", float(result), f"unit-convert: {value} {src} -> {dst} = {result}")
-
     if consumer == "vector":
         # The difg vector domain: "the magnitude of the vector (3, 4)" -> 5, "the
         # dot product of (1, 2, 3) and (4, 5, 6)" -> 32. A SPACED tuple is just
@@ -1390,45 +1254,6 @@ def answer(
         else:
             return Answer("decline", None, f"unsupported operation {op!r}")
         return Answer("number", float(result), f"vector: {op} = {result}")
-
-    if consumer == "coordinate":
-        # The difg coordinate-geometry domain: a NAMED quantity over two POINTS
-        # — "the distance between (0,0) and (3,4)", "the slope between (2,3) and
-        # (5,3)". The quantity was chosen by the ask (rules/coordinate-ops.yaml)
-        # and arrives as a structural opcode in query['op']; this branch holds
-        # only the general FUNCTIONS, no English word (constitution rule 1).
-        #
-        # Operands arrive as the comma-separated `components` of a `point`-typed
-        # slot (numbers.py _TUPLE), because every ask template interpolates to
-        # text. Splitting them here is reading a STRUCTURE the kernel already
-        # recognized, not parsing English (rule 2).
-        import math
-
-        op = query.get("op", "")
-        try:
-            p1 = [float(c) for c in str(query.get("p1", "")).split(",")]
-            p2 = [float(c) for c in str(query.get("p2", "")).split(",")]
-        except (TypeError, ValueError):
-            return Answer("decline", None, f"{op!r} needs numeric coordinates")
-        if len(p1) != len(p2) or len(p1) < 2:
-            # Definitive-or-decline: points of different arity name no distance.
-            return Answer("decline", None, f"{op!r} needs two points of equal arity")
-        if op == "distance":
-            # n-dimensional by construction — 2D and 3D read identically.
-            result = math.sqrt(sum((b - a) ** 2 for a, b in zip(p1, p2)))
-        elif op == "slope":
-            if len(p1) != 2:
-                return Answer("decline", None, "slope is defined for 2-D points")
-            dx = p2[0] - p1[0]
-            # A VERTICAL line has undefined slope, and the horizontal case is
-            # 0 rather than undefined — so this guards dx, never dy. Same
-            # definitive-or-decline policy as the tan pole.
-            result = (p2[1] - p1[1]) / dx if dx != 0 else None
-        else:
-            return Answer("decline", None, f"unsupported operation {op!r}")
-        if result is None:
-            return Answer("decline", None, f"{op!r} not defined for the given points")
-        return Answer("number", float(result), f"coordinate: {op} = {result}")
 
     if consumer == "list-statistic":
         # "What is the AVERAGE of 4, 8, 15, 16, and 42?" — read every number in

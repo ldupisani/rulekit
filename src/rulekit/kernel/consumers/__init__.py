@@ -72,9 +72,14 @@ def consumer(name: str):
 
 from . import (  # noqa: E402,F401  (import registers each handler)
     affine_convert as _affine_convert,
+    arithmetic as _arithmetic,
     calendar as _calendar,
+    coordinate as _coordinate,
     discounted_total as _discounted_total,
     measure_cost as _measure_cost,
     molar_mass as _molar_mass,
+    number_theory as _number_theory,
     rate_cost as _rate_cost,
+    trigonometry as _trigonometry,
+    unit_convert as _unit_convert,
 )
