@@ -283,6 +283,56 @@ rules:
   # ground-copular rule still reads the same sentence into its (junk,
   # joinless) phrase-key atom — harmless, and its span is what consumes the
   # sentence for the fragment guard.
+  # Stage 9g: the typed enumeration — "There are N TYPES of CLS: A, B, …,
+  # and F" reads each listed item as a subtype universal (∀x A(x)→CLS(x) —
+  # a listed TYPE of wild turkey is a wild turkey). The counted slot is
+  # gated on `enumeration_type_noun` ('type' only), which keeps the rule
+  # off possessive enumerations ("eight federal districts of RUSSIA: …" —
+  # its items are not Russias; unread is sound, misread is not). The list
+  # span deliberately admits 'and' — it is a LIST separator here, consumed
+  # and understood by the per-item emit (schemas.FactEmit.each), which is
+  # exactly what the fragment guard's contract asks of a conjunction.
+  # Exhaustiveness ("there are EXACTLY six") is NOT captured — the n-way
+  # elimination that would need it is a separate, unbuilt stage — so the
+  # emitted facts are sound under-reading.
+  - id: logic/enumeration-of-types
+    phase: read
+    match:
+      sentence:
+        - {lit: there, at_start: true}
+        - {lit: [are, is]}
+        - {slot: n, cat: enumeration_type_noun}
+        - {lit: of}
+        - {slot: cls, span: true, span_blocks: [negation, disjunctive_marker]}
+        - {lit: ':', consume_skipped: true}
+        - {slot: list, span: true, span_blocks: [negation, disjunctive_marker]}
+    emits:
+      # item folds .singular: list items in this construction are plural-
+      # agreeing generics ("… of pets: dogs, cats"), the same license the
+      # Stage 8d fold family carries
+      - {fact: quantified, each: list, cls: "{item.singular}", pred: "{cls.singular}", polarity: true}
+
+  # Stage 9g: the De Morgan neither/nor reader — landed WITH its first
+  # buyer exactly as the 9b bank prescribed. "X is neither A nor B" asserts
+  # ¬A(x) ∧ ¬B(x): two NEGATIVE atoms, never a disjunction (this is the one
+  # disjunctive surface whose reading needs no exclusivity measurement).
+  # Both spans block `neither_marker` (a second 'neither' may never ride
+  # inside a disjunct) and `conjunction` (the left span must stop at
+  # 'nor'), mirroring logic/disj-ground-either.
+  - id: logic/neither-nor-ground
+    phase: read
+    match:
+      sentence:
+        - {slot: subj, type: name, at_start: true, blocks_skipped: indefinite_article}
+        - {lit: is}
+        - {lit: neither}
+        - {slot: l, span: true, span_blocks: [negation, conjunction, preposition, neither_marker]}
+        - {lit: nor}
+        - {slot: r, span: true, span_blocks: [negation, conjunction, preposition, neither_marker]}
+    emits:
+      - {fact: atom, entity: "{subj}", pred: "{l}", polarity: false}
+      - {fact: atom, entity: "{subj}", pred: "{r}", polarity: false}
+
   # Stage 9f: the appointive passive — "NAME is/was APPOINTED as PRED"
   # asserts the resulting role as a fact ("was appointed as a referee
   # observer" ⊨ is a referee observer). The verb slot is gated on

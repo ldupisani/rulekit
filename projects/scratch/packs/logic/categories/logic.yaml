@@ -66,6 +66,14 @@ categories:
     # measured buyer's; each addition needs its own measurement.
     appointive_verb:
         parent: verb
+    # Stage 9g: the enumeration keyword — "There are N TYPES of X: A, B,
+    # …" licenses reading each listed item as a subtype of X. Gating the
+    # counted slot on this category is what keeps the rule off possessive
+    # enumerations ("eight federal districts OF RUSSIA: …" — the items are
+    # districts, not Russias; 'district' is not a member and must never
+    # be). One word; 'kind'/'sort' join only with their own measurement.
+    enumeration_type_noun:
+        parent: noun
 members:
     conjunctive_marker: [and]
     disjunctive_marker: [or]
@@ -74,3 +82,4 @@ members:
     agent_marker: [by]
     neither_marker: [neither]
     appointive_verb: [appointed]
+    enumeration_type_noun: [type]

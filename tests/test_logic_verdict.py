@@ -614,11 +614,17 @@ def test_neither_nor_mints_no_positive_atom(logic_reg):
     # "X is neither A nor B" asserts ¬A ∧ ¬B. Keying an atom on the whole
     # negated phrase asserts the OPPOSITE of the sentence, and no consumer
     # can see a negation hiding inside a key ('neither' is an ADJECTIVE, so
-    # `span_blocks: negation` never caught it).
+    # `span_blocks: negation` never caught it). At 9b this asserted an
+    # EMPTY store (the surface was refused, unread); the 9g De Morgan
+    # reader the 9b bank prescribed now reads it as the two NEGATIVE atoms
+    # — the invariant that never changes is: no POSITIVE atom, and no key
+    # carrying the marker.
     from rulekit.kernel.model import Atom
 
     r = engine.solve("Rex is neither a dog nor a cat.", logic_reg, tracing=False)
-    assert list(r.store.by_kind(Atom)) == []
+    atoms = list(r.store.by_kind(Atom))
+    assert {(a.pred, a.polarity) for a in atoms} == {("dog", False), ("cat", False)}
+    assert not any("neither" in a.pred or "nor" in a.pred for a in atoms)
 
 
 def test_neither_nor_conclusion_is_not_echo_answered(logic_reg):
@@ -976,3 +982,59 @@ def test_a_verbal_some_premise_reads_as_an_existential(logic_reg):
     assert facts[0].cls == "referee"
     assert facts[0].pred == "become observers"
     assert facts[0].polarity is True
+
+
+# ---- Stage 9g: the typed enumeration + the De Morgan neither/nor -----------
+# "There are N TYPES of CLS: A, B, …, and F" reads one subtype universal per
+# listed item (the per-item emit, schemas.FactEmit.each); the list's 'and' is
+# consumed AND understood, which is what lifts the fragment guard for the
+# story's stated facts. "X is neither A nor B" asserts two negative atoms —
+# the one disjunctive surface needing no exclusivity measurement (9b bank).
+
+
+def test_neither_nor_denies_both_sides(logic_reg):
+    assert _verdict("Rex is neither a dog nor a cat. Is it true that Rex is a dog?",
+                    logic_reg) == "no"
+    assert _verdict("Rex is neither a dog nor a cat. Is it true that Rex is a cat?",
+                    logic_reg) == "no"
+
+
+def test_neither_nor_licenses_nothing_about_a_third_class(logic_reg):
+    assert _verdict("Rex is neither a dog nor a cat. Is it true that Rex is a fox?",
+                    logic_reg) == "undetermined"
+
+
+def test_an_enumeration_reads_one_subtype_universal_per_item(logic_reg):
+    from rulekit.kernel.model import Quantified
+
+    r = engine.solve("There are three types of pets: dogs, cats, and foxes.",
+                     logic_reg, tracing=False)
+    facts = {(f.cls, f.pred, f.polarity) for f in r.store.by_kind(Quantified)}
+    assert ("dog", "pet", True) in facts
+    assert ("cat", "pet", True) in facts
+    assert ("fox", "pet", True) in facts
+
+
+def test_the_enumeration_lifts_the_veto_for_a_stated_negative(logic_reg):
+    assert _verdict(
+        "There are three types of pets: dogs, cats, and foxes. Rex is not a dog. "
+        "Is it true that Rex is a dog?", logic_reg
+    ) == "no"
+
+
+def test_an_enumeration_asserts_nothing_about_an_individual(logic_reg):
+    assert _verdict(
+        "There are three types of pets: dogs, cats, and foxes. "
+        "Is it true that Rex is a dog?", logic_reg
+    ) == "undetermined"
+
+
+def test_a_possessive_enumeration_is_not_a_type_list(logic_reg):
+    # "districts of Russia" — the items are districts, not Russias; the
+    # enumeration_type_noun gate keeps the rule off the construction, and
+    # NO subtype universal may mint ('unread is sound, misread is not')
+    from rulekit.kernel.model import Quantified
+
+    r = engine.solve("There are three districts of Ruritania: North, South, and East.",
+                     logic_reg, tracing=False)
+    assert not [f for f in r.store.by_kind(Quantified) if f.pred == "ruritania"]

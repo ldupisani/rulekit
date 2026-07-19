@@ -726,6 +726,29 @@ def intersective_split(
 _RELATIVE_MARKER_SENSES = ("interrogative", "complementizer", "wh_which")
 
 
+def _enumeration_segments(span: tuple) -> list[tuple]:
+    """Split an enumeration span at its list separators — comma punct and
+    conjunction-sensed units (', and' yields an empty middle segment, which
+    drops). Structural only: senses and the comma, never words."""
+    segs: list[tuple] = []
+    cur: list = []
+    for u in span:
+        if u.sense() == "conjunction" or (
+            u.sense() == "punct" and u.features.get("fold") == ","
+        ):
+            if cur:
+                segs.append(tuple(cur))
+                cur = []
+        else:
+            cur.append(u)
+    if cur:
+        segs.append(tuple(cur))
+    return [
+        s for s in segs
+        if any(u.sense() not in SKIPPABLE_SENSES for u in s)
+    ]
+
+
 # Which fact kinds decompose, and on WHICH field. Only UPWARD-monotone
 # positions may ever appear here: Atom.pred (a ground predicate),
 # Quantified.pred and Conditional.then_pred (consequents). Quantified.cls and
@@ -1169,6 +1192,27 @@ def run_rules(
             provenance = Provenance(source=rule.id, sentence=reading.sentence_index)
             facts = []
             for e in rule.emits:
+                if e.each is not None:
+                    # Stage 9g: one fact per enumeration segment (see
+                    # schemas.FactEmit.each). The segment binds as the
+                    # reserved `item` slot, rendered like any span. An item
+                    # whose NAME contains a conjunction ('Trinidad and
+                    # Tobago') would split wrongly — enumeration rules must
+                    # match constructions whose items are type names, where
+                    # that cannot occur.
+                    span = m.slots.get(e.each)
+                    if not isinstance(span, tuple):
+                        continue
+                    for seg in _enumeration_segments(span):
+                        sub_slots = dict(m.slots)
+                        sub_slots["item"] = seg
+                        fact = _build_fact(
+                            e.fields, e.fact, sub_slots, reg, provenance,
+                            log, rule.id, reading=reading,
+                        )
+                        facts.append(fact)
+                        facts.extend(atom_variants(fact, e.fields, sub_slots, reg))
+                    continue
                 fact = _build_fact(
                     e.fields, e.fact, m.slots, reg, provenance, log, rule.id,
                     reading=reading,

@@ -462,6 +462,13 @@ class FactEmit(StrictModel):
     # remaining fields are fact-kind specific; templated strings "{slot}" or
     # expressions evaluated by the safe evaluator.
     fields: dict[str, str | float | bool] = Field(default_factory=dict)
+    # Stage 9g: per-item emission over an ENUMERATION span. Names a span
+    # slot; the emit fires once per comma/conjunction-separated segment of
+    # that span, with the segment bound as the reserved `{item}` slot
+    # ("There are six types of wild turkeys: A, B, …, and F" → one fact per
+    # listed type). Declared here so it never falls into `fields` via the
+    # extra-collector below.
+    each: str | None = None
 
     model_config = ConfigDict(extra="allow")
 
