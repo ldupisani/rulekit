@@ -20,7 +20,8 @@ def unique_entity(ctx: ConsumerContext):
     from .. import deixis
     from ..evaluate import evaluate
     from ..model import GroupTotal, Quantity
-    from ..answer import _entity_total, _measure_substance_guard, _resolve_measure
+    from ..measures import _measure_substance_guard, _resolve_measure
+    from ..totals import _entity_total
 
     # an ENTITY-LESS ask ("how many balloons are left?") resolves iff
     # exactly one entity holds the measure — definitive-or-decline

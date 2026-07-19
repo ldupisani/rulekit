@@ -19,7 +19,7 @@ def combined_elided_measure(ctx: ConsumerContext):
     from ..answer import Answer
     from ..evaluate import evaluate
     from ..model import Quantity
-    from ..answer import _combined_holder_totals
+    from ..totals import _combined_holder_totals
 
     # mining candidate plural-np-totality-asks: the named-pair sibling
     # of `single-entity-elided-measure` above — "how many do Tom and

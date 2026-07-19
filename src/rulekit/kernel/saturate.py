@@ -32,6 +32,14 @@ from .model import (
     Relation,
 )
 
+# Direct top-level imports (session-4 refactor, step C): these five used to be
+# DEFERRED function-local imports of `answer`, working around the import cycle
+# that existed while the fold helpers lived inside answer.py. The folds now
+# live in `totals` (which imports `answer` one-way, never back), so the
+# workaround is gone with the cycle.
+from .measures import _resolve_measure, _resolve_measure_against
+from .totals import _entity_total, _sign
+
 MAX_ROUNDS = 50
 
 _FIELD_ALIASES = {"entity", "measure", "value", "verb", "subject", "standard",
@@ -156,7 +164,6 @@ _ELIDED_STANDARD = "$elided:standard$"
 def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> list[Fact]:
     """Resolve Relation facts against known Quantities:
     subject = factor*standard + offset, hop by hop (raw factors visible)."""
-    from .answer import _entity_total, _resolve_measure_against
 
     out: list[Fact] = []
     # a relation anchors on ANY known quantity of the standard, but only an
@@ -952,7 +959,6 @@ def _pool_before(
     events add/subtract by verb polarity, previously-derived fraction events
     included (so chains sequence). Rest-derived facts are excluded (they'd
     make the rest's own fixpoint unstable). None when nothing is known."""
-    from ..kernel.answer import _sign
 
     prior = [
         q for q in store.by_kind(Quantity)
@@ -979,7 +985,6 @@ def _fraction_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> list
     leaves it unresolved (the guard declines)."""
     from .model import FractionQuantity
 
-    from .answer import _resolve_measure
 
     out: list[Fact] = []
     resolved = {
@@ -1462,7 +1467,6 @@ def _ratio_split_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> l
     holder (mirrors `_partition_membership_synth`'s own guard) and the
     label itself has no Quantity of its own yet (never overwrite or
     double-emit)."""
-    from .answer import _entity_total
     from .model import RatioQuantity
 
     out: list[Fact] = []
@@ -1528,7 +1532,6 @@ def _sum_constraint_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -
     Deliberately scoped to exactly TWO holders per total (a three-entity
     chain — two relations plus one total — is a named, separate increment,
     not this one)."""
-    from .answer import _resolve_measure_against
 
     out: list[Fact] = []
     totals_by_measure: dict[str, list[GroupTotal]] = {}

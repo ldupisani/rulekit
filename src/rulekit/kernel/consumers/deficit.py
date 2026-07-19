@@ -19,7 +19,7 @@ def deficit(ctx: ConsumerContext):
     from ..answer import Answer
     from ..evaluate import evaluate
     from ..model import Goal, Quantity
-    from ..answer import _resolve_measure
+    from ..measures import _resolve_measure
 
     # "how many more X does WHO need" — goal minus the entity's single
     # CURRENT holding (a stated STATE quantity, never the general event

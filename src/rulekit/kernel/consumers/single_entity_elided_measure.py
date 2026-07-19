@@ -18,7 +18,7 @@ from . import ConsumerContext, consumer
 def single_entity_elided_measure(ctx: ConsumerContext):
     from ..answer import Answer
     from ..model import Quantity
-    from ..answer import _entity_total, _verb_total
+    from ..totals import _entity_total, _verb_total
 
     # mining candidate elided-measure-entity-asks: the question has NO
     # item/measure noun at all ("How many does Tom have?", "How many

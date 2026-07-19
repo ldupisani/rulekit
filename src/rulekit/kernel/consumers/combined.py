@@ -18,7 +18,7 @@ from . import ConsumerContext, consumer
 def combined(ctx: ConsumerContext):
     from ..answer import Answer
     from ..evaluate import evaluate
-    from ..answer import _combined_holder_totals
+    from ..totals import _combined_holder_totals
 
     # `exclude_entity` (mining candidate entityless-total-recut): bound
     # ONLY by ask/how-many-there-combined (`exclude_entity: world` in

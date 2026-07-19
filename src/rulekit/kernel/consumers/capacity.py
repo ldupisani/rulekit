@@ -19,7 +19,7 @@ def capacity(ctx: ConsumerContext):
     from ..answer import Answer
     from ..evaluate import evaluate
     from ..model import Price, Quantity
-    from ..answer import _purchase_total
+    from ..totals import _purchase_total
 
     # "how many X can/could/... WHO buy/purchase/afford (with $B)?" —
     # budget ÷ unit price, floored (leftover money is never itself

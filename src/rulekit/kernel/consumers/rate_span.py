@@ -19,7 +19,7 @@ def rate_span(ctx: ConsumerContext):
     from ..answer import Answer
     from ..evaluate import evaluate
     from ..model import Quantity, Rate
-    from ..answer import _entity_total
+    from ..totals import _entity_total
 
     # Re-landing step 4 (docs/negative-results.md): conversion spans
     # and rate x population are both live. The entity slot type is

@@ -18,7 +18,7 @@ from . import ConsumerContext, consumer
 def age_projected(ctx: ConsumerContext):
     from ..answer import Answer
     from ..evaluate import evaluate
-    from ..answer import _entity_total
+    from ..totals import _entity_total
 
     # mining candidate relation-standard-frames: "How old will X be in/
     # after N years?" / "...N years from now?" — a PROJECTED age ask,

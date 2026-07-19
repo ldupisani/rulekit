@@ -18,7 +18,7 @@ from . import ConsumerContext, consumer
 def average(ctx: ConsumerContext):
     from ..answer import Answer
     from ..evaluate import evaluate
-    from ..answer import _combined_holder_totals
+    from ..totals import _combined_holder_totals
 
     # "what is/was the average number/amount of ITEM (that) they VERB?"
     # (mining candidate average-asks): the SAME holder enumeration the

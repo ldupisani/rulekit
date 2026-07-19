@@ -19,7 +19,8 @@ def money_left(ctx: ConsumerContext):
     from ..answer import Answer
     from ..evaluate import evaluate
     from ..model import Quantity
-    from ..answer import _check_req_unit, _entity_total, _purchase_total, _resolve_measure
+    from ..measures import _check_req_unit, _resolve_measure
+    from ..totals import _entity_total, _purchase_total
 
     # "how much money does WHO have left" — the entity's general money
     # total (_entity_total: the SAME state-anchor + signed-event fold

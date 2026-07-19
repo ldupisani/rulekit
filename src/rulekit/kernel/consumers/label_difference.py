@@ -19,7 +19,7 @@ def label_difference(ctx: ConsumerContext):
     from ..answer import Answer
     from ..evaluate import evaluate
     from ..model import Quantity
-    from ..answer import _entity_total
+    from ..totals import _entity_total
 
     # mining candidate ratio-split-premises: the LABEL-comparand
     # sibling of 'difference' — "how many more BOYS than GIRLS are

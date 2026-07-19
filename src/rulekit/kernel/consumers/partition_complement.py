@@ -20,7 +20,7 @@ def partition_complement(ctx: ConsumerContext):
     from .. import deixis
     from ..evaluate import evaluate
     from ..model import PartitionQuantity, Quantity
-    from ..answer import _entity_total
+    from ..totals import _entity_total
 
     # "N of them are ADJ" premises name a subset of a collection; the
     # ask ("how many X are ADJ" / "how many X are not ADJ") either

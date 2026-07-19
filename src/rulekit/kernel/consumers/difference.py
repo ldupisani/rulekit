@@ -19,7 +19,8 @@ def difference(ctx: ConsumerContext):
     from ..answer import Answer
     from ..evaluate import evaluate
     from ..model import Quantity
-    from ..answer import _entity_total, _entity_total_convertible, _measure_substance_guard, _resolve_measure, _verb_total
+    from ..measures import _measure_substance_guard, _resolve_measure
+    from ..totals import _entity_total, _entity_total_convertible, _verb_total
 
     measure = ctx.query["measure"]
     singular = _resolve_measure(measure, ctx.store, ctx.reg, journal=ctx.log.journal)

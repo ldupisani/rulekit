@@ -20,7 +20,8 @@ def single_entity(ctx: ConsumerContext):
     from ..evaluate import evaluate
     from ..facts import FactStore
     from ..model import GroupTotal, Quantity
-    from ..answer import _check_req_unit, _entity_total, _measure_substance_guard, _purchase_total, _qualified_variant_total, _resolve_measure, _revenue_total, _superordinate_total, _verb_total
+    from ..measures import _check_req_unit, _measure_substance_guard, _resolve_measure
+    from ..totals import _entity_total, _purchase_total, _qualified_variant_total, _revenue_total, _superordinate_total, _verb_total
 
     entity, measure = ctx.query["entity"], ctx.query["measure"]
     # a possessive-qualified subject ("Kennedy's house") resolves bare

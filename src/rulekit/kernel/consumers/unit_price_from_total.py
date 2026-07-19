@@ -18,7 +18,7 @@ from . import ConsumerContext, consumer
 def unit_price_from_total(ctx: ConsumerContext):
     from ..answer import Answer
     from ..evaluate import evaluate
-    from ..answer import _unit_price_from_total
+    from ..totals import _unit_price_from_total
 
     # "how much does/did each ITEM cost?" / "what is the cost of N
     # ITEM?" (mining candidate unit-price-from-total, re-cut of the
