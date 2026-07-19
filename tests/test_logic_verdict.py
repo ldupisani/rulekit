@@ -766,3 +766,73 @@ def test_the_PREMISE_copula_split_is_NOT_merged(logic_reg):
     assert {f.cls for f in are.store.by_kind(Quantified)} == {"blicket"}   # folded
     is_ = engine.solve("All blickets is gleebs.", logic_reg, tracing=False)
     assert {f.cls for f in is_.store.by_kind(Quantified)} == {"blickets"}  # NOT folded
+
+
+# ---- Stage 9d: the reduced relative + the restricted bare-plural qdisj ------
+# A participial verb heading a predicate nominal's tail is a restrictive
+# postmodifier ("a van produced by Chevrolet" IS a van), so the head drops
+# exactly as with an overt 'who'/'that'. The guards are structural: a
+# 3sg-finite form never postmodifies (single-s suffix, the 9c fail-closed
+# precedent), a non-finite participle cannot scope a quantifier in its own
+# clause (the PP guard verbatim), and negatives never decompose.
+
+
+def test_a_participial_tail_drops_to_the_head(logic_reg):
+    assert _verdict(
+        "Rex is a dog owned by Mary. Is it true that Rex is a dog?", logic_reg
+    ) == "yes"
+
+
+def test_a_participial_tail_with_a_quantifier_refuses(logic_reg):
+    assert _verdict(
+        "Rex is a dog owned by no farmer. Is it true that Rex is a dog?", logic_reg
+    ) == "undetermined"
+
+
+def test_a_negated_participial_pred_licenses_nothing(logic_reg):
+    assert _verdict(
+        "Rex is not a dog owned by Mary. Is it true that Rex is a dog?", logic_reg
+    ) == "undetermined"
+
+
+def test_a_finite_verb_tail_refuses(logic_reg):
+    # a 3sg-finite verb in this position can only come from a garbled
+    # sentence — the head must not be asserted from garbage
+    assert _verdict(
+        "Bob is a chef serves dinner. Is it true that Bob is a chef?", logic_reg
+    ) == "undetermined"
+
+
+def test_the_participial_drop_never_answers_a_different_head(logic_reg):
+    assert _verdict(
+        "Rex is a dog owned by Mary. Is it true that Rex is a cat?", logic_reg
+    ) == "undetermined"
+
+
+def test_a_restricted_bare_plural_qdisj_reads_and_lifts_the_veto(logic_reg):
+    # the qdisj rule's effect is READING: with the disjunctive premise
+    # consumed, the fragment guard lets the story's OTHER commit through
+    text = ("The Rover is a wagon owned by Mary. "
+            "Wagons owned by Mary are either red or blue. "
+            "Is it true that The Rover is a wagon?")
+    assert _verdict(text, logic_reg) == "yes"
+
+
+def test_the_qdisj_restrictor_stays_in_the_cls_key(logic_reg):
+    # downward-monotone position: the restriction may never be dropped
+    from rulekit.kernel.model import QuantifiedDisjunction
+
+    r = engine.solve("Wagons owned by Mary are either red or blue.",
+                     logic_reg, tracing=False)
+    facts = list(r.store.by_kind(QuantifiedDisjunction))
+    assert len(facts) == 1
+    assert facts[0].cls == "wagon own by mary"
+    assert (facts[0].left, facts[0].right, facts[0].exclusive) == ("red", "blue", True)
+
+
+def test_a_qdisj_asserts_neither_disjunct(logic_reg):
+    # a disjunction asserts neither side — for the quantified form too
+    text = ("The Rover is a wagon owned by Mary. "
+            "Wagons owned by Mary are either red or blue. "
+            "Is it true that The Rover is red?")
+    assert _verdict(text, logic_reg) == "undetermined"

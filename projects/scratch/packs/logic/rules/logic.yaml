@@ -491,6 +491,33 @@ rules:
     emits:
       - {fact: quantified_disjunction, cls: "{cls}", left: "{l}", right: "{r}", exclusive: true}
 
+  # Stage 9d: the RESTRICTED bare-plural exclusive disjunction — "CLSs
+  # <restrictor> are either A or B" ("Vehicles produced by Chevrolet in this
+  # batch are either cars or vans"). The banked "bare-plural disjunctive
+  # premises" fix, landed with its first measured buyer: its effect is
+  # READING (the fragment guard's veto lifts for the story), the 8g
+  # precedent's fourth occurrence. The restrictor span rides INSIDE the cls
+  # key — a universal's antecedent is downward-monotone, so the restriction
+  # may never be dropped there, only carried verbatim. The subject is the
+  # same `bare_plural` unit as the Stage 8 universals (counted/possessive/
+  # definite subjects refused for the same reasons); the restrictor must
+  # capture something meaningful, so the UNRESTRICTED form ("Dogs are either
+  # wet or dry") stays unread — no measured buyer, and a separate rule the
+  # day one appears.
+  - id: logic/qdisj-bare-plural-restricted-either
+    phase: read
+    match:
+      sentence:
+        - {slot: cls, type: bare_plural, at_start: true, blocks_skipped: definite_article}
+        - {slot: rest, span: true, span_blocks: [negation, disjunctive_marker, either_marker]}
+        - {lit: are}
+        - {lit: either}
+        - {slot: l, span: true, span_blocks: [negation, conjunction, preposition, either_marker]}
+        - {lit: or}
+        - {slot: r, span: true, span_blocks: [negation, conjunction, preposition]}
+    emits:
+      - {fact: quantified_disjunction, cls: "{cls.singular} {rest}", left: "{l.singular}", right: "{r.singular}", exclusive: true}
+
   # ---- Stage 4: quantifier morphology + existentials (ROADMAP.md) -----------
   # 'any' is an ARTICLE (difg-mined) — auto-skipped, so an ordinary lit can
   # never see it; `consume_skipped` (schemas.MatchToken) stops the skip AT

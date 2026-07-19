@@ -33,6 +33,12 @@ _TYPE_SENSES = {
     "name": frozenset(),  # structural, no lexicon sense
     "noun": frozenset({"noun"}),
     "plural": frozenset({"noun"}),
+    # noun-sensed AND in the plural map, like `plural` — the generic-subject
+    # slot ("Mushrooms are fungi"). Without the entry it fell through to
+    # "matches anything" and `{lit: all}` was reported as colliding with a
+    # slot no quantifier can ever bind (the nonstate_verb blind spot, next
+    # type over).
+    "bare_plural": frozenset({"noun"}),
     "counted": frozenset({"noun"}),
     "verb": frozenset({"verb"}),
     # verb-sensed MINUS the `state` category — the subtraction is applied in
@@ -87,7 +93,7 @@ def _tokens_intersect(a: MatchToken, b: MatchToken, reg: Registry) -> bool:
             def _ok(lit: str) -> bool:
                 entry = reg.lexicon.get(lit)
                 hit = entry is not None and bool(set(entry.senses) & senses)
-                if slot.type == "plural":
+                if slot.type in ("plural", "bare_plural"):
                     hit = hit and lit in reg.plural_to_singular
                 if slot.type == "nonstate_verb":
                     # mirror patterns._slot_ok exactly: the state category

@@ -817,6 +817,28 @@ def atom_variants(fact: Fact, emit_fields: dict, slots: dict, reg: Registry) -> 
             tail_units[0].sense() == "preposition"
             and not any(u.sense() == "quantifier" for u in tail_units)
         )
+        # Stage 9d: a REDUCED relative — a participial verb heading the tail
+        # ("a van produced by Chevrolet", "a business run and owned by X") is
+        # a restrictive postmodifier of the predicate nominal, so the head
+        # entailment holds exactly as with an overt marker. Two guards, both
+        # structural: (1) a 3sg-FINITE form ('serves') is never a
+        # postmodifier — in this position it can only come from a garbled
+        # sentence, so the single-s suffix refuses (the 9c fail-closed
+        # precedent; real participles end in -ed/-en/-ing or are irregular
+        # bare forms like 'run', none of which end in a single 's');
+        # (2) the participle is NON-finite, so unlike a marked relative it
+        # cannot scope a quantifier in its own clause — the PP quantifier
+        # guard applies verbatim ("a van produced by no company").
+        # An unknown (senseless) tail lead still refuses: only a lexicon
+        # verb is evidence of the construction.
+        or (
+            tail_units[0].sense() == "verb"
+            and not (
+                (tail_units[0].features.get("fold") or "").endswith("s")
+                and not (tail_units[0].features.get("fold") or "").endswith("ss")
+            )
+            and not any(u.sense() == "quantifier" for u in tail_units)
+        )
     )
 
     preds: list[str] = []

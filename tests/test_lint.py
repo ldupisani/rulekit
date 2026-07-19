@@ -299,3 +299,48 @@ def test_an_event_verb_lit_still_collides(tmp_path):
     findings = _nsv_overlaps(tmp_path, "{lit: eats}")
     assert findings, "the real overlap disappeared with the false one"
     assert any("r/verbal" in f.message and "r/literal" in f.message for f in findings)
+
+
+# --- the bare_plural blind spot (same class, next type over) -----------------
+# Found the day Stage 9d added a bare_plural rule: `{lit: all}` was reported
+# as colliding with a slot only a plural NOUN can bind.
+
+BP_LEX = """format: rulekit/lexicon@1
+entries:
+  all: {senses: [quantifier]}
+  are: {senses: [verb], verb: {lemma: be}}
+  dog: {senses: [noun], plural: dogs}
+  dogs: {senses: [noun]}
+  pet: {senses: [noun], plural: pets}
+"""
+
+BP_RULE_TMPL = """format: rulekit/rules@1
+rules:
+  - id: {rid}
+    phase: read
+    match:
+      sentence:
+        - {mid}
+        - {{lit: are}}
+        - {{slot: pred, type: noun}}
+    emits:
+      - {{fact: quantity, entity: "x", measure: "{{pred}}", value: 1.0}}
+"""
+
+
+def _bp_overlaps(tmp_path, lit_mid):
+    reg = _mk(
+        tmp_path, BP_LEX,
+        BP_RULE_TMPL.format(rid="r/generic", mid="{slot: cls, type: bare_plural}"),
+        BP_RULE_TMPL.format(rid="r/literal", mid=lit_mid),
+    )
+    return lint_overlaps(reg)
+
+
+def test_a_quantifier_lit_cannot_collide_with_a_bare_plural_slot(tmp_path):
+    assert _bp_overlaps(tmp_path, "{lit: all}") == []
+
+
+def test_a_plural_noun_lit_still_collides_with_a_bare_plural_slot(tmp_path):
+    findings = _bp_overlaps(tmp_path, "{lit: dogs}")
+    assert findings, "the real overlap disappeared with the false one"
