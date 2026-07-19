@@ -841,3 +841,31 @@ collision. Four pieces:
   sample; the tests are the specification (that memory's third firing).
 
 ## Running count after 9i: 18 dev-train + 1 holdout (look #5 at ~20-21)
+
+## Stage 9j — the name-identity stack — DONE (fc60a2d)
+
+**folio-with-logic dev-train 20 (+2/0, [100/101] — the Islip
+demolished/still-used pair), all nine benchmark slices NEUTRAL, pytest
+1833.** The stage 9e deferred ("design it as its own stage or not at
+all"), and the 9i modus tollens was indeed half of it. Four pieces + the
+existing DS synths:
+
+- `logic/conditional-restricted-plural-have-at` + `logic/ground-do-not-
+  have-at`: the restricted stative-'have' universal and its do-support
+  denial — a modus-tollens PAIR by construction: both key 'have {q}'
+  through the same render path, and the anaphoric PP ('at them'/'at it')
+  is consumed but NEVER keyed (its number differs between the pair;
+  keying it would unjoin them).
+- `synth/name-prefix-alias` (plugin): name-shortening identity, gated on
+  both names being FACT SUBJECTS and the long extension being UNIQUE.
+  The 9e Alias copy synths do the transfer.
+- `synth/name-head-sortal` (plugin): a ≥2-word, partitive-free name
+  declares its head's sort ONLY when the story already quantifies over
+  that head (join-driven gate — 'The Salmon of Doubt' stays sortless).
+- `synth/conditional-modus-tollens`: then-positive conditionals only.
+
+[99] (the temporal-existential "demolition derby somewhere that has
+since been demolished") correctly stays declined — it needs event/time
+machinery no stage has.
+
+## Running count after 9j: 20 dev-train + 1 holdout — AT the look-#5 band (~20-21). Ask the user.
