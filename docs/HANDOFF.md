@@ -1,3 +1,37 @@
+# Session 4 (2026-07-19): the A/B/C plan landed — guard coverage 90/90, lint blind spot fixed, answer.py split
+
+Three commits (0d35c31, e24ebb1, 31a9097), every corpus byte-identical
+throughout — this session changed NO behaviour, only pinned and moved it.
+All session-3 baselines below still hold at HEAD. pytest 1728 → **1772**.
+
+- **A — guard coverage 49/90 → 90/90, ratchet at ceiling** (`_GUARD_FLOOR=90`,
+  `_GAP_CEILING=0`). 18 gaps were text-reachable after all (found by probing
+  the live matcher, not reading the consumer — the currency-ambiguity,
+  found/now-has restatement, and `type: noun` span-unit tricks); 23 are
+  direct `ConsumerContext` probes in `tests/test_consumer_guard_probes.py`,
+  each with its unreachability reason recorded in `_COVERED_BY_UNIT_TEST`.
+  ⚠ The six verdict consumers' "question states" guard is text-unreachable
+  BY CONSTRUCTION: a final span must run to sentence end and never swallows
+  a `span_blocks` word, and every verdict ask anchors `at_start` — probe it
+  by truncating a real match's `consumed` tuple.
+- **B — the linter's `nonstate_verb` blind spot**: `_TYPE_SENSES` had no
+  entry, so the type read as "matches anything" and all 8 scratch errors
+  were ONE false positive ({lit: is} vs a slot `_slot_ok` refuses). Fixed by
+  mirroring `_slot_ok` (state category on BOTH surface and verb lemma).
+  scratch lint is now clean and BLOCKING in CI.
+- **C — answer.py 1,175 → 197**: folds to `kernel/totals.py` (811),
+  measure resolution to `kernel/measures.py` (218). Every moved function
+  verified BYTE-IDENTICAL against the pre-move file, mechanically.
+  Import graph is one-way (measures→answer, totals→answer+measures);
+  `_unit_price_from_total`/`_sign`/`_conversion_factor` live in totals —
+  moving them is what keeps the graph acyclic. saturate.py's five deferred
+  imports are now two top-level ones. NOTE: totals.py at 811 lines still
+  exceeds architecture.md's ~400 budget — the violation moved, it did not
+  vanish; splitting the fold family further is future work with the golden
+  master already in place.
+
+---
+
 # Session 3 (2026-07-18/19): +27 correct answers, answer.py refactored 41/41, 0 new wrongs
 
 **Baselines — all re-measured at HEAD, every commit gate-clean:**
