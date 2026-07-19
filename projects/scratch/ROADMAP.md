@@ -670,3 +670,61 @@ The honest read: **Stage 9a bought one item and three other general fixes
 bought zero.** The cheap-increment frontier really is exhausted; the next
 DEV conversions come from `composition-design.md`'s S2 stack or from S4,
 not from more one-slot rules.
+
+## Stage 9d — the reduced relative drops to its head — DONE (76810e1)
+
+**folio-with-logic dev-train 12 (+1/0, the Chevrolet story — a NEW story
+per the look-4 policy), all eight benchmark slices byte-identical, pytest
+1782.** Two pieces, found by probing the matcher over the 76
+"no logic fact decides it" declines (the near frontier — conclusion side
+already reads):
+
+- `atom_variants`' tail drop covers the participial postmodifier: "a van
+  produced by Chevrolet" IS a van, the same entailment as an overt
+  'who'/'that'. Guards structural: 3sg-finite single-s suffix refuses
+  (9c precedent), quantifier guard verbatim (a participle is non-finite),
+  negatives never decompose. Stage 7's "participial levers measured at
+  ZERO" was scoped to atom-pred PREFIX joins on the then-current reader —
+  the buyer's premise minted no droppable atom at all until now.
+- `logic/qdisj-bare-plural-restricted-either`: the banked bare-plural
+  disjunctive premise, landed WITH its first buyer as the RESTRICTED
+  form (restrictor verbatim inside the cls key — downward-monotone,
+  never dropped). Effect is READING (fragment-guard veto-lift, the 8g
+  precedent's 4th occurrence).
+- Bycatch: `_TYPE_SENSES` gained `bare_plural` (the nonstate_verb linter
+  blind spot, one type over; {lit: all} was reported against a slot no
+  quantifier binds). Pinned both directions in tests/test_lint.py.
+
+## Stage 9e — the stated alias — DONE (398e61e)
+
+**folio-with-logic dev-train 13 (+1/0, the Edwin/Ted Smith story — second
+new story), pytest 1790.** New `Alias` fact kind + `logic/alias-known-as`
++ two declarative copy synths (both directions, both polarities — identity
+transfers denials too). Narrow: proper_name slots only, definite-article
+gate refuses epithets ("known as THE Governess"), negated surface never
+matches (lit adjacency). Name-shortening ('Islip'≡'Islip Speedway') is a
+DIFFERENT mechanism — an inference, not a stated premise — still unbuilt.
+⚠ MATCHER LESSON (pinned): a rule whose final slot is a single unit loses
+to a sibling whose SPAN swallows the trailing period — strict-superset
+subsumption at admit_rule_results. The alias rule claims the '.' via an
+opt consume_skipped token to tie. Check this on ANY new non-span-final
+rule beside a span rule.
+
+## Running count after 9e: 13 dev-train + 1 holdout conversions
+
+Look #5 wants ~10 conversions PAST look #4's ten, from different stories
+— i.e. around 20-21 total; we are at 13+1. Next levers by measured price
+(all from the 9d survey of the 76 near-frontier declines):
+
+- **Brian Winter [277]** — 'was appointed as X' → atom(brian, X): an
+  'as'-complement reading plus a temporal-PP tail drop ('after his
+  retirement' — the PP branch already drops, the 'appointed as' segment
+  is the new piece). 2 pieces, 1-2 items.
+- **Islip [100]/[101]** — modus tollens over a restricted verbal
+  universal + disjunctive syllogism (the Disjunction fact and both DS
+  synths ALREADY EXIST — the missing piece is reading "Speedways that
+  are still being used have races held at them" and the ¬races premise,
+  both 'have'-headed = the state-verb exclusion to walk carefully).
+- **[400] turkeys** — the banked De Morgan neither/nor reader + the
+  "There are six types: A, B, ..." enumeration-as-disjunction + n-way
+  elimination. Two pieces land together per the 9b bank note.
