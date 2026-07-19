@@ -99,6 +99,13 @@ def consumer(name: str, *, time_scoped: bool = False):
 
 
 from . import (  # noqa: E402,F401  (import registers each handler)
+    membership_verdict as _membership_verdict,
+    logic_disjunction_verdict as _logic_disjunction_verdict,
+    verbal_obj_class_verdict as _verbal_obj_class_verdict,
+    universal_verdict as _universal_verdict,
+    existential_verdict as _existential_verdict,
+    logic_verdict as _logic_verdict,
+    passive_agent_verdict as _passive_agent_verdict,
     affine_convert as _affine_convert,
     arithmetic as _arithmetic,
     calendar as _calendar,
