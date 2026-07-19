@@ -67,13 +67,30 @@ def test_cross_mention_coreference_still_folds(full_registry):
     # conflict ever arose here, so entity identity stays untouched, bare,
     # exactly as before this change) — a regression this candidate's first
     # attempt actually introduced and had to be walked back.
+    #
+    # Asserted at the STORE, not the answer: both events must fold onto
+    # the one bare 'dog' entity. This test used to accept the committed
+    # ANSWER (abs(value) == 8 — the fold's anchorless events-only -8),
+    # but that commit was itself the negative-holdings artifact
+    # `_entity_total`'s anchor guard now refuses, and blessing it with
+    # abs() was always a smell. Coreference is provable without it.
+    from rulekit.kernel.model import Quantity
+
     r = solve(
         "Tom's dog ate 5 apples. The dog ate 3 apples. "
         "How many apples are there?",
         full_registry,
     )
-    assert r.answer.kind == "number"
-    assert abs(r.answer.value) == 8
+    dog_events = sorted(
+        q.value for q in r.store.by_kind(Quantity)
+        if q.entity == "dog" and q.measure == "apple"
+    )
+    assert dog_events == [3.0, 5.0], (
+        f"coreference broke — dog/apple events are {dog_events}"
+    )
+    # the answer itself now DECLINES: an anchorless events-only fold
+    # summing negative is the unstated-prior-holdings class, not a count.
+    assert not r.answer.committed
 
 
 def test_unmentioned_possessor_declines_not_borrows(full_registry):

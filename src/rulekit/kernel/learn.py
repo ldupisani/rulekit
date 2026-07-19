@@ -1530,6 +1530,18 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                     )
                 )
         elif dobj is not None:
+            # a quantifier-sensed determiner binding THIS dobj ("has SOME
+            # blocks" — 'some' carries a quantifier obligation targeting
+            # 'blocks') marks the object as stated-but-unquantified; the
+            # anchorless-fold guard (totals._entity_total) reads the flag.
+            # Structural only: the ROLE name is checked, never a word —
+            # "had to sell boxes" mints the same have-Predication shape
+            # with no quantifier anywhere and stays unflagged.
+            dobj_unquantified = any(
+                ob.role == "quantifier" and ob.target is dobj
+                for u in reading.units
+                for ob in u.features.get("obligations", ())
+            )
             facts.append(
                 Predication(
                     provenance=prov,
@@ -1537,6 +1549,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                     verb=verb_lemma,
                     dobj=_lemma(dobj),
                     polarity=polarity,
+                    dobj_unquantified=dobj_unquantified,
                 )
             )
         else:

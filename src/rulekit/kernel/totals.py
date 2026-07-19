@@ -364,6 +364,47 @@ def _entity_total(
     def _esign(verb: str) -> int:
         s_ = _sign(verb, reg)
         return -s_ if invert_events else s_
+    if not state:
+        # AN EVENTS-ONLY FOLD HAS NO ANCHOR, and two shapes prove the
+        # implicit zero unfounded (the SVAMP campaign's second live wrong,
+        # "Randy has some blocks. He uses 52... how many did he have at
+        # the start?" answered -52):
+        #
+        # (1) The holding was STATED WITHOUT A VALUE — a state-category
+        # Predication for this exact (entity, measure) whose dobj was
+        # bound by a bare quantifier (`dobj_unquantified`: "has SOME
+        # blocks") with no state Quantity. The text itself says the
+        # anchor exists and is unknown, so folding events from zero is
+        # unfounded in EITHER direction ("has some, buys 4" is as
+        # unanswerable as "has some, uses 4"). The `state` category is
+        # referenced as STRUCTURE (constitution rule 1's named
+        # exemption); no verb is enumerated here. The flag is what keeps
+        # this off modal have-artifacts — "Jerry HAD TO SELL boxes"
+        # mints the same have/box Predication shape with no quantifier,
+        # and Jerry's anchorless '10 he started with minus 5 sold' fold
+        # is correct and must survive (an ASDiv BROKE caught exactly
+        # this before the flag existed).
+        #
+        # (2) The signed events SUM NEGATIVE — consumption exceeding
+        # stated acquisitions presupposes prior holdings the text never
+        # quantified ("Rina uses 4 blocks. How many does Rina have?"
+        # answered -4). A negative HOLDING from positive stated counts is
+        # never a reading, only an artifact of the zero anchor. Summed in
+        # plain Python, not `evaluate` — a declined probe must not enter
+        # the arithmetic log's value accounting.
+        #
+        # An anchorless fold of pure acquisitions ("bought 4 and 3, how
+        # many does she have?" = 7) is the standard word-problem reading
+        # and stays untouched: no Predication, non-negative sum.
+        if any(
+            p.polarity and p.subject == entity and p.dobj == measure
+            and p.dobj_unquantified
+            and reg.word_in_category(p.verb, "state")
+            for p in store.by_kind(Predication)
+        ):
+            return None
+        if sum(_esign(q.verb) * q.value for q in events) < 0:
+            return None
     if state and events:
         earliest_event = min(q.provenance.sentence for q in events)
         if any(q.provenance.sentence > earliest_event for q in state):
