@@ -869,3 +869,25 @@ since been demolished") correctly stays declined — it needs event/time
 machinery no stage has.
 
 ## Running count after 9j: 20 dev-train + 1 holdout — AT the look-#5 band (~20-21). Ask the user.
+
+## FOLIO TEST look #5 SPENT (2026-07-19, user-directed at 20+1 — the band's edge)
+
+**1 correct / 1 wrong / 283 declined of 285 — aggregates IDENTICAL to
+looks #3 and #4 (ledger row 5, fingerprint 7d4af7f7…).** Precision 0.5
+HELD: no revert trigger; every stage stays landed. But the transfer
+result is the headline, and it is now measured TWICE: the look-4 policy
+demanded ~10 more conversions from different stories before looking
+again; 9 landed (9f–9j, EIGHT distinct stories, including three designed
+inference stages — elimination, reductio, identity), and they
+transferred ZERO TEST items. The 1 correct and 1 wrong are the same
+stable items as looks #3–#4.
+
+The honest reading: dev-train conversions are story-specific in a
+stronger sense than "same story" — the designed machinery is general,
+but a TEST conversion needs an entire STORY STACK (every premise reader
++ the inference shape + the ask) to line up, and at 285 items the
+overlap rate with any 20-story dev sample is ~0. TEST movement will not
+come from more single-story conversions; it would need breadth-first
+premise-reader coverage (the 311-item convertible pool's common blocker
+classes), which is a different campaign with a different cost curve.
+Do NOT schedule look #6 off conversion count alone.
