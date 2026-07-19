@@ -771,3 +771,38 @@ name-shortening identity, a REJECTED-for-now inference); [128/129]
 XOR-conditional reductio; [144/145] do-support negation VR + negative
 restrictor refutation; [96/97] modal swamp. The single-item tail is 50
 stories of one-off shapes.
+
+## Stage 9h — the exhaustive counted enumeration + n-way elimination — DONE (18fad9e)
+
+**folio-with-logic dev-train 16 (+1/0, [400] — the wild-turkey story's
+gold-TRUE item, the first SECOND item from an already-converted story),
+all nine benchmark slices NEUTRAL, pytest 1812.** The designed stage the
+9g note reserved, in three pieces plus a prerequisite tokenizer fix:
+
+- **Prerequisite (6b2ba94)**: U+2019 was outside the tokenizer's
+  apostrophe class and silently DROPPED — "Gould’s" (curly, the
+  enumeration sentence) and "Gould's" (straight, the refutation) minted
+  different fact keys, so two of Tom's five refutations could never
+  join. The fold normalizes ’ -> ' beside .lower(); surfaces stay
+  verbatim. Found by dumping the fact store, not by reading rules.
+- **`EnumeratedDisjunction`** (model.py): exhaustive n-way class
+  disjunction, INCLUSIVE only — the numeral licenses exhaustiveness
+  ("there are SIX" + six listed = the list is the whole class), never
+  pairwise exclusivity. Keyed by cls alone: disagreeing enumerations
+  quarantine -> decline.
+- **`FactEmit.options_from`** (schemas + patterns.py): whole-list
+  emission gated on stated count == segment count; mismatch or countless
+  emits NOTHING (fail closed — a partial list claims nothing). Options
+  render via the 9g `.singular` path so keys join the per-item
+  universals and the ground atoms.
+- **`synth/enumeration-elimination`** (saturate plugin — n-ary is
+  inexpressible in the fixed-arity YAML synths): stated positive member
+  + all options but exactly one refuted by explicit negatives ⊢ the
+  last. Guards pinned in test_logic_verdict.py: no membership -> nothing
+  (Joey control); any positive option -> decided (inclusive); >1 open ->
+  nothing; a QUARANTINED option atom taints the entity (both sides of a
+  contradiction vanish from store.facts, so the option reads as merely
+  open to a naive elimination — and the conflict machinery declines the
+  item outright anyway).
+
+## Running count after 9h: 16 dev-train + 1 holdout (look #5 at ~20-21)
