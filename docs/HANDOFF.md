@@ -1,3 +1,86 @@
+# Session 5 (2026-07-19, second half): FOLIO frontier 9d–9g — four conversions, four new stories
+
+Four commits (`76810e1` 9d, `398e61e` 9e, `490a02c` 9f, `d66a78c` 9g), every
+one +1 SOLVED / 0 BROKE on folio-with-logic and byte-identical on all eight
+benchmark slices. pytest 1772 → **1803**. Stage detail lives in
+`projects/scratch/ROADMAP.md` (§9d–9g); this section carries only what the
+next session must not relearn.
+
+**Numbers at HEAD:** folio-with-logic dev-train **15 correct / 1 poisoned**
+(item 228, the standing proof the judge works), dev-holdout **1/0**. All
+session-3/4 benchmark baselines below still hold (gsm8k 104/0 + 40/0 + suite
+52/52, asdiv 43/0, svamp 13/0, mawps 9/0, scibench 0/0, folio 0/0, difg
+70/0). lint 0 errors everywhere; scratch carries 8 warnings, all the
+standing is/are-alternation class. **TEST look #5 count: 15 dev-train + 1
+holdout of the ~20-21 the look-4 policy wants. Do not spend the look.**
+
+#### What shipped (one line each)
+
+- **9d** — `atom_variants` tail drop covers the REDUCED relative ("a van
+  produced by Chevrolet" IS a van); the banked bare-plural disjunctive
+  premise landed RESTRICTED with its first buyer (veto-lift).
+- **9e** — `Alias` fact + 'known as' reader + two-direction copy synths;
+  epithets refused by the definite-article gate; negated surface never
+  matches by lit adjacency.
+- **9f** — the appointive passive (`appointive_verb`, a SOUNDNESS category:
+  resultative only, 'regarded/described as' must never join); the
+  lead-nominal RUN extension in `atom_variants`; the verbal 'Some' premise.
+- **9g** — `schemas.FactEmit.each` (per-item emission over an enumeration
+  span, `{item}` reserved binding); the typed-enumeration rule gated on
+  'type' so possessive enumerations stay UNREAD not misread; the 9b-banked
+  De Morgan neither/nor reader, landed WITH its buyer as the bank
+  prescribed.
+
+#### Invariants minted — do not relearn these
+
+- **Probe the matcher, not the consumer.** Every conversion this session
+  came from a 10-line driver running candidates through `solve()` +
+  `match_ask` over the near-frontier declines ("no logic fact decides it" —
+  the conclusion already reads). Reachability is a whole-pipeline property;
+  reading the consumer cannot answer it.
+- **The subsumption trap, now general:** a rule ending in non-span tokens
+  is SILENTLY DROPPED at `admit_rule_results` beside a sibling whose greedy
+  span consumes a strict superset — the span swallows the trailing period
+  (9e) and mid-sentence articles (9f). A new rule sharing a surface with
+  the ground-copular family must claim every such skippable (opt
+  `consume_skipped` tokens) or out-gate it on category depth. Both
+  occurrences are pinned.
+- **A banked zero is scoped to its reader-moment.** Stage 7 measured
+  "participial levers = 0" against the then-current reader; 9d's buyer
+  existed the whole time behind a premise that minted no droppable atom
+  yet. Re-measure banked zeros after ANY reader change.
+- **Walk the buyer's whole story** fired twice more (9d's qdisj, 9f's
+  some-verbal): the fragment guard prices every unread truth-scoping word
+  into the item, so a conversion's cost includes reading its story's
+  bystander sentences.
+- **Land a banked fix WITH its first buyer** paid out twice exactly as
+  written (bare-plural disjunctive premise, De Morgan reader). The bank
+  notes were precise enough to implement from — keep writing them that way.
+
+#### Do NOT do next, with reasons
+
+- **A folio TEST look** — 15+1 of ~20-21; the policy stands.
+- **[400] (gold-true Ocellated)** without the n-way elimination stage — the
+  enumeration deliberately does not claim exhaustiveness; committing from
+  it without elimination machinery would be unsound.
+- **Islip [99-101]** without identity machinery — modus tollens there needs
+  `speedway(islip)`, which NO premise states; the route is name-shortening
+  identity ('Islip' ≡ 'Islip Speedway'), an INFERENCE the 9e alias reader
+  deliberately excluded. Design it as its own stage or not at all.
+- **[8]/[9] William Dickinson** — missing-period corpus defect, unwinnable.
+- **The 169 'Uncertain' text golds** — can never score correct; they are
+  wrong-hazards, not opportunities. The convertible pool is 311 at HEAD.
+- The remaining multi-item near stories each need a DESIGNED stage
+  (ROADMAP §"after 9g"): n-way elimination, XOR-conditional reductio
+  [128/129], do-support negation VR + negative-restrictor refutation
+  [144/145]. Pick one deliberately at session start; none is an increment.
+
+Survey/diff scripts were session-scratch (per methodology §4): the recipe is
+`folio_survey.py` = run dev-train via `harness.bench.run_suite` with the
+scratch registry, dump per-item outcome/reason/text to JSON, diff by idx.
+
+---
+
 # Session 4 (2026-07-19): the A/B/C plan landed — guard coverage 90/90, lint blind spot fixed, answer.py split
 
 Three commits (0d35c31, e24ebb1, 31a9097), every corpus byte-identical
