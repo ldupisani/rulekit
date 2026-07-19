@@ -99,6 +99,15 @@ def consumer(name: str, *, time_scoped: bool = False):
 
 
 from . import (  # noqa: E402,F401  (import registers each handler)
+    single_entity as _single_entity,
+    rate_span as _rate_span,
+    rate_span_inverse as _rate_span_inverse,
+    capacity as _capacity,
+    difference as _difference,
+    change as _change,
+    unique_entity as _unique_entity,
+    money_left as _money_left,
+    single_entity_elided_measure as _single_entity_elided_measure,
     combined_elided_measure as _combined_elided_measure,
     combined as _combined,
     average as _average,

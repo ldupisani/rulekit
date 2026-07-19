@@ -1,0 +1,327 @@
+"""`single-entity` — The total a single named entity holds — the widest ask family.
+
+Moved out of `answer.py` UNCHANGED. The only edits are `query`/`reg`/`store`/
+`question`/`log`/`_match`/`ask` becoming `ctx.` lookups.
+
+⚠ TIME-SCOPED: this consumer lived BELOW the temporal origo, so it has
+always received the time-FILTERED store. It registers `time_scoped=True`
+and is dispatched after the origo; without the flag it would silently
+answer from unfiltered facts.
+"""
+
+from __future__ import annotations
+
+from . import ConsumerContext, consumer
+
+
+@consumer("single-entity", time_scoped=True)
+def single_entity(ctx: ConsumerContext):
+    from ..answer import Answer
+    from ..evaluate import evaluate
+    from ..facts import FactStore
+    from ..model import GroupTotal, Quantity
+    from ..answer import _check_req_unit, _entity_total, _measure_substance_guard, _purchase_total, _qualified_variant_total, _resolve_measure, _revenue_total, _superordinate_total, _verb_total
+
+    entity, measure = ctx.query["entity"], ctx.query["measure"]
+    # a possessive-qualified subject ("Kennedy's house") resolves bare
+    # ("house") the same as any other entity UNLESS a same-key VALUE
+    # conflict forced facts.py to re-key it to "house[kennedy]". Two
+    # asked-for lookups when `entity_owner` is bound (absent for every
+    # ask that never matches a `possessed` slot — a no-op there):
+    # the exact qualified key first (the conflict-split case), then
+    # the bare key SCOPED to owner-compatible facts only — excluding
+    # any Quantity whose OWN owner names a DIFFERENT possessor, so
+    # "Kennedy's house has 5 rooms" can never answer a question about
+    # Benedict's house just because the bare lemma never collided.
+    owner = ctx.query.get("entity_owner")
+    # increment 34's mirror of `owner`: an attribute-qualified subject
+    # ("the coconut tree") resolves bare ("tree") the same way UNLESS a
+    # same-key VALUE conflict forced facts.py to re-key it to
+    # "tree[coconut]" — same two-lookup, owner-scoped-fallback shape,
+    # gated on `qualifier` instead. An ask binds at most one of
+    # `entity_owner`/`entity_qualifier` (each comes from a distinct ask
+    # id), so the two never compete for the same query.
+    qualifier = ctx.query.get("entity_qualifier")
+    # mining candidate qualified-measure-keys: the MEASURE-side mirror
+    # of `qualifier` above, one field over — "how many GREEN apples
+    # does Sam have?" resolves the bare measure ("apple") the same way
+    # UNLESS a same-key VALUE conflict forced facts.py to re-key it to
+    # "apple[green]" (increment 70). Read off the ask's OWN `item`
+    # token's qualifier feature (bound only on ask ids that opt in via
+    # `measure_qualifier: "{item.qualifier}"` — a no-op empty string
+    # everywhere else), never the entity-level `entity_qualifier`.
+    measure_qualifier = ctx.query.get("measure_qualifier")
+    singular = _resolve_measure(measure, ctx.store, ctx.reg, journal=ctx.log.journal)
+    if singular is None:
+        return Answer("decline", None,
+                      f"measure {measure!r} is ambiguous across the facts")
+    req_unit = ctx.query.get("req_unit")
+    if not _check_req_unit(req_unit, singular, ctx.store, ctx.reg, journal=ctx.log.journal):
+        return Answer(
+            "decline", None,
+            f"asked unit {req_unit!r} does not match resolved measure {singular!r}",
+        )
+    measure_substance = ctx.query.get("measure_substance")
+    if measure_substance:
+        guard = _measure_substance_guard(
+            ctx.store, singular, measure_substance, entities=[entity]
+        )
+        if guard is not None:
+            return guard
+    # distributive-container consumer — the single-entity mirror of the
+    # unique-entity GroupTotal branch below (line ~1548). A `GroupTotal`
+    # for this SAME measure is a distributive WHOLE ("150 shelves, each with
+    # 15 books" -> saturate's book=2250). When the NAMED entity is itself a
+    # counted container ("there were 150 shelves" -> a Quantity whose MEASURE
+    # is this entity) that also HOLDS the asked measure directly ("each shelf
+    # had 15 books"), its own Quantity is the PER-CONTAINER RATE, and the ask
+    # ("how many books were on the shelves") wants the WHOLE — the GroupTotal
+    # is exactly it. Commit it. This is SAFE ONLY because the group total is
+    # now trustworthy: saturate's distributive-container-total synth was
+    # tightened (learn.py provenance.distributive gate) so a SPECIFIC
+    # instance's count ("bucket B has 30", "the first warehouse has 400") no
+    # longer masquerades as a per-container rate — those garbage totals are
+    # gone, so preferring the total no longer risks committing one. Stays
+    # TIGHT: fires ONLY on the container signature, so a named holder whose
+    # fold is genuinely correct and merely coexists with an unrelated
+    # document total ("Tom has 15 books" + a stated total) is untouched —
+    # `tom` is not a counted measure. Two rival totals stay a decline.
+    matching_totals = [gt for gt in ctx.store.by_kind(GroupTotal) if gt.measure == singular]
+    if matching_totals:
+        holds_rate = any(
+            q.entity == entity and q.measure == singular
+            for q in ctx.store.by_kind(Quantity)
+        )
+        entity_is_counted = any(
+            q.measure == entity for q in ctx.store.by_kind(Quantity)
+        )
+        if holds_rate and entity_is_counted:
+            if len(matching_totals) == 1:
+                total = evaluate(
+                    f"{matching_totals[0].value}", {}, ctx.log, source="group-total"
+                )
+                return Answer(
+                    "number", total,
+                    f"group total of {singular!r} over the counted {entity!r} containers",
+                )
+            return Answer(
+                "decline", None,
+                f"{entity!r} holds a per-container rate of {singular!r} but "
+                "several rival group totals exist — cannot tell which whole is meant",
+            )
+    owner_store = ctx.store
+    if owner:
+        owner_store = FactStore(facts=[
+            q for q in ctx.store.by_kind(Quantity) if q.owner is None or q.owner == owner
+        ])
+    qualifier_store = ctx.store
+    if qualifier:
+        qualifier_store = FactStore(facts=[
+            q for q in ctx.store.by_kind(Quantity)
+            if q.qualifier is None or q.qualifier == qualifier
+        ])
+    # mining candidate qualified-measure-keys: scopes the generic
+    # bare-measure fallback to compatible siblings only, exactly like
+    # `qualifier_store` above but keyed on `measure_qualifier` instead
+    # of `qualifier` — a bare 'apple' fact tagged 'red' must NEVER
+    # answer a question asking specifically about GREEN apples just
+    # because a same-key collision never happened to force the split.
+    measure_qualifier_store = ctx.store
+    if measure_qualifier:
+        measure_qualifier_store = FactStore(facts=[
+            q for q in ctx.store.by_kind(Quantity)
+            if q.measure != singular
+            or q.measure_qualifier is None
+            or q.measure_qualifier == measure_qualifier
+        ])
+    ask_verb = ctx.query.get("verb", "have")
+    is_state_ask = ask_verb in ("have", "be") or ctx.reg.word_in_category(ask_verb, "state")
+    if not is_state_ask:
+        # An EVENT ask ("how many apples did Mary EAT?") sums only that
+        # verb's own event quantities — a holdings fold answering an
+        # eat-question with a buy-total is a category error (the
+        # question's verb is part of the query, difg playbook lesson).
+        total = (
+            _verb_total(ctx.store, f"{entity}[{owner}]", singular, ask_verb, ctx.log)
+            if owner else None
+        )
+        if total is None and qualifier:
+            total = _verb_total(ctx.store, f"{entity}[{qualifier}]", singular, ask_verb, ctx.log)
+        if total is None and measure_qualifier:
+            total = _verb_total(ctx.store, entity, f"{singular}[{measure_qualifier}]", ask_verb, ctx.log)
+        if total is None:
+            scoped = (
+                owner_store if owner
+                else qualifier_store if qualifier
+                else measure_qualifier_store
+            )
+            total = _verb_total(scoped, entity, singular, ask_verb, ctx.log)
+        if total is not None:
+            return Answer("number", total, f"Σ {ask_verb!r} events of {entity!r}/{singular!r}")
+        # "how much did X pay/spend?" over priced purchases ("3 toys at
+        # $10 each") is a DERIVED total, not a literal 'pay'/'spend'
+        # event — gated to money asks over spend-family verbs only.
+        is_currency_ask = singular == "currency" or ctx.reg.word_in_category(singular, "currency")
+        if is_currency_ask and ctx.reg.word_in_category(ask_verb, "spend_verb"):
+            total = _purchase_total(ctx.store, ctx.reg, entity, ctx.log)
+            if total is not None:
+                return Answer(
+                    "number", total, f"Σ price × qty over {entity!r}'s purchases"
+                )
+        # "how much money does WHO make/earn?" over priced sales ("5
+        # cakes at $3 each") is likewise a DERIVED total — gated to the
+        # narrow wage_verb category (packs/difg-mined/categories/wage.yaml)
+        # so an unrelated 'how much did Mary buy' never reaches here;
+        # sell-side mirror of the spend_verb branch above (increment
+        # 10's purchase-total, sales-revenue-asks candidate).
+        if is_currency_ask and ctx.reg.word_in_category(ask_verb, "wage_verb"):
+            total = _revenue_total(ctx.store, ctx.reg, entity, ctx.log)
+            if total is not None:
+                return Answer(
+                    "number", total, f"Σ price × qty over {entity!r}'s sales"
+                )
+        # superordinate-totality fallback (mining candidate subtype-
+        # total-asks), verb-scoped sibling of the state-ask fallback
+        # below: "James buys twice as many toy soldiers as toy cars...
+        # how many total toys does he buy?" — see `_superordinate_
+        # total`'s own docstring for the guard.
+        total = _superordinate_total(ctx.store, ctx.reg, entity, singular, ctx.log, verb=ask_verb)
+        if total is not None:
+            return Answer(
+                "number", total, f"Σ {ask_verb!r} subtype events of {entity!r}/{singular!r}"
+            )
+        return Answer(
+            "decline", None,
+            f"no {ask_verb!r} events known for {entity!r}/{singular!r}",
+        )
+    # START STATE (opt-in, bound only by the start-state asks —
+    # rules/start-state.yaml): the question asks what the entity held BEFORE
+    # the narrated events, so the fold UNDOES them instead of applying them.
+    # Unset for every other ask, which therefore folds byte-identically (the
+    # `place_fallback_entity` precedent: a shared consumer widened for one
+    # caller via a defaulted-off parameter, never globally).
+    invert = ctx.query.get("start_state") == "true"
+    total = (
+        _entity_total(ctx.store, ctx.reg, f"{entity}[{owner}]", singular, ctx.log, invert_events=invert)
+        if owner else None
+    )
+    if total is None and qualifier:
+        total = _entity_total(ctx.store, ctx.reg, f"{entity}[{qualifier}]", singular, ctx.log, invert_events=invert)
+    if total is None and measure_qualifier:
+        # mining candidate qualified-measure-keys: the exact qualified
+        # key first (the conflict-split case) — mirrors the owner/
+        # entity_qualifier two-lookup shape above, keyed on the
+        # MEASURE's own qualifier instead of the entity's.
+        total = _entity_total(ctx.store, ctx.reg, entity, f"{singular}[{measure_qualifier}]", ctx.log, invert_events=invert)
+    if total is None:
+        scoped = (
+            owner_store if owner
+            else qualifier_store if qualifier
+            else measure_qualifier_store
+        )
+        total = _entity_total(scoped, ctx.reg, entity, singular, ctx.log, invert_events=invert)
+    if total is None and ctx.query.get("sum_measure_variants") and not measure_qualifier:
+        # gap (c), mining candidate qualified-measure-keys: "Sam has 30
+        # red balls. Sam has 36 green balls. How many balls does Sam
+        # have?" — no bare 'ball' fact exists (facts.py's admit-time
+        # qualifier split already re-keyed both into
+        # 'ball[red]'/'ball[green]'), so every lookup above comes back
+        # empty. Opt-in per ask id (never a blanket widening of this
+        # consumer) and only for a BARE ask (`not measure_qualifier`):
+        # a question naming one SPECIFIC variant must never silently
+        # roll up every colour instead.
+        total = _qualified_variant_total(ctx.store, ctx.reg, entity, singular, ctx.log)
+    fallback_entity = ctx.query.get("place_fallback_entity")
+    # `not invert` mirrors the superordinate fallback below, and it is a
+    # MECHANISM rather than a note because the failure is silent: this branch
+    # calls `_entity_total` WITHOUT `invert_events`, so under a start-state
+    # ask it would answer the fallback entity's CURRENT total while wearing
+    # that ask's name — the same defect `sum_measure_variants` is opted out
+    # of in rules/start-state.yaml. It is unreachable today (only
+    # ask/how-many-in-place binds `place_fallback_entity`, and it sets no
+    # `start_state`), and that is exactly why it needed pinning: the next
+    # in-place start-state ask to bind the field would ship a confident-wrong
+    # with nothing to stop it. Prose does not enforce.
+    if total is None and fallback_entity and not invert:
+        # decline-safe fallback (mining candidate complement-labeled-
+        # subsets), bound ONLY by ask/how-many-in-place — the HANDOFF
+        # opt-in-parameter discipline for widening a shared consumer
+        # (mirrors the pre-existing `exclude_entity: world` precedent
+        # on ask/how-many-there-combined: the fallback entity is pack
+        # DATA carried through the query, never a hardcoded "world"
+        # string literal in this Python consumer). The named PLACE
+        # holds NO facts of the asked measure at all (e.g. a bare
+        # existential collection scene-held on `world`, introduced by
+        # a leading place PP that never actually bound to the named
+        # place). Answer from `fallback_entity` ONLY when it is the
+        # SOLE holder of the measure anywhere in the document — never
+        # merely "some other single holder exists" (that would risk a
+        # confident wrong whenever an unrelated entity happens to be
+        # the only other holder, e.g. "Tom's STORE has 20 candies...
+        # how many are in the BOX?"). Every OTHER single-entity ask (a
+        # NAMED individual like "how many toys does Tom have") never
+        # binds this query field, so it can only ever CONVERT a
+        # decline into a commit for the in-place ask, never move an
+        # already-committed answer or reach for an unrelated entity.
+        holders = {q.entity for q in ctx.store.by_kind(Quantity) if q.measure == singular}
+        if holders == {fallback_entity}:
+            total = _entity_total(ctx.store, ctx.reg, fallback_entity, singular, ctx.log)
+    if total is None and not invert:
+        # superordinate-totality fallback (mining candidate subtype-
+        # total-asks): the asked measure has ZERO facts of its own but
+        # every measure this entity holds is a pack-declared subtype of
+        # it — see `_superordinate_total`'s own docstring for the guard.
+        #
+        # NOT taken for a START-STATE ask: this helper sums subtype
+        # holdings and knows nothing of `invert_events`, so it would
+        # return a confidently UN-inverted total under a question asking
+        # for the start. Declining is the safe half of that trade, and is
+        # the same call made for `sum_measure_variants` in
+        # rules/start-state.yaml. Threading the inversion through here
+        # first is what it would take to widen this.
+        total = _superordinate_total(ctx.store, ctx.reg, entity, singular, ctx.log)
+    if total is None:
+        return Answer(
+            "decline", None,
+            f"no quantity known for {entity!r} of {singular!r} (ask {ctx.ask.id})",
+        )
+    # container-contents + loose composition ("Beth has 4 packs of crayons.
+    # Each pack has 10 crayons. She also has 6 extra crayons. How many crayons
+    # altogether?" -> 4*10 + 6 = 46). The fold above gave the holder's LOOSE
+    # amount of the measure; if the holder ALSO owns containers whose contents
+    # are exactly a synthesized GroupTotal for this measure, that whole is a
+    # DISJOINT part the loose fold missed — add it. TIGHT on two counts: the
+    # group total must equal THIS holder's own container-count times the
+    # per-container rate (G == N*r), which both attributes the holder-less
+    # total to this holder and confirms it is the containers' contents; and it
+    # never fires when the loose fold already equals the whole (G == total),
+    # so a fold that already absorbed the container contents (via
+    # synth/container-contents, when the holder held no loose amount) is not
+    # double-counted. Only the container-contents family reaches here.
+    # DELIBERATELY NOT gated on `invert` — the composition is ALREADY correct
+    # for a start-state ask, and gating it here was a confident-wrong I had to
+    # revert: a GroupTotal is a STATE (an anchor), and the inversion only ever
+    # negates EVENTS, so "Beth has 4 packs of 10 crayons. Beth ate 6 and had 6
+    # left. How many did she have in the beginning?" composes 40 + 12 = 52,
+    # which is right. Dropping the packs answered 12. Not every path needs the
+    # opt-out — only those that fold events without knowing about it.
+    group_totals = [gt for gt in ctx.store.by_kind(GroupTotal) if gt.measure == singular]
+    if len(group_totals) == 1 and abs(group_totals[0].value - total) > 1e-9:
+        g = group_totals[0].value
+        for c_fact in ctx.store.by_kind(Quantity):
+            if c_fact.entity != entity or c_fact.measure == singular:
+                continue
+            rates = [
+                q for q in ctx.store.by_kind(Quantity)
+                if q.entity == c_fact.measure and q.measure == singular
+            ]
+            if len(rates) == 1 and abs(c_fact.value * rates[0].value - g) < 1e-9:
+                composed = evaluate(
+                    f"{total} + {g}", {}, ctx.log, source="container-plus-loose"
+                )
+                return Answer(
+                    "number", composed,
+                    f"{entity!r}'s loose {singular!r} ({total:g}) plus its "
+                    f"{c_fact.measure!r} contents (group total {g:g})",
+                )
+    return Answer("number", total, f"fold over {entity!r}/{singular!r}")
