@@ -70,4 +70,11 @@ def consumer(name: str):
     return register
 
 
-from . import molar_mass as _molar_mass  # noqa: E402,F401  (registers on import)
+from . import (  # noqa: E402,F401  (import registers each handler)
+    affine_convert as _affine_convert,
+    calendar as _calendar,
+    discounted_total as _discounted_total,
+    measure_cost as _measure_cost,
+    molar_mass as _molar_mass,
+    rate_cost as _rate_cost,
+)
