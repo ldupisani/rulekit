@@ -21,13 +21,15 @@ identically before and after because the probe never reached the shape). The
 consumer comes from `match_ask`, the same function `answer()` dispatches on, so
 the assertion is on the real dispatch and not a reimplementation of it.
 
-COVERAGE IS PARTIAL AND MEASURED: 41 consumers, 102 probes — 24 answering
-paths and 78 GUARDS — reaching 45 of the 92 distinct guard messages in
-`answer.py` (49%). The probes were mined from the existing suite, so they reach
-exactly the guards the suite already reached; the other 47 need hand-written
-inputs. `test_guard_coverage_does_not_regress` pins the number and names the
-gaps, so the figure cannot rot and a refactor of any consumer can see which of
-ITS guards are unprotected before it starts. Probes were mined by instrumenting dispatch
+COVERAGE IS COMPLETE AND MEASURED: 41 consumers, 120 probes — 24 answering
+paths and 96 GUARDS — reaching all 90 distinct guard messages across the
+consumer surface: 67 from text rows here, 23 via direct unit probes
+(`_COVERED_BY_UNIT_TEST` + tests/test_consumer_guard_probes.py, for guards
+text cannot phrase — the reason is stated per entry). The first 102 probes
+were mined from the existing suite; the session-4 rows were found by probing
+the live matcher for each remaining gap. `test_guard_coverage_does_not_regress`
+pins both directions, so the figure cannot rot and a new guard without a probe
+fails loudly. Probes were mined by instrumenting dispatch
 during the existing suite, then filtered so that NO probe contains a corpus
 sentence (constitution rule 3); the generator applies that filter itself, so it
 cannot reintroduce at scale what was just cleaned out of tests/.
@@ -260,6 +262,47 @@ GOLDEN = [
      'vector', 'decline', None, 'a dot product needs two equal-length vectors'),
     ('scratch', 'Is it true that Rex does not play for a farmer?',
      'verbal-obj-class-verdict', 'verdict', 'undetermined', 'no object-class relation decides it'),
+    # --- the guard-gap closure (session 4). Every row below was found by
+    # probing the live matcher, not by reading the consumer: each reaches a
+    # guard that had NO probe, from text a real user could type. The probes
+    # that COULD NOT be phrased are direct unit tests instead
+    # (tests/test_consumer_guard_probes.py + _COVERED_BY_UNIT_TEST below).
+    ('gsm8k', 'Callum paid with 20 dollars. How much change did Callum get?',
+     'change', 'decline', None, "no resolvable priced-purchase total for 'callum' — a"),
+    ('gsm8k', 'What is the slope between (1,1,1) and (2,2,2)?',
+     'coordinate', 'decline', None, 'slope is defined for 2-D points'),
+    ('gsm8k', 'What is the speed of an object that travels 60 meters and 60 meters in 4 seconds?',
+     'physics', 'decline', None, "two 'distance' values stated — 'speed' cannot choose"),
+    ('gsm8k', 'Tom has 5 apples. How many more apples does he have than him?',
+     'difference', 'decline', None, "a difference ask resolved both sides to 'tom' — a se"),
+    ('gsm8k', 'Tom has 3 apples. What is the difference in apples they have?',
+     'difference', 'decline', None, 'a pronoun difference ask needs exactly two holders o'),
+    ('gsm8k', 'Tom has 3 dollars. Tom has 2 pounds. Mary has 1 dollar. How much more money does Tom have than Mary?',
+     'difference', 'decline', None, "measure 'money' is ambiguous across the facts"),
+    ('gsm8k', 'Tom has 5 apples. How many did Tom eat?',
+     'single-entity-elided-measure', 'decline', None, "no 'eat' events known for 'tom'/'apple'"),
+    ('gsm8k', 'Tom found 3 apples. Now Tom has 5 apples. How many does Tom have?',
+     'single-entity-elided-measure', 'decline', None, "no quantity known for 'tom' of 'apple' (ask ask/how-"),
+    ('gsm8k', 'The bird eats 2 berries per day. How many berries does the bird eat in 3 meters?',
+     'rate-span', 'decline', None, "no conversion from 'meter' to the rate's 'day' — can"),
+    ('gsm8k', 'Rob earns 10 dollars per hour. How much does Rob earn?',
+     'rate-span', 'decline', None, "no unique 'hour' span known for 'rob' to pair with t"),
+    ('gsm8k', 'A bird eats 2 berries per day. Tom found 3 birds. Now Tom has 5 birds. How many berries does the bird eat in 4 days?',
+     'rate-span', 'decline', None, 'the rate is per-bird'),
+    ('gsm8k', 'A bird eats 2 berries per day. Tom has 3 birds. How long does it take the bird to eat 10 berries?',
+     'rate-span-inverse', 'decline', None, 'the rate is per-bird — the inverse span ask does not'),
+    ('gsm8k', 'The machine makes 5 toys per day. How many gallons did it take the machine to make 20 toys?',
+     'rate-span-inverse', 'decline', None, "no conversion from the rate's 'day' to asked time un"),
+    ('gsm8k', 'Tom has 5 dollars. How much money in apples will Tom have left?',
+     'money-left', 'decline', None, "asked unit 'apple' does not match resolved measure '"),
+    ('gsm8k', 'Tom has 3 dollars. Tom has 2 pounds. How much money does Tom have left?',
+     'money-left', 'decline', None, "measure 'currency' is ambiguous across the facts"),
+    ('gsm8k', 'Tom has 5 dollars. How much money in apples does Tom have?',
+     'single-entity', 'decline', None, "asked unit 'apple' does not match resolved measure '"),
+    ('gsm8k', 'Tom has 3 dollars. Tom has 2 pounds. How much money does Tom have?',
+     'single-entity', 'decline', None, "measure 'money' is ambiguous across the facts"),
+    ('gsm8k', 'Tom found 3 oranges. Now Tom has 4 oranges. Tom has 2 apples. How many more oranges than apples are there?',
+     'label-difference', 'decline', None, "missing a total for 'orange' or 'apple'"),
 ]
 
 
@@ -321,8 +364,8 @@ def test_the_guards_are_the_bulk_of_the_coverage():
 
 # --- the coverage of this file, measured and enforced ----------------------
 
-_GUARD_FLOOR = 49   # guards WITH a probe: raise as probes are added, never lower
-_GAP_CEILING = 41   # guards WITHOUT one: lower as probes are added, never raise
+_GUARD_FLOOR = 90   # guards WITH a probe: raise as probes are added, never lower
+_GAP_CEILING = 0    # guards WITHOUT one: lower as probes are added, never raise
 
 # The denominator is 90, and it was 92 until the boundary bug above was fixed:
 # the naive split credited `geometry` with the temporal origo's decline and let
@@ -341,6 +384,44 @@ _COVERED_BY_UNIT_TEST = {
     ("molar-mass", "a cost needs a numeric rate"),
     ("molar-mass", "weight needs the gram->kilogram conversi"),
     ("molar-mass", "weight formula failed"),
+    # --- session 4: the guard-gap closure. Everything below is probed in
+    # tests/test_consumer_guard_probes.py; each entry states WHY text
+    # cannot reach it (verified against the matcher, not assumed).
+    #
+    # The op/value slots are typed or category-gated at the ask, so an
+    # unknown op or a non-numeric value never binds:
+    ("affine-convert", "a conversion needs a numeric quantity"),
+    ("arithmetic", "unsupported operation"),
+    ("coordinate", "unsupported operation"),
+    ("number-theory", "unsupported operation"),
+    ("trigonometry", "unsupported operation"),
+    ("unit-convert", "a conversion needs a numeric quantity"),
+    ("rate-cost", "a rate cost needs a quantity and a rate"),
+    ("measure-cost", "unsupported measure operation"),
+    ("measure-cost", "unreadable tax rate"),
+    ("vector", "unsupported operation"),
+    ("physics", "no formula for the"),
+    ("list-statistic", "unsupported statistic"),
+    # both age-projected asks bind the offset as a REQUIRED counted slot:
+    ("age-projected", "projected age ask has no stated year off"),
+    # the stat/vector asks require the numeric list to match at all:
+    ("list-statistic", "no numbers to take the"),
+    ("vector", "no components to take the"),
+    # `currency` is the ONLY interchangeable category, and no ask reaching
+    # these two consumers can bind its factless member ('money'):
+    ("deficit", "measure"),
+    ("unique-entity", "measure"),
+    # the full-read contract is enforced STRUCTURALLY by the matcher —
+    # a final span must run to the sentence end and may never swallow a
+    # span_blocks word, and every verdict ask anchors `at_start` — so a
+    # matched-but-partially-read question cannot occur from text. The
+    # consumer guard is the defensive restatement, probed directly:
+    ("existential-verdict", "question states"),
+    ("logic-disjunction-verdict", "question states"),
+    ("logic-verdict", "question states"),
+    ("passive-agent-verdict", "question states"),
+    ("universal-verdict", "question states"),
+    ("verbal-obj-class-verdict", "question states"),
 }
 
 
