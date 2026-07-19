@@ -29,10 +29,23 @@ _TOKEN = re.compile(
     r"|\d+/\d+"                                 # slash fraction ("1/4")
     r"|\d[\d,]*(?:st|nd|rd|th)(?![^\W\d_])"     # fused ordinal ("5th", "21st")
     r"|\$?\d[\d,]*(?:\.\d+)?%?"                 # numbers/currency/percent
-    r"|[^\W\d_]+(?:'[^\W\d_]+)?"                 # words (with contractions)
-    r"|'s"                                       # bare possessive clitic
+    # the apostrophe class admits U+2019 (the typographic right single
+    # quote) beside ASCII: corpora mix them freely ("Gould’s" in one
+    # sentence, "Gould's" in the next), and a curly one outside the class
+    # is DROPPED between tokens — "Gould’s" tokenized as 'Gould' + 's' and
+    # "isn’t" shredded to 'isn' + 't', so the same phrase minted two
+    # different fact keys depending on which quote its sentence used. The
+    # SURFACE keeps whichever character was written (annotate, don't
+    # transform); only the fold normalizes, below.
+    r"|[^\W\d_]+(?:['’][^\W\d_]+)?"              # words (with contractions)
+    r"|['’]s"                                    # bare possessive clitic
     r"|[.,!?;:]"
 )
+
+# fold-layer normalization (with .lower()): the typographic apostrophe reads
+# as the ASCII one, so clitic-table suffix matching and every downstream fold
+# comparison see ONE spelling
+_FOLD_APOSTROPHE = str.maketrans("’", "'")
 
 def split_sentences(text: str) -> list[str]:
     parts = [p.strip() for p in _SENT_SPLIT.split(text.strip())]
@@ -65,16 +78,20 @@ def tokenize(
     index = 0
     for match in _TOKEN.finditer(sentence):
         surface = match.group()
-        # split contractions ("isn't" -> "is" + "not")
+        # split contractions ("isn't" -> "is" + "not"); matching runs on the
+        # FOLD so a curly-apostrophe surface finds its straight-quote table
+        # entry (U+2019 and ASCII "'" are both one char, so the suffix
+        # length slices the raw surface correctly)
+        folded = surface.lower().translate(_FOLD_APOSTROPHE)
         pieces = [surface]
         for suffix, expansion in contractions:
-            if surface.lower().endswith(suffix) and len(surface) > len(suffix):
+            if folded.endswith(suffix) and len(surface) > len(suffix):
                 stem = surface[: -len(suffix)]
                 pieces = [stem, expansion]
                 break
         for piece in pieces:
             unit = reading.new_unit((Word(piece, index),))
-            unit.features["fold"] = piece.lower()
+            unit.features["fold"] = piece.lower().translate(_FOLD_APOSTROPHE)
             reading.units.append(unit)
             index += 1
     return reading

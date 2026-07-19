@@ -48,6 +48,32 @@ def test_diacritic_name_takes_the_possessive_clitic(contractions):
     ]
 
 
+def _folds(sentence, contractions=()):
+    return [u.features["fold"] for u in tokenize(sentence, tracing=False,
+                                                 contractions=contractions).units]
+
+
+def test_curly_possessive_matches_straight(contractions):
+    # U+2019 outside the apostrophe class was DROPPED between tokens:
+    # "Rex’s" read as 'Rex' + 's' (fold 's'), so the same phrase minted a
+    # different fact key than its straight-quote spelling one sentence
+    # over. The stem keeps its written surface; the clitic piece surfaces
+    # as the TABLE's expansion (the same replacement "isn't" -> "not"
+    # already performs), and the fold normalizes.
+    curly = tokenize("Rex’s dog barked.", tracing=False,
+                     contractions=contractions).units
+    assert [u.surface for u in curly] == ["Rex", "'s", "dog", "barked", "."]
+    assert [u.features["fold"] for u in curly] == _folds(
+        "Rex's dog barked.", contractions)
+
+
+def test_curly_contraction_matches_straight(contractions):
+    # "isn’t" shredded to 'isn' + 't' under the old class; now it splits
+    # through the clitic table exactly like "isn't"
+    assert _folds("It isn’t red.", contractions) == _folds(
+        "It isn't red.", contractions)
+
+
 def test_ascii_tokenization_unchanged(contractions):
     # the incidental-behaviors-are-contract pin: plain ASCII text must
     # tokenize byte-identically to the old class
