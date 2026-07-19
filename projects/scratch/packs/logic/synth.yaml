@@ -120,6 +120,47 @@ rules:
     emit:
       - {fact: atom, entity: X, pred: L, polarity: false}
 
+  # ---- Stage 9i: modus tollens + the ground disjunctive conditional --------
+  # ∀A→B, ¬B(x)  ⊢  ¬A(x)   (the contrapositive of universal-instantiation;
+  # only the POSITIVE universal contraposes — "no A are B" + ¬B(x) licenses
+  # nothing)
+  - id: synth/modus-tollens
+    when:
+      - {fact: quantified, cls: A, pred: B, polarity: true}
+      - {fact: atom, entity: X, pred: B, polarity: false}
+    unless:
+      - {fact: atom, entity: X, pred: A}
+    emit:
+      - {fact: atom, entity: X, pred: A, polarity: false}
+
+  # (L ∨/⊕ R) → [¬]Q at x, L(x), ¬R(x)  ⊢  [¬]Q(x)  — EXACTLY-ONE
+  # established fires under BOTH readings (⊕ needs exactly one; L∧¬R
+  # satisfies L∨R), so no exclusivity gate. One true disjunct with the
+  # other UNDECIDED fires NOTHING: under ⊕ the antecedent is not yet
+  # established (model.DisjunctiveConditional).
+  # ⚠ DELIBERATELY NO `unless`: when the consequent's opposite is already
+  # stored, this emission must COLLIDE so the store quarantines both —
+  # that collision is the reductio engine's contradiction signal
+  # (consumers/logic_verdict.py); an unless guard here would silently
+  # suppress the very inconsistency assumption-testing exists to detect.
+  # In MAIN saturation the same collision means genuinely contradictory
+  # premises, and quarantine -> decline is the correct reading.
+  - id: synth/disj-conditional-fire-left
+    when:
+      - {fact: disjunctive_conditional, entity: X, left: L, right: R, then_pred: Q, then_polarity: POL}
+      - {fact: atom, entity: X, pred: L, polarity: true}
+      - {fact: atom, entity: X, pred: R, polarity: false}
+    emit:
+      - {fact: atom, entity: X, pred: Q, polarity: POL}
+
+  - id: synth/disj-conditional-fire-right
+    when:
+      - {fact: disjunctive_conditional, entity: X, left: L, right: R, then_pred: Q, then_polarity: POL}
+      - {fact: atom, entity: X, pred: R, polarity: true}
+      - {fact: atom, entity: X, pred: L, polarity: false}
+    emit:
+      - {fact: atom, entity: X, pred: Q, polarity: POL}
+
   # ---- Stage 9e: the stated alias (identity of names) ----------------------
   # alias(A,B), P(A)  ⊢  P(B) — and the mirror, because identity is
   # symmetric. Both polarities carry: an identity transfers what is DENIED

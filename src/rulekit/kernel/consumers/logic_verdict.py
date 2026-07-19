@@ -66,4 +66,61 @@ def logic_verdict(ctx: ConsumerContext):
                 f"logic atom {f.entity!r} {f.pred!r} "
                 f"({'+' if f.polarity else '-'}) via {f.provenance.source}",
             )
+    # Phase 0 composes with the reductio: a definite-DESCRIPTION question
+    # refuses indefinite premises in the loop above, but a hypothesis
+    # admitted into the trial store would COLLIDE with those same refused
+    # atoms and answer through the back door (caught by
+    # test_article_compatibility, not by any corpus). No reductio for a
+    # definite-description question.
+    if q_defcom:
+        return Answer("verdict", "undetermined", "no logic fact decides it")
+    # Stage 9i: reductio ad absurdum, tried only when no stored fact
+    # decides the atom. Assume the queried atom each way in a THROWAWAY
+    # copy of the store and re-saturate: a hypothesis whose closure
+    # COLLIDES (the store quarantines both sides of a same-key
+    # disagreement) is refuted, so its negation holds. Soundness rests
+    # on every synth being individually sound — the collision then
+    # witnesses genuine inconsistency with the premises — and on the
+    # synths deliberately built to collide rather than yield
+    # (synth/disj-conditional-fire-*'s no-unless note). Reaching this
+    # point means the REAL store is collision-free (a premise conflict
+    # declines upstream), so any quarantine in the trial is the
+    # hypothesis's own. Incompleteness of the closure only ever loses
+    # conversions, never adds commitments — monotone-safe. Both
+    # hypotheses refuting means the machinery contradicts either way
+    # (degenerate premises): commit nothing.
+    refutes_true = _hypothesis_refuted(ctx, entity, pred, True)
+    refutes_false = _hypothesis_refuted(ctx, entity, pred, False)
+    if refutes_true and not refutes_false:
+        return Answer(
+            "verdict", "no" if pol else "yes",
+            f"reductio: assuming {entity!r} {pred!r} (+) contradicts the premises",
+        )
+    if refutes_false and not refutes_true:
+        return Answer(
+            "verdict", "yes" if pol else "no",
+            f"reductio: assuming {entity!r} {pred!r} (-) contradicts the premises",
+        )
     return Answer("verdict", "undetermined", "no logic fact decides it")
+
+
+def _hypothesis_refuted(ctx: ConsumerContext, entity: str, pred: str,
+                        polarity: bool) -> bool:
+    """Admit atom(entity, pred, polarity) into a copy of the store,
+    re-saturate, and report whether the closure quarantined anything.
+    The trial gets a FRESH log — hypothetical derivation must never leak
+    into the real one's accounting."""
+    from ..evaluate import ArithmeticLog
+    from ..facts import FactStore
+    from ..model import Atom, Provenance
+    from ..saturate import saturate
+
+    trial = FactStore()
+    for f in ctx.store.facts:
+        trial.admit(f)
+    trial.admit(Atom(
+        provenance=Provenance(source="hypothesis/reductio", sentence=-1),
+        entity=entity, pred=pred, polarity=polarity, indef_obj=True,
+    ))
+    saturate(trial, ctx.reg, ArithmeticLog())
+    return bool(trial.quarantined)

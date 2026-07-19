@@ -43,6 +43,28 @@ rules:
     emits:
       - {fact: quantified, cls: "{cls.singular}", pred: "{pred.singular}", polarity: true}
 
+  # Stage 9i: the indefinite-generic copular universal — "A carp is a
+  # fish" / "An osprey is a bird" reads as ∀ carp → fish, the generic
+  # frame (indefinite article on BOTH sides, bare singular nouns, no
+  # negation). SINGULAR-agreeing, so keys render PLAIN, never .singular
+  # (the Stage 8d symmetry: -is constructions join ground atom preds
+  # verbatim; only the plural-agreeing family folds). The negated form
+  # ("A carp is not a bird") deliberately never matches — a negative
+  # generic stays unread, which is monotone-safe. Both articles claimed
+  # with consume_skipped (they are skippable senses — the dead-literal
+  # lesson) so the whole construction is consumed for the fragment guard.
+  - id: logic/universal-indefinite-copular
+    phase: read
+    match:
+      sentence:
+        - {lit: [a, an], at_start: true, consume_skipped: true}
+        - {slot: cls, span: true, span_blocks: [negation, conjunction, preposition, disjunctive_marker]}
+        - {lit: is}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: pred, span: true, span_blocks: [negation, conjunction, preposition, disjunctive_marker]}
+    emits:
+      - {fact: quantified, cls: "{cls}", pred: "{pred}", polarity: true}
+
   - id: logic/universal-copular-all-is
     phase: read
     match:
@@ -546,6 +568,38 @@ rules:
         - {slot: r, span: true, span_blocks: [negation, conjunction, preposition]}
     emits:
       - {fact: disjunction, entity: "{subj}", left: "{l}", right: "{r}", exclusive: false}
+
+  # Stage 9i: the ground disjunctive conditional — "If NAME is either A
+  # or B, then NAME is not (also) C" -> (A(x) ⊕ B(x)) → ¬C(x). The
+  # antecedent subject repeats as a name in the consequent; same_lemma
+  # pins the two to one entity (a different name in the consequent is a
+  # different construction and stays unread). 'also' is grammatical
+  # skeleton of the 'not also' surface, claimed by opt (the alias rule's
+  # precedent). Only the negative-consequent form is built — it is the
+  # form with a buyer; the positive twin waits for its own (the _TOKEN
+  # bank discipline).
+  - id: logic/conditional-name-either-or-then-is-not
+    phase: read
+    match:
+      sentence:
+        - {lit: if, at_start: true}
+        - {slot: subj, type: name, blocks_skipped: indefinite_article}
+        - {lit: is}
+        - {lit: either}
+        - {slot: l, span: true, span_blocks: [negation, conjunction, preposition, either_marker]}
+        - {lit: or}
+        - {slot: r, span: true, span_blocks: [negation, conjunction, preposition]}
+        - {lit: then}
+        - {slot: subj2, type: name, blocks_skipped: indefinite_article}
+        - {lit: is}
+        - {lit: not}
+        - opt:
+            - {lit: also}
+        - {slot: c, span: true, span_blocks: [negation, conjunction, preposition]}
+    where:
+      - {same_lemma: [subj, subj2]}
+    emits:
+      - {fact: disjunctive_conditional, entity: "{subj}", left: "{l}", right: "{r}", then_pred: "{c}", then_polarity: false, exclusive: true}
 
   - id: logic/disj-ground-either
     phase: read

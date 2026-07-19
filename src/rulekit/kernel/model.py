@@ -396,6 +396,41 @@ class QuantifiedDisjunction(Fact):
 
 
 @dataclass(frozen=True)
+class DisjunctiveConditional(Fact):
+    """A GROUND conditional whose antecedent is a two-way disjunction over
+    one named entity: "If Bubbles is either an osprey or a goldfish, then
+    Bubbles is not also a fish" -> (osprey(b) ⊕ goldfish(b)) → ¬fish(b).
+    `exclusive` carries Disjunction's surface-decided reading ('either…or'
+    = ⊕, Stage 3's James minimal pair).
+
+    Fired ONLY by the exactly-one synths (synth/disj-conditional-fire-*):
+    one disjunct true AND the other explicitly false establishes the
+    antecedent under BOTH readings (⊕ needs exactly one; L∧¬R satisfies
+    L∨R too), so no exclusivity gate is needed at fire time. A single
+    true disjunct with the other UNDECIDED fires nothing — under ⊕ the
+    antecedent is not yet established, and reading it as ∨ to fire early
+    is exactly the confident-wrong the Stage 3 measurement forbids.
+
+    Disjuncts and consequent never decompose (not in _DECOMPOSABLE_FIELDS):
+    the antecedent sides are non-monotone under ⊕, and the consequent may
+    carry polarity false, where stripping widens the denial."""
+
+    entity: str
+    left: str
+    right: str
+    then_pred: str
+    then_polarity: bool = True
+    exclusive: bool = False
+
+    def key(self) -> tuple:
+        return ("logic-disj-conditional", self.entity, self.left,
+                self.right, self.then_pred)
+
+    def value_part(self) -> Any:
+        return (self.then_polarity, self.exclusive)
+
+
+@dataclass(frozen=True)
 class EnumeratedDisjunction(Fact):
     """An EXHAUSTIVE n-way class disjunction licensed by a COUNTED
     enumeration: "There are six types of wild turkeys: A, B, …, and F"

@@ -1127,3 +1127,104 @@ def test_a_quarantined_option_blocks_elimination(logic_reg):
         "Is it true that Rex is a fox?", logic_reg, tracing=False)
     assert not [f for f in r.store.by_kind(Atom) if f.pred == "fox"]
     assert r.answer.kind == "decline"
+
+
+# ---- Stage 9i: the XOR-conditional reductio --------------------------------
+# Four pieces: the indefinite-generic copular universal ("A carp is a
+# fish" -> ∀), synth/modus-tollens, the ground disjunctive conditional
+# ("If NAME is either A or B, then NAME is not also C") with its
+# exactly-one fire synths (deliberately NO unless — the collision IS the
+# contradiction signal), and the reductio engine in logic_verdict (assume
+# the undecided queried atom each way; a hypothesis whose closure
+# quarantines is refuted).
+
+
+def test_indefinite_generic_reads_as_a_universal(logic_reg):
+    assert _verdict("A trout is a swimmer. Rex is a trout. "
+                    "Is it true that Rex is a swimmer?", logic_reg) == "yes"
+
+
+def test_indefinite_generic_asserts_no_ground_atom(logic_reg):
+    from rulekit.kernel.model import Atom
+
+    r = engine.solve("A trout is a swimmer.", logic_reg, tracing=False)
+    assert not list(r.store.by_kind(Atom))
+
+
+def test_negated_indefinite_generic_stays_unread(logic_reg):
+    from rulekit.kernel.model import Quantified
+
+    r = engine.solve("A trout is not a flyer.", logic_reg, tracing=False)
+    assert not list(r.store.by_kind(Quantified))
+
+
+def test_modus_tollens_contraposes_the_positive_universal(logic_reg):
+    assert _verdict("All trout are swimmers. Rex is not a swimmer. "
+                    "Is it true that Rex is a trout?", logic_reg) == "no"
+
+
+def test_modus_tollens_never_contraposes_a_negative_universal(logic_reg):
+    # "no trout are swimmers" + ¬swimmer(rex) licenses nothing about trout
+    assert _verdict("No trout are swimmers. Rex is not a swimmer. "
+                    "Is it true that Rex is a trout?", logic_reg) == "undetermined"
+
+
+def test_disj_conditional_fires_on_exactly_one_established(logic_reg):
+    assert _verdict(
+        "If Rex is either a hawk or a guppy, then Rex is not also a pet. "
+        "Rex is a hawk. Rex is not a guppy. "
+        "Is it true that Rex is a pet?", logic_reg) == "no"
+
+
+def test_disj_conditional_never_fires_on_one_undecided(logic_reg):
+    # hawk true but guppy UNDECIDED: under the exclusive reading the
+    # antecedent is not established — firing early is the Stage 3
+    # confident-wrong
+    assert _verdict(
+        "If Rex is either a hawk or a guppy, then Rex is not also a pet. "
+        "Rex is a hawk. "
+        "Is it true that Rex is a pet?", logic_reg) == "undetermined"
+
+
+def test_disj_conditional_needs_one_subject(logic_reg):
+    from rulekit.kernel.model import DisjunctiveConditional
+
+    r = engine.solve(
+        "If Rex is either a hawk or a guppy, then Max is not also a pet.",
+        logic_reg, tracing=False)
+    assert not list(r.store.by_kind(DisjunctiveConditional))
+
+
+def test_reductio_refutes_through_the_xor_conditional(logic_reg):
+    # assume guppy(ollie): guppy ⊆ trout ⊆ swimmer gives swimmer(ollie);
+    # no-swimmers-are-flyers gives ¬flyer(ollie); modus tollens on
+    # hawk ⊆ flyer gives ¬hawk(ollie); the antecedent is now exactly-one
+    # -> ¬swimmer(ollie) — collision, hypothesis refuted, so 'no'/'yes'
+    story = ("No swimmers are flyers. A hawk is a flyer. A trout is a "
+             "swimmer. All guppies are trout. If Ollie is either a hawk "
+             "or a guppy, then Ollie is not also a swimmer. ")
+    assert _verdict(story + "Is it true that Ollie is a guppy?",
+                    logic_reg) == "no"
+    assert _verdict(story + "Is it true that Ollie is not a guppy?",
+                    logic_reg) == "yes"
+
+
+def test_reductio_needs_every_link(logic_reg):
+    # the same story WITHOUT "A trout is a swimmer": assuming guppy(ollie)
+    # no longer reaches swimmer(ollie), no collision, nothing follows
+    story = ("No swimmers are flyers. A hawk is a flyer. "
+             "All guppies are trout. If Ollie is either a hawk "
+             "or a guppy, then Ollie is not also a swimmer. ")
+    assert _verdict(story + "Is it true that Ollie is a guppy?",
+                    logic_reg) == "undetermined"
+
+
+def test_reductio_commits_nothing_about_the_other_disjunct(logic_reg):
+    # assuming hawk(ollie) derives flyer(ollie) and stops — the guppy
+    # disjunct stays undecided, so the conditional never fires and the
+    # hawk question stays open (the Uncertain-gold sibling's shape)
+    story = ("No swimmers are flyers. A hawk is a flyer. A trout is a "
+             "swimmer. All guppies are trout. If Ollie is either a hawk "
+             "or a guppy, then Ollie is not also a swimmer. ")
+    assert _verdict(story + "Is it true that Ollie is a hawk?",
+                    logic_reg) == "undetermined"
