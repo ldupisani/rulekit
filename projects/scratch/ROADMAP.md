@@ -728,3 +728,20 @@ Look #5 wants ~10 conversions PAST look #4's ten, from different stories
 - **[400] turkeys** — the banked De Morgan neither/nor reader + the
   "There are six types: A, B, ..." enumeration-as-disjunction + n-way
   elimination. Two pieces land together per the 9b bank note.
+
+## Stage 9f — the appointive passive — DONE (490a02c)
+
+**folio-with-logic dev-train 14 (+1/0, the Brian Winter story — third new
+story), pytest 1797.** Three pieces, each forced by walking the buyer's
+whole story: the `appointive_verb`-gated passive rule ("was appointed as
+X" ⊨ is an X; resultative members ONLY, 'regarded/described' must never
+join), the lead-nominal RUN extension in atom_variants (an unmerged
+'referee observer' now reaches the PP drop; additive by construction),
+and `logic/existential-some-verbal` (the verbal 'Some' premise — reading,
+veto-lift). ⚠ THE SUBSUMPTION TRAP GENERALIZED: a non-span rule beside a
+greedy-span sibling must claim EVERY skippable the sibling's span
+swallows — the trailing period (9e) AND any mid-sentence article (9f, opt
+consume_skipped alternation [a, an, the]). Check both on any new rule
+that shares a surface with the ground-copular family.
+
+## Running count after 9f: 14 dev-train + 1 holdout (look #5 at ~20-21)
