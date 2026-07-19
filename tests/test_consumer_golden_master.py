@@ -432,3 +432,59 @@ def test_the_unprotected_guards_are_listed_not_forgotten():
     print(f"\n{len(gaps)} guards with no golden probe:")
     for consumer, msg in gaps:
         print(f"  {consumer:26s} {msg}")
+
+
+# --- the temporal-origo split, pinned ---------------------------------------
+
+
+def test_no_extracted_consumer_silently_loses_the_time_filter():
+    """`answer()` resolves the question's reference time PART-WAY DOWN its body
+    and rebinds `store` to a time-filtered copy.
+
+    Consumers written above that point never see the filter; those below it
+    always do. So a single dispatch before the if-chain is behaviour-preserving
+    for the first group and a SILENT REGRESSION for the second — it would drop
+    the time scoping, and no corpus item need phrase the difference.
+
+    This pins the two-phase mechanism: every registered consumer is dispatched
+    on the side of the origo it was written for.
+    """
+    import re
+
+    from rulekit.kernel.consumers import CONSUMERS, TIME_SCOPED
+
+    src = (ROOT / "src" / "rulekit" / "kernel" / "answer.py").read_text().split("\n")
+    origo = next(i for i, l in enumerate(src) if "THE TEMPORAL ORIGO" in l)
+    phase1 = next(i for i, l in enumerate(src) if "Phase 1: consumers that lived ABOVE" in l)
+    phase2 = next(i for i, l in enumerate(src) if "Phase 2: consumers that lived BELOW" in l)
+
+    assert phase1 < origo < phase2, (
+        "the two dispatch points must straddle the origo, or the flag means nothing"
+    )
+    # a consumer still in the if-chain BELOW the origo must not also be
+    # registered without the flag
+    for i, line in enumerate(src):
+        m = re.match(r'    if consumer == "([a-z-]+)":', line)
+        if m and i > origo and m.group(1) in CONSUMERS:
+            assert m.group(1) in TIME_SCOPED, (
+                f"{m.group(1)} lives below the origo but is dispatched early"
+            )
+
+
+def test_the_origo_still_runs_for_chain_consumers():
+    """The shared time scoping must not have been swallowed into a consumer
+    module — a boundary drawn to "the next `if consumer ==`" would have moved
+    it, since it sits between two branches."""
+    answer_src = (ROOT / "src" / "rulekit" / "kernel" / "answer.py").read_text()
+    assert "THE TEMPORAL ORIGO" in answer_src
+    assert "_question_reference_time" in answer_src
+
+    # look for the CODE, not the prose: `consumers/__init__.py` documents the
+    # origo at length, and a check that a comment is absent would forbid
+    # explaining the very trap it guards
+    consumers = ROOT / "src" / "rulekit" / "kernel" / "consumers"
+    for mod in consumers.glob("*.py"):
+        body = mod.read_text()
+        assert "_question_reference_time(" not in body, (
+            f"{mod.name} swallowed the shared temporal origo"
+        )

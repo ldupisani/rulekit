@@ -52,19 +52,47 @@ class ConsumerContext:
     ask: Any              # patterns.AskRule
 
 
-# name -> handler. `answer()` consults this BEFORE its if-chain, so an
-# extracted consumer is unreachable from the chain and the two can never
-# silently diverge.
+# name -> handler, dispatched BEFORE `answer()`'s if-chain so an extracted
+# consumer is unreachable from the chain and the two cannot silently diverge.
 CONSUMERS: dict[str, Callable[[ConsumerContext], Any]] = {}
 
+# ⚠ THE TEMPORAL ORIGO SPLITS `answer()` IN TWO, and this is the trap the rest
+# of the extraction has to respect.
+#
+# `answer()` resolves the question's reference time PART-WAY DOWN its body and
+# rebinds `store` to a time-filtered copy. Consumers written ABOVE that point
+# never see the filter; the 26 written BELOW it always do. So "dispatch the
+# registry before the chain" is behaviour-preserving for an above-origo
+# consumer and a SILENT REGRESSION for a below-origo one — it would drop the
+# time scoping, and no corpus item need phrase the difference.
+#
+# Moving the single dispatch below the origo is not the fix either: the origo
+# can itself DECLINE ("the question names more than one time"), so running it
+# first would let above-origo consumers newly decline on questions they answer
+# today.
+#
+# Hence two dispatch points and a flag. A consumer extracted from below the
+# origo registers with `time_scoped=True` and is dispatched AFTER it, with
+# `ctx.store` already filtered. All 15 extracted so far are above it — verified
+# against the pre-refactor file, not assumed.
+TIME_SCOPED: set[str] = set()
 
-def consumer(name: str):
-    """Register a handler under the name its asks resolve to."""
+
+def consumer(name: str, *, time_scoped: bool = False):
+    """Register a handler under the name its asks resolve to.
+
+    `time_scoped` marks a consumer that lived BELOW the temporal origo and must
+    therefore receive the time-filtered store. Getting it wrong is invisible in
+    the answer of any single question, so it is recorded per consumer at the
+    point of extraction rather than inferred later.
+    """
 
     def register(fn):
         if name in CONSUMERS:
             raise RuntimeError(f"consumer {name!r} registered twice")
         CONSUMERS[name] = fn
+        if time_scoped:
+            TIME_SCOPED.add(name)
         return fn
 
     return register
@@ -76,10 +104,14 @@ from . import (  # noqa: E402,F401  (import registers each handler)
     calendar as _calendar,
     coordinate as _coordinate,
     discounted_total as _discounted_total,
+    geometry as _geometry,
+    list_statistic as _list_statistic,
     measure_cost as _measure_cost,
     molar_mass as _molar_mass,
     number_theory as _number_theory,
     rate_cost as _rate_cost,
+    physics as _physics,
     trigonometry as _trigonometry,
     unit_convert as _unit_convert,
+    vector as _vector,
 )

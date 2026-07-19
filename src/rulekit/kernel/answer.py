@@ -1108,236 +1108,23 @@ def answer(
     # the two can never silently diverge — a leftover branch would otherwise sit
     # there shadowed and rot. Imported lazily: `consumers` needs `Answer` from
     # this module, and a module-level import either way is a cycle.
-    from .consumers import CONSUMERS, ConsumerContext
+    from .consumers import CONSUMERS, TIME_SCOPED, ConsumerContext
 
-    handler = CONSUMERS.get(consumer)
-    if handler is not None:
+    def _dispatch(scoped_store):
+        handler = CONSUMERS.get(consumer)
+        if handler is None:
+            return None
         return handler(ConsumerContext(
-            query=query, question=question, store=store, reg=reg,
+            query=query, question=question, store=scoped_store, reg=reg,
             log=log, match=_match, ask=ask,
         ))
 
-    if consumer == "physics":
-        # The difg `physics` domain: a NAMED physical quantity computed from the
-        # parameters the question states — "the speed of an object that travels
-        # 100 meters in 5 seconds". The formulas and the unit->dimension map are
-        # DATA (packs/difg-mined/formulas.yaml); this branch is the generic
-        # evaluator and names no quantity, no unit and no formula (rule 1). Same
-        # shape as the `geometry` consumer above, minus the shape key.
-        quantity = query.get("quantity", "")
-        expr = reg.quantity_formulas.get(quantity)
-        if expr is None:
-            return Answer("decline", None, f"no formula for the {quantity!r} of a thing")
-        # The names the formula ACTUALLY references. "Read" means the expression
-        # uses it — NOT merely that some dimension could be bound from it. Those
-        # two sets differ, and the gap is a silent-ignore: "the weight of a 3 kg
-        # object THAT TRAVELS 60 METERS IN 4 SECONDS" binds distance and time,
-        # `mass * 9.8` never mentions them, and nothing would decline. Deriving
-        # the set from the expr keeps this honest for formulas that do not exist
-        # yet (the `_TOKEN` increment adds velocity/acceleration dimensions, which
-        # is exactly when a bindable-but-unused value stops being harmless).
-        read_names = set(re.findall(r"[a-z_][a-z_0-9]*", expr))
-
-        # Bind each stated number by the DIMENSION OF ITS OWN UNIT, never by
-        # position — "an object that took 5 seconds to travel 100 meters" must
-        # read identically to the same facts in the other order. The unit is the
-        # counted unit's LEMMA ("100 meters" -> 'meter'), or its QUALIFIER when
-        # the noun itself is not a unit ("a 2 kg object" -> lemma 'object',
-        # qualifier 'kilogram').
-        env: dict[str, float] = {}
-        for u in question.units:
-            kind = u.features.get("value_kind")
-            # MIRROR guards.py's accounted kinds EXACTLY. This branch takes that
-            # guard's exemption, so whatever it would have checked is now this
-            # consumer's duty — and it accounts for count/multiplier/fraction,
-            # not counts alone. A multiplier or a fraction is never a dimension
-            # operand ("...in 4 seconds TWICE", "...and HALF of that"), so a
-            # stated one is a quantity the formula provably did not read.
-            if kind not in _ACCOUNTED_VALUE_KINDS:
-                continue
-            if kind != "count":
-                return Answer(
-                    "decline", None,
-                    f"{quantity!r} cannot read the stated {u.surface!r}",
-                )
-            value = float(u.features["value"])
-            dim = None
-            for word in (u.features.get("lemma"), u.features.get("qualifier")):
-                d = reg.unit_dimension.get(word or "")
-                # A dimension the FORMULA does not reference is not a reading of
-                # this value — it is a quantity the answer would ignore. Treating
-                # it as unbound routes it to the decline below, which is the whole
-                # point: bindable != read.
-                if d is not None and d in read_names:
-                    dim = d
-                    break
-            if dim is None:
-                # AN UNREAD COUNT IS A DECLINE. This branch takes the guards.py
-                # value-accounting exemption (_WHOLE_LIST_CONSUMERS), so nothing
-                # downstream will catch a number the formula silently ignored:
-                # "travels 60 meters in 4 seconds AND 3 MINUTES" would commit 15
-                # (the true answer is 0.33) because 'minute' denominates no
-                # dimension here. Taking the exemption means OWNING the
-                # accounting, so every stated count must be read or the whole
-                # commit goes.
-                return Answer(
-                    "decline", None,
-                    f"{quantity!r} cannot read the stated {u.surface!r}",
-                )
-            if dim in env:
-                # ANY second value for a dimension, not just a DIFFERENT one:
-                # "60 meters then 60 meters" is as unreadable as "60 then 50"
-                # (the true distance is 120), and comparing values would let the
-                # equal case through — the same-value blind spot guards.py's own
-                # Counter exists to close. The question states more than the
-                # formula can consume; picking one is a guess either way.
-                return Answer(
-                    "decline", None,
-                    f"two {dim!r} values stated — {quantity!r} cannot choose",
-                )
-            env[dim] = value
-        # Register the operands so the arithmetic log shows what was read (the
-        # `list-statistic` lesson); the sum is only the logging vehicle. `env`
-        # holds ONLY expr-referenced dimensions, so what is logged is what the
-        # answer actually READ — logging the merely-bindable would launder a
-        # value the formula ignored into `log.uses_value()`, which other guards
-        # consult as evidence. Every accounted value either reaches here or has
-        # already declined, so this honours _WHOLE_LIST_CONSUMERS' contract.
-        if env:
-            evaluate(" + ".join(f"{v:g}" for v in env.values()), {}, log, source="physics")
-        try:
-            result = evaluate(expr, env, log, source="physics")
-        except Exception:
-            # A dimension the question never supplied leaves its name unbound and
-            # `evaluate` raises — the definitive-or-decline path, and the ONLY
-            # guard the shredded compound units need: "3 m/s^2" never yields an
-            # 'acceleration', so `force` declines here rather than guessing from
-            # whatever numbers happen to be lying around (including the exponent).
-            return Answer(
-                "decline", None,
-                f"{quantity!r} needs parameters the question does not supply",
-            )
-        return Answer("number", float(result), f"physics: {quantity} = {expr} = {result}")
-
-    if consumer == "vector":
-        # The difg vector domain: "the magnitude of the vector (3, 4)" -> 5, "the
-        # dot product of (1, 2, 3) and (4, 5, 6)" -> 32. A SPACED tuple is just
-        # loose number tokens (the parens are dropped at tokenization), so this
-        # reads the question's whole number list exactly as `list-statistic`
-        # does — and is therefore arity-free. The operation arrives as a
-        # structural opcode from the ask (rules/vector-ops.yaml); no English word
-        # appears here (constitution rule 1).
-        import math
-
-        op = query.get("op", "")
-        nums = [
-            float(u.features["value"])
-            for u in question.units
-            if u.features.get("value_kind") == "count"
-        ]
-        if not nums:
-            return Answer("decline", None, f"no components to take the {op!r} of")
-        # Register every operand in the arithmetic log — they ARE all inputs, so
-        # value-accounting must see them consumed (the `list-statistic` lesson:
-        # otherwise it vetoes the commit for "stated count reached no fact").
-        evaluate(" + ".join(f"{x:g}" for x in nums), {}, log, source="vector")
-        if op == "magnitude":
-            result = math.sqrt(sum(x * x for x in nums))
-        elif op == "dot":
-            # The two vectors are concatenated in the number list, so they split
-            # down the middle. Definitive-or-decline: an ODD count cannot be two
-            # equal-length vectors, so it declines rather than guessing a split.
-            if len(nums) % 2:
-                return Answer("decline", None, "a dot product needs two equal-length vectors")
-            half = len(nums) // 2
-            result = sum(a * b for a, b in zip(nums[:half], nums[half:]))
-        else:
-            return Answer("decline", None, f"unsupported operation {op!r}")
-        return Answer("number", float(result), f"vector: {op} = {result}")
-
-    if consumer == "list-statistic":
-        # "What is the AVERAGE of 4, 8, 15, 16, and 42?" — read every number in
-        # the question and apply the named statistic. The statistic WORDS live in
-        # the statistic sub-categories (categories/statistics.yaml); this branch
-        # holds only the general math OPERATIONS (mean/median/max/min/product/
-        # mode), dispatched by which sub-category the word is in — no word list
-        # in Python (constitution rule 1). Definitive-or-decline.
-        stat = query.get("stat", "")
-        nums = [
-            float(u.features["value"])
-            for u in question.units
-            if u.features.get("value_kind") == "count"
-        ]
-        if not nums:
-            return Answer("decline", None, f"no numbers to take the {stat!r} of")
-        # register every operand in the arithmetic log — they ARE all inputs to
-        # the statistic, so value-accounting must see them consumed (else it
-        # vetoes the commit for "stated count reached no fact"). The sum is just
-        # the logging vehicle; the actual statistic is computed below.
-        evaluate(" + ".join(f"{x:g}" for x in nums), {}, log, source="list-statistic")
-        if reg.word_in_category(stat, "stat_mean"):
-            result = sum(nums) / len(nums)
-        elif reg.word_in_category(stat, "stat_median"):
-            s = sorted(nums)
-            n = len(s)
-            result = s[n // 2] if n % 2 else (s[n // 2 - 1] + s[n // 2]) / 2
-        elif reg.word_in_category(stat, "stat_max"):
-            result = max(nums)
-        elif reg.word_in_category(stat, "stat_min"):
-            result = min(nums)
-        elif reg.word_in_category(stat, "stat_product"):
-            result = 1.0
-            for x in nums:
-                result *= x
-        elif reg.word_in_category(stat, "stat_mode"):
-            from collections import Counter
-
-            counts = Counter(nums)
-            top = counts.most_common()
-            if len(top) > 1 and top[0][1] == top[1][1]:
-                return Answer("decline", None, f"{stat!r} is not unique")
-            result = top[0][0]
-        else:
-            return Answer("decline", None, f"unsupported statistic {stat!r}")
-        return Answer(
-            "number", round(result, 4), f"list {stat} of {len(nums)} values"
-        )
-
-    if consumer == "geometry":
-        # Formula-selection (difg geometry domain): "what is the AREA of a CIRCLE
-        # with RADIUS 5?" -> look up the (shape, quantity) formula in the pack's
-        # declarative table, bind the named dimensions from the ask, evaluate.
-        # NO per-domain Python (constitution): the formulas are DATA, this branch
-        # is the generic evaluator. Definitive-or-decline: a formula whose named
-        # dimensions are not all bound (wrong/missing dimension for the shape)
-        # evaluates to a NameError and declines rather than guess.
-        shape, quantity = query.get("shape"), query.get("quantity")
-        expr = reg.geometry_formulas.get((shape, quantity))
-        if expr is None:
-            return Answer(
-                "decline", None,
-                f"no geometry formula for {quantity!r} of a {shape!r}",
-            )
-        env = {"pi": 3.141592653589793}
-        for d, v in ((query.get("dim1"), query.get("val1")),
-                     (query.get("dim2"), query.get("val2"))):
-            if d and v not in (None, ""):
-                env[d] = float(v)
-        try:
-            value = evaluate(expr, env, log, source="geometry")
-        except Exception:
-            return Answer(
-                "decline", None,
-                f"{quantity!r} of a {shape!r} needs dimensions its given ones "
-                "do not supply",
-            )
-        # A pi-bearing area/volume is irrational; present it to 2 decimals, the
-        # conventional precision for a geometry answer (and difg's own gold
-        # rounding). Exact integer results (rectangle area 24, cube volume 27)
-        # are unchanged by the round.
-        return Answer(
-            "number", round(value, 2), f"geometry: {quantity} of {shape} = {expr}"
-        )
+    # Phase 1: consumers that lived ABOVE the temporal origo. They never saw the
+    # time-filtered store, so dispatching here is exactly what they had.
+    if consumer not in TIME_SCOPED:
+        early = _dispatch(store)
+        if early is not None:
+            return early
 
     # ------------------------------------------------------------------
     # THE TEMPORAL ORIGO (docs/deixis.md phase 2).
@@ -1376,6 +1163,15 @@ def answer(
             f for f in store.facts
             if getattr(f, "time", None) in (None, reference_time)
         ])
+
+    # Phase 2: consumers that lived BELOW the origo. `store` is now the
+    # time-filtered copy, which is the state those consumers have always been
+    # written against.
+    if consumer in TIME_SCOPED:
+        late = _dispatch(store)
+        if late is not None:
+            return late
+
 
     if consumer == "single-entity":
         entity, measure = query["entity"], query["measure"]
