@@ -1,15 +1,30 @@
-# Session 6 (2026-07-19): Stage 9h — the counted enumeration is exhaustive, n-way elimination lands
+# Session 6 (2026-07-19): Stages 9h + 9i — n-way elimination and the XOR-conditional reductio
 
-Two gated commits (`6b2ba94` tokenizer, `18fad9e` 9h), both NEUTRAL on all
-nine DEV slices; folio-with-logic dev-train **15 → 16** (+1/0, [400] — the
-wild-turkey story's gold-TRUE Ocellated item). pytest 1803 → **1812**. Stage
-detail: `projects/scratch/ROADMAP.md` §9h.
+Four gated commits (`6b2ba94` tokenizer, `18fad9e` 9h, `ea1a266` 9i, plus
+ROADMAP records), every one NEUTRAL on all nine DEV slices;
+folio-with-logic dev-train **15 → 18** ([400] Ocellated +1, [128/129]
+Bubbles +2). pytest 1803 → **1823**. Stage detail:
+`projects/scratch/ROADMAP.md` §9h–9i.
 
-**Numbers at HEAD:** folio-with-logic dev-train **16 correct / 1 poisoned**,
+**Numbers at HEAD:** folio-with-logic dev-train **18 correct / 1 poisoned**,
 dev-holdout **1/0**. All benchmark baselines unchanged (gsm8k 104/0 + 40/0 +
 suite 52/52, asdiv 43/0, svamp 13/0, mawps 9/0, scibench 0/0, folio 0/0,
-difg 70/0). **TEST look #5 count: 16 dev-train + 1 holdout of ~20-21. Do
-not spend the look.**
+difg 70/0). **TEST look #5 count: 18 dev-train + 1 holdout of ~20-21 —
+close, but not there. Do not spend the look without asking.**
+
+#### 9i in one paragraph (the S4 frontier is open)
+
+The reductio engine lives in `consumers/logic_verdict.py`: an undecided
+verdict atom is assumed each way in a throwaway store copy and
+re-saturated; a quarantining closure refutes the hypothesis. It works
+because the Bubbles derivation is LINEAR given `synth/modus-tollens` (new,
+reusable — the Islip MT half now exists) and the `DisjunctiveConditional`
+fire synths (exactly-one established, sound under both readings; NO
+`unless` ON PURPOSE — the collision IS the contradiction signal). Two
+traps already caught by tests, not corpora: no reductio under a
+definite-description question (it would answer from atoms the Phase 0
+gate just refused), and the fire synths must never fire on one true +
+one undecided disjunct (Stage 3's exclusivity measurement).
 
 #### What shipped (one line each)
 
@@ -26,14 +41,14 @@ not spend the look.**
   membership → nothing; any positive option → decided; >1 open → nothing;
   a quarantined option atom taints the entity.
 
-#### Carry-forwards (unchanged from session 5 — still binding)
+#### Carry-forwards
 
-- **A folio TEST look** — 16+1 of ~20-21; the policy stands.
-- **Islip [99-101]** needs name-shortening identity, its own stage.
+- **A folio TEST look** — 18+1 of ~20-21; ask the user before spending.
+- **Islip [99-101]** needs name-shortening identity, its own stage — but
+  its modus-tollens half now exists (9i).
 - **[8]/[9] William Dickinson** — corpus defect, unwinnable.
-- The other designed stages ([128/129] XOR reductio, [144/145] do-support
-  negation) remain deliberately unpicked; the session-5 invariants below
-  all still hold.
+- **[144/145] do-support negation VR** remains the last named designed
+  stage; the session-5 invariants below all still hold.
 
 ---
 
