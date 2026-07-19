@@ -353,6 +353,30 @@ class Existential(Fact):
 
 
 @dataclass(frozen=True)
+class Alias(Fact):
+    """A stated identity between two NAMES: "Edwin Smith was also known as
+    Ted Smith" asserts the two names refer to one individual, so every
+    ground Atom of either carries over to the other (synth/alias-copy-*,
+    both directions — identity is symmetric).
+
+    Deliberately narrow (Stage 9e): only the overt 'known as' construction
+    with a PROPER NAME on each side ever mints one. Name-shortening
+    ('Islip' for 'Islip Speedway') and epithets ("known as THE King of
+    Pop" — refused by the definite-article gate on the alias slot) are
+    different, riskier mechanisms and stay unbuilt: an alias here is a
+    stated premise, never an inference."""
+
+    a: str
+    b: str
+
+    def key(self) -> tuple:
+        return ("logic-alias", self.a, self.b)
+
+    def value_part(self) -> Any:
+        return True
+
+
+@dataclass(frozen=True)
 class QuantifiedDisjunction(Fact):
     """A class-scoped disjunction: ∀e ∈ cls. e ∈ left ∨/⊕ right ("Every pet
     is a dog or a cat"). Instantiates to a ground Disjunction per member

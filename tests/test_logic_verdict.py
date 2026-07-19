@@ -836,3 +836,78 @@ def test_a_qdisj_asserts_neither_disjunct(logic_reg):
             "Wagons owned by Mary are either red or blue. "
             "Is it true that The Rover is red?")
     assert _verdict(text, logic_reg) == "undetermined"
+
+
+# ---- Stage 9e: the stated alias --------------------------------------------
+# "NAME is/was (also) known as NAME2" states an identity between two names;
+# ground atoms carry across it in both directions and at both polarities.
+# Narrow by design: proper names only (a description is not a name), and the
+# negated surface never matches.
+
+
+def test_atoms_carry_forward_across_a_stated_alias(logic_reg):
+    assert _verdict(
+        "Mary Poppins is a nanny. Mary Poppins is also known as Sky Danvers. "
+        "Is it true that Sky Danvers is a nanny?", logic_reg
+    ) == "yes"
+
+
+def test_atoms_carry_backward_across_a_stated_alias(logic_reg):
+    assert _verdict(
+        "Sky Danvers is a nanny. Mary Poppins is also known as Sky Danvers. "
+        "Is it true that Mary Poppins is a nanny?", logic_reg
+    ) == "yes"
+
+
+def test_a_negative_atom_carries_too(logic_reg):
+    # identity transfers what is DENIED as much as what is asserted
+    assert _verdict(
+        "Mary Poppins is not a nanny. Mary Poppins is also known as Sky Danvers. "
+        "Is it true that Sky Danvers is a nanny?", logic_reg
+    ) == "no"
+
+
+def test_no_alias_no_carry(logic_reg):
+    assert _verdict(
+        "Mary Poppins is a nanny. Is it true that Sky Danvers is a nanny?",
+        logic_reg
+    ) == "undetermined"
+
+
+def test_the_optional_also_is_optional(logic_reg):
+    assert _verdict(
+        "Mary Poppins is a nanny. Mary Poppins is known as Sky Danvers. "
+        "Is it true that Sky Danvers is a nanny?", logic_reg
+    ) == "yes"
+
+
+def test_a_definite_epithet_is_not_an_alias(logic_reg):
+    # "known as THE Governess" is a description; the definite-article gate
+    # refuses it and nothing carries
+    assert _verdict(
+        "Mary Poppins is a nanny. Mary Poppins is also known as the Governess. "
+        "Is it true that Governess is a nanny?", logic_reg
+    ) == "undetermined"
+
+
+def test_a_negated_known_as_states_no_alias(logic_reg):
+    # 'not' between the copula and 'known' breaks the lit adjacency — the
+    # rule has no polarity field to get wrong because the surface never
+    # matches
+    assert _verdict(
+        "Mary Poppins is a nanny. Mary Poppins is not known as Sky Danvers. "
+        "Is it true that Sky Danvers is a nanny?", logic_reg
+    ) == "undetermined"
+
+
+def test_the_alias_match_is_not_subsumed_by_the_copular_span(logic_reg):
+    # the regression the trailing-punct opt token exists for: the general
+    # copular rule's pred span swallows the final '.', and a strict-superset
+    # match silently drops this rule's at admit_rule_results
+    from rulekit.kernel.model import Alias
+
+    r = engine.solve("Mary Poppins is also known as Sky Danvers.",
+                     logic_reg, tracing=False)
+    facts = list(r.store.by_kind(Alias))
+    assert len(facts) == 1
+    assert (facts[0].a, facts[0].b) == ("mary poppins", "sky danvers")

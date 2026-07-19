@@ -18,6 +18,7 @@ from ..data.registry import Registry
 from ..data.schemas import AskRule, MatchToken, PatternRule
 from .evaluate import ArithmeticLog, EvaluationError, evaluate
 from .model import (
+    Alias,
     Before,
     VerbalRelation,
     Conditional,
@@ -58,6 +59,7 @@ _FACT_CLASSES = {
     "disjunction": Disjunction,
     "existential": Existential,
     "quantified_disjunction": QuantifiedDisjunction,
+    "alias": Alias,
     "subset": Subset,
     "predication": Predication,
     "before": Before,

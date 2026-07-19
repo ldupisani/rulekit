@@ -119,3 +119,27 @@ rules:
       - {fact: atom, entity: X, pred: L}
     emit:
       - {fact: atom, entity: X, pred: L, polarity: false}
+
+  # ---- Stage 9e: the stated alias (identity of names) ----------------------
+  # alias(A,B), P(A)  ⊢  P(B) — and the mirror, because identity is
+  # symmetric. Both polarities carry: an identity transfers what is DENIED
+  # of one name as much as what is asserted. Only ground Atoms copy —
+  # a name never heads a class, so Quantified/Conditional have no A-slot
+  # for an alias to reach.
+  - id: synth/alias-copy-forward
+    when:
+      - {fact: alias, a: A, b: B}
+      - {fact: atom, entity: A, pred: P, polarity: POL}
+    unless:
+      - {fact: atom, entity: B, pred: P}
+    emit:
+      - {fact: atom, entity: B, pred: P, polarity: POL}
+
+  - id: synth/alias-copy-backward
+    when:
+      - {fact: alias, a: A, b: B}
+      - {fact: atom, entity: B, pred: P, polarity: POL}
+    unless:
+      - {fact: atom, entity: A, pred: P}
+    emit:
+      - {fact: atom, entity: A, pred: P, polarity: POL}

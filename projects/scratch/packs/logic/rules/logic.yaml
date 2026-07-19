@@ -271,6 +271,40 @@ rules:
     emits:
       - {fact: atom, entity: "{subj}", pred: "{pred}", polarity: true}
 
+  # Stage 9e: the stated alias — "NAME is/was (also) known as NAME2" asserts
+  # an identity between two names, so ground atoms carry across it in BOTH
+  # directions (synth/alias-copy-*). Both slots are `proper_name` (a
+  # resolved pronoun never states an identity between names), and the alias
+  # side refuses a skipped DEFINITE article: "known as THE King of Pop" is
+  # an epithet — a description, not a second name — and copying atoms onto
+  # a description key would let it collide with real predicates. Negated
+  # forms never match (the 'not' between copula and 'known' breaks lit
+  # adjacency), so no polarity field exists to get wrong. The general
+  # ground-copular rule still reads the same sentence into its (junk,
+  # joinless) phrase-key atom — harmless, and its span is what consumes the
+  # sentence for the fragment guard.
+  - id: logic/alias-known-as
+    phase: read
+    match:
+      sentence:
+        - {slot: a, type: proper_name, at_start: true, blocks_skipped: indefinite_article}
+        - {lit: [is, was]}
+        - opt:
+            - {lit: also}
+        - {lit: known}
+        - {lit: as}
+        - {slot: b, type: proper_name, blocks_skipped: definite_article}
+        # the trailing period, claimed on purpose: the general copular rule's
+        # pred SPAN swallows it, so without this token its match consumes a
+        # strict SUPERSET of this rule's units and admit_rule_results drops
+        # the alias as subsumed. Claiming the same skippable makes the two
+        # matches tie — both fire, which is the intent: the copular rule's
+        # joinless phrase-key atom is harmless beside the alias fact.
+        - opt:
+            - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: alias, a: "{a}", b: "{b}"}
+
   - id: logic/ground-copular-is-not
     phase: read
     match:
