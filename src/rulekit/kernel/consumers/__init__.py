@@ -99,6 +99,16 @@ def consumer(name: str, *, time_scoped: bool = False):
 
 
 from . import (  # noqa: E402,F401  (import registers each handler)
+    combined_elided_measure as _combined_elided_measure,
+    combined as _combined,
+    average as _average,
+    unit_price_from_total as _unit_price_from_total,
+    cost_of_quantity as _cost_of_quantity,
+    partition_complement as _partition_complement,
+    label_difference as _label_difference,
+    item_cost as _item_cost,
+    deficit as _deficit,
+    age_projected as _age_projected,
     membership_verdict as _membership_verdict,
     logic_disjunction_verdict as _logic_disjunction_verdict,
     verbal_obj_class_verdict as _verbal_obj_class_verdict,

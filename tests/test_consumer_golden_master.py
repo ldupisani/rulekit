@@ -322,7 +322,13 @@ def test_the_guards_are_the_bulk_of_the_coverage():
 # --- the coverage of this file, measured and enforced ----------------------
 
 _GUARD_FLOOR = 49   # guards WITH a probe: raise as probes are added, never lower
-_GAP_CEILING = 43   # guards WITHOUT one: lower as probes are added, never raise
+_GAP_CEILING = 41   # guards WITHOUT one: lower as probes are added, never raise
+
+# The denominator is 90, and it was 92 until the boundary bug above was fixed:
+# the naive split credited `geometry` with the temporal origo's decline and let
+# one branch absorb its neighbour's. Verified against the PRE-refactor file with
+# the corrected boundary — also 90 — so the extraction lost nothing; the old
+# figure was simply an over-count.
 
 # Guards with no golden probe because they are UNREACHABLE from text by design
 # (a defensive re-check, or a slot type that cannot bind the bad value). They
@@ -357,22 +363,28 @@ def _declared_guards() -> dict[str, set[str]]:
             if mod.name == "__init__.py":
                 continue
             body = mod.read_text()
-            m = re.search(r'@consumer\("([a-z-]+)"\)', body)
+            m = re.search(r'@consumer\("([a-z-]+)"', body)  # may carry time_scoped=
             if not m:
                 continue
             msgs = re.findall(r'"decline",\s*None,\s*\n?\s*f?"([^"]{6,70})', body)
             extracted[m.group(1)] = {x.split("{")[0].split(":")[0].strip()[:40] for x in msgs}
 
+    # ⚠ A BRANCH ENDS at the first non-blank line NOT indented into it — not at
+    # the next `if consumer ==`. `answer()` has SHARED code between branches
+    # (the temporal origo), and the naive boundary mis-attributes it: geometry
+    # was being credited with the origo's decline, and a branch whose successor
+    # had been extracted silently absorbed the next one's guards. The same
+    # boundary bug that hit the extraction tool, in the measurement.
     lines = text.split("\n")
-    blocks, cur, start = {}, None, 0
+    blocks = {}
     for i, ln in enumerate(lines):
         m = re.match(r'    if consumer == "([a-z-]+)":', ln)
-        if m:
-            if cur:
-                blocks[cur] = "\n".join(lines[start:i])
-            cur, start = m.group(1), i
-    if cur:
-        blocks[cur] = "\n".join(lines[start:])
+        if not m:
+            continue
+        end = next((j for j in range(i + 1, len(lines))
+                    if lines[j].strip() and not lines[j].startswith("        ")),
+                   len(lines))
+        blocks[m.group(1)] = "\n".join(lines[i:end])
     out = {}
     for consumer, body in blocks.items():
         msgs = re.findall(r'"decline",\s*None,\s*\n?\s*f?"([^"]{6,70})', body)
