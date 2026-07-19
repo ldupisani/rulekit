@@ -1,3 +1,104 @@
+# Session 3 (2026-07-18/19): +27 correct answers, answer.py refactored 41/41, 0 new wrongs
+
+**Baselines — all re-measured at HEAD, every commit gate-clean:**
+
+| corpus | | corpus | |
+|---|---|---|---|
+| gsm8k dev-train | **104/0** | difg | **70/0** of 342 |
+| gsm8k dev-holdout | **40/0** | asdiv | **43/0** |
+| gsm8k TEST | 92.3% (**no look spent**) | svamp | **13/0** |
+| curated suite | **52/52** | mawps | **9/0** |
+| folio | **0/0** | scibench | **0/0** |
+| folio-with-logic dev-train | **11 / 1 poisoned** | …dev-holdout | **1/0** |
+
+pytest **1420 → 1728**. lint: gsm8k/difg 0 errors; scratch 8 (all false
+positives — see task B).
+
+#### What shipped
+
+- **difg 44 → 70** (+26): angle conversions, percent change, ISO + spelled
+  dates, geometric-measure costing, discounted/taxed totals, unit-converted
+  rate costing, `seconds` literal-variant, hypotenuse, affine temperature,
+  molar mass + derived quantities.
+- **folio-with-logic 10 → 11** (Stage 9a) plus two precision fixes (9b, 9c).
+- **`answer.py` 3,479 → 1,175 lines**, all 41 consumers extracted to
+  `kernel/consumers/` behind `ConsumerContext` + a registry.
+- **Guardrails**: `/api/doc` firewall hole, `--twice`'s false determinism
+  claim, CI (`.github/workflows/ci.yml`), contractions moved to a pack,
+  the `lit` alternation primitive + 3 lint checks.
+
+#### Invariants minted — do not relearn these
+
+- **Reading that needs DATA belongs where the data is.** `CO2` and `MP3` are
+  structurally identical; only the element table separates them, and the
+  tokenizer has no registry. A tokenizer-level formula pattern cost 2 GSM8K
+  items before moving to `condense`. Same lesson as spelled dates.
+- **`answer()` had SHARED code between consumer branches.** A block boundary
+  drawn to "the next `if consumer ==`" swallows the **temporal origo**. The
+  origo also SPLITS the file: 15 consumers above it never see the
+  time-filtered store, 26 below it always do — hence two dispatch points and
+  `time_scoped=True`, recorded per consumer at extraction.
+- **A refactor must never launder its own debt.** `_declared_guards()` parsed
+  only `answer.py`, so extracting a consumer deleted its guards from the
+  denominator and coverage improved for free. It now scans `consumers/` too.
+- **The guard denominator is 90, not 92.** The old figure came from the same
+  naive boundary bug; verified against the pre-refactor file.
+- **difg has mangled golds.** `What time is 90 minutes after 11:15 AM?` golds
+  as `value=12.0, unit=':45 PM'` — an engine answering the bare hour scores
+  CORRECT for the wrong reason. Also `1.2044` + `e+24` for molecules. And
+  small-magnitude MONEY golds are unwinnable: `$0.27432` vs a `$0.27` gold
+  fails the 1% relative comparator. Do not chase; do not "fix" by rounding.
+- **Rule 3 was being broken.** 47 corpus sentences were in `tests/`, several
+  added this session in files whose docstrings claimed "SYNTHETIC ONLY".
+  `tests/test_no_corpus_strings_in_tests.py` now guards it with a 38-entry
+  debt ledger (shrink it, never grow it).
+- **`bare_form`'s `fold == lemma` test is a proxy delegating to lemma data**
+  with 71 gaps; fixed fail-closed on the -s suffix (9c). The COVERAGE half
+  (adding the 71 mappings) is still open and rewrites fact keys corpus-wide.
+
+#### Do NOT do next, with reasons
+
+- **`saturate.py` (1,903 lines)** — it already HAS the registry (`PLUGINS`,
+  `saturate.py:1875`), but `_relations_synth` alone is **654 lines (34%)**, so
+  extracting the other 11 plugins leaves ~850 and does not close the budget it
+  is motivated by. Those 654 lines are an ordered fallthrough over four shared
+  mutable indices where **reachability is the contract**
+  (`saturate.py:590-593`); splitting converts an invariant statement order
+  enforces into one a registry must. And there is NO characterisation net —
+  the 654-line plugin is the least pinned of all (`synth/relation-to-quantity`:
+  1 test mention). If ever taken on: build a store-level golden master first
+  (assert the sorted `(kind, entity, measure, value, provenance.source)` set
+  after `saturate()`), then task C below, then factor the anchor-lookup layer
+  (`saturate.py:215-330`) into a `QuantityIndex` — a real seam, ~120 lines, no
+  ordering risk. `learn.py` (1,551) is worse: one 661-line `learn()`, no
+  registry at all.
+- **A folio TEST look** — policy needs ~10 more conversions; there is 1 since
+  look #4.
+- **The remaining difg items** — the cheap ones are gone. Percent composition
+  needs `composition` (GSM8K dev exposure) AND a bare single-symbol `O`, which
+  would sweep in `B`/`C`/`K` as labels. Finance (3), proportion (2) and
+  inclusion-exclusion (1) all need premise reading or new machinery.
+
+#### Next up (agreed plan: A → B → C, in order)
+
+- **A. Close the 41 guard gaps** — tests only. Per consumer: golden-master row
+  where the guard is text-reachable, else a direct `ConsumerContext` probe
+  asserting the decline (pattern: `tests/test_consumer_molar_mass.py`).
+  Bookkeeping: `_GUARD_FLOOR` / `_GAP_CEILING` / `_COVERED_BY_UNIT_TEST` in
+  `tests/test_consumer_golden_master.py`.
+- **B. Fix the linter's `nonstate_verb` blind spot** — `_TYPE_SENSES`
+  (`src/rulekit/lint/overlap.py:32`) has no entry, so `{lit: is}` reports a
+  collision it cannot have. Clears all 8 scratch errors; then make scratch
+  lint BLOCKING in CI.
+- **C. Lift `answer.py`'s 981 helper lines out by theme** — `kernel/totals.py`
+  (~640: the eight `_*_total` helpers), `kernel/measures.py` (~185: the five
+  `_resolve_measure*`/`_check_req_unit`/`_measure_substance_guard` helpers),
+  leaving `answer.py` ~195. Repoint 17 consumer imports; `saturate.py`'s five
+  deferred imports become top-level. Byte-neutral everywhere. A before C so
+  guards are pinned before they move.
+
+---
+
 # Session handoff — 2026-07-18 (session 2)
 
 Read this + `CLAUDE.md` (the constitution) + `docs/methodology.md` before touching anything.
