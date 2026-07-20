@@ -100,6 +100,12 @@ formulas:
   # their unit dimensions, never by position; extra values still decline under
   # the consumer's whole-list accounting contract.
   - {quantity: momentum, expr: "mass * velocity"}
+  # Translational kinetic energy when velocity is stated directly. The exact
+  # qualified key prevents bare, gravitational, rotational, and relativistic
+  # energy asks from borrowing this formula. A distance/time operand shape is
+  # deliberately not derived here; it remains a separate formula-alternatives
+  # design problem and declines under whole-list accounting.
+  - {quantity: kinetic energy, expr: "0.5 * mass * velocity**2"}
 
 # DELIBERATELY ABSENT — the remaining compound-unit quantities. The tokenizer
 # now preserves their operands whole, but no canonical dimension/formula is
@@ -108,8 +114,6 @@ formulas:
 # the missing-dimension NameError path remains the guard.
 #   force    = mass * acceleration   (m/s^2)
 #   density  = mass / volume         (cm^3)
-#   kinetic energy   = 0.5 * mass * velocity**2   (m/s; its complete qualified
-#     key already distinguishes it from gravitational/rotational energy)
 #
-# Momentum now buys the compound-token mechanism. The remaining formulas stay
-# absent for their independent vocabulary/scale/formula-shape blockers.
+# Momentum bought the compound-token mechanism. The remaining formulas stay
+# absent for their independent vocabulary and scale blockers.

@@ -1,3 +1,47 @@
+# Session 17 (2026-07-20): direct kinetic energy +2 rows @100%; one formula shape stays explicit; TEST holds
+
+One independently revertible, pack-only physics increment adds translational
+kinetic energy for a directly stated mass and velocity. **difg DEV 73 → 75
+committed at 100% precision**; every other DEV/suite snapshot is item-neutral,
+curated is 65/65 in two fresh processes, lint has 0 errors, and pytest **1951 →
+1953**. All three aggregate-only TEST fingerprints are unchanged: difg **15
+correct / 0 wrong / 92 declined**, GSM8K **13 correct / 1 persistent wrong /
+1305 declined**, and SciBench **0 correct / 0 wrong / 168 declined**.
+
+#### `kinetic energy = 0.5 * mass * velocity**2` — direct operands only
+
+Session 16 supplied every prerequisite: compound `m/s` tokenization, the
+canonical velocity dimension, `moving`, and full qualified formula keys.
+This session therefore adds only declarative formula data. The exact `kinetic
+energy` key cannot be borrowed by bare, gravitational, rotational, or
+relativistic energy asks. A synthetic 3 kg × 4 m/s probe yields 24, while the
+generic physics consumer continues to bind operands by unit rather than order.
+
+The formula deliberately references only `mass` and `velocity`. A question
+that states mass, distance, and time could derive velocity mathematically, but
+`rulekit/formulas@1` declares one explicit expression and one operand set per
+quantity. The existing whole-list contract therefore rejects the unread
+distance/time values instead of silently composing the speed formula. A
+synthetic negative probe pins that boundary.
+
+The DEV corpus contains the same direct kinetic-energy question twice. Bench
+counts both rows, hence 73 → 75, while snapshots key both copies to the same
+question-derived ID and report one `SOLVED` ID (`8b9b4219aeb7`). This is a
+pre-existing corpus/snapshot bookkeeping quirk, not two reasoning paths; do not
+mix a snapshot-key migration into a formula increment.
+
+**Next lever**: the remaining classical kinetic-energy row needs two things in
+one bought increment: the `s` time symbol must canonicalize to the existing
+seconds dimension, and formulas need guarded alternatives selected by a
+uniquely satisfiable referenced-dimension set (`mass+velocity` versus
+`mass+distance+time`). That is a schema/consumer increment, not another formula
+line. Survey its cross-formula value before building it. Force remains blocked
+by vocabulary exposure and contradictory Coulomb answer scaling; density still
+conflicts with the one-canonical-unit-per-dimension contract. The separately
+scoped text answer kind remains the other honest frontier.
+
+---
+
 # Session 16 (2026-07-20): momentum +1 @100%; compound units are whole tokens; three TEST firewalls hold
 
 One independently revertible difg physics increment lands the previously

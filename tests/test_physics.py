@@ -280,6 +280,31 @@ def test_momentum_with_a_second_velocity_declines(reg):
     assert not r.answer.committed
 
 
+def test_direct_velocity_binds_kinetic_energy(reg):
+    """The exact qualified key selects translational kinetic energy, while the
+    operands still bind from their units rather than their textual order."""
+    r = solve(
+        "What is the kinetic energy of a 3 kg object moving at 4 m/s?",
+        reg,
+        tracing=False,
+    )
+    assert r.answer.committed, (r.answer.reason or "")
+    assert r.answer.value == pytest.approx(24.0)
+
+
+def test_kinetic_energy_does_not_derive_an_unstated_velocity(reg):
+    """Distance and time could imply velocity mathematically, but formulas@1
+    has one explicit operand shape. Silently composing speed would broaden the
+    mechanism and launder two values the selected expression does not read."""
+    r = solve(
+        "What is the kinetic energy of a 3 kg object that travels 48 meters "
+        "in 6 seconds?",
+        reg,
+        tracing=False,
+    )
+    assert not r.answer.committed
+
+
 # --- definitive-or-decline --------------------------------------------------
 
 
