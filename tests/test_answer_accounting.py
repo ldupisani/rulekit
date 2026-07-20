@@ -27,12 +27,37 @@ def reg():
     return load_project(Path("projects/gsm8k")).registry
 
 
-def test_partial_reading_over_qualified_siblings_declines(reg):
+def test_qualified_parts_are_summed_never_partially_committed(reg):
     """The core case. The holder owns three colour-qualified quantities of one
-    measure; the ask names the bare measure. Committing ANY single one of them is a
-    confident wrong — the engine must decline instead."""
+    measure and the ask names the bare measure. Committing ANY SINGLE ONE of
+    them is the confident wrong this guard exists to stop.
+
+    ⚠ THIS TEST USED TO ASSERT A DECLINE, and it was passing for a reason
+    DOWNSTREAM OF A BUG. The qualifier split was pairwise, so an odd-length
+    part list stranded the last conjunct under the BARE key ('hat'=4); the
+    guard then correctly saw two unused qualified siblings and declined. With
+    the split made order-independent all three parts are keyed, the bare ask
+    sums them, and 9 is simply the right answer — a decline here would now be
+    a coverage loss, not a safety win.
+
+    The guard's real concern is UNCHANGED and is asserted directly: no single
+    part may ever be committed. `test_a_stated_whole_over_parts_still_
+    declines` keeps the shape this file's docstring actually describes."""
     r = solve(
         "Ann has 2 red hats, 3 blue hats, and 4 green hats. How many hats does Ann have?",
+        reg, tracing=False,
+    )
+    assert r.value == 9.0
+    assert r.value not in (2.0, 3.0, 4.0), "committed a single part"
+
+
+def test_a_stated_whole_over_parts_still_declines(reg):
+    """The shape this file's docstring names — qualified siblings PLUS a bare
+    holding of the same measure. Which is the whole and which the parts is
+    genuinely ambiguous, so the guard must still refuse."""
+    r = solve(
+        "Ann has 2 red hats, 3 blue hats and 4 green hats. Ann has 20 hats. "
+        "How many hats does Ann have?",
         reg, tracing=False,
     )
     assert not r.answer.committed, f"committed {r.answer.value!r} on a partial reading"

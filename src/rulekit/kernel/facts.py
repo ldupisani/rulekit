@@ -105,6 +105,47 @@ class FactStore:
         grandma ... 3 rolls to a neighbour") reaches this mirror too
         (segment still differs, so it never hits the top-of-loop agreement
         dedupe) and so is never silently undercounted to one occurrence."""
+        # THE QUALIFIED SPLIT IS PAIRWISE, SO ODD LISTS STRANDED THE LAST ONE.
+        #
+        # The measure-qualifier split below only fires on a KEY COLLISION, and
+        # re-keying both sides REMOVES the bare key they collided on. So a
+        # third qualified sibling arrives, finds nothing to collide with, and
+        # is stored BARE — a silently dropped qualifier, not a decline:
+        #
+        #   "15 brown bears, 24 white bears and 27 black bears"
+        #     brown -> stored bare 'bear'
+        #     white -> COLLIDES -> both re-keyed to bear[brown], bear[white]
+        #     black -> no bare 'bear' left -> stored as bare 'bear'   <-- bug
+        #
+        # Confirmed by prediction before it was fixed: the defect is PARITY,
+        # so n=3 and n=5 stranded the last conjunct while n=4 and n=6 were
+        # clean (the 4th collides with the stranded 3rd and rescues it).
+        #
+        # The cure is to make the qualified keying ORDER-INDEPENDENT rather
+        # than to add another pairwise case: if this measure already has a
+        # qualified sibling on this entity, this fact belongs in that same
+        # keyspace. The `no bare sibling` condition is copied verbatim from
+        # the split below — a stated unqualified holding IS the whole, and
+        # splitting alongside it would misread the whole as another part.
+        if (
+            isinstance(fact, Quantity)
+            and fact.measure_qualifier
+            and "[" not in str(fact.measure)
+            and any(
+                isinstance(other, Quantity)
+                and other.entity == fact.entity
+                and str(other.measure) == f"{fact.measure}[{other.measure_qualifier}]"
+                for other in self.facts
+            )
+            and not any(
+                isinstance(other, Quantity)
+                and other.entity == fact.entity
+                and other.measure == fact.measure
+                and other.measure_qualifier is None
+                for other in self.facts
+            )
+        ):
+            fact = replace(fact, measure=f"{fact.measure}[{fact.measure_qualifier}]")
         for existing in self.facts:
             if existing.key() == fact.key():
                 # A conjunct-segment split (mirror #5 below) must win even
