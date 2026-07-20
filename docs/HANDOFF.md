@@ -3,11 +3,13 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B reader 1 now serves the
-> ground both-or-neither equivalence subtype: +2 / +5 fully-read premise instances and
-> +1 / +1 stack-ready stories on dev-train / dev-holdout, with no verdict or hazard
-> movement. Continue by re-surveying the remaining `entity-in-raw-or` constructions;
-> do not widen this exact reader. No TEST look was spent.
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–2 now serve
+> ground both-or-neither equivalence and unrestricted bare-plural disjunction. Cumulative
+> movement from Phase A is +4 / +6 fully-read premise instances and +1 / +2 stack-ready
+> stories on dev-train / dev-holdout, with no verdict or hazard movement. Two construction
+> classes are served; re-survey for reader 3 and do not widen either exact reader. The
+> `_naive_singular`, CamelCase-name, and verbal-universal-ask banks still have zero joins.
+> No TEST look was spent.
 >
 > **Campaign status (2026-07-20): PARKED.** The difg/SciBench physics-formula
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)

@@ -793,6 +793,38 @@ rules:
     emits:
       - {fact: quantified_disjunction, cls: "{cls.singular} {rest}", left: "{l.singular}", right: "{r.singular}", exclusive: true}
 
+  # Phase B reader 2: the Stage 8 banked UNRESTRICTED bare-plural family now
+  # has one buyer on each grouped split ("Bananas are grasses or fruits";
+  # "Events are either happy or sad"). The same bare_plural slot that guards
+  # ordinary generic universals refuses counted, qualified, possessive, and
+  # definite subjects. Bare 'or' remains inclusive; overt 'either' remains
+  # exclusive under Stage 3's measured surface contract. Each disjunct is one
+  # positive predicate span; negation and larger coordination fail closed.
+  - id: logic/qdisj-bare-plural-unrestricted-bare
+    phase: read
+    match:
+      sentence:
+        - {slot: cls, type: bare_plural, at_start: true, blocks_skipped: definite_article}
+        - {lit: are}
+        - {slot: l, span: true, span_blocks: [negation, conjunction, preposition, either_marker]}
+        - {lit: or}
+        - {slot: r, span: true, span_blocks: [negation, conjunction, preposition]}
+    emits:
+      - {fact: quantified_disjunction, cls: "{cls.singular}", left: "{l.singular}", right: "{r.singular}", exclusive: false}
+
+  - id: logic/qdisj-bare-plural-unrestricted-either
+    phase: read
+    match:
+      sentence:
+        - {slot: cls, type: bare_plural, at_start: true, blocks_skipped: definite_article}
+        - {lit: are}
+        - {lit: either}
+        - {slot: l, span: true, span_blocks: [negation, conjunction, preposition, either_marker]}
+        - {lit: or}
+        - {slot: r, span: true, span_blocks: [negation, conjunction, preposition]}
+    emits:
+      - {fact: quantified_disjunction, cls: "{cls.singular}", left: "{l.singular}", right: "{r.singular}", exclusive: true}
+
   # ---- Stage 4: quantifier morphology + existentials (ROADMAP.md) -----------
   # 'any' is an ARTICLE (difg-mined) — auto-skipped, so an ordinary lit can
   # never see it; `consume_skipped` (schemas.MatchToken) stops the skip AT

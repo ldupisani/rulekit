@@ -1065,3 +1065,40 @@ stack-ready-story coverage move on **both** grouped splits. The rest of
 alternatives, repeated `neither A nor B`, and larger signed conjunctions are
 separate construction families. Re-survey them independently; do not widen
 this reader or call the whole catch-all served.
+
+## Phase B reader 2 — unrestricted bare-plural disjunction (2026-07-20)
+
+The Stage 8 banked family now has a cross-split buyer: **“CLSs are [either]
+L or R.”** Two pack-only readers reuse `QuantifiedDisjunction` and the existing
+instantiation, case-analysis, DS, and XOR synths. Bare `or` is inclusive and
+overt `either` is exclusive, exactly matching Stage 3's measured contract.
+The existing `bare_plural` slot carries the whole safety boundary: counted,
+definite, possessive, and qualified subjects refuse. Negated or larger
+coordinated disjuncts remain unread.
+
+Synthetic contract: inclusive instantiation + case analysis, exclusive
+elimination, four non-generic subject refusals, and a larger-disjunct refusal.
+**pytest 1966 passed; scratch lint 0 errors.** The full benchmark matrix is
+NEUTRAL against reader 1: curated 65/65, plus difg dev, GSM8K dev-train and
+dev-holdout, ASDiv, SVAMP, MAWPS, SciBench, and FOLIO dev all at **0 BROKE /
+0 DECL→WRONG**. Folio-with-logic verdicts remain 20 correct / 1 persistent
+poisoned-text wrong / 473 declined on train and 1 / 0 / 424 on holdout.
+
+### Incremental reader movement
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | target raw-or premises | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1329→1329 | 722→724 (+2) | 16/12→16/12 | 15→15 | 664→662 |
+| dev-holdout | 1295→1295 | 726→727 (+1) | 7/6→8/7 | 35→34 | 609→608 |
+
+Every hazard stays at the Phase A baseline. The train reader removes a real
+truth-scope blocker even though the query-overlap heuristic did not label that
+story `entity-in-raw-or`; the holdout reader also creates one stack-ready
+story. This is the second fully served construction class toward Phase C's
+three-class minimum.
+
+The mandatory banked-zero recheck remains **zero** for all three joins. The
+new generic keys use regular `-s` singularization (`bananas`) or a registered
+noun (`events`), so the `_naive_singular` `-se/-ce/-ze` fix cannot participate.
+Neither story introduces a CamelCase entity. Their conclusions are copular,
+not verbal-universal asks. Keep all three banked.

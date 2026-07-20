@@ -1,7 +1,7 @@
 # The breadth-first premise-reader campaign — FOLIO logic → full integration
 
-**ACTIVE. Phase A and Phase B reader 1 completed 2026-07-20; the first
-conjunctive-disjunct construction is ground both-or-neither equivalence.**
+**ACTIVE. Phase A and Phase B readers 1–2 completed 2026-07-20: ground
+both-or-neither equivalence and unrestricted bare-plural disjunction.**
 
 ## Context
 
@@ -148,6 +148,12 @@ stack-ready stories +1 / +1 on dev-train / dev-holdout with every hazard and
 verdict outcome unchanged. Other `entity-in-raw-or` surfaces remain unserved
 and must be priced as separate constructions; see the landed record in
 `projects/scratch/ROADMAP.md`.
+
+Reader 2 serves unrestricted generic **“CLSs are [either] L or R”** using the
+existing quantified-disjunction machinery. Incremental movement is +2 / +1
+fully-read premises and +0 / +1 stack-ready stories, again with no verdict or
+hazard movement. Two construction classes are now served; at least one more
+is required before Phase C can trigger, in addition to the numeric thresholds.
 
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key

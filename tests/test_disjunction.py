@@ -200,3 +200,44 @@ def test_both_or_neither_refuses_larger_trailing_construction(logic_reg):
         logic_reg, tracing=False,
     )
     assert not list(r.store.by_kind(Equivalence))
+
+
+# ---- Phase B reader 2: unrestricted bare-plural disjunction -----------------
+
+def test_bare_plural_disjunction_instantiates_then_cases(logic_reg):
+    assert _verdict(
+        "Pets are dogs or cats. Rex is a pet. Every dog is an animal. "
+        "Every cat is an animal. Is it true that Rex is an animal?", logic_reg,
+    ) == "yes"
+
+
+def test_bare_plural_either_preserves_exclusivity(logic_reg):
+    assert _verdict(
+        "Pets are either dogs or cats. Rex is a pet. Rex is a dog. "
+        "Is it true that Rex is a cat?", logic_reg,
+    ) == "no"
+
+
+@pytest.mark.parametrize(
+    "surface",
+    [
+        "Three dogs are cats or wolves.",
+        "The dogs are cats or wolves.",
+        "Guard dogs are cats or wolves.",
+        "Mary's dogs are cats or wolves.",
+    ],
+)
+def test_bare_plural_disjunction_refuses_non_generic_subjects(logic_reg, surface):
+    from rulekit.kernel.model import QuantifiedDisjunction
+
+    r = engine.solve(surface, logic_reg, tracing=False)
+    assert not list(r.store.by_kind(QuantifiedDisjunction))
+
+
+def test_bare_plural_disjunction_refuses_larger_disjunct(logic_reg):
+    from rulekit.kernel.model import QuantifiedDisjunction
+
+    r = engine.solve(
+        "Dogs are either cats or wolves and birds.", logic_reg, tracing=False,
+    )
+    assert not list(r.store.by_kind(QuantifiedDisjunction))
