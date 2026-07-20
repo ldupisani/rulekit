@@ -891,3 +891,131 @@ come from more single-story conversions; it would need breadth-first
 premise-reader coverage (the 311-item convertible pool's common blocker
 classes), which is a different campaign with a different cost curve.
 Do NOT schedule look #6 off conversion count alone.
+
+## Phase A — breadth-first premise-reader baseline (2026-07-20)
+
+Phase A of `docs/delphi-learnings-plan.md` is complete. It is measurement
+only: no rule, consumer, corpus, snapshot, or TEST state changed. The
+machine-readable evidence is `folio-blocker-baseline.json`; it contains only
+DEV IDs/labels and aggregates, never copied TEST data.
+
+### The current pool is 305 raw / 302 actionable, not 314 or 311
+
+The 314 figure above was correct at Stage 9c. Stages 9d–9j subsequently
+converted nine verdict-gold declines, so the current dev-train pool is
+**305**. Three fixed exclusions make the actionable pool **302**:
+`72a175580c38` and `b4896190b01e` are the missing-period Dickinson
+mega-sentences, and `634b26d06409` needs the explicitly out-of-scope
+event/time machinery. The old 311 wording at the end of the look-#5 note had
+already subtracted only part of the later movement; it is not a distinct pool.
+
+### Reproducible definitions and fingerprints
+
+- Input: FOLIO's grouped `train` parquet, sliced through the normal harness
+  into `dev-train` and `dev-holdout`; only `TypedGold(kind="verdict")` rows.
+- Registry: the normal `projects/scratch` registry, which loads the logic
+  pack. Each item is solved with tracing off. Direct premise facts are facts
+  whose provenance sentence equals that premise's sentence index.
+- **Fact-bearing**: a premise emits at least one such direct fact.
+- **Fully read**: it is fact-bearing and has no *unconsumed* unknown unit,
+  ambiguous unit, unmet obligation, or unread truth-scoping unit. Units
+  consumed by a whole-construction logic reader are not blockers merely
+  because their lexical sense is otherwise unknown.
+- **Stack-ready**: the ask and query are represented, every premise is fully
+  read, some fact key overlaps a query entity/predicate, and there is no
+  collision, quarantine, ambiguous reading, or clause-split hazard.
+  Same-value agreement deduplications remain diagnostic, not blocking.
+- Labels are multi-label. There is deliberately **no primary-blocker
+  precedence** and no ordering inherited from classifier branch order.
+  Exact label definitions and every DEV item ID per label are in the JSON.
+- Source commit: `207944dd1b608ca1b8b829e8220e02d9c727e6a3`.
+  Logic registry fingerprint: `3b432fed3e47bf4f9773fa1570e956884915a2c7ce8f2d703e2c231b1570760f`.
+  Corpus fingerprints: dev-train `5035b9f662b3a888246732397e4d77415703edb77175d6caa1a5b640bbbef697`;
+  dev-holdout `6772c96beafd14b45bf63a8ce15c8775cc6002b5e7a5551b36ccaa52ff3cd320`.
+
+The classifier is intentionally throwaway. To regenerate it, use the same
+harness loading/slicing path, solve every verdict-gold item with the scratch
+registry, derive per-premise facts from provenance plus operative blockers
+from `Document.consumed_uids`, then apply the definitions above and the label
+definitions in the JSON. The fingerprints must match before comparing totals.
+
+### Baseline
+
+| grouped split | verdict-gold | correct / declined | actionable stories | fact-bearing | fully read | stack-ready items / stories |
+|---|---:|---:|---:|---:|---:|---:|
+| dev-train | 325 | 20 / 305 | 154 | 1327/1647 (80.57%) | 720/1647 (43.72%) | 14 / 11 |
+| dev-holdout | 292 | 1 / 291 | 130 | 1295/1602 (80.84%) | 721/1602 (45.01%) | 6 / 5 |
+
+The actionable dev-train answer shapes are 216 no-ask, 82 represented-but-
+undetermined, and 4 other declines. Dev-holdout is 192 / 97 / 2. The roughly
+36-point gap between fact-bearing and fully-read coverage is the measured
+reason to build premise readers rather than chase additional isolated facts.
+
+Hazard baselines (train / holdout): collision **8 / 12**, quarantine **16 /
+24**, ambiguous readings **51 / 33**, clause split **0 / 0**. Agreement
+ambiguities are diagnostic-only at **63 / 86**.
+
+### Multi-label construction survey and marginal stack estimate
+
+`gain` means: ask represented and every currently blocked premise carries
+that label. It is an optimistic ordering signal, not a promised conversion.
+
+| class | train items / stories / gain items-stories | holdout items / stories / gain items-stories | decision |
+|---|---:|---:|---|
+| entity-in-raw-or | 17 / 12 / 4-2 | 35 / 24 / 9-6 | first buyer; extend existing Stage 3 machinery |
+| entity-raw-other | 9 / 9 / 3-3 | 15 / 11 / 3-3 | survey into real constructions; never ship this catch-all |
+| passive | 79 / 36 / 6-4 | 79 / 36 / 6-3 | broad but heuristic; price a narrow passive family |
+| relative-clause | 104 / 50 / 2-1 | 91 / 35 / 6-3 | broad but costly/overlapping; split before build |
+| entity-in-raw-if | 12 / 10 / 2-2 | 9 / 6 / 0-0 | bank until a two-split buyer appears |
+| compound-generic | 9 / 5 / 0-0 | 8 / 4 / 1-1 | cheap candidate, but not yet a two-split stack buyer |
+| do-support-negation | 63 / 29 / 0-0 | 41 / 20 / 0-0 | demoted; surface frequency did not buy stack readiness |
+| scope-ambiguous universal | 5 / 3 / 0-0 | 5 / 2 / 0-0 | no measured buyer; do not design yet |
+
+Truth-scope vetoes are the dominant cross-cutting symptom: 666 premises / 248
+items / 122 stories on train and 614 / 251 / 108 on holdout. They are not one
+reader class. Raw coordination, unknown vocabulary, and unmet obligations are
+likewise diagnostics that must be resolved through construction-specific
+readers, never blanket relaxations. The current strict key-overlap classifier
+found no surviving `paraphrase-gap` label; that frontier remains last rather
+than inheriting the stale Stage-6 count.
+
+### Shared-kernel reachability inventory
+
+The scratch logic asks already reach six shared, time-scoped consumers:
+`logic-verdict` (including reductio), `logic-disjunction-verdict`,
+`existential-verdict`, `universal-verdict`, `passive-agent-verdict`, and
+`verbal-obj-class-verdict`. The shared saturation registry also always runs
+`synth/enumeration-elimination`, `synth/name-prefix-alias`, and
+`synth/name-head-sortal`; their effects become reachable when logic-pack facts
+are present. Phase D promotion risk therefore includes these shared code paths,
+not only the YAML pack.
+
+### Pre-registered look-#6 thresholds
+
+All conditions must hold on **both** grouped splits before asking the user for
+look #6:
+
+1. Fully-read coverage improves by at least **8 percentage points**:
+   dev-train at least **852/1647 (51.73%)** and dev-holdout at least
+   **850/1602 (53.06%)**.
+2. Unread truth-scope premise count falls by at least **25%**: dev-train at
+   most **499/1647 (30.30%)** and dev-holdout at most **460/1602 (28.71%)**.
+3. Stack-ready stories at least double: dev-train **≥22**, dev-holdout **≥10**.
+4. At least **three construction-specific blocker classes** are fully served.
+5. Collision, quarantine, ambiguous-reading, and clause-split counts do not
+   exceed the baselines above; no wrong-hazard or `DECL→WRONG` may appear.
+
+### Phase B build order
+
+1. **Conjunctive disjuncts / `entity-in-raw-or`** — strongest cross-split
+   marginal gain, existing disjunction facts and synths, narrow reader cost.
+2. **Decompose `entity-raw-other` by actual construction**, then build only
+   its cheapest cross-split family. Initial samples include generics,
+   existential composition, resultative/participial predicates, enumeration,
+   and relation chains; the catch-all itself is not an implementation class.
+3. **Price one narrow passive or relative-clause family** using exact emitted
+   key shapes and composition buyers; passive currently has the stronger
+   balanced marginal estimate.
+4. Re-survey `entity-in-raw-if`, compound generics, and all banked zeros after
+   each landed class. Do-support negation, unresolved scope, and paraphrase
+   stay banked until their join surface acquires a measured two-split buyer.

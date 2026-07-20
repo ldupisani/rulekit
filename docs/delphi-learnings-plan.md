@@ -1,6 +1,7 @@
 # The breadth-first premise-reader campaign — FOLIO logic → full integration
 
-**PLAN ONLY. No implementation in this session.**
+**ACTIVE. Phase A completed 2026-07-20; Phase B starts with conjunctive
+disjuncts.**
 
 ## Context
 
@@ -22,10 +23,11 @@ campaign with a different cost curve. This file is that campaign's plan.
 
 ## Fixed facts the plan is built on (do not re-derive)
 
-- **Convertible pool = 314** dev-train declines (137 false-gold + 177 true-gold);
-  `ROADMAP.md:613-620`. The 169 'Uncertain' items are `text` golds — never convertible,
-  wrong-hazards only. (ROADMAP also says "311" at line 891; Phase A re-measures and fixes
-  the number.)
+- **Historical Stage-9c convertible pool = 314** dev-train declines (137 false-gold +
+  177 true-gold). Phase A resolved the current number: nine later conversions leave
+  **305 raw / 302 actionable** verdict-gold declines. The 169 'Uncertain' items are
+  `text` golds — never convertible, wrong-hazards only. See the Phase A record at the
+  end of `projects/scratch/ROADMAP.md` and `folio-blocker-baseline.json`.
 - Post-Stage-7 split: 301 no-ask declines vs 179 consumer-reached undetermined; 76
   "near-frontier" declines (conclusion side reads, no logic fact decides).
 - Stage-6 gap taxonomy (over the then-170 undetermined; STALE, re-measure in Phase A):
@@ -52,10 +54,10 @@ campaign with a different cost curve. This file is that campaign's plan.
 
 ## Campaign phases
 
-### Phase A — re-survey the pool by BLOCKER CLASS (measurement only, ~1 session)
+### Phase A — re-survey the pool by BLOCKER CLASS — DONE (2026-07-20)
 
 Goal: replace the stale Stage-6 taxonomy with a current, per-PREMISE classification of the
-314-pool, ranked by expected stack-readiness gain / estimated reader cost, scoped to
+current pool, ranked by expected stack-readiness gain / estimated reader cost, scoped to
 verdict-gold items only. A large expensive class does not rank higher merely because its cost
 is larger.
 
@@ -89,6 +91,14 @@ is larger.
 6. Phase A closes by pre-registering numeric Phase C thresholds for BOTH grouped DEV splits
    and publishing the Phase B build order by expected stack-ready gain / cost.
 
+Resolution: the baseline is 43.72% / 45.01% fully read and 11 / 5 stack-ready stories
+(dev-train / dev-holdout). Look #6 requires at least 51.73% / 53.06% fully read,
+truth-scope-veto premises at most 499 / 460, stack-ready stories at least 22 / 10, three
+served construction classes, and no hazard increase. The measured first reader is
+`entity-in-raw-or` (conjunctive disjuncts); do-support negation is demoted because its
+marginal stack estimate is zero on both splits. Exact definitions, counts, fingerprints,
+and the remaining build order are recorded in `projects/scratch/ROADMAP.md`.
+
 ### Phase B — premise readers by class, breadth-first (the long middle)
 
 Goal: raise READING coverage across the pool, class by class — not conversions per story.
@@ -115,21 +125,21 @@ Rules of engagement (all inherited, non-negotiable):
 - After each class lands, re-measure the banked zeros against the new join surface before
   starting the next class (the 8d/9d lesson).
 
-Candidate class order (Phase A finalizes; expected shape from current data):
-1. **Do-support negation VR** — biggest single conclusion surface (29), blocked on the
-   state-verb 'have' discipline + 'live' vocabulary; parts already staged by 9j's MT pair.
-   Keep it first only if Phase A shows that serving the conclusion surface materially raises
-   stack readiness; conclusion count by itself is not a premise-reader buyer.
-2. **entity-raw-other constructions** (37): compound generics ("Guard dogs are protective"),
-   remaining passives, participials — mostly one-rule reader families.
-3. **entity-in-raw-or** (23): conjunctive disjuncts ("either P and Q, or ¬P and R") —
-   Stage 3 extension, machinery exists.
-4. **entity-in-raw-if** (10): negated-antecedent conditionals — needs Stage 3 case analysis
-   already built; reader only.
-5. **Scope-marked universals** ("All X are not Y"): a designed stage — an
+Measured class order (Phase A baseline; re-survey after every landed reader):
+1. **entity-in-raw-or**: conjunctive disjuncts ("either P and Q, or ¬P and R") —
+   best cross-split stack estimate and Stage 3 machinery already exists.
+2. **entity-raw-other**, first split into real construction families — the label is a survey
+   catch-all, never one implementation increment. Choose the cheapest cross-split buyer.
+3. **One narrow passive or relative-clause family** — broad measured surfaces, but heuristic
+   labels require construction-level pricing before code; passive has the more balanced gain.
+4. **entity-in-raw-if** and compound generics — banked until re-measurement produces a
+   two-split buyer.
+5. **Do-support negation VR** — 63 train / 41 holdout items but zero estimated marginal
+   stack gain on both splits; demoted until another reader changes its join surface.
+6. **Scope-marked universals** ("All X are not Y"): a designed stage — an
    unresolved-scope fact marker consumable only by scope-invariant verdicts (the MRS
    underspecification borrowing). Only if Phase A shows the class has verdict-gold buyers.
-6. **paraphrase-gap** (28) stays LAST — it is the composition frontier
+7. **paraphrase-gap** stays LAST — it is the composition frontier
    (`composition-design.md` stacks), the steepest cost curve.
 
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):

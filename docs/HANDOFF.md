@@ -1,3 +1,11 @@
+> **Active direction (2026-07-20): Delphi breadth-first premise readers.**
+> Phase A is complete: the reproducible DEV-only baseline is
+> [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
+> its interpretation and look-#6 thresholds are in
+> [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). The first Phase B increment is the
+> `entity-in-raw-or` conjunctive-disjunct reader. No TEST look was spent.
+>
 > **Campaign status (2026-07-20): PARKED.** The difg/SciBench physics-formula
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
