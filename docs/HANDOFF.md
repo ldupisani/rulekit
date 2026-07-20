@@ -1,3 +1,132 @@
+# Session 7 (2026-07-19/20): the SVAMP campaign opens — survey, two precision fixes, one banked enabler
+
+The SVAMP mining campaign is OPEN. **SVAMP dev (754 items) is now a MINED
+corpus and no longer an independent cross-corpus gate for GSM8K work** — its
+salt-cut TEST reserve (246 items, `build_corpus.py`, SALT `svamp-test@1`) is
+the precision measure, spent like any TEST look. ASDiv / MAWPS / SciBench /
+FOLIO stay unmined gates, and GSM8K's dev slices now gate SVAMP-mined
+changes in the reverse direction (nothing new is fitted to them).
+
+Two commits landed and PUSHED (`5bf5517`, `35ac745`), both PRECISION fixes
+for confident-wrongs LIVE on main before this session — every one of the
+nine DEV slices NEUTRAL on both, folio-with-logic byte-identical item-by-
+item. pytest 1833 → **1843**. svamp dev stays **13/0** (0 SOLVED — that is
+the point: these were wrongs the corpora never phrased).
+
+**Numbers at HEAD:** unchanged everywhere — gsm8k 104/0 + 40/0 + suite
+52/52, asdiv 43/0, svamp 13/0, mawps 9/0, scibench 0/0, folio 0/0, difg
+70/0, folio-with-logic 20+1 / 1-0. lint 0 errors.
+
+#### The survey (recreate per methodology §4; per-item JSON was scratch)
+
+741 declines = **473 no-ask-shape + 426 vocab-blocked** (178 items blocked
+by ONE word, 142 by two; the top "unknown word" `t` is the hyphen-split of
+"t-shirt" — 19 items, one Razorback story family — a READING artifact, not
+vocabulary). The no-ask-shape pool clusters: **182 if-lead fused questions**
+("If she had grown 3 trees initially How many more trees died…" — no comma,
+capitalized wh mid-sentence), **~150 comparatives** ("how many more N1 than
+N2…", 124 standalone + overlaps), remainder small shapes (geometry
+"how deep/what is the length", grouping, pieces-of). Coverage factorization
+43.5% fully-read × 4.0% hit-rate — the gap is machinery, not vocabulary.
+
+#### What shipped (the class, one paragraph each)
+
+- **`5bf5517` — a specific instance's count is not a per-container rate.**
+  "A book has 2 chapters. The second chapter is 36 pages long. If there are
+  a total of 67 pages in the book, how many pages are in the first
+  chapter?" (gold 31) committed **67** — the single-entity distributive-
+  container branch read the qualifier='second' fact as a per-container rate;
+  with that closed it committed **36** — ask/how-many-in-place DROPPED the
+  'first' it never binds. Fixes: `_distributive_rate_source` extracted to
+  module level in saturate.py (the distributive-container-total synth's own
+  gate — now the ONE definition), applied in `_container_contents_synth`'s
+  rate table (filtered BEFORE the uniqueness check) and the consumer's
+  `holds_rate`; and the in-place ask binds
+  `entity_qualifier: "{place.qualifier}"` (the entity-side twin of
+  `measure_qualifier` — the consumer's qualifier_store machinery existed
+  all along, nothing bound it). Pinned in test_group_total_container.py.
+- **`35ac745` — an anchorless events-only fold has no license to commit.**
+  "Randy has some blocks. He uses 52… how many did he have at the start?"
+  committed **−52**; even "Rina uses 4 blocks. How many blocks does Rina
+  have?" committed **−4** on plain GSM8K machinery. Two guards in
+  `_entity_total` (shared fold — full nine-slice gate): a state-category
+  Predication whose dobj was bound by a bare quantifier
+  (`Predication.dobj_unquantified`, NEW field, deliberately NOT in `key()`)
+  declines the fold in BOTH directions ("has some, buys 4" is as
+  unanswerable as "has some, uses 4"); and a negative signed-event sum
+  declines (summed in plain Python — a declined probe must not enter the
+  arithmetic log's value accounting). Pure acquisitions ("bought 4 and 3"
+  = 7) untouched. Pinned in test_anchorless_fold_guard.py.
+
+#### Invariants minted — do not relearn these
+
+- **The modal have-artifact.** "Jerry HAD TO SELL boxes" mints the same
+  have/box Predication shape as "has SOME blocks" — the FIRST version of
+  the anchor guard keyed on the bare shape and the ASDiv gate broke
+  (`9d175f1131ff`, correct → declined). The distinguishing evidence is the
+  quantifier-role obligation targeting the dobj, recorded at mint time in
+  learn.py — structural (role name), never a word list. A guard keyed on a
+  fact SHAPE must ask what else mints that shape.
+- **`abs()` in a test assertion is a blessed wrong.** test_mining_
+  increment_25's coreference test asserted `abs(value) == 8` because the
+  engine has always answered −8 there; the guard exposed it. Its real
+  concern (cross-mention entity identity) is now asserted against the
+  STORE. Grep tests for `abs(` before trusting an old committed value.
+- **An enabler must be bought — measured live this session.** The comma-
+  less if-split fired on 175/182 fused questions and cashed ZERO (177
+  still miss ask shapes post-split); its only two commits were the two
+  wrongs above. REVERTED and banked, exactly the two-infra-increments
+  lesson from the GSM8K run.
+- **A cluster is not a class, twice.** "If-lead" (182) decomposed into
+  ~114 vocab + 39 comparative + 24 geometry once probed; "comparative"
+  (150) decomposes into measure-vs-measure (55) + existential/qualifier
+  (43) + verb-vs-verb / time-vs-time wearing an entity surface (42) +
+  elliptical goal (10). Neither shared surface was a shared mechanism.
+
+#### BANKED: the comma-less leading if-split (design is complete, do not re-derive)
+
+Sibling of increment 53's `_split_trailing_clause_commaless`, as a fallback
+INSIDE `_split_leading_clause` (both call sites in `split_question` benefit).
+Cue: a MID-SENTENCE CAPITALIZED ask-cue token (the capital does the comma's
+job — lowercase embedded 'how' never splits); the promoted clause must carry
+a digit; the FIRST qualifying boundary wins, NOT the trailing form's LAST —
+the errors are asymmetric (early split leaves junk on the QUESTION side and
+declines; late split folds question words into a PREMISE and mints facts
+from unasserted material). A capitalized name carrying a modal sense
+('Will', 'May') is skipped by the digit test when it opens the sentence.
+Land it ONLY with measured buyers — the 39 comparative if-lead items are
+the named candidates, after the comparative stage exists.
+
+#### Next stage (scoped, measured, NOT started): comparatives
+
+The class is blocked BELOW the ask — conjoined existential premises are
+unread: "In a school there are 34 girls and 841 boys" mints ONLY girl=34
+(the conjunct is lost); "7 red peaches, 71 yellow peaches and 8 green
+peaches are in the basket" mints ~nothing (a Membership). The designed
+stage is a conjoined-existential READER landed WITH a measure-vs-measure
+difference ask + consumer (the existing `difference` consumer is entity-
+vs-entity under one measure; this one is two measures under one holder/
+scene, where "baseball cards vs Ace cards" and "green vs red peaches" may
+both resolve as ONE measure with two `measure_qualifier`s). OPEN DESIGN
+DECISION, measure before choosing: reversed-direction asks ("how many more
+girls than boys" where boys win) — decline as presupposition failure vs
+answer |diff|; SVAMP's adversarial items punish the wrong choice. The Nell
+baseball-cards item is a MISREADING hazard (two sentences read wrong, one
+fact on the wrong entity), not a buyer.
+
+#### Carry-forwards
+
+- The two spent-look policies stand (gsm8k TEST 92.3%, folio look #5).
+  **No SVAMP TEST look yet** — nothing was mined INTO svamp dev; spend the
+  first look only after the campaign's first coverage increments land.
+- The vocabulary admissions list (survey top-40) is cheap coverage but
+  EVERY admission goes through `packs/difg-mined/quarantine.yaml` first.
+- "t-shirt" (19 items) is a tokenizer/condense READING class, not
+  vocabulary — same lesson as CO2/MP3: hyphenated compounds need data,
+  read them where the data is.
+
+---
+
 # Session 6 (2026-07-19): Stages 9h + 9i + 9j — elimination, reductio, identity
 
 Three stages landed (`6b2ba94` tokenizer + `18fad9e` 9h, `ea1a266` 9i,
