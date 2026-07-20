@@ -156,15 +156,38 @@ future reading improvement can expose latent wrongs. Expect this; run the
 null control (substitute a name, measure at HEAD) before blaming the new
 code.
 
-**THE ACTUAL BLOCKER — qualified measures do not fold into the bare
-form.** "105 green tomatoes and 71 red tomatoes … picked 137 tomatoes"
-mints `tomato[green]=105`, `tomato[red]=71`, `tomato=137` and totals the
-BARE key alone (137, gold 39 = 105+71-137). Same shape in the asdiv
-grapes item. That fold — deciding when `measure[qual]` siblings sum into
-`measure` — is the next increment and is worth doing on its own merits;
-it is adjacent to facts.py's measure-qualifier collision split
-(increment 70). Land it, THEN re-land this stack, which is written above
-precisely enough to rebuild.
+**THE BLOCKER IS THREE MECHANISMS, NOT ONE — corrected by building the
+fix and measuring it.** The first version of this note said "qualified
+measures do not fold into the bare form" and named that as the next
+increment. IT WAS BUILT, IT GATES CLEAN, AND IT IS NOT ENOUGH — do not
+rebuild it expecting to unblock the stack:
+
+- **asdiv grapes — the qualified-part fold. SOLVED by the patch below,
+  which is safe but 0-BUYER ALONE** (all six corpora NEUTRAL, so it must
+  not land by itself). Two halves in `_entity_total`'s collection loop:
+  (a) when the entity holds NO bare STATE quantity, adopt its qualified
+  STATE siblings as the anchor — FAIL-CLOSED on a stated whole, because
+  "14 blue + 26 purple, and 200 jellybeans in the jar" must stay 200,
+  never 280; (b) ALWAYS extend `events` with qualified siblings — an
+  event is a delta, never a restatement of the whole, so it cannot
+  double-count. Verified: "15 brown bears and 24 white bears" → 39, and
+  the grapes item moves WRONG(3) → decline.
+- **gsm8k carpenter — UNTOUCHED, a different bug.** "Last month, he made
+  three fewer tables than this month" mints `carpenter/month=13`: an
+  anchored relation whose STANDARD is a TIME PERIOD, not an entity. It
+  should decline and instead invents a month quantity.
+- **svamp farmer — likely UNWINNABLE as written.** "had 105 green
+  tomatoes … in his garden … picked 137 tomatoes" needs picking to DEBIT
+  the garden (gold 39 = 176-137), but 'pick' folds as an ACQUISITION, so
+  the parts and the pick sum to 313. Making that come out right is
+  SOURCE-MARKED TRANSFER — a mechanism `_entity_total`'s own docstring
+  and docs/negative-results.md record as deliberately NOT existing. Do
+  not treat this item as a buyer for anything.
+
+So re-landing the animate stack needs the carpenter relation-standard
+fix as well, and must accept the farmer item staying declined. The
+qualified fold should land WITH whichever of those first gives it a
+buyer — never on its own.
 
 #### Next up (measured, not started): Class A is pronoun coreference, NOT premise reading
 
