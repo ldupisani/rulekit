@@ -2684,6 +2684,56 @@ rules:
         value: "item"
         verb: have
 
+  - id: arithmetic/existential-premise-bare-conjoined
+    phase: read
+    description: >
+      "There are 34 girls and 841 boys." — the CONJOINED sibling of
+      arithmetic/existential-premise-bare. That rule matches a single
+      `{slot: item, type: counted}` and so mints only the FIRST conjunct,
+      silently DROPPING the second: the sentence above minted girl=34 and
+      no boy fact at all, which is not a decline but a SILENT partial
+      reading — every downstream consumer then sees a store missing a
+      quantity the text plainly states.
+
+      The ordinary SVO fold already reads this conjunction correctly
+      ("The basket has 7 red peaches and 8 green peaches" mints BOTH,
+      qualifiers included); only the existential surface lacked it. This
+      rule closes that asymmetry, emitting the SAME `world` scene-holder
+      shape its bare sibling emits, once per conjunct.
+
+      Strictly LONGER than arithmetic/existential-premise-bare, so it
+      subsumes that rule on every sentence carrying the "and COUNTED"
+      tail, exactly as -distributive subsumes -premise; a single-item
+      "There are 12 chairs." has no such tail and is untouched.
+
+      The `absent: {cat: aggregate}` guard is inherited verbatim: "There
+      are 34 girls and 841 boys ALTOGETHER" is a group TOTAL (a sum
+      constraint), never two independent holdings, and must keep routing
+      to arithmetic/existential-premise-total.
+    match:
+      sentence:
+        - {lit: there}
+        - {slot: verb, type: verb}
+        - {slot: item, type: counted}
+        - {lit: and}
+        - {slot: item2, type: counted}
+    where:
+      - absent: {cat: aggregate}
+    consumes: [item, item2]
+    emits:
+      - fact: quantity
+        entity: world
+        measure: "{item}"
+        measure_qualifier: "{item.qualifier}"
+        value: "item"
+        verb: have
+      - fact: quantity
+        entity: world
+        measure: "{item2}"
+        measure_qualifier: "{item2.qualifier}"
+        value: "item2"
+        verb: have
+
   - id: arithmetic/existential-premise-total
     phase: read
     description: >
@@ -4323,6 +4373,52 @@ asks:
         - {slot: b, type: plural}
         - {slot: verb, cat: state}
         - {lit: there}
+    resolves:
+      consumer: label-difference
+      a: "{a}"
+      b: "{b}"
+
+  - id: ask/how-many-more-label-comparative-held
+    # "How many more peaches than apples does Steven have?" (SVAMP
+    # comparative stage) — the HELD sibling of ask/how-many-more-label-
+    # comparative: identical through `b`, differing only in the TAIL. The
+    # existential form ends "are there"; this one names a holder clause
+    # ("does Steven have", "did baker sell", "does he have left").
+    #
+    # The two never tie: that ask requires {cat: state} + {lit: there};
+    # this one requires an AUXILIARY at the same position, and a unit is
+    # never both. `who, type: entity` admits the three holder surfaces the
+    # class actually uses (name 'baker', common noun 'the school',
+    # resolved pronoun 'he') — see patterns.py `type: entity`.
+    #
+    # ⚠ WORD ORDER IS THE GATE, and it is load-bearing. Requiring `than
+    # {b, type: plural}` BEFORE the auxiliary structurally excludes the
+    # 63-item aux-first family ("how many more crayons did he lose THAN
+    # those he gave", "...on monday THAN on tuesday", "...does Jake have
+    # THAN Jill"), which is verb-vs-verb / time-vs-time / entity-vs-entity
+    # wearing a comparative surface — NOT a measure pair. That family
+    # includes the measured misreading hazard "How many more games does
+    # Katie have than her friend?" (gold 62 = (57+39)-34, an entity
+    # difference over a measure FOLD); a rule matching it would commit
+    # 57-39=18. Do NOT relax the tail to reach those items — they are a
+    # different class and need their own reading.
+    #
+    # `who`/`aux`/`verb` bind nothing the consumer reads: `label-
+    # difference` resolves the holder ITSELF from the facts, by the
+    # exactly-one-SHARED-holder discipline, and declines otherwise. So
+    # this increment is ASK-ONLY — no kernel change, no consumer change,
+    # and the consumer's existing decline-safety covers it unmodified.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: dir, cat: delta}
+        - {slot: a, type: plural}
+        - {lit: than}
+        - {slot: b, type: plural}
+        - {slot: aux, type: auxiliary}
+        - {slot: who, type: entity}
+        - {slot: verb, type: verb}
     resolves:
       consumer: label-difference
       a: "{a}"
