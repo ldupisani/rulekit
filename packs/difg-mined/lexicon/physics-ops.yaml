@@ -1,21 +1,15 @@
 format: rulekit/lexicon@1
-# The words the difg `physics` domain's three LANDED formulas need admitted
-# (packs/difg-mined/formulas.yaml): speed = distance/time, weight = mass * 9.8,
-# voltage = resistance * current. EVERY entry here is load-bearing for a formula
-# that FIRES — 'joule' was dropped with the `power` formula for exactly the
-# reason the note below gives.
+# Vocabulary admitted specifically for the difg `physics` formula table. Every
+# entry is load-bearing for a formula that fires; admitting a word removes an
+# unknown-word decline guard, so each block records its own collision scope and
+# gates. The first voltage entries below were collision-grepped across every
+# corpus: they occur only in SciBench (1-4 items each), with zero exposure in
+# GSM8K / ASDiv / SVAMP / MAWPS. None are quarantined.
 #
-# 'speed', 'power', 'weight', 'meter', 'seconds' and 'kilogram' were already
-# admitted, so this is only the four that were missing. Collision-grepped across
-# every corpus first (admitting a word REMOVES a decline guard — the lesson 'tan'
-# taught in lexicon/trig-ops.yaml): all four appear ONLY in SciBench, and only
-# 1-4 items each. ZERO exposure in GSM8K / ASDiv / SVAMP / MAWPS. SciBench must
-# hold at 0 commits, and that gate is the arbiter. None are quarantined.
-#
-# STILL NOT ADMITTED — 'force', 'density', 'momentum', 'newton'. They belong to
-# formulas whose operands are compound units the tokenizer shreds ('force' 1
-# GSM8K TEST, 'density' 4 train, 'newton' 1 TEST as the NAME). They come with
-# the tokenizer increment or not at all.
+# STILL NOT ADMITTED — 'force', 'density', 'newton'. They belong to
+# formulas whose dimensions/scales remain deliberately unregistered ('force' 1
+# GSM8K TEST, 'density' 4 train, 'newton' 1 TEST as the NAME). Preserving their
+# compound symbols does not by itself admit either quantity.
 #
 # 'energy' WAS on that list; its refusal reason expired when the entropy-change
 # formula landed (formulas.yaml: ΔS = energy/temperature, bought by the scibench
@@ -52,3 +46,10 @@ entries:
   # They remain data; the ask routes the complete qualified phrase generically.
   gravitational: {senses: [adjective]}
   potential: {senses: [adjective]}
+  # Momentum buyer: `m/s` is a number-form of one semantic velocity unit, just
+  # as `kg` is a number-form of kilogram. `moving` is ordinary verbal syntax;
+  # admitting it removes the unknown-word guard without giving the kernel a
+  # word-specific branch. GSM8K exposure is gated explicitly for this change.
+  momentum: {senses: [noun]}
+  moving: {senses: [verb], verb: {lemma: move}}
+  meter_per_second: {senses: [noun], plural: [m/s]}

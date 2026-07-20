@@ -41,6 +41,9 @@ dimensions:
   mass: [kilogram]
   resistance: [ohm]
   current: [amp]
+  # Compound symbol `m/s` is a number-form of this one canonical unit. The
+  # tokenizer preserves the symbol whole; the lexicon canonicalizes it here.
+  velocity: [meter_per_second]
 formulas:
   - {quantity: speed, expr: "distance / time"}
   # g = 9.8 m/s^2 is a CONSTANT of the formula, so it lives in the expression
@@ -93,18 +96,20 @@ formulas:
   # potential energy therefore cannot borrow this mass/height formula.
   - quantity: gravitational potential energy
     expr: "mass * 9.8 * distance"
+  # Linear momentum from a stated mass and velocity. Both operands bind by
+  # their unit dimensions, never by position; extra values still decline under
+  # the consumer's whole-list accounting contract.
+  - {quantity: momentum, expr: "mass * velocity"}
 
-# DELIBERATELY ABSENT — the compound-unit quantities. Their operands are units
-# the tokenizer SHREDS ("3 m/s^2" -> the numbers [3, 2]; "100 cm^3" -> [100, 3] —
-# the EXPONENT becomes a free-standing number), so their dimension never binds
-# and they DECLINE. That is the correct outcome and it needs no guard here: the
-# NameError path is the guard.
+# DELIBERATELY ABSENT — the remaining compound-unit quantities. The tokenizer
+# now preserves their operands whole, but no canonical dimension/formula is
+# registered for them, so they still bind nothing and DECLINE. That is the
+# correct outcome and needs no question-specific guard: exact formula lookup or
+# the missing-dimension NameError path remains the guard.
 #   force    = mass * acceleration   (m/s^2)
 #   density  = mass / volume         (cm^3)
-#   momentum = mass * velocity       (m/s)
 #   kinetic energy   = 0.5 * mass * velocity**2   (m/s; its complete qualified
 #     key already distinguishes it from gravitational/rotational energy)
 #
-# Adding them is a `tokenize.py` `_TOKEN` change (compound units as ONE token) —
-# the shared reader under EVERY corpus. Do it as its own increment, bought by
-# these rows, and read the `_DIGIT` invariant in docs/HANDOFF.md first.
+# Momentum now buys the compound-token mechanism. The remaining formulas stay
+# absent for their independent vocabulary/scale/formula-shape blockers.

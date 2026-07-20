@@ -1,3 +1,50 @@
+# Session 16 (2026-07-20): momentum +1 @100%; compound units are whole tokens; three TEST firewalls hold
+
+One independently revertible difg physics increment lands the previously
+banked compound-unit tokenizer change with its first real buyer: linear
+momentum. **difg DEV 72 → 73 committed at 100% precision**; every other
+DEV/suite snapshot is item-neutral, curated is 65/65 in two fresh processes,
+lint has 0 errors, and pytest **1948 → 1951**. All relevant aggregate-only TEST
+fingerprints are unchanged: difg **15 correct / 0 wrong / 92 declined**,
+GSM8K **13 correct / 1 persistent wrong / 1305 declined**, and SciBench
+**0 correct / 0 wrong / 168 declined**.
+
+#### `momentum = mass * velocity` — `m/s` is one semantic operand
+
+The tokenizer now preserves compound scientific symbols and exponent-bearing
+units as one token: `m/s`, `m/s^2`, and `cm^3`. The branch is structural and
+precedes ordinary word tokenization; it does not know any unit vocabulary.
+That closes the phantom-exponent hole where `m/s^2` used to emit a free-standing
+count `2`. An unregistered compound symbol remains unknown and declines, so
+force and density do not become reachable merely because their typography is
+preserved.
+
+Pack data gives `m/s` one identity, `meter_per_second`, and maps that identity
+to the new `velocity` dimension. The generic physics binder can therefore read
+mass and velocity by units, then evaluate the declarative `mass * velocity`
+formula. `momentum` joins the exact physics-quantity gate; `moving` is admitted
+as ordinary verb data. A synthetic 6 kg × 7 m/s probe yields 42, while a second
+velocity declines under the existing duplicate-dimension guard. The difg buyer
+commits 32 for 4 kg × 8 m/s.
+
+The lexical admission had known exposure: `moving` occurs in one GSM8K TEST
+item, and `momentum` occurs in two SciBench TEST items. Both aggregate-only
+looks were spent and neither commitment fingerprint moved. The tokenizer still
+fuses slash-shaped prose such as `installed/hung`; as in the banked measurement,
+that can change the fully-read diagnostic (GSM8K dev-train 39.4% → 39.3%) but
+produced zero answer-status changes across GSM8K, ASDiv, SVAMP, MAWPS,
+SciBench, and FOLIO DEV.
+
+**Next lever**: direct kinetic energy is now a small pack-only buyer:
+`0.5 * mass * velocity**2` can solve the velocity-stated item using the exact
+`kinetic energy` key. A second kinetic-energy item states distance and time
+instead; it should continue to decline until formula alternatives are designed
+as a separate mechanism. Force still has its TEST vocabulary exposure and
+Coulomb output-scale contradiction; density still conflicts with the
+one-canonical-unit-per-dimension contract.
+
+---
+
 # Session 15 (2026-07-20): gravitational potential energy +1 @100%; formula keys preserve every modifier; TEST holds
 
 One independently revertible difg physics increment adds gravitational

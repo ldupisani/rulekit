@@ -261,6 +261,25 @@ def test_unit_may_be_the_qualifier_not_the_head(reg):
     assert r.answer.value == pytest.approx(29.4)
 
 
+def test_compound_velocity_unit_binds_momentum(reg):
+    """A compound symbol is one canonical unit operand, not two words. The
+    invented magnitudes keep this a mechanism probe rather than a corpus copy."""
+    r = solve("What is the momentum of a 6 kg object moving at 7 m/s?", reg, tracing=False)
+    assert r.answer.committed, (r.answer.reason or "")
+    assert r.answer.value == pytest.approx(42.0)
+
+
+def test_momentum_with_a_second_velocity_declines(reg):
+    """Choosing between two velocity values would be a guess, even if every
+    unit is readable; momentum inherits the generic duplicate-dimension guard."""
+    r = solve(
+        "What is the momentum of a 6 kg object moving at 7 m/s then 9 m/s?",
+        reg,
+        tracing=False,
+    )
+    assert not r.answer.committed
+
+
 # --- definitive-or-decline --------------------------------------------------
 
 
@@ -271,14 +290,16 @@ def test_missing_dimension_declines(reg):
                      reg, tracing=False).answer.committed
 
 
-def test_shredded_compound_unit_declines(reg):
-    """The phantom-exponent trap, pinned. The tokenizer shreds "3 m/s^2" into the
-    numbers [3, 2] — the EXPONENT becomes a free-standing number. A consumer that
-    read the number list positionally would bind it as an operand. Binding by
-    unit means no 'acceleration' ever appears, so `force` declines."""
+def test_unregistered_compound_unit_declines_without_a_phantom_exponent(reg):
+    """The tokenizer keeps "m/s^2" whole, so its exponent cannot masquerade as
+    a free scalar. Acceleration is deliberately not registered yet; force must
+    therefore still decline at its independent vocabulary/formula blockers."""
     r = solve("What is the force on a mass of 10 kg accelerating at 3 m/s^2?",
               reg, tracing=False)
     assert not r.answer.committed
+    assert not any(
+        u.features.get("value") == 2 for u in r.question.units
+    )
 
 
 def test_ambiguous_dimension_declines(reg):

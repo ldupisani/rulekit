@@ -29,6 +29,13 @@ _TOKEN = re.compile(
     r"|\d+/\d+"                                 # slash fraction ("1/4")
     r"|\d[\d,]*(?:st|nd|rd|th)(?![^\W\d_])"     # fused ordinal ("5th", "21st")
     r"|\$?\d[\d,]*(?:\.\d+)?%?"                 # numbers/currency/percent
+    # A compound scientific unit is ONE token. This alternative must precede
+    # the ordinary word branch: otherwise "m/s^2" becomes 'm', 's', '2' and
+    # the exponent masquerades as a stated scalar. Requiring either an
+    # exponent or a unit separator keeps ordinary ASCII words on the existing
+    # Unicode-aware branch below. Whether the resulting surface is a KNOWN
+    # unit remains lexicon data; tokenization only preserves its structure.
+    r"|[A-Za-z]+(?:\^\d+|(?:[/·][A-Za-z]+(?:\^\d+)?)+)"
     # the apostrophe class admits U+2019 (the typographic right single
     # quote) beside ASCII: corpora mix them freely ("Gould’s" in one
     # sentence, "Gould's" in the next), and a curly one outside the class
