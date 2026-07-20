@@ -255,7 +255,11 @@ def _check_number(
                 if matched_consumer in _WHOLE_LIST_CONSUMERS:
                     exempt_question = question
                 if matched_consumer in _WHOLE_DOCUMENT_CONSUMERS:
-                    quantity = qm[1].get("quantity", "")
+                    # Mirror physics' formula-key normalization: a bare
+                    # "{q.qualifier} {q}" render has one leading space, while
+                    # a qualified key keeps its modifier. The consumer and its
+                    # document-accounting exemption must select the SAME row.
+                    quantity = qm[1].get("quantity", "").strip()
                     exempt_document = (
                         reg.quantity_formula_scopes.get(quantity) == "document"
                     )

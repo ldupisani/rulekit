@@ -75,6 +75,13 @@ formulas:
   - quantity: frequency
     expr: "2.99792458e-6 / distance"
     scope: document
+  # Wien's displacement law for a blackbody. The corpus reports the answer as
+  # the coefficient in 1e-5 m, so b=2.897771955e-3 m K is scaled to
+  # 289.7771955 here. The qualified key is load-bearing: a typical or de
+  # Broglie wavelength cannot borrow this temperature-only formula.
+  - quantity: maximum wavelength
+    expr: "289.7771955 / temperature"
+    scope: document
 
 # DELIBERATELY ABSENT — the compound-unit quantities. Their operands are units
 # the tokenizer SHREDS ("3 m/s^2" -> the numbers [3, 2]; "100 cm^3" -> [100, 3] —

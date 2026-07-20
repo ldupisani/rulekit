@@ -12,10 +12,10 @@ entries:
   volume: {senses: [noun], plural: volumes}
   circumference: {senses: [noun], plural: circumferences}
   diagonal: {senses: [noun], plural: diagonals}
-  # 'surface' as an ADJECTIVE so "surface area" merges (condense.py merge-
-  # attribute) into one quantity unit (lemma 'area', qualifier 'surface') the
-  # geometry_quantity slot matches; a sphere's plain 'area' IS its surface area,
-  # so the (sphere, area) formula answers both phrasings.
-  surface: {senses: [adjective]}
+  # `surface` is noun-sensed: noun+noun condensation still makes "surface area"
+  # one quantity unit (lemma 'area', qualifier 'surface'), while the same sense
+  # can serve as the owned noun in "Earth's surface". Declaring both noun and
+  # adjective leaves the standalone owned use genuinely ambiguous.
+  surface: {senses: [noun]}
   # NOTE: 'square' gains its shape NOUN sense in n-s.yaml (it already had the
   # adjective there); it is a geometry_shape member in categories/geometry.yaml.

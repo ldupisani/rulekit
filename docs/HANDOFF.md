@@ -1,3 +1,50 @@
+# Session 13 (2026-07-20): Wien formula +1 @100%; qualified present quantities keep their formula key; SciBench TEST holds 0 wrong
+
+One independently revertible A3 increment adds modifier-preserving selection
+for present/imperative physical quantities plus Wien's displacement formula.
+**SciBench dev 5 → 6 committed at 100% precision**; every other DEV/suite
+snapshot is item-neutral, curated is 65/65 with fresh-process determinism,
+lint has 0 errors, and pytest **1941 → 1944**. The aggregate-only SciBench TEST
+look was spent: **0 correct / 0 wrong / 168 declined**. Fully-read TEST coverage
+is 1.2%, but no item committed, so the increment survives the precision hold.
+
+#### `maximum wavelength = b / temperature` — the modifier is routing data
+
+The generic `What is <physics_quantity>` and imperative asks used to collapse a
+compound noun to its head: `maximum wavelength`, `typical wavelength`, and bare
+`wavelength` all selected the same key. They now preserve the reader's existing
+`qualifier` feature; the physics consumer and its whole-document accounting
+guard normalize the empty qualifier for bare quantities with the same `strip()`
+boundary. Existing bare `frequency`/`speed` formulas therefore remain stable,
+while the new exact key is `maximum wavelength`. A synthetic sibling proves
+that `typical wavelength` cannot borrow Wien's law.
+
+The buyer states its 288 K temperature in a premise, so the formula explicitly
+reuses `scope: document`. Its expression stores the physical Wien constant with
+the answer's `10^-5 m` output scale folded in, following the existing de Broglie
+and photon-frequency convention. `surface` is now noun-sensed: ordinary
+noun+noun condensation still reads `surface area`, while the same unambiguous
+sense can be possessed in `Earth's surface`. The six non-target corpora were
+neutral under the vocabulary/sense change: GSM8K 104/0 + 40/0, ASDiv 44/0,
+SVAMP 30/0, MAWPS 9/0, difg 70/0, and FOLIO 0/0.
+
+**Rejected before code:** the constant-volume gas-thermometer class has clean
+arithmetic golds but `triple point` currently reads `triple` as the numeric
+multiplier 3. Source-scoped repeated-dimension roles would not fix that parse;
+shipping the class would also require a separate declarative lexicalized-number
+phrase mechanism. Do not weaken physics' all-values accounting or zero-multiply
+the stray value. Reopen the thermometer only after that phrase mechanism has an
+independent buyer.
+
+**Next levers**: the clean qualified single-dimension buyer is consumed.
+Repeated-dimension formulas remain the A3 frontier, but select a class whose
+complete parse is already honest; the thermometer and double-slit rows each
+have an additional numeric-language blocker. The `_TOKEN` compound-unit change
+remains banked until independently bought, and the text answer kind remains its
+own kernel+judge increment.
+
+---
+
 # Session 12 (2026-07-20): frequency formula +1 @100%; the first premise-scope reuse; SciBench TEST holds 0 wrong
 
 One independently revertible A3 increment adds the general imperative

@@ -31,7 +31,12 @@ def physics(ctx: ConsumerContext):
     # DATA (packs/difg-mined/formulas.yaml); this branch is the generic
     # evaluator and names no quantity, no unit and no formula (rule 1). Same
     # shape as the `geometry` consumer above, minus the shape key.
-    quantity = ctx.query.get("quantity", "")
+    # Ask templates may preserve a compound quantity's modifier by rendering
+    # "{q.qualifier} {q}".  A BARE quantity has no qualifier and therefore
+    # renders with one harmless leading space; normalize the lookup key here so
+    # every existing bare formula remains byte-compatible while qualified keys
+    # ("maximum wavelength", "initial speed") stay exact.
+    quantity = ctx.query.get("quantity", "").strip()
     expr = ctx.reg.quantity_formulas.get(quantity)
     if expr is None:
         return Answer("decline", None, f"no formula for the {quantity!r} of a thing")

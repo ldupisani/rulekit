@@ -72,6 +72,44 @@ def test_eponymic_quantity_still_rejects_an_extra_count(reg):
     assert not r.answer.committed
 
 
+def test_qualified_present_quantity_selects_wien_formula(reg):
+    """A present-tense compound quantity keeps its modifier as the formula key.
+
+    The temperature and wording are synthetic; the possessive/blackbody nouns
+    exercise the vocabulary path without copying a benchmark sentence.
+    """
+    r = solve(
+        "Earth's surface has a temperature of 315 K. "
+        "What is the maximum wavelength of blackbody radiation?",
+        reg,
+        tracing=False,
+    )
+    assert r.answer.committed, (r.answer.reason or "")
+    assert r.answer.value == pytest.approx(289.7771955 / 315)
+
+
+def test_wavelength_qualifier_cannot_borrow_wien_formula(reg):
+    """The same operand cannot turn another wavelength class into Wien's law."""
+    r = solve(
+        "A source has a temperature of 315 K. "
+        "What is the typical wavelength of the source?",
+        reg,
+        tracing=False,
+    )
+    assert not r.answer.committed
+
+
+def test_wien_formula_rejects_an_unused_document_value(reg):
+    """Document scope still owns every stated number, including premises."""
+    r = solve(
+        "A blackbody has a temperature of 315 K and an energy of 8 joules. "
+        "What is the maximum wavelength of its radiation?",
+        reg,
+        tracing=False,
+    )
+    assert not r.answer.committed
+
+
 def test_qualified_quantity_reads_dimensioned_operands_from_premises(reg):
     """A formula may read unit-bearing operands stated before the final ask.
     Invented magnitudes keep this synthetic rather than copying a corpus row."""
