@@ -3,8 +3,11 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). The first Phase B increment is the
-> `entity-in-raw-or` conjunctive-disjunct reader. No TEST look was spent.
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B reader 1 now serves the
+> ground both-or-neither equivalence subtype: +2 / +5 fully-read premise instances and
+> +1 / +1 stack-ready stories on dev-train / dev-holdout, with no verdict or hazard
+> movement. Continue by re-surveying the remaining `entity-in-raw-or` constructions;
+> do not widen this exact reader. No TEST look was spent.
 >
 > **Campaign status (2026-07-20): PARKED.** The difg/SciBench physics-formula
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)

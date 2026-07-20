@@ -1019,3 +1019,49 @@ look #6:
 4. Re-survey `entity-in-raw-if`, compound generics, and all banked zeros after
    each landed class. Do-support negation, unresolved scope, and paraphrase
    stay banked until their join surface acquires a measured two-split buyer.
+
+## Phase B reader 1 — ground both-or-neither equivalence (2026-07-20)
+
+The first `entity-in-raw-or` construction is served: **“NAME is either
+[both] A and B, or [PRONOUN is] neither”**. This is not an ordinary binary
+disjunction and is not represented by stuffing a conjunction into one opaque
+predicate key. Its exact classical content is the ground equivalence
+`A(NAME) ↔ B(NAME)`.
+
+The shared model therefore gains `Equivalence(entity, left, right)`, but the
+fact is reachable only from two anchored scratch-pack readers. It asserts no
+Atom by itself. Two pack synths transfer an already established polarity in
+either direction; explicit falsity propagates exactly like truth. They carry
+no `unless`, deliberately: a propagated opposite must collide so the normal
+quarantine path and reductio's throwaway store can observe the contradiction.
+The readers require the final period and refuse negation or additional
+coordination inside a predicate, so a larger trailing construction cannot be
+partially consumed.
+
+Synthetic contract: exact fact shape, no unsupported atoms, positive and
+negative propagation, universal-chain composition, reductio composition, a
+negated-conjunct minimal pair, and a larger-construction refusal. **pytest
+1959 passed; scratch lint 0 errors; curated 65/65.** Every benchmark slice is
+NEUTRAL against the last behavior baseline: difg dev, GSM8K dev-train and
+dev-holdout, ASDiv, SVAMP, MAWPS, SciBench, and the safety-only FOLIO dev gate
+all report **0 BROKE / 0 DECL→WRONG**.
+
+### Bought reader movement
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | target raw-or premises | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1327→1329 | 720→722 (+2) | 14/11→16/12 | 17→15 | 666→664 |
+| dev-holdout | 1295→1295 | 721→726 (+5) | 6/5→7/6 | 38→35 | 614→609 |
+
+Hazards are unchanged on both splits: collision 8/12, quarantine 16/24,
+ambiguous readings 51/33, clause split 0/0 (train/holdout). No verdict moves:
+verdict-gold stays 20 correct / 305 declined on train and 1 / 291 on holdout.
+The complete folio-with-logic gate likewise stays 20 correct / 1 persistent
+poisoned-text wrong / 473 declined on train and 1 / 0 / 424 on holdout.
+
+The increment is bought under the Phase B rule because both fully-read and
+stack-ready-story coverage move on **both** grouped splits. The rest of
+`entity-in-raw-or` remains heterogeneous: verbal alternatives, conditional
+alternatives, repeated `neither A nor B`, and larger signed conjunctions are
+separate construction families. Re-survey them independently; do not widen
+this reader or call the whole catch-all served.

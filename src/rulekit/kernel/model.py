@@ -337,6 +337,33 @@ class Disjunction(Fact):
 
 
 @dataclass(frozen=True)
+class Equivalence(Fact):
+    """A ground equivalence between two predicates of one named entity.
+
+    The sole text reader is the narrow logic-pack construction
+    ``X is either [both] A and B, or [PRONOUN is] neither``. That surface
+    denotes ``A(X) ↔ B(X)``: knowing either predicate true licenses the
+    other true, and knowing either explicitly false licenses the other
+    false. The fact itself asserts neither side, preserving open-world
+    behavior until another premise or a reductio hypothesis supplies one.
+
+    ``left`` and ``right`` never decompose. They are exact Atom phrase keys;
+    only the equivalence synth rules transfer an already established
+    polarity between them.
+    """
+
+    entity: str
+    left: str
+    right: str
+
+    def key(self) -> tuple:
+        return ("logic-equivalence", self.entity, self.left, self.right)
+
+    def value_part(self) -> Any:
+        return True
+
+
+@dataclass(frozen=True)
 class Existential(Fact):
     """∃e. e ∈ cls ∧ [¬]pred(e) — "Some dogs are [not] pets". Emitted by the
     'some' extraction rules (which CONSUME the quantifier, relaxing the

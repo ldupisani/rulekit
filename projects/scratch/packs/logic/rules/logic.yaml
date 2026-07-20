@@ -666,6 +666,52 @@ rules:
     emits:
       - {fact: disjunction, entity: "{subj}", left: "{l}", right: "{r}", exclusive: true}
 
+  # Phase B reader 1: "X is either [both] A and B, or neither" states a
+  # GROUND equivalence A(X) ↔ B(X). It does not assert either predicate by
+  # itself; synth/equivalence-* only propagates a polarity supplied by
+  # another premise or a reductio hypothesis. Two exact corpus surfaces are
+  # admitted: bare "or neither" and the anaphoric "or he/it is neither".
+  # A required final period makes both whole-construction-or-nothing: a
+  # trailing third conjunct can never be silently ignored. Negation and a
+  # second coordination marker inside either predicate fail closed.
+  - id: logic/equivalence-ground-both-or-neither
+    phase: read
+    match:
+      sentence:
+        - {slot: subj, type: proper_name, at_start: true, blocks_skipped: indefinite_article}
+        - {lit: is}
+        - {lit: either}
+        - opt:
+            - {lit: both}
+        - {slot: l, span: true, span_blocks: [negation, conjunction, disjunctive_marker, neither_marker]}
+        - {lit: and}
+        - {slot: r, span: true, span_blocks: [negation, conjunction, disjunctive_marker, neither_marker]}
+        - {lit: or}
+        - {lit: neither}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: equivalence, entity: "{subj}", left: "{l}", right: "{r}"}
+
+  - id: logic/equivalence-ground-both-or-anaphor-neither
+    phase: read
+    match:
+      sentence:
+        - {slot: subj, type: proper_name, at_start: true, blocks_skipped: indefinite_article}
+        - {lit: is}
+        - {lit: either}
+        - opt:
+            - {lit: both}
+        - {slot: l, span: true, span_blocks: [negation, conjunction, disjunctive_marker, neither_marker]}
+        - {lit: and}
+        - {slot: r, span: true, span_blocks: [negation, conjunction, disjunctive_marker, neither_marker]}
+        - {lit: or}
+        - {slot: anaph, type: pronoun}
+        - {lit: is}
+        - {lit: neither}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: equivalence, entity: "{subj}", left: "{l}", right: "{r}"}
+
   - id: logic/qdisj-all-are-bare
     phase: read
     match:
@@ -1340,4 +1386,3 @@ asks:
       entity: "{subj}"
       pred: "{pred}"
       polarity: "false"
-

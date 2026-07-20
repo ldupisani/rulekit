@@ -14,7 +14,7 @@ import pytest
 from rulekit.data.packs import load_packs
 from rulekit.data.registry import compile_registry
 from rulekit.kernel import engine
-from rulekit.kernel.model import Disjunction
+from rulekit.kernel.model import Atom, Disjunction, Equivalence
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -145,3 +145,58 @@ def test_null_control_unmentioned_subject(logic_reg):
         "Rex is a dog or a cat. Every dog is an animal. Every cat is an animal. "
         "Is it true that Ann is an animal?", logic_reg)
     assert got in ("undetermined", "decline")
+
+
+# ---- Phase B reader 1: ground both-or-neither equivalence --------------------
+
+def test_both_or_neither_mints_only_an_equivalence(logic_reg):
+    r = engine.solve(
+        "Rex is either both a dog and a cat, or neither.",
+        logic_reg, tracing=False,
+    )
+    assert [(f.entity, f.left, f.right) for f in r.store.by_kind(Equivalence)] == [
+        ("rex", "dog", "cat")
+    ]
+    assert not list(r.store.by_kind(Atom))
+
+
+def test_both_or_anaphoric_neither_propagates_both_polarities(logic_reg):
+    assert _verdict(
+        "Rex is either a dog and a cat, or he is neither. Rex is a dog. "
+        "Is it true that Rex is a cat?", logic_reg,
+    ) == "yes"
+    assert _verdict(
+        "Rex is either a dog and a cat, or he is neither. Rex is not a dog. "
+        "Is it true that Rex is a cat?", logic_reg,
+    ) == "no"
+
+
+def test_both_or_neither_composes_with_existing_inference(logic_reg):
+    assert _verdict(
+        "Rex is either both a dog and a cat, or neither. Rex is a dog. "
+        "Every cat is an animal. Is it true that Rex is an animal?", logic_reg,
+    ) == "yes"
+
+
+def test_both_or_neither_composes_with_reductio(logic_reg):
+    assert _verdict(
+        "No athletes are artists. Every dog is an athlete. Every cat is an artist. "
+        "Rex is either both a dog and a cat, or neither. "
+        "Is it true that Rex is a dog?", logic_reg,
+    ) == "no"
+
+
+def test_both_or_neither_refuses_negated_conjunct(logic_reg):
+    r = engine.solve(
+        "Rex is either both a dog and not a cat, or neither.",
+        logic_reg, tracing=False,
+    )
+    assert not list(r.store.by_kind(Equivalence))
+
+
+def test_both_or_neither_refuses_larger_trailing_construction(logic_reg):
+    r = engine.solve(
+        "Rex is either both a dog and a cat, or neither, and a pet.",
+        logic_reg, tracing=False,
+    )
+    assert not list(r.store.by_kind(Equivalence))

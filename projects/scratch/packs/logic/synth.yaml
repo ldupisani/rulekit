@@ -120,6 +120,25 @@ rules:
     emit:
       - {fact: atom, entity: X, pred: L, polarity: false}
 
+  # Phase B reader 1: A(X) ↔ B(X). POL carries both explicit truth and
+  # explicit falsity. There is deliberately no `unless`: if the opposite
+  # polarity is already present, the emitted fact must collide so ordinary
+  # inconsistency handling (and the reductio engine's throwaway store) sees
+  # the contradiction instead of suppressing it.
+  - id: synth/equivalence-forward
+    when:
+      - {fact: equivalence, entity: X, left: L, right: R}
+      - {fact: atom, entity: X, pred: L, polarity: POL}
+    emit:
+      - {fact: atom, entity: X, pred: R, polarity: POL}
+
+  - id: synth/equivalence-reverse
+    when:
+      - {fact: equivalence, entity: X, left: L, right: R}
+      - {fact: atom, entity: X, pred: R, polarity: POL}
+    emit:
+      - {fact: atom, entity: X, pred: L, polarity: POL}
+
   # ---- Stage 9i: modus tollens + the ground disjunctive conditional --------
   # ∀A→B, ¬B(x)  ⊢  ¬A(x)   (the contrapositive of universal-instantiation;
   # only the POSITIVE universal contraposes — "no A are B" + ¬B(x) licenses

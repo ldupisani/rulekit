@@ -1,7 +1,7 @@
 # The breadth-first premise-reader campaign — FOLIO logic → full integration
 
-**ACTIVE. Phase A completed 2026-07-20; Phase B starts with conjunctive
-disjuncts.**
+**ACTIVE. Phase A and Phase B reader 1 completed 2026-07-20; the first
+conjunctive-disjunct construction is ground both-or-neither equivalence.**
 
 ## Context
 
@@ -141,6 +141,13 @@ Measured class order (Phase A baseline; re-survey after every landed reader):
    underspecification borrowing). Only if Phase A shows the class has verdict-gold buyers.
 7. **paraphrase-gap** stays LAST — it is the composition frontier
    (`composition-design.md` stacks), the steepest cost curve.
+
+Progress: reader 1 serves the repeated ground **both-or-neither** subtype as
+an exact `A(X) ↔ B(X)` fact. It moves fully-read premises +2 / +5 and
+stack-ready stories +1 / +1 on dev-train / dev-holdout with every hazard and
+verdict outcome unchanged. Other `entity-in-raw-or` surfaces remain unserved
+and must be priced as separate constructions; see the landed record in
+`projects/scratch/ROADMAP.md`.
 
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
