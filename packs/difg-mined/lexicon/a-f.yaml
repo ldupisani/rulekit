@@ -2571,6 +2571,14 @@ entries:
     senses:
     - noun
     plural: employees
+  emit:
+    senses:
+    - verb
+  emits:
+    senses:
+    - verb
+    verb:
+      lemma: emit
   empty:
     senses:
     - adjective
@@ -3090,6 +3098,10 @@ entries:
   freed:
     senses:
     - verb
+  frequency:
+    senses:
+    - noun
+    plural: frequencies
   fresh:
     senses:
     - adjective

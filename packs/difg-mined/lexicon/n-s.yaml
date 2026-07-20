@@ -13,6 +13,12 @@ entries:
   named:
     senses:
     - verb
+  nanometer:
+    senses:
+    - noun
+    plural:
+    - nm
+    - nanometers
   nap:
     senses:
     - noun
@@ -61,6 +67,9 @@ entries:
   neither:
     senses:
     - adjective
+  neon:
+    senses:
+    - noun
   nephews:
     senses:
     - noun
@@ -1820,6 +1829,10 @@ entries:
   scavenger:
     senses:
     - adjective
+  scanner:
+    senses:
+    - noun
+    plural: scanners
   school:
     senses:
     - noun

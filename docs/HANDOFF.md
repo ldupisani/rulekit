@@ -1,6 +1,52 @@
+# Session 12 (2026-07-20): frequency formula +1 @100%; the first premise-scope reuse; SciBench TEST holds 0 wrong
+
+One independently revertible A3 increment adds the general imperative
+physical-quantity ask plus the declarative photon-frequency formula.
+**SciBench dev 4 → 5 committed at 100% precision**; every other DEV/suite
+snapshot is item-neutral, lint has 0 errors, curated is 65/65 with fresh-process
+determinism, and pytest **1937 → 1941**. The aggregate-only SciBench TEST look
+was spent from the main checkout: **0 correct / 0 wrong / 168 declined**.
+Vocabulary raised its fully-read ceiling **1 → 2**, but the new readable item
+still declined: zero transfer and zero damage, so the increment survives the
+precision-hold rule.
+
+#### `frequency = c / wavelength` — Session 11's schema is independently bought
+
+This is the first independent reuse of formula-level `scope: document`; it
+needs no kernel change. `frequency` opts into premise readings, the wavelength binds
+by the existing `distance` dimension, and `nanometer → meter` is conversions
+data. The expression yields the coefficient in `1e14 Hz`, so the speed-of-light
+constant is explicitly scale-folded to `2.99792458e-6`, the same output-scale
+discipline used by the de Broglie nanometre formula. The buyer computes
+**4.73755** against typed gold **4.738**.
+
+The general `Calculate <physics_quantity>` ask is shorter than the existing
+change/eponymic constructions, so their more-specific readings still win. Its
+one reachable frequency sibling states `207`, `1`, and `2` but no distance;
+dimension binding makes it decline rather than treating any number as a
+wavelength. Synthetic probes pin the `nm` symbol, an extra premise duration,
+and non-distance values. Lexical admission had real DEV exposure (`light` 31
+rows, `frequency` 19, `nm` 23), yet all six non-SciBench corpus diffs were
+item-neutral.
+
+The full gate initially failed because a synthetic test copied the corpus's
+complete final sentence even though its magnitudes were invented. The
+executable corpus-string firewall caught it; the test now asks for the
+frequency “of the laser,” preserving the mechanism without embedding benchmark
+text. This is constitution rule 3 enforced, not prose.
+
+**Next levers**: the clean single-dimension premise buyer is consumed. Many
+remaining A3 candidates need repeated-dimension roles (initial/final pressure
+or temperature, two charges, multiple slit distances); build that only with a
+class whose whole reachable gold set preflights cleanly. The `_TOKEN`
+compound-unit change remains banked until independently bought, and the text
+answer kind remains its own kernel+judge increment.
+
+---
+
 # Session 11 (2026-07-20): projectile formula +1 @100%; operand scope becomes formula data; SciBench TEST holds 0 wrong
 
-One independently revertible A3 increment is ready to land: the past-copular
+One independently revertible A3 increment landed (`09a72ab`): the past-copular
 qualified-quantity ask plus the declarative `initial speed` projectile formula.
 **SciBench dev 3 → 4 committed at 100% precision**; every other DEV/suite
 snapshot is item-neutral, lint has 0 errors, curated is 65/65 with fresh-process

@@ -94,3 +94,8 @@ conversions:
 - from: electronvolt
   to: joule
   factor: 1.602176634e-19
+# scibench optics: wavelength premises use the nm symbol; physics formulas bind
+# their distance operand in canonical meters.
+- from: nanometer
+  to: meter
+  factor: 1.0e-9

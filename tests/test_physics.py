@@ -128,6 +128,51 @@ def test_formula_operand_scope_is_declarative_and_question_safe_by_default(reg):
     into the stronger whole-document accounting contract."""
     assert reg.quantity_formula_scopes["speed"] == "question"
     assert reg.quantity_formula_scopes["initial speed"] == "document"
+    assert reg.quantity_formula_scopes["frequency"] == "document"
+
+
+def test_imperative_quantity_reads_a_wavelength_from_a_premise(reg):
+    """The general imperative ask selects formula data; the document-scoped
+    distance operand reaches canonical meters through conversion data."""
+    r = solve(
+        "A laser emits light at 480 nanometers. Calculate the frequency of the laser.",
+        reg,
+        tracing=False,
+    )
+    assert r.answer.committed, (r.answer.reason or "")
+    assert r.answer.value == pytest.approx(2.99792458e-6 / (480e-9))
+
+
+def test_frequency_accepts_the_nanometer_symbol(reg):
+    """A symbol is a declarative number-form of its unit, not a kernel branch."""
+    r = solve(
+        "A laser emits light at 512 nm. Calculate the frequency of the laser.",
+        reg,
+        tracing=False,
+    )
+    assert r.answer.committed, (r.answer.reason or "")
+    assert r.answer.value == pytest.approx(2.99792458e-6 / (512e-9))
+
+
+def test_frequency_rejects_an_extra_premise_value(reg):
+    """A document-scoped formula owns every accounted premise value."""
+    r = solve(
+        "A laser emits light at 480 nanometers for 2 seconds. "
+        "Calculate the frequency of the laser.",
+        reg,
+        tracing=False,
+    )
+    assert not r.answer.committed
+
+
+def test_frequency_rejects_values_without_a_distance_dimension(reg):
+    """Numbers in a reachable sibling cannot bind by position."""
+    r = solve(
+        "A laser emits light for 3 seconds. Calculate the frequency of the laser.",
+        reg,
+        tracing=False,
+    )
+    assert not r.answer.committed
 
 
 # --- the property the whole design exists for ------------------------------

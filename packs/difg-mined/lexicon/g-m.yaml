@@ -372,6 +372,9 @@ entries:
     senses:
     - noun
     plural: helicopters
+  helium:
+    senses:
+    - noun
   help:
     senses:
     - verb
@@ -1048,6 +1051,10 @@ entries:
   lassi:
     senses:
     - noun
+  laser:
+    senses:
+    - noun
+    plural: lasers
   last:
     senses:
     - adjective
@@ -1197,6 +1204,10 @@ entries:
   lift:
     senses:
     - verb
+  light:
+    senses:
+    - noun
+    plural: lights
   lighter:
     senses:
     - comparative

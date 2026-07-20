@@ -69,6 +69,12 @@ formulas:
   - quantity: initial speed
     expr: "(distance * 9.80665 / sin(2 * angle))**0.5"
     scope: document
+  # Photon frequency from a wavelength stated in an earlier premise. The
+  # expression yields the coefficient in 1e14 Hz, matching the corpus's typed
+  # numeric payload; c=2.99792458e8 m/s therefore becomes 2.99792458e-6 here.
+  - quantity: frequency
+    expr: "2.99792458e-6 / distance"
+    scope: document
 
 # DELIBERATELY ABSENT — the compound-unit quantities. Their operands are units
 # the tokenizer SHREDS ("3 m/s^2" -> the numbers [3, 2]; "100 cm^3" -> [100, 3] —

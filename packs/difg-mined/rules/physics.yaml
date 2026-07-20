@@ -53,6 +53,17 @@ asks:
     resolves:
       consumer: physics
       quantity: "{q} change"
+  # General imperative named quantity: "Calculate the frequency ...". It is
+  # deliberately shorter than the change/eponymic constructions below, which
+  # continue to win on their longer structural matches.
+  - id: ask/physics-quantity-imperative
+    match:
+      question:
+        - {lit: calculate}
+        - {slot: q, cat: physics_quantity}
+    resolves:
+      consumer: physics
+      quantity: "{q}"
   # Named/eponymic quantity frame: "Calculate the de Broglie wavelength ...".
   # Each name-bearing piece is a STRUCTURAL slot — no eponym lives in the
   # grammar. The full phrase becomes the formula lookup key, so another name

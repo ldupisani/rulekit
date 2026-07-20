@@ -24,4 +24,4 @@ categories:
 # declines — q/T is the CHANGE for reversible isothermal transfer, never the
 # absolute entropy.
 members:
-  physics_quantity: [speed, weight, voltage, entropy, wavelength]
+  physics_quantity: [speed, weight, voltage, entropy, wavelength, frequency]
