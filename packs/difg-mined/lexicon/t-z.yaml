@@ -872,6 +872,12 @@ entries:
   watermelons:
     senses:
     - noun
+  # scibench: the quantity head in the eponymic physics ask. Formula selection
+  # still uses the full "de broglie wavelength" key, not this bare noun.
+  wavelength:
+    senses:
+    - noun
+    plural: wavelengths
   watt:
     senses:
     - noun

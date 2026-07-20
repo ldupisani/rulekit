@@ -34,6 +34,43 @@ def test_quantity(reg, question, want):
     assert r.answer.value == pytest.approx(want)
 
 
+def test_eponymic_quantity_binds_a_scaled_energy_operand(reg):
+    """A named multiword quantity selects pack DATA, while the operand binds by
+    its unit and is scaled to the formula's canonical dimension. The invented
+    magnitude keeps this synthetic; it is not a SciBench case string."""
+    r = solve(
+        "Calculate the de Broglie wavelength for an electron with a kinetic "
+        "energy of 144 eV?",
+        reg,
+        tracing=False,
+    )
+    assert r.answer.committed, (r.answer.reason or "")
+    assert r.answer.value == pytest.approx(0.10220216384651244)
+
+
+def test_an_unregistered_eponymic_quantity_declines(reg):
+    """The grammar is general, but formula selection is exact pack data."""
+    r = solve(
+        "Calculate the de Rowan wavelength for an electron with a kinetic "
+        "energy of 144 eV?",
+        reg,
+        tracing=False,
+    )
+    assert not r.answer.committed
+
+
+def test_eponymic_quantity_still_rejects_an_extra_count(reg):
+    """The physics consumer continues to own whole-list accounting: a time the
+    formula does not read cannot be laundered by the new ask."""
+    r = solve(
+        "Calculate the de Broglie wavelength for an electron with a kinetic "
+        "energy of 144 eV in 2 seconds?",
+        reg,
+        tracing=False,
+    )
+    assert not r.answer.committed
+
+
 # --- the property the whole design exists for ------------------------------
 
 

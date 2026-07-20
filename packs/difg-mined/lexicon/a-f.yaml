@@ -2037,6 +2037,12 @@ entries:
     senses:
     - noun
     plural: days
+  # scibench: the proper-name particle in "de Broglie wavelength". It is
+  # matched structurally as a preposition by the eponymic-quantity ask; the
+  # physicist's name and the quantity stay separate slots.
+  de:
+    senses:
+    - preposition
   debit:
     senses:
     - adjective
@@ -2531,6 +2537,19 @@ entries:
   electricity:
     senses:
     - noun
+  # scibench de Broglie wavelength: the object named by the question and the
+  # eV input scale. 'eV' is a number-form of electronvolt, following the
+  # kg/kilogram and kJ/kilojoule precedents.
+  electron:
+    senses:
+    - noun
+    plural: electrons
+  electronvolt:
+    senses:
+    - noun
+    plural:
+    - ev
+    - electronvolts
   elementary:
     senses:
     - adjective

@@ -873,6 +873,12 @@ entries:
     - verb
     verb:
       lemma: keep
+  # scibench de Broglie wavelength: qualifies the energy operand. Adjective
+  # data keeps "kinetic energy" a restricted noun while the formula binds its
+  # numeric value by the eV unit, never by position.
+  kinetic:
+    senses:
+    - adjective
   # scibench: 'K' is the SYMBOL (fold 'k'), a number-form of the unit as
   # 'kg' is of kilogram — the canonical temperature unit of formulas.yaml
   kelvin:

@@ -50,6 +50,15 @@ formulas:
   # CHANGE, never the absolute entropy. Buyers: the scibench entropy pair
   # (25 kJ at 100°C -> 67, at 0°C -> 92).
   - {quantity: entropy change, expr: "energy / temperature"}
+  # Matter-wave wavelength for a non-relativistic electron. The energy operand
+  # binds in canonical joules (eV reaches it through conversions@1); h and the
+  # electron mass are physical constants in DATA, exactly as g is above. The
+  # 1e9 meter->nanometer factor is folded into h (6.626e-34 -> 6.626e-25),
+  # yielding the conventional scale of this question family. Buyer: any
+  # eponymic de Broglie wavelength question with a single unit-bearing
+  # kinetic-energy operand, independent of word order.
+  - quantity: de broglie wavelength
+    expr: "6.62607015e-25 / (2 * 9.1093837015e-31 * energy)**0.5"
 
 # DELIBERATELY ABSENT — the compound-unit quantities. Their operands are units
 # the tokenizer SHREDS ("3 m/s^2" -> the numbers [3, 2]; "100 cm^3" -> [100, 3] —

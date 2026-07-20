@@ -88,3 +88,9 @@ conversions:
 - from: kilojoule
   to: joule
   factor: 1000.0
+# scibench quantum mechanics: eV reaches the canonical joule energy dimension
+# before the de Broglie formula evaluates. Exact SI definition (2019): one
+# electronvolt is exactly 1.602176634e-19 joule.
+- from: electronvolt
+  to: joule
+  factor: 1.602176634e-19

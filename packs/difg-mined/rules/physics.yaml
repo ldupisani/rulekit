@@ -53,3 +53,18 @@ asks:
     resolves:
       consumer: physics
       quantity: "{q} change"
+  # Named/eponymic quantity frame: "Calculate the de Broglie wavelength ...".
+  # Each name-bearing piece is a STRUCTURAL slot — no eponym lives in the
+  # grammar. The full phrase becomes the formula lookup key, so another name
+  # reaches the same general construction and then declines unless pack data
+  # defines its formula. The quantity head remains category-gated.
+  - id: ask/physics-eponymic-quantity
+    match:
+      question:
+        - {lit: calculate}
+        - {slot: particle, type: preposition}
+        - {slot: eponym, type: proper_name}
+        - {slot: q, cat: physics_quantity}
+    resolves:
+      consumer: physics
+      quantity: "{particle} {eponym} {q}"
