@@ -1,3 +1,8 @@
+> **Campaign status (2026-07-20): PARKED.** The difg/SciBench physics-formula
+> campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
+> at commit `5b9d62c`. Resume from that guide only when this direction is chosen
+> again; the sessions below remain the detailed historical record.
+
 # Session 17 (2026-07-20): direct kinetic energy +2 rows @100%; one formula shape stays explicit; TEST holds
 
 One independently revertible, pack-only physics increment adds translational
