@@ -1,3 +1,50 @@
+# Session 14 (2026-07-20): power formula +1 @100%; partitives resolve noun/verb polysemy; both TEST firewalls hold
+
+One independently revertible difg physics increment adds average power as
+declarative formula data and closes the reader gap in `joules of work`.
+**difg DEV 70 → 71 committed at 100% precision**; every other DEV/suite
+snapshot is item-neutral, curated is 65/65 with fresh-process determinism,
+lint has 0 errors, and pytest **1944 → 1946**. The aggregate-only TEST checks
+both held: difg's first recorded regression fingerprint is **15 correct / 0
+wrong / 92 declined**, while GSM8K remains **13 correct / 1 persistent wrong /
+1305 declined**. GSM8K fully-read exposure rose 376 → 379 but commitments did
+not move.
+
+#### `power = energy / time` — an old blocker expired, then exposed the real one
+
+The formula was explicitly parked when the physics consumer could read only
+the final question: `What is the power if ...?` moves the `if` clause into a
+premise. Formula-level `scope: document`, independently bought in Session 11,
+now makes the two unit-bearing operands available, so `power` joins the physics
+quantity category and its formula uses the existing energy/time dimensions.
+`joule/joules` is admitted as the canonical energy unit; the arithmetic-power
+ask remains more specific and its regression probe still computes 2^10.
+
+The first pack-only draft still declined. `work` genuinely has noun and verb
+senses, but coverage arbitration tied: under the false verb trial it borrowed
+the measured energy as a subject and the later duration as an object. The
+reader now mirrors its existing article-noun filter with the already-declared
+`partitive` category. A noun/verb ambiguity governed by a partitive preposition
+selects its existing noun candidate; the kernel names only the structural
+category, while English `of` remains YAML data. Outside that context ordinary
+`work` remains verbal. Synthetic probes pin both paths.
+
+**Rejected before code:** Coulomb force looked like the clean first buyer for a
+commutative repeated-dimension reducer, but its reachable gold set is poisoned
+by lost answer scale. One row expects the SI value **2.81 N**; another represents
+**8.99 × 10^9 N** as the bare payload **8.99** after the corpus builder drops
+units/scales. One honest formula cannot satisfy both. Do not key output scaling
+on ask wording or land the repeated-charge mechanism through this class.
+
+**Next levers**: power consumed the last obvious single-formula reuse unlocked
+by document scope. Repeated-dimension formulas remain the A3 frontier, but the
+thermometer, double-slit, Carnot, and Coulomb families each have a separately
+recorded language/gold blocker. The `_TOKEN` compound-unit change remains
+banked until independently bought, and the text answer kind remains its own
+kernel+judge increment.
+
+---
+
 # Session 13 (2026-07-20): Wien formula +1 @100%; qualified present quantities keep their formula key; SciBench TEST holds 0 wrong
 
 One independently revertible A3 increment adds modifier-preserving selection

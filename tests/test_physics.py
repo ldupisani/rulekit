@@ -360,6 +360,30 @@ def test_unknown_quantity_declines(reg):
 # --- the 'power' collision --------------------------------------------------
 
 
+def test_power_reads_energy_and_time_from_split_premise(reg):
+    """The generic formula reuses document scope after the conditional splits.
+
+    Invented magnitudes and the `over` variant keep this synthetic while
+    exercising joule/time dimension binding and noun-sensed `work`.
+    """
+    r = solve(
+        "What is the power if 147 joules of work is done over 7 seconds?",
+        reg,
+        tracing=False,
+    )
+    assert r.answer.committed, (r.answer.reason or "")
+    assert r.answer.value == pytest.approx(21.0)
+
+
+def test_work_keeps_its_verb_sense_outside_a_partitive(reg):
+    """The noun license is context-gated; ordinary event `work` stays verbal."""
+    from rulekit.kernel.engine import analyze
+
+    reading = analyze("Tom will work.", reg)
+    unit = next(u for u in reading.units if u.features.get("fold") == "work")
+    assert unit.senses() == ["verb"]
+
+
 def test_arithmetic_power_is_untouched(reg):
     """'power' is an arithmetic operator word AND was a candidate physics
     quantity. ask/arith-power consumes 7 units and must keep winning."""

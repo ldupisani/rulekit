@@ -45,3 +45,6 @@ entries:
   earth: {senses: [noun]}
   blackbody: {senses: [adjective]}
   radiation: {senses: [noun]}
+  # Canonical energy unit for the document-scoped power formula. The plural and
+  # singular are one identity, following kilogram/kilograms and kilojoule/kJ.
+  joule: {senses: [noun], plural: joules}

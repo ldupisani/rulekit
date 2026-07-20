@@ -404,6 +404,26 @@ def _article_licenses_noun(reading: Reading, unit: Unit) -> bool:
     return False
 
 
+def _partitive_licenses_noun(reading: Reading, unit: Unit, reg: Registry) -> bool:
+    """A noun governed by the pack's partitive preposition is nominal.
+
+    In "joules of work", a noun/verb trial otherwise ties: the verb trial can
+    spuriously borrow the measured quantity as its subject and a later duration
+    as its object. The governing word is DATA (`partitive` currently contains
+    English `of`), while this function states only the grammatical structure.
+    Articles/adjectives may intervene inside the governed noun phrase.
+    """
+    idx = reading.units.index(unit)
+    for prev in reversed(reading.units[:idx]):
+        sense = prev.sense()
+        if sense in ("article", "adjective"):
+            continue
+        return sense == "preposition" and reg.word_in_category(
+            prev.features.get("fold", ""), "partitive"
+        )
+    return False
+
+
 def disambiguate(reading: Reading, reg: Registry) -> Reading:
     """Commit one sense per multi-sense unit: the assignment with the best
     obligation coverage wins, and only a unique winner commits."""
@@ -418,15 +438,25 @@ def disambiguate(reading: Reading, reg: Registry) -> Reading:
             )
         return reading
 
-    options = [
-        [
-            s
-            for s in u.senses()
-            if not (s in ("auxiliary", "modal") and _article_licenses_noun(reading, u))
-        ]
-        or u.senses()
-        for u in ambiguous
-    ]
+    options = []
+    for u in ambiguous:
+        senses = u.senses()
+        if "noun" in senses and _partitive_licenses_noun(reading, u, reg):
+            # A partitive complement is a nominal position. Restrict an
+            # EXISTING noun candidate; never invent one for a verb-only word.
+            options.append(["noun"])
+            continue
+        options.append(
+            [
+                s
+                for s in senses
+                if not (
+                    s in ("auxiliary", "modal")
+                    and _article_licenses_noun(reading, u)
+                )
+            ]
+            or senses
+        )
     scored: list[tuple[tuple[int, int], tuple[str, ...]]] = []
     for assignment in itertools.product(*options):
         trial = copy.deepcopy(reading)
