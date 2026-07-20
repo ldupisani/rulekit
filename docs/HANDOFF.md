@@ -1,3 +1,86 @@
+# Session 8 (2026-07-20): the comparative stage lands — svamp dev 13 → 15, TEST look #1 spent, precision held
+
+One commit (`f50b94a`), gate-clean on all nine DEV slices. **svamp dev
+13/0 → 15/0**; gsm8k dev-train / asdiv / mawps / scibench / folio all
+NEUTRAL item-by-item; holdout 40/0, suite 52/52, difg 70/0, lint 0
+errors. pytest 1843 → **1850**.
+
+**SVAMP TEST looks #1 AND #2 SPENT (user-directed), and the pair is the
+result.** Look #1 at HEAD: 246 items, 5 correct / 1 wrong / 240 declined,
+precision **83.3%**. Look #2 at HEAD~1 (distinct fingerprint, both in
+`snapshots/test-ledger.jsonl`): **byte-identical aggregates**. So the
+lone confident-wrong is **PRE-EXISTING**, precision **held exactly**, and
+the increment ships on evidence. ⚠ A first-ever TEST look on a corpus is
+UNINTERPRETABLE ALONE — "1 wrong" condemns nothing when the rule is
+precision-HOLD and no baseline exists. Budget two looks for the first
+look at any new corpus, or the number cannot be acted on.
+
+**Zero transfer, now on a third corpus.** 2 dev conversions → 0 TEST
+conversions, exactly the folio look-#4/#5 lesson. Do not schedule the
+next svamp look off dev-conversion count.
+
+#### The stage, and the three framings the measurement corrected
+
+The session-7 plan ("conjoined-existential READER landed WITH a
+measure-vs-measure difference ask + consumer") was right in outline and
+wrong in all three specifics — each correction found by probing, not
+reading:
+
+- **"Conjoined existential premises are unread" is too broad.** The SVO
+  fold ALWAYS read the conjunction ("The basket has 7 red peaches and 8
+  green peaches" mints both, `measure_qualifier` included) — 134 dev
+  items. Only the existential surface dropped conjuncts, a 38-item class.
+  The fix is an ASYMMETRY CLOSED, not a new capability.
+- **The ask and consumer already existed.** `label-difference` +
+  `ask/how-many-more-label-comparative` have handled two measure labels
+  under one shared holder since the ratio-split-premises candidate — but
+  only with the existential tail ("...are there?"). The held tail
+  ("...does Steven have?") had no ask. So the increment is ASK-ONLY on
+  that half: no kernel change, no consumer change, and the consumer's
+  exactly-one-SHARED-holder decline-safety covers it unmodified.
+- **The open |diff|-vs-decline design decision is MOOT.** SVAMP dev has
+  **ZERO** genuinely reversed comparatives: all 11 candidates resolve
+  FORWARD once ask-time quantities bind (the apparent reversals came from
+  reading initial/`made` counts instead of `sold`/final ones). No
+  measured buyer either way, so `label-difference`'s existing `abs()`
+  stands. Do not reopen this without a reversed item in hand.
+
+#### Invariants minted — do not relearn these
+
+- **WORD ORDER IS THE GATE for the held comparative, and it is
+  load-bearing.** Requiring `than MEASURE` BEFORE the auxiliary
+  structurally excludes the 63-item aux-first family — verb-vs-verb
+  ("did he lose than he gave"), time-vs-time ("than on tuesday"),
+  entity-vs-entity ("than Jill"). That family contains the measured
+  MISREADING HAZARD "How many more games does Katie have than her
+  friend?" (gold 62 = (57+39)−34, an entity difference over a measure
+  FOLD); a rule reaching it commits 57−39=18. Pinned by
+  `test_aux_first_comparative_is_not_this_class`. Do NOT relax the tail
+  to reach those items.
+- **The enabler was bought, and the measurement is why.** The ask ALONE
+  converted **0 of its 22-item form-A pool**. Landing it solo would have
+  been the two-infra-increments mistake a third time; the reader is what
+  buys it. Always measure the half you are about to land ALONE.
+- **A synthetic test still needs LEXICON nouns.** The first draft used
+  'widget'/'gadget' and failed all four reading assertions — an unknown
+  word mints no fact, so the test fails for reasons unrelated to the rule.
+  "Synthetic" means an invented SCENARIO, never invented VOCABULARY.
+  Check `reg.plural_to_singular` before writing the fixture.
+
+#### Next up (measured, not started)
+
+The largest remaining block in this pool is **13 form-A items behind the
+`value-accounting` guard** — unread relational/event premises ("Jake has
+6 fewer peaches than Steven", "If he sold 158 cakes and 147 pastries").
+The guard is doing its job (a stated count reaching no fact declines the
+item); converting them needs a relational-premise reader, its own
+increment. **The ask side for them already exists at HEAD** — this
+increment built it. The 5 remaining no-holder/other declines are the
+partitive "pages of math homework" qualifier gap (a DIFFERENT reading
+class) and two fold conflicts.
+
+---
+
 # Session 7 (2026-07-19/20): the SVAMP campaign opens — survey, two precision fixes, one banked enabler
 
 The SVAMP mining campaign is OPEN. **SVAMP dev (754 items) is now a MINED
