@@ -110,6 +110,62 @@ reading:
   "Synthetic" means an invented SCENARIO, never invented VOCABULARY.
   Check `reg.plural_to_singular` before writing the fixture.
 
+#### ⛔ BUILT, GATE-REJECTED, REVERTED: the animate-coreference stack (do not re-derive; fix its blocker first)
+
+**It was built end-to-end, it works, and it does not ship.** Gate:
+svamp **+7 SOLVED** (form A 6 → 13 — all seven Baker items), gsm8k /
+asdiv / svamp each **DECL→WRONG 1**. Rule 3 is not discretionary, so it
+was reverted whole. Re-landing it needs the measure-fold fix below FIRST.
+
+What was built (all four pieces are needed together, in this order):
+
+1. `animate` category in core-english (parent: noun, 48 person-nouns) —
+   membership is a SOUNDNESS claim, not vocabulary. Three deliberate
+   exclusions: **'player'** ("MP3 player" is a DEVICE — the documented
+   trap that once cost 2 GSM8K items), **'cook'** (verb sense; the
+   'paint'/'work'/'second' precedent), **'king'** (name-like).
+2. `animate_pronoun` category (parent: pronoun, [he, she, him, her]) —
+   the kernel has NO gender or person feature (a pronoun unit carries
+   only `number`), so without this gate the fallback binds 'it' to a
+   person noun.
+3. `document.py` `_animate_candidates` + a ZERO-NAME fallback in
+   `_bind_discourse` (needs `reg` threaded to both call sites). ⚠ The
+   zero-name ordering is the whole safety argument: `deixis.resolve`
+   under the constant metric needs a UNIQUE winner, so adding candidates
+   to a NON-empty set could silently UNBIND a working binding. Firing
+   only when no name exists cannot do that. Verified by probe: binds
+   'Baker…He', refuses 'basket…He', refuses 'Baker…It'.
+4. `_split_leading_clause_commaless` (the twice-banked if-split) and
+   verb-scoped `label-difference` (`_verb_total` on a non-state ask verb,
+   mirroring the `difference` consumer's own split). SVAMP asks the SAME
+   baker premises both ways — "did baker SELL?" (11) vs "did baker MAKE?"
+   (78) — so the ask verb is the ONLY thing separating those golds.
+
+**WHY IT FAILED, and it is not the coreference.** Binding the pronoun
+makes previously-unread sentences READ, and they are then MISREAD by a
+pre-existing weakness. NULL CONTROL, run at HEAD with the pronoun
+replaced by a NAME: the asdiv shape commits **3 (gold 7)** and the gsm8k
+shape commits **10 (gold 17)** with none of this code present. Two of the
+three "new" wrongs are LATENT CONFIDENT-WRONGS THE ENGINE ALREADY HAS —
+currently masked, by accident, behind a coreference failure.
+
+⚠ **The masking generalises, and it is the real headline.** Every unbound
+pronoun is potentially hiding a misreading. The system's zero-wrong
+record is partly held up by sentences it fails to read at all, so ANY
+future reading improvement can expose latent wrongs. Expect this; run the
+null control (substitute a name, measure at HEAD) before blaming the new
+code.
+
+**THE ACTUAL BLOCKER — qualified measures do not fold into the bare
+form.** "105 green tomatoes and 71 red tomatoes … picked 137 tomatoes"
+mints `tomato[green]=105`, `tomato[red]=71`, `tomato=137` and totals the
+BARE key alone (137, gold 39 = 105+71-137). Same shape in the asdiv
+grapes item. That fold — deciding when `measure[qual]` siblings sum into
+`measure` — is the next increment and is worth doing on its own merits;
+it is adjacent to facts.py's measure-qualifier collision split
+(increment 70). Land it, THEN re-land this stack, which is written above
+precisely enough to rebuild.
+
 #### Next up (measured, not started): Class A is pronoun coreference, NOT premise reading
 
 Of the original 13, the 4 relational are DONE (`5700e3c`). What remains:
