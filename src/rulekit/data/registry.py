@@ -137,6 +137,11 @@ class Registry:
     # curated reference facts: (entity fold, attribute, year|None) -> value.
     # Frozen like every other table — the dict-not-DuckDB tier (schemas.ReferenceDoc)
     reference: Mapping[tuple[str, str, int | None], float]
+    # (entity fold, group attribute) -> folded group value ("continent" ->
+    # "europe"). The sets aggregates run over; reference/db.py derives its
+    # DuckDB tables from THIS and `reference` alone, so the resolver inherits
+    # the frozen registry's determinism instead of owning any data
+    reference_groups: Mapping[tuple[str, str], str]
     quarantine: Mapping[str, str]  # word -> reason (never vocabulary)
     rules: tuple[PatternRule, ...]
     asks: tuple[AskRule, ...]
@@ -381,6 +386,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
     # year and NO year-less key — the lookup consumer declines a year-less ask
     # against a time series rather than silently choosing a year.
     reference: dict[tuple[str, str, int | None], float] = {}
+    reference_groups: dict[tuple[str, str], str] = {}
     for pack in packs:
         for doc in pack.reference:
             for table in doc.tables:
@@ -400,6 +406,16 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                                 f"reference table {table.name!r} row {entity!r}: "
                                 f"undeclared attribute {attr!r}"
                             )
+                        if spec.group:
+                            gkey = (entity, attr)
+                            gval = str(value).strip().lower()
+                            if gkey in reference_groups and reference_groups[gkey] != gval:
+                                raise CompileError(
+                                    f"reference group {gkey} declared twice with "
+                                    f"different values"
+                                )
+                            reference_groups[gkey] = gval
+                            continue
                         if spec.by == "year":
                             if not isinstance(value, dict):
                                 raise CompileError(
@@ -620,6 +636,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
         contractions=contractions,
         affine_scales=_freeze(affine_scales),
         reference=_freeze(reference),
+        reference_groups=_freeze(reference_groups),
         geometry_formulas=_freeze(geometry_formulas),
         quantity_formulas=_freeze(quantity_formulas),
         unit_dimension=_freeze(unit_dimension),

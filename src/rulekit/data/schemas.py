@@ -857,9 +857,20 @@ class ReferenceAttrDef(StrictModel):
     `by: year` marks a TIME-SERIES attribute: its row values are {year: number}
     maps and a lookup without a stated year DECLINES (answering "the population
     of France" with some silently-chosen year would be a confident guess — the
-    engine's epistemics require the question to pin the series point)."""
+    engine's epistemics require the question to pin the series point).
+
+    `group: true` marks a TEXT grouping column (e.g. continent): its values
+    name the sets aggregates run over ("the total population of Europe") and
+    are never themselves answerable — the engine has no text answer kind."""
 
     by: Literal["year"] | None = None
+    group: bool = False
+
+    @model_validator(mode="after")
+    def _group_is_not_a_series(self) -> "ReferenceAttrDef":
+        if self.group and self.by is not None:
+            raise ValueError("a group column cannot also be a time series")
+        return self
 
 
 class ReferenceTableDef(StrictModel):

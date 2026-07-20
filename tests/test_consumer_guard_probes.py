@@ -258,3 +258,20 @@ def test_reference_lookup_unreadable_year_declines(gsm8k):
                {"attribute": "population", "entity": "france", "year": "blorp"})
     assert got.kind == "decline"
     assert "as a year" in got.reason
+
+
+# --- reference-aggregate: same structure as reference-lookup above — the op
+# is a resolves LITERAL ('total'/'average'), attribute and group are required
+# slots, and the year arrives via "{y.value}" off a number-typed slot.
+
+def test_reference_aggregate_empty_slots_decline(gsm8k):
+    got = call("reference-aggregate", gsm8k, {"op": "total", "attribute": "", "group": ""})
+    assert got.kind == "decline"
+    assert "needs an op, an attribute and a group" in got.reason
+
+
+def test_reference_aggregate_unreadable_year_declines(gsm8k):
+    got = call("reference-aggregate", gsm8k,
+               {"op": "total", "attribute": "population", "group": "europe", "year": "blorp"})
+    assert got.kind == "decline"
+    assert "as a year" in got.reason

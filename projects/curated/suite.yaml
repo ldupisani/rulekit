@@ -212,3 +212,22 @@ items:
   - id: ref-decline-year-outside-series
     text: What is the population of France in 1874?
     expect: decline
+
+  # ---- reference aggregates (rulekit.reference.db, B2) ---------------------
+  # The BUYERS of the DuckDB resolver: set-valued questions a point lookup
+  # structurally cannot answer, plus the honesty declines.
+  - id: ref-agg-total-population-year
+    text: What is the total population of Europe in 2020?
+    expect: 543100000
+  - id: ref-agg-average-area
+    text: What is the average area of Europe?
+    expect: 1999469.9
+  - id: ref-agg-total-area-point
+    text: What is the total area of Oceania?
+    expect: 7960045
+  - id: ref-agg-decline-yearless-series
+    text: What is the total population of Europe?
+    expect: decline
+  - id: ref-agg-decline-unknown-group
+    text: What is the total population of Narnia in 2020?
+    expect: decline

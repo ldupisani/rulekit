@@ -141,3 +141,96 @@ class TestLookup:
         reg = _registry(tmp_path, empty)
         r = solve("What is the wingspan of Zamfir?", reg, tracing=False)
         assert r.answer.kind == "decline"
+
+
+REFERENCE_GROUPED_YAML = """\
+format: rulekit/reference@1
+tables:
+  - name: dragons
+    key: dragon
+    attributes:
+      wingspan: {}
+      clan: {group: true}
+      shade: {group: true}
+    rows:
+      - {dragon: Zamfir, wingspan: 12, clan: emberfell, shade: crimson}
+      - {dragon: Vexis, wingspan: 8, clan: emberfell, shade: viridian}
+      - {dragon: Orlo, wingspan: 4, clan: mistvale, shade: viridian}
+"""
+
+AGG_ASKS = """\
+  - id: ask/testref-aggregate
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {lit: total}
+        - {slot: a, cat: reference_attribute}
+        - {lit: of}
+        - {slot: g, type: name}
+    resolves:
+      consumer: reference-aggregate
+      op: total
+      attribute: "{a}"
+      group: "{g}"
+"""
+
+
+def _grouped_registry(tmp_path):
+    pack = _write_pack(tmp_path / "testref", REFERENCE_GROUPED_YAML)
+    (pack / "asks.yaml").write_text(ASKS_YAML + AGG_ASKS)
+    return compile_registry(
+        load_packs([REPO / "packs/core-english", REPO / "packs/arithmetic", pack])
+    )
+
+
+class TestAggregate:
+    def test_group_sum_over_duckdb(self, tmp_path):
+        from rulekit.kernel.engine import solve
+
+        reg = _grouped_registry(tmp_path)
+        r = solve("What is the total wingspan of Emberfell?", reg, tracing=False)
+        assert r.answer.kind == "number"
+        assert r.answer.value == 20.0
+
+    def test_ambiguous_group_value_declines(self, tmp_path):
+        # 'viridian' is a shade, but if a value ever names TWO group columns
+        # the set is ambiguous — here we probe the guard by making one do so
+        from rulekit.kernel.engine import solve
+
+        ambiguous = REFERENCE_GROUPED_YAML.replace("clan: mistvale", "clan: viridian")
+        pack = _write_pack(tmp_path / "testref", ambiguous)
+        (pack / "asks.yaml").write_text(ASKS_YAML + AGG_ASKS)
+        reg = compile_registry(
+            load_packs([REPO / "packs/core-english", REPO / "packs/arithmetic", pack])
+        )
+        r = solve("What is the total wingspan of Viridian?", reg, tracing=False)
+        assert r.answer.kind == "decline"
+        assert "ambiguous" in r.answer.reason
+
+    def test_missing_duckdb_declines_never_errors(self, tmp_path, monkeypatch):
+        # the optional-extra contract: absence maps to the safe outcome
+        import builtins
+
+        from rulekit.kernel.engine import solve
+        from rulekit.reference import db
+
+        reg = _grouped_registry(tmp_path)
+        real_import = builtins.__import__
+
+        def no_duckdb(name, *a, **kw):
+            if name == "duckdb":
+                raise ImportError("duckdb not installed")
+            return real_import(name, *a, **kw)
+
+        monkeypatch.setattr(builtins, "__import__", no_duckdb)
+        monkeypatch.setattr(db, "_CONNECTIONS", {})
+        r = solve("What is the total wingspan of Emberfell?", reg, tracing=False)
+        assert r.answer.kind == "decline"
+        assert "cannot aggregate" in r.answer.reason
+
+    def test_group_column_never_a_fact(self, tmp_path):
+        # a group column is set membership, not an answerable quantity
+        reg = _grouped_registry(tmp_path)
+        assert ("zamfir", "clan", None) not in reg.reference
+        assert reg.reference_groups[("zamfir", "clan")] == "emberfell"

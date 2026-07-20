@@ -310,6 +310,12 @@ GOLDEN = [
      'reference-lookup', 'decline', None, "no reference fact for the 'population' of 'atlantis'"),
     ('curated', 'What is the population of France?',
      'reference-lookup', 'decline', None, "no reference fact for the 'population' of 'france'"),
+    ('curated', 'What is the total population of Europe in 2020?',
+     'reference-aggregate', 'number', 543100000.0, 'reference-aggregate'),
+    ('curated', 'What is the total population of Narnia in 2020?',
+     'reference-aggregate', 'decline', None, "no reference group named 'narnia'"),
+    ('curated', 'What is the total population of Europe?',
+     'reference-aggregate', 'decline', None, "cannot aggregate the 'population' of 'europe'"),
 ]
 
 
@@ -404,6 +410,11 @@ _COVERED_BY_UNIT_TEST = {
     # from text; probed directly in test_consumer_guard_probes.py
     ("reference-lookup", "a reference lookup needs an attribute an"),
     ("reference-lookup", "cannot read"),
+    # same structure as reference-lookup: op is a resolves LITERAL, the
+    # attribute/group slots are required, the year is "{y.value}" off a
+    # number slot — probed directly in test_consumer_guard_probes.py
+    ("reference-aggregate", "an aggregate needs an op, an attribute a"),
+    ("reference-aggregate", "cannot read"),
     ("arithmetic", "unsupported operation"),
     ("coordinate", "unsupported operation"),
     ("number-theory", "unsupported operation"),

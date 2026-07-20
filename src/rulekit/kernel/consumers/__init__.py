@@ -137,6 +137,7 @@ from . import (  # noqa: E402,F401  (import registers each handler)
     number_theory as _number_theory,
     rate_cost as _rate_cost,
     physics as _physics,
+    reference_aggregate as _reference_aggregate,
     reference_lookup as _reference_lookup,
     trigonometry as _trigonometry,
     unit_convert as _unit_convert,

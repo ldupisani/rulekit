@@ -13,12 +13,16 @@ bench = [
     "pyarrow>=16",
 ]
 server = ["fastapi>=0.111", "uvicorn>=0.30"]
+# the DuckDB resolver (rulekit.reference.db) — absence is safe: the
+# reference-aggregate consumer declines when the import fails
+reference = ["duckdb>=1.0"]
 
 [project.scripts]
 rulekit = "rulekit.cli:main"
 
 [dependency-groups]
-dev = ["pytest>=8"]
+# duckdb here so the test suite exercises the aggregate path, not its decline
+dev = ["pytest>=8", "duckdb>=1.0"]
 
 [build-system]
 requires = ["hatchling"]

@@ -36,3 +36,72 @@ asks:
       attribute: "{a}"
       entity: "{e}"
       year: "{y.value}"
+  # Aggregates over a GROUP (B2): "What is the total population of Europe in
+  # 2020?" — computed over the set of entities whose group column names the
+  # slot value, in DuckDB (rulekit.reference.db), derived from the same frozen
+  # tables. 'total'/'average' are literals exactly as statistics.yaml's
+  # 'average' is; the op reaches the consumer as data. Year forms win by
+  # consumed length when a year is stated; a year-less ask against a by-year
+  # attribute finds no rows and declines.
+  - id: ask/reference-aggregate-total
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {lit: total}
+        - {slot: a, cat: reference_attribute}
+        - {lit: of}
+        - {slot: g, type: name}
+    resolves:
+      consumer: reference-aggregate
+      op: total
+      attribute: "{a}"
+      group: "{g}"
+  - id: ask/reference-aggregate-total-year
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {lit: total}
+        - {slot: a, cat: reference_attribute}
+        - {lit: of}
+        - {slot: g, type: name}
+        - {lit: in}
+        - {slot: y, type: number}
+    resolves:
+      consumer: reference-aggregate
+      op: total
+      attribute: "{a}"
+      group: "{g}"
+      year: "{y.value}"
+  - id: ask/reference-aggregate-average
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {lit: average}
+        - {slot: a, cat: reference_attribute}
+        - {lit: of}
+        - {slot: g, type: name}
+    resolves:
+      consumer: reference-aggregate
+      op: average
+      attribute: "{a}"
+      group: "{g}"
+  - id: ask/reference-aggregate-average-year
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {lit: average}
+        - {slot: a, cat: reference_attribute}
+        - {lit: of}
+        - {slot: g, type: name}
+        - {lit: in}
+        - {slot: y, type: number}
+    resolves:
+      consumer: reference-aggregate
+      op: average
+      attribute: "{a}"
+      group: "{g}"
+      year: "{y.value}"
