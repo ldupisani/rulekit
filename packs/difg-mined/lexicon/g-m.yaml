@@ -28,6 +28,7 @@ entries:
   gas:
     senses:
     - noun
+    plural: gases
   gathered:
     senses:
     - verb
@@ -872,6 +873,14 @@ entries:
     - verb
     verb:
       lemma: keep
+  # scibench: 'K' is the SYMBOL (fold 'k'), a number-form of the unit as
+  # 'kg' is of kilogram — the canonical temperature unit of formulas.yaml
+  kelvin:
+    senses:
+    - noun
+    plural:
+    - k
+    - kelvins
   kept:
     senses:
     - verb
@@ -890,6 +899,15 @@ entries:
     plural:
     - kg
     - kilograms
+  # scibench: 'kJ' is the SYMBOL (a number-form of its unit, folded to 'kj' —
+  # the 'kg' precedent above); the physics consumer scales it to the canonical
+  # 'joule' through the conversions table at bind time
+  kilojoule:
+    senses:
+    - noun
+    plural:
+    - kj
+    - kilojoules
   kilometer:
     senses:
     - noun

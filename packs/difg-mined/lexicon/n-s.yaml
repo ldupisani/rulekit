@@ -370,6 +370,9 @@ entries:
   others:
     senses:
     - noun
+  otherwise:
+    senses:
+    - adverb
   ounce:
     senses:
     - noun
@@ -636,6 +639,9 @@ entries:
   percentage:
     senses:
     - noun
+  perfect:
+    senses:
+    - adjective
   perform:
     senses:
     - verb
@@ -1392,6 +1398,9 @@ entries:
     senses:
     - noun
   reels:
+    senses:
+    - verb
+  refer:
     senses:
     - verb
   refill:
@@ -2525,6 +2534,9 @@ entries:
     senses:
     - noun
     plural: states
+  stated:
+    senses:
+    - verb
   station:
     senses:
     - noun

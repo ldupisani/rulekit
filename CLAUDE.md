@@ -46,8 +46,8 @@ uv run rulekit --project projects/gsm8k diff before.json after.json    # ship ga
 uv run rulekit --project projects/asdiv bench --slice dev --jobs 8      # CROSS-CORPUS gate (§3b) — packs mined only on GSM8K, run on ASDiv
 uv run rulekit --project projects/svamp bench --slice dev --jobs 8      # 2nd CROSS-CORPUS gate — SVAMP (adversarial variations, harder)
 uv run rulekit --project projects/mawps bench --slice dev --jobs 8      # 3rd — MAWPS (classic arithmetic repository)
-uv run rulekit --project projects/scibench bench --slice dev --jobs 8   # 4th — SciBench OUT-OF-DOMAIN safety (want 0 commits)
-uv run rulekit --project projects/folio bench --slice dev --jobs 8      # 5th — FOLIO LOGIC safety, the only NON-arithmetic gate (want 0 commits)
+uv run rulekit --project projects/scibench bench --slice dev --jobs 8   # 4th — SciBench (ATTEMPTED since 2026-07; standard bar: 0 BROKE, 0 DECL→WRONG)
+uv run rulekit --project projects/folio bench --slice dev --jobs 8      # 5th — FOLIO LOGIC safety, the only NON-arithmetic gate (the sole want-0-commits gate)
 uv run rulekit --project projects/gsm8k stats                          # the mining worklists
 uv run rulekit --project projects/gsm8k lint [--category NAME]         # overlaps, blast radius
 uv run rulekit --project projects/gsm8k serve                          # visual designer
@@ -67,11 +67,15 @@ uv run rulekit --project projects/gsm8k serve                          # visual 
   `uv run --with datasets python projects/asdiv/build_corpus.py`
 - `projects/svamp/`, `projects/mawps/`, `projects/scibench/` — the 2nd–4th cross-corpus gates. SVAMP
   (adversarial variations, harshest in-domain), MAWPS (classic arithmetic repository), and SciBench
-  (out-of-domain college science — an over-commitment/safety check, expected 0 commits). Same shape as
+  (out-of-domain college science — ATTEMPTED since 2026-07 via the LaTeX reader; the historical
+  0-commit safety expectation is retired, the bar is the standard one: 0 BROKE, 0 DECL→WRONG, and
+  every new commit hand-inspected. A replacement pure-OOD 0-commit corpus is deferred until SciBench
+  coverage is non-trivial). Same shape as
   asdiv; each rebuilt once with `uv run --with datasets python projects/<name>/build_corpus.py`
 - `projects/folio/` — the 5th and only NON-ARITHMETIC gate: human-written first-order logic (Yale-LILY).
   Every other gate asks for a number, so none can catch the engine ASSERTING a number at logic prose;
-  a committed number against its verdict/text golds scores WRONG. Expect 0 commits. Its firewall buckets
+  a committed number against its verdict/text golds scores WRONG. Expect 0 commits — since SciBench
+  became an attempted corpus (2026-07) this is the SOLE expect-0-commits gate. Its firewall buckets
   by PREMISE BLOCK, not per-item (340 stories → 1,001 items), and its 'Uncertain' gold is `text`, never
   `decline` — see `docs/negative-results.md` → "The logic-corpus search" before touching either.
 

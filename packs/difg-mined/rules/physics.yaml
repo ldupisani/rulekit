@@ -34,3 +34,22 @@ asks:
     resolves:
       consumer: physics
       quantity: "{q}"
+  # The imperative Δ-frame: "Calculate the change in <q> when ...". 'calculate'
+  # is reachable as a literal exactly as 'convert' is in ask/unit-convert-imp
+  # (it carries the `imperative` sense); 'change in' is the grammatical skeleton
+  # of the Δ-nominal, not corpus phrasing — the CLASS is change-in-quantity
+  # questions (scibench thermo is the first member). The quantity resolves to
+  # "{q} change" so the formula KEY differs from the slot word: the plain
+  # what-is ask can never reach a Δ formula (see formulas.yaml's entropy note).
+  - id: ask/physics-quantity-change
+    match:
+      question:
+        # no {lit: the} — articles are SKIPPABLE senses, the compiler rejects a
+        # literal the skip loop would walk past
+        - {lit: calculate}
+        - {lit: change}
+        - {lit: in}
+        - {slot: q, cat: physics_quantity}
+    resolves:
+      consumer: physics
+      quantity: "{q} change"

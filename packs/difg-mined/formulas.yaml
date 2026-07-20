@@ -25,6 +25,12 @@ dimensions:
   # -> 'meter'), or its QUALIFIER when the noun itself is not a unit ("a 2 kg
   # object" -> lemma 'object', qualifier 'kilogram').
   distance: [meter]
+  # scibench thermo: the stated units are symbols ('25 kJ') and labeled degrees
+  # ('100 degrees C'); the consumer scales them to these canonical units through
+  # the conversions / affine-scales tables at bind time — one canonical unit per
+  # dimension still holds, non-canonical units REACH it by table or decline
+  energy: [joule]
+  temperature: [kelvin]
   # 'seconds', not 'second': in the lexicon 'second' is an ADJECTIVE (the
   # ordinal), so the time unit's only noun form is the plural. Forcing a noun
   # sense onto it is the trap that broke the `average` consumer.
@@ -38,6 +44,12 @@ formulas:
   # (data) exactly as `pi` does for geometry — not in the consumer.
   - {quantity: weight, expr: "mass * 9.8"}
   - {quantity: voltage, expr: "resistance * current"}
+  # ΔS = q/T (reversible isothermal transfer). The key is 'entropy change', NOT
+  # 'entropy': only ask/physics-quantity-change resolves "{q} change", so the
+  # plain "What is the entropy" ask finds no formula and declines — q/T is the
+  # CHANGE, never the absolute entropy. Buyers: the scibench entropy pair
+  # (25 kJ at 100°C -> 67, at 0°C -> 92).
+  - {quantity: entropy change, expr: "energy / temperature"}
 
 # DELIBERATELY ABSENT — the compound-unit quantities. Their operands are units
 # the tokenizer SHREDS ("3 m/s^2" -> the numbers [3, 2]; "100 cm^3" -> [100, 3] —

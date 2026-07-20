@@ -160,11 +160,14 @@ of §3a's blind spot lit up.
   pattern-matchers. Baseline **80.0%** — the harshest in-domain check.
 - `projects/mawps/` — the classic MAWPS repository, a third arithmetic source. Baseline **100% (9/0)** —
   low coverage, clean; confirms precision holds on yet another source.
-- `projects/scibench/` — a DIFFERENT kind of gate: **out-of-domain safety**. College physics/chemistry
-  with LaTeX and formulas — NOT the engine's task, so coverage is ~0 by design. It measures whether the
-  engine correctly **declines** material it cannot read rather than over-committing. Baseline: **0 commits
-  across 524** (all safe declines) — the "know what you don't know" property, held. A rising wrong count
-  here means the engine is guessing on text it does not understand.
+- `projects/scibench/` — college physics/chemistry with LaTeX and formulas. Formerly the
+  **out-of-domain safety gate** ("expect 0 commits"); since 2026-07 it is an **attempted corpus**: the
+  LaTeX reader (kernel mathtext) plus incremental formula-pack growth seek coverage here through the
+  standard gate. The safety property is carried by the same bar as everywhere — any new WRONG on
+  scibench dev makes a change unsafe — plus the reader's conservatism (unrecognized math spans are
+  left verbatim and decline). Historical baseline at reframing: **0 commits across 524** (all safe
+  declines). A replacement pure-OOD 0-commit corpus (never-mined science text) is deferred until
+  SciBench coverage is non-trivial; FOLIO remains the sole expect-0-commits gate meanwhile.
 
 The split is defined by the salt in each `build_corpus.py` (committed **infrastructure** — a throwaway
 script would make the TEST firewall non-reproducible). Golds are floats (the corpus's leading answer
@@ -221,8 +224,8 @@ inspectable slice, before they can bite on TEST.
 6b. **Cross-corpus** (§3b): snapshot before/after and `diff` — **0 BROKE, 0 DECL→WRONG** on each of
    `projects/{asdiv,svamp,mawps,scibench} --slice dev`. These are the only gates that can see a shape
    GSM8K doesn't contain; run them on any kernel/pack change. A new wrong on ANY → the change is unsafe
-   even if every GSM8K gate was clean (SVAMP is the harshest in-domain; SciBench catches over-commitment
-   on out-of-domain text — it should stay at 0 commits).
+   even if every GSM8K gate was clean (SVAMP is the harshest in-domain; SciBench is attempted since
+   2026-07 — its commits are sought but each new one is hand-verified while they are few).
 7. **Unit test**: synthetic only — *never* a GSM8K string in `test_reading.py` (the firewall: the parser
    is never tuned to the benchmark's individual items).
 8. **TEST look** (single, aggregate): precision must hold. A drop → **revert**.

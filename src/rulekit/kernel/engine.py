@@ -20,6 +20,7 @@ from .evaluate import ArithmeticLog
 from .facts import FactStore
 from .guards import GuardVeto, check as run_guards
 from .learn import _has_event_polarity
+from .mathtext import normalize_math
 from .model import Fact, Reading
 from .numbers import annotate_numbers
 from .obligations import attach_obligations, bind, disambiguate
@@ -514,6 +515,10 @@ def solve(text: str, reg: Registry, tracing: bool = True) -> Result:
     It also skips the deictic journal, for the same reason and with the same effect:
     `deixis.resolve` takes the silent path when handed None, so bench pays nothing.
     """
+    # the reader stage: LaTeX math spans transcribed to plain text BEFORE any
+    # splitting/tokenization; non-LaTeX text passes through as the same object
+    # (mathtext.py — whole-span conservatism, unrecognized spans stay verbatim)
+    text = normalize_math(text)
     premise_texts, question_text = split_question(text, reg)
     expanded_premise_texts: list[str] = []
     for premise_text in premise_texts:

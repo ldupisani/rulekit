@@ -1,18 +1,24 @@
 format: rulekit/project@1
 name: scibench
-# THE OUT-OF-DOMAIN SAFETY GATE (a DIFFERENT kind of cross-corpus check).
+# AN ATTEMPTED CORPUS since 2026-07 (formerly the out-of-domain safety gate).
 #
 # SciBench (Wang et al. 2023) is college-level science: physics/chemistry word
-# problems with LaTeX, formulas, and unit-bearing answers. This is NOT the
-# engine's task — it is grade-school arithmetic, mined on GSM8K — so coverage is
-# expected to be ~0. The point is PRECISION on OUT-OF-DOMAIN text: does the engine
-# correctly DECLINE material it cannot read, or does it over-commit confident
-# wrongs? A rising wrong count here means the engine is guessing on text it does
-# not understand — a distinct precision failure from the in-domain corpora, and
-# exactly the "know what you don't know" property a deterministic reader should
-# have. Same shape/firewall as asdiv/svamp/mawps.
+# problems with LaTeX, formulas, and unit-bearing answers. Historically coverage
+# was ~0 by design and the gate's expectation was 0 commits; that expectation is
+# RETIRED — the LaTeX reader (kernel mathtext) plus formula-pack growth now seek
+# coverage here. The bar is the standard ship gate: 0 BROKE, 0 DECL→WRONG on
+# every increment, every new commit verified correct by hand while they are few.
+# The reader is conservative by construction (unrecognized math spans are left
+# verbatim and decline), so "declines what it can't read" survives structurally.
+# FOLIO is now the sole expect-0-commits gate. Baseline at reframing: 0 commits
+# across 524 dev items. Same shape/firewall as asdiv/svamp/mawps.
 packs: [core-english, arithmetic, difg-mined]
+# gold: typed — scibench golds are book answers ROUNDED to 2-3 significant
+# figures ("#### 67" for 25000/373.15 = 66.997), so the untyped float path's
+# TOL=1e-6 would score every physically-correct commit WRONG. The typed judge
+# (bench._judge_typed) carries the 1% relative tolerance these golds need.
+# Corpus-scoped: no other project sets it, GSM8K keeps the float path.
 datasets:
   scibench:
-    train: {parquet: data/scibench_dev.parquet, question: question, answer: answer}
-    test: {parquet: data/scibench_test.parquet, question: question, answer: answer}
+    train: {parquet: data/scibench_dev.parquet, question: question, answer: answer, gold: typed}
+    test: {parquet: data/scibench_test.parquet, question: question, answer: answer, gold: typed}

@@ -375,6 +375,10 @@ entries:
     senses:
     - noun
     plural: assignments
+  assume:
+    senses:
+    - verb
+    - imperative
   assuming:
     senses:
     - verb
@@ -2026,6 +2030,9 @@ entries:
     senses:
     - noun
     plural: dancers
+  data:
+    senses:
+    - noun
   daughter:
     senses:
     - noun
@@ -2589,6 +2596,12 @@ entries:
   entrance:
     senses:
     - adjective
+  # scibench: the ask/physics-quantity-change slot word ("the change in
+  # entropy"); a physics_quantity member (categories/physics.yaml)
+  entropy:
+    senses:
+    - noun
+    plural: entropies
   entree:
     senses:
     - noun

@@ -19,5 +19,9 @@ format: rulekit/categories@1
 # single capital letter that the name-merge rule would fight over.
 categories:
   physics_quantity: {parent: noun}
+# 'entropy' is the SLOT word, not the formula key: only the change-in-<q> ask
+# reaches a formula (key 'entropy change'), so "What is the entropy...?" still
+# declines — q/T is the CHANGE for reversible isothermal transfer, never the
+# absolute entropy.
 members:
-  physics_quantity: [speed, weight, voltage]
+  physics_quantity: [speed, weight, voltage, entropy]

@@ -79,6 +79,38 @@ def physics(ctx: ConsumerContext):
                 dim = d
                 break
         if dim is None:
+            # SCALE-TO-CANONICAL. A stated unit that is not a dimension's
+            # canonical unit can still REACH one through the conversion
+            # tables — "25 kJ" reaches 'joule' by linear factor, "100 degrees
+            # C" reaches 'kelvin' by the affine pair keyed on the merged
+            # LABEL. Both lookups are pure data (conversions@1 /
+            # affine-conversions@1); no unit, scale or factor is named here.
+            # A word or label that reaches the canonical units of TWO read
+            # dimensions is ambiguous and binds nothing — the decline below
+            # is the safe outcome, exactly as for an unknown unit.
+            canon_units = {
+                d: unit
+                for unit, d in ctx.reg.unit_dimension.items()
+                if d in read_names
+            }
+            reachable: list[tuple[str, float]] = []
+            for word in (u.features.get("lemma"), u.features.get("qualifier")):
+                if not word:
+                    continue
+                for d, canon in sorted(canon_units.items()):
+                    factor = ctx.reg.conversions.get((word, canon))
+                    if factor is not None:
+                        reachable.append((d, value * factor))
+            label = u.features.get("label")
+            if label:
+                for d, canon in sorted(canon_units.items()):
+                    pair = ctx.reg.affine_scales.get((label.lower(), canon))
+                    if pair is not None:
+                        offset, factor = pair
+                        reachable.append((d, (value + offset) * factor))
+            if len(reachable) == 1:
+                dim, value = reachable[0]
+        if dim is None:
             # AN UNREAD COUNT IS A DECLINE. This branch takes the guards.py
             # value-accounting exemption (_WHOLE_LIST_CONSUMERS), so nothing
             # downstream will catch a number the formula silently ignored:

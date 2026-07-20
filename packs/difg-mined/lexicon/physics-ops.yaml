@@ -12,13 +12,15 @@ format: rulekit/lexicon@1
 # 1-4 items each. ZERO exposure in GSM8K / ASDiv / SVAMP / MAWPS. SciBench must
 # hold at 0 commits, and that gate is the arbiter. None are quarantined.
 #
-# DELIBERATELY NOT ADMITTED — 'energy', 'force', 'density', 'momentum', 'newton'.
-# They belong to the formulas this increment does NOT land (their operands are
-# compound units the tokenizer shreds), and they are the collision-heavy ones:
-# 'energy' appears in 2 GSM8K **TEST** items and 8 in train, 'force' in 1 TEST,
-# 'density' in 4 train, 'newton' in 1 TEST (as the NAME). Admitting a word for a
-# formula that cannot fire would lift those decline guards and buy nothing —
-# strictly a downside. They come with the tokenizer increment or not at all.
+# STILL NOT ADMITTED — 'force', 'density', 'momentum', 'newton'. They belong to
+# formulas whose operands are compound units the tokenizer shreds ('force' 1
+# GSM8K TEST, 'density' 4 train, 'newton' 1 TEST as the NAME). They come with
+# the tokenizer increment or not at all.
+#
+# 'energy' WAS on that list; its refusal reason expired when the entropy-change
+# formula landed (formulas.yaml: ΔS = energy/temperature, bought by the scibench
+# entropy pair — a formula that FIRES). Exposure re-measured 2026-07-20: gsm8k
+# train 8 / TEST 2, folio 3 — the six-corpus diff is the arbiter, as ever.
 entries:
   voltage: {senses: [noun]}
   # not a unit — admitted only so the unknown-word guard stops blocking the
@@ -26,3 +28,14 @@ entries:
   resistor: {senses: [noun], plural: resistors}
   ohm: {senses: [noun], plural: ohms}
   amp: {senses: [noun], plural: amps}
+  # the entropy-pair sentence ("...when 25 kJ of ENERGY is TRANSFERRED
+  # REVERSIBLY and ISOTHERMALLY as HEAT to a large block of IRON at 100 degrees
+  # C"). Collision-grepped 2026-07-20: reversibly/isothermally 0 everywhere;
+  # transferred gsm8k-train 4 + folio 3; heat gsm8k 3+3, folio 8; iron gsm8k
+  # 9+2, folio 2. The unknown-word guard is what these lift — gated on all six.
+  energy: {senses: [noun]}
+  transferred: {senses: [verb], verb: {lemma: transfer}}
+  reversibly: {senses: [adverb]}
+  isothermally: {senses: [adverb]}
+  heat: {senses: [noun]}
+  iron: {senses: [noun]}

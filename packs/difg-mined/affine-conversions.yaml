@@ -9,3 +9,8 @@ format: rulekit/affine-conversions@1
 scales:
   - {from: fahrenheit, to: celsius, offset: -32.0, factor: 0.5555555555555556}
   - {from: kelvin, to: celsius, offset: -273.15, factor: 1.0}
+  # 'c' is the merged-label SYMBOL form ("100 degrees C" reads lemma 'degree'
+  # with label 'C'; the physics consumer folds the label and looks the scale up
+  # here to reach the canonical kelvin). A symbol is a number-form of its scale,
+  # exactly as 'kg' is of kilogram in the plural map.
+  - {from: c, to: kelvin, offset: 273.15, factor: 1.0}
