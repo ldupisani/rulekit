@@ -1,10 +1,18 @@
-# Session 8 (2026-07-20): comparative + relational stages land — svamp dev 13 → 23, TEST look #1 spent, precision held
+# Session 8 (2026-07-20): svamp dev 13 → 30, asdiv 43 → 44, TEST look #1 spent, precision held
 
-Two commits (`f50b94a` comparative, `5700e3c` relational), each gate-clean
-on all nine DEV slices. **svamp dev 13/0 → 15/0 → 23/0** (+2, +8; 0 BROKE
-and 0 DECL→WRONG on both); gsm8k dev-train / asdiv / mawps / scibench /
-folio all NEUTRAL item-by-item throughout; holdout 40/0, suite 52/52,
-difg 70/0, lint 0 errors. pytest 1843 → **1857**.
+Five landed commits (`f50b94a` comparative, `5700e3c` relational,
+`0792d85` animate coreference, `749d514` qualifier parity, plus two BANK
+notes), each gate-clean on all nine DEV slices. **svamp dev 13/0 → 30/0**,
+**asdiv 43/0 → 44/0**; gsm8k dev-train / mawps / scibench / folio NEUTRAL
+item-by-item throughout; holdout 40/0, suite 52/52, difg 70/0, lint 0
+errors. pytest 1843 → **1872**. ZERO confident-wrongs added anywhere, and
+three LATENT ones removed.
+
+**Two increments were built, gate-rejected and reverted** (the animate
+stack, then the qualified fold alone). The animate stack later landed
+UNCHANGED once its three exposed wrongs were fixed. That sequence is the
+session's main lesson and is recorded below — a rejected increment is
+often correct code sitting on broken ground.
 
 #### `5700e3c` — the relational stage, and the pattern it confirms
 
@@ -110,7 +118,43 @@ reading:
   "Synthetic" means an invented SCENARIO, never invented VOCABULARY.
   Check `reg.plural_to_singular` before writing the fixture.
 
-#### ⛔ BUILT, GATE-REJECTED, REVERTED: the animate-coreference stack (do not re-derive; fix its blocker first)
+#### `0792d85` + `749d514` — the animate stack LANDED, and the parity bug behind it
+
+**The stack below was rejected, then landed unchanged once its three
+exposed wrongs were fixed.** svamp dev 23 → **30/0** (+7, all seven Baker
+items); asdiv 43 → **44/0** from the parity fix. The reverted-then-landed
+sequence is the record worth keeping: the coreference code never changed,
+only the ground under it.
+
+- **`slot_not_category`** — NEW where-predicate (opt-in per rule, like
+  `distinct_measure`): a relation's STANDARD must not be a TIME PERIOD.
+  Applied at 4 anchored-relation sites.
+- **The attribution guard** — a BARE event over PARTS-ONLY state declines.
+  Answering it needs source-marked transfer, deliberately absent.
+- **The qualified fold** — a BARE ask asks for the WHOLE; fail-closed on a
+  stated whole, unconditional for events.
+- **The comma-less if-split**, banked twice, finally cashed: it is
+  DOWNSTREAM of coreference (its promoted clause reads "he sold 158
+  cakes"), which is exactly why it measured 0 buyers both times.
+
+**`749d514` — THE QUALIFIER SPLIT WAS PAIRWISE, so odd-length part lists
+stranded their last conjunct.** The split fired only on a key COLLISION,
+and re-keying both sides REMOVED the bare key they collided on, so the
+third sibling found nothing to collide with and was stored BARE — a
+silently dropped qualifier. n=3 and n=5 stranded; n=4 and n=6 were clean
+(the 4th rescues the 3rd). **The parity prediction was made and confirmed
+BEFORE the fix** — that is what proved the mechanism instead of the
+symptom. Now order-independent, pinned at four arities.
+
+⚠ **Two of my own diagnoses in this file were WRONG, both from testing
+with words the engine does not have.** "n-ary conjunction is unread
+(~118 items)" was `pear` missing from the lexicon — 3- and 4-item
+UNqualified lists always read fine. Before believing any reading defect,
+check `reg.lexicon` / `reg.plural_to_singular` for every content word in
+the probe. This is the `widget`/`gadget` lesson, and it has now cost two
+mis-scoped entries here.
+
+#### ⛔ The record of the first attempt (kept: it is why the guards exist)
 
 **It was built end-to-end, it works, and it does not ship.** Gate:
 svamp **+7 SOLVED** (form A 6 → 13 — all seven Baker items), gsm8k /
