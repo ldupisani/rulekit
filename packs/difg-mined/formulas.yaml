@@ -88,6 +88,11 @@ formulas:
   - quantity: power
     expr: "energy / time"
     scope: document
+  # Near-Earth gravitational potential energy. The complete three-word key is
+  # preserved by `{q.qualified}`; kinetic, rotational kinetic, and bare
+  # potential energy therefore cannot borrow this mass/height formula.
+  - quantity: gravitational potential energy
+    expr: "mass * 9.8 * distance"
 
 # DELIBERATELY ABSENT — the compound-unit quantities. Their operands are units
 # the tokenizer SHREDS ("3 m/s^2" -> the numbers [3, 2]; "100 cm^3" -> [100, 3] —
@@ -97,10 +102,8 @@ formulas:
 #   force    = mass * acceleration   (m/s^2)
 #   density  = mass / volume         (cm^3)
 #   momentum = mass * velocity       (m/s)
-#   kinetic energy   = 0.5 * mass * velocity**2   (m/s; and "kinetic energy"
-#     merges to ONE compound noun whose lemma is the head 'energy', so telling it
-#     from "potential energy" needs the qualifier — see the `bare:` gate lesson)
-#   potential energy = mass * 9.8 * height        (needs 'm' as a distance unit)
+#   kinetic energy   = 0.5 * mass * velocity**2   (m/s; its complete qualified
+#     key already distinguishes it from gravitational/rotational energy)
 #
 # Adding them is a `tokenize.py` `_TOKEN` change (compound units as ONE token) —
 # the shared reader under EVERY corpus. Do it as its own increment, bought by

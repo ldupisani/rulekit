@@ -110,6 +110,28 @@ def test_wien_formula_rejects_an_unused_document_value(reg):
     assert not r.answer.committed
 
 
+def test_full_qualified_quantity_selects_gravitational_potential_formula(reg):
+    """All modifiers survive routing; operands still bind by unit dimension."""
+    r = solve(
+        "What is the gravitational potential energy of a 7 kg object "
+        "at a height of 3 meters?",
+        reg,
+        tracing=False,
+    )
+    assert r.answer.committed, (r.answer.reason or "")
+    assert r.answer.value == pytest.approx(7 * 9.8 * 3)
+
+
+def test_shorter_energy_key_cannot_borrow_gravitational_formula(reg):
+    """Exact phrase routing declines when the defining modifier is absent."""
+    r = solve(
+        "What is the potential energy of a 7 kg object at a height of 3 meters?",
+        reg,
+        tracing=False,
+    )
+    assert not r.answer.committed
+
+
 def test_qualified_quantity_reads_dimensioned_operands_from_premises(reg):
     """A formula may read unit-bearing operands stated before the final ask.
     Invented magnitudes keep this synthetic rather than copying a corpus row."""

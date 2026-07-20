@@ -48,3 +48,7 @@ entries:
   # Canonical energy unit for the document-scoped power formula. The plural and
   # singular are one identity, following kilogram/kilograms and kilojoule/kJ.
   joule: {senses: [noun], plural: joules}
+  # Exact output-quantity modifiers for the gravitational-potential formula.
+  # They remain data; the ask routes the complete qualified phrase generically.
+  gravitational: {senses: [adjective]}
+  potential: {senses: [adjective]}

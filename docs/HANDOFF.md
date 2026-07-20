@@ -1,3 +1,44 @@
+# Session 15 (2026-07-20): gravitational potential energy +1 @100%; formula keys preserve every modifier; TEST holds
+
+One independently revertible difg physics increment adds gravitational
+potential energy and replaces the one-modifier formula-key render with the
+reader's existing full-qualified phrase render. **difg DEV 71 → 72 committed at
+100% precision**; every other DEV/suite snapshot is item-neutral, curated is
+65/65 with fresh-process determinism, lint has 0 errors, and pytest **1946 →
+1948**. Both aggregate-only TEST fingerprints are unchanged: difg **15 correct /
+0 wrong / 92 declined**, GSM8K **13 correct / 1 persistent wrong / 1305
+declined**.
+
+#### `gravitational potential energy = mass * 9.8 * distance` — full phrases are keys
+
+Session 13 preserved one modifier with `{q.qualifier} {q}`. That is sufficient
+for `maximum wavelength` but lossy for a deeper compound: `gravitational
+potential energy` carries both `gravitational` and `potential`, while the
+single `qualifier` feature exposes only one. The generic present, imperative,
+and past-qualified physics asks now resolve `{q.qualified}` instead. This
+pre-existing renderer returns the complete folded phrase with its head lemma
+canonicalized; a bare noun still renders as its lemma, and every existing
+one-modifier formula key is unchanged.
+
+The exact three-word key selects the near-Earth formula from data. A 5 kg
+object at 10 meters computes exactly **490 J** through the existing mass and
+distance dimensions; `height` needs no duplicate dimension because its stated
+unit already supplies distance. `energy` joins the physics quantity gate, while
+`gravitational` and `potential` are adjective data. Newly reachable kinetic,
+rotational-kinetic, bare-energy, and shorter potential-energy asks all decline
+at exact formula lookup. A synthetic negative probe pins that the shorter
+`potential energy` key cannot borrow the gravitational formula.
+
+**Next levers**: the clean potential-energy buyer is consumed. Kinetic energy
+and momentum still need compound velocity-unit tokenization; force has TEST
+vocabulary exposure and poisoned Coulomb output scaling; density conflicts with
+the one-canonical-unit-per-dimension contract. Repeated-dimension families retain
+their recorded blockers. The next honest choice is therefore a fully bought
+`_TOKEN` + compound-unit formula class or the separately scoped text answer
+kind—not an unbought reader enabler.
+
+---
+
 # Session 14 (2026-07-20): power formula +1 @100%; partitives resolve noun/verb polysemy; both TEST firewalls hold
 
 One independently revertible difg physics increment adds average power as
