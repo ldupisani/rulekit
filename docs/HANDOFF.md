@@ -1,3 +1,44 @@
+# Session 11 (2026-07-20): projectile formula +1 @100%; operand scope becomes formula data; SciBench TEST holds 0 wrong
+
+One independently revertible A3 increment is ready to land: the past-copular
+qualified-quantity ask plus the declarative `initial speed` projectile formula.
+**SciBench dev 3 → 4 committed at 100% precision**; every other DEV/suite
+snapshot is item-neutral, lint has 0 errors, curated is 65/65 with fresh-process
+determinism, and pytest **1932 → 1937**. The aggregate-only SciBench TEST look
+was spent from the main checkout: **0 correct / 0 wrong / 168 declined**, the
+same aggregate as both prior fingerprints. This is zero transfer and zero
+damage; the increment survives the precision-hold rule.
+
+#### Formula-level operand scope — the failed broad draft became schema
+
+The first correct-looking implementation made every `physics` formula read all
+premises. Its DEV diff was **1 SOLVED / 2 BROKE**: both entropy answers began
+reading unrelated numerical assumptions from their boilerplate. That draft was
+not landed. `rulekit/formulas@1` now carries `scope: question|document`, default
+`question`; only `initial speed` opts into `document`. The registry freezes the
+scope beside each expression, the consumer scans premises only for an opted-in
+formula, and value accounting grants the whole-document exemption on that same
+field. A formula taking the exemption must decline on every unused premise
+value. Synthetic probes pin an extra duration, a repeated distance, and an
+unregistered qualifier as declines.
+
+The buyer is the general vacuum-projectile inversion
+`sqrt(distance*g/sin(2*angle))`. Degree inputs reach canonical radians through
+the existing conversion table; metre symbols reach the existing distance
+dimension through lexicon plural data; `sin` is a whitelisted safe-evaluator
+function. The ask resolves the compound formula key `initial speed`, never bare
+`speed`, so the exposed GSM8K siblings `average speed` and `final weight` remain
+item-neutral rather than borrowing the formula.
+
+**Next levers**: formula-level premise scope now exists, so another one-class
+A3 candidate may use clean earlier-sentence operands without widening every
+formula. Still preflight every reachable sibling and every typed gold first;
+many survivors need repeated-dimension roles rather than premise scope. The
+`_TOKEN` compound-unit change remains banked until independently bought, and
+the text answer kind remains its own kernel+judge increment.
+
+---
+
 # Session 10 (2026-07-20): de Broglie formula +1 @100%; SciBench TEST holds 0 wrong; the 65-item suite gate is repaired
 
 One independently revertible increment landed (`cf539f5`): the eponymic

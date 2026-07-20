@@ -68,3 +68,17 @@ asks:
     resolves:
       consumer: physics
       quantity: "{particle} {eponym} {q}"
+  # Past-copular qualified quantity: "what was the INITIAL speed ...?" The
+  # qualifier is part of the formula key, so this general grammar cannot use an
+  # initial-speed formula to answer average/final speed. The physics category
+  # gates the head; a bare head has an empty qualifier and therefore resolves
+  # to no formula, preserving definitive-or-decline.
+  - id: ask/physics-qualified-quantity-past
+    match:
+      question:
+        - {lit: what}
+        - {lit: was}
+        - {slot: q, cat: physics_quantity}
+    resolves:
+      consumer: physics
+      quantity: "{q.qualifier} {q}"

@@ -566,7 +566,7 @@ def solve(text: str, reg: Registry, tracing: bool = True) -> Result:
                     "ask-consume", unit, {"pattern_consumed": True},
                     f"value consumed by ask {matched_ask[0].id}",
                 )
-    proposed = run_answer(question, doc.store, reg, doc.log)
+    proposed = run_answer(question, doc.store, reg, doc.log, premises=premises)
     veto = run_guards(
         premises, doc.consumed_uids, doc.log, reg, proposed, doc.store, question,
         # the clause pre-split erases its boundary word from the readings, so

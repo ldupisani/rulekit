@@ -50,6 +50,11 @@ class ConsumerContext:
     log: "ArithmeticLog"
     match: Any            # patterns.Match — the matched span, for read-checks
     ask: Any              # patterns.AskRule
+    # Premise readings are optional for backward compatibility with direct
+    # consumer probes. Most consumers reason over the saturated FactStore;
+    # whole-document numeric consumers may additionally audit the original
+    # unit-bearing values without reconstructing them from facts.
+    premises: tuple["Reading", ...] = ()
 
 
 # name -> handler, dispatched BEFORE `answer()`'s if-chain so an extracted

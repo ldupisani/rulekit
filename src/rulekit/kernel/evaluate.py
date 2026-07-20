@@ -8,6 +8,7 @@ stated value was actually used (hop-by-hop, raw factors visible).
 from __future__ import annotations
 
 import ast
+import math
 import operator
 from dataclasses import dataclass, field
 from typing import Any
@@ -22,7 +23,7 @@ _BIN_OPS = {
     ast.Pow: operator.pow,
 }
 _UNARY_OPS = {ast.UAdd: operator.pos, ast.USub: operator.neg}
-_FUNCS = {"abs": abs, "min": min, "max": max, "round": round}
+_FUNCS = {"abs": abs, "min": min, "max": max, "round": round, "sin": math.sin}
 
 
 class EvaluationError(Exception):

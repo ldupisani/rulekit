@@ -38,6 +38,10 @@ _NUMERIC_FACT_FIELDS = ("value", "factor", "offset", "fraction")
 # the kind tuple is imported rather than re-listed: a contract with two copies
 # has already drifted.
 _WHOLE_LIST_CONSUMERS = ("list-statistic", "vector", "physics")
+# A stricter subset that audits accounted values across PREMISES as well as the
+# question. Membership is safe only while the consumer scans every reading and
+# declines on any value its expression cannot use; `physics` owns that contract.
+_WHOLE_DOCUMENT_CONSUMERS = ("physics",)
 
 
 @dataclass
@@ -242,13 +246,21 @@ def _check_number(
         # all as operands. Both do (each calls `evaluate` over its whole list).
         # Adding one that does NOT would silently disable the guard for its asks.
         exempt_question = None
+        exempt_document = False
         if question is not None:
             from .patterns import match_ask
             qm = match_ask(question, reg)
-            if qm is not None and qm[1].get("consumer") in _WHOLE_LIST_CONSUMERS:
-                exempt_question = question
+            if qm is not None:
+                matched_consumer = qm[1].get("consumer")
+                if matched_consumer in _WHOLE_LIST_CONSUMERS:
+                    exempt_question = question
+                if matched_consumer in _WHOLE_DOCUMENT_CONSUMERS:
+                    quantity = qm[1].get("quantity", "")
+                    exempt_document = (
+                        reg.quantity_formula_scopes.get(quantity) == "document"
+                    )
         for reading in readings:
-            if reading is exempt_question:
+            if exempt_document or reading is exempt_question:
                 continue
             used = consumed_uids.get(reading.sentence_index, set())
             # a MUTABLE per-reading copy: each stated mention CLAIMS one fact of

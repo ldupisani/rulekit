@@ -31,6 +31,9 @@ dimensions:
   # dimension still holds, non-canonical units REACH it by table or decline
   energy: [joule]
   temperature: [kelvin]
+  # Projectile formulas consume angular measures in radians. Degree-bearing
+  # inputs reach this canonical unit through conversions@1 before evaluation.
+  angle: [radian]
   # 'seconds', not 'second': in the lexicon 'second' is an ADJECTIVE (the
   # ordinal), so the time unit's only noun form is the plural. Forcing a noun
   # sense onto it is the trap that broke the `average` consumer.
@@ -59,6 +62,13 @@ formulas:
   # kinetic-energy operand, independent of word order.
   - quantity: de broglie wavelength
     expr: "6.62607015e-25 / (2 * 9.1093837015e-31 * energy)**0.5"
+  # Vacuum projectile range inverted for launch speed. The qualifier belongs
+  # to the formula key: an "average speed" or "final speed" question reaches
+  # the same qualified-quantity grammar and then declines rather than borrowing
+  # this formula. Buyer: an angle and range stated in earlier premises.
+  - quantity: initial speed
+    expr: "(distance * 9.80665 / sin(2 * angle))**0.5"
+    scope: document
 
 # DELIBERATELY ABSENT — the compound-unit quantities. Their operands are units
 # the tokenizer SHREDS ("3 m/s^2" -> the numbers [3, 2]; "100 cm^3" -> [100, 3] —

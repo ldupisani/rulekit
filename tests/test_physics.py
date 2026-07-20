@@ -7,6 +7,7 @@ answer.py's `physics` consumer is the generic evaluator — the geometry templat
 with the shape dropped. It names no quantity, no unit and no formula.
 """
 
+import math
 from pathlib import Path
 
 import pytest
@@ -69,6 +70,64 @@ def test_eponymic_quantity_still_rejects_an_extra_count(reg):
         tracing=False,
     )
     assert not r.answer.committed
+
+
+def test_qualified_quantity_reads_dimensioned_operands_from_premises(reg):
+    """A formula may read unit-bearing operands stated before the final ask.
+    Invented magnitudes keep this synthetic rather than copying a corpus row."""
+    r = solve(
+        "A ball is thrown at an angle of 37 degrees to the ground. "
+        "If the ball lands 121 meters away, what was the initial speed of the ball?",
+        reg,
+        tracing=False,
+    )
+    assert r.answer.committed, (r.answer.reason or "")
+    want = (121 * 9.80665 / math.sin(2 * math.radians(37))) ** 0.5
+    assert r.answer.value == pytest.approx(want)
+
+
+def test_qualified_quantity_formula_key_keeps_the_modifier(reg):
+    """Another qualifier cannot borrow the buyer's formula merely because
+    both compounds have the same `speed` head."""
+    r = solve(
+        "A ball is thrown at an angle of 37 degrees to the ground. "
+        "If the ball lands 121 meters away, what was the final speed of the ball?",
+        reg,
+        tracing=False,
+    )
+    assert not r.answer.committed
+
+
+def test_whole_document_physics_rejects_an_unused_premise_value(reg):
+    """Taking the premise value-accounting exemption means physics owns every
+    stated value there: an irrelevant duration may not be silently ignored."""
+    r = solve(
+        "A ball is thrown at an angle of 37 degrees for 3 seconds to the ground. "
+        "If the ball lands 121 meters away, what was the initial speed of the ball?",
+        reg,
+        tracing=False,
+    )
+    assert not r.answer.committed
+
+
+def test_whole_document_physics_rejects_a_duplicate_dimension(reg):
+    """Two range values in separate premises are still ambiguous; document
+    scope must not turn first/last mention order into an implicit role."""
+    r = solve(
+        "A ball is thrown at an angle of 37 degrees to the ground. "
+        "The range is 119 meters. "
+        "If the ball lands 121 meters away, what was the initial speed of the ball?",
+        reg,
+        tracing=False,
+    )
+    assert not r.answer.committed
+
+
+def test_formula_operand_scope_is_declarative_and_question_safe_by_default(reg):
+    """Old formulas remain question-scoped unless their pack definition opts
+    into the stronger whole-document accounting contract."""
+    assert reg.quantity_formula_scopes["speed"] == "question"
+    assert reg.quantity_formula_scopes["initial speed"] == "document"
 
 
 # --- the property the whole design exists for ------------------------------

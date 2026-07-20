@@ -4,10 +4,10 @@ Moved out of `answer.py` UNCHANGED (the extraction increment). Every branch,
 message and computation is the original; the only edits are `query`/`reg`/
 `question`/`log` becoming `ctx.` lookups.
 
-This tier reads the QUESTION READING as well as the query — these consumers
-take the question's whole number list rather than bound slots — which is why
-`ConsumerContext` carries it. Pinned across the move by the consumer golden
-master and by all eight corpus slices being byte-neutral.
+This tier always reads the question and may read the original premise readings
+when the selected formula explicitly declares document scope. A document-scoped
+formula owns every accounted value in those readings and declines if any stated
+value cannot bind to an expression-referenced dimension.
 """
 
 from __future__ import annotations
@@ -26,7 +26,7 @@ def physics(ctx: ConsumerContext):
     from ..answer import _ACCOUNTED_VALUE_KINDS, Answer
 
     # The difg `physics` domain: a NAMED physical quantity computed from the
-    # parameters the question states — "the speed of an object that travels
+    # parameters its formula scope admits — "the speed of an object that travels
     # 100 meters in 5 seconds". The formulas and the unit->dimension map are
     # DATA (packs/difg-mined/formulas.yaml); this branch is the generic
     # evaluator and names no quantity, no unit and no formula (rule 1). Same
@@ -35,6 +35,7 @@ def physics(ctx: ConsumerContext):
     expr = ctx.reg.quantity_formulas.get(quantity)
     if expr is None:
         return Answer("decline", None, f"no formula for the {quantity!r} of a thing")
+    scope = ctx.reg.quantity_formula_scopes.get(quantity, "question")
     # The names the formula ACTUALLY references. "Read" means the expression
     # uses it — NOT merely that some dimension could be bound from it. Those
     # two sets differ, and the gap is a silent-ignore: "the weight of a 3 kg
@@ -52,7 +53,12 @@ def physics(ctx: ConsumerContext):
     # the noun itself is not a unit ("a 2 kg object" -> lemma 'object',
     # qualifier 'kilogram').
     env: dict[str, float] = {}
-    for u in ctx.question.units:
+    readings = (*ctx.premises, ctx.question) if scope == "document" else (ctx.question,)
+    for u in (
+        unit
+        for reading in readings
+        for unit in reading.units
+    ):
         kind = u.features.get("value_kind")
         # MIRROR guards.py's accounted kinds EXACTLY. This branch takes that
         # guard's exemption, so whatever it would have checked is now this

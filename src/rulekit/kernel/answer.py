@@ -111,6 +111,7 @@ def answer(
     store: FactStore,
     reg: Registry,
     log: ArithmeticLog,
+    premises: list[Reading] | None = None,
 ) -> Answer:
     if not store.clean:
         c = store.collisions[0]
@@ -139,7 +140,7 @@ def answer(
             return None
         return handler(ConsumerContext(
             query=query, question=question, store=scoped_store, reg=reg,
-            log=log, match=_match, ask=ask,
+            log=log, match=_match, ask=ask, premises=tuple(premises or ()),
         ))
 
     # Phase 1: consumers that lived ABOVE the temporal origo. They never saw the

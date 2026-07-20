@@ -718,6 +718,10 @@ class QuantityFormulaDef(StrictModel):
     # disambiguate; a physical quantity names its formula on its own.
     quantity: str
     expr: str
+    # Where unit-bearing operands may be read. Question-only is the safe,
+    # backward-compatible default; document scope is an explicit trade in
+    # which the physics consumer owns every accounted premise value too.
+    scope: Literal["question", "document"] = "question"
 
 
 class FormulasDoc(StrictModel):

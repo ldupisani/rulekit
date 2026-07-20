@@ -127,6 +127,7 @@ class Registry:
     conversions: Mapping[tuple[str, str], float]
     geometry_formulas: Mapping[tuple[str, str], str]  # (shape, quantity) -> expr
     quantity_formulas: Mapping[str, str]  # quantity -> expr over dimension names
+    quantity_formula_scopes: Mapping[str, str]  # quantity -> question|document
     unit_dimension: Mapping[str, str]  # unit lemma -> dimension name
     calendar_span_days: Mapping[str, float]  # span unit lemma -> days per unit
     month_numbers: Mapping[str, int]  # month name/abbreviation -> 1..12
@@ -493,15 +494,20 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
     # geometry table above: a redeclaration with a different expression ERRORS
     # rather than letting one silently win.
     quantity_formulas: dict[str, str] = {}
+    quantity_formula_scopes: dict[str, str] = {}
     unit_dimension: dict[str, str] = {}
     for pack in packs:
         for doc in pack.formulas:
             for f in doc.formulas:
-                if f.quantity in quantity_formulas and quantity_formulas[f.quantity] != f.expr:
+                if f.quantity in quantity_formulas and (
+                    quantity_formulas[f.quantity] != f.expr
+                    or quantity_formula_scopes[f.quantity] != f.scope
+                ):
                     raise CompileError(
-                        f"quantity formula {f.quantity!r} declared twice with different expressions"
+                        f"quantity formula {f.quantity!r} declared twice with different definitions"
                     )
                 quantity_formulas[f.quantity] = f.expr
+                quantity_formula_scopes[f.quantity] = f.scope
             for dim, units in doc.dimensions.items():
                 for unit in units:
                     if unit in unit_dimension and unit_dimension[unit] != dim:
@@ -639,6 +645,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
         reference_groups=_freeze(reference_groups),
         geometry_formulas=_freeze(geometry_formulas),
         quantity_formulas=_freeze(quantity_formulas),
+        quantity_formula_scopes=_freeze(quantity_formula_scopes),
         unit_dimension=_freeze(unit_dimension),
         quarantine=_freeze(quarantine),
         rules=tuple(sorted(rules, key=lambda r: r.id)),

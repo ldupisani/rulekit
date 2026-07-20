@@ -212,6 +212,9 @@ entries:
     senses:
     - noun
     plural: groceries
+  ground:
+    senses:
+    - noun
   grounded:
     senses:
     - verb
@@ -650,6 +653,9 @@ entries:
     senses:
     - noun
     plural: ingredients
+  initial:
+    senses:
+    - adjective
   initially:
     senses:
     - adverb
@@ -1017,6 +1023,11 @@ entries:
   land:
     senses:
     - noun
+  lands:
+    senses:
+    - verb
+    verb:
+      lemma: land
   lane:
     senses:
     - noun
@@ -1571,7 +1582,11 @@ entries:
   meter:
     senses:
     - noun
-    plural: meters
+    plural:
+    # Unit symbols are number-forms of their units, the same declarative
+    # mechanism already used by km/kilometer and rad/radian.
+    - m
+    - meters
   metro:
     senses:
     - noun
