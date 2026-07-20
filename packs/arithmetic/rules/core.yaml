@@ -120,6 +120,72 @@ rules:
         subject_label: "{who.label}"
         standard_label: "{std.label}"
 
+  - id: arithmetic/anchored-relation-conjoined-measures
+    phase: read
+    description: >
+      "Jake has 6 fewer peaches and 8 more apples than Steven" — the
+      CONJOINED-MEASURE sibling of arithmetic/anchored-relation. That rule
+      requires `than` after a SINGLE `item` (modulo its PP tail), so a
+      second "and N DIR ITEM" conjunct before the `than` fails its match
+      outright and the sentence mints NO relation at all — not one
+      relation plus a dropped conjunct, but nothing. Both conjuncts share
+      the ONE trailing standard ("...than Steven" scopes over both), so
+      this emits two Relations differing only in measure/offset.
+
+      The SAME asymmetry the conjoined existential closed: the engine's
+      conjunction handling is per-construction, and each construction has
+      to earn it. Strictly longer than arithmetic/anchored-relation, so
+      the single-conjunct sentence is untouched.
+
+      GUARDS INHERITED VERBATIM, once per conjunct: `distinct: [who, std]`
+      (a relation to oneself is a misread, never a fact) and
+      `distinct_measure` on BOTH item/std and item2/std — the self-
+      reference that guard blocks ("2 fewer animal stickers than flower
+      stickers", an elliptical MEASURE comparison on one holder) can
+      appear in either conjunct independently, so a single check would
+      leave the other conjunct unguarded.
+    match:
+      sentence:
+        - {slot: who, type: entity}
+        - {slot: verb, type: verb}
+        - {slot: n, type: number}
+        - {slot: dir, cat: delta}
+        - {slot: item, type: plural}
+        - {lit: and}
+        - {slot: n2, type: number}
+        - {slot: dir2, cat: delta}
+        - {slot: item2, type: plural}
+        - {lit: than}
+        - {slot: std, type: entity}
+    where:
+      - distinct: [who, std]
+      - distinct_measure: [item, std]
+      - distinct_measure: [item2, std]
+    consumes: [n, n2]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: "{item}"
+        measure_qualifier: "{item.qualifier}"
+        standard_qualifier: "{std.qualifier}"
+        factor: 1.0
+        offset: "n * sign(dir)"
+        verb: "{verb}"
+        subject_label: "{who.label}"
+        standard_label: "{std.label}"
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: "{item2}"
+        measure_qualifier: "{item2.qualifier}"
+        standard_qualifier: "{std.qualifier}"
+        factor: 1.0
+        offset: "n2 * sign(dir2)"
+        verb: "{verb}"
+        subject_label: "{who.label}"
+        standard_label: "{std.label}"
+
   - id: arithmetic/anchored-relation-possessive-kinship-standard
     phase: read
     description: >
@@ -4423,6 +4489,14 @@ asks:
       consumer: label-difference
       a: "{a}"
       b: "{b}"
+      # the HOLDER the question names ("...does Steven have?"). A HINT, not
+      # a requirement: `label-difference` uses it only when that entity
+      # actually holds BOTH measures, and otherwise falls back to its
+      # exactly-one-SHARED-holder discipline unchanged. The existential
+      # sibling ask names no holder and binds nothing here, so its path is
+      # byte-identical. See the consumer for why the fallback (rather than
+      # a decline) is the safe direction.
+      holder: "{who}"
 
   - id: ask/how-many-entity
     # NOTE (mining candidate pronoun-entity-asks): a widening of `who` to

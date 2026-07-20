@@ -44,13 +44,40 @@ def label_difference(ctx: ConsumerContext):
     entities_b = sorted(
         {q.entity for q in ctx.store.by_kind(Quantity) if q.measure == measure_b}
     )
-    if len(entities_a) != 1 or len(entities_b) != 1 or entities_a != entities_b:
+    # THE HOLDER HINT (the held-comparative ask, "...does Steven have?").
+    # A HINT, never a requirement, and the fallback direction is the whole
+    # design:
+    #
+    #   * used ONLY when the named entity holds BOTH measures — then it is
+    #     strictly better information than the uniqueness discipline, and
+    #     it is what lets a story mention a SECOND holder of one measure
+    #     without collapsing the ask. "Jake has 6 fewer peaches than
+    #     Steven. Steven has 17 peaches and 16 apples." derives a jake
+    #     peach quantity, so 'peach' has two holders and the discipline
+    #     below (correctly, on its own terms) refuses — but the question
+    #     names Steven, who holds both.
+    #
+    #   * otherwise IGNORED, falling through to the unchanged discipline.
+    #     NOT a decline: `who` binds the question's surface holder, which
+    #     legitimately fails to match a fact key when the scene itself is
+    #     the holder — "In a school there are 34 girls and 841 boys. How
+    #     many more boys than girls does the school have?" binds
+    #     'school' while both facts sit on the `world` scene-holder. A
+    #     decline there would break the existential reading this ask was
+    #     built for. Falling back is also EXACTLY the behaviour before the
+    #     hint existed (this consumer ignored the holder entirely), so no
+    #     path is made less safe by adding it.
+    holder_hint = ctx.query.get("holder")
+    if holder_hint is not None and holder_hint in entities_a and holder_hint in entities_b:
+        holder = holder_hint
+    elif len(entities_a) != 1 or len(entities_b) != 1 or entities_a != entities_b:
         return Answer(
             "decline", None,
             f"{measure_a!r}/{measure_b!r} need exactly one SHARED holder "
             f"— found {entities_a} / {entities_b}",
         )
-    (holder,) = entities_a
+    else:
+        (holder,) = entities_a
     ta = _entity_total(ctx.store, ctx.reg, holder, measure_a, ctx.log)
     tb = _entity_total(ctx.store, ctx.reg, holder, measure_b, ctx.log)
     if ta is None or tb is None:
