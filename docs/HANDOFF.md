@@ -1,9 +1,52 @@
-# Session 8 (2026-07-20): the comparative stage lands — svamp dev 13 → 15, TEST look #1 spent, precision held
+# Session 8 (2026-07-20): comparative + relational stages land — svamp dev 13 → 23, TEST look #1 spent, precision held
 
-One commit (`f50b94a`), gate-clean on all nine DEV slices. **svamp dev
-13/0 → 15/0**; gsm8k dev-train / asdiv / mawps / scibench / folio all
-NEUTRAL item-by-item; holdout 40/0, suite 52/52, difg 70/0, lint 0
-errors. pytest 1843 → **1850**.
+Two commits (`f50b94a` comparative, `5700e3c` relational), each gate-clean
+on all nine DEV slices. **svamp dev 13/0 → 15/0 → 23/0** (+2, +8; 0 BROKE
+and 0 DECL→WRONG on both); gsm8k dev-train / asdiv / mawps / scibench /
+folio all NEUTRAL item-by-item throughout; holdout 40/0, suite 52/52,
+difg 70/0, lint 0 errors. pytest 1843 → **1857**.
+
+#### `5700e3c` — the relational stage, and the pattern it confirms
+
+**THE ENGINE'S CONJUNCTION HANDLING IS PER-CONSTRUCTION.** That is the
+session's most transferable finding, now measured twice in two commits:
+the SVO fold reads "A and B" fine, but the EXISTENTIAL premise dropped
+its second conjunct (`f50b94a`) and the ANCHORED RELATION failed its
+match outright (`5700e3c`, minting nothing at all). Each construction has
+to earn conjunction separately. **Before designing any premise reader,
+probe whether the singular form already works and only the conjunction is
+missing** — both times that was the actual gap, and both times the
+handoff's prose had described something broader.
+
+The 13 items behind the value-accounting guard were **three mechanisms,
+not one** ([[a-cluster-is-not-a-class]] again): 7 Baker + 4 Jake + 2
+school. Only the 4 Jake items were relational.
+
+- **The reader**: `arithmetic/anchored-relation-conjoined-measures` — both
+  conjuncts share the ONE trailing standard. `distinct_measure` is checked
+  on BOTH conjuncts (the elliptical self-reference can appear in either
+  independently).
+- **The holder hint**: reading the relation DERIVES the subject's
+  quantities, so 'peach' gains a second holder and `label-difference`'s
+  exactly-one-SHARED-holder discipline refuses. **Measured: the reader
+  ALONE bought 0** — it moved the 4 items from guard-veto to
+  consumer-decline, a lateral move. The held ask names the holder, so the
+  consumer now reads it.
+- ⚠ **THE FALLBACK IS THE LOAD-BEARING PART.** The hint is used ONLY when
+  the named entity holds BOTH measures, and otherwise IGNORED — never a
+  decline. `who` binds the question's SURFACE holder, which legitimately
+  fails to match a fact key when the SCENE holds the quantities ("does the
+  school have" binds 'school' while both facts sit on `world`). Declining
+  on an unresolved hint would have REGRESSED `f50b94a`, the commit
+  immediately before it. Falling back is byte-identical to pre-hint
+  behaviour, so no path is made less safe.
+- **Free wins, the sign the seam was right**: 4 of the 8 conversions are
+  OUTSIDE the targeted form-A pool — they ask directly about the derived
+  quantity ("How many apples does Jake have?") through PRE-EXISTING asks
+  that only ever needed the relation read. All 8 verified individually
+  against golds, not trusted from the aggregate.
+
+#### `f50b94a` — the comparative stage
 
 **SVAMP TEST looks #1 AND #2 SPENT (user-directed), and the pair is the
 result.** Look #1 at HEAD: 246 items, 5 correct / 1 wrong / 240 declined,
@@ -67,17 +110,36 @@ reading:
   "Synthetic" means an invented SCENARIO, never invented VOCABULARY.
   Check `reg.plural_to_singular` before writing the fixture.
 
-#### Next up (measured, not started)
+#### Next up (measured, not started): Class A is pronoun coreference, NOT premise reading
 
-The largest remaining block in this pool is **13 form-A items behind the
-`value-accounting` guard** — unread relational/event premises ("Jake has
-6 fewer peaches than Steven", "If he sold 158 cakes and 147 pastries").
-The guard is doing its job (a stated count reaching no fact declines the
-item); converting them needs a relational-premise reader, its own
-increment. **The ask side for them already exists at HEAD** — this
-increment built it. The 5 remaining no-holder/other declines are the
-partitive "pages of math homework" qualifier gap (a DIFFERENT reading
-class) and two fold conflicts.
+Of the original 13, the 4 relational are DONE (`5700e3c`). What remains:
+
+- **Class A — the Baker family, 7 items, the largest single lever.**
+  Blocked by **PRONOUN COREFERENCE**, which is not what it looks like.
+  `baker` is lexically `['noun']` (an occupation), so "Baker made 157
+  cakes. **He** sold 158 cakes." fails with *"'He' (pronoun) needs a
+  refers and none was found"* — while "Ana made… **She** sold…" works,
+  because 'ana' is an UNKNOWN word that defaults to NAME. Verified by
+  probe: substituting the name for the pronoun makes the item read.
+  The general fix is admitting a subject COMMON NOUN as a pronoun
+  antecedent — linguistically correct and not a lexicon hack — but it is
+  CORE shared machinery under all seven corpora, a far wider blast radius
+  than anything landed this session. Do NOT "fix" it by deleting 'baker'
+  from the lexicon: that is word-specific fitting, and it would break
+  ordinary "the baker has 5 cakes" readings.
+- **The comma-less leading if-split stays BANKED, and now we know WHY its
+  buyers never cash.** It was implemented again this session and reverted
+  again: it correctly promotes "If he sold 158 cakes and 147 pastries" to
+  a premise, and the Baker items STILL decline, because the promoted
+  clause's 'he' cannot corefer. **The if-split is downstream of the
+  coreference fix, not independent of it** — land them together or not at
+  all. (Session 7 banked it on a 0-buyer measurement; this is the reason
+  behind that number.)
+- **Class C — 2 items**: "465 more girls joined the school" is an unread
+  ACQUISITION EVENT on the scene holder. Its own small class.
+- The remaining declines are the partitive "pages of math homework"
+  qualifier gap (a DIFFERENT reading class — the qualifier is lost, only
+  `page=2` mints) and 2 fold conflicts.
 
 ---
 
