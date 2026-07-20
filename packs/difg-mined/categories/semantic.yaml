@@ -122,6 +122,18 @@ categories:
   vehicle:
     parent: noun
 members:
+  # extends core-english's `animate` (see its note there): these 43
+  # person-denoting nouns are lexically defined in THIS pack, so their
+  # membership must be declared here — a member absent from the loading
+  # project's lexicon is a CompileError, and core-english alone has only
+  # five of them.
+  animate: [baker, farmer, boy, girl, man, woman, mother, father,
+            sister, brother, kid, doctor, nurse, worker, painter, chef,
+            driver, dancer, seller, buyer, customer, neighbor, cousin,
+            aunt, uncle, grandmother, grandfather, son, daughter, baby,
+            parent, person, clerk, manager, guest, captain, shopkeeper,
+            carpenter, tailor, fisherman, hunter, artist, writer,
+            soldier]
   # mining candidate sum-constraint-premise-surfaces: 'age' is a difg-mined
   # lexicon word (packs/difg-mined/lexicon/a-f.yaml); the category itself
   # (parent/notes) is declared in core-english (packs/core-english/

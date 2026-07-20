@@ -621,6 +621,20 @@ def _check_where(
             ]
             if len(values) != len(set(values)):
                 return False
+        if pred.slot_not_category is not None:
+            # A TIME PERIOD IS NOT A HOLDER. "he made three fewer tables
+            # than this month" bound `std` to 'month' and minted a Relation
+            # whose standard was a timeperiod, from which the engine then
+            # invented a 'carpenter/month' quantity — a category error, not
+            # a near-miss. Scoped to the SLOT, so the sentence's own time
+            # adverbials are untouched.
+            slot_name = pred.slot_not_category["slot"]
+            cat = pred.slot_not_category["cat"]
+            unit = slots.get(slot_name)
+            if unit is not None:
+                word = unit.features.get("lemma", unit.features.get("fold", ""))
+                if reg.word_in_category(word, cat):
+                    return False
         if pred.absent is not None:
             cat = pred.absent["cat"]
             for u in reading.units:

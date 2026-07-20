@@ -19,7 +19,7 @@ def label_difference(ctx: ConsumerContext):
     from ..answer import Answer
     from ..evaluate import evaluate
     from ..model import Quantity
-    from ..totals import _entity_total
+    from ..totals import _entity_total, _verb_total
 
     # mining candidate ratio-split-premises: the LABEL-comparand
     # sibling of 'difference' — "how many more BOYS than GIRLS are
@@ -78,8 +78,20 @@ def label_difference(ctx: ConsumerContext):
         )
     else:
         (holder,) = entities_a
-    ta = _entity_total(ctx.store, ctx.reg, holder, measure_a, ctx.log)
-    tb = _entity_total(ctx.store, ctx.reg, holder, measure_b, ctx.log)
+    # STATE vs ACTIVITY, mirroring the `difference` consumer's own split: a
+    # stative ask totals HOLDINGS, an event ask totals that VERB's
+    # occurrences ("selling is not owning"). SVAMP asks the SAME baker
+    # premises both ways — "did baker SELL?" (11) vs "did baker MAKE?" (78)
+    # — so the ask verb is the ONLY thing separating those golds, and this
+    # consumer was ignoring it. Default 'have' keeps every pre-existing
+    # call site on the stative branch unchanged.
+    ask_verb = ctx.query.get("verb", "have")
+    if ask_verb in ("have", "be") or ctx.reg.word_in_category(ask_verb, "state"):
+        ta = _entity_total(ctx.store, ctx.reg, holder, measure_a, ctx.log)
+        tb = _entity_total(ctx.store, ctx.reg, holder, measure_b, ctx.log)
+    else:
+        ta = _verb_total(ctx.store, holder, measure_a, ask_verb, ctx.log)
+        tb = _verb_total(ctx.store, holder, measure_b, ask_verb, ctx.log)
     if ta is None or tb is None:
         return Answer(
             "decline", None, f"missing a total for {measure_a!r} or {measure_b!r}"

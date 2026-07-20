@@ -120,6 +120,47 @@ def _split_leading_clause(question: str, reg: Registry) -> tuple[str | None, str
         if _has_ask_cue_sense(first, reg):
             clause = ",".join(parts[: i + 1])[2:].strip().lstrip()
             return clause.rstrip(".") + ".", rest
+    return _split_leading_clause_commaless(question, reg)
+
+
+def _split_leading_clause_commaless(
+    question: str, reg: Registry
+) -> tuple[str | None, str]:
+    """Comma-less sibling of `_split_leading_clause` — the LEADING mirror of
+    increment 53's `_split_trailing_clause_commaless`, reached only when the
+    comma path found no split.
+
+    "If he sold 158 cakes and 147 pastries How many more cakes than pastries
+    did baker sell?" — SVAMP writes the fused conditional with no comma, so
+    the whole clause stays on the QUESTION side and its counts reach no fact.
+
+    THE CAPITAL DOES THE COMMA'S JOB: the cue is a MID-SENTENCE CAPITALIZED
+    ask-cue token. `_has_ask_cue_sense` lowercases internally, so the
+    capitalisation test is separate and load-bearing — a lowercase embedded
+    cue must never split.
+
+    THE FIRST QUALIFYING BOUNDARY WINS, deliberately NOT the trailing form's
+    LAST: the errors are ASYMMETRIC. An early split leaves junk on the
+    question side and DECLINES (safe); a late split folds question words
+    into a PREMISE and mints facts from unasserted material.
+
+    The promoted clause must carry a digit — which also neutralises a
+    capitalised modal-sensed name ('Will', 'May') opening the sentence, since
+    the clause before it is empty and hence digit-free."""
+    if not question.lower().startswith("if "):
+        return None, question
+    tokens = question.split()
+    for i in range(1, len(tokens)):
+        token = tokens[i]
+        if not token[:1].isupper():
+            continue
+        if not _has_ask_cue_sense(token, reg):
+            continue
+        clause = " ".join(tokens[1:i]).strip().rstrip(",").rstrip(".").strip()
+        rest = " ".join(tokens[i:]).strip()
+        if not clause or not rest or not any(ch.isdigit() for ch in clause):
+            return None, question
+        return clause + ".", rest
     return None, question
 
 
@@ -496,7 +537,7 @@ def solve(text: str, reg: Registry, tracing: bool = True) -> Result:
     )
     # the question's own pronouns resolve against the document's discourse
     # exactly like premise pronouns: unique antecedent or stay unmet
-    _bind_discourse(premises + [question], journal=journal)
+    _bind_discourse(premises + [question], journal=journal, reg=reg)
     # only slots whose VALUE the consumer uses ({slot.value} templates)
     # count as read — matching "four-minute songs" as an item does NOT read
     # the four, and value accounting must still decline it

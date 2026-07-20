@@ -88,11 +88,41 @@ def _discourse_candidates(
     return out
 
 
+def _animate_candidates(
+    readings: list[Reading], upto: int, reg: Registry
+) -> dict[str, tuple[int, Unit]]:
+    """`animate`-category common nouns before `upto` — the FALLBACK
+    candidate set, consulted only when there is no name at all.
+
+    "Baker made 157 cakes. He sold 158 cakes." has NO name unit: 'baker' is
+    lexically a common noun, so the pronoun found no antecedent and the item
+    declined — while the same story with 'Ana' reads, because an unknown
+    word defaults to NAME. That asymmetry is an artifact of the lexicon, not
+    of the English. Category membership is the ONLY admission test."""
+    out: dict[str, tuple[int, Unit]] = {}
+    for reading in readings:
+        if reading.sentence_index >= upto:
+            continue
+        for unit in reading.units:
+            if unit.sense() != "noun":
+                continue
+            lemma = unit.features.get("lemma", unit.features["fold"])
+            if reg.word_in_category(lemma, "animate"):
+                out[lemma] = (reading.sentence_index, unit)
+    return out
+
+
 def _bind_discourse(
-    readings: list[Reading], journal: deixis.Journal | None = None
+    readings: list[Reading],
+    journal: deixis.Journal | None = None,
+    reg: Registry | None = None,
 ) -> set[int]:
-    """Bind unmet pronoun `refers` obligations to a UNIQUE prior name.
-    Returns the sentence indexes that gained a binding this round."""
+    """Bind unmet pronoun `refers` obligations to a UNIQUE prior name, or —
+    when the text contains NO name at all — to a unique prior `animate`
+    common noun. Returns the sentence indexes that gained a binding.
+
+    `reg` is optional so the name-only path stays callable without a
+    registry; the zero-name fallback simply does not run without one."""
     changed: set[int] = set()
     for reading in readings:
         for unit in reading.units:
@@ -113,6 +143,20 @@ def _bind_discourse(
                 # PERSON metric is switched on later as its own gated increment
                 # (docs/deixis.md phase 5).
                 candidates = _discourse_candidates(readings, reading.sentence_index)
+                # THE ZERO-NAME FALLBACK. Common nouns are considered ONLY
+                # when no name candidate exists, which is provably
+                # byte-identical wherever any name is in play. That ordering
+                # IS the safety argument: `deixis.resolve` under the constant
+                # metric needs a UNIQUE winner, so adding candidates to a
+                # non-empty set could silently UNBIND a working binding —
+                # this shape never runs against a non-empty set.
+                if not candidates and reg is not None and reg.word_in_category(
+                    unit.features.get("lemma", unit.features["fold"]),
+                    "animate_pronoun",
+                ):
+                    candidates = _animate_candidates(
+                        readings, reading.sentence_index, reg
+                    )
                 winner = deixis.resolve(
                     [
                         # sentence/span are INERT under the constant metric (nothing
@@ -286,7 +330,7 @@ def run_document(
         doc.rounds = round_no
         if journal is not None:
             journal.round = round_no
-        changed = _bind_discourse(premises, journal=journal)
+        changed = _bind_discourse(premises, journal=journal, reg=reg)
         changed |= _bind_measure_anaphor(premises, journal=journal)
         if not changed:
             break

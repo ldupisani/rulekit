@@ -106,6 +106,8 @@ rules:
     where:
       - distinct: [who, std]
       - distinct_measure: [item, std]
+      # a TIME PERIOD is not a holder — see slot_not_category in schemas.py
+      - slot_not_category: {slot: std, cat: timeperiod}
     consumes: [n]
     emits:
       - fact: relation
@@ -160,6 +162,8 @@ rules:
     where:
       - distinct: [who, std]
       - distinct_measure: [item, std]
+      # a TIME PERIOD is not a holder — see slot_not_category in schemas.py
+      - slot_not_category: {slot: std, cat: timeperiod}
       - distinct_measure: [item2, std]
     consumes: [n, n2]
     emits:
@@ -226,6 +230,8 @@ rules:
     where:
       - distinct: [who, std]
       - distinct_measure: [item, std]
+      # a TIME PERIOD is not a holder — see slot_not_category in schemas.py
+      - slot_not_category: {slot: std, cat: timeperiod}
     consumes: [n]
     emits:
       - fact: relation
@@ -402,6 +408,8 @@ rules:
     where:
       - distinct: [who, std]
       - distinct_measure: [item, std]
+      # a TIME PERIOD is not a holder — see slot_not_category in schemas.py
+      - slot_not_category: {slot: std, cat: timeperiod}
     consumes: [item]
     emits:
       - fact: relation
@@ -4497,6 +4505,12 @@ asks:
       # byte-identical. See the consumer for why the fallback (rather than
       # a decline) is the safe direction.
       holder: "{who}"
+      # the ask's VERB selects state-vs-activity totals in the consumer,
+      # exactly as in the sibling `difference` branch. SVAMP asks the SAME
+      # premises both ways ("did baker SELL?" vs "did baker MAKE?") with
+      # DIFFERENT golds. The existential sibling binds a `cat: state` verb
+      # and therefore keeps the stative path.
+      verb: "{verb}"
 
   - id: ask/how-many-entity
     # NOTE (mining candidate pronoun-entity-asks): a widening of `who` to

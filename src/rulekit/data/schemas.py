@@ -422,6 +422,15 @@ class WherePredicate(StrictModel):
     distinct_measure: list[str] | None = None
     name_count: dict[str, int] | None = None  # {"exactly": 2}
     absent: dict[str, str] | None = None  # {"cat": name} — no such word in sentence
+    # {"slot": name, "cat": name} — that SLOT's bound unit must NOT be in
+    # the category. A SEPARATE predicate rather than a widening of `absent`
+    # (which scans the WHOLE sentence): a relation's standard must not be a
+    # TIME PERIOD, while the sentence may legitimately contain time words
+    # elsewhere ("Last month, he made three fewer tables THAN THIS MONTH" —
+    # 'month' is both the adverbial and the illegal standard). Same opt-in
+    # discipline `distinct_measure` records: no existing rule's behaviour
+    # changes, only rules that name this predicate get the check.
+    slot_not_category: dict[str, str] | None = None
     # mining candidate elided-comparative-standards: these OPTIONAL slots
     # must NOT have matched anything — the general, reusable mirror of a
     # positional negative lookahead this engine otherwise has no way to
@@ -442,6 +451,7 @@ class WherePredicate(StrictModel):
             v for v in (
                 self.same_lemma, self.distinct, self.distinct_measure,
                 self.name_count, self.absent, self.unbound,
+                self.slot_not_category,
             )
             if v is not None
         ]

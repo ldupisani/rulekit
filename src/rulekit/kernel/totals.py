@@ -321,6 +321,52 @@ def _entity_total(
         if q.entity != entity or q.measure != measure:
             continue
         (state if q.is_state else events).append(q)
+    # THE WHOLE IS THE SUM OF ITS PARTS — with two guards.
+    #
+    # "Gino has 15 brown bears and 24 white bears. How many bears?" holds
+    # only PARTS (bear[brown], bear[white]); a BARE ask asks for the whole,
+    # and folding the bare key alone finds nothing. Qualified siblings are
+    # not a different measure — they are this measure's parts.
+    #
+    # (1) FAIL CLOSED ON A STATED WHOLE: only when NO bare state exists,
+    #     because a stated bare holding IS the whole and adding the parts
+    #     would DOUBLE-COUNT ("14 blue + 26 purple, and 200 jellybeans in
+    #     the jar" must stay 200, never 280).
+    #
+    # (2) FAIL CLOSED ON AN UNATTRIBUTABLE EVENT: if a BARE event also
+    #     exists, decline outright. "A farmer had 105 green tomatoes and 71
+    #     red tomatoes ... picked 137 tomatoes" cannot be folded: the engine
+    #     cannot know WHICH part the bare pick depletes, and 'pick' is
+    #     (correctly) an `acquire` for the picker, so folding it yields 313
+    #     against a gold of 39. Answering that needs SOURCE-MARKED TRANSFER
+    #     (the garden is debited), a mechanism docs/negative-results.md
+    #     records as deliberately absent. Declining is the honest outcome,
+    #     and it is what keeps this fold from manufacturing a confident-wrong
+    #     the moment a pronoun binds.
+    if not state:
+        parts = [
+            q for q in store.by_kind(Quantity)
+            if q.entity == entity
+            and q.is_state
+            and str(q.measure).split("[")[0] == measure
+            and str(q.measure) != measure
+        ]
+        if parts:
+            if events:
+                return None  # guard (2): a bare event over parts-only state
+            state = parts
+    # A CHANGE TO A PART IS A CHANGE TO THE WHOLE. "Ana bought 2 purple
+    # grapes and 2 green grapes. She already had 3 grapes." holds a bare
+    # STATE (3) plus two qualified BUY events; she now has 3+2+2. Unlike the
+    # state branch there is no double-count to fail closed against — an event
+    # is a delta, never a restatement of the whole.
+    events.extend(
+        q for q in store.by_kind(Quantity)
+        if q.entity == entity
+        and not q.is_state
+        and str(q.measure).split("[")[0] == measure
+        and str(q.measure) != measure
+    )
     if not state and not events:
         return None
     if invert_events and not events and any(

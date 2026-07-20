@@ -5,6 +5,33 @@ format: rulekit/categories@1
 categories:
   animal: {parent: noun}
   pet: {parent: animal}
+  animate:
+    parent: noun
+    notes: >
+      PERSON-DENOTING common nouns — the antecedent-eligibility signal for
+      a singular personal pronoun, and the ONLY thing separating "Baker
+      made 157 cakes. He sold 158." (bindable) from "The basket has 7
+      peaches. He ..." (must stay unbound). Read ONLY by document.py's
+      zero-name coreference fallback.
+
+      MEMBERSHIP IS A SOUNDNESS CLAIM, not a vocabulary list: a member
+      asserts a singular personal pronoun MAY corefer with this noun, so
+      an ambiguous word admitted here becomes a wrong-hazard in every
+      corpus at once. Three deliberate exclusions, do not re-add without
+      measuring: 'player' ("MP3 player" is a DEVICE — the documented trap
+      that cost 2 GSM8K items), 'cook' (verb sense; the 'paint'/'work'/
+      'second' precedent), 'king' (name-like; names are already
+      candidates). Animals are NOT members — `animal` is a sibling under
+      `noun`, and "the dog ... he" has no measured buyer.
+  animate_pronoun:
+    parent: pronoun
+    notes: >
+      Singular PERSONAL pronouns — the pronoun-side half of the `animate`
+      gate. The kernel has NO gender or person feature (a pronoun unit
+      carries only `number`), so without this category the zero-name
+      fallback would bind 'it' to a person noun. Excludes 'it' (already
+      `pool_pronoun`) and every plural (`_bind_discourse` refuses plurals
+      outright — group referents are unbuilt).
   state:
     parent: verb
     notes: >
@@ -689,6 +716,17 @@ members:
   remnant_adj: [left]
   animal: [dog, cat, fish, bird, rabbit, hamster]
   pet: [dog, cat, hamster]
+  # MEMBERS LIVE WHERE THE WORD IS LEXICALLY DEFINED. Only these five are
+  # core-english words; the other 43 occupation/kinship nouns are defined in
+  # packs/difg-mined and extend this category from there, exactly as
+  # `dimension_adjective` notes for 'tall'/'long'. A member that is not in
+  # the loading project's lexicon is a CompileError, so a minimal pack set
+  # must never see a member it cannot resolve.
+  # Deliberate exclusions ('player', 'cook', 'king') — see the category note.
+  animate: [teacher, student, friend, child]
+  # 'him'/'her' are OBJECT-case and have no lexicon entry of their own;
+  # the fallback binds a SUBJECT pronoun to a prior subject anyway.
+  animate_pronoun: [he, she]
   state: [has, have, had, is, are, was, were, own, owns]
   acquire: [get, gets, got, find, finds, found, buy, buys, bought, receive, receives, received, win, wins, won]
   lose: [lose, loses, lost, eat, eats, ate, give, gives, gave, sell, sells, sold, spend, spends, spent, dropped, drops]
