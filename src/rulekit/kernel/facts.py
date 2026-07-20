@@ -11,7 +11,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field, replace
 
 from ..data.registry import Registry
-from .model import Fact, Price, Quantity
+from .model import Fact, Price, Provenance, Quantity
 from .patterns import RuleMatchResult, subsumes
 
 
@@ -24,11 +24,60 @@ class Collision:
     b_value: object
 
 
+@dataclass(frozen=True)
+class AgreementAmbiguity:
+    """Two independently attributed derivations collapsed to one fact.
+
+    This is diagnostic evidence only.  The store keeps its first fact and
+    preserves the long-standing same-key/same-value dedupe behaviour; a later
+    corpus report decides whether either derivation needs a semantic change.
+    """
+
+    key: tuple
+    value: object
+    retained: Provenance
+    deduped: Provenance
+
+    def to_trace_event(self) -> dict:
+        return {
+            "kind": "agreement-ambiguity",
+            "key": list(self.key),
+            "value": self.value,
+            "retained": {
+                "source": self.retained.source,
+                "sentence": self.retained.sentence,
+                "decision_seq": self.retained.decision_seq,
+                "distributive": self.retained.distributive,
+            },
+            "deduped": {
+                "source": self.deduped.source,
+                "sentence": self.deduped.sentence,
+                "decision_seq": self.deduped.decision_seq,
+                "distributive": self.deduped.distributive,
+            },
+            "reason": "separate derivations agreed on one fact; retained the first",
+        }
+
+
 @dataclass
 class FactStore:
     facts: list[Fact] = field(default_factory=list)
     collisions: list[Collision] = field(default_factory=list)
     quarantined: list[Fact] = field(default_factory=list)
+    agreement_ambiguities: list[AgreementAmbiguity] = field(default_factory=list)
+
+    def _record_agreement(self, existing: Fact, fact: Fact) -> None:
+        """Keep one event per provenance pair, even across saturation rounds."""
+        if existing.provenance == fact.provenance:
+            return
+        event = AgreementAmbiguity(
+            key=fact.key(),
+            value=fact.value_part(),
+            retained=existing.provenance,
+            deduped=fact.provenance,
+        )
+        if event not in self.agreement_ambiguities:
+            self.agreement_ambiguities.append(event)
 
     def admit(self, fact: Fact) -> bool:
         """Admit one fact. Same key + same value dedupes; same key +
@@ -163,6 +212,7 @@ class FactStore:
                     and (existing.segment or 0) != (fact.segment or 0)
                 )
                 if existing.value_part() == fact.value_part() and not conjunct_split:
+                    self._record_agreement(existing, fact)
                     return True  # agreement: dedupe
                 if (
                     isinstance(existing, Quantity)

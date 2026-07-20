@@ -399,6 +399,9 @@ def build_router(state: ServerState) -> APIRouter:
                  "a_value": _jsonable(c.a_value), "b_value": _jsonable(c.b_value)}
                 for c in result.store.collisions
             ],
+            "agreement_ambiguities": [
+                event.to_trace_event() for event in result.store.agreement_ambiguities
+            ],
             "gaps": (
                 [g.describe() for g in result.document.gaps]
                 if result.document else []

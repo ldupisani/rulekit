@@ -103,6 +103,7 @@ class Result:
         for reading in self.premises + ([self.question] if self.question else []):
             for d in reading.decisions:
                 events.append({"sentence": reading.sentence_index, **d.to_json()})
+        events.extend(event.to_trace_event() for event in self.store.agreement_ambiguities)
         return events
 
 

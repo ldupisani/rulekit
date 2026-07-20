@@ -30,6 +30,15 @@ def cmd_solve(args) -> int:
         print(f"  reason: {a.reason}")
         if args.trace:
             for event in result.trace():
+                if event["kind"] == "agreement-ambiguity":
+                    retained = event["retained"]
+                    deduped = event["deduped"]
+                    print(
+                        "  [fact] agreement-ambiguity "
+                        f"{retained['source']}@{retained['sentence']} == "
+                        f"{deduped['source']}@{deduped['sentence']}"
+                    )
+                    continue
                 print(
                     f"  [{event['sentence']}:{event['seq']:03d}] {event['kind']:<20} "
                     f"u{event['target']}  {event['reason']}"
