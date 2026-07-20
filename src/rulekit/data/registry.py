@@ -134,6 +134,9 @@ class Registry:
     # clitic -> expansion, LONGEST CLITIC FIRST (see compile_registry)
     contractions: tuple[tuple[str, str], ...]
     affine_scales: Mapping[tuple[str, str], tuple[float, float]]  # (from,to) -> (offset,factor)
+    # curated reference facts: (entity fold, attribute, year|None) -> value.
+    # Frozen like every other table — the dict-not-DuckDB tier (schemas.ReferenceDoc)
+    reference: Mapping[tuple[str, str, int | None], float]
     quarantine: Mapping[str, str]  # word -> reason (never vocabulary)
     rules: tuple[PatternRule, ...]
     asks: tuple[AskRule, ...]
@@ -372,6 +375,54 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                 affine_scales[fwd] = pair
                 affine_scales[rev] = (-sc.offset * sc.factor, 1.0 / sc.factor)
 
+    # reference tables: rows flattened to (entity fold, attribute, year|None)
+    # -> float. Validation happens HERE, not in the schema, so an error names
+    # the table, row and attribute. A `by: year` attribute stores one key per
+    # year and NO year-less key — the lookup consumer declines a year-less ask
+    # against a time series rather than silently choosing a year.
+    reference: dict[tuple[str, str, int | None], float] = {}
+    for pack in packs:
+        for doc in pack.reference:
+            for table in doc.tables:
+                for row in table.rows:
+                    if table.key not in row:
+                        raise CompileError(
+                            f"reference table {table.name!r}: a row lacks its "
+                            f"key field {table.key!r}"
+                        )
+                    entity = str(row[table.key]).strip().lower()
+                    for attr, value in sorted(row.items()):
+                        if attr == table.key:
+                            continue
+                        spec = table.attributes.get(attr)
+                        if spec is None:
+                            raise CompileError(
+                                f"reference table {table.name!r} row {entity!r}: "
+                                f"undeclared attribute {attr!r}"
+                            )
+                        if spec.by == "year":
+                            if not isinstance(value, dict):
+                                raise CompileError(
+                                    f"reference {table.name!r}.{attr!r} is by-year "
+                                    f"but row {entity!r} gives a bare value"
+                                )
+                            points = [(int(y), float(v)) for y, v in value.items()]
+                        elif isinstance(value, dict):
+                            raise CompileError(
+                                f"reference {table.name!r}.{attr!r} is not by-year "
+                                f"but row {entity!r} gives a mapping"
+                            )
+                        else:
+                            points = [(None, float(value))]
+                        for year, v in sorted(points, key=lambda p: (p[0] is not None, p[0])):
+                            key = (entity, attr, year)
+                            if key in reference and reference[key] != v:
+                                raise CompileError(
+                                    f"reference fact {key} declared twice with "
+                                    f"different values"
+                                )
+                            reference[key] = v
+
     # contractions: clitic -> expansion. Stored as an ordered TUPLE sorted by
     # DESCENDING clitic length, because matching is longest-suffix-first: "n't"
     # and a hypothetical "'t" both match "doesn't" and only the longer is
@@ -568,6 +619,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
         atomic_masses=_freeze(atomic_masses),
         contractions=contractions,
         affine_scales=_freeze(affine_scales),
+        reference=_freeze(reference),
         geometry_formulas=_freeze(geometry_formulas),
         quantity_formulas=_freeze(quantity_formulas),
         unit_dimension=_freeze(unit_dimension),

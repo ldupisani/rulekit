@@ -851,6 +851,43 @@ class ProjectDoc(StrictModel):
     suite: str | None = None  # path to a curated YAML suite (small projects)
 
 
+class ReferenceAttrDef(StrictModel):
+    """One attribute of a reference table's rows.
+
+    `by: year` marks a TIME-SERIES attribute: its row values are {year: number}
+    maps and a lookup without a stated year DECLINES (answering "the population
+    of France" with some silently-chosen year would be a confident guess — the
+    engine's epistemics require the question to pin the series point)."""
+
+    by: Literal["year"] | None = None
+
+
+class ReferenceTableDef(StrictModel):
+    """A table of curated real-world facts (difg's reference-seed pattern).
+
+    Rows are plain mappings validated at REGISTRY COMPILE (not here) so the
+    error can name the table, row and attribute. `key` names the row field the
+    entity slot must match; every other row field must be a declared attribute."""
+
+    name: str
+    key: str
+    attributes: dict[str, ReferenceAttrDef]
+    rows: list[dict[str, object]]
+
+
+class ReferenceDoc(StrictModel):
+    """Curated reference data compiled into the FROZEN registry.
+
+    The dict-not-DuckDB decision is deliberate for this tier: a point lookup
+    against a frozen mapping is deterministic across processes by construction
+    (the registry contract), and the data is hand-curated pack YAML exactly as
+    conversions/formulas are. Tables that outgrow YAML arrive with the
+    non-frozen resolver seam (plan phase B2), not by bloating this one."""
+
+    format: Literal["rulekit/reference@1"]
+    tables: list[ReferenceTableDef]
+
+
 KIND_MODELS: dict[str, type[BaseModel]] = {
     "rulekit/lexicon@1": LexiconDoc,
     "rulekit/categories@1": CategoriesDoc,
@@ -862,6 +899,7 @@ KIND_MODELS: dict[str, type[BaseModel]] = {
     "rulekit/contractions@1": ContractionsDoc,
     "rulekit/affine-conversions@1": AffineConversionsDoc,
     "rulekit/quarantine@1": QuarantineDoc,
+    "rulekit/reference@1": ReferenceDoc,
     "rulekit/numbers@1": NumbersDoc,
     "rulekit/obligations@1": ObligationsDoc,
     "rulekit/rules@1": RulesDoc,

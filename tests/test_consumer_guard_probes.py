@@ -240,3 +240,21 @@ def test_a_partially_read_verdict_question_declines(scratch, consumer_name, text
     assert got.kind == "decline"
     assert "question states" in got.reason
     assert dropped.surface in got.reason
+
+
+# --- reference-lookup: both asks bind attribute (category-gated) and entity
+# (name slot) as REQUIRED slots, and the year arrives via "{y.value}" off a
+# number-typed slot — so an empty attribute/entity or a non-numeric year
+# cannot be phrased. Direct probes, the affine-convert pattern.
+
+def test_reference_lookup_empty_slots_decline(gsm8k):
+    got = call("reference-lookup", gsm8k, {"attribute": "", "entity": ""})
+    assert got.kind == "decline"
+    assert "needs an attribute and an entity" in got.reason
+
+
+def test_reference_lookup_unreadable_year_declines(gsm8k):
+    got = call("reference-lookup", gsm8k,
+               {"attribute": "population", "entity": "france", "year": "blorp"})
+    assert got.kind == "decline"
+    assert "as a year" in got.reason

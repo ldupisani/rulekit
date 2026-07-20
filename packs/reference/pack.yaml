@@ -1,0 +1,10 @@
+format: rulekit/pack@1
+name: reference
+version: "0.1"
+requires: [core-english]
+description: >
+  Curated real-world reference facts (difg's reference-seed pattern, ported).
+  Small, hand-verifiable, version-controlled tables compiled into the frozen
+  registry; the lookup ask family and the reference-lookup consumer are the
+  only readers. Numeric attributes only — the engine has no text answer kind
+  yet, so capital-of style lookups wait for one.

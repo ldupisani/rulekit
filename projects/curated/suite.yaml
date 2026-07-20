@@ -184,3 +184,31 @@ items:
   - id: decline-question-carries-unread-number
     text: Lisa walks 10 meters each minute. How many meters will Lisa walk in two days?
     expect: decline
+
+  # ---- reference lookups (packs/reference, B1) -----------------------------
+  # The BUYERS of the rulekit/reference@1 machinery: numeric facts from the
+  # curated geography table, plus the honesty declines that keep it precise.
+  - id: ref-population-year
+    text: What is the population of France in 2020?
+    expect: 67000000
+  - id: ref-population-year-early
+    text: What is the population of Kenya in 1990?
+    expect: 23000000
+  - id: ref-area-point
+    text: What is the area of Japan?
+    expect: 377975
+  - id: ref-area-multiword-entity
+    text: What is the area of New Zealand?
+    expect: 268021
+  - id: ref-population-multiword-article
+    text: What is the population of the United States in 2020?
+    expect: 331000000
+  - id: ref-decline-yearless-series
+    text: What is the population of France?
+    expect: decline
+  - id: ref-decline-unknown-entity
+    text: What is the population of Atlantis in 2020?
+    expect: decline
+  - id: ref-decline-year-outside-series
+    text: What is the population of France in 1874?
+    expect: decline

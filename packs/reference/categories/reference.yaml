@@ -1,0 +1,10 @@
+format: rulekit/categories@1
+# The attribute-selection gate for reference lookups, exactly the
+# physics_quantity pattern: ask/reference-* gates its slot on this and the
+# reference-lookup consumer takes the WORD to the compiled table. Members are
+# exactly the attributes geography.yaml declares — an attribute without data
+# cannot match the gate, so it declines at the ask.
+categories:
+  reference_attribute: {parent: noun}
+members:
+  reference_attribute: [population, area]

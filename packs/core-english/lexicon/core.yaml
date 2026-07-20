@@ -155,6 +155,9 @@ entries:
 
   # common nouns
   apple: {senses: [noun], plural: apples}
+  # promoted from difg-mined 2026-07-20: packs/reference needs it too, and
+  # packs may not shadow — the shared base is the one home both can require
+  area: {senses: [noun], plural: areas}
   plum: {senses: [noun], plural: plums}
   marble: {senses: [noun], plural: marbles}
   book: {senses: [noun], plural: books}

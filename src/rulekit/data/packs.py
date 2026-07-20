@@ -31,6 +31,7 @@ from .schemas import (
     ObligationsDoc,
     PackDoc,
     QuarantineDoc,
+    ReferenceDoc,
     RequirementsDoc,
     RulesDoc,
     SynthDoc,
@@ -65,6 +66,7 @@ class LoadedPack:
     contractions: list[ContractionsDoc] = field(default_factory=list)
     affine: list[AffineConversionsDoc] = field(default_factory=list)
     quarantine: list[QuarantineDoc] = field(default_factory=list)
+    reference: list[ReferenceDoc] = field(default_factory=list)
     fingerprint: str = ""
 
 
@@ -138,6 +140,8 @@ def load_pack(root: Path) -> LoadedPack:
             pack.affine.append(doc)
         elif isinstance(doc, QuarantineDoc):
             pack.quarantine.append(doc)
+        elif isinstance(doc, ReferenceDoc):
+            pack.reference.append(doc)
 
     pack.fingerprint = hasher.hexdigest()
     return pack

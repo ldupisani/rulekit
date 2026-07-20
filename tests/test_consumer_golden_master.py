@@ -53,7 +53,7 @@ ROOT = Path(__file__).resolve().parents[1]
 @pytest.fixture(scope="module")
 def registries():
     return {n: load_project(ROOT / "projects" / n).registry
-            for n in ("gsm8k", "difg", "scratch")}
+            for n in ("gsm8k", "difg", "scratch", "curated")}
 
 
 # (registry, question, expected consumer, kind, value, reason prefix)
@@ -303,6 +303,13 @@ GOLDEN = [
      'single-entity', 'decline', None, "measure 'money' is ambiguous across the facts"),
     ('gsm8k', 'Tom found 3 oranges. Now Tom has 4 oranges. Tom has 2 apples. How many more oranges than apples are there?',
      'label-difference', 'decline', None, "missing a total for 'orange' or 'apple'"),
+    # reference-lookup ('curated' is the only project loading packs/reference)
+    ('curated', 'What is the area of Japan?',
+     'reference-lookup', 'number', 377975.0, 'reference'),
+    ('curated', 'What is the population of Atlantis in 2020?',
+     'reference-lookup', 'decline', None, "no reference fact for the 'population' of 'atlantis'"),
+    ('curated', 'What is the population of France?',
+     'reference-lookup', 'decline', None, "no reference fact for the 'population' of 'france'"),
 ]
 
 
@@ -391,6 +398,12 @@ _COVERED_BY_UNIT_TEST = {
     # The op/value slots are typed or category-gated at the ask, so an
     # unknown op or a non-numeric value never binds:
     ("affine-convert", "a conversion needs a numeric quantity"),
+    # both reference asks bind attribute (category-gated) and entity (a name
+    # slot) as REQUIRED, and the year template is "{y.value}" off a number
+    # slot — an empty attribute/entity or a non-numeric year cannot arrive
+    # from text; probed directly in test_consumer_guard_probes.py
+    ("reference-lookup", "a reference lookup needs an attribute an"),
+    ("reference-lookup", "cannot read"),
     ("arithmetic", "unsupported operation"),
     ("coordinate", "unsupported operation"),
     ("number-theory", "unsupported operation"),

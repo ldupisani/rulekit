@@ -1,0 +1,38 @@
+format: rulekit/rules@1
+# Reference lookups: "What is the <attribute> of <Entity> [in <year>]?".
+# Two shapes, not one with an optional tail: the year form consumes more units,
+# so ask-ranking (max consumed) picks it exactly when a year is stated. The
+# entity slot is a NAME (the affine-convert precedent) — proper names need no
+# lexicon entry, and an entity the table does not hold declines in the
+# consumer, never guesses. A YEAR-LESS ask against a by-year attribute also
+# declines (registry stores no year-less key for a time series) — "the
+# population of France" does not get a silently-chosen year.
+rules: []
+asks:
+  - id: ask/reference-attribute
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {slot: a, cat: reference_attribute}
+        - {lit: of}
+        - {slot: e, type: name}
+    resolves:
+      consumer: reference-lookup
+      attribute: "{a}"
+      entity: "{e}"
+  - id: ask/reference-attribute-year
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {slot: a, cat: reference_attribute}
+        - {lit: of}
+        - {slot: e, type: name}
+        - {lit: in}
+        - {slot: y, type: number}
+    resolves:
+      consumer: reference-lookup
+      attribute: "{a}"
+      entity: "{e}"
+      year: "{y.value}"

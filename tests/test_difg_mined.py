@@ -19,8 +19,16 @@ MINED = REPO / "packs/difg-mined"
 def full_registry():
     if not MINED.exists():
         pytest.skip("difg-mined not generated (run tools/migrate_difg.py)")
+    # the curated project's own pack list (incl. packs/reference since B1)
+    # PLUS the mined pack — the diff-neutral test below compares against the
+    # curated registry, so the only delta may be the enrichment itself
     return compile_registry(
-        load_packs([REPO / "packs/core-english", REPO / "packs/arithmetic", MINED])
+        load_packs([
+            REPO / "packs/core-english",
+            REPO / "packs/arithmetic",
+            REPO / "packs/reference",
+            MINED,
+        ])
     )
 
 

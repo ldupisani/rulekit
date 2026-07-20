@@ -1,0 +1,11 @@
+format: rulekit/lexicon@1
+# The attribute WORDS of the reference tables (geography.yaml) — admitted here,
+# in the pack that gives them a consumer, so a project without reference data
+# keeps its unknown-word decline guard on them. 'area' is NOT here: difg-mined
+# already defined it and packs may not shadow, so it was promoted to
+# core-english (the shared base both packs require) 2026-07-20.
+entries:
+  population:
+    senses:
+    - noun
+    plural: populations
