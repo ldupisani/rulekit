@@ -1,3 +1,51 @@
+# Session 10 (2026-07-20): de Broglie formula +1 @100%; SciBench TEST holds 0 wrong; the 65-item suite gate is repaired
+
+One independently revertible increment landed (`cf539f5`): the eponymic
+physical-quantity ask plus the declarative de Broglie wavelength formula.
+**SciBench dev 2 → 3 committed at 100% precision**; every other DEV/suite
+snapshot is item-neutral, lint has 0 errors, and pytest **1929 → 1932**.
+The aggregate-only SciBench TEST look was spent from the main checkout:
+**0 correct / 0 wrong / 168 declined**, byte-identical aggregates to the
+previous fingerprint. This is zero transfer and zero damage; the increment
+survives the precision-hold rule.
+
+#### `cf539f5` — named quantity grammar, dimension binding unchanged
+
+`ask/physics-eponymic-quantity` reads the construction as structural slots:
+preposition + proper name + `physics_quantity`. The full phrase becomes the
+formula key (`de broglie wavelength`), so another eponym reaches the SAME
+grammar and then declines unless pack data defines it. The input stays on the
+existing safe path: `eV` is a number-form of `electronvolt`, conversions@1
+scales it to canonical joules, and the formula binds by the energy DIMENSION,
+never position. An extra count and an unregistered eponym are pinned declines.
+
+**Gold precision rejected two larger-looking classes before code:** the
+second Carnot-efficiency row's exact 0.1072 sits outside the typed judge's 1%
+band around gold 0.11; a Coulomb-force sibling drops its scientific-notation
+exponent and would score the correct SI result wrong. One formula class must
+survive ALL of its reachable siblings, not merely have one clean buyer.
+
+#### The curated-suite invocation was stale, not the 65 cases
+
+Session 9 added eight reference cases and the separate `projects/curated`
+project that loads `packs/reference`. The active CI/mining commands still ran
+the shared suite through `projects/gsm8k`, which deliberately does NOT load
+that pack: live output was 57 correct + 8 declined, and bench exited 0. The
+correct gate is now `--project projects/curated`: **65/65**, including the
+fresh-process determinism check. Active CI, project commands, and both Claude/
+Codex mining instructions now name that project; historical 52/52 records stay
+historical. Do NOT "fix" this by loading reference into GSM8K — that would
+widen a benchmark project's behavior to repair a command.
+
+**Next levers**: continue A3 one-class formula growth, but preflight every
+reachable sibling against the typed-gold tolerance first. The clean one-input,
+same-question buyer was consumed here; many remaining candidates need premise
+readings (operands live in an earlier sentence) or repeated-dimension roles.
+The `_TOKEN` compound-unit change remains banked until independently bought;
+the text answer kind remains its own kernel+judge increment.
+
+---
+
 # Session 9 (2026-07-20): SciBench ATTEMPTED — first 2 commits ever @100%; gsm8k TEST 92.3 → 92.9%; the reference tier lands (lookup + DuckDB aggregates)
 
 Three landed commits, each through the full gate and walked on TEST
@@ -1736,7 +1784,7 @@ synth-GroupTotal fix + consumer both paths (`2439b82`, `ab878ad`) · container+l
 3. Build the tightest GENERAL mechanism (YAML rules/categories first; kernel only for structure).
    One class per increment, named at ship time.
 4. Gate: `bench --slice dev-train --snapshot X.json` → `diff <baseline> X.json` (must be **0 BROKE /
-   0 DECL→WRONG**) → same for dev-holdout → synthetic pytest (never GSM8K strings) → suite holds 52/52
+   0 DECL→WRONG**) → same for dev-holdout → synthetic pytest (never GSM8K strings) → curated suite holds 65/65
    → the five cross-corpus gates.
 5. TEST look per shipped increment: `bench --slice test --spend-test-look`. Precision must hold vs the
    last look or the increment REVERTS.
@@ -1914,7 +1962,8 @@ The 1 persistent TEST wrong is a stable §3a unseen shape, present since look #1
 
 ```
 uv run pytest -q
-uv run rulekit --project projects/gsm8k bench --slice suite|dev-train|dev-holdout [--snapshot F]
+uv run rulekit --project projects/curated bench --slice suite
+uv run rulekit --project projects/gsm8k bench --slice dev-train|dev-holdout [--snapshot F]
 uv run rulekit --project projects/gsm8k diff conj-train.json <new>.json      # ship gate
 uv run rulekit --project projects/gsm8k stats                                # mining worklists
 uv run rulekit --project projects/gsm8k serve                                # designer :8321

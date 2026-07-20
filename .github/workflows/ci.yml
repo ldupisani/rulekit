@@ -15,7 +15,7 @@ name: ci
 #   - the lint has no errors
 #   - 1500+ synthetic contract tests, which have caught things all six corpora
 #     missed ("the corpora are a SAMPLE; the tests are the SPECIFICATION")
-#   - the curated suite still scores 52/52, in a FRESH process
+#   - the curated suite still scores 65/65, in a FRESH process
 #
 # Data-backed test asserts skip themselves when the parquet is absent, so the
 # suite runs clean here without pretending to have measured a corpus.
@@ -74,4 +74,4 @@ jobs:
         # --twice now re-runs in a SPAWNED interpreter and compares canonical
         # snapshots, so this is a real determinism check rather than a second
         # in-process run agreeing with itself.
-        run: uv run rulekit --project projects/gsm8k bench --slice suite --twice
+        run: uv run rulekit --project projects/curated bench --slice suite --twice

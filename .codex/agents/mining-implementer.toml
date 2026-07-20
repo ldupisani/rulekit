@@ -72,7 +72,7 @@ uv run rulekit --project projects/gsm8k bench --slice dev-holdout --snapshot <sl
 uv run rulekit --project projects/gsm8k diff base-<slug>-train.json <slug>-train.json
 uv run rulekit --project projects/gsm8k diff base-<slug>-holdout.json <slug>-holdout.json
 uv run pytest -q
-uv run rulekit --project projects/gsm8k bench --slice suite
+uv run rulekit --project projects/curated bench --slice suite
 uv run rulekit --project projects/gsm8k lint
 ```
 

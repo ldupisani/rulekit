@@ -217,7 +217,7 @@ const COMPOSE_SCHEMA = {
   type: 'object',
   required: ['verdict', 'evidence'],
   properties: {
-    verdict: { enum: ['pass', 'fail'], description: 'pass ONLY if both diffs vs main show 0 BROKE and 0 DECL->WRONG, suite 52/52, pytest green, lint 0 errors' },
+    verdict: { enum: ['pass', 'fail'], description: 'pass ONLY if both diffs vs main show 0 BROKE and 0 DECL->WRONG, curated suite 65/65, pytest green, lint 0 errors' },
     solved_vs_main: { type: 'number', description: "the batch's TRUE dev-train coverage delta, enabler included — the number the TEST look is spent against" },
     evidence: { type: 'string', description: 'the raw diff verdicts vs main for both slices, plus suite/pytest/lint' },
     notes: { type: 'string' },
@@ -363,7 +363,7 @@ clean against their own baseline, and can still interact.
 Re-prove the FULL dev gate for the staging tip against MAIN's baselines:
 build fresh main baselines (bench dev-train and dev-holdout at main, --jobs 8),
 then bench the staging tip and diff against those. 0 BROKE and 0 DECL->WRONG on
-BOTH slices, suite 52/52, pytest green, lint 0 errors.
+BOTH slices, curated suite 65/65, pytest green, lint 0 errors.
 
 Report SOLVED vs main too — that is the batch's TRUE coverage delta, enabler
 included, and it is the number the TEST look will be spent against.

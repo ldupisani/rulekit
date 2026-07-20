@@ -39,8 +39,8 @@ Abort with a clear message if any of these fail:
   `git branch --list 'mining/*'` shows leftovers from a previous batch —
   ask nothing, just report them; stale `mining/cand-*` branches from a
   crashed run should be surfaced to the user before piling on more.
-- Quick sanity: `uv run rulekit --project projects/gsm8k bench --slice suite`
-  → `correct 52`, `wrong 0`.
+- Quick sanity: `uv run rulekit --project projects/curated bench --slice suite`
+  → `correct 65`, `wrong 0`.
 
 ### 2. Run the workflow
 

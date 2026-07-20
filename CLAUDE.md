@@ -40,7 +40,8 @@ commits are fast-forwarded to `main` by hand. `/mine --smoke` self-tests the pip
 
 ```
 uv run pytest                                            # unit tests (synthetic only)
-uv run rulekit --project projects/gsm8k bench --slice suite|dev-train|dev-holdout
+uv run rulekit --project projects/curated bench --slice suite              # fast 65/65 regression gate (includes reference pack)
+uv run rulekit --project projects/gsm8k bench --slice dev-train|dev-holdout
 uv run rulekit --project projects/gsm8k bench --slice dev-train --snapshot before.json
 uv run rulekit --project projects/gsm8k diff before.json after.json    # ship gate
 uv run rulekit --project projects/asdiv bench --slice dev --jobs 8      # CROSS-CORPUS gate (§3b) — packs mined only on GSM8K, run on ASDiv
@@ -60,7 +61,9 @@ uv run rulekit --project projects/gsm8k serve                          # visual 
 - `packs/difg-mined/` — vocabulary mined from difg; `quarantine.yaml` lists words difg
   deliberately withheld (holdout poison) — CHECK IT before admitting new vocabulary
 - `packs/arithmetic/` — pattern rules, ask shapes, synthesizers (the general solver families)
-- `projects/gsm8k/` — the benchmark project (data + snapshots gitignored; suite = curated)
+- `projects/curated/` — the fast 65-item regression suite; loads the reference pack required by
+  its eight lookup/aggregate cases. Always run the suite through THIS project, not gsm8k.
+- `projects/gsm8k/` — the benchmark project (data + snapshots gitignored)
 - `projects/asdiv/` — the CROSS-CORPUS precision gate: same packs, DIFFERENT authors' problems, run
   through the same ship gate to catch confident-wrongs GSM8K structurally can't see (methodology §3b).
   `build_corpus.py` (committed) defines the DEV/TEST firewall; data gitignored, rebuild once with
