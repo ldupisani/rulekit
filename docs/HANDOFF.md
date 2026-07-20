@@ -1,3 +1,92 @@
+# Session 9 (2026-07-20): SciBench ATTEMPTED — first 2 commits ever @100%; gsm8k TEST 92.3 → 92.9%; the reference tier lands (lookup + DuckDB aggregates)
+
+Three landed commits, each through the full gate and walked on TEST
+(`b57f562` LaTeX reader + entropy pair, `eca7e41` B1 reference lookup,
+`7978ff5` B2 DuckDB aggregates), main fast-forwarded and pushed. **scibench
+dev 0 → 2 committed at 100% precision** — the corpus's first commits since
+its safety-gate days ended (the 0-commit expectation is RETIRED in
+methodology §3b / CLAUDE.md / project.yaml; **FOLIO is now the sole
+expect-0-commits gate**). All five other corpora byte-NEUTRAL through every
+increment. pytest 1872 → **1929**, curated suite 52 → **65/65**. TEST looks
+ledgered: **gsm8k 92.3% → 92.9%** (13/1 — one FREE TEST solve from the new
+lexicon, no new wrong), **scibench TEST 0 wrong across 168** (zero transfer,
+zero damage — the entropy class is dev-only, the fourth zero-transfer
+corpus).
+
+#### `b57f562` — the reader stage, and the accidental safety made structural
+
+`kernel/mathtext.py` transcribes `$...$` LaTeX spans BEFORE tokenization.
+The old 0-commit record was held up BY ACCIDENT — the tokenizer shredded
+`$3.5 \times 10^{6} \mathrm{~J}$` into phantom counts value-accounting
+could not consume. The reader keeps that safety structurally: **whole-span
+conservatism** (one unrecognized construct → span verbatim → the old
+decline) and an **object-identity fast path** (no backslash-command / `^{`
+→ the SAME string object; the five non-LaTeX corpora were proven
+byte-identical from a detached-HEAD worktree baseline, never assumed).
+`_TOKEN`/`_DIGIT` untouched — unit exponents (`dm^3`, `m/s^2`) remain the
+documented compound-unit increment.
+
+- **The reader alone bought 0.** The buyer shipped with it: the entropy
+  pair (golds 67/92) via `ask/physics-quantity-change` ("Calculate the
+  change in <q>"), formula key **'entropy change'** (unreachable from the
+  what-is ask — q/T is the Δ, never the absolute), and NEW scale-to-
+  canonical binding in the physics consumer: linear via conversions@1
+  (25 kJ → joule), affine via the merged token's **LABEL** ("100 degrees C"
+  already carries `label: 'C'`; the pack row `{from: c, to: kelvin}` takes
+  it to canonical). Ambiguous reach (two read dimensions) binds nothing.
+- ⚠ **`gold: typed` on scibench is LOAD-BEARING.** Its golds are book
+  answers rounded to 2-3 s.f.; the float path's TOL=1e-6 scores every
+  CORRECT commit wrong (66.997 vs "#### 67"). And a 2 s.f. gold can sit
+  outside even the typed 1% band (gold 2600 vs exact 2548.6) — **check
+  |exact − gold| ≤ TOL + 1% BEFORE naming any scibench buyer.**
+- 'energy' admitted: its physics-ops.yaml refusal ("no formula fires")
+  expired with the entropy formula; exposure re-measured, gates arbitrated.
+
+#### `eca7e41` / `7978ff5` — the reference tier (difg's dataset capability, re-homed)
+
+**The dict/DuckDB split is the design**: point lookups compile into the
+FROZEN registry (`rulekit/reference@1` → `reg.reference`, the conversions
+pattern — a frozen dict beats SQL by ~10⁴ on lookups); SET questions
+("total population of Europe in 2020" — membership JOIN + aggregate) go to
+DuckDB (`rulekit/reference/db.py`, outside kernel/), whose tables DERIVE
+from the same frozen mappings so determinism is inherited: one cached
+connection per registry fingerprint, sorted insertion, **`SET threads TO
+1`** (parallel SUM reorders float additions between runs). `duckdb` is an
+optional extra; absence → the consumer DECLINES. difg's LLM-retrieval half
+and trend projection were NOT ported — a year-less ask against a time
+series declines (compile stores no year-less key), an out-of-series year
+declines: an estimate is not a fact.
+
+- **Packs may not shadow, and the fix is promotion**: 'area' existed in
+  difg-mined AND the new pack — co-loading them was impossible until the
+  word moved to core-english (the shared base both require). Found only
+  because test_difg_mined's fixture co-loads; a project-level compile
+  cannot see a cross-pack collision its own pack list avoids.
+- The engine has **NO text answer kind** — capital-of lookups and
+  superlatives ("largest country") are blocked until one exists (a
+  kernel + judge design, its own increment).
+
+#### Parked unbought, and the process traps
+
+- `find`/`estimate`/`predict` imperative senses moved 16 scibench items
+  from "no question found" to readable — and measured **0 SOLVED on all
+  seven slices**. Parked in the session scratchpad
+  (`imperative-senses-unbought.patch`); re-apply only WITH an ask that
+  buys. [[enabler-must-be-bought]], enforced against my own increment.
+- ⚠ **Never pipe pytest through `tail` in a background shell** — exit 0 is
+  tail's, and it masked a real guard-coverage failure until a foreground
+  re-run. The guard ratchet then caught BOTH new consumers' unprobed
+  branches; golden rows + direct probes now ship WITH a consumer.
+- `uv sync` DROPS extras the venv had ad hoc (pyarrow, fastapi) — resync
+  `--all-extras` or bench/pytest die mid-gate.
+
+**Next levers**: A3 formula growth over the 80-item "no ask shape" pool
+(110 of 524 fully normalize; one CLASS per increment, gold-precision check
+first); the `_TOKEN` compound-unit increment (unlocks pV=nRT); a text
+answer kind.
+
+---
+
 # Session 8 (2026-07-20): svamp dev 13 → 30, asdiv 43 → 44, TEST look #1 spent, precision held
 
 Five landed commits (`f50b94a` comparative, `5700e3c` relational,
