@@ -1858,3 +1858,45 @@ still binds. No TEST look was spent.
 **Next:** re-price the remaining single-veto positive possessive,
 intransitive-universal, coordination, and passive/relative families. Do not
 merge relation- or coreference-dependent shapes without their missing stack.
+
+## Phase B reader 16 — named possession/event disjunctions (2026-07-21)
+
+The next bought coordination class is **“NAME has P or V Q.”** Its two
+branches deliberately normalize through different existing contracts:
+singular `has P` becomes the canonical stative atom key `have P`, while the
+event head lemma-renders with its predicate exactly like ground-verbal. Bare
+`or` emits the established inclusive ground `Disjunction`, so existing
+disjunctive syllogism consumes negative evidence for either branch.
+
+Nineteen synthetic pins cover the exact mixed fact, elimination in both
+directions, open-world and inclusive nulls, and fourteen adjacent refusals.
+The first refusal run caught two structural scope leaks: possessive `no` is
+quantifier-sensed, and `either` has its own marker category. Both now block the
+left span alongside sign, coordination, verbs/modals, and counted material;
+the event branch independently refuses sign, coordination, modals, additional
+verbs, particles, and counts.
+
+**pytest 2,137 passed; scratch lint 0 errors with the same eight warnings;
+curated 65/65 twice.** All eight standard DEV and both grouped
+FOLIO-with-logic snapshot diffs are NEUTRAL (0 BROKE, 0 DECL→WRONG).
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1338→1338 | 757→761 (+4) | 17/13→17/13 | 4 / 1 | 633→629 (−4) |
+| dev-holdout | 1304→1304 | 754→754 | 8/7→8/7 | 0 / 0 | 587→587 |
+
+The one train buyer emits `james: have car OR work at meta` across four item
+instances. Remaining gaps leave outcomes and stack readiness unchanged
+(train 19 correct / 1 poisoned-text wrong / 474 declined; holdout 1 / 0 /
+424). Collision, quarantine, agreement, ambiguity, and clause-split hazards
+remain neutral.
+
+Cumulative recorded-frame state is 761/1647 and 754/1602 fully read, 629/587
+truth-scope vetoes, 13/7 stack-ready stories, collision 8/9, and quarantine
+16/18. Phase A movement is +41/+33 fully read and 37/27 fewer truth-scope
+vetoes. Sixteen construction classes are served; every Phase C threshold
+still binds. No TEST look was spent.
+
+**Next:** price positive possessive and intransitive universals independently;
+keep passive/relative families banked until their relation direction and
+consumer keys are represented.

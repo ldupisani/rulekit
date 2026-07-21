@@ -758,6 +758,25 @@ rules:
     emits:
       - {fact: disjunction, entity: "{subj}", left: "{l}", right: "{r}", exclusive: false}
 
+  # Phase B reader 16: mixed named possession/event disjunctions —
+  # "NAME has P or V Q". Bare `or` carries the established inclusive reading.
+  # The stative left branch canonicalizes singular-agreeing `has` to the
+  # existing `have P` atom key; the right branch lemma-renders exactly like a
+  # named ground-verbal event. Each branch refuses its own larger signed,
+  # coordinated, modal, verbal, particle, and counted constructions.
+  - id: logic/disj-ground-has-or-verbal
+    phase: read
+    match:
+      sentence:
+        - {slot: subj, type: name, at_start: true, blocks_skipped: indefinite_article}
+        - {lit: has}
+        - {slot: left, span: true, span_blocks: [negation, quantifier, conjunction, disjunctive_marker, either_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+        - {lit: or}
+        - {slot: v, type: nonstate_verb, single_word: true}
+        - {slot: right, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+    emits:
+      - {fact: disjunction, entity: "{subj}", left: "have {left}", right: "{v} {right}", exclusive: false}
+
   # Stage 9j: the restricted stative-'have' universal — "CLSs that are
   # RESTRICTOR have NP PARTICIPLE at them" ("Speedways that are still
   # being used have races held at them") -> Conditional(cls, restrictor,
