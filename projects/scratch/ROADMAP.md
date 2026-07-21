@@ -2448,3 +2448,44 @@ stack-ready stories. Twenty-nine classes are served. No TEST look was spent.
 **Next:** re-survey beyond the one-away pool. Every remaining train one-away
 candidate requires lexical, passive, definite-description, or coreference
 infrastructure; do not disguise those decisions as grammar-only readers.
+
+## Phase B reader 30 — named-PP existential premises (2026-07-21)
+
+Reader 30 serves **“There is a/an CLS PREPOSITION NAME.”** `there` supplies
+existence rather than an entity. A noun class, preposition, and name object
+provide exact internal boundaries; a claimed terminal period supplies the
+endpoint that a final single-unit slot does not enforce by itself. The rule
+emits `Existential(cls, prep+name)` and creates no witness.
+
+Plural copulas, other determiners, signed/coordinated classes, common or
+counted objects, relative clauses, and passive tails remain unread. Nineteen
+synthetic pins cover exact emission, existential echo composition, a changed-
+object null, and sixteen adjacent refusals. The refusal suite caught prefix
+matching on larger tails before corpus measurement.
+
+**pytest 2,358 passed; scratch lint 0 errors with the same eight warnings;
+curated 65/65 twice.** All eight standard DEV diffs and both FOLIO-with-logic
+grouped diffs are NEUTRAL. Outcomes remain train 21 correct / 1 pre-existing
+poisoned-text wrong / 472 declined and holdout 4 / 0 / 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1342→1342 | 783→783 | 21/17→21/17 | 0 / 0 | 613→613 |
+| dev-holdout | 1316→1319 (+3) | 774→777 (+3) | 18/12→20/13 (+2/+1) | 3 / 1 | 574→574 |
+
+The only matched story emits `∃ person: from India`. Existing existential
+consumers perform exact echoes and witness checks but do not propagate an
+existential through universal implications, so the BRICS conclusions remain
+undetermined. The DEV survey also found one train relative-clause surface and
+one holdout passive-tail surface; both remain unread by construction. Hazards
+are neutral.
+
+Cumulative recorded-frame state is 783/1647 and 777/1607 fully read, 613/574
+vetoes, 17/13 stack-ready stories, collision 8/9, and quarantine 16/18. Phase
+A movement is +63/+56 fully read, 53/40 fewer truth-scope vetoes, and +6/+8
+stack-ready stories. Thirty classes are served. No TEST look was spent.
+
+**Next:** continue surveying beyond one-away readers with train readiness
+still binding. Remaining train candidates require explicit lexical, passive,
+definite-description, or coreference infrastructure; require an independently
+proven general construction and composition path before buying one.

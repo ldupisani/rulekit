@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–29 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–30 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -56,18 +56,20 @@
 > disjunctions `A/An CLS is a/an L or a/an R`, reusing
 > `QuantifiedDisjunction` with bare-`or` semantics — and (reader 29)
 > active-participial compound verbal universals `V-ing CLSs V2 P`, using
-> exact participial class keys. Cumulative movement from Phase A is +63 / +53
-> fully-read premise instances and +6 / +7
+> exact participial class keys — and (reader 30) named-PP existential premises
+> `There is a/an CLS PREPOSITION NAME`, using `Existential` without minting a
+> witness. Cumulative movement from Phase A is +63 / +56 fully-read premise
+> instances and +6 / +8
 > stack-ready stories on dev-train / dev-holdout, with no
 > verdict regression or hazard increase; truth-scope vetoes improve by 53 / 40, while
-> holdout collision/quarantine improve 12→9 / 24→18. Twenty-nine construction classes
+> holdout collision/quarantine improve 12→9 / 24→18. Thirty construction classes
 > are served. The holdout stack-ready threshold is now exceeded, but the
-> conjunctive Phase C gate remains unmet (fully read 783/1647 and 774/1607 vs
-> 852/850; vetoes 613/574 vs ≤499/460; stack-ready stories 17/12 vs ≥22/10).
+> conjunctive Phase C gate remains unmet (fully read 783/1647 and 777/1607 vs
+> 852/850; vetoes 613/574 vs ≤499/460; stack-ready stories 17/13 vs ≥22/10).
 > Next re-survey beyond the one-away pool; the remaining train one-away
 > candidates require lexical, passive, definite-description, or coreference
-> infrastructure. The unbought outer-quantified verbal relative, surveyed
-> `there is`, and direct passive-agent candidates remain banked pending
+> infrastructure. The unbought outer-quantified verbal relative and direct
+> passive-agent candidates remain banked pending
 > composition or infrastructure evidence. Reader 4's opt-in
 > `single_word` slot gate stays dormant for all pre-existing rules.
 > The one-unit-span `_naive_singular` bank is now bought by reader 20;
@@ -88,6 +90,47 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 44 (2026-07-21): Phase B reader 30 — named-PP existential premises; +3 holdout fully read, +1 stack-ready story
+
+One reader serves **“There is a/an CLS PREPOSITION NAME.”** `there` contributes
+existence but never becomes an entity. Typed noun, preposition, and name slots
+give the indefinite NP and PP exact boundaries; a claimed terminal period
+enforces sentence exhaustion. The reader emits `Existential(cls, prep+name)`.
+Plural copulas, other determiners, signed/coordinated classes, common or
+counted objects, relative clauses, and passive tails refuse.
+
+Nineteen synthetic pins cover exact emission without a witness, existential
+echo composition, a different-object null, and sixteen adjacent refusals. The
+refusal suite caught the matcher’s single-slot prefix behavior and bought the
+explicit endpoint before measurement. The DEV survey finds three holdout
+verdict rows in one story and no train rows; the other three `There is a/an …`
+surfaces are structurally larger and remain unread.
+
+**All 2,358 tests pass; scratch lint has 0 errors and the same eight warnings;
+curated is 65/65 twice.** All eight standard DEV diffs and both grouped logic
+diffs are NEUTRAL. Outcomes remain train 21 correct / 1 pre-existing
+poisoned-text wrong / 472 declined and holdout 4 / 0 / 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1342→1342 | 783→783 | 21/17→21/17 | 0 / 0 | 613→613 |
+| dev-holdout | 1316→1319 (+3) | 774→777 (+3) | 18/12→20/13 (+2/+1) | 3 / 1 | 574→574 |
+
+The buyer emits `∃ person: from India`. Existing existential consumers support
+exact echoes and witness checks but no existential-through-universal chaining,
+so the BRICS conclusions safely remain undetermined. No inference code or
+synthetic witness was added, and every hazard is neutral.
+
+Cumulative recorded-frame state is 783/1647 and 777/1607 fully read, 613/574
+truth-scope vetoes, 17/13 stack-ready stories, collision 8/9, and quarantine
+16/18. Thirty classes are served. No TEST look was spent.
+
+**Next:** continue the beyond-one-away survey with train readiness still
+binding. The remaining train candidates require explicit infrastructure;
+prefer a general construction with independently proven composition.
+
+---
 
 # Session 43 (2026-07-21): Phase B reader 29 — participial compound verbal universals; +1 holdout fully read and stack-ready story
 

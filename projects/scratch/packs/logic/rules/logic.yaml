@@ -1541,6 +1541,27 @@ rules:
     emits:
       - {fact: quantified, cls: "{v} {p}", pred: "have {q}", polarity: true}
 
+  # Phase B reader 30: named-PP existential premises —
+  # "There is a/an CLS PREPOSITION NAME". `there` contributes existence,
+  # never an entity; the noun and name slots give the indefinite NP and PP
+  # exact boundaries without splitting a free span. A claimed terminal period
+  # rejects relative/passive tails. Plural copulas, non-indefinite determiners,
+  # signed/coordinated classes, common/count objects, and larger clauses stay
+  # whole-unread.
+  - id: logic/existential-there-is-indefinite-named-pp
+    phase: read
+    match:
+      sentence:
+        - {lit: there, at_start: true}
+        - {lit: is}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: cls, type: noun}
+        - {slot: prep, type: preposition}
+        - {slot: obj, type: name}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: existential, cls: "{cls}", pred: "{prep} {obj}", polarity: true}
+
   - id: logic/existential-some-are
     phase: read
     match:

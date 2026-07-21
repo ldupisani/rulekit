@@ -450,6 +450,18 @@ subclass bridge. Agreement ambiguity improves by one; no hazard increases.
 Twenty-nine classes are served; the fully-read, veto, and train-stack
 thresholds remain unmet.
 
+Reader 30 serves named-PP existential premises **“There is a/an CLS
+PREPOSITION NAME.”** Typed noun/name boundaries plus a claimed terminal period
+prevent prefix truncation of relative or passive tails. The reader emits an
+`Existential` fact and never invents a witness. Plural copulas, other
+determiners, signed/coordinated classes, common/count objects, and larger
+clauses refuse. Incremental movement is +0 / +3 fact-bearing and fully-read
+premises, +0 / +1 stack-ready stories, and no truth-scope-veto movement on
+dev-train / dev-holdout. Existing consumers do not chain existentials through
+universals, so the buyer remains undetermined. Hazards and outcomes are
+neutral. Thirty classes are served; the fully-read, veto, and train-stack
+thresholds remain unmet.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /
