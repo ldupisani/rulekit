@@ -183,6 +183,24 @@ rules:
     emits:
       - {fact: quantified, cls: "{cls}", pred: "have {pred}", polarity: true}
 
+  # Phase B reader 26: plural-agreeing positive possessive universals —
+  # "All CLSs have P". `All` plus bare `have` licenses singularizing the
+  # class key, while the possessed predicate stays unfolded to echo named
+  # possession facts. Relative restrictors and any second verb are separate
+  # constructions; signed, modal, coordinated, quantified-object, and merged
+  # counted-noun variants remain whole-unread rather than losing scope or
+  # cardinality.
+  - id: logic/universal-all-have
+    phase: read
+    match:
+      sentence:
+        - {lit: all, at_start: true}
+        - {slot: cls, span: true, span_blocks: [negation, quantifier, conjunction, disjunctive_marker, either_marker, verb, future_modal, capacity_modal, interrogative, complementizer, wh_which]}
+        - {lit: have}
+        - {slot: pred, span: true, span_blocks: [negation, quantifier, conjunction, disjunctive_marker, either_marker, verb, future_modal, capacity_modal, interrogative, complementizer, wh_which], span_blocks_counted: true}
+    emits:
+      - {fact: quantified, cls: "{cls.singular}", pred: "have {pred}", polarity: true}
+
   # Phase B reader 12: plural-agreeing negative event universals —
   # "No CLSs V P". A bare-form, single-token event verb is the structural
   # plural-agreement signal, licensing `.singular` on the class while the

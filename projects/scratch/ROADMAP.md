@@ -2282,3 +2282,52 @@ conjunctively unmet. No TEST look was spent.
 **Next:** regenerate the exact one-away frontier. Prefer a cross-split family
 when possible; otherwise keep buying train stack stories without coupling a
 premise construction to its later inference consumer.
+
+## Phase B reader 26 — plural-agreeing positive possessive universals (2026-07-21)
+
+Reader 17 served singular **“Every CLS has P”**; this increment adds its
+plural-agreeing sibling **“All CLSs have P.”** `All` plus bare `have` licenses
+the class fold to singular, while the possessed predicate stays unfolded and
+echo-exact. The rule emits the existing positive `Quantified` fact, so
+universal instantiation, chaining, and reductio need no new machinery.
+
+The class span refuses relative markers, extra verbs, sign, coordination, and
+modals; the predicate also refuses quantifier scope, coordination, extra
+verbs, and merged counted nouns. This prevents an inner relative-clause
+`have` from being mistaken for the main predicate and keeps lossy cardinality
+out of logical keys. Fifteen synthetic pins cover exact emission, named
+instantiation, a missing-membership null, and twelve adjacent-construction
+refusals.
+
+**pytest 2,280 passed; scratch lint 0 errors with the same eight warnings;
+curated 65/65 twice.** All eight standard DEV diffs are NEUTRAL. The
+FOLIO-with-logic train diff safely SOLVES one item with 0 BROKE and 0
+DECL→WRONG; holdout is NEUTRAL. Outcomes become train 21 correct / 1
+pre-existing poisoned-text wrong / 472 declined and remain holdout 4 / 0 /
+421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1340→1340 | 773→780 (+7) | 18/14→19/15 (+1/+1) | 7 / 3 | 623→616 (−7) |
+| dev-holdout | 1316→1316 | 769/1607→773/1607 (+4) | 17/11→17/11 | 4 / 2 | 579→575 (−4) |
+
+Across all gold kinds, the rule appears in 9 train rows / 3 stories and 7
+holdout rows / 3 stories. The table retains the campaign’s verdict-only
+measurement frame. Existing fold facts made the matched premises fact-bearing
+before the reader; consuming the universal makes their logical scope exact.
+
+The solved train story states `horse → have hooves` and `human → not have
+hooves`. Existing `synth/negative-chain` derives `human → not horse`, which
+refutes the existential conclusion. This is a premise-reader conversion, not
+a bundled inference special case. Hazards are neutral.
+
+Cumulative recorded-frame state is 780/1647 and 773/1607 fully read, 616/575
+vetoes, 15/11 stack-ready stories, collision 8/9, and quarantine 16/18. Phase
+A movement is +60/+52 fully read, 50/39 fewer truth-scope vetoes, and +4/+6
+stack-ready stories. Twenty-six classes are served. Holdout stack readiness
+exceeds its threshold; fully-read, veto, and train-stack thresholds remain
+conjunctively unmet. No TEST look was spent.
+
+**Next:** regenerate the one-away frontier after the cross-split gain. Continue
+preferring exact plural-agreement or coordination families that move train
+stack readiness without requiring lexical or coreference guesses.

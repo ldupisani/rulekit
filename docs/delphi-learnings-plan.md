@@ -1,6 +1,6 @@
 # The breadth-first premise-reader campaign — FOLIO logic → full integration
 
-**ACTIVE. Phase A and Phase B readers 1–25 completed 2026-07-21: ground
+**ACTIVE. Phase A and Phase B readers 1–26 completed 2026-07-21: ground
 both-or-neither equivalence, unrestricted bare-plural disjunction, and negative
 two-article indefinite generics, plus single-antecedent verbal “Everyone who”
 implications, verbal-restrictor conditionals, and the negative-antecedent
@@ -15,8 +15,8 @@ possessive universals, plural-generic copular-to-verbal conditionals,
 indefinite-generic verbal conditionals, reduced-relative people universals,
 fully repeated ground both-or-neither equivalences, implicit-restrictor
 property universals, second-person generic conditionals, grammar-proven
-fused premise/question boundaries, and active participial-restrictor
-possessive universals.**
+fused premise/question boundaries, active participial-restrictor possessive
+universals, and plural-agreeing positive possessive universals.**
 
 ## Context
 
@@ -401,6 +401,16 @@ dev-holdout; fact-bearing, truth-scope vetoes, outcomes, and hazards remain
 neutral. The buyer is now ready for deeper disjunctive case reasoning, which
 remains a separate inference increment. Twenty-five classes are served; the
 fully-read, veto, and train-stack thresholds remain unmet.
+
+Reader 26 serves plural-agreeing positive possessive universals **“All CLSs
+have P.”** The `All`/bare-`have` agreement licenses singularizing the class;
+the predicate stays echo-exact. Relative, signed, modal, coordinated,
+quantified-object, multi-verb, and merged-counted siblings refuse. Incremental
+movement is +7 / +4 fully-read premises, −7 / −4 truth-scope vetoes, and +1 /
++0 stack-ready stories on dev-train / dev-holdout. One train item safely
+converts declined → correct through the existing negative-chain synthesizer;
+hazards remain neutral. Twenty-six classes are served; the fully-read, veto,
+and train-stack thresholds remain unmet.
 
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key

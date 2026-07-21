@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–25 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–26 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -47,14 +47,16 @@
 > and (reader 24) missing terminal boundaries between a wholly read premise
 > and a wholly read ask — and (reader 25) active reduced-relative possessive
 > universals `Everyone V-ing P has Q`, guarded by opt-in present-participle
-> morphology and emitted as `Quantified(V(P), have(Q))`. Cumulative movement
-> from Phase A is +53 / +48 fully-read premise instances and +3 / +6
+> morphology and emitted as `Quantified(V(P), have(Q))` — and (reader 26)
+> plural-agreeing positive possessive universals `All CLSs have P`, using
+> positive `Quantified` facts and the existing negative-chain path. Cumulative
+> movement from Phase A is +60 / +52 fully-read premise instances and +4 / +6
 > stack-ready stories on dev-train / dev-holdout, with no
-> verdict regression or hazard increase; truth-scope vetoes improve by 43 / 35, while
-> holdout collision/quarantine improve 12→9 / 24→18. Twenty-five construction classes
+> verdict regression or hazard increase; truth-scope vetoes improve by 50 / 39, while
+> holdout collision/quarantine improve 12→9 / 24→18. Twenty-six construction classes
 > are served. The holdout stack-ready threshold is now exceeded, but the
-> conjunctive Phase C gate remains unmet (fully read 773/1647 and 769/1607 vs
-> 852/850; vetoes 623/579 vs ≤499/460; stack-ready stories 14/11 vs ≥22/10).
+> conjunctive Phase C gate remains unmet (fully read 780/1647 and 773/1607 vs
+> 852/850; vetoes 616/575 vs ≤499/460; stack-ready stories 15/11 vs ≥22/10).
 > Next re-survey the remaining exact coordination and conditional families; the
 > unbought outer-quantified verbal relative, surveyed `there is`, direct passive-agent, and unresolved
 > ground-pronoun candidates remain banked pending composition, lexical infrastructure,
@@ -78,6 +80,44 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 40 (2026-07-21): Phase B reader 26 — plural positive possessive universals; +7/+4 fully read, +1 train solve
+
+One reader serves **“All CLSs have P.”** Plural agreement licenses a singular
+class key while leaving the possessed predicate echo-exact. Relative markers,
+extra verbs, sign, modality, coordination, quantified objects, and merged
+counted nouns refuse, preventing inner relative-clause `have` surfaces and
+cardinality-bearing material from being flattened into universals.
+
+Fifteen synthetic pins cover exact emission, named instantiation, a missing-
+membership null, and twelve adjacent refusals. The reader matches 7 verdict
+instances / 3 stories on train and 4 / 2 on holdout (9 / 3 and 7 / 3 when text
+golds are included).
+
+**All 2,280 tests pass; scratch lint has 0 errors and the same eight warnings;
+curated is 65/65 twice.** All eight standard DEV diffs are NEUTRAL. The grouped
+logic train diff safely SOLVES one item with 0 BROKE and 0 DECL→WRONG; holdout
+is NEUTRAL. Outcomes become train 21 correct / 1 pre-existing poisoned-text
+wrong / 472 declined and remain holdout 4 / 0 / 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1340→1340 | 773→780 (+7) | 18/14→19/15 (+1/+1) | 7 / 3 | 623→616 (−7) |
+| dev-holdout | 1316→1316 | 769/1607→773/1607 (+4) | 17/11→17/11 | 4 / 2 | 579→575 (−4) |
+
+The solve composes `horse → have hooves` with `human → not have hooves`;
+existing `synth/negative-chain` derives `human → not horse` and refutes the
+existential query. No inference code was added. Hazards remain neutral.
+
+Cumulative recorded-frame state is 780/1647 and 773/1607 fully read, 616/575
+truth-scope vetoes, 15/11 stack-ready stories, collision 8/9, and quarantine
+16/18. Twenty-six classes are served. No TEST look was spent.
+
+**Next:** regenerate the one-away frontier, prioritizing exact cross-split
+families and the remaining train stack deficit. Avoid lexical/coreference
+guesses and keep later inference consumers separate from premise readers.
+
+---
 
 # Session 39 (2026-07-21): Phase B reader 25 — active participial possessive universals; +6 train fully read, +1 train stack-ready story
 
