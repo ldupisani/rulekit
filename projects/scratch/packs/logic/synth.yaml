@@ -194,6 +194,25 @@ rules:
     emit:
       - {fact: atom, entity: X, pred: Q, polarity: POL}
 
+  # Phase B reader 6: the negative-antecedent ground conditional fires on
+  # an EXPLICIT negative atom — gc(x: ¬P→[¬]Q), ¬P(x)  ⊢  [¬]Q(x). An
+  # undecided antecedent fires nothing (open world: not knowing P(x) is
+  # false never establishes ¬P(x)). ⚠ DELIBERATELY NO `unless` (the
+  # equivalence / disj-conditional-fire precedent): if the consequent's
+  # opposite is already stored the emission must COLLIDE, so quarantine
+  # (contradictory premises → decline) and the reductio engine's throwaway
+  # store both observe the contradiction instead of a silent suppression.
+  # The contrapositive (¬Q(x) ⊢ P(x)) therefore needs NO synth of its own:
+  # reductio assumes ¬P, this rule emits Q, the collision with the stated
+  # ¬Q refutes the hypothesis, and P commits — pinned in
+  # test_folio_ground_conditional.py::test_contrapositive_comes_free_via_reductio.
+  - id: synth/ground-conditional-fire
+    when:
+      - {fact: ground_conditional, entity: X, pred: P, then_pred: Q, then_polarity: POL}
+      - {fact: atom, entity: X, pred: P, polarity: false}
+    emit:
+      - {fact: atom, entity: X, pred: Q, polarity: POL}
+
   # ---- Stage 9e: the stated alias (identity of names) ----------------------
   # alias(A,B), P(A)  ⊢  P(B) — and the mirror, because identity is
   # symmetric. Both polarities carry: an identity transfers what is DENIED

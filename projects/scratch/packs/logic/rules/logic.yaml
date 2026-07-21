@@ -692,6 +692,55 @@ rules:
     emits:
       - {fact: disjunctive_conditional, entity: "{subj}", left: "{l}", right: "{r}", then_pred: "{c}", then_polarity: false, exclusive: true}
 
+  # Phase B reader 6: the negative-antecedent same-entity ground conditional
+  # — "If NAME is not P, then NAME is Q" (repeated name, same_lemma-pinned,
+  # the 9i precedent) and "If NAME is not P, then he is Q" (the subject
+  # pronoun is grammatically bound inside the construction and consumed as
+  # skeleton, exactly as Stage 1 consumes 'it'/'they'). Semantics
+  # ¬P(e) → Q(e), held by the dedicated GROUND fact — a name must never
+  # ride Conditional.cls (that fact is inert without a membership premise;
+  # the delphi plan pins the boundary). Whole-construction or nothing:
+  # 'not' is consumed as the STRUCTURAL negation, and both spans refuse
+  # further negation, coordination, and either/neither marking, so the
+  # measured coordinated surfaces (Mike/Emily/Clyde/Thomas/Carol) stay
+  # whole-unread. A DIFFERENT name in the consequent is a cross-entity
+  # conditional: it fails same_lemma and stays unread. The negative-
+  # consequent anaphoric variant ("then they are not paid ...") and the
+  # 'she' twin are BANKED — each has no cross-split buyer yet.
+  - id: logic/ground-conditional-not-then-name-is
+    phase: read
+    match:
+      sentence:
+        - {lit: if, at_start: true}
+        - {slot: subj, type: name, blocks_skipped: indefinite_article}
+        - {lit: is}
+        - {lit: not}
+        - {slot: p, span: true, span_blocks: [negation, conjunction, disjunctive_marker, either_marker, neither_marker]}
+        - {lit: then}
+        - {slot: subj2, type: name, blocks_skipped: indefinite_article}
+        - {lit: is}
+        - {slot: q, span: true, span_blocks: [negation, conjunction, disjunctive_marker, either_marker, neither_marker]}
+    where:
+      - {same_lemma: [subj, subj2]}
+    emits:
+      - {fact: ground_conditional, entity: "{subj}", pred: "{p}", then_pred: "{q}", then_polarity: true}
+
+  - id: logic/ground-conditional-not-then-he-is
+    phase: read
+    match:
+      sentence:
+        - {lit: if, at_start: true}
+        - {slot: subj, type: name, blocks_skipped: indefinite_article}
+        - {lit: is}
+        - {lit: not}
+        - {slot: p, span: true, span_blocks: [negation, conjunction, disjunctive_marker, either_marker, neither_marker]}
+        - {lit: then}
+        - {lit: he}
+        - {lit: is}
+        - {slot: q, span: true, span_blocks: [negation, conjunction, disjunctive_marker, either_marker, neither_marker]}
+    emits:
+      - {fact: ground_conditional, entity: "{subj}", pred: "{p}", then_pred: "{q}", then_polarity: true}
+
   - id: logic/disj-ground-either
     phase: read
     match:

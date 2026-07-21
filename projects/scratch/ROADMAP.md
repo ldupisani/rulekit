@@ -1275,3 +1275,88 @@ Marvin is an extraterrestrial` and holdout's anaphoric `If Leon is not pursuing
 a bachelor's degree, then he is a professor`. This needs a dedicated ground
 implication fact and synth; do not encode a name as `Conditional.cls` or mix in
 cross-entity/modal conditionals.
+
+## Phase B reader 6 — negative-antecedent same-entity ground conditional (2026-07-21)
+
+The family above is served by a dedicated fact: **“If NAME is not P, then
+NAME/he is Q”** → `GroundConditional(entity, pred, then_pred, then_polarity)`,
+semantics ¬P(e) → Q(e). The negation is STRUCTURAL (the reading consumes
+`not` as skeleton, so `pred` holds plain P), and a name never rides
+`Conditional.cls`. Two pack rules: the repeated-name surface pinned by
+`same_lemma` (the 9i precedent) and the anaphoric surface consuming the
+grammatically bound subject pronoun `he` as skeleton (Stage 1's `it`/`they`
+discipline). Both spans refuse negation, coordination, and either/neither
+marking, so the coordinated surfaces (Mike/Emily/Clyde/Thomas/Carol) stay
+whole-unread. Cross-entity consequents fail `same_lemma`. The
+negative-consequent anaphoric variant (`If Nancy is not a teacher, then they
+are not paid by the school` — one train story, no holdout twin) and the `she`
+twin are BANKED without cross-split buyers. Neither `pred` nor `then_pred`
+decomposes (non-monotone antecedent position; a false-polarity consequent
+would widen under stripping).
+
+One synth, `synth/ground-conditional-fire`: gc + explicit `Atom(e, P,
+polarity=false)` ⊢ `Atom(e, Q, then_polarity)`, deliberately `unless`-free
+(the equivalence/disj-conditional precedent) so an opposite consequent
+COLLIDES. That choice makes the contrapositive FREE: the 9i reductio engine
+assumes ¬P, this synth emits Q, the collision with a stated ¬Q refutes the
+hypothesis, and P commits — pinned as
+`test_contrapositive_comes_free_via_reductio`; no tollens synth exists or is
+needed.
+
+Synthetic contract (10 pins): exact fact shape on both surfaces,
+cross-entity refusal, positive-antecedent refusal, coordinated-antecedent
+refusal, banked negative-consequent refusal, explicit-antecedent fire,
+open-world undecided antecedent, reductio contrapositive, and
+contradictory-consequent quarantine. **pytest 1995 passed; scratch lint 0
+errors; curated 65/65.** The fact kind touches the shared kernel
+(model/patterns/schemas registration), so the complete matrix ran as live
+blast radius: all eight standard snapshot diffs NEUTRAL (difg dev, GSM8K
+dev-train/dev-holdout, ASDiv, SVAMP, MAWPS, SciBench, FOLIO dev — 0 BROKE,
+0 DECL→WRONG), and both folio-with-logic comparisons item-level neutral in
+OUTCOME AND REASON (train 20 correct / 1 persistent poisoned-text wrong /
+473 declined; holdout 1 / 0 / 424).
+
+### Incremental reader movement
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1333→1333 | 730→732 (+2) | 16/12→16/12 | 2 / 1 | 660→658 (-2) |
+| dev-holdout | 1300→1302 (+2) | 733→735 (+2) | 8/7→8/7 | 2 / 1 | 605→603 (-2) |
+
+The item-level movers are exactly the four buyer items (both Marvin items,
+both Leon items) and nothing else. Bycatch: holdout's diagnostic
+agreement-ambiguity count IMPROVES 53→51 — before this reader the permissive
+fold leaked `Membership('leon','degree')` out of the conditional's
+antecedent (the pinned if-antecedent-leak class, always sub-verdict); the
+whole-construction read stops the leak. No hazard count moves on either
+split; no verdict converts (the Marvin/Leon stacks still carry other
+blocked premises — Leon's conjoined ground denial is coordination-unread,
+Marvin's needs the compound-cls universal).
+
+Six construction classes are served. Cumulative campaign state: 732/1647
+and 735/1602 fully-read premises, 658 and 603 truth-scope vetoes, and 12
+and 7 stack-ready stories — all still below the Phase C thresholds
+(852/850, ≤499/460, ≥22/10).
+
+⚠ **Classifier regeneration note (this session):** the throwaway Phase A
+classifier was rebuilt from the recorded definitions. It reproduces the
+premise universe (1647/1602 over the actionable decline pool), fact-bearing,
+truth-scope vetoes, hazards (quarantine counts QUARANTINED FACTS, collision
+counts items), and every reader's incremental movement EXACTLY, but its
+fully-read total sits a CONSTANT −4 (train) / −11 (holdout) below the
+recorded scale at both endpoints, and its stack-ready count −4/−2 items —
+some Phase A blocker nuance was not recovered. Movement (deltas) is
+frame-independent and is what the table above reports; cumulative numbers
+are stated in the RECORDED frame by adding deltas to the reader-5 totals.
+
+The mandatory banked-zero recheck remains **zero**: the new keys carry no
+`_naive_singular` `-se/-ce/-ze` ending, no CamelCase entity, and no
+represented verbal-universal conclusion joins them. Do-support negation and
+compound generics keep their recorded estimates (no join-surface change for
+`have`/`do` keys).
+
+**Next:** the priced `entity-raw-other` and passive families are still
+banked on composition/lexical infrastructure (reader 3's record). Re-price a
+narrow passive or relative-clause family per the Phase A build order, and
+re-survey compound generics and `entity-in-raw-if` for a new cross-split
+buyer now that six classes are served.

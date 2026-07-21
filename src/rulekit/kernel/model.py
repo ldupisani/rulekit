@@ -466,6 +466,43 @@ class DisjunctiveConditional(Fact):
 
 
 @dataclass(frozen=True)
+class GroundConditional(Fact):
+    """A GROUND implication over one named entity whose antecedent is a
+    NEGATED predicate — the negative-antecedent same-entity conditional
+    (Phase B reader 6): "If Marvin is not from Earth, then Marvin is an
+    extraterrestrial" -> ¬from-earth(m) → extraterrestrial(m). The negation
+    is STRUCTURAL (the reading consumes 'not' as skeleton), so `pred` holds
+    the plain predicate P of ¬P(e); there is deliberately no antecedent-
+    polarity field — a positive-antecedent ground surface ("If Nancy is a
+    teacher, ...") already reads as a name-classed Conditional and must not
+    acquire a second representation here.
+
+    Same-entity by construction: the repeated-name surface is pinned by
+    `same_lemma`, the anaphoric surface consumes the grammatically bound
+    subject pronoun as skeleton. A DIFFERENT name in the consequent is a
+    cross-entity conditional and stays whole-unread (monotone-safe).
+
+    Fired only by synth/ground-conditional-fire on an EXPLICIT negative
+    atom of the same entity and pred; an undecided antecedent fires
+    nothing (open world). Neither `pred` nor `then_pred` decomposes (not
+    in _DECOMPOSABLE_FIELDS): the antecedent position is non-monotone
+    under the structural negation, and the consequent may carry
+    then_polarity false, where stripping widens the denial."""
+
+    entity: str
+    pred: str
+    then_pred: str
+    then_polarity: bool = True
+
+    def key(self) -> tuple:
+        return ("logic-ground-conditional", self.entity, self.pred,
+                self.then_pred)
+
+    def value_part(self) -> Any:
+        return self.then_polarity
+
+
+@dataclass(frozen=True)
 class EnumeratedDisjunction(Fact):
     """An EXHAUSTIVE n-way class disjunction licensed by a COUNTED
     enumeration: "There are six types of wild turkeys: A, B, …, and F"

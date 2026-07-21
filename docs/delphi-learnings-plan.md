@@ -1,9 +1,10 @@
 # The breadth-first premise-reader campaign — FOLIO logic → full integration
 
-**ACTIVE. Phase A and Phase B readers 1–5 completed 2026-07-21: ground
+**ACTIVE. Phase A and Phase B readers 1–6 completed 2026-07-21: ground
 both-or-neither equivalence, unrestricted bare-plural disjunction, and negative
 two-article indefinite generics, plus single-antecedent verbal “Everyone who”
-implications and verbal-restrictor conditionals.**
+implications, verbal-restrictor conditionals, and the negative-antecedent
+same-entity ground conditional.**
 
 ## Context
 
@@ -184,6 +185,16 @@ Incremental movement is +2 / +3 fully-read premises, -2 / -3 truth-scope
 vetoes, and +0 / +0 stack-ready stories, with no verdict or hazard movement.
 Five construction classes are now served; numeric Phase C thresholds still
 bind independently.
+
+Reader 6 serves **“If NAME is not P, then NAME/he is Q”** through the new
+dedicated `GroundConditional` fact (¬P(e) → Q(e), structural negation, a name
+never rides `Conditional.cls`) and one `unless`-free fire synth — the
+contrapositive comes free through the Stage 9i reductio engine and is pinned,
+not built. Incremental movement is +2 / +2 fully-read premises, -2 / -2
+truth-scope vetoes, and +0 / +0 stack-ready stories, with no verdict or
+hazard movement and one diagnostic improvement (the fold's if-antecedent
+Membership leak stops on the served holdout story). Six construction classes
+are served; every numeric Phase C threshold still binds.
 
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key

@@ -3,21 +3,28 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–5 now serve
-> ground both-or-neither equivalence, unrestricted bare-plural disjunction, and negative
-> two-article indefinite generics, plus single-antecedent verbal “Everyone who” implications.
-> Reader 5 adds verbal-restrictor `If a CLS V P, then it is Q` conditionals. Cumulative
-> movement from Phase A is +10 / +12 fully-read
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–6 now serve
+> ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
+> two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
+> verbal-restrictor `If a CLS V P, then it is Q` conditionals, and (reader 6, 2026-07-21)
+> the negative-antecedent same-entity ground conditional `If NAME is not P, then NAME/he
+> is Q` via a dedicated `GroundConditional` fact + unless-free fire synth — the
+> contrapositive comes FREE through the 9i reductio engine (pinned), and the fold's
+> if-antecedent Membership leak on the Leon story stops as bycatch. Cumulative
+> movement from Phase A is +12 / +14 fully-read
 > premise instances and +1 / +2 stack-ready stories on dev-train / dev-holdout, with no
-> verdict or hazard movement; truth-scope vetoes improve by 6 / 9. Five construction classes
-> are served, but all numeric Phase C thresholds remain unmet. Reader 6 should price the
-> negative-antecedent same-entity ground conditional family with a dedicated fact/synth; the
-> surveyed `there is` and direct passive-agent candidates remain
-> banked because their cross-split joins require additional composition or lexical
-> infrastructure. Reader 4 also added an opt-in `single_word` slot gate that refuses lossy
-> particle/perfect-verb keys and is dormant for all pre-existing rules. The
+> verdict or hazard movement; truth-scope vetoes improve by 8 / 11. Six construction classes
+> are served, but all numeric Phase C thresholds remain unmet (fully read 732/1647 and
+> 735/1602 vs 852/850; vetoes 658/603 vs ≤499/460; stack-ready stories 12/7 vs ≥22/10).
+> Reader 7 should re-price a narrow passive or relative-clause family per the Phase A build
+> order; the surveyed `there is`, direct passive-agent, negative-consequent `they`, and
+> `she`-twin candidates remain banked because their cross-split joins require additional
+> composition or lexical infrastructure (or a second-split buyer). Reader 4's opt-in
+> `single_word` slot gate stays dormant for all pre-existing rules. The
 > `_naive_singular`, CamelCase-name, and verbal-universal-ask banks still have zero joins.
-> No TEST look was spent.
+> ⚠ The regenerated movement classifier reproduces every recorded metric and all reader
+> deltas exactly except a constant fully-read offset (−4/−11) — see the reader-6 ROADMAP
+> record before comparing absolute totals. No TEST look was spent.
 >
 > **Campaign status (2026-07-20): PARKED.** The difg/SciBench physics-formula
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
