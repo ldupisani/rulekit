@@ -1058,6 +1058,36 @@ rules:
     emits:
       - {fact: equivalence, entity: "{subj}", left: "{l}", right: "{r}"}
 
+  # Phase B reader 21: the fully repeated equivalence surface —
+  # "X is either both A and B or neither A nor B". The repeated negative
+  # branch is not decorative: same_phrase guards prove its two predicates
+  # are exactly the positive branch's predicates before the existing
+  # Equivalence fact is licensed. Articles are grammatical skeleton and
+  # auto-skip; sign, nested coordination, mismatched/swapped repeats, and
+  # trailing larger constructions remain whole-unread.
+  - id: logic/equivalence-ground-both-or-neither-repeated
+    phase: read
+    match:
+      sentence:
+        - {slot: subj, type: proper_name, at_start: true, blocks_skipped: indefinite_article}
+        - {lit: is}
+        - {lit: either}
+        - {lit: both}
+        - {slot: l, span: true, span_blocks: [negation, conjunction, disjunctive_marker, neither_marker]}
+        - {lit: and}
+        - {slot: r, span: true, span_blocks: [negation, conjunction, disjunctive_marker, neither_marker]}
+        - {lit: or}
+        - {lit: neither}
+        - {slot: l2, span: true, span_blocks: [negation, conjunction, disjunctive_marker, neither_marker]}
+        - {lit: nor}
+        - {slot: r2, span: true, span_blocks: [negation, conjunction, disjunctive_marker, neither_marker]}
+        - {lit: ".", consume_skipped: true}
+    where:
+      - {same_phrase: [l, l2]}
+      - {same_phrase: [r, r2]}
+    emits:
+      - {fact: equivalence, entity: "{subj}", left: "{l}", right: "{r}"}
+
   - id: logic/qdisj-all-are-bare
     phase: read
     match:

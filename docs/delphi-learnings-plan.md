@@ -1,6 +1,6 @@
 # The breadth-first premise-reader campaign — FOLIO logic → full integration
 
-**ACTIVE. Phase A and Phase B readers 1–20 completed 2026-07-21: ground
+**ACTIVE. Phase A and Phase B readers 1–21 completed 2026-07-21: ground
 both-or-neither equivalence, unrestricted bare-plural disjunction, and negative
 two-article indefinite generics, plus single-antecedent verbal “Everyone who”
 implications, verbal-restrictor conditionals, and the negative-antecedent
@@ -12,8 +12,8 @@ event universals, named ground do-support event denials, bare-plural
 future-event exclusive disjunctions, and future-negative indefinite
 generics, named mixed possession/event disjunctions, and singular positive
 possessive universals, plural-generic copular-to-verbal conditionals,
-indefinite-generic verbal conditionals, and reduced-relative people
-universals.**
+indefinite-generic verbal conditionals, reduced-relative people universals,
+and fully repeated ground both-or-neither equivalences.**
 
 ## Context
 
@@ -346,6 +346,16 @@ names remain exact. Incremental movement is +0 / +1 fully-read premises,
 0 / −1 truth-scope vetoes, and +0 / +1 stack-ready stories on dev-train /
 dev-holdout. One holdout item safely converts declined → correct; no hazard
 increases. Twenty classes are served; every Phase C threshold still binds.
+
+Reader 21 serves fully repeated ground equivalences **“NAME is either both A
+and B or neither A nor B.”** A reusable `same_phrase` rule predicate requires
+the two negative-branch spans to render exactly like the positive branch
+before emitting the existing `Equivalence` fact. Incremental movement is
++0 / +2 fully-read premises, 0 / −2 truth-scope vetoes, and +0 / +1
+stack-ready stories on dev-train / dev-holdout. Two holdout items safely
+convert declined → correct through existing equivalence propagation,
+disjointness, reductio, and modus tollens. Twenty-one classes are served;
+every Phase C threshold still binds.
 
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key

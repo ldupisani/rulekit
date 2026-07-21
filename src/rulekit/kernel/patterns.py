@@ -591,6 +591,16 @@ def _check_where(
             }
             if len(lemmas) > 1:
                 return False
+        if pred.same_phrase is not None:
+            # Unlike same_lemma, this predicate is designed for span slots:
+            # compare the exact canonical value each slot would emit. Missing
+            # optional slots do not create equality evidence, so every named
+            # slot must be bound before the predicate can pass.
+            if any(s not in slots for s in pred.same_phrase):
+                return False
+            values = {_slot_value(slots[s], None) for s in pred.same_phrase}
+            if len(values) > 1:
+                return False
         if pred.distinct is not None:
             # (lemma, label) pairs, not bare lemma alone — mining candidate
             # labeled-entity-relations: "Jar B has 12 more marbles than jar

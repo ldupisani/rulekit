@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–20 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–21 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -38,12 +38,14 @@
 > indefinite-generic verbal conditionals `If a/an CLS V P, [then] they V2 Q`
 > — and (reader 20) reduced-relative people universals `People V P are Q`,
 > with a one-unit capitalized plural predicate folded consistently through
-> the existing plural-agreement contract. Cumulative movement from Phase A is +47 / +34 fully-read
-> premise instances and +2 / +3 stack-ready stories on dev-train / dev-holdout, with no
-> verdict regression or hazard increase; truth-scope vetoes improve by 43 / 28, while
-> holdout collision/quarantine improve 12→9 / 24→18. Twenty construction classes
+> the existing plural-agreement contract — and (reader 21) fully repeated
+> `NAME is either both A and B or neither A nor B` equivalences, guarded by
+> exact repeated-span equality. Cumulative movement from Phase A is +47 / +36 fully-read
+> premise instances and +2 / +4 stack-ready stories on dev-train / dev-holdout, with no
+> verdict regression or hazard increase; truth-scope vetoes improve by 43 / 30, while
+> holdout collision/quarantine improve 12→9 / 24→18. Twenty-one construction classes
 > are served, but all numeric Phase C thresholds remain unmet (fully read 767/1647 and
-> 755/1602 vs 852/850; vetoes 623/586 vs ≤499/460; stack-ready stories 13/8 vs ≥22/10).
+> 757/1602 vs 852/850; vetoes 623/584 vs ≤499/460; stack-ready stories 13/9 vs ≥22/10).
 > Next re-survey the remaining exact coordination and conditional families; the
 > unbought outer-quantified verbal relative, surveyed `there is`, direct passive-agent, and unresolved
 > ground-pronoun candidates remain banked pending composition, lexical infrastructure,
@@ -67,6 +69,50 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 35 (2026-07-21): Phase B reader 21 — repeated both-or-neither equivalence; +0/+2 fully read, +2 holdout solves
+
+One reader serves **“NAME is either both A and B or neither A nor B.”** The
+surface states `(A ∧ B) ∨ (¬A ∧ ¬B)`, exactly the existing ground
+`Equivalence(A, B)` contract. A new opt-in `same_phrase` where-predicate
+compares canonical slot values—including spans—so the reader only fires when
+the negative branch repeats both positive predicates in the same order.
+Mismatched and swapped repeats remain whole-unread.
+
+Eleven synthetic pins cover exact emission, positive and negative propagation,
+composition through disjointness plus reductio, and seven refusals for
+ordinary disjunction/conjunction, mismatched or swapped repeats, signed and
+trailing larger constructions, and indefinite subjects.
+
+**All 2,206 tests pass; scratch lint has 0 errors and the same eight warnings;
+curated is 65/65 twice.** All eight standard DEV snapshot diffs are NEUTRAL.
+The FOLIO-with-logic train diff is neutral and holdout safely SOLVES two
+items, with 0 BROKE and 0 DECL→WRONG. Outcomes become train 19 correct / 1
+pre-existing poisoned-text wrong / 474 declined and holdout 4 / 0 / 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1340→1340 | 767→767 | 17/13→17/13 | 0 / 0 | 623→623 |
+| dev-holdout | 1304→1304 | 755→757 (+2) | 9/8→11/9 (+2/+1) | 2 / 1 | 586→584 (−2) |
+
+The buyer story already states that humans are animals, flowers are plants,
+and no animals are plants. Equating a named subject's human and flower
+predicates makes their positive branch inconsistent; the existing reductio
+engine derives `not human`, and modus tollens through `pupil → human` derives
+`not pupil`. The positive and negative pupil questions therefore both move
+to their correct verdicts. Hazards remain neutral.
+
+Cumulative recorded-frame state is 767/1647 and 757/1602 fully read, 623/584
+truth-scope vetoes, 13/9 stack-ready stories, collision 8/9, and quarantine
+16/18. Twenty-one construction classes are served. The holdout stack-story
+threshold is now one story away, but all Phase C thresholds remain conjunctive
+(852/850, ≤499/460, ≥22/10). No TEST look was spent.
+
+**Next:** continue the one-reader-away holdout survey, but do not optimize only
+for the final holdout stack story: the fully-read and veto thresholds remain
+the larger gaps. Prefer a cross-split reader when its inference keys are exact.
+
+---
 
 # Session 34 (2026-07-21): Phase B reader 20 — reduced-relative people universals; +0/+1 fully read, +1 holdout solve
 

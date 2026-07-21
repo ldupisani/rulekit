@@ -2063,3 +2063,40 @@ are served; no TEST look was spent.
 **Next:** continue the one-reader-away holdout survey. Price compound generic,
 existential, and two-blocker conditional candidates by actual end-to-end key
 closure before selecting the next increment.
+
+## Phase B reader 21 — repeated both-or-neither equivalence (2026-07-21)
+
+The next holdout-first buyer is **“NAME is either both A and B or neither A
+nor B.”** This surface is exactly `A(NAME) ↔ B(NAME)`, represented by the
+existing `Equivalence` fact. The new opt-in matcher predicate `same_phrase`
+compares canonical rendered values for scalar or span slots; two guards prove
+that the repeated negative predicates equal the positive predicates in order.
+Mismatched and swapped repeats therefore refuse instead of licensing a false
+equivalence.
+
+Eleven synthetic pins cover exact emission, both propagation polarities, the
+full disjointness/reductio composition path, and seven adjacent/larger
+refusals. **pytest 2,206 passed; scratch lint 0 errors with the same eight
+warnings; curated 65/65 twice.** All eight standard DEV diffs are NEUTRAL.
+FOLIO-with-logic is neutral on train and safely SOLVES two holdout items with
+0 BROKE / 0 DECL→WRONG.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1340→1340 | 767→767 | 17/13→17/13 | 0 / 0 | 623→623 |
+| dev-holdout | 1304→1304 | 755→757 (+2) | 9/8→11/9 (+2/+1) | 2 / 1 | 586→584 (−2) |
+
+In the buyer story, `human → animal`, `flower → plant`, and `animal ∩ plant
+= ∅`. The new equivalence makes the positive human/flower branch
+inconsistent, so existing reductio derives `not human`; `pupil → human` then
+contraposes to `not pupil`. Both pupil-polarity questions convert correctly,
+moving holdout outcomes from 2/0/423 to 4/0/421. Hazards are neutral.
+
+Cumulative state is 767/1647 and 757/1602 fully read, 623/584 vetoes, 13/9
+stack-ready stories, collision 8/9, and quarantine 16/18. Twenty-one classes
+are served; no TEST look was spent.
+
+**Next:** the holdout stack-story threshold is one story away, but thresholds
+are conjunctive. Continue pricing exact one-away holdout readers while
+favoring any cross-split construction that also reduces the much larger
+fully-read and veto gaps.

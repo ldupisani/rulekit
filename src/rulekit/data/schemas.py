@@ -413,6 +413,10 @@ class WherePredicate(StrictModel):
     """Closed set of cross-slot constraints."""
 
     same_lemma: list[str] | None = None
+    # Opt-in equality for whole rendered slot values, including span slots.
+    # `same_lemma` deliberately skips spans; constructions with repeated
+    # multi-unit phrases need exact phrase identity, not head-lemma identity.
+    same_phrase: list[str] | None = None
     distinct: list[str] | None = None
     # mining candidate qualified-measure-keys: the SAME self-reference
     # guard as `distinct` (lemma, label), plus each slot's own `qualifier`
@@ -456,7 +460,7 @@ class WherePredicate(StrictModel):
     def _one(self) -> "WherePredicate":
         set_ = [
             v for v in (
-                self.same_lemma, self.distinct, self.distinct_measure,
+                self.same_lemma, self.same_phrase, self.distinct, self.distinct_measure,
                 self.name_count, self.absent, self.unbound,
                 self.slot_not_category,
             )
