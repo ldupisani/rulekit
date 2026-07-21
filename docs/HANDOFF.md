@@ -3,14 +3,16 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–4 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–5 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, and negative
 > two-article indefinite generics, plus single-antecedent verbal “Everyone who” implications.
-> Cumulative movement from Phase A is +8 / +9 fully-read
+> Reader 5 adds verbal-restrictor `If a CLS V P, then it is Q` conditionals. Cumulative
+> movement from Phase A is +10 / +12 fully-read
 > premise instances and +1 / +2 stack-ready stories on dev-train / dev-holdout, with no
-> verdict or hazard movement. Four construction classes are served, but all numeric Phase C
-> thresholds remain unmet. Reader 5 should re-survey compound generics and
-> `entity-in-raw-if`; the surveyed `there is` and direct passive-agent candidates remain
+> verdict or hazard movement; truth-scope vetoes improve by 6 / 9. Five construction classes
+> are served, but all numeric Phase C thresholds remain unmet. Reader 6 should price the
+> negative-antecedent same-entity ground conditional family with a dedicated fact/synth; the
+> surveyed `there is` and direct passive-agent candidates remain
 > banked because their cross-split joins require additional composition or lexical
 > infrastructure. Reader 4 also added an opt-in `single_word` slot gate that refuses lossy
 > particle/perfect-verb keys and is dormant for all pre-existing rules. The

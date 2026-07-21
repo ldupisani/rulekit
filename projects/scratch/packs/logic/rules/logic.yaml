@@ -533,6 +533,28 @@ rules:
     emits:
       - {fact: conditional, cls: "{cls}", pred: "{p}", then_pred: "{q}", polarity: false}
 
+  # Phase B reader 5: a verbal restrictor with a copular consequence —
+  # "If a CLS V P, then it is Q" means forall e, CLS(e) and V(P)(e) -> Q(e).
+  # This is the existing Conditional contract with the antecedent predicate
+  # rendered exactly like ground-verbal. `single_word` preserves reader 4's
+  # key-safety boundary: particle/perfect merges keep only their base lemma
+  # under `{v}` and therefore stay unread. Coordination, negation, modals, and
+  # a second verb remain separate conditional constructions.
+  - id: logic/conditional-verbal-then-it-is
+    phase: read
+    match:
+      sentence:
+        - {lit: if, at_start: true}
+        - {slot: cls, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal]}
+        - {slot: v, type: nonstate_verb, single_word: true}
+        - {slot: p, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+        - {lit: then}
+        - {lit: it}
+        - {lit: is}
+        - {slot: q, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal]}
+    emits:
+      - {fact: conditional, cls: "{cls}", pred: "{v} {p}", then_pred: "{q}", polarity: true}
+
   # "If someone is P, then they are [not] Q" — the 1-antecedent degenerate
   # form IS a universal (∀x P(x) → [¬]Q(x)); emit quantified directly so the
   # EXISTING instantiation synth serves it, no new machinery

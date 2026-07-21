@@ -1220,3 +1220,58 @@ represented verbal-universal conclusion joins them. Keep those banks closed.
 direct passive-agent and existential families remain banked under reader 3's
 recorded composition/vocabulary blockers; do not reopen them without a new
 cross-split buyer.
+
+## Phase B reader 5 — verbal-restrictor conditional (2026-07-21)
+
+The `entity-in-raw-if` family **“If a CLS V P, then it is Q”** is now served by
+the existing `Conditional(cls, pred, then_pred, polarity=true)` contract. The
+class membership and verbal antecedent must both hold before the existing
+conditional-instantiation synth derives the copular consequence. Antecedent
+keys render through the same `{v} {p}` path as `ground-verbal`; reader 4's
+opt-in `single_word` gate refuses particle/perfect merges that would lose part
+of the predicate.
+
+The landed train key is `competitive sport + involves spectators betting on
+small game → banned`; the holdout key is `technique + provides spatial
+resolution of brains → measurement of brain activity`. No vocabulary, fact
+type, synth, consumer, or kernel code changes. Negated consequences,
+coordinated or modal antecedents, copular antecedents, and particle verbs remain
+separate constructions.
+
+Synthetic contract: exact `Conditional` shape, copular-antecedent minimal
+pair, full class+verbal named-witness composition, and refusals for negative
+consequences, coordination, modality, and particle-key loss. **pytest 1985
+passed; scratch lint 0 errors; curated 65/65.** All eight standard snapshots
+and both folio-with-logic comparisons are NEUTRAL at **0 BROKE / 0
+DECL→WRONG**.
+
+### Incremental reader movement
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1331→1333 (+2) | 728→730 (+2) | 16/12→16/12 | 2 / 1 | 662→660 (-2) |
+| dev-holdout | 1297→1300 (+3) | 730→733 (+3) | 8/7→8/7 | 3 / 1 | 608→605 (-3) |
+
+No verdict converts. Hazards remain at the Phase A baselines: collision 8/12,
+quarantine 16/24, ambiguous readings 51/33, and clause split 0/0
+(train/holdout). Folio-with-logic remains 20 correct / 1 persistent
+poisoned-text wrong / 473 declined on train and 1 / 0 / 424 on holdout.
+
+Cumulative campaign state is 730/1647 and 733/1602 fully-read premises, 660
+and 605 truth-scope vetoes, and 12 and 7 stack-ready stories. Five construction
+classes are served, but the Phase C thresholds remain 852/850 fully read,
+499/460 truth-scope vetoes, and 22/10 stack-ready stories.
+
+The mandatory banked-zero recheck remains **zero**: no verdict moved, the new
+keys contain no `_naive_singular` ending or CamelCase entity, and no represented
+verbal-universal conclusion joins them. Do-support negation also remains at
+zero estimated stack gain on both splits (63/29 train items/stories; 41/20
+holdout). Compound generics remain asymmetric at zero train versus one holdout
+estimated stack-ready story.
+
+**Next:** price the remaining cross-split negative-antecedent ground conditional
+family for reader 6: train's repeated-name `If Marvin is not from Earth, then
+Marvin is an extraterrestrial` and holdout's anaphoric `If Leon is not pursuing
+a bachelor's degree, then he is a professor`. This needs a dedicated ground
+implication fact and synth; do not encode a name as `Conditional.cls` or mix in
+cross-entity/modal conditionals.
