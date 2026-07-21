@@ -719,6 +719,31 @@ rules:
     emits:
       - {fact: quantified, cls: "{p.singular}", pred: "{q.singular}", polarity: false}
 
+  # Phase B reader 23: the second-person generic conditional —
+  # "If you are a P, then you are a Q". Repeated generic `you` supplies one
+  # universally bound variable; it is not discourse anaphora and therefore
+  # needs no referent. Requiring both indefinite articles and the overt
+  # comma/then boundary keeps the rule on the nominal generic frame. Signed,
+  # coordinated, modal, verbal, counted, mixed-person, and comma-less siblings
+  # remain whole-unread.
+  - id: logic/conditional-generic-you-are-then-you-are
+    phase: read
+    match:
+      sentence:
+        - {lit: if, at_start: true}
+        - {lit: you}
+        - {lit: are}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: p, span: true, span_blocks: [negation, quantifier, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+        - {lit: ',', consume_skipped: true}
+        - {lit: then}
+        - {lit: you}
+        - {lit: are}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: q, span: true, span_blocks: [negation, quantifier, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+    emits:
+      - {fact: quantified, cls: "{p}", pred: "{q}", polarity: true}
+
   # Phase B reader 22: implicit-restrictor property universals — the dual
   # surfaces "Anything P is Q" (∀x. P→Q) and "No one P is Q"
   # (∀x. P→¬Q). `Anything` and `No one` supply the variable and never enter

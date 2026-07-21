@@ -1,6 +1,6 @@
 # The breadth-first premise-reader campaign — FOLIO logic → full integration
 
-**ACTIVE. Phase A and Phase B readers 1–22 completed 2026-07-21: ground
+**ACTIVE. Phase A and Phase B readers 1–23 completed 2026-07-21: ground
 both-or-neither equivalence, unrestricted bare-plural disjunction, and negative
 two-article indefinite generics, plus single-antecedent verbal “Everyone who”
 implications, verbal-restrictor conditionals, and the negative-antecedent
@@ -13,8 +13,8 @@ future-event exclusive disjunctions, and future-negative indefinite
 generics, named mixed possession/event disjunctions, and singular positive
 possessive universals, plural-generic copular-to-verbal conditionals,
 indefinite-generic verbal conditionals, reduced-relative people universals,
-fully repeated ground both-or-neither equivalences, and implicit-restrictor
-property universals.**
+fully repeated ground both-or-neither equivalences, implicit-restrictor
+property universals, and second-person generic conditionals.**
 
 ## Context
 
@@ -368,6 +368,16 @@ vetoes, and +0 / +1 stack-ready stories on dev-train / dev-holdout. Outcomes
 and hazards remain neutral. Twenty-two classes are served; the holdout
 stack-story threshold is met exactly at 10, while the fully-read, veto, and
 train stack thresholds remain conjunctively unmet.
+
+Reader 23 serves second-person generic conditionals **“If you are a P, then
+you are a Q.”** Repeated generic `you` denotes one universally bound variable,
+so the construction emits positive `Quantified(P, Q)` without discourse
+coreference. Incremental movement is +0 / +5 fully-read premises, 0 / −5
+truth-scope vetoes, and +0 / +0 stack-ready stories on dev-train /
+dev-holdout. The target tennis story becomes premise-complete and derives the
+exact champion-to-professional-player chain; its asks remain unread. Outcomes
+and hazards are neutral. Twenty-three classes are served; the holdout
+stack-story threshold remains met while the other conjunctive thresholds bind.
 
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key

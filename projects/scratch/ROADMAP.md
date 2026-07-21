@@ -2146,3 +2146,45 @@ conjunctively unmet. No TEST look was spent.
 cross-split, while addressing the larger fully-read and veto gaps. Treat the
 conjunctive conclusion consumer exposed here as a separate construction class
 that must earn its own reversible increment.
+
+## Phase B reader 23 — second-person generic conditionals (2026-07-21)
+
+The next holdout buyer is **“If you are a P, then you are a Q.”** In this
+generic frame, repeated `you` is the same universally bound variable—not an
+unresolved reference to a named discourse entity. Requiring indefinite
+articles on both nominal predicates plus the explicit comma/`then` boundary
+keeps the reader narrow. It emits the existing positive `Quantified` fact and
+reuses universal chaining, instantiation, and negative chaining unchanged.
+
+Seventeen synthetic pins cover exact emission, direct named instantiation,
+composition through another universal, a missing-antecedent null, and thirteen
+refusals for signed, coordinated, modal, verbal, counted, mixed-person, and
+comma-less siblings. **pytest 2,242 passed; scratch lint 0 errors with the same
+eight warnings; curated 65/65 twice.** All eight standard DEV and both
+FOLIO-with-logic grouped snapshot diffs are NEUTRAL (0 BROKE / 0 DECL→WRONG).
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1340→1340 | 767→767 | 17/13→17/13 | 0 / 0 | 623→623 |
+| dev-holdout | 1306→1311 (+5) | 759→764 (+5) | 12/10→12/10 | 5 / 1 | 584→579 (−5) |
+
+The one buyer story states that World Tour players are professional tennis
+players, Grand Slam champions are World Tour players, and professional tennis
+umpires are disjoint from professional tennis players. The new fact closes
+the exact positive chain `Grand Slam champion → professional tennis player`
+and lets the existing negative-chain logic propagate the disjointness. All
+premises become fully read across five holdout verdict items. Their asks are
+still unrepresented, so stack readiness and outcomes remain unchanged at
+train 19/1/474 and holdout 4/0/421 (correct/wrong/declined). Hazards are
+neutral.
+
+Cumulative state is 767/1647 and 764/1602 fully read, 623/579 vetoes, 13/10
+stack-ready stories, collision 8/9, and quarantine 16/18. Phase A movement is
++47/+43 fully read, 43/35 fewer truth-scope vetoes, and +2/+5 stack-ready
+stories. Twenty-three classes are served. The holdout stack-story threshold
+remains met, while the fully-read, veto, and train stack thresholds remain
+conjunctively unmet. No TEST look was spent.
+
+**Next:** price the buyer story's now-exposed ask surfaces by exact stored-key
+joins, alongside other cross-split ask gaps. Keep premise readers ahead when
+they buy broader fully-read or stack-ready movement.
