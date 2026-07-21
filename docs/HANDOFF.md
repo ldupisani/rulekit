@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–28 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–29 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -54,18 +54,21 @@
 > they V2 what SUBJECT V3 Q`, preserving the embedded clause inside one exact
 > consequence key — and (reader 28) inclusive two-article indefinite-generic
 > disjunctions `A/An CLS is a/an L or a/an R`, reusing
-> `QuantifiedDisjunction` with bare-`or` semantics. Cumulative movement from
-> Phase A is +63 / +52 fully-read premise instances and +6 / +6
+> `QuantifiedDisjunction` with bare-`or` semantics — and (reader 29)
+> active-participial compound verbal universals `V-ing CLSs V2 P`, using
+> exact participial class keys. Cumulative movement from Phase A is +63 / +53
+> fully-read premise instances and +6 / +7
 > stack-ready stories on dev-train / dev-holdout, with no
-> verdict regression or hazard increase; truth-scope vetoes improve by 53 / 39, while
-> holdout collision/quarantine improve 12→9 / 24→18. Twenty-eight construction classes
+> verdict regression or hazard increase; truth-scope vetoes improve by 53 / 40, while
+> holdout collision/quarantine improve 12→9 / 24→18. Twenty-nine construction classes
 > are served. The holdout stack-ready threshold is now exceeded, but the
-> conjunctive Phase C gate remains unmet (fully read 783/1647 and 773/1607 vs
-> 852/850; vetoes 613/575 vs ≤499/460; stack-ready stories 17/11 vs ≥22/10).
-> Next re-survey the remaining exact coordination and conditional families; the
-> unbought outer-quantified verbal relative, surveyed `there is`, direct passive-agent, and unresolved
-> ground-pronoun candidates remain banked pending composition, lexical infrastructure,
-> or coreference evidence. Reader 4's opt-in
+> conjunctive Phase C gate remains unmet (fully read 783/1647 and 774/1607 vs
+> 852/850; vetoes 613/574 vs ≤499/460; stack-ready stories 17/12 vs ≥22/10).
+> Next re-survey beyond the one-away pool; the remaining train one-away
+> candidates require lexical, passive, definite-description, or coreference
+> infrastructure. The unbought outer-quantified verbal relative, surveyed
+> `there is`, and direct passive-agent candidates remain banked pending
+> composition or infrastructure evidence. Reader 4's opt-in
 > `single_word` slot gate stays dormant for all pre-existing rules.
 > The one-unit-span `_naive_singular` bank is now bought by reader 20;
 > CamelCase-name and verbal-universal-ask banks still have zero joins.
@@ -85,6 +88,47 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 43 (2026-07-21): Phase B reader 29 — participial compound verbal universals; +1 holdout fully read and stack-ready story
+
+One reader serves **“V-ing CLSs V2 P.”** An opt-in present-participle modifier
+plus a plural class head forms the exact membership key; a bare-form main verb
+proves plural agreement and preserves the ground-verbal predicate shape. A
+skipped definite article is blocked, as are finite/adjectival modifiers,
+singular classes, state/modal/signed or coordinated consequences,
+particle/perfect verbs, relatives, and counted tails.
+
+Twenty synthetic pins cover exact emission, named instantiation, a missing-
+membership null, and seventeen adjacent refusals. The refusal work exposed and
+closed definite-article and adverb-sensed particle leaks. The exact survey
+finds one holdout verdict row in one story, plus two text-gold copies, and no
+train rows.
+
+**All 2,339 tests pass; scratch lint has 0 errors and the same eight warnings;
+curated is 65/65 twice.** All eight standard DEV diffs and both grouped logic
+diffs are NEUTRAL. Outcomes remain train 21 correct / 1 pre-existing
+poisoned-text wrong / 472 declined and holdout 4 / 0 / 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1342→1342 | 783→783 | 21/17→21/17 | 0 / 0 | 613→613 |
+| dev-holdout | 1316→1316 | 773→774 (+1) | 17/11→18/12 (+1/+1) | 1 / 1 | 575→574 (−1) |
+
+The buyer now records `hold company → hold several company`; the premise was
+already fact-bearing through a lossy fold, so that count does not rise.
+Koei Tecmo’s longer coordinated class description has no licensed exact
+subclass bridge, leaving the verdict correctly undetermined. Agreement-
+ambiguity diagnostics also decrease by one; no hazard increases.
+
+Cumulative recorded-frame state is 783/1647 and 774/1607 fully read, 613/574
+truth-scope vetoes, 17/12 stack-ready stories, collision 8/9, and quarantine
+16/18. Twenty-nine classes are served. No TEST look was spent.
+
+**Next:** re-survey beyond the one-away pool. The remaining train one-away
+candidates require lexical, passive, definite-description, or coreference
+infrastructure; do not disguise those choices as grammar-only readers.
+
+---
 
 # Session 42 (2026-07-21): Phase B reader 28 — inclusive indefinite-generic disjunctions; +2 train fully read, +1 stack-ready story
 

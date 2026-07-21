@@ -438,6 +438,18 @@ separate inference class. Hazards and outcomes remain neutral. Twenty-eight
 classes are served; the fully-read, veto, and train-stack thresholds remain
 unmet.
 
+Reader 29 serves active-participial compound verbal universals **“V-ing CLSs
+V2 P.”** The participle and singularized plural head form an exact class key;
+the bare-form main verb preserves ground-verbal predicate rendering. Definite
+subjects, finite/adjectival modifiers, singular classes, signed, modal,
+coordinated, state, particle/perfect, relative, and counted siblings refuse.
+Incremental movement is +0 / +1 fully-read premises, 0 / −1 truth-scope
+vetoes, and +0 / +1 stack-ready stories on dev-train / dev-holdout. The buyer
+remains undetermined because its longer coordinated ground class has no exact
+subclass bridge. Agreement ambiguity improves by one; no hazard increases.
+Twenty-nine classes are served; the fully-read, veto, and train-stack
+thresholds remain unmet.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /

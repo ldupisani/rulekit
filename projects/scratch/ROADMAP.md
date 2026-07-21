@@ -2409,3 +2409,42 @@ stack-ready stories. Twenty-eight classes are served. No TEST look was spent.
 **Next:** regenerate the exact one-away frontier. Train stack readiness remains
 the binding story threshold; keep relational substitution and lexical or
 coreference infrastructure separate from premise readers.
+
+## Phase B reader 29 — active-participial compound verbal universals (2026-07-21)
+
+Reader 29 serves **“V-ing CLSs V2 P.”** The opt-in present-participle modifier
+and singularized plural head form the same class key as named copular
+membership; a bare-form main verb proves plural agreement and keeps its exact
+ground-verbal predicate shape.
+
+The modifier blocks a skipped definite article. Finite/adjectival modifiers,
+singular classes, state/modal/signed or coordinated consequences,
+particle/perfect verbs, relatives, and counted tails stay unread. Twenty
+synthetic pins cover exact emission, named instantiation, a missing-membership
+null, and seventeen adjacent refusals; the refusals caught the definite-
+article and adverb-sensed particle leaks before measurement.
+
+**pytest 2,339 passed; scratch lint 0 errors with the same eight warnings;
+curated 65/65 twice.** All eight standard DEV diffs and both FOLIO-with-logic
+grouped diffs are NEUTRAL. Outcomes remain train 21 correct / 1 pre-existing
+poisoned-text wrong / 472 declined and holdout 4 / 0 / 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1342→1342 | 783→783 | 21/17→21/17 | 0 / 0 | 613→613 |
+| dev-holdout | 1316→1316 | 773→774 (+1) | 17/11→18/12 (+1/+1) | 1 / 1 | 575→574 (−1) |
+
+Across all gold kinds the rule appears in three holdout rows / one story and
+no train rows. It emits `hold company → hold several company`; the premise was
+already fact-bearing via a lossy fold. Koei Tecmo’s coordinated ground class
+does not exactly join, so the item safely remains undetermined. Agreement-
+ambiguity diagnostics fall by one and no hazard increases.
+
+Cumulative recorded-frame state is 783/1647 and 774/1607 fully read, 613/574
+vetoes, 17/12 stack-ready stories, collision 8/9, and quarantine 16/18. Phase
+A movement is +63/+53 fully read, 53/40 fewer truth-scope vetoes, and +6/+7
+stack-ready stories. Twenty-nine classes are served. No TEST look was spent.
+
+**Next:** re-survey beyond the one-away pool. Every remaining train one-away
+candidate requires lexical, passive, definite-description, or coreference
+infrastructure; do not disguise those decisions as grammar-only readers.

@@ -348,6 +348,24 @@ rules:
     emits:
       - {fact: quantified, cls: "{cls.singular}", pred: "{v} {p}", polarity: true}
 
+  # Phase B reader 29: active-participial compound verbal universals —
+  # "V-ing CLSs V2 P". The present participle modifies the plural class head;
+  # together they form the exact class key used by named copular membership.
+  # The bare-form main verb is the plural-agreement proof and its unfolded
+  # tail echoes named ground-verbal keys. Finite/adjectival modifiers,
+  # singular classes, state/modal/signed or coordinated consequences,
+  # particle/perfect verbs, relatives, and counted tails remain whole-unread.
+  - id: logic/universal-participial-bare-plural-verbal
+    phase: read
+    match:
+      sentence:
+        - {slot: modifier, type: nonstate_verb, at_start: true, blocks_skipped: definite_article, single_word: true, present_participle: true}
+        - {slot: cls, type: bare_plural}
+        - {slot: v, type: nonstate_verb, bare_form: true, single_word: true}
+        - {slot: p, span: true, span_blocks: [negation, conjunction, preposition, verb_particle, disjunctive_marker, verb, future_modal, capacity_modal, complementizer, interrogative, wh_which], span_blocks_counted: true}
+    emits:
+      - {fact: quantified, cls: "{modifier} {cls.singular}", pred: "{v} {p}", polarity: true}
+
   # ---- Stage 8g: the VERBAL generic conditional, negated-consequent form --
   # "If a CLS <v> <obj>[,] they no longer <v2> <rest>" — the Stage 1
   # someone-form's verbal sibling ("If a player leaves a team they no
