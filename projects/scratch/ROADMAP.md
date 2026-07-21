@@ -1102,3 +1102,67 @@ new generic keys use regular `-s` singularization (`bananas`) or a registered
 noun (`events`), so the `_naive_singular` `-se/-ce/-ze` fix cannot participate.
 Neither story introduces a CamelCase entity. Their conclusions are copular,
 not verbal-universal asks. Keep all three banked.
+
+## Phase B reader 3 — negative two-article indefinite generic (2026-07-21)
+
+The cheapest genuine cross-split family inside the `entity-raw-other` survey
+is now served: **“A/An CLS is not a/an PRED.”** The new pack-only reader is the
+negative sibling of Stage 9i's positive indefinite generic and emits the
+existing `Quantified(cls, pred, polarity=false)` shape. It admits no vocabulary
+globally: the two articles, copula, and explicit negator anchor unknown corpus
+nouns such as `god`, `destroyer`, and `podcast`. Articleless adjectival
+predicates and coordinated predicates remain unread as separate constructions.
+
+The existing universal-instantiation synth buys composition directly:
+`A trout is not a flyer` plus `Rex is a trout` derives `not flyer(Rex)`.
+Synthetic falsification pins the exact fact, absence of a ground atom, the
+positive minimal pair, the articleless refusal, and refusal of a larger
+coordinated predicate. The pre-existing Stage 9i test that explicitly banked
+the negative form was intentionally updated to the new fact contract.
+**pytest 1971 passed; scratch lint 0 errors; curated 65/65.** All eight standard
+snapshot comparisons are NEUTRAL: difg dev, GSM8K dev-train/dev-holdout,
+ASDiv, SVAMP, MAWPS, SciBench, and the safety-only FOLIO dev gate each report
+**0 BROKE / 0 DECL→WRONG**.
+
+### Incremental reader movement
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | target raw-other items / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1329→1331 | 724→726 (+2) | 16/12→16/12 | 9/9→9/9 | 662→662 |
+| dev-holdout | 1295→1297 | 727→729 (+2) | 8/7→8/7 | 15/11→14/10 | 608→608 |
+
+The emitted rule occurs in two verdict-gold train item instances across one
+story (`A god is not a destroyer`) and three holdout instances across two
+stories (`A phone is not a computer`; `A podcast is not a novel`). Two holdout
+instances newly become fully read; the third premise was already fact-bearing
+through other machinery. No verdict converts. Hazards remain exactly at the
+Phase A baselines: collision 8/12, quarantine 16/24, ambiguous readings 51/33,
+and clause split 0/0 (train/holdout). Folio-with-logic also remains 20 correct /
+1 persistent poisoned-text wrong / 473 declined on train and 1 / 0 / 424 on
+holdout, with both diffs NEUTRAL.
+
+This is the third served construction class, but it does not trigger Phase C:
+cumulative fully-read coverage is only 726/1647 and 729/1602, truth-scope
+vetoes are 662 and 608, and stack-ready stories are 12 and 7, all below the
+pre-registered thresholds.
+
+The mandatory banked-zero recheck is again **zero**. Reader 3's keys contain
+none of the `_naive_singular` `-se/-ce/-ze` endings, no CamelCase entity, and
+no verbal-universal conclusion. Keep all three infrastructure ideas banked.
+
+### Survey banks before reader 4
+
+- **Existential “there is/exists” is not one construction.** The train surface
+  says “There exist both harmful and beneficial controlled substances” and
+  needs a conjoined-property existential plus witness/class propagation. The
+  two simple holdout surfaces need PP/resultative phrase composition to join
+  their conclusions. A bare `there is` reader alone is unbought.
+- **Direct `… was/is VERBed by NAME` passives are vocabulary-blocked at the
+  shared join.** The clean train participle (`produced`) has a multi-token
+  unknown subject, while holdout's `edited`/`announced` participles and name
+  tails are not currently canonical verb/name units. Span-only extraction
+  would mint non-joining verb keys. Bank until a measured lemma/name increment
+  has buyers on both splits.
+- The next increment should re-price a narrow passive or relative-clause
+  family, then compound generics and `entity-in-raw-if`. Do not widen reader 3
+  into articleless predicates or complex negative subjects.

@@ -1,13 +1,16 @@
-> **Active direction (2026-07-20): Delphi breadth-first premise readers.**
+> **Active direction (2026-07-21): Delphi breadth-first premise readers.**
 > Phase A is complete: the reproducible DEV-only baseline is
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–2 now serve
-> ground both-or-neither equivalence and unrestricted bare-plural disjunction. Cumulative
-> movement from Phase A is +4 / +6 fully-read premise instances and +1 / +2 stack-ready
-> stories on dev-train / dev-holdout, with no verdict or hazard movement. Two construction
-> classes are served; re-survey for reader 3 and do not widen either exact reader. The
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–3 now serve
+> ground both-or-neither equivalence, unrestricted bare-plural disjunction, and negative
+> two-article indefinite generics. Cumulative movement from Phase A is +6 / +8 fully-read
+> premise instances and +1 / +2 stack-ready stories on dev-train / dev-holdout, with no
+> verdict or hazard movement. Three construction classes are served, but all numeric Phase C
+> thresholds remain unmet. Reader 4 should re-price a narrow passive or relative-clause
+> family; the surveyed `there is` and direct passive-agent candidates are banked because
+> their cross-split joins require additional composition or lexical infrastructure. The
 > `_naive_singular`, CamelCase-name, and verbal-universal-ask banks still have zero joins.
 > No TEST look was spent.
 >

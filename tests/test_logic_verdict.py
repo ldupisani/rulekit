@@ -1151,11 +1151,14 @@ def test_indefinite_generic_asserts_no_ground_atom(logic_reg):
     assert not list(r.store.by_kind(Atom))
 
 
-def test_negated_indefinite_generic_stays_unread(logic_reg):
+def test_negated_indefinite_generic_reads_as_negative_universal(logic_reg):
     from rulekit.kernel.model import Quantified
 
     r = engine.solve("A trout is not a flyer.", logic_reg, tracing=False)
-    assert not list(r.store.by_kind(Quantified))
+    facts = list(r.store.by_kind(Quantified))
+    assert [(fact.cls, fact.pred, fact.polarity) for fact in facts] == [
+        ("trout", "flyer", False),
+    ]
 
 
 def test_modus_tollens_contraposes_the_positive_universal(logic_reg):

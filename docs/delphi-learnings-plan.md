@@ -1,7 +1,8 @@
 # The breadth-first premise-reader campaign — FOLIO logic → full integration
 
-**ACTIVE. Phase A and Phase B readers 1–2 completed 2026-07-20: ground
-both-or-neither equivalence and unrestricted bare-plural disjunction.**
+**ACTIVE. Phase A and Phase B readers 1–3 completed 2026-07-21: ground
+both-or-neither equivalence, unrestricted bare-plural disjunction, and negative
+two-article indefinite generics.**
 
 ## Context
 
@@ -152,8 +153,21 @@ and must be priced as separate constructions; see the landed record in
 Reader 2 serves unrestricted generic **“CLSs are [either] L or R”** using the
 existing quantified-disjunction machinery. Incremental movement is +2 / +1
 fully-read premises and +0 / +1 stack-ready stories, again with no verdict or
-hazard movement. Two construction classes are now served; at least one more
-is required before Phase C can trigger, in addition to the numeric thresholds.
+hazard movement.
+
+Reader 3 serves negative two-article generics **“A/An CLS is not a/an PRED”**
+as an existing negative `Quantified` fact. Incremental movement is +2 / +2
+fully-read premises and +0 / +0 stack-ready stories, with no verdict,
+truth-scope, or hazard movement. Three construction classes are now served,
+satisfying only Phase C's class-count condition; every numeric coverage
+threshold still binds.
+
+The `entity-raw-other` survey also banked two false unifications. “There is …”
+is not one reader family: the train buyer is a conjoined-property existential,
+while the holdout forms additionally need class/PP phrase composition. Direct
+passive-agent premises likewise need either participle lemma coverage or
+multi-token name handling before the measured train and holdout surfaces share
+one exact key contract. Neither enabler is bought alone.
 
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key

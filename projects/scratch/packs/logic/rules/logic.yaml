@@ -45,12 +45,10 @@ rules:
 
   # Stage 9i: the indefinite-generic copular universal — "A carp is a
   # fish" / "An osprey is a bird" reads as ∀ carp → fish, the generic
-  # frame (indefinite article on BOTH sides, bare singular nouns, no
-  # negation). SINGULAR-agreeing, so keys render PLAIN, never .singular
+  # frame (indefinite article on BOTH sides, bare singular nouns, positive
+  # polarity). SINGULAR-agreeing, so keys render PLAIN, never .singular
   # (the Stage 8d symmetry: -is constructions join ground atom preds
-  # verbatim; only the plural-agreeing family folds). The negated form
-  # ("A carp is not a bird") deliberately never matches — a negative
-  # generic stays unread, which is monotone-safe. Both articles claimed
+  # verbatim; only the plural-agreeing family folds). Both articles claimed
   # with consume_skipped (they are skippable senses — the dead-literal
   # lesson) so the whole construction is consumed for the fragment guard.
   - id: logic/universal-indefinite-copular
@@ -64,6 +62,25 @@ rules:
         - {slot: pred, span: true, span_blocks: [negation, conjunction, preposition, disjunctive_marker]}
     emits:
       - {fact: quantified, cls: "{cls}", pred: "{pred}", polarity: true}
+
+  # Phase B reader 3: the negative sibling, deliberately restricted to the
+  # same two-article nominal frame — "A god is not a destroyer" asserts
+  # forall god -> not destroyer. The explicit `not` owns polarity; neither
+  # span may swallow another negation or coordination. Adjectival predicates
+  # without an article and larger coordinated predicates remain unread as
+  # separate constructions.
+  - id: logic/universal-indefinite-copular-not
+    phase: read
+    match:
+      sentence:
+        - {lit: [a, an], at_start: true, consume_skipped: true}
+        - {slot: cls, span: true, span_blocks: [negation, conjunction, preposition, disjunctive_marker]}
+        - {lit: is}
+        - {lit: not}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: pred, span: true, span_blocks: [negation, conjunction, preposition, disjunctive_marker]}
+    emits:
+      - {fact: quantified, cls: "{cls}", pred: "{pred}", polarity: false}
 
   - id: logic/universal-copular-all-is
     phase: read
