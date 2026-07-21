@@ -1,6 +1,6 @@
 # The breadth-first premise-reader campaign — FOLIO logic → full integration
 
-**ACTIVE. Phase A and Phase B readers 1–17 completed 2026-07-21: ground
+**ACTIVE. Phase A and Phase B readers 1–18 completed 2026-07-21: ground
 both-or-neither equivalence, unrestricted bare-plural disjunction, and negative
 two-article indefinite generics, plus single-antecedent verbal “Everyone who”
 implications, verbal-restrictor conditionals, and the negative-antecedent
@@ -11,7 +11,7 @@ disjunctions, plus negative possessive universals, plural-agreeing negative
 event universals, named ground do-support event denials, bare-plural
 future-event exclusive disjunctions, and future-negative indefinite
 generics, named mixed possession/event disjunctions, and singular positive
-possessive universals.**
+possessive universals, and plural-generic copular-to-verbal conditionals.**
 
 ## Context
 
@@ -313,6 +313,17 @@ material. Incremental movement is +2 / +0 fully-read premises, +0 / +0
 fact-bearing premises, −2 / 0 truth-scope vetoes, and +0 / +0 stack-ready
 stories on dev-train / dev-holdout. Outcomes and hazards remain neutral.
 Seventeen classes are served; every Phase C threshold still binds.
+
+Reader 18 serves plural-generic **“If people are P, then they V Q”**
+copular-to-verbal conditionals as positive `Quantified` facts. The antecedent
+uses reader 7's singular-folded key contract; the bare, single-token non-state
+consequence renders exactly like named ground-verbal facts and questions.
+Incremental movement is +2 / +0 fully-read and fact-bearing premises, −2 / 0
+truth-scope vetoes, and +0 / +0 stack-ready stories on dev-train /
+dev-holdout. Train agreement ambiguity improves by two; outcomes and all
+other hazards remain neutral. The broader unrestricted verbal-to-verbal
+prototype was removed after matching zero DEV premises. Eighteen classes are
+served; every Phase C threshold still binds.
 
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key

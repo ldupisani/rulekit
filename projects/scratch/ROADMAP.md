@@ -1939,3 +1939,48 @@ still binds. No TEST look was spent.
 **Next:** bank the holdout-only `All dogs sleep` form until bare intransitive
 ground facts and asks provide a full stack. Continue the exact coordination
 and conditional survey; passive relations still require direction-aware keys.
+
+## Phase B reader 18 — plural-generic copular-to-verbal conditionals (2026-07-21)
+
+The next bought conditional class is **“If people are P, then they V Q.”**
+The plural-agreeing antecedent folds to the singular property key used by
+named copular atoms. The bare, single-token non-state consequence plus its
+predicate renders exactly like ground-verbal, so an existing positive
+`Quantified` fact and universal-instantiation synth provide the complete
+inference path without schema or kernel work.
+
+Fifteen synthetic pins cover exact emission, named instantiation, a missing-
+antecedent null, a coordinated antecedent preserved as one opaque exact key,
+and eleven adjacent refusals. Consequent sign, copular/state syntax, modals,
+intervening adverbs, coordination, particle/perfect verbs, and counted spans
+remain separate classes. The preceding `If people V P, then they V2 Q`
+prototype passed its synthetic inference stack but matched zero DEV premises:
+the apparent corpus buyers used unknown antecedent heads or larger signed,
+coordinated, restricted, or adverbial structures. It was removed and banked.
+
+**pytest 2,169 passed; scratch lint 0 errors with the same eight warnings;
+curated 65/65 twice.** All eight standard DEV and both grouped
+FOLIO-with-logic snapshot diffs are NEUTRAL (0 BROKE, 0 DECL→WRONG).
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1338→1340 (+2) | 763→765 (+2) | 17/13→17/13 | 2 / 1 | 627→625 (−2) |
+| dev-holdout | 1304→1304 | 754→754 | 8/7→8/7 | 0 / 0 | 587→587 |
+
+The one train buyer emits `fascinated by history of renaissance and past era
+→ attend renaissance fairs regularly` across two item instances. Other gaps
+leave outcomes and stack readiness unchanged (train 19 correct / 1 poisoned-
+text wrong / 474 declined; holdout 1 / 0 / 424). Train agreement ambiguity
+improves by two; collision, quarantine, other ambiguity, and clause-split
+hazards are neutral.
+
+Cumulative recorded-frame state is 765/1647 and 754/1602 fully read, 625/587
+truth-scope vetoes, 13/7 stack-ready stories, collision 8/9, and quarantine
+16/18. Phase A movement is +45/+33 fully read and 41/27 fewer truth-scope
+vetoes. Eighteen construction classes are served; every Phase C threshold
+still binds. No TEST look was spent.
+
+**Next:** continue the exact coordination and conditional survey. Keep the
+unrestricted people verbal-to-verbal prototype banked until recognized verb
+heads or a larger exact construction buys it; passive relations still require
+direction-aware keys.

@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–17 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–18 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -32,13 +32,15 @@
 > `Quantified` facts and existing chaining/instantiation — and (reader 16)
 > mixed named possession/event disjunctions `NAME has P or V Q`, using an
 > inclusive ground `Disjunction` — and (reader 17) singular positive possessive
-> universals `Every CLS has P`, using positive `Quantified` facts. Cumulative
-> movement from Phase A is +43 / +33 fully-read
+> universals `Every CLS has P`, using positive `Quantified` facts — and
+> (reader 18) plural-generic copular-to-verbal conditionals `If people are P,
+> then they V Q`, again using positive `Quantified` facts. Cumulative
+> movement from Phase A is +45 / +33 fully-read
 > premise instances and +2 / +2 stack-ready stories on dev-train / dev-holdout, with no
-> verdict regression or hazard increase; truth-scope vetoes improve by 39 / 27, while
-> holdout collision/quarantine improve 12→9 / 24→18. Seventeen construction classes
-> are served, but all numeric Phase C thresholds remain unmet (fully read 763/1647 and
-> 754/1602 vs 852/850; vetoes 627/587 vs ≤499/460; stack-ready stories 13/7 vs ≥22/10).
+> verdict regression or hazard increase; truth-scope vetoes improve by 41 / 27, while
+> holdout collision/quarantine improve 12→9 / 24→18. Eighteen construction classes
+> are served, but all numeric Phase C thresholds remain unmet (fully read 765/1647 and
+> 754/1602 vs 852/850; vetoes 625/587 vs ≤499/460; stack-ready stories 13/7 vs ≥22/10).
 > Next re-survey the remaining exact coordination and conditional families; the
 > unbought outer-quantified verbal relative, surveyed `there is`, direct passive-agent, and unresolved
 > ground-pronoun candidates remain banked pending composition, lexical infrastructure,
@@ -61,6 +63,54 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 32 (2026-07-21): Phase B reader 18 — people copular-to-verbal conditionals; +2/+0 fully read
+
+One pack-only increment serves **“If people are P, then they V Q.”** The
+plural-agreeing copular antecedent singular-folds to the same key as a named
+ground atom, while the bare, single-token non-state consequence head renders
+the same event key as named ground-verbal facts and questions. It emits an
+existing positive `Quantified` fact, so the existing universal-instantiation
+synth supplies the whole inference path.
+
+Fifteen synthetic pins cover exact emission, direct instantiation, a missing-
+antecedent null, preservation of a coordinated antecedent as one exact opaque
+key, and eleven refusals for other subjects, restricted subjects, negative
+antecedents, copular/signed/modal/adverbial/coordinated/particle and counted
+consequences. A preceding unrestricted verbal-to-verbal prototype passed its
+synthetic stack but matched zero DEV premises because its apparent buyers had
+unknown verb heads or larger structures; it was removed under the
+enabler-must-be-bought rule.
+
+**All 2,169 tests pass; scratch lint has 0 errors and the same eight warnings;
+curated is 65/65 twice.** All eight standard DEV and both FOLIO-with-logic
+grouped snapshot diffs are NEUTRAL (0 BROKE, 0 DECL→WRONG). Outcomes remain
+train 19 correct / 1 pre-existing poisoned-text wrong / 474 declined and
+holdout 1 / 0 / 424.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1338→1340 (+2) | 763→765 (+2) | 17/13→17/13 | 2 / 1 | 627→625 (−2) |
+| dev-holdout | 1304→1304 | 754→754 | 8/7→8/7 | 0 / 0 | 587→587 |
+
+The sole buyer story states that people fascinated by Renaissance history
+attend Renaissance fairs, emitting the exact universal `fascinated by history
+of renaissance and past era → attend renaissance fairs regularly` across two
+item instances. Other story gaps keep both items from all-premises-read or
+stack-ready status. Train agreement ambiguities improve by two; collision,
+quarantine, other ambiguity, and clause-split hazards do not increase.
+
+Cumulative recorded-frame state is 765/1647 and 754/1602 fully read, 625/587
+truth-scope vetoes, 13/7 stack-ready stories, collision 8/9, and quarantine
+16/18. Eighteen construction classes are served; every Phase C threshold
+still binds (852/850, ≤499/460, ≥22/10). No TEST look was spent.
+
+**Next:** continue pricing exact coordination and conditional siblings. Keep
+the unrestricted people verbal-to-verbal form banked until recognized verb
+heads or a larger exact construction buy it; passive relations still require
+direction-aware keys.
+
+---
 
 # Session 31 (2026-07-21): Phase B reader 17 — positive possessive universals; +2/+0 fully read
 

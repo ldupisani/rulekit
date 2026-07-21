@@ -719,6 +719,30 @@ rules:
     emits:
       - {fact: quantified, cls: "{p.singular}", pred: "{q.singular}", polarity: false}
 
+  # Phase B reader 18: the verbal-consequent sibling —
+  # "If people are P, then they V Q". Reader 7 established the plural-
+  # agreeing antecedent key: P folds to the singular key emitted for a named
+  # witness. The bare, single-token non-state consequence head plus its exact
+  # predicate renders like ground-verbal, so the existing quantified
+  # instantiation synth supplies the join. As in reader 7, coordination may
+  # remain inside the antecedent phrase key; it narrows rather than invents a
+  # join. Signed antecedents and signed/modal/coordinated/count-bearing or
+  # multi-verb consequences stay unread.
+  - id: logic/conditional-people-are-then-they-verbal
+    phase: read
+    match:
+      sentence:
+        - {lit: if, at_start: true}
+        - {lit: people}
+        - {lit: are}
+        - {slot: p, span: true, span_blocks: negation}
+        - {lit: then}
+        - {lit: they}
+        - {slot: v, type: nonstate_verb, bare_form: true, single_word: true}
+        - {slot: q, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+    emits:
+      - {fact: quantified, cls: "{p.singular}", pred: "{v} {q}", polarity: true}
+
   # Phase B reader 8: the class-scoped bare-plural copular relative —
   # "CLSs who are P are [not] Q" means ∀e. CLS(e) ∧ P(e) → [¬]Q(e).
   # This is the EXISTING Conditional contract and its two-antecedent
