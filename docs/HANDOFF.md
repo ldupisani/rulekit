@@ -7,15 +7,16 @@
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, and (reader 6, 2026-07-21)
-> the negative-antecedent same-entity ground conditional `If NAME is not P, then NAME/he
+> the negative-antecedent same-entity ground conditional `If NAME is not P, then NAME
 > is Q` via a dedicated `GroundConditional` fact + unless-free fire synth — the
-> contrapositive comes FREE through the 9i reductio engine (pinned), and the fold's
-> if-antecedent Membership leak on the Leon story stops as bycatch. Cumulative
-> movement from Phase A is +12 / +14 fully-read
+> contrapositive comes FREE through the 9i reductio engine (pinned). The initially
+> landed literal-`he` surface was removed after review: without resolved coreference it
+> could misbind `he` to the antecedent subject when another name occurred inside the
+> predicate. Cumulative movement from Phase A is +12 / +12 fully-read
 > premise instances and +1 / +2 stack-ready stories on dev-train / dev-holdout, with no
-> verdict or hazard movement; truth-scope vetoes improve by 8 / 11. Six construction classes
+> verdict or hazard movement; truth-scope vetoes improve by 8 / 9. Six construction classes
 > are served, but all numeric Phase C thresholds remain unmet (fully read 732/1647 and
-> 735/1602 vs 852/850; vetoes 658/603 vs ≤499/460; stack-ready stories 12/7 vs ≥22/10).
+> 733/1602 vs 852/850; vetoes 658/605 vs ≤499/460; stack-ready stories 12/7 vs ≥22/10).
 > Reader 7 should re-price a narrow passive or relative-clause family per the Phase A build
 > order; the surveyed `there is`, direct passive-agent, negative-consequent `they`, and
 > `she`-twin candidates remain banked because their cross-split joins require additional
@@ -33,9 +34,10 @@
 
 # Session 18 (2026-07-21): Phase B reader 6 — negative-antecedent ground conditionals; the contrapositive is free; all gates NEUTRAL
 
-One independently revertible increment (`cb3c955`, pushed) lands the delphi
-campaign's sixth premise-reader class: **“If NAME is not P, then NAME/he is
-Q”** as the new kernel fact `GroundConditional(entity, pred, then_pred,
+One independently revertible increment (`cb3c955`, pushed) introduced the
+delphi campaign's sixth premise-reader class. After the safety correction
+below, its supported surface is **“If NAME is not P, then NAME is Q”** as the
+new kernel fact `GroundConditional(entity, pred, then_pred,
 then_polarity)` — semantics ¬P(e) → Q(e), the negation consumed as STRUCTURAL
 skeleton so `pred` holds plain P, and a name never rides `Conditional.cls`
 (the plan's pinned boundary). **pytest 1985 → 1995, scratch lint 0 errors,
@@ -45,14 +47,22 @@ radius), and folio-with-logic is item-level neutral in OUTCOME AND REASON on
 both splits (train 20 correct / 1 persistent poisoned-text wrong / 473
 declined; holdout 1 / 0 / 424). No TEST look was spent.**
 
+**Post-review safety correction:** the literal-`he` reader has been removed.
+It asserted that `he` denoted the antecedent subject without consuming resolved
+coreference evidence; for example, “If Alice is not taller than Bob, then he is
+happy” could confidently assert that Alice was happy. The safe current surface
+is repeated-name only. The original landed measurements are historical; the
+corrected reader-6 delta is +2 / +0 fully-read premises and −2 / 0
+truth-scope vetoes (dev-train / dev-holdout), with no Leon bycatch. The
+correction passes all 2,004 tests, scratch lint (0 errors), and curated 65/65.
+
 #### What landed, and the finding worth keeping
 
-Two pack rules serve the two measured cross-split surfaces: the repeated-name
-form (`If Marvin is not from Earth, then Marvin is an extraterrestrial`,
-pinned by `same_lemma` — the 9i precedent) and the anaphoric form (`If Leon
-is not pursuing a bachelor's degree, then he is a professor`, the bound
-subject pronoun consumed as skeleton per Stage 1's `it`/`they` discipline).
-Both spans refuse negation, coordination, and either/neither marking, so the
+The safe pack rule serves the repeated-name surface (`If Marvin is not from
+Earth, then Marvin is an extraterrestrial`, pinned by `same_lemma` — the 9i
+precedent). Pronoun consequents remain unread until their referent is
+represented as evidence. Both spans refuse negation, coordination, and
+either/neither marking, so the
 measured coordinated surfaces (Mike/Emily/Clyde/Thomas/Carol) stay
 whole-unread; a different consequent name fails `same_lemma`. One
 `unless`-free fire synth (gc + explicit ¬P(e) ⊢ Q(e)) completes the contract.
@@ -61,19 +71,19 @@ whole-unread; a different consequent name fails `same_lemma`. One
 reductio engine assumes ¬P, the unless-free synth emits Q, the collision
 with a stated ¬Q refutes the hypothesis, and P commits — pinned as
 `test_contrapositive_comes_free_via_reductio`, and the reason the fire synth
-must never grow an `unless`. Bycatch: the permissive fold's if-antecedent
-`Membership('leon','degree')` leak stops once the conditional is consumed
-whole (holdout's diagnostic agreement count improves 53 → 51).
+must never grow an `unless`. The permissive fold's if-antecedent
+`Membership('leon','degree')` leak is no longer hidden by an unsafe whole read;
+it remains a separate sub-verdict reader problem.
 
 #### Movement, and the measurement caveat
 
-Incremental movement is +2 / +2 fully-read premises and −2 / −2 truth-scope
-vetoes (dev-train / dev-holdout); the item-level movers are exactly the four
-buyer items (both Marvin, both Leon), and no verdict converts — Leon's
-ground denial is still coordination-unread and Marvin needs the compound-cls
-universal, so stack-ready stays 12 / 7 stories. Banked without cross-split
-buyers: the negative-consequent `they` variant (`If Nancy is not a teacher,
-then they are not paid by the school`, one train story) and the `she` twin.
+Corrected incremental movement is +2 / +0 fully-read premises and −2 / 0
+truth-scope vetoes (dev-train / dev-holdout); the item-level movers are the
+two Marvin items, and no verdict converts — Marvin still needs the compound-cls
+universal, so stack-ready stays 12 / 7 stories. Banked pending coreference
+evidence: the positive `he` surface, the negative-consequent `they` variant
+(`If Nancy is not a teacher, then they are not paid by the school`, one train
+story), and the `she` twin.
 The three standing banks (`_naive_singular`, CamelCase names,
 verbal-universal asks) re-checked at zero joins.
 
@@ -89,7 +99,7 @@ and the rebuilt script's definitions are in the reader-6 ROADMAP record.
 **Next lever**: reader 7 should price one narrow passive or relative-clause
 family per the Phase A build order (passive has the stronger balanced
 marginal estimate), then re-survey compound generics and `entity-in-raw-if`.
-Cumulative state is 732/1647 and 735/1602 fully-read, vetoes 658/603,
+Cumulative state is 732/1647 and 733/1602 fully-read, vetoes 658/605,
 stack-ready 12/7 — all numeric Phase C thresholds still bind.
 
 ---

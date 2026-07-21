@@ -694,9 +694,10 @@ rules:
 
   # Phase B reader 6: the negative-antecedent same-entity ground conditional
   # — "If NAME is not P, then NAME is Q" (repeated name, same_lemma-pinned,
-  # the 9i precedent) and "If NAME is not P, then he is Q" (the subject
-  # pronoun is grammatically bound inside the construction and consumed as
-  # skeleton, exactly as Stage 1 consumes 'it'/'they'). Semantics
+  # the 9i precedent). The pronoun surfaces ("then he/she/they is Q") stay
+  # unread until coreference is represented as evidence: consuming a literal
+  # pronoun as skeleton can misbind it when the antecedent names another
+  # entity. Semantics
   # ¬P(e) → Q(e), held by the dedicated GROUND fact — a name must never
   # ride Conditional.cls (that fact is inert without a membership premise;
   # the delphi plan pins the boundary). Whole-construction or nothing:
@@ -722,22 +723,6 @@ rules:
         - {slot: q, span: true, span_blocks: [negation, conjunction, disjunctive_marker, either_marker, neither_marker]}
     where:
       - {same_lemma: [subj, subj2]}
-    emits:
-      - {fact: ground_conditional, entity: "{subj}", pred: "{p}", then_pred: "{q}", then_polarity: true}
-
-  - id: logic/ground-conditional-not-then-he-is
-    phase: read
-    match:
-      sentence:
-        - {lit: if, at_start: true}
-        - {slot: subj, type: name, blocks_skipped: indefinite_article}
-        - {lit: is}
-        - {lit: not}
-        - {slot: p, span: true, span_blocks: [negation, conjunction, disjunctive_marker, either_marker, neither_marker]}
-        - {lit: then}
-        - {lit: he}
-        - {lit: is}
-        - {slot: q, span: true, span_blocks: [negation, conjunction, disjunctive_marker, either_marker, neither_marker]}
     emits:
       - {fact: ground_conditional, entity: "{subj}", pred: "{p}", then_pred: "{q}", then_polarity: true}
 

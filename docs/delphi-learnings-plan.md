@@ -186,15 +186,16 @@ vetoes, and +0 / +0 stack-ready stories, with no verdict or hazard movement.
 Five construction classes are now served; numeric Phase C thresholds still
 bind independently.
 
-Reader 6 serves **“If NAME is not P, then NAME/he is Q”** through the new
+Reader 6 serves **“If NAME is not P, then NAME is Q”** through the new
 dedicated `GroundConditional` fact (¬P(e) → Q(e), structural negation, a name
 never rides `Conditional.cls`) and one `unless`-free fire synth — the
 contrapositive comes free through the Stage 9i reductio engine and is pinned,
-not built. Incremental movement is +2 / +2 fully-read premises, -2 / -2
+not built. The initially landed literal-`he` form was removed because it
+assumed coreference without evidence; pronoun consequents remain banked.
+Incremental movement is +2 / +0 fully-read premises, -2 / 0
 truth-scope vetoes, and +0 / +0 stack-ready stories, with no verdict or
-hazard movement and one diagnostic improvement (the fold's if-antecedent
-Membership leak stops on the served holdout story). Six construction classes
-are served; every numeric Phase C threshold still binds.
+hazard movement. Six construction classes are served; every numeric Phase C
+threshold still binds.
 
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key

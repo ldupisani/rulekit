@@ -1278,21 +1278,25 @@ cross-entity/modal conditionals.
 
 ## Phase B reader 6 — negative-antecedent same-entity ground conditional (2026-07-21)
 
-The family above is served by a dedicated fact: **“If NAME is not P, then
-NAME/he is Q”** → `GroundConditional(entity, pred, then_pred, then_polarity)`,
+The safe subset of the family above is served by a dedicated fact: **“If NAME
+is not P, then NAME is Q”** →
+`GroundConditional(entity, pred, then_pred, then_polarity)`,
 semantics ¬P(e) → Q(e). The negation is STRUCTURAL (the reading consumes
 `not` as skeleton, so `pred` holds plain P), and a name never rides
-`Conditional.cls`. Two pack rules: the repeated-name surface pinned by
-`same_lemma` (the 9i precedent) and the anaphoric surface consuming the
-grammatically bound subject pronoun `he` as skeleton (Stage 1's `it`/`they`
-discipline). Both spans refuse negation, coordination, and either/neither
+`Conditional.cls`. The repeated-name surface is pinned by `same_lemma` (the
+9i precedent). The initially landed literal-`he` surface was removed after
+review: it consumed the pronoun as skeleton without checking its unresolved
+`refers` obligation, so “If Alice is not taller than Bob, then he is happy”
+could confidently assert that Alice was happy. Pronoun consequents stay
+unread until coreference is represented as evidence. Both spans refuse
+negation, coordination, and either/neither
 marking, so the coordinated surfaces (Mike/Emily/Clyde/Thomas/Carol) stay
 whole-unread. Cross-entity consequents fail `same_lemma`. The
-negative-consequent anaphoric variant (`If Nancy is not a teacher, then they
-are not paid by the school` — one train story, no holdout twin) and the `she`
-twin are BANKED without cross-split buyers. Neither `pred` nor `then_pred`
-decomposes (non-monotone antecedent position; a false-polarity consequent
-would widen under stripping).
+positive `he`, negative-consequent `they` (`If Nancy is not a teacher, then
+they are not paid by the school` — one train story, no holdout twin), and the
+`she` twin are BANKED pending sound coreference evidence. Neither `pred` nor
+`then_pred` decomposes (non-monotone antecedent position; a false-polarity
+consequent would widen under stripping).
 
 One synth, `synth/ground-conditional-fire`: gc + explicit `Atom(e, P,
 polarity=false)` ⊢ `Atom(e, Q, then_polarity)`, deliberately `unless`-free
@@ -1303,11 +1307,12 @@ hypothesis, and P commits — pinned as
 `test_contrapositive_comes_free_via_reductio`; no tollens synth exists or is
 needed.
 
-Synthetic contract (10 pins): exact fact shape on both surfaces,
-cross-entity refusal, positive-antecedent refusal, coordinated-antecedent
-refusal, banked negative-consequent refusal, explicit-antecedent fire,
-open-world undecided antecedent, reductio contrapositive, and
-contradictory-consequent quarantine. **pytest 1995 passed; scratch lint 0
+Synthetic contract (11 pins): exact repeated-name fact shape, simple and
+ambiguous-pronoun refusal, cross-entity refusal, positive-antecedent refusal,
+coordinated-antecedent refusal, banked negative-consequent refusal,
+explicit-antecedent fire, open-world undecided antecedent, reductio
+contrapositive, and contradictory-consequent quarantine. **The targeted 11
+tests pass; scratch lint has 0
 errors; curated 65/65.** The fact kind touches the shared kernel
 (model/patterns/schemas registration), so the complete matrix ran as live
 blast radius: all eight standard snapshot diffs NEUTRAL (difg dev, GSM8K
@@ -1321,20 +1326,16 @@ OUTCOME AND REASON (train 20 correct / 1 persistent poisoned-text wrong /
 | grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
 |---|---:|---:|---:|---:|---:|
 | dev-train | 1333→1333 | 730→732 (+2) | 16/12→16/12 | 2 / 1 | 660→658 (-2) |
-| dev-holdout | 1300→1302 (+2) | 733→735 (+2) | 8/7→8/7 | 2 / 1 | 605→603 (-2) |
+| dev-holdout | 1300→1300 | 733→733 | 8/7→8/7 | 0 / 0 | 605→605 |
 
-The item-level movers are exactly the four buyer items (both Marvin items,
-both Leon items) and nothing else. Bycatch: holdout's diagnostic
-agreement-ambiguity count IMPROVES 53→51 — before this reader the permissive
-fold leaked `Membership('leon','degree')` out of the conditional's
-antecedent (the pinned if-antecedent-leak class, always sub-verdict); the
-whole-construction read stops the leak. No hazard count moves on either
-split; no verdict converts (the Marvin/Leon stacks still carry other
-blocked premises — Leon's conjoined ground denial is coordination-unread,
-Marvin's needs the compound-cls universal).
+The item-level movers are the two Marvin items and nothing else. The Leon
+surface and its permissive-fold `Membership('leon','degree')` leak remain
+unread; resolving that diagnostic issue does not justify assuming pronoun
+coreference. No hazard count moves on either split; no verdict converts
+(Marvin's stack still needs the compound-cls universal).
 
 Six construction classes are served. Cumulative campaign state: 732/1647
-and 735/1602 fully-read premises, 658 and 603 truth-scope vetoes, and 12
+and 733/1602 fully-read premises, 658 and 605 truth-scope vetoes, and 12
 and 7 stack-ready stories — all still below the Phase C thresholds
 (852/850, ≤499/460, ≥22/10).
 

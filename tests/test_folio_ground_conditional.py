@@ -1,9 +1,12 @@
 """Phase B reader 6: the negative-antecedent same-entity ground conditional.
 
-``If NAME is not P, then NAME/he is Q`` -> GroundConditional(entity, P, Q):
+``If NAME is not P, then NAME is Q`` -> GroundConditional(entity, P, Q):
 ¬P(e) → Q(e), a dedicated GROUND fact — never a name smuggled into
 Conditional.cls. Fired only by synth/ground-conditional-fire on an explicit
 negative atom; an undecided antecedent licenses nothing (open world).
+
+Pronoun consequents stay unread until coreference is represented as evidence;
+a literal ``he`` cannot safely be assumed to denote the antecedent subject.
 """
 
 from pathlib import Path
@@ -19,7 +22,6 @@ from rulekit.kernel.model import GroundConditional
 ROOT = Path(__file__).resolve().parents[1]
 SOURCES = (
     "logic/ground-conditional-not-then-name-is",
-    "logic/ground-conditional-not-then-he-is",
 )
 
 
@@ -35,11 +37,14 @@ def logic_reg():
     )
 
 
-def _facts(text, reg):
+def _ground_conditionals(text, reg):
     result = engine.solve(text, reg, tracing=False)
+    return list(result.store.by_kind(GroundConditional))
+
+
+def _facts(text, reg):
     return [
-        fact
-        for fact in result.store.by_kind(GroundConditional)
+        fact for fact in _ground_conditionals(text, reg)
         if fact.provenance.source in SOURCES
     ]
 
@@ -57,12 +62,18 @@ def test_repeated_name_emits_exact_ground_conditional(logic_reg):
     ] == [("rex", "dog", "cat", True)]
 
 
-def test_anaphoric_subject_pronoun_binds_the_name(logic_reg):
-    facts = _facts("If Rex is not a dog, then he is a cat.", logic_reg)
+def test_anaphoric_subject_pronoun_stays_unread(logic_reg):
+    assert _ground_conditionals(
+        "If Rex is not a dog, then he is a cat.", logic_reg
+    ) == []
 
-    assert [
-        (f.entity, f.pred, f.then_pred, f.then_polarity) for f in facts
-    ] == [("rex", "dog", "cat", True)]
+
+def test_ambiguous_pronoun_does_not_assert_about_antecedent_subject(logic_reg):
+    assert _verdict(
+        "If Alice is not taller than Bob, then he is happy. "
+        "Alice is not taller than Bob. Is it true that Alice is happy?",
+        logic_reg,
+    ) == "undetermined"
 
 
 def test_cross_entity_consequent_stays_unread(logic_reg):
