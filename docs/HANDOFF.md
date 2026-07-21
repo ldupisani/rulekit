@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–16 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–17 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -31,12 +31,14 @@
 > future-negative indefinite generics `A/An CLS will not V P`, using negative
 > `Quantified` facts and existing chaining/instantiation — and (reader 16)
 > mixed named possession/event disjunctions `NAME has P or V Q`, using an
-> inclusive ground `Disjunction`. Cumulative movement from Phase A is +41 / +33 fully-read
+> inclusive ground `Disjunction` — and (reader 17) singular positive possessive
+> universals `Every CLS has P`, using positive `Quantified` facts. Cumulative
+> movement from Phase A is +43 / +33 fully-read
 > premise instances and +2 / +2 stack-ready stories on dev-train / dev-holdout, with no
-> verdict regression or hazard increase; truth-scope vetoes improve by 37 / 27, while
-> holdout collision/quarantine improve 12→9 / 24→18. Sixteen construction classes
-> are served, but all numeric Phase C thresholds remain unmet (fully read 761/1647 and
-> 754/1602 vs 852/850; vetoes 629/587 vs ≤499/460; stack-ready stories 13/7 vs ≥22/10).
+> verdict regression or hazard increase; truth-scope vetoes improve by 39 / 27, while
+> holdout collision/quarantine improve 12→9 / 24→18. Seventeen construction classes
+> are served, but all numeric Phase C thresholds remain unmet (fully read 763/1647 and
+> 754/1602 vs 852/850; vetoes 627/587 vs ≤499/460; stack-ready stories 13/7 vs ≥22/10).
 > Next re-survey the remaining exact coordination and conditional families; the
 > unbought outer-quantified verbal relative, surveyed `there is`, direct passive-agent, and unresolved
 > ground-pronoun candidates remain banked pending composition, lexical infrastructure,
@@ -59,6 +61,49 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 31 (2026-07-21): Phase B reader 17 — positive possessive universals; +2/+0 fully read
+
+One pack-only increment serves **“Every CLS has P.”** State syntax remains
+outside the event-oriented `nonstate_verb` family; the dedicated rule
+canonicalizes singular-agreeing `has P` to the same `have P` key used by
+negative possessive universals and mixed possession disjunctions. It emits an
+existing positive `Quantified` fact, so universal chaining and named
+instantiation work without new schema or kernel behavior.
+
+Seventeen synthetic pins cover exact emission, direct instantiation, subclass
+chaining, a missing-membership null, and thirteen refusals for plural/all
+agreement, non-possession, scoped `no`/`either`, coordination, do-support,
+modals, verbal/perfect predicates, counts, relatives, compound classes, and
+non-universal subjects.
+
+**All 2,154 tests pass; scratch lint has 0 errors and the same eight warnings;
+curated is 65/65 twice.** All eight standard DEV and both FOLIO-with-logic
+grouped snapshot diffs are NEUTRAL (0 BROKE, 0 DECL→WRONG). Outcomes remain
+train 19 correct / 1 pre-existing poisoned-text wrong / 474 declined and
+holdout 1 / 0 / 424.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1338→1338 | 761→763 (+2) | 17/13→17/13 | 2 / 1 | 629→627 (−2) |
+| dev-holdout | 1304→1304 | 754→754 | 8/7→8/7 | 0 / 0 | 587→587 |
+
+The sole buyer story states `Every teacher has students`, emitting the exact
+universal `teacher → have student` across two item instances. Remaining
+question coordination keeps both items from all-premises-read or stack-ready
+status. Collision, quarantine, agreement, ambiguity, and clause-split hazards
+remain unchanged.
+
+Cumulative recorded-frame state is 763/1647 and 754/1602 fully read, 627/587
+truth-scope vetoes, 13/7 stack-ready stories, collision 8/9, and quarantine
+16/18. Seventeen construction classes are served; every Phase C threshold
+still binds (852/850, ≤499/460, ≥22/10). No TEST look was spent.
+
+**Next:** keep the holdout-only intransitive universal banked until a matching
+ground/ask stack exists; continue pricing exact coordination and conditional
+families before relation-dependent passive/relative shapes.
+
+---
 
 # Session 30 (2026-07-21): Phase B reader 16 — named possession/event disjunctions; +4/+0 fully read
 

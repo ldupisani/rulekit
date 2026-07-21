@@ -166,6 +166,23 @@ rules:
     emits:
       - {fact: quantified, cls: "{cls}", pred: "have {pred}", polarity: false}
 
+  # Phase B reader 17: singular positive possessive universals —
+  # "Every CLS has P". `has` is state syntax and therefore remains outside
+  # the event-oriented `nonstate_verb` family; this dedicated reader
+  # canonicalizes it to the same `have P` key as ground possession and the
+  # negative possessive universals. Scoped, relative, signed, coordinated,
+  # modal, perfect/verbal, either-marked, and counted predicates refuse.
+  - id: logic/universal-every-has
+    phase: read
+    match:
+      sentence:
+        - {lit: every, at_start: true}
+        - {slot: cls, span: true, span_blocks: [negation, quantifier, conjunction, disjunctive_marker, either_marker, verb, future_modal, capacity_modal, interrogative, complementizer, wh_which]}
+        - {lit: has}
+        - {slot: pred, span: true, span_blocks: [negation, quantifier, conjunction, disjunctive_marker, either_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+    emits:
+      - {fact: quantified, cls: "{cls}", pred: "have {pred}", polarity: true}
+
   # Phase B reader 12: plural-agreeing negative event universals —
   # "No CLSs V P". A bare-form, single-token event verb is the structural
   # plural-agreement signal, licensing `.singular` on the class while the

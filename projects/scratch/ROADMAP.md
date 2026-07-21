@@ -1900,3 +1900,42 @@ still binds. No TEST look was spent.
 **Next:** price positive possessive and intransitive universals independently;
 keep passive/relative families banked until their relation direction and
 consumer keys are represented.
+
+## Phase B reader 17 — positive possessive universals (2026-07-21)
+
+The next single-veto buyer is **“Every CLS has P.”** `has` remains state
+syntax—not an event-verb exception—and canonicalizes to the established
+`have P` predicate key. The reader emits a positive `Quantified` fact that
+composes through existing universal chaining and named instantiation.
+
+Seventeen synthetic pins cover exact emission, direct and chained
+instantiation, a membership null, and thirteen adjacent refusals. The class
+span blocks scope markers, coordination, verbs/modals, and relative-marker
+senses; the predicate independently blocks scope, either-marking,
+coordination, further verbs/modals, and counted material. `All ... have ...`
+and intransitive event universals remain separate agreement/key classes.
+
+**pytest 2,154 passed; scratch lint 0 errors with the same eight warnings;
+curated 65/65 twice.** All eight standard DEV and both grouped
+FOLIO-with-logic snapshot diffs are NEUTRAL (0 BROKE, 0 DECL→WRONG).
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1338→1338 | 761→763 (+2) | 17/13→17/13 | 2 / 1 | 629→627 (−2) |
+| dev-holdout | 1304→1304 | 754→754 | 8/7→8/7 | 0 / 0 | 587→587 |
+
+The one train buyer emits `teacher → have student` across two item instances.
+Remaining coordinated questions leave outcomes and stack readiness unchanged
+(train 19 correct / 1 poisoned-text wrong / 474 declined; holdout 1 / 0 /
+424). Collision, quarantine, agreement, ambiguity, and clause-split hazards
+remain neutral.
+
+Cumulative recorded-frame state is 763/1647 and 754/1602 fully read, 627/587
+truth-scope vetoes, 13/7 stack-ready stories, collision 8/9, and quarantine
+16/18. Phase A movement is +43/+33 fully read and 39/27 fewer truth-scope
+vetoes. Seventeen construction classes are served; every Phase C threshold
+still binds. No TEST look was spent.
+
+**Next:** bank the holdout-only `All dogs sleep` form until bare intransitive
+ground facts and asks provide a full stack. Continue the exact coordination
+and conditional survey; passive relations still require direction-aware keys.
