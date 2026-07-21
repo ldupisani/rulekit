@@ -1729,3 +1729,30 @@ Passive/cross-entity relations, object relatives, stative ownership, the
 zero-movement outer-relative reader, articleless unknown-word disjunctions,
 and unresolved pronoun conditionals remain banked until their missing
 structure or consumer join is bought.
+
+## Phase B infrastructure — event-reader exclusion is not arithmetic state (2026-07-21)
+
+Reader 14's future-event-disjunction falsification found that bare `be` was
+verb-sensed but absent from `state`, so `nonstate_verb` admitted a copular
+branch. Simply adding `be`/`been`/`being` to `state` was unsafe: that category
+selects arithmetic holding facts, and the full gate caught a GSM8K temporal
+age item moving from decline to a confident wrong (expected 16, got 6).
+
+The bought prerequisite separates those meanings structurally.
+`non_event_verb` is now the parent of `state`; every existing state member
+therefore remains excluded from event readers, while difg-mined's three bare
+or participial copular forms join only `non_event_verb`. The legacy DSL type
+name `nonstate_verb` remains stable but checks the broader boundary by both
+surface fold and lemma. Three synthetic pins prove these forms emit no verbal
+universal and do not become arithmetic states.
+
+**pytest 2,083 passed; scratch lint 0 errors with the same eight warnings;
+curated 65/65 twice.** All eight standard DEV snapshot diffs and both grouped
+FOLIO-with-logic diffs are NEUTRAL against reader 13 (0 BROKE, 0 DECL→WRONG);
+the caught GSM8K item returns to decline. FOLIO outcomes, coverage, veto,
+stack, collision, quarantine, agreement, ambiguity, and clause-split metrics
+are unchanged. This is infrastructure only: reader count remains 13, no Phase
+B movement is claimed, and no TEST look was spent.
+
+**Next:** re-land reader 14's separately measured `CLSs will either V P or V2
+Q` exact future-event disjunction now that its copular refusal is structural.

@@ -32,8 +32,16 @@ categories:
       fallback would bind 'it' to a person noun. Excludes 'it' (already
       `pool_pronoun`) and every plural (`_bind_discourse` refuses plurals
       outright — group referents are unbuilt).
-  state:
+  non_event_verb:
     parent: verb
+    notes: >
+      verbs excluded from flat event-predicate readers. `state` is the
+      quantitative-holding subclass used by arithmetic folds; other forms may
+      be non-events for logic parsing without acquiring holding semantics.
+      The DSL type remains named `nonstate_verb` for compatibility, but its
+      structural exclusion boundary is this category.
+  state:
+    parent: non_event_verb
     notes: >
       stative verbs — a quantity they state is a HOLDING (same-key
       disagreement is a conflict); any other verb is an EVENT (each

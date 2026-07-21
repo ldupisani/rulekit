@@ -37,6 +37,11 @@
 > or coreference evidence. Reader 4's opt-in
 > `single_word` slot gate stays dormant for all pre-existing rules. The
 > `_naive_singular`, CamelCase-name, and verbal-universal-ask banks still have zero joins.
+> Reader 14 falsification also bought a prerequisite category correction:
+> `state` is now the arithmetic-holding subclass of `non_event_verb`, and
+> difg-mined's `be`/`been`/`being` join only the broader reader-exclusion
+> category. This closes the bare-copula event-reader hole without changing
+> arithmetic state semantics; it earns no reader or coverage credit.
 > ⚠ The regenerated movement classifier reproduces every recorded metric and all reader
 > deltas exactly except a constant fully-read offset (−4/−11) — see the reader-6 ROADMAP
 > record before comparing absolute totals. No TEST look was spent.
@@ -45,6 +50,34 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 26 (2026-07-21): split event-reader exclusion from arithmetic state semantics
+
+Reader 14's future-event disjunction prototype correctly refused finite
+copulas but falsification found that bare `be` was still accepted by
+`nonstate_verb`. The missing membership could not safely be added to `state`:
+that category controls arithmetic holding/event folds, and the first draft
+turned one GSM8K temporal offset into a confident wrong (expected 16, got 6).
+
+The independently revertible prerequisite introduces `non_event_verb` between
+`verb` and `state`. Existing quantitative state verbs inherit it; the
+difg-mined forms `be`, `been`, and `being` join only the broader category.
+`nonstate_verb` now excludes that structural category by fold or lemma. Three
+behavior pins prove the forms cannot emit verbal universals and, critically,
+are not arithmetic `state` members.
+
+**All 2,083 tests pass; scratch lint has 0 errors and the same eight warnings;
+curated is 65/65 in two fresh runs.** All eight standard DEV snapshots and
+both FOLIO-with-logic grouped snapshots are NEUTRAL against reader 13: 0 BROKE
+and 0 DECL→WRONG. The originally regressed GSM8K item returns to decline.
+FOLIO outcomes and recorded-frame coverage/hazard metrics are unchanged, so
+this borrowing earns no reader count or Phase B movement. No TEST look was
+spent.
+
+**Next:** restore the separately measured reader 14 future-event disjunction
+prototype and rerun its exact/refusal/composition and full campaign gates.
+
+---
 
 # Session 25 (2026-07-21): Phase B reader 13 — named do-support event denials; +4/+0 fully read
 

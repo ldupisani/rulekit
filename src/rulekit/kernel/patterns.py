@@ -247,15 +247,18 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
         if t == "verb":
             return sense == "verb"
         if t == "nonstate_verb":
-            # an EVENT verb: verb-sensed and not in the `state` category (a
-            # structural category name). BOTH the fold and the lemma are
-            # checked: the category lists SURFACE forms (is/are/was/has...),
-            # so a lemma-only check let 'is' (lemma 'be', not a member)
-            # through and the v1 'be'-twin returned — caught by
-            # test_copular_sentences_stay_copular.
+            # an EVENT verb: verb-sensed and not in the structural
+            # `non_event_verb` category. `state` inherits that category, while
+            # copular forms that must stay out of event readers need not gain
+            # arithmetic holding semantics. BOTH fold and lemma are checked:
+            # categories may list surface forms or canonical forms.
             return sense == "verb" and not (
-                reg.word_in_category(unit.features.get("fold", ""), "state")
-                or reg.word_in_category(unit.features.get("lemma", ""), "state")
+                reg.word_in_category(
+                    unit.features.get("fold", ""), "non_event_verb"
+                )
+                or reg.word_in_category(
+                    unit.features.get("lemma", ""), "non_event_verb"
+                )
             )
         if t == "auxiliary":
             return sense == "auxiliary"

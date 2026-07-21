@@ -282,6 +282,13 @@ Infrastructure borrowings (each its own increment, only if Phase B friction prov
   gate after the measured `gets up` key-loss probe. It is dormant for every
   existing rule and should be reused when a logical key cannot preserve a
   condensed verb's full predicate.
+- **Event-reader/state split is built:** reader 14 falsification proved bare
+  `be`/`been`/`being` were escaping `nonstate_verb`, but adding them to `state`
+  changed arithmetic holding semantics and produced a GSM8K confident wrong.
+  Core now declares `non_event_verb` as the parent of `state`; difg-mined adds
+  the three copular forms only to that broader exclusion category. This
+  prerequisite is neutral on all ten snapshot gates and earns no reader or
+  coverage credit.
 
 ### Phase C — the look-#6 coverage checkpoint
 

@@ -87,6 +87,16 @@ def test_copular_sentences_stay_copular(logic_reg):
     assert {f.pred for f in r.store.by_kind(Atom)} == {"dog"}
 
 
+@pytest.mark.parametrize("verb", ["be", "been", "being"])
+def test_additional_be_forms_stay_out_of_verbal_universals(logic_reg, verb):
+    # These forms are lexically owned by difg-mined. They extend the event-
+    # reader exclusion category, not the narrower arithmetic state category.
+    r = engine.solve(f"Every dog {verb} friendly.", logic_reg, tracing=False)
+    assert not list(r.store.by_kind(Quantified))
+    assert logic_reg.word_in_category(verb, "non_event_verb")
+    assert not logic_reg.word_in_category(verb, "state")
+
+
 # ---- the arithmetic clash: counted nouns stay the fold's -----------------------
 
 def test_counted_sentences_keep_their_quantities(logic_reg):
