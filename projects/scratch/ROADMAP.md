@@ -2527,3 +2527,42 @@ stack-ready stories. Thirty-one classes are served. No TEST look was spent.
 **Next:** regenerate the exact frontier. Train stack readiness still binds;
 do not bundle lexical admission, definite-reference resolution, or
 named-object property substitution into the next premise reader.
+
+## Phase B reader 32 — PP-restricted “None of” verbal universals (2026-07-21)
+
+Reader 32 serves **“None of the CLSs PREPOSITION R V the P.”** A typed
+bare-plural head and bare-form event verb prove generic agreement, while the
+one explicit PP stays in the exact restrictor key. Both definite articles and
+the terminal period are claimed. The reader emits a negative `Quantified`
+fact and needs no new inference machinery.
+
+The single-PP segmentation keeps relative clauses, multi-PP restrictors, and
+other quantifier scopes out. Nineteen synthetic pins cover exact emission,
+negative-event instantiation, a changed-restriction null, and sixteen
+adjacent refusals spanning number, articles, coordination, sign, modality,
+counting, perfect aspect, and larger tails.
+
+**pytest 2,397 passed; scratch lint 0 errors with the same eight warnings;
+curated 65/65 twice.** All eight standard DEV diffs and both FOLIO-with-logic
+grouped diffs are NEUTRAL. Outcomes remain train 21 correct / 1 pre-existing
+poisoned-text wrong / 472 declined and holdout 4 / 0 / 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1342→1342 | 785→787 (+2) | 22/18→23/19 (+1/+1) | 2 / 1 | 613→613 |
+| dev-holdout | 1319→1319 | 777→777 | 20/13→20/13 | 0 / 0 | 574→574 |
+
+Across all gold kinds the rule appears in three train rows / one story and no
+holdout rows. It emits `kid in our family → not love opera`; Billy’s exact
+membership joins through ordinary universal instantiation, but the story’s
+represented student/scientist conclusion remains undetermined. Hazards are
+neutral.
+
+Cumulative recorded-frame state is 787/1647 and 777/1607 fully read, 613/574
+vetoes, 19/13 stack-ready stories, collision 8/9, and quarantine 16/18. Phase
+A movement is +67/+56 fully read, 53/40 fewer truth-scope vetoes, and +8/+8
+stack-ready stories. Thirty-two classes are served. No TEST look was spent.
+
+**Next:** regenerate the exact frontier. Train stack readiness remains the
+binding threshold; keep definite-kind readings, coreference, and lexical
+admission separate from grammar-only readers.

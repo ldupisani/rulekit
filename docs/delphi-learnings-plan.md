@@ -473,6 +473,17 @@ and +1 / +0 stack-ready stories on dev-train / dev-holdout; fact-bearing,
 truth-scope vetoes, outcomes, and hazards remain neutral. Thirty-one classes
 are served; the fully-read, veto, and train-stack thresholds remain unmet.
 
+Reader 32 serves PP-restricted negative verbal universals **“None of the CLSs
+PREPOSITION R V the P.”** A typed bare-plural head and bare-form event verb
+prove generic agreement; one explicit PP remains in the exact restrictor key,
+and both definite articles plus the terminal period are claimed. The reader
+emits negative `Quantified` facts. Relative, multi-PP, signed, modal,
+coordinated, counted, perfect, and larger-tail siblings remain unread.
+Incremental movement is +2 / +0 fully-read premises and +1 / +0 stack-ready
+stories on dev-train / dev-holdout; fact-bearing, truth-scope vetoes,
+outcomes, and hazards remain neutral. Thirty-two classes are served; the
+fully-read, veto, and train-stack thresholds remain unmet.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /

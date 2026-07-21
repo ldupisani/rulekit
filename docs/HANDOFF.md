@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–31 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–32 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -60,15 +60,17 @@
 > `There is a/an CLS PREPOSITION NAME`, using `Existential` without minting a
 > witness — and (reader 31) direct passive named-agent premises `The PATIENT
 > is V-ed by NAME`, using a morphology-gated `VerbalRelation(NAME, V,
-> PATIENT)`. Cumulative movement from Phase A is +65 / +56 fully-read premise
-> instances and +7 / +8
+> PATIENT)` — and (reader 32) PP-restricted negative verbal universals `None
+> of the CLSs PREPOSITION R V the P`, using exact negative `Quantified`
+> facts. Cumulative movement from Phase A is +67 / +56 fully-read premise
+> instances and +8 / +8
 > stack-ready stories on dev-train / dev-holdout, with no
 > verdict regression or hazard increase; truth-scope vetoes improve by 53 / 40, while
-> holdout collision/quarantine improve 12→9 / 24→18. Thirty-one construction classes
+> holdout collision/quarantine improve 12→9 / 24→18. Thirty-two construction classes
 > are served. The holdout stack-ready threshold is now exceeded, but the
-> conjunctive Phase C gate remains unmet (fully read 785/1647 and 777/1607 vs
-> 852/850; vetoes 613/574 vs ≤499/460; stack-ready stories 18/13 vs ≥22/10).
-> Next regenerate the frontier after buying the direct passive family; the
+> conjunctive Phase C gate remains unmet (fully read 787/1647 and 777/1607 vs
+> 852/850; vetoes 613/574 vs ≤499/460; stack-ready stories 19/13 vs ≥22/10).
+> Next regenerate the frontier after buying the restricted `None of` family; the
 > remaining candidates require lexical, definite-description, coreference,
 > or deeper composition infrastructure. The unbought outer-quantified verbal
 > relative remains banked pending composition evidence. Reader 4's opt-in
@@ -91,6 +93,46 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 46 (2026-07-21): Phase B reader 32 — PP-restricted “None of” verbal universals; +2 train fully read, +1 stack-ready story
+
+One reader serves **“None of the CLSs PREPOSITION R V the P.”** The
+bare-plural head and bare-form event verb prove generic agreement; the single
+PP remains inside the exact restrictor key. Both definite articles and a
+terminal period are claimed explicitly. The reader emits negative
+`Quantified(CLS+PP, V+P)` and reuses universal instantiation unchanged.
+
+Nineteen synthetic pins cover exact emission, negative-event instantiation,
+a changed-restriction null, and sixteen adjacent refusals. Singular or
+articleless restrictors, missing/multiple PPs, relative clauses, sign,
+modality, indefinite or counted objects, coordination, perfect verbs, and
+larger object tails all remain whole-unread.
+
+**All 2,397 tests pass; scratch lint has 0 errors and the same eight warnings;
+curated is 65/65 twice.** All eight standard DEV diffs and both grouped logic
+diffs are NEUTRAL. Outcomes remain train 21 correct / 1 pre-existing
+poisoned-text wrong / 472 declined and holdout 4 / 0 / 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1342→1342 | 785→787 (+2) | 22/18→23/19 (+1/+1) | 2 / 1 | 613→613 |
+| dev-holdout | 1319→1319 | 777→777 | 20/13→20/13 | 0 / 0 | 574→574 |
+
+The buyer records `kid in our family → not love opera`; Billy’s exact ground
+membership can instantiate that event denial. The currently represented
+student/scientist conclusion does not use it, so the story becomes stack-ready
+without an outcome change or unrelated inference bridge. All hazards remain
+neutral.
+
+Cumulative recorded-frame state is 787/1647 and 777/1607 fully read, 613/574
+truth-scope vetoes, 19/13 stack-ready stories, collision 8/9, and quarantine
+16/18. Thirty-two classes are served. No TEST look was spent.
+
+**Next:** regenerate the exact frontier. Train stack readiness remains the
+binding story threshold; continue preferring structurally explicit readers
+over lexical, coreference, or definite-kind guesses.
+
+---
 
 # Session 45 (2026-07-21): Phase B reader 31 — direct passive named-agent premises; +2 train fully read, +1 stack-ready story
 
