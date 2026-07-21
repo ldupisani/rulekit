@@ -471,6 +471,89 @@ def _split_conjoined_clauses(sentence: str, reg: Registry) -> list[str]:
     return [c + trailing for c in clauses]
 
 
+def _split_fused_premise_question(
+    fused: str, reg: Registry
+) -> tuple[str | None, str]:
+    """Recover a missing terminal boundary between one premise and its ask.
+
+    Some sources concatenate ``<premise> <Question?>`` without punctuation
+    after the premise. Capitalization only proposes a boundary; it never
+    licenses one. The left side must be wholly consumed by one fact-emitting
+    read rule, and the right side wholly consumed by one ask rule. This
+    two-sided grammar proof prevents an ask that merely floats to a later
+    substring—or a premise rule that reads only a fragment—from manufacturing
+    a document boundary.
+
+    The rule and ask vocabularies remain pack-owned. This function compares
+    only structural match coverage and therefore introduces no word list in
+    the kernel.
+    """
+    if not fused.rstrip().endswith("?"):
+        return None, fused
+    first = fused.split()[0] if fused.split() else ""
+    first_entry = reg.lexicon.get(first.lower().rstrip(",?"))
+    if _has_ask_cue_sense(first, reg) or (
+        first_entry is not None and "verb" in first_entry.senses
+    ):
+        # Ordinary questions overwhelmingly declare themselves at token 0.
+        # A registered leading verb covers inverted questions such as
+        # copular "Is ...?", whose `is` sense is structural `verb` rather
+        # than one of ASK_CUE_SENSES. Fused inputs instead begin with their
+        # premise subject/quantifier, so they proceed to the two-sided proof.
+        return None, fused
+
+    # Local import avoids making the tokenizer/document entry point depend on
+    # the pattern module during engine import. The same functions are imported
+    # lazily by solve() for ordinary ask matching below.
+    from .patterns import SKIPPABLE_SENSES, match_ask, run_rules
+
+    def meaningful_uids(reading: Reading) -> set[int]:
+        return {
+            unit.uid
+            for unit in reading.units
+            if unit.sense() not in SKIPPABLE_SENSES
+        }
+
+    # A question already consumed end-to-end has no missing boundary. Besides
+    # preserving its interpretation, this fast path avoids probing capitalized
+    # names inside the overwhelmingly common correctly punctuated question.
+    whole = analyze(fused, reg, tracing=False)
+    whole_ask = match_ask(whole, reg)
+    if whole_ask is not None and meaningful_uids(whole).issubset(
+        whole_ask[2].consumed
+    ):
+        return None, fused
+
+    # The capital is the only surface evidence that punctuation was omitted.
+    # The grammar proofs below carry the semantic load.
+    for boundary in list(re.finditer(r"\S+", fused))[1:]:
+        token = boundary.group()
+        if not token[:1].isupper():
+            continue
+        head = fused[: boundary.start()].strip()
+        tail = fused[boundary.start() :].strip()
+        if len(head.split()) < 3 or len(tail.split()) < 3:
+            continue
+
+        question = analyze(tail, reg, tracing=False)
+        ask = match_ask(question, reg)
+        if ask is None or not meaningful_uids(question).issubset(ask[2].consumed):
+            continue
+
+        premise = analyze(head, reg, tracing=False)
+        content = meaningful_uids(premise)
+        exact_fact_rule = any(
+            result.facts and content.issubset(result.match.consumed)
+            for result in run_rules(premise, reg, "read")
+        )
+        if not exact_fact_rule:
+            continue
+
+        promoted = head.rstrip(",;:").rstrip().rstrip(".") + "."
+        return promoted, tail
+    return None, fused
+
+
 def split_question(text: str, reg: Registry | None = None) -> tuple[list[str], str | None]:
     sentences = split_sentences(text)
     if not sentences:
@@ -500,6 +583,8 @@ def split_question(text: str, reg: Registry | None = None) -> tuple[list[str], s
             clause, last = _split_leading_temporal_clause(last, reg)
         if clause is None:
             clause, last = _split_trailing_clause(last, reg)
+        if clause is None:
+            clause, last = _split_fused_premise_question(last, reg)
         if clause is not None:
             premises = premises + [clause]
     return premises, last

@@ -1,6 +1,6 @@
 # The breadth-first premise-reader campaign — FOLIO logic → full integration
 
-**ACTIVE. Phase A and Phase B readers 1–23 completed 2026-07-21: ground
+**ACTIVE. Phase A and Phase B readers 1–24 completed 2026-07-21: ground
 both-or-neither equivalence, unrestricted bare-plural disjunction, and negative
 two-article indefinite generics, plus single-antecedent verbal “Everyone who”
 implications, verbal-restrictor conditionals, and the negative-antecedent
@@ -14,7 +14,8 @@ generics, named mixed possession/event disjunctions, and singular positive
 possessive universals, plural-generic copular-to-verbal conditionals,
 indefinite-generic verbal conditionals, reduced-relative people universals,
 fully repeated ground both-or-neither equivalences, implicit-restrictor
-property universals, and second-person generic conditionals.**
+property universals, second-person generic conditionals, and grammar-proven
+fused premise/question boundaries.**
 
 ## Context
 
@@ -378,6 +379,16 @@ dev-holdout. The target tennis story becomes premise-complete and derives the
 exact champion-to-professional-player chain; its asks remain unread. Outcomes
 and hazards are neutral. Twenty-three classes are served; the holdout
 stack-story threshold remains met while the other conjunctive thresholds bind.
+
+Reader 24 serves missing terminal boundaries between a premise and question.
+A capitalized token only proposes the split; one read rule must wholly consume
+the left fragment and emit a fact, while one ask rule must wholly consume the
+right. Incremental movement is +0 / +5 fully-read premises and +0 / +1
+stack-ready stories on dev-train / dev-holdout; the holdout premise denominator
+also rises by five as the previously omitted final premise is restored. Truth
+vetoes, outcomes, and hazards remain neutral. Twenty-four classes are served;
+holdout stack readiness reaches 11 stories, while the other conjunctive
+thresholds remain unmet.
 
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key

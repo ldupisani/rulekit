@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–23 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–24 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -43,14 +43,15 @@
 > exact repeated-span equality — and (reader 22) implicit-restrictor property
 > universals `Anything P is Q` / `No one P is Q`, using positive/negative
 > `Quantified` facts — and (reader 23) second-person generic conditionals
-> `If you are a P, then you are a Q`, using a positive `Quantified` fact.
-> Cumulative movement from Phase A is +47 / +43 fully-read
-> premise instances and +2 / +5 stack-ready stories on dev-train / dev-holdout, with no
+> `If you are a P, then you are a Q`, using a positive `Quantified` fact —
+> and (reader 24) missing terminal boundaries between a wholly read premise
+> and a wholly read ask. Cumulative movement from Phase A is +47 / +48
+> fully-read premise instances and +2 / +6 stack-ready stories on dev-train / dev-holdout, with no
 > verdict regression or hazard increase; truth-scope vetoes improve by 43 / 35, while
-> holdout collision/quarantine improve 12→9 / 24→18. Twenty-three construction classes
-> are served. The holdout stack-ready threshold is now met exactly, but the
-> conjunctive Phase C gate remains unmet (fully read 767/1647 and 764/1602 vs
-> 852/850; vetoes 623/579 vs ≤499/460; stack-ready stories 13/10 vs ≥22/10).
+> holdout collision/quarantine improve 12→9 / 24→18. Twenty-four construction classes
+> are served. The holdout stack-ready threshold is now exceeded, but the
+> conjunctive Phase C gate remains unmet (fully read 767/1647 and 769/1607 vs
+> 852/850; vetoes 623/579 vs ≤499/460; stack-ready stories 13/11 vs ≥22/10).
 > Next re-survey the remaining exact coordination and conditional families; the
 > unbought outer-quantified verbal relative, surveyed `there is`, direct passive-agent, and unresolved
 > ground-pronoun candidates remain banked pending composition, lexical infrastructure,
@@ -74,6 +75,52 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 38 (2026-07-21): Phase B reader 24 — grammar-proven fused premise/question boundaries; +0/+5 fully read, +1 holdout stack-ready story
+
+One document-reader construction recovers a missing terminal boundary in
+**“PREMISE Is it true that …?”** without hardcoding that wrapper. A capitalized
+token merely proposes a split: the left fragment must be consumed end-to-end
+by one fact-emitting read rule, and the right fragment end-to-end by one ask
+rule. Existing leading/trailing conditional splitters run first, and an
+already complete question takes a fast path. Partial/floating matches and
+unknown left fragments remain fused and decline.
+
+Eight synthetic pins cover exact splitting, positive and negative end-to-end
+verdicts, preservation of a disjunction without asserting either branch, and
+four refusals/compatibility cases. The exact-boundary survey finds no matches
+in the eight standard DEV slices or FOLIO train; all five holdout verdict
+instances in the tennis story match.
+
+**All 2,250 tests pass; scratch lint has 0 errors and the same eight warnings;
+curated is 65/65 twice.** All eight standard DEV and both FOLIO-with-logic
+grouped snapshot diffs are NEUTRAL (0 BROKE, 0 DECL→WRONG). Outcomes remain
+train 19 correct / 1 pre-existing poisoned-text wrong / 474 declined and
+holdout 4 / 0 / 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1340→1340 | 767→767 | 17/13→17/13 | 0 / 0 | 623→623 |
+| dev-holdout | 1311→1316 (+5) | 764/1602→769/1607 (+5/+5 denominator) | 12/10→17/11 (+5/+1) | 5 / 1 | 579→579 |
+
+The buyer's final disjunctive premise had been fused into each question and
+therefore omitted from premise accounting. Reader 24 restores it as a fully
+read `Disjunction`, exposes the existing asks, and makes all five verdict
+items stack-ready. The current inference/consumer layer still cannot decide
+their negative, neither/nor, and conditional conclusions, so this is readiness
+rather than answer conversion. Hazards remain neutral.
+
+Cumulative recorded-frame state is 767/1647 and 769/1607 fully read, 623/579
+truth-scope vetoes, 13/11 stack-ready stories, collision 8/9, and quarantine
+16/18. Twenty-four construction classes are served. The holdout stack-story
+threshold is exceeded; the fully-read, veto, and train stack thresholds remain
+conjunctively unmet. No TEST look was spent.
+
+**Next:** re-survey premise readers for cross-split fully-read and train-stack
+movement. Keep the tennis conclusion consumers banked as distinct inference
+classes; the boundary reader has already isolated their exact remaining gaps.
+
+---
 
 # Session 37 (2026-07-21): Phase B reader 23 — second-person generic conditionals; +0/+5 fully read
 

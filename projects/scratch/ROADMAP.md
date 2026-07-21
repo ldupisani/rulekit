@@ -2188,3 +2188,50 @@ conjunctively unmet. No TEST look was spent.
 **Next:** price the buyer story's now-exposed ask surfaces by exact stored-key
 joins, alongside other cross-split ask gaps. Keep premise readers ahead when
 they buy broader fully-read or stack-ready movement.
+
+## Phase B reader 24 — grammar-proven fused premise/question boundaries (2026-07-21)
+
+The tennis story exposed a document-layer blocker: its final premise has no
+terminal period, so `split_sentences` returned **“PREMISE Is it true that
+…?”** as one question and omitted the premise from the document. The shipped
+reader does not search for the FOLIO wrapper. Capitalization proposes a
+boundary, then the loaded grammar must prove both sides: one fact-emitting read
+rule consumes every meaningful left-side unit and one ask rule consumes every
+meaningful right-side unit. Existing conditional splitters take priority; a
+complete question fast-path avoids probing its internal names.
+
+The broad capitalization/cue prototype was rejected because it proposed false
+boundaries at capitalized names and the month `May`. Requiring end-to-end rule
+coverage on both fragments reduces the measured DEV blast radius to exactly
+the six rows sharing the one holdout tennis story (five verdict golds plus one
+text gold), with zero standard-slice or FOLIO-train matches.
+
+Eight synthetic pins cover exact splitting, positive/negative verdicts,
+disjunction preservation, partial and unknown left-fragment refusals, lowercase
+boundary refusal, and unchanged punctuated splitting. **pytest 2,250 passed;
+scratch lint 0 errors with the same eight warnings; curated 65/65 twice.** All
+eight standard DEV and both FOLIO-with-logic diffs are NEUTRAL (0 BROKE / 0
+DECL→WRONG).
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1340→1340 | 767→767 | 17/13→17/13 | 0 / 0 | 623→623 |
+| dev-holdout | 1311→1316 (+5) | 764/1602→769/1607 (+5/+5 denominator) | 12/10→17/11 (+5/+1) | 5 / 1 | 579→579 |
+
+The restored final premise emits Nadal's inclusive World-Tour-player / Grand-
+Slam-champion `Disjunction`, and all five verdict conclusions now reach their
+existing ask rules. They remain undetermined: the simple negative claims need
+stronger disjointness reasoning, while the neither/nor and conditional claims
+need their own conclusion consumers. Outcomes stay train 19/1/474 and holdout
+4/0/421 (correct/wrong/declined); hazards are neutral.
+
+Cumulative state is 767/1647 and 769/1607 fully read, 623/579 vetoes, 13/11
+stack-ready stories, collision 8/9, and quarantine 16/18. Phase A movement is
++47/+48 fully read, 43/35 fewer truth-scope vetoes, and +2/+6 stack-ready
+stories. Twenty-four classes are served. Holdout stack readiness exceeds its
+threshold; fully-read, veto, and train-stack thresholds remain conjunctively
+unmet. No TEST look was spent.
+
+**Next:** return to cross-split premise readers and train-stack movement. Keep
+the now-isolated tennis conclusion consumers banked as separate inference
+classes rather than bundling them into this document-boundary increment.
