@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–8 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–9 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -14,15 +14,18 @@
 > could misbind `he` to the antecedent subject when another name occurred inside the
 > predicate — and (reader 7) the plural generic `If people are P, then they are [not]
 > Q`, using the existing `Quantified` fact and instantiation synth — and (reader 8)
-> class-scoped `CLSs who are P are [not] Q`, using the existing `Conditional` fact.
-> Cumulative movement from Phase A is +16 / +21 fully-read
-> premise instances and +1 / +2 stack-ready stories on dev-train / dev-holdout, with no
-> verdict regression or hazard increase; truth-scope vetoes improve by 12 / 15, while
-> holdout collision/quarantine improve 12→9 / 24→18. Eight construction classes
-> are served, but all numeric Phase C thresholds remain unmet (fully read 736/1647 and
-> 742/1602 vs 852/850; vetoes 654/599 vs ≤499/460; stack-ready stories 12/7 vs ≥22/10).
-> Next re-survey the adjacent verbal/do-support `people` conditionals and the narrow
-> passive/relative families; the surveyed `there is`, direct passive-agent, and unresolved
+> class-scoped `CLSs who are P are [not] Q`, using the existing `Conditional` fact —
+> and (reader 9) restricted `Everyone RESTRICTION is [either] L or R`, using the
+> existing
+> `QuantifiedDisjunction` fact and instantiation/case-analysis synths.
+> Cumulative movement from Phase A is +18 / +24 fully-read
+> premise instances and +2 / +2 stack-ready stories on dev-train / dev-holdout, with no
+> verdict regression or hazard increase; truth-scope vetoes improve by 14 / 18, while
+> holdout collision/quarantine improve 12→9 / 24→18. Nine construction classes
+> are served, but all numeric Phase C thresholds remain unmet (fully read 738/1647 and
+> 745/1602 vs 852/850; vetoes 652/596 vs ≤499/460; stack-ready stories 13/7 vs ≥22/10).
+> Next re-survey the remaining exact raw-coordination and conditional families; the
+> unbought outer-quantified verbal relative, surveyed `there is`, direct passive-agent, and unresolved
 > ground-pronoun candidates remain banked pending composition, lexical infrastructure,
 > or coreference evidence. Reader 4's opt-in
 > `single_word` slot gate stays dormant for all pre-existing rules. The
@@ -35,6 +38,53 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 21 (2026-07-21): Phase B reader 9 — restricted Everyone disjunctions; +2/+3 fully read; +1 train stack-ready story
+
+One pack-only, independently revertible increment serves **“Everyone
+RESTRICTION is [either] L or R”**. `Everyone` supplies the universally
+quantified variable; the mandatory restriction is the antecedent predicate
+that named ground facts can join (`at event`, for example). The reader reuses
+`QuantifiedDisjunction` and the existing instantiation and case-analysis
+synths. Bare `or` is inclusive and overt `either … or` exclusive under the
+Stage 3 surface contract.
+
+The exact construction refuses an empty restriction, `who` relatives,
+negative disjuncts, three-way disjunctions, and verbal disjuncts. Eleven
+synthetic pins cover both exact fact shapes, composition through both
+branches, missing-restriction and non-decomposition nulls, and every refusal
+boundary. **All 2,026 tests pass; scratch lint has 0 errors and the same eight
+pre-existing warnings; curated remains 65/65.** All eight standard DEV
+snapshot diffs are NEUTRAL (difg, GSM8K train/holdout, ASDiv, SVAMP, MAWPS,
+SciBench, FOLIO), as are both FOLIO-with-logic grouped diffs: 0 BROKE and 0
+DECL→WRONG throughout. The pre-existing poisoned text wrong remains unchanged
+on train (19 correct / 1 wrong / 474 declined); holdout remains 1 / 0 / 424.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1333→1335 (+2) | 736→738 (+2) | 16/12→17/13 (+1/+1) | 2 / 1 | 654→652 (−2) |
+| dev-holdout | 1300→1300 | 742→745 (+3) | 8/7→8/7 | 3 / 2 | 599→596 (−3) |
+
+Both train items become all-premises-read; the item with the represented
+positive query also becomes stack-ready because its named restriction witness
+and fact-key path coexist without a hazard. The second conclusion in that
+story still lacks an ask shape. Holdout moves
+three premise instances in two stories; coarse facts already existed there,
+so fact-bearing stays flat while exact whole-reading consumes the previously
+unread `or`. No verdict or reason changes, and collision, quarantine,
+agreement, ambiguous-reading, and clause-split diagnostics remain unchanged.
+
+The mandatory banked-zero recheck remains zero: no `_naive_singular` ending,
+CamelCase entity, or verbal-universal ask joins the new keys. The preceding
+survey also banked three non-readers: positive verbal `people` consequences
+lack one shared train/holdout key contract; outer-quantified verbal relatives
+matched 9/8 item instances but moved no reading, stack, or hazard metric; and
+the apparent verbal both-or-neither sibling needs unresolved same-sentence
+pronoun coreference. Cumulative recorded-frame state is 738/1647 and 745/1602
+fully-read premises, 652/596 truth-scope vetoes, 13/7 stack-ready stories,
+collision 8/9, and quarantine 16/18. No TEST look was spent.
+
+---
 
 # Session 20 (2026-07-21): Phase B reader 8 — bare-plural copular relatives; +2/+3 fully read; holdout conflicts removed
 

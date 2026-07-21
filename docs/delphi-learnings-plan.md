@@ -1,11 +1,12 @@
 # The breadth-first premise-reader campaign — FOLIO logic → full integration
 
-**ACTIVE. Phase A and Phase B readers 1–8 completed 2026-07-21: ground
+**ACTIVE. Phase A and Phase B readers 1–9 completed 2026-07-21: ground
 both-or-neither equivalence, unrestricted bare-plural disjunction, and negative
 two-article indefinite generics, plus single-antecedent verbal “Everyone who”
 implications, verbal-restrictor conditionals, and the negative-antecedent
 same-entity ground conditional, plural-generic `people` conditionals, and
-class-scoped bare-plural copular relatives.**
+class-scoped bare-plural copular relatives, plus restricted `Everyone … is
+[either] … or …` disjunctions.**
 
 ## Context
 
@@ -216,6 +217,15 @@ stack-ready stories. Outcomes remain neutral; the holdout fallback-conflict
 hazard improves from collision 12→9 and quarantine 24→18. Negative/verbal
 relatives, verbal consequences, and definite/counted/singular subjects remain
 separate. Eight construction classes are served; every numeric Phase C
+threshold still binds.
+
+Reader 9 serves **“Everyone RESTRICTION is [either] L or R”** through the
+existing `QuantifiedDisjunction` fact. `Everyone` supplies the universal
+variable while the non-empty restriction is the joinable antecedent key;
+bare `or` remains inclusive and overt `either` exclusive. Incremental
+movement is +2 / +3 fully-read premises, −2 / −3 truth-scope vetoes, and
++1 / +0 stack-ready stories on dev-train / dev-holdout. Outcomes and hazards
+remain neutral. Nine construction classes are served; every numeric Phase C
 threshold still binds.
 
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):

@@ -924,6 +924,41 @@ rules:
     emits:
       - {fact: quantified_disjunction, cls: "{cls}", left: "{l}", right: "{r}", exclusive: true}
 
+  # Phase B reader 9: restricted-pronominal quantified disjunctions —
+  # "Everyone RESTRICTION is [either] L or R". `Everyone` supplies the
+  # universal variable; the non-empty restriction is its joinable antecedent
+  # predicate ("at the event" joins the ground atom from "Rex is at the
+  # event"). Reuse QuantifiedDisjunction and its existing instantiation/case
+  # analysis synths. As throughout Stage 3, bare `or` is inclusive and overt
+  # `either` is exclusive. Negated, coordinated, verbal, three-way, `who`,
+  # and unrestricted surfaces fail the exact construction and stay unread.
+  - id: logic/qdisj-everyone-restricted-is-bare
+    phase: read
+    match:
+      sentence:
+        - {lit: everyone, at_start: true}
+        - {slot: cls, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal]}
+        - {lit: is}
+        - {slot: l, span: true, span_blocks: [negation, conjunction, preposition, either_marker, verb]}
+        - {lit: or}
+        - {slot: r, span: true, span_blocks: [negation, conjunction, preposition, disjunctive_marker, verb]}
+    emits:
+      - {fact: quantified_disjunction, cls: "{cls}", left: "{l}", right: "{r}", exclusive: false}
+
+  - id: logic/qdisj-everyone-restricted-is-either
+    phase: read
+    match:
+      sentence:
+        - {lit: everyone, at_start: true}
+        - {slot: cls, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal]}
+        - {lit: is}
+        - {lit: either}
+        - {slot: l, span: true, span_blocks: [negation, conjunction, preposition, either_marker, verb]}
+        - {lit: or}
+        - {slot: r, span: true, span_blocks: [negation, conjunction, preposition, disjunctive_marker, verb]}
+    emits:
+      - {fact: quantified_disjunction, cls: "{cls}", left: "{l}", right: "{r}", exclusive: true}
+
   # Stage 9d: the RESTRICTED bare-plural exclusive disjunction — "CLSs
   # <restrictor> are either A or B" ("Vehicles produced by Chevrolet in this
   # batch are either cars or vans"). The banked "bare-plural disjunctive

@@ -1473,3 +1473,48 @@ The mandatory banked-zero recheck remains zero: the emitted keys carry no
 ask, and no item becomes a new all-read stack. Re-price the adjacent
 verbal/do-support `people` conditionals and the remaining passive/relative
 families against this cleaner state before reader 9. No TEST look was spent.
+
+## Phase B reader 9 — restricted Everyone disjunctions (2026-07-21)
+
+The next bought raw-coordination family is **“Everyone RESTRICTION is
+[either] L or R”**. `Everyone` contributes the universal variable; the
+non-empty restriction contributes the joinable antecedent predicate. The two
+rules reuse `QuantifiedDisjunction` and `synth/qdisj-instantiation`; subsequent
+case analysis is already shared. Bare `or` remains inclusive and explicit
+`either` exclusive. Empty restrictions, relatives, negated or verbal
+disjuncts, and three-way forms remain whole-unread.
+
+Eleven synthetic tests pin both exact fact shapes, successful composition,
+the missing-restriction and branch-non-decomposition nulls, and all refusal
+boundaries. **pytest 2,026 passed; scratch lint 0 errors with the same eight
+warnings; curated 65/65.** All eight standard DEV snapshot diffs and both
+FOLIO-with-logic grouped diffs are NEUTRAL: 0 BROKE and 0 DECL→WRONG.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1333→1335 (+2) | 736→738 (+2) | 16/12→17/13 (+1/+1) | 2 / 1 | 654→652 (−2) |
+| dev-holdout | 1300→1300 | 742→745 (+3) | 8/7→8/7 | 3 / 2 | 599→596 (−3) |
+
+The train story crosses the stronger all-premises-read and stack-ready
+boundary for its represented conclusion; the sibling negative conclusion
+still has no ask shape. Holdout's three premises were already fact-bearing
+through coarse readings, but the exact reader consumes their truth-scoping
+`or`, so fully-read coverage moves without inventing a second fact path.
+Outcomes, reasons, collision, quarantine, agreement, ambiguous-reading, and
+clause-split diagnostics remain unchanged.
+
+The pre-reader survey banked three candidates rather than widening them:
+positive verbal `people` consequences do not share a train/holdout ground-key
+contract; outer-quantified verbal relatives emitted facts for 9/8 instances
+but moved no registered metric; and verbal both-or-neither would require the
+same unsupported coreference assumption removed from reader 6. The normal
+banked-zero recheck (`_naive_singular`, CamelCase entities,
+verbal-universal asks) remains zero. Cumulative recorded-frame state is
+738/1647 and 745/1602 fully read, 652/596 truth-scope vetoes, 13/7
+stack-ready stories, collision 8/9, and quarantine 16/18. Every numeric Phase
+C threshold still binds (852/850, ≤499/460, ≥22/10). No TEST look was spent.
+
+**Next:** re-price the remaining exact raw-coordination and conditional
+families against reader 9's newly stack-ready train story. Do-support,
+unresolved coreference, direct passive-agent infrastructure, and paraphrase
+bridges remain banked until a two-split buyer appears.
