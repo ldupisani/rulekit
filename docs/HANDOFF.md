@@ -31,6 +31,69 @@
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
 
+# Session 18 (2026-07-21): Phase B reader 6 — negative-antecedent ground conditionals; the contrapositive is free; all gates NEUTRAL
+
+One independently revertible increment (`cb3c955`, pushed) lands the delphi
+campaign's sixth premise-reader class: **“If NAME is not P, then NAME/he is
+Q”** as the new kernel fact `GroundConditional(entity, pred, then_pred,
+then_polarity)` — semantics ¬P(e) → Q(e), the negation consumed as STRUCTURAL
+skeleton so `pred` holds plain P, and a name never rides `Conditional.cls`
+(the plan's pinned boundary). **pytest 1985 → 1995, scratch lint 0 errors,
+curated 65/65; all eight benchmark slices snapshot-diffed NEUTRAL (the fact
+kind touches model/patterns/schemas, so the full matrix ran as live blast
+radius), and folio-with-logic is item-level neutral in OUTCOME AND REASON on
+both splits (train 20 correct / 1 persistent poisoned-text wrong / 473
+declined; holdout 1 / 0 / 424). No TEST look was spent.**
+
+#### What landed, and the finding worth keeping
+
+Two pack rules serve the two measured cross-split surfaces: the repeated-name
+form (`If Marvin is not from Earth, then Marvin is an extraterrestrial`,
+pinned by `same_lemma` — the 9i precedent) and the anaphoric form (`If Leon
+is not pursuing a bachelor's degree, then he is a professor`, the bound
+subject pronoun consumed as skeleton per Stage 1's `it`/`they` discipline).
+Both spans refuse negation, coordination, and either/neither marking, so the
+measured coordinated surfaces (Mike/Emily/Clyde/Thomas/Carol) stay
+whole-unread; a different consequent name fails `same_lemma`. One
+`unless`-free fire synth (gc + explicit ¬P(e) ⊢ Q(e)) completes the contract.
+
+**The contrapositive ((¬P→Q) ∧ ¬Q ⊢ P) needed NO synth**: the Stage 9i
+reductio engine assumes ¬P, the unless-free synth emits Q, the collision
+with a stated ¬Q refutes the hypothesis, and P commits — pinned as
+`test_contrapositive_comes_free_via_reductio`, and the reason the fire synth
+must never grow an `unless`. Bycatch: the permissive fold's if-antecedent
+`Membership('leon','degree')` leak stops once the conditional is consumed
+whole (holdout's diagnostic agreement count improves 53 → 51).
+
+#### Movement, and the measurement caveat
+
+Incremental movement is +2 / +2 fully-read premises and −2 / −2 truth-scope
+vetoes (dev-train / dev-holdout); the item-level movers are exactly the four
+buyer items (both Marvin, both Leon), and no verdict converts — Leon's
+ground denial is still coordination-unread and Marvin needs the compound-cls
+universal, so stack-ready stays 12 / 7 stories. Banked without cross-split
+buyers: the negative-consequent `they` variant (`If Nancy is not a teacher,
+then they are not paid by the school`, one train story) and the `she` twin.
+The three standing banks (`_naive_singular`, CamelCase names,
+verbal-universal asks) re-checked at zero joins.
+
+⚠ **The Phase A movement classifier was REGENERATED this session** (the
+original was throwaway, per the plan). It reproduces the premise universe —
+the metric scope is the ACTIONABLE DECLINE POOL, 1647/1602 premises —
+fact-bearing, truth-scope vetoes, hazards (quarantine counts FACTS,
+collision counts items), and every reader's incremental movement EXACTLY,
+but its absolute fully-read total sits a constant −4/−11 below the recorded
+scale at both endpoints. Compare DELTAS, not absolute totals; the full note
+and the rebuilt script's definitions are in the reader-6 ROADMAP record.
+
+**Next lever**: reader 7 should price one narrow passive or relative-clause
+family per the Phase A build order (passive has the stronger balanced
+marginal estimate), then re-survey compound generics and `entity-in-raw-if`.
+Cumulative state is 732/1647 and 735/1602 fully-read, vetoes 658/603,
+stack-ready 12/7 — all numeric Phase C thresholds still bind.
+
+---
+
 # Session 17 (2026-07-20): direct kinetic energy +2 rows @100%; one formula shape stays explicit; TEST holds
 
 One independently revertible, pack-only physics increment adds translational
