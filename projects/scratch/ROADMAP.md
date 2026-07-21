@@ -2371,3 +2371,41 @@ stack-ready stories. Twenty-seven classes are served. No TEST look was spent.
 **Next:** regenerate the exact one-away frontier. Continue buying train stack
 stories with exact grammar; do not bundle the banked European membership/event
 bridge or any lexical/coreference guess into a premise reader.
+
+## Phase B reader 28 — inclusive two-article indefinite-generic disjunctions (2026-07-21)
+
+Reader 28 serves **“A/An CLS is a/an L or a/an R.”** It is Reader 10’s
+bare-`or` sibling: the three articles prove a generic nominal class and two
+nominal branches, while the missing `either` selects inclusive semantics. The
+reader emits the existing `QuantifiedDisjunction` with `exclusive: false`, so
+case analysis composes but a known branch never negates the other.
+
+Signed, coordinated, verbal, prepositional, articleless, either-marked, and
+larger disjuncts remain unread. Twenty synthetic pins cover exact emission,
+case-analysis composition, refusal of exclusive elimination, a missing-class
+null, and sixteen adjacent constructions.
+
+**pytest 2,319 passed; scratch lint 0 errors with the same eight warnings;
+curated 65/65 twice.** All eight standard DEV diffs and both FOLIO-with-logic
+grouped diffs are NEUTRAL. Outcomes remain train 21 correct / 1 pre-existing
+poisoned-text wrong / 472 declined and holdout 4 / 0 / 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1340→1342 (+2) | 781→783 (+2) | 20/16→21/17 (+1/+1) | 2 / 1 | 615→613 (−2) |
+| dev-holdout | 1316→1316 | 773/1607→773/1607 | 17/11→17/11 | 0 / 0 | 575→575 |
+
+Across all gold kinds the rule appears in three train rows / one story and no
+holdout rows. The buyer now records `photographer → professional ∨ amateur`.
+Its Alba Roversi conclusion is stack-ready but still undetermined because
+substituting the object `Roversi` with its property `Italian surname` is a
+separate relational inference class. Hazards are neutral.
+
+Cumulative recorded-frame state is 783/1647 and 773/1607 fully read, 613/575
+vetoes, 17/11 stack-ready stories, collision 8/9, and quarantine 16/18. Phase
+A movement is +63/+52 fully read, 53/39 fewer truth-scope vetoes, and +6/+6
+stack-ready stories. Twenty-eight classes are served. No TEST look was spent.
+
+**Next:** regenerate the exact one-away frontier. Train stack readiness remains
+the binding story threshold; keep relational substitution and lexical or
+coreference infrastructure separate from premise readers.

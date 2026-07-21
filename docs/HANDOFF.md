@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–27 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–28 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -52,14 +52,16 @@
 > positive `Quantified` facts and the existing negative-chain path — and
 > (reader 27) comma-bound free-relative verbal conditionals `If a/an CLS V P,
 > they V2 what SUBJECT V3 Q`, preserving the embedded clause inside one exact
-> consequence key. Cumulative movement from Phase A is +61 / +52 fully-read
-> premise instances and +5 / +6
+> consequence key — and (reader 28) inclusive two-article indefinite-generic
+> disjunctions `A/An CLS is a/an L or a/an R`, reusing
+> `QuantifiedDisjunction` with bare-`or` semantics. Cumulative movement from
+> Phase A is +63 / +52 fully-read premise instances and +6 / +6
 > stack-ready stories on dev-train / dev-holdout, with no
-> verdict regression or hazard increase; truth-scope vetoes improve by 51 / 39, while
-> holdout collision/quarantine improve 12→9 / 24→18. Twenty-seven construction classes
+> verdict regression or hazard increase; truth-scope vetoes improve by 53 / 39, while
+> holdout collision/quarantine improve 12→9 / 24→18. Twenty-eight construction classes
 > are served. The holdout stack-ready threshold is now exceeded, but the
-> conjunctive Phase C gate remains unmet (fully read 781/1647 and 773/1607 vs
-> 852/850; vetoes 615/575 vs ≤499/460; stack-ready stories 16/11 vs ≥22/10).
+> conjunctive Phase C gate remains unmet (fully read 783/1647 and 773/1607 vs
+> 852/850; vetoes 613/575 vs ≤499/460; stack-ready stories 17/11 vs ≥22/10).
 > Next re-survey the remaining exact coordination and conditional families; the
 > unbought outer-quantified verbal relative, surveyed `there is`, direct passive-agent, and unresolved
 > ground-pronoun candidates remain banked pending composition, lexical infrastructure,
@@ -83,6 +85,46 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 42 (2026-07-21): Phase B reader 28 — inclusive indefinite-generic disjunctions; +2 train fully read, +1 stack-ready story
+
+One reader serves **“A/An CLS is a/an L or a/an R.”** The three articles
+prove a generic nominal class and two nominal branches even when a branch noun
+is unknown. Bare `or` emits the existing `QuantifiedDisjunction` with
+`exclusive: false`; unlike Reader 10’s overt-`either` sibling, knowing one
+branch cannot refute the other. Signed, coordinated, verbal, prepositional,
+articleless, either-marked, and larger disjuncts refuse.
+
+Twenty synthetic pins cover exact inclusive emission, case-analysis
+composition, the absence of exclusive elimination, a missing-membership null,
+and sixteen adjacent refusals. The exact survey finds two train verdict rows
+in one story, plus one text-gold copy, and no holdout rows.
+
+**All 2,319 tests pass; scratch lint has 0 errors and the same eight warnings;
+curated is 65/65 twice.** All eight standard DEV diffs and both grouped logic
+diffs are NEUTRAL. Outcomes remain train 21 correct / 1 pre-existing
+poisoned-text wrong / 472 declined and holdout 4 / 0 / 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1340→1342 (+2) | 781→783 (+2) | 20/16→21/17 (+1/+1) | 2 / 1 | 615→613 (−2) |
+| dev-holdout | 1316→1316 | 773/1607→773/1607 | 17/11→17/11 | 0 / 0 | 575→575 |
+
+The buyer story now records `photographer → professional ∨ amateur` and is
+fully read. Its represented Alba Roversi conclusion becomes stack-ready but
+remains undetermined: replacing the named object `Roversi` with its property
+`Italian surname` requires a separate relational substitution inference, not
+disjunction reasoning. No inference code was added and all hazards are neutral.
+
+Cumulative recorded-frame state is 783/1647 and 773/1607 fully read, 613/575
+truth-scope vetoes, 17/11 stack-ready stories, collision 8/9, and quarantine
+16/18. Twenty-eight classes are served. No TEST look was spent.
+
+**Next:** regenerate the one-away frontier. Train stack readiness remains the
+binding story threshold; keep relational substitution and lexical/coreference
+work separate from premise readers.
+
+---
 
 # Session 41 (2026-07-21): Phase B reader 27 — free-relative verbal consequences; +1 train fully read and stack-ready story
 
