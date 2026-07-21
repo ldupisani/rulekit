@@ -1166,3 +1166,57 @@ no verbal-universal conclusion. Keep all three infrastructure ideas banked.
 - The next increment should re-price a narrow passive or relative-clause
   family, then compound generics and `entity-in-raw-if`. Do not widen reader 3
   into articleless predicates or complex negative subjects.
+
+## Phase B reader 4 — single-antecedent verbal “Everyone who” (2026-07-21)
+
+The narrow relative-clause family **“Everyone who V P V2 Q”** is now served as
+the universal implication `V(P) → V2(Q)`. `Quantified.cls` is intentionally an
+arbitrary predicate key, not only a noun class, so named ground-verbal atoms
+join the existing universal-instantiation synth directly. The landed DEV keys
+are `work for government department → pay tax on their salary` and
+`rent car → spend money`; no new fact type, synth, consumer, or vocabulary is
+introduced.
+
+The first pack-only draft also matched “Everyone who gets up early catches the
+sunrise,” but condensation represents `gets up` as one verb unit carrying the
+base lemma `get`. Emitting `get early` would conflate the particle predicate
+with an unrelated “get early.” The shared matcher therefore gains an opt-in,
+default-false `single_word` slot constraint that requires one original token.
+Reader 4 enables it on both verbs, refusing particle and perfect merges. This
+is structural rather than lexical and leaves every pre-existing rule
+byte-identical. The lossy story remains unread.
+
+Synthetic contract: exact `Quantified` key shape, a `Someone` minimal pair,
+named-witness composition, negated-consequent refusal, coordinated-antecedent
+refusal, modal-consequent refusal, and the particle-key-loss refusal. **pytest
+1978 passed; scratch lint 0 errors; curated 65/65.** Because the opt-in field
+lives in the shared kernel,
+the complete matrix was treated as live blast radius. All eight standard
+snapshot comparisons and both folio-with-logic comparisons are NEUTRAL at
+**0 BROKE / 0 DECL→WRONG**.
+
+### Incremental reader movement
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1331→1331 | 726→728 (+2) | 16/12→16/12 | 2 / 1 | 662→662 |
+| dev-holdout | 1297→1297 | 729→730 (+1) | 8/7→8/7 | 1 / 1 | 608→608 |
+
+No verdict converts. Hazards remain at the Phase A baselines: collision 8/12,
+quarantine 16/24, ambiguous readings 51/33, and clause split 0/0
+(train/holdout). Folio-with-logic remains 20 correct / 1 persistent
+poisoned-text wrong / 473 declined on train and 1 / 0 / 424 on holdout.
+
+Cumulative campaign state is now 728/1647 and 730/1602 fully-read premises,
+662 and 608 truth-scope vetoes, and 12 and 7 stack-ready stories. Four
+construction classes are served, but the Phase C thresholds remain 852/850
+fully read, 499/460 truth-scope vetoes, and 22/10 stack-ready stories.
+
+The mandatory banked-zero recheck remains **zero**: no verdict moved, the
+landed keys contain no `_naive_singular` ending or CamelCase entity, and no
+represented verbal-universal conclusion joins them. Keep those banks closed.
+
+**Next:** re-survey compound generics and `entity-in-raw-if` for reader 5. The
+direct passive-agent and existential families remain banked under reader 3's
+recorded composition/vocabulary blockers; do not reopen them without a new
+cross-split buyer.

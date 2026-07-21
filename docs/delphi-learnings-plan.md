@@ -1,8 +1,9 @@
 # The breadth-first premise-reader campaign — FOLIO logic → full integration
 
-**ACTIVE. Phase A and Phase B readers 1–3 completed 2026-07-21: ground
+**ACTIVE. Phase A and Phase B readers 1–4 completed 2026-07-21: ground
 both-or-neither equivalence, unrestricted bare-plural disjunction, and negative
-two-article indefinite generics.**
+two-article indefinite generics, plus single-antecedent verbal “Everyone who”
+implications.**
 
 ## Context
 
@@ -169,6 +170,14 @@ passive-agent premises likewise need either participle lemma coverage or
 multi-token name handling before the measured train and holdout surfaces share
 one exact key contract. Neither enabler is bought alone.
 
+Reader 4 serves **“Everyone who V P V2 Q”** as a universal implication between
+the existing flat verbal keys. A new opt-in `single_word` slot gate refuses
+condensed particle/perfect verbs whose base-lemma render would erase part of
+the predicate. Incremental movement is +2 / +1 fully-read premises and +0 / +0
+stack-ready stories, with no verdict, truth-scope, or hazard movement. The
+campaign now serves four construction classes, but remains far below every
+numeric Phase C threshold.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /
@@ -176,6 +185,10 @@ Infrastructure borrowings (each its own increment, only if Phase B friction prov
 - **Verb-lemma table completion** (the 71 self-lemma verbs, 9c): a difg-mined/core-english
   pack change with repo-wide key churn — own increment, full nine-slice gate, only when a
   class (e.g. 'lives in' locatives) is measurably blocked on it.
+- **Merged-verb refusal is built:** reader 4 added the opt-in `single_word` slot
+  gate after the measured `gets up` key-loss probe. It is dormant for every
+  existing rule and should be reused when a logical key cannot preserve a
+  condensed verb's full predicate.
 
 ### Phase C — the look-#6 coverage checkpoint
 

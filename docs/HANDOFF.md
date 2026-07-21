@@ -3,14 +3,17 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–3 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–4 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, and negative
-> two-article indefinite generics. Cumulative movement from Phase A is +6 / +8 fully-read
+> two-article indefinite generics, plus single-antecedent verbal “Everyone who” implications.
+> Cumulative movement from Phase A is +8 / +9 fully-read
 > premise instances and +1 / +2 stack-ready stories on dev-train / dev-holdout, with no
-> verdict or hazard movement. Three construction classes are served, but all numeric Phase C
-> thresholds remain unmet. Reader 4 should re-price a narrow passive or relative-clause
-> family; the surveyed `there is` and direct passive-agent candidates are banked because
-> their cross-split joins require additional composition or lexical infrastructure. The
+> verdict or hazard movement. Four construction classes are served, but all numeric Phase C
+> thresholds remain unmet. Reader 5 should re-survey compound generics and
+> `entity-in-raw-if`; the surveyed `there is` and direct passive-agent candidates remain
+> banked because their cross-split joins require additional composition or lexical
+> infrastructure. Reader 4 also added an opt-in `single_word` slot gate that refuses lossy
+> particle/perfect-verb keys and is dormant for all pre-existing rules. The
 > `_naive_singular`, CamelCase-name, and verbal-universal-ask banks still have zero joins.
 > No TEST look was spent.
 >

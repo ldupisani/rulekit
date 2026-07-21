@@ -118,6 +118,11 @@ def _looks_third_person_singular(fold: str) -> bool:
 
 
 def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
+    if token.single_word and len(unit.words) != 1:
+        # OPT-IN (schemas.MatchToken.single_word): condensation preserves the
+        # original words on the merged Unit, so this structurally refuses
+        # particle/perfect verbs without naming either vocabulary class.
+        return False
     if token.bare_form and (
         unit.features.get("fold") != _lemma_of(unit)
         or _looks_third_person_singular(unit.features.get("fold") or "")

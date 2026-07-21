@@ -332,6 +332,13 @@ class MatchToken(StrictModel):
     # sibling of the copular rules' plural-agreeing {lit: are}. Defaults
     # False: every existing verb slot is byte-identical.
     bare_form: bool = False
+    # OPT-IN: require a slot to bind one original token, not a unit produced by
+    # condensation. Logic implication keys use this on verb slots because a
+    # merged particle verb intentionally keeps the base verb's lemma ("gets
+    # up" -> "get" for arithmetic event polarity); reusing that lemma as a
+    # logical predicate would conflate "get up early" with "get early".
+    # Defaults False so every existing rule remains byte-identical.
+    single_word: bool = False
     opt: list["MatchToken"] | None = None  # optional sub-sequence
 
     @property

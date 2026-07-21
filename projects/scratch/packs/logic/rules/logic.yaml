@@ -921,6 +921,26 @@ rules:
     emits:
       - {fact: quantified, cls: "{p}", pred: "{q}", polarity: false}
 
+  # Phase B reader 4: the verbal sibling — "Everyone who V P V2 Q" is the
+  # universal implication V(P) -> V2(Q). Quantified.cls intentionally holds
+  # the antecedent predicate key; ground-verbal emits that same flat key for
+  # named witnesses, so the existing universal-instantiation synth composes
+  # without a new fact type. Both spans block verbs to expose the one clause
+  # boundary, and block coordination/negation so multi-antecedent, modal, and
+  # signed relatives remain separate constructions.
+  - id: logic/universal-everyone-who-verbal
+    phase: read
+    match:
+      sentence:
+        - {lit: everyone, at_start: true}
+        - {lit: who}
+        - {slot: v, type: nonstate_verb, single_word: true}
+        - {slot: p, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+        - {slot: v2, type: nonstate_verb, single_word: true}
+        - {slot: q, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+    emits:
+      - {fact: quantified, cls: "{v} {p}", pred: "{v2} {q}", polarity: true}
+
   - id: logic/existential-some-are
     phase: read
     match:
