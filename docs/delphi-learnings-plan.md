@@ -1,6 +1,6 @@
 # The breadth-first premise-reader campaign — FOLIO logic → full integration
 
-**ACTIVE. Phase A and Phase B readers 1–24 completed 2026-07-21: ground
+**ACTIVE. Phase A and Phase B readers 1–25 completed 2026-07-21: ground
 both-or-neither equivalence, unrestricted bare-plural disjunction, and negative
 two-article indefinite generics, plus single-antecedent verbal “Everyone who”
 implications, verbal-restrictor conditionals, and the negative-antecedent
@@ -14,8 +14,9 @@ generics, named mixed possession/event disjunctions, and singular positive
 possessive universals, plural-generic copular-to-verbal conditionals,
 indefinite-generic verbal conditionals, reduced-relative people universals,
 fully repeated ground both-or-neither equivalences, implicit-restrictor
-property universals, second-person generic conditionals, and grammar-proven
-fused premise/question boundaries.**
+property universals, second-person generic conditionals, grammar-proven
+fused premise/question boundaries, and active participial-restrictor
+possessive universals.**
 
 ## Context
 
@@ -390,6 +391,17 @@ vetoes, outcomes, and hazards remain neutral. Twenty-four classes are served;
 holdout stack readiness reaches 11 stories, while the other conjunctive
 thresholds remain unmet.
 
+Reader 25 serves active reduced-relative possessive universals **“Everyone
+V-ing P has Q.”** An opt-in `present_participle` morphology gate requires an
+`-ing` surface whose registered lemma differs, distinguishing the non-finite
+restrictor from a finite or accidentally `-ing`-final bare verb. The reader
+emits exact `Quantified(V(P), have(Q))` keys. Incremental movement is +6 / +0
+fully-read premises and +1 / +0 stack-ready stories on dev-train /
+dev-holdout; fact-bearing, truth-scope vetoes, outcomes, and hazards remain
+neutral. The buyer is now ready for deeper disjunctive case reasoning, which
+remains a separate inference increment. Twenty-five classes are served; the
+fully-read, veto, and train-stack thresholds remain unmet.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /
@@ -401,6 +413,10 @@ Infrastructure borrowings (each its own increment, only if Phase B friction prov
   gate after the measured `gets up` key-loss probe. It is dormant for every
   existing rule and should be reused when a logical key cannot preserve a
   condensed verb's full predicate.
+- **Present-participle refusal is built:** reader 25 added the opt-in
+  `present_participle` slot gate. It requires inflected `-ing` morphology plus
+  a distinct registered lemma, stays dormant for every pre-existing rule,
+  and prevents active reduced relatives from accepting finite/bare verbs.
 - **Event-reader/state split is built:** reader 14 falsification proved bare
   `be`/`been`/`being` were escaping `nonstate_verb`, but adding them to `state`
   changed arithmetic holding semantics and produced a GSM8K confident wrong.

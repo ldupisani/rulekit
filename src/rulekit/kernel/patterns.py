@@ -125,6 +125,14 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
         # original words on the merged Unit, so this structurally refuses
         # particle/perfect verbs without naming either vocabulary class.
         return False
+    if token.present_participle:
+        fold = unit.features.get("fold") or ""
+        if not fold.endswith("ing") or fold == _lemma_of(unit):
+            # OPT-IN (schemas.MatchToken.present_participle): an active
+            # reduced relative needs non-finite -ing morphology. Requiring
+            # an actual lemma change prevents a bare lemma such as "sing"
+            # from masquerading as participial syntax by suffix alone.
+            return False
     if token.bare_form and (
         unit.features.get("fold") != _lemma_of(unit)
         or _looks_third_person_singular(unit.features.get("fold") or "")

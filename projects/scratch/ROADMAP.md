@@ -2235,3 +2235,50 @@ unmet. No TEST look was spent.
 **Next:** return to cross-split premise readers and train-stack movement. Keep
 the now-isolated tennis conclusion consumers banked as separate inference
 classes rather than bundling them into this document-boundary increment.
+
+## Phase B reader 25 — active participial-restrictor possessive universals (2026-07-21)
+
+The next train-stack buyer is **“Everyone V-ing P has Q.”** The participial
+clause restricts the universally quantified person; it is not a ground event
+whose subject is the pronoun `Everyone`. The reader therefore emits the
+existing `Quantified` implication `V(P) → have(Q)`, with both sides rendered
+exactly like named ground-verbal and possession keys.
+
+A new opt-in `present_participle` slot gate requires a verb surface ending in
+`-ing` whose fold differs from its registered lemma. This distinguishes the
+non-finite reduced relative from finite verbs and from bare lemmas that merely
+end in the same letters. `single_word` preserves the existing particle/perfect
+refusal. Negative, modal, coordinated, counted, passive, verbal-consequence,
+and marked-relative siblings remain whole-unread.
+
+Fifteen synthetic pins cover exact emission, named instantiation, a missing-
+restrictor null, suffix/lemma morphology, and adjacent larger constructions.
+**pytest 2,265 passed; scratch lint 0 errors with the same eight warnings;
+curated 65/65 twice.** All eight standard DEV and both FOLIO-with-logic diffs
+are NEUTRAL (0 BROKE / 0 DECL→WRONG). The grouped outcome snapshots remain
+train 20 correct / 1 pre-existing poisoned-text wrong / 473 declined and
+holdout 4 / 0 / 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1340→1340 | 767→773 (+6) | 17/13→18/14 (+1/+1) | 6 / 1 | 623→623 |
+| dev-holdout | 1316→1316 | 769/1607→769/1607 | 17/11→17/11 | 0 / 0 | 579→579 |
+
+The premise already emitted an unrelated fallback fact before this reader, so
+fact-bearing does not rise. Consuming the whole universal nevertheless makes
+all six grouped copies fully read, and the one represented false conclusion
+becomes stack-ready. The verdict remains undetermined because proving it
+requires deeper case propagation through the named disjunction; that inference
+class is banked rather than bundled into the premise reader. Hazards are
+neutral.
+
+Cumulative recorded-frame state is 773/1647 and 769/1607 fully read, 623/579
+vetoes, 14/11 stack-ready stories, collision 8/9, and quarantine 16/18. Phase A
+movement is +53/+48 fully read, 43/35 fewer truth-scope vetoes, and +3/+6
+stack-ready stories. Twenty-five classes are served. Holdout stack readiness
+exceeds its threshold; fully-read, veto, and train-stack thresholds remain
+conjunctively unmet. No TEST look was spent.
+
+**Next:** regenerate the exact one-away frontier. Prefer a cross-split family
+when possible; otherwise keep buying train stack stories without coupling a
+premise construction to its later inference consumer.

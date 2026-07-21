@@ -1437,6 +1437,25 @@ rules:
     emits:
       - {fact: quantified, cls: "{v} {p}", pred: "{v2} {q}", polarity: true}
 
+  # Phase B reader 25: active reduced-relative possessive universals —
+  # "Everyone V-ing P has Q" means V(P) -> have(Q). The opt-in present-
+  # participle gate distinguishes the non-finite restrictor from a finite
+  # verbal clause; its lemma-rendered key echoes named ground-verbal facts.
+  # The possessive consequence deliberately stays the narrow literal `has`
+  # sibling of reader 17, so modal, negative, verbal, passive, coordinated,
+  # particle/perfect, and counted constructions remain whole-unread.
+  - id: logic/universal-everyone-participial-has
+    phase: read
+    match:
+      sentence:
+        - {lit: everyone, at_start: true}
+        - {slot: v, type: nonstate_verb, single_word: true, present_participle: true}
+        - {slot: p, span: true, span_blocks: [negation, quantifier, conjunction, disjunctive_marker, either_marker, verb, future_modal, capacity_modal, interrogative, complementizer, wh_which], span_blocks_counted: true}
+        - {lit: has}
+        - {slot: q, span: true, span_blocks: [negation, quantifier, conjunction, disjunctive_marker, either_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+    emits:
+      - {fact: quantified, cls: "{v} {p}", pred: "have {q}", polarity: true}
+
   - id: logic/existential-some-are
     phase: read
     match:

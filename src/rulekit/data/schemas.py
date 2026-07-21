@@ -339,6 +339,13 @@ class MatchToken(StrictModel):
     # logical predicate would conflate "get up early" with "get early".
     # Defaults False so every existing rule remains byte-identical.
     single_word: bool = False
+    # OPT-IN: this verb slot only matches an inflected present participle:
+    # the surface fold ends in ``-ing`` and differs from its registered
+    # lemma. This is the grammatical signal for an active reduced relative
+    # ("Everyone carrying boxes ..."), while a finite/bare verb — including
+    # a lemma that happens to end in ``-ing`` — refuses. Defaults False so
+    # every existing rule remains byte-identical.
+    present_participle: bool = False
     opt: list["MatchToken"] | None = None  # optional sub-sequence
 
     @property
