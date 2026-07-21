@@ -1984,3 +1984,44 @@ still binds. No TEST look was spent.
 unrestricted people verbal-to-verbal prototype banked until recognized verb
 heads or a larger exact construction buys it; passive relations still require
 direction-aware keys.
+
+## Phase B reader 19 — indefinite-generic verbal conditionals (2026-07-21)
+
+The next bought class is **“If a/an CLS V P, [then] they V2 Q.”** The article
+marks a singular generic; the antecedent head is third-person singular and the
+pronoun consequence uses a bare-form event head. Paired explicit-`then` and
+comma-only readers keep the clause boundary exact. Both event keys echo
+ground-verbal and emit a positive `Quantified` fact, so existing universal
+instantiation supplies the composition path.
+
+Fifteen synthetic pins cover both forms, exact keys, named instantiation, a
+missing-antecedent null, and eleven adjacent refusals. The broader-looking
+holdout form `If a person gains knowledge, they become smarter` remains
+unread because `gains`, `knowledge`, and `smarter` are unknown in the current
+lexicon; no vocabulary expansion was bundled into this reader.
+
+**pytest 2,184 passed; scratch lint 0 errors with the same eight warnings;
+curated 65/65 twice.** All eight standard DEV and both grouped
+FOLIO-with-logic snapshot diffs are NEUTRAL (0 BROKE, 0 DECL→WRONG).
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1340→1340 | 765→767 (+2) | 17/13→17/13 | 2 / 1 | 625→623 (−2) |
+| dev-holdout | 1304→1304 | 754→754 | 8/7→8/7 | 0 / 0 | 587→587 |
+
+The train buyer emits `pay their tax → contribute to country` across two
+items. The coordinated asks still decline, leaving outcomes and stack
+readiness unchanged (train 19 correct / 1 poisoned-text wrong / 474 declined;
+holdout 1 / 0 / 424). Collision, quarantine, agreement, ambiguity, and
+clause-split hazards are neutral.
+
+Cumulative recorded-frame state is 767/1647 and 754/1602 fully read, 623/587
+truth-scope vetoes, 13/7 stack-ready stories, collision 8/9, and quarantine
+16/18. Phase A movement is +47/+33 fully read and 43/27 fewer truth-scope
+vetoes. Nineteen construction classes are served; every Phase C threshold
+still binds. No TEST look was spent.
+
+**Next:** continue pricing exact coordination and conditional siblings. Bank
+negative verbal consequences and unknown-vocabulary generic conditionals
+until their enablers are independently bought; passive relations still
+require direction-aware keys.

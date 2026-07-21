@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–18 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–19 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -35,12 +35,12 @@
 > universals `Every CLS has P`, using positive `Quantified` facts — and
 > (reader 18) plural-generic copular-to-verbal conditionals `If people are P,
 > then they V Q`, again using positive `Quantified` facts. Cumulative
-> movement from Phase A is +45 / +33 fully-read
+> movement from Phase A is +47 / +33 fully-read
 > premise instances and +2 / +2 stack-ready stories on dev-train / dev-holdout, with no
-> verdict regression or hazard increase; truth-scope vetoes improve by 41 / 27, while
+> verdict regression or hazard increase; truth-scope vetoes improve by 43 / 27, while
 > holdout collision/quarantine improve 12→9 / 24→18. Eighteen construction classes
-> are served, but all numeric Phase C thresholds remain unmet (fully read 765/1647 and
-> 754/1602 vs 852/850; vetoes 625/587 vs ≤499/460; stack-ready stories 13/7 vs ≥22/10).
+> are served, but all numeric Phase C thresholds remain unmet (fully read 767/1647 and
+> 754/1602 vs 852/850; vetoes 623/587 vs ≤499/460; stack-ready stories 13/7 vs ≥22/10).
 > Next re-survey the remaining exact coordination and conditional families; the
 > unbought outer-quantified verbal relative, surveyed `there is`, direct passive-agent, and unresolved
 > ground-pronoun candidates remain banked pending composition, lexical infrastructure,
@@ -63,6 +63,53 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 33 (2026-07-21): Phase B reader 19 — indefinite-generic verbal conditionals; +2/+0 fully read
+
+One pack-only increment serves **“If a/an CLS V P, [then] they V2 Q.”**
+Paired explicit-`then` and comma-only readers encode the article-licensed
+singular generic with a third-person-singular antecedent event and a plural
+bare-form consequence event. Both flat keys echo named ground-verbal facts,
+so positive `Quantified` instantiation composes without new schema or kernel
+behavior.
+
+Fifteen synthetic pins cover both skeletons, exact key emission, named-event
+instantiation, a missing-antecedent null, and eleven refusals for other
+subjects, signed/modal/state/copular consequences, adverbs, coordination,
+particles, and counts. The comma-only form is separately claimed so an
+explicit `then` cannot be swallowed into the antecedent span.
+
+**All 2,184 tests pass; scratch lint has 0 errors and the same eight warnings;
+curated is 65/65 twice.** All eight standard DEV and both FOLIO-with-logic
+grouped snapshot diffs are NEUTRAL (0 BROKE, 0 DECL→WRONG). Outcomes remain
+train 19 correct / 1 pre-existing poisoned-text wrong / 474 declined and
+holdout 1 / 0 / 424.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1340→1340 | 765→767 (+2) | 17/13→17/13 | 2 / 1 | 625→623 (−2) |
+| dev-holdout | 1304→1304 | 754→754 | 8/7→8/7 | 0 / 0 | 587→587 |
+
+The sole buyer story states that a person who pays their taxes contributes to
+the country, emitting `pay their tax → contribute to country` across two train
+item instances. The holdout-looking `gains knowledge … become smarter` form
+does not match because its event heads and predicate are unknown in the
+current lexicon; vocabulary expansion remains a separate enabler. The train
+items' coordinated asks stay declined, so outcomes and stack readiness are
+unchanged. Collision, quarantine, agreement, ambiguity, and clause-split
+hazards are neutral.
+
+Cumulative recorded-frame state is 767/1647 and 754/1602 fully read, 623/587
+truth-scope vetoes, 13/7 stack-ready stories, collision 8/9, and quarantine
+16/18. Nineteen construction classes are served; every Phase C threshold
+still binds (852/850, ≤499/460, ≥22/10). No TEST look was spent.
+
+**Next:** continue pricing exact coordination and conditional siblings. Bank
+negative verbal consequences and the unknown-vocabulary `gains knowledge`
+surface until their lexical or composition enablers are independently bought;
+passive relations still require direction-aware keys.
+
+---
 
 # Session 32 (2026-07-21): Phase B reader 18 — people copular-to-verbal conditionals; +2/+0 fully read
 

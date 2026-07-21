@@ -743,6 +743,46 @@ rules:
     emits:
       - {fact: quantified, cls: "{p.singular}", pred: "{v} {q}", polarity: true}
 
+  # Phase B reader 19: indefinite-generic verbal conditionals —
+  # "If a/an CLS V P, [then] they V2 Q". The article licenses a singular
+  # generic subject; its event head is third-person singular, while the
+  # pronoun consequence takes the plural bare form. Both event keys are flat
+  # and echo ground-verbal, so Quantified instantiation supplies composition.
+  # Paired explicit-then and comma-only rules cover both skeletons without
+  # loosening any semantic span. Signed, modal, stative, coordinated, particle/perfect,
+  # and counted variants stay whole-unread.
+  - id: logic/conditional-indefinite-verbal-then-they-verbal-then
+    phase: read
+    match:
+      sentence:
+        - {lit: if, at_start: true}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: cls, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal]}
+        - {slot: v, type: nonstate_verb, single_word: true}
+        - {slot: p, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+        - {lit: then}
+        - {lit: they}
+        - {slot: v2, type: nonstate_verb, bare_form: true, single_word: true}
+        - {slot: q, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+    emits:
+      - {fact: quantified, cls: "{v} {p}", pred: "{v2} {q}", polarity: true}
+
+  - id: logic/conditional-indefinite-verbal-comma-they-verbal
+    phase: read
+    match:
+      sentence:
+        - {lit: if, at_start: true}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: cls, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal]}
+        - {slot: v, type: nonstate_verb, single_word: true}
+        - {slot: p, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+        - {lit: ',', consume_skipped: true}
+        - {lit: they}
+        - {slot: v2, type: nonstate_verb, bare_form: true, single_word: true}
+        - {slot: q, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+    emits:
+      - {fact: quantified, cls: "{v} {p}", pred: "{v2} {q}", polarity: true}
+
   # Phase B reader 8: the class-scoped bare-plural copular relative —
   # "CLSs who are P are [not] Q" means ∀e. CLS(e) ∧ P(e) → [¬]Q(e).
   # This is the EXISTING Conditional contract and its two-antecedent
