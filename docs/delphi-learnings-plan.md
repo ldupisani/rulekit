@@ -1,13 +1,14 @@
 # The breadth-first premise-reader campaign — FOLIO logic → full integration
 
-**ACTIVE. Phase A and Phase B readers 1–11 completed 2026-07-21: ground
+**ACTIVE. Phase A and Phase B readers 1–12 completed 2026-07-21: ground
 both-or-neither equivalence, unrestricted bare-plural disjunction, and negative
 two-article indefinite generics, plus single-antecedent verbal “Everyone who”
 implications, verbal-restrictor conditionals, and the negative-antecedent
 same-entity ground conditional, plural-generic `people` conditionals, and
 class-scoped bare-plural copular relatives, restricted `Everyone … is
 [either] … or …` disjunctions, and two-article indefinite-generic exclusive
-disjunctions, plus negative possessive universals.**
+disjunctions, plus negative possessive universals and plural-agreeing negative
+event universals.**
 
 ## Context
 
@@ -246,6 +247,16 @@ coordinated forms. Incremental movement is +1 / +3 fully-read premises,
 +1 / +1 fact-bearing premises, −1 / −3 truth-scope vetoes, and +0 / +0
 stack-ready stories on dev-train / dev-holdout. Outcomes and hazards remain
 neutral. Eleven construction classes are served; every numeric Phase C
+threshold still binds.
+
+Reader 12 serves plural-agreeing **“No CLSs V P”** event universals through
+the same negative `Quantified` representation. A bare-form, single-token
+non-state verb is the agreement and key-preservation gate; structural blocks
+for `who`/`that`/`which` relative-marker senses prevent a relative verb from
+being mistaken for the main verb. Incremental movement is +4 / +3 fully-read
+premises, +0 / +0 fact-bearing premises, −4 / −3 truth-scope vetoes, and +0 /
++0 stack-ready stories on dev-train / dev-holdout. Outcomes and hazards remain
+neutral. Twelve construction classes are served; every numeric Phase C
 threshold still binds.
 
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):

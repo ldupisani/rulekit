@@ -166,6 +166,23 @@ rules:
     emits:
       - {fact: quantified, cls: "{cls}", pred: "have {pred}", polarity: false}
 
+  # Phase B reader 12: plural-agreeing negative event universals —
+  # "No CLSs V P". A bare-form, single-token event verb is the structural
+  # plural-agreement signal, licensing `.singular` on the class while the
+  # verbal predicate stays unfolded to echo ground-verbal keys. Relative,
+  # modal, negated, coordinated, perfect, and singular-agreeing forms fail
+  # the exact spans/gates and remain unread.
+  - id: logic/universal-no-verbal-plural
+    phase: read
+    match:
+      sentence:
+        - {lit: 'no', at_start: true}
+        - {slot: cls, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal, interrogative, complementizer, wh_which]}
+        - {slot: v, type: nonstate_verb, bare_form: true, single_word: true}
+        - {slot: pred, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+    emits:
+      - {fact: quantified, cls: "{cls.singular}", pred: "{v} {pred}", polarity: false}
+
   # ⚠ THE `.singular` TEMPLATE ATTR (the unknown-plural-morphology increment):
   # every cls/pred key in the PLURAL-AGREEING family (quantifier + 'are',
   # bare-plural subjects, 'some ... are') renders with unknown-word plurals

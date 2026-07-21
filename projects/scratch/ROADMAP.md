@@ -1616,3 +1616,57 @@ possessive existential ask gap, but that is not a premise-reader class and
 stays banked unless the campaign scope explicitly expands. Articleless
 unknown-word disjunctions, do-support, unresolved coreference, and direct
 passive-agent infrastructure remain banked.
+
+## Phase B reader 12 — plural negative event universals (2026-07-21)
+
+The next bought universal family is **“No CLSs V P”**, where `V` is a
+bare-form, single-token non-state verb. The plural agreement licenses
+`.singular` on the class key, while the full `V P` predicate remains unfolded
+and exact. The reader emits the existing negative `Quantified` fact, so the
+existing universal-chain and universal-instantiation synths supply all
+composition without a new fact kind or kernel path.
+
+The initial broad draft measured +4/+6 fully-read instances, but one holdout
+story was a false relative-clause parse: `who` rode inside the class span, its
+relative verb filled `V`, and an unknown real main verb was swallowed into
+`P`. The landed rule blocks the structural senses used by `who`, `that`, and
+`which` (`interrogative`, `complementizer`, `wh_which`) in addition to verbs,
+modals, negation, and coordination. The predicate also refuses a second verb,
+modals, negation, coordination, and counted material. This narrows the DEV
+buyers to exactly the intended two story families.
+
+Fifteen synthetic tests pin the exact negative fact, subclass chaining,
+named instantiation, and twelve minimal/larger refusal boundaries: positive
+quantification, singular agreement, modal, three relative markers,
+do-negation, coordinated class, coordinated predicate, perfect, particle
+verb, and counted predicate. **pytest 2,067 passed; scratch lint 0 errors with
+the same eight warnings; curated 65/65.** All eight standard DEV snapshot
+diffs and both FOLIO-with-logic grouped diffs are NEUTRAL: 0 BROKE and 0
+DECL→WRONG.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1338→1338 | 741→745 (+4) | 17/13→17/13 | 4 / 1 | 649→645 (−4) |
+| dev-holdout | 1304→1304 | 751→754 (+3) | 8/7→8/7 | 3 / 1 | 590→587 (−3) |
+
+Train buys the repeated negative student/destination premise; holdout buys
+the repeated Russian-Federation-official/citizenship premise. The only new
+semantics are their exact negative `Quantified` keys. No named class witness
+in either represented stack instantiates a verdict-relevant atom, so
+all-premises-read, stack readiness, outcomes, and reasons remain unchanged
+(train 19 correct / 1 pre-existing poisoned-text wrong / 474 declined;
+holdout 1 / 0 / 424). Collision, quarantine, agreement, ambiguous-reading,
+and clause-split hazards also remain unchanged.
+
+The banked-zero recheck remains zero: the one unknown plural uses ordinary
+`-s` folding rather than the banked `-se`/`-ce`/`-ze` cases, no entity field
+is introduced, and neither story presents a represented verbal-universal ask
+join. Cumulative recorded-frame state is 745/1647 and 754/1602 fully read,
+645/587 truth-scope vetoes, 13/7 stack-ready stories, collision 8/9, and
+quarantine 16/18. Every numeric Phase C threshold still binds (852/850,
+≤499/460, ≥22/10). No TEST look was spent.
+
+**Next:** re-price the remaining exact conditional and passive/relative
+families against reader 12. Do-support negation, unresolved coreference,
+articleless unknown-word disjunctions, and direct passive-agent infrastructure
+remain banked until an exact cross-split key contract appears.

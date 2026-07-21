@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–11 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–12 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -21,13 +21,15 @@
 > either a/an L or a/an R`, reusing the same fact and synth path — and
 > (reader 11) negative possessive universals `No CLSs have P` / `No CLS has
 > P`, using negative `Quantified` facts and the existing chain/instantiation
-> synths. Cumulative movement from Phase A is +21 / +30 fully-read
+> synths — and (reader 12) plural-agreeing negative event universals `No
+> CLSs V P`, again using negative `Quantified` facts and the existing
+> chain/instantiation synths. Cumulative movement from Phase A is +25 / +33 fully-read
 > premise instances and +2 / +2 stack-ready stories on dev-train / dev-holdout, with no
-> verdict regression or hazard increase; truth-scope vetoes improve by 17 / 24, while
-> holdout collision/quarantine improve 12→9 / 24→18. Eleven construction classes
-> are served, but all numeric Phase C thresholds remain unmet (fully read 741/1647 and
-> 751/1602 vs 852/850; vetoes 649/590 vs ≤499/460; stack-ready stories 13/7 vs ≥22/10).
-> Next re-survey the remaining exact raw-coordination and conditional families; the
+> verdict regression or hazard increase; truth-scope vetoes improve by 21 / 27, while
+> holdout collision/quarantine improve 12→9 / 24→18. Twelve construction classes
+> are served, but all numeric Phase C thresholds remain unmet (fully read 745/1647 and
+> 754/1602 vs 852/850; vetoes 645/587 vs ≤499/460; stack-ready stories 13/7 vs ≥22/10).
+> Next re-survey the remaining exact conditional and passive/relative families; the
 > unbought outer-quantified verbal relative, surveyed `there is`, direct passive-agent, and unresolved
 > ground-pronoun candidates remain banked pending composition, lexical infrastructure,
 > or coreference evidence. Reader 4's opt-in
@@ -41,6 +43,61 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 24 (2026-07-21): Phase B reader 12 — plural negative event universals; +4/+3 fully read
+
+One pack-only, independently revertible increment serves **“No CLSs V P”**
+when `V` is a bare-form, single-token non-state verb. Plural agreement
+licenses `.singular` on the class key; the verb and predicate remain one exact
+unfolded phrase key. The reader emits an existing negative
+`Quantified(cls, pred="V P")`, so universal chaining and named instantiation
+compose without new fact, synth, schema, or kernel behavior.
+
+The first measured draft exposed an important refusal boundary: it read a
+relative construction by treating `who` as part of the class and the relative
+verb as the main verb, then swallowing the real unknown verb into the
+predicate. The shipped class span therefore blocks all three structural
+relative-marker senses (`interrogative`, `complementizer`, and `wh_which`), as
+well as verbs, modals, negation, and coordination. The predicate blocks a
+second verb, modals, negation, coordination, and counted material. Singular
+agreement, perfects, particle verbs, and larger constructions remain unread.
+Fifteen synthetic pins cover the exact fact, subclass chaining, named
+instantiation, and twelve refusal surfaces.
+
+**All 2,067 tests pass; scratch lint has 0 errors and the same eight warnings;
+curated remains 65/65.** All eight standard DEV snapshot diffs are NEUTRAL
+(difg, GSM8K train/holdout, ASDiv, SVAMP, MAWPS, SciBench, FOLIO), as are both
+FOLIO-with-logic grouped diffs: 0 BROKE and 0 DECL→WRONG throughout. Train
+remains 19 correct / 1 pre-existing poisoned-text wrong / 474 declined;
+holdout remains 1 / 0 / 424.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1338→1338 | 741→745 (+4) | 17/13→17/13 | 4 / 1 | 649→645 (−4) |
+| dev-holdout | 1304→1304 | 751→754 (+3) | 8/7→8/7 | 3 / 1 | 590→587 (−3) |
+
+Train serves the repeated student/destination story, emitting the exact
+negative verbal key after existing possessive coreference normalization.
+Holdout serves the repeated Russian-Federation-official/citizenship story.
+Neither story contains the missing inference/ask stack needed for a verdict,
+so no item becomes all-premises-read or stack-ready. Outcomes, reasons,
+collision, quarantine, agreement, ambiguous-reading, and clause-split
+diagnostics remain unchanged.
+
+The mandatory banked-zero recheck remains zero: the unknown plural fold has
+none of the banked `-se`/`-ce`/`-ze` endings, `Quantified` carries no entity,
+and no represented verbal-universal ask joins either key. Cumulative
+recorded-frame state is 745/1647 and 754/1602 fully-read premises, 645/587
+truth-scope vetoes, 13/7 stack-ready stories, collision 8/9, and quarantine
+16/18. Every numeric Phase C threshold still binds (852/850, ≤499/460,
+≥22/10). No TEST look was spent.
+
+**Next:** re-survey the remaining exact conditional and passive/relative
+families against the new verbal-negative join surface. Do-support, unresolved
+coreference, articleless unknown-word disjunctions, and direct passive-agent
+infrastructure remain banked until one exact cross-split buyer appears.
+
+---
 
 # Session 23 (2026-07-21): Phase B reader 11 — negative possessive universals; +1/+3 fully read
 
