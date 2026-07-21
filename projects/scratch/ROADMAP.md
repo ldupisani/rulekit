@@ -1361,3 +1361,65 @@ banked on composition/lexical infrastructure (reader 3's record). Re-price a
 narrow passive or relative-clause family per the Phase A build order, and
 re-survey compound generics and `entity-in-raw-if` for a new cross-split
 buyer now that six classes are served.
+
+## Phase B reader 7 — plural-generic `people` conditionals (2026-07-21)
+
+The post-reader-6 re-survey found a cheaper cross-split conditional class:
+**“If people are P, then they are [not] Q”**. Bare `people` is the
+plural-agreeing form of the unrestricted human quantifier already represented
+by the `someone` reader, so this increment reuses
+`Quantified(cls, pred, polarity)` and `synth/universal-instantiation`. Both
+keys render through `.singular`, matching the established Stage 8d/9a rule
+that a plural-agreeing predicate must meet singular ground-atom keys. No new
+kernel machinery or fact kind is introduced.
+
+The construction is exact and copular: `if` / `people` / `are` / P / `then` /
+`they` / `are` / [explicit `not`] / Q. The consequent pronoun carries the
+generic subject variable; unlike reader 6's removed literal-`he` rule, it is
+never grounded to a named entity. Verbal and do-support consequences,
+negated antecedents, and the singular `someone` sibling stay whole-unread.
+Multiword predicates remain exact phrase keys; treating an internal modifier
+or participial phrase as opaque can only narrow a join, never erase words and
+loosen one.
+
+The nine-test synthetic contract pins positive and negative exact facts, the
+passive-participial key shape, universal-instantiation composition and its
+unmet-antecedent null, plus four larger/minimal-pair refusals. **pytest 2,005
+passed; scratch lint 0 errors; curated 65/65.** All eight standard DEV
+snapshot diffs are NEUTRAL: difg dev, GSM8K dev-train/dev-holdout, ASDiv,
+SVAMP, MAWPS, SciBench, and FOLIO each report 0 BROKE and 0 DECL→WRONG.
+The standard projects do not load the scratch pack, but the explicit matrix
+pins that blast-radius assumption.
+
+The in-memory DEV-only before/after comparison removed only the two reader-7
+rule IDs from the baseline registry, leaving the reader-6 pronoun correction
+present on both sides. Folio-with-logic is item-level neutral in OUTCOME AND
+REASON on both splits (train 20 correct / 1 persistent poisoned-text wrong /
+473 declined; holdout 1 / 0 / 424):
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1333→1333 | 732→734 (+2) | 16/12→16/12 | 2 / 1 | 658→656 (−2) |
+| dev-holdout | 1300→1300 | 733→739 (+6) | 8/7→8/7 | 6 / 3 | 605→599 (−6) |
+
+The train movement is one negative-consequent generic story. Holdout moves
+three stories: two positive-consequent predicates and one negative. No item
+becomes all-premises-read, so stack readiness remains 12/7 stories and no
+conversion null is required. Collision and quarantine stay 8/12 and 16/24;
+ambiguous-reading and clause-split hazards do not increase. Diagnostic
+agreement events improve 86→84 on holdout. The only new semantics are four
+intended `Quantified` keys and one existing intersective narrowing; no new
+ground atom instantiates and no answer reason changes.
+
+Seven construction classes are served. Cumulative recorded-frame state is
+734/1647 and 739/1602 fully-read premises, 656 and 599 truth-scope vetoes,
+and 12 and 7 stack-ready stories. All numeric Phase C thresholds still bind
+(852/850, ≤499/460, ≥22/10).
+
+The mandatory banked-zero recheck remains zero: the new keys carry no
+`_naive_singular` ending, CamelCase entity, or represented verbal-universal
+ask, and no existing bank joins to a verdict or a newly all-read stack.
+Adjacent verbal and do-support `people` conditionals show one-sided potential
+but remain distinct construction families; re-price them across both grouped
+splits before implementation. The narrow passive/relative family remains the
+next broad build-order lever. No TEST look was spent.

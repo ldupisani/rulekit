@@ -589,6 +589,54 @@ rules:
     emits:
       - {fact: quantified, cls: "{p}", pred: "{q}", polarity: false}
 
+  # Phase B reader 7: the someone-form's PLURAL-generic twin — "If people
+  # are P, then they are [not] Q". Bare 'people' plays exactly someone's
+  # grammatical role (the unrestricted human quantifier; FOLIO-FOL renders
+  # both as ∀x P(x) → [¬]Q(x)), so the same degenerate-universal reading
+  # applies and the EXISTING quantified fact + instantiation synth serve
+  # it, no new machinery. The antecedent/consequent spans mirror the
+  # someone rules' guard profile (span_blocks: negation only): passive
+  # participial predicates ('criticized by their boss') and coordinated
+  # nominal phrases ride as EXACT phrase keys — swallowed conjunctions can
+  # only narrow reachability, never loosen a join (the Fiedler
+  # discipline). Unlike someone (singular-agreeing, keys render PLAIN),
+  # 'people are' is PLURAL-agreeing, so both spans fold `.singular` per
+  # the 8d invariant — the 9a lesson: a plural-agreeing key that does not
+  # fold can never meet the singular ground atoms it must instantiate.
+  # Verbal and do-support consequents ('then they attend …', 'then they
+  # do not receive …') are separate constructions and stay whole-unread,
+  # monotone-safe.
+  - id: logic/conditional-people-are-then-they-are
+    phase: read
+    match:
+      sentence:
+        - {lit: if, at_start: true}
+        - {lit: people}
+        - {lit: are}
+        - {slot: p, span: true, span_blocks: negation}
+        - {lit: then}
+        - {lit: they}
+        - {lit: are}
+        - {slot: q, span: true, span_blocks: negation}
+    emits:
+      - {fact: quantified, cls: "{p.singular}", pred: "{q.singular}", polarity: true}
+
+  - id: logic/conditional-people-are-then-they-are-not
+    phase: read
+    match:
+      sentence:
+        - {lit: if, at_start: true}
+        - {lit: people}
+        - {lit: are}
+        - {slot: p, span: true, span_blocks: negation}
+        - {lit: then}
+        - {lit: they}
+        - {lit: are}
+        - {lit: not}
+        - {slot: q, span: true, span_blocks: negation}
+    emits:
+      - {fact: quantified, cls: "{p.singular}", pred: "{q.singular}", polarity: false}
+
   # ---- Stage 3: disjunction (ROADMAP.md). Exclusivity is SURFACE-DECIDED,
   # measured from folio DEV golds: bare 'or' is INCLUSIVE ("German or
   # Russian or both" golds True), 'either...or' is EXCLUSIVE (the James

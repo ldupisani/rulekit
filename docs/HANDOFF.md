@@ -3,24 +3,26 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–6 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–7 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
-> verbal-restrictor `If a CLS V P, then it is Q` conditionals, and (reader 6, 2026-07-21)
+> verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
 > the negative-antecedent same-entity ground conditional `If NAME is not P, then NAME
 > is Q` via a dedicated `GroundConditional` fact + unless-free fire synth — the
 > contrapositive comes FREE through the 9i reductio engine (pinned). The initially
 > landed literal-`he` surface was removed after review: without resolved coreference it
 > could misbind `he` to the antecedent subject when another name occurred inside the
-> predicate. Cumulative movement from Phase A is +12 / +12 fully-read
+> predicate — and (reader 7) the plural generic `If people are P, then they are [not]
+> Q`, using the existing `Quantified` fact and instantiation synth. Cumulative movement
+> from Phase A is +14 / +18 fully-read
 > premise instances and +1 / +2 stack-ready stories on dev-train / dev-holdout, with no
-> verdict or hazard movement; truth-scope vetoes improve by 8 / 9. Six construction classes
-> are served, but all numeric Phase C thresholds remain unmet (fully read 732/1647 and
-> 733/1602 vs 852/850; vetoes 658/605 vs ≤499/460; stack-ready stories 12/7 vs ≥22/10).
-> Reader 7 should re-price a narrow passive or relative-clause family per the Phase A build
-> order; the surveyed `there is`, direct passive-agent, negative-consequent `they`, and
-> `she`-twin candidates remain banked because their cross-split joins require additional
-> composition or lexical infrastructure (or a second-split buyer). Reader 4's opt-in
+> verdict or hazard movement; truth-scope vetoes improve by 10 / 15. Seven construction classes
+> are served, but all numeric Phase C thresholds remain unmet (fully read 734/1647 and
+> 739/1602 vs 852/850; vetoes 656/599 vs ≤499/460; stack-ready stories 12/7 vs ≥22/10).
+> Next re-survey the adjacent verbal/do-support `people` conditionals and the narrow
+> passive/relative families; the surveyed `there is`, direct passive-agent, and unresolved
+> ground-pronoun candidates remain banked pending composition, lexical infrastructure,
+> or coreference evidence. Reader 4's opt-in
 > `single_word` slot gate stays dormant for all pre-existing rules. The
 > `_naive_singular`, CamelCase-name, and verbal-universal-ask banks still have zero joins.
 > ⚠ The regenerated movement classifier reproduces every recorded metric and all reader
@@ -31,6 +33,60 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 19 (2026-07-21): Phase B reader 7 — plural-generic people conditionals; +2/+6 fully read; all gates NEUTRAL
+
+One pack-only, independently revertible increment serves **“If people are P,
+then they are [not] Q”** as the plural-agreeing twin of the existing
+`If someone is P, then they are [not] Q` reader. It emits the existing
+`Quantified(cls=P, pred=Q, polarity=±)` fact with `.singular`-folded keys, so
+the existing universal-instantiation synth performs composition; no kernel,
+fact, schema, or synth change is needed.
+
+This `they` does not perform the unsafe named-entity binding removed from
+reader 6. The exact generic construction carries one universally quantified
+subject variable from `people` into the consequent; no pronoun is resolved to
+a particular person. The reader stays copular on both sides. Verbal
+consequents, do-support negative consequents, negated antecedents, and the
+singular `someone` construction remain separate and whole-unread. Predicate
+spans stay exact phrase keys, and only explicit consequent `not` sets negative
+polarity.
+
+Synthetic coverage has nine pins: positive and negative exact fact shapes, a
+passive-participial exact key, positive composition plus its null, and refusal
+of verbal consequence, do-support consequence, negated antecedent, and the
+singular-someone sibling. **All 2,005 tests pass; scratch lint has 0 errors;
+curated is 65/65.** All eight standard DEV snapshot comparisons are NEUTRAL
+(difg, GSM8K train/holdout, ASDiv, SVAMP, MAWPS, SciBench, and FOLIO): 0
+BROKE and 0 DECL→WRONG throughout.
+
+The DEV-only folio-with-logic comparison is item-level neutral in both OUTCOME
+AND REASON on both splits (train 20 correct / 1 persistent poisoned-text wrong
+/ 473 declined; holdout 1 / 0 / 424). The intended reading movement is:
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1333→1333 | 732→734 (+2) | 16/12→16/12 | 2 / 1 | 658→656 (−2) |
+| dev-holdout | 1300→1300 | 733→739 (+6) | 8/7→8/7 | 6 / 3 | 605→599 (−6) |
+
+No matched item becomes all-premises-read, so stack readiness does not move.
+Collision and quarantine stay at 8/12 and 16/24; ambiguous-reading and
+clause-split hazards do not increase. Diagnostic agreement events improve by
+two on holdout because the whole conditional replaces a permissive partial
+reading. The new semantic surface consists only of the four intended
+quantified keys plus one existing intersective narrowing; it produces no new
+ground instantiation and changes no answer reason.
+
+The banked-zero recheck remains zero: no `_naive_singular` ending, CamelCase
+entity, or represented verbal-universal ask joins the new keys. Adjacent
+verbal and do-support `people` conditionals now have visible one-sided stack
+potential but are distinct constructions; re-price them across both splits
+before code. The next broad lever remains a narrow passive or relative-clause
+family. Cumulative recorded-frame state is 734/1647 and 739/1602 fully-read
+premises, 656/599 truth-scope vetoes, and 12/7 stack-ready stories. No TEST
+look was spent.
+
+---
 
 # Session 18 (2026-07-21): Phase B reader 6 — negative-antecedent ground conditionals; the contrapositive is free; all gates NEUTRAL
 
