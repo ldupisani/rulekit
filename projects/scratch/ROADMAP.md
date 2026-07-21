@@ -2489,3 +2489,41 @@ stack-ready stories. Thirty classes are served. No TEST look was spent.
 still binding. Remaining train candidates require explicit lexical, passive,
 definite-description, or coreference infrastructure; require an independently
 proven general construction and composition path before buying one.
+
+## Phase B reader 31 — direct passive named-agent premises (2026-07-21)
+
+Reader 31 serves **“The PATIENT is V-ed by NAME.”** It reverses the surface
+roles into the existing structured fact `VerbalRelation(NAME, V, PATIENT)`;
+no new fact or inference kind is introduced. The definite article and terminal
+period establish whole-construction boundaries, while a guarded span retains
+multi-unit patient names.
+
+The reader adds an opt-in `past_participle` slot check: the surface must end in
+`-ed` or `-en` and differ from the registered lemma. That morphology is the
+evidence for passive voice. Self-lemmed or irregular forms outside the suffix
+contract decline safely. Twenty synthetic pins cover exact emission, the
+existing passive-agent bridge, two nulls, and sixteen adjacent refusals.
+
+**pytest 2,378 passed; scratch lint 0 errors with the same eight warnings;
+curated 65/65 twice.** All eight standard DEV diffs and both FOLIO-with-logic
+grouped diffs are NEUTRAL. Outcomes remain train 21 correct / 1 pre-existing
+poisoned-text wrong / 472 declined and holdout 4 / 0 / 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1342→1342 | 783→785 (+2) | 21/17→22/18 (+1/+1) | 3 / 1 | 613→613 |
+| dev-holdout | 1319→1319 | 777→777 | 20/13→20/13 | 0 / 0 | 574→574 |
+
+Across all gold kinds the rule appears in four train rows / one story and no
+holdout rows. It emits `produce(Chevrolet, Lumina APV)` and removes the final
+blocked premise for the buyer without manufacturing a new bridge or changing
+an outcome. Hazards are neutral.
+
+Cumulative recorded-frame state is 785/1647 and 777/1607 fully read, 613/574
+vetoes, 18/13 stack-ready stories, collision 8/9, and quarantine 16/18. Phase
+A movement is +65/+56 fully read, 53/40 fewer truth-scope vetoes, and +7/+8
+stack-ready stories. Thirty-one classes are served. No TEST look was spent.
+
+**Next:** regenerate the exact frontier. Train stack readiness still binds;
+do not bundle lexical admission, definite-reference resolution, or
+named-object property substitution into the next premise reader.

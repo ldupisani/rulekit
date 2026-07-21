@@ -346,6 +346,15 @@ class MatchToken(StrictModel):
     # a lemma that happens to end in ``-ing`` — refuses. Defaults False so
     # every existing rule remains byte-identical.
     present_participle: bool = False
+    # OPT-IN: this verb slot only matches an inflected past participle whose
+    # surface has regular ``-ed`` or productive ``-en`` morphology and differs
+    # from its registered lemma. This is the grammatical signal used by
+    # direct passive readers ("is produced by ..."); a finite present or bare
+    # verb after the copula must not masquerade as passive syntax. Defaults
+    # False so every existing rule remains byte-identical. Irregular forms
+    # without either suffix deliberately decline until morphology represents
+    # them structurally.
+    past_participle: bool = False
     opt: list["MatchToken"] | None = None  # optional sub-sequence
 
     @property

@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–30 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–31 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -58,19 +58,20 @@
 > active-participial compound verbal universals `V-ing CLSs V2 P`, using
 > exact participial class keys — and (reader 30) named-PP existential premises
 > `There is a/an CLS PREPOSITION NAME`, using `Existential` without minting a
-> witness. Cumulative movement from Phase A is +63 / +56 fully-read premise
-> instances and +6 / +8
+> witness — and (reader 31) direct passive named-agent premises `The PATIENT
+> is V-ed by NAME`, using a morphology-gated `VerbalRelation(NAME, V,
+> PATIENT)`. Cumulative movement from Phase A is +65 / +56 fully-read premise
+> instances and +7 / +8
 > stack-ready stories on dev-train / dev-holdout, with no
 > verdict regression or hazard increase; truth-scope vetoes improve by 53 / 40, while
-> holdout collision/quarantine improve 12→9 / 24→18. Thirty construction classes
+> holdout collision/quarantine improve 12→9 / 24→18. Thirty-one construction classes
 > are served. The holdout stack-ready threshold is now exceeded, but the
-> conjunctive Phase C gate remains unmet (fully read 783/1647 and 777/1607 vs
-> 852/850; vetoes 613/574 vs ≤499/460; stack-ready stories 17/13 vs ≥22/10).
-> Next re-survey beyond the one-away pool; the remaining train one-away
-> candidates require lexical, passive, definite-description, or coreference
-> infrastructure. The unbought outer-quantified verbal relative and direct
-> passive-agent candidates remain banked pending
-> composition or infrastructure evidence. Reader 4's opt-in
+> conjunctive Phase C gate remains unmet (fully read 785/1647 and 777/1607 vs
+> 852/850; vetoes 613/574 vs ≤499/460; stack-ready stories 18/13 vs ≥22/10).
+> Next regenerate the frontier after buying the direct passive family; the
+> remaining candidates require lexical, definite-description, coreference,
+> or deeper composition infrastructure. The unbought outer-quantified verbal
+> relative remains banked pending composition evidence. Reader 4's opt-in
 > `single_word` slot gate stays dormant for all pre-existing rules.
 > The one-unit-span `_naive_singular` bank is now bought by reader 20;
 > CamelCase-name and verbal-universal-ask banks still have zero joins.
@@ -90,6 +91,49 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 45 (2026-07-21): Phase B reader 31 — direct passive named-agent premises; +2 train fully read, +1 stack-ready story
+
+One reader serves **“The PATIENT is V-ed by NAME.”** The passive surface emits
+the existing active-role `VerbalRelation(NAME, V, PATIENT)`. A definite
+article and terminal period claim the whole construction; a bounded subject
+span preserves multi-unit product names even when one component is not
+lexically typed. A new opt-in `past_participle` matcher requires `-ed`/`-en`
+morphology plus a registered lemma change, so finite, bare, and self-lemmed
+verbs fail closed instead of masquerading as passive voice.
+
+Twenty synthetic pins cover exact role reversal, composition through the
+existing passive-agent membership bridge, changed-patient and missing-agent
+nulls, and sixteen adjacent refusals. Those refusals keep indefinite subjects,
+other copulas, finite/bare verbs, negation, progressives, coordination,
+non-`by` PPs, common/indefinite agents, counted subjects, and larger tails
+whole-unread.
+
+**All 2,378 tests pass; scratch lint has 0 errors and the same eight warnings;
+curated is 65/65 twice.** All eight standard DEV diffs and both grouped logic
+diffs are NEUTRAL. Outcomes remain train 21 correct / 1 pre-existing
+poisoned-text wrong / 472 declined and holdout 4 / 0 / 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1342→1342 | 783→785 (+2) | 21/17→22/18 (+1/+1) | 3 / 1 | 613→613 |
+| dev-holdout | 1319→1319 | 777→777 | 20/13→20/13 | 0 / 0 | 574→574 |
+
+The buyer records `produce(Chevrolet, Lumina APV)`. The story’s other exact
+facts already make one conclusion answerable; the newly completed passive
+premise makes one additional represented conclusion stack-ready but does not
+change its verdict. No relation-to-class or named-object substitution was
+added, and all hazards remain neutral.
+
+Cumulative recorded-frame state is 785/1647 and 777/1607 fully read, 613/574
+truth-scope vetoes, 18/13 stack-ready stories, collision 8/9, and quarantine
+16/18. Thirty-one classes are served. No TEST look was spent.
+
+**Next:** regenerate the exact frontier. Train readiness remains binding;
+prefer a construction with a cross-split buyer and an existing exact-key
+composition path over lexical, reference-resolution, or substitution guesses.
+
+---
 
 # Session 44 (2026-07-21): Phase B reader 30 — named-PP existential premises; +3 holdout fully read, +1 stack-ready story
 

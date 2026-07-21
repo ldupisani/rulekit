@@ -1562,6 +1562,29 @@ rules:
     emits:
       - {fact: existential, cls: "{cls}", pred: "{prep} {obj}", polarity: true}
 
+  # Phase B reader 31: direct passive named-agent premises —
+  # "The PATIENT is V-ed by NAME" is the active relation V(NAME, PATIENT).
+  # The definite article and terminal period claim the whole construction;
+  # the bounded patient span permits multi-unit product/place names without
+  # treating their incomplete lexical tagging as grammar. The opt-in past-
+  # participle gate is the voice evidence: finite/bare verbs after `is` do
+  # not match. Only a named, definite agent is represented; indefinite or
+  # common-noun agents require existential/reference machinery and remain
+  # unread, as do signed, coordinated, modal, perfect, and PP-tail siblings.
+  - id: logic/passive-dobj-definite-patient-named-agent
+    phase: read
+    match:
+      sentence:
+        - {lit: the, at_start: true, consume_skipped: true}
+        - {slot: patient, span: true, span_blocks: [negation, quantifier, conjunction, disjunctive_marker, either_marker, verb, preposition, future_modal, capacity_modal, interrogative, complementizer, wh_which], span_blocks_counted: true}
+        - {lit: is}
+        - {slot: v, type: nonstate_verb, single_word: true, past_participle: true}
+        - {lit: by}
+        - {slot: agent, type: name}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: verbal_relation, entity: "{agent}", verb: "{v}", obj: "{patient}", polarity: true}
+
   - id: logic/existential-some-are
     phase: read
     match:

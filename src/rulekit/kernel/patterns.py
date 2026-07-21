@@ -133,6 +133,13 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
             # an actual lemma change prevents a bare lemma such as "sing"
             # from masquerading as participial syntax by suffix alone.
             return False
+    if token.past_participle:
+        fold = unit.features.get("fold") or ""
+        if not fold.endswith(("ed", "en")) or fold == _lemma_of(unit):
+            # OPT-IN (schemas.MatchToken.past_participle): a direct passive
+            # needs non-finite participial morphology. The lemma-change guard
+            # rejects bare verbs that merely happen to end in the same suffix.
+            return False
     if token.bare_form and (
         unit.features.get("fold") != _lemma_of(unit)
         or _looks_third_person_singular(unit.features.get("fold") or "")

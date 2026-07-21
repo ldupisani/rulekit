@@ -462,6 +462,17 @@ universals, so the buyer remains undetermined. Hazards and outcomes are
 neutral. Thirty classes are served; the fully-read, veto, and train-stack
 thresholds remain unmet.
 
+Reader 31 serves direct passive named-agent premises **“The PATIENT is V-ed
+by NAME.”** A new opt-in `past_participle` morphology gate requires `-ed`/`-en`
+surface morphology plus a registered lemma change; the reader reverses the
+surface roles into the existing `VerbalRelation(NAME, V, PATIENT)`. Definite
+and terminal boundaries plus a guarded patient span keep other copulas,
+finite/bare/self-lemmed verbs, sign, coordination, indefinite/common agents,
+and larger tails unread. Incremental movement is +2 / +0 fully-read premises
+and +1 / +0 stack-ready stories on dev-train / dev-holdout; fact-bearing,
+truth-scope vetoes, outcomes, and hazards remain neutral. Thirty-one classes
+are served; the fully-read, veto, and train-stack thresholds remain unmet.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /
@@ -477,6 +488,10 @@ Infrastructure borrowings (each its own increment, only if Phase B friction prov
   `present_participle` slot gate. It requires inflected `-ing` morphology plus
   a distinct registered lemma, stays dormant for every pre-existing rule,
   and prevents active reduced relatives from accepting finite/bare verbs.
+- **Past-participle refusal is built:** reader 31 added the opt-in
+  `past_participle` slot gate. It requires productive `-ed`/`-en` morphology
+  plus a distinct registered lemma, stays dormant for every pre-existing
+  rule, and prevents direct passives from accepting finite/bare verbs.
 - **Event-reader/state split is built:** reader 14 falsification proved bare
   `be`/`been`/`being` were escaping `nonstate_verb`, but adding them to `state`
   changed arithmetic holding semantics and produced a GSM8K confident wrong.
