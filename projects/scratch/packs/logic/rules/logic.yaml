@@ -719,6 +719,37 @@ rules:
     emits:
       - {fact: quantified, cls: "{p.singular}", pred: "{q.singular}", polarity: false}
 
+  # Phase B reader 22: implicit-restrictor property universals — the dual
+  # surfaces "Anything P is Q" (∀x. P→Q) and "No one P is Q"
+  # (∀x. P→¬Q). `Anything` and `No one` supply the variable and never enter
+  # a key; the property spans render plain because both frames are singular-
+  # agreeing. The narrow no-one rule additionally corrects the generic
+  # universal-no-is fallback's over-literal `one P` key without changing
+  # that older rule's behavior. Signed, relative, modal, verbal,
+  # coordinated, disjunctive, and counted siblings stay whole-unread.
+  - id: logic/universal-anything-copular
+    phase: read
+    match:
+      sentence:
+        - {lit: anything, at_start: true}
+        - {slot: p, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal, complementizer, interrogative, wh_which], span_blocks_counted: true}
+        - {lit: is}
+        - {slot: q, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+    emits:
+      - {fact: quantified, cls: "{p}", pred: "{q}", polarity: true}
+
+  - id: logic/universal-no-one-copular
+    phase: read
+    match:
+      sentence:
+        - {lit: no, at_start: true}
+        - {lit: one}
+        - {slot: p, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal, complementizer, interrogative, wh_which], span_blocks_counted: true}
+        - {lit: is}
+        - {slot: q, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+    emits:
+      - {fact: quantified, cls: "{p}", pred: "{q}", polarity: false}
+
   # Phase B reader 18: the verbal-consequent sibling —
   # "If people are P, then they V Q". Reader 7 established the plural-
   # agreeing antecedent key: P folds to the singular key emitted for a named

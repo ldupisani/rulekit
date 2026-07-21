@@ -2100,3 +2100,49 @@ are served; no TEST look was spent.
 are conjunctive. Continue pricing exact one-away holdout readers while
 favoring any cross-split construction that also reduces the much larger
 fully-read and veto gaps.
+
+## Phase B reader 22 — implicit-restrictor property universals (2026-07-21)
+
+The next holdout-first buyer is the dual construction **“Anything P is Q”** /
+**“No one P is Q.”** In both surfaces the subject supplies an implicit
+quantified variable and the following property is the actual restrictor.
+Positive and negative `Quantified` facts reuse the existing instantiation and
+universal-chain synths. The narrow no-one reader deliberately coexists with
+the older generic fallback: it adds the semantically exact `P → not Q` key
+without removing the pre-existing over-literal `one P → not Q` fact.
+
+A positive-only prototype was removed after corpus measurement. It made the
+`Anything` premise fact-bearing, but the target story remained blocked because
+the negative universal had no exact `unproductive` join. Pairing the two
+semantic siblings closes a real chain rather than booking soft parser movement.
+
+Nineteen synthetic pins cover exact positive and negative emission, named
+instantiation, positive-to-negative universal chaining, a missing-antecedent
+null, and fourteen adjacent/larger refusals. **pytest 2,225 passed; scratch
+lint 0 errors with the same eight warnings; curated 65/65 twice.** All eight
+standard DEV and both FOLIO-with-logic grouped snapshot diffs are NEUTRAL
+(0 BROKE / 0 DECL→WRONG).
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1340→1340 | 767→767 | 17/13→17/13 | 0 / 0 | 623→623 |
+| dev-holdout | 1304→1306 (+2) | 757→759 (+2) | 11/9→12/10 (+1/+1) | 2 / 1 | 584→584 |
+
+The buyer story contains `lazy → unproductive`, `unproductive → not
+energetic`, and `sloth → lazy`. All five premises are now fully read, the
+target item becomes stack-ready, and saturation contains the exact derived
+universal `lazy → not energetic`. Its conjunctive conclusion still has no
+deciding consumer, so outcomes remain train 19/1/474 and holdout 4/0/421
+(correct/wrong/declined). Hazards are neutral.
+
+Cumulative state is 767/1647 and 759/1602 fully read, 623/584 vetoes, 13/10
+stack-ready stories, collision 8/9, and quarantine 16/18. Phase A movement is
++47/+38 fully read, 43/30 fewer truth-scope vetoes, and +2/+5 stack-ready
+stories. Twenty-two classes are served. The holdout stack-story threshold is
+met exactly, but the fully-read, veto, and train stack thresholds remain
+conjunctively unmet. No TEST look was spent.
+
+**Next:** keep favoring exact readers with stack-ready buyers, preferably
+cross-split, while addressing the larger fully-read and veto gaps. Treat the
+conjunctive conclusion consumer exposed here as a separate construction class
+that must earn its own reversible increment.

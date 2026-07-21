@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–21 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–22 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -40,12 +40,15 @@
 > with a one-unit capitalized plural predicate folded consistently through
 > the existing plural-agreement contract — and (reader 21) fully repeated
 > `NAME is either both A and B or neither A nor B` equivalences, guarded by
-> exact repeated-span equality. Cumulative movement from Phase A is +47 / +36 fully-read
-> premise instances and +2 / +4 stack-ready stories on dev-train / dev-holdout, with no
+> exact repeated-span equality — and (reader 22) implicit-restrictor property
+> universals `Anything P is Q` / `No one P is Q`, using positive/negative
+> `Quantified` facts. Cumulative movement from Phase A is +47 / +38 fully-read
+> premise instances and +2 / +5 stack-ready stories on dev-train / dev-holdout, with no
 > verdict regression or hazard increase; truth-scope vetoes improve by 43 / 30, while
-> holdout collision/quarantine improve 12→9 / 24→18. Twenty-one construction classes
-> are served, but all numeric Phase C thresholds remain unmet (fully read 767/1647 and
-> 757/1602 vs 852/850; vetoes 623/584 vs ≤499/460; stack-ready stories 13/9 vs ≥22/10).
+> holdout collision/quarantine improve 12→9 / 24→18. Twenty-two construction classes
+> are served. The holdout stack-ready threshold is now met exactly, but the
+> conjunctive Phase C gate remains unmet (fully read 767/1647 and 759/1602 vs
+> 852/850; vetoes 623/584 vs ≤499/460; stack-ready stories 13/10 vs ≥22/10).
 > Next re-survey the remaining exact coordination and conditional families; the
 > unbought outer-quantified verbal relative, surveyed `there is`, direct passive-agent, and unresolved
 > ground-pronoun candidates remain banked pending composition, lexical infrastructure,
@@ -69,6 +72,54 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 36 (2026-07-21): Phase B reader 22 — implicit-restrictor property universals; +0/+2 fully read, +1 holdout stack-ready story
+
+One construction class serves the dual surfaces **“Anything P is Q”** and
+**“No one P is Q.”** The implicit subjects supply the quantified variable;
+the property after them is the restrictor, and the final copular predicate is
+the positive or negative consequence. Both emit existing `Quantified` facts.
+The narrow negative sibling also emits the semantically exact `P → not Q`
+key alongside the older generic fallback's over-literal `one P → not Q`, so
+existing behavior is preserved while universal chaining gains the correct
+join.
+
+Nineteen synthetic pins cover both exact emissions, named instantiation, the
+positive-to-negative universal chain, a missing-antecedent null, and fourteen
+refusals for adjacent or larger constructions. A first positive-only probe
+was rejected: it improved raw reading but could not close the target chain
+because the negative premise still carried the literal `one` in its key.
+
+**All 2,225 tests pass; scratch lint has 0 errors and the same eight warnings;
+curated is 65/65 twice.** All eight standard DEV snapshot diffs and both
+FOLIO-with-logic grouped diffs are NEUTRAL (0 BROKE, 0 DECL→WRONG). Outcomes
+remain train 19 correct / 1 pre-existing poisoned-text wrong / 474 declined
+and holdout 4 / 0 / 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1340→1340 | 767→767 | 17/13→17/13 | 0 / 0 | 623→623 |
+| dev-holdout | 1304→1306 (+2) | 757→759 (+2) | 11/9→12/10 (+1/+1) | 2 / 1 | 584→584 |
+
+The buyer story states `lazy → unproductive`, `unproductive → not energetic`,
+and `sloth → lazy`, plus an existential sloth witness. The paired reader makes
+all five premises fully read and the item stack-ready; saturation derives the
+exact universal chain `lazy → not energetic`. The conjunctive conclusion
+consumer still declines, so this is readiness movement rather than an answer
+conversion. Hazards remain neutral.
+
+Cumulative recorded-frame state is 767/1647 and 759/1602 fully read, 623/584
+truth-scope vetoes, 13/10 stack-ready stories, collision 8/9, and quarantine
+16/18. Twenty-two construction classes are served. The holdout stack-story
+threshold is met exactly, but the fully-read, veto, and train stack thresholds
+remain conjunctively unmet. No TEST look was spent.
+
+**Next:** keep prioritizing readers that improve stack readiness, especially
+cross-split families, while pricing the larger fully-read and truth-veto gaps.
+The newly exposed conjunctive conclusion consumer is a separate frontier and
+must earn its own general construction-class increment.
+
+---
 
 # Session 35 (2026-07-21): Phase B reader 21 — repeated both-or-neither equivalence; +0/+2 fully read, +2 holdout solves
 
