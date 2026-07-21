@@ -1,6 +1,6 @@
 # The breadth-first premise-reader campaign — FOLIO logic → full integration
 
-**ACTIVE. Phase A and Phase B readers 1–13 completed 2026-07-21: ground
+**ACTIVE. Phase A and Phase B readers 1–14 completed 2026-07-21: ground
 both-or-neither equivalence, unrestricted bare-plural disjunction, and negative
 two-article indefinite generics, plus single-antecedent verbal “Everyone who”
 implications, verbal-restrictor conditionals, and the negative-antecedent
@@ -8,7 +8,8 @@ same-entity ground conditional, plural-generic `people` conditionals, and
 class-scoped bare-plural copular relatives, restricted `Everyone … is
 [either] … or …` disjunctions, and two-article indefinite-generic exclusive
 disjunctions, plus negative possessive universals, plural-agreeing negative
-event universals, and named ground do-support event denials.**
+event universals, named ground do-support event denials, and bare-plural
+future-event exclusive disjunctions.**
 
 ## Context
 
@@ -270,6 +271,15 @@ Thirteen construction classes are served; every numeric Phase C threshold
 still binds. The adjacent outer-quantified subject-relative verbal prototype
 was re-measured and removed after adding a valid fact but moving no registered
 metric; stative ownership remains a separate unbought class.
+
+Reader 14 serves bare-plural **“CLSs will either V P or V2 Q”** future-event
+disjunctions as exclusive `QuantifiedDisjunction` facts. Both branches require
+bare-form, single-token `nonstate_verb` heads and predicate spans that refuse
+sign, coordination, further verbs/modals, and counted material. Incremental
+movement is +4 / +0 fully-read premises, +0 / +0 fact-bearing premises, −4 / 0
+truth-scope vetoes, and +0 / +0 stack-ready stories on dev-train / dev-holdout.
+Outcomes and hazards remain neutral. Fourteen construction classes are
+served; every numeric Phase C threshold still binds.
 
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key

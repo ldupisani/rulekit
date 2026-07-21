@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–13 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–14 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -25,12 +25,15 @@
 > CLSs V P`, again using negative `Quantified` facts and the existing
 > chain/instantiation synths — and (reader 13) named ground do-support event
 > denials `NAME does not V P`, using exact negative `Atom` keys and the existing
-> verdict consumer. Cumulative movement from Phase A is +29 / +33 fully-read
+> verdict consumer — and (reader 14) bare-plural future-event disjunctions
+> `CLSs will either V P or V2 Q`, using exclusive `QuantifiedDisjunction` facts
+> and the existing instantiation/elimination synths. Cumulative movement from
+> Phase A is +33 / +33 fully-read
 > premise instances and +2 / +2 stack-ready stories on dev-train / dev-holdout, with no
-> verdict regression or hazard increase; truth-scope vetoes improve by 25 / 27, while
-> holdout collision/quarantine improve 12→9 / 24→18. Thirteen construction classes
-> are served, but all numeric Phase C thresholds remain unmet (fully read 749/1647 and
-> 754/1602 vs 852/850; vetoes 641/587 vs ≤499/460; stack-ready stories 13/7 vs ≥22/10).
+> verdict regression or hazard increase; truth-scope vetoes improve by 29 / 27, while
+> holdout collision/quarantine improve 12→9 / 24→18. Fourteen construction classes
+> are served, but all numeric Phase C thresholds remain unmet (fully read 753/1647 and
+> 754/1602 vs 852/850; vetoes 637/587 vs ≤499/460; stack-ready stories 13/7 vs ≥22/10).
 > Next re-survey the remaining exact coordination and conditional families; the
 > unbought outer-quantified verbal relative, surveyed `there is`, direct passive-agent, and unresolved
 > ground-pronoun candidates remain banked pending composition, lexical infrastructure,
@@ -50,6 +53,52 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 27 (2026-07-21): Phase B reader 14 — future-event disjunctions; +4/+0 fully read
+
+One pack-only increment serves **“CLSs will either V P or V2 Q”** when both
+branches begin with bare-form, single-token non-event verbs. The plural class
+folds to its singular membership key; `will` contributes tense but no
+predicate material; each `V P` branch renders exactly like an existing ground
+verbal atom. Overt `either` emits an exclusive `QuantifiedDisjunction`, so the
+existing instantiation, disjunctive-syllogism, and XOR-elimination synths
+compose without new schema or kernel behavior.
+
+Seventeen synthetic pins cover the exact fact, negative-left disjunctive
+syllogism, positive-left exclusive elimination, missing-class and
+disjunction-only nulls, plus capacity-modal, missing-`either`, singular,
+definite, named, signed, coordinated, multi-verb, particle, counted,
+three-way, and copular refusals. The final refusal uses Session 26's
+`non_event_verb` boundary; `Students will either be happy ...` stays unread.
+
+**All 2,100 tests pass; scratch lint has 0 errors and the same eight warnings;
+curated is 65/65 twice.** All eight standard DEV snapshot diffs and both
+FOLIO-with-logic grouped diffs are NEUTRAL (0 BROKE, 0 DECL→WRONG). Outcomes
+remain train 19 correct / 1 pre-existing poisoned-text wrong / 474 declined
+and holdout 1 / 0 / 424.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1338→1338 | 749→753 (+4) | 17/13→17/13 | 4 / 1 | 641→637 (−4) |
+| dev-holdout | 1304→1304 | 754→754 | 8/7→8/7 | 0 / 0 | 587→587 |
+
+The sole buyer story states that people will either take a bus or drive to
+their destination. Its emitted key is exactly `person → take bus XOR drive
+to meta destination`; four item instances share that story. Other unread
+premises/questions keep it from all-premises-read or stack-ready status.
+Collision, quarantine, agreement, ambiguity, and clause-split hazards remain
+unchanged.
+
+Cumulative recorded-frame state is 753/1647 and 754/1602 fully read, 637/587
+truth-scope vetoes, 13/7 stack-ready stories, collision 8/9, and quarantine
+16/18. Fourteen construction classes are served; every numeric Phase C
+threshold still binds (852/850, ≤499/460, ≥22/10). No TEST look was spent.
+
+**Next:** continue the breadth-first survey of exact conditional,
+passive/relative, and remaining coordination families; keep relation- or
+coreference-dependent shapes banked until their missing stack is bought.
+
+---
 
 # Session 26 (2026-07-21): split event-reader exclusion from arithmetic state semantics
 

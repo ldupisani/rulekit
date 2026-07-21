@@ -1089,6 +1089,27 @@ rules:
     emits:
       - {fact: quantified_disjunction, cls: "{cls.singular}", left: "{l.singular}", right: "{r.singular}", exclusive: true}
 
+  # Phase B reader 14: future-event generic disjunctions —
+  # "CLSs will either V P or V2 Q". The plural class and both bare,
+  # single-token event verbs preserve the same keys as ground-verbal facts;
+  # `will` contributes tense but not a separate predicate key. Explicit
+  # `either` carries the established exclusive reading. Signed, coordinated,
+  # modal-internal, perfect/particle, counted, and three-way branches refuse.
+  - id: logic/qdisj-bare-plural-future-events-either
+    phase: read
+    match:
+      sentence:
+        - {slot: cls, type: bare_plural, at_start: true, blocks_skipped: definite_article}
+        - {slot: aux, type: future_modal}
+        - {lit: either}
+        - {slot: v1, type: nonstate_verb, bare_form: true, single_word: true}
+        - {slot: p1, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+        - {lit: or}
+        - {slot: v2, type: nonstate_verb, bare_form: true, single_word: true}
+        - {slot: p2, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+    emits:
+      - {fact: quantified_disjunction, cls: "{cls.singular}", left: "{v1} {p1}", right: "{v2} {p2}", exclusive: true}
+
   # ---- Stage 4: quantifier morphology + existentials (ROADMAP.md) -----------
   # 'any' is an ARTICLE (difg-mined) — auto-skipped, so an ordinary lit can
   # never see it; `consume_skipped` (schemas.MatchToken) stops the skip AT

@@ -1756,3 +1756,47 @@ B movement is claimed, and no TEST look was spent.
 
 **Next:** re-land reader 14's separately measured `CLSs will either V P or V2
 Q` exact future-event disjunction now that its copular refusal is structural.
+
+## Phase B reader 14 — bare-plural future-event disjunctions (2026-07-21)
+
+The post-reader-13 coordination survey found one bought exact class:
+**“CLSs will either V P or V2 Q.”** `will` is tense scaffolding; each bare,
+single-token non-event verb plus its predicate renders the same flat key as a
+ground-verbal atom. The reader emits an existing exclusive
+`QuantifiedDisjunction`, so class instantiation, disjunctive syllogism, and
+XOR elimination compose immediately.
+
+The rule requires a bare-plural subject, `future_modal`, overt `either`, two
+bare-form `single_word` non-state verb heads, and predicate spans that block
+sign, coordination, disjunction, further verbs/modals, and counted material.
+Seventeen synthetic pins prove the exact fact, both elimination directions,
+two null controls, and refusals for the adjacent modal, missing-marker,
+subject, signed, coordinated, multi-verb, particle, counted, three-way, and
+copular families. Session 26's broader event-reader exclusion makes the final
+`be happy` refusal structural.
+
+**pytest 2,100 passed; scratch lint 0 errors with the same eight warnings;
+curated 65/65 twice.** All eight standard DEV snapshot diffs and both grouped
+FOLIO-with-logic diffs are NEUTRAL (0 BROKE, 0 DECL→WRONG).
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1338→1338 | 749→753 (+4) | 17/13→17/13 | 4 / 1 | 641→637 (−4) |
+| dev-holdout | 1304→1304 | 754→754 | 8/7→8/7 | 0 / 0 | 587→587 |
+
+The one train buyer story says people will either take a bus or drive to
+their destination. Its exact fact is `person → take bus XOR drive to meta
+destination`; four item instances share the story. Remaining gaps keep every
+item outcome and stack-ready metric unchanged (train 19 correct / 1 poisoned
+text wrong / 474 declined; holdout 1 / 0 / 424). Collision, quarantine,
+agreement, ambiguity, and clause-split hazards are neutral.
+
+Cumulative recorded-frame state is 753/1647 and 754/1602 fully read, 637/587
+truth-scope vetoes, 13/7 stack-ready stories, collision 8/9, and quarantine
+16/18. Phase A movement is now +33/+33 fully read and 29/27 fewer truth-scope
+vetoes. Fourteen construction classes are served; all numeric Phase C
+thresholds still bind. No TEST look was spent.
+
+**Next:** continue the exact conditional, passive/relative, and coordination
+survey. Keep binary-relation and unresolved-coreference forms banked until
+their missing representation or consumer stack has a measured buyer.
