@@ -183,6 +183,25 @@ rules:
     emits:
       - {fact: quantified, cls: "{cls.singular}", pred: "{v} {pred}", polarity: false}
 
+  # Phase B reader 15: future-negative indefinite generics —
+  # "A/An CLS will not V P". The leading article marks the singular generic
+  # class, `will` contributes tense only, and the explicit negator owns the
+  # polarity. A bare, single-token event verb plus its predicate preserves
+  # the same key as ground-verbal facts and questions. Larger signed, modal,
+  # coordinated, perfect/particle, and counted constructions refuse.
+  - id: logic/universal-indefinite-future-not-verbal
+    phase: read
+    match:
+      sentence:
+        - {lit: [a, an], at_start: true, consume_skipped: true}
+        - {slot: cls, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal]}
+        - {lit: will}
+        - {lit: not}
+        - {slot: v, type: nonstate_verb, bare_form: true, single_word: true}
+        - {slot: pred, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+    emits:
+      - {fact: quantified, cls: "{cls}", pred: "{v} {pred}", polarity: false}
+
   # ⚠ THE `.singular` TEMPLATE ATTR (the unknown-plural-morphology increment):
   # every cls/pred key in the PLURAL-AGREEING family (quantifier + 'are',
   # bare-plural subjects, 'some ... are') renders with unknown-word plurals

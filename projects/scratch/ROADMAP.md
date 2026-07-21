@@ -1818,3 +1818,43 @@ coverage, outcome, stack, or hazard metric changes; no TEST look was spent.
 
 **Next:** restore the separately removed future-negative indefinite-generic
 prototype with literal `will` and price it as reader 15.
+
+## Phase B reader 15 — future-negative indefinite generics (2026-07-21)
+
+The corrected single-veto survey buys **“A/An CLS will not V P.”** The leading
+article establishes a singular generic class; literal `will` contributes no
+key material; `not` supplies negative polarity. The bare, single-token
+non-event verb plus predicate is ground-verbal-key exact, so an existing
+negative `Quantified` fact composes through universal chaining and named
+instantiation without new schema or kernel behavior.
+
+Seventeen synthetic pins cover exact emission, direct refutation of a positive
+ground question, subclass chaining, a membership null, and thirteen adjacent
+refusals: other quantifiers/subjects, do-support, conditional `would`, missing
+or alternate negation, copular, multi-verb, particle, coordinated, and counted
+forms.
+
+**pytest 2,118 passed; scratch lint 0 errors with the same eight warnings;
+curated 65/65 twice.** All eight standard DEV and both grouped
+FOLIO-with-logic snapshot diffs are NEUTRAL (0 BROKE, 0 DECL→WRONG).
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1338→1338 | 753→757 (+4) | 17/13→17/13 | 4 / 1 | 637→633 (−4) |
+| dev-holdout | 1304→1304 | 754→754 | 8/7→8/7 | 0 / 0 | 587→587 |
+
+The one train buyer emits `person with high income → not take bus to meta
+destination` across four item instances. Remaining story gaps leave outcomes
+and stack readiness unchanged (train 19 correct / 1 poisoned-text wrong / 474
+declined; holdout 1 / 0 / 424). Collision, quarantine, agreement, ambiguity,
+and clause-split hazards remain neutral.
+
+Cumulative recorded-frame state is 757/1647 and 754/1602 fully read, 633/587
+truth-scope vetoes, 13/7 stack-ready stories, collision 8/9, and quarantine
+16/18. Phase A movement is +37/+33 fully read and 33/27 fewer truth-scope
+vetoes. Fifteen construction classes are served; every Phase C threshold
+still binds. No TEST look was spent.
+
+**Next:** re-price the remaining single-veto positive possessive,
+intransitive-universal, coordination, and passive/relative families. Do not
+merge relation- or coreference-dependent shapes without their missing stack.

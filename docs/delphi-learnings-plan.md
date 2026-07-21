@@ -1,6 +1,6 @@
 # The breadth-first premise-reader campaign — FOLIO logic → full integration
 
-**ACTIVE. Phase A and Phase B readers 1–14 completed 2026-07-21: ground
+**ACTIVE. Phase A and Phase B readers 1–15 completed 2026-07-21: ground
 both-or-neither equivalence, unrestricted bare-plural disjunction, and negative
 two-article indefinite generics, plus single-antecedent verbal “Everyone who”
 implications, verbal-restrictor conditionals, and the negative-antecedent
@@ -8,8 +8,9 @@ same-entity ground conditional, plural-generic `people` conditionals, and
 class-scoped bare-plural copular relatives, restricted `Everyone … is
 [either] … or …` disjunctions, and two-article indefinite-generic exclusive
 disjunctions, plus negative possessive universals, plural-agreeing negative
-event universals, named ground do-support event denials, and bare-plural
-future-event exclusive disjunctions.**
+event universals, named ground do-support event denials, bare-plural
+future-event exclusive disjunctions, and future-negative indefinite
+generics.**
 
 ## Context
 
@@ -282,6 +283,16 @@ movement is +4 / +0 fully-read premises, +0 / +0 fact-bearing premises, −4 / 0
 truth-scope vetoes, and +0 / +0 stack-ready stories on dev-train / dev-holdout.
 Outcomes and hazards remain neutral. Fourteen construction classes are
 served; every numeric Phase C threshold still binds.
+
+Reader 15 serves singular indefinite **“A/An CLS will not V P”** future-event
+generics as negative `Quantified` facts. Literal `will` avoids the ask-oriented
+`future_modal` auxiliary breadth; the event head is bare-form, single-word,
+and non-state, while both class and predicate spans refuse larger signed,
+coordinated, modal, verbal, and counted constructions. Incremental movement
+is +4 / +0 fully-read premises, +0 / +0 fact-bearing premises, −4 / 0
+truth-scope vetoes, and +0 / +0 stack-ready stories on dev-train / dev-holdout.
+Outcomes and hazards remain neutral. Fifteen classes are served; every Phase
+C threshold still binds.
 
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
