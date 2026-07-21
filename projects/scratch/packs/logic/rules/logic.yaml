@@ -857,6 +857,33 @@ rules:
     emits:
       - {fact: quantified, cls: "{v} {p}", pred: "{v2} {q}", polarity: true}
 
+  # Phase B reader 27: free-relative consequences on comma-bound
+  # indefinite-generic verbal conditionals —
+  # "If a/an CLS V P, they V2 what SUBJECT V3 Q". The embedded subject and
+  # verb belong to the object phrase headed by `what`; they are preserved in
+  # the outer consequence key rather than asserted as another proposition.
+  # The explicit segmentation prevents the ordinary consequence span from
+  # swallowing an arbitrary second verb. Explicit-then, signed, modal,
+  # coordinated, perfect/particle, and counted siblings remain whole-unread.
+  - id: logic/conditional-indefinite-verbal-comma-they-verbal-free-relative
+    phase: read
+    match:
+      sentence:
+        - {lit: if, at_start: true}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: cls, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal]}
+        - {slot: v, type: nonstate_verb, single_word: true}
+        - {slot: p, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+        - {lit: ',', consume_skipped: true}
+        - {lit: they}
+        - {slot: v2, type: nonstate_verb, bare_form: true, single_word: true}
+        - {lit: what}
+        - {slot: embedded_subject, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, auxiliary, future_modal, capacity_modal], span_blocks_counted: true}
+        - {slot: v3, type: nonstate_verb, single_word: true}
+        - {slot: q, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+    emits:
+      - {fact: quantified, cls: "{v} {p}", pred: "{v2} what {embedded_subject} {v3} {q}", polarity: true}
+
   # Phase B reader 20: reduced-relative people universals —
   # "People V P are Q". As with reader 7's explicit people conditional,
   # `people` supplies FOLIO's unrestricted human variable rather than a

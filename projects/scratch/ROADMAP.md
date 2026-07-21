@@ -2331,3 +2331,43 @@ conjunctively unmet. No TEST look was spent.
 **Next:** regenerate the one-away frontier after the cross-split gain. Continue
 preferring exact plural-agreement or coordination families that move train
 stack readiness without requiring lexical or coreference guesses.
+
+## Phase B reader 27 — comma-bound free-relative verbal conditionals (2026-07-21)
+
+Reader 27 serves **“If a/an CLS V P, they V2 what SUBJECT V3 Q.”** The free-
+relative clause is structurally segmented but preserved inside the exact
+outer predicate key. It is not asserted independently, and the ordinary
+conditional reader remains unable to swallow arbitrary extra verbs.
+
+The rule buys only the comma-bound skeleton. Its class, event complements,
+embedded subject, and free-relative tail block sign, modality, coordination,
+extra verbs, and counted material; the embedded subject additionally blocks
+auxiliaries. Explicit-`then` and perfect/particle siblings remain unread.
+Nineteen synthetic pins cover emission, composition, a missing-antecedent
+null, and sixteen adjacent refusals.
+
+**pytest 2,299 passed; scratch lint 0 errors with the same eight warnings;
+curated 65/65 twice.** All eight standard DEV diffs and both FOLIO-with-logic
+grouped diffs are NEUTRAL. Outcomes remain train 21 correct / 1 pre-existing
+poisoned-text wrong / 472 declined and holdout 4 / 0 / 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1340→1340 | 780→781 (+1) | 19/15→20/16 (+1/+1) | 1 / 1 | 616→615 (−1) |
+| dev-holdout | 1316→1316 | 773/1607→773/1607 | 17/11→17/11 | 0 / 0 | 575→575 |
+
+The sole buyer is the European-football story. The new fact is `play football
+→ play what American call soccer`, while the ground premise classifies Adam
+Buska as a `European football player`; no exact antecedent fact exists.
+Reading therefore improves stack readiness without changing the verdict, and
+the missing membership/event bridge remains banked as a separate generality
+and soundness problem. Hazards are neutral.
+
+Cumulative recorded-frame state is 781/1647 and 773/1607 fully read, 615/575
+vetoes, 16/11 stack-ready stories, collision 8/9, and quarantine 16/18. Phase
+A movement is +61/+52 fully read, 51/39 fewer truth-scope vetoes, and +5/+6
+stack-ready stories. Twenty-seven classes are served. No TEST look was spent.
+
+**Next:** regenerate the exact one-away frontier. Continue buying train stack
+stories with exact grammar; do not bundle the banked European membership/event
+bridge or any lexical/coreference guess into a premise reader.

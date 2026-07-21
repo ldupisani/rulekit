@@ -412,6 +412,19 @@ converts declined → correct through the existing negative-chain synthesizer;
 hazards remain neutral. Twenty-six classes are served; the fully-read, veto,
 and train-stack thresholds remain unmet.
 
+Reader 27 serves comma-bound free-relative verbal conditionals **“If a/an CLS
+V P, they V2 what SUBJECT V3 Q.”** The embedded subject and verb remain inside
+one exact outer consequence key; they do not mint another proposition. An
+auxiliary guard prevents `do` from being absorbed into the embedded subject,
+and explicit-`then`, signed, modal, coordinated, perfect/particle, and counted
+siblings refuse. Incremental movement is +1 / +0 fully-read premises, −1 / 0
+truth-scope vetoes, and +1 / +0 stack-ready stories on dev-train /
+dev-holdout. The buyer remains undetermined because its ground class fact and
+conditional event antecedent do not yet join; that bridge is a separate
+construction/inference decision. Hazards and outcomes remain neutral.
+Twenty-seven classes are served; the fully-read, veto, and train-stack
+thresholds remain unmet.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /
