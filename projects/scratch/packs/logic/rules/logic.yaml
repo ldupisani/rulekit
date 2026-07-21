@@ -137,6 +137,35 @@ rules:
     emits:
       - {fact: quantified, cls: "{cls}", pred: "{pred}", polarity: false}
 
+  # Phase B reader 11: negative possessive universals — "No CLSs have P" /
+  # "No CLS has P". The agreement pair shares the exact predicate key
+  # `have P`; only the plural subject frame folds its class key. The class
+  # span refuses verbs and modals so relative restrictions ("No facts that
+  # Dan knows have ...") and capacity forms ("No reptiles can have ...")
+  # cannot be mistaken for the simple frame, while the predicate refuses
+  # perfect/verbal, negated, and coordinated continuations.
+  - id: logic/universal-no-have
+    phase: read
+    match:
+      sentence:
+        - {lit: 'no', at_start: true}
+        - {slot: cls, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal]}
+        - {lit: have}
+        - {slot: pred, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb]}
+    emits:
+      - {fact: quantified, cls: "{cls.singular}", pred: "have {pred}", polarity: false}
+
+  - id: logic/universal-no-has
+    phase: read
+    match:
+      sentence:
+        - {lit: 'no', at_start: true}
+        - {slot: cls, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal]}
+        - {lit: has}
+        - {slot: pred, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb]}
+    emits:
+      - {fact: quantified, cls: "{cls}", pred: "have {pred}", polarity: false}
+
   # ⚠ THE `.singular` TEMPLATE ATTR (the unknown-plural-morphology increment):
   # every cls/pred key in the PLURAL-AGREEING family (quantifier + 'are',
   # bare-plural subjects, 'some ... are') renders with unknown-word plurals

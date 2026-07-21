@@ -1,13 +1,13 @@
 # The breadth-first premise-reader campaign — FOLIO logic → full integration
 
-**ACTIVE. Phase A and Phase B readers 1–10 completed 2026-07-21: ground
+**ACTIVE. Phase A and Phase B readers 1–11 completed 2026-07-21: ground
 both-or-neither equivalence, unrestricted bare-plural disjunction, and negative
 two-article indefinite generics, plus single-antecedent verbal “Everyone who”
 implications, verbal-restrictor conditionals, and the negative-antecedent
 same-entity ground conditional, plural-generic `people` conditionals, and
 class-scoped bare-plural copular relatives, restricted `Everyone … is
 [either] … or …` disjunctions, and two-article indefinite-generic exclusive
-disjunctions.**
+disjunctions, plus negative possessive universals.**
 
 ## Context
 
@@ -237,6 +237,16 @@ failed. Incremental movement is +2 / +3 fully-read and fact-bearing premises,
 −2 / −3 truth-scope vetoes, and +0 / +0 stack-ready stories on dev-train /
 dev-holdout. Outcomes and hazards remain neutral. Ten construction classes
 are served; every numeric Phase C threshold still binds.
+
+Reader 11 serves **“No CLSs have P” / “No CLS has P”** through negative
+`Quantified` facts. Agreement normalizes both predicates to `have P`, while
+only the plural class key folds; verb/modal class-span blocks and strict
+predicate blocks refuse relative, modal, perfect, double-negative, and
+coordinated forms. Incremental movement is +1 / +3 fully-read premises,
++1 / +1 fact-bearing premises, −1 / −3 truth-scope vetoes, and +0 / +0
+stack-ready stories on dev-train / dev-holdout. Outcomes and hazards remain
+neutral. Eleven construction classes are served; every numeric Phase C
+threshold still binds.
 
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key

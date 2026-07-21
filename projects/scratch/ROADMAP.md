@@ -1568,3 +1568,51 @@ binds (852/850, ≤499/460, ≥22/10). No TEST look was spent.
 remaining exact conditional families. Stative/modal/do-support negative
 universals, direct passive-agent infrastructure, and unresolved coreference
 remain banked until a single two-split key contract appears.
+
+## Phase B reader 11 — negative possessive universals (2026-07-21)
+
+The next bought universal family is **“No CLSs have P” / “No CLS has P”**.
+The agreement pair emits one shared negative `Quantified` predicate key,
+`have P`; the plural frame folds only the class key and the singular frame
+keeps it plain. Existing universal instantiation and universal chaining carry
+the semantics without a new fact or synth.
+
+The simple frame excludes the adjacent lookalikes structurally. The class
+span blocks verbs and capacity/future modals, so relative restrictions and
+`can/will have` forms cannot become an opaque class. The predicate blocks a
+second verb, negation, and coordination, refusing perfect, double-negative,
+and coordinated predicates. Twelve synthetic tests pin both fact shapes,
+subclass chaining, named instantiation, and eight refusal boundaries.
+
+**pytest 2,052 passed; scratch lint 0 errors with the same eight warnings;
+curated 65/65.** All eight standard DEV snapshot diffs and both
+FOLIO-with-logic grouped diffs are NEUTRAL: 0 BROKE and 0 DECL→WRONG.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1337→1338 (+1) | 740→741 (+1) | 17/13→17/13 | 1 / 1 | 650→649 (−1) |
+| dev-holdout | 1303→1304 (+1) | 748→751 (+3) | 8/7→8/7 | 3 / 2 | 593→590 (−3) |
+
+The train buyer is the single `No humans have hooves` premise. Holdout buys
+two stories: `No women have prostate cancer` and `No reptile has fur`. The
+reptile denial chains through the existing `snake → reptile` fact to derive
+`snake → not have fur`, and its item becomes all-premises-read. The question
+`Some snake has fur` still has no ask shape, however, so the item remains an
+honest decline and stack readiness does not move. Outcomes and reasons remain
+unchanged (train 19 correct / 1 pre-existing wrong / 474 declined; holdout
+1 / 0 / 424), as do collision, quarantine, agreement, ambiguous-reading, and
+clause-split diagnostics.
+
+The banked-zero recheck remains zero: the plural key uses registered ordinary
+morphology, `Quantified` carries no entity field, and the possessive
+universal has no represented ask join. Cumulative recorded-frame state is
+741/1647 and 751/1602 fully read, 649/590 truth-scope vetoes, 13/7
+stack-ready stories, collision 8/9, and quarantine 16/18. Every numeric Phase
+C threshold still binds (852/850, ≤499/460, ≥22/10). No TEST look was spent.
+
+**Next:** continue the Phase B premise-reader survey with exact conditional
+and passive/relative families. The now-all-read snake story exposes a
+possessive existential ask gap, but that is not a premise-reader class and
+stays banked unless the campaign scope explicitly expands. Articleless
+unknown-word disjunctions, do-support, unresolved coreference, and direct
+passive-agent infrastructure remain banked.
