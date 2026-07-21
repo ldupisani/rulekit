@@ -1518,3 +1518,53 @@ C threshold still binds (852/850, ≤499/460, ≥22/10). No TEST look was spent.
 families against reader 9's newly stack-ready train story. Do-support,
 unresolved coreference, direct passive-agent infrastructure, and paraphrase
 bridges remain banked until a two-split buyer appears.
+
+## Phase B reader 10 — two-article indefinite-generic disjunctions (2026-07-21)
+
+The next bought raw-coordination family is **“A/An CLS is either a/an L or
+a/an R”**. It is singular-agreeing and therefore renders all three keys plain,
+exactly like `universal-indefinite-copular`. The leading article licenses a
+generic class; explicit `either` licenses exclusivity. The existing
+`QuantifiedDisjunction`, `synth/qdisj-instantiation`, and case-analysis/XOR
+synths supply the entire semantic path.
+
+The first prototype accepted articleless branches and measured +5/+7
+fully-read instances, but failed its larger-construction falsification:
+`span_blocks: verb` cannot detect a quarantined unknown verb, so an unknown
+verbal branch followed by an adverb could ride an opaque predicate span. The
+shipped reader requires `a/an` on both branches, structural evidence that
+they are nominal. This deliberately banks the articleless adjective and
+unknown-word surfaces despite their additional measured coverage.
+
+Fourteen synthetic tests pin exact exclusive fact shape, case-analysis and
+XOR composition, the missing-class null, plus missing-article, bare-`or`,
+quantifier/definite-subject, coordinated-class, negated, prepositional,
+verbal, and three-way refusals. **pytest 2,040 passed; scratch lint 0 errors
+with the same eight warnings; curated 65/65.** All eight standard DEV
+snapshot diffs and both FOLIO-with-logic grouped diffs are NEUTRAL: 0 BROKE
+and 0 DECL→WRONG.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1335→1337 (+2) | 738→740 (+2) | 17/13→17/13 | 2 / 1 | 652→650 (−2) |
+| dev-holdout | 1300→1303 (+3) | 745→748 (+3) | 8/7→8/7 | 3 / 1 | 596→593 (−3) |
+
+The repeated train function premise and holdout neuroimaging premise are the
+only buyers. Each gains one exact `QuantifiedDisjunction`; neither has a
+matching named class witness, so no ground disjunction instantiates and no
+item becomes all-premises-read or stack-ready. Outcomes and reasons remain
+unchanged (train 19 correct / 1 pre-existing wrong / 474 declined; holdout
+1 / 0 / 424), as do collision, quarantine, agreement, ambiguous-reading, and
+clause-split diagnostics.
+
+The mandatory banked-zero recheck remains zero: no `.singular` unknown-word
+fold runs, `QuantifiedDisjunction` has no entity field, and the new keys do not
+join a verbal-universal ask. Cumulative recorded-frame state is 740/1647 and
+748/1602 fully read, 650/593 truth-scope vetoes, 13/7 stack-ready stories,
+collision 8/9, and quarantine 16/18. Every numeric Phase C threshold still
+binds (852/850, ≤499/460, ≥22/10). No TEST look was spent.
+
+**Next:** re-price a structurally gated articleless disjunction class and the
+remaining exact conditional families. Stative/modal/do-support negative
+universals, direct passive-agent infrastructure, and unresolved coreference
+remain banked until a single two-split key contract appears.

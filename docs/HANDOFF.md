@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–9 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–10 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -16,14 +16,15 @@
 > Q`, using the existing `Quantified` fact and instantiation synth — and (reader 8)
 > class-scoped `CLSs who are P are [not] Q`, using the existing `Conditional` fact —
 > and (reader 9) restricted `Everyone RESTRICTION is [either] L or R`, using the
-> existing
-> `QuantifiedDisjunction` fact and instantiation/case-analysis synths.
-> Cumulative movement from Phase A is +18 / +24 fully-read
+> existing `QuantifiedDisjunction` fact and instantiation/case-analysis synths —
+> and (reader 10) two-article indefinite-generic disjunctions `A/An CLS is
+> either a/an L or a/an R`, reusing the same fact and synth path.
+> Cumulative movement from Phase A is +20 / +27 fully-read
 > premise instances and +2 / +2 stack-ready stories on dev-train / dev-holdout, with no
-> verdict regression or hazard increase; truth-scope vetoes improve by 14 / 18, while
-> holdout collision/quarantine improve 12→9 / 24→18. Nine construction classes
-> are served, but all numeric Phase C thresholds remain unmet (fully read 738/1647 and
-> 745/1602 vs 852/850; vetoes 652/596 vs ≤499/460; stack-ready stories 13/7 vs ≥22/10).
+> verdict regression or hazard increase; truth-scope vetoes improve by 16 / 21, while
+> holdout collision/quarantine improve 12→9 / 24→18. Ten construction classes
+> are served, but all numeric Phase C thresholds remain unmet (fully read 740/1647 and
+> 748/1602 vs 852/850; vetoes 650/593 vs ≤499/460; stack-ready stories 13/7 vs ≥22/10).
 > Next re-survey the remaining exact raw-coordination and conditional families; the
 > unbought outer-quantified verbal relative, surveyed `there is`, direct passive-agent, and unresolved
 > ground-pronoun candidates remain banked pending composition, lexical infrastructure,
@@ -38,6 +39,54 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 22 (2026-07-21): Phase B reader 10 — two-article indefinite disjunctions; +2/+3 fully read
+
+One pack-only, independently revertible increment serves **“A/An CLS is
+either a/an L or a/an R”** as a singular-agreeing generic exclusive
+disjunction. It is the disjunctive sibling of the existing two-article
+indefinite generic: the leading article marks a generic class rather than a
+named witness, all keys render plain, and overt `either` carries Stage 3
+exclusivity. The reader reuses `QuantifiedDisjunction`, universal
+instantiation, and case analysis without adding a fact kind or synth.
+
+The two predicate articles are a soundness boundary, not decoration. An
+initial broader draft also accepted articleless disjuncts and moved +5/+7
+fully-read instances, but a synthetic refusal showed that quarantined unknown
+verbs could be swallowed as opaque predicate text when `span_blocks: verb`
+had no registered verb sense to see. Requiring `a/an` before both branches
+provides structural evidence that they are nominal. Articleless adjectival
+and multiword forms remain banked, along with bare `or`, negated,
+prepositional, verbal, coordinated, and three-way forms.
+
+Fourteen synthetic pins cover the exact fact, case-analysis and XOR
+composition, absent-class null, and all refusal boundaries. **All 2,040 tests
+pass; scratch lint has 0 errors and the same eight warnings; curated remains
+65/65.** All eight standard DEV snapshot diffs are NEUTRAL (difg, GSM8K
+train/holdout, ASDiv, SVAMP, MAWPS, SciBench, FOLIO), as are both
+FOLIO-with-logic grouped diffs: 0 BROKE and 0 DECL→WRONG throughout. Train
+remains 19 correct / 1 pre-existing poisoned-text wrong / 474 declined;
+holdout remains 1 / 0 / 424.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1335→1337 (+2) | 738→740 (+2) | 17/13→17/13 | 2 / 1 | 652→650 (−2) |
+| dev-holdout | 1300→1303 (+3) | 745→748 (+3) | 8/7→8/7 | 3 / 1 | 596→593 (−3) |
+
+The train buyer is the repeated function-class story; the holdout buyer is
+the repeated neuroimaging-technique story. The only semantic additions are
+their exact `QuantifiedDisjunction` facts: neither story contains a matching
+ground class witness, so no disjunction instantiates and no item becomes
+all-premises-read or stack-ready. Outcomes, reasons, collision, quarantine,
+agreement, ambiguous-reading, and clause-split diagnostics remain unchanged.
+
+The mandatory banked-zero recheck remains zero: singular folding is not used,
+the fact carries no entity slot, and no verbal-universal ask joins the new
+keys. Cumulative recorded-frame state is 740/1647 and 748/1602 fully-read
+premises, 650/593 truth-scope vetoes, 13/7 stack-ready stories, collision 8/9,
+and quarantine 16/18. No TEST look was spent.
+
+---
 
 # Session 21 (2026-07-21): Phase B reader 9 — restricted Everyone disjunctions; +2/+3 fully read; +1 train stack-ready story
 

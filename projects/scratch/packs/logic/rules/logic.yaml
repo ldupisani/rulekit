@@ -924,6 +924,31 @@ rules:
     emits:
       - {fact: quantified_disjunction, cls: "{cls}", left: "{l}", right: "{r}", exclusive: true}
 
+  # Phase B reader 10: the two-article indefinite-generic disjunction —
+  # "A/An CLS is either a/an L or a/an R". This is the disjunctive sibling of
+  # universal-indefinite-copular: the leading article marks a generic class,
+  # not a named witness, and the singular-agreeing construction keeps all
+  # keys plain. The overt `either` carries Stage 3 exclusivity. All three
+  # articles are claimed as structural skeleton; requiring the two predicate
+  # articles proves both branches are nominal even when their words are
+  # unknown. Articleless, negated, coordinated, verbal, prepositional,
+  # bare-`or`, and larger disjuncts stay whole-unread.
+  - id: logic/qdisj-indefinite-copular-either
+    phase: read
+    match:
+      sentence:
+        - {lit: [a, an], at_start: true, consume_skipped: true}
+        - {slot: cls, span: true, span_blocks: [negation, conjunction, preposition, disjunctive_marker, verb]}
+        - {lit: is}
+        - {lit: either}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: l, span: true, span_blocks: [negation, conjunction, preposition, either_marker, verb]}
+        - {lit: or}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: r, span: true, span_blocks: [negation, conjunction, preposition, disjunctive_marker, verb]}
+    emits:
+      - {fact: quantified_disjunction, cls: "{cls}", left: "{l}", right: "{r}", exclusive: true}
+
   # Phase B reader 9: restricted-pronominal quantified disjunctions —
   # "Everyone RESTRICTION is [either] L or R". `Everyone` supplies the
   # universal variable; the non-empty restriction is its joinable antecedent
