@@ -1100,7 +1100,7 @@ rules:
     match:
       sentence:
         - {slot: cls, type: bare_plural, at_start: true, blocks_skipped: definite_article}
-        - {slot: aux, type: future_modal}
+        - {lit: will}
         - {lit: either}
         - {slot: v1, type: nonstate_verb, bare_form: true, single_word: true}
         - {slot: p1, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}

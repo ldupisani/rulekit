@@ -45,6 +45,9 @@
 > difg-mined's `be`/`been`/`being` join only the broader reader-exclusion
 > category. This closes the bare-copula event-reader hole without changing
 > arithmetic state semantics; it earns no reader or coverage credit.
+> Reader 14's tense skeleton is now literal `will`, not the broader
+> `future_modal` slot type (which also accepts ordinary auxiliaries for asks);
+> do-support disjunctions therefore remain unread.
 > ⚠ The regenerated movement classifier reproduces every recorded metric and all reader
 > deltas exactly except a constant fully-read offset (−4/−11) — see the reader-6 ROADMAP
 > record before comparing absolute totals. No TEST look was spent.
@@ -53,6 +56,33 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 28 (2026-07-21): Reader 14 precision correction — literal `will`, no auxiliary bycatch
+
+Reader 15 falsification exposed an overbroad gate in reader 14 before the new
+class landed. The DSL's `future_modal` slot type deliberately accepts ordinary
+auxiliaries as well as `will`/`would`, because factual question readers reuse
+it for do-support. In a premise rule that meant **“Students do either V P or
+V2 Q”** could emit the same future-event disjunction as the intended
+**“Students will either …”** construction.
+
+The independently revertible correction replaces that slot with literal
+`will`, the exact grammatical skeleton named by the reader. A new synthetic
+refusal pin covers do-support. The intended buyer remains unchanged: the same
+four train instances in one story move fully-read, and the same exact
+`person → take bus XOR drive to meta destination` fact is emitted.
+
+**All 2,101 tests pass; scratch lint has 0 errors and the same eight warnings;
+curated is 65/65 twice.** All eight standard DEV snapshot diffs and both
+FOLIO-with-logic grouped diffs are NEUTRAL against reader 14 (0 BROKE, 0
+DECL→WRONG). Coverage, outcomes, and every recorded hazard are unchanged. No
+TEST look was spent, and the reader count remains 14.
+
+**Next:** resume the separately removed `A/An CLS will not V P` reader 15
+prototype using literal `will`, then remeasure its exact composition and DEV
+movement.
+
+---
 
 # Session 27 (2026-07-21): Phase B reader 14 — future-event disjunctions; +4/+0 fully read
 

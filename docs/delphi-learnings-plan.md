@@ -273,7 +273,9 @@ was re-measured and removed after adding a valid fact but moving no registered
 metric; stative ownership remains a separate unbought class.
 
 Reader 14 serves bare-plural **“CLSs will either V P or V2 Q”** future-event
-disjunctions as exclusive `QuantifiedDisjunction` facts. Both branches require
+disjunctions as exclusive `QuantifiedDisjunction` facts. Literal `will`
+provides the exact tense skeleton (the broader `future_modal` slot also admits
+ordinary auxiliaries and was removed after falsification). Both branches require
 bare-form, single-token `nonstate_verb` heads and predicate spans that refuse
 sign, coordination, further verbs/modals, and counted material. Incremental
 movement is +4 / +0 fully-read premises, +0 / +0 fact-bearing premises, −4 / 0

@@ -1766,14 +1766,14 @@ ground-verbal atom. The reader emits an existing exclusive
 `QuantifiedDisjunction`, so class instantiation, disjunctive syllogism, and
 XOR elimination compose immediately.
 
-The rule requires a bare-plural subject, `future_modal`, overt `either`, two
+The rule requires a bare-plural subject, literal `will`, overt `either`, two
 bare-form `single_word` non-state verb heads, and predicate spans that block
 sign, coordination, disjunction, further verbs/modals, and counted material.
-Seventeen synthetic pins prove the exact fact, both elimination directions,
+Eighteen synthetic pins prove the exact fact, both elimination directions,
 two null controls, and refusals for the adjacent modal, missing-marker,
-subject, signed, coordinated, multi-verb, particle, counted, three-way, and
-copular families. Session 26's broader event-reader exclusion makes the final
-`be happy` refusal structural.
+ordinary-auxiliary, subject, signed, coordinated, multi-verb, particle,
+counted, three-way, and copular families. Session 26's broader event-reader
+exclusion makes the final `be happy` refusal structural.
 
 **pytest 2,100 passed; scratch lint 0 errors with the same eight warnings;
 curated 65/65 twice.** All eight standard DEV snapshot diffs and both grouped
@@ -1800,3 +1800,21 @@ thresholds still bind. No TEST look was spent.
 **Next:** continue the exact conditional, passive/relative, and coordination
 survey. Keep binary-relation and unresolved-coreference forms banked until
 their missing representation or consumer stack has a measured buyer.
+
+## Reader 14 correction — `future_modal` was broader than future tense (2026-07-21)
+
+Reader 15's refusal matrix caught that `type: future_modal` is intentionally
+dual-purpose: in question patterns it accepts ordinary auxiliaries for
+do-support as well as future/conditional modals. Reader 14 therefore admitted
+the unintended **“Students do either V P or V2 Q”** surface. The exact reader
+contract says `will`, so the premise skeleton now uses that literal and an
+eighteenth synthetic pin refuses do-support.
+
+The correction preserves the measured buyer exactly (+4/+0 fully read,
+−4/0 truth vetoes, one train story) while removing only bycatch. **pytest
+2,101 passes; lint 0 errors with the same eight warnings; curated 65/65 twice;
+all eight standard and both FOLIO-with-logic snapshot diffs are NEUTRAL.** No
+coverage, outcome, stack, or hazard metric changes; no TEST look was spent.
+
+**Next:** restore the separately removed future-negative indefinite-generic
+prototype with literal `will` and price it as reader 15.

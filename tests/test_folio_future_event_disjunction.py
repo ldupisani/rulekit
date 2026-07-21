@@ -86,6 +86,7 @@ def test_disjunction_alone_asserts_neither_branch(logic_reg):
     "surface",
     [
         "Students can either visit museums or read books.",
+        "Students do either visit museums or read books.",
         "Students will visit museums or read books.",
         "A student will either visit museums or read books.",
         "The students will either visit museums or read books.",
