@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–19 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–20 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -34,19 +34,23 @@
 > inclusive ground `Disjunction` — and (reader 17) singular positive possessive
 > universals `Every CLS has P`, using positive `Quantified` facts — and
 > (reader 18) plural-generic copular-to-verbal conditionals `If people are P,
-> then they V Q`, again using positive `Quantified` facts. Cumulative
-> movement from Phase A is +47 / +33 fully-read
-> premise instances and +2 / +2 stack-ready stories on dev-train / dev-holdout, with no
-> verdict regression or hazard increase; truth-scope vetoes improve by 43 / 27, while
-> holdout collision/quarantine improve 12→9 / 24→18. Eighteen construction classes
+> then they V Q`, again using positive `Quantified` facts — and (reader 19)
+> indefinite-generic verbal conditionals `If a/an CLS V P, [then] they V2 Q`
+> — and (reader 20) reduced-relative people universals `People V P are Q`,
+> with a one-unit capitalized plural predicate folded consistently through
+> the existing plural-agreement contract. Cumulative movement from Phase A is +47 / +34 fully-read
+> premise instances and +2 / +3 stack-ready stories on dev-train / dev-holdout, with no
+> verdict regression or hazard increase; truth-scope vetoes improve by 43 / 28, while
+> holdout collision/quarantine improve 12→9 / 24→18. Twenty construction classes
 > are served, but all numeric Phase C thresholds remain unmet (fully read 767/1647 and
-> 754/1602 vs 852/850; vetoes 623/587 vs ≤499/460; stack-ready stories 13/7 vs ≥22/10).
+> 755/1602 vs 852/850; vetoes 623/586 vs ≤499/460; stack-ready stories 13/8 vs ≥22/10).
 > Next re-survey the remaining exact coordination and conditional families; the
 > unbought outer-quantified verbal relative, surveyed `there is`, direct passive-agent, and unresolved
 > ground-pronoun candidates remain banked pending composition, lexical infrastructure,
 > or coreference evidence. Reader 4's opt-in
 > `single_word` slot gate stays dormant for all pre-existing rules. The
-> `_naive_singular`, CamelCase-name, and verbal-universal-ask banks still have zero joins.
+> The one-unit-span `_naive_singular` bank is now bought by reader 20;
+> CamelCase-name and verbal-universal-ask banks still have zero joins.
 > Reader 14 falsification also bought a prerequisite category correction:
 > `state` is now the arithmetic-holding subclass of `non_event_verb`, and
 > difg-mined's `be`/`been`/`being` join only the broader reader-exclusion
@@ -63,6 +67,51 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 34 (2026-07-21): Phase B reader 20 — reduced-relative people universals; +0/+1 fully read, +1 holdout solve
+
+One reader serves **“People V P are Q”** where the non-state verb phrase is a
+reduced relative and `Q` is a copular predicate. As in the established
+`people` conditional family, the human subject supplies the unrestricted
+variable; the exact reduced-relative key becomes the positive `Quantified`
+antecedent. A one-content-unit capitalized fallback-name span now follows the
+same `.singular` morphology as a one-unit slot, so a plural-agreeing predicate
+such as `Americans` joins the singular `American` conclusion without a
+word-specific kernel table. Multi-unit name spans remain untouched.
+
+Eleven synthetic pins cover exact key emission, named-witness composition, a
+missing-restrictor null, a multiword-name exactness guard, and seven refusals for signed antecedents and
+consequences, coordination, counts, overt relatives, verbal consequences,
+and definite subjects. The first single-token draft was rejected because it
+partially accepted a coordinated consequence; the shipped span consumes the
+whole predicate and blocks that larger construction.
+
+**All 2,195 tests pass; scratch lint has 0 errors and the same eight warnings;
+curated is 65/65 twice.** All eight standard DEV snapshot diffs are NEUTRAL.
+The FOLIO-with-logic train diff is neutral and holdout safely SOLVES one item,
+with 0 BROKE and 0 DECL→WRONG. Outcomes become train 19 correct / 1
+pre-existing poisoned-text wrong / 474 declined and holdout 2 / 0 / 423.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1340→1340 | 767→767 | 17/13→17/13 | 0 / 0 | 623→623 |
+| dev-holdout | 1304→1304 | 754→755 (+1) | 8/7→9/8 (+1/+1) | 1 / 1 | 587→586 (−1) |
+
+The buyer story already represented a named birth fact and asks whether that
+person is American; this reader closes its sole missing premise and the
+existing universal-instantiation synth derives the gold conclusion. Collision,
+quarantine, agreement, ambiguity, and clause-split hazards are neutral.
+
+Cumulative recorded-frame state is 767/1647 and 755/1602 fully read, 623/586
+truth-scope vetoes, 13/8 stack-ready stories, collision 8/9, and quarantine
+16/18. Twenty construction classes are served; every Phase C threshold still
+binds (852/850, ≤499/460, ≥22/10). No TEST look was spent.
+
+**Next:** keep selecting holdout stories that are one exact reader away from
+stack-ready. Re-price the remaining compound generic, existential, and
+two-blocker conditional candidates before broad train-only readers.
+
+---
 
 # Session 33 (2026-07-21): Phase B reader 19 — indefinite-generic verbal conditionals; +2/+0 fully read
 

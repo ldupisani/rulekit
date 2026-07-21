@@ -2025,3 +2025,41 @@ still binds. No TEST look was spent.
 negative verbal consequences and unknown-vocabulary generic conditionals
 until their enablers are independently bought; passive relations still
 require direction-aware keys.
+
+## Phase B reader 20 — reduced-relative people universals (2026-07-21)
+
+The holdout-first frontier buys **“People V P are Q.”** `People` carries the
+same unrestricted-human semantics as reader 7; the exact non-state verb
+phrase is the `Quantified` antecedent and the copular predicate is its
+consequence. Universal instantiation therefore composes directly with a
+named ground fact carrying the reduced-relative key.
+
+The first whole-span probe exposed an old representational asymmetry:
+`.singular` naively folded a capitalized fallback name in a one-unit slot but
+not the identical value captured as a one-unit span. The generic correction
+now counts content units (ignoring punctuation) and applies the same fold only
+when exactly one name-sensed content unit is present. Multi-unit proper names
+remain untouched. A rejected single-token rule had composed but partially
+read a coordinated consequence; the final rule restores a blocking span.
+
+Eleven synthetic pins cover exact emission, named composition, a missing-
+restrictor null, multiword-name exactness, and seven adjacent/larger refusals. **pytest 2,195 passed;
+scratch lint 0 errors with the same eight warnings; curated 65/65 twice.** All
+eight standard DEV diffs are NEUTRAL. FOLIO-with-logic is neutral on train and
+safely SOLVES one holdout item with 0 BROKE / 0 DECL→WRONG.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1340→1340 | 767→767 | 17/13→17/13 | 0 / 0 | 623→623 |
+| dev-holdout | 1304→1304 | 754→755 (+1) | 8/7→9/8 (+1/+1) | 1 / 1 | 587→586 (−1) |
+
+The holdout buyer's other premises and named birth atom were already fully
+represented. The new universal derives the singular nationality conclusion,
+moving outcomes from 1/0/424 to 2/0/423 (correct/wrong/declined). Hazards are
+neutral. Cumulative state is 767/1647 and 755/1602 fully read, 623/586 vetoes,
+13/8 stack-ready stories, collision 8/9, and quarantine 16/18. Twenty classes
+are served; no TEST look was spent.
+
+**Next:** continue the one-reader-away holdout survey. Price compound generic,
+existential, and two-blocker conditional candidates by actual end-to-end key
+closure before selecting the next increment.

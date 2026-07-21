@@ -1,6 +1,6 @@
 # The breadth-first premise-reader campaign — FOLIO logic → full integration
 
-**ACTIVE. Phase A and Phase B readers 1–19 completed 2026-07-21: ground
+**ACTIVE. Phase A and Phase B readers 1–20 completed 2026-07-21: ground
 both-or-neither equivalence, unrestricted bare-plural disjunction, and negative
 two-article indefinite generics, plus single-antecedent verbal “Everyone who”
 implications, verbal-restrictor conditionals, and the negative-antecedent
@@ -11,8 +11,9 @@ disjunctions, plus negative possessive universals, plural-agreeing negative
 event universals, named ground do-support event denials, bare-plural
 future-event exclusive disjunctions, and future-negative indefinite
 generics, named mixed possession/event disjunctions, and singular positive
-possessive universals, plural-generic copular-to-verbal conditionals, and
-indefinite-generic verbal conditionals.**
+possessive universals, plural-generic copular-to-verbal conditionals,
+indefinite-generic verbal conditionals, and reduced-relative people
+universals.**
 
 ## Context
 
@@ -335,6 +336,16 @@ fully-read premises, −2 / 0 truth-scope vetoes, and +0 / +0 stack-ready
 stories on dev-train / dev-holdout. The holdout-looking `gains knowledge`
 surface remains blocked by unknown vocabulary. Nineteen classes are served;
 every Phase C threshold still binds.
+
+Reader 20 serves reduced-relative people universals **“People V P are Q”**
+as positive `Quantified` facts keyed by the exact reduced-relative verb
+phrase. A shared morphology correction makes a one-content-unit `.singular`
+span follow the same capitalized fallback-name fold as a one-unit slot; this
+is what lets plural `Americans` join singular `American`, while multi-unit
+names remain exact. Incremental movement is +0 / +1 fully-read premises,
+0 / −1 truth-scope vetoes, and +0 / +1 stack-ready stories on dev-train /
+dev-holdout. One holdout item safely converts declined → correct; no hazard
+increases. Twenty classes are served; every Phase C threshold still binds.
 
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key

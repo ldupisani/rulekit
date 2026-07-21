@@ -783,6 +783,29 @@ rules:
     emits:
       - {fact: quantified, cls: "{v} {p}", pred: "{v2} {q}", polarity: true}
 
+  # Phase B reader 20: reduced-relative people universals —
+  # "People V P are Q". As with reader 7's explicit people conditional,
+  # `people` supplies FOLIO's unrestricted human variable rather than a
+  # separately asserted class antecedent. The non-state verb and its exact
+  # complement therefore form the Quantified class key. The consequence is
+  # one blocking whole span. When that span contains one capitalized nominal
+  # (the structural proper-name fallback used for demonyms such as
+  # "Americans"), the established `.singular` rule folds it to the singular
+  # ground/ask spelling. Signed, coordinated, counted, overt-relative, and
+  # verbal-consequent siblings remain separate constructions and stay
+  # whole-unread.
+  - id: logic/universal-people-reduced-relative-copular
+    phase: read
+    match:
+      sentence:
+        - {lit: people, at_start: true, blocks_skipped: definite_article}
+        - {slot: v, type: nonstate_verb, single_word: true}
+        - {slot: p, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+        - {lit: are}
+        - {slot: q, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+    emits:
+      - {fact: quantified, cls: "{v} {p.singular}", pred: "{q.singular}", polarity: true}
+
   # Phase B reader 8: the class-scoped bare-plural copular relative —
   # "CLSs who are P are [not] Q" means ∀e. CLS(e) ∧ P(e) → [¬]Q(e).
   # This is the EXISTING Conditional contract and its two-antecedent

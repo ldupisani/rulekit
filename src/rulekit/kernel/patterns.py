@@ -976,8 +976,22 @@ def _slot_value(unit: Unit, attr: str | None) -> str:
         # a span slot (MatchToken.span) binds a RUN of units; its rendering
         # is the canonical phrase — `.singular` additionally folds unknown-
         # word plurals (the plural-agreeing-construction attr, see
-        # _naive_singular); every other attr renders the plain phrase
-        return _canonical_phrase(unit, singularize_unknown=(attr == "singular"))
+        # _naive_singular). A ONE-unit capitalized fallback-name span is the
+        # same grammatical value as a one-unit slot and must follow that
+        # slot's fold below: plural predicate nominals such as `Americans`
+        # otherwise remain plural merely because the rule used `span: true`
+        # to enforce whole-construction matching. Multi-unit name spans stay
+        # untouched. Every other attr renders the plain phrase.
+        rendered = _canonical_phrase(unit, singularize_unknown=(attr == "singular"))
+        content = tuple(u for u in unit if u.sense() not in SKIPPABLE_SENSES)
+        if (
+            attr == "singular"
+            and len(content) == 1
+            and len(content[0].words) == 1
+            and content[0].sense() == "name"
+        ):
+            rendered = " ".join(_naive_singular(w) for w in rendered.split())
+        return rendered
     if attr == "singular":
         # a single-unit key in a construction whose grammar marks it PLURAL
         # (a bare-plural generic subject): the lemma render, then the naive
