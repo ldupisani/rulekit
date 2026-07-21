@@ -637,6 +637,43 @@ rules:
     emits:
       - {fact: quantified, cls: "{p.singular}", pred: "{q.singular}", polarity: false}
 
+  # Phase B reader 8: the class-scoped bare-plural copular relative —
+  # "CLSs who are P are [not] Q" means ∀e. CLS(e) ∧ P(e) → [¬]Q(e).
+  # This is the EXISTING Conditional contract and its two-antecedent
+  # instantiation synth: unlike reader 7's unrestricted generic 'people',
+  # the overt class must be retained ("pets who are naughty" requires both
+  # pet(e) and naughty(e)). All three plural-agreeing positions fold through
+  # `.singular`, so their keys meet singular ground atoms. The explicit final
+  # 'not' alone owns polarity; negative relatives, verbal relatives,
+  # verbal consequences, definite/counted subjects, and singular subjects
+  # are separate constructions and stay whole-unread.
+  - id: logic/conditional-bare-plural-who-are
+    phase: read
+    match:
+      sentence:
+        - {slot: cls, type: bare_plural, at_start: true, blocks_skipped: definite_article}
+        - {lit: who}
+        - {lit: are}
+        - {slot: p, span: true, span_blocks: [negation, disjunctive_marker]}
+        - {lit: are}
+        - {slot: q, span: true, span_blocks: [negation, disjunctive_marker]}
+    emits:
+      - {fact: conditional, cls: "{cls.singular}", pred: "{p.singular}", then_pred: "{q.singular}", polarity: true}
+
+  - id: logic/conditional-bare-plural-who-are-not
+    phase: read
+    match:
+      sentence:
+        - {slot: cls, type: bare_plural, at_start: true, blocks_skipped: definite_article}
+        - {lit: who}
+        - {lit: are}
+        - {slot: p, span: true, span_blocks: [negation, disjunctive_marker]}
+        - {lit: are}
+        - {lit: not}
+        - {slot: q, span: true, span_blocks: [negation, disjunctive_marker]}
+    emits:
+      - {fact: conditional, cls: "{cls.singular}", pred: "{p.singular}", then_pred: "{q.singular}", polarity: false}
+
   # ---- Stage 3: disjunction (ROADMAP.md). Exclusivity is SURFACE-DECIDED,
   # measured from folio DEV golds: bare 'or' is INCLUSIVE ("German or
   # Russian or both" golds True), 'either...or' is EXCLUSIVE (the James

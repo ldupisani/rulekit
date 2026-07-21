@@ -1,10 +1,11 @@
 # The breadth-first premise-reader campaign — FOLIO logic → full integration
 
-**ACTIVE. Phase A and Phase B readers 1–7 completed 2026-07-21: ground
+**ACTIVE. Phase A and Phase B readers 1–8 completed 2026-07-21: ground
 both-or-neither equivalence, unrestricted bare-plural disjunction, and negative
 two-article indefinite generics, plus single-antecedent verbal “Everyone who”
 implications, verbal-restrictor conditionals, and the negative-antecedent
-same-entity ground conditional, plus plural-generic `people` conditionals.**
+same-entity ground conditional, plural-generic `people` conditionals, and
+class-scoped bare-plural copular relatives.**
 
 ## Context
 
@@ -206,6 +207,16 @@ not increase. Copular positive/negative consequences are the whole class:
 verbal, do-support, negated-antecedent, and singular-`someone` siblings remain
 separate constructions. Seven construction classes are served; every numeric
 Phase C threshold still binds.
+
+Reader 8 serves **“CLSs who are P are [not] Q”** through the existing
+class-scoped `Conditional`: class membership and the relative property are
+both required before the consequence instantiates. Incremental movement is
++2 / +3 fully-read premises, -2 / 0 truth-scope vetoes, and +0 / +0
+stack-ready stories. Outcomes remain neutral; the holdout fallback-conflict
+hazard improves from collision 12→9 and quarantine 24→18. Negative/verbal
+relatives, verbal consequences, and definite/counted/singular subjects remain
+separate. Eight construction classes are served; every numeric Phase C
+threshold still binds.
 
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key

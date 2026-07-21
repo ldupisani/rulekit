@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–7 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–8 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -13,12 +13,14 @@
 > landed literal-`he` surface was removed after review: without resolved coreference it
 > could misbind `he` to the antecedent subject when another name occurred inside the
 > predicate — and (reader 7) the plural generic `If people are P, then they are [not]
-> Q`, using the existing `Quantified` fact and instantiation synth. Cumulative movement
-> from Phase A is +14 / +18 fully-read
+> Q`, using the existing `Quantified` fact and instantiation synth — and (reader 8)
+> class-scoped `CLSs who are P are [not] Q`, using the existing `Conditional` fact.
+> Cumulative movement from Phase A is +16 / +21 fully-read
 > premise instances and +1 / +2 stack-ready stories on dev-train / dev-holdout, with no
-> verdict or hazard movement; truth-scope vetoes improve by 10 / 15. Seven construction classes
-> are served, but all numeric Phase C thresholds remain unmet (fully read 734/1647 and
-> 739/1602 vs 852/850; vetoes 656/599 vs ≤499/460; stack-ready stories 12/7 vs ≥22/10).
+> verdict regression or hazard increase; truth-scope vetoes improve by 12 / 15, while
+> holdout collision/quarantine improve 12→9 / 24→18. Eight construction classes
+> are served, but all numeric Phase C thresholds remain unmet (fully read 736/1647 and
+> 742/1602 vs 852/850; vetoes 654/599 vs ≤499/460; stack-ready stories 12/7 vs ≥22/10).
 > Next re-survey the adjacent verbal/do-support `people` conditionals and the narrow
 > passive/relative families; the surveyed `there is`, direct passive-agent, and unresolved
 > ground-pronoun candidates remain banked pending composition, lexical infrastructure,
@@ -33,6 +35,53 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 20 (2026-07-21): Phase B reader 8 — bare-plural copular relatives; +2/+3 fully read; holdout conflicts removed
+
+One pack-only, independently revertible increment serves **“CLSs who are P
+are [not] Q”** as the class-scoped relative conditional
+`∀e. CLS(e) ∧ P(e) → [¬]Q(e)`. It reuses the existing
+`Conditional(cls, pred, then_pred, polarity)` fact and two-antecedent
+instantiation synth. All three plural-agreeing keys render through
+`.singular`, so class, relative property, and consequence meet singular
+ground atoms without any kernel or schema change.
+
+The class antecedent is semantically required: this reader does not collapse
+“pets who are naughty” into the unrestricted `naughty → not-liked` implication.
+The exact contract keeps definite/count-qualified and singular subjects,
+negative or verbal relatives, and verbal consequences whole-unread. Ten
+synthetic pins cover both polarities, exact fact shape, positive composition,
+independent absence of each antecedent, and all four refusal boundaries.
+
+**All 2,015 tests pass; scratch lint has 0 errors; curated is 65/65.** All
+eight standard DEV snapshot comparisons are NEUTRAL (difg, GSM8K
+train/holdout, ASDiv, SVAMP, MAWPS, SciBench, FOLIO): 0 BROKE and 0
+DECL→WRONG throughout. Folio-with-logic is outcome-neutral on both splits
+(train 20 correct / 1 persistent poisoned-text wrong / 473 declined; holdout
+1 / 0 / 424):
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1333→1333 | 734→736 (+2) | 16/12→16/12 | 2 / 1 | 656→654 (−2) |
+| dev-holdout | 1300→1300 | 739→742 (+3) | 8/7→8/7 | 3 / 1 | 599→599 |
+
+No item becomes all-premises-read, so stack readiness does not move. The train
+story changes no outcome or reason. On holdout, whole-reading the negative
+pet relative removes the fallback's contradictory `pet/be` predications:
+collision falls **12→9** and quarantined facts **24→18** across the actionable
+pool. The three repeated item reasons improve from a fold conflict to honest
+missing-logic/no-ask declines; outcome remains declined. Agreement and
+ambiguous-reading diagnostics do not move, and clause split remains zero.
+
+The banked-zero recheck remains zero: no `_naive_singular` ending, CamelCase
+entity, or verbal-universal ask joins the new conditional keys. Adjacent
+verbal/do-support `people` conditionals and broader passive/relative families
+remain separate; re-price them against the now-cleaner join surface. Cumulative
+recorded-frame state is 736/1647 and 742/1602 fully-read premises, 654/599
+truth-scope vetoes, 12/7 stack-ready stories, collision 8/9, and quarantine
+16/18. No TEST look was spent.
+
+---
 
 # Session 19 (2026-07-21): Phase B reader 7 — plural-generic people conditionals; +2/+6 fully read; all gates NEUTRAL
 

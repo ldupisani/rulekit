@@ -1423,3 +1423,53 @@ Adjacent verbal and do-support `people` conditionals show one-sided potential
 but remain distinct construction families; re-price them across both grouped
 splits before implementation. The narrow passive/relative family remains the
 next broad build-order lever. No TEST look was spent.
+
+## Phase B reader 8 — class-scoped bare-plural copular relatives (2026-07-21)
+
+The next narrow relative family is **“CLSs who are P are [not] Q”**. Its
+semantics require two antecedents, `CLS(e)` and `P(e)`, so it maps directly to
+the existing `Conditional(cls, pred, then_pred, polarity)` fact and
+`synth/conditional-instantiation`. It must not reuse reader 7's unrestricted
+`Quantified(P,Q)` representation: “pets who are naughty” does not license the
+consequence for every naughty entity. The class, relative property, and
+consequence all occur in plural-agreeing positions and therefore render with
+the established `.singular` key discipline.
+
+Two polarity rules own the entire copular construction. An explicit final
+`not` alone sets negative consequence polarity. Negative or verbal relatives,
+verbal consequences, definite/count-qualified plural subjects, and singular
+subjects fail the exact match and remain whole-unread. The ten-test synthetic
+contract pins both exact fact shapes, successful composition, missing-class
+and missing-property nulls, and every refusal boundary.
+
+**pytest 2,015 passed; scratch lint 0 errors; curated 65/65.** All eight
+standard DEV snapshot diffs are NEUTRAL: difg dev, GSM8K
+dev-train/dev-holdout, ASDiv, SVAMP, MAWPS, SciBench, and FOLIO each report 0
+BROKE and 0 DECL→WRONG. Folio-with-logic also remains outcome-neutral (train
+20 correct / 1 persistent poisoned-text wrong / 473 declined; holdout 1 / 0 /
+424):
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1333→1333 | 734→736 (+2) | 16/12→16/12 | 2 / 1 | 656→654 (−2) |
+| dev-holdout | 1300→1300 | 739→742 (+3) | 8/7→8/7 | 3 / 1 | 599→599 |
+
+The train buyer is a positive `people` relative; the holdout buyer is a
+negative `pets` relative. Neither story becomes all-premises-read, so stack
+readiness and verdict outcomes remain unchanged. The holdout whole read does
+remove a harmful permissive-fold byproduct: three repeated item collisions
+disappear (**12→9**) and six quarantined facts disappear (**24→18**). Their
+reasons move from contradictory `pet/be` fold facts to honest
+missing-logic/no-ask declines. Agreement ambiguity, ambiguous-reading, and
+clause-split diagnostics do not increase.
+
+Eight construction classes are served. Cumulative recorded-frame state is
+736/1647 and 742/1602 fully-read premises, 654 and 599 truth-scope vetoes,
+12 and 7 stack-ready stories, collision 8/9, and quarantine 16/18. All numeric
+Phase C thresholds still bind (852/850, ≤499/460, ≥22/10).
+
+The mandatory banked-zero recheck remains zero: the emitted keys carry no
+`_naive_singular` ending, CamelCase entity, or represented verbal-universal
+ask, and no item becomes a new all-read stack. Re-price the adjacent
+verbal/do-support `people` conditionals and the remaining passive/relative
+families against this cleaner state before reader 9. No TEST look was spent.
