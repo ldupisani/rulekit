@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–12 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–13 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -23,13 +23,15 @@
 > P`, using negative `Quantified` facts and the existing chain/instantiation
 > synths — and (reader 12) plural-agreeing negative event universals `No
 > CLSs V P`, again using negative `Quantified` facts and the existing
-> chain/instantiation synths. Cumulative movement from Phase A is +25 / +33 fully-read
+> chain/instantiation synths — and (reader 13) named ground do-support event
+> denials `NAME does not V P`, using exact negative `Atom` keys and the existing
+> verdict consumer. Cumulative movement from Phase A is +29 / +33 fully-read
 > premise instances and +2 / +2 stack-ready stories on dev-train / dev-holdout, with no
-> verdict regression or hazard increase; truth-scope vetoes improve by 21 / 27, while
-> holdout collision/quarantine improve 12→9 / 24→18. Twelve construction classes
-> are served, but all numeric Phase C thresholds remain unmet (fully read 745/1647 and
-> 754/1602 vs 852/850; vetoes 645/587 vs ≤499/460; stack-ready stories 13/7 vs ≥22/10).
-> Next re-survey the remaining exact conditional and passive/relative families; the
+> verdict regression or hazard increase; truth-scope vetoes improve by 25 / 27, while
+> holdout collision/quarantine improve 12→9 / 24→18. Thirteen construction classes
+> are served, but all numeric Phase C thresholds remain unmet (fully read 749/1647 and
+> 754/1602 vs 852/850; vetoes 641/587 vs ≤499/460; stack-ready stories 13/7 vs ≥22/10).
+> Next re-survey the remaining exact coordination and conditional families; the
 > unbought outer-quantified verbal relative, surveyed `there is`, direct passive-agent, and unresolved
 > ground-pronoun candidates remain banked pending composition, lexical infrastructure,
 > or coreference evidence. Reader 4's opt-in
@@ -43,6 +45,64 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 25 (2026-07-21): Phase B reader 13 — named do-support event denials; +4/+0 fully read
+
+One pack-only, independently revertible increment serves **“NAME does not V
+P”** when `V` is a bare-form, single-token non-state verb. The explicit
+negator owns polarity, while `V P` renders exactly like the existing positive
+ground-verbal key. The reader emits a negative `Atom`, so the existing logic
+verdict consumer can refute the corresponding positive verbal question
+without a new fact, synth, schema, or kernel path.
+
+The non-state gate remains a soundness boundary. It excludes copulas and
+stative possession (`have`, `own`) rather than weakening the Stage 6 be-twin
+discipline for one holdout surface. `single_word`, verb/modal/coordination
+span blocks, and counted-material refusal keep particle, perfect,
+multi-verb, coordinated, modal, and counted constructions whole-unread.
+Thirteen synthetic pins cover the exact fact, positive-question refutation,
+a different-entity null, and ten refusal surfaces.
+
+**All 2,080 tests pass; scratch lint has 0 errors and the same eight warnings;
+curated remains 65/65.** All eight standard DEV snapshot diffs are NEUTRAL
+(difg, GSM8K train/holdout, ASDiv, SVAMP, MAWPS, SciBench, FOLIO), as are both
+FOLIO-with-logic grouped diffs: 0 BROKE and 0 DECL→WRONG throughout. Train
+remains 19 correct / 1 pre-existing poisoned-text wrong / 474 declined;
+holdout remains 1 / 0 / 424.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1338→1338 | 745→749 (+4) | 17/13→17/13 | 4 / 2 | 645→641 (−4) |
+| dev-holdout | 1304→1304 | 754→754 | 8/7→8/7 | 0 / 0 | 587→587 |
+
+Train serves the repeated named denials for working at a pool and catching
+the sunrise. Both exact negative event atoms are consumer-compatible, but
+their stories still lack other represented premises/questions, so no item
+becomes all-premises-read or stack-ready. Outcomes, reasons, collision,
+quarantine, agreement, ambiguous-reading, and clause-split diagnostics remain
+unchanged.
+
+The pre-reader survey also re-priced two banks. A subject-relative verbal
+`All CLSs who/that V P V2 Q` prototype emitted one valid holdout
+`Conditional` across five item instances but moved no fact-bearing,
+fully-read, veto, stack, hazard, or outcome metric; it was removed as an
+unbought enabler. The holdout ownership denial is stative and has no existing
+flat-event consumer join, so it remains a separate class rather than widening
+this rule.
+
+The mandatory banked-zero recheck remains zero: no singular fold or entity
+reclassification is involved, and no verbal-universal ask joins the new keys.
+Cumulative recorded-frame state is 749/1647 and 754/1602 fully-read premises,
+641/587 truth-scope vetoes, 13/7 stack-ready stories, collision 8/9, and
+quarantine 16/18. Every numeric Phase C threshold still binds (852/850,
+≤499/460, ≥22/10). No TEST look was spent.
+
+**Next:** re-survey the remaining exact coordination and conditional families.
+Passive relations, object relatives, stative ownership denials, and the
+zero-movement outer-relative reader remain banked until their missing
+relation/consumer stack is bought.
+
+---
 
 # Session 24 (2026-07-21): Phase B reader 12 — plural negative event universals; +4/+3 fully read
 

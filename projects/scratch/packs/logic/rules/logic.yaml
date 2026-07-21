@@ -1322,6 +1322,24 @@ rules:
     emits:
       - {fact: verbal_relation, entity: "{subj}", verb: "{v}", obj: "{obj}", polarity: true}
 
+  # Phase B reader 13: named ground do-support event denials —
+  # "NAME does not V P". Do-support supplies the bare event verb while the
+  # explicit negator owns the Atom polarity. The event and predicate render
+  # exactly like ground-verbal, preserving echo and universal joins. State,
+  # modal, particle/perfect, coordinated, counted, and multi-verb surfaces
+  # fail the structural gates and remain whole-unread.
+  - id: logic/ground-verbal-does-not
+    phase: read
+    match:
+      sentence:
+        - {slot: subj, type: name, at_start: true, blocks_skipped: indefinite_article}
+        - {lit: does}
+        - {lit: not}
+        - {slot: v, type: nonstate_verb, bare_form: true, single_word: true}
+        - {slot: pred, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+    emits:
+      - {fact: atom, entity: "{subj}", pred: "{v} {pred}", polarity: false}
+
   - id: logic/universal-verbal-all
     phase: read
     match:

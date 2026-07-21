@@ -1,14 +1,14 @@
 # The breadth-first premise-reader campaign — FOLIO logic → full integration
 
-**ACTIVE. Phase A and Phase B readers 1–12 completed 2026-07-21: ground
+**ACTIVE. Phase A and Phase B readers 1–13 completed 2026-07-21: ground
 both-or-neither equivalence, unrestricted bare-plural disjunction, and negative
 two-article indefinite generics, plus single-antecedent verbal “Everyone who”
 implications, verbal-restrictor conditionals, and the negative-antecedent
 same-entity ground conditional, plural-generic `people` conditionals, and
 class-scoped bare-plural copular relatives, restricted `Everyone … is
 [either] … or …` disjunctions, and two-article indefinite-generic exclusive
-disjunctions, plus negative possessive universals and plural-agreeing negative
-event universals.**
+disjunctions, plus negative possessive universals, plural-agreeing negative
+event universals, and named ground do-support event denials.**
 
 ## Context
 
@@ -258,6 +258,18 @@ premises, +0 / +0 fact-bearing premises, −4 / −3 truth-scope vetoes, and +0 
 +0 stack-ready stories on dev-train / dev-holdout. Outcomes and hazards remain
 neutral. Twelve construction classes are served; every numeric Phase C
 threshold still binds.
+
+Reader 13 serves named ground **“NAME does not V P”** event denials as exact
+negative `Atom` facts. The existing `nonstate_verb`, `bare_form`, and
+`single_word` gates preserve the ground-verbal key while refusing copular,
+stative-possession, particle, perfect, coordinated, counted, and multi-verb
+surfaces. Incremental movement is +4 / +0 fully-read premises, +0 / +0
+fact-bearing premises, −4 / 0 truth-scope vetoes, and +0 / +0 stack-ready
+stories on dev-train / dev-holdout. Outcomes and hazards remain neutral.
+Thirteen construction classes are served; every numeric Phase C threshold
+still binds. The adjacent outer-quantified subject-relative verbal prototype
+was re-measured and removed after adding a valid fact but moving no registered
+metric; stative ownership remains a separate unbought class.
 
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key

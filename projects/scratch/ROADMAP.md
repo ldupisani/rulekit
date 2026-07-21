@@ -1670,3 +1670,62 @@ quarantine 16/18. Every numeric Phase C threshold still binds (852/850,
 families against reader 12. Do-support negation, unresolved coreference,
 articleless unknown-word disjunctions, and direct passive-agent infrastructure
 remain banked until an exact cross-split key contract appears.
+
+## Phase B reader 13 — named do-support event denials (2026-07-21)
+
+The post-reader-12 single-veto survey found a narrow bought slice inside the
+previously demoted do-support bucket: **“NAME does not V P”** with a
+bare-form, single-token non-state event verb. The explicit `not` supplies
+negative polarity; `V P` renders through the same path as ground-verbal, so
+the result is an exact negative `Atom` consumable by the existing logic
+verdict path. A synthetic positive verbal question is refuted directly,
+proving this is a current join rather than an inert fact shape.
+
+The construction keeps the Stage 6 be-twin boundary intact. `nonstate_verb`
+refuses copulas and stative possession; `bare_form` and `single_word` refuse
+inflected/condensed verbs; the predicate blocks another verb, modal,
+negation, coordination, disjunction, and counted material. The nearby
+holdout `own` denial therefore remains a separate stative class with no
+represented flat-event consumer, not an excuse to weaken the gate.
+
+Thirteen synthetic tests pin the exact negative fact, refutation of the
+matching positive question, a different-entity null, and positive,
+do-emphatic, stative `own`/`have`, plural/coordinated subject, coordinated
+predicate, multi-verb, particle, counted, and embedded-conditional refusals.
+**pytest 2,080 passed; scratch lint 0 errors with the same eight warnings;
+curated 65/65.** All eight standard DEV snapshot diffs and both
+FOLIO-with-logic grouped diffs are NEUTRAL: 0 BROKE and 0 DECL→WRONG.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1338→1338 | 745→749 (+4) | 17/13→17/13 | 4 / 2 | 645→641 (−4) |
+| dev-holdout | 1304→1304 | 754→754 | 8/7→8/7 | 0 / 0 | 587→587 |
+
+The two train buyers are repeated named denials for working at a pool and
+catching the sunrise. Their new facts are exact and consumer-compatible, but
+other gaps in those stories keep all-premises-read, stack readiness, and
+outcomes unchanged (train 19 correct / 1 pre-existing poisoned-text wrong /
+474 declined; holdout 1 / 0 / 424). Collision, quarantine, agreement,
+ambiguous-reading, and clause-split hazards also remain unchanged.
+
+Before selecting this class, a subject-relative verbal `All CLSs who/that V
+P V2 Q` prototype was re-measured. It emitted one semantically valid holdout
+`Conditional` across five item instances, but changed no fact-bearing,
+fully-read, veto, stack, hazard, outcome, or reason metric and matched no
+train item. It was removed under the enabler-must-be-bought rule. Direct
+passive examples remain structurally asymmetric across splits and mostly
+occur inside cross-entity conditionals or disjunctions; object relatives need
+binary relation direction rather than a unary phrase key.
+
+The banked-zero recheck remains zero: no singular fold or CamelCase entity is
+involved, and no represented verbal-universal ask joins the new keys.
+Cumulative recorded-frame state is 749/1647 and 754/1602 fully read, 641/587
+truth-scope vetoes, 13/7 stack-ready stories, collision 8/9, and quarantine
+16/18. Every numeric Phase C threshold still binds (852/850, ≤499/460,
+≥22/10). No TEST look was spent.
+
+**Next:** re-price remaining exact coordination and conditional families.
+Passive/cross-entity relations, object relatives, stative ownership, the
+zero-movement outer-relative reader, articleless unknown-word disjunctions,
+and unresolved pronoun conditionals remain banked until their missing
+structure or consumer join is bought.
