@@ -67,3 +67,8 @@ entries:
   device: {senses: [noun], plural: devices}
   logo: {senses: [noun]}
   belong: {senses: [verb], verb: {lemma: belong}}
+  # Phase B lexical activation: the existing copular universal reader can
+  # already preserve an attributive league modifier. All-caps tokens do not
+  # receive the ordinary adjective fallback, so declare this modifier only in
+  # the isolated logic pack.
+  nba: {senses: [adjective]}

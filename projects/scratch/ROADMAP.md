@@ -3657,3 +3657,24 @@ construction classes remain served.
 
 **Next:** prioritize train movement while continuing holdout reductions; Phase
 C needs +9/+21 fully read and −64/−72 vetoes.
+
+## All-caps league modifier lexical activation (2026-07-22)
+
+Pack-local adjective `NBA` removes the sole unread unit from the repeated
+copular universal while leaving its already-correct fact shape unchanged.
+Other NBA contexts retain independent unread units.
+
+Six synthetic pins pass. **pytest 2,907 passed; curated is 65/65 twice.**
+Scratch lint reports 0 errors with the same eight warnings; all eight standard
+DEV diffs and both grouped logic outcome diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1394→1394 | 843→849 (+6) | 34/24→34/24 | 6 / 2 | 563→557 (−6) |
+| dev-holdout | 1364→1364 | 829→835 (+6) | 22/15→22/15 | 6 / 2 | 532→526 (−6) |
+
+Outcomes remain 23/1/470 and 5/0/420. Cumulative state is 849/1647 and
+835/1607 fully read, 557/526 vetoes, and 24/15 stack-ready stories. Sixty-two
+construction classes remain served.
+
+**Next:** Phase C needs +3/+15 fully read and −58/−66 vetoes.

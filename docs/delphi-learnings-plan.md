@@ -808,6 +808,12 @@ Inflected `belongs` and `belonging` remain unactivated, and construction-class
 credit remains sixty-two. Current Phase C gaps are +9 / +21 fully read and
 −64 / −72 vetoes.
 
+The next pack-local activation admits all-caps `NBA` as an adjective. It
+removes the only unread unit from a repeated copular universal on both splits,
+adding +6 / +6 fully-read premises and reducing vetoes by 6 / 6 without fact,
+stack, outcome, hazard, or construction-class movement. Current Phase C gaps
+are +3 / +15 fully read and −58 / −66 vetoes.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /
