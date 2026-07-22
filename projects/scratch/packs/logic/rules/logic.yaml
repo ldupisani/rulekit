@@ -843,6 +843,24 @@ rules:
     emits:
       - {fact: quantified, cls: "{p}", pred: "{q}", polarity: true}
 
+  # Phase B reader 43: the `Everything` surface of the same implicit-
+  # restrictor property universal — "Everything P is Q". `Everything`
+  # supplies the universal variable; required nonempty exact spans preserve
+  # both antecedent and consequence properties. Sign, coordination,
+  # disjunction, verbal/modal predicates, counts, empty restrictions, other
+  # copulas, and missing boundaries remain whole-unread.
+  - id: logic/universal-everything-copular
+    phase: read
+    match:
+      sentence:
+        - {lit: everything, at_start: true}
+        - {slot: p, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal, complementizer, interrogative, wh_which], span_blocks_counted: true}
+        - {lit: is}
+        - {slot: q, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: quantified, cls: "{p}", pred: "{q}", polarity: true}
+
   - id: logic/universal-no-one-copular
     phase: read
     match:

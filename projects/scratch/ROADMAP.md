@@ -2948,3 +2948,30 @@ stories. Forty-two classes are served; Phase C and TEST look #6 remain
 unscheduled.
 
 **Next:** regenerate the fully-read/truth-scope-veto frontier.
+
+## Phase B reader 43 — Everything copular universals (2026-07-22)
+
+Reader 43 serves **“Everything RESTRICTION is PROPERTY.”** The implicit
+universal variable and required nonempty exact spans emit the existing
+positive `Quantified(RESTRICTION, PROPERTY)` fact. Signed, coordinated,
+disjunctive, verbal, modal, counted, empty-restriction, other-copula, and
+incomplete siblings refuse.
+
+Seventeen synthetic pins pass. **pytest 2,596 passed; scratch lint 0 errors
+with the same eight warnings; curated 65/65 with an identical fresh-process
+rerun.** All eight standard DEV diffs and both grouped logic diffs are
+NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1349→1351 (+2) | 798→800 (+2) | 28/22→28/22 | 2 / 2 | 608→606 (−2) |
+| dev-holdout | 1326→1326 | 790→790 | 22/15→22/15 | 0 / 0 | 571→571 |
+
+The reader occurs in three train rows / two stories and no holdout rows. Both
+premise instances gain direct facts, become fully read, and lose their veto;
+independent unread premises prevent stack movement. Cumulative state is
+800/1647 and 790/1607 fully read, 606/571 vetoes, and 22/15 stack-ready
+stories. Forty-three classes are served; Phase C and TEST look #6 remain
+unscheduled.
+
+**Next:** regenerate the fully-read/truth-scope-veto frontier.

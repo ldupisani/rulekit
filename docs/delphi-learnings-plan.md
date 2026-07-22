@@ -606,6 +606,14 @@ truth-scope vetoes, and +0 / +0 stack-ready stories on dev-train /
 dev-holdout. Outcomes and hazards remain neutral. Forty-two classes are
 served; Phase C and TEST look #6 remain unscheduled.
 
+Reader 43 serves implicit-restrictor property universals
+**“Everything RESTRICTION is PROPERTY.”** It emits the existing positive
+`Quantified` fact with exact restriction and consequence keys. Incremental
+movement is +2 / +0 fact-bearing and fully-read premises, −2 / 0 truth-scope
+vetoes, and +0 / +0 stack-ready stories on dev-train / dev-holdout. Outcomes
+and hazards remain neutral. Forty-three classes are served; Phase C and TEST
+look #6 remain unscheduled.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /
