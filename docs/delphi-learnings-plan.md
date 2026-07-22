@@ -847,6 +847,11 @@ lipstick universals for +8 / +0 fully-read premises and −8 / 0 vetoes, with
 neutral outcomes and hazards. Phase C still needs 33 / 36 truth-scope-veto
 reductions.
 
+Pack-local `human`/`humans` morphology clears existing universal,
+disjunctive, distributive, and repeated-equivalence premises for +7 / +21
+fully-read movement and −7 / −21 vetoes. Surfaces retaining other blockers
+receive no credit. Phase C still needs 26 / 15 truth-scope-veto reductions.
+
 Pack-local `defender`/`defenders` morphology next removes the only unread unit
 from the soccer-role universal on both splits. It adds +3 / +6 fully-read
 premises and reduces vetoes by 3 / 6 without fact, stack, outcome, hazard, or

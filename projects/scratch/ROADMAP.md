@@ -3821,3 +3821,22 @@ DEV diffs and both grouped logic outcome diffs are NEUTRAL.
 Outcomes and hazards remain neutral. Current vetoes are 532/496.
 
 **Next:** Phase C remains gated only by −33/−36 truth-scope vetoes.
+
+## Human sortal morphology activation (2026-07-23)
+
+Pack-local `human`/`humans` morphology clears existing universal,
+disjunctive, distributive, and repeated-equivalence premises. Surfaces with
+another blocker or no valid reader receive no credit.
+
+Six synthetic pins pass. **pytest 2,955 passed; curated is 65/65 twice.**
+Scratch lint reports 0 errors with the same eight warnings; all eight standard
+DEV diffs and both grouped logic outcome diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready floor | credited premise instances | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1394→1394 | 874→881 (+7) | ≥34/24 | 7 | 532→525 (−7) |
+| dev-holdout | 1364→1364 | 865→886 (+21) | ≥22/15 | 21 | 496→475 (−21) |
+
+Outcomes and hazards remain neutral. Current vetoes are 525/475.
+
+**Next:** Phase C remains gated only by −26/−15 truth-scope vetoes.

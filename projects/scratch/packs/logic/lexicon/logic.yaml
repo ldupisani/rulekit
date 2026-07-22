@@ -94,3 +94,6 @@ entries:
   # Phase B lexical activation: an adjectival consequence in an existing
   # long PP/appositive-qualified universal. Its eight-row buyer is isolated.
   refillable: {senses: [adjective]}
+  # Phase B lexical activation: explicit sortal morphology shared by existing
+  # copular universals and ground disjunction/equivalence readers.
+  human: {senses: [noun], plural: humans}
