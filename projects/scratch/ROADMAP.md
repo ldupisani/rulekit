@@ -3897,3 +3897,22 @@ DEV diffs and both grouped logic outcome diffs are NEUTRAL.
 Outcomes and hazards remain neutral. Holdout meets its veto ceiling exactly.
 
 **Next:** Phase C remains gated only by 23 train truth-scope vetoes.
+
+## Body object morphology activation (2026-07-23)
+
+Pack-local `body`/`bodies` morphology clears the five-row Carrozzeria ground
+event. Two holdout coordinated negatives lose their unknown word but remain
+uncredited pending a whole-construction reader.
+
+Six synthetic pins pass. **pytest 2,979 passed; curated is 65/65 twice.**
+Scratch lint reports 0 errors with the same eight warnings; all eight standard
+DEV diffs and both grouped logic outcome diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready floor | credited premise instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1394→1394 | 884→889 (+5) | ≥34/24 | 5 / 1 | 522→517 (−5) |
+| dev-holdout | 1364→1364 | 901→901 | ≥22/15 | 0 / 0 | 460→460 |
+
+Outcomes and hazards remain neutral. All holdout thresholds remain met.
+
+**Next:** Phase C remains gated only by 18 train truth-scope vetoes.

@@ -109,3 +109,6 @@ entries:
   # Phase B lexical activation: negative adjectival consequence for the
   # existing restricted-someone conditional.
   scared: {senses: [adjective]}
+  # Phase B lexical activation: explicit object morphology for the existing
+  # ground-verbal `make car bodies` fact.
+  body: {senses: [noun], plural: bodies}
