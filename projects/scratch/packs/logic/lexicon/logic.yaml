@@ -65,7 +65,7 @@ entries:
   # pack-scoped form facts make its plural class and bare event head reachable
   # without changing shared benchmark vocabulary or universal semantics.
   device: {senses: [noun], plural: devices}
-  logo: {senses: [noun]}
+  logo: {senses: [noun], plural: logos}
   belong: {senses: [verb], verb: {lemma: belong}}
   # Phase B lexical activation: the existing copular universal reader can
   # already preserve an attributive league modifier. All-caps tokens do not

@@ -138,13 +138,13 @@
 > A later pack-scoped `plots`/`swallow` activation makes the existing Stage 6
 > ground reader consume one controlled-infinitive train premise; it earns
 > movement but no new construction-class credit.
-> Cumulative movement from Phase A is +129 / +114 fully-read premise instances
+> Cumulative movement from Phase A is +134 / +114 fully-read premise instances
 > and +13 / +10
 > stack-ready stories on dev-train / dev-holdout, with no
-> verdict regression or hazard increase; truth-scope vetoes improve by 109 / 88, while
+> verdict regression or hazard increase; truth-scope vetoes improve by 114 / 88, while
 > holdout collision/quarantine improve 12→9 / 24→18. Sixty-two construction classes
 > are served. Both stack-ready thresholds are now met, but the conjunctive Phase C
-> gate remains unmet (fully read 849/1647 and 835/1607 vs 852/850; vetoes 557/526
+> gate remains unmet (fully read 854/1647 and 835/1607 vs 852/850; vetoes 552/526
 > vs ≤499/460; stack-ready stories 24/15 vs ≥22/10).
 > Next regenerate the fully-read and truth-scope-veto frontier, prioritizing
 > train-side movement. The
@@ -170,6 +170,33 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 85 (2026-07-22): plural logo morphology; +5 train fully read
+
+Declaring `logos` as the plural of the already pack-local noun `logo` removes
+the sole unread unit from **“All products with Apple logos are designed by
+Apple.”** The existing universal already preserved the qualified class and
+passive property, so this is a morphology-only classification improvement.
+The neighboring Macbook premise retains its independent unknown class.
+
+Six synthetic pins pass. **All 2,913 tests pass; curated is 65/65 with an
+identical fresh-process rerun.** Scratch lint has 0 errors and the same eight warnings. All
+eight standard DEV diffs and both grouped logic outcome diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1394→1394 | 849→854 (+5) | 34/24→34/24 | 5 / 1 | 557→552 (−5) |
+| dev-holdout | 1364→1364 | 835→835 | 22/15→22/15 | 0 / 0 | 526→526 |
+
+Outcomes remain 23/1/470 and 5/0/420; stack readiness is unchanged. The train
+fully-read threshold is now met. Cumulative state is 854/1647 and 835/1607
+fully read, 552/526 vetoes, and 24/15 stack-ready stories. Construction-class
+credit remains sixty-two. No TEST look was spent.
+
+**Next:** prioritize holdout fully-read movement; Phase C still needs +15
+holdout fully read and −53/−66 vetoes.
+
+---
 
 # Session 84 (2026-07-22): all-caps league modifier activation; +6/+6 fully read
 

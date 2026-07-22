@@ -3678,3 +3678,26 @@ Outcomes remain 23/1/470 and 5/0/420. Cumulative state is 849/1647 and
 construction classes remain served.
 
 **Next:** Phase C needs +3/+15 fully read and −58/−66 vetoes.
+
+## Plural logo morphology activation (2026-07-22)
+
+Declaring `logos` as the plural of pack-local `logo` removes the only unread
+unit from the repeated qualified Apple-product universal. The existing fact
+shape is unchanged; the neighboring Macbook premise remains blocked on its
+own class vocabulary.
+
+Six synthetic pins pass. **pytest 2,913 passed; curated is 65/65 twice.**
+Scratch lint reports 0 errors with the same eight warnings; all eight standard
+DEV diffs and both grouped logic outcome diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1394→1394 | 849→854 (+5) | 34/24→34/24 | 5 / 1 | 557→552 (−5) |
+| dev-holdout | 1364→1364 | 835→835 | 22/15→22/15 | 0 / 0 | 526→526 |
+
+Outcomes remain 23/1/470 and 5/0/420. Cumulative state is 854/1647 and
+835/1607 fully read, 552/526 vetoes, and 24/15 stack-ready stories. Sixty-two
+construction classes remain served.
+
+**Next:** prioritize holdout fully-read movement; Phase C still needs +15
+holdout fully read and −53/−66 vetoes.
