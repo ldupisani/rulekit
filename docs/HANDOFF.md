@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–43 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–44 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -85,14 +85,16 @@
 > (reader 42) implicit-restrictor negative possession `Nothing R has P`, using
 > an exact negative `Quantified(R, have P)` fact — and (reader 43)
 > implicit-restrictor property universals `Everything P is Q`, using an exact
-> positive `Quantified(P, Q)` fact.
-> Cumulative movement from Phase A is +80 / +69 fully-read premise instances
+> positive `Quantified(P, Q)` fact — and (reader 44) appositive-restricted
+> plural possession disjunctions `CLSs R, APPOSITIVE have either a L or a R`,
+> preserving the full class and both nominal possession keys.
+> Cumulative movement from Phase A is +86 / +69 fully-read premise instances
 > and +11 / +10
 > stack-ready stories on dev-train / dev-holdout, with no
-> verdict regression or hazard increase; truth-scope vetoes improve by 60 / 43, while
-> holdout collision/quarantine improve 12→9 / 24→18. Forty-three construction classes
+> verdict regression or hazard increase; truth-scope vetoes improve by 66 / 43, while
+> holdout collision/quarantine improve 12→9 / 24→18. Forty-four construction classes
 > are served. Both stack-ready thresholds are now met, but the conjunctive Phase C
-> gate remains unmet (fully read 800/1647 and 790/1607 vs 852/850; vetoes 606/571
+> gate remains unmet (fully read 806/1647 and 790/1607 vs 852/850; vetoes 600/571
 > vs ≤499/460; stack-ready stories 22/15 vs ≥22/10).
 > Next regenerate the frontier for fully-read and truth-scope-veto movement; the
 > remaining candidates require lexical, definite-description, coreference,
@@ -117,6 +119,50 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 59 (2026-07-22): Phase B reader 44 — appositive-restricted plural possession disjunctions; +6 train fully read and −6 vetoes
+
+One reader serves **“CLSs RESTRICTION, APPOSITIVE have either a/an MODIFIER
+NOUN or a/an MODIFIER NOUN.”** Plural morphology licenses the singular class
+fold; both required spans around the appositive comma remain in its exact key,
+and overt articles plus noun-category compound units prove the two possession
+branches. The noun compounds render through their complete surfaces, so their
+modifiers are not lost. Signed, comma-free or empty-appositive, verbal, modal,
+coordinated, counted, articleless, larger, and missing-boundary siblings remain
+unread.
+
+The measured buyer required three pack-scoped lexical entries (`lipstick` as
+a noun with plural `lipsticks`; `velvet` and `satin` as adjectives) and one
+shared correction: `finish` is genuine noun/verb polysemy rather than
+verb-only. The article context selects its noun sense. The shared correction
+is neutral across all standard gates.
+
+Nineteen synthetic pins cover exact complete-key emission, quantified-
+disjunction instantiation, a changed-restriction null, and sixteen adjacent
+refusals. **All 2,615 tests pass; scratch lint has 0 errors and the same eight
+warnings; curated is 65/65 with an identical fresh-process rerun.** All eight
+standard DEV diffs and both grouped logic diffs are NEUTRAL. Outcomes remain
+train 21 correct / 1 pre-existing poisoned-text wrong / 472 declined and
+holdout 4 / 0 / 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1351→1357 (+6) | 800→806 (+6) | 28/22→28/22 | 6 / 6 | 606→600 (−6) |
+| dev-holdout | 1326→1326 | 790→790 | 22/15→22/15 | 0 / 0 | 571→571 |
+
+The same lipstick premise occurs in seven verdict rows across six distinct
+train stories and no holdout story. Each story's premise gains a direct
+fact, becomes fully read, and loses its truth-scope veto. Other unread
+premises keep stack readiness unchanged. Outcomes and hazards remain neutral.
+
+Cumulative recorded-frame state is 806/1647 and 790/1607 fully read, 600/571
+truth-scope vetoes, 22/15 stack-ready stories, collision 8/9, and quarantine
+16/18. Forty-four classes are served. No TEST look was spent.
+
+**Next:** regenerate the post-Reader-44 frontier; both fully-read and veto
+thresholds remain conjunctively binding.
+
+---
 
 # Session 58 (2026-07-22): Phase B reader 43 — Everything copular universals; +2 train fully read and −2 vetoes
 

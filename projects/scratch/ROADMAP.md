@@ -2975,3 +2975,34 @@ stories. Forty-three classes are served; Phase C and TEST look #6 remain
 unscheduled.
 
 **Next:** regenerate the fully-read/truth-scope-veto frontier.
+
+## Phase B reader 44 — appositive-restricted plural possession disjunctions (2026-07-22)
+
+Reader 44 serves **“CLSs RESTRICTION, APPOSITIVE have either a/an MODIFIER
+NOUN or a/an MODIFIER NOUN.”** Both required restriction spans remain in the
+singular-folded class key; overt articles and noun-category compound units
+prove the two exclusive `have` branches. Compound nouns use surface rendering
+to preserve their modifiers. Signed, comma-free/empty-appositive, verbal,
+modal, coordinated, counted, articleless, larger, and incomplete siblings
+refuse.
+
+The buyer adds pack-scoped noun/adjective morphology for `lipstick`, `velvet`,
+and `satin`; shared `finish` is corrected from verb-only to genuine noun/verb
+polysemy. Nineteen synthetic pins pass. **pytest 2,615 passed; scratch lint 0
+errors with the same eight warnings; curated 65/65 with an identical fresh-
+process rerun.** All eight standard DEV diffs and both grouped logic diffs are
+NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1351→1357 (+6) | 800→806 (+6) | 28/22→28/22 | 6 / 6 | 606→600 (−6) |
+| dev-holdout | 1326→1326 | 790→790 | 22/15→22/15 | 0 / 0 | 571→571 |
+
+The premise occurs in seven train verdict rows / six stories and no holdout
+story. All six premise instances gain direct facts, become fully read, and
+lose their veto; independent unread premises prevent stack movement.
+Cumulative state is 806/1647 and 790/1607 fully read, 600/571 vetoes, and
+22/15 stack-ready stories. Forty-four classes are served; Phase C and TEST
+look #6 remain unscheduled.
+
+**Next:** regenerate the fully-read/truth-scope-veto frontier.

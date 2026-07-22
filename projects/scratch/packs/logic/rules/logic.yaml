@@ -1530,6 +1530,32 @@ rules:
     emits:
       - {fact: quantified_disjunction, cls: "{cls.singular}", left: "{l.singular}", right: "{r.singular}", exclusive: true}
 
+  # Phase B reader 44: appositive-restricted plural-generic possession
+  # disjunctions — "CLSs RESTRICTION, APPOSITIVE have either a/an L or a/an
+  # R". Plural morphology and bare `have` license the singular class fold;
+  # both required spans around the comma remain inside that exact key, while
+  # the two overt object articles delimit possession predicates. Signed,
+  # comma-free/empty-appositive, verbal/modal, coordinated, counted,
+  # articleless, larger, and missing-boundary siblings stay unread.
+  - id: logic/qdisj-bare-plural-appositive-have-either
+    phase: read
+    match:
+      sentence:
+        - {slot: cls, type: bare_plural, at_start: true, blocks_skipped: definite_article}
+        - {slot: rest, span: true, span_blocks: [negation, quantifier, conjunction, disjunctive_marker, either_marker, verb, future_modal, capacity_modal, interrogative, complementizer, wh_which]}
+        - {lit: ",", consume_skipped: true}
+        - {slot: appositive, span: true, span_blocks: [negation, quantifier, conjunction, disjunctive_marker, either_marker, verb, future_modal, capacity_modal, interrogative, complementizer, wh_which]}
+        - {lit: have}
+        - {lit: either}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: l, cat: noun, span_blocks_counted: true}
+        - {lit: or}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: r, cat: noun, span_blocks_counted: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: quantified_disjunction, cls: "{cls.singular} {rest} {appositive}", left: "have {l.surface}", right: "have {r.surface}", exclusive: true}
+
   # Phase B reader 14: future-event generic disjunctions —
   # "CLSs will either V P or V2 Q". The plural class and both bare,
   # single-token event verbs preserve the same keys as ground-verbal facts;

@@ -20,3 +20,8 @@ entries:
   # "Everything displayed ..." construction. The mined bare `display`
   # remains noun-only; only this overt participle gains a verb lemma.
   displayed: {senses: [verb], verb: {lemma: display}}
+  # Phase B reader 44 buyer: plural morphology is the structural evidence
+  # that the restricted subject is a generic class rather than a name.
+  lipstick: {senses: [noun], plural: lipsticks}
+  satin: {senses: [adjective]}
+  velvet: {senses: [adjective]}
