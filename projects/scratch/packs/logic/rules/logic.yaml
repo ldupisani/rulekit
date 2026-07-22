@@ -428,6 +428,27 @@ rules:
     emits:
       - {fact: atom, entity: "{subj}", pred: "{pred}", polarity: true}
 
+  # Phase B reader 38: definite described ground membership —
+  # "The DESCRIPTION is a/an PREDICATE" predicates of one definite
+  # referent, unlike the two-indefinite generic universal. Singular copular
+  # agreement licenses a singular-folded description key; the predicate
+  # stays exact. Both determiners and the terminal period bind the complete
+  # nominal construction. A subject cardinal may remain inside its exact
+  # description key; counted predicates, sign, coordination, relatives,
+  # other copulas, and verbal predicates remain whole-unread.
+  - id: logic/ground-copular-definite-description-is-indefinite
+    phase: read
+    match:
+      sentence:
+        - {lit: the, at_start: true, consume_skipped: true}
+        - {slot: subj, span: true, span_blocks: [negation, quantifier, conjunction, disjunctive_marker, preposition, verb, future_modal, capacity_modal, interrogative, complementizer, wh_which], span_blocks_counted: true}
+        - {lit: is}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: pred, span: true, span_blocks: [negation, quantifier, conjunction, disjunctive_marker, verb, future_modal, capacity_modal, interrogative, complementizer, wh_which], span_blocks_counted: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: atom, entity: "{subj.singular}", pred: "{pred}", polarity: true}
+
   # Stage 9e: the stated alias — "NAME is/was (also) known as NAME2" asserts
   # an identity between two names, so ground atoms carry across it in BOTH
   # directions (synth/alias-copy-*). Both slots are `proper_name` (a

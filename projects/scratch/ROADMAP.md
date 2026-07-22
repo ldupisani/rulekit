@@ -2778,3 +2778,41 @@ stack-ready stories. Thirty-seven classes are served. No TEST look was spent.
 
 **Next:** regenerate the exact frontier. Train stack readiness remains the
 binding threshold at 20/22; require a measured whole-construction join.
+
+## Phase B reader 38 — definite-description ground membership (2026-07-22)
+
+Reader 38 serves **“The DESCRIPTION is a/an PREDICATE.”** The definite NP is
+one described referent, so the reader emits
+`Atom(singular DESCRIPTION, PREDICATE)` rather than a generic `Quantified`
+fact. Both articles, the singular copula, bounded spans, and terminal period
+prove the whole construction. A subject cardinal stays inside its exact key;
+counted predicates, sign, coordination, relatives, other copulas, verbal
+predicates, and missing boundaries refuse.
+
+Sixteen synthetic pins cover exact emission, universal-instantiation
+composition, a changed-description null, and thirteen adjacent refusals.
+**pytest 2,507 passed; scratch lint 0 errors with the same eight warnings;
+curated 65/65 twice.** All eight standard DEV diffs and both grouped logic
+diffs are NEUTRAL. Outcomes remain train 21 correct / 1 pre-existing wrong /
+472 declined and holdout 4 / 0 / 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1346→1346 | 792→794 (+2) | 25/20→27/21 (+2/+1) | 6 / 4 | 611→611 |
+| dev-holdout | 1323→1325 (+2) | 785→789 (+4) | 22/15→22/15 | 9 / 5 | 572→572 |
+
+The reader appears in thirteen rows / four train stories and thirteen rows /
+five holdout stories across all gold kinds. Two fixed Dickinson rows remain
+excluded. An exact Reader-37/Reader-38 audit—not occurrence counting—finds
+only the summer-Olympic-games train story newly all-premises-read, making its
+two actionable queries stack-ready. Documentary membership adds the two
+holdout fact-bearing gains; MoMA supplies the other two holdout fully-read
+gains. Other matched premises were already fully read through fold facts.
+
+Cumulative recorded-frame state is 794/1647 and 789/1607 fully read, 611/572
+vetoes, 21/15 stack-ready stories, collision 8/9, and quarantine 16/18. Phase
+A movement is +74/+68 fully read, 55/42 fewer truth-scope vetoes, and +10/+10
+stack-ready stories. Thirty-eight classes are served. No TEST look was spent.
+
+**Next:** regenerate the exact frontier. Train stack readiness is one story
+short at 21/22; fully-read and veto thresholds remain independently binding.

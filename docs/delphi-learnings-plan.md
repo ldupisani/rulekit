@@ -1,6 +1,6 @@
 # The breadth-first premise-reader campaign — FOLIO logic → full integration
 
-**ACTIVE. Phase A and Phase B readers 1–37 completed through 2026-07-22: ground
+**ACTIVE. Phase A and Phase B readers 1–38 completed through 2026-07-22: ground
 both-or-neither equivalence, unrestricted bare-plural disjunction, and negative
 two-article indefinite generics, plus single-antecedent verbal “Everyone who”
 implications, verbal-restrictor conditionals, and the negative-antecedent
@@ -21,8 +21,9 @@ free-relative verbal conditionals, indefinite-generic inclusive disjunctions,
 participial compound verbal universals, named-PP existentials, direct passive
 named agents, PP-restricted negative universals, reversed named memberships,
 exactly-three named distributive copular subjects, and reversed definite role
-memberships, exactly-four asyndetic named copular lists, and past indefinite
-existentials with definite PP descriptions.**
+memberships, exactly-four asyndetic named copular lists, past indefinite
+existentials with definite PP descriptions, and definite-description ground
+copular memberships.**
 
 ## Context
 
@@ -551,6 +552,14 @@ dev-train / dev-holdout; vetoes, outcomes, and hazards remain neutral.
 Thirty-seven classes are served. A preceding attempt to admit `left` as the
 irregular past of `leave` bought the Bayern train story but failed the shared
 suite by rerouting arithmetic remainder asks, so it was reverted and banked.
+
+Reader 38 serves definite-description ground copular memberships **“The
+DESCRIPTION is a/an PREDICATE.”** It emits one exact positive `Atom` for the
+described referent rather than turning the definite NP into a generic class.
+Incremental movement is +0 / +2 fact-bearing premises, +2 / +4 fully-read
+premises, and +1 / +0 stack-ready stories on dev-train / dev-holdout;
+vetoes, outcomes, and hazards remain neutral. Thirty-eight classes are
+served, and the train stack-ready threshold is now 21/22 stories.
 
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
