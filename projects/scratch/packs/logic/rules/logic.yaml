@@ -2172,6 +2172,31 @@ rules:
       - {fact: atom, entity: "{subj}", pred: "{cls.singular}", polarity: true}
       - {fact: atom, entity: "{subj}", pred: "{pred.singular}", polarity: false}
 
+  # Phase B reader 54: modal-passive plus local positive coordination —
+  # "NAME can be V-ed REST, and it is P." The first exact property retains
+  # `can be`, so possibility never becomes actuality. The comma-bound
+  # immediate `and it` safely binds the positive second property to NAME.
+  # Active, modal-free, other-modal, signed, coordinated, pronominal,
+  # bare-participle, empty-rest, and missing-boundary siblings stay unread.
+  - id: logic/ground-modal-passive-local-it-positive
+    phase: read
+    match:
+      sentence:
+        - {slot: subj, type: proper_name, at_start: true, blocks_skipped: named_subject_article}
+        - {lit: can}
+        - {lit: be}
+        - {slot: v, type: nonstate_verb, single_word: true, past_participle: true}
+        - {slot: rest, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal, interrogative, complementizer, wh_which]}
+        - {lit: ',', consume_skipped: true}
+        - {lit: and}
+        - {lit: it}
+        - {lit: is}
+        - {slot: pred, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: atom, entity: "{subj}", pred: "can be {v} {rest}", polarity: true}
+      - {fact: atom, entity: "{subj}", pred: "{pred.singular}", polarity: true}
+
   # ---- S2: conjunctive SUBJECTS distribute over a copular pred -------------
   # "Oxford Street and Regent Street are in London" ⊢ in-london(os) ∧
   # in-london(rs). Distribution is sound for distributive predicates and

@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–53 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–54 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -106,7 +106,9 @@
 > role identities `The ROLE of OWNER, MEMBER, is a CLS who V REST`, emitting
 > the role, class, and explicitly bound relative event — and (reader 53) local
 > same-subject coordination `NAME is a/an CLS, and it is not P`, whose
-> punctuation-bound immediate `it` safely emits both clauses.
+> punctuation-bound immediate `it` safely emits both clauses — and (reader
+> 54) modal-passive local coordination `NAME can be V-ed REST, and it is P`,
+> preserving possibility and the positive local property separately.
 > Subsequent pack-scoped lexical activations (`act/acts`, `prevent`, and the
 > regular-past forms `supported`/`researched`) make
 > the pre-existing Stage 9f verbal existential reader reachable for one train
@@ -120,13 +122,13 @@
 > A later pack-scoped `plots`/`swallow` activation makes the existing Stage 6
 > ground reader consume one controlled-infinitive train premise; it earns
 > movement but no new construction-class credit.
-> Cumulative movement from Phase A is +96 / +74 fully-read premise instances
+> Cumulative movement from Phase A is +97 / +74 fully-read premise instances
 > and +11 / +10
 > stack-ready stories on dev-train / dev-holdout, with no
-> verdict regression or hazard increase; truth-scope vetoes improve by 76 / 48, while
-> holdout collision/quarantine improve 12→9 / 24→18. Fifty-three construction classes
+> verdict regression or hazard increase; truth-scope vetoes improve by 77 / 48, while
+> holdout collision/quarantine improve 12→9 / 24→18. Fifty-four construction classes
 > are served. Both stack-ready thresholds are now met, but the conjunctive Phase C
-> gate remains unmet (fully read 816/1647 and 795/1607 vs 852/850; vetoes 590/566
+> gate remains unmet (fully read 817/1647 and 795/1607 vs 852/850; vetoes 589/566
 > vs ≤499/460; stack-ready stories 22/15 vs ≥22/10).
 > Next regenerate the fully-read and truth-scope-veto frontier, prioritizing
 > train-side movement. The
@@ -152,6 +154,40 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 74 (2026-07-22): Phase B reader 54 — modal-passive local positive coordination; +1 train fully read and −1 veto
+
+Reader 54 serves **“NAME can be V-ed REST, and it is P.”** The first exact
+ground property retains `can be`, so possibility is never asserted as
+actuality. The comma-bound immediate `and it` safely binds the positive second
+property to the named subject without general pronoun resolution. Productive
+participle morphology proves passive voice. Active, modal-free, other-modal,
+signed, coordinated, pronominal, bare-participle, empty-rest, and
+missing-boundary siblings remain unread. Reader 50's existing `spotted → spot`
+form activates the buyer; no new lexicon entry is needed.
+
+Fourteen synthetic pins cover both exact facts, positive local composition,
+the modality-versus-actuality null, and eleven adjacent refusals. **All 2,790
+tests pass; scratch lint has 0 errors and the same eight warnings; curated is
+65/65 with an identical fresh-process rerun.** All eight standard DEV diffs
+and both grouped logic diffs are NEUTRAL. Outcomes remain train 23 / 1 / 470
+and holdout 5 / 0 / 420.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1367→1368 (+1) | 816→817 (+1) | 28/22→28/22 | 3 / 1 | 590→589 (−1) |
+| dev-holdout | 1330→1330 | 795→795 | 22/15→22/15 | 0 / 0 | 566→566 |
+
+The buyer emits `Atom(rockie, can be spot near campus)` and
+`Atom(rockie, calm)`, becomes fully read, and loses its veto. The remaining
+“The only animals…” premise keeps the story from stack readiness. Cumulative
+state is 817/1647 and 795/1607 fully read, 589/566 vetoes, 22/15 stack-ready
+stories, and fifty-four classes. No TEST look was spent.
+
+**Next:** inspect the restrictive “only … are …” frontier without treating
+`only` as an ordinary universal.
+
+---
 
 # Session 73 (2026-07-22): Phase B reader 53 — local `and it` negative coordination; +1 train fully read and −1 veto
 

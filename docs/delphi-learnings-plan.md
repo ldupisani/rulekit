@@ -736,6 +736,13 @@ coreference without enabling a general resolver. Incremental movement is +1 /
 stories. Outcomes and hazards remain neutral. Pack-scoped `TikTok: name`
 activates the sole train buyer. Fifty-three classes are served.
 
+Reader 54 serves modal-passive local positive coordination **“NAME can be
+V-ed REST, and it is P.”** It preserves possibility inside the first exact
+property and emits the comma-bound local positive property separately.
+Incremental movement is +1 / +0 fact-bearing and fully-read premise, −1 / 0
+veto, and +0 / +0 stack-ready stories. Outcomes and hazards remain neutral.
+Fifty-four classes are served.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /
