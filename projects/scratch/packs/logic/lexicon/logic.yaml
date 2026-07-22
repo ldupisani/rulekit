@@ -106,3 +106,6 @@ entries:
   # this keeps its progressive class key lemma-stable.
   belonging: {senses: [verb], verb: {lemma: belong}}
   connected: {senses: [adjective]}
+  # Phase B lexical activation: negative adjectival consequence for the
+  # existing restricted-someone conditional.
+  scared: {senses: [adjective]}

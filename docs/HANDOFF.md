@@ -138,13 +138,13 @@
 > A later pack-scoped `plots`/`swallow` activation makes the existing Stage 6
 > ground reader consume one controlled-infinitive train premise; it earns
 > movement but no new construction-class credit.
-> Cumulative movement from Phase A is +164 / +175 fully-read premise instances
+> Cumulative movement from Phase A is +164 / +180 fully-read premise instances
 > and +13 / +10
 > stack-ready stories on dev-train / dev-holdout, with no
-> verdict regression or hazard increase; truth-scope vetoes improve by 144 / 149, while
+> verdict regression or hazard increase; truth-scope vetoes improve by 144 / 154, while
 > holdout collision/quarantine improve 12→9 / 24→18. Sixty-two construction classes
 > are served. Both stack-ready thresholds are now met, but the conjunctive Phase C
-> gate remains unmet (fully read 884/1647 and 896/1607 vs 852/850; vetoes 522/465
+> gate remains unmet (fully read 884/1647 and 901/1607 vs 852/850; vetoes 522/460
 > vs ≤499/460; stack-ready stories 24/15 vs ≥22/10).
 > Next regenerate the fully-read and truth-scope-veto frontier, prioritizing
 > train-side movement. The
@@ -170,6 +170,32 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 95 (2026-07-23): scared adjective activation; +5 holdout fully read
+
+Pack-local adjective `scared` completes **“If someone in Love City is good
+with pets, then they are not scared of animals.”** The existing restricted-
+someone negative conditional preserves both antecedents and the full negative
+property. The fronted inclusive-union neighbor remains blocked on its frame
+and `loves`.
+
+Six synthetic pins pass. **All 2,973 tests pass; curated is 65/65 with an
+identical fresh-process rerun.** Scratch lint has 0 errors and the same eight warnings. All
+eight standard DEV diffs and both grouped logic outcome diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready floor | credited premise instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1394→1394 | 884→884 | ≥34/24 | 0 / 0 | 522→522 |
+| dev-holdout | 1364→1364 | 896→901 (+5) | ≥22/15 | 5 / 1 | 465→460 (−5) |
+
+Outcomes remain 23/1/470 and 5/0/420; hazards and stack floor are unchanged.
+Holdout now meets its veto ceiling exactly. Construction-class credit remains
+sixty-two. No TEST look was spent.
+
+**Next:** every holdout and coverage/stack threshold is met; Phase C remains
+gated only by 23 train truth-scope vetoes.
+
+---
 
 # Session 94 (2026-07-23): company-device participial/property forms; +7 holdout fully read
 

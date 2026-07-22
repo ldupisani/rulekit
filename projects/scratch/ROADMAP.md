@@ -3878,3 +3878,22 @@ DEV diffs and both grouped logic outcome diffs are NEUTRAL.
 Outcomes and hazards remain neutral. Current vetoes are 522/465.
 
 **Next:** Phase C remains gated only by −23/−5 truth-scope vetoes.
+
+## Scared adjective lexical activation (2026-07-23)
+
+Pack-local adjective `scared` clears the five-row negative restricted-someone
+conditional. The fronted Love City inclusive union retains independent
+blockers.
+
+Six synthetic pins pass. **pytest 2,973 passed; curated is 65/65 twice.**
+Scratch lint reports 0 errors with the same eight warnings; all eight standard
+DEV diffs and both grouped logic outcome diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready floor | credited premise instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1394→1394 | 884→884 | ≥34/24 | 0 / 0 | 522→522 |
+| dev-holdout | 1364→1364 | 896→901 (+5) | ≥22/15 | 5 / 1 | 465→460 (−5) |
+
+Outcomes and hazards remain neutral. Holdout meets its veto ceiling exactly.
+
+**Next:** Phase C remains gated only by 23 train truth-scope vetoes.
