@@ -729,6 +729,13 @@ fully-read premise, −1 / 0 veto, and +0 / +0 stack-ready stories. Outcomes,
 hazards, and class credit remain unchanged. `Some CLSs that have P have Q`
 stays banked pending a sound compound boundary for `well-attended weddings`.
 
+Reader 53 serves local same-subject coordination **“NAME is a/an CLS, and it
+is not P.”** Punctuation and the immediate pronoun establish exact local
+coreference without enabling a general resolver. Incremental movement is +1 /
++0 fact-bearing and fully-read premise, −1 / 0 veto, and +0 / +0 stack-ready
+stories. Outcomes and hazards remain neutral. Pack-scoped `TikTok: name`
+activates the sole train buyer. Fifty-three classes are served.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /

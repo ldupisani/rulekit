@@ -53,3 +53,6 @@ entries:
   # infinitive preserve one exact controlled-event predicate.
   plots: {senses: [verb], verb: {lemma: plot}}
   swallow: {senses: [verb]}
+  # Phase B reader 53: CamelCase does not receive capitalization-name
+  # fallback, so the measured named subject is declared pack-locally.
+  tiktok: {senses: [name]}

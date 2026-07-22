@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–52 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–53 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -104,7 +104,9 @@
 > (reader 51) fronted predicative adjuncts `After being ADJECTIVE, NAME V-ed
 > REST`, emitting only the complete main event — and (reader 52) appositive
 > role identities `The ROLE of OWNER, MEMBER, is a CLS who V REST`, emitting
-> the role, class, and explicitly bound relative event.
+> the role, class, and explicitly bound relative event — and (reader 53) local
+> same-subject coordination `NAME is a/an CLS, and it is not P`, whose
+> punctuation-bound immediate `it` safely emits both clauses.
 > Subsequent pack-scoped lexical activations (`act/acts`, `prevent`, and the
 > regular-past forms `supported`/`researched`) make
 > the pre-existing Stage 9f verbal existential reader reachable for one train
@@ -118,13 +120,13 @@
 > A later pack-scoped `plots`/`swallow` activation makes the existing Stage 6
 > ground reader consume one controlled-infinitive train premise; it earns
 > movement but no new construction-class credit.
-> Cumulative movement from Phase A is +95 / +74 fully-read premise instances
+> Cumulative movement from Phase A is +96 / +74 fully-read premise instances
 > and +11 / +10
 > stack-ready stories on dev-train / dev-holdout, with no
-> verdict regression or hazard increase; truth-scope vetoes improve by 75 / 48, while
-> holdout collision/quarantine improve 12→9 / 24→18. Fifty-two construction classes
+> verdict regression or hazard increase; truth-scope vetoes improve by 76 / 48, while
+> holdout collision/quarantine improve 12→9 / 24→18. Fifty-three construction classes
 > are served. Both stack-ready thresholds are now met, but the conjunctive Phase C
-> gate remains unmet (fully read 815/1647 and 795/1607 vs 852/850; vetoes 591/566
+> gate remains unmet (fully read 816/1647 and 795/1607 vs 852/850; vetoes 590/566
 > vs ≤499/460; stack-ready stories 22/15 vs ≥22/10).
 > Next regenerate the fully-read and truth-scope-veto frontier, prioritizing
 > train-side movement. The
@@ -150,6 +152,41 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 73 (2026-07-22): Phase B reader 53 — local `and it` negative coordination; +1 train fully read and −1 veto
+
+Reader 53 serves **“NAME is a/an CLS, and it is not P.”** The comma-bound
+immediate `and it` has exactly one local antecedent, so the reader safely emits
+the positive base-class `Atom` and exact negative property without activating
+a general pronoun resolver. Passive or modal first clauses, positive second
+clauses, alternate pronouns, coordination inside either predicate,
+articleless classes, and missing boundaries remain unread. Pack-scoped
+`TikTok: name` activates the CamelCase buyer; it does not buy general CamelCase
+fallback.
+
+Twelve synthetic pins cover both emitted facts, exact negative composition,
+and ten adjacent refusals. **All 2,776 tests pass; scratch lint has 0 errors
+and the same eight warnings; curated is 65/65 with an identical fresh-process
+rerun.** All eight standard DEV diffs and both grouped logic diffs are
+NEUTRAL. Outcomes remain train 23 / 1 / 470 and holdout 5 / 0 / 420.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1366→1367 (+1) | 815→816 (+1) | 28/22→28/22 | 4 / 1 | 591→590 (−1) |
+| dev-holdout | 1330→1330 | 795→795 | 22/15→22/15 | 0 / 0 | 566→566 |
+
+The buyer emits `Atom(tiktok, social media application, +)` and
+`Atom(tiktok, ideal for preteen, −)`, becomes fully read, and loses its veto.
+Other unread premises in the social-media story prevent stack movement. The
+modal-passive and two-passive `and it` siblings observed in the survey remain
+separate, unread constructions. Cumulative state is 816/1647 and 795/1607
+fully read, 590/566 vetoes, 22/15 stack-ready stories, and fifty-three classes.
+No TEST look was spent.
+
+**Next:** continue the train reader frontier without generalizing local `it`
+beyond this punctuation-closed construction.
+
+---
 
 # Session 72 (2026-07-22): Stage 6 lexical activation — controlled ground event; +1 train fully read and −1 veto
 

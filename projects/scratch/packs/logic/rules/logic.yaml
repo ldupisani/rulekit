@@ -2146,6 +2146,32 @@ rules:
       - {fact: atom, entity: "{member}", pred: "{cls.surface}", polarity: true}
       - {fact: atom, entity: "{member}", pred: "{v} {rest}", polarity: true}
 
+  # Phase B reader 53: local same-subject copular coordination —
+  # "NAME is a/an CLS, and it is not P." The comma-bound immediate `and it`
+  # has exactly one local antecedent, so both clauses safely bind to NAME
+  # without a general pronoun resolver. Emit the positive base class and
+  # exact negative property. Passive/modal first clauses, positive second
+  # clauses, alternate pronouns, coordination inside either predicate,
+  # articleless classes, and missing boundaries remain whole-unread.
+  - id: logic/ground-copular-local-it-negative
+    phase: read
+    match:
+      sentence:
+        - {slot: subj, type: name, at_start: true, blocks_skipped: named_subject_article}
+        - {lit: is}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: cls, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+        - {lit: ',', consume_skipped: true}
+        - {lit: and}
+        - {lit: it}
+        - {lit: is}
+        - {lit: not}
+        - {slot: pred, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: atom, entity: "{subj}", pred: "{cls.singular}", polarity: true}
+      - {fact: atom, entity: "{subj}", pred: "{pred.singular}", polarity: false}
+
   # ---- S2: conjunctive SUBJECTS distribute over a copular pred -------------
   # "Oxford Street and Regent Street are in London" ⊢ in-london(os) ∧
   # in-london(rs). Distribution is sound for distributive predicates and

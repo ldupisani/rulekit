@@ -3377,3 +3377,29 @@ stories. Fifty-two classes remain served.
 
 **Next:** regenerate the reader frontier with that compound-dependent
 construction banked.
+
+## Phase B reader 53 — local `and it` negative coordination (2026-07-22)
+
+Reader 53 serves **“NAME is a/an CLS, and it is not P.”** The comma-bound
+immediate pronoun has one explicit local antecedent, allowing exact positive
+class and negative property Atoms without a general coreference mechanism.
+Passive/modal first clauses, positive or alternate-pronoun second clauses,
+internal coordination, articleless classes, and incomplete siblings refuse.
+Pack-scoped `TikTok: name` activates the CamelCase buyer only.
+
+Twelve synthetic pins pass. **pytest 2,776 passed; scratch lint 0 errors with
+the same eight warnings; curated 65/65 with an identical fresh-process rerun.**
+All eight standard DEV diffs and both grouped logic diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1366→1367 (+1) | 815→816 (+1) | 28/22→28/22 | 4 / 1 | 591→590 (−1) |
+| dev-holdout | 1330→1330 | 795→795 | 22/15→22/15 | 0 / 0 | 566→566 |
+
+The TikTok premise gains both exact Atoms, becomes fully read, and loses its
+veto. Other story premises prevent stack movement; outcomes remain 23/1/470
+and 5/0/420. Cumulative state is 816/1647 and 795/1607 fully read, 590/566
+vetoes, and 22/15 stack-ready stories. Fifty-three classes are served.
+
+**Next:** keep the local-pronoun boundary closed while continuing the train
+reader frontier.
