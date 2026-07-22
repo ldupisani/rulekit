@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–33 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–34 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -64,15 +64,17 @@
 > of the CLSs PREPOSITION R V the P`, using exact negative `Quantified`
 > facts — and (reader 33) reversed named memberships `One of the CLSs of
 > OWNER was MEMBER`, emitting the identified witness as an exact positive
-> `Atom(MEMBER, CLS+of+OWNER)`. Cumulative movement from Phase A is +67 / +58 fully-read premise
+> `Atom(MEMBER, CLS+of+OWNER)` — and (reader 34) exactly-three named
+> distributive copular subjects `A, B[, ] and C are P`, emitting one exact
+> positive `Atom` per name while refusing collective predicates. Cumulative movement from Phase A is +69 / +60 fully-read premise
 > instances and +8 / +9
 > stack-ready stories on dev-train / dev-holdout, with no
-> verdict regression or hazard increase; truth-scope vetoes improve by 53 / 40, while
-> holdout collision/quarantine improve 12→9 / 24→18. Thirty-three construction classes
+> verdict regression or hazard increase; truth-scope vetoes improve by 55 / 42, while
+> holdout collision/quarantine improve 12→9 / 24→18. Thirty-four construction classes
 > are served. The holdout stack-ready threshold is now exceeded, but the
-> conjunctive Phase C gate remains unmet (fully read 787/1647 and 779/1607 vs
-> 852/850; vetoes 613/574 vs ≤499/460; stack-ready stories 19/14 vs ≥22/10).
-> Next regenerate the frontier after buying reversed named membership; the
+> conjunctive Phase C gate remains unmet (fully read 789/1647 and 781/1607 vs
+> 852/850; vetoes 611/572 vs ≤499/460; stack-ready stories 19/14 vs ≥22/10).
+> Next regenerate the frontier after buying three-name distributive subjects; the
 > remaining candidates require lexical, definite-description, coreference,
 > or deeper composition infrastructure. The unbought outer-quantified verbal
 > relative remains banked pending composition evidence. Reader 4's opt-in
@@ -95,6 +97,50 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 48 (2026-07-22): Phase B reader 34 — three-name distributive copular subjects; +2/+2 fully read and −2/−2 vetoes
+
+One reader serves **“A, B and C are P”** and its Oxford-comma sibling. It is
+the exactly-three extension of the existing two-name distributive rule:
+plural agreement singular-folds the shared predicate, and the reader emits
+one positive `Atom` for each named subject. The inherited indefinite-article
+refusal keeps collective predicates such as “are a team” unread; sign,
+disjunction, non-name members, and shorter or longer lists also refuse.
+
+Twenty synthetic pins cover ordinary and Oxford punctuation, exact copular
+composition, an unlisted-name null, and sixteen adjacent refusals.
+
+**All 2,436 tests pass; scratch lint has 0 errors and the same eight warnings;
+curated is 65/65 twice.** All eight standard DEV diffs and both grouped logic
+diffs are NEUTRAL. Outcomes remain train 21 correct / 1 pre-existing
+poisoned-text wrong / 472 declined and holdout 4 / 0 / 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1342→1344 (+2) | 787→789 (+2) | 23/19→23/19 | 2 / 1 | 613→611 (−2) |
+| dev-holdout | 1319→1321 (+2) | 779→781 (+2) | 21/14→21/14 | 2 / 1 | 574→572 (−2) |
+
+Across all gold kinds the reader appears in three rows / one story on each
+split. Train distributes `play by Deborah Wallace` over three named works;
+holdout distributes `located in the South Shetland Islands` over three named
+islands. Each story still has one unrelated blocked premise, so neither is
+stack-ready yet. All hazards remain neutral.
+
+The mandatory banked-zero recheck prototyped the general sibling **“If
+someone is P, then they V Q.”** Nineteen synthetic tests passed, but it
+matched zero DEV rows: the only apparent buyer uses ambiguous `work`, which
+cannot satisfy the required event-verb gate. The prototype was removed and
+stays banked; weakening that gate would erase the grammatical evidence.
+
+Cumulative recorded-frame state is 789/1647 and 781/1607 fully read, 611/572
+truth-scope vetoes, 19/14 stack-ready stories, collision 8/9, and quarantine
+16/18. Thirty-four classes are served. No TEST look was spent.
+
+**Next:** regenerate the exact frontier. Train stack readiness remains the
+binding story threshold; the `someone … they work` bank needs independent
+sense-resolution evidence before it can be reconsidered.
+
+---
 
 # Session 47 (2026-07-22): Phase B reader 33 — reversed named memberships; +2 holdout fully read, +1 stack-ready story
 

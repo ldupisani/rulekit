@@ -2604,3 +2604,46 @@ stack-ready stories. Thirty-three classes are served. No TEST look was spent.
 **Next:** regenerate the exact frontier. Train stack readiness remains the
 binding threshold; require an independently general construction and an
 existing exact-key composition path before the next buyer.
+
+## Phase B reader 34 — three-name distributive copular subjects (2026-07-22)
+
+Reader 34 serves **“A, B and C are P”** plus the Oxford-comma sibling. It is
+the exactly-three extension of the existing two-name distributive reader.
+Plural agreement singular-folds the shared predicate and emits one positive
+`Atom` for each name. The same indefinite-article refusal keeps collective
+predicates out; sign, disjunction, non-name members, and shorter/longer lists
+remain whole-unread.
+
+Twenty synthetic pins cover both punctuation forms, exact copular
+composition, an unlisted-name null, and sixteen adjacent refusals.
+
+**pytest 2,436 passed; scratch lint 0 errors with the same eight warnings;
+curated 65/65 twice.** All eight standard DEV diffs and both FOLIO-with-logic
+grouped diffs are NEUTRAL. Outcomes remain train 21 correct / 1 pre-existing
+poisoned-text wrong / 472 declined and holdout 4 / 0 / 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1342→1344 (+2) | 787→789 (+2) | 23/19→23/19 | 2 / 1 | 613→611 (−2) |
+| dev-holdout | 1319→1321 (+2) | 779→781 (+2) | 21/14→21/14 | 2 / 1 | 574→572 (−2) |
+
+Across all gold kinds the reader appears in three rows / one story per split.
+Train records three named works as `play by Deborah Wallace`; holdout records
+three named islands as `located in the South Shetland Islands`. Each story
+still has one separate blocked premise, so stack readiness does not move.
+Hazards are neutral.
+
+The required banked-zero recheck implemented **“If someone is P, then they V
+Q”** with the same safe event-head gate as reader 18. Its nineteen synthetic
+tests passed, but the only apparent DEV buyer uses ambiguous `work`, so the
+rule matched zero corpus rows. The prototype was removed and remains banked;
+loosening the verb gate would be an unsupported grammar change.
+
+Cumulative recorded-frame state is 789/1647 and 781/1607 fully read, 611/572
+vetoes, 19/14 stack-ready stories, collision 8/9, and quarantine 16/18. Phase
+A movement is +69/+60 fully read, 55/42 fewer truth-scope vetoes, and +8/+9
+stack-ready stories. Thirty-four classes are served. No TEST look was spent.
+
+**Next:** regenerate the exact frontier. Train stack readiness remains the
+binding threshold; keep the `someone … they work` bank closed until a
+separate sense-resolution increment has measured support.

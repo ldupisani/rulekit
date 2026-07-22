@@ -1634,6 +1634,30 @@ rules:
     emits:
       - {fact: atom, entity: "{member}", pred: "{cls.singular} of {owner}", polarity: true}
 
+  # Phase B reader 34: three-name distributive copular subjects —
+  # "A, B and C are P" / "A, B, and C are P". This is the exactly-three
+  # sibling of Stage S2's two-name rule. Plural agreement singular-folds the
+  # shared predicate into the key each singular name would carry. The same
+  # article refusal keeps collective predicates ("are a team") unread;
+  # sign and disjunction remain whole-unread, and shorter/longer lists cannot
+  # satisfy this exact punctuation skeleton.
+  - id: logic/ground-copular-three-conj-subjects
+    phase: read
+    match:
+      sentence:
+        - {slot: s1, type: name, at_start: true, blocks_skipped: indefinite_article}
+        - {lit: ",", consume_skipped: true}
+        - {slot: s2, type: name}
+        - {opt: [{lit: ",", consume_skipped: true}]}
+        - {lit: and}
+        - {slot: s3, type: name}
+        - {lit: are}
+        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker, indefinite_article], blocks_skipped: indefinite_article}
+    emits:
+      - {fact: atom, entity: "{s1}", pred: "{pred.singular}", polarity: true}
+      - {fact: atom, entity: "{s2}", pred: "{pred.singular}", polarity: true}
+      - {fact: atom, entity: "{s3}", pred: "{pred.singular}", polarity: true}
+
   - id: logic/existential-some-are
     phase: read
     match:

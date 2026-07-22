@@ -1,6 +1,6 @@
 # The breadth-first premise-reader campaign — FOLIO logic → full integration
 
-**ACTIVE. Phase A and Phase B readers 1–26 completed 2026-07-21: ground
+**ACTIVE. Phase A and Phase B readers 1–34 completed through 2026-07-22: ground
 both-or-neither equivalence, unrestricted bare-plural disjunction, and negative
 two-article indefinite generics, plus single-antecedent verbal “Everyone who”
 implications, verbal-restrictor conditionals, and the negative-antecedent
@@ -16,7 +16,11 @@ indefinite-generic verbal conditionals, reduced-relative people universals,
 fully repeated ground both-or-neither equivalences, implicit-restrictor
 property universals, second-person generic conditionals, grammar-proven
 fused premise/question boundaries, active participial-restrictor possessive
-universals, and plural-agreeing positive possessive universals.**
+universals, plural-agreeing positive possessive universals, comma-bound
+free-relative verbal conditionals, indefinite-generic inclusive disjunctions,
+participial compound verbal universals, named-PP existentials, direct passive
+named agents, PP-restricted negative universals, reversed named memberships,
+and exactly-three named distributive copular subjects.**
 
 ## Context
 
@@ -495,6 +499,19 @@ is +0 / +2 fully-read premises and +0 / +1 stack-ready stories on dev-train /
 dev-holdout; fact-bearing, truth-scope vetoes, outcomes, and hazards remain
 neutral. Thirty-three classes are served; the fully-read, veto, and
 train-stack thresholds remain unmet.
+
+Reader 34 serves exactly-three named distributive copular subjects **“A, B
+and C are P”** and the Oxford-comma sibling. It extends the existing two-name
+rule, singular-folding the shared plural-agreeing predicate and emitting one
+positive `Atom` per name. The inherited article refusal excludes collective
+predicates; signed, disjunctive, non-name, shorter, and longer siblings remain
+unread. Incremental movement is +2 / +2 fact-bearing and fully-read premises
+and −2 / −2 truth-scope vetoes on dev-train / dev-holdout; stack readiness,
+outcomes, and hazards remain neutral. Thirty-four classes are served; the
+fully-read, veto, and train-stack thresholds remain unmet. The rechecked
+`If someone is P, then they V Q` sibling stays banked because its sole
+apparent DEV buyer has an ambiguous event head and the safe prototype matches
+zero rows.
 
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
