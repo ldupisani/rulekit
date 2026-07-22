@@ -800,6 +800,14 @@ Incremental movement is +10 / +0 fact-bearing and fully-read premises,
 −10 / 0 vetoes, and +0 / +0 stack-ready stories. Outcomes and hazards remain
 neutral. Sixty-two classes are served.
 
+The following pack-local lexical increment activates the pre-existing
+`All CLSs V P` reader for the qualified company-device universal by admitting
+`device`/`devices`, `logo`, and bare `belong`. It adds +0 / +4 fact-bearing
+and fully-read premises, 0 / −4 vetoes, and no stack or outcome movement.
+Inflected `belongs` and `belonging` remain unactivated, and construction-class
+credit remains sixty-two. Current Phase C gaps are +9 / +21 fully read and
+−64 / −72 vetoes.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /

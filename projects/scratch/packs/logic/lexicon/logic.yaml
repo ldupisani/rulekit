@@ -60,3 +60,10 @@ entries:
   # PP-restricted singular `No` universal. Bare/plural `struggle` remains a
   # separate surface and cannot satisfy the reader's category gate.
   struggles: {senses: [verb], verb: {lemma: struggle}}
+  # Phase B lexical activation after reader 62: the existing unrestricted
+  # `All CLSs V P` reader already covers the company-device universal. These
+  # pack-scoped form facts make its plural class and bare event head reachable
+  # without changing shared benchmark vocabulary or universal semantics.
+  device: {senses: [noun], plural: devices}
+  logo: {senses: [noun]}
+  belong: {senses: [verb], verb: {lemma: belong}}

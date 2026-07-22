@@ -3634,3 +3634,26 @@ vetoes, and 24/15 stack-ready stories. Sixty-two classes are served.
 
 **Next:** prioritize holdout; Phase C needs +9/+25 fully read and −64/−76
 vetoes.
+
+## Existing verbal universal — company-device lexical activation (2026-07-22)
+
+Pack-local `device`/`devices`, `logo`, and bare `belong` activate the existing
+`All CLSs V P` reader for the PP-qualified company-device universal. The
+complete class and event object are preserved; `belongs` and `belonging`
+remain unactivated.
+
+Six synthetic pins pass. **pytest 2,901 passed; curated is 65/65 twice.**
+Scratch lint reports 0 errors with the same eight warnings; all eight standard
+DEV diffs and both grouped logic outcome diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1394→1394 | 843→843 | 34/24→34/24 | 0 / 0 | 563→563 |
+| dev-holdout | 1360→1364 (+4) | 825→829 (+4) | 22/15→22/15 | 4 / 1 | 536→532 (−4) |
+
+Outcomes remain 23/1/470 and 5/0/420. Cumulative state is 843/1647 and
+829/1607 fully read, 563/532 vetoes, and 24/15 stack-ready stories. Sixty-two
+construction classes remain served.
+
+**Next:** prioritize train movement while continuing holdout reductions; Phase
+C needs +9/+21 fully read and −64/−72 vetoes.

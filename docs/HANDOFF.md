@@ -138,13 +138,13 @@
 > A later pack-scoped `plots`/`swallow` activation makes the existing Stage 6
 > ground reader consume one controlled-infinitive train premise; it earns
 > movement but no new construction-class credit.
-> Cumulative movement from Phase A is +123 / +104 fully-read premise instances
+> Cumulative movement from Phase A is +123 / +108 fully-read premise instances
 > and +13 / +10
 > stack-ready stories on dev-train / dev-holdout, with no
-> verdict regression or hazard increase; truth-scope vetoes improve by 103 / 78, while
+> verdict regression or hazard increase; truth-scope vetoes improve by 103 / 82, while
 > holdout collision/quarantine improve 12→9 / 24→18. Sixty-two construction classes
 > are served. Both stack-ready thresholds are now met, but the conjunctive Phase C
-> gate remains unmet (fully read 843/1647 and 825/1607 vs 852/850; vetoes 563/536
+> gate remains unmet (fully read 843/1647 and 829/1607 vs 852/850; vetoes 563/532
 > vs ≤499/460; stack-ready stories 24/15 vs ≥22/10).
 > Next regenerate the fully-read and truth-scope-veto frontier, prioritizing
 > train-side movement. The
@@ -170,6 +170,34 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 83 (2026-07-22): existing verbal universal activated for the company-device class; +4 holdout fully read
+
+Pack-local `device`/`devices`, `logo`, and bare `belong` activate the existing
+`All CLSs V P` reader for **“All devices with the company logo belong to the
+company.”** The full PP-qualified class and event object remain exact keys.
+Inflected `belongs` and `belonging` remain outside this activation, so the
+neighboring ground and reduced-relative constructions do not move.
+
+Six synthetic pins pass. **All 2,901 tests pass; curated is 65/65 with an
+identical fresh-process rerun.** Scratch lint has 0 errors and the same eight
+warnings. All eight standard DEV diffs and both grouped logic outcome diffs
+are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1394→1394 | 843→843 | 34/24→34/24 | 0 / 0 | 563→563 |
+| dev-holdout | 1360→1364 (+4) | 825→829 (+4) | 22/15→22/15 | 4 / 1 | 536→532 (−4) |
+
+Outcomes remain 23/1/470 and 5/0/420; the rest of the story remains unread.
+Cumulative state is 843/1647 and 829/1607 fully read, 563/532 vetoes, and
+24/15 stack-ready stories. Construction-class credit remains sixty-two. No
+TEST look was spent.
+
+**Next:** prioritize train movement while continuing holdout reductions; Phase
+C needs +9/+21 fully read and −64/−72 vetoes.
+
+---
 
 # Session 82 (2026-07-22): Phase B reader 62 — restricted everyone inclusive union; +10 train fully read and veto reduction
 
