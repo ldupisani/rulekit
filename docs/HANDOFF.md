@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–32 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–33 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -62,15 +62,17 @@
 > is V-ed by NAME`, using a morphology-gated `VerbalRelation(NAME, V,
 > PATIENT)` — and (reader 32) PP-restricted negative verbal universals `None
 > of the CLSs PREPOSITION R V the P`, using exact negative `Quantified`
-> facts. Cumulative movement from Phase A is +67 / +56 fully-read premise
-> instances and +8 / +8
+> facts — and (reader 33) reversed named memberships `One of the CLSs of
+> OWNER was MEMBER`, emitting the identified witness as an exact positive
+> `Atom(MEMBER, CLS+of+OWNER)`. Cumulative movement from Phase A is +67 / +58 fully-read premise
+> instances and +8 / +9
 > stack-ready stories on dev-train / dev-holdout, with no
 > verdict regression or hazard increase; truth-scope vetoes improve by 53 / 40, while
-> holdout collision/quarantine improve 12→9 / 24→18. Thirty-two construction classes
+> holdout collision/quarantine improve 12→9 / 24→18. Thirty-three construction classes
 > are served. The holdout stack-ready threshold is now exceeded, but the
-> conjunctive Phase C gate remains unmet (fully read 787/1647 and 777/1607 vs
-> 852/850; vetoes 613/574 vs ≤499/460; stack-ready stories 19/13 vs ≥22/10).
-> Next regenerate the frontier after buying the restricted `None of` family; the
+> conjunctive Phase C gate remains unmet (fully read 787/1647 and 779/1607 vs
+> 852/850; vetoes 613/574 vs ≤499/460; stack-ready stories 19/14 vs ≥22/10).
+> Next regenerate the frontier after buying reversed named membership; the
 > remaining candidates require lexical, definite-description, coreference,
 > or deeper composition infrastructure. The unbought outer-quantified verbal
 > relative remains banked pending composition evidence. Reader 4's opt-in
@@ -93,6 +95,47 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 47 (2026-07-22): Phase B reader 33 — reversed named memberships; +2 holdout fully read, +1 stack-ready story
+
+One reader serves **“One of the CLSs of OWNER was MEMBER.”** The first `of`
+is the partitive quantifier skeleton; the second remains inside the exact
+owned-class key. Because the sentence identifies the witness by name, the
+reader emits positive `Atom(MEMBER, singular(CLS)+of+OWNER)` rather than an
+anonymous existential. Typed class, owner, and member boundaries plus a
+claimed terminal period keep larger or differently scoped constructions
+whole-unread.
+
+Nineteen synthetic pins cover exact emission, exact copular-ask composition,
+a changed-owner null, and sixteen adjacent refusals. Counts, missing
+articles/owners, extra PPs, other copulas, negation, nominal or pronominal
+members, coordination, adjunct tails, apposition, modality, relatives, and
+larger subjects all remain unread.
+
+**All 2,416 tests pass; scratch lint has 0 errors and the same eight warnings;
+curated is 65/65 twice.** All eight standard DEV diffs and both grouped logic
+diffs are NEUTRAL. Outcomes remain train 21 correct / 1 pre-existing
+poisoned-text wrong / 472 declined and holdout 4 / 0 / 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1342→1342 | 787→787 | 23/19→23/19 | 0 / 0 | 613→613 |
+| dev-holdout | 1319→1319 | 777→779 (+2) | 20/13→21/14 (+1/+1) | 3 / 1 | 574→574 |
+
+Across all gold kinds the rule appears in five holdout rows / one story and
+no train rows. It records `Herodicus` as a `tutor of Hippocrates`; the story's
+represented conclusion becomes stack-ready without a new substitution rule
+or an outcome change. All hazards remain neutral.
+
+Cumulative recorded-frame state is 787/1647 and 779/1607 fully read, 613/574
+truth-scope vetoes, 19/14 stack-ready stories, collision 8/9, and quarantine
+16/18. Thirty-three classes are served. No TEST look was spent.
+
+**Next:** regenerate the exact frontier. Train stack readiness remains the
+binding story threshold; continue requiring a general grammar class and an
+existing exact-key composition path.
+
+---
 
 # Session 46 (2026-07-21): Phase B reader 32 — PP-restricted “None of” verbal universals; +2 train fully read, +1 stack-ready story
 

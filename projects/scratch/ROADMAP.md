@@ -2566,3 +2566,41 @@ stack-ready stories. Thirty-two classes are served. No TEST look was spent.
 **Next:** regenerate the exact frontier. Train stack readiness remains the
 binding threshold; keep definite-kind readings, coreference, and lexical
 admission separate from grammar-only readers.
+
+## Phase B reader 33 — reversed named memberships (2026-07-22)
+
+Reader 33 serves **“One of the CLSs of OWNER was MEMBER.”** The first `of`
+is the partitive quantifier skeleton, while the second remains in the exact
+owned-class key. The named witness licenses a positive
+`Atom(MEMBER, singular(CLS)+of+OWNER)`; no anonymous existential or new
+inference machinery is introduced. Typed class, owner, and member boundaries
+plus a terminal period make the rule fail closed on larger constructions.
+
+Nineteen synthetic pins cover exact emission, exact copular-ask composition,
+a changed-owner null, and sixteen adjacent refusals spanning counts,
+articles, extra PPs, tense, sign, member type, coordination, adjuncts,
+apposition, modality, relatives, and larger subjects.
+
+**pytest 2,416 passed; scratch lint 0 errors with the same eight warnings;
+curated 65/65 twice.** All eight standard DEV diffs and both FOLIO-with-logic
+grouped diffs are NEUTRAL. Outcomes remain train 21 correct / 1 pre-existing
+poisoned-text wrong / 472 declined and holdout 4 / 0 / 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1342→1342 | 787→787 | 23/19→23/19 | 0 / 0 | 613→613 |
+| dev-holdout | 1319→1319 | 777→779 (+2) | 20/13→21/14 (+1/+1) | 3 / 1 | 574→574 |
+
+Across all gold kinds the rule appears in five holdout rows / one story and
+no train rows. It records `tutor of Hippocrates(Herodicus)` and removes the
+final blocked premise for one represented conclusion without adding a
+substitution bridge or changing an outcome. Hazards are neutral.
+
+Cumulative recorded-frame state is 787/1647 and 779/1607 fully read, 613/574
+vetoes, 19/14 stack-ready stories, collision 8/9, and quarantine 16/18. Phase
+A movement is +67/+58 fully read, 53/40 fewer truth-scope vetoes, and +8/+9
+stack-ready stories. Thirty-three classes are served. No TEST look was spent.
+
+**Next:** regenerate the exact frontier. Train stack readiness remains the
+binding threshold; require an independently general construction and an
+existing exact-key composition path before the next buyer.

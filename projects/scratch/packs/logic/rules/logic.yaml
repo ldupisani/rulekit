@@ -1610,6 +1610,30 @@ rules:
     emits:
       - {fact: quantified, cls: "{cls} {prep} {restriction}", pred: "{v} {obj}", polarity: false}
 
+  # Phase B reader 33: reversed named membership —
+  # "One of the CLSs of OWNER was MEMBER" identifies the witness, so its
+  # usable content is the ground atom CLS-of-OWNER(MEMBER), not an anonymous
+  # existential. Both `of` relations are grammatical skeleton: the first
+  # belongs to the partitive quantifier, the second remains inside the exact
+  # restricted class key. A terminal period prevents prefix truncation;
+  # sign, coordination, common/pronominal endpoints, appositives, and larger
+  # tails remain whole-unread.
+  - id: logic/ground-one-of-owned-class-was-name
+    phase: read
+    match:
+      sentence:
+        - {lit: one, at_start: true}
+        - {lit: of}
+        - {lit: the, consume_skipped: true}
+        - {slot: cls, span: true, span_blocks: [negation, quantifier, conjunction, disjunctive_marker, either_marker, verb, preposition, future_modal, capacity_modal, interrogative, complementizer, wh_which], span_blocks_counted: true}
+        - {lit: of}
+        - {slot: owner, type: proper_name}
+        - {lit: was}
+        - {slot: member, type: proper_name}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: atom, entity: "{member}", pred: "{cls.singular} of {owner}", polarity: true}
+
   - id: logic/existential-some-are
     phase: read
     match:

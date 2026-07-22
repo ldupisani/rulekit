@@ -484,6 +484,18 @@ stories on dev-train / dev-holdout; fact-bearing, truth-scope vetoes,
 outcomes, and hazards remain neutral. Thirty-two classes are served; the
 fully-read, veto, and train-stack thresholds remain unmet.
 
+Reader 33 serves reversed named memberships **“One of the CLSs of OWNER was
+MEMBER.”** The first `of` provides the partitive skeleton while the second
+stays inside the exact owned-class key. Because the witness is identified,
+the reader emits positive `Atom(MEMBER, singular(CLS)+of+OWNER)` rather than
+an existential. Counts, missing articles/owners, extra PPs, other copulas,
+sign, nominal/pronominal members, coordination, adjuncts, apposition,
+modality, relatives, and larger siblings remain unread. Incremental movement
+is +0 / +2 fully-read premises and +0 / +1 stack-ready stories on dev-train /
+dev-holdout; fact-bearing, truth-scope vetoes, outcomes, and hazards remain
+neutral. Thirty-three classes are served; the fully-read, veto, and
+train-stack thresholds remain unmet.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /
