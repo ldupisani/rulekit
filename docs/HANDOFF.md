@@ -113,6 +113,8 @@
 > A subsequent exact existential-predicate chain now carries an existing
 > witness through an existing universal predicate, solving one train and one
 > holdout verdict without changing reader coverage or class credit.
+> Its separately landed witness-class sibling reclassifies that same witness
+> through a positive superclass edge and solves one further train verdict.
 > Cumulative movement from Phase A is +94 / +74 fully-read premise instances
 > and +11 / +10
 > stack-ready stories on dev-train / dev-holdout, with no
@@ -145,6 +147,41 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 71 (2026-07-22): existential witness-class lifting; +1 correct on grouped dev-train
+
+The new monotone synth implements **`∃x(C(x) ∧ [¬]P(x))` and `∀x(C(x) →
+Q(x))` entail `∃x(Q(x) ∧ [¬]P(x))`**. The same witness is reclassified through
+an exact positive superclass edge while its original property and polarity
+are preserved. A negative universal cannot supply class membership; the rule
+does not run downward. This is deliberately separate from Session 70's
+predicate chaining. No reader, lexicon, schema, or consumer changes are
+involved, so reading and construction-class counts do not change.
+
+Five synthetic pins cover positive and negative witness properties,
+positive-superclass gating, directionality, and property preservation. **All
+2,759 tests pass; scratch lint has 0 errors and the same eight warnings;
+curated is 65/65 with an identical fresh-process rerun.** All eight standard
+DEV diffs are NEUTRAL. Grouped dev-train solves exactly one item with 0 BROKE
+and 0 DECL→WRONG; grouped dev-holdout is NEUTRAL.
+
+| grouped split | outcomes before → after | diff | fully read | stack-ready items / stories | vetoes |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 22 / 1 / 471 → 23 / 1 / 470 | +1 solved | 814/1647 | 28/22 | 592 |
+| dev-holdout | 5 / 0 / 420 → 5 / 0 / 420 | neutral | 795/1607 | 22/15 | 566 |
+
+The conversion proves “some mammals are not pets” from an existing cat/non-pet
+witness and the cat→mammal universal. Three train and two holdout stories
+derive exact lifted facts; unmatched queries remain safely undetermined.
+The juvenile-delinquent story does not convert because `commit crime` and
+`committed a crime` are distinct keys—no paraphrase is invented. Reader state
+remains 814/1647 and 795/1607 fully read, 592/566 vetoes, 22/15 stack-ready
+stories, and fifty-two classes. No TEST look was spent.
+
+**Next:** return to the regenerated reader frontier; do not broaden exact
+predicate keys merely to convert the remaining existential query.
+
+---
 
 # Session 70 (2026-07-22): existential predicate chaining; +1 correct on both grouped DEV splits
 

@@ -3324,3 +3324,30 @@ unscheduled.
 
 **Next:** evaluate witness-class lifting as its own reversible inference
 increment.
+
+## Existential witness-class lifting (2026-07-22)
+
+The monotone rule **`∃(C ∧ [¬]P)` plus `∀(C → Q)` entails `∃(Q ∧ [¬]P)`**
+reclassifies the same witness through a positive superclass edge while
+preserving its original property and polarity. It cannot use a negative
+universal as membership, cannot run downward, and remains distinct from the
+predicate-chain rule. No reader, lexicon, schema, or consumer changes; no
+class credit.
+
+Five synthetic pins pass. **pytest 2,759 passed; scratch lint 0 errors with the
+same eight warnings; curated 65/65 with an identical fresh-process rerun.** All
+eight standard DEV diffs are NEUTRAL. Grouped train SHIPs with one SOLVED, 0
+BROKE, and 0 DECL→WRONG; grouped holdout is NEUTRAL.
+
+| grouped split | outcomes before → after | fully read | stack-ready items / stories | vetoes |
+|---|---:|---:|---:|---:|
+| dev-train | 22 / 1 / 471 → 23 / 1 / 470 | 814/1647 | 28/22 | 592 |
+| dev-holdout | 5 / 0 / 420 → 5 / 0 / 420 | 795/1607 | 22/15 | 566 |
+
+One exact negative-property existential query converts. Other lifted facts do
+not match their queries and remain undetermined. Reader state stays at
+fifty-two classes; Phase C's reader thresholds and TEST look #6 remain
+unscheduled.
+
+**Next:** return to the reader frontier without weakening exact predicate-key
+identity.

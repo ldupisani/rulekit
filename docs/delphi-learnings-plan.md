@@ -716,6 +716,12 @@ witness class. It solves one train and one holdout verdict with no regression;
 fully-read, veto, stack-ready, hazard, and class counts remain unchanged. The
 distinct witness-class lifting operation remains a separate candidate.
 
+The separately gated witness-class lift adds `∃(C ∧ [¬]P)` plus `∀(C → Q)`
+entails `∃(Q ∧ [¬]P)`. It solves one train verdict and no holdout verdict with
+no regression; fully-read, veto, stack-ready, hazard, and class counts remain
+unchanged. Exact predicate mismatch continues to block the remaining
+juvenile-delinquent query and is not normalized away.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /

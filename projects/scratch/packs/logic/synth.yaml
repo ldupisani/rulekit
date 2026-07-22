@@ -41,6 +41,19 @@ rules:
     emit:
       - {fact: existential, cls: C, pred: Q, polarity: POL}
 
+  # ∃x(C(x) ∧ [¬]P(x)), ∀x(C(x) → Q(x))
+  #   ⊢ ∃x(Q(x) ∧ [¬]P(x)). The SAME witness is reclassified through a
+  # positive superclass edge while its original property and polarity are
+  # preserved. A negative universal cannot supply class membership.
+  - id: synth/existential-witness-class-lift
+    when:
+      - {fact: existential, cls: C, pred: P, polarity: POL}
+      - {fact: quantified, cls: C, pred: Q, polarity: true}
+    unless:
+      - {fact: existential, cls: Q, pred: P}
+    emit:
+      - {fact: existential, cls: Q, pred: P, polarity: POL}
+
   # M⊆F, P∩F=∅  ⊢  P∩M=∅   (Stage 8: negative chain through the
   # SUPERCLASS — anything in both P and M would be in F. The contraposed
   # sibling of universal-chain: there the negative rides in the SECOND
