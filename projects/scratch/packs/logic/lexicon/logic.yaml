@@ -88,3 +88,6 @@ entries:
   # class keys. The existing universal and conditional readers already retain
   # the preposition and object; this entry only removes the unknown-unit veto.
   mixer: {senses: [noun]}
+  # Phase B lexical activation: an adjectival consequence/property shared by
+  # an existing restricted generic conditional and a ground conditional.
+  famous: {senses: [adjective]}

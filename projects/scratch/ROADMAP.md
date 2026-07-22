@@ -3784,3 +3784,22 @@ DEV diffs and both grouped logic outcome diffs are NEUTRAL.
 Outcomes remain neutral. Current vetoes are 543/496.
 
 **Next:** Phase C remains gated only by −44/−36 truth-scope vetoes.
+
+## Famous adjective lexical activation (2026-07-22)
+
+Pack-local adjective `famous` clears the repeated restricted generic
+conditional. A neighboring colon sentence is excluded from movement credit
+because it remains a flat-ground-atom clause-split hazard.
+
+Six synthetic pins pass. **pytest 2,943 passed; curated is 65/65 twice.**
+Scratch lint reports 0 errors with the same eight warnings; all eight standard
+DEV diffs and both grouped logic outcome diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready floor | credited premise instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1394→1394 | 863→866 (+3) | ≥34/24 | 3 / 1 | 543→540 (−3) |
+| dev-holdout | 1364→1364 | 865→865 | ≥22/15 | 0 / 0 | 496→496 |
+
+Outcomes and hazards remain neutral. Current vetoes are 540/496.
+
+**Next:** Phase C remains gated only by −41/−36 truth-scope vetoes.
