@@ -1939,6 +1939,30 @@ rules:
     emits:
       - {fact: existential, cls: "{cls.singular}", pred: "{v} {p}", polarity: true}
 
+  # Phase B reader 45: reduced-passive restricted possessive existentials —
+  # "Some CLSs V-IRREG by AGENT have a/an P". `Some` supplies existence;
+  # plural noun morphology bounds and folds the witness class, an opt-in
+  # irregular-participle category proves the reduced passive, and the full
+  # by-agent phrase stays inside the class key. Bare stative `have` and the
+  # required object article delimit the exact possession predicate. Signed,
+  # singular, finite/productive/active, modal, coordinated, counted,
+  # articleless, other-agreement, and missing-boundary siblings stay unread.
+  - id: logic/existential-some-irregular-passive-have
+    phase: read
+    match:
+      sentence:
+        - {lit: some, at_start: true}
+        - {slot: cls, type: bare_plural}
+        - {slot: v, cat: irregular_past_participle, single_word: true}
+        - {lit: by}
+        - {slot: agent, span: true, span_blocks: [negation, quantifier, conjunction, disjunctive_marker, verb, future_modal, capacity_modal, interrogative, complementizer, wh_which]}
+        - {lit: have}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: pred, span: true, span_blocks: [negation, quantifier, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: existential, cls: "{cls.singular} {v} by {agent}", pred: "have {pred}", polarity: true}
+
   # ---- Stage 6: the VERBAL frontier (re-landed from v1, hazards designed out)
   # - v slot `type: nonstate_verb`: 'is'/'was' stay copular (the 'be'-twin).
   # - the verbal universal's pred span BLOCKS verb-sensed words, so a
@@ -2137,6 +2161,30 @@ asks:
       consumer: existential-verdict
       cls: "{cls}"
       pred: "{v} {p}"
+      polarity: "true"
+
+  # Reader 45's exact question-side twin. It intentionally shares the same
+  # irregular-participle category, agent boundary, and required object
+  # article so an existential echo cannot widen the premise construction.
+  - id: ask/logic-existential-irregular-passive-have
+    match:
+      question:
+        - {lit: is, at_start: true}
+        - {lit: it}
+        - {lit: 'true'}
+        - {lit: that}
+        - {lit: some}
+        - {slot: cls, type: bare_plural}
+        - {slot: v, cat: irregular_past_participle, single_word: true}
+        - {lit: by}
+        - {slot: agent, span: true, span_blocks: [negation, quantifier, conjunction, disjunctive_marker, verb, future_modal, capacity_modal, interrogative, complementizer, wh_which]}
+        - {lit: have}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: pred, span: true, span_blocks: [negation, quantifier, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+    resolves:
+      consumer: existential-verdict
+      cls: "{cls.singular} {v} by {agent}"
+      pred: "have {pred}"
       polarity: "true"
 
   - id: ask/logic-existential-some-are

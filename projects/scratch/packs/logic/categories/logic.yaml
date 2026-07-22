@@ -74,6 +74,11 @@ categories:
     # be). One word; 'kind'/'sort' join only with their own measurement.
     enumeration_type_noun:
         parent: noun
+    # Phase B reader 45: irregular passive participles that cannot satisfy
+    # the productive `-ed`/`-en` morphology gate. Membership is an overt-
+    # form claim, not a lemma claim; finite/bare `make` must never join.
+    irregular_past_participle:
+        parent: verb
 members:
     conjunctive_marker: [and]
     disjunctive_marker: [or]
@@ -83,3 +88,4 @@ members:
     neither_marker: [neither]
     appointive_verb: [appointed]
     enumeration_type_noun: [type]
+    irregular_past_participle: [made]

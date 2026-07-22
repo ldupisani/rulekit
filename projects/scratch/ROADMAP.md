@@ -3006,3 +3006,35 @@ Cumulative state is 806/1647 and 790/1607 fully read, 600/571 vetoes, and
 look #6 remain unscheduled.
 
 **Next:** regenerate the fully-read/truth-scope-veto frontier.
+
+## Phase B reader 45 — reduced-passive possessive existentials (2026-07-22)
+
+Reader 45 serves **“Some CLSs V-IRREG by AGENT have a/an PROPERTY.”** Plural
+noun morphology bounds the existential class, an opt-in irregular-participle
+category proves the reduced passive, and the complete by-agent restriction
+stays in its key. Bare `have` plus the required object article delimit the
+exact property. The question-side twin reaches the existing existential
+consumer; no witness is minted. Signed, singular, finite/productive/active,
+modal, coordinated, counted, articleless, other-agreement, and incomplete
+siblings refuse.
+
+The existing shared `monitor` noun gains plural `monitors`; the pack-scoped
+irregular-participle category contains `made`, while bare `make` stays out.
+Eighteen synthetic pins pass. **pytest 2,633 passed; scratch lint 0 errors with
+the same eight warnings; curated 65/65 with an identical fresh-process
+rerun.** All eight standard DEV diffs and both grouped logic diffs are
+NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1357→1357 | 806→806 | 28/22→28/22 | 0 / 0 | 600→600 |
+| dev-holdout | 1326→1329 (+3) | 790→793 (+3) | 22/15→22/15 | 3 / 3 | 571→568 (−3) |
+
+The premise occurs in four holdout verdict rows / three stories and no train
+story. All three instances gain direct facts, become fully read, and lose
+their veto; each story's independent second premise prevents stack movement.
+Cumulative state is 806/1647 and 793/1607 fully read, 600/568 vetoes, and
+22/15 stack-ready stories. Forty-five classes are served; Phase C and TEST
+look #6 remain unscheduled.
+
+**Next:** regenerate the fully-read/truth-scope-veto frontier.

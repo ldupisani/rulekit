@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–44 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–45 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -87,14 +87,16 @@
 > implicit-restrictor property universals `Everything P is Q`, using an exact
 > positive `Quantified(P, Q)` fact — and (reader 44) appositive-restricted
 > plural possession disjunctions `CLSs R, APPOSITIVE have either a L or a R`,
-> preserving the full class and both nominal possession keys.
-> Cumulative movement from Phase A is +86 / +69 fully-read premise instances
+> preserving the full class and both nominal possession keys — and (reader 45)
+> reduced-passive possessive existentials `Some CLSs V-IRREG by AGENT have P`,
+> preserving the complete restricted witness class without minting a witness.
+> Cumulative movement from Phase A is +86 / +72 fully-read premise instances
 > and +11 / +10
 > stack-ready stories on dev-train / dev-holdout, with no
-> verdict regression or hazard increase; truth-scope vetoes improve by 66 / 43, while
-> holdout collision/quarantine improve 12→9 / 24→18. Forty-four construction classes
+> verdict regression or hazard increase; truth-scope vetoes improve by 66 / 46, while
+> holdout collision/quarantine improve 12→9 / 24→18. Forty-five construction classes
 > are served. Both stack-ready thresholds are now met, but the conjunctive Phase C
-> gate remains unmet (fully read 806/1647 and 790/1607 vs 852/850; vetoes 600/571
+> gate remains unmet (fully read 806/1647 and 793/1607 vs 852/850; vetoes 600/568
 > vs ≤499/460; stack-ready stories 22/15 vs ≥22/10).
 > Next regenerate the frontier for fully-read and truth-scope-veto movement; the
 > remaining candidates require lexical, definite-description, coreference,
@@ -119,6 +121,48 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 60 (2026-07-22): Phase B reader 45 — reduced-passive possessive existentials; +3 holdout fully read and −3 vetoes
+
+One reader serves **“Some CLSs V-IRREG by AGENT have a/an PROPERTY.”** `Some`
+supplies existence, plural noun morphology bounds and folds the witness class,
+and an opt-in irregular-past-participle category proves the reduced passive.
+The full by-agent phrase remains inside the exact class key; bare stative
+`have` and the required object article delimit the possession predicate. No
+witness is invented. A matching question-side reader routes exact existential
+queries to the existing consumer. Signed, singular, finite, productive,
+active, modal, coordinated, counted, articleless, other-agreement, and
+missing-boundary siblings remain unread.
+
+The measured buyer completes the existing shared `monitor` noun entry with
+plural `monitors`; the pack-scoped irregular-participle category initially
+contains only `made`. Bare `make` cannot join. Eighteen synthetic pins cover
+complete restricted emission, exact existential echo, a changed-agent null,
+and fifteen adjacent refusals. **All 2,633 tests pass; scratch lint has 0
+errors and the same eight warnings; curated is 65/65 with an identical fresh-
+process rerun.** All eight standard DEV diffs and both grouped logic diffs are
+NEUTRAL. Outcomes remain train 21 correct / 1 pre-existing poisoned-text wrong
+/ 472 declined and holdout 4 / 0 / 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1357→1357 | 806→806 | 28/22→28/22 | 0 / 0 | 600→600 |
+| dev-holdout | 1326→1329 (+3) | 790→793 (+3) | 22/15→22/15 | 3 / 3 | 571→568 (−3) |
+
+The same monitor premise occurs in four holdout verdict rows across three
+distinct stories and no train story. All three premise instances gain direct
+facts, become fully read, and lose their truth-scope veto. The independent
+second premise remains unread, so stack readiness does not move. Outcomes and
+hazards remain neutral.
+
+Cumulative recorded-frame state is 806/1647 and 793/1607 fully read, 600/568
+truth-scope vetoes, 22/15 stack-ready stories, collision 8/9, and quarantine
+16/18. Forty-five classes are served. No TEST look was spent.
+
+**Next:** regenerate the post-Reader-45 frontier; both fully-read and veto
+thresholds remain conjunctively binding.
+
+---
 
 # Session 59 (2026-07-22): Phase B reader 44 — appositive-restricted plural possession disjunctions; +6 train fully read and −6 vetoes
 

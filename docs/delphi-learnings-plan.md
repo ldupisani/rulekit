@@ -624,6 +624,15 @@ stack-ready stories on dev-train / dev-holdout. Outcomes and hazards remain
 neutral. Forty-four classes are served; Phase C and TEST look #6 remain
 unscheduled.
 
+Reader 45 serves reduced-passive possessive existentials
+**“Some CLSs V-IRREG by AGENT have a/an PROPERTY.”** It emits the existing
+`Existential` fact with the full restricted witness class and exact `have`
+property; the matching ask reaches the existing existential consumer without
+minting a witness. Incremental movement is +0 / +3 fact-bearing and fully-read
+premises, 0 / −3 truth-scope vetoes, and +0 / +0 stack-ready stories on
+dev-train / dev-holdout. Outcomes and hazards remain neutral. Forty-five
+classes are served; Phase C and TEST look #6 remain unscheduled.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /
