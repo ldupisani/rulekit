@@ -3840,3 +3840,22 @@ DEV diffs and both grouped logic outcome diffs are NEUTRAL.
 Outcomes and hazards remain neutral. Current vetoes are 525/475.
 
 **Next:** Phase C remains gated only by −26/−15 truth-scope vetoes.
+
+## Closed-compound centerback morphology activation (2026-07-23)
+
+Pack-local `centerback`/`centerbacks` morphology clears the closed-compound
+soccer-role universals on both splits. The hyphenated sibling stays blocked;
+global adverb-only `back` is not widened.
+
+Six synthetic pins pass. **pytest 2,961 passed; curated is 65/65 twice.**
+Scratch lint reports 0 errors with the same eight warnings; all eight standard
+DEV diffs and both grouped logic outcome diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready floor | credited premise instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1394→1394 | 881→884 (+3) | ≥34/24 | 3 / 1 | 525→522 (−3) |
+| dev-holdout | 1364→1364 | 886→889 (+3) | ≥22/15 | 3 / 1 | 475→472 (−3) |
+
+Outcomes and hazards remain neutral. Current vetoes are 522/472.
+
+**Next:** Phase C remains gated only by −23/−12 truth-scope vetoes.

@@ -97,3 +97,7 @@ entries:
   # Phase B lexical activation: explicit sortal morphology shared by existing
   # copular universals and ground disjunction/equivalence readers.
   human: {senses: [noun], plural: humans}
+  # Phase B lexical activation: closed-compound sport-role morphology. The
+  # hyphenated `center-backs` sibling remains blocked because global `back` is
+  # adverb-only and is deliberately not widened here.
+  centerback: {senses: [noun], plural: centerbacks}

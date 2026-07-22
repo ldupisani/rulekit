@@ -852,6 +852,11 @@ disjunctive, distributive, and repeated-equivalence premises for +7 / +21
 fully-read movement and −7 / −21 vetoes. Surfaces retaining other blockers
 receive no credit. Phase C still needs 26 / 15 truth-scope-veto reductions.
 
+Closed-compound `centerback`/`centerbacks` morphology clears +3 / +3 premise
+instances and vetoes. The hyphenated sibling remains safely blocked rather
+than widening global adverb-only `back`. Phase C still needs 23 / 12
+truth-scope-veto reductions.
+
 Pack-local `defender`/`defenders` morphology next removes the only unread unit
 from the soccer-role universal on both splits. It adds +3 / +6 fully-read
 premises and reduces vetoes by 3 / 6 without fact, stack, outcome, hazard, or
