@@ -213,6 +213,17 @@ rules:
     emit:
       - {fact: atom, entity: X, pred: Q, polarity: POL}
 
+  # Phase B reader 47: pgc(x: P→[¬]Q), P(x) ⊢ [¬]Q(x). The antecedent
+  # requires an EXPLICIT positive Atom with the complete phrase key. As with
+  # the negative ground conditional, there is deliberately no `unless`: an
+  # opposite consequent must collide for premise inconsistency and reductio.
+  - id: synth/positive-ground-conditional-fire
+    when:
+      - {fact: positive_ground_conditional, entity: X, pred: P, then_pred: Q, then_polarity: POL}
+      - {fact: atom, entity: X, pred: P, polarity: true}
+    emit:
+      - {fact: atom, entity: X, pred: Q, polarity: POL}
+
   # ---- Stage 9e: the stated alias (identity of names) ----------------------
   # alias(A,B), P(A)  ⊢  P(B) — and the mirror, because identity is
   # symmetric. Both polarities carry: an identity transfers what is DENIED

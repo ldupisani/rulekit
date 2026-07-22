@@ -643,6 +643,15 @@ premise, 0 / −1 truth-scope veto, and +0 / +0 stack-ready stories on dev-train
 also buys the ground-Atom prerequisite for a named-possession conditional.
 Forty-six classes are served; Phase C and TEST look #6 remain unscheduled.
 
+Reader 47 serves positive same-name possession conditionals **“If NAME has
+[a/an] PROPERTY, then NAME is a/an PROPERTY.”** A dedicated
+`PositiveGroundConditional` preserves Reader 6's negative-only fact contract
+and fires only from an exact positive Atom; Reader 46 composition is pinned.
+Incremental movement is +0 / +1 fact-bearing and fully-read premise, 0 / −1
+truth-scope veto, and +0 / +0 stack-ready stories on dev-train / dev-holdout.
+Outcomes and hazards remain neutral. Forty-seven classes are served; Phase C
+and TEST look #6 remain unscheduled.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /

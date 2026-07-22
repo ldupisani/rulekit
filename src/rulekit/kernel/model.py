@@ -473,9 +473,10 @@ class GroundConditional(Fact):
     extraterrestrial" -> ¬from-earth(m) → extraterrestrial(m). The negation
     is STRUCTURAL (the reading consumes 'not' as skeleton), so `pred` holds
     the plain predicate P of ¬P(e); there is deliberately no antecedent-
-    polarity field — a positive-antecedent ground surface ("If Nancy is a
-    teacher, ...") already reads as a name-classed Conditional and must not
-    acquire a second representation here.
+    polarity field — a positive COPULAR antecedent ground surface ("If Nancy
+    is a teacher, ...") already reads as a name-classed Conditional and must
+    not acquire a second representation here. Reader 47's positive
+    POSSESSION construction instead uses PositiveGroundConditional below.
 
     Same-entity by construction: the repeated-name surface is pinned by
     `same_lemma`, the anaphoric surface consumes the grammatically bound
@@ -497,6 +498,39 @@ class GroundConditional(Fact):
     def key(self) -> tuple:
         return ("logic-ground-conditional", self.entity, self.pred,
                 self.then_pred)
+
+    def value_part(self) -> Any:
+        return self.then_polarity
+
+
+@dataclass(frozen=True)
+class PositiveGroundConditional(Fact):
+    """A positive-antecedent implication over one named entity.
+
+    ``If Orion has a velvet badge, then Orion is a patient artist`` becomes
+    ``have velvet badge(Orion) -> patient artist(Orion)``.  This is separate
+    from :class:`GroundConditional`, whose antecedent is structurally
+    NEGATED: the two constructions have different firing evidence and must
+    not share a defaulted polarity field.
+
+    Both predicate positions are exact atomic phrase keys.  The antecedent
+    never decomposes; only an explicit positive Atom with the complete key
+    fires the implication.  Same-entity identity is proved by the emitting
+    rule's repeated-name ``same_lemma`` gate.
+    """
+
+    entity: str
+    pred: str
+    then_pred: str
+    then_polarity: bool = True
+
+    def key(self) -> tuple:
+        return (
+            "logic-positive-ground-conditional",
+            self.entity,
+            self.pred,
+            self.then_pred,
+        )
 
     def value_part(self) -> Any:
         return self.then_polarity

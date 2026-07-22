@@ -3068,3 +3068,34 @@ classes are served; Phase C and TEST look #6 remain unscheduled.
 
 **Next:** price the named-possession conditional enabled by this ground Atom;
 bank it without a measured DEV buyer.
+
+## Phase B reader 47 — positive ground possession conditionals (2026-07-22)
+
+Reader 47 serves **“If NAME has [a/an] PROPERTY, then NAME is a/an
+PROPERTY.”** Repeated bare proper names establish one entity. A dedicated
+`PositiveGroundConditional` stores the exact `have` antecedent and copular
+consequent without weakening Reader 6's negative-only ground fact. Its synth
+requires an explicit positive Atom and preserves collision/reductio behavior.
+Internal nominal coordination stays inside indivisible phrase keys; signed,
+modal, disjunctive, cross-name, pronominal/verbal-consequent, and incomplete
+siblings refuse.
+
+Nineteen synthetic pins pass. **pytest 2,670 passed; scratch lint 0 errors with
+the same eight warnings; curated 65/65 with an identical fresh-process rerun.**
+All eight standard DEV diffs and both grouped logic diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1357→1357 | 806→806 | 28/22→28/22 | 0 / 0 | 600→600 |
+| dev-holdout | 1329→1330 (+1) | 794→795 (+1) | 22/15→22/15 | 8 / 1 | 567→566 (−1) |
+
+Sam's conditional is the sole buyer, occurring across eight holdout verdict
+rows in one story and no train story. It gains a direct fact, becomes fully
+read, and loses its veto; other unread premises prevent stack movement. The
+Reader 46 ground-Atom composition path is synthetically pinned. Cumulative
+state is 806/1647 and 795/1607 fully read, 600/566 vetoes, and 22/15 stack-
+ready stories. Forty-seven classes are served; Phase C and TEST look #6 remain
+unscheduled.
+
+**Next:** regenerate the fully-read/truth-scope-veto frontier, prioritizing a
+train-side buyer.

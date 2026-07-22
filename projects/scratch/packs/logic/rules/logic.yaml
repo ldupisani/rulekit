@@ -1241,6 +1241,36 @@ rules:
     emits:
       - {fact: ground_conditional, entity: "{subj}", pred: "{p}", then_pred: "{q}", then_polarity: true}
 
+  # Phase B reader 47: positive named possession conditional —
+  # "If NAME has [a/an] P, then NAME is a/an Q". Repeating the bare name
+  # proves one ground entity; `has` canonicalizes to the same exact `have P`
+  # Atom key emitted by reader 46. The optional object article is claimed as
+  # grammatical skeleton rather than predicate content. Antecedent and
+  # consequent remain indivisible phrase keys: internal nominal coordination
+  # is preserved, never distributed. Signed, modal, disjunctive, cross-name,
+  # pronominal-consequent, verbal-consequent, and incomplete siblings remain
+  # unread.
+  - id: logic/positive-ground-possession-conditional
+    phase: read
+    match:
+      sentence:
+        - {lit: if, at_start: true}
+        - {slot: subj, type: proper_name, blocks_skipped: named_subject_article}
+        - {lit: has}
+        - opt:
+            - {lit: [a, an], consume_skipped: true}
+        - {slot: p, span: true, span_blocks: [negation, quantifier, disjunctive_marker, either_marker, neither_marker, verb, future_modal, capacity_modal, complementizer]}
+        - {lit: then}
+        - {slot: subj2, type: proper_name, blocks_skipped: named_subject_article}
+        - {lit: is}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: q, span: true, span_blocks: [negation, quantifier, disjunctive_marker, either_marker, neither_marker, verb, future_modal, capacity_modal, complementizer]}
+        - {lit: ".", consume_skipped: true}
+    where:
+      - {same_lemma: [subj, subj2]}
+    emits:
+      - {fact: positive_ground_conditional, entity: "{subj}", pred: "have {p}", then_pred: "{q}", then_polarity: true}
+
   - id: logic/disj-ground-either
     phase: read
     match:
