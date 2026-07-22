@@ -23,8 +23,8 @@ def _facts(text: str) -> list[Atom]:
 def test_emits_the_complete_reduced_relative_property() -> None:
     facts = _facts("The Winter Hall is a building added near Rome.")
     assert [(f.entity, f.pred, f.polarity) for f in facts] == [
-        ("winter hall", "build", True),
-        ("winter hall", "build add near rome", True),
+        ("winter hall", "building", True),
+        ("winter hall", "building add near rome", True),
     ]
 
 

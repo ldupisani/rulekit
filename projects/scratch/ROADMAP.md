@@ -2878,3 +2878,18 @@ the stack-ready set. Cumulative state is 795/1647 and 790/1607 fully read,
 C and TEST look #6 remain unscheduled.
 
 **Next:** prioritize a train-side fully-read or truth-scope-veto buyer.
+
+## Reader 39 noun-rendering correction (2026-07-22)
+
+Reader 39's noun-category slot was emitted through the default ambiguous-unit
+lemma, so noun **“building”** became verb `build` in both stored predicates.
+The regression pin now requires `building` and `building add …`. The premise
+uses the noun surface, and a narrow mirrored reduced-passive copular ask uses
+the same rendering so exact fact/question composition remains possible.
+
+**pytest 2,543 passed; scratch lint 0 errors with the same eight warnings;
+curated 65/65 with an identical fresh-process rerun.** All eight standard DEV
+and both grouped logic diffs are NEUTRAL. Reader counts and all recorded
+metrics remain unchanged. No TEST look was spent.
+
+**Next:** resume the train-side fully-read/truth-scope-veto frontier.

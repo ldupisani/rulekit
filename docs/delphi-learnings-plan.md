@@ -582,6 +582,12 @@ are served. A broader articleless-disjunction candidate was banked when its
 buyer-preserving grammar admitted ambiguous finite verbs. Phase C and TEST
 look #6 remain unscheduled.
 
+Reader 39 was subsequently corrected after review: its noun-category class
+slot had rendered ambiguous noun **“building”** through verb lemma `build`.
+Both emitted predicates now preserve the noun surface, and a narrow mirrored
+reduced-passive question shape uses the identical key. The correction is
+neutral on all ten DEV gates and changes no campaign metric.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /

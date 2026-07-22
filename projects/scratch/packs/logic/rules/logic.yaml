@@ -469,8 +469,8 @@ rules:
         - {slot: rest, span: true, span_blocks: [negation, quantifier, conjunction, disjunctive_marker, verb, future_modal, capacity_modal, interrogative, complementizer, wh_which]}
         - {lit: ".", consume_skipped: true}
     emits:
-      - {fact: atom, entity: "{subj.singular}", pred: "{cls}", polarity: true}
-      - {fact: atom, entity: "{subj.singular}", pred: "{cls} {v} {rest}", polarity: true}
+      - {fact: atom, entity: "{subj.singular}", pred: "{cls.surface}", polarity: true}
+      - {fact: atom, entity: "{subj.singular}", pred: "{cls.surface} {v} {rest}", polarity: true}
 
   # Stage 9e: the stated alias — "NAME is/was (also) known as NAME2" asserts
   # an identity between two names, so ground atoms carry across it in BOTH
@@ -2304,6 +2304,29 @@ asks:
       left: "{l}"
       right: "{r}"
       exclusive: "true"
+
+  # Reader 39's question-side twin. The class slot preserves its noun surface
+  # rather than the ambiguous lexical lemma (`building` must not render as
+  # verb `build`); the productive participle and full tail mirror the premise
+  # reader, so the exact fact and exact question share one key.
+  - id: ask/logic-embedded-copular-reduced-passive
+    match:
+      question:
+        - {lit: is, at_start: true}
+        - {lit: it}
+        - {lit: 'true'}
+        - {lit: that}
+        - {slot: subj, type: name, blocks_skipped: indefinite_article}
+        - {lit: is}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: cls, cat: noun}
+        - {slot: v, type: nonstate_verb, single_word: true, past_participle: true}
+        - {slot: rest, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal]}
+    resolves:
+      consumer: logic-verdict
+      entity: "{subj}"
+      pred: "{cls.surface} {v} {rest}"
+      polarity: "true"
 
   # is/was is one alternation here: the tense is not read by this consumer,
   # so the two asks resolved identically. Premise-side is/are is NOT the

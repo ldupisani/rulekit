@@ -112,6 +112,31 @@
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
 
+# Session 55 (2026-07-22): Reader 39 correction — preserve noun “building” instead of verb lemma “build”
+
+Review found that Reader 39 correctly gated its class slot with `cat: noun`
+but rendered the slot through the default ambiguous-unit lemma. Consequently,
+the noun **“building”** emitted the verb key `build`; the synthetic expectation
+had encoded that bug. The premise now renders the noun surface in both its
+base-class and reduced-relative atoms: `building` and `building add …`.
+
+The fix is symmetric on the question side. A narrow reduced-passive copular
+ask mirrors Reader 39's noun-category and productive-participle gates and
+renders the same noun surface, so an exact question joins the corrected fact
+instead of continuing to ask for `build add …`. The general copular ask and
+all other ambiguous-unit rendering remain unchanged.
+
+The corrected exact-emission and composition pins pass. **All 2,543 tests
+pass; scratch lint has 0 errors and the same eight warnings; curated is 65/65
+with an identical fresh-process rerun.** All eight standard DEV diffs and both
+grouped logic diffs are NEUTRAL. Coverage, veto, stack, outcome, and hazard
+metrics remain exactly at the Reader 40 frame. No TEST look was spent.
+
+**Next:** resume the train-side fully-read/truth-scope-veto frontier from the
+clean Reader 40 baseline.
+
+---
+
 # Session 54 (2026-07-22): Phase B reader 40 — restricted people verbal conditionals; +1 holdout fully read and −1 veto
 
 One reader serves **“If people RESTRICTION V P, then they V2 Q.”** The
