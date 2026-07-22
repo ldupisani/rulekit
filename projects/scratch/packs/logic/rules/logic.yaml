@@ -1562,6 +1562,28 @@ rules:
     emits:
       - {fact: existential, cls: "{cls}", pred: "{prep} {obj}", polarity: true}
 
+  # Phase B reader 37: past existential with a definite PP description —
+  # "There was a/an CLS PREPOSITION the DESCRIPTION". The two determiners
+  # and preposition bound the indefinite witness class and its exact
+  # definite-location predicate without minting a witness. The PP object is
+  # one condensed noun unit; `.qualified` preserves its modifiers. Reader 30
+  # keeps the present-tense named-PP sibling. Coordination, sign, counts,
+  # further PPs, relative tails, and missing boundaries remain whole-unread.
+  - id: logic/existential-there-was-indefinite-definite-pp
+    phase: read
+    match:
+      sentence:
+        - {lit: there, at_start: true}
+        - {lit: was}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: cls, span: true, span_blocks: [negation, quantifier, conjunction, disjunctive_marker, preposition, verb], span_blocks_counted: true}
+        - {slot: prep, type: preposition}
+        - {lit: the, consume_skipped: true}
+        - {slot: obj, type: noun}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: existential, cls: "{cls}", pred: "{prep} {obj.qualified}", polarity: true}
+
   # Phase B reader 31: direct passive named-agent premises —
   # "The PATIENT is V-ed by NAME" is the active relation V(NAME, PATIENT).
   # The definite article and terminal period claim the whole construction;

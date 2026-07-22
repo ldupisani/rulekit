@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–36 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–37 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -70,15 +70,17 @@
 > (reader 35) reversed definite role memberships `The ROLE of OWNER is/was
 > MEMBER`, preserving the full owner-qualified role key — and (reader 36)
 > exactly-four asyndetic named copular lists `A, B, C, D are P`, distributing
-> the singular-folded predicate over all four names. Cumulative movement from Phase A is +70 / +64 fully-read premise
-> instances and +8 / +10
+> the singular-folded predicate over all four names — and (reader 37) past
+> indefinite existentials `There was a/an CLS PREPOSITION the DESCRIPTION`,
+> preserving the qualified definite PP without minting a witness. Cumulative
+> movement from Phase A is +72 / +64 fully-read premise instances and +9 / +10
 > stack-ready stories on dev-train / dev-holdout, with no
 > verdict regression or hazard increase; truth-scope vetoes improve by 55 / 42, while
-> holdout collision/quarantine improve 12→9 / 24→18. Thirty-six construction classes
+> holdout collision/quarantine improve 12→9 / 24→18. Thirty-seven construction classes
 > are served. The holdout stack-ready threshold is now exceeded, but the
-> conjunctive Phase C gate remains unmet (fully read 790/1647 and 785/1607 vs
-> 852/850; vetoes 611/572 vs ≤499/460; stack-ready stories 19/15 vs ≥22/10).
-> Next regenerate the frontier after buying the four-name asyndetic list; the
+> conjunctive Phase C gate remains unmet (fully read 792/1647 and 785/1607 vs
+> 852/850; vetoes 611/572 vs ≤499/460; stack-ready stories 20/15 vs ≥22/10).
+> Next regenerate the frontier after buying the past definite-PP existential; the
 > remaining candidates require lexical, definite-description, coreference,
 > or deeper composition infrastructure. The unbought outer-quantified verbal
 > relative remains banked pending composition evidence. Reader 4's opt-in
@@ -101,6 +103,49 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 51 (2026-07-22): Phase B reader 37 — past definite-PP existentials; +2 train fully read, +1 stack-ready story
+
+One reader serves **“There was a/an CLS PREPOSITION the DESCRIPTION.”** The
+past existential, indefinite class, definite article, one condensed noun
+object, and terminal period bind the complete construction. It emits an
+`Existential(CLS, PREPOSITION+qualified DESCRIPTION)` without inventing a
+witness. Coordination, sign, counts, named/indefinite PP objects, further
+PPs, relative tails, other agreement, and missing boundaries stay unread.
+
+Sixteen synthetic pins cover exact qualified emission, existing existential
+composition, a changed-description null, and thirteen adjacent refusals.
+**All 2,491 tests pass; scratch lint has 0 errors and the same eight warnings;
+curated is 65/65 twice.** All eight standard DEV diffs and both grouped logic
+diffs are NEUTRAL. Outcomes remain train 21 correct / 1 pre-existing
+poisoned-text wrong / 472 declined and holdout 4 / 0 / 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1344→1346 (+2) | 790→792 (+2) | 23/19→25/20 (+2/+1) | 2 / 1 | 611→611 |
+| dev-holdout | 1323→1323 | 785→785 | 22/15→22/15 | 0 / 0 | 572→572 |
+
+Across all gold kinds the reader appears in three train rows / one story and
+no holdout rows. The third row is the fixed event/time exclusion; the two
+actionable verdict rows gain the final premise reader and become stack-ready.
+Their already-correct outcomes remain unchanged. Hazards are neutral.
+
+The regenerated frontier first exposed **“Robert Lewandowski left Bayern
+Munchen.”** The ground-event reader already exists; the blocker is lexical.
+Admitting `left → leave` in shared core bought that train story but rerouted
+many arithmetic remainder asks (`have left`) and failed the full suite, so the
+experiment was reverted and remains banked. The counted-existential closer
+from Session 50 remains banked for its separate key-rendering problem.
+
+Cumulative recorded-frame state is 792/1647 and 785/1607 fully read, 611/572
+truth-scope vetoes, 20/15 stack-ready stories, collision 8/9, and quarantine
+16/18. Thirty-seven classes are served. No TEST look was spent.
+
+**Next:** regenerate the exact frontier. Train stack readiness remains the
+binding story threshold at 20/22; require a whole-construction buyer rather
+than global lexical ambiguity or partial counted-existential consumption.
+
+---
 
 # Session 50 (2026-07-22): Phase B reader 36 — four-name asyndetic copular lists; +2 holdout fully read, +1 stack-ready story
 

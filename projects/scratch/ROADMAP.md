@@ -2738,3 +2738,43 @@ stack-ready stories. Thirty-six classes are served. No TEST look was spent.
 **Next:** regenerate the exact frontier. Train stack readiness remains the
 binding threshold; counted-existential coordination needs a bought key
 representation before implementation.
+
+## Phase B reader 37 — past definite-PP existentials (2026-07-22)
+
+Reader 37 serves **“There was a/an CLS PREPOSITION the DESCRIPTION.”** The
+past existential, indefinite class, definite PP object, and terminal boundary
+emit `Existential(CLS, PREPOSITION+qualified DESCRIPTION)` without inventing
+a witness. The object must be one condensed noun unit, so counts, named or
+indefinite objects, coordination, further PPs, and relative tails refuse.
+
+Sixteen synthetic pins cover exact qualified emission, existential-query
+composition, a changed-description null, and thirteen adjacent refusals.
+**pytest 2,491 passed; scratch lint 0 errors with the same eight warnings;
+curated 65/65 twice.** All eight standard DEV diffs and both grouped logic
+diffs are NEUTRAL. Outcomes remain train 21 correct / 1 pre-existing wrong /
+472 declined and holdout 4 / 0 / 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1344→1346 (+2) | 790→792 (+2) | 23/19→25/20 (+2/+1) | 2 / 1 | 611→611 |
+| dev-holdout | 1323→1323 | 785→785 | 22/15→22/15 | 0 / 0 | 572→572 |
+
+The reader appears in three train rows / one story across all gold kinds;
+one row is the fixed event/time exclusion. Both actionable verdict rows gain
+their last reader and become stack-ready without an outcome change.
+
+The regenerated frontier also exposed the lexical blocker in **“Robert
+Lewandowski left Bayern Munchen.”** Adding `left → leave` to shared core made
+the existing ground-event reader fire and bought the story, but it rerouted
+arithmetic remainder asks such as `have left` and failed many full-suite
+tests. The experiment was reverted and is banked. The coordinated counted-
+existential closer remains separately banked because its cardinal cannot yet
+be removed from the class key without partial reading.
+
+Cumulative recorded-frame state is 792/1647 and 785/1607 fully read, 611/572
+vetoes, 20/15 stack-ready stories, collision 8/9, and quarantine 16/18. Phase
+A movement is +72/+64 fully read, 55/42 fewer truth-scope vetoes, and +9/+10
+stack-ready stories. Thirty-seven classes are served. No TEST look was spent.
+
+**Next:** regenerate the exact frontier. Train stack readiness remains the
+binding threshold at 20/22; require a measured whole-construction join.

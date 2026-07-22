@@ -1,6 +1,6 @@
 # The breadth-first premise-reader campaign — FOLIO logic → full integration
 
-**ACTIVE. Phase A and Phase B readers 1–36 completed through 2026-07-22: ground
+**ACTIVE. Phase A and Phase B readers 1–37 completed through 2026-07-22: ground
 both-or-neither equivalence, unrestricted bare-plural disjunction, and negative
 two-article indefinite generics, plus single-antecedent verbal “Everyone who”
 implications, verbal-restrictor conditionals, and the negative-antecedent
@@ -21,7 +21,8 @@ free-relative verbal conditionals, indefinite-generic inclusive disjunctions,
 participial compound verbal universals, named-PP existentials, direct passive
 named agents, PP-restricted negative universals, reversed named memberships,
 exactly-three named distributive copular subjects, and reversed definite role
-memberships, plus exactly-four asyndetic named copular lists.**
+memberships, exactly-four asyndetic named copular lists, and past indefinite
+existentials with definite PP descriptions.**
 
 ## Context
 
@@ -540,6 +541,16 @@ are served; the fully-read, veto, and train-stack thresholds remain unmet.
 The newly exposed coordinated counted-existential train closer stays banked
 because condensation splits its hyphenated counted classes and no existing
 key renderer can remove the cardinal without partial reading.
+
+Reader 37 serves past indefinite existentials with definite PP descriptions:
+**“There was a/an CLS PREPOSITION the DESCRIPTION.”** The construction emits
+an `Existential` with the complete indefinite class and exact qualified PP
+predicate, without inventing a witness. Incremental movement is +2 / +0
+fact-bearing and fully-read premises and +1 / +0 stack-ready stories on
+dev-train / dev-holdout; vetoes, outcomes, and hazards remain neutral.
+Thirty-seven classes are served. A preceding attempt to admit `left` as the
+irregular past of `leave` bought the Bayern train story but failed the shared
+suite by rerouting arithmetic remainder asks, so it was reverted and banked.
 
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
