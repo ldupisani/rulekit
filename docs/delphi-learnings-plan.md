@@ -780,6 +780,13 @@ siblings. Incremental movement is +0 / +9 fact-bearing and fully-read
 premises, 0 / −9 vetoes, and +0 / +0 stack-ready stories. Outcomes and
 hazards remain neutral. Fifty-nine classes are served.
 
+Reader 60 serves PP-restricted indefinite copular conditionals with negative
+verbal consequences **“If a/an CLS PREPOSITION RESTRICTION is P, then they do
+not V Q.”** It preserves the qualified class and property as separate
+antecedents. Incremental movement is +10 / +0 fact-bearing and fully-read
+premises, −10 / 0 vetoes, and +0 / +0 stack-ready stories. Outcomes and
+hazards remain neutral. Sixty classes are served.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /

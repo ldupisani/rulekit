@@ -3560,3 +3560,28 @@ stack readiness. Cumulative state is 822/1647 and 819/1607 fully read,
 
 **Next:** rebalance toward train while retaining repeated holdout gains; Phase
 C needs +30/+31 fully read and −85/−82 vetoes.
+
+## Phase B reader 60 — PP-restricted indefinite negative-verbal conditional (2026-07-22)
+
+Reader 60 serves **“If a/an CLS PREPOSITION RESTRICTION is P, then they do
+not V Q.”** The full qualified class and property remain the two independent
+inputs to `Conditional`; do-support supplies negative polarity and the bare
+event supplies the consequence key. Unrestricted, positive/modal/coordinated,
+signed/compound-antecedent, other-pronoun, missing-PP, counted, and incomplete
+siblings refuse.
+
+Thirteen synthetic pins pass. **pytest 2,869 passed; scratch lint 0 errors
+with the same eight warnings; curated 65/65 twice.** All eight standard DEV
+diffs and both grouped logic diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1373→1383 (+10) | 822→832 (+10) | 34/24→34/24 | 10 / 1 | 584→574 (−10) |
+| dev-holdout | 1354→1354 | 819→819 | 22/15→22/15 | 0 / 0 | 542→542 |
+
+Outcomes remain 23/1/470 and 5/0/420; other gaps keep the Board Game story
+from stack readiness. Cumulative state is 832/1647 and 819/1607 fully read,
+574/542 vetoes, and 24/15 stack-ready stories. Sixty classes are served.
+
+**Next:** rebalance toward holdout fully-read coverage; Phase C needs +20/+31
+fully read and −75/−82 vetoes.

@@ -1088,6 +1088,36 @@ rules:
     emits:
       - {fact: quantified, cls: "{v} {p}", pred: "{v2} {q}", polarity: true}
 
+  # Phase B reader 60: PP-restricted indefinite copular conditionals with a
+  # negative verbal consequence — "If a/an CLS PREPOSITION RESTRICTION is P,
+  # then they do not V Q". The qualified class and antecedent property remain
+  # independent requirements in the existing Conditional contract. Bound
+  # singular `they` denotes the same generic witness; do-support contributes
+  # polarity and the bare event renders like ground-verbal keys. Unrestricted,
+  # positive/modal/coordinated consequences, signed/compound antecedents,
+  # other pronouns, missing PP boundaries, counted, and incomplete siblings
+  # remain whole-unread.
+  - id: logic/conditional-indefinite-pp-is-then-they-do-not-verbal
+    phase: read
+    match:
+      sentence:
+        - {lit: if, at_start: true}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: cls, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, preposition, future_modal, capacity_modal, complementizer, interrogative, wh_which], span_blocks_counted: true}
+        - {slot: prep, cat: preposition}
+        - {slot: restriction, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal, complementizer, interrogative, wh_which], span_blocks_counted: true}
+        - {lit: is}
+        - {slot: p, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+        - {lit: then}
+        - {lit: they}
+        - {lit: do}
+        - {lit: not}
+        - {slot: v, type: nonstate_verb, bare_form: true, single_word: true}
+        - {slot: q, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: conditional, cls: "{cls} {prep} {restriction}", pred: "{p}", then_pred: "{v} {q}", polarity: false}
+
   # Phase B reader 27: free-relative consequences on comma-bound
   # indefinite-generic verbal conditionals —
   # "If a/an CLS V P, they V2 what SUBJECT V3 Q". The embedded subject and
