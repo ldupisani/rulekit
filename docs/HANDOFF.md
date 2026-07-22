@@ -96,13 +96,16 @@
 > positive same-name possession conditionals `If NAME has P, then NAME is Q`,
 > using a dedicated positive ground implication that fires only from an exact
 > positive Atom.
-> Cumulative movement from Phase A is +86 / +74 fully-read premise instances
+> A subsequent pack-scoped lexical activation (`act/acts`, `prevent`) makes
+> the pre-existing Stage 9f verbal existential reader reachable for one train
+> premise; it earns movement but no new construction-class credit.
+> Cumulative movement from Phase A is +87 / +74 fully-read premise instances
 > and +11 / +10
 > stack-ready stories on dev-train / dev-holdout, with no
-> verdict regression or hazard increase; truth-scope vetoes improve by 66 / 48, while
+> verdict regression or hazard increase; truth-scope vetoes improve by 67 / 48, while
 > holdout collision/quarantine improve 12→9 / 24→18. Forty-seven construction classes
 > are served. Both stack-ready thresholds are now met, but the conjunctive Phase C
-> gate remains unmet (fully read 806/1647 and 795/1607 vs 852/850; vetoes 600/566
+> gate remains unmet (fully read 807/1647 and 795/1607 vs 852/850; vetoes 599/566
 > vs ≤499/460; stack-ready stories 22/15 vs ≥22/10).
 > Next regenerate the fully-read and truth-scope-veto frontier, prioritizing
 > train-side movement. The
@@ -128,6 +131,43 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 63 (2026-07-22): Stage 9f lexical activation — +1 train fully read and −1 veto; no new class
+
+The regenerated post-Reader-47 frontier found that the existing Stage 9f
+reader and ask already define the safe construction **“Some CLSs VERB
+OBJECT.”** Its `Some Acts prevent harmful things` train buyer was dormant only
+because `act/acts` and bare `prevent` were absent from the logic-pack lexicon,
+causing premise and ask rendering to disagree and leaving the verb structurally
+unknown. This increment adds only those two pack-scoped morphology facts. It
+does not widen a rule, add a synth, or earn construction-class credit.
+
+Four synthetic pins cover exact existing-reader emission, its existing ask
+twin, a changed-object null, and singular-agreement refusal. **All 2,674 tests
+pass; scratch lint has 0 errors and the same eight warnings; curated is 65/65
+with an identical fresh-process rerun.** All eight standard DEV diffs and both
+grouped logic diffs are NEUTRAL. Outcomes remain train 21 correct / 1 pre-
+existing poisoned-text wrong / 472 declined and holdout 4 / 0 / 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1357→1358 (+1) | 806→807 (+1) | 28/22→28/22 | 2 / 1 | 600→599 (−1) |
+| dev-holdout | 1330→1330 | 795→795 | 22/15→22/15 | 0 / 0 | 566→566 |
+
+The one train premise now emits the pre-existing exact
+`Existential(act, prevent harmful things)`, becomes fully read, and loses its
+veto across two verdict rows in one story. Independent unread premises keep
+the story out of the stack-ready set. No holdout sentence uses this lexical
+pair.
+
+Cumulative recorded-frame state is 807/1647 and 795/1607 fully read, 599/566
+truth-scope vetoes, 22/15 stack-ready stories, collision 8/9, and quarantine
+16/18. Forty-seven construction classes remain served. No TEST look was spent.
+
+**Next:** continue the regenerated frontier, keeping lexical activations
+separate from new construction readers and prioritizing train movement.
+
+---
 
 # Session 62 (2026-07-22): Phase B reader 47 — positive ground possession conditionals; +1 holdout fully read and −1 veto
 

@@ -3099,3 +3099,29 @@ unscheduled.
 
 **Next:** regenerate the fully-read/truth-scope-veto frontier, prioritizing a
 train-side buyer.
+
+## Stage 9f lexical activation — `act/acts`, `prevent` (2026-07-22)
+
+The existing verbal existential reader/ask already safely serves **“Some CLSs
+VERB OBJECT.”** One train buyer remained dormant because `act/acts` and bare
+`prevent` lacked pack-scoped morphology, making premise and ask keys disagree
+and leaving the verb unknown. Adding those two lexicon facts activates the
+existing construction without changing its grammar or synths. It earns no new
+construction-class credit.
+
+Four synthetic pins pass. **pytest 2,674 passed; scratch lint 0 errors with the
+same eight warnings; curated 65/65 with an identical fresh-process rerun.** All
+eight standard DEV diffs and both grouped logic diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1357→1358 (+1) | 806→807 (+1) | 28/22→28/22 | 2 / 1 | 600→599 (−1) |
+| dev-holdout | 1330→1330 | 795→795 | 22/15→22/15 | 0 / 0 | 566→566 |
+
+The sole buyer becomes fact-bearing and fully read and loses its veto; other
+unread premises prevent stack movement. Cumulative state is 807/1647 and
+795/1607 fully read, 599/566 vetoes, and 22/15 stack-ready stories. Forty-seven
+classes remain served; Phase C and TEST look #6 remain unscheduled.
+
+**Next:** continue the regenerated frontier, separating lexical activations
+from new reader classes.

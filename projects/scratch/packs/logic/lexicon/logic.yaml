@@ -25,3 +25,10 @@ entries:
   lipstick: {senses: [noun], plural: lipsticks}
   satin: {senses: [adjective]}
   velvet: {senses: [adjective]}
+  # Phase B lexical activation after reader 47: the pre-existing Stage 9f
+  # verbal existential already reads "Some CLSs VERB OBJECT" safely, but
+  # its train buyer was dormant because the plural class morphology and bare
+  # verb were not registered consistently across premise and ask rendering.
+  # These are pack-scoped form facts; the grammar itself is unchanged.
+  act: {senses: [noun], plural: acts}
+  prevent: {senses: [verb], verb: {lemma: prevent}}

@@ -652,6 +652,13 @@ truth-scope veto, and +0 / +0 stack-ready stories on dev-train / dev-holdout.
 Outcomes and hazards remain neutral. Forty-seven classes are served; Phase C
 and TEST look #6 remain unscheduled.
 
+Post-Reader-47 lexical activation adds pack-scoped `act/acts` and `prevent`,
+making the pre-existing Stage 9f **“Some CLSs VERB OBJECT”** reader and ask
+reachable for one train premise. Incremental movement is +1 / +0 fact-bearing
+and fully-read premise, −1 / 0 truth-scope veto, and +0 / +0 stack-ready
+stories. It changes no grammar, inference, outcome, or hazard and earns no new
+construction-class credit; forty-seven classes remain served.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /
