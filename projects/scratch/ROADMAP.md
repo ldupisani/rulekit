@@ -2693,3 +2693,48 @@ stack-ready stories. Thirty-five classes are served. No TEST look was spent.
 **Next:** regenerate the exact frontier. Train stack readiness remains the
 binding threshold; require a measured key join before adding prefixed-verb or
 other infrastructure.
+
+## Phase B reader 36 — four-name asyndetic copular lists (2026-07-22)
+
+Reader 36 serves **“A, B, C, D are P.”** It requires exactly three comma
+boundaries and no conjunction, separating the class from reader 34's
+three-name conjunction/Oxford-comma reader. Plural agreement singular-folds
+the shared predicate and emits one positive `Atom` for each name. The
+inherited article refusal excludes collective predicates.
+
+Nineteen synthetic pins cover exact emission, copular composition, an
+unlisted-name null, and sixteen adjacent refusals across arity, punctuation,
+coordination, member type, agreement, collectivity, sign, leading material,
+and apposition.
+
+**pytest 2,475 passed; scratch lint 0 errors with the same eight warnings;
+curated 65/65 twice.** All eight standard DEV diffs and both FOLIO-with-logic
+grouped diffs are NEUTRAL. Outcomes remain train 21 correct / 1 pre-existing
+poisoned-text wrong / 472 declined and holdout 4 / 0 / 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1344→1344 | 790→790 | 23/19→23/19 | 0 / 0 | 611→611 |
+| dev-holdout | 1321→1323 (+2) | 783→785 (+2) | 21/14→22/15 (+1/+1) | 2 / 1 | 572→572 |
+
+Across all gold kinds the reader appears in three holdout rows / one story
+and no train rows. Four exact `district in the city of Guilin` atoms make one
+represented Xiufeng query stack-ready, while the conclusion's narrower
+`district in Guilin` key stays unmatched. Outcomes and hazards remain
+neutral.
+
+The next train closer, **“One six-way tie was on the leaderboard, and one
+person in the six-way tie was from Belgium,”** was surveyed and banked. It is
+a coordinated pair of counted existentials, but condensation splits the
+hyphenated counted classes. No current renderer removes the cardinal while
+preserving the full class, and merely consuming the conjunction would be
+partial reading.
+
+Cumulative recorded-frame state is 790/1647 and 785/1607 fully read, 611/572
+vetoes, 19/15 stack-ready stories, collision 8/9, and quarantine 16/18. Phase
+A movement is +70/+64 fully read, 55/42 fewer truth-scope vetoes, and +8/+10
+stack-ready stories. Thirty-six classes are served. No TEST look was spent.
+
+**Next:** regenerate the exact frontier. Train stack readiness remains the
+binding threshold; counted-existential coordination needs a bought key
+representation before implementation.

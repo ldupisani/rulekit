@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–35 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–36 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -68,15 +68,17 @@
 > distributive copular subjects `A, B[, ] and C are P`, emitting one exact
 > positive `Atom` per name while refusing collective predicates — and
 > (reader 35) reversed definite role memberships `The ROLE of OWNER is/was
-> MEMBER`, preserving the full owner-qualified role key. Cumulative movement from Phase A is +70 / +62 fully-read premise
-> instances and +8 / +9
+> MEMBER`, preserving the full owner-qualified role key — and (reader 36)
+> exactly-four asyndetic named copular lists `A, B, C, D are P`, distributing
+> the singular-folded predicate over all four names. Cumulative movement from Phase A is +70 / +64 fully-read premise
+> instances and +8 / +10
 > stack-ready stories on dev-train / dev-holdout, with no
 > verdict regression or hazard increase; truth-scope vetoes improve by 55 / 42, while
-> holdout collision/quarantine improve 12→9 / 24→18. Thirty-five construction classes
+> holdout collision/quarantine improve 12→9 / 24→18. Thirty-six construction classes
 > are served. The holdout stack-ready threshold is now exceeded, but the
-> conjunctive Phase C gate remains unmet (fully read 790/1647 and 783/1607 vs
-> 852/850; vetoes 611/572 vs ≤499/460; stack-ready stories 19/14 vs ≥22/10).
-> Next regenerate the frontier after buying reversed definite role membership; the
+> conjunctive Phase C gate remains unmet (fully read 790/1647 and 785/1607 vs
+> 852/850; vetoes 611/572 vs ≤499/460; stack-ready stories 19/15 vs ≥22/10).
+> Next regenerate the frontier after buying the four-name asyndetic list; the
 > remaining candidates require lexical, definite-description, coreference,
 > or deeper composition infrastructure. The unbought outer-quantified verbal
 > relative remains banked pending composition evidence. Reader 4's opt-in
@@ -99,6 +101,56 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 50 (2026-07-22): Phase B reader 36 — four-name asyndetic copular lists; +2 holdout fully read, +1 stack-ready story
+
+One reader serves **“A, B, C, D are P.”** It is deliberately separate from
+reader 34's exactly-three conjunction/Oxford-comma construction: three comma
+boundaries and no conjunction prove the four-name asyndetic list. Plural
+agreement singular-folds the shared predicate, and one positive `Atom` is
+emitted for each name. The inherited article refusal excludes collective
+predicates such as “are a team.”
+
+Nineteen synthetic pins cover exact emission, existing copular-ask
+composition, an unlisted-name null, and sixteen adjacent refusals. Shorter or
+longer lists, explicit conjunction/disjunction, missing punctuation,
+non-name members, singular agreement, collectives, sign, leading material,
+and apposition remain unread.
+
+**All 2,475 tests pass; scratch lint has 0 errors and the same eight warnings;
+curated is 65/65 twice.** All eight standard DEV diffs and both grouped logic
+diffs are NEUTRAL. Outcomes remain train 21 correct / 1 pre-existing
+poisoned-text wrong / 472 declined and holdout 4 / 0 / 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1344→1344 | 790→790 | 23/19→23/19 | 0 / 0 | 611→611 |
+| dev-holdout | 1321→1323 (+2) | 783→785 (+2) | 21/14→22/15 (+1/+1) | 2 / 1 | 572→572 |
+
+Across all gold kinds the reader appears in three holdout rows / one story
+and no train rows. It records four exact `district in the city of Guilin`
+atoms, including Xiufeng's. One represented query now has a complete,
+overlapping premise stack, but the stricter `district in Guilin` conclusion
+key remains unmatched, so the outcome safely stays undetermined. All hazards
+remain neutral.
+
+The post-reader survey rejected the newly exposed train closer **“One
+six-way tie was on the leaderboard, and one person in the six-way tie was
+from Belgium.”** It is two coordinated counted existentials, but current
+condensation splits each hyphenated counted NP across units. Representing the
+class without retaining its cardinal as predicate text needs new
+count-stripping key machinery; consuming the conjunction without that
+semantics would be partial reading. The construction remains banked.
+
+Cumulative recorded-frame state is 790/1647 and 785/1607 fully read, 611/572
+truth-scope vetoes, 19/15 stack-ready stories, collision 8/9, and quarantine
+16/18. Thirty-six classes are served. No TEST look was spent.
+
+**Next:** regenerate the exact frontier. Train stack readiness remains the
+binding story threshold; counted-existential coordination needs an
+independently bought key representation before reconsideration.
+
+---
 
 # Session 49 (2026-07-22): Phase B reader 35 — reversed definite role memberships; +1/+2 fully read
 

@@ -1694,6 +1694,32 @@ rules:
     emits:
       - {fact: atom, entity: "{member}", pred: "{role} of {owner}", polarity: true}
 
+  # Phase B reader 36: four-name asyndetic copular enumeration —
+  # "A, B, C, D are P" distributes one shared predicate over four names.
+  # Reader 34 owns the three-name conjunction/Oxford-comma class; requiring
+  # three comma boundaries and no conjunction keeps the constructions
+  # separate. Plural agreement singular-folds the predicate, while the same
+  # article refusal excludes collectives ("are a team"). Sign, disjunction,
+  # non-name members, and shorter/longer lists remain whole-unread.
+  - id: logic/ground-copular-four-asyndetic-subjects
+    phase: read
+    match:
+      sentence:
+        - {slot: s1, type: name, at_start: true, blocks_skipped: indefinite_article}
+        - {lit: ",", consume_skipped: true}
+        - {slot: s2, type: name}
+        - {lit: ",", consume_skipped: true}
+        - {slot: s3, type: name}
+        - {lit: ",", consume_skipped: true}
+        - {slot: s4, type: name}
+        - {lit: are}
+        - {slot: pred, span: true, span_blocks: [negation, disjunctive_marker, indefinite_article], blocks_skipped: indefinite_article}
+    emits:
+      - {fact: atom, entity: "{s1}", pred: "{pred.singular}", polarity: true}
+      - {fact: atom, entity: "{s2}", pred: "{pred.singular}", polarity: true}
+      - {fact: atom, entity: "{s3}", pred: "{pred.singular}", polarity: true}
+      - {fact: atom, entity: "{s4}", pred: "{pred.singular}", polarity: true}
+
   - id: logic/existential-some-are
     phase: read
     match:

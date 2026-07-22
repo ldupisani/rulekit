@@ -1,6 +1,6 @@
 # The breadth-first premise-reader campaign — FOLIO logic → full integration
 
-**ACTIVE. Phase A and Phase B readers 1–35 completed through 2026-07-22: ground
+**ACTIVE. Phase A and Phase B readers 1–36 completed through 2026-07-22: ground
 both-or-neither equivalence, unrestricted bare-plural disjunction, and negative
 two-article indefinite generics, plus single-antecedent verbal “Everyone who”
 implications, verbal-restrictor conditionals, and the negative-antecedent
@@ -21,7 +21,7 @@ free-relative verbal conditionals, indefinite-generic inclusive disjunctions,
 participial compound verbal universals, named-PP existentials, direct passive
 named agents, PP-restricted negative universals, reversed named memberships,
 exactly-three named distributive copular subjects, and reversed definite role
-memberships.**
+memberships, plus exactly-four asyndetic named copular lists.**
 
 ## Context
 
@@ -526,6 +526,20 @@ fully-read, veto, and train-stack thresholds remain unmet. A structural
 prefixed-verb reader remains banked: tokenization erases the hyphen in the
 apparent `co-produced` train closer, and its exact predicate has no existing
 conclusion or inference join.
+
+Reader 36 serves exactly-four asyndetic named copular lists **“A, B, C, D are
+P.”** Three required comma boundaries distinguish it from reader 34's
+three-name conjunction/Oxford-comma class. It singular-folds the shared
+plural-agreeing predicate and emits one positive `Atom` per name; the same
+article refusal excludes collective predicates. Shorter/longer lists,
+conjunction, disjunction, missing punctuation, non-name members, sign, and
+apposition remain unread. Incremental movement is +0 / +2 fact-bearing and
+fully-read premises and +0 / +1 stack-ready stories on dev-train /
+dev-holdout; vetoes, outcomes, and hazards remain neutral. Thirty-six classes
+are served; the fully-read, veto, and train-stack thresholds remain unmet.
+The newly exposed coordinated counted-existential train closer stays banked
+because condensation splits its hyphenated counted classes and no existing
+key renderer can remove the cardinal without partial reading.
 
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
