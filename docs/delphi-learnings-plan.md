@@ -842,6 +842,11 @@ conditional for +3 / +0 fully-read premises and −3 / 0 vetoes. A neighboring
 colon sentence remains hazard-blocked and receives no movement credit. Phase C
 still needs 41 / 36 truth-scope-veto reductions.
 
+Pack-local adjective `refillable` clears eight repeated long-qualified
+lipstick universals for +8 / +0 fully-read premises and −8 / 0 vetoes, with
+neutral outcomes and hazards. Phase C still needs 33 / 36 truth-scope-veto
+reductions.
+
 Pack-local `defender`/`defenders` morphology next removes the only unread unit
 from the soccer-role universal on both splits. It adds +3 / +6 fully-read
 premises and reduces vetoes by 3 / 6 without fact, stack, outcome, hazard, or

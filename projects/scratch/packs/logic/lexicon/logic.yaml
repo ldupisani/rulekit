@@ -91,3 +91,6 @@ entries:
   # Phase B lexical activation: an adjectival consequence/property shared by
   # an existing restricted generic conditional and a ground conditional.
   famous: {senses: [adjective]}
+  # Phase B lexical activation: an adjectival consequence in an existing
+  # long PP/appositive-qualified universal. Its eight-row buyer is isolated.
+  refillable: {senses: [adjective]}

@@ -3803,3 +3803,21 @@ DEV diffs and both grouped logic outcome diffs are NEUTRAL.
 Outcomes and hazards remain neutral. Current vetoes are 540/496.
 
 **Next:** Phase C remains gated only by −41/−36 truth-scope vetoes.
+
+## Refillable adjective lexical activation (2026-07-22)
+
+Pack-local adjective `refillable` clears the eight repeated long-qualified
+lipstick universals. The existing fact shape remains complete and unchanged.
+
+Six synthetic pins pass. **pytest 2,949 passed; curated is 65/65 twice.**
+Scratch lint reports 0 errors with the same eight warnings; all eight standard
+DEV diffs and both grouped logic outcome diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready floor | credited premise instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1394→1394 | 866→874 (+8) | ≥34/24 | 8 / 1 | 540→532 (−8) |
+| dev-holdout | 1364→1364 | 865→865 | ≥22/15 | 0 / 0 | 496→496 |
+
+Outcomes and hazards remain neutral. Current vetoes are 532/496.
+
+**Next:** Phase C remains gated only by −33/−36 truth-scope vetoes.
