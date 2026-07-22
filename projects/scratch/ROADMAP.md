@@ -3585,3 +3585,27 @@ from stack readiness. Cumulative state is 832/1647 and 819/1607 fully read,
 
 **Next:** rebalance toward holdout fully-read coverage; Phase C needs +20/+31
 fully read and −75/−82 vetoes.
+
+## Phase B reader 61 — exact repeated-generic copular conditional (2026-07-22)
+
+Reader 61 serves **“If a/an CLS is P, the CLS is Q.”** Exact whole-phrase
+equality between indefinite and definite generic NPs proves they bind the same
+witness. Class membership and P remain separate inputs to `Conditional`.
+Mismatched, explicit-then/pronominal, signed/modal/verbal/coordinated, counted,
+and incomplete siblings refuse.
+
+Thirteen synthetic pins pass. **pytest 2,882 passed; scratch lint 0 errors
+with the same eight warnings; curated 65/65 twice.** All eight standard DEV
+diffs and both grouped logic diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1383→1384 (+1) | 832→833 (+1) | 34/24→34/24 | 1 / 1 | 574→573 (−1) |
+| dev-holdout | 1354→1360 (+6) | 819→825 (+6) | 22/15→22/15 | 6 / 2 | 542→536 (−6) |
+
+Outcomes remain 23/1/470 and 5/0/420; other gaps prevent stack-readiness
+movement. Cumulative state is 833/1647 and 825/1607 fully read, 573/536
+vetoes, and 24/15 stack-ready stories. Sixty-one classes are served.
+
+**Next:** continue balanced repeated-family reductions; Phase C needs +19/+25
+fully read and −74/−76 vetoes.

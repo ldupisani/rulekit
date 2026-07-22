@@ -1118,6 +1118,34 @@ rules:
     emits:
       - {fact: conditional, cls: "{cls} {prep} {restriction}", pred: "{p}", then_pred: "{v} {q}", polarity: false}
 
+  # Phase B reader 61: repeated-generic copular conditionals —
+  # "If a/an CLS is P, the CLS is Q". The indefinite and definite noun
+  # phrases denote the same ranged witness only when their complete rendered
+  # phrases agree; `same_phrase` is the proof, not a noun-specific literal or
+  # a coreference guess. The class and antecedent property remain independent
+  # Conditional requirements. Explicit-then/pronominal, mismatched repeats,
+  # signed/modal/verbal/coordinated clauses, counted phrases, and incomplete
+  # siblings remain whole-unread.
+  - id: logic/conditional-indefinite-is-repeated-definite-is
+    phase: read
+    match:
+      sentence:
+        - {lit: if, at_start: true}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: cls, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal, complementizer, interrogative, wh_which], span_blocks_counted: true}
+        - {lit: is}
+        - {slot: p, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+        - {lit: ",", consume_skipped: true}
+        - {lit: the, consume_skipped: true}
+        - {slot: cls2, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal, complementizer, interrogative, wh_which], span_blocks_counted: true}
+        - {lit: is}
+        - {slot: q, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+        - {lit: ".", consume_skipped: true}
+    where:
+      - {same_phrase: [cls, cls2]}
+    emits:
+      - {fact: conditional, cls: "{cls}", pred: "{p}", then_pred: "{q}", polarity: true}
+
   # Phase B reader 27: free-relative consequences on comma-bound
   # indefinite-generic verbal conditionals —
   # "If a/an CLS V P, they V2 what SUBJECT V3 Q". The embedded subject and

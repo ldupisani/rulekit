@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–60 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–61 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -120,7 +120,9 @@
 > and (reader 59) singular-agreeing PP-restricted negative events `No CLS
 > PREPOSITION RESTRICTION V P`, with buyer-backed 3sg morphology — and
 > (reader 60) PP-restricted indefinite copular conditionals with negative
-> verbal consequences `If a/an CLS PREP R is P, then they do not V Q`.
+> verbal consequences `If a/an CLS PREP R is P, then they do not V Q` — and
+> (reader 61) exact repeated-generic conditionals `If a/an CLS is P, the CLS
+> is Q`, with whole-phrase equality proving witness identity.
 > Subsequent pack-scoped lexical activations (`act/acts`, `prevent`, and the
 > regular-past forms `supported`/`researched`) make
 > the pre-existing Stage 9f verbal existential reader reachable for one train
@@ -134,13 +136,13 @@
 > A later pack-scoped `plots`/`swallow` activation makes the existing Stage 6
 > ground reader consume one controlled-infinitive train premise; it earns
 > movement but no new construction-class credit.
-> Cumulative movement from Phase A is +112 / +98 fully-read premise instances
+> Cumulative movement from Phase A is +113 / +104 fully-read premise instances
 > and +13 / +10
 > stack-ready stories on dev-train / dev-holdout, with no
-> verdict regression or hazard increase; truth-scope vetoes improve by 92 / 72, while
-> holdout collision/quarantine improve 12→9 / 24→18. Sixty construction classes
+> verdict regression or hazard increase; truth-scope vetoes improve by 93 / 78, while
+> holdout collision/quarantine improve 12→9 / 24→18. Sixty-one construction classes
 > are served. Both stack-ready thresholds are now met, but the conjunctive Phase C
-> gate remains unmet (fully read 832/1647 and 819/1607 vs 852/850; vetoes 574/542
+> gate remains unmet (fully read 833/1647 and 825/1607 vs 852/850; vetoes 573/536
 > vs ≤499/460; stack-ready stories 24/15 vs ≥22/10).
 > Next regenerate the fully-read and truth-scope-veto frontier, prioritizing
 > train-side movement. The
@@ -166,6 +168,37 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 81 (2026-07-22): Phase B reader 61 — exact repeated-generic copular conditionals; +1/+6 fully read and veto reduction
+
+Reader 61 serves **“If a/an CLS is P, the CLS is Q.”** The indefinite and
+definite noun phrases denote the same ranged witness only when their complete
+rendered phrases agree; `same_phrase` provides that proof. The class and
+antecedent property remain independent `Conditional` requirements.
+Explicit-then/pronominal, mismatched repeats, signed/modal/verbal or
+coordinated clauses, counted phrases, and incomplete siblings remain unread.
+
+Thirteen synthetic pins cover exact repetition, two-antecedent necessity,
+and eleven adjacent refusals. **All 2,882 tests pass; scratch lint has 0
+errors and the same eight warnings; curated is 65/65 with an identical
+fresh-process rerun.** All eight standard DEV diffs and both grouped logic
+diffs are NEUTRAL. Outcomes remain train 23 / 1 / 470 and holdout 5 / 0 / 420.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1383→1384 (+1) | 832→833 (+1) | 34/24→34/24 | 1 / 1 | 574→573 (−1) |
+| dev-holdout | 1354→1360 (+6) | 819→825 (+6) | 22/15→22/15 | 6 / 2 | 542→536 (−6) |
+
+The holdout buyers are the repeated person/location chains; one train sibling
+also joins. Other unread premises keep their stories outside the stack-ready
+set. Outcomes and hazards remain neutral. Cumulative state is 833/1647 and
+825/1607 fully read, 573/536 vetoes, 24/15 stack-ready stories, and sixty-one
+classes. No TEST look was spent.
+
+**Next:** continue balanced repeated-family reductions; Phase C needs +19/+25
+fully read and −74/−76 vetoes.
+
+---
 
 # Session 80 (2026-07-22): Phase B reader 60 — PP-restricted indefinite negative-verbal conditionals; +10 train fully read and veto reduction
 
