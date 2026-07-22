@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–34 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–35 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -66,15 +66,17 @@
 > OWNER was MEMBER`, emitting the identified witness as an exact positive
 > `Atom(MEMBER, CLS+of+OWNER)` — and (reader 34) exactly-three named
 > distributive copular subjects `A, B[, ] and C are P`, emitting one exact
-> positive `Atom` per name while refusing collective predicates. Cumulative movement from Phase A is +69 / +60 fully-read premise
+> positive `Atom` per name while refusing collective predicates — and
+> (reader 35) reversed definite role memberships `The ROLE of OWNER is/was
+> MEMBER`, preserving the full owner-qualified role key. Cumulative movement from Phase A is +70 / +62 fully-read premise
 > instances and +8 / +9
 > stack-ready stories on dev-train / dev-holdout, with no
 > verdict regression or hazard increase; truth-scope vetoes improve by 55 / 42, while
-> holdout collision/quarantine improve 12→9 / 24→18. Thirty-four construction classes
+> holdout collision/quarantine improve 12→9 / 24→18. Thirty-five construction classes
 > are served. The holdout stack-ready threshold is now exceeded, but the
-> conjunctive Phase C gate remains unmet (fully read 789/1647 and 781/1607 vs
+> conjunctive Phase C gate remains unmet (fully read 790/1647 and 783/1607 vs
 > 852/850; vetoes 611/572 vs ≤499/460; stack-ready stories 19/14 vs ≥22/10).
-> Next regenerate the frontier after buying three-name distributive subjects; the
+> Next regenerate the frontier after buying reversed definite role membership; the
 > remaining candidates require lexical, definite-description, coreference,
 > or deeper composition infrastructure. The unbought outer-quantified verbal
 > relative remains banked pending composition evidence. Reader 4's opt-in
@@ -97,6 +99,55 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 49 (2026-07-22): Phase B reader 35 — reversed definite role memberships; +1/+2 fully read
+
+One construction serves **“The ROLE of OWNER is/was MEMBER.”** The definite
+description identifies a named member of one exact owner-qualified role, so
+the paired tense readers emit positive `Atom(MEMBER, ROLE+of+OWNER)`. They do
+not assert identity, aliasing, or a bare-role property. Separate `is` and
+`was` rules preserve the copular boundary without admitting arbitrary verbs.
+
+Twenty synthetic pins cover both tenses, exact copular-ask composition, a
+changed-owner null, and sixteen adjacent refusals. Indefinite or missing
+determiners, missing/extra role structure, other copulas, sign,
+common/pronominal members, coordination, modality, relatives, apposition,
+and trailing material remain whole-unread.
+
+**All 2,456 tests pass; scratch lint has 0 errors and the same eight warnings;
+curated is 65/65 twice.** All eight standard DEV diffs and both grouped logic
+diffs are NEUTRAL. Outcomes remain train 21 correct / 1 pre-existing
+poisoned-text wrong / 472 declined and holdout 4 / 0 / 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1344→1344 | 789→790 (+1) | 23/19→23/19 | 1 / 1 | 611→611 |
+| dev-holdout | 1321→1321 | 781→783 (+2) | 21/14→21/14 | 2 / 1 | 572→572 |
+
+Across all gold kinds the reader appears in two train rows / one story and
+three holdout rows / one story. It records `winner of 1992 du Maurier
+Classic(Steinhauer)` and `lead singer of Imagine Dragons(Dan)`. The old fold
+already made both premises fact-bearing; each story still has a separate
+blocked premise, so stack readiness and outcomes remain unchanged. The train
+fragment guard explicitly keeps the exact negated echo declined while its
+coordinated sibling premise is unread. All hazards remain neutral.
+
+The post-reader survey rejected the tempting train closer **“Deborah Wallace
+co-produced Gasland.”** Tokenization currently drops the hyphen, leaving
+unknown `co` before `produced`; preserving that boundary could support a
+general prefixed-verb reader, but the resulting `co-produce Gasland` key has
+no existing conclusion or inference join in the story. It is therefore not a
+bought infrastructure increment and remains banked.
+
+Cumulative recorded-frame state is 790/1647 and 783/1607 fully read, 611/572
+truth-scope vetoes, 19/14 stack-ready stories, collision 8/9, and quarantine
+16/18. Thirty-five classes are served. No TEST look was spent.
+
+**Next:** regenerate the exact frontier. Train stack readiness remains the
+binding story threshold; require a real key join before revisiting prefixed
+verbs or other infrastructure.
+
+---
 
 # Session 48 (2026-07-22): Phase B reader 34 — three-name distributive copular subjects; +2/+2 fully read and −2/−2 vetoes
 

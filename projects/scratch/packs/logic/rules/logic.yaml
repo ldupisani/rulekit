@@ -1658,6 +1658,42 @@ rules:
       - {fact: atom, entity: "{s2}", pred: "{pred.singular}", polarity: true}
       - {fact: atom, entity: "{s3}", pred: "{pred.singular}", polarity: true}
 
+  # Phase B reader 35: reversed definite role membership —
+  # "The ROLE of OWNER is/was MEMBER" identifies the member of one exact
+  # owner-qualified role. This is reader 33's definite-description sibling:
+  # it emits ROLE-of-OWNER(MEMBER), never an identity alias and never a bare
+  # ROLE atom. Separate is/was rules avoid treating every verb as a copula;
+  # tense changes no first-order content here. The definite boundary, final
+  # proper name, and terminal period keep sign, coordination, relatives,
+  # common/pronominal members, and trailing clauses whole-unread.
+  - id: logic/ground-definite-role-of-owner-is-name
+    phase: read
+    match:
+      sentence:
+        - {lit: the, at_start: true, consume_skipped: true}
+        - {slot: role, span: true, span_blocks: [negation, quantifier, conjunction, disjunctive_marker, either_marker, verb, preposition, future_modal, capacity_modal, interrogative, complementizer, wh_which], span_blocks_counted: true}
+        - {lit: of}
+        - {slot: owner, span: true, span_blocks: [negation, conjunction, disjunctive_marker, either_marker, future_modal, capacity_modal, interrogative, complementizer, wh_which]}
+        - {lit: is}
+        - {slot: member, type: proper_name}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: atom, entity: "{member}", pred: "{role} of {owner}", polarity: true}
+
+  - id: logic/ground-definite-role-of-owner-was-name
+    phase: read
+    match:
+      sentence:
+        - {lit: the, at_start: true, consume_skipped: true}
+        - {slot: role, span: true, span_blocks: [negation, quantifier, conjunction, disjunctive_marker, either_marker, verb, preposition, future_modal, capacity_modal, interrogative, complementizer, wh_which], span_blocks_counted: true}
+        - {lit: of}
+        - {slot: owner, span: true, span_blocks: [negation, conjunction, disjunctive_marker, either_marker, future_modal, capacity_modal, interrogative, complementizer, wh_which]}
+        - {lit: was}
+        - {slot: member, type: proper_name}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: atom, entity: "{member}", pred: "{role} of {owner}", polarity: true}
+
   - id: logic/existential-some-are
     phase: read
     match:

@@ -2647,3 +2647,49 @@ stack-ready stories. Thirty-four classes are served. No TEST look was spent.
 **Next:** regenerate the exact frontier. Train stack readiness remains the
 binding threshold; keep the `someone … they work` bank closed until a
 separate sense-resolution increment has measured support.
+
+## Phase B reader 35 — reversed definite role memberships (2026-07-22)
+
+Reader 35 serves **“The ROLE of OWNER is/was MEMBER.”** The definite
+description identifies a named member of one exact owner-qualified role.
+Paired tense rules emit positive `Atom(MEMBER, ROLE+of+OWNER)` and never an
+identity alias or bare-role property. Separate `is`/`was` skeletons avoid a
+broad verb gate.
+
+Twenty synthetic pins cover both tenses, exact copular composition, a
+changed-owner null, and sixteen adjacent refusals across determiners,
+structure, copulas, sign, member type, coordination, modality, relatives,
+apposition, and trailing material.
+
+**pytest 2,456 passed; scratch lint 0 errors with the same eight warnings;
+curated 65/65 twice.** All eight standard DEV diffs and both FOLIO-with-logic
+grouped diffs are NEUTRAL. Outcomes remain train 21 correct / 1 pre-existing
+poisoned-text wrong / 472 declined and holdout 4 / 0 / 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1344→1344 | 789→790 (+1) | 23/19→23/19 | 1 / 1 | 611→611 |
+| dev-holdout | 1321→1321 | 781→783 (+2) | 21/14→21/14 | 2 / 1 | 572→572 |
+
+Across all gold kinds the rules appear in two train rows / one story and
+three holdout rows / one story. They record `winner of 1992 du Maurier
+Classic(Steinhauer)` and `lead singer of Imagine Dragons(Dan)`. Fold facts
+already made both premises fact-bearing, and one separate blocker remains in
+each story, so stack readiness and outcomes do not move. The fragment guard
+continues to decline the train negated echo while the story's coordinated
+premise remains unread. Hazards are neutral.
+
+The frontier survey also rejected **“Deborah Wallace co-produced Gasland.”**
+The tokenizer erases the hyphen and exposes unknown `co`; although an opt-in
+structural marker could preserve it, the resulting exact predicate has no
+existing conclusion/inference join. That infrastructure is unbought and
+remains banked.
+
+Cumulative recorded-frame state is 790/1647 and 783/1607 fully read, 611/572
+vetoes, 19/14 stack-ready stories, collision 8/9, and quarantine 16/18. Phase
+A movement is +70/+62 fully read, 55/42 fewer truth-scope vetoes, and +8/+9
+stack-ready stories. Thirty-five classes are served. No TEST look was spent.
+
+**Next:** regenerate the exact frontier. Train stack readiness remains the
+binding threshold; require a measured key join before adding prefixed-verb or
+other infrastructure.

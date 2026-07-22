@@ -1,6 +1,6 @@
 # The breadth-first premise-reader campaign — FOLIO logic → full integration
 
-**ACTIVE. Phase A and Phase B readers 1–34 completed through 2026-07-22: ground
+**ACTIVE. Phase A and Phase B readers 1–35 completed through 2026-07-22: ground
 both-or-neither equivalence, unrestricted bare-plural disjunction, and negative
 two-article indefinite generics, plus single-antecedent verbal “Everyone who”
 implications, verbal-restrictor conditionals, and the negative-antecedent
@@ -20,7 +20,8 @@ universals, plural-agreeing positive possessive universals, comma-bound
 free-relative verbal conditionals, indefinite-generic inclusive disjunctions,
 participial compound verbal universals, named-PP existentials, direct passive
 named agents, PP-restricted negative universals, reversed named memberships,
-and exactly-three named distributive copular subjects.**
+exactly-three named distributive copular subjects, and reversed definite role
+memberships.**
 
 ## Context
 
@@ -512,6 +513,19 @@ fully-read, veto, and train-stack thresholds remain unmet. The rechecked
 `If someone is P, then they V Q` sibling stays banked because its sole
 apparent DEV buyer has an ambiguous event head and the safe prototype matches
 zero rows.
+
+Reader 35 serves reversed definite role memberships **“The ROLE of OWNER
+is/was MEMBER.”** Paired tense readers emit positive
+`Atom(MEMBER, ROLE+of+OWNER)` without asserting identity, aliasing, or a bare
+role. Definite and terminal boundaries plus a final proper-name gate keep
+indefinite, signed, coordinated, modal, relative, appositive, and larger
+siblings unread. Incremental movement is +1 / +2 fully-read premises on
+dev-train / dev-holdout; fact-bearing, truth-scope vetoes, stack readiness,
+outcomes, and hazards remain neutral. Thirty-five classes are served; the
+fully-read, veto, and train-stack thresholds remain unmet. A structural
+prefixed-verb reader remains banked: tokenization erases the hyphen in the
+apparent `co-produced` train closer, and its exact predicate has no existing
+conclusion or inference join.
 
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
