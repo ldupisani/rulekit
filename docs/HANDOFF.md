@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–55 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–56 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -110,7 +110,9 @@
 > 54) modal-passive local coordination `NAME can be V-ed REST, and it is P`,
 > preserving possibility and the positive local property separately — and
 > (reader 55) restrictive-only modal-passive unions `The only CLSs that can be
-> V-ed REST are L and R`, preserving the complete reverse-direction class.
+> V-ed REST are L and R`, preserving the complete reverse-direction class —
+> and (reader 56) someone-generic verbal consequences `If someone is P, then
+> they V Q`, with a locally selected ambiguous bare event verb.
 > Subsequent pack-scoped lexical activations (`act/acts`, `prevent`, and the
 > regular-past forms `supported`/`researched`) make
 > the pre-existing Stage 9f verbal existential reader reachable for one train
@@ -124,14 +126,14 @@
 > A later pack-scoped `plots`/`swallow` activation makes the existing Stage 6
 > ground reader consume one controlled-infinitive train premise; it earns
 > movement but no new construction-class credit.
-> Cumulative movement from Phase A is +98 / +74 fully-read premise instances
-> and +12 / +10
+> Cumulative movement from Phase A is +99 / +74 fully-read premise instances
+> and +13 / +10
 > stack-ready stories on dev-train / dev-holdout, with no
-> verdict regression or hazard increase; truth-scope vetoes improve by 78 / 48, while
-> holdout collision/quarantine improve 12→9 / 24→18. Fifty-five construction classes
+> verdict regression or hazard increase; truth-scope vetoes improve by 79 / 48, while
+> holdout collision/quarantine improve 12→9 / 24→18. Fifty-six construction classes
 > are served. Both stack-ready thresholds are now met, but the conjunctive Phase C
-> gate remains unmet (fully read 818/1647 and 795/1607 vs 852/850; vetoes 588/566
-> vs ≤499/460; stack-ready stories 23/15 vs ≥22/10).
+> gate remains unmet (fully read 819/1647 and 795/1607 vs 852/850; vetoes 587/566
+> vs ≤499/460; stack-ready stories 24/15 vs ≥22/10).
 > Next regenerate the fully-read and truth-scope-veto frontier, prioritizing
 > train-side movement. The
 > remaining candidates require lexical, definite-description, coreference,
@@ -156,6 +158,41 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 76 (2026-07-22): Phase B reader 56 — someone-generic verbal consequence; +1 train fully read, −1 veto, +1 stack-ready story
+
+Reader 56 serves **“If someone is P, then they V Q.”** `Someone` and bound
+singular `they` denote the same universally ranged witness in this generic
+conditional. The exact bare event plus its complete complement therefore
+emits `Quantified(P, V Q)` and reuses existing instantiation. The measured
+`work` buyer is noun/verb ambiguous in the shared lexicon; a scratch-pack
+category selects only its overt bare event position without shadowing that
+entry or changing any benchmark registry. Signed, modal, coordinated,
+multi-verb, perfect/particle, counted, copular, other-pronoun, and incomplete
+siblings remain unread.
+
+Thirteen synthetic pins cover exact emission, existing instantiation, and
+eleven adjacent refusals. **All 2,816 tests pass; scratch lint has 0 errors and
+the same eight warnings; curated is 65/65 with an identical fresh-process
+rerun.** All eight standard DEV diffs and both grouped logic diffs are
+NEUTRAL. Outcomes remain train 23 / 1 / 470 and holdout 5 / 0 / 420.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1369→1370 (+1) | 818→819 (+1) | 31/23→34/24 (+3/+1) | 3 / 1 | 588→587 (−1) |
+| dev-holdout | 1330→1330 | 795→795 | 22/15→22/15 | 0 / 0 | 566→566 |
+
+The lifeguard conditional emits `Quantified(lifeguard, work at pool,
+positive)`, completing every premise in Mary's three-item story and making
+all three represented queries stack-ready. Their verdicts safely remain
+undetermined. No TEST look was spent. Cumulative state is 819/1647 and
+795/1607 fully read, 587/566 vetoes, 24/15 stack-ready stories, and fifty-six
+classes.
+
+**Next:** regenerate the train frontier again. Reject premise-only gains whose
+questions lack ask shapes or whose blocker facts do not overlap the query.
+
+---
 
 # Session 75 (2026-07-22): Phase B reader 55 — restrictive-only modal-passive union; +1 train fully read, −1 veto, +1 stack-ready story
 

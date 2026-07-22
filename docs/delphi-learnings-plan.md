@@ -751,6 +751,14 @@ veto, and +1 / +0 stack-ready story (+3 / +0 items). Outcomes and hazards
 remain neutral; exact sortal preservation deliberately blocks an otherwise
 tempting query conversion. Fifty-five classes are served.
 
+Reader 56 serves someone-generic verbal consequences **“If someone is P,
+then they V Q.”** It treats singular `they` as bound by the generic
+conditional and reuses the existing quantified-instantiation path. A
+scratch-pack category selects the measured ambiguous bare event without
+shadowing shared lexicon data. Incremental movement is +1 / +0 fact-bearing
+and fully-read premise, −1 / 0 veto, and +1 / +0 stack-ready story (+3 / +0
+items). Outcomes and hazards remain neutral. Fifty-six classes are served.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /

@@ -751,6 +751,30 @@ rules:
     emits:
       - {fact: quantified, cls: "{p}", pred: "{q}", polarity: false}
 
+  # Phase B reader 56: the verbal-consequence sibling of the established
+  # someone generic — "If someone is P, then they V Q". `Someone` and the
+  # bound singular-they form denote the same universally ranged witness in
+  # this conditional, so the existing Quantified instantiation path applies.
+  # The exact non-state bare verb plus its complete complement render like a
+  # ground-verbal predicate. Signed, modal, coordinated, multi-verb,
+  # particle/perfect, counted, copular, other-pronoun, and incomplete siblings
+  # remain whole-unread.
+  - id: logic/conditional-someone-is-then-they-verbal
+    phase: read
+    match:
+      sentence:
+        - {lit: if, at_start: true}
+        - {lit: someone}
+        - {lit: is}
+        - {slot: p, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+        - {lit: then}
+        - {lit: they}
+        - {slot: v, cat: logic_bare_event_verb, bare_form: true, single_word: true}
+        - {slot: q, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: quantified, cls: "{p}", pred: "{v} {q}", polarity: true}
+
   # Phase B reader 7: the someone-form's PLURAL-generic twin — "If people
   # are P, then they are [not] Q". Bare 'people' plays exactly someone's
   # grammatical role (the unrestricted human quantifier; FOLIO-FOL renders

@@ -3457,3 +3457,31 @@ undetermined because Rockie lacks explicit animal membership. Outcomes remain
 
 **Next:** prefer readers that complete nearly-ready stories while retaining
 their exact sortal restrictions.
+
+## Phase B reader 56 — someone-generic verbal consequence (2026-07-22)
+
+Reader 56 serves **“If someone is P, then they V Q.”** Bound singular `they`
+refers to the same universally ranged witness introduced by `someone`, so the
+reader emits `Quantified(P, V Q)` and reuses existing instantiation. A
+scratch-pack category selects the measured ambiguous bare event `work`
+without shadowing the shared noun/verb lexicon entry. Signed, modal,
+coordinated, multi-verb, perfect/particle, counted, copular, other-pronoun,
+and incomplete siblings refuse.
+
+Thirteen synthetic pins pass. **pytest 2,816 passed; scratch lint 0 errors
+with the same eight warnings; curated 65/65 with an identical fresh-process
+rerun.** All eight standard DEV diffs and both grouped logic diffs are
+NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1369→1370 (+1) | 818→819 (+1) | 31/23→34/24 (+3/+1) | 3 / 1 | 588→587 (−1) |
+| dev-holdout | 1330→1330 | 795→795 | 22/15→22/15 | 0 / 0 | 566→566 |
+
+The reader completes Mary's three-item story; every represented query becomes
+stack-ready and remains safely undetermined. Outcomes stay 23/1/470 and
+5/0/420. Cumulative state is 819/1647 and 795/1607 fully read, 587/566
+vetoes, and 24/15 stack-ready stories. Fifty-six classes are served.
+
+**Next:** require both a represented ask and a real query-key overlap when
+pricing the regenerated one-away frontier.

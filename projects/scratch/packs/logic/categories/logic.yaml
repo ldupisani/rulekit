@@ -85,6 +85,12 @@ categories:
     # slot's `blocks_skipped` gate.
     named_subject_article:
         parent: article
+    # Phase B reader 56: overt bare event verbs whose shared lexicon entry is
+    # genuinely sense-ambiguous. Category membership supplies the local
+    # grammatical selection without shadowing the shared entry or changing
+    # any non-scratch registry. Each new member requires its own buyer.
+    logic_bare_event_verb:
+        parent: verb
 members:
     conjunctive_marker: [and]
     disjunctive_marker: [or]
@@ -93,6 +99,7 @@ members:
     agent_marker: [by]
     neither_marker: [neither]
     appointive_verb: [appointed]
+    logic_bare_event_verb: [work]
     enumeration_type_noun: [type]
     irregular_past_participle: [made]
     named_subject_article: [a, an, the]
