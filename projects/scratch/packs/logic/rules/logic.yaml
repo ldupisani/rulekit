@@ -2094,6 +2094,28 @@ rules:
     emits:
       - {fact: atom, entity: "{subj}", pred: "{v} {p}", polarity: true}
 
+  # Phase B reader 51: fronted predicative adjunct plus ground event —
+  # "After being ADJECTIVE, NAME V-ed REST." The adjunct is structural context:
+  # this reader emits only the entailed main event and does not independently
+  # assert the adjunct property. The comma fixes the clause boundary; the
+  # proper-name subject fixes the morphology-gated verb as the finite event
+  # head. Signed, modal, coordinated, pronominal,
+  # empty-rest, other-adjunct, and missing-boundary siblings stay unread.
+  - id: logic/ground-verbal-after-being-adjective
+    phase: read
+    match:
+      sentence:
+        - {lit: after, at_start: true}
+        - {lit: being}
+        - {slot: adjunct, type: adjective, single_word: true}
+        - {lit: ',', consume_skipped: true}
+        - {slot: subj, type: proper_name, blocks_skipped: named_subject_article}
+        - {slot: v, type: nonstate_verb, single_word: true, past_participle: true}
+        - {slot: rest, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: atom, entity: "{subj}", pred: "{v} {rest}", polarity: true}
+
   # ---- S2: conjunctive SUBJECTS distribute over a copular pred -------------
   # "Oxford Street and Regent Street are in London" ⊢ in-london(os) ∧
   # in-london(rs). Distribution is sound for distributive predicates and

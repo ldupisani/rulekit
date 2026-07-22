@@ -692,6 +692,15 @@ fact-bearing and fully-read premises, −2 / 0 truth-scope vetoes, and +0 / +0
 stack-ready stories. Grammar, inference, outcomes, and hazards remain neutral;
 fifty classes remain served.
 
+Reader 51 serves fronted predicative adjuncts plus ground events **“After
+being ADJECTIVE, NAME V-ed REST.”** It emits only the complete normalized
+main-event `Atom`, not an independent adjunct property. Incremental movement
+is +1 / +0 fact-bearing and fully-read premise, −1 / 0 truth-scope veto, and
++0 / +0 stack-ready stories on dev-train / dev-holdout. Outcomes and hazards
+remain neutral. The bare-plural present-event disjunction candidate is banked
+until its subject/verb/possessive-object token boundary is independently
+proved. Fifty-one classes are served.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /

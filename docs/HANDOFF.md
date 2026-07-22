@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–50 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–51 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -100,19 +100,21 @@
 > inventing an object — and (reader 49) restricted past-passive existentials
 > `Some CLSs RESTRICTION were V-ed REST`, preserving both complete keys — and
 > (reader 50) modal-passive existentials `Some CLSs can be V-ed REST`, retaining
-> possibility inside the exact property rather than asserting actuality.
+> possibility inside the exact property rather than asserting actuality — and
+> (reader 51) fronted predicative adjuncts `After being ADJECTIVE, NAME V-ed
+> REST`, emitting only the complete main event.
 > Subsequent pack-scoped lexical activations (`act/acts`, `prevent`, and the
 > regular-past forms `supported`/`researched`) make
 > the pre-existing Stage 9f verbal existential reader reachable for one train
 > premise and the Stage 6 ground-verbal reader reachable for two more; they
 > earn movement but no new construction-class credit.
-> Cumulative movement from Phase A is +92 / +74 fully-read premise instances
+> Cumulative movement from Phase A is +93 / +74 fully-read premise instances
 > and +11 / +10
 > stack-ready stories on dev-train / dev-holdout, with no
-> verdict regression or hazard increase; truth-scope vetoes improve by 72 / 48, while
+> verdict regression or hazard increase; truth-scope vetoes improve by 73 / 48, while
 > holdout collision/quarantine improve 12→9 / 24→18. Forty-nine construction classes
 > are served. Both stack-ready thresholds are now met, but the conjunctive Phase C
-> gate remains unmet (fully read 812/1647 and 795/1607 vs 852/850; vetoes 594/566
+> gate remains unmet (fully read 813/1647 and 795/1607 vs 852/850; vetoes 593/566
 > vs ≤499/460; stack-ready stories 22/15 vs ≥22/10).
 > Next regenerate the fully-read and truth-scope-veto frontier, prioritizing
 > train-side movement. The
@@ -138,6 +140,41 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 68 (2026-07-22): Phase B reader 51 — fronted predicative adjunct plus ground event; +1 train fully read and −1 veto
+
+Reader 51 serves **“After being ADJECTIVE, NAME V-ed REST.”** The fronted
+adjunct is consumed as structural context but is not independently asserted;
+the reader emits only the exact positive main-event `Atom`. The comma fixes
+the clause boundary, the proper-name subject fixes the finite event head, and
+productive regular morphology normalizes its tense. Signed, modal,
+coordinated, pronominal, empty-rest, other-adjunct, and missing-boundary
+siblings remain unread. The buyer adds only pack-scoped `retired → retire`.
+
+Ten synthetic pins cover exact main-event emission, non-emission of the
+adjunct property, and eight adjacent refusals. **All 2,738 tests pass; scratch
+lint has 0 errors and the same eight warnings; curated is 65/65 with an
+identical fresh-process rerun.** All eight standard DEV diffs and both grouped
+logic diffs are NEUTRAL. Outcomes remain train 21 correct / 1 pre-existing
+poisoned-text wrong / 472 declined and holdout 4 / 0 / 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1363→1364 (+1) | 812→813 (+1) | 28/22→28/22 | 3 / 1 | 594→593 (−1) |
+| dev-holdout | 1330→1330 | 795→795 | 22/15→22/15 | 0 / 0 | 566→566 |
+
+The sole buyer emits `Atom(brian winter, retire in 2012)`, becomes fully
+read, and loses its veto. Other unread premises and absent query reach prevent
+stack movement. Cumulative state is 813/1647 and 795/1607 fully read, 593/566
+vetoes, and 22/15 stack-ready stories. Fifty-one classes are served. The
+bare-plural present-event disjunction candidate was banked before landing:
+its measured buyer still needs subject, verb, and possessive-object lexical
+infrastructure, so the grammar boundary is not yet proven. No TEST look was
+spent.
+
+**Next:** regenerate the train frontier with that disjunction banked.
+
+---
 
 # Session 67 (2026-07-22): Stage 6 lexical activation — regular-past ground events; +2 train fully read and −2 vetoes
 

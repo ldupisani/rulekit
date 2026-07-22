@@ -3242,3 +3242,31 @@ remain unscheduled.
 
 **Next:** prefer a genuine train-side construction reader over another
 isolated lexical activation.
+
+## Phase B reader 51 — fronted predicative adjunct plus ground event (2026-07-22)
+
+Reader 51 serves **“After being ADJECTIVE, NAME V-ed REST.”** It consumes the
+fronted adjunct as context without minting an adjunct fact, and emits only the
+exact main-event `Atom`. The comma, proper-name subject, productive regular
+morphology, and terminal boundary prove the construction. Signed, modal,
+coordinated, pronominal, empty-rest, other-adjunct, and incomplete siblings
+refuse. Pack-scoped `retired → retire` activates the buyer.
+
+Ten synthetic pins pass. **pytest 2,738 passed; scratch lint 0 errors with the
+same eight warnings; curated 65/65 with an identical fresh-process rerun.** All
+eight standard DEV diffs and both grouped logic diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1363→1364 (+1) | 812→813 (+1) | 28/22→28/22 | 3 / 1 | 594→593 (−1) |
+| dev-holdout | 1330→1330 | 795→795 | 22/15→22/15 | 0 / 0 | 566→566 |
+
+The sole buyer emits the normalized retirement event, becomes fully read, and
+loses its veto. Other unread premises and absent query reach prevent stack
+movement. Cumulative state is 813/1647 and 795/1607 fully read, 593/566 vetoes,
+and 22/15 stack-ready stories. Fifty-one classes are served. The attempted
+bare-plural present-event disjunction remains banked because its buyer does
+not yet prove the intended token/category boundary. Phase C and TEST look #6
+remain unscheduled.
+
+**Next:** regenerate the train frontier with that disjunction banked.
