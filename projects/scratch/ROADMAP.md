@@ -2816,3 +2816,35 @@ stack-ready stories. Thirty-eight classes are served. No TEST look was spent.
 
 **Next:** regenerate the exact frontier. Train stack readiness is one story
 short at 21/22; fully-read and veto thresholds remain independently binding.
+
+## Phase B reader 39 — reduced-passive definite membership (2026-07-22)
+
+Reader 39 serves **“The DESCRIPTION is a/an CLS V-ed REST.”** The definite
+subject, indefinite predicate article, noun-category base class, productive
+past participle, bounded tail, and terminal period prove the complete
+construction. It emits both entailed atoms: base class membership and the
+exact participially restricted property. Finite/bare verbs, auxiliary
+passives, irregular participles outside the productive morphology gate,
+sign, coordination, further clauses, and missing boundaries refuse.
+
+Nineteen synthetic pins pass. **pytest 2,526 passed; scratch lint 0 errors
+with the same eight warnings; curated 65/65 with an identical fresh-process
+rerun.** All eight standard DEV diffs and both grouped logic diffs are
+NEUTRAL. A first grouped probe caught and repaired a specific-reader shadowing
+regression by preserving the independently entailed base-class atom.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1346→1346 | 794→795 (+1) | 27/21→28/22 (+1/+1) | 6 / 2 | 611→611 |
+| dev-holdout | 1325→1325 | 789→789 | 22/15→22/15 | 0 / 0 | 572→572 |
+
+The reader appears in seven train rows / two stories across all gold kinds.
+The Chevrolet premise was already fully read. The Blake McFall premise is the
+sole new fully-read instance, and its represented `6a527cece7da` query becomes
+the sole new stack-ready item/story. Cumulative state is 795/1647 and 789/1607
+fully read, 611/572 vetoes, and 22/15 stack-ready stories. Thirty-nine classes
+are served. Both stack targets are met; fully-read and veto thresholds still
+bind, so Phase C and TEST look #6 remain unscheduled.
+
+**Next:** regenerate the frontier and prioritize readers with measured
+fully-read or truth-scope-veto movement.

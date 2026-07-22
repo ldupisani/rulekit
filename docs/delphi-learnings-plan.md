@@ -561,6 +561,17 @@ premises, and +1 / +0 stack-ready stories on dev-train / dev-holdout;
 vetoes, outcomes, and hazards remain neutral. Thirty-eight classes are
 served, and the train stack-ready threshold is now 21/22 stories.
 
+Reader 39 serves definite-description memberships with reduced passive
+relatives **“The DESCRIPTION is a/an CLS V-ed REST.”** It emits the entailed
+base-class atom plus the exact restricted-property atom, using the predicate
+article, noun category, productive past-participle morphology, and complete
+sentence boundary as its proof. Incremental movement is +0 / +0 fact-bearing,
++1 / +0 fully-read premise, and +1 / +0 stack-ready item/story on dev-train /
+dev-holdout; vetoes, outcomes, and hazards remain neutral. Thirty-nine classes
+are served. Both stack-story thresholds are now met, but the fully-read and
+truth-scope-veto thresholds remain conjunctively unmet, so Phase C and TEST
+look #6 are not scheduled.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /

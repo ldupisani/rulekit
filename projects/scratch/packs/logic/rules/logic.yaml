@@ -449,6 +449,29 @@ rules:
     emits:
       - {fact: atom, entity: "{subj.singular}", pred: "{pred}", polarity: true}
 
+  # Phase B reader 39: definite ground membership with a reduced passive
+  # relative — "The DESCRIPTION is a/an CLS V-ed REST". The predicate
+  # article proves the nominal class even when its unit is ambiguous, and
+  # the opt-in past-participle gate proves the modifier boundary. The full
+  # class membership and the full participial restriction are both entailed;
+  # no event or identity is invented. Sign, coordination, finite/bare verbs, auxiliary
+  # passives, further clauses, and missing boundaries remain whole-unread.
+  - id: logic/ground-copular-definite-description-reduced-passive
+    phase: read
+    match:
+      sentence:
+        - {lit: the, at_start: true, consume_skipped: true}
+        - {slot: subj, span: true, span_blocks: [negation, quantifier, conjunction, disjunctive_marker, preposition, verb, future_modal, capacity_modal, interrogative, complementizer, wh_which], span_blocks_counted: true}
+        - {lit: is}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: cls, cat: noun}
+        - {slot: v, type: nonstate_verb, single_word: true, past_participle: true}
+        - {slot: rest, span: true, span_blocks: [negation, quantifier, conjunction, disjunctive_marker, verb, future_modal, capacity_modal, interrogative, complementizer, wh_which]}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: atom, entity: "{subj.singular}", pred: "{cls}", polarity: true}
+      - {fact: atom, entity: "{subj.singular}", pred: "{cls} {v} {rest}", polarity: true}
+
   # Stage 9e: the stated alias — "NAME is/was (also) known as NAME2" asserts
   # an identity between two names, so ground atoms carry across it in BOTH
   # directions (synth/alias-copy-*). Both slots are `proper_name` (a

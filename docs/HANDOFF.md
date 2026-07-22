@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–38 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–39 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -74,16 +74,19 @@
 > indefinite existentials `There was a/an CLS PREPOSITION the DESCRIPTION`,
 > preserving the qualified definite PP without minting a witness — and
 > (reader 38) definite-description ground memberships `The DESCRIPTION is
-> a/an PREDICATE`, emitting one exact `Atom` for the described referent.
-> Cumulative movement from Phase A is +74 / +68 fully-read premise instances
-> and +10 / +10
+> a/an PREDICATE`, emitting one exact `Atom` for the described referent — and
+> (reader 39) definite-description memberships with reduced passive relatives
+> `The DESCRIPTION is a/an CLS V-ed REST`, emitting both entailed base-class
+> membership and the exact restricted property.
+> Cumulative movement from Phase A is +75 / +68 fully-read premise instances
+> and +11 / +10
 > stack-ready stories on dev-train / dev-holdout, with no
 > verdict regression or hazard increase; truth-scope vetoes improve by 55 / 42, while
-> holdout collision/quarantine improve 12→9 / 24→18. Thirty-eight construction classes
-> are served. The holdout stack-ready threshold is now exceeded, but the
-> conjunctive Phase C gate remains unmet (fully read 794/1647 and 789/1607 vs
-> 852/850; vetoes 611/572 vs ≤499/460; stack-ready stories 21/15 vs ≥22/10).
-> Next regenerate the frontier after buying definite-description membership; the
+> holdout collision/quarantine improve 12→9 / 24→18. Thirty-nine construction classes
+> are served. Both stack-ready thresholds are now met, but the conjunctive Phase C
+> gate remains unmet (fully read 795/1647 and 789/1607 vs 852/850; vetoes 611/572
+> vs ≤499/460; stack-ready stories 22/15 vs ≥22/10).
+> Next regenerate the frontier for fully-read and truth-scope-veto movement; the
 > remaining candidates require lexical, definite-description, coreference,
 > or deeper composition infrastructure. The unbought outer-quantified verbal
 > relative remains banked pending composition evidence. Reader 4's opt-in
@@ -106,6 +109,51 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 53 (2026-07-22): Phase B reader 39 — reduced-passive definite membership; +1 train fully read and stack-ready story
+
+One reader serves **“The DESCRIPTION is a/an CLS V-ed REST.”** The predicate
+article and noun-category gate prove the base class even when the unit is
+lexically ambiguous (`building`); the opt-in productive past-participle gate
+proves the reduced-relative boundary. The construction emits the two positive
+atoms it entails: base `CLS` membership and the exact `CLS V REST` restriction.
+It invents neither an event nor an identity. Sign, coordination, finite/bare
+verbs, auxiliary passives, irregular participles outside the productive gate,
+further clauses, missing tails, and missing boundaries remain unread.
+
+Nineteen synthetic pins cover both exact emissions, exact-membership question
+composition, a changed-description null, and sixteen adjacent refusals. The
+first grouped probe exposed a shadowing regression on “The Astro is a van
+produced by Chevrolet”: the specific reader suppressed the older broad
+copular reader's derived base membership. Emitting the independently entailed
+base-class atom repaired that regression. **All 2,526 tests pass; scratch lint
+has 0 errors and the same eight warnings; curated is 65/65 with an identical
+fresh-process rerun.** All eight standard DEV diffs and both grouped logic
+diffs are NEUTRAL. Outcomes remain train 21 correct / 1 pre-existing
+poisoned-text wrong / 472 declined and holdout 4 / 0 / 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1346→1346 | 794→795 (+1) | 27/21→28/22 (+1/+1) | 6 / 2 | 611→611 |
+| dev-holdout | 1325→1325 | 789→789 | 22/15→22/15 | 0 / 0 | 572→572 |
+
+Across all gold kinds the reader appears in seven train rows / two stories
+and no holdout rows. The Chevrolet premise was already fully read and remains
+behaviorally identical. The Blake McFall premise supplies the sole fully-read
+gain; its represented `6a527cece7da` conclusion gains the last premise reader
+and becomes stack-ready. The sibling location query retains its separate
+paraphrase gap, and the remaining sibling is `Uncertain` text gold.
+
+Cumulative recorded-frame state is 795/1647 and 789/1607 fully read, 611/572
+truth-scope vetoes, 22/15 stack-ready stories, collision 8/9, and quarantine
+16/18. Thirty-nine classes are served. Both stack thresholds are met, but the
+fully-read and veto thresholds still bind conjunctively; no TEST look was
+spent.
+
+**Next:** regenerate and rank the frontier by fully-read and truth-scope-veto
+movement. Meeting the final stack target does not schedule look #6.
+
+---
 
 # Session 52 (2026-07-22): Phase B reader 38 — definite-description ground membership; +2/+4 fully read, +1 train stack-ready story
 
