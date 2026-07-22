@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–54 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–55 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -108,7 +108,9 @@
 > same-subject coordination `NAME is a/an CLS, and it is not P`, whose
 > punctuation-bound immediate `it` safely emits both clauses — and (reader
 > 54) modal-passive local coordination `NAME can be V-ed REST, and it is P`,
-> preserving possibility and the positive local property separately.
+> preserving possibility and the positive local property separately — and
+> (reader 55) restrictive-only modal-passive unions `The only CLSs that can be
+> V-ed REST are L and R`, preserving the complete reverse-direction class.
 > Subsequent pack-scoped lexical activations (`act/acts`, `prevent`, and the
 > regular-past forms `supported`/`researched`) make
 > the pre-existing Stage 9f verbal existential reader reachable for one train
@@ -122,14 +124,14 @@
 > A later pack-scoped `plots`/`swallow` activation makes the existing Stage 6
 > ground reader consume one controlled-infinitive train premise; it earns
 > movement but no new construction-class credit.
-> Cumulative movement from Phase A is +97 / +74 fully-read premise instances
-> and +11 / +10
+> Cumulative movement from Phase A is +98 / +74 fully-read premise instances
+> and +12 / +10
 > stack-ready stories on dev-train / dev-holdout, with no
-> verdict regression or hazard increase; truth-scope vetoes improve by 77 / 48, while
-> holdout collision/quarantine improve 12→9 / 24→18. Fifty-four construction classes
+> verdict regression or hazard increase; truth-scope vetoes improve by 78 / 48, while
+> holdout collision/quarantine improve 12→9 / 24→18. Fifty-five construction classes
 > are served. Both stack-ready thresholds are now met, but the conjunctive Phase C
-> gate remains unmet (fully read 817/1647 and 795/1607 vs 852/850; vetoes 589/566
-> vs ≤499/460; stack-ready stories 22/15 vs ≥22/10).
+> gate remains unmet (fully read 818/1647 and 795/1607 vs 852/850; vetoes 588/566
+> vs ≤499/460; stack-ready stories 23/15 vs ≥22/10).
 > Next regenerate the fully-read and truth-scope-veto frontier, prioritizing
 > train-side movement. The
 > remaining candidates require lexical, definite-description, coreference,
@@ -154,6 +156,42 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 75 (2026-07-22): Phase B reader 55 — restrictive-only modal-passive union; +1 train fully read, −1 veto, +1 stack-ready story
+
+Reader 55 serves **“The only CLSs that can be V-ed REST are L and R.”** `Only`
+reverses ordinary descriptive direction: members of the complete restricted
+class belong to the listed union. The final `and` enumerates an inclusive
+union; it neither says each witness is both branches nor asserts exclusivity.
+Productive participle morphology proves passive voice. Non-only, singular,
+active, signed, modal-free, disjunctive, three-branch, article-marked-branch,
+and missing-boundary siblings remain unread. No new lexicon or inference is
+needed.
+
+Thirteen synthetic pins cover the complete restricted class, inclusive-union
+semantics, and eleven adjacent refusals. **All 2,803 tests pass; scratch lint
+has 0 errors and the same eight warnings; curated is 65/65 with an identical
+fresh-process rerun.** All eight standard DEV diffs and both grouped logic
+diffs are NEUTRAL. Outcomes remain train 23 / 1 / 470 and holdout 5 / 0 / 420.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1368→1369 (+1) | 817→818 (+1) | 28/22→31/23 (+3/+1) | 3 / 1 | 589→588 (−1) |
+| dev-holdout | 1330→1330 | 795→795 | 22/15→22/15 | 0 / 0 | 566→566 |
+
+The buyer emits `QuantifiedDisjunction(animal can be spot near campus,
+rabbit, squirrel, inclusive)`, becomes fully read, and loses its veto. Every
+premise in the Rockie story is now fully read, so its represented disjunctive
+queries become stack-ready. The verdict remains safely undetermined: Rockie
+has `can be spot near campus` but no explicit `animal` membership. Dropping
+that sortal constraint would be unsound and is not done. Cumulative state is
+818/1647 and 795/1607 fully read, 588/566 vetoes, 23/15 stack-ready stories,
+and fifty-five classes. No TEST look was spent.
+
+**Next:** prioritize similarly exact readers that complete nearly-ready
+stories; preserve sortal restrictions even when they block a conversion.
+
+---
 
 # Session 74 (2026-07-22): Phase B reader 54 — modal-passive local positive coordination; +1 train fully read and −1 veto
 

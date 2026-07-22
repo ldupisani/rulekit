@@ -1627,6 +1627,34 @@ rules:
     emits:
       - {fact: quantified_disjunction, cls: "{cls.singular}", left: "{v1} {p1}", right: "{v2} {p2}", exclusive: true}
 
+  # Phase B reader 55: restrictive-only modal-passive union —
+  # "The only CLSs that can be V-ed REST are L and R." `Only` reverses the
+  # ordinary descriptive direction: members of the complete restricted class
+  # belong to the listed union. `and` enumerates that union; it does not claim
+  # every witness is both L and R, nor establish exclusivity. Productive
+  # participle morphology proves passive voice. Non-only, singular, active,
+  # signed, modal-free, disjunctive, three-branch, and incomplete siblings
+  # remain unread.
+  - id: logic/qdisj-only-modal-passive-union
+    phase: read
+    match:
+      sentence:
+        - {lit: the, at_start: true, consume_skipped: true}
+        - {lit: only}
+        - {slot: cls, type: bare_plural}
+        - {lit: that}
+        - {lit: can}
+        - {lit: be}
+        - {slot: v, type: nonstate_verb, single_word: true, past_participle: true}
+        - {slot: rest, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal, interrogative, complementizer, wh_which]}
+        - {lit: are}
+        - {slot: left, type: bare_plural}
+        - {lit: and}
+        - {slot: right, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: quantified_disjunction, cls: "{cls.singular} can be {v} {rest}", left: "{left.singular}", right: "{right.singular}", exclusive: false}
+
   # ---- Stage 4: quantifier morphology + existentials (ROADMAP.md) -----------
   # 'any' is an ARTICLE (difg-mined) — auto-skipped, so an ordinary lit can
   # never see it; `consume_skipped` (schemas.MatchToken) stops the skip AT

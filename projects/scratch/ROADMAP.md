@@ -3430,3 +3430,30 @@ classes are served.
 
 **Next:** inspect the restrictive-only frontier without weakening its reverse
 direction semantics.
+
+## Phase B reader 55 — restrictive-only modal-passive union (2026-07-22)
+
+Reader 55 serves **“The only CLSs that can be V-ed REST are L and R.”** It
+models the reverse `only` direction as an inclusive `QuantifiedDisjunction`
+over the complete restricted class. It does not assert both branches or
+exclusivity. Productive participle morphology proves passive voice. Non-only,
+singular, active, signed, modal-free, disjunctive, larger, article-marked, and
+incomplete siblings refuse.
+
+Thirteen synthetic pins pass. **pytest 2,803 passed; scratch lint 0 errors with
+the same eight warnings; curated 65/65 with an identical fresh-process rerun.**
+All eight standard DEV diffs and both grouped logic diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1368→1369 (+1) | 817→818 (+1) | 28/22→31/23 (+3/+1) | 3 / 1 | 589→588 (−1) |
+| dev-holdout | 1330→1330 | 795→795 | 22/15→22/15 | 0 / 0 | 566→566 |
+
+The reader completes all premises in the Rockie story and makes its three
+queries stack-ready. Exact sortal preservation keeps the verdict
+undetermined because Rockie lacks explicit animal membership. Outcomes remain
+23/1/470 and 5/0/420. Cumulative state is 818/1647 and 795/1607 fully read,
+588/566 vetoes, and 23/15 stack-ready stories. Fifty-five classes are served.
+
+**Next:** prefer readers that complete nearly-ready stories while retaining
+their exact sortal restrictions.
