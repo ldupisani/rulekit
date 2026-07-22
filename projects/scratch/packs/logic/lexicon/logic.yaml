@@ -76,3 +76,7 @@ entries:
   # copular universal fold the sport-role class symmetrically across premise
   # and query keys.
   defender: {senses: [noun], plural: defenders}
+  # Phase B lexical activation: explicit sport-role morphology serves both
+  # positive `All` and negative `No` copular universals without changing
+  # either construction.
+  umpire: {senses: [noun], plural: umpires}

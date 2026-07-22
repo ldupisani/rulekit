@@ -3722,3 +3722,25 @@ Outcomes remain 23/1/470 and 5/0/420. Cumulative state is 857/1647 and
 construction classes remain served.
 
 **Next:** Phase C still needs +9 holdout fully read and −50/−60 vetoes.
+
+## Umpire role morphology activation (2026-07-22)
+
+Pack-local `umpire`/`umpires` morphology removes the only unread unit from the
+repeated positive and negative tennis-role universals on holdout. Both existing
+fact shapes remain unchanged.
+
+Six synthetic pins pass. **pytest 2,925 passed; curated is 65/65 twice.**
+Scratch lint reports 0 errors with the same eight warnings; all eight standard
+DEV diffs and both grouped logic outcome diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1394→1394 | 857→857 | 34/24→34/24 | 0 / 0 | 549→549 |
+| dev-holdout | 1364→1364 | 841→853 (+12) | 22/15→22/15 | 12 / 1 | 520→508 (−12) |
+
+Outcomes remain 23/1/470 and 5/0/420. Both fully-read thresholds are now met.
+Cumulative state is 857/1647 and 853/1607 fully read, 549/508 vetoes, and
+24/15 stack-ready stories. Sixty-two construction classes remain served.
+
+**Next:** fully-read and stack gates are met; Phase C still needs −50/−48
+truth-scope vetoes.

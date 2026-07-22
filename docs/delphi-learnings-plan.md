@@ -821,6 +821,12 @@ stack, outcome, hazard, or class movement. The train fully-read threshold is
 now met; remaining Phase C gaps are +15 holdout fully read and −53 / −66
 vetoes.
 
+Pack-local `umpire`/`umpires` morphology then clears two otherwise-complete
+positive/negative tennis-role universals, adding +0 / +12 fully-read premises
+and reducing vetoes by 0 / 12 without fact, stack, outcome, hazard, or class
+movement. Both fully-read thresholds are now met. Phase C remains gated only
+by a further 50 / 48 truth-scope-veto reductions.
+
 Pack-local `defender`/`defenders` morphology next removes the only unread unit
 from the soccer-role universal on both splits. It adds +3 / +6 fully-read
 premises and reduces vetoes by 3 / 6 without fact, stack, outcome, hazard, or
