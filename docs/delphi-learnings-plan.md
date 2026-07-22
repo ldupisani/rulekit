@@ -793,6 +793,13 @@ noun-specific coreference. Incremental movement is +1 / +6 fact-bearing and
 fully-read premises, −1 / −6 vetoes, and +0 / +0 stack-ready stories.
 Outcomes and hazards remain neutral. Sixty-one classes are served.
 
+Reader 62 serves restricted everyone inclusive unions **“Everyone
+RESTRICTION is L, or they are R, or both.”** The final phrase proves inclusive
+semantics while the full restriction remains the quantified class.
+Incremental movement is +10 / +0 fact-bearing and fully-read premises,
+−10 / 0 vetoes, and +0 / +0 stack-ready stories. Outcomes and hazards remain
+neutral. Sixty-two classes are served.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /

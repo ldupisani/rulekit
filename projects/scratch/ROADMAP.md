@@ -3609,3 +3609,28 @@ vetoes, and 24/15 stack-ready stories. Sixty-one classes are served.
 
 **Next:** continue balanced repeated-family reductions; Phase C needs +19/+25
 fully read and −74/−76 vetoes.
+
+## Phase B reader 62 — restricted everyone inclusive union (2026-07-22)
+
+Reader 62 serves **“Everyone RESTRICTION is L, or they are R, or both.”** The
+final phrase proves an inclusive union; neither branch is asserted alone.
+`Everyone` binds `they` to the restricted witness and the complete restriction
+remains the quantified class. Unrestricted, exclusive/either, missing-both,
+signed, modal/verbal, mismatched-pronoun, coordinated-branch, and incomplete
+siblings refuse.
+
+Thirteen synthetic pins pass. **pytest 2,895 passed; scratch lint 0 errors
+with the same eight warnings; curated 65/65 twice.** All eight standard DEV
+diffs and both grouped logic diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1384→1394 (+10) | 833→843 (+10) | 34/24→34/24 | 10 / 1 | 573→563 (−10) |
+| dev-holdout | 1360→1360 | 825→825 | 22/15→22/15 | 0 / 0 | 536→536 |
+
+Outcomes remain 23/1/470 and 5/0/420; other gaps prevent stack-readiness
+movement. Cumulative state is 843/1647 and 825/1607 fully read, 563/536
+vetoes, and 24/15 stack-ready stories. Sixty-two classes are served.
+
+**Next:** prioritize holdout; Phase C needs +9/+25 fully read and −64/−76
+vetoes.

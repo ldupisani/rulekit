@@ -1664,6 +1664,34 @@ rules:
     emits:
       - {fact: quantified_disjunction, cls: "{cls}", left: "{l}", right: "{r}", exclusive: true}
 
+  # Phase B reader 62: restricted everyone inclusive disjunctions —
+  # "Everyone RESTRICTION is L, or they are R, or both". The explicit final
+  # `or both` proves inclusive semantics; neither branch is asserted alone.
+  # `Everyone` binds plural `they` to the same restricted witness, and the
+  # complete nonempty restriction remains the QuantifiedDisjunction class.
+  # Unrestricted, exclusive/either, missing-both, signed, modal/verbal,
+  # mismatched-pronoun, coordinated-branch, and incomplete siblings remain
+  # whole-unread.
+  - id: logic/qdisj-everyone-restricted-or-they-or-both
+    phase: read
+    match:
+      sentence:
+        - {lit: everyone, at_start: true}
+        - {slot: cls, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal, complementizer, interrogative, wh_which], span_blocks_counted: true}
+        - {lit: is}
+        - {slot: l, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+        - {lit: ",", consume_skipped: true}
+        - {lit: or}
+        - {lit: they}
+        - {lit: are}
+        - {slot: r, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+        - {lit: ",", consume_skipped: true}
+        - {lit: or}
+        - {lit: both}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: quantified_disjunction, cls: "{cls}", left: "{l}", right: "{r}", exclusive: false}
+
   # Phase B reader 41: reduced-passive unrestricted-object disjunctions —
   # "Everything V-ed RESTRICTION is either a/an L or a/an R". `Everything`
   # supplies the universal variable; productive past-participle morphology
