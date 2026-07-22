@@ -84,3 +84,7 @@ entries:
   # existing Grand-Slam copular universals and ground disjunctions fully
   # readable without changing their fact shapes.
   champion: {senses: [noun], plural: champions}
+  # Phase B lexical activation: a venue noun carried inside exact PP-qualified
+  # class keys. The existing universal and conditional readers already retain
+  # the preposition and object; this entry only removes the unknown-unit veto.
+  mixer: {senses: [noun]}

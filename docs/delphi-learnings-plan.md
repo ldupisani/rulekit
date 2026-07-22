@@ -832,6 +832,11 @@ universal and ground disjunction, adding +0 / +12 fully-read premises and
 reducing vetoes by 0 / 12 with neutral outcomes and hazards. Phase C remains
 gated only by a further 50 / 36 truth-scope-veto reductions.
 
+Pack-local venue noun `mixer` clears two otherwise-complete qualified
+universals, adding +6 / +0 fully-read premises and reducing vetoes by 6 / 0
+with neutral outcomes and hazards. Phase C remains gated only by a further
+44 / 36 truth-scope-veto reductions.
+
 Pack-local `defender`/`defenders` morphology next removes the only unread unit
 from the soccer-role universal on both splits. It adds +3 / +6 fully-read
 premises and reduces vetoes by 3 / 6 without fact, stack, outcome, hazard, or

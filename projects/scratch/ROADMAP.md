@@ -3765,3 +3765,22 @@ the already-passing stack metric; its exact post-increment count is deferred
 to the final classifier audit. Current vetoes are 549/496.
 
 **Next:** Phase C remains gated only by −50/−36 truth-scope vetoes.
+
+## Mixer venue lexical activation (2026-07-22)
+
+Pack-local noun `mixer` clears two otherwise-complete qualified universals in
+one train story. Six neighboring premises retain independent blockers, giving
+the activation an exact six-instance footprint.
+
+Six synthetic pins pass. **pytest 2,937 passed; curated is 65/65 twice.**
+Scratch lint reports 0 errors with the same eight warnings; all eight standard
+DEV diffs and both grouped logic outcome diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready floor | matched premise instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1394→1394 | 857→863 (+6) | ≥34/24 | 6 / 1 | 549→543 (−6) |
+| dev-holdout | 1364→1364 | 865→865 | ≥22/15 | 0 / 0 | 496→496 |
+
+Outcomes remain neutral. Current vetoes are 543/496.
+
+**Next:** Phase C remains gated only by −44/−36 truth-scope vetoes.
