@@ -821,6 +821,12 @@ stack, outcome, hazard, or class movement. The train fully-read threshold is
 now met; remaining Phase C gaps are +15 holdout fully read and −53 / −66
 vetoes.
 
+Pack-local `defender`/`defenders` morphology next removes the only unread unit
+from the soccer-role universal on both splits. It adds +3 / +6 fully-read
+premises and reduces vetoes by 3 / 6 without fact, stack, outcome, hazard, or
+class movement. Remaining Phase C gaps are +9 holdout fully read and −50 / −60
+vetoes.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /

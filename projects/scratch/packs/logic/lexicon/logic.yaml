@@ -72,3 +72,7 @@ entries:
   # receive the ordinary adjective fallback, so declare this modifier only in
   # the isolated logic pack.
   nba: {senses: [adjective]}
+  # Phase B lexical activation: explicit plural morphology lets the existing
+  # copular universal fold the sport-role class symmetrically across premise
+  # and query keys.
+  defender: {senses: [noun], plural: defenders}

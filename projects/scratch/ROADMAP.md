@@ -3701,3 +3701,24 @@ construction classes remain served.
 
 **Next:** prioritize holdout fully-read movement; Phase C still needs +15
 holdout fully read and −53/−66 vetoes.
+
+## Defender role morphology activation (2026-07-22)
+
+Pack-local `defender`/`defenders` morphology removes the only unread unit from
+the repeated soccer-role universal on both splits. Its fact was already
+complete; centerback and existential neighbors retain other blockers.
+
+Six synthetic pins pass. **pytest 2,919 passed; curated is 65/65 twice.**
+Scratch lint reports 0 errors with the same eight warnings; all eight standard
+DEV diffs and both grouped logic outcome diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1394→1394 | 854→857 (+3) | 34/24→34/24 | 3 / 1 | 552→549 (−3) |
+| dev-holdout | 1364→1364 | 835→841 (+6) | 22/15→22/15 | 6 / 1 | 526→520 (−6) |
+
+Outcomes remain 23/1/470 and 5/0/420. Cumulative state is 857/1647 and
+841/1607 fully read, 549/520 vetoes, and 24/15 stack-ready stories. Sixty-two
+construction classes remain served.
+
+**Next:** Phase C still needs +9 holdout fully read and −50/−60 vetoes.
