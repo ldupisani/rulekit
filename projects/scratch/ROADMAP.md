@@ -3157,3 +3157,32 @@ unscheduled.
 
 **Next:** continue the regenerated frontier with the negative `All … are not
 …` family explicitly banked.
+
+## Phase B reader 49 — restricted past-passive existentials (2026-07-22)
+
+Reader 49 serves **“Some CLSs RESTRICTION were V-ed REST.”** `Some` plus
+plural-only `were` license the complete restricted-class fold; the opt-in
+productive participle gate proves passive voice. It emits the existing
+positive `Existential` with exact class and tense-normalized property keys.
+The mirrored ask reuses the existing consumer. Active, copular, present-
+passive, singular, modal, signed, coordinated, bare-participle, counted-class,
+empty-rest, and incomplete siblings refuse. Pack-scoped
+`established → establish` morphology activates the buyer.
+
+Sixteen synthetic pins pass. **pytest 2,705 passed; scratch lint 0 errors with
+the same eight warnings; curated 65/65 with an identical fresh-process rerun.**
+All eight standard DEV diffs and both grouped logic diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1359→1360 (+1) | 808→809 (+1) | 28/22→28/22 | 2 / 1 | 598→597 (−1) |
+| dev-holdout | 1330→1330 | 795→795 | 22/15→22/15 | 0 / 0 | 566→566 |
+
+The sole train buyer gains a direct fact, becomes fully read, and loses its
+veto; other unread premises prevent stack movement. Cumulative state is
+809/1647 and 795/1607 fully read, 597/566 vetoes, and 22/15 stack-ready
+stories. Forty-nine classes are served; Phase C and TEST look #6 remain
+unscheduled.
+
+**Next:** continue the regenerated frontier without reopening banked scope-
+ambiguous universals.

@@ -668,6 +668,14 @@ remain neutral. The cross-split `All CLSs are not PROPERTY` candidate stays
 banked because the earlier v1 falsification records mixed scope judgments and
 a confident wrong. Forty-eight classes are served.
 
+Reader 49 serves restricted past-passive existentials **“Some CLSs
+RESTRICTION were V-ed REST.”** It emits the existing positive `Existential`
+with the complete restricted class and tense-normalized passive property;
+productive participle morphology proves voice. Incremental movement is +1 /
++0 fact-bearing and fully-read premise, −1 / 0 truth-scope veto, and +0 / +0
+stack-ready stories on dev-train / dev-holdout. Outcomes and hazards remain
+neutral. Forty-nine classes are served.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /

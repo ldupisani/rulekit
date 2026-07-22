@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–48 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–49 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -97,17 +97,18 @@
 > using a dedicated positive ground implication that fires only from an exact
 > positive Atom — and (reader 48) plural-agreeing intransitive existentials
 > `Some CLSs VERB`, using the existing `Existential` fact and consumer without
-> inventing an object.
+> inventing an object — and (reader 49) restricted past-passive existentials
+> `Some CLSs RESTRICTION were V-ed REST`, preserving both complete keys.
 > A subsequent pack-scoped lexical activation (`act/acts`, `prevent`) makes
 > the pre-existing Stage 9f verbal existential reader reachable for one train
 > premise; it earns movement but no new construction-class credit.
-> Cumulative movement from Phase A is +88 / +74 fully-read premise instances
+> Cumulative movement from Phase A is +89 / +74 fully-read premise instances
 > and +11 / +10
 > stack-ready stories on dev-train / dev-holdout, with no
-> verdict regression or hazard increase; truth-scope vetoes improve by 68 / 48, while
-> holdout collision/quarantine improve 12→9 / 24→18. Forty-eight construction classes
+> verdict regression or hazard increase; truth-scope vetoes improve by 69 / 48, while
+> holdout collision/quarantine improve 12→9 / 24→18. Forty-nine construction classes
 > are served. Both stack-ready thresholds are now met, but the conjunctive Phase C
-> gate remains unmet (fully read 808/1647 and 795/1607 vs 852/850; vetoes 598/566
+> gate remains unmet (fully read 809/1647 and 795/1607 vs 852/850; vetoes 597/566
 > vs ≤499/460; stack-ready stories 22/15 vs ≥22/10).
 > Next regenerate the fully-read and truth-scope-veto frontier, prioritizing
 > train-side movement. The
@@ -133,6 +134,44 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 65 (2026-07-22): Phase B reader 49 — restricted past-passive existentials; +1 train fully read and −1 veto
+
+Reader 49 serves **“Some CLSs RESTRICTION were V-ed REST.”** `Some` and the
+plural-only copula `were` license singular folding of the complete restricted
+class; opt-in productive past-participle morphology proves passive voice. The
+full post-participle property remains exact and tense-normalized. It emits the
+existing positive `Existential` fact, and a matching ask reaches the existing
+consumer. Active, copular, present-passive, singular, modal, signed,
+coordinated, bare-participle, counted-class, empty-rest, and missing-boundary
+siblings remain unread. The buyer adds only pack-scoped
+`established → establish` morphology.
+
+Sixteen synthetic pins cover complete restricted emission, exact ask
+composition, a changed-restriction null, and thirteen adjacent refusals. **All
+2,705 tests pass; scratch lint has 0 errors and the same eight warnings;
+curated is 65/65 with an identical fresh-process rerun.** All eight standard
+DEV diffs and both grouped logic diffs are NEUTRAL. Outcomes remain train 21
+correct / 1 pre-existing poisoned-text wrong / 472 declined and holdout 4 / 0
+/ 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1359→1360 (+1) | 808→809 (+1) | 28/22→28/22 | 2 / 1 | 598→597 (−1) |
+| dev-holdout | 1330→1330 | 795→795 | 22/15→22/15 | 0 / 0 | 566→566 |
+
+The sole buyer is one train premise shared by two verdict rows. It emits
+`Existential(federal district in russia, establish in 2000)`, becomes fully
+read, and loses its veto. Other unread premises prevent stack movement.
+
+Cumulative recorded-frame state is 809/1647 and 795/1607 fully read, 597/566
+truth-scope vetoes, 22/15 stack-ready stories, collision 8/9, and quarantine
+16/18. Forty-nine classes are served. No TEST look was spent.
+
+**Next:** continue the regenerated fully-read/veto frontier, prioritizing
+train-side buyers without reopening banked scope-ambiguous universals.
+
+---
 
 # Session 64 (2026-07-22): Phase B reader 48 — intransitive verbal existentials; +1 train fully read and −1 veto
 
