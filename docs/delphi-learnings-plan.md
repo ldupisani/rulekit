@@ -773,6 +773,13 @@ movement is +0 / +10 fact-bearing and fully-read premises, 0 / −10 vetoes,
 and +0 / +0 stack-ready stories. Outcomes and hazards remain neutral.
 Fifty-eight classes are served.
 
+Reader 59 serves singular-agreeing PP-restricted negative verbal universals
+**“No CLS PREPOSITION RESTRICTION V P.”** It preserves the full qualified
+class and uses buyer-backed 3sg morphology rather than admitting plural
+siblings. Incremental movement is +0 / +9 fact-bearing and fully-read
+premises, 0 / −9 vetoes, and +0 / +0 stack-ready stories. Outcomes and
+hazards remain neutral. Fifty-nine classes are served.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /

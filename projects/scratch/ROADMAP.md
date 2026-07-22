@@ -3535,3 +3535,28 @@ served.
 
 **Next:** keep reducing the repeated holdout frontier; Phase C needs +30/+40
 fully read and −85/−91 vetoes.
+
+## Phase B reader 59 — singular PP-restricted negative event (2026-07-22)
+
+Reader 59 serves **“No CLS PREPOSITION RESTRICTION V P.”** It preserves the
+full PP-qualified class and emits the complete event predicate negatively.
+Buyer-backed scratch morphology and a 3sg category make singular agreement
+explicit; the unqualified base class and plural/bare sibling are not inferred.
+Partitives, signed/modal/coordinated, missing-restriction, multi-verb,
+counted, and incomplete siblings refuse.
+
+Thirteen synthetic pins pass. **pytest 2,856 passed; scratch lint 0 errors
+with the same eight warnings; curated 65/65 twice.** All eight standard DEV
+diffs and both grouped logic diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1373→1373 | 822→822 | 34/24→34/24 | 0 / 0 | 584→584 |
+| dev-holdout | 1345→1354 (+9) | 810→819 (+9) | 22/15→22/15 | 9 / 1 | 551→542 (−9) |
+
+Outcomes remain 23/1/470 and 5/0/420; other gaps keep the Yale story from
+stack readiness. Cumulative state is 822/1647 and 819/1607 fully read,
+584/542 vetoes, and 24/15 stack-ready stories. Fifty-nine classes are served.
+
+**Next:** rebalance toward train while retaining repeated holdout gains; Phase
+C needs +30/+31 fully read and −85/−82 vetoes.

@@ -56,3 +56,7 @@ entries:
   # Phase B reader 53: CamelCase does not receive capitalization-name
   # fallback, so the measured named subject is declared pack-locally.
   tiktok: {senses: [name]}
+  # Phase B reader 59: measured overt 3sg event morphology for the
+  # PP-restricted singular `No` universal. Bare/plural `struggle` remains a
+  # separate surface and cannot satisfy the reader's category gate.
+  struggles: {senses: [verb], verb: {lemma: struggle}}

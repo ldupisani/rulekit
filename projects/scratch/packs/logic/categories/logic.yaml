@@ -91,6 +91,11 @@ categories:
     # any non-scratch registry. Each new member requires its own buyer.
     logic_bare_event_verb:
         parent: verb
+    # Phase B reader 59: overt third-person-singular event forms licensed for
+    # the singular-agreeing restricted `No` construction. Every member needs
+    # a measured buyer; morphology alone is not guessed by the kernel.
+    logic_singular_event_verb:
+        parent: verb
 members:
     conjunctive_marker: [and]
     disjunctive_marker: [or]
@@ -100,6 +105,7 @@ members:
     neither_marker: [neither]
     appointive_verb: [appointed]
     logic_bare_event_verb: [work]
+    logic_singular_event_verb: [struggles]
     enumeration_type_noun: [type]
     irregular_past_participle: [made]
     named_subject_article: [a, an, the]

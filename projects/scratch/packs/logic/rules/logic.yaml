@@ -241,6 +241,27 @@ rules:
     emits:
       - {fact: quantified, cls: "{cls.singular}", pred: "{v} {pred}", polarity: false}
 
+  # Phase B reader 59: PP-restricted singular negative verbal universals —
+  # "No CLS PREPOSITION RESTRICTION V P". Singular event agreement leaves
+  # the full PP-qualified subject as the quantified class; the event and its
+  # complete complement form the negative predicate. This does not infer
+  # membership in the unqualified base class. Plural agreement, partitives,
+  # signed/modal/coordinated predicates, missing restrictions, multi-verb,
+  # counted, and incomplete siblings remain whole-unread.
+  - id: logic/universal-no-singular-pp-verbal
+    phase: read
+    match:
+      sentence:
+        - {lit: no, at_start: true}
+        - {slot: cls, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, preposition, future_modal, capacity_modal, complementizer, interrogative, wh_which], span_blocks_counted: true}
+        - {slot: prep, cat: preposition}
+        - {slot: restriction, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal, complementizer, interrogative, wh_which], span_blocks_counted: true}
+        - {slot: v, cat: logic_singular_event_verb, single_word: true}
+        - {slot: pred, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: quantified, cls: "{cls} {prep} {restriction}", pred: "{v} {pred}", polarity: false}
+
   # Phase B reader 15: future-negative indefinite generics —
   # "A/An CLS will not V P". The leading article marks the singular generic
   # class, `will` contributes tense only, and the explicit negator owns the
