@@ -572,6 +572,16 @@ are served. Both stack-story thresholds are now met, but the fully-read and
 truth-scope-veto thresholds remain conjunctively unmet, so Phase C and TEST
 look #6 are not scheduled.
 
+Reader 40 serves restricted plural-generic verbal conditionals **“If people
+RESTRICTION V P, then they V2 Q.”** It maps the restriction and antecedent
+event to the existing `Conditional` antecedent pair and requires bare,
+single-token event heads. Incremental movement is +0 / +1 fact-bearing and
+fully-read premise, 0 / −1 truth-scope veto, and +0 / +0 stack-ready stories
+on dev-train / dev-holdout; outcomes and hazards remain neutral. Forty classes
+are served. A broader articleless-disjunction candidate was banked when its
+buyer-preserving grammar admitted ambiguous finite verbs. Phase C and TEST
+look #6 remain unscheduled.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /

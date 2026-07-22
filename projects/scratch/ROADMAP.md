@@ -2848,3 +2848,33 @@ bind, so Phase C and TEST look #6 remain unscheduled.
 
 **Next:** regenerate the frontier and prioritize readers with measured
 fully-read or truth-scope-veto movement.
+
+## Phase B reader 40 — restricted people verbal conditionals (2026-07-22)
+
+Reader 40 serves **“If people RESTRICTION V P, then they V2 Q.”** The
+nonempty restriction and antecedent event fill the two antecedent fields of
+the existing `Conditional`; bare-form, single-token event heads prove plural
+generic agreement. Sign, modality, coordination, copulas, unrestricted or
+comma-only forms, counted spans, multi-verb predicates, and missing boundaries
+refuse.
+
+Seventeen synthetic pins pass. **pytest 2,543 passed; scratch lint 0 errors
+with the same eight warnings; curated 65/65 with an identical fresh-process
+rerun.** All eight standard DEV diffs and both grouped logic diffs are
+NEUTRAL. The surveyed articleless-disjunction alternative was banked because
+the only grammar broad enough to retain buyers also admitted an ambiguous
+finite verb as a property branch.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1346→1346 | 795→795 | 28/22→28/22 | 0 / 0 | 611→611 |
+| dev-holdout | 1325→1326 (+1) | 789→790 (+1) | 22/15→22/15 | 2 / 1 | 572→571 (−1) |
+
+The reader occurs in three holdout rows / one story and no train rows. The
+Mary's-school ordering premise is the sole new direct fact, fully-read premise,
+and consumed truth-scope operator. Other unread premises keep the story out of
+the stack-ready set. Cumulative state is 795/1647 and 790/1607 fully read,
+611/571 vetoes, and 22/15 stack-ready stories. Forty classes are served; Phase
+C and TEST look #6 remain unscheduled.
+
+**Next:** prioritize a train-side fully-read or truth-scope-veto buyer.

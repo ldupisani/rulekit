@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–39 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–40 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -77,14 +77,16 @@
 > a/an PREDICATE`, emitting one exact `Atom` for the described referent — and
 > (reader 39) definite-description memberships with reduced passive relatives
 > `The DESCRIPTION is a/an CLS V-ed REST`, emitting both entailed base-class
-> membership and the exact restricted property.
-> Cumulative movement from Phase A is +75 / +68 fully-read premise instances
+> membership and the exact restricted property — and (reader 40) restricted
+> plural-generic verbal conditionals `If people RESTRICTION V P, then they V2 Q`,
+> reusing `Conditional` for the restriction/event antecedent pair.
+> Cumulative movement from Phase A is +75 / +69 fully-read premise instances
 > and +11 / +10
 > stack-ready stories on dev-train / dev-holdout, with no
-> verdict regression or hazard increase; truth-scope vetoes improve by 55 / 42, while
-> holdout collision/quarantine improve 12→9 / 24→18. Thirty-nine construction classes
+> verdict regression or hazard increase; truth-scope vetoes improve by 55 / 43, while
+> holdout collision/quarantine improve 12→9 / 24→18. Forty construction classes
 > are served. Both stack-ready thresholds are now met, but the conjunctive Phase C
-> gate remains unmet (fully read 795/1647 and 789/1607 vs 852/850; vetoes 611/572
+> gate remains unmet (fully read 795/1647 and 790/1607 vs 852/850; vetoes 611/571
 > vs ≤499/460; stack-ready stories 22/15 vs ≥22/10).
 > Next regenerate the frontier for fully-read and truth-scope-veto movement; the
 > remaining candidates require lexical, definite-description, coreference,
@@ -109,6 +111,47 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 54 (2026-07-22): Phase B reader 40 — restricted people verbal conditionals; +1 holdout fully read and −1 veto
+
+One reader serves **“If people RESTRICTION V P, then they V2 Q.”** The
+nonempty restriction and antecedent event become the two antecedent properties
+of the existing `Conditional` fact; both event heads require bare plural
+agreement and one original token. The exact consequence reuses existing
+conditional instantiation. Signed, modal, coordinated, copular, unrestricted,
+comma-only, counted, multi-verb, and missing-boundary siblings remain unread.
+
+Seventeen synthetic pins cover exact emission, two-antecedent composition, a
+missing-antecedent null, and fourteen adjacent refusals. Two broader candidates
+were surveyed and banked first: the same verbal skeleton had no train buyer,
+and articleless indefinite disjunctions initially matched five premises but
+could not structurally refuse an ambiguous finite-verb branch without also
+losing every buyer. **All 2,543 tests pass; scratch lint has 0 errors and the
+same eight warnings; curated is 65/65 with an identical fresh-process rerun.**
+All eight standard DEV diffs and both grouped logic diffs are NEUTRAL.
+Outcomes remain train 21 correct / 1 pre-existing poisoned-text wrong / 472
+declined and holdout 4 / 0 / 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1346→1346 | 795→795 | 28/22→28/22 | 0 / 0 | 611→611 |
+| dev-holdout | 1325→1326 (+1) | 789→790 (+1) | 22/15→22/15 | 2 / 1 | 572→571 (−1) |
+
+Across all gold kinds the reader appears in three holdout rows / one story and
+no train rows. The Mary's-school ordering premise supplies the sole new direct
+fact, fully-read premise, and consumed truth-scoping conditional. Its story
+still contains several independent unread constructions, so stack readiness
+does not move. Outcomes and all hazards remain neutral.
+
+Cumulative recorded-frame state is 795/1647 and 790/1607 fully read, 611/571
+truth-scope vetoes, 22/15 stack-ready stories, collision 8/9, and quarantine
+16/18. Forty classes are served. No TEST look was spent.
+
+**Next:** regenerate the frontier and prioritize a train-side fully-read/veto
+buyer; the stack thresholds remain satisfied but the conjunctive Phase C gate
+is still closed.
+
+---
 
 # Session 53 (2026-07-22): Phase B reader 39 — reduced-passive definite membership; +1 train fully read and stack-ready story
 

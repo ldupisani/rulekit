@@ -879,6 +879,29 @@ rules:
     emits:
       - {fact: quantified, cls: "{p.singular}", pred: "{v} {q}", polarity: true}
 
+  # Phase B reader 40: restricted plural-generic verbal conditionals —
+  # "If people RESTRICTION V P, then they V2 Q". The nonempty restriction
+  # and event are the two antecedent properties of the existing Conditional
+  # fact; plural agreement requires bare, single-token event heads. Signed,
+  # modal, coordinated, copular, unrestricted, comma-only, and multi-verb
+  # siblings remain whole-unread.
+  - id: logic/conditional-people-restricted-verbal-then-they-verbal
+    phase: read
+    match:
+      sentence:
+        - {lit: if, at_start: true}
+        - {lit: people}
+        - {slot: cls, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal, complementizer, interrogative, wh_which]}
+        - {slot: v, type: nonstate_verb, bare_form: true, single_word: true}
+        - {slot: p, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+        - {lit: then}
+        - {lit: they}
+        - {slot: v2, type: nonstate_verb, bare_form: true, single_word: true}
+        - {slot: q, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: conditional, cls: "{cls.singular}", pred: "{v} {p}", then_pred: "{v2} {q}", polarity: true}
+
   # Phase B reader 19: indefinite-generic verbal conditionals —
   # "If a/an CLS V P, [then] they V2 Q". The article licenses a singular
   # generic subject; its event head is third-person singular, while the
