@@ -3485,3 +3485,27 @@ vetoes, and 24/15 stack-ready stories. Fifty-six classes are served.
 
 **Next:** require both a represented ask and a real query-key overlap when
 pricing the regenerated one-away frontier.
+
+## Phase B reader 57 — restricted someone-generic copular conditional (2026-07-22)
+
+Reader 57 serves **“If someone RESTRICTION is P, then they are [not] Q.”**
+The exact restriction and antecedent property remain separate requirements in
+the existing two-antecedent `Conditional`; bound singular `they` denotes the
+same generic witness. Unrestricted, verbal/modal, signed-antecedent,
+coordinated, disjunctive, other-pronoun, and incomplete siblings refuse.
+
+Fourteen synthetic pins pass. **pytest 2,830 passed; scratch lint 0 errors
+with the same eight warnings; curated 65/65 twice.** All eight standard DEV
+diffs and both grouped logic diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1370→1373 (+3) | 819→822 (+3) | 34/24→34/24 | 3 / 1 | 587→584 (−3) |
+| dev-holdout | 1330→1335 (+5) | 795→800 (+5) | 22/15→22/15 | 5 / 1 | 566→561 (−5) |
+
+Outcomes remain 23/1/470 and 5/0/420. Other gaps keep both buyer stories from
+stack readiness. Cumulative state is 822/1647 and 800/1607 fully read,
+584/561 vetoes, and 24/15 stack-ready stories. Fifty-seven classes are served.
+
+**Next:** prioritize repeated cross-split truth-scoping families; Phase C
+still needs +30/+50 fully read and −85/−101 vetoes.

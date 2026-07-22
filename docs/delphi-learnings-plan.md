@@ -759,6 +759,13 @@ shadowing shared lexicon data. Incremental movement is +1 / +0 fact-bearing
 and fully-read premise, −1 / 0 veto, and +1 / +0 stack-ready story (+3 / +0
 items). Outcomes and hazards remain neutral. Fifty-six classes are served.
 
+Reader 57 serves restricted someone-generic copular conditionals **“If
+someone RESTRICTION is P, then they are [not] Q.”** It preserves restriction
+and antecedent property as the two independent inputs to the existing
+`Conditional` machinery. Incremental movement is +3 / +5 fact-bearing and
+fully-read premises, −3 / −5 vetoes, and +0 / +0 stack-ready stories.
+Outcomes and hazards remain neutral. Fifty-seven classes are served.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /

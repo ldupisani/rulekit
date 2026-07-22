@@ -775,6 +775,48 @@ rules:
     emits:
       - {fact: quantified, cls: "{p}", pred: "{v} {q}", polarity: true}
 
+  # Phase B reader 57: restricted someone-generic copular conditionals —
+  # "If someone RESTRICTION is P, then they are [not] Q". The nonempty
+  # restriction and antecedent property are independently necessary, so this
+  # is the existing two-antecedent Conditional contract rather than a flat
+  # Quantified key. Bound singular `they` denotes the same ranged witness.
+  # Unrestricted, verbal/modal, signed-antecedent, coordinated, disjunctive,
+  # other-pronoun, and incomplete siblings remain whole-unread.
+  - id: logic/conditional-someone-restricted-is-then-they-are
+    phase: read
+    match:
+      sentence:
+        - {lit: if, at_start: true}
+        - {lit: someone}
+        - {slot: cls, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal, complementizer, interrogative, wh_which]}
+        - {lit: is}
+        - {slot: p, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+        - {lit: then}
+        - {lit: they}
+        - {lit: are}
+        - {slot: q, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: conditional, cls: "{cls}", pred: "{p}", then_pred: "{q}", polarity: true}
+
+  - id: logic/conditional-someone-restricted-is-then-they-are-not
+    phase: read
+    match:
+      sentence:
+        - {lit: if, at_start: true}
+        - {lit: someone}
+        - {slot: cls, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal, complementizer, interrogative, wh_which]}
+        - {lit: is}
+        - {slot: p, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+        - {lit: then}
+        - {lit: they}
+        - {lit: are}
+        - {lit: not}
+        - {slot: q, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: conditional, cls: "{cls}", pred: "{p}", then_pred: "{q}", polarity: false}
+
   # Phase B reader 7: the someone-form's PLURAL-generic twin — "If people
   # are P, then they are [not] Q". Bare 'people' plays exactly someone's
   # grammatical role (the unrestricted human quantifier; FOLIO-FOL renders
