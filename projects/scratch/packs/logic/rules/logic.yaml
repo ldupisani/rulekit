@@ -1103,6 +1103,26 @@ rules:
     emits:
       - {fact: disjunction, entity: "{subj}", left: "have {left}", right: "{v} {right}", exclusive: false}
 
+  # Phase B reader 46: named indefinite possession — "NAME has a/an P".
+  # Singular `has` canonicalizes to the logic atom key `have P`; the object
+  # article, one noun-category compound, and terminal period bound one
+  # complete positive property. This is the natural ground-Atom bridge for
+  # possessive quantified/conditional facts, distinct from arithmetic's
+  # generic Predication fold. Article-marked proper-name, common-noun,
+  # pronominal, signed, modal, verbal, coordinated, disjunctive, counted,
+  # larger-property, appositive, and missing-boundary siblings remain unread.
+  - id: logic/ground-named-has-indefinite
+    phase: read
+    match:
+      sentence:
+        - {slot: subj, type: proper_name, at_start: true, blocks_skipped: named_subject_article}
+        - {lit: has}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: pred, cat: noun, span_blocks_counted: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: atom, entity: "{subj}", pred: "have {pred.surface}", polarity: true}
+
   # Stage 9j: the restricted stative-'have' universal — "CLSs that are
   # RESTRICTOR have NP PARTICIPLE at them" ("Speedways that are still
   # being used have races held at them") -> Conditional(cls, restrictor,
@@ -2400,6 +2420,25 @@ asks:
       prep: "{prep}"
       cls: "{cls}"
       polarity: "false"
+
+  # Reader 46's exact question-side twin. The same proper-name, article,
+  # compound-property, and sign gates keep fact and query keys symmetric.
+  - id: ask/logic-ground-named-has-indefinite
+    match:
+      question:
+        - {lit: is, at_start: true}
+        - {lit: it}
+        - {lit: 'true'}
+        - {lit: that}
+        - {slot: subj, type: proper_name, blocks_skipped: named_subject_article}
+        - {lit: has}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: pred, cat: noun, span_blocks_counted: true}
+    resolves:
+      consumer: logic-verdict
+      entity: "{subj}"
+      pred: "have {pred.surface}"
+      polarity: "true"
 
   - id: ask/logic-disj-embedded-bare
     match:

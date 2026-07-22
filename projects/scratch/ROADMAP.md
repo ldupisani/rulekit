@@ -3038,3 +3038,33 @@ Cumulative state is 806/1647 and 793/1607 fully read, 600/568 vetoes, and
 look #6 remain unscheduled.
 
 **Next:** regenerate the fully-read/truth-scope-veto frontier.
+
+## Phase B reader 46 — named indefinite possession (2026-07-22)
+
+Reader 46 serves **“NAME has a/an MODIFIER NOUN.”** A bare proper-name
+subject, singular possessive agreement, overt object article, noun-category
+compound, and terminal period emit the exact positive `Atom(NAME, have
+MODIFIER NOUN)`. Surface rendering preserves the modifier. The mirrored ask
+reaches the existing logic-verdict consumer. Article-marked/common/pronominal
+subjects, signed/modal/other-tense forms, articleless/plural/counted objects,
+coordination, disjunction, larger phrases, appositives, and incomplete siblings
+refuse.
+
+Eighteen synthetic pins pass. **pytest 2,651 passed; scratch lint 0 errors with
+the same eight warnings; curated 65/65 with an identical fresh-process rerun.**
+All eight standard DEV diffs and both grouped logic diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1357→1357 | 806→806 | 28/22→28/22 | 0 / 0 | 600→600 |
+| dev-holdout | 1329→1329 | 793→794 (+1) | 22/15→22/15 | 1 / 1 | 568→567 (−1) |
+
+The Adam premise is the sole buyer and occurs in one holdout verdict row/story.
+Its pre-existing generic fact means fact-bearing is unchanged, but whole-rule
+consumption makes the premise fully read and removes its veto. An independent
+unread premise prevents stack movement. Cumulative state is 806/1647 and
+794/1607 fully read, 600/567 vetoes, and 22/15 stack-ready stories. Forty-six
+classes are served; Phase C and TEST look #6 remain unscheduled.
+
+**Next:** price the named-possession conditional enabled by this ground Atom;
+bank it without a measured DEV buyer.

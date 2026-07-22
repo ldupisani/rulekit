@@ -79,6 +79,12 @@ categories:
     # form claim, not a lemma claim; finite/bare `make` must never join.
     irregular_past_participle:
         parent: verb
+    # Phase B reader 46: any overt article before a proper-name subject
+    # changes the construction away from bare named possession. Articles are
+    # skippable, so one category must make all three surfaces visible to the
+    # slot's `blocks_skipped` gate.
+    named_subject_article:
+        parent: article
 members:
     conjunctive_marker: [and]
     disjunctive_marker: [or]
@@ -89,3 +95,4 @@ members:
     appointive_verb: [appointed]
     enumeration_type_noun: [type]
     irregular_past_participle: [made]
+    named_subject_article: [a, an, the]

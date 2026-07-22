@@ -633,6 +633,16 @@ premises, 0 / −3 truth-scope vetoes, and +0 / +0 stack-ready stories on
 dev-train / dev-holdout. Outcomes and hazards remain neutral. Forty-five
 classes are served; Phase C and TEST look #6 remain unscheduled.
 
+Reader 46 serves bare-name indefinite possession **“NAME has a/an MODIFIER
+NOUN.”** It emits an exact positive ground `Atom(NAME, have MODIFIER NOUN)`;
+the mirrored ask composes through the existing verdict consumer. The
+noun-category compound preserves modifiers while refusing larger phrases and
+unsafe skipped-comma boundaries. Incremental movement is +0 / +1 fully-read
+premise, 0 / −1 truth-scope veto, and +0 / +0 stack-ready stories on dev-train
+/ dev-holdout; fact-bearing, outcomes, and hazards remain neutral. The reader
+also buys the ground-Atom prerequisite for a named-possession conditional.
+Forty-six classes are served; Phase C and TEST look #6 remain unscheduled.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /

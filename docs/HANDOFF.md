@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–45 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–46 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -89,16 +89,21 @@
 > plural possession disjunctions `CLSs R, APPOSITIVE have either a L or a R`,
 > preserving the full class and both nominal possession keys — and (reader 45)
 > reduced-passive possessive existentials `Some CLSs V-IRREG by AGENT have P`,
-> preserving the complete restricted witness class without minting a witness.
-> Cumulative movement from Phase A is +86 / +72 fully-read premise instances
+> preserving the complete restricted witness class without minting a witness —
+> and (reader 46) bare-name indefinite possession `NAME has a/an MODIFIER NOUN`,
+> emitting the exact ground `have` Atom needed by possession conditionals while
+> refusing article-marked subjects and larger object phrases.
+> Cumulative movement from Phase A is +86 / +73 fully-read premise instances
 > and +11 / +10
 > stack-ready stories on dev-train / dev-holdout, with no
-> verdict regression or hazard increase; truth-scope vetoes improve by 66 / 46, while
-> holdout collision/quarantine improve 12→9 / 24→18. Forty-five construction classes
+> verdict regression or hazard increase; truth-scope vetoes improve by 66 / 47, while
+> holdout collision/quarantine improve 12→9 / 24→18. Forty-six construction classes
 > are served. Both stack-ready thresholds are now met, but the conjunctive Phase C
-> gate remains unmet (fully read 806/1647 and 793/1607 vs 852/850; vetoes 600/568
+> gate remains unmet (fully read 806/1647 and 794/1607 vs 852/850; vetoes 600/567
 > vs ≤499/460; stack-ready stories 22/15 vs ≥22/10).
-> Next regenerate the frontier for fully-read and truth-scope-veto movement; the
+> Next price the named-possession conditional that Reader 46 was built to feed,
+> but ship it only with a measured DEV buyer; otherwise regenerate the fully-read
+> and truth-scope-veto frontier. The
 > remaining candidates require lexical, definite-description, coreference,
 > or deeper composition infrastructure. The unbought outer-quantified verbal
 > relative remains banked pending composition evidence. Reader 4's opt-in
@@ -121,6 +126,45 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 61 (2026-07-22): Phase B reader 46 — named indefinite possession; +1 holdout fully read and −1 veto
+
+One reader serves **“NAME has a/an MODIFIER NOUN.”** Bare proper-name subject,
+singular `has`, an overt object article, one noun-category compound, and the
+terminal period emit an exact positive `Atom(NAME, have MODIFIER NOUN)`. The
+noun renders through its surface so modifiers survive. A matching ask reaches
+the existing logic-verdict consumer. Article-marked/common/pronominal subjects,
+signed/modal/other-tense possession, articleless/plural/counted objects,
+coordination, disjunction, larger object phrases, appositives, and missing
+boundaries remain unread. The narrow compound gate also avoids treating a
+skipped internal comma as a safe span boundary.
+
+Eighteen synthetic pins cover complete emission, exact ask composition, a
+changed-property null, and fifteen adjacent refusals. **All 2,651 tests pass;
+scratch lint has 0 errors and the same eight warnings; curated is 65/65 with an
+identical fresh-process rerun.** All eight standard DEV diffs and both grouped
+logic diffs are NEUTRAL. Outcomes remain train 21 correct / 1 pre-existing
+poisoned-text wrong / 472 declined and holdout 4 / 0 / 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1357→1357 | 806→806 | 28/22→28/22 | 0 / 0 | 600→600 |
+| dev-holdout | 1329→1329 | 793→794 (+1) | 22/15→22/15 | 1 / 1 | 568→567 (−1) |
+
+The holdout-only Adam premise already had a generic fact, so fact-bearing does
+not move; consuming the complete possession construction makes it fully read
+and removes its truth-scope veto. Another premise in that story remains unread,
+so stack readiness does not move. Reader 46 also supplies the exact ground Atom
+schema required for a future named-possession conditional composition pin.
+
+Cumulative recorded-frame state is 806/1647 and 794/1607 fully read, 600/567
+truth-scope vetoes, 22/15 stack-ready stories, collision 8/9, and quarantine
+16/18. Forty-six classes are served. No TEST look was spent.
+
+**Next:** price the named-possession conditional against DEV; bank it if the
+composition prerequisite has no measured buyer.
+
+---
 
 # Session 60 (2026-07-22): Phase B reader 45 — reduced-passive possessive existentials; +3 holdout fully read and −3 vetoes
 
