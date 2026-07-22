@@ -701,6 +701,15 @@ remain neutral. The bare-plural present-event disjunction candidate is banked
 until its subject/verb/possessive-object token boundary is independently
 proved. Fifty-one classes are served.
 
+Reader 52 serves appositive role identities with explicit relative events
+**“The ROLE of OWNER, MEMBER, is a CLS who V REST.”** It emits exact role,
+class, and event `Atom`s because punctuation and `who` bind all three to the
+named member without heuristic coreference. Incremental movement is +1 / +0
+fact-bearing and fully-read premise, −1 / 0 truth-scope veto, and +0 / +0
+stack-ready stories on dev-train / dev-holdout. The buyer completes premise
+reading for one story, but its existential-relative ask remains unrepresented.
+Outcomes and hazards remain neutral. Fifty-two classes are served.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /

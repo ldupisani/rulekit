@@ -2116,6 +2116,36 @@ rules:
     emits:
       - {fact: atom, entity: "{subj}", pred: "{v} {rest}", polarity: true}
 
+  # Phase B reader 52: appositive role identity with an explicit relative —
+  # "The ROLE of OWNER, MEMBER, is a CLS who V REST." The two comma
+  # boundaries explicitly identify MEMBER with the owner-qualified role, and
+  # `who` unambiguously binds the following event to that same member. Emit
+  # all three stated facts: role membership, base class, and exact event.
+  # Pronominal, signed, coordinated, articleless, multi-verb, appositive-free,
+  # and missing-boundary siblings remain whole-unread.
+  - id: logic/appositive-role-member-relative-event
+    phase: read
+    match:
+      sentence:
+        - {lit: the, at_start: true, consume_skipped: true}
+        - {slot: role, cat: noun, single_word: true}
+        - {lit: of}
+        - {slot: owner, type: proper_name}
+        - {lit: ',', consume_skipped: true}
+        - {slot: member, type: proper_name}
+        - {lit: ',', consume_skipped: true}
+        - {lit: is}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: cls, cat: noun}
+        - {lit: who}
+        - {slot: v, type: nonstate_verb, single_word: true}
+        - {slot: rest, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: atom, entity: "{member}", pred: "{role} of {owner}", polarity: true}
+      - {fact: atom, entity: "{member}", pred: "{cls.surface}", polarity: true}
+      - {fact: atom, entity: "{member}", pred: "{v} {rest}", polarity: true}
+
   # ---- S2: conjunctive SUBJECTS distribute over a copular pred -------------
   # "Oxford Street and Regent Street are in London" ⊢ in-london(os) ∧
   # in-london(rs). Distribution is sound for distributive predicates and

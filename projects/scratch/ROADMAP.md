@@ -3270,3 +3270,30 @@ not yet prove the intended token/category boundary. Phase C and TEST look #6
 remain unscheduled.
 
 **Next:** regenerate the train frontier with that disjunction banked.
+
+## Phase B reader 52 — appositive role identity with relative event (2026-07-22)
+
+Reader 52 serves **“The ROLE of OWNER, MEMBER, is a CLS who V REST.”** Two
+comma boundaries establish explicit appositive identity, and `who` explicitly
+binds the relative event to the named member. It emits exact positive `Atom`s
+for the owner-qualified role, base class, and complete event. Pronominal,
+signed, coordinated, articleless, multi-verb, appositive-free, and incomplete
+siblings refuse. No lexical or inference change is needed.
+
+Eleven synthetic pins pass. **pytest 2,749 passed; scratch lint 0 errors with
+the same eight warnings; curated 65/65 with an identical fresh-process rerun.**
+All eight standard DEV diffs and both grouped logic diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1364→1365 (+1) | 813→814 (+1) | 28/22→28/22 | 3 / 1 | 593→592 (−1) |
+| dev-holdout | 1330→1330 | 795→795 | 22/15→22/15 | 0 / 0 | 566→566 |
+
+The buyer adds all three Andy Winter facts. Every premise in its story is now
+fully read, but the existential-relative ask remains unrepresented, so stack
+readiness does not move. Cumulative state is 814/1647 and 795/1607 fully read,
+592/566 vetoes, and 22/15 stack-ready stories. Fifty-two classes are served;
+Phase C and TEST look #6 remain unscheduled.
+
+**Next:** prioritize query reach for newly all-read stories without weakening
+existential witness requirements.
