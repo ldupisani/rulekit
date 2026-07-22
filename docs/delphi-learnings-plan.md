@@ -598,6 +598,14 @@ stack-ready stories on dev-train / dev-holdout. Outcomes and hazards remain
 neutral. Forty-one classes are served; Phase C and TEST look #6 remain
 unscheduled.
 
+Reader 42 serves implicit-restrictor negative possession universals
+**“Nothing RESTRICTION has P.”** It emits the existing negative `Quantified`
+fact with an exact restriction and canonical `have P` consequence.
+Incremental movement is +2 / +0 fact-bearing and fully-read premises, −2 / 0
+truth-scope vetoes, and +0 / +0 stack-ready stories on dev-train /
+dev-holdout. Outcomes and hazards remain neutral. Forty-two classes are
+served; Phase C and TEST look #6 remain unscheduled.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /

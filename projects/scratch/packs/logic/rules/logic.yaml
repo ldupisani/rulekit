@@ -855,6 +855,24 @@ rules:
     emits:
       - {fact: quantified, cls: "{p}", pred: "{q}", polarity: false}
 
+  # Phase B reader 42: implicit-restrictor negative possession universals —
+  # "Nothing RESTRICTION has P" means every entity satisfying the exact
+  # nonempty restriction lacks P. `Nothing` supplies the universal variable;
+  # singular `has` fixes the possessive predicate key to `have P`. Signed,
+  # coordinated, verbal, modal, counted, empty-restriction, other-agreement,
+  # and missing-boundary siblings remain whole-unread.
+  - id: logic/universal-nothing-restricted-has
+    phase: read
+    match:
+      sentence:
+        - {lit: nothing, at_start: true}
+        - {slot: cls, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal, complementizer, interrogative, wh_which], span_blocks_counted: true}
+        - {lit: has}
+        - {slot: p, span: true, span_blocks: [negation, quantifier, value, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: quantified, cls: "{cls}", pred: "have {p}", polarity: false}
+
   # Phase B reader 18: the verbal-consequent sibling —
   # "If people are P, then they V Q". Reader 7 established the plural-
   # agreeing antecedent key: P folds to the singular key emitted for a named

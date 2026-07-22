@@ -2921,3 +2921,30 @@ the stack-ready set. Cumulative state is 796/1647 and 790/1607 fully read,
 Phase C and TEST look #6 remain unscheduled.
 
 **Next:** regenerate the fully-read/truth-scope-veto frontier.
+
+## Phase B reader 42 — restricted Nothing possession (2026-07-22)
+
+Reader 42 serves **“Nothing RESTRICTION has P.”** The implicit universal
+variable, nonempty exact restriction, singular possessive agreement, bounded
+predicate, and terminal period emit `Quantified(RESTRICTION, have P, false)`.
+Signed, coordinated, verbal, modal, counted, other-agreement, and incomplete
+siblings refuse.
+
+Seventeen synthetic pins pass. **pytest 2,579 passed; scratch lint 0 errors
+with the same eight warnings; curated 65/65 with an identical fresh-process
+rerun.** All eight standard DEV diffs and both grouped logic diffs are
+NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1347→1349 (+2) | 796→798 (+2) | 28/22→28/22 | 2 / 2 | 610→608 (−2) |
+| dev-holdout | 1326→1326 | 790→790 | 22/15→22/15 | 0 / 0 | 571→571 |
+
+The solar-system premise occurs in two distinct train stories and no holdout
+story. Both instances gain direct facts, become fully read, and lose their
+veto; independent unread premises prevent stack movement. Cumulative state is
+798/1647 and 790/1607 fully read, 608/571 vetoes, and 22/15 stack-ready
+stories. Forty-two classes are served; Phase C and TEST look #6 remain
+unscheduled.
+
+**Next:** regenerate the fully-read/truth-scope-veto frontier.

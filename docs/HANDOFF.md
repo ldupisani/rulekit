@@ -3,7 +3,7 @@
 > [`../projects/scratch/folio-blocker-baseline.json`](../projects/scratch/folio-blocker-baseline.json),
 > its interpretation and look-#6 thresholds are in
 > [`../projects/scratch/ROADMAP.md`](../projects/scratch/ROADMAP.md), and the campaign plan is
-> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–41 now serve
+> [`delphi-learnings-plan.md`](delphi-learnings-plan.md). Phase B readers 1–42 now serve
 > ground both-or-neither equivalence, unrestricted bare-plural disjunction, negative
 > two-article indefinite generics, single-antecedent verbal “Everyone who” implications,
 > verbal-restrictor `If a CLS V P, then it is Q` conditionals, (reader 6)
@@ -81,14 +81,16 @@
 > plural-generic verbal conditionals `If people RESTRICTION V P, then they V2 Q`,
 > reusing `Conditional` for the restriction/event antecedent pair — and
 > (reader 41) reduced-passive `Everything V-ed R is either a/an L or a/an R`
-> exclusive universals, using productive morphology and nominal branch gates.
-> Cumulative movement from Phase A is +76 / +69 fully-read premise instances
+> exclusive universals, using productive morphology and nominal branch gates — and
+> (reader 42) implicit-restrictor negative possession `Nothing R has P`, using
+> an exact negative `Quantified(R, have P)` fact.
+> Cumulative movement from Phase A is +78 / +69 fully-read premise instances
 > and +11 / +10
 > stack-ready stories on dev-train / dev-holdout, with no
-> verdict regression or hazard increase; truth-scope vetoes improve by 56 / 43, while
-> holdout collision/quarantine improve 12→9 / 24→18. Forty-one construction classes
+> verdict regression or hazard increase; truth-scope vetoes improve by 58 / 43, while
+> holdout collision/quarantine improve 12→9 / 24→18. Forty-two construction classes
 > are served. Both stack-ready thresholds are now met, but the conjunctive Phase C
-> gate remains unmet (fully read 796/1647 and 790/1607 vs 852/850; vetoes 610/571
+> gate remains unmet (fully read 798/1647 and 790/1607 vs 852/850; vetoes 608/571
 > vs ≤499/460; stack-ready stories 22/15 vs ≥22/10).
 > Next regenerate the frontier for fully-read and truth-scope-veto movement; the
 > remaining candidates require lexical, definite-description, coreference,
@@ -113,6 +115,42 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 57 (2026-07-22): Phase B reader 42 — restricted Nothing possession; +2 train fully read and −2 vetoes
+
+One reader serves **“Nothing RESTRICTION has P.”** `Nothing` supplies the
+universal variable, the required nonempty restriction is preserved as the
+exact class key, and singular `has` fixes the negative consequence to
+`have P`. Negation, quantifiers, scalar values, coordination, disjunction,
+verbs, and modals are blocked inside spans; counted, signed, empty-restriction,
+other-agreement, other-tense, and missing-boundary siblings remain unread.
+
+Seventeen synthetic pins cover exact negative emission, instantiation, a
+changed-restriction null, and fourteen adjacent refusals. **All 2,579 tests
+pass; scratch lint has 0 errors and the same eight warnings; curated is 65/65
+with an identical fresh-process rerun.** All eight standard DEV diffs and both
+grouped logic diffs are NEUTRAL. Outcomes remain train 21 correct / 1
+pre-existing poisoned-text wrong / 472 declined and holdout 4 / 0 / 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1347→1349 (+2) | 796→798 (+2) | 28/22→28/22 | 2 / 2 | 610→608 (−2) |
+| dev-holdout | 1326→1326 | 790→790 | 22/15→22/15 | 0 / 0 | 571→571 |
+
+The identical solar-system premise occurs once in each of two distinct train
+stories, covering three rows total (two verdict golds and one `Uncertain`).
+Both premise instances gain a direct fact, become fully read, and lose their
+truth-scope veto. Other unread premises keep both stories out of the
+stack-ready set. Outcomes and hazards remain neutral.
+
+Cumulative recorded-frame state is 798/1647 and 790/1607 fully read, 608/571
+truth-scope vetoes, 22/15 stack-ready stories, collision 8/9, and quarantine
+16/18. Forty-two classes are served. No TEST look was spent.
+
+**Next:** regenerate the post-Reader-42 frontier; both fully-read and veto
+thresholds remain conjunctively binding.
+
+---
 
 # Session 56 (2026-07-22): Phase B reader 41 — reduced-passive Everything disjunction; +1 train fully read and −1 veto
 
