@@ -3859,3 +3859,22 @@ DEV diffs and both grouped logic outcome diffs are NEUTRAL.
 Outcomes and hazards remain neutral. Current vetoes are 522/472.
 
 **Next:** Phase C remains gated only by −23/−12 truth-scope vetoes.
+
+## Company-device participial/property forms (2026-07-23)
+
+Pack-local `belonging → belong` and adjective `connected` clear the seven-row
+company-device universal. Neighboring sentences retain independent
+`wifi`/possessive or `controlled` blockers.
+
+Six synthetic pins pass. **pytest 2,967 passed; curated is 65/65 twice.**
+Scratch lint reports 0 errors with the same eight warnings; all eight standard
+DEV diffs and both grouped logic outcome diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready floor | credited premise instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1394→1394 | 884→884 | ≥34/24 | 0 / 0 | 522→522 |
+| dev-holdout | 1364→1364 | 889→896 (+7) | ≥22/15 | 7 / 1 | 472→465 (−7) |
+
+Outcomes and hazards remain neutral. Current vetoes are 522/465.
+
+**Next:** Phase C remains gated only by −23/−5 truth-scope vetoes.

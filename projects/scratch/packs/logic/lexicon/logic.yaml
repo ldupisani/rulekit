@@ -101,3 +101,8 @@ entries:
   # hyphenated `center-backs` sibling remains blocked because global `back` is
   # adverb-only and is deliberately not widened here.
   centerback: {senses: [noun], plural: centerbacks}
+  # Phase B lexical activation: explicit participial/property forms for the
+  # existing company-device universals. Bare `belong` was admitted earlier;
+  # this keeps its progressive class key lemma-stable.
+  belonging: {senses: [verb], verb: {lemma: belong}}
+  connected: {senses: [adjective]}
