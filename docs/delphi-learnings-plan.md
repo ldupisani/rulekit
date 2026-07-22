@@ -659,6 +659,15 @@ and fully-read premise, −1 / 0 truth-scope veto, and +0 / +0 stack-ready
 stories. It changes no grammar, inference, outcome, or hazard and earns no new
 construction-class credit; forty-seven classes remain served.
 
+Reader 48 serves plural-agreeing intransitive existentials **“Some CLSs
+VERB.”** It emits the existing positive `Existential(CLS, VERB)` fact and
+reuses the existing consumer without inventing an object. Incremental movement
+is +1 / +0 fact-bearing and fully-read premise, −1 / 0 truth-scope veto, and
++0 / +0 stack-ready stories on dev-train / dev-holdout. Outcomes and hazards
+remain neutral. The cross-split `All CLSs are not PROPERTY` candidate stays
+banked because the earlier v1 falsification records mixed scope judgments and
+a confident wrong. Forty-eight classes are served.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /

@@ -32,3 +32,7 @@ entries:
   # These are pack-scoped form facts; the grammar itself is unchanged.
   act: {senses: [noun], plural: acts}
   prevent: {senses: [verb], verb: {lemma: prevent}}
+  # Phase B reader 48 buyer morphology: plural class plus bare intransitive
+  # event. Pack-scoped so it cannot alter any standard benchmark registry.
+  sophist: {senses: [noun], plural: sophists}
+  reason: {senses: [verb], verb: {lemma: reason}}

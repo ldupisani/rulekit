@@ -3125,3 +3125,35 @@ classes remain served; Phase C and TEST look #6 remain unscheduled.
 
 **Next:** continue the regenerated frontier, separating lexical activations
 from new reader classes.
+
+## Phase B reader 48 — intransitive verbal existentials (2026-07-22)
+
+Reader 48 serves **“Some CLSs VERB.”** One bare-plural class, one single-token
+bare non-state verb, and the terminal period emit positive
+`Existential(CLS, VERB)` without inventing an object. The mirrored ask reuses
+the existing existential consumer. Transitive, copular, stative, modal,
+passive, signed, coordinated, restricted, counted, singular, other-tense, and
+incomplete siblings refuse. Pack-scoped `sophist/sophists` and `reason`
+morphology activate the buyer.
+
+The tempting cross-split `All CLSs are not PROPERTY` frontier was rejected:
+the v1 record already demonstrates mixed annotation scope and a confident
+wrong from that broad reading. It remains banked rather than being re-mined.
+
+Fifteen synthetic pins pass. **pytest 2,689 passed; scratch lint 0 errors with
+the same eight warnings; curated 65/65 with an identical fresh-process rerun.**
+All eight standard DEV diffs and both grouped logic diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1358→1359 (+1) | 807→808 (+1) | 28/22→28/22 | 2 / 1 | 599→598 (−1) |
+| dev-holdout | 1330→1330 | 795→795 | 22/15→22/15 | 0 / 0 | 566→566 |
+
+The sole train buyer gains a direct fact, becomes fully read, and loses its
+veto; other unread premises prevent stack movement. Cumulative state is
+808/1647 and 795/1607 fully read, 598/566 vetoes, and 22/15 stack-ready
+stories. Forty-eight classes are served; Phase C and TEST look #6 remain
+unscheduled.
+
+**Next:** continue the regenerated frontier with the negative `All … are not
+…` family explicitly banked.

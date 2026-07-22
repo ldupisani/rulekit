@@ -1989,6 +1989,23 @@ rules:
     emits:
       - {fact: existential, cls: "{cls.singular}", pred: "{v} {p}", polarity: true}
 
+  # Phase B reader 48: the intransitive verbal existential —
+  # "Some CLSs VERB." `Some` supplies existence; one overt bare-plural class
+  # and one single-token bare event verb prove plural agreement and close the
+  # predicate without inventing an object. Transitive, copular, stative,
+  # modal, passive, signed, coordinated, restricted-class, counted, singular,
+  # and missing-boundary siblings remain unread.
+  - id: logic/existential-some-intransitive
+    phase: read
+    match:
+      sentence:
+        - {lit: some, at_start: true}
+        - {slot: cls, type: bare_plural}
+        - {slot: v, type: nonstate_verb, bare_form: true, single_word: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: existential, cls: "{cls.singular}", pred: "{v}", polarity: true}
+
   # Phase B reader 45: reduced-passive restricted possessive existentials —
   # "Some CLSs V-IRREG by AGENT have a/an P". `Some` supplies existence;
   # plural noun morphology bounds and folds the witness class, an opt-in
@@ -2374,6 +2391,24 @@ asks:
       consumer: existential-verdict
       cls: "{cls}"
       pred: "{v} {p}"
+      polarity: "true"
+
+  # Reader 48's exact question-side twin; the terminal question boundary
+  # itself closes the intransitive predicate.
+  - id: ask/logic-existential-some-intransitive
+    match:
+      question:
+        - {lit: is, at_start: true}
+        - {lit: it}
+        - {lit: 'true'}
+        - {lit: that}
+        - {lit: some}
+        - {slot: cls, type: bare_plural}
+        - {slot: v, type: nonstate_verb, bare_form: true, single_word: true}
+    resolves:
+      consumer: existential-verdict
+      cls: "{cls.singular}"
+      pred: "{v}"
       polarity: "true"
 
   # ---- S2 (composition-design.md): the passive-agent conclusion -----------
