@@ -685,6 +685,13 @@ Outcomes and hazards remain neutral. Qualified nouns remain banked because
 their condensed qualifier is deliberately refused by `bare_plural`, and the
 modal supplies no independent agreement signal. Fifty classes are served.
 
+Post-Reader-50 lexical activation adds pack-scoped `supported → support` and
+`researched → research`, making the pre-existing Stage 6 ground-verbal reader
+reachable for two train premises. Incremental movement is +2 / +0
+fact-bearing and fully-read premises, −2 / 0 truth-scope vetoes, and +0 / +0
+stack-ready stories. Grammar, inference, outcomes, and hazards remain neutral;
+fifty classes remain served.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /

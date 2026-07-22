@@ -42,3 +42,7 @@ entries:
   # Phase B reader 50: productive passive form for the second modal-passive
   # buyer. Bare `spot` remains noun-only; only the overt participle is verbal.
   spotted: {senses: [verb], verb: {lemma: spot}}
+  # Stage 6 ground-verbal activation: overt regular-past forms preserve the
+  # tense-normalized predicate keys without admitting the bare lemmas here.
+  supported: {senses: [verb], verb: {lemma: support}}
+  researched: {senses: [verb], verb: {lemma: research}}

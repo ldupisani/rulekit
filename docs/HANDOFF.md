@@ -101,16 +101,18 @@
 > `Some CLSs RESTRICTION were V-ed REST`, preserving both complete keys — and
 > (reader 50) modal-passive existentials `Some CLSs can be V-ed REST`, retaining
 > possibility inside the exact property rather than asserting actuality.
-> A subsequent pack-scoped lexical activation (`act/acts`, `prevent`) makes
+> Subsequent pack-scoped lexical activations (`act/acts`, `prevent`, and the
+> regular-past forms `supported`/`researched`) make
 > the pre-existing Stage 9f verbal existential reader reachable for one train
-> premise; it earns movement but no new construction-class credit.
-> Cumulative movement from Phase A is +90 / +74 fully-read premise instances
+> premise and the Stage 6 ground-verbal reader reachable for two more; they
+> earn movement but no new construction-class credit.
+> Cumulative movement from Phase A is +92 / +74 fully-read premise instances
 > and +11 / +10
 > stack-ready stories on dev-train / dev-holdout, with no
-> verdict regression or hazard increase; truth-scope vetoes improve by 70 / 48, while
+> verdict regression or hazard increase; truth-scope vetoes improve by 72 / 48, while
 > holdout collision/quarantine improve 12→9 / 24→18. Forty-nine construction classes
 > are served. Both stack-ready thresholds are now met, but the conjunctive Phase C
-> gate remains unmet (fully read 810/1647 and 795/1607 vs 852/850; vetoes 596/566
+> gate remains unmet (fully read 812/1647 and 795/1607 vs 852/850; vetoes 594/566
 > vs ≤499/460; stack-ready stories 22/15 vs ≥22/10).
 > Next regenerate the fully-read and truth-scope-veto frontier, prioritizing
 > train-side movement. The
@@ -136,6 +138,39 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 67 (2026-07-22): Stage 6 lexical activation — regular-past ground events; +2 train fully read and −2 vetoes
+
+The existing Stage 6 ground-verbal reader already serves **“NAME VERB
+OBJECT.”** Two train buyers remained dormant because their overt regular-past
+forms lacked pack-scoped lemma entries. Adding `supported → support` and
+`researched → research` activates the existing tense-normalized `Atom` and
+direct-object relation paths without changing grammar, inference, or consumer
+reach. It earns no new construction-class credit.
+
+Five synthetic pins cover both normalized keys and signed, modal, and passive
+nulls. **All 2,728 tests pass; scratch lint has 0 errors and the same eight
+warnings; curated is 65/65 with an identical fresh-process rerun.** All eight
+standard DEV diffs and both grouped logic diffs are NEUTRAL. Outcomes remain
+train 21 correct / 1 pre-existing poisoned-text wrong / 472 declined and
+holdout 4 / 0 / 421.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1361→1363 (+2) | 810→812 (+2) | 28/22→28/22 | 6 / 2 | 596→594 (−2) |
+| dev-holdout | 1330→1330 | 795→795 | 22/15→22/15 | 0 / 0 | 566→566 |
+
+The buyers emit exact ground keys for supporting the Portland Whigs and
+researching numerical methods. Both become fully read and lose their vetoes;
+other unread premises and absent query reach prevent stack movement.
+Cumulative state is 812/1647 and 795/1607 fully read, 594/566 vetoes, and
+22/15 stack-ready stories. Fifty classes remain served. No TEST look was
+spent.
+
+**Next:** regenerate the train frontier after removing these lexical blockers;
+prefer a genuine construction reader over another isolated form activation.
+
+---
 
 # Session 66 (2026-07-22): Phase B reader 50 — modal-passive existentials; +1 train fully read and −1 veto
 

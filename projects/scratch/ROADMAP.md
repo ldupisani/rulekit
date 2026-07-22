@@ -3216,3 +3216,29 @@ unscheduled.
 
 **Next:** regenerate the frontier without weakening the qualified-noun
 refusal contract.
+
+## Stage 6 lexical activation — `supported`, `researched` (2026-07-22)
+
+The existing ground-verbal reader already serves **“NAME VERB OBJECT.”**
+Pack-scoped `supported → support` and `researched → research` morphology makes
+two regular-past train premises reachable through its existing exact `Atom`
+and direct-object relation paths. No grammar, inference, or consumer changes;
+therefore no construction-class credit.
+
+Five synthetic pins pass. **pytest 2,728 passed; scratch lint 0 errors with the
+same eight warnings; curated 65/65 with an identical fresh-process rerun.** All
+eight standard DEV diffs and both grouped logic diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1361→1363 (+2) | 810→812 (+2) | 28/22→28/22 | 6 / 2 | 596→594 (−2) |
+| dev-holdout | 1330→1330 | 795→795 | 22/15→22/15 | 0 / 0 | 566→566 |
+
+Both buyers become fact-bearing and fully read and lose their vetoes. Other
+unread premises and absent query reach prevent stack movement. Cumulative
+state is 812/1647 and 795/1607 fully read, 594/566 vetoes, and 22/15
+stack-ready stories. Fifty classes remain served; Phase C and TEST look #6
+remain unscheduled.
+
+**Next:** prefer a genuine train-side construction reader over another
+isolated lexical activation.
