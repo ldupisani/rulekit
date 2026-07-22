@@ -166,6 +166,29 @@ rules:
     emits:
       - {fact: quantified, cls: "{cls}", pred: "have {pred}", polarity: false}
 
+  # Phase B reader 58: relative-class negative possession universals —
+  # "No CLSs that NAME V have P". The embedded named event remains inside
+  # the complete restrictor key: this reader does not pretend a binary
+  # object-position relation is a unary property of NAME or of an arbitrary
+  # witness. Plural `have` supplies the negative consequence. Signed,
+  # coordinated, modal, unnamed/pronominal relative subjects, other
+  # agreement, missing relative clauses, and incomplete siblings remain
+  # whole-unread.
+  - id: logic/universal-no-relative-named-verbal-have
+    phase: read
+    match:
+      sentence:
+        - {lit: no, at_start: true}
+        - {slot: cls, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal, complementizer, interrogative, wh_which], span_blocks_counted: true}
+        - {lit: that}
+        - {slot: subj, type: proper_name}
+        - {slot: v, type: nonstate_verb, single_word: true}
+        - {lit: have}
+        - {slot: pred, span: true, span_blocks: [negation, conjunction, disjunctive_marker, future_modal, capacity_modal], span_blocks_counted: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: quantified, cls: "{cls.singular} that {subj} {v}", pred: "have {pred}", polarity: false}
+
   # Phase B reader 17: singular positive possessive universals —
   # "Every CLS has P". `has` is state syntax and therefore remains outside
   # the event-oriented `nonstate_verb` family; this dedicated reader

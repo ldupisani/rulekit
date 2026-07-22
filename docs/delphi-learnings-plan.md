@@ -766,6 +766,13 @@ and antecedent property as the two independent inputs to the existing
 fully-read premises, −3 / −5 vetoes, and +0 / +0 stack-ready stories.
 Outcomes and hazards remain neutral. Fifty-seven classes are served.
 
+Reader 58 serves relative-class negative possession universals **“No CLSs
+that NAME V have P.”** It preserves the full relative restrictor and negative
+possessive consequence without object-position substitution. Incremental
+movement is +0 / +10 fact-bearing and fully-read premises, 0 / −10 vetoes,
+and +0 / +0 stack-ready stories. Outcomes and hazards remain neutral.
+Fifty-eight classes are served.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /

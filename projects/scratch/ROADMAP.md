@@ -3509,3 +3509,29 @@ stack readiness. Cumulative state is 822/1647 and 800/1607 fully read,
 
 **Next:** prioritize repeated cross-split truth-scoping families; Phase C
 still needs +30/+50 fully read and −85/−101 vetoes.
+
+## Phase B reader 58 — relative-class negative possession (2026-07-22)
+
+Reader 58 serves **“No CLSs that NAME V have P.”** It retains the embedded
+named event inside one complete relative-class key and emits a negative
+possessive `Quantified` fact. It performs no object-position substitution.
+Plural `have` provides agreement evidence; unknown consequence participles
+remain verbatim. Signed, coordinated, modal, unnamed/pronominal relative
+subjects, other agreement, missing relatives, and incomplete siblings refuse.
+
+Thirteen synthetic pins pass. **pytest 2,843 passed; scratch lint 0 errors
+with the same eight warnings; curated 65/65 twice.** All eight standard DEV
+diffs and both grouped logic diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1373→1373 | 822→822 | 34/24→34/24 | 0 / 0 | 584→584 |
+| dev-holdout | 1335→1345 (+10) | 800→810 (+10) | 22/15→22/15 | 10 / 1 | 561→551 (−10) |
+
+Outcomes remain 23/1/470 and 5/0/420. Another blocked premise keeps the Dan
+story from stack readiness. Cumulative state is 822/1647 and 810/1607 fully
+read, 584/551 vetoes, and 24/15 stack-ready stories. Fifty-eight classes are
+served.
+
+**Next:** keep reducing the repeated holdout frontier; Phase C needs +30/+40
+fully read and −85/−91 vetoes.
