@@ -710,6 +710,12 @@ stack-ready stories on dev-train / dev-holdout. The buyer completes premise
 reading for one story, but its existential-relative ask remains unrepresented.
 Outcomes and hazards remain neutral. Fifty-two classes are served.
 
+Post-Reader-52 inference adds exact existential predicate chaining:
+`∃(C ∧ P)` plus `∀(P → [¬]Q)` entails `∃(C ∧ [¬]Q)`, preserving the original
+witness class. It solves one train and one holdout verdict with no regression;
+fully-read, veto, stack-ready, hazard, and class counts remain unchanged. The
+distinct witness-class lifting operation remains a separate candidate.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /

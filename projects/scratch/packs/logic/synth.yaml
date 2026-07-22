@@ -28,6 +28,19 @@ rules:
     emit:
       - {fact: quantified, cls: A, pred: C, polarity: POL}
 
+  # ∃x(C(x) ∧ P(x)), ∀x(P(x) → [¬]Q(x))
+  #   ⊢ ∃x(C(x) ∧ [¬]Q(x)). The existential's SAME witness supplies the
+  # universal antecedent; its original class key remains unchanged. This is
+  # predicate propagation only, not the distinct witness-class lifting rule.
+  - id: synth/existential-predicate-chain
+    when:
+      - {fact: existential, cls: C, pred: P, polarity: true}
+      - {fact: quantified, cls: P, pred: Q, polarity: POL}
+    unless:
+      - {fact: existential, cls: C, pred: Q}
+    emit:
+      - {fact: existential, cls: C, pred: Q, polarity: POL}
+
   # M⊆F, P∩F=∅  ⊢  P∩M=∅   (Stage 8: negative chain through the
   # SUPERCLASS — anything in both P and M would be in F. The contraposed
   # sibling of universal-chain: there the negative rides in the SECOND

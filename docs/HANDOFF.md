@@ -110,6 +110,9 @@
 > the pre-existing Stage 9f verbal existential reader reachable for one train
 > premise and the Stage 6 ground-verbal reader reachable for two more; they
 > earn movement but no new construction-class credit.
+> A subsequent exact existential-predicate chain now carries an existing
+> witness through an existing universal predicate, solving one train and one
+> holdout verdict without changing reader coverage or class credit.
 > Cumulative movement from Phase A is +94 / +74 fully-read premise instances
 > and +11 / +10
 > stack-ready stories on dev-train / dev-holdout, with no
@@ -142,6 +145,41 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 70 (2026-07-22): existential predicate chaining; +1 correct on both grouped DEV splits
+
+The new monotone synth implements the exact FOL step **`∃x(C(x) ∧ P(x))` and
+`∀x(P(x) → [¬]Q(x))` entail `∃x(C(x) ∧ [¬]Q(x))`**. The same existential
+witness supplies the universal antecedent; the original witness-class key is
+preserved. It does not run backward, does not use a negative existential
+predicate as an antecedent, and is deliberately distinct from witness-class
+lifting. No reader, lexicon, fact schema, or consumer changes are involved,
+so construction-class and reading-coverage counts do not change.
+
+Five synthetic pins cover positive and negative consequences, directionality,
+positive-antecedent gating, and class preservation. **All 2,754 tests pass;
+scratch lint has 0 errors and the same eight warnings; curated is 65/65 with
+an identical fresh-process rerun.** All eight standard DEV diffs are NEUTRAL.
+The grouped logic diffs each solve exactly one item with 0 BROKE and 0
+DECL→WRONG:
+
+| grouped split | outcomes before → after | diff | fully read | stack-ready items / stories | vetoes |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 21 / 1 / 472 → 22 / 1 / 471 | +1 solved | 814/1647 | 28/22 | 592 |
+| dev-holdout | 4 / 0 / 421 → 5 / 0 / 420 | +1 solved | 795/1607 | 22/15 | 566 |
+
+The train conversion proves “some living things are plants” from an existing
+living-thing/tree witness and the tree→plant universal. The holdout conversion
+uses the same exact shape for a furniture witness and a universal consequence.
+Five holdout stories derive facts, but only that exact query converts; all
+others remain safely undetermined. Cumulative reader state remains 814/1647
+and 795/1607 fully read, 592/566 vetoes, 22/15 stack-ready stories, and
+fifty-two classes. No TEST look was spent.
+
+**Next:** evaluate the distinct, sound witness-class lifting rule separately;
+do not combine it with this predicate-chain increment.
+
+---
 
 # Session 69 (2026-07-22): Phase B reader 52 — appositive role identity with relative event; +1 train fully read and −1 veto
 

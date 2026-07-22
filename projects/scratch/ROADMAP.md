@@ -3297,3 +3297,30 @@ Phase C and TEST look #6 remain unscheduled.
 
 **Next:** prioritize query reach for newly all-read stories without weakening
 existential witness requirements.
+
+## Existential predicate chaining (2026-07-22)
+
+The monotone rule **`∃(C ∧ P)` plus `∀(P → [¬]Q)` entails `∃(C ∧ [¬]Q)`**
+propagates the same witness through an exact universal predicate while
+preserving its original class. It cannot run backward, requires a positive
+existential antecedent predicate, and does not perform the distinct operation
+of lifting the witness class. No reader, lexicon, schema, or consumer changes;
+no class credit.
+
+Five synthetic pins pass. **pytest 2,754 passed; scratch lint 0 errors with the
+same eight warnings; curated 65/65 with an identical fresh-process rerun.** All
+eight standard DEV diffs are NEUTRAL. Both grouped logic diffs SHIP with one
+SOLVED, 0 BROKE, and 0 DECL→WRONG.
+
+| grouped split | outcomes before → after | fully read | stack-ready items / stories | vetoes |
+|---|---:|---:|---:|---:|
+| dev-train | 21 / 1 / 472 → 22 / 1 / 471 | 814/1647 | 28/22 | 592 |
+| dev-holdout | 4 / 0 / 421 → 5 / 0 / 420 | 795/1607 | 22/15 | 566 |
+
+One exact existential query converts on each split; other derived facts remain
+undetermined where their queries do not match. Reader state remains unchanged
+at fifty-two classes. Phase C's reader thresholds and TEST look #6 remain
+unscheduled.
+
+**Next:** evaluate witness-class lifting as its own reversible inference
+increment.
