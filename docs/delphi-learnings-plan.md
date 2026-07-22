@@ -722,6 +722,13 @@ no regression; fully-read, veto, stack-ready, hazard, and class counts remain
 unchanged. Exact predicate mismatch continues to block the remaining
 juvenile-delinquent query and is not normalized away.
 
+Post-inference lexical activation adds pack-scoped `plots → plot` and bare
+`swallow`, making the existing Stage 6 ground reader consume one train
+controlled-event premise. Incremental movement is +1 / +0 fact-bearing and
+fully-read premise, −1 / 0 veto, and +0 / +0 stack-ready stories. Outcomes,
+hazards, and class credit remain unchanged. `Some CLSs that have P have Q`
+stays banked pending a sound compound boundary for `well-attended weddings`.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /

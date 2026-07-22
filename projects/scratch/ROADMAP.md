@@ -3351,3 +3351,29 @@ unscheduled.
 
 **Next:** return to the reader frontier without weakening exact predicate-key
 identity.
+
+## Stage 6 lexical activation — `plots`, `swallow` (2026-07-22)
+
+The existing ground-verbal reader already preserves controller and
+infinitival complement as one exact event key. Pack-scoped `plots → plot` and
+bare `swallow` activate **“NAME plots to swallow up some OBJECTS.”** without
+new grammar, inference, or consumer behavior; no class credit.
+
+Five synthetic pins pass. **pytest 2,764 passed; scratch lint 0 errors with the
+same eight warnings; curated 65/65 with an identical fresh-process rerun.** All
+eight standard DEV diffs and both grouped logic diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1365→1366 (+1) | 814→815 (+1) | 28/22→28/22 | 3 / 1 | 592→591 (−1) |
+| dev-holdout | 1330→1330 | 795→795 | 22/15→22/15 | 0 / 0 | 566→566 |
+
+The sole buyer gains the complete controlled-event Atom, becomes fully read,
+and loses its veto. Outcomes remain 23/1/470 and 5/0/420. The attempted
+restricted possessive existential remains banked because `well-attended
+weddings` does not yet have a sound token boundary. Cumulative state is
+815/1647 and 795/1607 fully read, 591/566 vetoes, and 22/15 stack-ready
+stories. Fifty-two classes remain served.
+
+**Next:** regenerate the reader frontier with that compound-dependent
+construction banked.

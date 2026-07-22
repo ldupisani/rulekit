@@ -115,13 +115,16 @@
 > holdout verdict without changing reader coverage or class credit.
 > Its separately landed witness-class sibling reclassifies that same witness
 > through a positive superclass edge and solves one further train verdict.
-> Cumulative movement from Phase A is +94 / +74 fully-read premise instances
+> A later pack-scoped `plots`/`swallow` activation makes the existing Stage 6
+> ground reader consume one controlled-infinitive train premise; it earns
+> movement but no new construction-class credit.
+> Cumulative movement from Phase A is +95 / +74 fully-read premise instances
 > and +11 / +10
 > stack-ready stories on dev-train / dev-holdout, with no
-> verdict regression or hazard increase; truth-scope vetoes improve by 74 / 48, while
-> holdout collision/quarantine improve 12→9 / 24→18. Forty-nine construction classes
+> verdict regression or hazard increase; truth-scope vetoes improve by 75 / 48, while
+> holdout collision/quarantine improve 12→9 / 24→18. Fifty-two construction classes
 > are served. Both stack-ready thresholds are now met, but the conjunctive Phase C
-> gate remains unmet (fully read 814/1647 and 795/1607 vs 852/850; vetoes 592/566
+> gate remains unmet (fully read 815/1647 and 795/1607 vs 852/850; vetoes 591/566
 > vs ≤499/460; stack-ready stories 22/15 vs ≥22/10).
 > Next regenerate the fully-read and truth-scope-veto frontier, prioritizing
 > train-side movement. The
@@ -147,6 +150,39 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 72 (2026-07-22): Stage 6 lexical activation — controlled ground event; +1 train fully read and −1 veto
+
+The existing Stage 6 ground-verbal reader already preserves a controller plus
+infinitival complement as one exact predicate. Pack-scoped `plots → plot` and
+bare `swallow` make **“NAME plots to swallow up some OBJECTS.”** reachable
+without adding a controlled-infinitive parser, inference rule, or consumer.
+The resulting key retains the complete event, including particle, quantifier,
+and object. This earns no new construction-class credit.
+
+Five synthetic pins cover complete emission and signed, modal, generic, and
+disjunctive nulls. **All 2,764 tests pass; scratch lint has 0 errors and the
+same eight warnings; curated is 65/65 with an identical fresh-process rerun.**
+All eight standard DEV diffs and both grouped logic diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1365→1366 (+1) | 814→815 (+1) | 28/22→28/22 | 3 / 1 | 592→591 (−1) |
+| dev-holdout | 1330→1330 | 795→795 | 22/15→22/15 | 0 / 0 | 566→566 |
+
+The buyer emits `Atom(mede empire, plot to swallow up some nearby country)`,
+becomes fully read, and loses its veto. Its story's queries do not target that
+event, so outcomes remain train 23 / 1 / 470 and holdout 5 / 0 / 420. The
+candidate `Some CLSs that have P have Q` reader was banked: its train buyer
+mis-tokenizes the intended compound `well-attended weddings` across a verb
+boundary, so the repeated-`have` construction is not yet structurally proven.
+Cumulative state is 815/1647 and 795/1607 fully read, 591/566 vetoes, 22/15
+stack-ready stories, and fifty-two classes. No TEST look was spent.
+
+**Next:** regenerate the reader frontier with the restricted possessive
+existential banked pending compound-noun infrastructure.
+
+---
 
 # Session 71 (2026-07-22): existential witness-class lifting; +1 correct on grouped dev-train
 

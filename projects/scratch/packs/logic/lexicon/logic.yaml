@@ -49,3 +49,7 @@ entries:
   # Phase B reader 51: overt regular form for the finite main event. The
   # fronted `being ADJECTIVE` adjunct needs no new lexical claim.
   retired: {senses: [verb], verb: {lemma: retire}}
+  # Stage 6 ground-verbal activation: the finite controller and bare
+  # infinitive preserve one exact controlled-event predicate.
+  plots: {senses: [verb], verb: {lemma: plot}}
+  swallow: {senses: [verb]}
