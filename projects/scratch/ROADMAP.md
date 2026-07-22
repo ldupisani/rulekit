@@ -2893,3 +2893,31 @@ and both grouped logic diffs are NEUTRAL. Reader counts and all recorded
 metrics remain unchanged. No TEST look was spent.
 
 **Next:** resume the train-side fully-read/truth-scope-veto frontier.
+
+## Phase B reader 41 — reduced-passive Everything disjunction (2026-07-22)
+
+Reader 41 serves **“Everything V-ed RESTRICTION is either a/an L or a/an
+R.”** Productive past-participle morphology proves the reduced-relative
+boundary; the full restriction is the exact universal class key, and both
+overt articles plus noun-category units prove nominal exclusive branches.
+The logic pack supplies only the missing `displayed → display` verb form;
+bare `display` remains noun-only.
+
+Nineteen synthetic pins pass. **pytest 2,562 passed; scratch lint 0 errors
+with the same eight warnings; curated 65/65 with an identical fresh-process
+rerun.** All eight standard DEV diffs and both grouped logic diffs are
+NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1346→1347 (+1) | 795→796 (+1) | 28/22→28/22 | 2 / 1 | 611→610 (−1) |
+| dev-holdout | 1326→1326 | 790→790 | 22/15→22/15 | 0 / 0 | 571→571 |
+
+The reader occurs in three train rows / one story and no holdout rows. The
+collection-display premise supplies the sole direct-fact, fully-read, and
+truth-scope-veto movement; independent unread premises keep the story out of
+the stack-ready set. Cumulative state is 796/1647 and 790/1607 fully read,
+610/571 vetoes, and 22/15 stack-ready stories. Forty-one classes are served;
+Phase C and TEST look #6 remain unscheduled.
+
+**Next:** regenerate the fully-read/truth-scope-veto frontier.

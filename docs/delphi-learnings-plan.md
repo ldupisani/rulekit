@@ -588,6 +588,16 @@ Both emitted predicates now preserve the noun surface, and a narrow mirrored
 reduced-passive question shape uses the identical key. The correction is
 neutral on all ten DEV gates and changes no campaign metric.
 
+Reader 41 serves reduced-passive unrestricted-object disjunctions
+**“Everything V-ed RESTRICTION is either a/an L or a/an R.”** It uses the
+existing productive-participle gate, exact restricted class key, and
+noun-category disjuncts; the logic pack supplies only the missing overt
+`displayed → display` morphology. Incremental movement is +1 / +0
+fact-bearing and fully-read premise, −1 / 0 truth-scope veto, and +0 / +0
+stack-ready stories on dev-train / dev-holdout. Outcomes and hazards remain
+neutral. Forty-one classes are served; Phase C and TEST look #6 remain
+unscheduled.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /

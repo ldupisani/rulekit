@@ -1410,6 +1410,31 @@ rules:
     emits:
       - {fact: quantified_disjunction, cls: "{cls}", left: "{l}", right: "{r}", exclusive: true}
 
+  # Phase B reader 41: reduced-passive unrestricted-object disjunctions —
+  # "Everything V-ed RESTRICTION is either a/an L or a/an R". `Everything`
+  # supplies the universal variable; productive past-participle morphology
+  # proves the reduced-relative boundary, and both predicate articles prove
+  # nominal exclusive branches. The full reduced restriction is the exact
+  # class key. Bare/finite/irregular verbs, articleless or signed branches,
+  # coordination, larger disjunctions, and missing boundaries stay unread.
+  - id: logic/qdisj-everything-reduced-passive-is-either
+    phase: read
+    match:
+      sentence:
+        - {lit: everything, at_start: true}
+        - {slot: v, type: nonstate_verb, single_word: true, past_participle: true}
+        - {slot: cls, span: true, span_blocks: [negation, conjunction, disjunctive_marker, verb, future_modal, capacity_modal, complementizer, interrogative, wh_which]}
+        - {lit: is}
+        - {lit: either}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: l, cat: noun}
+        - {lit: or}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: r, cat: noun}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: quantified_disjunction, cls: "{v} {cls}", left: "{l}", right: "{r}", exclusive: true}
+
   # Stage 9d: the RESTRICTED bare-plural exclusive disjunction — "CLSs
   # <restrictor> are either A or B" ("Vehicles produced by Chevrolet in this
   # batch are either cars or vans"). The banked "bare-plural disjunctive

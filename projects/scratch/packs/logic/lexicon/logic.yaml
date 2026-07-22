@@ -16,3 +16,7 @@ entries:
   # the appointive_verb category (categories/logic.yaml) — pack-scoped, so
   # no benchmark corpus ever sees the word.
   appointed: {senses: [verb], verb: {lemma: appoint}}
+  # Phase B reader 41: productive passive morphology for the pack-scoped
+  # "Everything displayed ..." construction. The mined bare `display`
+  # remains noun-only; only this overt participle gains a verb lemma.
+  displayed: {senses: [verb], verb: {lemma: display}}
