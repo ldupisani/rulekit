@@ -39,3 +39,6 @@ entries:
   # Phase B reader 49: overt productive passive morphology for the measured
   # past-passive existential. Bare `establish` remains outside this form claim.
   established: {senses: [verb], verb: {lemma: establish}}
+  # Phase B reader 50: productive passive form for the second modal-passive
+  # buyer. Bare `spot` remains noun-only; only the overt participle is verbal.
+  spotted: {senses: [verb], verb: {lemma: spot}}

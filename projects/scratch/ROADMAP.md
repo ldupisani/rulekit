@@ -3186,3 +3186,33 @@ unscheduled.
 
 **Next:** continue the regenerated frontier without reopening banked scope-
 ambiguous universals.
+
+## Phase B reader 50 — modal-passive existentials (2026-07-22)
+
+Reader 50 serves **“Some CLSs can be V-ed REST.”** The possibility modal is
+retained in the exact property key, a bare-plural class supplies number, and
+productive participle morphology proves passive voice. The exact ask reuses
+the existing existential consumer. Singular, qualified, modal-free,
+other-modal, negative, active, coordinated, bare-participle, counted,
+empty-rest, and incomplete siblings refuse. Qualified nouns remain banked:
+their condensed qualifier makes `bare_plural` refuse by design, while `can`
+provides no independent agreement evidence. Pack-scoped `spotted → spot`
+activates the sole buyer.
+
+Eighteen synthetic pins pass. **pytest 2,723 passed; scratch lint 0 errors with
+the same eight warnings; curated 65/65 with an identical fresh-process rerun.**
+All eight standard DEV diffs and both grouped logic diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready items / stories | matched verdict instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1360→1361 (+1) | 809→810 (+1) | 28/22→28/22 | 3 / 1 | 597→596 (−1) |
+| dev-holdout | 1330→1330 | 795→795 | 22/15→22/15 | 0 / 0 | 566→566 |
+
+The sole train buyer gains a direct modal `Existential`, becomes fully read,
+and loses its veto; other unread premises prevent stack movement. Cumulative
+state is 810/1647 and 795/1607 fully read, 596/566 vetoes, and 22/15
+stack-ready stories. Fifty classes are served; Phase C and TEST look #6 remain
+unscheduled.
+
+**Next:** regenerate the frontier without weakening the qualified-noun
+refusal contract.

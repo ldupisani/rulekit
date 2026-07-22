@@ -676,6 +676,15 @@ productive participle morphology proves voice. Incremental movement is +1 /
 stack-ready stories on dev-train / dev-holdout. Outcomes and hazards remain
 neutral. Forty-nine classes are served.
 
+Reader 50 serves modal-passive existentials **“Some CLSs can be V-ed REST.”**
+It retains the modal inside the exact property key, so possibility is not
+asserted as actuality; productive participle morphology proves passive voice.
+Incremental movement is +1 / +0 fact-bearing and fully-read premise, −1 / 0
+truth-scope veto, and +0 / +0 stack-ready stories on dev-train / dev-holdout.
+Outcomes and hazards remain neutral. Qualified nouns remain banked because
+their condensed qualifier is deliberately refused by `bare_plural`, and the
+modal supplies no independent agreement signal. Fifty classes are served.
+
 Infrastructure borrowings (each its own increment, only if Phase B friction proves the need):
 - **Key-schema lint** (the SEM-I borrowing): every emitting rule declares its mintable key
   shapes; lint joins them against consumer key shapes. Catches the curly-apostrophe /
