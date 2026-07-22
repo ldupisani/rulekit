@@ -80,3 +80,7 @@ entries:
   # positive `All` and negative `No` copular universals without changing
   # either construction.
   umpire: {senses: [noun], plural: umpires}
+  # Phase B lexical activation: explicit title-role morphology makes the
+  # existing Grand-Slam copular universals and ground disjunctions fully
+  # readable without changing their fact shapes.
+  champion: {senses: [noun], plural: champions}

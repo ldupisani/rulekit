@@ -138,13 +138,13 @@
 > A later pack-scoped `plots`/`swallow` activation makes the existing Stage 6
 > ground reader consume one controlled-infinitive train premise; it earns
 > movement but no new construction-class credit.
-> Cumulative movement from Phase A is +137 / +132 fully-read premise instances
+> Cumulative movement from Phase A is +137 / +144 fully-read premise instances
 > and +13 / +10
 > stack-ready stories on dev-train / dev-holdout, with no
-> verdict regression or hazard increase; truth-scope vetoes improve by 117 / 106, while
+> verdict regression or hazard increase; truth-scope vetoes improve by 117 / 118, while
 > holdout collision/quarantine improve 12→9 / 24→18. Sixty-two construction classes
 > are served. Both stack-ready thresholds are now met, but the conjunctive Phase C
-> gate remains unmet (fully read 857/1647 and 853/1607 vs 852/850; vetoes 549/508
+> gate remains unmet (fully read 857/1647 and 865/1607 vs 852/850; vetoes 549/496
 > vs ≤499/460; stack-ready stories 24/15 vs ≥22/10).
 > Next regenerate the fully-read and truth-scope-veto frontier, prioritizing
 > train-side movement. The
@@ -170,6 +170,32 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 88 (2026-07-22): champion title morphology; +12 holdout fully read
+
+Pack-local `champion`/`champions` morphology removes the sole unread unit from
+the repeated Grand Slam universal and Nadal ground disjunction. Existing
+copular-universal and inclusive-disjunction facts were already complete; the
+train occurrences remain blocked on `mixer`.
+
+Six synthetic pins pass. **All 2,931 tests pass; curated is 65/65 with an
+identical fresh-process rerun.** Scratch lint has 0 errors and the same eight warnings. All
+eight standard DEV diffs and both grouped logic outcome diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready floor | matched premise instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1394→1394 | 857→857 | ≥34/24 | 0 / 0 | 549→549 |
+| dev-holdout | 1364→1364 | 853→865 (+12) | ≥22/15 | 12 / 1 | 508→496 (−12) |
+
+Outcomes remain 23/1/470 and 5/0/420. The newly complete story can only raise
+the already-passing stack metric; the recorded pre-increment floor is retained
+pending the final classifier audit. Cumulative fully-read state is 857/1647
+and 865/1607, with 549/496 vetoes. Construction-class credit remains
+sixty-two. No TEST look was spent.
+
+**Next:** Phase C remains gated only by −50/−36 truth-scope vetoes.
+
+---
 
 # Session 87 (2026-07-22): umpire role morphology; +12 holdout fully read
 

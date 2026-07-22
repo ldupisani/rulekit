@@ -3744,3 +3744,24 @@ Cumulative state is 857/1647 and 853/1607 fully read, 549/508 vetoes, and
 
 **Next:** fully-read and stack gates are met; Phase C still needs −50/−48
 truth-scope vetoes.
+
+## Champion title-role morphology activation (2026-07-22)
+
+Pack-local `champion`/`champions` morphology clears the repeated Grand Slam
+universal and Nadal disjunction on holdout. Their existing fact shapes remain
+unchanged; train neighbors retain `mixer` as an independent blocker.
+
+Six synthetic pins pass. **pytest 2,931 passed; curated is 65/65 twice.**
+Scratch lint reports 0 errors with the same eight warnings; all eight standard
+DEV diffs and both grouped logic outcome diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready floor | matched premise instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1394→1394 | 857→857 | ≥34/24 | 0 / 0 | 549→549 |
+| dev-holdout | 1364→1364 | 853→865 (+12) | ≥22/15 | 12 / 1 | 508→496 (−12) |
+
+Outcomes remain 23/1/470 and 5/0/420. The newly complete story cannot lower
+the already-passing stack metric; its exact post-increment count is deferred
+to the final classifier audit. Current vetoes are 549/496.
+
+**Next:** Phase C remains gated only by −50/−36 truth-scope vetoes.

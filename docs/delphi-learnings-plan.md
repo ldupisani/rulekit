@@ -827,6 +827,11 @@ and reducing vetoes by 0 / 12 without fact, stack, outcome, hazard, or class
 movement. Both fully-read thresholds are now met. Phase C remains gated only
 by a further 50 / 48 truth-scope-veto reductions.
 
+Pack-local `champion`/`champions` morphology clears a repeated Grand Slam
+universal and ground disjunction, adding +0 / +12 fully-read premises and
+reducing vetoes by 0 / 12 with neutral outcomes and hazards. Phase C remains
+gated only by a further 50 / 36 truth-scope-veto reductions.
+
 Pack-local `defender`/`defenders` morphology next removes the only unread unit
 from the soccer-role universal on both splits. It adds +3 / +6 fully-read
 premises and reduces vetoes by 3 / 6 without fact, stack, outcome, hazard, or
