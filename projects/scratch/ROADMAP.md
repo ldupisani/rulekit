@@ -4034,3 +4034,27 @@ No TEST look was spent.
 
 **Next:** regenerate exact-key buyers over 208/178. Frequency alone is not a
 buyer; require a complete query echo/refutation and an end-to-end conversion.
+
+## DEV-only no-ask reader 2 — existential possession (2026-07-23)
+
+The regenerated frontier adds document guard cleanliness to exact-key buyer
+qualification. A trial `CLSs are P with no Q` stack was reverted because an
+unrelated unread existential premise still triggered `verdict-fragment`;
+weakening the guard or bundling another premise family is outside the class.
+
+The next genuine buyer is `Is it true that Some CLS has P?`. It reuses
+`existential-verdict`: a named witness proves yes, an exact negative universal
+proves no, and missing evidence stays undetermined.
+
+All 3,019 tests pass, curated is 65/65 twice, lint remains 0 errors/eight
+warnings/52 info, and all external DEV diffs are NEUTRAL.
+
+| split | outcome movement | no-ask population |
+|---|---:|---:|
+| dev-train | 24/1/469 → 24/1/469 | 208→208 |
+| dev-holdout | 5/0/420 → 6/0/419 | 178→177 |
+
+No TEST look was spent.
+
+**Next:** require all three for reader 3: complete query representation,
+deciding store path, and a guard-clean premise document.

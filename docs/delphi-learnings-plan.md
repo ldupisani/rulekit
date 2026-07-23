@@ -957,6 +957,15 @@ key and `logic-verdict`. It moves train outcomes 23/1/470→24/1/469 and reduces
 train no-ask 210→208; holdout remains 5/0/420 and 178 no-ask. All DEV safety
 gates are neutral. No TEST look was spent.
 
+No-ask reader 2 serves singular existential possession,
+`Is it true that Some CLS has P?`, through `existential-verdict`. It moves
+holdout 5/0/420→6/0/419 and no-ask 178→177; train remains neutral at
+24/1/469 and 208. A larger conjunction candidate was reverted when an unread
+unrelated premise correctly triggered the document guard. Future buyers must
+therefore satisfy three checks: complete query representation, a deciding
+fact/inference path, and an all-premises guard-clean document. No TEST look was
+spent.
+
 ### Phase D — the gate back to FOLIO (integration proper)
 
 Only after a look #6 that shows nonzero transfer at held precision:

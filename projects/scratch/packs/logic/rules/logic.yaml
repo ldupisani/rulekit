@@ -2683,6 +2683,29 @@ asks:
       pred: "{pred.singular}"
       polarity: "false"
 
+  # No-ask reader 2: singular existential possession, "Some CLS has P?".
+  # The existing existential-verdict consumer answers yes from a named witness
+  # and no from an exact negative universal; absence remains undetermined.
+  # Singular agreement, the explicit existential quantifier, and the complete
+  # possession key keep plural, past, modal, signed, and coordinated siblings
+  # outside this family.
+  - id: ask/logic-existential-some-has
+    match:
+      question:
+        - {lit: is, at_start: true}
+        - {lit: it}
+        - {lit: 'true'}
+        - {lit: that}
+        - {lit: some}
+        - {slot: cls, span: true, span_blocks: [negation, quantifier, conjunction, disjunctive_marker, verb, future_modal, capacity_modal]}
+        - {lit: has}
+        - {slot: pred, span: true, span_blocks: [negation, quantifier, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+    resolves:
+      consumer: existential-verdict
+      cls: "{cls.singular}"
+      pred: "have {pred}"
+      polarity: "true"
+
   # ---- universal conclusions: "Is it true that all/no CLS are PRED?" ---------
   # The consumer (universal-verdict) reads the SATURATED Quantified closure:
   # yes from an echo or synth/universal-chain fact at the claimed polarity;

@@ -172,6 +172,41 @@
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
 
+# Session 102 (2026-07-23): existential-possession questions; +1 holdout
+
+The post-reader-1 exact-key survey finds no remaining ask-only echo/refutation
+until it also checks document guard readiness. A proposed paired construction,
+`CLSs are P with no Q`, was implemented experimentally and fully reverted:
+although both required universal facts became available, an unrelated unread
+existential premise triggered the verdict-fragment guard. Weakening that guard
+would be unsafe, and bundling another premise family would violate the
+one-construction increment rule. The buyer classifier now requires the complete
+query key **and** an all-premises guard-clean story.
+
+That stricter frontier exposes a genuine ask-only holdout buyer:
+**“Is it true that Some CLS has P?”** The existing saturated store already
+contains an exact negative universal for its class/property, so the existing
+`existential-verdict` consumer soundly answers the positive existential “no.”
+Absence remains undetermined and a named witness remains the only positive
+proof path.
+
+Eleven synthetic/falsification pins and the corpus-string firewall pass. All
+3,019 tests pass; curated is 65/65 twice; lint remains 0 errors, eight warnings,
+and 52 info. Every external DEV diff is NEUTRAL.
+
+| split | before | after | diff | no-ask population |
+|---|---:|---:|---:|---:|
+| dev-train | 24/1/469 | 24/1/469 | NEUTRAL | 208→208 |
+| dev-holdout | 5/0/420 | 6/0/419 | +1 SOLVED, 0 BROKE, 0 DECL→WRONG | 178→177 |
+
+No TEST look was spent.
+
+**Next:** regenerate buyers over 208/177 with three conjunctive requirements:
+recognized complete query semantics, a deciding fact/inference path, and a
+guard-clean complete premise document.
+
+---
+
 # Session 101 (2026-07-23): DEV-only no-ask campaign begins; named do-negation questions
 
 The post-look diagnosis starts from the current verdict-gold no-ask population,
