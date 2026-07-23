@@ -4,7 +4,7 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** Phase E common-subject campaign complete
+**Status:** Phase F indefinite common-subject increment selected
 
 **Previous safe capability commit:** `0717f04`
 (`Add COGS semantic projection phase A`)
@@ -589,10 +589,9 @@ GSM8K, ASDiv, SVAMP, MAWPS, SciBench, and FOLIO diffs.
 
 ## Immediate next step
 
-Preserve the completed Phase E state as the new DEV baseline. If continuing
-coverage, profile the indefinite-common-subject active-transitive class from
-DEV-train and lock it as a separate campaign before implementation. Preserve
-the proper-object boundary and do not rerun TEST or generalization.
+Implement the recorded indefinite-common-subject active-transitive increment
+and run the complete DEV gate. Preserve the proper-object boundary and do not
+rerun TEST or generalization.
 
 ## Phase C restart exit audit
 
@@ -715,6 +714,40 @@ The complete gate is green: 192 focused COGS tests, 3,237 full-suite tests,
 zero lint errors, curated 65/65 twice, and neutral GSM8K, ASDiv, SVAMP, MAWPS,
 SciBench, and FOLIO diffs. Every locked Phase E condition is met, so the
 one-increment campaign is complete.
+
+## Phase F — indefinite common subjects
+
+This separate DEV-only campaign extends the same licensed active frame to an
+explicitly indefinite common-noun subject. It begins from completed Phase E;
+protected checkpoint evidence is not a tuning source.
+
+The locked exit conditions are 100% projected-edge precision, zero incorrect
+graphs, complete buyers in both DEV partitions, no definite edge without
+`the`, no recipient-boundary widening, and neutral standing gates.
+
+### Selection brief
+
+Selected before implementation on 2026-07-23:
+
+1. **Construction class:** exactly `A/An N V a/an N.`, with an existing
+   `semantic_nominal_entity_noun` subject, licensed
+   `semantic_agent_theme_verb`, and existing `semantic_bare_theme_noun`
+   object. There is no proper object, recipient, passive, modifier,
+   complement, coordination, negation, or tail.
+2. **Complete graph:** two span-distinct typed entities, one normalized event,
+   and ordinary agent/theme roles. Neither entity is definite.
+3. **Synthetic positive:** an indefinite invented `zephyrstone` appreciates
+   another indefinite `zephyrstone`, proving equal types retain different
+   span identities without a definite edge.
+4. **Negative neighbours:** definite, named, plural, modified, or coordinated
+   subjects; definite or named objects; passive and ditransitive order; PP or
+   complement tails; negation; unlicensed words; and missing punctuation.
+5. **Expected buyers:** DEV-train profiling found 66 currently declined
+   buyers. The same mechanical licence reports 71 aggregate DEV-holdout
+   buyers without inspecting holdout rows.
+6. **Licence and boundary:** no vocabulary, quarantine, category, Python,
+   recipient, or ditransitive changes. The existing audited noun and event
+   categories are reused exactly.
 
 ## Increment protocol
 
