@@ -966,6 +966,27 @@ therefore satisfy three checks: complete query representation, a deciding
 fact/inference path, and an all-premises guard-clean document. No TEST look was
 spent.
 
+The first buyer-backed semantic projection serves
+`Is it true that A/An CLS was PRED?`. The ask denotes an existential and the
+existing witness consumer joins two complete exact atoms for one named entity.
+It moves train 24/1/469→25/1/468 and no-ask 208→207; holdout remains
+6/0/419 and 177. `AnswerProof` records the normalized query, named inference,
+and evidence facts. The designer now exposes **Semantic field** and **Proof**
+lenses: facts are grouped by observed/knowledge/derived role and independently
+marked exact/structured, while proof evidence cross-links to fact ids. Parser
+categories are not ontology facts. All safety gates are neutral and no TEST
+look was spent.
+
+The next infrastructure slice makes ambiguous asks explicit rather than
+letting rule order choose a meaning. `some CLSs have Ps` normalizes directly
+to an existential, while `a/an CLS has a/an P` pauses between existential and
+strict class-wide readings. The answer carries a structured clarification
+request; the designer elicits a choice and reruns with that interpretation id.
+Proof remains visibly paused before confirmation. This separates “the question
+has multiple meanings” from logical `undetermined` after one meaning has been
+chosen. The slice has no DEV buyer and every corpus diff is neutral; no TEST
+look was spent.
+
 ### Phase D — the gate back to FOLIO (integration proper)
 
 Only after a look #6 that shows nonzero transfer at held precision:

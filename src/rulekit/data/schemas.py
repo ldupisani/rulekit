@@ -537,10 +537,22 @@ class PatternRule(StrictModel):
     overrides: dict[str, str] | None = None  # {"rule": id, "reason": ...}
 
 
+class AskInterpretation(StrictModel):
+    """One explicit semantic reading of an ambiguous ask surface."""
+
+    id: str
+    label: str
+    description: str = ""
+    kind: str
+    resolves: dict[str, str]  # consumer + query fields, templated
+
+
 class AskRule(StrictModel):
     id: str
     match: dict[Literal["question"], list[MatchToken]]
-    resolves: dict[str, str]  # consumer + query fields, templated
+    resolves: dict[str, str] = Field(default_factory=dict)
+    clarification: str | None = None
+    interpretations: list[AskInterpretation] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def _anchor_is_first(self) -> "AskRule":
@@ -558,6 +570,23 @@ class AskRule(StrictModel):
                         f"ask {self.id!r}: `at_start` is only meaningful on the "
                         f"FIRST token of a match sequence (found at index {i})"
                     )
+        has_resolution = bool(self.resolves)
+        has_interpretations = bool(self.interpretations)
+        if has_resolution == has_interpretations:
+            raise ValueError(
+                f"ask {self.id!r}: define exactly one of `resolves` or "
+                "`interpretations`"
+            )
+        if self.interpretations:
+            if not self.clarification:
+                raise ValueError(
+                    f"ask {self.id!r}: ambiguous asks require `clarification`"
+                )
+            ids = [choice.id for choice in self.interpretations]
+            if len(ids) != len(set(ids)):
+                raise ValueError(
+                    f"ask {self.id!r}: interpretation ids must be unique"
+                )
         return self
 
 

@@ -590,7 +590,12 @@ def split_question(text: str, reg: Registry | None = None) -> tuple[list[str], s
     return premises, last
 
 
-def solve(text: str, reg: Registry, tracing: bool = True) -> Result:
+def solve(
+    text: str,
+    reg: Registry,
+    tracing: bool = True,
+    interpretation: str | None = None,
+) -> Result:
     """Read `text` and answer it.
 
     `tracing=False` skips snapshotting the reversible feature diffs in every
@@ -638,9 +643,12 @@ def solve(text: str, reg: Registry, tracing: bool = True) -> Result:
     if matched_ask is not None:
         import re as _re
 
+        resolve_templates = list(matched_ask[0].resolves.values())
+        for choice in matched_ask[0].interpretations:
+            resolve_templates.extend(choice.resolves.values())
         value_slots = {
             m.group(1)
-            for raw in matched_ask[0].resolves.values()
+            for raw in resolve_templates
             for m in _re.finditer(r"\{(\w+)\.value\}", raw)
         }
         for slot_name, unit in matched_ask[2].slots.items():
@@ -651,7 +659,14 @@ def solve(text: str, reg: Registry, tracing: bool = True) -> Result:
                     "ask-consume", unit, {"pattern_consumed": True},
                     f"value consumed by ask {matched_ask[0].id}",
                 )
-    proposed = run_answer(question, doc.store, reg, doc.log, premises=premises)
+    proposed = run_answer(
+        question,
+        doc.store,
+        reg,
+        doc.log,
+        premises=premises,
+        interpretation=interpretation,
+    )
     veto = run_guards(
         premises, doc.consumed_uids, doc.log, reg, proposed, doc.store, question,
         # the clause pre-split erases its boundary word from the readings, so

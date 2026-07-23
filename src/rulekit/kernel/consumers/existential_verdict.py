@@ -16,7 +16,7 @@ from . import ConsumerContext, consumer
 
 @consumer("existential-verdict", time_scoped=True)
 def existential_verdict(ctx: ConsumerContext):
-    from ..answer import Answer
+    from ..answer import Answer, AnswerProof, ProofStep, SemanticNode
 
     # "Is it true that some CLS are [not] PRED?" — ∃-introduction at
     # query time (Stage 4): 'yes' from a stated Existential echo or from
@@ -40,19 +40,42 @@ def existential_verdict(ctx: ConsumerContext):
         )
     cls_p, pred = ctx.query["cls"], ctx.query["pred"]
     pol = ctx.query.get("polarity", "true") == "true"
+    query_node = SemanticNode(
+        "Existential",
+        (
+            ("cls", cls_p),
+            ("pred", pred),
+            ("polarity", pol),
+        ),
+    )
     for f in ctx.store.by_kind(Existential):
         if f.cls == cls_p and f.pred == pred:
             return Answer(
                 "verdict", "yes" if f.polarity == pol else "undetermined",
                 f"existential {cls_p!r}/{pred!r} "
                 f"({'+' if f.polarity else '-'}) via {f.provenance.source}",
+                AnswerProof(
+                    query_node,
+                    (
+                        ProofStep(
+                            "existential-echo",
+                            query_node,
+                            (f,),
+                            "the text states the same existential proposition",
+                        ),
+                    ) if f.polarity == pol else (),
+                ),
             )
     # Phase 0: an indefinite-premise atom never witnesses a definite-
     # description pred (same contract as logic-verdict above)
     from ..patterns import field_definite_common
 
     q_defcom = field_definite_common(ctx.ask, "pred", ctx.match, ctx.question, ctx.reg)
-    in_cls = {f.entity for f in ctx.store.by_kind(Atom) if f.pred == cls_p and f.polarity}
+    in_cls = {
+        f.entity: f
+        for f in ctx.store.by_kind(Atom)
+        if f.pred == cls_p and f.polarity
+    }
     for f in ctx.store.by_kind(Atom):
         if q_defcom and f.indef_obj:
             continue
@@ -61,6 +84,17 @@ def existential_verdict(ctx: ConsumerContext):
                 "verdict", "yes",
                 f"witness {f.entity!r}: {cls_p!r} and "
                 f"{'not ' if not pol else ''}{pred!r}",
+                AnswerProof(
+                    query_node,
+                    (
+                        ProofStep(
+                            "existential-introduction",
+                            query_node,
+                            (in_cls[f.entity], f),
+                            f"{f.entity!r} satisfies both required properties",
+                        ),
+                    ),
+                ),
             )
     if pol:
         for f in ctx.store.by_kind(Quantified):
@@ -69,5 +103,27 @@ def existential_verdict(ctx: ConsumerContext):
                     "verdict", "no",
                     f"negative universal {cls_p!r}/{pred!r} refutes the "
                     f"existential via {f.provenance.source}",
+                    AnswerProof(
+                        query_node,
+                        (
+                            ProofStep(
+                                "negative-universal-refutation",
+                                SemanticNode(
+                                    "Verdict",
+                                    (
+                                        ("value", "no"),
+                                        ("query_kind", "Existential"),
+                                    ),
+                                ),
+                                (f,),
+                                "a universal denial excludes every possible witness",
+                            ),
+                        ),
+                    ),
                 )
-    return Answer("verdict", "undetermined", "no witness and no refuting universal")
+    return Answer(
+        "verdict",
+        "undetermined",
+        "no witness and no refuting universal",
+        AnswerProof(query_node),
+    )

@@ -11,6 +11,7 @@ statement about what the text determines, never a guess.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 from ..data.registry import Registry
 from . import deixis
@@ -18,6 +19,9 @@ from .evaluate import ArithmeticLog
 from .facts import FactStore
 from .model import Reading
 from .patterns import match_ask
+
+if TYPE_CHECKING:  # pragma: no cover - types only
+    from .model import Fact
 
 
 # The value kinds VALUE-ACCOUNTING holds a reading responsible for (guards.py
@@ -34,11 +38,64 @@ from .patterns import match_ask
 _ACCOUNTED_VALUE_KINDS = ("count", "multiplier", "fraction")
 
 
+@dataclass(frozen=True)
+class SemanticNode:
+    """One typed proposition in an answer proof.
+
+    This is deliberately smaller than a Fact: a query or intermediate
+    conclusion need not be materialized in the FactStore. Exact textual facts
+    remain untouched; the proof records the semantic projection that used
+    them.
+    """
+
+    kind: str
+    fields: tuple[tuple[str, str | float | bool], ...]
+
+
+@dataclass(frozen=True)
+class ProofStep:
+    """A named inference over evidence facts."""
+
+    rule: str
+    conclusion: SemanticNode
+    evidence: tuple["Fact", ...] = ()
+    detail: str = ""
+
+
+@dataclass(frozen=True)
+class AnswerProof:
+    """Structured proof metadata for the designer and API."""
+
+    query: SemanticNode
+    steps: tuple[ProofStep, ...] = ()
+
+
+@dataclass(frozen=True)
+class ClarificationOption:
+    """One normalized interpretation the caller may explicitly confirm."""
+
+    id: str
+    label: str
+    description: str
+    query: SemanticNode
+
+
+@dataclass(frozen=True)
+class ClarificationRequest:
+    """A paused answer whose surface has more than one supported reading."""
+
+    prompt: str
+    options: tuple[ClarificationOption, ...]
+    selected: str | None = None
+
+
 @dataclass
 class Answer:
     kind: str  # "number" | "verdict" | "decline"
     value: float | str | None
     reason: str
+    proof: AnswerProof | None = None
+    clarification: ClarificationRequest | None = None
 
     @property
     def committed(self) -> bool:
@@ -112,6 +169,7 @@ def answer(
     reg: Registry,
     log: ArithmeticLog,
     premises: list[Reading] | None = None,
+    interpretation: str | None = None,
 ) -> Answer:
     if not store.clean:
         c = store.collisions[0]
@@ -125,7 +183,67 @@ def answer(
     if matched is None:
         return Answer("decline", None, "no ask shape recognizes this question")
     ask, query, _match = matched
+
+    clarification = None
+    raw_choices = query.get("__interpretations__")
+    if raw_choices is not None:
+        def semantic_value(value: str) -> str | bool:
+            if value == "true":
+                return True
+            if value == "false":
+                return False
+            return value
+
+        def semantic_query(choice) -> SemanticNode:
+            return SemanticNode(
+                choice["kind"],
+                tuple(
+                    (key, semantic_value(value))
+                    for key, value in choice["query"].items()
+                    if key != "consumer"
+                ),
+            )
+
+        options = tuple(
+            ClarificationOption(
+                choice["id"],
+                choice["label"],
+                choice["description"],
+                semantic_query(choice),
+            )
+            for choice in raw_choices
+        )
+        selected = next(
+            (choice for choice in raw_choices if choice["id"] == interpretation),
+            None,
+        )
+        clarification = ClarificationRequest(
+            query["__clarification__"],
+            options,
+            selected=interpretation if selected is not None else None,
+        )
+        if interpretation is None:
+            return Answer(
+                "decline",
+                None,
+                "the question has multiple supported interpretations",
+                clarification=clarification,
+            )
+        if selected is None:
+            return Answer(
+                "decline",
+                None,
+                f"unknown interpretation {interpretation!r}; clarification is still required",
+                clarification=clarification,
+            )
+        query = dict(selected["query"])
+
     consumer = query.get("consumer")
+
+    def finish(result: Answer) -> Answer:
+        if clarification is not None:
+            result.clarification = clarification
+        return result
 
     # EXTRACTED CONSUMERS FIRST (kernel/consumers/). Consulted before the
     # if-chain below so an extracted consumer is unreachable from the chain and
@@ -148,7 +266,7 @@ def answer(
     if consumer not in TIME_SCOPED:
         early = _dispatch(store)
         if early is not None:
-            return early
+            return finish(early)
 
     # ------------------------------------------------------------------
     # THE TEMPORAL ORIGO (docs/deixis.md phase 2).
@@ -178,10 +296,10 @@ def answer(
             # Two moments named, and no way to choose: arbitrating between times needs
             # an ORDER, and `time` is an opaque label with none (deixis.md §1.3).
             # Declining is the only honest move.
-            return Answer(
+            return finish(Answer(
                 "decline", None,
                 "the question names more than one time, and time arbitration is unbuilt",
-            )
+            ))
         reference_time = origo.key
         store = FactStore(facts=[
             f for f in store.facts
@@ -194,6 +312,8 @@ def answer(
     if consumer in TIME_SCOPED:
         late = _dispatch(store)
         if late is not None:
-            return late
+            return finish(late)
 
-    return Answer("decline", None, f"ask {ask.id} names unknown consumer {consumer!r}")
+    return finish(
+        Answer("decline", None, f"ask {ask.id} names unknown consumer {consumer!r}")
+    )

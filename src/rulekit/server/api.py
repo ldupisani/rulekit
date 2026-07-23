@@ -37,6 +37,7 @@ class DocBody(BaseModel):
 
 class TraceBody(BaseModel):
     text: str
+    interpretation: str | None = None
 
 
 class ImpactBody(BaseModel):
@@ -110,6 +111,156 @@ def _fact_json(fact) -> dict[str, Any]:
         "fields": fields,
         "source": fact.provenance.source,
         "sentence": fact.provenance.sentence,
+    }
+
+
+def _semantic_role(fact) -> str:
+    """Classify epistemic origin without changing the FactStore contract."""
+    source = fact.provenance.source
+    if source.startswith(("knowledge/", "provider/", "reference/")):
+        return "knowledge"
+    if source.startswith(("synth/", "inference/")):
+        return "derived"
+    return "observed"
+
+
+def _semantic_fact_json(fact, fact_id: str) -> dict[str, Any]:
+    payload = _fact_json(fact)
+    payload.update({
+        "id": fact_id,
+        "role": _semantic_role(fact),
+        # Atom is the deliberately opaque, exact phrase-keyed proposition.
+        # Every other fact kind exposes named semantic fields.
+        "representation": "exact" if type(fact).__name__ == "Atom" else "structured",
+    })
+    return payload
+
+
+def _semantic_node_json(node) -> dict[str, Any]:
+    return {"kind": node.kind, "fields": dict(node.fields)}
+
+
+def _clarification_json(clarification) -> dict[str, Any] | None:
+    if clarification is None:
+        return None
+    return {
+        "prompt": clarification.prompt,
+        "selected": clarification.selected,
+        "options": [
+            {
+                "id": option.id,
+                "label": option.label,
+                "description": option.description,
+                "query": _semantic_node_json(option.query),
+            }
+            for option in clarification.options
+        ],
+    }
+
+
+def _semantic_json(result, ask=None) -> dict[str, Any]:
+    """Designer projection of typed facts and structured answer proof.
+
+    This is a view over the result, never a second inference engine. The
+    consumer owns proof construction; the server only assigns stable ids to
+    its evidence so the UI can cross-link it to the semantic field.
+    """
+    facts = list(result.store.facts)
+    fact_ids = {id(fact): f"f{i}" for i, fact in enumerate(facts)}
+    fact_payloads = [
+        _semantic_fact_json(fact, fact_ids[id(fact)])
+        for fact in facts
+    ]
+
+    answer_proof = result.answer.proof
+    clarification = result.answer.clarification
+    selected_option = None
+    if clarification is not None:
+        selected_option = next(
+            (
+                option
+                for option in clarification.options
+                if option.id == clarification.selected
+            ),
+            None,
+        )
+
+    if answer_proof is not None:
+        query = _semantic_node_json(answer_proof.query)
+    elif selected_option is not None:
+        query = _semantic_node_json(selected_option.query)
+    elif clarification is not None:
+        query = {
+            "kind": "Ambiguous",
+            "fields": {"interpretations": len(clarification.options)},
+        }
+    elif ask is not None:
+        query = {"kind": "Ask", "fields": dict(ask[1])}
+    else:
+        query = None
+    proof = None
+    if answer_proof is not None:
+        steps = []
+        for i, step in enumerate(answer_proof.steps):
+            evidence = []
+            for fact in step.evidence:
+                fact_id = fact_ids.get(id(fact))
+                if fact_id is None:
+                    # Defensive fallback for a future proof over a fact copied
+                    # out of the store: equality is exact for frozen Facts.
+                    fact_id = next(
+                        (
+                            fact_ids[id(candidate)]
+                            for candidate in facts
+                            if candidate == fact
+                        ),
+                        None,
+                    )
+                evidence.append({
+                    "id": fact_id,
+                    **_fact_json(fact),
+                    "role": _semantic_role(fact),
+                    "representation": (
+                        "exact" if type(fact).__name__ == "Atom" else "structured"
+                    ),
+                })
+            steps.append({
+                "id": f"p{i}",
+                "rule": step.rule,
+                "conclusion": _semantic_node_json(step.conclusion),
+                "evidence": evidence,
+                "detail": step.detail,
+            })
+        proof = {
+            "query": _semantic_node_json(answer_proof.query),
+            "steps": steps,
+            "status": (
+                "proved" if result.answer.committed else "undetermined"
+            ),
+        }
+
+    return {
+        "query": query,
+        "interpretations": (
+            [
+                {
+                    "id": option.id,
+                    "label": option.label,
+                    "description": option.description,
+                    "query": _semantic_node_json(option.query),
+                    "selected": option.id == clarification.selected,
+                }
+                for option in clarification.options
+            ]
+            if clarification is not None else []
+        ),
+        "facts": fact_payloads,
+        "proof": proof,
+        "roles": {
+            "observed": "asserted by a reader from a source sentence",
+            "knowledge": "supplied by an explicitly enabled knowledge source",
+            "derived": "produced by a named inference from other facts",
+        },
     }
 
 
@@ -366,7 +517,11 @@ def build_router(state: ServerState) -> APIRouter:
     @router.post("/trace")
     def trace(body: TraceBody):
         try:
-            result = solve(body.text, state.registry)
+            result = solve(
+                body.text,
+                state.registry,
+                interpretation=body.interpretation,
+            )
         except Exception as exc:  # noqa: BLE001 — surface, don't 500
             return {"error": f"{type(exc).__name__}: {exc}",
                     "traceback": traceback.format_exc()[-2000:]}
@@ -378,10 +533,21 @@ def build_router(state: ServerState) -> APIRouter:
                 "kind": result.answer.kind,
                 "value": result.answer.value,
                 "reason": result.answer.reason,
+                "clarification": _clarification_json(result.answer.clarification),
             },
             "rounds": result.document.rounds if result.document else 1,
             "ask": (
-                {"id": ask[0].id, "query": ask[1]} if ask is not None else None
+                {
+                    "id": ask[0].id,
+                    "query": (
+                        {
+                            key: value
+                            for key, value in ask[1].items()
+                            if not key.startswith("__")
+                        } or None
+                    ),
+                }
+                if ask is not None else None
             ),
             "sentences": [
                 {
@@ -394,6 +560,7 @@ def build_router(state: ServerState) -> APIRouter:
                 for r in readings
             ],
             "facts": [_fact_json(f) for f in result.store.facts],
+            "semantic": _semantic_json(result, ask),
             "collisions": [
                 {"key": _jsonable(list(c.key)), "a": c.a_source, "b": c.b_source,
                  "a_value": _jsonable(c.a_value), "b_value": _jsonable(c.b_value)}

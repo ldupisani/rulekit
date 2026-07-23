@@ -212,12 +212,23 @@ re-runs tens of items, not thousands.
 
 Engine records every mutation as a serializable Decision → **step-through needs no engine
 pauses**: server returns the full decision stream; UI steps a cursor, reconstructing state.
-Three panes: (1) Monaco rule editor with live JSON Schema + inline lint, saves write YAML back
-via ruamel (comments preserved); (2) trace stepper — token ribbon with sense/obligation badges,
-before→after per decision, fact-store and gap-table panels, visible re-parse rounds; (3) impact
-panel — auto-runs trigger-affected dev-train items on save, shows diff buckets + blast radius
-(holdout/test never itemized — firewall enforced in the tool). Later: category graph, collision
-explorer, rule-from-example scaffolding.
+The designer has four complementary lenses over one result: **Reading** shows
+the token ribbon, obligations, decisions, facts, and gaps; **Semantic field**
+groups facts by observed/knowledge/derived epistemic role and independently
+marks exact versus structured representation; **Deictic field** shows reference
+coordinates and declines; **Proof** shows a consumer-owned normalized query,
+named inference steps, and evidence fact ids. Semantic and proof views are
+projections of the result, never a second inference engine. The editor writes
+schema-validated YAML back with comments preserved, while the impact panel
+enforces the DEV/TEST firewall. Later: category graph, collision explorer,
+rule-from-example scaffolding.
+
+Ask ambiguity is represented before consumer dispatch. A pack ask may provide
+multiple normalized interpretations; without a caller selection the answer is
+a non-committing clarification request and Proof remains paused. The trace API
+round-trips an interpretation id, then reruns the ordinary solve path with only
+that query selected. This is distinct from `undetermined`, which means one
+query was understood but the fact store cannot decide it.
 
 ### Migration from difg
 

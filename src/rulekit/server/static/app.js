@@ -15,6 +15,7 @@ const state = {
   decisions: [],        // flattened [{sentence, ...decision}]
   cursor: -1,
   currentDoc: null,     // path of the doc in the editor
+  interpretation: null, // explicitly confirmed query reading
 };
 
 async function api(method, path, body) {
@@ -100,26 +101,30 @@ async function saveDoc() {
 
 /* ---------- trace ---------- */
 
-async function runTrace() {
+async function runTrace(interpretation = null) {
   const text = $("trace-input").value.trim();
   if (!text) return;
   setStatus("reading…");
-  const t = await api("POST", "/api/trace", { text });
+  const t = await api("POST", "/api/trace", { text, interpretation });
   if (t.error) {
     setStatus(t.error, "err");
     return;
   }
+  state.interpretation = interpretation;
   state.trace = t;
   state.decisions = t.sentences.flatMap((s) =>
     s.decisions.map((d) => ({ ...d, sentence: s.index, is_question: s.is_question }))
   );
   state.cursor = state.decisions.length - 1;
   renderAnswer(t);
+  renderClarification(t);
   renderSentences(t);
   renderDecisions();
   renderFacts(t);
   renderGaps(t);
+  renderSemantic(t);
   renderField(t);
+  renderProof(t);
   selectDecision(state.cursor, false);
   const declines = (t.deixis?.observations || []).filter((o) => o.outcome === "declined").length;
   setStatus(
@@ -131,13 +136,75 @@ async function runTrace() {
 
 function renderAnswer(t) {
   const b = $("answer-banner");
-  b.classList.remove("hidden", "number", "decline");
-  const isAnswer = t.answer.kind === "number" || t.answer.kind === "verdict";
-  b.classList.add(isAnswer ? "number" : "decline");
-  b.replaceChildren(
-    el("span", "big", isAnswer ? String(t.answer.value) : "declined"),
-    el("span", "reason", t.answer.reason + (t.ask ? `   ·   ask ${t.ask.id} → ${JSON.stringify(t.ask.query)}` : "")),
+  b.classList.remove("hidden", "number", "decline", "clarify", "undetermined");
+  const clarification = t.answer.clarification;
+  if (clarification && !clarification.selected) {
+    b.classList.add("clarify");
+    b.replaceChildren(
+      el("span", "big", "needs clarification"),
+      el("span", "reason", t.answer.reason),
+    );
+    return;
+  }
+  const isUndetermined =
+    t.answer.kind === "verdict" && t.answer.value === "undetermined";
+  const isAnswer =
+    t.answer.kind === "number" ||
+    (t.answer.kind === "verdict" && !isUndetermined);
+  b.classList.add(
+    isUndetermined ? "undetermined" : isAnswer ? "number" : "decline",
   );
+  const confirmed = clarification?.selected
+    ? `   ·   confirmed ${clarification.selected}`
+    : "";
+  b.replaceChildren(
+    el(
+      "span",
+      "big",
+      isUndetermined ? "undetermined" : isAnswer ? String(t.answer.value) : "declined",
+    ),
+    el(
+      "span",
+      "reason",
+      t.answer.reason +
+        confirmed +
+        (t.ask ? `   ·   ask ${t.ask.id} → ${JSON.stringify(t.ask.query)}` : ""),
+    ),
+  );
+}
+
+function renderClarification(t) {
+  const box = $("clarification");
+  box.replaceChildren();
+  const request = t.answer.clarification;
+  box.classList.toggle("hidden", !request);
+  if (!request) return;
+
+  const head = el("div", "clarification-head");
+  head.append(
+    el("span", "clarification-kicker", request.selected ? "Interpretation confirmed" : "More information needed"),
+    el("span", "clarification-prompt", request.prompt),
+  );
+  box.append(head);
+
+  const choices = el("div", "clarification-options");
+  for (const option of request.options) {
+    const selected = option.id === request.selected;
+    const button = el(
+      "button",
+      `clarification-option${selected ? " selected" : ""}`,
+    );
+    button.type = "button";
+    button.setAttribute("aria-pressed", String(selected));
+    button.append(
+      el("span", "clarification-option-label", option.label),
+      el("span", "clarification-option-description", option.description),
+      semanticNodeCard(option.query, "clarification-query"),
+    );
+    button.onclick = () => runTrace(option.id);
+    choices.append(button);
+  }
+  box.append(choices);
 }
 
 function senseBadgeClass(s) {
@@ -279,6 +346,214 @@ function renderGaps(t) {
     box.append(el("div", "gap", g));
   }
   if (!box.children.length) box.append(el("div", "dim", "none — the reading is saturated"));
+}
+
+/* ---------- semantic field ---------- */
+
+function semanticFields(fields) {
+  return Object.entries(fields || {})
+    .filter(([k, v]) => !(k === "polarity" && v === true))
+    .map(([k, v]) => `${k}=${v}`)
+    .join("  ");
+}
+
+function semanticFactCard(f, compact = false) {
+  const card = el("div", `sem-fact role-${f.role} repr-${f.representation}`);
+  if (f.id) card.dataset.factId = f.id;
+  const head = el("div", "sem-fact-head");
+  head.append(
+    el("span", "sem-id mono", f.id || "—"),
+    el("span", "sem-type", f.type),
+    el("span", `sem-role role-${f.role}`, f.role),
+    el("span", `sem-repr repr-${f.representation}`, f.representation),
+  );
+  card.append(head);
+  card.append(el("div", "sem-fields mono", semanticFields(f.fields)));
+  if (!compact) {
+    card.append(el("div", "sem-source", `${f.source} · sentence ${f.sentence}`));
+  }
+  return card;
+}
+
+function semanticNodeCard(node, cls = "") {
+  const card = el("div", `sem-node ${cls}`);
+  card.append(el("span", "sem-type", node?.kind || "unrecognized query"));
+  card.append(el("span", "sem-fields mono", semanticFields(node?.fields)));
+  return card;
+}
+
+function renderSemantic(t) {
+  const box = $("semantic");
+  box.replaceChildren();
+  const sem = t.semantic;
+  if (!sem) {
+    box.append(el("div", "dim", "no semantic projection supplied"));
+    return;
+  }
+
+  const query = el("section", "sem-section query-section");
+  query.append(el("div", "pane-title", "Query projection"));
+  if (sem.query) query.append(semanticNodeCard(sem.query, "query-node"));
+  else query.append(el("div", "dim", "no question was projected"));
+  box.append(query);
+
+  if (sem.interpretations?.length) {
+    const candidates = el("section", "sem-section interpretation-section");
+    candidates.append(el("div", "pane-title", "Supported interpretations"));
+    const grid = el("div", "interpretation-grid");
+    for (const option of sem.interpretations) {
+      const card = el(
+        "div",
+        `interpretation-card${option.selected ? " selected" : ""}`,
+      );
+      card.append(
+        el("div", "interpretation-label", option.label),
+        semanticNodeCard(option.query),
+        el("div", "sem-note", option.description),
+      );
+      grid.append(card);
+    }
+    candidates.append(grid);
+    box.append(candidates);
+  }
+
+  const groups = [
+    {
+      title: "Observed · exact",
+      note: "lossless phrase-keyed propositions read directly from the text",
+      select: (f) => f.role === "observed" && f.representation === "exact",
+    },
+    {
+      title: "Observed · structured",
+      note: "typed relations, quantifiers, quantities, and other fielded assertions",
+      select: (f) => f.role === "observed" && f.representation === "structured",
+    },
+    {
+      title: "Knowledge",
+      note: "explicitly enabled world or domain knowledge; parser categories do not appear here",
+      select: (f) => f.role === "knowledge",
+    },
+    {
+      title: "Derived",
+      note: "facts produced by named inference rules from observed or knowledge facts",
+      select: (f) => f.role === "derived",
+    },
+  ];
+
+  for (const group of groups) {
+    const section = el("section", "sem-section");
+    const facts = sem.facts.filter(group.select);
+    const title = el("div", "sem-section-title");
+    title.append(
+      el("span", "", group.title),
+      el("span", "sem-count mono", String(facts.length)),
+    );
+    section.append(title, el("div", "sem-note", group.note));
+    const grid = el("div", "sem-grid");
+    for (const fact of facts) grid.append(semanticFactCard(fact));
+    if (!facts.length) {
+      grid.append(el(
+        "div",
+        "sem-empty",
+        group.title === "Knowledge"
+          ? "∅ no ontology or world-knowledge facts are enabled for this run"
+          : "∅ none",
+      ));
+    }
+    section.append(grid);
+    box.append(section);
+  }
+}
+
+/* ---------- proof ---------- */
+
+function linkProofEvidence(node, factId) {
+  if (!factId) return node;
+  node.classList.add("linked");
+  const target = () => document.querySelector(
+    `#semantic [data-fact-id="${factId}"]`,
+  );
+  node.addEventListener("mouseenter", () => target()?.classList.add("sem-hl"));
+  node.addEventListener("mouseleave", () => target()?.classList.remove("sem-hl"));
+  node.title = `${factId} in semantic field`;
+  return node;
+}
+
+function renderProof(t) {
+  const box = $("proof");
+  box.replaceChildren();
+  const proof = t.semantic?.proof;
+
+  const query = el("section", "proof-query");
+  query.append(el("div", "pane-title", "Normalized question"));
+  if (t.semantic?.query) query.append(semanticNodeCard(t.semantic.query, "query-node"));
+  else query.append(el("div", "dim", "no recognized question"));
+  box.append(query);
+
+  const clarification = t.answer.clarification;
+  if (clarification && !clarification.selected) {
+    box.append(el(
+      "div",
+      "proof-empty clarification-paused",
+      "REASONING PAUSED · choose an interpretation before asking the proof system to commit.",
+    ));
+    return;
+  }
+
+  if (!proof) {
+    box.append(el(
+      "div",
+      "proof-empty",
+      `No structured proof is available for this consumer. ${t.answer.reason}`,
+    ));
+    return;
+  }
+  if (!proof.steps.length) {
+    box.append(el(
+      "div",
+      "proof-empty undetermined",
+      `UNDETERMINED · ${t.answer.reason}`,
+    ));
+    return;
+  }
+
+  const flow = el("div", "proof-flow");
+  for (const [i, step] of proof.steps.entries()) {
+    const card = el("section", "proof-step");
+    const head = el("div", "proof-step-head");
+    head.append(
+      el("span", "proof-index mono", String(i + 1)),
+      el("span", "proof-rule mono", step.rule),
+    );
+    card.append(head);
+
+    const evidence = el("div", "proof-evidence");
+    evidence.append(el("div", "proof-label", "Evidence"));
+    const evidenceGrid = el("div", "proof-evidence-grid");
+    for (const fact of step.evidence) {
+      evidenceGrid.append(linkProofEvidence(semanticFactCard(fact, true), fact.id));
+    }
+    if (!step.evidence.length) evidenceGrid.append(el("span", "dim", "no stored evidence"));
+    evidence.append(evidenceGrid);
+    card.append(evidence);
+
+    card.append(el("div", "proof-arrow", "↓"));
+    const conclusion = el("div", "proof-conclusion");
+    conclusion.append(el("div", "proof-label", "Conclusion"));
+    conclusion.append(semanticNodeCard(step.conclusion, "conclusion-node"));
+    card.append(conclusion);
+    if (step.detail) card.append(el("div", "proof-detail", step.detail));
+    flow.append(card);
+  }
+  box.append(flow);
+
+  const outcome = el("div", `proof-outcome ${proof.status}`);
+  outcome.append(
+    el("span", "proof-outcome-label", proof.status.toUpperCase()),
+    el("span", "mono", `${t.answer.kind}:${t.answer.value}`),
+    el("span", "dim", t.answer.reason),
+  );
+  box.append(outcome);
 }
 
 /* ---------- the deictic field ----------
@@ -480,11 +755,10 @@ function renderField(t) {
 }
 
 function setView(which) {
-  const field = which === "field";
-  $("field").classList.toggle("hidden", !field);
-  document.querySelector(".cols").classList.toggle("hidden", field);
-  $("view-field").classList.toggle("on", field);
-  $("view-reading").classList.toggle("on", !field);
+  for (const view of ["reading", "semantic", "field", "proof"]) {
+    $(view).classList.toggle("hidden", which !== view);
+    $(`view-${view}`).classList.toggle("on", which === view);
+  }
 }
 
 /* ---------- impact ---------- */
@@ -577,7 +851,7 @@ async function setBaseline() {
 
 /* ---------- wiring ---------- */
 
-$("trace-btn").onclick = runTrace;
+$("trace-btn").onclick = () => runTrace();
 $("trace-input").addEventListener("keydown", (e) => { if (e.key === "Enter") runTrace(); });
 $("save-btn").onclick = saveDoc;
 $("editor").addEventListener("keydown", (e) => {
@@ -586,7 +860,9 @@ $("editor").addEventListener("keydown", (e) => {
 $("impact-btn").onclick = runImpact;
 $("baseline-btn").onclick = setBaseline;
 $("view-reading").onclick = () => setView("reading");
+$("view-semantic").onclick = () => setView("semantic");
 $("view-field").onclick = () => setView("field");
+$("view-proof").onclick = () => setView("proof");
 document.addEventListener("keydown", (e) => {
   if (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT") return;
   if (e.key === "ArrowDown" || e.key === "j") { e.preventDefault(); selectDecision(state.cursor + 1); }

@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
+from typing import Any
 
 from ..data.registry import Registry
 from ..data.schemas import AskRule, MatchToken, PatternRule
@@ -389,7 +390,9 @@ def field_definite_common(ask, field: str, match, reading, reg: Registry) -> boo
     part of the name's surface — so a name successor passes. Scoped to the
     one field: a definite article in the question's OTHER spans must not
     poison unrelated matches."""
-    tpl = ask.resolves.get(field, "")
+    templates = [ask.resolves.get(field, "")]
+    templates.extend(choice.resolves.get(field, "") for choice in ask.interpretations)
+    tpl = " ".join(templates)
     for mm in _TEMPLATE.finditer(tpl):
         span = match.slots.get(mm.group(1))
         if not isinstance(span, tuple):
@@ -1334,7 +1337,7 @@ def run_rules(
 
 def match_ask(
     reading: Reading, reg: Registry
-) -> tuple[AskRule, dict[str, str], Match] | None:
+) -> tuple[AskRule, dict[str, Any], Match] | None:
     """Match question shapes; the MOST SPECIFIC matching ask wins (max
     consumed units — a longer match read more of the question), then Σ CATEGORY
     GATE DEPTH, with id order as the deterministic tie-break. Re-landed alone
@@ -1348,23 +1351,45 @@ def match_ask(
     a PLACE and declines) purely because 'h' < 'u'. Ties are the only matches
     affected; any match that already won on length still wins.
     """
-    best: tuple[AskRule, dict[str, str], Match] | None = None
-    for ask in reg.asks:  # sorted by id — deterministic tie-break
-        seq = ask.match["question"]
-        m = match_sequence(reading, seq, reg)
-        if m is None:
-            continue
-        resolved = {}
-        for key, raw in ask.resolves.items():
+    def render(raw: str, match: Match) -> str:
+        return _TEMPLATE.sub(
+            lambda mm: _slot_value(match.slots[mm.group(1)], mm.group(2)), raw
+        )
+
+    def resolve(fields: dict[str, str], match: Match) -> dict[str, str]:
+        resolved_fields = {}
+        for key, raw in fields.items():
             try:
-                resolved[key] = _TEMPLATE.sub(
-                    lambda mm: _slot_value(m.slots[mm.group(1)], mm.group(2)), raw
-                )
+                resolved_fields[key] = render(raw, match)
             except KeyError:
                 # the template references an OPTIONAL slot that didn't bind
                 # ("verb: {verb}" with the opt-group absent) — omit the key
                 # and let the consumer's default apply
                 continue
+        return resolved_fields
+
+    best: tuple[AskRule, dict[str, Any], Match] | None = None
+    for ask in reg.asks:  # sorted by id — deterministic tie-break
+        seq = ask.match["question"]
+        m = match_sequence(reading, seq, reg)
+        if m is None:
+            continue
+        if ask.interpretations:
+            resolved = {
+                "__clarification__": render(ask.clarification or "", m),
+                "__interpretations__": tuple(
+                    {
+                        "id": choice.id,
+                        "label": render(choice.label, m),
+                        "description": render(choice.description, m),
+                        "kind": choice.kind,
+                        "query": resolve(choice.resolves, m),
+                    }
+                    for choice in ask.interpretations
+                ),
+            }
+        else:
+            resolved = resolve(ask.resolves, m)
         if best is None or _ask_rank(m, ask, reg) > _ask_rank(best[2], best[0], reg):
             best = (ask, resolved, m)
     return best

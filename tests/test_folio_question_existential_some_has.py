@@ -51,7 +51,6 @@ def test_missing_possession_remains_open_world() -> None:
 @pytest.mark.parametrize(
     "question",
     [
-        "Is it true that Some otters have badges?",
         "Is it true that Some otter had a badge?",
         "Is it true that Some otter may have a badge?",
         "Is it true that No otter has a badge?",
@@ -61,7 +60,7 @@ def test_missing_possession_remains_open_world() -> None:
         "Is it true that Some otter has 3 badges?",
     ],
 )
-def test_plural_past_modal_quantified_signed_coordinated_and_counted_neighbors_refuse(
+def test_past_modal_quantified_signed_coordinated_and_counted_neighbors_refuse(
     question: str,
 ) -> None:
     _, matched = _matched(question)

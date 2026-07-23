@@ -4058,3 +4058,61 @@ No TEST look was spent.
 
 **Next:** require all three for reader 3: complete query representation,
 deciding store path, and a guard-clean premise document.
+
+## Buyer-backed semantic projection + designer lenses (2026-07-23)
+
+The first vertical slice projects the indefinite passive question
+`A/An CLS was PRED` into an existential query while leaving the two evidence
+facts exact and untouched. `existential-verdict` proves it from a named entity
+holding both `Atom(entity, CLS)` and `Atom(entity, PRED)`; missing either stays
+undetermined. No phrase key is split, loosened, or materialized.
+
+`AnswerProof` now carries a typed query plus named proof steps and their actual
+evidence facts. The designer's new **Semantic field** groups observed,
+knowledge, and derived facts while independently marking exact versus
+structured representation. The new **Proof** lens renders the normalized query,
+evidence ids, inference, conclusion, and outcome. Parser categories never
+appear as knowledge facts.
+
+The guard-clean DEV-train buyer moves 24/1/469→25/1/468 and the no-ask
+population 208→207. Holdout stays 6/0/419 and 177. All 3,030 tests pass,
+curated is 65/65 twice, JavaScript syntax passes, lint remains 0 errors/eight
+warnings/52 info, and all eight external DEV diffs are NEUTRAL. Browser
+verification found no console errors.
+
+No TEST look was spent.
+
+**Next:** require a buyer whose deciding path actually needs an explicitly
+scoped knowledge axiom or structured relation. Lexical/POS data, parser
+categories, world knowledge, and derived facts remain separate layers.
+
+## First-class ask ambiguity + clarification UI (2026-07-23)
+
+`some otters have badges` is now read as an explicit existential and
+canonicalized to the same `otter` / `have badge` query as singular `some`.
+`an otter has a badge` deliberately does not choose: its ask data declares an
+existential candidate and a strict class-wide universal candidate.
+
+The kernel returns a non-committing `ClarificationRequest` until the caller
+supplies one candidate id. This is not logical `undetermined`: ambiguity means
+there is no unique query yet; undetermined means a confirmed query has
+insufficient evidence. Selecting existential reruns the witness consumer and
+proves the Nadia example. Selecting class-wide reaches the universal consumer
+and stays undetermined from Nadia alone, but succeeds from an exact `Every
+otter has a badge` fact.
+
+The designer presents the clarification prompt and both normalized query cards,
+posts the chosen interpretation back to `/api/trace`, and marks the selected
+reading. Proof says `REASONING PAUSED` before selection. A live browser pass
+verified both choices, explicit-`some` bypass, and no console errors.
+
+This is a user-driven infrastructure slice with no DEV corpus buyer. All eight
+external DEV diffs are NEUTRAL; scratch logic remains 25/1/468 train and
+6/0/419 holdout. All 3,045 tests pass, curated is 65/65 twice, lint remains
+0 errors/eight warnings/52 info, and JavaScript syntax passes.
+
+No TEST look was spent.
+
+**Next:** add ambiguity only where every candidate has a precise semantic node.
+Do not use clarification as a substitute for refusing malformed or unsupported
+grammar.

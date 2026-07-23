@@ -172,6 +172,94 @@
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
 
+# Session 104 (2026-07-23): first-class ask ambiguity + clarification UI
+
+Ambiguous question interpretation is now a first-class, non-committing result.
+An ask may declare multiple templated `interpretations`, each with an id, user
+label, semantic kind, and ordinary consumer query. With no explicit selection,
+`answer()` returns a safe `decline` carrying a structured
+`ClarificationRequest`; it does **not** call either consumer. Passing the chosen
+interpretation back through `solve(..., interpretation=...)` reruns the same
+document and dispatches only the confirmed query.
+
+The initial family distinguishes:
+
+- `some CLSs have Ps` — explicit existential, normalized directly to
+  `Existential(cls=CLS, pred=have P)`;
+- `a/an CLS has a/an P` — ambiguous between the same existential and a strict
+  class-wide `Universal` reading.
+
+This keeps two epistemic states separate: **needs clarification** means the
+question has no unique normalized meaning; **undetermined** means a selected,
+well-formed query lacks deciding evidence. For the Nadia example, choosing the
+existential yields `yes` with the existing witness proof; choosing class-wide
+yields `undetermined` unless an exact universal fact is present.
+
+The trace API accepts an optional interpretation id and exposes the prompt,
+candidate queries, and selected id. The designer renders an amber
+**More information needed** panel with selectable query cards. Proof displays
+`REASONING PAUSED` until a choice is made; a selection reruns the trace, marks
+the confirmed card, and then shows the resulting proof or insufficiency.
+
+This user-driven infrastructure increment has no DEV corpus buyer: every
+standing external DEV diff is NEUTRAL and the scratch logic totals remain
+25/1/468 train and 6/0/419 holdout. All 3,045 tests pass; curated is 65/65
+twice; JavaScript syntax passes; lint remains 0 errors, eight warnings, and
+52 info. A live browser pass verified both choices, the paused proof, the
+explicit-plural bypass, and zero console errors.
+
+No TEST look was spent.
+
+**Next:** keep ambiguity declarations in pack data and add another
+buyer-backed construction only when its alternative readings can each name a
+precise semantic node and a supported consumer (or explicitly report that the
+chosen semantics are not implemented).
+
+---
+
+# Session 103 (2026-07-23): buyer-backed semantic projection + designer lenses
+
+The first semantic-projection vertical slice keeps exact `Atom` facts as the
+lossless reading and projects only at query time. The new question family,
+**“Is it true that A/An CLS was PRED?”**, denotes
+`∃e. CLS(e) ∧ PRED(e)`. Both fields remain complete exact phrase keys; the
+existing `existential-verdict` consumer proves the query only from a named
+witness holding both atoms. Missing either property remains undetermined.
+Definite, plural, signed, quantified, modal, and disjunctive neighbors refuse.
+
+This converts one guard-clean DEV-train buyer. It also adds consumer-owned
+structured proof metadata (`SemanticNode`, `ProofStep`, `AnswerProof`) without
+changing answer values or materializing derived query keys. The existential
+consumer now records its echo, witness, and negative-universal evidence.
+
+The designer gains two lenses:
+
+- **Semantic field** groups facts along independent axes: observed / knowledge /
+  derived epistemic role, and exact / structured representation. Parser
+  categories are explicitly excluded from the knowledge lane.
+- **Proof** shows the normalized query, evidence fact ids, named inference,
+  conclusion, and outcome. Evidence cross-links to the semantic field.
+
+A browser pass verified both views on an observed universal, observed exact
+possession, derived class atom, and existential-introduction proof; no console
+errors occurred. All 3,030 tests pass; curated is 65/65 twice; JavaScript syntax
+passes; lint remains 0 errors, eight warnings, and 52 info. Every external DEV
+diff is NEUTRAL.
+
+| split | before | after | diff | no-ask population |
+|---|---:|---:|---:|---:|
+| dev-train | 24/1/469 | 25/1/468 | +1 SOLVED, 0 BROKE, 0 DECL→WRONG | 208→207 |
+| dev-holdout | 6/0/419 | 6/0/419 | NEUTRAL | 177→177 |
+
+No TEST look was spent.
+
+**Next:** select the next buyer that genuinely requires an explicitly scoped
+knowledge or structured-relation fact. Keep lexical recognition, parser
+categories, world axioms, and derived facts separate; do not count an ontology
+schema as bought until its inference completes a guard-clean DEV stack.
+
+---
+
 # Session 102 (2026-07-23): existential-possession questions; +1 holdout
 
 The post-reader-1 exact-key survey finds no remaining ask-only echo/refutation

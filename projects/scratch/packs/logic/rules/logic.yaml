@@ -2624,6 +2624,30 @@ asks:
       pred: "{v} {p}"
       polarity: "true"
 
+  # Semantic-projection vertical slice: an indefinite singular subject plus a
+  # past copula, "A CLS was PRED", denotes ∃e. CLS(e) ∧ PRED(e). The class and
+  # predicate remain complete, exact phrase keys; the existing
+  # existential-verdict consumer performs the projection at query time from a
+  # named witness holding both Atoms. This is intentionally not a loose
+  # paraphrase or a stored derived key. Definite, plural, signed, quantified,
+  # disjunctive, and modal neighbors remain outside the family.
+  - id: ask/logic-existential-indefinite-was
+    match:
+      question:
+        - {lit: is, at_start: true}
+        - {lit: it}
+        - {lit: 'true'}
+        - {lit: that}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: cls, span: true, span_blocks: [negation, quantifier, disjunctive_marker, verb, future_modal, capacity_modal]}
+        - {lit: was}
+        - {slot: pred, span: true, span_blocks: [negation, quantifier, disjunctive_marker, future_modal, capacity_modal]}
+    resolves:
+      consumer: existential-verdict
+      cls: "{cls.singular}"
+      pred: "{pred.singular}"
+      polarity: "true"
+
   # Reader 45's exact question-side twin. It intentionally shares the same
   # irregular-participle category, agent boundary, and required object
   # article so an existential echo cannot widen the premise construction.
@@ -2687,8 +2711,8 @@ asks:
   # The existing existential-verdict consumer answers yes from a named witness
   # and no from an exact negative universal; absence remains undetermined.
   # Singular agreement, the explicit existential quantifier, and the complete
-  # possession key keep plural, past, modal, signed, and coordinated siblings
-  # outside this family.
+  # possession key keep past, modal, signed, and coordinated siblings outside
+  # this family.
   - id: ask/logic-existential-some-has
     match:
       question:
@@ -2705,6 +2729,64 @@ asks:
       cls: "{cls.singular}"
       pred: "have {pred}"
       polarity: "true"
+
+  # The plural-agreeing surface is the same explicit existential:
+  # `some CLSs have Ps` denotes at least one witness, not a plural cardinality
+  # claim. Both phrase keys singularize into the exact Atom vocabulary already
+  # used by the witness consumer.
+  - id: ask/logic-existential-some-have
+    match:
+      question:
+        - {lit: is, at_start: true}
+        - {lit: it}
+        - {lit: 'true'}
+        - {lit: that}
+        - {lit: some}
+        - {slot: cls, span: true, span_blocks: [negation, quantifier, conjunction, disjunctive_marker, verb, future_modal, capacity_modal]}
+        - {lit: have}
+        - {slot: pred, span: true, span_blocks: [negation, quantifier, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+    resolves:
+      consumer: existential-verdict
+      cls: "{cls.singular}"
+      pred: "have {pred.singular}"
+      polarity: "true"
+
+  # An indefinite singular subject can introduce one witness or state a
+  # class-wide property. The grammar does not choose between those readings.
+  # This ask therefore carries both normalized queries and cannot dispatch a
+  # consumer until the caller explicitly confirms one.
+  - id: ask/logic-ambiguous-indefinite-has
+    match:
+      question:
+        - {lit: is, at_start: true}
+        - {lit: it}
+        - {lit: 'true'}
+        - {lit: that}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: cls, span: true, span_blocks: [negation, quantifier, conjunction, disjunctive_marker, verb, future_modal, capacity_modal]}
+        - {lit: has}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: pred, span: true, span_blocks: [negation, quantifier, conjunction, disjunctive_marker, verb, future_modal, capacity_modal], span_blocks_counted: true}
+    clarification: "Did you mean that at least one {cls.singular} has at least one {pred.singular}, or that every {cls.singular} has at least one {pred.singular}?"
+    interpretations:
+      - id: existential
+        label: "At least one {cls.singular} has at least one {pred.singular}"
+        description: "Treat the indefinite subject as an existential witness."
+        kind: Existential
+        resolves:
+          consumer: existential-verdict
+          cls: "{cls.singular}"
+          pred: "have {pred.singular}"
+          polarity: "true"
+      - id: class-wide
+        label: "Every {cls.singular} has at least one {pred.singular}"
+        description: "Treat the sentence as a strict class-wide property."
+        kind: Universal
+        resolves:
+          consumer: universal-verdict
+          cls: "{cls.singular}"
+          pred: "have {pred.singular}"
+          polarity: "true"
 
   # ---- universal conclusions: "Is it true that all/no CLS are PRED?" ---------
   # The consumer (universal-verdict) reads the SATURATED Quantified closure:

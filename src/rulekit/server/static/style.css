@@ -95,10 +95,39 @@ body.resizing iframe, body.resizing textarea { pointer-events: none; }
 }
 .banner.number { border-color: #2c5c41; background: #1b2b22; }
 .banner.decline { border-color: #5c3a42; background: #2b1e22; }
+.banner.clarify { border-color: #6a542b; background: #2d271b; }
+.banner.undetermined { border-color: #6a542b; background: #2d271b; }
 .banner .big { font-size: 19px; font-weight: 700; margin-right: 10px; }
 .banner.number .big { color: var(--green); }
 .banner.decline .big { color: var(--red); }
+.banner.clarify .big { color: var(--amber); }
+.banner.undetermined .big { color: var(--amber); }
 .banner .reason { color: var(--dim); font-size: 12px; }
+
+#clarification {
+  border: 1px solid #6a542b; border-radius: 8px;
+  background: #211e18; padding: 10px 12px;
+}
+.clarification-head { display: flex; flex-direction: column; gap: 2px; }
+.clarification-kicker {
+  color: var(--amber); text-transform: uppercase; letter-spacing: .08em;
+  font-size: 9px; font-weight: 700;
+}
+.clarification-prompt { font-size: 13px; }
+.clarification-options {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 8px; margin-top: 9px;
+}
+.clarification-option {
+  display: flex; flex-direction: column; align-items: stretch; gap: 3px;
+  text-align: left; background: var(--panel); padding: 9px 10px;
+}
+.clarification-option.selected {
+  border-color: var(--green); box-shadow: 0 0 0 1px #66c28f55;
+}
+.clarification-option-label { color: var(--text); font-weight: 650; }
+.clarification-option-description { color: var(--dim); font-size: 10.5px; }
+.clarification-query { margin-top: 4px; font-size: 10.5px; }
 
 #sentences { overflow-y: auto; max-height: 34%; display: flex; flex-direction: column; gap: 7px; }
 .sentence { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 7px 9px; }
@@ -206,7 +235,113 @@ body.impact-busy #impact-btn {
 }
 .toggle button.on { background: var(--panel2); color: var(--accent); }
 
-#field { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+#field, #semantic, #proof {
+  flex: 1; overflow-y: auto; display: flex; flex-direction: column;
+  gap: 10px; min-height: 0;
+}
+
+/* ---------- semantic field ---------- */
+
+.sem-section {
+  border: 1px solid var(--border); border-radius: 7px;
+  padding: 9px 10px; background: var(--panel);
+}
+.sem-section.query-section { border-color: #35608a; }
+.sem-section.interpretation-section { border-color: #6a542b; }
+.sem-section-title {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; text-transform: uppercase; letter-spacing: .08em;
+  font-weight: 700;
+}
+.sem-count {
+  color: var(--dim); border: 1px solid var(--border);
+  border-radius: 9px; padding: 0 6px; font-size: 10px;
+}
+.sem-note { color: var(--dim); font-size: 11px; margin: 2px 0 8px; }
+.sem-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 7px;
+}
+.sem-fact, .sem-node {
+  border: 1px solid var(--border); border-left: 3px solid var(--accent);
+  border-radius: 6px; background: var(--panel2); padding: 7px 9px;
+  transition: border-color .12s, box-shadow .12s;
+}
+.sem-fact.role-derived { border-left-color: var(--purple); }
+.sem-fact.role-knowledge { border-left-color: var(--amber); }
+.sem-fact.repr-structured.role-observed { border-left-color: var(--green); }
+.sem-fact.sem-hl {
+  border-color: var(--accent); box-shadow: 0 0 0 2px #5aa9e633;
+}
+.sem-fact-head { display: flex; gap: 7px; align-items: baseline; flex-wrap: wrap; }
+.sem-id { color: var(--dim); font-size: 10px; }
+.sem-type { color: var(--accent); font-weight: 650; }
+.sem-role, .sem-repr {
+  border: 1px solid var(--border); border-radius: 4px;
+  padding: 0 4px; font-size: 9px; text-transform: uppercase;
+  letter-spacing: .05em; color: var(--dim);
+}
+.sem-role.role-derived { color: var(--purple); }
+.sem-role.role-knowledge { color: var(--amber); }
+.sem-repr.repr-structured { color: var(--green); }
+.sem-fields { margin-top: 4px; font-size: 11px; word-break: break-word; }
+.sem-source { margin-top: 5px; color: var(--dim); font-size: 10px; }
+.sem-empty {
+  border: 1px dashed var(--border); border-radius: 5px;
+  padding: 9px; color: var(--dim); font-size: 11px;
+}
+.sem-node { display: flex; gap: 12px; align-items: baseline; }
+.sem-node.query-node { border-left-color: var(--accent); }
+.interpretation-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 7px;
+}
+.interpretation-card {
+  border: 1px solid var(--border); border-radius: 6px;
+  padding: 8px; background: var(--panel2);
+}
+.interpretation-card.selected { border-color: var(--green); }
+.interpretation-label { color: var(--amber); font-weight: 650; margin-bottom: 5px; }
+
+/* ---------- proof ---------- */
+
+.proof-query, .proof-step {
+  border: 1px solid var(--border); border-radius: 7px;
+  padding: 9px 10px; background: var(--panel);
+}
+.proof-flow { display: flex; flex-direction: column; gap: 9px; }
+.proof-step { border-left: 3px solid var(--purple); }
+.proof-step-head { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
+.proof-index {
+  display: inline-grid; place-items: center; width: 20px; height: 20px;
+  border-radius: 50%; background: #3a3150; color: var(--purple);
+}
+.proof-rule { color: var(--purple); font-weight: 650; }
+.proof-label {
+  color: var(--dim); text-transform: uppercase; letter-spacing: .08em;
+  font-size: 9px; margin-bottom: 5px;
+}
+.proof-evidence-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 7px;
+}
+.proof-evidence .sem-fact.linked { cursor: crosshair; }
+.proof-arrow { color: var(--purple); font-size: 18px; padding: 3px 8px; }
+.proof-detail { color: var(--dim); font-size: 11px; margin-top: 7px; }
+.proof-outcome {
+  display: flex; align-items: baseline; gap: 10px;
+  border: 1px solid #2c5c41; border-radius: 7px;
+  background: #1b2b22; padding: 9px 12px;
+}
+.proof-outcome-label { color: var(--green); font-weight: 700; font-size: 10px; }
+.proof-empty {
+  border: 1px dashed var(--border); border-radius: 7px;
+  padding: 18px; color: var(--dim); background: var(--panel);
+}
+.proof-empty.undetermined { border-color: var(--amber); color: var(--amber); }
+.proof-empty.clarification-paused {
+  border-color: var(--amber); color: var(--amber);
+}
 
 .axis { border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; background: var(--panel); }
 .axis.degenerate { border-style: dashed; opacity: .8; }

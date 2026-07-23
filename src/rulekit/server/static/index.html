@@ -13,7 +13,9 @@
   <span id="fingerprint" class="pill mono"></span>
   <span id="view-toggle" class="toggle">
     <button id="view-reading" class="on">reading</button
-    ><button id="view-field">deictic field</button>
+    ><button id="view-semantic">semantic field</button
+    ><button id="view-field">deictic field</button
+    ><button id="view-proof">proof</button>
   </span>
   <span id="status" class="status"></span>
 </header>
@@ -41,8 +43,9 @@
 
   <section id="trace-view">
     <div id="answer-banner" class="banner hidden"></div>
+    <div id="clarification" class="hidden"></div>
     <div id="sentences"></div>
-    <div class="cols">
+    <div id="reading" class="cols">
       <div class="col">
         <div class="pane-title">Decisions <span id="decision-count" class="dim"></span></div>
         <div id="decisions" tabindex="0"></div>
@@ -57,10 +60,18 @@
       </div>
     </div>
 
+    <!-- Typed propositions grouped by epistemic role. This remains a view over
+         the one FactStore; it does not run a second inference path. -->
+    <div id="semantic" class="hidden"></div>
+
     <!-- The deictic field. Every axis reports its own degeneracy: three of the four
          have no coordinates at all, and drawing them as if they did would be a lie
          the engine cannot back up (docs/deixis.md §4). -->
     <div id="field" class="hidden"></div>
+
+    <!-- Structured proof metadata supplied by the answer consumer. Evidence
+         cross-links to fact ids in the semantic field. -->
+    <div id="proof" class="hidden"></div>
   </section>
 </main>
 
