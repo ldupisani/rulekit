@@ -49,6 +49,8 @@ from .model import (
     Relation,
     RatioQuantity,
     RestQuantity,
+    SemanticGraphEdge,
+    SemanticGraphNode,
     Subset,
     Unit,
 )
@@ -83,6 +85,8 @@ _FACT_CLASSES = {
     "discount": Discount,
     "percent_change": PercentChange,
     "verbal_relation": VerbalRelation,
+    "semantic_graph_node": SemanticGraphNode,
+    "semantic_graph_edge": SemanticGraphEdge,
 }
 
 
@@ -1002,6 +1006,13 @@ def atom_variants(fact: Fact, emit_fields: dict, slots: dict, reg: Registry) -> 
 
 
 def _slot_value(unit: Unit, attr: str | None) -> str:
+    if attr in ("span_start", "span_end"):
+        units = unit if isinstance(unit, tuple) else (unit,)
+        if not units:
+            return ""
+        index = 0 if attr == "span_start" else -1
+        span_index = 0 if attr == "span_start" else -1
+        return str(units[index].span[span_index])
     if isinstance(unit, tuple):
         # a span slot (MatchToken.span) binds a RUN of units; its rendering
         # is the canonical phrase — `.singular` additionally folds unknown-

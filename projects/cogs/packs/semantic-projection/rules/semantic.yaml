@@ -1,0 +1,39 @@
+format: rulekit/rules@1
+rules:
+  # Phase B increment 1: one complete active-transitive semantic graph.
+  #
+  # The two lexical categories license the role interpretation. The explicit
+  # indefinite article, sentence anchors, bare noun, and terminal punctuation
+  # keep passive, definite, ditransitive, PP-tailed, coordinated, and embedded
+  # neighbours outside this rule. Runtime refs are local span identities; the
+  # COGS adapter alone maps them to its token-indexed evaluation variables.
+  - id: semantic/active-name-indefinite-theme
+    phase: read
+    match:
+      sentence:
+        - {slot: agent, type: proper_name, at_start: true,
+           blocks_skipped: indefinite_article}
+        - {slot: event, cat: semantic_agent_theme_verb, single_word: true}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: theme, cat: semantic_bare_theme_noun, bare: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "name:{agent}", kind: entity,
+         span_start: "{agent.span_start}", span_end: "{agent.span_end}"}
+      - {fact: semantic_graph_node, ref: "event:{event.span_start}", kind: event,
+         span_start: "{event.span_start}", span_end: "{event.span_end}"}
+      - {fact: semantic_graph_node, ref: "entity:{theme.span_start}", kind: entity,
+         span_start: "{theme.span_start}", span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_edge, kind: event,
+         source: "event:{event.span_start}", label: "{event}",
+         span_start: "{event.span_start}", span_end: "{event.span_end}"}
+      - {fact: semantic_graph_edge, kind: type,
+         source: "entity:{theme.span_start}", label: "{theme}",
+         span_start: "{theme.span_start}", span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_edge, kind: role,
+         source: "event:{event.span_start}", target: "name:{agent}", label: agent,
+         span_start: "{agent.span_start}", span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_edge, kind: role,
+         source: "event:{event.span_start}", target: "entity:{theme.span_start}",
+         label: theme,
+         span_start: "{agent.span_start}", span_end: "{theme.span_end}"}

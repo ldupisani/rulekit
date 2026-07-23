@@ -1,0 +1,43 @@
+format: rulekit/categories@1
+categories:
+  semantic_agent_theme_verb:
+    parent: verb
+  semantic_bare_theme_noun:
+    parent: noun
+  # Marks event forms first admitted by this pack. The legacy
+  # VerbalRelation evaluation bridge yields to the first-class semantic
+  # reader for these forms, so vocabulary cannot accidentally buy an
+  # unserved neighbouring construction.
+  semantic_projection_owned_verb:
+    parent: semantic_agent_theme_verb
+members:
+  # Overt finite forms whose active direct-object construction licenses the
+  # agent/theme interpretation in Phase B increment 1. Unsafe self-lemma
+  # forms stay out until their lexical normalization is independently known.
+  semantic_agent_theme_verb:
+    [admired, adored, appreciated, ate, burned, changed, cleaned, collapsed,
+     crumpled, decomposed, disintegrated, dusted, enlarged,
+     examined, floated, found, froze, grew, heard, held, helped, hunted,
+     improved, knew, liked, loved, noticed, nursed, observed, packed, painted,
+     pierced, poked, respected, rolled, saw, shortened, sketched, slid,
+     snapped, split, stabbed, studied, tolerated, tossed, touched, valued,
+     worshipped]
+  # Unambiguous singular common-noun heads admitted as existential themes.
+  # Sense-ambiguous rose/drink/watch remain outside the licence.
+  semantic_bare_theme_noun:
+    [baby, bag, ball, balloon, bean, bear, bell, bird, block, bottle, box,
+     boy, brush, bucket, cake, captain, cat, chair, champion, chemical,
+     chicken, child, cloud, coach, cookie, cow, crayon, cup, customer,
+     director, dog, doll, donut, duke, flag, frog, game, girl,
+     hamburger, hammer, horse, jacket, judge, knife, leaf, liver,
+     lollipop, melon, monkey, mouse, muffin, needle, newspaper, pancake,
+     patient, pen, pickle, pillow, pizza, plate, potato, present, president,
+     pretzel, prince, princess, pumpkin, pupil, puppy, purse, queen, raisin,
+     ring, sandwich, soap, strawberry, student, sweetcorn, teacher, tenant,
+     toothbrush, towel, turtle, visitor, weapon]
+  semantic_projection_owned_verb:
+    [admired, adored, appreciated, burned, cleaned, collapsed, crumpled,
+     decomposed, disintegrated, dusted, enlarged, examined, floated, froze,
+     heard, hunted, improved, loved, noticed, nursed, observed, packed,
+     pierced, poked, respected, rolled, shortened, sketched, slid, snapped,
+     stabbed, tolerated, tossed, touched, valued, worshipped]

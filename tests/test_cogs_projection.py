@@ -20,8 +20,11 @@ from rulekit.harness.projection import (
     ProjectionNode,
     classify_projection_graph,
     parse_cogs_logical_form,
+    project_result,
 )
 from rulekit.harness.snapshot import diff
+from rulekit.kernel.engine import solve
+from rulekit.kernel.model import SemanticGraphEdge, SemanticGraphNode
 
 
 def test_cogs_adapter_normalizes_conjunct_order_and_spacing() -> None:
@@ -83,6 +86,65 @@ def test_projection_construction_taxonomy_is_graph_structural() -> None:
         "AND parcel ( x _ 3 ) AND pilot ( x _ 5 )"
     )
     assert classify_projection_graph(graph) == "ditransitive"
+
+
+@pytest.fixture(scope="module")
+def cogs_project():
+    return load_project(Path("projects/cogs"))
+
+
+def test_active_named_indefinite_transitive_projects_a_complete_graph(
+    cogs_project,
+) -> None:
+    text = "Neris admired a cloud."
+    result = solve(text, cogs_project.registry, tracing=False)
+    got = project_result(result, text, cogs_project.registry)
+    expected = parse_cogs_logical_form(
+        "admire.agent(x_1,Neris) AND admire.theme(x_1,x_3) "
+        "AND cloud(x_3)"
+    )
+    assert got.node_keys() == expected.node_keys()
+    assert got.edge_keys() == expected.edge_keys()
+
+    nodes = list(result.store.by_kind(SemanticGraphNode))
+    edges = list(result.store.by_kind(SemanticGraphEdge))
+    assert len(nodes) == 3
+    assert len(edges) == 4
+    assert {fact.provenance.source for fact in nodes + edges} == {
+        "semantic/active-name-indefinite-theme"
+    }
+    assert {
+        (fact.span_start, fact.span_end) for fact in nodes
+    } == {("0", "0"), ("1", "1"), ("3", "3")}
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Neris admired the cloud.",
+        "A pilot admired a cloud.",
+        "A cloud was admired by Neris.",
+        "Neris admired a cloud near Mira.",
+        "Neris admired a cloud and a bell.",
+        "Neris missed a cloud.",
+        "Neris admired a rose.",
+    ],
+)
+def test_active_transitive_rule_declines_negative_neighbours(
+    cogs_project,
+    text: str,
+) -> None:
+    result = solve(text, cogs_project.registry, tracing=False)
+    assert list(result.store.by_kind(SemanticGraphNode)) == []
+    assert list(result.store.by_kind(SemanticGraphEdge)) == []
+
+
+def test_new_event_vocabulary_does_not_buy_a_definite_neighbour(
+    cogs_project,
+) -> None:
+    text = "Neris admired the cloud."
+    result = solve(text, cogs_project.registry, tracing=False)
+    assert project_result(result, text, cogs_project.registry).empty
 
 
 def _snapshot(outcome: str, got_label: str = "") -> dict:

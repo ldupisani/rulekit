@@ -4,9 +4,9 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** Phase A complete; Phase B is next
+**Status:** Phase B underway; increment 1 complete
 
-**Last capability commit:** `0717f04` (`Add COGS semantic projection phase A`)
+**Previous phase commit:** `0717f04` (`Add COGS semantic projection phase A`)
 
 This is the short operational handoff. The complete Session 1–105 history is
 preserved byte-for-byte in
@@ -150,9 +150,10 @@ The locked exit conditions are:
 Adding vocabulary alone earns no credit. Verb-class membership belongs in YAML
 packs; Python may consume a category but must not enumerate its members.
 
-## Immediate next step
+## Phase B increment 1
 
-Use only inspectable `dev-train` data to subdivide the transitive pool by:
+The first Phase B increment used only inspectable `dev-train` data to
+subdivide the transitive pool by:
 
 - missing graph structure;
 - subject construction;
@@ -160,8 +161,8 @@ Use only inspectable `dev-train` data to subdivide the transitive pool by:
 - active/passive voice; and
 - named versus indefinite referents.
 
-Select one frequent, clean class whose complete target requires a general
-entity/event/role representation. Before implementation, record:
+It selected one frequent, clean class whose complete target requires a general
+entity/event/role representation and recorded:
 
 1. the construction class;
 2. the complete graph it should buy;
@@ -170,8 +171,81 @@ entity/event/role representation. Before implementation, record:
 5. the expected DEV-train and aggregate DEV-holdout buyers; and
 6. which YAML categories, if any, license its role interpretation.
 
-Do not begin by admitting frequent unknown COGS words. First design the
-general representation and a complete construction buyer.
+### Phase B increment 1 selection brief
+
+Selected before implementation on 2026-07-23:
+
+1. **Construction class:** a sentence-initial proper name followed by one
+   licensed active transitive event and one bare indefinite singular
+   direct-object noun, with no PP, coordination, second object, or trailing
+   material beyond punctuation.
+2. **Complete graph:** one named entity node, one existential entity node,
+   one event node, the event predicate, the object's type, and exact
+   `agent(event, name)` and `theme(event, object)` edges. Every node and edge
+   must retain the emitting rule provenance and source span.
+3. **Synthetic positives:** forms such as “Neris polished a lantern” and
+   additional invented regular/irregular event lemmas with an invented common
+   noun theme.
+4. **Negative neighbours:** definite or named objects, common-noun subjects,
+   passives, ditransitives, PP-tailed objects, coordination, negation, and
+   lexically unlicensed or sense-ambiguous event heads. These must remain for
+   their own construction increment or decline safely.
+5. **Expected buyers:** 279 inspectable DEV-train graphs and 228 aggregate
+   DEV-holdout graphs have the broad structure. The conservative lexical
+   licence excludes unsafe/self-lemma event forms, ambiguous nominal forms,
+   and the `difg-mined` quarantine entries. The final licensed class contains
+   243 DEV-train buyers (96 exact, 2 safe-partial, 145 declined) and 158
+   aggregate DEV-holdout buyers (57 exact, 101 declined). Holdout item text
+   remains uninspected.
+6. **Declarative licence:** a project-local `semantic_agent_theme_verb`
+   category names verbs for which this active direct-object construction
+   licenses agent/theme roles. Surface-to-lemma mappings and nominal type
+   facts live in the same COGS-local YAML pack; the Python kernel contains no
+   member list.
+
+The representation is first-class semantic node/edge facts in the ordinary
+fact store. The COGS adapter consumes that typed view; it does not split flat
+`Atom` or `VerbalRelation` strings to guess structure.
+
+### Phase B increment 1 result
+
+The licensed active named-agent/indefinite-theme rule produces complete
+entity/event/type/role graphs with exact rule and span provenance. A
+declarative ownership subcategory prevents newly admitted event vocabulary
+from widening the legacy `VerbalRelation` bridge into unserved definite,
+passive, PP-tailed, or coordinated neighbours.
+
+| split | before exact | after exact | new exact | incorrect | edge recall |
+|---|---:|---:|---:|---:|---:|
+| DEV-train | 247 | 390 | +143 | 0 | 1.5% → 2.3% |
+| DEV-holdout | 213 | 312 | +99 | 0 | 1.3% → 1.8% |
+
+Within the final licensed class, DEV-train moved from 96 exact / 2 partial /
+145 declined to 239 exact / 0 partial / 4 declined. Aggregate DEV-holdout
+moved from 57 exact / 0 partial / 101 declined to 156 exact / 0 partial / 2
+declined. Both harm-ordered diffs report zero broken exact graphs and zero
+safe-to-incorrect transitions.
+
+Verification is green: 3,064 synthetic/unit tests; curated twice; GSM8K
+DEV-train and DEV-holdout; ASDiv, SVAMP, MAWPS, SciBench, and FOLIO DEV; and
+COGS lint with zero errors. Every standing non-COGS snapshot diff is neutral.
+No COGS TEST or generalization look was spent.
+
+## Immediate next step
+
+Begin the Phase B intransitive-role increment. Use only inspectable
+`dev-train` data to subdivide the 699 intransitive-agent and 1,301
+intransitive-theme graphs by:
+
+- named, indefinite, and definite subject construction;
+- overt verb form and ambiguity/lemma quality;
+- the YAML verb class needed to license agent versus theme; and
+- complete-graph blockers beyond the event, type, and single role.
+
+Select one frequent clean class with complete buyers in both DEV partitions.
+Record its positive graph, negative agent/theme minimal pairs, ambiguity and
+overreach cases, expected buyers, and declarative verb-class licence before
+implementation. Do not inspect holdout rows or spend protected looks.
 
 ## Increment protocol
 
