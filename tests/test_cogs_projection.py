@@ -307,6 +307,78 @@ def test_named_agent_ccomp_declines_neighbouring_complement_shapes(
     assert "semantic/ccomp-name-agent-name-agent" not in semantic_sources
 
 
+def test_subject_control_xcomp_projects_explicit_shared_agent(
+    cogs_project,
+) -> None:
+    text = "Neris hoped to smirk."
+    result = solve(text, cogs_project.registry, tracing=False)
+    got = project_result(result, text, cogs_project.registry)
+    expected = parse_cogs_logical_form(
+        "hope.agent(x_1,Neris) AND hope.xcomp(x_1,x_3) "
+        "AND smirk.agent(x_3,Neris)"
+    )
+    assert got.node_keys() == expected.node_keys()
+    assert got.edge_keys() == expected.edge_keys()
+    assert ("complement", "x1", "x3", "xcomp") in got.edge_keys()
+
+    nodes = list(result.store.by_kind(SemanticGraphNode))
+    edges = list(result.store.by_kind(SemanticGraphEdge))
+    assert len(nodes) == 3
+    assert len(edges) == 5
+    assert {fact.provenance.source for fact in nodes + edges} == {
+        "semantic/xcomp-name-agent-shared-agent"
+    }
+    agent_edges = [fact for fact in edges if fact.kind == "role"]
+    assert {
+        (edge.source, edge.target, edge.label) for edge in agent_edges
+    } == {
+        ("event:1", "name:neris", "agent"),
+        ("event:3", "name:neris", "agent"),
+    }
+    complement = next(fact for fact in edges if fact.kind == "complement")
+    assert (complement.source, complement.target, complement.label) == (
+        "event:1",
+        "event:3",
+        "xcomp",
+    )
+    assert (complement.span_start, complement.span_end) == ("1", "3")
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Neris hoped Mira smirked.",
+        "Neris hoped that Mira smirked.",
+        "A pilot hoped to smirk.",
+        "The pilot hoped to smirk.",
+        "Neris hoped smirk.",
+        "Neris hoped to redden.",
+        "Neris hoped to admire a zephyrstone.",
+        "Neris persuaded Mira to smirk.",
+        "Neris hoped to smirk and sneeze.",
+        "Neris did not hope to smirk.",
+        "Neris hoped to want to smirk.",
+        "Neris hoped to smirk beside Mira.",
+        "Neris expected Mira to smirk.",
+        "Neris planned to nap.",
+        "Neris tried to call Mira.",
+    ],
+)
+def test_subject_control_xcomp_declines_neighbouring_control_shapes(
+    cogs_project,
+    text: str,
+) -> None:
+    result = solve(text, cogs_project.registry, tracing=False)
+    semantic_sources = {
+        fact.provenance.source
+        for fact in (
+            list(result.store.by_kind(SemanticGraphNode))
+            + list(result.store.by_kind(SemanticGraphEdge))
+        )
+    }
+    assert "semantic/xcomp-name-agent-shared-agent" not in semantic_sources
+
+
 def test_named_intransitive_agent_projects_a_complete_graph(
     cogs_project,
 ) -> None:

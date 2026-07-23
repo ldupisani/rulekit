@@ -4,7 +4,7 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** Phase C restart increment 3 selected
+**Status:** Phase C restart underway; increment 3 complete
 
 **Previous safe capability commit:** `0717f04`
 (`Add COGS semantic projection phase A`)
@@ -473,11 +473,29 @@ Selected before implementation on 2026-07-23:
    remains declarative project-local YAML. Noun-only ambiguous infinitives
    stay excluded. The proper-object boundary is unchanged.
 
+### Result
+
+The subject-control rule emits one controller entity, two independently
+span-addressed events, two agent edges targeting the same controller, and one
+directed xcomp edge. Sharing is explicit in the role graph.
+
+| DEV partition | Before exact | After exact | Gain | Incorrect | Edge recall |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| train | 1,537 | 1,644 | +107 | 0 | 8.1% |
+| holdout | 1,464 | 1,560 | +96 | 0 | 7.6% |
+
+Both harm-ordered diffs have zero broken exact graphs and zero
+safe-to-incorrect transitions. The complete gate is green: 152 focused COGS
+tests, 3,197 full-suite tests, zero lint errors, curated twice, and neutral
+GSM8K, ASDiv, SVAMP, MAWPS, SciBench, and FOLIO diffs.
+
 ## Immediate next step
 
-Implement the recorded subject-control xcomp class and run the complete
-increment gate. Preserve the proper-object boundary and do not rerun either
-spent protected slice.
+Begin the next safe Phase C increment with a DEV-train-only selection brief
+for recursive nested nominal modifiers. Do not restore the former
+double-object alternation increment: it crosses the protected proper-object
+boundary. Preserve that boundary and do not rerun either spent protected
+slice.
 
 ## Increment protocol
 
