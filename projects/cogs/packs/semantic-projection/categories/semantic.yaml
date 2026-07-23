@@ -4,6 +4,8 @@ categories:
     parent: verb
   semantic_bare_theme_noun:
     parent: noun
+  semantic_ditransitive_verb:
+    parent: verb
   semantic_intransitive_agent_verb:
     parent: verb
   semantic_intransitive_theme_verb:
@@ -41,6 +43,10 @@ members:
      pretzel, prince, princess, pumpkin, pupil, puppy, purse, queen, raisin,
      ring, sandwich, soap, strawberry, student, sweetcorn, teacher, tenant,
      toothbrush, towel, turtle, visitor, weapon, zephyrstone]
+  # Overt forms whose exact active `Name V a N to Name` construction
+  # licenses agent, theme, and recipient roles.
+  semantic_ditransitive_verb:
+    [brought, fed, gave, offered, passed, rented, sent, sold]
   # Overt finite forms whose bare named-subject intransitive construction
   # licenses an AGENT role. Theme-class forms live in the disjoint category
   # below: identical syntax is not permission to guess the role.

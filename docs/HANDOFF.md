@@ -4,10 +4,10 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** Phase B underway; increments 1–5 complete
+**Status:** Phase B underway; increments 1–6 complete
 
-**Previous capability commit:** `0034a58`
-(`Add COGS agentless passive projection`)
+**Previous capability commit:** `70d159e`
+(`Add COGS named-agent passive projection`)
 
 This is the short operational handoff. The complete Session 1–105 history is
 preserved byte-for-byte in
@@ -510,25 +510,85 @@ DEV-train and DEV-holdout; and ASDiv, SVAMP, MAWPS, SciBench, and FOLIO DEV.
 Every standing non-COGS snapshot diff is neutral. No COGS TEST or
 generalization look was spent.
 
+## Phase B increment 6
+
+The sixth Phase B increment begins ditransitives with the simple active
+prepositional-dative class: named agent, licensed event, indefinite
+common-noun theme, `to`, and named recipient.
+
+### Phase B increment 6 selection brief
+
+Selected before implementation on 2026-07-23:
+
+1. **Construction class:** exactly `Name V a N to Name.`, with sentence
+   anchors, exact proper-name agent and recipient, one bare singular
+   `semantic_bare_theme_noun`, and a new declarative ditransitive-event
+   category. There is no definiteness, modifier, second PP, coordination,
+   negation, complement, passive auxiliary, or trailing material.
+2. **Complete graph:** named agent entity, event and normalized predicate,
+   indefinite theme entity/type, named recipient entity, and the three roles
+   `agent(event, agent)`, `theme(event, theme)`, and
+   `recipient(event, recipient)`. Every node and edge retains the emitting
+   rule provenance and exact source span.
+3. **Synthetic positive:** `Neris` transfers an invented `zephyrstone` to
+   invented recipient `Mira`, paired with the corresponding double-object,
+   ordinary transitive, and passive surfaces.
+4. **Negative neighbours:** double-object order, omitted recipient,
+   indefinite or definite common-noun recipients, non-name agents, definite
+   or named themes, passive datives, modifier/PP tails, coordination,
+   negation, embedding, and malformed event forms. Each remains for its own
+   construction or declines safely.
+5. **Expected buyers:** the exact class contains 51 inspectable DEV-train and
+   38 aggregate DEV-holdout rows. Reusing the existing theme-noun licence and
+   exact name recognition, while admitting only eight overt forms with
+   already-correct registry lemmas, leaves 30 DEV-train and 18 aggregate
+   DEV-holdout buyers, all currently declined. Fourteen train rows use themes
+   outside the existing semantic licence and seven use missing or incorrect
+   event lemmas. Holdout item text remains uninspected.
+6. **Declarative licence:** a project-local `semantic_ditransitive_verb`
+   category contains `brought`, `fed`, `gave`, `offered`, `passed`, `rented`,
+   `sent`, and `sold`. The quarantine audit found none of these forms. Python
+   consumes the category and enumerates no vocabulary.
+
+### Phase B increment 6 result
+
+The active prepositional-dative rule emits one event and the same
+agent/theme/recipient role graph regardless of the surface position of those
+arguments. The `to` skeleton licenses recipient; the double-object
+alternation remains safely declined for Phase C's cross-alternation work.
+
+| split | before exact | after exact | new exact | incorrect | edge recall |
+|---|---:|---:|---:|---:|---:|
+| DEV-train | 1,205 | 1,235 | +30 | 0 | 5.4% → 5.6% |
+| DEV-holdout | 1,180 | 1,198 | +18 | 0 | 5.2% → 5.4% |
+
+The structural ditransitive bucket now has 30/2,661 exact DEV-train graphs
+and 18/2,687 exact aggregate DEV-holdout graphs. The observed buyers exactly
+match the pre-implementation estimate. Both harm-ordered diffs report zero
+broken exact graphs and zero safe-to-incorrect transitions.
+
+Verification is green: 3,128 synthetic/unit tests; COGS lint with zero errors;
+curated twice; GSM8K DEV-train and DEV-holdout; and ASDiv, SVAMP, MAWPS,
+SciBench, and FOLIO DEV. Every standing non-COGS snapshot diff is neutral. No
+COGS TEST or generalization look was spent.
+
 ## Immediate next step
 
-Begin ditransitives and recipient roles. Use only inspectable `dev-train` data
-to:
+Build the Phase B definiteness increment. Use only inspectable `dev-train`
+data to:
 
-- subdivide all 2,661 structural ditransitives by active versus passive
-  surface, prepositional versus double-object dative, and named/indefinite/
-  definite agent, theme, and recipient;
-- choose one frequent, structurally simple active subclass that can reuse the
-  existing entity, event, agent, and theme licences while adding exactly one
-  recipient entity and `recipient(event, entity)` edge;
-- record the complete graph, exact buyers, alternation and attachment
-  exclusions, quarantine audit, and aggregate holdout count before
-  implementation;
-- test prepositional/double-object minimal pairs plus transitive, passive,
-  omitted-recipient, PP/modifier, coordination, negation, and embedded
-  neighbours; and
-- require nonzero exact ditransitive coverage on both DEV partitions with no
-  change to the active or passive transitive graphs.
+- subdivide definite entity graphs across the already served active,
+  intransitive, and passive surfaces, separating exact bare descriptions from
+  modifiers, compounds, and attachment structures;
+- choose one frequent minimal pair of an existing indefinite class where the
+  only new semantic element is `definite(entity)`;
+- retain entity/type, event/predicate, and role provenance while recording
+  the definite article's evidence without asserting uniqueness or identity
+  beyond the discourse referent;
+- test indefinite/definite minimal pairs plus named, modified, coordinated,
+  negated, passive, embedded, and article-less neighbours; and
+- require complete definite buyers on both DEV partitions with no change to
+  the existing indefinite graphs.
 
 Do not inspect holdout rows or spend COGS TEST/generalization looks.
 

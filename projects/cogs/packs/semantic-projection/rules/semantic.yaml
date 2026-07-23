@@ -151,3 +151,46 @@ rules:
       - {fact: semantic_graph_edge, kind: role,
          source: "event:{event.span_start}", target: "name:{agent}", label: agent,
          span_start: "{event.span_start}", span_end: "{agent.span_end}"}
+
+  # Phase B increment 6: one complete active prepositional dative. The `to`
+  # skeleton assigns recipient independently of surface position; the verb
+  # category licenses the three-place event.
+  - id: semantic/ditransitive-name-indefinite-theme-to-name
+    phase: read
+    match:
+      sentence:
+        - {slot: agent, type: proper_name, at_start: true,
+           blocks_skipped: article}
+        - {slot: event, cat: semantic_ditransitive_verb, single_word: true}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: theme, cat: semantic_bare_theme_noun, bare: true}
+        - {lit: to}
+        - {slot: recipient, type: proper_name, blocks_skipped: article}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "name:{agent}", kind: entity,
+         span_start: "{agent.span_start}", span_end: "{agent.span_end}"}
+      - {fact: semantic_graph_node, ref: "event:{event.span_start}", kind: event,
+         span_start: "{event.span_start}", span_end: "{event.span_end}"}
+      - {fact: semantic_graph_node, ref: "entity:{theme.span_start}",
+         kind: entity, span_start: "{theme.span_start}",
+         span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_node, ref: "name:{recipient}", kind: entity,
+         span_start: "{recipient.span_start}", span_end: "{recipient.span_end}"}
+      - {fact: semantic_graph_edge, kind: event,
+         source: "event:{event.span_start}", label: "{event}",
+         span_start: "{event.span_start}", span_end: "{event.span_end}"}
+      - {fact: semantic_graph_edge, kind: type,
+         source: "entity:{theme.span_start}", label: "{theme}",
+         span_start: "{theme.span_start}", span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_edge, kind: role,
+         source: "event:{event.span_start}", target: "name:{agent}", label: agent,
+         span_start: "{agent.span_start}", span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_edge, kind: role,
+         source: "event:{event.span_start}", target: "entity:{theme.span_start}",
+         label: theme, span_start: "{agent.span_start}",
+         span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_edge, kind: role,
+         source: "event:{event.span_start}", target: "name:{recipient}",
+         label: recipient, span_start: "{event.span_start}",
+         span_end: "{recipient.span_end}"}

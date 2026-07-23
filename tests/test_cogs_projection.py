@@ -403,6 +403,71 @@ def test_named_agent_passive_declines_shape_and_lemma_neighbours(
     )
 
 
+def test_prepositional_dative_projects_a_complete_graph(
+    cogs_project,
+) -> None:
+    text = "Neris gave a zephyrstone to Mira."
+    result = solve(text, cogs_project.registry, tracing=False)
+    got = project_result(result, text, cogs_project.registry)
+    expected = parse_cogs_logical_form(
+        "give.agent(x_1,Neris) AND give.theme(x_1,x_3) "
+        "AND zephyrstone(x_3) AND give.recipient(x_1,Mira)"
+    )
+    assert got.node_keys() == expected.node_keys()
+    assert got.edge_keys() == expected.edge_keys()
+    assert ("role", "x1", "const:neris", "agent") in got.edge_keys()
+    assert ("role", "x1", "x3", "theme") in got.edge_keys()
+    assert ("role", "x1", "const:mira", "recipient") in got.edge_keys()
+
+    nodes = list(result.store.by_kind(SemanticGraphNode))
+    edges = list(result.store.by_kind(SemanticGraphEdge))
+    assert len(nodes) == 4
+    assert len(edges) == 5
+    assert {fact.provenance.source for fact in nodes + edges} == {
+        "semantic/ditransitive-name-indefinite-theme-to-name"
+    }
+    assert {
+        (fact.span_start, fact.span_end) for fact in nodes
+    } == {("0", "0"), ("1", "1"), ("3", "3"), ("5", "5")}
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Neris gave Mira a zephyrstone.",
+        "Neris gave a zephyrstone.",
+        "Neris gave a zephyrstone to a pilot.",
+        "Neris gave a zephyrstone to the pilot.",
+        "A pilot gave a zephyrstone to Mira.",
+        "Neris gave the zephyrstone to Mira.",
+        "Neris gave Mira to Lio.",
+        "A zephyrstone was given to Mira by Neris.",
+        "Neris gave a zephyrstone near Mira to Lio.",
+        "Neris gave a zephyrstone to Mira near Lio.",
+        "Neris gave a zephyrstone to Mira and Lio.",
+        "Neris did not give a zephyrstone to Mira.",
+        "Lio said that Neris gave a zephyrstone to Mira.",
+        "Neris lended a zephyrstone to Mira.",
+    ],
+)
+def test_prepositional_dative_declines_alternation_and_shape_neighbours(
+    cogs_project,
+    text: str,
+) -> None:
+    result = solve(text, cogs_project.registry, tracing=False)
+    semantic_sources = {
+        fact.provenance.source
+        for fact in (
+            list(result.store.by_kind(SemanticGraphNode))
+            + list(result.store.by_kind(SemanticGraphEdge))
+        )
+    }
+    assert (
+        "semantic/ditransitive-name-indefinite-theme-to-name"
+        not in semantic_sources
+    )
+
+
 def _snapshot(outcome: str, got_label: str = "") -> dict:
     got = ProjectionGraph(
         nodes=(ProjectionNode("x1", "entity"),) if got_label else (),
