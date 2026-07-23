@@ -4002,3 +4002,35 @@ No item-level TEST information was inspected.
 
 **Next:** halt promotion and re-plan from aggregate evidence before spending
 another TEST look or beginning a materially different campaign.
+
+## DEV-only no-ask baseline + reader 1 (2026-07-23)
+
+The new campaign measures question recognition directly. Current scratch
+baseline: **210 train / 178 holdout** verdict-gold declines report exactly
+`no ask shape recognizes this question`. Largest families are disjunction
+38/47, conditional 22/31, positive ground copular 37/28, named ground verbal
+negation 21/11, positive named ground verbal 19/8, possession 13/6, negative
+ground copular 12/9, malformed/fused boundary 11/3, and existential 8/10.
+
+The throwaway buyer survey replays each conclusion through existing premise
+readers, but credits only the complete proposition key. This rejected a false
+copular candidate whose intersective side fact matched while its full property
+did not.
+
+Reader 1 adds the exact question twin of `logic/ground-verbal-does-not`:
+`Is it true that NAME does not/doesn't V P?`. It converts one train item and
+makes one other train query represented-but-undetermined; holdout is neutral.
+Prepositional complements remain owned by the existing object-class ask.
+
+All 3,008 tests pass, curated is 65/65 twice, lint remains 0 errors/eight
+warnings/52 info, and all eight external DEV diffs are NEUTRAL.
+
+| split | outcome movement | no-ask population |
+|---|---:|---:|
+| dev-train | 23/1/470 → 24/1/469 | 210→208 |
+| dev-holdout | 5/0/420 → 5/0/420 | 178→178 |
+
+No TEST look was spent.
+
+**Next:** regenerate exact-key buyers over 208/178. Frequency alone is not a
+buyer; require a complete query echo/refutation and an end-to-end conversion.

@@ -2569,6 +2569,32 @@ asks:
       pred: "{v} {p}"
       polarity: "true"
 
+  # No-ask reader 1: the exact question-side twin of
+  # logic/ground-verbal-does-not. Contractions are already expanded by the
+  # pack-owned contraction table, so `doesn't` and `does not` share this one
+  # skeleton. The complete event complement stays in the Atom key. The more
+  # specific verbal-object-class ask below retains its established route by
+  # specificity; signed, modal, coordinated, counted, state, perfect, and
+  # multi-verb siblings remain unread. Prepositional complements stay with the
+  # established verbal-object-class ask instead of entering a ranking contest.
+  - id: ask/logic-ground-verbal-does-not
+    match:
+      question:
+        - {lit: is, at_start: true}
+        - {lit: it}
+        - {lit: 'true'}
+        - {lit: that}
+        - {slot: subj, type: name, blocks_skipped: indefinite_article}
+        - {lit: does}
+        - {lit: not}
+        - {slot: v, type: nonstate_verb, bare_form: true, single_word: true}
+        - {slot: pred, span: true, span_blocks: [negation, conjunction, disjunctive_marker, preposition, verb, future_modal, capacity_modal], span_blocks_counted: true}
+    resolves:
+      consumer: logic-verdict
+      entity: "{subj}"
+      pred: "{v} {pred}"
+      polarity: "false"
+
   # the user-example form: "Is it true that A Czech published a book in
   # 1946?" — an EXISTENTIAL (the indefinite marks it; consume_skipped stops
   # the article skip at 'a'/'an'), answered by the existential-verdict

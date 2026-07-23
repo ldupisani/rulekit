@@ -172,6 +172,56 @@
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
 
+# Session 101 (2026-07-23): DEV-only no-ask campaign begins; named do-negation questions
+
+The post-look diagnosis starts from the current verdict-gold no-ask population,
+not premise counts. A fresh throwaway classifier against the scratch registry
+finds **210 dev-train / 178 dev-holdout** declines whose answer reason is exactly
+`no ask shape recognizes this question`. The largest structural families are:
+
+| question family | dev-train | dev-holdout |
+|---|---:|---:|
+| disjunction | 38 | 47 |
+| conditional | 22 | 31 |
+| positive ground copular | 37 | 28 |
+| named ground verbal negation | 21 | 11 |
+| positive named ground verbal | 19 | 8 |
+| named possession | 13 | 6 |
+| negative ground copular | 12 | 9 |
+| malformed/fused question boundary | 11 | 3 |
+| existential | 8 | 10 |
+| remaining definite/modal/universal families | 30 | 25 |
+
+Question bodies were also replayed through existing premise readers and checked
+against the original story store. This prevents an ask-only enabler from
+receiving credit. The first apparent copular-property echo was rejected: only
+an intersective side fact matched, while the complete property key differed.
+
+The first genuine buyer is the exact question-side twin of
+`logic/ground-verbal-does-not`: **“Is it true that NAME does not/doesn't V
+P?”** Contractions already expand through pack data. The ask preserves the
+complete event key and routes to `logic-verdict`; prepositional complements
+remain with the existing, more specific object-class consumer.
+
+Eleven synthetic/falsification pins and the corpus-string firewall pass. All
+3,008 tests pass; curated is 65/65 twice; scratch lint remains 0 errors, eight
+warnings, and 52 info. All eight external DEV diffs are NEUTRAL. Grouped logic
+movement is:
+
+| split | before | after | diff | no-ask population |
+|---|---:|---:|---:|---:|
+| dev-train | 23/1/470 | 24/1/469 | +1 SOLVED, 0 BROKE, 0 DECL→WRONG | 210→208 |
+| dev-holdout | 5/0/420 | 5/0/420 | NEUTRAL | 178→178 |
+
+The two-item train no-ask reduction comprises one conversion and one newly
+represented-but-undetermined query. No TEST look was spent.
+
+**Next:** regenerate the exact-key buyer survey from the 208/178 population.
+Do not rank a family by surface frequency alone; require a complete query key
+to echo or refute an existing story fact.
+
+---
+
 # Session 100 (2026-07-23): FOLIO TEST look #6 spent; safety held; zero transfer
 
 The user-authorized aggregate-only look was run through the continuing FOLIO

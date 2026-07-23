@@ -942,6 +942,21 @@ but answer transfer was zero (identical conversion aggregate to looks #3–#5).
 The aggregate fully-read diagnostic moved 0→3. Phase D's nonzero-transfer
 precondition is not met; promotion is halted pending a new plan.
 
+### Post-checkpoint direction — DEV-only no-ask questions
+
+The zero-transfer result exposed a measurement mistake: premise coverage rose
+while the majority of actionable declines still had no represented question.
+The successor campaign therefore begins with the current no-ask population
+(210 dev-train / 178 dev-holdout), classifies question constructions, and
+credits only increments with a complete query key that joins an existing
+premise/inference path.
+
+No-ask reader 1 serves named do-support event denials,
+`Is it true that NAME does not/doesn't V P?`, through the existing exact Atom
+key and `logic-verdict`. It moves train outcomes 23/1/470→24/1/469 and reduces
+train no-ask 210→208; holdout remains 5/0/420 and 178 no-ask. All DEV safety
+gates are neutral. No TEST look was spent.
+
 ### Phase D — the gate back to FOLIO (integration proper)
 
 Only after a look #6 that shows nonzero transfer at held precision:
