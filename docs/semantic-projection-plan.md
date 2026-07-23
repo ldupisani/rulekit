@@ -391,6 +391,11 @@ checkpoint 1, and the spent protected slices cannot be used again. Entering
 this phase requires a separately preregistered, independent OOD projection
 gate that demonstrates nonzero transfer without a precision failure.
 
+The candidate gate and frozen acceptance contract are recorded in
+[`semantic-projection-ood-gate-plan.md`](semantic-projection-ood-gate-plan.md).
+PMB 5.1.0 English gold is conditionally selected; implementation is blocked
+until its dataset licence is confirmed from an authoritative source.
+
 After COGS demonstrates nonzero OOD transfer:
 
 1. make question consumers request graph-shaped semantic queries rather than
@@ -448,7 +453,8 @@ Two valid next directions remain:
    membership before implementation, and run the normal increment gate.
 2. **Unblock original Phase E:** first specify and freeze a fresh independent
    OOD projection corpus/gate, including its licence, grouping, precision
-   threshold, and one-look policy. Phase E begins only if that gate
+   threshold, and one-look policy. The preregistration now exists; resolve
+   the PMB dataset-licence blocker next. Phase E begins only if that gate
    demonstrates nonzero transfer without a precision failure.
 
 Do not tune to DEV-holdout items. Do not start by admitting the frequent COGS

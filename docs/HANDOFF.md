@@ -4,7 +4,7 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** Post-D DEV campaign 2 complete; original Phase E remains blocked
+**Status:** OOD gate preregistered; original Phase E blocked on PMB licence
 
 **Current safe DEV baseline:** `964f09f`
 (`Add COGS indefinite common subject projection`)
@@ -591,9 +591,11 @@ GSM8K, ASDiv, SVAMP, MAWPS, SciBench, and FOLIO diffs.
 
 Preserve completed post-D DEV campaign 2 as the DEV baseline. If continuing
 DEV coverage, profile a determined common-subject intransitive class and lock
-its role class before implementation. To advance the original plan instead,
-first preregister a fresh independent OOD projection gate. Preserve the
-proper-object boundary and do not rerun TEST or generalization.
+its role class before implementation. To advance the original plan, resolve
+the PMB dataset-licence blocker in
+[`semantic-projection-ood-gate-plan.md`](semantic-projection-ood-gate-plan.md);
+the independent gate is preregistered but no data has been downloaded.
+Preserve the proper-object boundary and do not rerun TEST or generalization.
 
 ## Phase C restart exit audit
 
