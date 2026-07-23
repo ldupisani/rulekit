@@ -91,3 +91,7 @@ entries:
   tenant: {senses: [noun]}
   toothbrush: {senses: [noun]}
   weapon: {senses: [noun]}
+
+  # Synthetic-only noun used to pin semantic projection rules without copying
+  # a COGS sentence into the unit suite.
+  zephyrstone: {senses: [noun]}

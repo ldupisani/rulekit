@@ -85,3 +85,33 @@ rules:
       - {fact: semantic_graph_edge, kind: role,
          source: "event:{event.span_start}", target: "name:{theme}", label: theme,
          span_start: "{theme.span_start}", span_end: "{event.span_end}"}
+
+  # Phase B increment 4: an indefinite common-noun theme in a direct passive
+  # with no expressed agent. The exact anchored surface and the participle
+  # category prevent this rule from floating into active, definite, embedded,
+  # expressed-agent, or ditransitive neighbours.
+  - id: semantic/passive-indefinite-theme-agent-omitted
+    phase: read
+    match:
+      sentence:
+        - {lit: [a, an], consume_skipped: true, at_start: true}
+        - {slot: theme, cat: semantic_bare_theme_noun, bare: true}
+        - {lit: was}
+        - {slot: event, cat: semantic_passive_participle, single_word: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "entity:{theme.span_start}",
+         kind: entity, span_start: "{theme.span_start}",
+         span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_node, ref: "event:{event.span_start}", kind: event,
+         span_start: "{event.span_start}", span_end: "{event.span_end}"}
+      - {fact: semantic_graph_edge, kind: type,
+         source: "entity:{theme.span_start}", label: "{theme}",
+         span_start: "{theme.span_start}", span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_edge, kind: event,
+         source: "event:{event.span_start}", label: "{event}",
+         span_start: "{event.span_start}", span_end: "{event.span_end}"}
+      - {fact: semantic_graph_edge, kind: role,
+         source: "event:{event.span_start}", target: "entity:{theme.span_start}",
+         label: theme, span_start: "{theme.span_start}",
+         span_end: "{event.span_end}"}

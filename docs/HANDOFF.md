@@ -4,10 +4,10 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** Phase B underway; increments 1–3 complete
+**Status:** Phase B underway; increments 1–4 complete
 
-**Previous capability commit:** `950a49f`
-(`Add COGS named intransitive agent projection`)
+**Previous capability commit:** `7e52633`
+(`Add COGS named intransitive theme projection`)
 
 This is the short operational handoff. The complete Session 1–105 history is
 preserved byte-for-byte in
@@ -370,23 +370,94 @@ curated twice; GSM8K DEV-train and DEV-holdout; and ASDiv, SVAMP, MAWPS,
 SciBench, and FOLIO DEV. Every standing non-COGS snapshot diff is neutral. No
 COGS TEST or generalization look was spent.
 
+## Phase B increment 4
+
+The fourth Phase B increment begins passive transitives with the largest
+simple class that does not require definiteness or an expressed-agent entity:
+an indefinite common-noun theme, passive auxiliary and licensed participle,
+and no `by` phrase.
+
+### Phase B increment 4 selection brief
+
+Selected before implementation on 2026-07-23:
+
+1. **Construction class:** exactly `A N was V-en.`, where the article is an
+   indefinite article, the singular noun is licensed by
+   `semantic_bare_theme_noun`, `was` is the passive auxiliary, and the final
+   participle is licensed by a new project-local passive category. There is no
+   expressed agent, recipient, complement, modifier, coordination, negation,
+   or trailing material.
+2. **Complete graph:** one indefinite entity node and type edge, one event
+   node and normalized event-predicate edge, and
+   `theme(event, entity)`. No agent edge is invented when the passive omits
+   its agent. Every node and edge retains the emitting rule provenance and
+   exact source span.
+3. **Synthetic positive:** an invented common noun in the selected passive
+   frame, paired with active and expressed-agent neighbours that must remain
+   outside this rule.
+4. **Negative neighbours:** a definite or named theme; an expressed `by`
+   agent; an active clause; an intransitive use; plural agreement; a
+   recipient, PP, complement, coordination, or negation tail; quarantined
+   `cooked`; and the missing or unsafe participle lemmas `frozen`, `seen`,
+   `thrown`, `drawn`, `grown`, `discovered`, `doubled`, `broken`, `missed`,
+   `called`, and `known`.
+5. **Expected buyers:** the exact surface/graph pool contains 427 inspectable
+   DEV-train rows and 432 aggregate DEV-holdout rows. Reusing the existing
+   noun licence and admitting only 45 quarantine-safe participles whose
+   current registry lemma exactly matches the gold event leaves 214
+   DEV-train and 210 aggregate DEV-holdout buyers. Every selected graph is
+   currently declined. Holdout item text remains uninspected.
+6. **Declarative licence:** a project-local
+   `semantic_passive_participle` category states which overt forms license
+   this passive construction. It does not infer participial morphology or
+   enumerate verbs in Python. The exact sentence pattern, disjoint rule
+   identity, and reuse of already-registered event lemmas keep the new
+   category from widening active, expressed-agent, definite, ditransitive, or
+   embedded neighbours.
+
+### Phase B increment 4 result
+
+The anchored indefinite passive rule emits the common-noun entity and type,
+event and normalized predicate, and theme role. It emits no agent edge when
+the sentence contains no expressed agent. The rule accepts irregular
+participles only through the explicit category and an already-correct
+registry lemma.
+
+| split | before exact | after exact | new exact | incorrect | edge recall |
+|---|---:|---:|---:|---:|---:|
+| DEV-train | 751 | 965 | +214 | 0 | 3.3% → 4.1% |
+| DEV-holdout | 671 | 881 | +210 | 0 | 2.8% → 3.6% |
+
+All 214 selected DEV-train and 210 aggregate DEV-holdout buyers became exact,
+matching the pre-implementation estimate. Both harm-ordered diffs report zero
+broken exact graphs and zero safe-to-incorrect transitions. Because the
+construction taxonomy is graph-structural, an omitted-agent passive has the
+same event/theme-only graph shape as an intransitive-theme sentence and is
+reported in that structural bucket; the exact anchored surface and rule
+provenance preserve the passive reading.
+
+Verification is green: 3,097 synthetic/unit tests; COGS lint with zero errors;
+curated twice; GSM8K DEV-train and DEV-holdout; and ASDiv, SVAMP, MAWPS,
+SciBench, and FOLIO DEV. Every standing non-COGS snapshot diff is neutral. No
+COGS TEST or generalization look was spent.
+
 ## Immediate next step
 
-Build the first passive-transitive increment. Use only inspectable
+Build the expressed-agent passive minimal pair. Use only inspectable
 `dev-train` data to:
 
-- subdivide passive transitive graphs by named, indefinite, and definite
-  theme; absent versus expressed agent; auxiliary and participle form; and
-  any additional complete-graph blockers;
-- choose one frequent clean subclass with complete buyers in both DEV
-  partitions;
-- record the exact graph contract, positive buyers, unsafe neighbours,
-  quarantine exclusions, and aggregate holdout buyer count before
-  implementation;
-- test active/passive minimal pairs, absent and expressed agents, and nearby
-  auxiliary, PP, coordination, negation, and malformed-participle cases; and
-- retain one role graph across the alternation without treating passive
-  surface order as semantic argument order.
+- start with the exact `A N was V-en by Name.` surface and subdivide by noun
+  licence, participle lemma, agent recognition, and complete-graph blockers;
+- retain the increment-4 entity, type, event, predicate, and theme graph, then
+  add exactly the named agent node and `agent(event, name)` edge licensed by
+  the `by` phrase;
+- record expected buyers, quarantine and homograph exclusions, aggregate
+  holdout counts, and the declarative licence before implementation;
+- test absent versus expressed agents, named versus common-noun agents,
+  definite themes, active order, malformed auxiliaries/participles, and
+  PP/coordination/negation/embedding tails; and
+- require the expressed-agent rule not to alter any increment-4
+  omitted-agent graph.
 
 Do not inspect holdout rows or spend COGS TEST/generalization looks.
 

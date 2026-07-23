@@ -8,6 +8,8 @@ categories:
     parent: verb
   semantic_intransitive_theme_verb:
     parent: verb
+  semantic_passive_participle:
+    parent: verb
   # Marks event forms first admitted by this pack. The legacy
   # VerbalRelation evaluation bridge yields to the first-class semantic
   # reader for these forms, so vocabulary cannot accidentally buy an
@@ -38,7 +40,7 @@ members:
      patient, pen, pickle, pillow, pizza, plate, potato, present, president,
      pretzel, prince, princess, pumpkin, pupil, puppy, purse, queen, raisin,
      ring, sandwich, soap, strawberry, student, sweetcorn, teacher, tenant,
-     toothbrush, towel, turtle, visitor, weapon]
+     toothbrush, towel, turtle, visitor, weapon, zephyrstone]
   # Overt finite forms whose bare named-subject intransitive construction
   # licenses an AGENT role. Theme-class forms live in the disjoint category
   # below: identical syntax is not permission to guess the role.
@@ -55,6 +57,16 @@ members:
     [burned, collapsed, crumpled, decomposed, disintegrated, enlarged, floated,
      froze, grew, improved, inflated, reddened, rolled, shattered, shortened,
      slid, snapped, split]
+  # Overt forms licensed as the participle after `was` in the exact
+  # indefinite-theme passive construction. Irregular morphology is admitted
+  # only when the registry already supplies the correct event lemma.
+  semantic_passive_participle:
+    [admired, adored, appreciated, burned, changed, cleaned, collapsed,
+     crumpled, decomposed, disintegrated, dusted, eaten, enlarged, floated,
+     found, heard, held, helped, hunted, improved, inflated, investigated,
+     juggled, liked, loved, noticed, nursed, observed, packed, painted,
+     pierced, poked, reddened, respected, rolled, shortened, sketched, slid,
+     snapped, split, studied, tossed, touched, valued, worshipped]
   semantic_projection_owned_verb:
     [admired, adored, appreciated, burned, cleaned, collapsed, crumpled,
      decomposed, disintegrated, dusted, enlarged, examined, floated, froze,

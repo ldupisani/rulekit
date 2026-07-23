@@ -251,6 +251,71 @@ def test_named_intransitive_theme_declines_role_and_shape_neighbours(
     assert "semantic/intransitive-name-theme" not in semantic_sources
 
 
+def test_indefinite_agentless_passive_projects_a_complete_graph(
+    cogs_project,
+) -> None:
+    text = "A zephyrstone was appreciated."
+    result = solve(text, cogs_project.registry, tracing=False)
+    got = project_result(result, text, cogs_project.registry)
+    expected = parse_cogs_logical_form(
+        "zephyrstone(x_1) AND appreciate.theme(x_3,x_1)"
+    )
+    assert got.node_keys() == expected.node_keys()
+    assert got.edge_keys() == expected.edge_keys()
+    assert ("role", "x3", "x1", "theme") in got.edge_keys()
+    assert not any(
+        edge[0] == "role" and edge[3] == "agent"
+        for edge in got.edge_keys()
+    )
+
+    nodes = list(result.store.by_kind(SemanticGraphNode))
+    edges = list(result.store.by_kind(SemanticGraphEdge))
+    assert len(nodes) == 2
+    assert len(edges) == 3
+    assert {fact.provenance.source for fact in nodes + edges} == {
+        "semantic/passive-indefinite-theme-agent-omitted"
+    }
+    assert {
+        (fact.span_start, fact.span_end) for fact in nodes
+    } == {("1", "1"), ("3", "3")}
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "The zephyrstone was appreciated.",
+        "Neris was appreciated.",
+        "A zephyrstone was appreciated by Neris.",
+        "Neris appreciated a zephyrstone.",
+        "A zephyrstone appreciated.",
+        "Zephyrstones were appreciated.",
+        "A zephyrstone was appreciated near Neris.",
+        "A zephyrstone was appreciated and admired.",
+        "A zephyrstone was not appreciated.",
+        "A zephyrstone was cooked.",
+        "A zephyrstone was frozen.",
+        "A zephyrstone is appreciated.",
+        "Neris said that a zephyrstone was appreciated.",
+    ],
+)
+def test_indefinite_agentless_passive_declines_shape_and_lemma_neighbours(
+    cogs_project,
+    text: str,
+) -> None:
+    result = solve(text, cogs_project.registry, tracing=False)
+    semantic_sources = {
+        fact.provenance.source
+        for fact in (
+            list(result.store.by_kind(SemanticGraphNode))
+            + list(result.store.by_kind(SemanticGraphEdge))
+        )
+    }
+    assert (
+        "semantic/passive-indefinite-theme-agent-omitted"
+        not in semantic_sources
+    )
+
+
 def _snapshot(outcome: str, got_label: str = "") -> dict:
     got = ProjectionGraph(
         nodes=(ProjectionNode("x1", "entity"),) if got_label else (),
