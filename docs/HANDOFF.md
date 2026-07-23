@@ -4,7 +4,7 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** Phase C restart underway; increment 1 complete
+**Status:** Phase C restart increment 2 selected
 
 **Previous safe capability commit:** `0717f04`
 (`Add COGS semantic projection phase A`)
@@ -392,14 +392,45 @@ full-suite tests, zero COGS lint errors, curated 65/65 twice, and neutral
 GSM8K, ASDiv, SVAMP, MAWPS, SciBench, and FOLIO diffs. The dative role
 boundary is unchanged.
 
+## Phase C restart increment 2
+
+This increment begins sentential composition with one depth-1 `ccomp` class
+joining two complete named-agent event subgraphs.
+
+### Ccomp event selection brief
+
+Selected before implementation on 2026-07-23:
+
+1. **Construction class:** exactly `Name V that Name V.`, with a licensed
+   `semantic_ccomp_matrix_verb` and an existing
+   `semantic_intransitive_agent_verb`. Both subjects are bare proper names.
+   There is no object, passive, PP, recipient, control gap, coordination,
+   negation, second complement, or trailing material.
+2. **Complete graph:** two named entity nodes, two normalized event nodes,
+   their respective agent roles, and exactly
+   `complement(matrix_event, embedded_event, ccomp)`. The complement edge
+   spans the matrix through embedded event, preserving overt `that`,
+   attachment direction, and provenance.
+3. **Synthetic positives:** distinct invented names plus a same-name variant,
+   proving entity identity may be shared without collapsing the two event
+   references.
+4. **Negative neighbours:** omitted `that`; common-noun or definite subjects;
+   theme-class, transitive, passive, or ditransitive embedded clauses;
+   `xcomp` surfaces; coordination; negation; nesting; matrix objects; and
+   unlicensed or ambiguous event forms.
+5. **Known DEV buyers:** the earlier DEV-only implementation established 26
+   complete train buyers and 17 aggregate holdout buyers, all currently
+   declined after the checkpoint revert. No holdout rows are inspected.
+6. **Licence and safety boundary:** matrix membership and missing ordinary
+   verb lemmas remain project-local YAML data. Unsafe registry forms stay
+   excluded. The `semantic_to_dative_verb` and proper-object boundaries are
+   unchanged.
+
 ## Immediate next step
 
-Begin the next Phase C increment with a DEV-train-only selection brief for
-depth-1 `ccomp` event/clause embedding. Select a frequent class that joins two
-complete licensed event subgraphs with one ordinary
-`complement(matrix, embedded, ccomp)` edge. Preserve the
-`semantic_to_dative_verb` boundary, keep double-object recipient projection
-withheld, and do not rerun either spent protected slice.
+Implement the recorded depth-1 `ccomp` class and run the complete increment
+gate. Preserve the proper-object boundary and do not rerun either spent
+protected slice.
 
 ## Increment protocol
 
