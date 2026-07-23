@@ -4,7 +4,7 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** Phase B restart safety increment 2 selected
+**Status:** Phase B restart complete; exit audit passed
 
 **Previous safe capability commit:** `0717f04`
 (`Add COGS semantic projection phase A`)
@@ -230,11 +230,12 @@ estimate. All 37 licensed DEV-train double-object surfaces remain declined.
 Both harm-ordered diffs report zero broken exact graphs and zero
 safe-to-incorrect transitions; projected-edge precision remains 100%.
 
-Verification is green: all 3,133 synthetic/unit tests; all 88 focused COGS
-projection tests, including 20 explicit-`to` and proper-object boundary cases;
-COGS lint with zero errors; curated 65/65 twice; GSM8K DEV-train 104 and
-DEV-holdout 40; ASDiv 44; SVAMP 30; MAWPS 9; SciBench 6; and FOLIO with zero
-commitments. Every standing non-COGS snapshot diff is neutral.
+Verification is green: all 3,149 synthetic/unit tests; all 104 focused COGS
+projection tests, including 16 definite-passive cases and 20 explicit-`to`
+and proper-object boundary cases; COGS lint with zero errors; curated 65/65
+twice; GSM8K DEV-train 104 and DEV-holdout 40; ASDiv 44; SVAMP 30; MAWPS 9;
+SciBench 6; and FOLIO with zero commitments. Every standing non-COGS snapshot
+diff is neutral.
 
 The protected TEST and generalization ledgers remain at one row each. Neither
 protected slice was rerun.
@@ -272,6 +273,23 @@ Selected before implementation on 2026-07-23:
    construction-specific `semantic_to_dative_verb` boundary remains
    unchanged, and double-object recipient projection stays withheld.
 
+### Result
+
+The selected rule now emits the existing agentless-passive graph plus one
+article-backed `definite` edge. It does not assert uniqueness or identity,
+and every emitted fact retains exact rule and source-span provenance.
+
+| DEV partition | Before exact | After exact | Gain | Incorrect | Edge recall |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| train | 1,235 | 1,452 | +217 | 0 | 6.8% |
+| holdout | 1,198 | 1,390 | +192 | 0 | 6.4% |
+
+Both harm-ordered diffs have zero broken exact graphs and zero
+safe-to-incorrect transitions. The complete gate is green: 16 focused
+definite-passive cases, 104 focused COGS projection tests, 3,149 full-suite
+tests, zero COGS lint errors, curated twice, and neutral GSM8K, ASDiv, SVAMP,
+MAWPS, SciBench, and FOLIO diffs.
+
 ## Phase B objective
 
 Build first-class entity, event, and semantic-role projection breadth-first,
@@ -297,10 +315,29 @@ The locked exit conditions are:
 Adding vocabulary alone earns no credit. Verb-class membership belongs in YAML
 packs; Python may consume a category but must not enumerate its members.
 
+### Phase B restart exit audit
+
+The restart satisfies every locked Phase B DEV condition:
+
+- precision is 100% and incorrect graphs are zero on train and holdout;
+- exact coverage is 1,452 train and 1,390 holdout, above the locked 247/213
+  thresholds, with 6.8%/6.4% edge recall above 1.5%/1.3%;
+- train/holdout exact coverage is respectively 630/611 transitive, 30/18
+  ditransitive, 271/267 intransitive-agent, and 521/494
+  intransitive-theme graphs;
+- every served construction has complete buyers in both DEV partitions; and
+- all regression and cross-corpus gates are neutral.
+
+Recipient coverage is deliberately limited to explicit prepositional
+`to`-datives. Double-object recipient projection and named themes followed by
+`to` remain declined: the spent Phase D checkpoint localized all protected
+errors to those two proper-object role boundaries, so they are not part of
+the safe served set.
+
 ## Immediate next step
 
-Implement the recorded definite agentless-passive class and run the complete
-increment gate, then rerun the Phase B exit audit. Preserve the
+Begin the Phase C restart with a fresh DEV-train-only selection brief for
+nominal PP modifiers and attachment provenance. Preserve the
 construction-specific `semantic_to_dative_verb` boundary, keep double-object
 recipient projection withheld, and do not rerun either spent protected slice.
 
