@@ -10,6 +10,15 @@ entries:
   hoped: {senses: [verb], verb: {lemma: hope}}
   imagined: {senses: [verb], verb: {lemma: imagine}}
 
+  # Missing infinitival forms for the first subject-control xcomp class.
+  dust: {senses: [verb]}
+  giggle: {senses: [verb]}
+  investigate: {senses: [verb]}
+  sketch: {senses: [verb]}
+  smirk: {senses: [verb]}
+  sneeze: {senses: [verb]}
+  talk: {senses: [verb]}
+
   # Missing overt event forms used by the licensed construction.
   admired: {senses: [verb], verb: {lemma: admire}}
   adored: {senses: [verb], verb: {lemma: adore}}

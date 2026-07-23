@@ -140,6 +140,55 @@ rules:
          span_start: "{matrix_event.span_start}",
          span_end: "{embedded_event.span_end}"}
 
+  # Phase C increment 3: subject-control xcomp. Both agent edges deliberately
+  # target one named entity ref; the two events remain independently
+  # span-addressed and are joined by the overt `to`-licensed xcomp edge.
+  - id: semantic/xcomp-name-agent-shared-agent
+    phase: read
+    match:
+      sentence:
+        - {slot: controller, type: proper_name, at_start: true,
+           blocks_skipped: article}
+        - {slot: matrix_event, cat: semantic_xcomp_matrix_verb,
+           single_word: true}
+        - {lit: to}
+        - {slot: embedded_event, cat: semantic_xcomp_agent_verb,
+           single_word: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "name:{controller}", kind: entity,
+         span_start: "{controller.span_start}",
+         span_end: "{controller.span_end}"}
+      - {fact: semantic_graph_node, ref: "event:{matrix_event.span_start}",
+         kind: event, span_start: "{matrix_event.span_start}",
+         span_end: "{matrix_event.span_end}"}
+      - {fact: semantic_graph_node, ref: "event:{embedded_event.span_start}",
+         kind: event, span_start: "{embedded_event.span_start}",
+         span_end: "{embedded_event.span_end}"}
+      - {fact: semantic_graph_edge, kind: event,
+         source: "event:{matrix_event.span_start}", label: "{matrix_event}",
+         span_start: "{matrix_event.span_start}",
+         span_end: "{matrix_event.span_end}"}
+      - {fact: semantic_graph_edge, kind: event,
+         source: "event:{embedded_event.span_start}", label: "{embedded_event}",
+         span_start: "{embedded_event.span_start}",
+         span_end: "{embedded_event.span_end}"}
+      - {fact: semantic_graph_edge, kind: role,
+         source: "event:{matrix_event.span_start}",
+         target: "name:{controller}", label: agent,
+         span_start: "{controller.span_start}",
+         span_end: "{matrix_event.span_end}"}
+      - {fact: semantic_graph_edge, kind: role,
+         source: "event:{embedded_event.span_start}",
+         target: "name:{controller}", label: agent,
+         span_start: "{controller.span_start}",
+         span_end: "{embedded_event.span_end}"}
+      - {fact: semantic_graph_edge, kind: complement,
+         source: "event:{matrix_event.span_start}",
+         target: "event:{embedded_event.span_start}", label: xcomp,
+         span_start: "{matrix_event.span_start}",
+         span_end: "{embedded_event.span_end}"}
+
   # Phase B increment 2: the syntactically bare named-subject intransitive.
   # Agent/theme is lexically licensed: a theme-class verb in this identical
   # frame must not inherit the role merely from word order.

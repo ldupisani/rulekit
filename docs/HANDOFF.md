@@ -4,10 +4,10 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** Phase C underway; increment 2 complete
+**Status:** Phase C underway; increment 3 complete
 
-**Previous capability commit:** `1a94b63`
-(`Add COGS nominal PP modifier projection`)
+**Previous capability commit:** `29ff50e`
+(`Add COGS ccomp event projection`)
 
 This is the short operational handoff. The complete Session 1–105 history is
 preserved byte-for-byte in
@@ -789,15 +789,83 @@ DEV-train 104 and DEV-holdout 40; ASDiv 44; SVAMP 30; MAWPS 9; SciBench 6;
 and FOLIO 0 committed. Every standing non-COGS snapshot diff is neutral. No
 COGS TEST or generalization look was spent.
 
+## Phase C increment 3
+
+The third Phase C increment adds subject-control `xcomp` composition with one
+explicitly shared controller entity.
+
+### Phase C increment 3 selection brief
+
+Selected before implementation on 2026-07-23:
+
+1. **Construction class:** exactly `Name V to V.`, where the matrix event is
+   a licensed `semantic_xcomp_matrix_verb` and the infinitival event is a
+   licensed `semantic_xcomp_agent_verb`. The subject is one bare proper name.
+   There is no overt embedded subject, object, definiteness, passive, PP,
+   recipient, coordination, negation, second complement, or trailing
+   material.
+2. **Complete graph:** one named entity node and two independently
+   span-addressed event nodes; normalized matrix and embedded predicates;
+   `agent(matrix_event, controller)` and
+   `agent(embedded_event, controller)` targeting the same entity ref; and
+   exactly `complement(matrix_event, embedded_event, xcomp)`. The overt `to`
+   and exact construction license subject control; sharing is represented by
+   equal role targets, not by copying or merging the two events.
+3. **Synthetic positive:** invented `Neris` hopes to smirk, with assertions
+   that both event-agent edges share `Neris` while the event refs and
+   predicates remain distinct.
+4. **Negative neighbours:** overt embedded subjects; object-control and
+   transitive infinitives; theme-class infinitives; omitted `to`; `ccomp`
+   surfaces; common-noun or definite controllers; passive, coordination,
+   negation, PP tails, and nested complements; and lexically unlicensed or
+   ambiguous matrix/embedded forms.
+5. **Expected buyers:** the exact named subject-control surface has 282
+   inspectable DEV-train rows. Correct existing lemma mappings leave 123
+   structural candidates; excluding noun-only ambiguous infinitives leaves
+   109 DEV-train and 96 aggregate DEV-holdout buyers, all currently declined.
+   Holdout item text remains uninspected.
+6. **Declarative licence and audit:** the matrix category contains `dreamed`,
+   `hoped`, `liked`, `loved`, `needed`, and `wanted`. The embedded category
+   contains 17 agentive infinitives; seven missing forms receive project-local
+   verb entries and join the projection-owned guard. Existing noun-only
+   `dance`, `hunt`, and `nap` remain excluded rather than widening shared
+   lexicon senses. No selected form is quarantined; quarantined `cooked` does
+   not license or block the distinct selected infinitive `cook`.
+
+### Phase C increment 3 result
+
+The subject-control rule emits one controller entity, two independently
+span-addressed events, two agent edges targeting the same controller ref, and
+one directed `xcomp` edge. Referent sharing is therefore explicit in the role
+graph rather than inferred from duplicate names or represented by merging the
+two events.
+
+| split | before exact | after exact | new exact | incorrect | edge recall |
+|---|---:|---:|---:|---:|---:|
+| DEV-train | 1,537 | 1,644 | +107 | 0 | 7.4% → 8.1% |
+| DEV-holdout | 1,464 | 1,560 | +96 | 0 | 6.9% → 7.6% |
+
+The `xcomp` bucket now has 107/601 exact DEV-train graphs and 96/605 exact
+aggregate DEV-holdout graphs. Holdout exactly matches the pre-implementation
+estimate; two of the 109 mechanically predicted train buyers remained safely
+declined. Both harm-ordered diffs report zero broken exact graphs and zero
+safe-to-incorrect transitions.
+
+Verification is green: 3,192 synthetic/unit tests; 147 focused COGS
+projection tests; COGS lint with zero errors; curated 65/65 twice; GSM8K
+DEV-train 104 and DEV-holdout 40; ASDiv 44; SVAMP 30; MAWPS 9; SciBench 6;
+and FOLIO 0 committed. Every standing non-COGS snapshot diff is neutral. No
+COGS TEST or generalization look was spent.
+
 ## Immediate next step
 
-Begin Phase C increment 3 with `xcomp` control and explicit referent sharing.
-Use only inspectable DEV-train data to subdivide the 601 `xcomp` graphs by
-matrix frame, controller role, embedded event frame, shared referent,
-complement marker, and nesting depth. Select one frequent depth-1 class whose
-complete graph makes the shared entity explicit, record buyers and overreach
-controls before implementation, and preserve zero incorrect edges and neutral
-standing gates.
+Begin Phase C increment 4 with cross-alternation role invariance. Use only
+inspectable DEV-train data to select a frequent unserved active/passive or
+dative surface alternation whose complete graph reuses an already served
+agent/theme/recipient role structure. Record paired synthetic surfaces,
+buyers, exclusions, and declarative licences before implementation; add no
+surface-order-specific semantic role type, and preserve zero incorrect edges
+and neutral standing gates.
 
 Do not inspect holdout rows or spend COGS TEST/generalization looks before the
 Phase D checkpoint.

@@ -18,6 +18,10 @@ categories:
     parent: preposition
   semantic_passive_participle:
     parent: verb
+  semantic_xcomp_agent_verb:
+    parent: verb
+  semantic_xcomp_matrix_verb:
+    parent: verb
   # Marks event forms first admitted by this pack. The legacy
   # VerbalRelation evaluation bridge yields to the first-class semantic
   # reader for these forms, so vocabulary cannot accidentally buy an
@@ -92,6 +96,13 @@ members:
      juggled, liked, loved, noticed, nursed, observed, packed, painted,
      pierced, poked, reddened, respected, rolled, shortened, sketched, slid,
      snapped, split, studied, tossed, touched, valued, worshipped]
+  # Infinitival agent-event forms and matrix subject-control forms for the
+  # exact `Name V to V` xcomp construction.
+  semantic_xcomp_agent_verb:
+    [call, clean, cook, dust, eat, giggle, investigate, jog, paint, read, run,
+     sketch, sleep, smirk, sneeze, talk, walk]
+  semantic_xcomp_matrix_verb:
+    [dreamed, hoped, liked, loved, needed, wanted]
   semantic_projection_owned_verb:
     [admired, adored, appreciated, burned, cleaned, collapsed, crumpled,
      decomposed, disintegrated, dusted, enlarged, examined, floated, froze,
@@ -102,4 +113,5 @@ members:
      cried, danced, frowned, gasped, giggled, investigated, juggled, laughed,
      napped, scoffed, screamed, smiled, smirked, sneezed, snoozed, snored,
      stuttered, talked,
-     believed, confessed, dreamed, hoped, imagined]
+     believed, confessed, dreamed, hoped, imagined,
+     dust, giggle, investigate, sketch, smirk, sneeze, talk]
