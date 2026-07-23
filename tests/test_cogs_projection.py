@@ -135,8 +135,14 @@ def test_active_transitive_rule_declines_negative_neighbours(
     text: str,
 ) -> None:
     result = solve(text, cogs_project.registry, tracing=False)
-    assert list(result.store.by_kind(SemanticGraphNode)) == []
-    assert list(result.store.by_kind(SemanticGraphEdge)) == []
+    semantic_sources = {
+        fact.provenance.source
+        for fact in (
+            list(result.store.by_kind(SemanticGraphNode))
+            + list(result.store.by_kind(SemanticGraphEdge))
+        )
+    }
+    assert "semantic/active-name-indefinite-theme" not in semantic_sources
 
 
 def test_new_event_vocabulary_does_not_buy_a_definite_neighbour(
@@ -312,6 +318,87 @@ def test_indefinite_agentless_passive_declines_shape_and_lemma_neighbours(
     }
     assert (
         "semantic/passive-indefinite-theme-agent-omitted"
+        not in semantic_sources
+    )
+
+
+def test_indefinite_passive_with_named_agent_projects_a_complete_graph(
+    cogs_project,
+) -> None:
+    text = "A zephyrstone was appreciated by Neris."
+    result = solve(text, cogs_project.registry, tracing=False)
+    got = project_result(result, text, cogs_project.registry)
+    expected = parse_cogs_logical_form(
+        "zephyrstone(x_1) AND appreciate.theme(x_3,x_1) "
+        "AND appreciate.agent(x_3,Neris)"
+    )
+    assert got.node_keys() == expected.node_keys()
+    assert got.edge_keys() == expected.edge_keys()
+    assert ("role", "x3", "x1", "theme") in got.edge_keys()
+    assert ("role", "x3", "const:neris", "agent") in got.edge_keys()
+
+    nodes = list(result.store.by_kind(SemanticGraphNode))
+    edges = list(result.store.by_kind(SemanticGraphEdge))
+    assert len(nodes) == 3
+    assert len(edges) == 4
+    assert {fact.provenance.source for fact in nodes + edges} == {
+        "semantic/passive-indefinite-theme-name-agent"
+    }
+    assert {
+        (fact.span_start, fact.span_end) for fact in nodes
+    } == {("1", "1"), ("3", "3"), ("5", "5")}
+
+
+def test_expressed_agent_passive_leaves_agentless_minimal_pair_unchanged(
+    cogs_project,
+) -> None:
+    text = "A zephyrstone was appreciated."
+    result = solve(text, cogs_project.registry, tracing=False)
+    semantic_sources = {
+        fact.provenance.source
+        for fact in (
+            list(result.store.by_kind(SemanticGraphNode))
+            + list(result.store.by_kind(SemanticGraphEdge))
+        )
+    }
+    assert semantic_sources == {
+        "semantic/passive-indefinite-theme-agent-omitted"
+    }
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "A zephyrstone was appreciated by a pilot.",
+        "A zephyrstone was appreciated by the Neris.",
+        "The zephyrstone was appreciated by Neris.",
+        "Neris was appreciated by Mira.",
+        "Neris appreciated a zephyrstone.",
+        "Zephyrstones were appreciated by Neris.",
+        "A zephyrstone was cooked by Neris.",
+        "A zephyrstone was frozen by Neris.",
+        "A zephyrstone is appreciated by Neris.",
+        "A zephyrstone was appreciated to Mira by Neris.",
+        "A zephyrstone was appreciated by Neris near Mira.",
+        "A zephyrstone was appreciated by Neris and Mira.",
+        "A zephyrstone was not appreciated by Neris.",
+        "Mira said that a zephyrstone was appreciated by Neris.",
+    ],
+)
+def test_named_agent_passive_declines_shape_and_lemma_neighbours(
+    cogs_project,
+    text: str,
+) -> None:
+    result = solve(text, cogs_project.registry, tracing=False)
+    semantic_sources = {
+        fact.provenance.source
+        for fact in (
+            list(result.store.by_kind(SemanticGraphNode))
+            + list(result.store.by_kind(SemanticGraphEdge))
+        )
+    }
+    assert (
+        "semantic/passive-indefinite-theme-name-agent"
         not in semantic_sources
     )
 

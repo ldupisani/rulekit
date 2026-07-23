@@ -4,10 +4,10 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** Phase B underway; increments 1–4 complete
+**Status:** Phase B underway; increments 1–5 complete
 
-**Previous capability commit:** `7e52633`
-(`Add COGS named intransitive theme projection`)
+**Previous capability commit:** `0034a58`
+(`Add COGS agentless passive projection`)
 
 This is the short operational handoff. The complete Session 1–105 history is
 preserved byte-for-byte in
@@ -441,23 +441,94 @@ curated twice; GSM8K DEV-train and DEV-holdout; and ASDiv, SVAMP, MAWPS,
 SciBench, and FOLIO DEV. Every standing non-COGS snapshot diff is neutral. No
 COGS TEST or generalization look was spent.
 
+## Phase B increment 5
+
+The fifth Phase B increment adds the expressed-agent minimal pair of
+increment 4: the same indefinite common-noun passive theme and licensed
+participle, followed by `by` and an exact proper name.
+
+### Phase B increment 5 selection brief
+
+Selected before implementation on 2026-07-23:
+
+1. **Construction class:** exactly `A N was V-en by Name.`, retaining
+   increment 4's indefinite article, bare singular theme noun, `was`
+   auxiliary, and `semantic_passive_participle` licence. The terminal agent is
+   licensed by the overt `by` phrase and the existing exact `proper_name`
+   slot. There is no recipient, modifier, complement, coordination, negation,
+   or trailing material.
+2. **Complete graph:** increment 4's indefinite entity/type, event/predicate,
+   and theme-role graph plus one named entity node and exactly
+   `agent(event, name)`. Surface subject order does not determine the semantic
+   role. Every node and edge retains the emitting rule provenance and exact
+   source span.
+3. **Synthetic positive:** the invented `zephyrstone` theme with invented
+   name `Neris`, paired with the identical omitted-agent passive and an active
+   clause to pin the role alternation.
+4. **Negative neighbours:** omitted agents remain increment 4's class;
+   common-noun `by` agents, definite or named themes, active order, plural
+   agreement, recipients, PP/modifier tails, coordination, negation,
+   embedding, and malformed auxiliaries remain outside this rule. The
+   increment-4 participle quarantine and unsafe-lemma exclusions remain
+   unchanged.
+5. **Expected buyers:** the exact surface/graph pool contains 427 inspectable
+   DEV-train rows and 466 aggregate DEV-holdout rows. Reusing increment 4's
+   noun and 45-participle licences plus exact proper-name recognition leaves
+   236 DEV-train and 294 aggregate DEV-holdout buyers, all currently
+   declined. On DEV-train, 116 rows use nouns outside the existing semantic
+   licence, 71 use excluded participles, and four otherwise eligible rows use
+   the `Jack`/`Mason` noun homographs. Holdout item text remains uninspected.
+6. **Declarative licence:** no new corpus vocabulary or Python mechanism is
+   needed. The existing noun and passive-participle categories license the
+   lexical interpretation; the explicit auxiliary, `by` skeleton, sentence
+   anchors, and `proper_name` type license the expressed-agent structure.
+
+### Phase B increment 5 result
+
+The expressed-agent passive rule reuses increment 4's entity/type,
+event/predicate, and theme projection, then emits the named agent entity and
+`agent(event, name)` only when the exact terminal `by Name` skeleton is
+present. The omitted-agent and expressed-agent rules remain disjoint.
+
+| split | before exact | after exact | new exact | incorrect | edge recall |
+|---|---:|---:|---:|---:|---:|
+| DEV-train | 965 | 1,205 | +240 | 0 | 4.1% → 5.4% |
+| DEV-holdout | 881 | 1,180 | +299 | 0 | 3.6% → 5.2% |
+
+Both harm-ordered diffs report zero broken exact graphs and zero
+safe-to-incorrect transitions. The conservative pre-implementation estimate
+was low by four DEV-train and five aggregate DEV-holdout rows. On the
+inspectable train slice, the four additional buyers use `Jack` or `Mason`:
+although those forms retain common-noun senses, the overt `by` context
+resolves them as proper-name agents. The five holdout additions remain
+aggregate-only and uninspected.
+
+The structural transitive bucket now has 630/3,221 exact DEV-train graphs and
+611/3,299 exact aggregate DEV-holdout graphs. Verification is green: 3,113
+synthetic/unit tests; COGS lint with zero errors; curated twice; GSM8K
+DEV-train and DEV-holdout; and ASDiv, SVAMP, MAWPS, SciBench, and FOLIO DEV.
+Every standing non-COGS snapshot diff is neutral. No COGS TEST or
+generalization look was spent.
+
 ## Immediate next step
 
-Build the expressed-agent passive minimal pair. Use only inspectable
-`dev-train` data to:
+Begin ditransitives and recipient roles. Use only inspectable `dev-train` data
+to:
 
-- start with the exact `A N was V-en by Name.` surface and subdivide by noun
-  licence, participle lemma, agent recognition, and complete-graph blockers;
-- retain the increment-4 entity, type, event, predicate, and theme graph, then
-  add exactly the named agent node and `agent(event, name)` edge licensed by
-  the `by` phrase;
-- record expected buyers, quarantine and homograph exclusions, aggregate
-  holdout counts, and the declarative licence before implementation;
-- test absent versus expressed agents, named versus common-noun agents,
-  definite themes, active order, malformed auxiliaries/participles, and
-  PP/coordination/negation/embedding tails; and
-- require the expressed-agent rule not to alter any increment-4
-  omitted-agent graph.
+- subdivide all 2,661 structural ditransitives by active versus passive
+  surface, prepositional versus double-object dative, and named/indefinite/
+  definite agent, theme, and recipient;
+- choose one frequent, structurally simple active subclass that can reuse the
+  existing entity, event, agent, and theme licences while adding exactly one
+  recipient entity and `recipient(event, entity)` edge;
+- record the complete graph, exact buyers, alternation and attachment
+  exclusions, quarantine audit, and aggregate holdout count before
+  implementation;
+- test prepositional/double-object minimal pairs plus transitive, passive,
+  omitted-recipient, PP/modifier, coordination, negation, and embedded
+  neighbours; and
+- require nonzero exact ditransitive coverage on both DEV partitions with no
+  change to the active or passive transitive graphs.
 
 Do not inspect holdout rows or spend COGS TEST/generalization looks.
 

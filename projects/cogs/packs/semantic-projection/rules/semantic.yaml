@@ -115,3 +115,39 @@ rules:
          source: "event:{event.span_start}", target: "entity:{theme.span_start}",
          label: theme, span_start: "{theme.span_start}",
          span_end: "{event.span_end}"}
+
+  # Phase B increment 5: the expressed-agent minimal pair. The `by` skeleton
+  # licenses agent rather than surface order, while exact anchoring keeps the
+  # omitted-agent rule and all longer passive neighbours disjoint.
+  - id: semantic/passive-indefinite-theme-name-agent
+    phase: read
+    match:
+      sentence:
+        - {lit: [a, an], consume_skipped: true, at_start: true}
+        - {slot: theme, cat: semantic_bare_theme_noun, bare: true}
+        - {lit: was}
+        - {slot: event, cat: semantic_passive_participle, single_word: true}
+        - {lit: by}
+        - {slot: agent, type: proper_name, blocks_skipped: article}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "entity:{theme.span_start}",
+         kind: entity, span_start: "{theme.span_start}",
+         span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_node, ref: "event:{event.span_start}", kind: event,
+         span_start: "{event.span_start}", span_end: "{event.span_end}"}
+      - {fact: semantic_graph_node, ref: "name:{agent}", kind: entity,
+         span_start: "{agent.span_start}", span_end: "{agent.span_end}"}
+      - {fact: semantic_graph_edge, kind: type,
+         source: "entity:{theme.span_start}", label: "{theme}",
+         span_start: "{theme.span_start}", span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_edge, kind: event,
+         source: "event:{event.span_start}", label: "{event}",
+         span_start: "{event.span_start}", span_end: "{event.span_end}"}
+      - {fact: semantic_graph_edge, kind: role,
+         source: "event:{event.span_start}", target: "entity:{theme.span_start}",
+         label: theme, span_start: "{theme.span_start}",
+         span_end: "{event.span_end}"}
+      - {fact: semantic_graph_edge, kind: role,
+         source: "event:{event.span_start}", target: "name:{agent}", label: agent,
+         span_start: "{event.span_start}", span_end: "{agent.span_end}"}
