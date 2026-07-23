@@ -1,7 +1,7 @@
 # rulekit
 
-**Continuing a session? Read `docs/HANDOFF.md` first** — current numbers,
-baselines, the re-landing plan, and the hard-won invariants.
+**Continuing a session? Read `docs/HANDOFF.md` first** — the active direction,
+current baseline, next action, and hard-won invariants.
 
 Grammar-driven reading & reasoning engine. Small deterministic kernel, declarative YAML rule
 packs, no LLM at runtime. Architecture: `docs/architecture.md`. Measurement discipline:
