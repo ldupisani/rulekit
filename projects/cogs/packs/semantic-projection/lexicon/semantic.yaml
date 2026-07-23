@@ -1,0 +1,97 @@
+format: rulekit/lexicon@1
+entries:
+  # Missing overt event forms used by the licensed construction.
+  admired: {senses: [verb], verb: {lemma: admire}}
+  adored: {senses: [verb], verb: {lemma: adore}}
+  appreciated: {senses: [verb], verb: {lemma: appreciate}}
+  burned: {senses: [verb], verb: {lemma: burn}}
+  cleaned: {senses: [verb], verb: {lemma: clean}}
+  collapsed: {senses: [verb], verb: {lemma: collapse}}
+  crumpled: {senses: [verb], verb: {lemma: crumple}}
+  decomposed: {senses: [verb], verb: {lemma: decompose}}
+  disintegrated: {senses: [verb], verb: {lemma: disintegrate}}
+  dusted: {senses: [verb], verb: {lemma: dust}}
+  enlarged: {senses: [verb], verb: {lemma: enlarge}}
+  examined: {senses: [verb], verb: {lemma: examine}}
+  floated: {senses: [verb], verb: {lemma: float}}
+  froze: {senses: [verb], verb: {lemma: freeze}}
+  heard: {senses: [verb], verb: {lemma: hear}}
+  hunted: {senses: [verb], verb: {lemma: hunt}}
+  improved: {senses: [verb], verb: {lemma: improve}}
+  loved: {senses: [verb], verb: {lemma: love}}
+  noticed: {senses: [verb], verb: {lemma: notice}}
+  nursed: {senses: [verb], verb: {lemma: nurse}}
+  observed: {senses: [verb], verb: {lemma: observe}}
+  packed: {senses: [verb], verb: {lemma: pack}}
+  pierced: {senses: [verb], verb: {lemma: pierce}}
+  poked: {senses: [verb], verb: {lemma: poke}}
+  respected: {senses: [verb], verb: {lemma: respect}}
+  rolled: {senses: [verb], verb: {lemma: roll}}
+  shortened: {senses: [verb], verb: {lemma: shorten}}
+  sketched: {senses: [verb], verb: {lemma: sketch}}
+  slid: {senses: [verb], verb: {lemma: slide}}
+  snapped: {senses: [verb], verb: {lemma: snap}}
+  stabbed: {senses: [verb], verb: {lemma: stab}}
+  tolerated: {senses: [verb], verb: {lemma: tolerate}}
+  tossed: {senses: [verb], verb: {lemma: toss}}
+  touched: {senses: [verb], verb: {lemma: touch}}
+  valued: {senses: [verb], verb: {lemma: value}}
+  worshipped: {senses: [verb], verb: {lemma: worship}}
+
+  # Phase B increment 2: missing finite forms for the licensed bare-name
+  # intransitive-agent construction.
+  cried: {senses: [verb], verb: {lemma: cry}}
+  danced: {senses: [verb], verb: {lemma: dance}}
+  frowned: {senses: [verb], verb: {lemma: frown}}
+  gasped: {senses: [verb], verb: {lemma: gasp}}
+  giggled: {senses: [verb], verb: {lemma: giggle}}
+  investigated: {senses: [verb], verb: {lemma: investigate}}
+  juggled: {senses: [verb], verb: {lemma: juggle}}
+  laughed: {senses: [verb], verb: {lemma: laugh}}
+  napped: {senses: [verb], verb: {lemma: nap}}
+  scoffed: {senses: [verb], verb: {lemma: scoff}}
+  screamed: {senses: [verb], verb: {lemma: scream}}
+  smiled: {senses: [verb], verb: {lemma: smile}}
+  smirked: {senses: [verb], verb: {lemma: smirk}}
+  sneezed: {senses: [verb], verb: {lemma: sneeze}}
+  snoozed: {senses: [verb], verb: {lemma: snooze}}
+  snored: {senses: [verb], verb: {lemma: snore}}
+  stuttered: {senses: [verb], verb: {lemma: stutter}}
+  talked: {senses: [verb], verb: {lemma: talk}}
+
+  # Phase B increment 3: missing finite forms for the licensed bare-name
+  # intransitive-theme construction.
+  inflated: {senses: [verb], verb: {lemma: inflate}}
+  reddened: {senses: [verb], verb: {lemma: redden}}
+  shattered: {senses: [verb], verb: {lemma: shatter}}
+
+  # Missing nominal type facts used by the same complete construction buyer.
+  bell: {senses: [noun]}
+  chemical: {senses: [noun]}
+  cloud: {senses: [noun]}
+  coach: {senses: [noun]}
+  director: {senses: [noun]}
+  duke: {senses: [noun]}
+  flag: {senses: [noun]}
+  hamburger: {senses: [noun]}
+  hammer: {senses: [noun]}
+  judge: {senses: [noun]}
+  liver: {senses: [noun]}
+  melon: {senses: [noun]}
+  needle: {senses: [noun]}
+  patient: {senses: [noun]}
+  pickle: {senses: [noun]}
+  pillow: {senses: [noun]}
+  president: {senses: [noun]}
+  prince: {senses: [noun]}
+  princess: {senses: [noun]}
+  queen: {senses: [noun]}
+  soap: {senses: [noun]}
+  sweetcorn: {senses: [noun]}
+  tenant: {senses: [noun]}
+  toothbrush: {senses: [noun]}
+  weapon: {senses: [noun]}
+
+  # Synthetic-only noun used to pin semantic projection rules without copying
+  # a COGS sentence into the unit suite.
+  zephyrstone: {senses: [noun]}

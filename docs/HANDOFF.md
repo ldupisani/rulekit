@@ -4,9 +4,9 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** Phase B restart; proper-object/ditransitive boundary selected
+**Status:** Phase B restart safety increment 1 complete; boundary enforced
 
-**Last safe capability commit:** `0717f04`
+**Previous safe capability commit:** `0717f04`
 (`Add COGS semantic projection phase A`)
 
 This is the short operational handoff. The complete Session 1–105 history is
@@ -204,9 +204,40 @@ Selected before implementation on 2026-07-23:
    edge.
 6. **Expected buyers and licence:** the conservative explicit-`to` class buys
    30 DEV-train and 18 aggregate DEV-holdout complete graphs, with no
-   double-object credit. The project-local `semantic_ditransitive_verb`
-   category contains the same eight previously audited overt forms. No Python
-   vocabulary and no quarantine change are permitted.
+   double-object credit. The construction-specific project-local
+   `semantic_to_dative_verb` category contains the same eight previously
+   audited overt forms; there is intentionally no generic ditransitive
+   category that a later double-object rule could reuse without a separate
+   audit. No Python vocabulary and no quarantine change are permitted.
+
+### Proper-object/ditransitive boundary result
+
+The previously DEV-gated first-class entity/event/role foundation is restored
+through the explicit prepositional-dative buyer. The construction-specific
+`semantic_to_dative_verb` category is the only recipient-event licence: no
+generic ditransitive category exists for a positional double-object rule to
+reuse. Synthetic direct proper objects remain themes, while double-object and
+named-theme-plus-`to` surfaces emit no recipient edge.
+
+| split | before exact | after exact | new exact | incorrect | edge recall |
+|---|---:|---:|---:|---:|---:|
+| DEV-train | 247 | 1,235 | +988 | 0 | 1.5% → 5.6% |
+| DEV-holdout | 213 | 1,198 | +985 | 0 | 1.3% → 5.4% |
+
+The conservative `to`-dative class buys exactly 30/2,661 DEV-train and
+18/2,687 aggregate DEV-holdout ditransitive graphs, matching the recorded
+estimate. All 37 licensed DEV-train double-object surfaces remain declined.
+Both harm-ordered diffs report zero broken exact graphs and zero
+safe-to-incorrect transitions; projected-edge precision remains 100%.
+
+Verification is green: all 3,133 synthetic/unit tests; all 88 focused COGS
+projection tests, including 20 explicit-`to` and proper-object boundary cases;
+COGS lint with zero errors; curated 65/65 twice; GSM8K DEV-train 104 and
+DEV-holdout 40; ASDiv 44; SVAMP 30; MAWPS 9; SciBench 6; and FOLIO with zero
+commitments. Every standing non-COGS snapshot diff is neutral.
+
+The protected TEST and generalization ledgers remain at one row each. Neither
+protected slice was rerun.
 
 ## Phase B objective
 
@@ -235,10 +266,10 @@ packs; Python may consume a category but must not enumerate its members.
 
 ## Immediate next step
 
-Reintroduce the previously DEV-gated Phase B foundation only through the
-explicit prepositional-dative increment. Add synthetic contracts that keep
-proper direct objects as themes and withhold double-object recipient
-projection. Run the complete increment gate without touching either spent
+Reintroduce the article-backed definite agentless-passive class as its own
+DEV-gated increment, then rerun the Phase B exit audit. Preserve the
+construction-specific `semantic_to_dative_verb` boundary and keep
+double-object recipient projection withheld. Do not rerun either spent
 protected slice.
 
 ## Increment protocol

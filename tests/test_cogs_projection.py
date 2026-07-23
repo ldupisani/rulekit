@@ -20,8 +20,11 @@ from rulekit.harness.projection import (
     ProjectionNode,
     classify_projection_graph,
     parse_cogs_logical_form,
+    project_result,
 )
 from rulekit.harness.snapshot import diff
+from rulekit.kernel.engine import solve
+from rulekit.kernel.model import SemanticGraphEdge, SemanticGraphNode
 
 
 def test_cogs_adapter_normalizes_conjunct_order_and_spacing() -> None:
@@ -83,6 +86,435 @@ def test_projection_construction_taxonomy_is_graph_structural() -> None:
         "AND parcel ( x _ 3 ) AND pilot ( x _ 5 )"
     )
     assert classify_projection_graph(graph) == "ditransitive"
+
+
+@pytest.fixture(scope="module")
+def cogs_project():
+    return load_project(Path("projects/cogs"))
+
+
+def test_active_named_indefinite_transitive_projects_a_complete_graph(
+    cogs_project,
+) -> None:
+    text = "Neris admired a cloud."
+    result = solve(text, cogs_project.registry, tracing=False)
+    got = project_result(result, text, cogs_project.registry)
+    expected = parse_cogs_logical_form(
+        "admire.agent(x_1,Neris) AND admire.theme(x_1,x_3) "
+        "AND cloud(x_3)"
+    )
+    assert got.node_keys() == expected.node_keys()
+    assert got.edge_keys() == expected.edge_keys()
+
+    nodes = list(result.store.by_kind(SemanticGraphNode))
+    edges = list(result.store.by_kind(SemanticGraphEdge))
+    assert len(nodes) == 3
+    assert len(edges) == 4
+    assert {fact.provenance.source for fact in nodes + edges} == {
+        "semantic/active-name-indefinite-theme"
+    }
+    assert {
+        (fact.span_start, fact.span_end) for fact in nodes
+    } == {("0", "0"), ("1", "1"), ("3", "3")}
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Neris admired the cloud.",
+        "A pilot admired a cloud.",
+        "A cloud was admired by Neris.",
+        "Neris admired a cloud near Mira.",
+        "Neris admired a cloud and a bell.",
+        "Neris missed a cloud.",
+        "Neris admired a rose.",
+    ],
+)
+def test_active_transitive_rule_declines_negative_neighbours(
+    cogs_project,
+    text: str,
+) -> None:
+    result = solve(text, cogs_project.registry, tracing=False)
+    semantic_sources = {
+        fact.provenance.source
+        for fact in (
+            list(result.store.by_kind(SemanticGraphNode))
+            + list(result.store.by_kind(SemanticGraphEdge))
+        )
+    }
+    assert "semantic/active-name-indefinite-theme" not in semantic_sources
+
+
+def test_new_event_vocabulary_does_not_buy_a_definite_neighbour(
+    cogs_project,
+) -> None:
+    text = "Neris admired the cloud."
+    result = solve(text, cogs_project.registry, tracing=False)
+    assert project_result(result, text, cogs_project.registry).empty
+
+
+def test_named_intransitive_agent_projects_a_complete_graph(
+    cogs_project,
+) -> None:
+    text = "Neris smiled."
+    result = solve(text, cogs_project.registry, tracing=False)
+    got = project_result(result, text, cogs_project.registry)
+    expected = parse_cogs_logical_form(
+        "smile.agent(x_1,Neris)"
+    )
+    assert got.node_keys() == expected.node_keys()
+    assert got.edge_keys() == expected.edge_keys()
+
+    nodes = list(result.store.by_kind(SemanticGraphNode))
+    edges = list(result.store.by_kind(SemanticGraphEdge))
+    assert len(nodes) == 2
+    assert len(edges) == 2
+    assert {fact.provenance.source for fact in nodes + edges} == {
+        "semantic/intransitive-name-agent"
+    }
+    assert {
+        (fact.span_start, fact.span_end) for fact in nodes
+    } == {("0", "0"), ("1", "1")}
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Neris collapsed.",
+        "A pilot smiled.",
+        "The pilot smiled.",
+        "Neris smiled a cloud.",
+        "Neris smiled near Mira.",
+        "Neris smiled and laughed.",
+        "Neris cooked.",
+        "Neris called.",
+    ],
+)
+def test_named_intransitive_agent_declines_role_and_shape_neighbours(
+    cogs_project,
+    text: str,
+) -> None:
+    result = solve(text, cogs_project.registry, tracing=False)
+    semantic_sources = {
+        fact.provenance.source
+        for fact in (
+            list(result.store.by_kind(SemanticGraphNode))
+            + list(result.store.by_kind(SemanticGraphEdge))
+        )
+    }
+    assert "semantic/intransitive-name-agent" not in semantic_sources
+
+
+def test_named_intransitive_theme_projects_a_complete_graph(
+    cogs_project,
+) -> None:
+    text = "Neris reddened."
+    result = solve(text, cogs_project.registry, tracing=False)
+    got = project_result(result, text, cogs_project.registry)
+    expected = parse_cogs_logical_form(
+        "redden.theme(x_1,Neris)"
+    )
+    assert got.node_keys() == expected.node_keys()
+    assert got.edge_keys() == expected.edge_keys()
+    assert ("role", "x1", "const:neris", "theme") in got.edge_keys()
+    assert ("role", "x1", "const:neris", "agent") not in got.edge_keys()
+
+    nodes = list(result.store.by_kind(SemanticGraphNode))
+    edges = list(result.store.by_kind(SemanticGraphEdge))
+    assert len(nodes) == 2
+    assert len(edges) == 2
+    assert {fact.provenance.source for fact in nodes + edges} == {
+        "semantic/intransitive-name-theme"
+    }
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Neris smiled.",
+        "A pilot reddened.",
+        "The pilot reddened.",
+        "Neris reddened a cloud.",
+        "Neris reddened near Mira.",
+        "Neris reddened and collapsed.",
+        "Neris broke.",
+        "Neris doubled.",
+        "Neris was reddened.",
+    ],
+)
+def test_named_intransitive_theme_declines_role_and_shape_neighbours(
+    cogs_project,
+    text: str,
+) -> None:
+    result = solve(text, cogs_project.registry, tracing=False)
+    semantic_sources = {
+        fact.provenance.source
+        for fact in (
+            list(result.store.by_kind(SemanticGraphNode))
+            + list(result.store.by_kind(SemanticGraphEdge))
+        )
+    }
+    assert "semantic/intransitive-name-theme" not in semantic_sources
+
+
+def test_indefinite_agentless_passive_projects_a_complete_graph(
+    cogs_project,
+) -> None:
+    text = "A zephyrstone was appreciated."
+    result = solve(text, cogs_project.registry, tracing=False)
+    got = project_result(result, text, cogs_project.registry)
+    expected = parse_cogs_logical_form(
+        "zephyrstone(x_1) AND appreciate.theme(x_3,x_1)"
+    )
+    assert got.node_keys() == expected.node_keys()
+    assert got.edge_keys() == expected.edge_keys()
+    assert ("role", "x3", "x1", "theme") in got.edge_keys()
+    assert not any(
+        edge[0] == "role" and edge[3] == "agent"
+        for edge in got.edge_keys()
+    )
+
+    nodes = list(result.store.by_kind(SemanticGraphNode))
+    edges = list(result.store.by_kind(SemanticGraphEdge))
+    assert len(nodes) == 2
+    assert len(edges) == 3
+    assert {fact.provenance.source for fact in nodes + edges} == {
+        "semantic/passive-indefinite-theme-agent-omitted"
+    }
+    assert {
+        (fact.span_start, fact.span_end) for fact in nodes
+    } == {("1", "1"), ("3", "3")}
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "The zephyrstone was appreciated.",
+        "Neris was appreciated.",
+        "A zephyrstone was appreciated by Neris.",
+        "Neris appreciated a zephyrstone.",
+        "A zephyrstone appreciated.",
+        "Zephyrstones were appreciated.",
+        "A zephyrstone was appreciated near Neris.",
+        "A zephyrstone was appreciated and admired.",
+        "A zephyrstone was not appreciated.",
+        "A zephyrstone was cooked.",
+        "A zephyrstone was frozen.",
+        "A zephyrstone is appreciated.",
+        "Neris said that a zephyrstone was appreciated.",
+    ],
+)
+def test_indefinite_agentless_passive_declines_shape_and_lemma_neighbours(
+    cogs_project,
+    text: str,
+) -> None:
+    result = solve(text, cogs_project.registry, tracing=False)
+    semantic_sources = {
+        fact.provenance.source
+        for fact in (
+            list(result.store.by_kind(SemanticGraphNode))
+            + list(result.store.by_kind(SemanticGraphEdge))
+        )
+    }
+    assert (
+        "semantic/passive-indefinite-theme-agent-omitted"
+        not in semantic_sources
+    )
+
+
+def test_indefinite_passive_with_named_agent_projects_a_complete_graph(
+    cogs_project,
+) -> None:
+    text = "A zephyrstone was appreciated by Neris."
+    result = solve(text, cogs_project.registry, tracing=False)
+    got = project_result(result, text, cogs_project.registry)
+    expected = parse_cogs_logical_form(
+        "zephyrstone(x_1) AND appreciate.theme(x_3,x_1) "
+        "AND appreciate.agent(x_3,Neris)"
+    )
+    assert got.node_keys() == expected.node_keys()
+    assert got.edge_keys() == expected.edge_keys()
+    assert ("role", "x3", "x1", "theme") in got.edge_keys()
+    assert ("role", "x3", "const:neris", "agent") in got.edge_keys()
+
+    nodes = list(result.store.by_kind(SemanticGraphNode))
+    edges = list(result.store.by_kind(SemanticGraphEdge))
+    assert len(nodes) == 3
+    assert len(edges) == 4
+    assert {fact.provenance.source for fact in nodes + edges} == {
+        "semantic/passive-indefinite-theme-name-agent"
+    }
+    assert {
+        (fact.span_start, fact.span_end) for fact in nodes
+    } == {("1", "1"), ("3", "3"), ("5", "5")}
+
+
+def test_expressed_agent_passive_leaves_agentless_minimal_pair_unchanged(
+    cogs_project,
+) -> None:
+    text = "A zephyrstone was appreciated."
+    result = solve(text, cogs_project.registry, tracing=False)
+    semantic_sources = {
+        fact.provenance.source
+        for fact in (
+            list(result.store.by_kind(SemanticGraphNode))
+            + list(result.store.by_kind(SemanticGraphEdge))
+        )
+    }
+    assert semantic_sources == {
+        "semantic/passive-indefinite-theme-agent-omitted"
+    }
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "A zephyrstone was appreciated by a pilot.",
+        "A zephyrstone was appreciated by the Neris.",
+        "The zephyrstone was appreciated by Neris.",
+        "Neris was appreciated by Mira.",
+        "Neris appreciated a zephyrstone.",
+        "Zephyrstones were appreciated by Neris.",
+        "A zephyrstone was cooked by Neris.",
+        "A zephyrstone was frozen by Neris.",
+        "A zephyrstone is appreciated by Neris.",
+        "A zephyrstone was appreciated to Mira by Neris.",
+        "A zephyrstone was appreciated by Neris near Mira.",
+        "A zephyrstone was appreciated by Neris and Mira.",
+        "A zephyrstone was not appreciated by Neris.",
+        "Mira said that a zephyrstone was appreciated by Neris.",
+    ],
+)
+def test_named_agent_passive_declines_shape_and_lemma_neighbours(
+    cogs_project,
+    text: str,
+) -> None:
+    result = solve(text, cogs_project.registry, tracing=False)
+    semantic_sources = {
+        fact.provenance.source
+        for fact in (
+            list(result.store.by_kind(SemanticGraphNode))
+            + list(result.store.by_kind(SemanticGraphEdge))
+        )
+    }
+    assert (
+        "semantic/passive-indefinite-theme-name-agent"
+        not in semantic_sources
+    )
+
+
+def test_prepositional_dative_projects_a_complete_graph(
+    cogs_project,
+) -> None:
+    text = "Neris gave a zephyrstone to Mira."
+    result = solve(text, cogs_project.registry, tracing=False)
+    got = project_result(result, text, cogs_project.registry)
+    expected = parse_cogs_logical_form(
+        "give.agent(x_1,Neris) AND give.theme(x_1,x_3) "
+        "AND zephyrstone(x_3) AND give.recipient(x_1,Mira)"
+    )
+    assert got.node_keys() == expected.node_keys()
+    assert got.edge_keys() == expected.edge_keys()
+    assert ("role", "x1", "const:neris", "agent") in got.edge_keys()
+    assert ("role", "x1", "x3", "theme") in got.edge_keys()
+    assert ("role", "x1", "const:mira", "recipient") in got.edge_keys()
+
+    nodes = list(result.store.by_kind(SemanticGraphNode))
+    edges = list(result.store.by_kind(SemanticGraphEdge))
+    assert len(nodes) == 4
+    assert len(edges) == 5
+    assert {fact.provenance.source for fact in nodes + edges} == {
+        "semantic/ditransitive-name-indefinite-theme-to-name"
+    }
+    assert {
+        (fact.span_start, fact.span_end) for fact in nodes
+    } == {("0", "0"), ("1", "1"), ("3", "3"), ("5", "5")}
+
+
+def test_proper_direct_object_remains_theme_not_recipient(
+    cogs_project,
+) -> None:
+    text = "Neris gave Mira."
+    result = solve(text, cogs_project.registry, tracing=False)
+    got = project_result(result, text, cogs_project.registry)
+    expected = parse_cogs_logical_form(
+        "give.agent(x_1,Neris) AND give.theme(x_1,Mira)"
+    )
+    assert got.node_keys() == expected.node_keys()
+    assert got.edge_keys() == expected.edge_keys()
+    assert not any(
+        edge.kind == "role" and edge.label == "recipient"
+        for edge in got.edges
+    )
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Neris gave Mira a zephyrstone.",
+        "Neris sold Mira a zephyrstone.",
+        "Neris passed Mira a zephyrstone.",
+        "Neris gave Mira to Lio.",
+    ],
+)
+def test_postverbal_proper_name_does_not_license_recipient_by_position(
+    cogs_project,
+    text: str,
+) -> None:
+    result = solve(text, cogs_project.registry, tracing=False)
+    got = project_result(result, text, cogs_project.registry)
+    assert not any(
+        edge.kind == "role" and edge.label == "recipient"
+        for edge in got.edges
+    )
+    semantic_sources = {
+        fact.provenance.source
+        for fact in (
+            list(result.store.by_kind(SemanticGraphNode))
+            + list(result.store.by_kind(SemanticGraphEdge))
+        )
+    }
+    assert (
+        "semantic/ditransitive-name-indefinite-theme-to-name"
+        not in semantic_sources
+    )
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Neris gave Mira a zephyrstone.",
+        "Neris gave a zephyrstone.",
+        "Neris gave a zephyrstone to a pilot.",
+        "Neris gave a zephyrstone to the pilot.",
+        "A pilot gave a zephyrstone to Mira.",
+        "Neris gave the zephyrstone to Mira.",
+        "Neris gave Mira to Lio.",
+        "A zephyrstone was given to Mira by Neris.",
+        "Neris gave a zephyrstone near Mira to Lio.",
+        "Neris gave a zephyrstone to Mira near Lio.",
+        "Neris gave a zephyrstone to Mira and Lio.",
+        "Neris did not give a zephyrstone to Mira.",
+        "Lio said that Neris gave a zephyrstone to Mira.",
+        "Neris lended a zephyrstone to Mira.",
+    ],
+)
+def test_prepositional_dative_declines_alternation_and_shape_neighbours(
+    cogs_project,
+    text: str,
+) -> None:
+    result = solve(text, cogs_project.registry, tracing=False)
+    semantic_sources = {
+        fact.provenance.source
+        for fact in (
+            list(result.store.by_kind(SemanticGraphNode))
+            + list(result.store.by_kind(SemanticGraphEdge))
+        )
+    }
+    assert (
+        "semantic/ditransitive-name-indefinite-theme-to-name"
+        not in semantic_sources
+    )
 
 
 def _snapshot(outcome: str, got_label: str = "") -> dict:

@@ -1,0 +1,10 @@
+format: rulekit/pack@1
+name: cogs-semantic-projection
+version: 0.1.0
+requires:
+  - core-english
+  - difg-mined
+description: >
+  Declarative lexical licences and construction rules for the COGS semantic
+  projection campaign. Membership states linguistic form/class facts; the
+  kernel contains no COGS vocabulary.

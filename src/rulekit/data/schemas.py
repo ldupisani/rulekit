@@ -494,7 +494,8 @@ class FactEmit(StrictModel):
         "ratio_quantity", "goal", "group_total", "rate", "discount",
         "percent_change", "atom", "quantified", "conditional",
         "disjunction", "equivalence", "quantified_disjunction", "existential",
-        "verbal_relation", "alias", "enumerated_disjunction",
+        "verbal_relation", "semantic_graph_node", "semantic_graph_edge",
+        "alias", "enumerated_disjunction",
         "disjunctive_conditional", "ground_conditional",
         "positive_ground_conditional",
     ]

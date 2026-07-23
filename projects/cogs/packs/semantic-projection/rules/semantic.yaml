@@ -1,0 +1,196 @@
+format: rulekit/rules@1
+rules:
+  # Phase B increment 1: one complete active-transitive semantic graph.
+  #
+  # The two lexical categories license the role interpretation. The explicit
+  # indefinite article, sentence anchors, bare noun, and terminal punctuation
+  # keep passive, definite, ditransitive, PP-tailed, coordinated, and embedded
+  # neighbours outside this rule. Runtime refs are local span identities; the
+  # COGS adapter alone maps them to its token-indexed evaluation variables.
+  - id: semantic/active-name-indefinite-theme
+    phase: read
+    match:
+      sentence:
+        - {slot: agent, type: proper_name, at_start: true,
+           blocks_skipped: indefinite_article}
+        - {slot: event, cat: semantic_agent_theme_verb, single_word: true}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: theme, cat: semantic_bare_theme_noun, bare: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "name:{agent}", kind: entity,
+         span_start: "{agent.span_start}", span_end: "{agent.span_end}"}
+      - {fact: semantic_graph_node, ref: "event:{event.span_start}", kind: event,
+         span_start: "{event.span_start}", span_end: "{event.span_end}"}
+      - {fact: semantic_graph_node, ref: "entity:{theme.span_start}", kind: entity,
+         span_start: "{theme.span_start}", span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_edge, kind: event,
+         source: "event:{event.span_start}", label: "{event}",
+         span_start: "{event.span_start}", span_end: "{event.span_end}"}
+      - {fact: semantic_graph_edge, kind: type,
+         source: "entity:{theme.span_start}", label: "{theme}",
+         span_start: "{theme.span_start}", span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_edge, kind: role,
+         source: "event:{event.span_start}", target: "name:{agent}", label: agent,
+         span_start: "{agent.span_start}", span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_edge, kind: role,
+         source: "event:{event.span_start}", target: "entity:{theme.span_start}",
+         label: theme,
+         span_start: "{agent.span_start}", span_end: "{theme.span_end}"}
+
+  # Phase B increment 2: the syntactically bare named-subject intransitive.
+  # Agent/theme is lexically licensed: a theme-class verb in this identical
+  # frame must not inherit the role merely from word order.
+  - id: semantic/intransitive-name-agent
+    phase: read
+    match:
+      sentence:
+        - {slot: agent, type: proper_name, at_start: true,
+           blocks_skipped: indefinite_article}
+        - {slot: event, cat: semantic_intransitive_agent_verb,
+           single_word: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "name:{agent}", kind: entity,
+         span_start: "{agent.span_start}", span_end: "{agent.span_end}"}
+      - {fact: semantic_graph_node, ref: "event:{event.span_start}", kind: event,
+         span_start: "{event.span_start}", span_end: "{event.span_end}"}
+      - {fact: semantic_graph_edge, kind: event,
+         source: "event:{event.span_start}", label: "{event}",
+         span_start: "{event.span_start}", span_end: "{event.span_end}"}
+      - {fact: semantic_graph_edge, kind: role,
+         source: "event:{event.span_start}", target: "name:{agent}", label: agent,
+         span_start: "{agent.span_start}", span_end: "{event.span_end}"}
+
+  # Phase B increment 3: the theme-class minimal pair of the preceding rule.
+  # The surface is identical; only the disjoint YAML verb class licenses the
+  # semantic role.
+  - id: semantic/intransitive-name-theme
+    phase: read
+    match:
+      sentence:
+        - {slot: theme, type: proper_name, at_start: true,
+           blocks_skipped: indefinite_article}
+        - {slot: event, cat: semantic_intransitive_theme_verb,
+           single_word: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "name:{theme}", kind: entity,
+         span_start: "{theme.span_start}", span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_node, ref: "event:{event.span_start}", kind: event,
+         span_start: "{event.span_start}", span_end: "{event.span_end}"}
+      - {fact: semantic_graph_edge, kind: event,
+         source: "event:{event.span_start}", label: "{event}",
+         span_start: "{event.span_start}", span_end: "{event.span_end}"}
+      - {fact: semantic_graph_edge, kind: role,
+         source: "event:{event.span_start}", target: "name:{theme}", label: theme,
+         span_start: "{theme.span_start}", span_end: "{event.span_end}"}
+
+  # Phase B increment 4: an indefinite common-noun theme in a direct passive
+  # with no expressed agent. The exact anchored surface and the participle
+  # category prevent this rule from floating into active, definite, embedded,
+  # expressed-agent, or ditransitive neighbours.
+  - id: semantic/passive-indefinite-theme-agent-omitted
+    phase: read
+    match:
+      sentence:
+        - {lit: [a, an], consume_skipped: true, at_start: true}
+        - {slot: theme, cat: semantic_bare_theme_noun, bare: true}
+        - {lit: was}
+        - {slot: event, cat: semantic_passive_participle, single_word: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "entity:{theme.span_start}",
+         kind: entity, span_start: "{theme.span_start}",
+         span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_node, ref: "event:{event.span_start}", kind: event,
+         span_start: "{event.span_start}", span_end: "{event.span_end}"}
+      - {fact: semantic_graph_edge, kind: type,
+         source: "entity:{theme.span_start}", label: "{theme}",
+         span_start: "{theme.span_start}", span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_edge, kind: event,
+         source: "event:{event.span_start}", label: "{event}",
+         span_start: "{event.span_start}", span_end: "{event.span_end}"}
+      - {fact: semantic_graph_edge, kind: role,
+         source: "event:{event.span_start}", target: "entity:{theme.span_start}",
+         label: theme, span_start: "{theme.span_start}",
+         span_end: "{event.span_end}"}
+
+  # Phase B increment 5: the expressed-agent minimal pair. The `by` skeleton
+  # licenses agent rather than surface order, while exact anchoring keeps the
+  # omitted-agent rule and all longer passive neighbours disjoint.
+  - id: semantic/passive-indefinite-theme-name-agent
+    phase: read
+    match:
+      sentence:
+        - {lit: [a, an], consume_skipped: true, at_start: true}
+        - {slot: theme, cat: semantic_bare_theme_noun, bare: true}
+        - {lit: was}
+        - {slot: event, cat: semantic_passive_participle, single_word: true}
+        - {lit: by}
+        - {slot: agent, type: proper_name, blocks_skipped: article}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "entity:{theme.span_start}",
+         kind: entity, span_start: "{theme.span_start}",
+         span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_node, ref: "event:{event.span_start}", kind: event,
+         span_start: "{event.span_start}", span_end: "{event.span_end}"}
+      - {fact: semantic_graph_node, ref: "name:{agent}", kind: entity,
+         span_start: "{agent.span_start}", span_end: "{agent.span_end}"}
+      - {fact: semantic_graph_edge, kind: type,
+         source: "entity:{theme.span_start}", label: "{theme}",
+         span_start: "{theme.span_start}", span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_edge, kind: event,
+         source: "event:{event.span_start}", label: "{event}",
+         span_start: "{event.span_start}", span_end: "{event.span_end}"}
+      - {fact: semantic_graph_edge, kind: role,
+         source: "event:{event.span_start}", target: "entity:{theme.span_start}",
+         label: theme, span_start: "{theme.span_start}",
+         span_end: "{event.span_end}"}
+      - {fact: semantic_graph_edge, kind: role,
+         source: "event:{event.span_start}", target: "name:{agent}", label: agent,
+         span_start: "{event.span_start}", span_end: "{agent.span_end}"}
+
+  # Phase B increment 6: one complete active prepositional dative. The `to`
+  # skeleton assigns recipient independently of surface position; the verb
+  # category licenses the three-place event.
+  - id: semantic/ditransitive-name-indefinite-theme-to-name
+    phase: read
+    match:
+      sentence:
+        - {slot: agent, type: proper_name, at_start: true,
+           blocks_skipped: article}
+        - {slot: event, cat: semantic_to_dative_verb, single_word: true}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: theme, cat: semantic_bare_theme_noun, bare: true}
+        - {lit: to}
+        - {slot: recipient, type: proper_name, blocks_skipped: article}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "name:{agent}", kind: entity,
+         span_start: "{agent.span_start}", span_end: "{agent.span_end}"}
+      - {fact: semantic_graph_node, ref: "event:{event.span_start}", kind: event,
+         span_start: "{event.span_start}", span_end: "{event.span_end}"}
+      - {fact: semantic_graph_node, ref: "entity:{theme.span_start}",
+         kind: entity, span_start: "{theme.span_start}",
+         span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_node, ref: "name:{recipient}", kind: entity,
+         span_start: "{recipient.span_start}", span_end: "{recipient.span_end}"}
+      - {fact: semantic_graph_edge, kind: event,
+         source: "event:{event.span_start}", label: "{event}",
+         span_start: "{event.span_start}", span_end: "{event.span_end}"}
+      - {fact: semantic_graph_edge, kind: type,
+         source: "entity:{theme.span_start}", label: "{theme}",
+         span_start: "{theme.span_start}", span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_edge, kind: role,
+         source: "event:{event.span_start}", target: "name:{agent}", label: agent,
+         span_start: "{agent.span_start}", span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_edge, kind: role,
+         source: "event:{event.span_start}", target: "entity:{theme.span_start}",
+         label: theme, span_start: "{agent.span_start}",
+         span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_edge, kind: role,
+         source: "event:{event.span_start}", target: "name:{recipient}",
+         label: recipient, span_start: "{event.span_start}",
+         span_end: "{recipient.span_end}"}
