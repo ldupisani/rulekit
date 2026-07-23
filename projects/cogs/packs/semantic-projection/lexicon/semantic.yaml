@@ -38,6 +38,27 @@ entries:
   valued: {senses: [verb], verb: {lemma: value}}
   worshipped: {senses: [verb], verb: {lemma: worship}}
 
+  # Phase B increment 2: missing finite forms for the licensed bare-name
+  # intransitive-agent construction.
+  cried: {senses: [verb], verb: {lemma: cry}}
+  danced: {senses: [verb], verb: {lemma: dance}}
+  frowned: {senses: [verb], verb: {lemma: frown}}
+  gasped: {senses: [verb], verb: {lemma: gasp}}
+  giggled: {senses: [verb], verb: {lemma: giggle}}
+  investigated: {senses: [verb], verb: {lemma: investigate}}
+  juggled: {senses: [verb], verb: {lemma: juggle}}
+  laughed: {senses: [verb], verb: {lemma: laugh}}
+  napped: {senses: [verb], verb: {lemma: nap}}
+  scoffed: {senses: [verb], verb: {lemma: scoff}}
+  screamed: {senses: [verb], verb: {lemma: scream}}
+  smiled: {senses: [verb], verb: {lemma: smile}}
+  smirked: {senses: [verb], verb: {lemma: smirk}}
+  sneezed: {senses: [verb], verb: {lemma: sneeze}}
+  snoozed: {senses: [verb], verb: {lemma: snooze}}
+  snored: {senses: [verb], verb: {lemma: snore}}
+  stuttered: {senses: [verb], verb: {lemma: stutter}}
+  talked: {senses: [verb], verb: {lemma: talk}}
+
   # Missing nominal type facts used by the same complete construction buyer.
   bell: {senses: [noun]}
   chemical: {senses: [noun]}

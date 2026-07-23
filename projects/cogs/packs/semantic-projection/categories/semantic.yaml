@@ -4,12 +4,14 @@ categories:
     parent: verb
   semantic_bare_theme_noun:
     parent: noun
+  semantic_intransitive_agent_verb:
+    parent: verb
   # Marks event forms first admitted by this pack. The legacy
   # VerbalRelation evaluation bridge yields to the first-class semantic
   # reader for these forms, so vocabulary cannot accidentally buy an
   # unserved neighbouring construction.
   semantic_projection_owned_verb:
-    parent: semantic_agent_theme_verb
+    parent: verb
 members:
   # Overt finite forms whose active direct-object construction licenses the
   # agent/theme interpretation in Phase B increment 1. Unsafe self-lemma
@@ -35,9 +37,21 @@ members:
      pretzel, prince, princess, pumpkin, pupil, puppy, purse, queen, raisin,
      ring, sandwich, soap, strawberry, student, sweetcorn, teacher, tenant,
      toothbrush, towel, turtle, visitor, weapon]
+  # Overt finite forms whose bare named-subject intransitive construction
+  # licenses an AGENT role. Theme-class forms live in their own future
+  # category: identical syntax is not permission to guess the role.
+  semantic_intransitive_agent_verb:
+    [ate, cleaned, cried, danced, dusted, examined, frowned, gasped, giggled,
+     heard, hunted, investigated, jogged, juggled, knew, laughed, napped,
+     noticed, nursed, observed, packed, painted, ran, saw, scoffed, screamed,
+     sketched, slept, smiled, smirked, sneezed, snoozed, snored, studied,
+     stuttered, talked, walked]
   semantic_projection_owned_verb:
     [admired, adored, appreciated, burned, cleaned, collapsed, crumpled,
      decomposed, disintegrated, dusted, enlarged, examined, floated, froze,
      heard, hunted, improved, loved, noticed, nursed, observed, packed,
      pierced, poked, respected, rolled, shortened, sketched, slid, snapped,
-     stabbed, tolerated, tossed, touched, valued, worshipped]
+     stabbed, tolerated, tossed, touched, valued, worshipped,
+     cried, danced, frowned, gasped, giggled, investigated, juggled, laughed,
+     napped, scoffed, screamed, smiled, smirked, sneezed, snoozed, snored,
+     stuttered, talked]

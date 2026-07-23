@@ -4,9 +4,10 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** Phase B underway; increment 1 complete
+**Status:** Phase B underway; increments 1–2 complete
 
-**Previous phase commit:** `0717f04` (`Add COGS semantic projection phase A`)
+**Previous capability commit:** `cac2a6e`
+(`Add COGS semantic projection phase B active transitives`)
 
 This is the short operational handoff. The complete Session 1–105 history is
 preserved byte-for-byte in
@@ -231,10 +232,10 @@ DEV-train and DEV-holdout; ASDiv, SVAMP, MAWPS, SciBench, and FOLIO DEV; and
 COGS lint with zero errors. Every standing non-COGS snapshot diff is neutral.
 No COGS TEST or generalization look was spent.
 
-## Immediate next step
+## Phase B increment 2
 
-Begin the Phase B intransitive-role increment. Use only inspectable
-`dev-train` data to subdivide the 699 intransitive-agent and 1,301
+The second Phase B increment began the intransitive-role work. It used only
+inspectable `dev-train` data to subdivide the 699 intransitive-agent and 1,301
 intransitive-theme graphs by:
 
 - named, indefinite, and definite subject construction;
@@ -242,10 +243,90 @@ intransitive-theme graphs by:
 - the YAML verb class needed to license agent versus theme; and
 - complete-graph blockers beyond the event, type, and single role.
 
-Select one frequent clean class with complete buyers in both DEV partitions.
-Record its positive graph, negative agent/theme minimal pairs, ambiguity and
-overreach cases, expected buyers, and declarative verb-class licence before
-implementation. Do not inspect holdout rows or spend protected looks.
+It selected one frequent clean class with complete buyers in both DEV
+partitions and recorded its positive graph, negative agent/theme minimal
+pairs, ambiguity and overreach cases, expected buyers, and declarative
+verb-class licence before implementation.
+
+### Phase B increment 2 selection brief
+
+Selected before implementation on 2026-07-23:
+
+1. **Construction class:** a sentence-initial bare proper name followed by one
+   licensed finite intransitive agent verb and terminal punctuation, with no
+   article, complement, object, PP, coordination, negation, auxiliary, or
+   trailing material.
+2. **Complete graph:** one named entity node, one event node, the normalized
+   event predicate, and `agent(event, name)`. Every node and edge retains the
+   emitting rule provenance and its exact source span.
+3. **Synthetic positives:** forms such as “Neris smiled” and “Mira slept,”
+   using invented names and arrangements.
+4. **Negative neighbours:** the identical proper-name frame with a
+   theme-class verb (“Neris collapsed”); indefinite and definite common-noun
+   subjects; transitive, PP-tailed, coordinated, negated, passive, and
+   auxiliary constructions; the quarantined `cooked` form; and the unsafe
+   self-lemma `called` form. Each remains for its own construction or declines
+   safely.
+5. **Expected buyers:** the broad named-agent pool contains 305 DEV-train
+   rows. Correct existing lemmas plus quarantine-safe new form mappings leave
+   277 inspectable DEV-train buyers and 271 aggregate DEV-holdout buyers. All
+   548 licensed graphs are declined at the increment-1 baseline. Holdout item
+   text remains uninspected.
+6. **Declarative licence:** a project-local
+   `semantic_intransitive_agent_verb` category states which overt forms
+   license an agent role in this construction. Newly admitted forms also join
+   the generic semantic-projection ownership category so vocabulary cannot
+   widen the legacy `VerbalRelation` bridge into unserved neighbours. Python
+   consumes category structure and enumerates no verbs.
+
+### Phase B increment 2 result
+
+The bare-name intransitive-agent rule emits a named entity node, event node,
+normalized event predicate, and exact agent role with source-span provenance.
+The agent/theme decision is licensed only by
+`semantic_intransitive_agent_verb`; the same surface frame with a theme-class
+verb emits nothing.
+
+| split | before exact | after exact | new exact | incorrect | edge recall |
+|---|---:|---:|---:|---:|---:|
+| DEV-train | 390 | 661 | +271 | 0 | 2.3% → 3.0% |
+| DEV-holdout | 312 | 579 | +267 | 0 | 1.8% → 2.6% |
+
+The intransitive-agent construction now has 271/699 exact DEV-train graphs
+and 267/665 exact aggregate DEV-holdout graphs. Both harm-ordered diffs report
+zero broken exact graphs and zero safe-to-incorrect transitions.
+
+The pre-implementation estimate was high by six DEV-train and four aggregate
+DEV-holdout rows. The six inspectable train misses are capitalized
+name/common-noun homographs: `Jack` and `Mason` retain their existing noun
+senses and therefore do not satisfy the exact `proper_name` slot. That is a
+separate entity-disambiguation construction, not permission to widen the
+intransitive rule. The four holdout rows remain aggregate-only and
+uninspected.
+
+Verification is green: 3,073 synthetic/unit tests; COGS lint with zero errors;
+curated twice; GSM8K DEV-train and DEV-holdout; and ASDiv, SVAMP, MAWPS,
+SciBench, and FOLIO DEV. Every standing non-COGS snapshot diff is neutral. No
+COGS TEST or generalization look was spent.
+
+## Immediate next step
+
+Build the named intransitive-theme minimal pair. Use only inspectable
+`dev-train` data to:
+
+- subdivide the 96 named-theme graphs by active unaccusative versus auxiliary
+  or passive surface;
+- select the bare `Name V.` subclass that is structurally identical to
+  increment 2 but licensed by a disjoint
+  `semantic_intransitive_theme_verb` YAML category;
+- record exact buyers, unsafe/self-lemma and quarantine exclusions, and
+  name-homograph residuals;
+- add synthetic agent/theme minimal pairs and the same object, PP,
+  coordination, negation, and auxiliary overreach controls; and
+- require complete buyers on both DEV partitions with no impact on the
+  increment-2 agent graphs.
+
+Do not inspect holdout rows or spend COGS TEST/generalization looks.
 
 ## Increment protocol
 
