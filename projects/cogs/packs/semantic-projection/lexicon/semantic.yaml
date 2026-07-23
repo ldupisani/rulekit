@@ -3,6 +3,13 @@ entries:
   # Missing nominal-attachment preposition for Phase C increment 1.
   beside: {senses: [preposition]}
 
+  # Missing matrix forms for the first depth-1 ccomp construction.
+  believed: {senses: [verb], verb: {lemma: believe}}
+  confessed: {senses: [verb], verb: {lemma: confess}}
+  dreamed: {senses: [verb], verb: {lemma: dream}}
+  hoped: {senses: [verb], verb: {lemma: hope}}
+  imagined: {senses: [verb], verb: {lemma: imagine}}
+
   # Missing overt event forms used by the licensed construction.
   admired: {senses: [verb], verb: {lemma: admire}}
   adored: {senses: [verb], verb: {lemma: adore}}

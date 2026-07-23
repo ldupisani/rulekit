@@ -4,6 +4,8 @@ categories:
     parent: verb
   semantic_bare_theme_noun:
     parent: noun
+  semantic_ccomp_matrix_verb:
+    parent: verb
   semantic_to_dative_verb:
     parent: verb
   semantic_intransitive_agent_verb:
@@ -47,6 +49,11 @@ members:
      pretzel, prince, princess, pumpkin, pupil, puppy, purse, queen, raisin,
      ring, sandwich, soap, strawberry, student, sweetcorn, teacher, tenant,
      toothbrush, towel, turtle, visitor, weapon, zephyrstone]
+  # Matrix forms whose exact `Name V that Name V` construction licenses an
+  # agentive event with a ccomp edge to the embedded event.
+  semantic_ccomp_matrix_verb:
+    [admired, believed, confessed, dreamed, hoped, imagined, liked, noticed,
+     respected]
   # Overt forms whose exact active `Name V a N to Name` construction
   # licenses agent, theme, and recipient roles. This construction-specific
   # category is deliberately not a generic ditransitive licence: a
@@ -96,4 +103,5 @@ members:
      worshipped,
      cried, danced, frowned, gasped, giggled, investigated, juggled, laughed,
      napped, scoffed, screamed, smiled, smirked, sneezed, snoozed, snored,
-     stuttered, talked]
+     stuttered, talked,
+     believed, confessed, dreamed, hoped, imagined]

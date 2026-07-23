@@ -226,6 +226,87 @@ def test_active_theme_nominal_modifier_declines_attachment_neighbours(
     )
 
 
+def test_named_agent_ccomp_projects_two_events_and_direction(
+    cogs_project,
+) -> None:
+    text = "Neris hoped that Mira smiled."
+    result = solve(text, cogs_project.registry, tracing=False)
+    got = project_result(result, text, cogs_project.registry)
+    expected = parse_cogs_logical_form(
+        "hope.agent(x_1,Neris) AND hope.ccomp(x_1,x_4) "
+        "AND smile.agent(x_4,Mira)"
+    )
+    assert got.node_keys() == expected.node_keys()
+    assert got.edge_keys() == expected.edge_keys()
+    assert ("complement", "x1", "x4", "ccomp") in got.edge_keys()
+    assert ("complement", "x4", "x1", "ccomp") not in got.edge_keys()
+
+    nodes = list(result.store.by_kind(SemanticGraphNode))
+    edges = list(result.store.by_kind(SemanticGraphEdge))
+    assert len(nodes) == 4
+    assert len(edges) == 5
+    assert {fact.provenance.source for fact in nodes + edges} == {
+        "semantic/ccomp-name-agent-name-agent"
+    }
+    complement = next(fact for fact in edges if fact.kind == "complement")
+    assert (complement.source, complement.target, complement.label) == (
+        "event:1",
+        "event:4",
+        "ccomp",
+    )
+    assert (complement.span_start, complement.span_end) == ("1", "4")
+
+
+def test_named_agent_ccomp_preserves_shared_name_and_distinct_events(
+    cogs_project,
+) -> None:
+    text = "Neris hoped that Neris smiled."
+    result = solve(text, cogs_project.registry, tracing=False)
+    got = project_result(result, text, cogs_project.registry)
+    expected = parse_cogs_logical_form(
+        "hope.agent(x_1,Neris) AND hope.ccomp(x_1,x_4) "
+        "AND smile.agent(x_4,Neris)"
+    )
+    assert got.node_keys() == expected.node_keys()
+    assert got.edge_keys() == expected.edge_keys()
+    assert len([node for node in got.nodes if node.kind == "entity"]) == 1
+    assert len([node for node in got.nodes if node.kind == "event"]) == 2
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Neris hoped Mira smiled.",
+        "A pilot hoped that Mira smiled.",
+        "Neris hoped that a pilot smiled.",
+        "Neris hoped that the pilot smiled.",
+        "Neris hoped that Mira reddened.",
+        "Neris hoped that Mira admired a zephyrstone.",
+        "Neris hoped that a zephyrstone was admired by Mira.",
+        "Neris hoped to smile.",
+        "Neris hoped that Mira smiled and laughed.",
+        "Neris did not hope that Mira smiled.",
+        "Neris hoped that Mira hoped that Lio smiled.",
+        "Neris told Mira that Lio smiled.",
+        "Neris said that Mira smiled.",
+        "Neris hoped that Mira cooked.",
+    ],
+)
+def test_named_agent_ccomp_declines_neighbouring_complement_shapes(
+    cogs_project,
+    text: str,
+) -> None:
+    result = solve(text, cogs_project.registry, tracing=False)
+    semantic_sources = {
+        fact.provenance.source
+        for fact in (
+            list(result.store.by_kind(SemanticGraphNode))
+            + list(result.store.by_kind(SemanticGraphEdge))
+        )
+    }
+    assert "semantic/ccomp-name-agent-name-agent" not in semantic_sources
+
+
 def test_named_intransitive_agent_projects_a_complete_graph(
     cogs_project,
 ) -> None:

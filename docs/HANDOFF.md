@@ -4,7 +4,7 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** Phase C restart increment 2 selected
+**Status:** Phase C restart underway; increment 2 complete
 
 **Previous safe capability commit:** `0717f04`
 (`Add COGS semantic projection phase A`)
@@ -426,11 +426,28 @@ Selected before implementation on 2026-07-23:
    excluded. The `semantic_to_dative_verb` and proper-object boundaries are
    unchanged.
 
+### Result
+
+The depth-1 ccomp rule emits two independently span-addressed events, their
+named agents, and one directed matrix-to-embedded complement edge backed by
+the overt `that` span. Repeated names share an entity without collapsing the
+event references.
+
+| DEV partition | Before exact | After exact | Gain | Incorrect | Edge recall |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| train | 1,511 | 1,537 | +26 | 0 | 7.4% |
+| holdout | 1,447 | 1,464 | +17 | 0 | 6.9% |
+
+Both harm-ordered diffs have zero broken exact graphs and zero
+safe-to-incorrect transitions. The complete gate is green: 136 focused COGS
+tests, 3,181 full-suite tests, zero lint errors, curated twice, and neutral
+GSM8K, ASDiv, SVAMP, MAWPS, SciBench, and FOLIO diffs.
+
 ## Immediate next step
 
-Implement the recorded depth-1 `ccomp` class and run the complete increment
-gate. Preserve the proper-object boundary and do not rerun either spent
-protected slice.
+Begin the next Phase C increment with a DEV-train-only selection brief for
+depth-1 `xcomp` control and explicit referent sharing. Preserve the
+proper-object boundary and do not rerun either spent protected slice.
 
 ## Increment protocol
 
