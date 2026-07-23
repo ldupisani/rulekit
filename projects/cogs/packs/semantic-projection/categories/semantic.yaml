@@ -10,6 +10,10 @@ categories:
     parent: verb
   semantic_intransitive_theme_verb:
     parent: verb
+  semantic_nominal_modifier_object_noun:
+    parent: noun
+  semantic_nominal_modifier_preposition:
+    parent: preposition
   semantic_passive_participle:
     parent: verb
   # Marks event forms first admitted by this pack. The legacy
@@ -65,6 +69,14 @@ members:
     [burned, collapsed, crumpled, decomposed, disintegrated, enlarged, floated,
      froze, grew, improved, inflated, reddened, rolled, shattered, shortened,
      slid, snapped, split]
+  # Unambiguous noun-only PP objects for the first nominal-modifier class.
+  # This licence is separate from event themes so adding attachment vocabulary
+  # cannot silently widen the Phase B active/passive constructions.
+  semantic_nominal_modifier_object_noun:
+    [bed, book, box, cabinet, chair, desk, garden, glass, hole, house, leaf,
+     notebook, pot, road, rock, room, sofa, storage, surface, table, tree,
+     vase, vehicle, zephyrstone]
+  semantic_nominal_modifier_preposition: [beside, in, on]
   # Overt forms licensed as the participle after `was` in the exact
   # indefinite-theme passive construction. Irregular morphology is admitted
   # only when the registry already supplies the correct event lemma.

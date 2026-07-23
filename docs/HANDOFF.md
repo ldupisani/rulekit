@@ -4,7 +4,7 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** Phase C restart increment 1 selected
+**Status:** Phase C restart underway; increment 1 complete
 
 **Previous safe capability commit:** `0717f04`
 (`Add COGS semantic projection phase A`)
@@ -230,12 +230,11 @@ estimate. All 37 licensed DEV-train double-object surfaces remain declined.
 Both harm-ordered diffs report zero broken exact graphs and zero
 safe-to-incorrect transitions; projected-edge precision remains 100%.
 
-Verification is green: all 3,149 synthetic/unit tests; all 104 focused COGS
-projection tests, including 16 definite-passive cases and 20 explicit-`to`
-and proper-object boundary cases; COGS lint with zero errors; curated 65/65
-twice; GSM8K DEV-train 104 and DEV-holdout 40; ASDiv 44; SVAMP 30; MAWPS 9;
-SciBench 6; and FOLIO with zero commitments. Every standing non-COGS snapshot
-diff is neutral.
+Verification is green: all 3,165 synthetic/unit tests; all 120 focused COGS
+projection tests; COGS lint with zero errors; curated 65/65 twice; GSM8K
+DEV-train 104 and DEV-holdout 40; ASDiv 44; SVAMP 30; MAWPS 9; SciBench 6;
+and FOLIO with zero commitments. Every standing non-COGS snapshot diff is
+neutral.
 
 The protected TEST and generalization ledgers remain at one row each. Neither
 protected slice was rerun.
@@ -371,10 +370,34 @@ Selected before implementation on 2026-07-23:
    nouns stay excluded. The `semantic_to_dative_verb` boundary is unchanged,
    and double-object recipient projection stays withheld.
 
+### Result
+
+The depth-1 nominal-PP rule emits the complete named-agent active graph plus
+one modifier-object entity/type and one ordinary modifier edge. The captured
+preposition supplies the label; the edge evidence spans the theme head
+through the PP object, retaining the exact attachment decision without a
+depth-specific fact class.
+
+| DEV partition | Before exact | After exact | Gain | Incorrect | Edge recall |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| train | 1,452 | 1,511 | +59 | 0 | 7.2% |
+| holdout | 1,390 | 1,447 | +57 | 0 | 6.8% |
+
+The nominal-modifier bucket now has 59/2,186 exact train graphs and
+57/2,121 exact aggregate holdout graphs. Both harm-ordered diffs have zero
+broken exact graphs and zero safe-to-incorrect transitions.
+
+The complete gate is green: 120 focused COGS projection tests, 3,165
+full-suite tests, zero COGS lint errors, curated 65/65 twice, and neutral
+GSM8K, ASDiv, SVAMP, MAWPS, SciBench, and FOLIO diffs. The dative role
+boundary is unchanged.
+
 ## Immediate next step
 
-Implement the recorded nominal PP modifier class and run the complete
-increment gate. Preserve the construction-specific
+Begin the next Phase C increment with a DEV-train-only selection brief for
+depth-1 `ccomp` event/clause embedding. Select a frequent class that joins two
+complete licensed event subgraphs with one ordinary
+`complement(matrix, embedded, ccomp)` edge. Preserve the
 `semantic_to_dative_verb` boundary, keep double-object recipient projection
 withheld, and do not rerun either spent protected slice.
 
