@@ -391,10 +391,15 @@ checkpoint 1, and the spent protected slices cannot be used again. Entering
 this phase requires a separately preregistered, independent OOD projection
 gate that demonstrates nonzero transfer without a precision failure.
 
-The candidate gate and frozen acceptance contract are recorded in
+The corpus selection and frozen acceptance contract are recorded in
 [`semantic-projection-ood-gate-plan.md`](semantic-projection-ood-gate-plan.md).
-PMB 5.1.0 English gold is conditionally selected; implementation is blocked
-until its dataset licence is confirmed from an authoritative source.
+A licence-first review found no single eligible primary corpus. UCCA English
+Web Treebank is the next admissible structural auxiliary, but it collapses
+agent/theme/recipient to Participant and therefore cannot independently
+validate the role boundary that failed COGS generalization. PMB remains
+ineligible because its official release metadata does not state an explicit
+dataset licence; UDS and Universal Proposition Banks are not human categorical
+role gold.
 
 After COGS demonstrates nonzero OOD transfer:
 
@@ -453,9 +458,11 @@ Two valid next directions remain:
    membership before implementation, and run the normal increment gate.
 2. **Unblock original Phase E:** first specify and freeze a fresh independent
    OOD projection corpus/gate, including its licence, grouping, precision
-   threshold, and one-look policy. The preregistration now exists; resolve
-   the PMB dataset-licence blocker next. Phase E begins only if that gate
-   demonstrates nonzero transfer without a precision failure.
+   threshold, and one-look policy. The licence-first selection is complete:
+   implement the preregistered UCCA structural auxiliary next, while retaining
+   the separate requirement for explicitly licensed, independent human-gold
+   categorical role evidence. Phase E begins only after both gates demonstrate
+   nonzero transfer without a precision failure.
 
 Do not tune to DEV-holdout items. Do not start by admitting the frequent COGS
 unknown words: vocabulary receives credit only as part of a complete
