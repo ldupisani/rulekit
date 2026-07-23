@@ -4,10 +4,10 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** Phase C underway; increment 5 complete
+**Status:** Phase C underway; increment 6 complete, exit audit next
 
-**Previous capability commit:** `2d5b51e`
-(`Add COGS double-object dative projection`)
+**Previous capability commit:** pending commit
+(`Add recursive COGS complement projection`)
 
 This is the short operational handoff. The complete Session 1–105 history is
 preserved byte-for-byte in
@@ -987,14 +987,80 @@ DEV-train 104 and DEV-holdout 40; ASDiv 44; SVAMP 30; MAWPS 9; SciBench 6;
 and FOLIO 0 committed. Every standing non-COGS snapshot diff is neutral. No
 COGS TEST or generalization look was spent.
 
+## Phase C increment 6
+
+The sixth Phase C increment applies the reusable local-link machinery to
+nested sentential composition: a `ccomp` chain terminating in subject-control
+`xcomp`.
+
+### Phase C increment 6 selection brief
+
+Selected before implementation on 2026-07-23:
+
+1. **Construction class:** the inspectable depth-2 surface is exactly
+   `Name V that Name V to V.`, where the first matrix form is an existing
+   `semantic_ccomp_matrix_verb`, the controller event is an existing
+   `semantic_xcomp_matrix_verb`, and the infinitive is an existing
+   `semantic_xcomp_agent_verb`. Synthetic deeper forms repeat
+   `Name V that` before the terminal control clause.
+2. **Complete graph:** one named agent and one event/predicate per overt
+   finite clause; one terminal infinitival event; directed `ccomp` edges for
+   every matrix-to-embedded finite event; and one terminal `xcomp` edge whose
+   source and target agent roles share the final controller entity. Event refs
+   remain distinct at every depth.
+3. **Reusable mechanism:** make the existing ccomp- and xcomp-matrix
+   categories children of one vocabulary-free semantic complement-matrix
+   supercategory. One overlapping local ccomp-link rule emits every adjacent
+   finite-clause hop; one local terminal xcomp-link rule emits explicit
+   controller sharing. Neither rule names or caps a depth.
+4. **Synthetic positives and termination:** chains with one, two, and three
+   successive `ccomp` links before the terminal `xcomp` must produce complete
+   graphs (total complement depths 2–4), retain local direction/provenance,
+   and settle deterministically through the normal document fixpoint.
+5. **Negative neighbours:** missing or replaced `that`/`to`; common-noun or
+   definite subjects; theme-class or transitive terminal events;
+   object-control; coordination; negation; PP/modifier tails; passive
+   embedded clauses; and unlicensed matrix, controller, or infinitive forms.
+6. **Expected buyers and licence:** the exact depth-2 all-name surface has 13
+   inspectable DEV-train rows. Existing lemma and category licences leave five
+   DEV-train and two aggregate DEV-holdout buyers, all currently declined.
+   No vocabulary or quarantine change is required, and holdout item text
+   remains uninspected.
+
+### Phase C increment 6 result
+
+Two reusable overlapping local rules project every adjacent finite `ccomp`
+hop and the terminal subject-control `xcomp`. Synthetic total complement
+depths 2 through 4 produce complete graphs in one deterministic document
+round, with distinct events, directed complement edges, explicit shared
+controller roles, and local rule provenance. The corpus depth-2 class gains
+exactly the complete buyers predicted in both DEV partitions.
+
+| split | before exact | after exact | new exact | incorrect | edge recall |
+|---|---:|---:|---:|---:|---:|
+| DEV-train | 1,678 | 1,683 | +5 | 0 | 10.8% → 11.0% |
+| DEV-holdout | 1,592 | 1,594 | +2 | 0 | 10.2% → 10.4% |
+
+The nested-complement bucket now has 5/142 exact and 24 safe-partial
+DEV-train graphs, plus 2/135 exact and 25 safe-partial aggregate DEV-holdout
+graphs. The local rules additionally move 30 train and 20 holdout graphs from
+declined to safe partial; edge precision remains 100%. Both harm-ordered
+diffs report zero broken exact graphs and zero safe-to-incorrect transitions.
+
+Verification is green: 3,234 synthetic/unit tests; 189 focused COGS
+projection tests, including 14 recursive-complement cases; COGS lint with zero
+errors; curated 65/65 twice; GSM8K DEV-train 104 and DEV-holdout 40; ASDiv 44;
+SVAMP 30; MAWPS 9; SciBench 6; and FOLIO 0 committed. Every standing
+non-COGS snapshot diff is neutral. No COGS TEST or generalization look was
+spent.
+
 ## Immediate next step
 
-Begin Phase C increment 6 with recursive nested sentential complements. Use
-only inspectable DEV-train data to select a nested extension of the licensed
-`ccomp` or `xcomp` frame. Reuse the general overlapping/local composition
-machinery where structurally appropriate, require one rule family to handle
-multiple synthetic depths with deterministic termination, and record buyers,
-sharing, direction, and overreach controls before implementation.
+Run the locked Phase C exit audit: confirm nonzero complete-graph
+DEV-holdout coverage for nominal PP modifiers, `ccomp`, `xcomp`, alternation,
+nested modifiers, and nested complements; confirm 100% projected-edge
+precision and neutral standing gates. If all conditions hold, record Phase C
+complete and hand off to the protected Phase D aggregate TEST checkpoint.
 
 Do not inspect holdout rows or spend COGS TEST/generalization looks before the
 Phase D checkpoint.

@@ -472,6 +472,128 @@ def test_subject_control_xcomp_declines_neighbouring_control_shapes(
     assert "semantic/xcomp-name-agent-shared-agent" not in semantic_sources
 
 
+@pytest.mark.parametrize("ccomp_depth", [1, 2, 3])
+def test_nested_complement_chain_uses_local_rules_at_multiple_depths(
+    cogs_project,
+    ccomp_depth: int,
+) -> None:
+    names = ["Neris", "Mira", "Lio", "Tavi"]
+    text_parts = [names[0], "hoped"]
+    logical_form = []
+    event_positions = [1 + 3 * index for index in range(ccomp_depth + 1)]
+    for index in range(ccomp_depth):
+        text_parts.extend(["that", names[index + 1], "hoped"])
+        logical_form.extend([
+            f"hope.agent(x_{event_positions[index]},{names[index]})",
+            (
+                f"hope.ccomp(x_{event_positions[index]},"
+                f"x_{event_positions[index + 1]})"
+            ),
+        ])
+    # Replace the final repeated ccomp matrix with the terminal xcomp matrix.
+    text_parts[-1] = "wanted"
+    controller = names[ccomp_depth]
+    terminal_event = event_positions[-1]
+    infinitive_event = terminal_event + 2
+    text_parts.extend(["to", "smirk"])
+    logical_form.extend([
+        f"want.agent(x_{terminal_event},{controller})",
+        f"want.xcomp(x_{terminal_event},x_{infinitive_event})",
+        f"smirk.agent(x_{infinitive_event},{controller})",
+    ])
+    text = " ".join(text_parts) + "."
+
+    result = solve(text, cogs_project.registry, tracing=False)
+    got = project_result(result, text, cogs_project.registry)
+    expected = parse_cogs_logical_form(" AND ".join(logical_form))
+    assert got.node_keys() == expected.node_keys()
+    assert got.edge_keys() == expected.edge_keys()
+    assert len([edge for edge in got.edges if edge.kind == "complement"]) == (
+        ccomp_depth + 1
+    )
+    assert result.document is not None
+    assert result.document.rounds == 1
+
+
+def test_nested_complement_edges_retain_local_direction_and_provenance(
+    cogs_project,
+) -> None:
+    text = (
+        "Neris hoped that Mira hoped that Lio hoped "
+        "that Tavi wanted to smirk."
+    )
+    result = solve(text, cogs_project.registry, tracing=False)
+    complements = [
+        fact
+        for fact in result.store.by_kind(SemanticGraphEdge)
+        if fact.kind == "complement"
+    ]
+    assert {
+        (fact.source, fact.target, fact.label) for fact in complements
+    } == {
+        ("event:1", "event:4", "ccomp"),
+        ("event:4", "event:7", "ccomp"),
+        ("event:7", "event:10", "ccomp"),
+        ("event:10", "event:12", "xcomp"),
+    }
+    assert {
+        fact.provenance.source for fact in complements if fact.label == "ccomp"
+    } == {"semantic/z-complement-chain-ccomp-link"}
+    assert {
+        fact.provenance.source for fact in complements if fact.label == "xcomp"
+    } == {"semantic/z-complement-chain-xcomp-terminal"}
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Neris hoped Mira wanted to smirk.",
+        "A pilot hoped that Mira wanted to smirk.",
+        "Neris hoped that a pilot wanted to smirk.",
+        "Neris hoped that the pilot wanted to smirk.",
+        "Neris said that Mira wanted to smirk.",
+        "Neris did not hope that Mira wanted to smirk.",
+    ],
+)
+def test_nested_ccomp_link_declines_unlicensed_outer_neighbours(
+    cogs_project,
+    text: str,
+) -> None:
+    result = solve(text, cogs_project.registry, tracing=False)
+    sources = {
+        fact.provenance.source
+        for fact in (
+            list(result.store.by_kind(SemanticGraphNode))
+            + list(result.store.by_kind(SemanticGraphEdge))
+        )
+    }
+    assert "semantic/z-complement-chain-ccomp-link" not in sources
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Neris hoped that Mira wanted smirk.",
+        "Neris hoped that Mira wanted to redden.",
+        "Neris hoped that Mira persuaded Lio to smirk.",
+        "Neris hoped that Mira wanted to nap.",
+    ],
+)
+def test_nested_xcomp_terminal_declines_unlicensed_control_neighbours(
+    cogs_project,
+    text: str,
+) -> None:
+    result = solve(text, cogs_project.registry, tracing=False)
+    sources = {
+        fact.provenance.source
+        for fact in (
+            list(result.store.by_kind(SemanticGraphNode))
+            + list(result.store.by_kind(SemanticGraphEdge))
+        )
+    }
+    assert "semantic/z-complement-chain-xcomp-terminal" not in sources
+
+
 def test_named_intransitive_agent_projects_a_complete_graph(
     cogs_project,
 ) -> None:

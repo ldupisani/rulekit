@@ -1,11 +1,13 @@
 format: rulekit/categories@1
 categories:
+  semantic_complement_matrix_verb:
+    parent: verb
   semantic_agent_theme_verb:
     parent: verb
   semantic_bare_theme_noun:
     parent: semantic_nominal_entity_noun
   semantic_ccomp_matrix_verb:
-    parent: verb
+    parent: semantic_complement_matrix_verb
   semantic_ditransitive_verb:
     parent: verb
   semantic_intransitive_agent_verb:
@@ -23,7 +25,7 @@ categories:
   semantic_xcomp_agent_verb:
     parent: verb
   semantic_xcomp_matrix_verb:
-    parent: verb
+    parent: semantic_complement_matrix_verb
   # Marks event forms first admitted by this pack. The legacy
   # VerbalRelation evaluation bridge yields to the first-class semantic
   # reader for these forms, so vocabulary cannot accidentally buy an
