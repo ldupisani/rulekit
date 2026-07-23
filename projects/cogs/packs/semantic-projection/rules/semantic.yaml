@@ -87,6 +87,78 @@ rules:
          target: "entity:{modifier.span_start}", label: "{link}",
          span_start: "{theme.span_start}", span_end: "{modifier.span_end}"}
 
+  # Phase C increment 5 root: recognize the licensed active frame before a
+  # nominal PP chain. No depth or sentence-end template lives here; the local
+  # overlapping link rule below emits every attachment independently.
+  - id: semantic/active-name-indefinite-theme-modifier-chain-root
+    phase: read
+    match:
+      sentence:
+        - {slot: agent, type: proper_name, at_start: true,
+           blocks_skipped: indefinite_article}
+        - {slot: event, cat: semantic_agent_theme_verb, single_word: true}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: theme, cat: semantic_bare_theme_noun, bare: true}
+        - {slot: link, cat: semantic_nominal_modifier_preposition,
+           single_word: true}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: modifier, cat: semantic_nominal_modifier_object_noun,
+           bare: true}
+    where:
+      - {absent: {cat: conjunction}}
+    emits:
+      - {fact: semantic_graph_node, ref: "name:{agent}", kind: entity,
+         span_start: "{agent.span_start}", span_end: "{agent.span_end}"}
+      - {fact: semantic_graph_node, ref: "event:{event.span_start}", kind: event,
+         span_start: "{event.span_start}", span_end: "{event.span_end}"}
+      - {fact: semantic_graph_node, ref: "entity:{theme.span_start}", kind: entity,
+         span_start: "{theme.span_start}", span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_edge, kind: event,
+         source: "event:{event.span_start}", label: "{event}",
+         span_start: "{event.span_start}", span_end: "{event.span_end}"}
+      - {fact: semantic_graph_edge, kind: type,
+         source: "entity:{theme.span_start}", label: "{theme}",
+         span_start: "{theme.span_start}", span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_edge, kind: role,
+         source: "event:{event.span_start}", target: "name:{agent}", label: agent,
+         span_start: "{agent.span_start}", span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_edge, kind: role,
+         source: "event:{event.span_start}", target: "entity:{theme.span_start}",
+         label: theme, span_start: "{agent.span_start}",
+         span_end: "{theme.span_end}"}
+
+  # One local rule handles every adjacent nominal link at every depth. The
+  # opt-in overlapping matcher advances from the match START, allowing the
+  # object of one link to become the head of the next.
+  - id: semantic/nominal-modifier-chain-link
+    phase: read
+    overlapping: true
+    match:
+      sentence:
+        - {slot: head, cat: semantic_nominal_entity_noun, bare: true}
+        - {slot: link, cat: semantic_nominal_modifier_preposition,
+           single_word: true}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: modifier, cat: semantic_nominal_entity_noun, bare: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "entity:{head.span_start}",
+         kind: entity, span_start: "{head.span_start}",
+         span_end: "{head.span_end}"}
+      - {fact: semantic_graph_node, ref: "entity:{modifier.span_start}",
+         kind: entity, span_start: "{modifier.span_start}",
+         span_end: "{modifier.span_end}"}
+      - {fact: semantic_graph_edge, kind: type,
+         source: "entity:{head.span_start}", label: "{head}",
+         span_start: "{head.span_start}", span_end: "{head.span_end}"}
+      - {fact: semantic_graph_edge, kind: type,
+         source: "entity:{modifier.span_start}", label: "{modifier}",
+         span_start: "{modifier.span_start}",
+         span_end: "{modifier.span_end}"}
+      - {fact: semantic_graph_edge, kind: modifier,
+         source: "entity:{head.span_start}",
+         target: "entity:{modifier.span_start}", label: "{link}",
+         span_start: "{head.span_start}", span_end: "{modifier.span_end}"}
+
   # Phase C increment 2: join two complete named-agent event subgraphs with
   # one overt `that`-licensed ccomp edge. Event refs remain span-local even
   # when both agent slots bind the same named entity.

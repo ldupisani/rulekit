@@ -4,7 +4,7 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** Phase C restart increment 4 selected
+**Status:** Phase C restart underway; increment 4 complete
 
 **Previous safe capability commit:** `0717f04`
 (`Add COGS semantic projection phase A`)
@@ -522,11 +522,28 @@ Selected before implementation on 2026-07-23:
    vocabulary or quarantine change is required, and the proper-object
    boundary is independent and unchanged.
 
+### Result
+
+The default-off overlapping matcher preserves existing behavior while one
+local nominal-link rule sees every adjacent attachment in a chain. Synthetic
+depths 1 through 4 terminate deterministically with locally sourced edges.
+
+| DEV partition | Before exact | After exact | Gain | Incorrect | Edge recall |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| train | 1,644 | 1,645 | +1 | 0 | 10.5% |
+| holdout | 1,560 | 1,561 | +1 | 0 | 10.0% |
+
+The rule additionally creates 584 train and 593 holdout safe partial graphs;
+edge precision remains 100%. Both harm-ordered diffs have zero broken exact
+graphs and zero safe-to-incorrect transitions. The complete gate is green:
+165 focused COGS tests, 3,210 full-suite tests, zero lint errors, curated
+twice, and neutral standing-corpus diffs.
+
 ## Immediate next step
 
-Implement the recorded recursive nominal-modifier class and run its complete
-increment gate. Preserve the proper-object boundary and do not rerun either
-spent protected slice.
+Begin the final compositional implementation increment with a DEV-train-only
+selection brief for recursive nested sentential complements. Preserve the
+proper-object boundary and do not rerun either spent protected slice.
 
 ## Increment protocol
 

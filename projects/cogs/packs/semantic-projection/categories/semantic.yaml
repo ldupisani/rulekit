@@ -3,7 +3,7 @@ categories:
   semantic_agent_theme_verb:
     parent: verb
   semantic_bare_theme_noun:
-    parent: noun
+    parent: semantic_nominal_entity_noun
   semantic_ccomp_matrix_verb:
     parent: verb
   semantic_to_dative_verb:
@@ -13,9 +13,11 @@ categories:
   semantic_intransitive_theme_verb:
     parent: verb
   semantic_nominal_modifier_object_noun:
-    parent: noun
+    parent: semantic_nominal_entity_noun
   semantic_nominal_modifier_preposition:
     parent: preposition
+  semantic_nominal_entity_noun:
+    parent: noun
   semantic_passive_participle:
     parent: verb
   semantic_xcomp_agent_verb:
