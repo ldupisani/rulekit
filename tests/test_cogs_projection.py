@@ -93,6 +93,31 @@ def cogs_project():
     return load_project(Path("projects/cogs"))
 
 
+def _abstract_role_topology(graph: ProjectionGraph) -> set[tuple]:
+    event_labels = {
+        edge.source: edge.label
+        for edge in graph.edges if edge.kind == "event"
+    }
+    type_labels = {
+        edge.source: edge.label
+        for edge in graph.edges if edge.kind == "type"
+    }
+
+    def abstract(ref):
+        if ref in event_labels:
+            return ("event", event_labels[ref])
+        if ref in type_labels:
+            return ("entity", type_labels[ref])
+        if ref.startswith("const:"):
+            return ("constant", ref.removeprefix("const:"))
+        return ("", "")
+
+    return {
+        (edge.kind, abstract(edge.source), abstract(edge.target), edge.label)
+        for edge in graph.edges
+    }
+
+
 def test_active_named_indefinite_transitive_projects_a_complete_graph(
     cogs_project,
 ) -> None:
@@ -790,6 +815,24 @@ def test_indefinite_passive_with_named_agent_projects_a_complete_graph(
     } == {("1", "1"), ("3", "3"), ("5", "5")}
 
 
+def test_active_and_passive_surfaces_share_one_role_topology(
+    cogs_project,
+) -> None:
+    active_text = "Neris appreciated a zephyrstone."
+    passive_text = "A zephyrstone was appreciated by Neris."
+    active = project_result(
+        solve(active_text, cogs_project.registry, tracing=False),
+        active_text,
+        cogs_project.registry,
+    )
+    passive = project_result(
+        solve(passive_text, cogs_project.registry, tracing=False),
+        passive_text,
+        cogs_project.registry,
+    )
+    assert _abstract_role_topology(active) == _abstract_role_topology(passive)
+
+
 def test_expressed_agent_passive_leaves_agentless_minimal_pair_unchanged(
     cogs_project,
 ) -> None:
@@ -937,31 +980,7 @@ def test_double_object_dative_projects_same_role_topology_as_to_dative(
         cogs_project.registry,
     )
 
-    def topology(graph):
-        event_labels = {
-            edge.source: edge.label
-            for edge in graph.edges if edge.kind == "event"
-        }
-        type_labels = {
-            edge.source: edge.label
-            for edge in graph.edges if edge.kind == "type"
-        }
-
-        def abstract(ref):
-            if ref in event_labels:
-                return ("event", event_labels[ref])
-            if ref in type_labels:
-                return ("entity", type_labels[ref])
-            if ref.startswith("const:"):
-                return ("constant", ref.removeprefix("const:"))
-            return ("", "")
-
-        return {
-            (edge.kind, abstract(edge.source), abstract(edge.target), edge.label)
-            for edge in graph.edges
-        }
-
-    assert topology(got) == topology(alternate)
+    assert _abstract_role_topology(got) == _abstract_role_topology(alternate)
 
 
 @pytest.mark.parametrize(

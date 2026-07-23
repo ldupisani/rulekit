@@ -4,9 +4,9 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** Phase C underway; increment 6 complete, exit audit next
+**Status:** Phase C complete; ready for the Phase D protected checkpoint
 
-**Previous capability commit:** pending commit
+**Previous capability commit:** `84a164c`
 (`Add recursive COGS complement projection`)
 
 This is the short operational handoff. The complete Session 1–105 history is
@@ -1054,13 +1054,38 @@ SVAMP 30; MAWPS 9; SciBench 6; and FOLIO 0 committed. Every standing
 non-COGS snapshot diff is neutral. No COGS TEST or generalization look was
 spent.
 
+## Phase C exit audit
+
+Phase C meets its locked exit gate:
+
+- total exact coverage is 1,683/12,056 on DEV-train and 1,594/12,099 on
+  aggregate DEV-holdout;
+- edge precision is 100%, incorrect graphs are zero, and every Phase C
+  harm-ordered DEV diff has zero broken exact graphs and zero
+  safe-to-incorrect transitions;
+- every targeted composition class has nonzero complete-graph DEV-holdout
+  coverage: nominal modifiers 57, `ccomp` 17, `xcomp` 96, ditransitives 49,
+  nested modifiers 1, and nested complements 2;
+- active/passive and double-object/prepositional-dative synthetic pairs
+  project the same abstract role topology, while their distinct surface refs
+  and rule provenance remain inspectable;
+- one reusable overlapping rule family handles nominal PP depths 1–4, and one
+  reusable complement-link family handles total complement depths 2–4, both
+  through the normal deterministic document round; and
+- all 3,235 synthetic/unit tests pass, and every standing regression and
+  cross-corpus gate remains neutral.
+
+The trigger for Phase D is therefore met: both Phase B and Phase C satisfy
+their locked DEV objectives. The aggregate TEST and generalization looks
+remain unspent.
+
 ## Immediate next step
 
-Run the locked Phase C exit audit: confirm nonzero complete-graph
-DEV-holdout coverage for nominal PP modifiers, `ccomp`, `xcomp`, alternation,
-nested modifiers, and nested complements; confirm 100% projected-edge
-precision and neutral standing gates. If all conditions hold, record Phase C
-complete and hand off to the protected Phase D aggregate TEST checkpoint.
+Run the Phase D checkpoint exactly once from the committed, clean `main`
+checkout: first spend one aggregate in-distribution COGS TEST look; only if
+graph precision holds, spend one generalization look. Report class-level
+aggregates and disclosed cases without inspecting failed rows. Revert the
+checkpoint batch if committed graph precision drops.
 
 Do not inspect holdout rows or spend COGS TEST/generalization looks before the
 Phase D checkpoint.
