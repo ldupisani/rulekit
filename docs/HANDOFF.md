@@ -4,7 +4,7 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** Phase E common-subject increment 1 selected
+**Status:** Phase E common-subject campaign complete
 
 **Previous safe capability commit:** `0717f04`
 (`Add COGS semantic projection phase A`)
@@ -589,9 +589,10 @@ GSM8K, ASDiv, SVAMP, MAWPS, SciBench, and FOLIO diffs.
 
 ## Immediate next step
 
-Implement the recorded definite-common-subject active-transitive increment
-and run the complete DEV gate. Preserve the proper-object boundary and do not
-rerun TEST or generalization.
+Preserve the completed Phase E state as the new DEV baseline. If continuing
+coverage, profile the indefinite-common-subject active-transitive class from
+DEV-train and lock it as a separate campaign before implementation. Preserve
+the proper-object boundary and do not rerun TEST or generalization.
 
 ## Phase C restart exit audit
 
@@ -694,6 +695,26 @@ Selected before implementation on 2026-07-23:
    supercategory structurally joins already audited noun categories. No
    vocabulary, quarantine, Python mechanism, recipient rule, or ditransitive
    category changes.
+
+### Result and exit audit
+
+The rule emits two span-distinct typed entities, one event, ordinary
+agent/theme roles, and one article-backed definite edge on the subject only.
+It adds no vocabulary or runtime mechanism.
+
+| DEV partition | Before exact | After exact | Gain | Incorrect | Edge recall |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| train | 1,650 | 1,699 | +49 | 0 | 11.2% |
+| holdout | 1,563 | 1,621 | +58 | 0 | 10.6% |
+
+The buyer counts exactly match the selection estimate. Both harm-ordered
+diffs have zero broken exact graphs and zero safe-to-incorrect transitions.
+Projected-edge precision remains 100%.
+
+The complete gate is green: 192 focused COGS tests, 3,237 full-suite tests,
+zero lint errors, curated 65/65 twice, and neutral GSM8K, ASDiv, SVAMP, MAWPS,
+SciBench, and FOLIO diffs. Every locked Phase E condition is met, so the
+one-increment campaign is complete.
 
 ## Increment protocol
 

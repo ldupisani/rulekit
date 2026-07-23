@@ -38,6 +38,48 @@ rules:
          label: theme,
          span_start: "{agent.span_start}", span_end: "{theme.span_end}"}
 
+  # Phase E increment 1: a definite common-noun subject in the licensed
+  # active frame. The article contributes discourse definiteness only.
+  - id: semantic/active-definite-agent-indefinite-theme
+    phase: read
+    match:
+      sentence:
+        - {lit: the, consume_skipped: true, at_start: true}
+        - {slot: agent, cat: semantic_nominal_entity_noun, bare: true}
+        - {slot: event, cat: semantic_agent_theme_verb, single_word: true}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: theme, cat: semantic_bare_theme_noun, bare: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "entity:{agent.span_start}",
+         kind: entity, span_start: "{agent.span_start}",
+         span_end: "{agent.span_end}"}
+      - {fact: semantic_graph_node, ref: "event:{event.span_start}", kind: event,
+         span_start: "{event.span_start}", span_end: "{event.span_end}"}
+      - {fact: semantic_graph_node, ref: "entity:{theme.span_start}",
+         kind: entity, span_start: "{theme.span_start}",
+         span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_edge, kind: type,
+         source: "entity:{agent.span_start}", label: "{agent}",
+         span_start: "{agent.span_start}", span_end: "{agent.span_end}"}
+      - {fact: semantic_graph_edge, kind: definite,
+         source: "entity:{agent.span_start}", span_start: "0",
+         span_end: "{agent.span_end}"}
+      - {fact: semantic_graph_edge, kind: event,
+         source: "event:{event.span_start}", label: "{event}",
+         span_start: "{event.span_start}", span_end: "{event.span_end}"}
+      - {fact: semantic_graph_edge, kind: type,
+         source: "entity:{theme.span_start}", label: "{theme}",
+         span_start: "{theme.span_start}", span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_edge, kind: role,
+         source: "event:{event.span_start}", target: "entity:{agent.span_start}",
+         label: agent, span_start: "{agent.span_start}",
+         span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_edge, kind: role,
+         source: "event:{event.span_start}", target: "entity:{theme.span_start}",
+         label: theme, span_start: "{agent.span_start}",
+         span_end: "{theme.span_end}"}
+
   # Phase C increment 1: attach one indefinite nominal PP to the already
   # licensed direct-object theme. The ordinary modifier edge records the head
   # and object refs plus the captured preposition; it is not depth-specific.

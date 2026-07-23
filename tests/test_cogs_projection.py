@@ -145,6 +145,61 @@ def test_active_named_indefinite_transitive_projects_a_complete_graph(
     } == {("0", "0"), ("1", "1"), ("3", "3")}
 
 
+def test_active_definite_common_subject_projects_a_complete_graph(
+    cogs_project,
+) -> None:
+    text = "The zephyrstone appreciated a zephyrstone."
+    result = solve(text, cogs_project.registry, tracing=False)
+    got = project_result(result, text, cogs_project.registry)
+    expected = parse_cogs_logical_form(
+        "* zephyrstone(x_1); appreciate.agent(x_2,x_1) "
+        "AND appreciate.theme(x_2,x_4) AND zephyrstone(x_4)"
+    )
+    assert got.node_keys() == expected.node_keys()
+    assert got.edge_keys() == expected.edge_keys()
+    assert ("definite", "x1", "", "") in got.edge_keys()
+    assert ("definite", "x4", "", "") not in got.edge_keys()
+    assert {("x1", "entity"), ("x4", "entity")} <= got.node_keys()
+
+    nodes = list(result.store.by_kind(SemanticGraphNode))
+    edges = list(result.store.by_kind(SemanticGraphEdge))
+    assert len(nodes) == 3
+    assert len(edges) == 6
+    assert {fact.provenance.source for fact in nodes + edges} == {
+        "semantic/active-definite-agent-indefinite-theme"
+    }
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "A zephyrstone appreciated a zephyrstone.",
+        "Neris appreciated a zephyrstone.",
+        "The zephyrstones appreciated a zephyrstone.",
+        "The zephyrstone appreciated the zephyrstone.",
+        "The zephyrstone appreciated Neris.",
+        "The zephyrstone gave Mira a zephyrstone.",
+        "The zephyrstone appreciated a zephyrstone beside a table.",
+        "The zephyrstone hoped that Neris smiled.",
+        "The zephyrstone did not appreciate a zephyrstone.",
+        "The zephyrstone appreciated a zephyrstone and a cloud.",
+        "The zephyrstone appreciated a zephyrstone",
+    ],
+)
+def test_active_definite_common_subject_declines_shape_neighbours(
+    cogs_project,
+    text: str,
+) -> None:
+    result = solve(text, cogs_project.registry, tracing=False)
+    assert "semantic/active-definite-agent-indefinite-theme" not in {
+        fact.provenance.source
+        for fact in (
+            list(result.store.by_kind(SemanticGraphNode))
+            + list(result.store.by_kind(SemanticGraphEdge))
+        )
+    }
+
+
 @pytest.mark.parametrize(
     "text",
     [
