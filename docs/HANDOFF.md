@@ -4,7 +4,7 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** Phase F indefinite common-subject increment selected
+**Status:** Phase F indefinite common-subject campaign complete
 
 **Previous safe capability commit:** `0717f04`
 (`Add COGS semantic projection phase A`)
@@ -589,9 +589,10 @@ GSM8K, ASDiv, SVAMP, MAWPS, SciBench, and FOLIO diffs.
 
 ## Immediate next step
 
-Implement the recorded indefinite-common-subject active-transitive increment
-and run the complete DEV gate. Preserve the proper-object boundary and do not
-rerun TEST or generalization.
+Preserve the completed Phase F state as the DEV baseline. If continuing,
+profile a determined common-subject intransitive class from DEV-train and
+lock its role class before implementation. Preserve the proper-object
+boundary and do not rerun TEST or generalization.
 
 ## Phase C restart exit audit
 
@@ -748,6 +749,25 @@ Selected before implementation on 2026-07-23:
 6. **Licence and boundary:** no vocabulary, quarantine, category, Python,
    recipient, or ditransitive changes. The existing audited noun and event
    categories are reused exactly.
+
+### Result and exit audit
+
+The rule emits two span-distinct indefinite entities, one event, and ordinary
+agent/theme roles. It emits no definite edge and changes no vocabulary or
+runtime mechanism.
+
+| DEV partition | Before exact | After exact | Gain | Incorrect | Edge recall |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| train | 1,699 | 1,765 | +66 | 0 | 11.6% |
+| holdout | 1,621 | 1,692 | +71 | 0 | 11.1% |
+
+Both buyer counts exactly match the selection estimate. The harm-ordered
+diffs have zero broken exact graphs and zero safe-to-incorrect transitions;
+projected-edge precision remains 100%.
+
+The complete gate is green: 204 focused COGS tests, 3,249 full-suite tests,
+zero lint errors, curated 65/65 twice, and neutral GSM8K, ASDiv, SVAMP, MAWPS,
+SciBench, and FOLIO diffs. Every locked Phase F condition is met.
 
 ## Increment protocol
 

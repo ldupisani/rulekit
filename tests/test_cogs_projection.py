@@ -200,6 +200,60 @@ def test_active_definite_common_subject_declines_shape_neighbours(
     }
 
 
+def test_active_indefinite_common_subject_projects_a_complete_graph(
+    cogs_project,
+) -> None:
+    text = "A zephyrstone appreciated a zephyrstone."
+    result = solve(text, cogs_project.registry, tracing=False)
+    got = project_result(result, text, cogs_project.registry)
+    expected = parse_cogs_logical_form(
+        "zephyrstone(x_1) AND appreciate.agent(x_2,x_1) "
+        "AND appreciate.theme(x_2,x_4) AND zephyrstone(x_4)"
+    )
+    assert got.node_keys() == expected.node_keys()
+    assert got.edge_keys() == expected.edge_keys()
+    assert not any(edge.kind == "definite" for edge in got.edges)
+    assert {("x1", "entity"), ("x4", "entity")} <= got.node_keys()
+
+    nodes = list(result.store.by_kind(SemanticGraphNode))
+    edges = list(result.store.by_kind(SemanticGraphEdge))
+    assert len(nodes) == 3
+    assert len(edges) == 5
+    assert {fact.provenance.source for fact in nodes + edges} == {
+        "semantic/active-indefinite-agent-indefinite-theme"
+    }
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "The zephyrstone appreciated a zephyrstone.",
+        "Neris appreciated a zephyrstone.",
+        "Zephyrstones appreciated a zephyrstone.",
+        "A zephyrstone appreciated the zephyrstone.",
+        "A zephyrstone appreciated Neris.",
+        "A zephyrstone gave Mira a zephyrstone.",
+        "A zephyrstone appreciated a zephyrstone beside a table.",
+        "A zephyrstone hoped that Neris smiled.",
+        "A zephyrstone did not appreciate a zephyrstone.",
+        "A zephyrstone appreciated a zephyrstone and a cloud.",
+        "A zephyrstone appreciated a zephyrstone",
+    ],
+)
+def test_active_indefinite_common_subject_declines_shape_neighbours(
+    cogs_project,
+    text: str,
+) -> None:
+    result = solve(text, cogs_project.registry, tracing=False)
+    assert "semantic/active-indefinite-agent-indefinite-theme" not in {
+        fact.provenance.source
+        for fact in (
+            list(result.store.by_kind(SemanticGraphNode))
+            + list(result.store.by_kind(SemanticGraphEdge))
+        )
+    }
+
+
 @pytest.mark.parametrize(
     "text",
     [
