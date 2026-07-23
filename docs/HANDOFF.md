@@ -4,7 +4,7 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** Phase D disposition complete; safe restart baseline frozen
+**Status:** Phase E common-subject increment 1 selected
 
 **Previous safe capability commit:** `0717f04`
 (`Add COGS semantic projection phase A`)
@@ -589,10 +589,9 @@ GSM8K, ASDiv, SVAMP, MAWPS, SciBench, and FOLIO diffs.
 
 ## Immediate next step
 
-Preserve this state as the safe semantic-projection restart baseline. Any
-further coverage work must begin a new DEV-only campaign with a fresh locked
-objective and must preserve the proper-object boundary. Do not rerun TEST or
-generalization.
+Implement the recorded definite-common-subject active-transitive increment
+and run the complete DEV gate. Preserve the proper-object boundary and do not
+rerun TEST or generalization.
 
 ## Phase C restart exit audit
 
@@ -650,6 +649,51 @@ diffs.
 This evidence supports freezing the repaired DEV baseline and removing the
 known failure mechanism. It does not support a numerical claim about repaired
 TEST or generalization precision.
+
+## Phase E — determiner-backed common subjects
+
+This new DEV-only campaign extends already safe event frames from proper-name
+subjects to explicitly determined common-noun subjects. It begins from frozen
+baseline `2dd8a2a`; the Phase D evidence is not reused as a tuning set.
+
+The locked campaign exit is:
+
+- 100% projected-edge precision and zero incorrect graphs on both DEV
+  partitions;
+- nonzero complete buyers in both partitions for a definite common-noun
+  agent in an active transitive frame;
+- article-backed definiteness with no uniqueness or cross-mention identity;
+- no widening of the proper-object or recipient-role boundary; and
+- neutral synthetic, lint, regression, and cross-corpus gates.
+
+### Increment 1 selection brief
+
+Selected before implementation on 2026-07-23:
+
+1. **Construction class:** exactly `The N V a N.`, where the subject is an
+   existing `semantic_nominal_entity_noun`, the event is a licensed
+   `semantic_agent_theme_verb`, and the object is an existing
+   `semantic_bare_theme_noun`. There is no proper object, recipient, passive,
+   modifier, complement, coordination, negation, or trailing material.
+2. **Complete graph:** two typed entity nodes, one normalized event node,
+   agent and theme role edges, and exactly one `definite(subject)` edge
+   licensed by the initial article. Definiteness records discourse status
+   only.
+3. **Synthetic positive:** the invented definite common subject
+   `zephyrstone` appreciates an indefinite `zephyrstone`, proving that equal
+   noun types retain distinct span-based entities and only the subject is
+   definite.
+4. **Negative neighbours:** indefinite, named, plural, modified, or
+   coordinated subjects; definite or named objects; passive order;
+   ditransitives; PP and complement tails; negation; unlicensed nouns or
+   events; and missing punctuation.
+5. **Expected buyers:** exact DEV-train profiling found 49 currently declined
+   buyers. The same mechanical licence reports 58 aggregate DEV-holdout
+   buyers without inspecting holdout rows.
+6. **Licence and safety boundary:** the existing vocabulary-free nominal
+   supercategory structurally joins already audited noun categories. No
+   vocabulary, quarantine, Python mechanism, recipient rule, or ditransitive
+   category changes.
 
 ## Increment protocol
 
