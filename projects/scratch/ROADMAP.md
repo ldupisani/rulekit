@@ -3934,3 +3934,24 @@ DEV diffs and both grouped logic outcome diffs are NEUTRAL.
 Outcomes and hazards remain neutral. All holdout thresholds remain met.
 
 **Next:** Phase C remains gated only by 13 train truth-scope vetoes.
+
+## Campus venue lexical activation and ledger correction (2026-07-23)
+
+Pack-local noun `campus` clears the five-row modal-passive turtle existential.
+A fresh audit also finds that the earlier `logos` increment cleared both
+five-row Apple premises; its ledger had conservatively omitted the Macbook
+universal. The correction adds five prior train instances without representing
+new runtime movement here.
+
+Six synthetic pins pass. All 2,991 tests pass; curated is 65/65 in both
+fresh-process runs. Scratch lint reports 0 errors with the same eight warnings;
+all eight standard DEV diffs and both grouped logic outcome diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready floor | runtime movement / ledger correction | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1394→1394 | 899→904 (+5) | ≥34/24 | +5 campus / +5 prior logos | 507→502 (−5) |
+| dev-holdout | 1364→1364 | 901→901 | ≥22/15 | 0 / 0 | 460→460 |
+
+Outcomes and hazards remain neutral. All holdout thresholds remain met.
+
+**Next:** Phase C remains gated only by three train truth-scope vetoes.

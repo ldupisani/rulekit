@@ -138,13 +138,13 @@
 > A later pack-scoped `plots`/`swallow` activation makes the existing Stage 6
 > ground reader consume one controlled-infinitive train premise; it earns
 > movement but no new construction-class credit.
-> Cumulative movement from Phase A is +174 / +180 fully-read premise instances
+> Cumulative movement from Phase A is +184 / +180 fully-read premise instances
 > and +13 / +10
 > stack-ready stories on dev-train / dev-holdout, with no
-> verdict regression or hazard increase; truth-scope vetoes improve by 154 / 154, while
+> verdict regression or hazard increase; truth-scope vetoes improve by 164 / 154, while
 > holdout collision/quarantine improve 12→9 / 24→18. Sixty-two construction classes
 > are served. Both stack-ready thresholds are now met, but the conjunctive Phase C
-> gate remains unmet (fully read 894/1647 and 901/1607 vs 852/850; vetoes 512/460
+> gate remains unmet (fully read 904/1647 and 901/1607 vs 852/850; vetoes 502/460
 > vs ≤499/460; stack-ready stories 24/15 vs ≥22/10).
 > Next regenerate the fully-read and truth-scope-veto frontier, prioritizing
 > train-side movement. The
@@ -170,6 +170,37 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 98 (2026-07-23): campus venue activation; +5 train fully read; conservative-ledger correction
+
+Pack-local noun `campus` completes **“Some turtles can be spotted near the
+campus”** through the existing modal-passive existential. Other campus
+premises retain independent `cute`, `squirrels`, `skittish`, or coordination
+blockers.
+
+The fresh audit also corrects an earlier conservative ledger entry: plural
+`logos` made both five-row Apple premises fully read, not only the qualified-
+product universal. `All Macbooks have Apple logos` already had a valid
+possessive-universal fact and capitalization-backed class. This adds the five
+previously omitted train instances to cumulative accounting; it is not new
+runtime movement in this increment.
+
+Six synthetic pins pass. **All 2,991 tests pass; curated is 65/65 in both
+fresh-process runs.** Scratch lint has 0 errors and the same eight warnings. All
+eight standard DEV diffs and both grouped logic outcome diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready floor | runtime movement / ledger correction | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1394→1394 | 899→904 (+5) | ≥34/24 | +5 campus / +5 prior logos | 507→502 (−5) |
+| dev-holdout | 1364→1364 | 901→901 | ≥22/15 | 0 / 0 | 460→460 |
+
+Outcomes remain 23/1/470 and 5/0/420; hazards and stack floors remain neutral.
+All holdout thresholds remain met. Construction-class credit remains
+sixty-two. No TEST look was spent.
+
+**Next:** Phase C remains gated only by three train truth-scope vetoes.
+
+---
 
 # Session 97 (2026-07-23): airforce PP-object morphology; +5 train fully read
 

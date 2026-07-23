@@ -857,6 +857,11 @@ instances and vetoes. The hyphenated sibling remains safely blocked rather
 than widening global adverb-only `back`. Phase C still needs 23 / 12
 truth-scope-veto reductions.
 
+Pack-local venue noun `campus` clears five train modal-passive existential
+instances. The same audit corrects the earlier `logos` ledger by +5 train:
+the Macbook possessive universal was also fully read. Phase C remains gated
+only by three train truth-scope-veto reductions.
+
 Pack-local `belonging → belong` plus adjective `connected` clears seven
 repeated company-device universals. Neighboring device premises retain
 independent blockers. Phase C still needs 23 / 5 truth-scope-veto reductions.

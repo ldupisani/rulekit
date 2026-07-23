@@ -115,3 +115,6 @@ entries:
   # Phase B lexical activation: exact PP-object morphology for the existing
   # ground event `work for airforces`.
   airforce: {senses: [noun], plural: airforces}
+  # Phase B lexical activation: venue object for the existing modal-passive
+  # existential `Some turtles can be spotted near the campus`.
+  campus: {senses: [noun]}
