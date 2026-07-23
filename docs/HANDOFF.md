@@ -4,10 +4,10 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** Phase C underway; increment 1 complete
+**Status:** Phase C underway; increment 2 complete
 
-**Previous capability commit:** `eef5385`
-(`Add COGS passive definiteness projection`)
+**Previous capability commit:** `1a94b63`
+(`Add COGS nominal PP modifier projection`)
 
 This is the short operational handoff. The complete Session 1–105 history is
 preserved byte-for-byte in
@@ -723,15 +723,81 @@ DEV-train 104 and DEV-holdout 40; ASDiv 44; SVAMP 30; MAWPS 9; SciBench 6;
 and FOLIO 0 committed. Every standing non-COGS snapshot diff is neutral. No
 COGS TEST or generalization look was spent.
 
+## Phase C increment 2
+
+The second Phase C increment begins sentential composition with one depth-1
+`ccomp` class joining two complete named-agent event subgraphs.
+
+### Phase C increment 2 selection brief
+
+Selected before implementation on 2026-07-23:
+
+1. **Construction class:** exactly `Name V that Name V.`, where the matrix
+   form is a declaratively licensed `semantic_ccomp_matrix_verb` and the
+   embedded form is an existing `semantic_intransitive_agent_verb`. Both
+   subjects are bare proper names. There is no object, definiteness, passive,
+   PP, recipient, control gap, coordination, negation, second complement, or
+   trailing material.
+2. **Complete graph:** two named entity nodes and two event nodes; normalized
+   event predicates; `agent(matrix_event, matrix_name)` and
+   `agent(embedded_event, embedded_name)`; and exactly
+   `complement(matrix_event, embedded_event, ccomp)`. The complement edge
+   spans the matrix event through the embedded event, preserving the overt
+   `that`-licensed attachment and direction. Repeated surface names may share
+   one constant node without sharing the two distinct event refs.
+3. **Synthetic positive:** invented name `Neris` hopes that invented name
+   `Mira` smiles, paired with a same-name variant to prove entity identity
+   and event identity remain distinct.
+4. **Negative neighbours:** omitted `that`; common-noun or definite subjects;
+   theme-class embedded verbs; transitive, passive, or ditransitive embedded
+   clauses; `xcomp`/control surfaces; coordination; negation; nested
+   complements; matrix objects; and lexically unlicensed or ambiguous event
+   forms. Each remains for its own construction or declines safely.
+5. **Expected buyers:** the exact graph/surface class contains 34 inspectable
+   DEV-train rows. Conservative matrix and embedded licences leave 26
+   DEV-train buyers and 18 aggregate DEV-holdout buyers, all currently
+   declined. Holdout item text remains uninspected.
+6. **Declarative licence and audit:** the matrix category contains
+   `admired`, `believed`, `confessed`, `dreamed`, `hoped`, `imagined`,
+   `liked`, `noticed`, and `respected`. Five missing forms receive ordinary
+   project-local verb/lemma entries and join the existing projection-owned
+   guard category. No selected form is quarantined. Existing `said` and
+   `thought` forms lack safe registry lemmas and remain excluded rather than
+   widening a shared pack.
+
+### Phase C increment 2 result
+
+The depth-1 `ccomp` rule emits two independently span-addressed events, their
+named agents, and one directed matrix-to-embedded complement edge backed by
+the overt `that` span. Repeated names share one constant entity while the
+events remain distinct, preserving identity without collapsing eventualities.
+
+| split | before exact | after exact | new exact | incorrect | edge recall |
+|---|---:|---:|---:|---:|---:|
+| DEV-train | 1,511 | 1,537 | +26 | 0 | 7.2% → 7.4% |
+| DEV-holdout | 1,447 | 1,464 | +17 | 0 | 6.8% → 6.9% |
+
+The `ccomp` bucket now has 26/970 exact DEV-train graphs and 17/1,028 exact
+aggregate DEV-holdout graphs. Train exactly matches the pre-implementation
+estimate. One of the 18 mechanically predicted holdout buyers remained safely
+declined; its row was not inspected. Both harm-ordered diffs report zero
+broken exact graphs and zero safe-to-incorrect transitions.
+
+Verification is green: 3,176 synthetic/unit tests; 131 focused COGS
+projection tests; COGS lint with zero errors; curated 65/65 twice; GSM8K
+DEV-train 104 and DEV-holdout 40; ASDiv 44; SVAMP 30; MAWPS 9; SciBench 6;
+and FOLIO 0 committed. Every standing non-COGS snapshot diff is neutral. No
+COGS TEST or generalization look was spent.
+
 ## Immediate next step
 
-Begin Phase C increment 2 with `ccomp` event/clause embedding. Use only
-inspectable DEV-train data to subdivide the 970 `ccomp` graphs by matrix
-frame, embedded event frame, subject realization and sharing, complementizer,
-definiteness, and nesting depth. Select one frequent depth-1 class that adds
-one event-to-event `complement(..., ccomp)` edge between complete licensed
-subgraphs, record buyers and overreach controls before implementation, and
-preserve zero incorrect edges and neutral standing gates.
+Begin Phase C increment 3 with `xcomp` control and explicit referent sharing.
+Use only inspectable DEV-train data to subdivide the 601 `xcomp` graphs by
+matrix frame, controller role, embedded event frame, shared referent,
+complement marker, and nesting depth. Select one frequent depth-1 class whose
+complete graph makes the shared entity explicit, record buyers and overreach
+controls before implementation, and preserve zero incorrect edges and neutral
+standing gates.
 
 Do not inspect holdout rows or spend COGS TEST/generalization looks before the
 Phase D checkpoint.
