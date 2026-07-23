@@ -59,7 +59,11 @@ def load_snapshot(path: Path) -> dict:
     return json.loads(path.read_text())
 
 
-def diff(before: dict, after: dict) -> Diff:
+def diff(before: dict, after: dict) -> Diff | ProjectionDiff:
+    if before.get("kind") == "projection" or after.get("kind") == "projection":
+        if before.get("kind") != after.get("kind"):
+            raise ValueError("cannot diff an answer snapshot against a projection snapshot")
+        return _projection_diff(before, after)
     d = Diff()
     before_items = before["items"]
     after_items = after["items"]
@@ -82,3 +86,70 @@ def diff(before: dict, after: dict) -> Diff:
         if b_out == "wrong" and a_out in ("declined", "errored"):
             d.wrong_to_decl.append(item_id)
     return d
+
+
+@dataclass
+class ProjectionDiff:
+    exact: list[str] = field(default_factory=list)
+    broke: list[str] = field(default_factory=list)
+    safe_to_incorrect: list[str] = field(default_factory=list)
+    incorrect_to_safe: list[str] = field(default_factory=list)
+    changed_graph: list[str] = field(default_factory=list)
+
+    @property
+    def net(self) -> int:
+        return len(self.exact) - len(self.broke)
+
+    @property
+    def ship(self) -> bool:
+        return not self.broke and not self.safe_to_incorrect and self.net >= 0
+
+    def verdict(self) -> str:
+        if self.broke or self.safe_to_incorrect:
+            return "REVERT"
+        if self.net > 0:
+            return "SHIP"
+        return "NEUTRAL"
+
+    def summary(self) -> str:
+        lines = [
+            f"EXACT           {len(self.exact)}",
+            f"BROKE           {len(self.broke)}   <- must be 0",
+            f"SAFE->INCORRECT {len(self.safe_to_incorrect)}   <- must be 0",
+            f"INCORRECT->SAFE {len(self.incorrect_to_safe)}",
+            f"NET             {self.net:+d}",
+            f"VERDICT: {self.verdict()}",
+        ]
+        for label, items in (
+            ("BROKE", self.broke),
+            ("SAFE->INCORRECT", self.safe_to_incorrect),
+            ("EXACT", self.exact),
+        ):
+            for item in items[:20]:
+                lines.append(f"  {label}: {item}")
+        return "\n".join(lines)
+
+
+def _projection_diff(before: dict, after: dict) -> ProjectionDiff:
+    result = ProjectionDiff()
+    before_items = before["items"]
+    after_items = after["items"]
+    safe = {"declined", "partial", "errored"}
+    for item_id in sorted(set(before_items) | set(after_items)):
+        old = before_items.get(item_id)
+        new = after_items.get(item_id)
+        if old is None or new is None:
+            continue
+        old_outcome = old["outcome"]
+        new_outcome = new["outcome"]
+        if old_outcome != "exact" and new_outcome == "exact":
+            result.exact.append(item_id)
+        elif old_outcome == "exact" and new_outcome != "exact":
+            result.broke.append(item_id)
+        if old_outcome in safe and new_outcome == "incorrect":
+            result.safe_to_incorrect.append(item_id)
+        if old_outcome == "incorrect" and new_outcome in safe:
+            result.incorrect_to_safe.append(item_id)
+        if old.get("got") != new.get("got"):
+            result.changed_graph.append(item_id)
+    return result

@@ -172,6 +172,41 @@
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
 
+# Session 105 (2026-07-23): COGS semantic-projection Phase A
+
+The new campaign plan is
+[`semantic-projection-plan.md`](semantic-projection-plan.md). COGS is the
+primary projection corpus because its gold logical forms directly measure
+entities, events, semantic roles, modifiers, complements, and compositional
+generalization. FraCaS remains the later answer-level semantic-inference gate.
+
+`projects/cogs/build_corpus.py` pins corrected upstream revision
+`165a7b669eade971fa47bf568a2e51925360fed8` and verifies all four official
+SHA-256 hashes. Official train is partitioned before mining into 12,056
+DEV-train and 12,099 DEV-holdout rows. The already sampled official dev is
+named calibration. TEST (3,000) and generalization (20,984 scored after
+published/exposed exclusions) are aggregate-only and unspent.
+
+Projects can now declare a projection corpus. The ordinary bench command
+normalizes COGS logical forms into an entity/event graph and scores
+exact/partial/declined/incorrect outcomes; projection snapshots use a matching
+harm-ordered diff gate. Primitive lambda rows, definiteness, roles, modifiers,
+and complements have synthetic adapter tests. The evaluator never splits flat
+`Atom` phrase keys. Its only baseline runtime bridge is the pre-existing
+structured `VerbalRelation`, and it fails closed on unlicensed surface lemmas
+or ambiguous nominal lemmas.
+
+Baseline:
+
+| split | exact | partial | declined | incorrect | edge precision | edge recall |
+|---|---:|---:|---:|---:|---:|---:|
+| DEV-train | 247 | 41 | 11,768 | 0 | 100% | 1.5% |
+| DEV-holdout | 213 | 47 | 11,839 | 0 | 100% | 1.3% |
+
+No TEST/generalization look was spent. Next: subdivide the inspectable
+DEV-train transitive pool and select the first buyer-backed entity/event/role
+vertical slice. Do not begin with vocabulary admission.
+
 # Session 104 (2026-07-23): first-class ask ambiguity + clarification UI
 
 Ambiguous question interpretation is now a first-class, non-committing result.

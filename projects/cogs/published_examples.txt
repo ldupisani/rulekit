@@ -1,0 +1,42 @@
+# Public COGS task-specification examples from the paper and repository.
+# Matching TEST/generalization rows remain auditable but are excluded from the
+# honest aggregate by build_corpus.py.
+A hedgehog ate the cake.
+The baby liked the hedgehog.
+Lina gave the cake to Olivia.
+A hero shortened Lina.
+Henry liked a cockroach.
+The cockroach ate the bat.
+The creature grew Charlie.
+Charlie worshipped the cake.
+A shark examined the child.
+Paula sketched William.
+A chief heard the shark.
+The child helped Paula.
+A baby planned to crawl.
+Noah ate the cake on the plate.
+The cake on the table burned.
+Emma said that Noah knew that the cat danced.
+Emma said that Noah knew that Lucas saw that the cat danced.
+Ava saw the ball in the bottle on the table.
+Ava saw the ball in the bottle on the table on the floor.
+The crocodile blessed William.
+A muffin was blessed.
+The book was squeezed.
+The girl squeezed the strawberry.
+Emily baked.
+The giraffe baked a cake.
+The glass shattered.
+Liam shatterd the jigsaw.
+The girl teleported Liam the cookie.
+Benjamin teleported the cake to Isabella.
+Jane shipped the cake to John.
+Jane shipped John the cake.
+The cobra helped a dog.
+The cobra froze.
+The hippo decomposed.
+The hippo painted.
+The hippo giggled.
+The drink froze.
+A cat smiled.
+The researcher in a room froze.

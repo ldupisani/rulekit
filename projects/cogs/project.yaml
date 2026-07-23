@@ -1,0 +1,23 @@
+format: rulekit/project@1
+name: cogs
+
+# Projection-level development corpus. The scratch logic pack is the work
+# produced by the FOLIO campaign; loading it here does not change FOLIO's
+# arithmetic-only 0-commit safety project.
+packs: [core-english, difg-mined, ../scratch/packs/logic]
+
+projection:
+  adapter: cogs
+  splits:
+    dev-train:
+      {parquet: data/cogs_dev_train.parquet}
+    dev-holdout:
+      {parquet: data/cogs_dev_holdout.parquet}
+    # Upstream dev was sampled during dataset selection. It is inspectable
+    # calibration data, never described as an untouched holdout.
+    calibration:
+      {parquet: data/cogs_calibration.parquet}
+    test:
+      {parquet: data/cogs_test.parquet, firewall: aggregate-only}
+    generalization:
+      {parquet: data/cogs_generalization.parquet, firewall: aggregate-only}

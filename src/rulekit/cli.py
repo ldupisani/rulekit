@@ -61,6 +61,100 @@ def cmd_bench(args) -> int:
     from .harness.firewall import INSPECTABLE_SLICES, record_test_look
 
     project, reg = _registry(args)
+    if project.doc.projection is not None:
+        from .harness.projection import (
+            run_projection_suite,
+            write_projection_snapshot,
+        )
+
+        projection = project.doc.projection
+        if not args.slice:
+            print(
+                "projection project: --slice "
+                f"{'|'.join(sorted(projection.splits))} required",
+                file=sys.stderr,
+            )
+            return 2
+        split = projection.splits.get(args.slice)
+        if split is None:
+            print(
+                f"unknown projection slice {args.slice!r}; choose one of "
+                f"{', '.join(sorted(projection.splits))}",
+                file=sys.stderr,
+            )
+            return 2
+        inspectable = project.projection_slice_inspectable(args.slice)
+        if not inspectable and not args.spend_test_look:
+            print(
+                f"{args.slice.upper()} is one-look and aggregate-only: add "
+                "--spend-test-look to spend it (recorded in the ledger)",
+                file=sys.stderr,
+            )
+            return 2
+        if not inspectable and args.limit:
+            print(
+                "refusing --limit on an aggregate-only projection slice: "
+                "a partial protected look is not a valid look",
+                file=sys.stderr,
+            )
+            return 2
+        items = project.projection_items(args.slice)
+        if args.limit:
+            print(
+                f"⚠ PARTIAL FIREWALL: --limit {args.limit} — a prefix number is "
+                "not the slice number; never ship on it"
+            )
+            items = items[: args.limit]
+        report = run_projection_suite(
+            items,
+            reg,
+            jobs=args.jobs,
+            project_dir=args.project,
+        )
+        print(report.summary(items_visible=inspectable))
+        if not inspectable:
+            ledger = project.snapshots_dir / f"{args.slice}-ledger.jsonl"
+            record_test_look(ledger, report.fingerprint, report.aggregates())
+            print(f"{args.slice} look SPENT -> {ledger.relative_to(project.root)}")
+            return 0
+        if args.snapshot:
+            path = project.snapshots_dir / args.snapshot
+            write_projection_snapshot(report, path)
+            print(f"snapshot -> {path}")
+        if args.emit_snapshot:
+            Path(args.emit_snapshot).write_text(
+                json.dumps(report.to_snapshot(), sort_keys=True)
+            )
+        if args.twice:
+            if args.jobs > 1:
+                second = run_projection_suite(items, reg, jobs=1)
+                if report.to_snapshot() != second.to_snapshot():
+                    print(
+                        f"DETERMINISM FAILURE: --jobs {args.jobs} "
+                        "disagrees with serial",
+                        file=sys.stderr,
+                    )
+                    return 3
+                print(
+                    f"determinism: --jobs {args.jobs} matches serial "
+                    "(same process)"
+                )
+            fresh = _rerun_in_subprocess(args)
+            if fresh is None:
+                print(
+                    "DETERMINISM FAILURE: the fresh-process re-run did not complete",
+                    file=sys.stderr,
+                )
+                return 3
+            if fresh != report.to_snapshot():
+                print(
+                    "DETERMINISM FAILURE: a fresh process disagrees with this one",
+                    file=sys.stderr,
+                )
+                return 3
+            print("determinism: a fresh process produces an identical snapshot")
+        return 1 if report.counts["incorrect"] else 0
+
     if args.slice == "suite" or (not args.slice and not project.doc.datasets):
         items = project.suite_items()
         if not items:
@@ -203,6 +297,27 @@ def cmd_stats(args) -> int:
 
     project, reg = _registry(args)
     slice_name = args.slice or "dev-train"
+    if project.doc.projection is not None:
+        from .harness.projection import run_projection_suite
+
+        if not project.projection_slice_inspectable(slice_name):
+            print(
+                "stats runs on inspectable projection slices only (the firewall)",
+                file=sys.stderr,
+            )
+            return 2
+        items = project.projection_items(slice_name)
+        report = run_projection_suite(items, reg)
+        unknown = Counter(
+            word
+            for result in report.results
+            for word in result.unknown_words
+        )
+        print(report.summary())
+        print("\nmost frequent unknown words (the vocabulary worklist):")
+        for word, count in unknown.most_common(args.top):
+            print(f"  {count:5d}  {word}")
+        return 0
     if project.doc.datasets:
         if slice_name not in INSPECTABLE_SLICES:
             print("stats runs on inspectable slices only (the firewall)", file=sys.stderr)
@@ -296,7 +411,12 @@ def main(argv: list[str] | None = None) -> int:
     p.set_defaults(fn=cmd_diagnose)
 
     p = sub.add_parser("bench", help="run the project suite or a dataset slice")
-    p.add_argument("--slice", help="dev|dev-train|dev-holdout|test (dataset projects)")
+    p.add_argument(
+        "--slice",
+        help=(
+            "suite|dev|dev-train|dev-holdout|calibration|test|generalization"
+        ),
+    )
     p.add_argument("--limit", type=int, help="prefix only — prints a PARTIAL FIREWALL warning")
     p.add_argument("--spend-test-look", action="store_true",
                    help="required for --slice test; the look is recorded in the ledger")

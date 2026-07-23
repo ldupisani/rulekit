@@ -49,6 +49,7 @@ uv run rulekit --project projects/svamp bench --slice dev --jobs 8      # 2nd CR
 uv run rulekit --project projects/mawps bench --slice dev --jobs 8      # 3rd — MAWPS (classic arithmetic repository)
 uv run rulekit --project projects/scibench bench --slice dev --jobs 8   # 4th — SciBench (ATTEMPTED since 2026-07; standard bar: 0 BROKE, 0 DECL→WRONG)
 uv run rulekit --project projects/folio bench --slice dev --jobs 8      # 5th — FOLIO LOGIC safety, the only NON-arithmetic gate (the sole want-0-commits gate)
+uv run rulekit --project projects/cogs bench --slice dev-train --jobs 8 # semantic-projection DEV worklist (COGS gold graphs)
 uv run rulekit --project projects/gsm8k stats                          # the mining worklists
 uv run rulekit --project projects/gsm8k lint [--category NAME]         # overlaps, blast radius
 uv run rulekit --project projects/gsm8k serve                          # visual designer
@@ -81,6 +82,11 @@ uv run rulekit --project projects/gsm8k serve                          # visual 
   became an attempted corpus (2026-07) this is the SOLE expect-0-commits gate. Its firewall buckets
   by PREMISE BLOCK, not per-item (340 stories → 1,001 items), and its 'Uncertain' gold is `text`, never
   `decline` — see `docs/negative-results.md` → "The logic-corpus search" before touching either.
+- `projects/cogs/` — the semantic-projection development corpus. Its pinned
+  builder materializes official COGS into DEV-train/DEV-holdout, contaminated
+  calibration, and aggregate-only TEST/generalization slices. `bench` routes
+  this project through normalized graph scoring (exact/partial/declined/
+  incorrect), not the answer judge. Data and snapshots remain gitignored.
 
 Mining scripts are throwaway: keep them in the session scratchpad, never the repo — recreate
 from `docs/methodology.md` §4.

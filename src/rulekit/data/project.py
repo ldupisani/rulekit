@@ -66,6 +66,27 @@ class Project:
             for i in slice_items(train, test, slice_name)
         ]
 
+    def projection_items(self, slice_name: str):
+        """Load one declared sentence→logical-form projection slice."""
+        from ..harness.projection import load_projection_items
+
+        projection = self.doc.projection
+        if projection is None:
+            raise ValueError("project has no projection corpus")
+        split = projection.splits.get(slice_name)
+        if split is None:
+            choices = ", ".join(sorted(projection.splits))
+            raise ValueError(
+                f"unknown projection slice {slice_name!r} (one of {choices})"
+            )
+        return load_projection_items(self.root, split, projection.adapter)
+
+    def projection_slice_inspectable(self, slice_name: str) -> bool:
+        projection = self.doc.projection
+        if projection is None or slice_name not in projection.splits:
+            return False
+        return projection.splits[slice_name].firewall == "inspectable"
+
 
 def _resolve_pack_path(name: str, project_root: Path) -> Path:
     if name.startswith("./") or name.startswith("../"):

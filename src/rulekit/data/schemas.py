@@ -903,13 +903,66 @@ class SplitDef(StrictModel):
     model_config = ConfigDict(extra="forbid", populate_by_name=True)
 
 
+class ProjectionSplitDef(StrictModel):
+    """One sentence→semantic-graph corpus slice.
+
+    Projection corpora are deliberately separate from ``DatasetDef``: their
+    gold is a logical form, not an answer payload, so routing them through the
+    numeric/typed answer judge would erase the intermediate representation the
+    corpus exists to measure.
+    """
+
+    parquet: str
+    text: str = "text"
+    logical_form: str = "logical_form"
+    item_id: str = "id"
+    case: str = "case"
+    scored: str | None = "scored"
+    firewall: Literal["inspectable", "aggregate-only"] = "inspectable"
+
+
+class ProjectionProjectDef(StrictModel):
+    adapter: Literal["cogs"]
+    splits: dict[str, ProjectionSplitDef]
+
+    @model_validator(mode="after")
+    def _required_slices(self) -> "ProjectionProjectDef":
+        required = {
+            "dev-train",
+            "dev-holdout",
+            "calibration",
+            "test",
+            "generalization",
+        }
+        missing = required - set(self.splits)
+        if missing:
+            raise ValueError(
+                f"projection project is missing required slices: {sorted(missing)}"
+            )
+        for name in ("test", "generalization"):
+            if self.splits[name].firewall != "aggregate-only":
+                raise ValueError(
+                    f"projection split {name!r} must be aggregate-only"
+                )
+        return self
+
+
 class ProjectDoc(StrictModel):
     format: Literal["rulekit/project@1"]
     name: str
     packs: list[str]
     datasets: dict[str, dict[str, DatasetDef]] = Field(default_factory=dict)
     splits: dict[str, SplitDef] = Field(default_factory=dict)
+    projection: ProjectionProjectDef | None = None
     suite: str | None = None  # path to a curated YAML suite (small projects)
+
+    @model_validator(mode="after")
+    def _one_evaluation_shape(self) -> "ProjectDoc":
+        if self.projection is not None and (self.datasets or self.suite is not None):
+            raise ValueError(
+                "a projection project cannot also declare answer datasets or a suite"
+            )
+        return self
 
 
 class ReferenceAttrDef(StrictModel):

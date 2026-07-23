@@ -230,6 +230,22 @@ round-trips an interpretation id, then reruns the ordinary solve path with only
 that query selected. This is distinct from `undetermined`, which means one
 query was understood but the fact store cannot decide it.
 
+### Semantic-projection evaluation
+
+A project may declare a `projection` corpus instead of answer datasets. The
+ordinary `bench` command then compares the result's structured semantic view
+with a normalized gold graph rather than routing a logical form through the
+answer judge. Graph equality ignores conjunct order and alpha-normalizes bound
+lambda variables while preserving COGS token anchors, predicates, semantic
+roles, attachment, complement structure, and definiteness.
+
+Projection outcomes are harm ordered: an extra node/edge is `incorrect`; an
+all-correct but incomplete graph is `partial`; an empty graph is `declined`;
+and a complete graph is `exact`. Snapshot diffing rejects exact→non-exact and
+safe→incorrect transitions. The current runtime bridge projects only the
+already-structured `VerbalRelation` fact; flat exact `Atom` phrase keys are
+never split by the evaluator.
+
 ### Migration from difg
 
 `tools/migrate_difg.py`: **import, don't parse** — `import reasoning.reading` executes all 8
