@@ -4,7 +4,7 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** Phase C restart underway; increment 4 complete
+**Status:** Phase C restart increment 5 selected
 
 **Previous safe capability commit:** `0717f04`
 (`Add COGS semantic projection phase A`)
@@ -539,11 +539,42 @@ graphs and zero safe-to-incorrect transitions. The complete gate is green:
 165 focused COGS tests, 3,210 full-suite tests, zero lint errors, curated
 twice, and neutral standing-corpus diffs.
 
+## Phase C restart increment 5
+
+This increment applies the reusable local-link machinery to a ccomp chain
+terminating in subject-control xcomp.
+
+### Recursive complement selection brief
+
+Selected before implementation on 2026-07-23:
+
+1. **Construction class:** depth 2 is exactly
+   `Name V that Name V to V.`, using existing ccomp-matrix, xcomp-matrix, and
+   xcomp-agent licences. Deeper synthetic forms repeat `Name V that` before
+   the terminal control clause.
+2. **Complete graph:** one named agent and event per finite clause, one
+   terminal infinitival event, directed ccomp edges between adjacent finite
+   events, and one terminal xcomp edge whose source and target agent roles
+   share the final controller. All event refs remain distinct.
+3. **Reusable mechanism:** a vocabulary-free complement-matrix supercategory,
+   one overlapping local ccomp-link rule, and one terminal xcomp-link rule.
+   No rule names or caps a depth.
+4. **Synthetic positives and termination:** one through three successive
+   ccomp links before xcomp must produce complete graphs with local
+   provenance and deterministic fixpoint termination.
+5. **Negative neighbours:** missing or replaced `that`/`to`; common or
+   definite subjects; theme or transitive terminals; object-control;
+   coordination; negation; modifiers; passives; and unlicensed forms.
+6. **Known DEV buyers:** the earlier DEV-only implementation established
+   five complete train and two aggregate holdout buyers. No vocabulary or
+   quarantine change is required, no holdout rows are inspected, and the
+   proper-object boundary is unchanged.
+
 ## Immediate next step
 
-Begin the final compositional implementation increment with a DEV-train-only
-selection brief for recursive nested sentential complements. Preserve the
-proper-object boundary and do not rerun either spent protected slice.
+Implement the recorded recursive complement class and run the complete
+increment gate. Preserve the proper-object boundary and do not rerun either
+spent protected slice.
 
 ## Increment protocol
 
