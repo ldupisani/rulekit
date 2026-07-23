@@ -4,7 +4,7 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** Phase D checkpoint failed; Phase B/C batch reverted to Phase A
+**Status:** Phase B restart; proper-object/ditransitive boundary selected
 
 **Last safe capability commit:** `0717f04`
 (`Add COGS semantic projection phase A`)
@@ -170,6 +170,44 @@ recipient-role coverage. The generalization aggregate may select this class;
 it may not supply examples or row-level tuning. The two protected looks are
 spent and must not be rerun.
 
+## Phase B restart safety increment 1
+
+This increment reintroduces the already DEV-gated Phase B entity/event/role
+foundation through the explicit prepositional-dative buyer, while tightening
+the proper-object boundary exposed by the failed checkpoint.
+
+### Proper-object/ditransitive boundary selection brief
+
+Selected before implementation on 2026-07-23:
+
+1. **Licensed construction:** exactly `Name V a N to Name.`, with sentence
+   anchors, one declaratively licensed ditransitive event, an indefinite typed
+   theme, and an overt `to` before the proper-name recipient. Only this overt
+   prepositional skeleton licenses `recipient`.
+2. **Proper-object boundary:** `Name V Name.` remains an ordinary transitive
+   proper-object shape whose postverbal name is a theme. `Name V Name a N.`
+   receives no recipient interpretation from position alone and remains
+   declined, as do proper themes followed by a `to` recipient until that
+   separate construction is licensed.
+3. **DEV evidence:** inspectable DEV-train contains 37 exact double-object
+   surfaces using the eight prior dative verb forms, but zero direct
+   proper-object minimal pairs for those forms. DEV therefore does not justify
+   transferring a bare postverbal proper name from theme to recipient.
+4. **Complete graph and provenance:** the licensed `to` dative emits one event,
+   named agent and recipient entities, one indefinite typed theme entity, and
+   exact agent/theme/recipient edges. Every fact retains its emitting rule and
+   source span.
+5. **Synthetic positives and negatives:** an invented `Neris` gives an
+   invented `zephyrstone` to `Mira`; direct proper-object, double-object,
+   named-theme-plus-`to`, common-noun recipients, passives, embedding,
+   coordination, negation, and PP-tailed variants must not emit a recipient
+   edge.
+6. **Expected buyers and licence:** the conservative explicit-`to` class buys
+   30 DEV-train and 18 aggregate DEV-holdout complete graphs, with no
+   double-object credit. The project-local `semantic_ditransitive_verb`
+   category contains the same eight previously audited overt forms. No Python
+   vocabulary and no quarantine change are permitted.
+
 ## Phase B objective
 
 Build first-class entity, event, and semantic-role projection breadth-first,
@@ -197,26 +235,11 @@ packs; Python may consume a category but must not enumerate its members.
 
 ## Immediate next step
 
-Use only inspectable `dev-train` data to subdivide the transitive pool by:
-
-- missing graph structure;
-- subject construction;
-- object construction;
-- active/passive voice; and
-- named versus indefinite referents.
-
-Select one frequent, clean class whose complete target requires a general
-entity/event/role representation. Before implementation, record:
-
-1. the construction class;
-2. the complete graph it should buy;
-3. representative synthetic positive examples;
-4. negative neighbours and ambiguity cases;
-5. the expected DEV-train and aggregate DEV-holdout buyers; and
-6. which YAML categories, if any, license its role interpretation.
-
-Do not begin by admitting frequent unknown COGS words. First design the
-general representation and a complete construction buyer.
+Reintroduce the previously DEV-gated Phase B foundation only through the
+explicit prepositional-dative increment. Add synthetic contracts that keep
+proper direct objects as themes and withhold double-object recipient
+projection. Run the complete increment gate without touching either spent
+protected slice.
 
 ## Increment protocol
 
