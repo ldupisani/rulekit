@@ -4,7 +4,7 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** Phase C restart underway; increment 2 complete
+**Status:** Phase C restart increment 3 selected
 
 **Previous safe capability commit:** `0717f04`
 (`Add COGS semantic projection phase A`)
@@ -443,11 +443,41 @@ safe-to-incorrect transitions. The complete gate is green: 136 focused COGS
 tests, 3,181 full-suite tests, zero lint errors, curated twice, and neutral
 GSM8K, ASDiv, SVAMP, MAWPS, SciBench, and FOLIO diffs.
 
+## Phase C restart increment 3
+
+This increment adds subject-control `xcomp` composition with one explicitly
+shared controller entity.
+
+### Xcomp control selection brief
+
+Selected before implementation on 2026-07-23:
+
+1. **Construction class:** exactly `Name V to V.`, with licensed
+   `semantic_xcomp_matrix_verb` and `semantic_xcomp_agent_verb` forms. The
+   subject is one bare proper name; there is no overt embedded subject,
+   object, passive, PP, recipient, coordination, negation, nesting, or tail.
+2. **Complete graph:** one named entity, two independently span-addressed
+   events, `agent` edges from both events to the same controller, and exactly
+   `complement(matrix_event, embedded_event, xcomp)`. Sharing is equal role
+   targets, never event merging.
+3. **Synthetic positive:** an invented name hopes to smirk, asserting the
+   shared entity and distinct event references and predicates.
+4. **Negative neighbours:** overt embedded subjects; object-control;
+   transitive or theme-class infinitives; omitted `to`; ccomp; common-noun
+   controllers; passive, coordination, negation, PP tails, nesting; and
+   unlicensed or ambiguous forms.
+5. **Known DEV buyers:** the earlier DEV-only implementation established 107
+   complete train buyers and 96 aggregate holdout buyers, all currently
+   declined after the checkpoint revert. No holdout rows are inspected.
+6. **Licence and safety boundary:** matrix and embedded agentive membership
+   remains declarative project-local YAML. Noun-only ambiguous infinitives
+   stay excluded. The proper-object boundary is unchanged.
+
 ## Immediate next step
 
-Begin the next Phase C increment with a DEV-train-only selection brief for
-depth-1 `xcomp` control and explicit referent sharing. Preserve the
-proper-object boundary and do not rerun either spent protected slice.
+Implement the recorded subject-control xcomp class and run the complete
+increment gate. Preserve the proper-object boundary and do not rerun either
+spent protected slice.
 
 ## Increment protocol
 
