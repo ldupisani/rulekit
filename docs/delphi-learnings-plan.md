@@ -862,6 +862,13 @@ instances. The same audit corrects the earlier `logos` ledger by +5 train:
 the Macbook possessive universal was also fully read. Phase C remains gated
 only by three train truth-scope-veto reductions.
 
+Pack-local `celebrity`/`celebrities` morphology clears those final three train
+vetoes through an existing restricted generic conditional. Final DEV-only
+reconciliation records 907/901 fully-read premises, 499/460 truth-scope
+vetoes, and conservative stack-ready story floors of 24/15. All conjunctive
+Phase C entry thresholds are met on both grouped splits with neutral outcomes
+and hazards. Phase B iteration stops here; no TEST look was spent.
+
 Pack-local `belonging → belong` plus adjective `connected` clears seven
 repeated company-device universals. Neighboring device premises retain
 independent blockers. Phase C still needs 23 / 5 truth-scope-veto reductions.

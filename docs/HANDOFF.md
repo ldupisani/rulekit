@@ -138,16 +138,15 @@
 > A later pack-scoped `plots`/`swallow` activation makes the existing Stage 6
 > ground reader consume one controlled-infinitive train premise; it earns
 > movement but no new construction-class credit.
-> Cumulative movement from Phase A is +184 / +180 fully-read premise instances
+> Cumulative movement from Phase A is +187 / +180 fully-read premise instances
 > and +13 / +10
 > stack-ready stories on dev-train / dev-holdout, with no
-> verdict regression or hazard increase; truth-scope vetoes improve by 164 / 154, while
+> verdict regression or hazard increase; truth-scope vetoes improve by 167 / 154, while
 > holdout collision/quarantine improve 12→9 / 24→18. Sixty-two construction classes
-> are served. Both stack-ready thresholds are now met, but the conjunctive Phase C
-> gate remains unmet (fully read 904/1647 and 901/1607 vs 852/850; vetoes 502/460
-> vs ≤499/460; stack-ready stories 24/15 vs ≥22/10).
-> Next regenerate the fully-read and truth-scope-veto frontier, prioritizing
-> train-side movement. The
+> are served. **The conjunctive Phase C entry gate is met on both grouped DEV
+> splits**: fully read 907/1647 and 901/1607 vs 852/850; vetoes 499/460 vs
+> ≤499/460; stack-ready stories at least 24/15 vs ≥22/10. The next action is
+> the separately authorized deliberate TEST look, not another Phase B reader. The
 > remaining candidates require lexical, definite-description, coreference,
 > or deeper composition infrastructure. The unbought outer-quantified verbal
 > relative remains banked pending composition evidence. Reader 4's opt-in
@@ -170,6 +169,44 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 99 (2026-07-23): celebrity role morphology; Phase C entry gate met
+
+Pack-local `celebrity`/`celebrities` morphology completes **“If a person at
+the mixer is a celebrity, then they are well paid”** through the existing
+restricted generic conditional. The three train rows sharing that story are
+the only newly fully-read premises. The Oscar-nominee universal retains
+independent `Oscar-nominated`/actor blockers, and the separate entertainment-
+industry story retains its longer relative-clause and vocabulary blockers.
+There is no holdout occurrence.
+
+Six synthetic pins and the corpus-string firewall pass. All 2,997 tests pass;
+curated is 65/65 in two fresh processes. Scratch lint remains 0 errors, eight
+warnings, and 52 info. All eight standard DEV diffs and both grouped logic
+outcome diffs are NEUTRAL; outcomes remain 23/1/470 and 5/0/420.
+
+The final DEV-only reconciliation applies the exact three-row runtime movement
+to Session 98's corrected ledger and rechecks every pre-registered condition:
+
+| Phase C condition | dev-train | dev-holdout | target | result |
+|---|---:|---:|---:|---|
+| fully read | 907/1647 | 901/1607 | ≥852 / ≥850 | met |
+| truth-scope veto premises | 499 | 460 | ≤499 / ≤460 | met |
+| stack-ready stories (conservative floor) | ≥24 | ≥15 | ≥22 / ≥10 | met |
+| served construction classes | 62 | 62 | ≥3 | met |
+| hazards / outcome regressions | none | none | none | met |
+
+The stack figures are conservative monotone floors from the last exact
+classifier audit; subsequent readers did not remove facts, ask/query
+representations, or overlap paths, and every incremental hazard and outcome
+diff is neutral. Collision, quarantine, ambiguity, and clause-split ceilings
+therefore remain satisfied. **Phase C entry is achieved. No TEST look was
+spent.**
+
+**Next:** stop Phase B iteration. A TEST look requires a separate deliberate
+authorization under the existing one-look aggregate-only firewall.
+
+---
 
 # Session 98 (2026-07-23): campus venue activation; +5 train fully read; conservative-ledger correction
 

@@ -118,3 +118,7 @@ entries:
   # Phase B lexical activation: venue object for the existing modal-passive
   # existential `Some turtles can be spotted near the campus`.
   campus: {senses: [noun]}
+  # Phase B lexical activation: explicit person-role morphology for the
+  # existing mixer conditional. The plural also occurs in a separately
+  # blocked Oscar-nominee universal.
+  celebrity: {senses: [noun], plural: celebrities}

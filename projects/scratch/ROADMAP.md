@@ -3955,3 +3955,32 @@ all eight standard DEV diffs and both grouped logic outcome diffs are NEUTRAL.
 Outcomes and hazards remain neutral. All holdout thresholds remain met.
 
 **Next:** Phase C remains gated only by three train truth-scope vetoes.
+
+## Celebrity role activation — Phase C entry achieved (2026-07-23)
+
+Pack-local `celebrity`/`celebrities` morphology clears the three repeated
+train instances of the existing mixer conditional. The Oscar-nominee premise
+and the separate entertainment-industry story retain independent blockers;
+there is no holdout occurrence.
+
+Six synthetic pins and the corpus-string firewall pass. All 2,997 tests pass;
+curated is 65/65 twice. Scratch lint remains 0 errors, eight warnings, and 52
+info. All eight standard DEV diffs and both grouped logic outcome diffs are
+NEUTRAL.
+
+| Phase C condition | dev-train | dev-holdout | target | result |
+|---|---:|---:|---:|---|
+| fully read | 907/1647 | 901/1607 | ≥852 / ≥850 | met |
+| truth-scope veto premises | 499 | 460 | ≤499 / ≤460 | met |
+| stack-ready stories (conservative floor) | ≥24 | ≥15 | ≥22 / ≥10 | met |
+| served construction classes | 62 | 62 | ≥3 | met |
+| hazards / outcome regressions | none | none | none | met |
+
+The exact three-row movement is reconciled against Session 98's corrected
+ledger. Stack counts remain conservative monotone floors; no later increment
+removes a fact, represented ask/query, or overlap path, and all incremental
+hazard/outcome diffs are neutral. The conjunctive Phase C entry gate is met on
+both grouped DEV splits. No TEST look was spent.
+
+**Next:** stop reader iteration. Spend the separately authorized deliberate
+aggregate-only TEST look only when requested.
