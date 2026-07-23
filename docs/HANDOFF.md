@@ -4,7 +4,7 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** Phase B restart complete; exit audit passed
+**Status:** Phase C restart increment 1 selected
 
 **Previous safe capability commit:** `0717f04`
 (`Add COGS semantic projection phase A`)
@@ -334,12 +334,49 @@ Recipient coverage is deliberately limited to explicit prepositional
 errors to those two proper-object role boundaries, so they are not part of
 the safe served set.
 
+## Phase C restart increment 1
+
+The first Phase C restart increment restores one depth-1 nominal PP class
+hosted by the safe named-agent active-transitive graph. It is independent of
+the withheld double-object constructions.
+
+### Nominal PP modifier selection brief
+
+Selected before implementation on 2026-07-23:
+
+1. **Construction class:** exactly `Name V a N P a N.`, where the event is a
+   licensed `semantic_agent_theme_verb`, the direct object is an existing
+   `semantic_bare_theme_noun`, and `P` is one of `beside`, `in`, or `on`.
+   Both nominals are indefinite singulars. There is no definiteness, passive
+   auxiliary, recipient, complement, coordination, second PP, negation, or
+   trailing material.
+2. **Complete graph:** the existing named-agent active graph plus one
+   modifier-object entity/type and exactly
+   `modifier(theme, object, preposition)`. The modifier edge spans the head
+   through its PP object, recording both attachment site and evidence. It is
+   the ordinary modifier edge, not a depth-specific fact.
+3. **Synthetic positives:** a named agent acts on an invented
+   `zephyrstone` beside, in, or on another invented `zephyrstone`, proving
+   the preposition label is data-driven and repeated types retain distinct
+   span-based identities.
+4. **Negative neighbours:** subject-attached PPs, definite or named modifier
+   objects, unsupported prepositions, omitted articles, second or nested PPs,
+   coordination, passives, negation, embedding, and unlicensed or ambiguous
+   events and nouns.
+5. **Known DEV buyers:** the earlier DEV-only implementation established 59
+   complete train buyers and 57 aggregate holdout buyers, all currently
+   declined after the checkpoint revert. No holdout rows are inspected.
+6. **Licence and safety boundary:** project-local preposition and
+   modifier-object categories remain declarative. Ambiguous or quarantined
+   nouns stay excluded. The `semantic_to_dative_verb` boundary is unchanged,
+   and double-object recipient projection stays withheld.
+
 ## Immediate next step
 
-Begin the Phase C restart with a fresh DEV-train-only selection brief for
-nominal PP modifiers and attachment provenance. Preserve the
-construction-specific `semantic_to_dative_verb` boundary, keep double-object
-recipient projection withheld, and do not rerun either spent protected slice.
+Implement the recorded nominal PP modifier class and run the complete
+increment gate. Preserve the construction-specific
+`semantic_to_dative_verb` boundary, keep double-object recipient projection
+withheld, and do not rerun either spent protected slice.
 
 ## Increment protocol
 
