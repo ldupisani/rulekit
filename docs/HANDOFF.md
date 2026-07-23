@@ -4,10 +4,10 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** Phase F indefinite common-subject campaign complete
+**Status:** Post-D DEV campaign 2 complete; original Phase E remains blocked
 
-**Previous safe capability commit:** `0717f04`
-(`Add COGS semantic projection phase A`)
+**Current safe DEV baseline:** `964f09f`
+(`Add COGS indefinite common subject projection`)
 
 This is the short operational handoff. The complete Session 1–105 history is
 preserved byte-for-byte in
@@ -589,10 +589,11 @@ GSM8K, ASDiv, SVAMP, MAWPS, SciBench, and FOLIO diffs.
 
 ## Immediate next step
 
-Preserve the completed Phase F state as the DEV baseline. If continuing,
-profile a determined common-subject intransitive class from DEV-train and
-lock its role class before implementation. Preserve the proper-object
-boundary and do not rerun TEST or generalization.
+Preserve completed post-D DEV campaign 2 as the DEV baseline. If continuing
+DEV coverage, profile a determined common-subject intransitive class and lock
+its role class before implementation. To advance the original plan instead,
+first preregister a fresh independent OOD projection gate. Preserve the
+proper-object boundary and do not rerun TEST or generalization.
 
 ## Phase C restart exit audit
 
@@ -651,7 +652,7 @@ This evidence supports freezing the repaired DEV baseline and removing the
 known failure mechanism. It does not support a numerical claim about repaired
 TEST or generalization precision.
 
-## Phase E — determiner-backed common subjects
+## Post-D DEV campaign 1 — determiner-backed common subjects
 
 This new DEV-only campaign extends already safe event frames from proper-name
 subjects to explicitly determined common-noun subjects. It begins from frozen
@@ -713,14 +714,14 @@ Projected-edge precision remains 100%.
 
 The complete gate is green: 192 focused COGS tests, 3,237 full-suite tests,
 zero lint errors, curated 65/65 twice, and neutral GSM8K, ASDiv, SVAMP, MAWPS,
-SciBench, and FOLIO diffs. Every locked Phase E condition is met, so the
-one-increment campaign is complete.
+SciBench, and FOLIO diffs. Every locked post-D campaign 1 condition is met,
+so the one-increment campaign is complete.
 
-## Phase F — indefinite common subjects
+## Post-D DEV campaign 2 — indefinite common subjects
 
 This separate DEV-only campaign extends the same licensed active frame to an
-explicitly indefinite common-noun subject. It begins from completed Phase E;
-protected checkpoint evidence is not a tuning source.
+explicitly indefinite common-noun subject. It begins from completed post-D
+campaign 1; protected checkpoint evidence is not a tuning source.
 
 The locked exit conditions are 100% projected-edge precision, zero incorrect
 graphs, complete buyers in both DEV partitions, no definite edge without
@@ -767,11 +768,11 @@ projected-edge precision remains 100%.
 
 The complete gate is green: 204 focused COGS tests, 3,249 full-suite tests,
 zero lint errors, curated 65/65 twice, and neutral GSM8K, ASDiv, SVAMP, MAWPS,
-SciBench, and FOLIO diffs. Every locked Phase F condition is met.
+SciBench, and FOLIO diffs. Every locked post-D campaign 2 condition is met.
 
 ## Increment protocol
 
-For every Phase B increment:
+For every semantic-projection DEV increment:
 
 1. snapshot COGS DEV train/holdout and all standing regression corpora;
 2. select one frequent clean blocker class from `dev-train`;

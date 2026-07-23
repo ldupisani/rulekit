@@ -1,11 +1,18 @@
 # Semantic projection campaign — COGS → compositional meaning
 
-**Status:** Phase D checkpoint 1 failed (2026-07-23); the Phase B/C batch was
-reverted to the Phase A baseline. One TEST and one generalization look are
-spent and ledgered; neither protected slice may be rerun.
+**Status:** Phase D checkpoint 1 failed (2026-07-23), the batch was reverted,
+and the repaired Phase B/C DEV baseline is now frozen. One TEST and one
+generalization look are spent and ledgered; neither protected slice may be
+rerun. The original Phase E is blocked pending fresh independent OOD evidence.
 
 **Decision:** use **COGS** as the first development corpus. Use **FraCaS** later
 as an external semantic-inference gate, not as the projection worklist.
+
+**Current position:** the repaired baseline plus two explicitly post-D
+DEV-only common-subject campaigns reaches 1,765 exact / 653 safe partial /
+0 incorrect on DEV-train and 1,692 / 660 / 0 on DEV-holdout, at 100%
+projected-edge precision and 11.6%/11.1% edge recall. These extensions are not
+Phase E and do not substitute DEV evidence for the failed OOD checkpoint.
 
 ---
 
@@ -379,6 +386,11 @@ success.
 
 ### Phase E — reconnect projection to questions and inference
 
+**Gate status: BLOCKED — not started.** The prerequisite below was not met by
+checkpoint 1, and the spent protected slices cannot be used again. Entering
+this phase requires a separately preregistered, independent OOD projection
+gate that demonstrates nonzero transfer without a precision failure.
+
 After COGS demonstrates nonzero OOD transfer:
 
 1. make question consumers request graph-shaped semantic queries rather than
@@ -424,10 +436,20 @@ No increment receives credit merely for:
 
 ## 9. Next implementation step
 
-Begin Phase B by subdividing the inspectable DEV-train `transitive` class by
-missing graph structure and subject/object construction. Select one frequent
-class whose complete graph requires a general entity/event/role representation,
-then name that graph and its negative neighbours before implementation.
+The original A–E plan is at the Phase D/Phase E boundary: the repaired DEV
+baseline is frozen, but Phase E remains blocked by the failed OOD checkpoint.
+Do not rerun COGS TEST or generalization and do not describe the post-D
+common-subject campaigns as plan phases.
+
+Two valid next directions remain:
+
+1. **Continue DEV coverage outside the original phase sequence:** profile a
+   determined common-subject intransitive class, lock agent/theme role
+   membership before implementation, and run the normal increment gate.
+2. **Unblock original Phase E:** first specify and freeze a fresh independent
+   OOD projection corpus/gate, including its licence, grouping, precision
+   threshold, and one-look policy. Phase E begins only if that gate
+   demonstrates nonzero transfer without a precision failure.
 
 Do not tune to DEV-holdout items. Do not start by admitting the frequent COGS
 unknown words: vocabulary receives credit only as part of a complete
