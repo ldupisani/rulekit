@@ -49,8 +49,6 @@ from .model import (
     Relation,
     RatioQuantity,
     RestQuantity,
-    SemanticGraphEdge,
-    SemanticGraphNode,
     Subset,
     Unit,
 )
@@ -85,8 +83,6 @@ _FACT_CLASSES = {
     "discount": Discount,
     "percent_change": PercentChange,
     "verbal_relation": VerbalRelation,
-    "semantic_graph_node": SemanticGraphNode,
-    "semantic_graph_edge": SemanticGraphEdge,
 }
 
 
@@ -577,21 +573,12 @@ def match_sequence(
 
 
 def match_all(
-    reading: Reading,
-    tokens: list[MatchToken],
-    reg: Registry,
-    limit: int = 8,
-    *,
-    overlapping: bool = False,
+    reading: Reading, tokens: list[MatchToken], reg: Registry, limit: int = 8
 ) -> list[Match]:
-    """All leftmost matches, non-overlapping unless explicitly requested.
-
-    The default keeps compound-clause matching unchanged. Opt-in overlapping
-    matching advances one unit after the previous match START, allowing one
-    local rule to see both links in an adjacent chain such as N-P-N-P-N.
-    """
+    """ALL non-overlapping leftmost matches — a compound sentence ("X picked
+    12 more than Y, and Y picked 5 less than Z") yields one match per
+    clause; taking only the first would leave the rest to the naive fold."""
     units = reading.units
-    unit_index = {unit.uid: index for index, unit in enumerate(units)}
     out: list[Match] = []
     start = 0
     while start < len(units) and len(out) < limit:
@@ -601,24 +588,12 @@ def match_all(
             consumed: list[int] = []
             end = _try_match_at(units, begin, tokens, reg, slots, consumed)
             if end is not None:
-                matched_here = (
-                    Match(rule=None, slots=slots, consumed=tuple(consumed)),
-                    end,
-                    begin,
-                )  # type: ignore[arg-type]
+                matched_here = (Match(rule=None, slots=slots, consumed=tuple(consumed)), end)  # type: ignore[arg-type]
                 break
         if matched_here is None:
             break
         out.append(matched_here[0])
-        if overlapping:
-            # `begin` may point at a skippable article immediately before the
-            # first consumed unit. Advance from the ACTUAL match start or the
-            # same semantic window is rediscovered once through the article
-            # and once through its head.
-            actual_start = min(unit_index[uid] for uid in matched_here[0].consumed)
-            start = actual_start + 1
-        else:
-            start = matched_here[1]
+        start = matched_here[1]
     return out
 
 
@@ -1027,13 +1002,6 @@ def atom_variants(fact: Fact, emit_fields: dict, slots: dict, reg: Registry) -> 
 
 
 def _slot_value(unit: Unit, attr: str | None) -> str:
-    if attr in ("span_start", "span_end"):
-        units = unit if isinstance(unit, tuple) else (unit,)
-        if not units:
-            return ""
-        index = 0 if attr == "span_start" else -1
-        span_index = 0 if attr == "span_start" else -1
-        return str(units[index].span[span_index])
     if isinstance(unit, tuple):
         # a span slot (MatchToken.span) binds a RUN of units; its rendering
         # is the canonical phrase — `.singular` additionally folds unknown-
@@ -1258,12 +1226,6 @@ def specificity(match: Match, reg: Registry) -> tuple[int, int, int]:
 def subsumes(a: Match, b: Match, reg: Registry) -> bool:
     """a strictly subsumes b: a consumed a superset of b's units and is
     strictly more specific — the narrow rule silently wins."""
-    if b.rule.overlapping:
-        # An opt-in overlapping rule declares a LOCAL edge/window that must
-        # coexist with an enclosing construction match. Dropping it because a
-        # whole-clause rule consumed a superset would defeat the only purpose
-        # of overlapping matching.
-        return False
     return set(a.consumed) >= set(b.consumed) and specificity(a, reg) > specificity(b, reg)
 
 
@@ -1295,7 +1257,7 @@ def run_rules(
             if t.lit is not None
         ):
             continue
-        for m in match_all(reading, seq, reg, overlapping=rule.overlapping):
+        for m in match_all(reading, seq, reg):
             m.rule = rule
             m.specificity = specificity(m, reg)
             if not _check_where(rule, m.slots, reading, reg):

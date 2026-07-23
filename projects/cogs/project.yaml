@@ -4,9 +4,7 @@ name: cogs
 # Projection-level development corpus. The scratch logic pack is the work
 # produced by the FOLIO campaign; loading it here does not change FOLIO's
 # arithmetic-only 0-commit safety project.
-packs:
-  [core-english, difg-mined, ../scratch/packs/logic,
-   ./packs/semantic-projection]
+packs: [core-english, difg-mined, ../scratch/packs/logic]
 
 projection:
   adapter: cogs

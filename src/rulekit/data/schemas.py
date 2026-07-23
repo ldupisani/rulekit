@@ -494,8 +494,7 @@ class FactEmit(StrictModel):
         "ratio_quantity", "goal", "group_total", "rate", "discount",
         "percent_change", "atom", "quantified", "conditional",
         "disjunction", "equivalence", "quantified_disjunction", "existential",
-        "verbal_relation", "semantic_graph_node", "semantic_graph_edge",
-        "alias", "enumerated_disjunction",
+        "verbal_relation", "alias", "enumerated_disjunction",
         "disjunctive_conditional", "ground_conditional",
         "positive_ground_conditional",
     ]
@@ -531,10 +530,6 @@ class PatternRule(StrictModel):
     id: str
     phase: Literal["read", "post-saturation"] = "read"
     description: str | None = None
-    # Opt-in local-chain matching. Default rules advance past a whole match;
-    # an overlapping rule advances one unit past its match start so adjacent
-    # windows such as N-P-N-P-N can emit both N-P-N links.
-    overlapping: bool = False
     match: dict[Literal["sentence", "sentences", "question"], list[MatchToken] | list[list[MatchToken]]]
     where: list[WherePredicate] = Field(default_factory=list)
     consumes: list[str] = Field(default_factory=list)  # value-accounting slots

@@ -275,52 +275,6 @@ class VerbalRelation(Fact):
 
 
 @dataclass(frozen=True)
-class SemanticGraphNode(Fact):
-    """One first-class node in the structured semantic view.
-
-    ``ref`` is a runtime-local identity supplied by the construction
-    (``name:...``, ``entity:...``, or ``event:...``), never a benchmark
-    variable.  Source spans remain metadata: they make the projection
-    inspectable without changing semantic identity or conflict behavior.
-    """
-
-    ref: str
-    kind: str
-    span_start: str = ""
-    span_end: str = ""
-
-    def key(self) -> tuple:
-        return (
-            "semantic-node",
-            self.provenance.sentence,
-            self.ref,
-            self.kind,
-        )
-
-
-@dataclass(frozen=True)
-class SemanticGraphEdge(Fact):
-    """One typed edge over ``SemanticGraphNode`` identities."""
-
-    kind: str
-    source: str
-    target: str = ""
-    label: str = ""
-    span_start: str = ""
-    span_end: str = ""
-
-    def key(self) -> tuple:
-        return (
-            "semantic-edge",
-            self.provenance.sentence,
-            self.kind,
-            self.source,
-            self.target,
-            self.label,
-        )
-
-
-@dataclass(frozen=True)
 class Conditional(Fact):
     """A class-scoped implication read from a copular if-then sentence:
     "If a X is P, then it is [not] Q" -> Conditional(cls='x', pred='p',

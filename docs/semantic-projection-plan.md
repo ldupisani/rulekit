@@ -1,7 +1,8 @@
 # Semantic projection campaign — COGS → compositional meaning
 
-**Status:** Phase A complete (2026-07-23); no TEST/generalization look has been
-spent.
+**Status:** Phase D checkpoint 1 failed (2026-07-23); the Phase B/C batch was
+reverted to the Phase A baseline. One TEST and one generalization look are
+spent and ledgered; neither protected slice may be rerun.
 
 **Decision:** use **COGS** as the first development corpus. Use **FraCaS** later
 as an external semantic-inference gate, not as the projection worklist.
