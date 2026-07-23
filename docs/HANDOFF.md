@@ -4,7 +4,7 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** Phase C restart underway; increment 3 complete
+**Status:** Phase C restart increment 4 selected
 
 **Previous safe capability commit:** `0717f04`
 (`Add COGS semantic projection phase A`)
@@ -489,13 +489,44 @@ safe-to-incorrect transitions. The complete gate is green: 152 focused COGS
 tests, 3,197 full-suite tests, zero lint errors, curated twice, and neutral
 GSM8K, ASDiv, SVAMP, MAWPS, SciBench, and FOLIO diffs.
 
+## Phase C restart increment 4
+
+This increment extends nominal PP attachment to arbitrary local chain depth
+with one reusable overlapping-link rule.
+
+### Recursive nominal modifier selection brief
+
+Selected before implementation on 2026-07-23:
+
+1. **Construction class:** a named-agent licensed active transitive with an
+   indefinite theme followed by two or more adjacent indefinite nominal PPs
+   using existing modifier licences. The depth-2 surface is
+   `Name V a N P a N P a N.`; one mechanism must also serve synthetic depths
+   1 through 4.
+2. **Complete graph:** the active agent/theme frame plus one entity/type and
+   one `modifier(previous_head, object, preposition)` edge per local PP. Each
+   edge retains its own immediately preceding head and exact evidence span.
+3. **Reusable mechanism:** a default-off `overlapping` pattern option lets
+   one declarative `N P a N` rule see every adjacent link. Existing rules keep
+   non-overlapping behavior; no rule encodes a depth.
+4. **Synthetic positives and termination:** depths 1 through 4 must settle
+   through the normal deterministic document fixpoint, with the exact number
+   of local modifier edges and provenance records.
+5. **Negative neighbours:** definite or named PP objects, unsupported
+   prepositions, coordination, event attachment, passives, unlicensed heads,
+   malformed articles, complement boundaries, and unsupported standalone
+   link fragments.
+6. **Known DEV buyers:** the earlier DEV-only implementation established one
+   complete nested-modifier buyer in each partition and safe partial
+   attachment subgraphs elsewhere. No holdout rows are inspected. No
+   vocabulary or quarantine change is required, and the proper-object
+   boundary is independent and unchanged.
+
 ## Immediate next step
 
-Begin the next safe Phase C increment with a DEV-train-only selection brief
-for recursive nested nominal modifiers. Do not restore the former
-double-object alternation increment: it crosses the protected proper-object
-boundary. Preserve that boundary and do not rerun either spent protected
-slice.
+Implement the recorded recursive nominal-modifier class and run its complete
+increment gate. Preserve the proper-object boundary and do not rerun either
+spent protected slice.
 
 ## Increment protocol
 
