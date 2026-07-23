@@ -194,3 +194,35 @@ rules:
          source: "event:{event.span_start}", target: "name:{recipient}",
          label: recipient, span_start: "{event.span_start}",
          span_end: "{recipient.span_end}"}
+
+  # Phase B increment 7: the definite minimal pair of the agentless passive.
+  # The article licenses only discourse definiteness; it does not assert
+  # uniqueness or identity with another mention.
+  - id: semantic/passive-definite-theme-agent-omitted
+    phase: read
+    match:
+      sentence:
+        - {lit: the, consume_skipped: true, at_start: true}
+        - {slot: theme, cat: semantic_bare_theme_noun, bare: true}
+        - {lit: was}
+        - {slot: event, cat: semantic_passive_participle, single_word: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "entity:{theme.span_start}",
+         kind: entity, span_start: "{theme.span_start}",
+         span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_node, ref: "event:{event.span_start}", kind: event,
+         span_start: "{event.span_start}", span_end: "{event.span_end}"}
+      - {fact: semantic_graph_edge, kind: type,
+         source: "entity:{theme.span_start}", label: "{theme}",
+         span_start: "{theme.span_start}", span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_edge, kind: definite,
+         source: "entity:{theme.span_start}", span_start: "0",
+         span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_edge, kind: event,
+         source: "event:{event.span_start}", label: "{event}",
+         span_start: "{event.span_start}", span_end: "{event.span_end}"}
+      - {fact: semantic_graph_edge, kind: role,
+         source: "event:{event.span_start}", target: "entity:{theme.span_start}",
+         label: theme, span_start: "{theme.span_start}",
+         span_end: "{event.span_end}"}

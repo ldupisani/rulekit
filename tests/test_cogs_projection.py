@@ -468,6 +468,89 @@ def test_prepositional_dative_declines_alternation_and_shape_neighbours(
     )
 
 
+def test_definite_agentless_passive_projects_a_complete_graph(
+    cogs_project,
+) -> None:
+    text = "The zephyrstone was appreciated."
+    result = solve(text, cogs_project.registry, tracing=False)
+    got = project_result(result, text, cogs_project.registry)
+    expected = parse_cogs_logical_form(
+        "* zephyrstone(x_1); appreciate.theme(x_3,x_1)"
+    )
+    assert got.node_keys() == expected.node_keys()
+    assert got.edge_keys() == expected.edge_keys()
+    assert ("definite", "x1", "", "") in got.edge_keys()
+    assert ("role", "x3", "x1", "theme") in got.edge_keys()
+    assert not any(
+        edge[0] == "role" and edge[3] == "agent"
+        for edge in got.edge_keys()
+    )
+
+    nodes = list(result.store.by_kind(SemanticGraphNode))
+    edges = list(result.store.by_kind(SemanticGraphEdge))
+    assert len(nodes) == 2
+    assert len(edges) == 4
+    assert {fact.provenance.source for fact in nodes + edges} == {
+        "semantic/passive-definite-theme-agent-omitted"
+    }
+    definite = next(edge for edge in edges if edge.kind == "definite")
+    assert (definite.span_start, definite.span_end) == ("0", "1")
+
+
+def test_definite_passive_leaves_indefinite_minimal_pair_unchanged(
+    cogs_project,
+) -> None:
+    text = "A zephyrstone was appreciated."
+    result = solve(text, cogs_project.registry, tracing=False)
+    semantic_sources = {
+        fact.provenance.source
+        for fact in (
+            list(result.store.by_kind(SemanticGraphNode))
+            + list(result.store.by_kind(SemanticGraphEdge))
+        )
+    }
+    assert semantic_sources == {
+        "semantic/passive-indefinite-theme-agent-omitted"
+    }
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Neris was appreciated.",
+        "Zephyrstones were appreciated.",
+        "The zephyrstone was appreciated by Neris.",
+        "The zephyrstone was given to Mira.",
+        "The bright zephyrstone was appreciated.",
+        "The zephyrstone beacon was appreciated.",
+        "The zephyrstone was appreciated near Mira.",
+        "The zephyrstone was appreciated and admired.",
+        "The zephyrstone was not appreciated.",
+        "The zephyrstone is appreciated.",
+        "Neris appreciated the zephyrstone.",
+        "Mira said that the zephyrstone was appreciated.",
+        "The zephyrstone was cooked.",
+        "The zephyrstone was frozen.",
+    ],
+)
+def test_definite_passive_declines_identity_and_shape_neighbours(
+    cogs_project,
+    text: str,
+) -> None:
+    result = solve(text, cogs_project.registry, tracing=False)
+    semantic_sources = {
+        fact.provenance.source
+        for fact in (
+            list(result.store.by_kind(SemanticGraphNode))
+            + list(result.store.by_kind(SemanticGraphEdge))
+        )
+    }
+    assert (
+        "semantic/passive-definite-theme-agent-omitted"
+        not in semantic_sources
+    )
+
+
 def _snapshot(outcome: str, got_label: str = "") -> dict:
     got = ProjectionGraph(
         nodes=(ProjectionNode("x1", "entity"),) if got_label else (),

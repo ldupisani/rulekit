@@ -4,10 +4,10 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** Phase B underway; increments 1–6 complete
+**Status:** Phase B complete; ready to begin Phase C
 
-**Previous capability commit:** `70d159e`
-(`Add COGS named-agent passive projection`)
+**Previous capability commit:** `2e92f92`
+(`Add COGS prepositional dative projection`)
 
 This is the short operational handoff. The complete Session 1–105 history is
 preserved byte-for-byte in
@@ -572,25 +572,103 @@ curated twice; GSM8K DEV-train and DEV-holdout; and ASDiv, SVAMP, MAWPS,
 SciBench, and FOLIO DEV. Every standing non-COGS snapshot diff is neutral. No
 COGS TEST or generalization look was spent.
 
+## Phase B increment 7
+
+The seventh Phase B increment adds definiteness as the exact minimal pair of
+increment 4: a definite common-noun theme in an agentless passive.
+
+### Phase B increment 7 selection brief
+
+Selected before implementation on 2026-07-23:
+
+1. **Construction class:** exactly `The N was V-en.`, with an anchored
+   definite article, one bare singular `semantic_bare_theme_noun`, the `was`
+   auxiliary, and one licensed `semantic_passive_participle`. There is no
+   expressed agent, recipient, modifier, coordination, negation, complement,
+   or trailing material.
+2. **Complete graph:** increment 4's theme entity/type, event/predicate, and
+   `theme(event, entity)` role plus exactly `definite(entity)`. The definite
+   edge records the article-backed discourse status; it does not assert a
+   unique real-world object or identity with any other mention. Every node and
+   edge retains the emitting rule provenance and exact source span.
+3. **Synthetic positive:** `The zephyrstone was appreciated.`, paired with
+   increment 4's indefinite form and increment 5's expressed-agent passive.
+4. **Negative neighbours:** indefinite and named themes; plural agreement;
+   expressed `by` agents; recipients; definite noun modifiers or compounds;
+   PP, coordination, negation, and embedded tails; active order; and all
+   increment-4 quarantine or unsafe-participle exclusions.
+5. **Expected buyers:** the exact class contains 439 inspectable DEV-train and
+   412 aggregate DEV-holdout rows. Reusing the existing noun and
+   passive-participle licences leaves 217 DEV-train and 192 aggregate
+   DEV-holdout buyers, all currently declined. On train, 159 rows use themes
+   outside the noun licence and 63 use participles outside the existing
+   passive licence. Holdout item text remains uninspected.
+6. **Declarative licence:** no new vocabulary or Python mechanism is needed.
+   The existing categories license noun and event interpretation; the exact
+   definite article and passive skeleton license the new graph edge.
+
+### Phase B increment 7 result
+
+The definite agentless-passive rule emits increment 4's complete
+entity/type, event/predicate, and theme-role graph plus one definite edge
+whose evidence spans the article and noun. It emits no uniqueness or
+cross-mention identity claim.
+
+| split | before exact | after exact | new exact | incorrect | edge recall |
+|---|---:|---:|---:|---:|---:|
+| DEV-train | 1,235 | 1,452 | +217 | 0 | 5.6% → 6.8% |
+| DEV-holdout | 1,198 | 1,390 | +192 | 0 | 5.4% → 6.4% |
+
+The observed buyer counts exactly match the pre-implementation estimate.
+Both harm-ordered diffs report zero broken exact graphs and zero
+safe-to-incorrect transitions.
+
+Verification is green: 3,144 synthetic/unit tests; COGS lint with zero errors;
+curated twice; GSM8K DEV-train and DEV-holdout; and ASDiv, SVAMP, MAWPS,
+SciBench, and FOLIO DEV. Every standing non-COGS snapshot diff is neutral. No
+COGS TEST or generalization look was spent.
+
+## Phase B exit audit
+
+Phase B meets its locked exit gate:
+
+- edge precision is 100% and incorrect graphs are zero on both DEV
+  partitions;
+- total exact coverage is 1,452/12,056 on DEV-train and 1,390/12,099 on
+  aggregate DEV-holdout, above the 247/213 Phase A baseline;
+- every required structural class has nonzero exact buyers on both
+  partitions: transitive 630/611, ditransitive 30/18, intransitive-agent
+  271/267, and intransitive-theme 521/494;
+- named and indefinite entities, verb-class-sensitive intransitives, active
+  and passive transitives with omitted or expressed agents, recipient roles,
+  and article-backed definiteness all have complete buyers;
+- every shipped class has exact source-span and rule provenance, with no
+  unsupported uniqueness or identity claim; and
+- every increment retained zero new incorrect edges and neutral standing
+  regression/cross-corpus gates.
+
+The protected COGS TEST/generalization checkpoint is Phase D, after both
+Phases B and C meet their DEV objectives. It remains unspent.
+
 ## Immediate next step
 
-Build the Phase B definiteness increment. Use only inspectable `dev-train`
-data to:
+Begin Phase C with nominal PP modifiers and attachment provenance. Use only
+inspectable `dev-train` data to:
 
-- subdivide definite entity graphs across the already served active,
-  intransitive, and passive surfaces, separating exact bare descriptions from
-  modifiers, compounds, and attachment structures;
-- choose one frequent minimal pair of an existing indefinite class where the
-  only new semantic element is `definite(entity)`;
-- retain entity/type, event/predicate, and role provenance while recording
-  the definite article's evidence without asserting uniqueness or identity
-  beyond the discourse referent;
-- test indefinite/definite minimal pairs plus named, modified, coordinated,
-  negated, passive, embedded, and article-less neighbours; and
-- require complete definite buyers on both DEV partitions with no change to
-  the existing indefinite graphs.
+- subdivide the 2,186 nominal-modifier graphs by head and object entity type,
+  preposition, modifier depth, definiteness, and whether an already served
+  event/role frame can host the attachment;
+- select one frequent depth-1 class whose complete graph adds exactly one
+  `modifier(head, object, preposition)` edge to already licensed entities;
+- record attachment evidence, exact buyers, alternative-attachment and
+  overreach controls, quarantine audit, and aggregate holdout count before
+  implementation;
+- require the same graph machinery—not a depth-specific fact class—to be
+  extensible to the later nested-modifier increment; and
+- preserve zero incorrect edges and neutral standing gates.
 
-Do not inspect holdout rows or spend COGS TEST/generalization looks.
+Do not inspect holdout rows or spend COGS TEST/generalization looks before the
+Phase D checkpoint.
 
 ## Increment protocol
 
