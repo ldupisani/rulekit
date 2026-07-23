@@ -4,7 +4,7 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** Phase C restart increment 5 selected
+**Status:** Phase C restart implementation complete; exit audit next
 
 **Previous safe capability commit:** `0717f04`
 (`Add COGS semantic projection phase A`)
@@ -570,11 +570,31 @@ Selected before implementation on 2026-07-23:
    quarantine change is required, no holdout rows are inspected, and the
    proper-object boundary is unchanged.
 
+### Result
+
+Two reusable local rules project each adjacent ccomp hop and the terminal
+subject-control xcomp. Synthetic total complement depths 2 through 4 produce
+complete graphs with distinct events, directed complement edges, explicit
+controller sharing, local provenance, and deterministic termination.
+
+| DEV partition | Before exact | After exact | Gain | Incorrect | Edge recall |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| train | 1,645 | 1,650 | +5 | 0 | 10.8% |
+| holdout | 1,561 | 1,563 | +2 | 0 | 10.2% |
+
+Both harm-ordered diffs have zero broken exact graphs and zero
+safe-to-incorrect transitions. The complete gate is green: 179 focused COGS
+tests, 3,224 full-suite tests, zero lint errors, curated twice, and neutral
+GSM8K, ASDiv, SVAMP, MAWPS, SciBench, and FOLIO diffs.
+
 ## Immediate next step
 
-Implement the recorded recursive complement class and run the complete
-increment gate. Preserve the proper-object boundary and do not rerun either
-spent protected slice.
+Run the locked Phase C exit audit against the safe post-checkpoint target set.
+Require nonzero complete holdout coverage for nominal PP modifiers, ccomp,
+xcomp, nested modifiers, and nested complements; verify active/passive role
+invariance and the explicit-to dative role graph; and record the
+double-object/proper-object exclusion without weakening the precision gate.
+Do not rerun either spent protected slice.
 
 ## Increment protocol
 
