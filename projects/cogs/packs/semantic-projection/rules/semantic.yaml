@@ -346,6 +346,48 @@ rules:
          label: recipient, span_start: "{event.span_start}",
          span_end: "{recipient.span_end}"}
 
+  # Phase C increment 4: the double-object alternant of the preceding rule.
+  # Recipient and theme follow the surface syntax, but the emitted semantic
+  # role graph is identical to the `to`-dative graph.
+  - id: semantic/ditransitive-name-name-recipient-indefinite-theme
+    phase: read
+    match:
+      sentence:
+        - {slot: agent, type: proper_name, at_start: true,
+           blocks_skipped: article}
+        - {slot: event, cat: semantic_ditransitive_verb, single_word: true}
+        - {slot: recipient, type: proper_name, blocks_skipped: article}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: theme, cat: semantic_bare_theme_noun, bare: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "name:{agent}", kind: entity,
+         span_start: "{agent.span_start}", span_end: "{agent.span_end}"}
+      - {fact: semantic_graph_node, ref: "event:{event.span_start}", kind: event,
+         span_start: "{event.span_start}", span_end: "{event.span_end}"}
+      - {fact: semantic_graph_node, ref: "name:{recipient}", kind: entity,
+         span_start: "{recipient.span_start}", span_end: "{recipient.span_end}"}
+      - {fact: semantic_graph_node, ref: "entity:{theme.span_start}",
+         kind: entity, span_start: "{theme.span_start}",
+         span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_edge, kind: event,
+         source: "event:{event.span_start}", label: "{event}",
+         span_start: "{event.span_start}", span_end: "{event.span_end}"}
+      - {fact: semantic_graph_edge, kind: type,
+         source: "entity:{theme.span_start}", label: "{theme}",
+         span_start: "{theme.span_start}", span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_edge, kind: role,
+         source: "event:{event.span_start}", target: "name:{agent}", label: agent,
+         span_start: "{agent.span_start}", span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_edge, kind: role,
+         source: "event:{event.span_start}", target: "entity:{theme.span_start}",
+         label: theme, span_start: "{event.span_start}",
+         span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_edge, kind: role,
+         source: "event:{event.span_start}", target: "name:{recipient}",
+         label: recipient, span_start: "{event.span_start}",
+         span_end: "{recipient.span_end}"}
+
   # Phase B increment 7: the definite minimal pair of the agentless passive.
   # The article licenses only discourse definiteness; it does not assert
   # uniqueness or identity with another mention.

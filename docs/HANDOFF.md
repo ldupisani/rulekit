@@ -4,10 +4,10 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** Phase C underway; increment 3 complete
+**Status:** Phase C underway; increment 4 complete
 
-**Previous capability commit:** `29ff50e`
-(`Add COGS ccomp event projection`)
+**Previous capability commit:** `94886cd`
+(`Add COGS xcomp control projection`)
 
 This is the short operational handoff. The complete Session 1–105 history is
 preserved byte-for-byte in
@@ -857,15 +857,75 @@ DEV-train 104 and DEV-holdout 40; ASDiv 44; SVAMP 30; MAWPS 9; SciBench 6;
 and FOLIO 0 committed. Every standing non-COGS snapshot diff is neutral. No
 COGS TEST or generalization look was spent.
 
+## Phase C increment 4
+
+The fourth Phase C increment demonstrates role-graph invariance across the
+double-object and prepositional-dative surface alternation.
+
+### Phase C increment 4 selection brief
+
+Selected before implementation on 2026-07-23:
+
+1. **Construction class:** exactly `Name V Name a N.`, where the event is an
+   existing `semantic_ditransitive_verb`, the first post-verbal name is the
+   recipient, and the final common noun is an existing
+   `semantic_bare_theme_noun`. There is no `to`, definiteness, passive, PP,
+   modifier, coordination, negation, complement, or trailing material.
+2. **Complete graph:** the identical four-node, five-edge semantic graph
+   emitted for Phase B's `Name V a N to Name.` prepositional dative: named
+   agent and recipient entities, one indefinite typed theme entity, one event
+   predicate, and `agent`, `theme`, and `recipient` role edges. Surface
+   position changes no role kind or edge direction.
+3. **Synthetic alternation pair:** `Neris` gives invented recipient `Mira` an
+   invented `zephyrstone`, paired with `Neris` giving the same
+   `zephyrstone` to `Mira`; both must have equal labeled role topology after
+   abstracting only the deliberately different token-indexed runtime refs.
+4. **Negative neighbours:** omitted recipients or themes; prepositional
+   datives handled by the existing rule; indefinite or definite common-noun
+   recipients; definite or named themes; passive datives; modifiers,
+   coordination, negation, embedding, malformed order, and unlicensed event
+   forms.
+5. **Expected buyers:** the exact graph/surface class contains 53 inspectable
+   DEV-train rows. Reusing the existing event and theme licences leaves 33
+   DEV-train and 31 aggregate DEV-holdout buyers, all currently declined.
+   Holdout item text remains uninspected.
+6. **Declarative licence and audit:** no new vocabulary or Python mechanism
+   is needed. Seven existing ditransitive forms have observed train buyers;
+   all selected forms and themes passed the earlier quarantine audit. The
+   rule emits the same role edge kinds used by the prepositional alternant.
+
+### Phase C increment 4 result
+
+The double-object rule emits the same event, entity/type, and
+agent/theme/recipient role topology as the existing prepositional dative.
+Only token-indexed runtime refs differ with surface order; no
+surface-order-specific role or semantic fact type was introduced.
+
+| split | before exact | after exact | new exact | incorrect | edge recall |
+|---|---:|---:|---:|---:|---:|
+| DEV-train | 1,644 | 1,677 | +33 | 0 | 8.1% → 8.4% |
+| DEV-holdout | 1,560 | 1,591 | +31 | 0 | 7.6% → 7.8% |
+
+The ditransitive bucket now has 63/2,661 exact DEV-train graphs and 49/2,687
+exact aggregate DEV-holdout graphs. Both observed buyer counts exactly match
+the pre-implementation estimate. Both harm-ordered diffs report zero broken
+exact graphs and zero safe-to-incorrect transitions.
+
+Verification is green: 3,207 synthetic/unit tests; 162 focused COGS
+projection tests; COGS lint with zero errors; curated 65/65 twice; GSM8K
+DEV-train 104 and DEV-holdout 40; ASDiv 44; SVAMP 30; MAWPS 9; SciBench 6;
+and FOLIO 0 committed. Every standing non-COGS snapshot diff is neutral. No
+COGS TEST or generalization look was spent.
+
 ## Immediate next step
 
-Begin Phase C increment 4 with cross-alternation role invariance. Use only
-inspectable DEV-train data to select a frequent unserved active/passive or
-dative surface alternation whose complete graph reuses an already served
-agent/theme/recipient role structure. Record paired synthetic surfaces,
-buyers, exclusions, and declarative licences before implementation; add no
-surface-order-specific semantic role type, and preserve zero incorrect edges
-and neutral standing gates.
+Begin Phase C increment 5 with recursive nested PP modifiers. Use only
+inspectable DEV-train data to identify a nested extension of increment 1's
+licensed attachment class. The implementation must use one reusable rule
+family or document-round mechanism across multiple synthetic depths, preserve
+deterministic termination, and emit each modifier edge with its own exact
+head/object attachment provenance. Record buyers and overreach controls before
+implementation.
 
 Do not inspect holdout rows or spend COGS TEST/generalization looks before the
 Phase D checkpoint.

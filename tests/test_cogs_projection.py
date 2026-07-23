@@ -694,6 +694,98 @@ def test_prepositional_dative_declines_alternation_and_shape_neighbours(
     )
 
 
+def test_double_object_dative_projects_same_role_topology_as_to_dative(
+    cogs_project,
+) -> None:
+    text = "Neris gave Mira a zephyrstone."
+    result = solve(text, cogs_project.registry, tracing=False)
+    got = project_result(result, text, cogs_project.registry)
+    expected = parse_cogs_logical_form(
+        "give.agent(x_1,Neris) AND give.theme(x_1,x_4) "
+        "AND give.recipient(x_1,Mira) AND zephyrstone(x_4)"
+    )
+    assert got.node_keys() == expected.node_keys()
+    assert got.edge_keys() == expected.edge_keys()
+
+    nodes = list(result.store.by_kind(SemanticGraphNode))
+    edges = list(result.store.by_kind(SemanticGraphEdge))
+    assert len(nodes) == 4
+    assert len(edges) == 5
+    assert {fact.provenance.source for fact in nodes + edges} == {
+        "semantic/ditransitive-name-name-recipient-indefinite-theme"
+    }
+
+    alternate_text = "Neris gave a zephyrstone to Mira."
+    alternate = project_result(
+        solve(alternate_text, cogs_project.registry, tracing=False),
+        alternate_text,
+        cogs_project.registry,
+    )
+
+    def topology(graph):
+        event_labels = {
+            edge.source: edge.label
+            for edge in graph.edges if edge.kind == "event"
+        }
+        type_labels = {
+            edge.source: edge.label
+            for edge in graph.edges if edge.kind == "type"
+        }
+
+        def abstract(ref):
+            if ref in event_labels:
+                return ("event", event_labels[ref])
+            if ref in type_labels:
+                return ("entity", type_labels[ref])
+            if ref.startswith("const:"):
+                return ("constant", ref.removeprefix("const:"))
+            return ("", "")
+
+        return {
+            (edge.kind, abstract(edge.source), abstract(edge.target), edge.label)
+            for edge in graph.edges
+        }
+
+    assert topology(got) == topology(alternate)
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Neris gave a zephyrstone to Mira.",
+        "Neris gave a zephyrstone.",
+        "Neris gave Mira.",
+        "Neris gave a pilot a zephyrstone.",
+        "Neris gave the pilot a zephyrstone.",
+        "A pilot gave Mira a zephyrstone.",
+        "Neris gave Mira the zephyrstone.",
+        "Neris gave Mira Lio.",
+        "A zephyrstone was given to Mira by Neris.",
+        "Neris gave Mira a zephyrstone beside a table.",
+        "Neris gave Mira a zephyrstone and a bell.",
+        "Neris did not give Mira a zephyrstone.",
+        "Lio said that Neris gave Mira a zephyrstone.",
+        "Neris lended Mira a zephyrstone.",
+    ],
+)
+def test_double_object_dative_declines_neighbouring_alternation_shapes(
+    cogs_project,
+    text: str,
+) -> None:
+    result = solve(text, cogs_project.registry, tracing=False)
+    sources = {
+        fact.provenance.source
+        for fact in (
+            list(result.store.by_kind(SemanticGraphNode))
+            + list(result.store.by_kind(SemanticGraphEdge))
+        )
+    }
+    assert (
+        "semantic/ditransitive-name-name-recipient-indefinite-theme"
+        not in sources
+    )
+
+
 def test_definite_agentless_passive_projects_a_complete_graph(
     cogs_project,
 ) -> None:
