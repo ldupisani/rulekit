@@ -1,5 +1,8 @@
 format: rulekit/lexicon@1
 entries:
+  # Missing nominal-attachment preposition for Phase C increment 1.
+  beside: {senses: [preposition]}
+
   # Missing overt event forms used by the licensed construction.
   admired: {senses: [verb], verb: {lemma: admire}}
   adored: {senses: [verb], verb: {lemma: adore}}

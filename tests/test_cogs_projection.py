@@ -153,6 +153,79 @@ def test_new_event_vocabulary_does_not_buy_a_definite_neighbour(
     assert project_result(result, text, cogs_project.registry).empty
 
 
+@pytest.mark.parametrize("preposition", ["beside", "in", "on"])
+def test_active_theme_nominal_modifier_projects_complete_attachment(
+    cogs_project,
+    preposition: str,
+) -> None:
+    text = f"Neris admired a zephyrstone {preposition} a zephyrstone."
+    result = solve(text, cogs_project.registry, tracing=False)
+    got = project_result(result, text, cogs_project.registry)
+    expected = parse_cogs_logical_form(
+        "admire.agent(x_1,Neris) AND admire.theme(x_1,x_3) "
+        f"AND zephyrstone(x_3) "
+        f"AND zephyrstone.nmod.{preposition}(x_3,x_6) "
+        "AND zephyrstone(x_6)"
+    )
+    assert got.node_keys() == expected.node_keys()
+    assert got.edge_keys() == expected.edge_keys()
+    assert ("modifier", "x3", "x6", preposition) in got.edge_keys()
+
+    nodes = list(result.store.by_kind(SemanticGraphNode))
+    edges = list(result.store.by_kind(SemanticGraphEdge))
+    assert len(nodes) == 4
+    assert len(edges) == 6
+    assert {fact.provenance.source for fact in nodes + edges} == {
+        "semantic/active-name-indefinite-theme-indefinite-modifier"
+    }
+    assert {
+        (fact.span_start, fact.span_end) for fact in nodes
+    } == {("0", "0"), ("1", "1"), ("3", "3"), ("6", "6")}
+    modifier = next(fact for fact in edges if fact.kind == "modifier")
+    assert (modifier.source, modifier.target, modifier.label) == (
+        "entity:3",
+        "entity:6",
+        preposition,
+    )
+    assert (modifier.span_start, modifier.span_end) == ("3", "6")
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "A zephyrstone beside a chair admired a zephyrstone.",
+        "Neris admired the zephyrstone beside a chair.",
+        "Neris admired a zephyrstone beside the chair.",
+        "Neris admired a zephyrstone beside Mira.",
+        "Neris admired a zephyrstone near a chair.",
+        "Neris admired a zephyrstone beside chair.",
+        "Neris admired a zephyrstone beside a chair on a table.",
+        "Neris admired a zephyrstone beside a chair and a table.",
+        "A zephyrstone was admired by Neris beside a chair.",
+        "Neris did not admire a zephyrstone beside a chair.",
+        "Neris said that Mira admired a zephyrstone beside a chair.",
+        "Neris missed a zephyrstone beside a chair.",
+        "Neris admired a zephyrstone beside a log.",
+    ],
+)
+def test_active_theme_nominal_modifier_declines_attachment_neighbours(
+    cogs_project,
+    text: str,
+) -> None:
+    result = solve(text, cogs_project.registry, tracing=False)
+    semantic_sources = {
+        fact.provenance.source
+        for fact in (
+            list(result.store.by_kind(SemanticGraphNode))
+            + list(result.store.by_kind(SemanticGraphEdge))
+        )
+    }
+    assert (
+        "semantic/active-name-indefinite-theme-indefinite-modifier"
+        not in semantic_sources
+    )
+
+
 def test_named_intransitive_agent_projects_a_complete_graph(
     cogs_project,
 ) -> None:

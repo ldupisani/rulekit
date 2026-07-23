@@ -4,10 +4,10 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** Phase B complete; ready to begin Phase C
+**Status:** Phase C underway; increment 1 complete
 
-**Previous capability commit:** `2e92f92`
-(`Add COGS prepositional dative projection`)
+**Previous capability commit:** `eef5385`
+(`Add COGS passive definiteness projection`)
 
 This is the short operational handoff. The complete Session 1–105 history is
 preserved byte-for-byte in
@@ -650,29 +650,95 @@ Phase B meets its locked exit gate:
 The protected COGS TEST/generalization checkpoint is Phase D, after both
 Phases B and C meet their DEV objectives. It remains unspent.
 
+## Phase C increment 1
+
+The first Phase C increment begins compositional attachment with one depth-1
+nominal PP class hosted by the already served active-transitive role graph.
+
+### Phase C increment 1 selection brief
+
+Selected before implementation on 2026-07-23:
+
+1. **Construction class:** exactly `Name V a N P a N.`, where the event is a
+   licensed `semantic_agent_theme_verb`, the direct object is an existing
+   `semantic_bare_theme_noun`, and `P` is one of the declaratively licensed
+   nominal modifiers `beside`, `in`, or `on`. Both nominals are indefinite
+   singulars. There is no definiteness, passive auxiliary, recipient,
+   complement, coordination, second PP, negation, or trailing material.
+2. **Complete graph:** the existing named-agent active graph—agent entity,
+   event/predicate, theme entity/type, and exact agent/theme roles—plus one
+   modifier-object entity/type and exactly
+   `modifier(theme, object, preposition)`. The modifier edge spans the head
+   through its PP object, so its provenance records both the attachment site
+   and attachment evidence. It uses the ordinary `modifier` graph edge, not a
+   depth-specific fact, and can therefore be reused by the later nested-PP
+   increment.
+3. **Synthetic positives:** a named agent admires an invented
+   `zephyrstone` beside, in, or on another invented `zephyrstone`, proving
+   that the preposition label is data-driven while node identity remains
+   span-based even when both type predicates are equal.
+4. **Negative neighbours:** subject-attached PPs, definite or named modifier
+   objects, unsupported prepositions, omitted articles, second or nested PPs,
+   coordination, passives, negation, embedding, and lexically unlicensed or
+   ambiguous events and nouns. Each must remain for its own construction or
+   decline safely.
+5. **Expected buyers:** the exact class has 122 inspectable DEV-train rows.
+   Existing event and theme licences plus a modifier-object category
+   containing only already known unambiguous noun entries leave 59
+   DEV-train buyers: 20 `beside`, 22 `in`, and 17 `on`. The same licence has
+   59 aggregate DEV-holdout buyers. All 118 buyers are currently declined;
+   holdout item text remains uninspected.
+6. **Declarative licence and audit:** new project-local preposition and
+   modifier-object categories contain no Python vocabulary. The object
+   category contains 23 corpus-relevant existing noun-only entries plus the
+   synthetic-only `zephyrstone`. Missing noun vocabulary remains excluded, as
+   do ambiguous `log` and quarantined `tiger`; none of the selected words or
+   prepositions is quarantined.
+
+### Phase C increment 1 result
+
+The depth-1 nominal-PP rule emits the complete named-agent active graph plus
+one modifier-object entity/type and one ordinary modifier edge. The captured
+preposition supplies the edge label; the edge's evidence spans the theme head
+through the PP object, retaining an exact, inspectable attachment decision.
+The same edge type can represent later nested attachments without a
+depth-specific schema or fact class.
+
+| split | before exact | after exact | new exact | incorrect | edge recall |
+|---|---:|---:|---:|---:|---:|
+| DEV-train | 1,452 | 1,511 | +59 | 0 | 6.8% → 7.2% |
+| DEV-holdout | 1,390 | 1,447 | +57 | 0 | 6.4% → 6.8% |
+
+The nominal-modifier bucket now has 59/2,186 exact DEV-train graphs and
+57/2,121 exact aggregate DEV-holdout graphs. Train exactly matches the
+pre-implementation buyer estimate. Two of the 59 mechanically predicted
+holdout buyers remained safely declined; their rows were not inspected and
+the dormant join is retained as an aggregate-only observation. Both
+harm-ordered diffs report zero broken exact graphs and zero safe-to-incorrect
+transitions.
+
+Verification is green: 3,160 synthetic/unit tests; 115 focused COGS
+projection tests; COGS lint with zero errors; curated 65/65 twice; GSM8K
+DEV-train 104 and DEV-holdout 40; ASDiv 44; SVAMP 30; MAWPS 9; SciBench 6;
+and FOLIO 0 committed. Every standing non-COGS snapshot diff is neutral. No
+COGS TEST or generalization look was spent.
+
 ## Immediate next step
 
-Begin Phase C with nominal PP modifiers and attachment provenance. Use only
-inspectable `dev-train` data to:
-
-- subdivide the 2,186 nominal-modifier graphs by head and object entity type,
-  preposition, modifier depth, definiteness, and whether an already served
-  event/role frame can host the attachment;
-- select one frequent depth-1 class whose complete graph adds exactly one
-  `modifier(head, object, preposition)` edge to already licensed entities;
-- record attachment evidence, exact buyers, alternative-attachment and
-  overreach controls, quarantine audit, and aggregate holdout count before
-  implementation;
-- require the same graph machinery—not a depth-specific fact class—to be
-  extensible to the later nested-modifier increment; and
-- preserve zero incorrect edges and neutral standing gates.
+Begin Phase C increment 2 with `ccomp` event/clause embedding. Use only
+inspectable DEV-train data to subdivide the 970 `ccomp` graphs by matrix
+frame, embedded event frame, subject realization and sharing, complementizer,
+definiteness, and nesting depth. Select one frequent depth-1 class that adds
+one event-to-event `complement(..., ccomp)` edge between complete licensed
+subgraphs, record buyers and overreach controls before implementation, and
+preserve zero incorrect edges and neutral standing gates.
 
 Do not inspect holdout rows or spend COGS TEST/generalization looks before the
 Phase D checkpoint.
 
 ## Increment protocol
 
-For every Phase B increment:
+For every semantic-projection increment:
 
 1. snapshot COGS DEV train/holdout and all standing regression corpora;
 2. select one frequent clean blocker class from `dev-train`;
