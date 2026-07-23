@@ -4,10 +4,10 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** Phase C underway; increment 4 complete
+**Status:** Phase C underway; increment 5 complete
 
-**Previous capability commit:** `94886cd`
-(`Add COGS xcomp control projection`)
+**Previous capability commit:** `2d5b51e`
+(`Add COGS double-object dative projection`)
 
 This is the short operational handoff. The complete Session 1–105 history is
 preserved byte-for-byte in
@@ -917,15 +917,84 @@ DEV-train 104 and DEV-holdout 40; ASDiv 44; SVAMP 30; MAWPS 9; SciBench 6;
 and FOLIO 0 committed. Every standing non-COGS snapshot diff is neutral. No
 COGS TEST or generalization look was spent.
 
+## Phase C increment 5
+
+The fifth Phase C increment extends nominal PP attachment to arbitrary local
+chain depth with one reusable overlapping-link rule.
+
+### Phase C increment 5 selection brief
+
+Selected before implementation on 2026-07-23:
+
+1. **Construction class:** a named-agent licensed active transitive with an
+   indefinite theme followed by two or more adjacent indefinite nominal PPs,
+   where every preposition and noun is in the existing modifier licences.
+   The inspectable depth-2 corpus surface is exactly
+   `Name V a N P a N P a N.`; the same mechanism must accept synthetic
+   depths 1, 2, 3, and 4 without depth-specific rules.
+2. **Complete graph:** the existing active agent/theme event graph plus one
+   entity/type node and one directed
+   `modifier(previous_head, object, preposition)` edge for every local PP.
+   Each link's source is the immediately preceding nominal ref, not the root
+   theme for all depths, and each edge retains its own head-through-object
+   evidence span.
+3. **Reusable mechanism:** add a default-off `overlapping` pattern-rule
+   option. When enabled, the generic matcher advances one unit after a match
+   start rather than after the whole match, so one declarative `N P a N`
+   link rule sees every adjacent, intentionally overlapping pair in a chain.
+   Existing rules retain non-overlapping behavior. A separate prefix root rule
+   emits the already licensed event frame once; neither rule encodes a depth.
+4. **Synthetic positives and termination:** invented `Neris`/`zephyrstone`
+   chains at depths 1 through 4 must produce the complete graph. The depth-4
+   case must settle through the normal document fixpoint in one round and
+   produce exactly four modifier edges with local provenance.
+5. **Negative neighbours:** definite or named PP objects, unsupported
+   prepositions, coordination, event-attached PPs, passives, unlicensed event
+   or noun heads, malformed articles, and complement boundaries. Root-frame
+   overreach and standalone link fragments must not create an unsupported
+   complete graph.
+6. **Expected buyers and licence:** the exact all-indefinite depth-2 surface
+   has three inspectable DEV-train rows. Existing event/theme/preposition and
+   modifier-object licences leave one DEV-train and one aggregate
+   DEV-holdout buyer, both currently declined. A new noun supercategory
+   structurally unites the existing theme and modifier-object subcategories
+   without copying either member list. No vocabulary or quarantine change is
+   needed; holdout item text remains uninspected.
+
+### Phase C increment 5 result
+
+The default-off overlapping matcher preserves all existing rule behavior while
+letting one local nominal-link rule see every adjacent edge in an attachment
+chain. Synthetic depths 1 through 4 produce complete graphs; the depth-4 case
+settles in one normal document round with four locally sourced modifier edges.
+The corpus depth-2 class gains complete buyers in both DEV partitions.
+
+| split | before exact | after exact | new exact | incorrect | edge recall |
+|---|---:|---:|---:|---:|---:|
+| DEV-train | 1,677 | 1,678 | +1 | 0 | 8.4% → 10.8% |
+| DEV-holdout | 1,591 | 1,592 | +1 | 0 | 7.8% → 10.2% |
+
+The nested-modifier bucket now has 1/199 exact DEV-train and 1/210 exact
+aggregate DEV-holdout graph, exactly matching the pre-implementation
+estimate. The reusable local rule additionally moved 584 train and 593
+holdout graphs from declined to safe partial by emitting only gold-consistent
+attachment/type subgraphs; edge precision remains 100%. Both harm-ordered
+diffs report zero broken exact graphs and zero safe-to-incorrect transitions.
+
+Verification is green: 3,220 synthetic/unit tests; 175 focused COGS
+projection tests; COGS lint with zero errors; curated 65/65 twice; GSM8K
+DEV-train 104 and DEV-holdout 40; ASDiv 44; SVAMP 30; MAWPS 9; SciBench 6;
+and FOLIO 0 committed. Every standing non-COGS snapshot diff is neutral. No
+COGS TEST or generalization look was spent.
+
 ## Immediate next step
 
-Begin Phase C increment 5 with recursive nested PP modifiers. Use only
-inspectable DEV-train data to identify a nested extension of increment 1's
-licensed attachment class. The implementation must use one reusable rule
-family or document-round mechanism across multiple synthetic depths, preserve
-deterministic termination, and emit each modifier edge with its own exact
-head/object attachment provenance. Record buyers and overreach controls before
-implementation.
+Begin Phase C increment 6 with recursive nested sentential complements. Use
+only inspectable DEV-train data to select a nested extension of the licensed
+`ccomp` or `xcomp` frame. Reuse the general overlapping/local composition
+machinery where structurally appropriate, require one rule family to handle
+multiple synthetic depths with deterministic termination, and record buyers,
+sharing, direction, and overreach controls before implementation.
 
 Do not inspect holdout rows or spend COGS TEST/generalization looks before the
 Phase D checkpoint.

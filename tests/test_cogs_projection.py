@@ -226,6 +226,99 @@ def test_active_theme_nominal_modifier_declines_attachment_neighbours(
     )
 
 
+@pytest.mark.parametrize("depth", [1, 2, 3, 4])
+def test_nominal_modifier_chain_uses_one_rule_at_multiple_depths(
+    cogs_project,
+    depth: int,
+) -> None:
+    prepositions = ["beside", "on", "in", "beside"]
+    text = "Neris admired a zephyrstone"
+    logical_form = [
+        "admire.agent(x_1,Neris)",
+        "admire.theme(x_1,x_3)",
+        "zephyrstone(x_3)",
+    ]
+    source = 3
+    for index, preposition in enumerate(prepositions[:depth]):
+        target = 6 + index * 3
+        text += f" {preposition} a zephyrstone"
+        logical_form.extend([
+            f"zephyrstone.nmod.{preposition}(x_{source},x_{target})",
+            f"zephyrstone(x_{target})",
+        ])
+        source = target
+    text += "."
+
+    result = solve(text, cogs_project.registry, tracing=False)
+    got = project_result(result, text, cogs_project.registry)
+    expected = parse_cogs_logical_form(" AND ".join(logical_form))
+    assert got.node_keys() == expected.node_keys()
+    assert got.edge_keys() == expected.edge_keys()
+    assert len([edge for edge in got.edges if edge.kind == "modifier"]) == depth
+    assert result.document is not None
+    assert result.document.rounds == 1
+
+
+def test_recursive_modifier_links_retain_local_attachment_provenance(
+    cogs_project,
+) -> None:
+    text = (
+        "Neris admired a zephyrstone beside a zephyrstone "
+        "on a zephyrstone in a zephyrstone beside a zephyrstone."
+    )
+    result = solve(text, cogs_project.registry, tracing=False)
+    modifiers = [
+        fact
+        for fact in result.store.by_kind(SemanticGraphEdge)
+        if fact.kind == "modifier"
+    ]
+    assert len(modifiers) == 4
+    assert {fact.provenance.source for fact in modifiers} == {
+        "semantic/nominal-modifier-chain-link"
+    }
+    assert {
+        (fact.source, fact.target, fact.label) for fact in modifiers
+    } == {
+        ("entity:3", "entity:6", "beside"),
+        ("entity:6", "entity:9", "on"),
+        ("entity:9", "entity:12", "in"),
+        ("entity:12", "entity:15", "beside"),
+    }
+    assert {
+        (fact.span_start, fact.span_end) for fact in modifiers
+    } == {("3", "6"), ("6", "9"), ("9", "12"), ("12", "15")}
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Neris admired a zephyrstone beside the zephyrstone on a zephyrstone.",
+        "Neris admired a zephyrstone near a zephyrstone on a zephyrstone.",
+        "Neris admired a zephyrstone beside Mira on a zephyrstone.",
+        "Neris admired a zephyrstone beside a zephyrstone and a zephyrstone.",
+        "Neris did not admire a zephyrstone beside a zephyrstone.",
+        "A zephyrstone was admired beside a zephyrstone by Neris.",
+        "Neris missed a zephyrstone beside a zephyrstone.",
+        "Neris hoped that Mira admired a zephyrstone beside a zephyrstone.",
+    ],
+)
+def test_modifier_chain_root_declines_unlicensed_neighbours(
+    cogs_project,
+    text: str,
+) -> None:
+    result = solve(text, cogs_project.registry, tracing=False)
+    sources = {
+        fact.provenance.source
+        for fact in (
+            list(result.store.by_kind(SemanticGraphNode))
+            + list(result.store.by_kind(SemanticGraphEdge))
+        )
+    }
+    assert "semantic/active-name-indefinite-theme-modifier-chain-root" not in (
+        sources
+    )
+
+
 def test_named_agent_ccomp_projects_two_events_and_direction(
     cogs_project,
 ) -> None:
