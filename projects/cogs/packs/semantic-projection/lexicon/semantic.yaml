@@ -59,6 +59,12 @@ entries:
   stuttered: {senses: [verb], verb: {lemma: stutter}}
   talked: {senses: [verb], verb: {lemma: talk}}
 
+  # Phase B increment 3: missing finite forms for the licensed bare-name
+  # intransitive-theme construction.
+  inflated: {senses: [verb], verb: {lemma: inflate}}
+  reddened: {senses: [verb], verb: {lemma: redden}}
+  shattered: {senses: [verb], verb: {lemma: shatter}}
+
   # Missing nominal type facts used by the same complete construction buyer.
   bell: {senses: [noun]}
   chemical: {senses: [noun]}

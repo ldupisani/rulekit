@@ -61,3 +61,27 @@ rules:
       - {fact: semantic_graph_edge, kind: role,
          source: "event:{event.span_start}", target: "name:{agent}", label: agent,
          span_start: "{agent.span_start}", span_end: "{event.span_end}"}
+
+  # Phase B increment 3: the theme-class minimal pair of the preceding rule.
+  # The surface is identical; only the disjoint YAML verb class licenses the
+  # semantic role.
+  - id: semantic/intransitive-name-theme
+    phase: read
+    match:
+      sentence:
+        - {slot: theme, type: proper_name, at_start: true,
+           blocks_skipped: indefinite_article}
+        - {slot: event, cat: semantic_intransitive_theme_verb,
+           single_word: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "name:{theme}", kind: entity,
+         span_start: "{theme.span_start}", span_end: "{theme.span_end}"}
+      - {fact: semantic_graph_node, ref: "event:{event.span_start}", kind: event,
+         span_start: "{event.span_start}", span_end: "{event.span_end}"}
+      - {fact: semantic_graph_edge, kind: event,
+         source: "event:{event.span_start}", label: "{event}",
+         span_start: "{event.span_start}", span_end: "{event.span_end}"}
+      - {fact: semantic_graph_edge, kind: role,
+         source: "event:{event.span_start}", target: "name:{theme}", label: theme,
+         span_start: "{theme.span_start}", span_end: "{event.span_end}"}

@@ -6,6 +6,8 @@ categories:
     parent: noun
   semantic_intransitive_agent_verb:
     parent: verb
+  semantic_intransitive_theme_verb:
+    parent: verb
   # Marks event forms first admitted by this pack. The legacy
   # VerbalRelation evaluation bridge yields to the first-class semantic
   # reader for these forms, so vocabulary cannot accidentally buy an
@@ -38,20 +40,28 @@ members:
      ring, sandwich, soap, strawberry, student, sweetcorn, teacher, tenant,
      toothbrush, towel, turtle, visitor, weapon]
   # Overt finite forms whose bare named-subject intransitive construction
-  # licenses an AGENT role. Theme-class forms live in their own future
-  # category: identical syntax is not permission to guess the role.
+  # licenses an AGENT role. Theme-class forms live in the disjoint category
+  # below: identical syntax is not permission to guess the role.
   semantic_intransitive_agent_verb:
     [ate, cleaned, cried, danced, dusted, examined, frowned, gasped, giggled,
      heard, hunted, investigated, jogged, juggled, knew, laughed, napped,
      noticed, nursed, observed, packed, painted, ran, saw, scoffed, screamed,
      sketched, slept, smiled, smirked, sneezed, snoozed, snored, studied,
      stuttered, talked, walked]
+  # Overt finite forms whose bare named-subject intransitive construction
+  # licenses a THEME role. This set is intentionally disjoint from the agent
+  # class above; bad self-lemmas `broke` and `doubled` remain excluded.
+  semantic_intransitive_theme_verb:
+    [burned, collapsed, crumpled, decomposed, disintegrated, enlarged, floated,
+     froze, grew, improved, inflated, reddened, rolled, shattered, shortened,
+     slid, snapped, split]
   semantic_projection_owned_verb:
     [admired, adored, appreciated, burned, cleaned, collapsed, crumpled,
      decomposed, disintegrated, dusted, enlarged, examined, floated, froze,
-     heard, hunted, improved, loved, noticed, nursed, observed, packed,
-     pierced, poked, respected, rolled, shortened, sketched, slid, snapped,
-     stabbed, tolerated, tossed, touched, valued, worshipped,
+     heard, hunted, improved, inflated, loved, noticed, nursed, observed,
+     packed, pierced, poked, reddened, respected, rolled, shattered, shortened,
+     sketched, slid, snapped, stabbed, tolerated, tossed, touched, valued,
+     worshipped,
      cried, danced, frowned, gasped, giggled, investigated, juggled, laughed,
      napped, scoffed, screamed, smiled, smirked, sneezed, snoozed, snored,
      stuttered, talked]

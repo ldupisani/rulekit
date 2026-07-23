@@ -199,6 +199,58 @@ def test_named_intransitive_agent_declines_role_and_shape_neighbours(
     assert "semantic/intransitive-name-agent" not in semantic_sources
 
 
+def test_named_intransitive_theme_projects_a_complete_graph(
+    cogs_project,
+) -> None:
+    text = "Neris reddened."
+    result = solve(text, cogs_project.registry, tracing=False)
+    got = project_result(result, text, cogs_project.registry)
+    expected = parse_cogs_logical_form(
+        "redden.theme(x_1,Neris)"
+    )
+    assert got.node_keys() == expected.node_keys()
+    assert got.edge_keys() == expected.edge_keys()
+    assert ("role", "x1", "const:neris", "theme") in got.edge_keys()
+    assert ("role", "x1", "const:neris", "agent") not in got.edge_keys()
+
+    nodes = list(result.store.by_kind(SemanticGraphNode))
+    edges = list(result.store.by_kind(SemanticGraphEdge))
+    assert len(nodes) == 2
+    assert len(edges) == 2
+    assert {fact.provenance.source for fact in nodes + edges} == {
+        "semantic/intransitive-name-theme"
+    }
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Neris smiled.",
+        "A pilot reddened.",
+        "The pilot reddened.",
+        "Neris reddened a cloud.",
+        "Neris reddened near Mira.",
+        "Neris reddened and collapsed.",
+        "Neris broke.",
+        "Neris doubled.",
+        "Neris was reddened.",
+    ],
+)
+def test_named_intransitive_theme_declines_role_and_shape_neighbours(
+    cogs_project,
+    text: str,
+) -> None:
+    result = solve(text, cogs_project.registry, tracing=False)
+    semantic_sources = {
+        fact.provenance.source
+        for fact in (
+            list(result.store.by_kind(SemanticGraphNode))
+            + list(result.store.by_kind(SemanticGraphEdge))
+        )
+    }
+    assert "semantic/intransitive-name-theme" not in semantic_sources
+
+
 def _snapshot(outcome: str, got_label: str = "") -> dict:
     got = ProjectionGraph(
         nodes=(ProjectionNode("x1", "entity"),) if got_label else (),
