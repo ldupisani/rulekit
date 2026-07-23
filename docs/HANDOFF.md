@@ -143,10 +143,12 @@
 > stack-ready stories on dev-train / dev-holdout, with no
 > verdict regression or hazard increase; truth-scope vetoes improve by 167 / 154, while
 > holdout collision/quarantine improve 12→9 / 24→18. Sixty-two construction classes
-> are served. **The conjunctive Phase C entry gate is met on both grouped DEV
+> are served. **The conjunctive Phase C entry gate was met on both grouped DEV
 > splits**: fully read 907/1647 and 901/1607 vs 852/850; vetoes 499/460 vs
 > ≤499/460; stack-ready stories at least 24/15 vs ≥22/10. The next action is
-> the separately authorized deliberate TEST look, not another Phase B reader. The
+> TEST look #6 was then spent: **1 correct / 1 wrong / 283 declined / 0 errors,
+> precision 50%**, identical conversion aggregates to looks #3–#5. Safety held,
+> but transfer remained zero, so Phase D is not unlocked. The
 > remaining candidates require lexical, definite-description, coreference,
 > or deeper composition infrastructure. The unbought outer-quantified verbal
 > relative remains banked pending composition evidence. Reader 4's opt-in
@@ -169,6 +171,33 @@
 > campaign is preserved in [`parked-physics-campaign.md`](parked-physics-campaign.md)
 > at commit `5b9d62c`. Resume from that guide only when this direction is chosen
 > again; the sessions below remain the detailed historical record.
+
+# Session 100 (2026-07-23): FOLIO TEST look #6 spent; safety held; zero transfer
+
+The user-authorized aggregate-only look was run through the continuing FOLIO
+ledger after temporarily wiring the scratch user/logic packs into the existing
+project. The ledger now has six rows; the project was immediately restored to
+its expect-0-commits safety configuration.
+
+| TEST items | correct | wrong | declined | errors | precision |
+|---:|---:|---:|---:|---:|---:|
+| 285 | 1 | 1 | 283 | 0 | 50.0% |
+
+Fingerprint: `5edf14446b46a07b4ee5c88101f175a4f9c088a019520b84b6717210d8913870`.
+The acceptance bar (wrong ≤1, correct ≥1, errors 0, precision ≥0.5) is met,
+and the wrong count did not increase, so no reader commit is reverted.
+
+The conversion aggregate is nevertheless identical to looks #3–#5: breadth-
+first premise coverage changed TEST fully-read diagnostics (0→3) but produced
+**zero answer transfer**. The pre-registered Phase D condition requires
+nonzero transfer at held precision; it is therefore not met. No item-level
+TEST information was inspected.
+
+**Next:** do not promote the scratch logic pack or create `folio-logic` under
+the current plan. Re-plan from aggregate evidence before authorizing another
+TEST look or a materially different campaign.
+
+---
 
 # Session 99 (2026-07-23): celebrity role morphology; Phase C entry gate met
 
@@ -203,8 +232,8 @@ diff is neutral. Collision, quarantine, ambiguity, and clause-split ceilings
 therefore remain satisfied. **Phase C entry is achieved. No TEST look was
 spent.**
 
-**Next:** stop Phase B iteration. A TEST look requires a separate deliberate
-authorization under the existing one-look aggregate-only firewall.
+**Next:** stop Phase B iteration and proceed only to the separately authorized
+aggregate-only TEST checkpoint (recorded in Session 100).
 
 ---
 

@@ -1,6 +1,8 @@
 # The breadth-first premise-reader campaign — FOLIO logic → full integration
 
-**ACTIVE. Phase A and Phase B readers 1–38 completed through 2026-07-22: ground
+**CHECKPOINT COMPLETE. Phase A and Phase B reached the pre-registered Phase C
+thresholds; user-directed TEST look #6 held precision but transferred zero
+answers, so Phase D is not unlocked. Readers 1–38 completed through 2026-07-22: ground
 both-or-neither equivalence, unrestricted bare-plural disjunction, and negative
 two-article indefinite generics, plus single-antecedent verbal “Everyone who”
 implications, verbal-restrictor conditionals, and the negative-antecedent
@@ -31,8 +33,8 @@ The benchmark-loaded FOLIO logic frontier lives in `projects/scratch/`: no bench
 loads `projects/scratch/packs/logic`, and the real `projects/folio` remains the repo's sole
 expect-0-commits safety gate. Some supporting consumers and saturation plugins already live
 in the shared kernel, dormant unless pack rules make them reachable; Phase A therefore
-inventories that shared machinery rather than treating Phase D as merely a pack move. Five
-TEST looks are spent. Looks #3–#5 returned identical aggregates
+inventories that shared machinery rather than treating Phase D as merely a pack move. Six
+TEST looks are spent. Looks #3–#6 returned identical conversion aggregates
 (1 correct / 1 wrong / 283 declined of 285, precision 0.5 held), and looks #4–#5 measured
 **zero transfer** from ~19 dev-train conversions across 8+ distinct stories — including three
 designed inference stages (elimination, reductio, identity). The recorded diagnosis
@@ -933,6 +935,12 @@ walked in commit order. The parked aggregate is 1 correct / 1 wrong / 283 declin
 acceptance requires **wrong ≤1, correct ≥1, errors = 0, and precision ≥0.5**. Any wrong-count
 increase reverts the responsible commit even when correct count rises enough for precision to
 hold or improve; a ratio may never launder a new confident wrong.
+
+Result (2026-07-23): look #6 returned **1 correct / 1 wrong / 283 declined /
+0 errors, precision 0.5**. Safety acceptance held and no commit was reverted,
+but answer transfer was zero (identical conversion aggregate to looks #3–#5).
+The aggregate fully-read diagnostic moved 0→3. Phase D's nonzero-transfer
+precondition is not met; promotion is halted pending a new plan.
 
 ### Phase D — the gate back to FOLIO (integration proper)
 

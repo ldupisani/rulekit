@@ -3984,3 +3984,21 @@ both grouped DEV splits. No TEST look was spent.
 
 **Next:** stop reader iteration. Spend the separately authorized deliberate
 aggregate-only TEST look only when requested.
+
+## FOLIO TEST look #6 — SPENT (2026-07-23, user-directed Phase C checkpoint)
+
+The continuing six-row FOLIO ledger records **1 correct / 1 wrong / 283
+declined / 0 errors of 285, precision 50.0%**. Fingerprint:
+`5edf14446b46a07b4ee5c88101f175a4f9c088a019520b84b6717210d8913870`.
+The project was temporarily wired to the scratch user/logic packs for the look
+and then restored to its expect-0-commits safety configuration.
+
+Acceptance holds: wrong ≤1, correct ≥1, errors 0, precision ≥0.5, and no new
+wrong. No commit reverts. But the conversion aggregate is identical to looks
+#3–#5, so the breadth-first campaign again measures **zero TEST answer
+transfer** (the aggregate fully-read diagnostic moved 0→3). Phase D explicitly
+requires nonzero transfer at held precision and is therefore not unlocked.
+No item-level TEST information was inspected.
+
+**Next:** halt promotion and re-plan from aggregate evidence before spending
+another TEST look or beginning a materially different campaign.
