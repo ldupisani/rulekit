@@ -366,6 +366,13 @@ active/passive role invariance, the explicit-to recipient graph, 100%
 projected-edge precision, and neutral standing gates. Both protected ledgers
 contain one row; no second checkpoint look is authorized.
 
+The completed disposition freezes the rebuilt state as a safe DEV baseline,
+not as a second checkpoint pass. A runtime diff against failed batch
+`e657fc9` confirms that the repaired candidate removes the double-object rule
+and narrows its reusable verb category to the explicit-to construction while
+leaving the remaining semantic rules and kernel machinery unchanged. Further
+coverage work requires a new DEV-only campaign with a new locked objective.
+
 Coverage on the official generalization split is the evidence that the
 machinery composes. High in-distribution accuracy alone is not a campaign
 success.

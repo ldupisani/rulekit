@@ -4,7 +4,7 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** Phase D decision boundary reached; protected checkpoint already spent
+**Status:** Phase D disposition complete; safe restart baseline frozen
 
 **Previous safe capability commit:** `0717f04`
 (`Add COGS semantic projection phase A`)
@@ -589,9 +589,10 @@ GSM8K, ASDiv, SVAMP, MAWPS, SciBench, and FOLIO diffs.
 
 ## Immediate next step
 
-Choose the post-checkpoint Phase D disposition using the recorded aggregate
-evidence. Do not rerun TEST or generalization. Any further coverage work must
-start a new DEV-only campaign and preserve the proper-object boundary.
+Preserve this state as the safe semantic-projection restart baseline. Any
+further coverage work must begin a new DEV-only campaign with a fresh locked
+objective and must preserve the proper-object boundary. Do not rerun TEST or
+generalization.
 
 ## Phase C restart exit audit
 
@@ -621,6 +622,34 @@ the construction-specific explicit-to recipient graph.
 
 Both protected ledgers still contain exactly one row. Phase D is therefore a
 decision and handoff point, not authorization for another protected look.
+
+## Phase D disposition
+
+The rebuilt candidate is accepted as the safe post-checkpoint development
+baseline and the restart campaign is closed. It is not described as having
+passed a second protected checkpoint, because no second measurement exists.
+
+The disposition rests on three bounded facts:
+
+1. the permitted protected aggregates localized every one of the 58 failures
+   to the two proper-object ditransitive cases, while every other disclosed
+   case and structural class had zero incorrect graphs;
+2. compared with failed batch `e657fc9`, the rebuilt runtime differs only by
+   replacing the generic ditransitive category with
+   `semantic_to_dative_verb` and deleting the double-object projection rule;
+   the remaining semantic rules and general kernel machinery are unchanged;
+3. the boundary is executable: direct proper objects remain themes,
+   positional proper objects emit no recipient, double-object surfaces
+   decline, and active/passive surfaces share one abstract role topology.
+
+The final audit passes 180 focused COGS tests and all 3,225 unit/synthetic
+tests. The latest complete increment gate also records 100% DEV edge
+precision and neutral curated, GSM8K, ASDiv, SVAMP, MAWPS, SciBench, and FOLIO
+diffs.
+
+This evidence supports freezing the repaired DEV baseline and removing the
+known failure mechanism. It does not support a numerical claim about repaired
+TEST or generalization precision.
 
 ## Increment protocol
 
