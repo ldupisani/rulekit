@@ -4,7 +4,7 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** Phase B restart safety increment 1 complete; boundary enforced
+**Status:** Phase B restart safety increment 2 selected
 
 **Previous safe capability commit:** `0717f04`
 (`Add COGS semantic projection phase A`)
@@ -239,6 +239,39 @@ commitments. Every standing non-COGS snapshot diff is neutral.
 The protected TEST and generalization ledgers remain at one row each. Neither
 protected slice was rerun.
 
+## Phase B restart safety increment 2
+
+This increment restores article-backed definiteness as the exact minimal pair
+of the already served agentless passive.
+
+### Definite agentless-passive selection brief
+
+Selected before implementation on 2026-07-23:
+
+1. **Construction class:** exactly `The N was V-en.`, with an anchored
+   definite article, one bare singular `semantic_bare_theme_noun`, `was`, and
+   one licensed `semantic_passive_participle`. There is no expressed agent,
+   recipient, modifier, coordination, negation, complement, or trailing
+   material.
+2. **Complete graph:** the existing passive theme entity/type,
+   event/predicate, and `theme(event, entity)` role plus exactly
+   `definite(entity)`. The definite edge records article-backed discourse
+   status, not uniqueness or cross-mention identity.
+3. **Synthetic positive and provenance:** `The zephyrstone was appreciated.`
+   must emit the complete graph with the definite edge spanning the article
+   and noun; every node and edge retains the emitting rule and exact source
+   span.
+4. **Negative neighbours:** indefinite and named themes; plurals; expressed
+   `by` agents; recipients; modified or compound nouns; PP, coordination,
+   negation, embedding, and active-order tails; and unsafe participles.
+5. **Expected buyers:** the exact surface has 439 inspectable DEV-train and
+   412 aggregate DEV-holdout rows. Existing noun and participle licences leave
+   217 train and 192 holdout complete buyers, all currently declined.
+6. **Licence and safety boundary:** no vocabulary or Python mechanism changes.
+   The existing noun and passive categories license interpretation. The
+   construction-specific `semantic_to_dative_verb` boundary remains
+   unchanged, and double-object recipient projection stays withheld.
+
 ## Phase B objective
 
 Build first-class entity, event, and semantic-role projection breadth-first,
@@ -266,11 +299,10 @@ packs; Python may consume a category but must not enumerate its members.
 
 ## Immediate next step
 
-Reintroduce the article-backed definite agentless-passive class as its own
-DEV-gated increment, then rerun the Phase B exit audit. Preserve the
-construction-specific `semantic_to_dative_verb` boundary and keep
-double-object recipient projection withheld. Do not rerun either spent
-protected slice.
+Implement the recorded definite agentless-passive class and run the complete
+increment gate, then rerun the Phase B exit audit. Preserve the
+construction-specific `semantic_to_dative_verb` boundary, keep double-object
+recipient projection withheld, and do not rerun either spent protected slice.
 
 ## Increment protocol
 
