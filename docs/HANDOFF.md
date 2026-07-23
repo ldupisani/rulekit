@@ -4,7 +4,7 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** Phase C restart implementation complete; exit audit next
+**Status:** Phase D decision boundary reached; protected checkpoint already spent
 
 **Previous safe capability commit:** `0717f04`
 (`Add COGS semantic projection phase A`)
@@ -589,12 +589,38 @@ GSM8K, ASDiv, SVAMP, MAWPS, SciBench, and FOLIO diffs.
 
 ## Immediate next step
 
-Run the locked Phase C exit audit against the safe post-checkpoint target set.
-Require nonzero complete holdout coverage for nominal PP modifiers, ccomp,
-xcomp, nested modifiers, and nested complements; verify active/passive role
-invariance and the explicit-to dative role graph; and record the
-double-object/proper-object exclusion without weakening the precision gate.
-Do not rerun either spent protected slice.
+Choose the post-checkpoint Phase D disposition using the recorded aggregate
+evidence. Do not rerun TEST or generalization. Any further coverage work must
+start a new DEV-only campaign and preserve the proper-object boundary.
+
+## Phase C restart exit audit
+
+The safe restart has reached the Phase D decision boundary:
+
+| Target | DEV-train exact | DEV-holdout exact | Result |
+| --- | ---: | ---: | --- |
+| nominal PP modifier | 59 | 57 | pass |
+| ccomp embedding | 26 | 17 | pass |
+| xcomp control/sharing | 107 | 96 | pass |
+| nested nominal modifier | 1 | 1 | pass |
+| nested complement | 5 | 2 | pass |
+
+The final DEV state is 1,650 exact / 653 safe partial / 0 incorrect on train
+and 1,563 / 660 / 0 on holdout, with 100% projected-edge precision and
+10.8%/10.2% edge recall. Active and passive constructions use the same
+agent/theme role edge kinds, and the explicit-to dative uses those same
+agent/theme edges plus the ordinary recipient edge. All standing gates are
+neutral.
+
+The original Phase C target also included the double-object/prepositional
+dative alternation. That target is not counted as passed: the spent protected
+generalization checkpoint proved its proper-object role transfer unsafe. The
+post-checkpoint plan explicitly retires that half of the target, keeps
+double-object and named-theme-plus-`to` surfaces declined, and retains only
+the construction-specific explicit-to recipient graph.
+
+Both protected ledgers still contain exactly one row. Phase D is therefore a
+decision and handoff point, not authorization for another protected look.
 
 ## Increment protocol
 

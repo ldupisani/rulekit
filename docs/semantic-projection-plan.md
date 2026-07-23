@@ -341,6 +341,31 @@ When Phases B and C meet their locked DEV objectives:
 5. revert the checkpoint batch if committed graph precision drops; and
 6. use only class-level aggregate results to choose the next DEV worklist.
 
+#### Post-checkpoint restart amendment — 2026-07-23
+
+Checkpoint 1 has been spent. TEST retained 100% precision, but the protected
+generalization aggregate exposed 58 incorrect graphs, all localized to the
+proper-object ditransitive cases `prim_to_obj_proper` and
+`subj_to_obj_proper`. No protected row was inspected, and the complete batch
+was reverted as required.
+
+The restart therefore treats proper-object role transfer as a proved unsafe
+boundary:
+
+- recipient projection is licensed only by the explicit
+  `Name V a N to Name` construction-specific category;
+- direct proper objects remain themes;
+- double-object and named-theme-plus-`to` surfaces remain declined; and
+- the former double-object half of Phase C target 4 is retired rather than
+  credited as complete.
+
+This is an explicit checkpoint-driven scope correction, not a claim that the
+original double-object target passed. Phase C restart readiness requires
+nonzero complete holdout coverage for the remaining safe composition classes,
+active/passive role invariance, the explicit-to recipient graph, 100%
+projected-edge precision, and neutral standing gates. Both protected ledgers
+contain one row; no second checkpoint look is authorized.
+
 Coverage on the official generalization split is the evidence that the
 machinery composes. High in-distribution accuracy alone is not a campaign
 success.
