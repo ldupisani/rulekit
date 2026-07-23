@@ -869,6 +869,10 @@ Pack-local `body`/`bodies` morphology clears five train instances of a genuine
 ground event. Unverified coordinated holdout siblings receive no credit. Phase
 C remains gated only by 18 train truth-scope-veto reductions.
 
+Pack-local `airforce`/`airforces` morphology clears five train instances of a
+genuine PP-bearing ground event. Phase C remains gated only by 13 train
+truth-scope-veto reductions.
+
 Pack-local `defender`/`defenders` morphology next removes the only unread unit
 from the soccer-role universal on both splits. It adds +3 / +6 fully-read
 premises and reduces vetoes by 3 / 6 without fact, stack, outcome, hazard, or

@@ -112,3 +112,6 @@ entries:
   # Phase B lexical activation: explicit object morphology for the existing
   # ground-verbal `make car bodies` fact.
   body: {senses: [noun], plural: bodies}
+  # Phase B lexical activation: exact PP-object morphology for the existing
+  # ground event `work for airforces`.
+  airforce: {senses: [noun], plural: airforces}

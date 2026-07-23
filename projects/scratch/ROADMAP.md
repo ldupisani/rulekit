@@ -3916,3 +3916,21 @@ DEV diffs and both grouped logic outcome diffs are NEUTRAL.
 Outcomes and hazards remain neutral. All holdout thresholds remain met.
 
 **Next:** Phase C remains gated only by 18 train truth-scope vetoes.
+
+## Airforce PP-object morphology activation (2026-07-23)
+
+Pack-local `airforce`/`airforces` morphology clears the five-row Carrozzeria
+ground event while preserving its full PP object.
+
+Six synthetic pins pass. **pytest 2,985 passed; curated is 65/65 twice.**
+Scratch lint reports 0 errors with the same eight warnings; all eight standard
+DEV diffs and both grouped logic outcome diffs are NEUTRAL.
+
+| grouped split | fact-bearing | fully read | stack-ready floor | credited premise instances / stories | truth-scope-veto premises |
+|---|---:|---:|---:|---:|---:|
+| dev-train | 1394→1394 | 889→894 (+5) | ≥34/24 | 5 / 1 | 517→512 (−5) |
+| dev-holdout | 1364→1364 | 901→901 | ≥22/15 | 0 / 0 | 460→460 |
+
+Outcomes and hazards remain neutral. All holdout thresholds remain met.
+
+**Next:** Phase C remains gated only by 13 train truth-scope vetoes.
