@@ -360,10 +360,56 @@ Agent edge. All 3,279 tests pass; COGS DEV, curated twice, GSM8K
 train/holdout, ASDiv, SVAMP, MAWPS, SciBench, FOLIO, and lint remain green.
 The protected PMB test remains unspent.
 
+### Coverage increment 2 selection brief — typed proper-name simple-past
+intransitive Agent
+
+Selected and frozen before implementation on 2026-07-24:
+
+1. **Licensed construction:** exactly anchored `Name V-ed.`, with the subject
+   in one of two PMB-local typed-name categories and the overt event form in a
+   PMB-local simple-past agentive-intransitive category. The category audit
+   includes only forms whose complete inspectable graph assigns Agent.
+2. **Complete graph:** one constant entity, one event, and one temporal entity;
+   a `male` or `female` type edge on the constant, the event predicate edge,
+   an Agent edge, and a `time` type edge on the temporal entity. The adapter
+   does not represent PMB's tense relation itself, so no event-to-time edge is
+   invented.
+3. **Inspectable buyers:** 33 train graphs—29 male-name and 4 female-name.
+   Six are the existing safe partials and need only the two missing type
+   edges; 27 are declines. All 33 assign Agent. The audited proper names are
+   limited to six YAML members, and the 31 overt event forms are limited to
+   the observed collision-free Agent set.
+4. **Development expectation:** one development graph has the same abstract
+   proper-name/simple-past topology, but its event form is absent from the
+   train-backed licence. No development row was inspected. The locked
+   development delta is therefore zero.
+5. **Boundary architecture:** two exact shared rules—one per typed-name
+   category—emit the same ordinary graph shape with a different declarative
+   subject type. Their categories are empty in COGS and extended only by the
+   PMB-local pack. Missing names and event forms are YAML lexicon entries.
+6. **Negative neighbours:** pronoun, quantified-pronoun, common-noun,
+   indefinite, definite, and plural subjects; Theme-class events; present,
+   progressive, modal, passive, negated, transitive, ditransitive, PP-tailed,
+   adverb-tailed, coordinated, interrogative, and embedded clauses; and any
+   unlicensed proper name or event form must emit nothing from these rules.
+7. **Synthetic contract:** use an invented typed name with a licensed event
+   form, not a PMB sentence. Assert both male/female graph variants, exact
+   temporal-node and provenance behavior, every negative boundary above, and
+   dormant behavior in COGS.
+8. **Locked expected delta:** train moves from 1 exact / 6 partial to exactly
+   34 exact / 0 partial, remains at zero incorrect, and contains 135 correct
+   projected edges in total (120 newly added relative to coverage increment
+   1). Development remains 0 exact / 0 partial / 0 incorrect. Both diffs have
+   zero broken exact and zero safe-to-incorrect transitions.
+9. **Non-claim:** this crosses the 25-complete-graph threshold on inspectable
+   train and strengthens explicit Agent evidence, but remains below 250
+   correct edges and 1% recall, provides no development transfer, and does
+   not supply attachment/complement, Theme, or Recipient coverage. It does
+   not authorize a protected test look.
+
 Remaining sequence:
 
-1. Profile and preregister coverage increment 2 for greater complete-graph
-   and correct-edge leverage.
+1. Implement the frozen typed proper-name simple-past Agent class.
 2. Require 100% train/development edge precision and run
    all standing gates.
 3. Profile and preregister each subsequent complete-graph class until every

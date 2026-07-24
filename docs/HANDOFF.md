@@ -5,7 +5,7 @@
 **Active campaign:** COGS semantic projection
 
 **Status:** PMB coverage increment 1 complete at 1 train exact / 0 incorrect;
-coverage increment 2 profiling is next
+coverage increment 2 selected and preregistered
 
 **Current safe DEV baseline:** `964f09f`
 (`Add COGS indefinite common subject projection`)
@@ -594,9 +594,10 @@ Preserve completed post-D DEV campaign 2 as the COGS DEV baseline. PMB
 coverage increment 1 implemented the exact anchored `A/An N V-s.`
 common-subject agentive-intransitive class and hit its locked delta: train is
 1 exact / 6 partial / 9,058 declined / 0 incorrect at 100% edge precision;
-development remains 0/0/990/0. Profile and preregister coverage increment 2
-for substantially more complete graphs and correct edges while retaining the
-new common-subject boundary.
+development remains 0/0/990/0. Implement the frozen coverage-increment-2
+proper-name simple-past Agent class. Its audited YAML boundary has 33 train
+buyers, all Agent: the locked result is 34 exact / 0 partial / 0 incorrect
+with 135 correct edges in total, while development remains unchanged.
 
 This clears the precision prerequisite for coverage, not the Phase E entry
 gate: PMB still has only one complete graph and effectively zero recall. No

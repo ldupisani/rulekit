@@ -473,9 +473,10 @@ Two valid next directions remain:
    protected test. The first complete-graph class, the exact indefinite
    common-subject agentive intransitive construction, now contributes one
    train exact graph and zero incorrect while leaving development unchanged.
-   Profile and preregister the next higher-leverage class. Phase E begins only
-   if the full gate demonstrates nonzero thematic-role transfer without a
-   precision failure.
+   The next class is preregistered as typed proper-name simple-past Agent,
+   with 33 train buyers and no expected development change. Implement that
+   frozen class next. Phase E begins only if the full gate demonstrates
+   nonzero thematic-role transfer without a precision failure.
 
 Do not tune to DEV-holdout items. Do not start by admitting the frequent COGS
 unknown words: vocabulary receives credit only as part of a complete
