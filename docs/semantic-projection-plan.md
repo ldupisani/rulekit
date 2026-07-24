@@ -477,8 +477,10 @@ Two valid next directions remain:
    Typed proper-name simple-past Agent now contributes 33 additional train
    exact graphs, bringing PMB train to 34 exact / 0 incorrect while
    development remains unchanged. Profile and preregister the next
-   higher-leverage Theme class. Phase E begins only if the full gate
-   demonstrates nonzero thematic-role transfer without a precision failure.
+   typed-subject simple-past indefinite-object Agent/Theme class is
+   preregistered with 19 train buyers and no expected development change.
+   Implement it next. Phase E begins only if the full gate demonstrates
+   nonzero thematic-role transfer without a precision failure.
 
 Do not tune to DEV-holdout items. Do not start by admitting the frequent COGS
 unknown words: vocabulary receives credit only as part of a complete

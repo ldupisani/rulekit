@@ -426,10 +426,55 @@ not PMB-specific kernel vocabulary.
 All 3,299 tests pass; curated twice, GSM8K train/holdout, ASDiv, SVAMP, MAWPS,
 SciBench, FOLIO, and lint are green. The protected PMB test remains unspent.
 
+### Coverage increment 3 selection brief — typed-subject simple-past
+indefinite-object Agent/Theme
+
+Selected and frozen before implementation on 2026-07-24:
+
+1. **Licensed construction:** exactly anchored
+   `Subject V-ed a/an N.`, with a PMB-local typed subject, audited overt event
+   form, and singular bare object noun. Subject licences are disjoint:
+   typed proper name, male pronoun, female pronoun, or person pronoun.
+2. **Complete graph:** subject entity, event, indefinite object entity, and
+   temporal entity; subject type, event predicate, object type, time type,
+   Agent edge to the subject, and Theme edge to the object. Pronouns remain
+   local entities; only the typed-name rule emits a constant.
+3. **Inspectable buyers:** exactly 19 train graphs. All 19 contain the same
+   six adapter-representable edges and assign both Agent and Theme. Every
+   proposed event/object/subject member was audited across the exact anchored
+   construction; there is no Patient/Experiencer/Stimulus or other role
+   collision inside the selected boundary.
+4. **Development expectation:** zero development graphs match the complete
+   selected construction. No development row was inspected, and the locked
+   delta is zero.
+5. **Boundary architecture:** four shared exact rules differ only in
+   declarative subject type and constant-versus-local identity. Reusable
+   categories are empty in COGS and receive members only in the PMB-local
+   pack. A reserved local numeric ref represents the adapter-visible temporal
+   entity without pretending it aligns to a surface token.
+6. **Negative neighbours:** common-noun or quantified subjects; unlicensed
+   names/pronouns; definite, plural, proper-name, compound, or modified
+   objects; Theme-class subjects; Patient/Experiencer/Stimulus objects;
+   present, progressive, modal, passive, negated, ditransitive, PP/adverb
+   tailed, coordinated, interrogative, and embedded clauses must emit nothing
+   from these rules.
+7. **Synthetic contract:** use invented subject/object combinations and
+   altered syntax, never a PMB sentence. Assert all four subject variants,
+   exact six-edge graphs, pronoun-versus-constant identity, temporal identity,
+   provenance, every negative boundary, and dormant COGS behavior.
+8. **Locked expected delta:** train moves from 34 to exactly 53 complete
+   graphs, remains at 0 partial / 0 incorrect, and reaches exactly 249 correct
+   projected edges (114 new). Development remains 0 exact / 0 partial /
+   0 incorrect. Both diffs have zero broken exact and zero
+   safe-to-incorrect transitions.
+9. **Non-claim:** this establishes inspectable Agent/Theme transfer and
+   complete event/role graphs, but leaves the 250-edge threshold short by one,
+   recall below 1%, development transfer absent, and Recipient plus
+   attachment/complement buckets uncovered. It does not authorize test.
+
 Remaining sequence:
 
-1. Profile and preregister coverage increment 3, prioritizing Theme edges and
-   the remaining correct-edge/recall thresholds.
+1. Implement the frozen typed-subject simple-past Agent/Theme class.
 2. Require 100% train/development edge precision and run
    all standing gates.
 3. Profile and preregister each subsequent complete-graph class until every
