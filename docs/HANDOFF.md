@@ -5,7 +5,7 @@
 **Active campaign:** COGS semantic projection
 
 **Status:** PMB inspectable safety repair complete at zero incorrect graphs;
-first complete-graph PMB coverage class is next
+first complete-graph PMB coverage class selected and preregistered
 
 **Current safe DEV baseline:** `964f09f`
 (`Add COGS indefinite common subject projection`)
@@ -590,14 +590,15 @@ GSM8K, ASDiv, SVAMP, MAWPS, SciBench, and FOLIO diffs.
 
 ## Immediate next step
 
-Preserve completed post-D DEV campaign 2 as the COGS DEV baseline. To advance
-the original plan, profile inspectable PMB train for the smallest
-complete-graph coverage class and preregister it before implementation. The
-first safety repair disabled the COGS-only legacy bridge for PMB, lexicalized
-indefinite/universal pronouns, and added a PMB-local fail-closed verb-role
-boundary. It moves all 113 train and 19 development incorrect graphs to safe
-outcomes: train is 0 exact / 6 partial / 9,059 declined / 0 incorrect at 100%
-edge precision, and development makes no commitment and has 0 incorrect.
+Preserve completed post-D DEV campaign 2 as the COGS DEV baseline. Implement
+the frozen PMB coverage-increment-1 brief in
+[`semantic-projection-ood-gate-plan.md`](semantic-projection-ood-gate-plan.md):
+the exact anchored `A/An N V-s.` common-subject agentive-intransitive class.
+Its first YAML-licensed buyer has the smallest supported role-bearing graph
+(one typed entity, one event, and one Agent edge), and the locked delta is
+exactly one new train complete graph with three correct edges, no change on
+development, and zero incorrect on both. Do not widen the class to definite,
+plural, modal, progressive, transitive, PP-tailed, or Theme-role neighbours.
 
 This clears the precision prerequisite for coverage, not the Phase E entry
 gate: PMB still has zero complete graphs and effectively zero recall. No

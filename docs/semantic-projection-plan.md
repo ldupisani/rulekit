@@ -470,8 +470,10 @@ Two valid next directions remain:
    requirement; its Tatoeba-only eligible subset, builder, adapter, and failed
    untouched-runtime baseline are frozen. Its inspectable safety repair now
    eliminates all 113/19 incorrect train/development graphs without touching
-   protected test. Preregister the first complete-graph PMB coverage class
-   next. Phase E begins only if the full gate demonstrates nonzero
+   protected test. The first complete-graph class is now preregistered as the
+   exact indefinite common-subject agentive intransitive construction, with
+   one train buyer and no expected development buyer. Implement that frozen
+   class next. Phase E begins only if the full gate demonstrates nonzero
    thematic-role transfer without a precision failure.
 
 Do not tune to DEV-holdout items. Do not start by admitting the frequent COGS

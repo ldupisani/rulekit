@@ -292,13 +292,66 @@ Safety is therefore sufficient to begin PMB coverage work, but Phase E is
 still blocked: the current PMB result has no complete graphs and effectively
 zero edge recall, so it does not meet entry conditions 2–6.
 
+### Coverage increment 1 selection brief — indefinite common-subject
+intransitive Agent
+
+Selected and frozen before implementation on 2026-07-24:
+
+1. **Licensed construction:** exactly anchored `A/An N V-s.`, where the
+   singular bare common noun is in a dedicated semantic subject category and
+   the overt finite verb is in a dedicated agentive-intransitive category.
+   The first corpus-backed members are `bee` and `buzzes`; all vocabulary
+   remains YAML-only.
+2. **Complete graph:** one indefinite entity node, one event node, a type edge
+   from the entity to the noun lemma, an event edge carrying the verb lemma,
+   and `agent(event, entity)`. The indefinite article does not license a
+   definite edge. Unsupported PMB scope operators are not projected.
+3. **Why this is the smallest class:** the buyer has two nodes and three
+   adapter-representable edges. The only smaller train graphs have no
+   supported thematic-role edge. Existing proper-name partials require
+   additional gender and temporal entities and therefore cannot become
+   complete through a smaller graph increment.
+4. **Inspectable evidence:** exactly one train row has the complete lexical
+   graph. Eleven train graphs have the same abstract two-node
+   entity/event-plus-Agent topology, but ten use different modal, imperative,
+   pronominal, proper-name, or definite constructions and are not buyers.
+   Development has one graph with the abstract topology but zero instances of
+   the selected lexical graph; no development row was inspected.
+5. **Boundary architecture:** define the reusable empty categories and one
+   exact construction rule in the shared semantic-projection pack. Extend
+   only their membership and missing lexical entries in the PMB-local pack.
+   Thus COGS behavior stays dormant and unchanged, while the English
+   construction remains ordinary rule machinery rather than benchmark
+   adapter logic.
+6. **Negative neighbours:** definite and plural subjects; proper names and
+   pronouns; bare subjects; modal, auxiliary, progressive, passive, negated,
+   interrogative, and imperative clauses; transitive objects; PP or adverbial
+   tails; coordination; and verbs whose PMB role is Theme rather than Agent
+   must emit no graph from this rule. In particular, merely sharing the
+   subject noun or event lemma cannot license a neighbouring construction.
+7. **Synthetic contract:** use an invented common noun with the licensed verb
+   for the positive graph, never the PMB sentence. Cover every boundary above
+   with invented names/nouns or altered syntax, assert exact provenance, and
+   assert that the same synthetic sentence remains declined by COGS while the
+   PMB-local membership is active.
+8. **Locked expected delta:** train moves from 0 to exactly 1 complete graph,
+   adds exactly three correct projected edges, preserves the six existing
+   safe partials, and remains at zero incorrect. Development is expected to
+   remain 0 exact / 0 partial / 0 incorrect because the selected lexical graph
+   is absent. Both snapshot diffs must have zero broken exact graphs and zero
+   safe-to-incorrect transitions.
+9. **Non-claim:** this increment alone cannot satisfy any Phase E coverage
+   threshold beyond establishing nonzero train completeness and one explicit
+   Agent role. It does not justify a protected test look.
+
 Remaining sequence:
 
-1. Select and preregister one inspectable PMB coverage class that can produce
-   complete graphs without weakening the new safety boundaries.
-2. Require 100% train/development edge precision for every increment and run
+1. Implement the frozen indefinite common-subject intransitive-Agent class
+   without widening its lexical or syntactic licence.
+2. Require 100% train/development edge precision and run
    all standing gates.
-3. Continue until every inspectable proxy for entry conditions 2–6 is met.
-4. Freeze the candidate commit and spend the single protected standard-test
-   look only then.
+3. Profile and preregister each subsequent complete-graph class until every
+   inspectable proxy for entry conditions 2–6 is met.
+4. Freeze the eventual candidate batch and spend the single protected
+   standard-test look only then.
 5. Record pass/fail without inspecting protected failed rows.
