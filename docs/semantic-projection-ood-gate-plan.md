@@ -731,6 +731,9 @@ Selected and frozen from inspectable train evidence on 2026-07-24:
 6. **Pairing boundary:** `this` and `that` receive separate categories rooted
    in their existing lexical senses, and each identity/type class has its own
    event category and rule. No generic two-token Theme inference is allowed.
+   The logical person pronoun/quantifier class is implemented as two
+   root-specific rules because those surfaces resolve to distinct registry
+   roots; this is an architectural split, not an additional buyer class.
 7. **Negative neighbours:** Agent readings; unlicensed subject/event
    pairings; objects; PPs; auxiliaries; modals; passives; negation; adverbs;
    coordination; questions; embedding; and trailing material must emit
