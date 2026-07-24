@@ -4,8 +4,8 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** PMB annotation licence confirmed; metadata-only raw-text licence
-audit is the next Phase E prerequisite
+**Status:** PMB release and Tatoeba-only licence subset frozen; builder is the
+next Phase E prerequisite
 
 **Current safe DEV baseline:** `964f09f`
 (`Add COGS indefinite common subject projection`)
@@ -592,12 +592,14 @@ GSM8K, ASDiv, SVAMP, MAWPS, SciBench, and FOLIO diffs.
 
 Preserve completed post-D DEV campaign 2 as the DEV baseline. If continuing
 DEV coverage, profile a determined common-subject intransitive class and lock
-its role class before implementation. To advance the original plan, pin PMB
-5.1.0 and perform the metadata-only `.met` raw-text licence audit described in
+its role class before implementation. To advance the original plan, implement
+the pinned PMB 5.1.0 builder and gold adapter described in
 [`semantic-projection-ood-gate-plan.md`](semantic-projection-ood-gate-plan.md).
-The PMB annotations are ODC-BY 1.0; admit only rows whose separate raw-text
-terms pass a frozen compatibility allowlist. No candidate data has been
-downloaded or inspected.
+The PMB annotations are ODC-BY 1.0 and the frozen raw-text allowlist admits
+only Tatoeba under its bundled CC BY 2.0 notice: 9,065 train, 990 development,
+and 923 protected standard-test documents. The local release and licence files
+are hashed. No sentence, meaning representation, or protected failure row has
+been inspected, and no evaluation look has been spent.
 Preserve the proper-object boundary and do not rerun TEST or generalization.
 
 ## Phase C restart exit audit

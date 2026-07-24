@@ -395,9 +395,11 @@ The selected gate and frozen acceptance contract are recorded in
 [`semantic-projection-ood-gate-plan.md`](semantic-projection-ood-gate-plan.md).
 PMB 5.1.0 English gold is selected: its release materials licence annotations
 under ODC-BY 1.0. Because raw texts retain the terms recorded in accompanying
-`.met` files, corpus construction must first perform a metadata-only licence
-audit and admit only rows on a frozen compatible-licence allowlist. No corpus
-or evaluation row has yet been downloaded or inspected.
+`.met` files, the completed metadata-only audit freezes a Tatoeba-only subset
+under the bundled CC BY 2.0 notice: 9,065 train, 990 development, and 923
+protected standard-test documents. The local release and licence files are
+hashed. No sentence, meaning representation, or protected failure row has
+been inspected, and no evaluation look has been spent.
 
 After COGS demonstrates nonzero OOD transfer:
 
@@ -457,8 +459,8 @@ Two valid next directions remain:
 2. **Unblock original Phase E:** first specify and freeze a fresh independent
    OOD projection corpus/gate, including its licence, grouping, precision
    threshold, and one-look policy. PMB now satisfies the annotation-licence
-   requirement; audit its `.met` raw-text licences, freeze the eligible subset,
-   and implement the preregistered gate next. Phase E begins only if that gate
+   requirement; its Tatoeba-only eligible subset is frozen and the builder and
+   gold adapter are next. Phase E begins only if that gate
    demonstrates nonzero thematic-role transfer without a precision failure.
 
 Do not tune to DEV-holdout items. Do not start by admitting the frequent COGS

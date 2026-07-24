@@ -1,7 +1,7 @@
 # Semantic projection independent OOD gate preregistration
 
-**Status:** PMB selected; annotation licence confirmed from the release
-materials; no corpus downloaded and no evaluation row inspected
+**Status:** PMB selected and local release verified; metadata-only raw-text
+licence audit complete; no sentence or meaning representation inspected
 
 **Selected corpus:** Parallel Meaning Bank (PMB) 5.1.0, English gold meaning
 representations, restricted by raw-text licence metadata
@@ -11,10 +11,10 @@ representations, restricted by raw-text licence metadata
 adaptation with attribution and preservation of licence notices. The full
 licence is shipped as `ODC-BY.txt`.
 
-**Remaining licence condition:** each raw text retains the licence recorded in
-its accompanying `.met` file. The builder must exclude any item whose raw-text
-terms are absent, ambiguous, incompatible with local benchmark use, or
-incompatible with redistribution of derived benchmark artifacts.
+**Raw-text allowlist:** `subcorpus: Tatoeba` only, covered by the release's
+bundled CC BY 2.0 notice. All other subcorpora fail closed for this campaign.
+
+**Local source:** `/Users/louis/Development/pmb-5.1.0`
 
 ## Why this gate exists
 
@@ -41,20 +41,32 @@ The annotations therefore pass the licence-first screen. The mixed raw-text
 terms are a filtering obligation, not a reason to treat the whole annotation
 database as unlicensed.
 
-On first authorized download, the builder must verify and record:
+The local release verification records:
 
-1. the exact text of `PMB LICENSE` and its SHA-256;
-2. the bundled `ODC-BY.txt` and its SHA-256;
-3. the PMB archive URL, version, and SHA-256;
-4. the set of raw-text licence identifiers found in `.met` files, without
-   opening sentence text or DRS annotations;
-5. a conservative allowlist with a written compatibility rationale for every
-   admitted identifier; and
-6. counts excluded for missing, unknown, or incompatible raw-text terms.
+1. `PMB_LICENSE.txt` SHA-256
+   `5e173568ea2d8dfe2a0a913e7ee8a924339a1680ebb469d4d10d3ca61a131abd`;
+2. `ODC-BY.txt` SHA-256
+   `597cb35ae00d3a9284fc748966b8303935625902ff615ab945d1c151eadc7e97`;
+3. `Tatoeba_LICENSE.txt` SHA-256
+   `da838337e44b466712ed708a637de5d6b8de1454283130c5de7af74a710b551e`;
+4. `README` SHA-256
+   `3a473fd7bdc947165d6b11ee154f746c86d72fa49991b419c10db8de32289c97`;
+5. the ordered English-gold `.met` checksum-manifest digest
+   `a51faf6ef9a755ee71f44838fd937f9ef8052ce49c203653215b2f1441cbaa19`;
+   and
+6. the three release split hashes listed under the firewall below.
 
 Licence eligibility is computed from metadata before content access and is
 immutable for the campaign. No row may be admitted merely because its text is
 useful.
+
+The `.met` files identify `source` and `subcorpus`; they do not carry a literal
+licence field. The audit therefore joins `subcorpus` to the release's bundled
+licence notices. Tatoeba is admitted because the bundled notice explicitly
+states CC BY 2.0 and supplies attribution information. SICK is excluded
+because its notice is CC BY-NC-SA 3.0. RTE, Questions/TREC/DISEQuA/Multisix,
+INTERSECT, UD-GUM, UCL, and GMB are excluded because this release does not
+bundle equally explicit, compatible English raw-text terms for this gate.
 
 ## Why PMB is selected
 
@@ -63,10 +75,13 @@ predicates, thematic roles, discourse structure, and coreference. It is much
 closer to Rulekit's evaluation graph than a database query language and,
 unlike SLOG, is independently authored and represented.
 
-The official release page reports 11,987 English gold instances in PMB 5.1.0
-and distinguishes fully human-corrected gold data from silver and bronze
-data. PMB5 also defines systematic splits intended to reduce overlap and a
-compositional-generalization challenge set.
+The release README reports 11,987 English gold documents and distinguishes
+fully human-corrected gold data from silver and bronze data. PMB5 supplies
+recommended length-distributed train/development/test splits. The extracted
+directory contains 12,053 English-gold document directories, while the
+recommended standard splits contain 11,940 deduplicated, non-long documents.
+The builder must record this release inconsistency rather than silently
+present either number as the other.
 
 Primary sources:
 
@@ -135,14 +150,12 @@ Pin before inspecting any sentence or meaning representation:
    and bundled notices;
 2. English **gold** meaning representations only—no silver or bronze data;
 3. only rows passing the frozen `.met` raw-text licence allowlist;
-4. the release-provided systematic train/development partition, filtered only
+4. the release-provided train/development partition, filtered only
    by that metadata rule, for adapter development;
-5. exactly one protected evaluation partition: the release-provided English
-   compositional-generalization challenge set, filtered by the identical
-   metadata rule, if its membership and gold status are present; and
-6. if the eligible challenge subset is absent or too small for the locked
-   thresholds, stop and revise the corpus decision before inspecting another
-   protected partition.
+5. exactly one protected evaluation partition: English
+   `split/en/test/standard.sbn`, filtered by the identical metadata rule; and
+6. exclude `split/en/test/long.sbn`, which the README describes as mixed
+   gold/silver long-text data and which is outside the gold-only contract.
 
 Do not create a convenient random split. Do not inspect protected text, DRS
 clauses, or failure rows before or after the one aggregate evaluation.
@@ -180,11 +193,23 @@ clause, and source span or token alignment when supplied.
 - **Eligible train:** inspectable for mapping design and category work.
 - **Eligible development:** aggregate and item-level validation permitted,
   but every reader change needs a named construction and synthetic tests.
-- **Eligible protected compositional challenge:** one aggregate look only.
+- **Eligible protected standard test:** one aggregate look only.
 - No protected failure row may be inspected after the look.
-- A ledger records archive and licence-file hashes, allowlist version, eligible
+- A ledger records release and licence-file hashes, allowlist version, eligible
   split counts, git commit, timestamp, command, aggregate result, and any
-  release-disclosed challenge-family aggregates.
+  preregistered structural aggregates.
+
+Pinned release split hashes and metadata-only eligible counts:
+
+| Split | Release file SHA-256 | All IDs | Tatoeba eligible |
+| --- | --- | ---: | ---: |
+| train | `a93a9ef831935d4164959c4bfeb66e19317e8beb47b62394cbb2919a9aa0f893` | 9,552 | 9,065 |
+| development | `111167f3a42b5c61db3567205ed2c1463e01d93f4e06b8c2aae8c0c6217b1770` | 1,194 | 990 |
+| protected standard test | `602183b2c06bd4d22130cafcc5eaa7572b8f95dc6ae0381b1eec9de82bdda546` | 1,194 | 923 |
+
+Only record identifiers and aggregate `subcorpus` counts were read from the
+protected split during this audit. No protected raw sentence, SBN graph, or
+failure row was inspected, and no evaluation look has been spent.
 
 The COGS TEST and generalization ledgers remain unrelated and must stay at one
 row each.
@@ -214,8 +239,9 @@ another protected look.
 
 ## Next implementation sequence
 
-1. Download PMB 5.1.0 once and verify the archive and bundled licence files.
-2. Perform the metadata-only raw-text licence audit and freeze the allowlist.
+1. Add a builder that verifies the pinned local release and bundled licence
+   files without redistributing them.
+2. Enforce the frozen Tatoeba-only allowlist from `.met` metadata.
 3. Materialize only eligible declared splits; record inclusion/exclusion
    counts without exposing protected content.
 4. Add the project schema, immutable builder, attribution metadata, and
@@ -224,5 +250,6 @@ another protected look.
 6. Establish an untouched-runtime baseline.
 7. Mine only eligible train/development, one construction class per increment.
 8. Run all standing gates for every increment.
-9. Freeze the candidate commit and spend the single protected challenge look.
+9. Freeze the candidate commit and spend the single protected standard-test
+   look.
 10. Record pass/fail without inspecting failed rows.
