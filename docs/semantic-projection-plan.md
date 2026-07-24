@@ -482,8 +482,12 @@ Two valid next directions remain:
    structural match remains quarantined. The next typed simple-past Recipient
    PP class adds ten train exact graphs and explicit Recipient, bringing PMB
    train to 62 exact / 303 edges / 0 incorrect. Its expected development buyer
-   did not materialize and remains unopened. Profile attachment/complement,
-   recall, and development transfer next. Phase E begins only if the full gate
+   did not materialize. The possessive-role attachment class hits its frozen
+   four-buyer lock, bringing train to 66 exact / 327 edges / 0 incorrect and
+   satisfying the attachment/complement bucket. A development diagnostic
+   protocol deviation is recorded in the OOD gate plan and its observations
+   are quarantined. Profile the remaining 1% recall requirement next.
+   Phase E begins only if the full gate
    demonstrates nonzero thematic-role transfer without a precision failure.
 
 Do not tune to DEV-holdout items. Do not start by admitting the frequent COGS

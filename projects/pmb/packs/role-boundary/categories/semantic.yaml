@@ -29,3 +29,15 @@ members:
   semantic_pmb_person_object_pronoun: [me]
   semantic_pmb_recipient_at_verb: [smiled, snickered, waved, yelled]
   semantic_pmb_recipient_to_verb: [apologized, nodded]
+  # Pair-specific attachment licences.
+  semantic_pmb_possessive_aged_role: [parents]
+  semantic_pmb_possessive_aged_adjective: [aged]
+  semantic_pmb_possessive_angry_role: [uncle]
+  semantic_pmb_possessive_angry_adjective: [angry]
+  semantic_pmb_possessive_famous_role: [sister]
+  semantic_pmb_possessive_famous_adjective: [famous]
+  semantic_pmb_possessive_tall_role: [father]
+  semantic_pmb_possessive_tall_adjective: [tall]
+  # Synthetic contract vocabulary; neither word occurs in PMB.
+  semantic_pmb_possessive_synthetic_role: [zephyrkin]
+  semantic_pmb_possessive_synthetic_adjective: [luminous]

@@ -74,6 +74,28 @@ categories:
     parent: verb
   semantic_pmb_recipient_to_verb:
     parent: verb
+  # Empty paired licences for PMB's exact possessive-role attachment buyer.
+  # Each noun/adjective pair has its own rule; the PMB pack supplies members.
+  semantic_pmb_possessive_aged_role:
+    parent: noun
+  semantic_pmb_possessive_aged_adjective:
+    parent: adjective
+  semantic_pmb_possessive_angry_role:
+    parent: noun
+  semantic_pmb_possessive_angry_adjective:
+    parent: adjective
+  semantic_pmb_possessive_famous_role:
+    parent: noun
+  semantic_pmb_possessive_famous_adjective:
+    parent: adjective
+  semantic_pmb_possessive_tall_role:
+    parent: noun
+  semantic_pmb_possessive_tall_adjective:
+    parent: adjective
+  semantic_pmb_possessive_synthetic_role:
+    parent: noun
+  semantic_pmb_possessive_synthetic_adjective:
+    parent: adjective
 members:
   # Overt finite forms whose active direct-object construction licenses the
   # agent/theme interpretation in Phase B increment 1. Unsafe self-lemma

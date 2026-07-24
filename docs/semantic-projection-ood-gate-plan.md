@@ -610,3 +610,30 @@ Selected and frozen from inspectable train evidence on 2026-07-24:
 9. **Non-claim:** this supplies the missing attachment/complement bucket but
    does not reach 1% recall. It cannot by itself authorize the protected test
    look.
+
+#### Coverage increment 5 result
+
+The adapter and reader hit the frozen train lock exactly:
+
+| Split | exact | safe partial | declined | incorrect | edge precision | edge recall |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| train | 66 | 0 | 8,999 | 0 | 100% | 0.6% |
+| development | 0 | 0 | 990 | 0 | n/a | 0.0% |
+
+The four new nominal-modifier graphs add 24 correct edges for 327 total.
+The adapter adds 447 train `Of` edges to the gold denominator; 443 remain on
+the worklist. The train diff reports exactly four new exact graphs, zero
+broken exact graphs, and zero safe-to-incorrect transitions. Development is
+neutral and safe; following the recorded diagnostic deviation, it is not
+claimed as untouched transfer evidence.
+
+The complete gate is green: all 3,358 tests; COGS DEV-train
+1,772/646/0 and DEV-holdout 1,696/656/0 at 100% projected-edge precision;
+curated 65/65 twice; GSM8K 104/0 wrong and 40/0 wrong; ASDiv 44/0; SVAMP
+30/0; MAWPS 9/0; SciBench 6/0; FOLIO with zero commitments; and COGS lint
+with zero errors and seven pre-existing warnings. The protected PMB test
+remains unopened.
+
+Increment 5 satisfies the inspectable attachment/complement coverage bucket.
+Phase E remains blocked by the 1% recall threshold and the absence of
+pristine development-transfer evidence.

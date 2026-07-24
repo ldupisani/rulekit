@@ -4,8 +4,8 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** PMB coverage increment 5 possessive-role attachment is
-preregistered; implementation is next
+**Status:** PMB coverage increment 5 complete at 66 train exact / 327 correct
+edges / 0 incorrect; recall coverage is next
 
 **Current safe DEV baseline:** `964f09f`
 (`Add COGS indefinite common subject projection`)
@@ -603,16 +603,15 @@ recall; development remains unchanged. Coverage increment 3
 Coverage increment 4 `TypedSubject V-ed at/to TypedRecipient.` is complete at
 62 train exact / 303 correct edges / 0 incorrect, adding explicit Recipient.
 The expected aggregate development buyer did not materialize and development
-stays at zero commitments. Coverage increment 5 is frozen as a four-buyer
-train-only possessive-role attachment class. Its adapter adds the explicit
-SBN noun-to-noun `Of` relation to the projection view; its exact reader must
-move train to 66 complete graphs and 327 correct edges with zero incorrect.
-Implement this frozen brief next.
+stays at zero commitments. Coverage increment 5 adds the explicit SBN
+noun-to-noun `Of` relation and hits its four-buyer train lock: 66 complete
+graphs / 327 correct edges / zero incorrect. The full standing gate is green.
+Profile the next train-only complete-graph class needed to cross 1% recall.
 
 This clears the precision prerequisite for coverage, not the Phase E entry
-gate: PMB has 62 complete train graphs and 303 correct edges, but only 0.6%
-recall, no development transfer, and no complete attachment/complement
-bucket. A development profiling diagnostic accidentally printed inspectable
+gate: PMB has 66 complete train graphs and 327 correct edges, but only 0.6%
+recall and no pristine development transfer. The attachment/complement bucket
+is now satisfied. A development profiling diagnostic accidentally printed inspectable
 rows despite the campaign's stricter aggregate-only choice; the observations
 are quarantined and the deviation is recorded in the gate plan. No protected
 PMB test look has been spent. Preserve the proper-object boundary and do not

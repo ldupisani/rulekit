@@ -267,8 +267,10 @@ def parse_pmb_sbn(sbn: str, *, document_id: str = "") -> ProjectionGraph:
     current synset.  The adapter deliberately maps only exact one-to-one
     Rulekit graph elements: nominal concepts, verbal events, adjectival
     ``AttributeOf`` properties, names, and the Agent/Theme/Recipient VerbNet
-    roles.  Temporal operators, scope boxes, senses, and all other roles remain
-    outside this projection view.
+    roles.  A nominal ``Of`` offset is represented as an ordinary ``of``
+    modifier edge from the owned/role nominal to its owner. Temporal
+    operators, scope boxes, senses, and all other roles remain outside this
+    projection view.
     """
 
     tokens = _PMB_TOKEN.findall(" ".join(str(sbn).split()))
@@ -367,6 +369,23 @@ def parse_pmb_sbn(sbn: str, *, document_id: str = "") -> ProjectionGraph:
                     "type",
                     target_ref,
                     label=lemma,
+                    evidence_source=edge_source,
+                )
+            elif pos == "n" and target_pos == "n" and role == "Of":
+                graph.node(
+                    target_ref,
+                    "entity",
+                    evidence_source=(
+                        f"pmb:{document_id}:synset:{target_index}"
+                        if document_id
+                        else f"pmb:synset:{target_index}"
+                    ),
+                )
+                graph.edge(
+                    "modifier",
+                    ref,
+                    target_ref,
+                    "of",
                     evidence_source=edge_source,
                 )
 

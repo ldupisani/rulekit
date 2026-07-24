@@ -1046,3 +1046,118 @@ rules:
       - {fact: semantic_graph_edge, kind: type, source: "entity:99", label: time}
       - {fact: semantic_graph_edge, kind: role, source: "event:{event.span_start}", target: "entity:{agent.span_start}", label: agent}
       - {fact: semantic_graph_edge, kind: role, source: "event:{event.span_start}", target: "entity:{recipient.span_start}", label: recipient}
+
+  # PMB coverage increment 5: exact possessive-role adjective attachments.
+  # Pair-specific rules prevent a category cross product from licensing an
+  # unseen noun/adjective combination. The role nominal remains distinct from
+  # the person it describes because PMB's separate `Role` relation is outside
+  # the adapter view; only its explicit nominal `Of` attachment is projected.
+  - id: semantic/possessive-role-aged
+    phase: read
+    match:
+      sentence:
+        - {lit: my, at_start: true}
+        - {slot: role, cat: semantic_pmb_possessive_aged_role, bare: true}
+        - {lit: are}
+        - {slot: attribute, cat: semantic_pmb_possessive_aged_adjective,
+           single_word: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "entity:0", kind: entity}
+      - {fact: semantic_graph_node, ref: "entity:{role.span_start}", kind: entity}
+      - {fact: semantic_graph_node, ref: "entity:98", kind: entity}
+      - {fact: semantic_graph_node, ref: "entity:99", kind: entity}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:0", label: person}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:{role.span_start}", label: "{role}"}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:98", label: person}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:98", label: "{attribute}"}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:99", label: time}
+      - {fact: semantic_graph_edge, kind: modifier, source: "entity:{role.span_start}", target: "entity:0", label: of}
+
+  - id: semantic/possessive-role-angry
+    phase: read
+    match:
+      sentence:
+        - {lit: my, at_start: true}
+        - {slot: role, cat: semantic_pmb_possessive_angry_role, bare: true}
+        - {lit: is}
+        - {slot: attribute, cat: semantic_pmb_possessive_angry_adjective,
+           single_word: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "entity:0", kind: entity}
+      - {fact: semantic_graph_node, ref: "entity:{role.span_start}", kind: entity}
+      - {fact: semantic_graph_node, ref: "entity:98", kind: entity}
+      - {fact: semantic_graph_node, ref: "entity:99", kind: entity}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:0", label: person}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:{role.span_start}", label: "{role}"}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:98", label: person}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:98", label: "{attribute}"}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:99", label: time}
+      - {fact: semantic_graph_edge, kind: modifier, source: "entity:{role.span_start}", target: "entity:0", label: of}
+
+  - id: semantic/possessive-role-famous
+    phase: read
+    match:
+      sentence:
+        - {lit: my, at_start: true}
+        - {slot: role, cat: semantic_pmb_possessive_famous_role, bare: true}
+        - {lit: is}
+        - {slot: attribute, cat: semantic_pmb_possessive_famous_adjective,
+           single_word: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "entity:0", kind: entity}
+      - {fact: semantic_graph_node, ref: "entity:{role.span_start}", kind: entity}
+      - {fact: semantic_graph_node, ref: "entity:98", kind: entity}
+      - {fact: semantic_graph_node, ref: "entity:99", kind: entity}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:0", label: person}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:{role.span_start}", label: "{role}"}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:98", label: person}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:98", label: "{attribute}"}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:99", label: time}
+      - {fact: semantic_graph_edge, kind: modifier, source: "entity:{role.span_start}", target: "entity:0", label: of}
+
+  - id: semantic/possessive-role-tall
+    phase: read
+    match:
+      sentence:
+        - {lit: my, at_start: true}
+        - {slot: role, cat: semantic_pmb_possessive_tall_role, bare: true}
+        - {lit: is}
+        - {slot: attribute, cat: semantic_pmb_possessive_tall_adjective,
+           single_word: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "entity:0", kind: entity}
+      - {fact: semantic_graph_node, ref: "entity:{role.span_start}", kind: entity}
+      - {fact: semantic_graph_node, ref: "entity:98", kind: entity}
+      - {fact: semantic_graph_node, ref: "entity:99", kind: entity}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:0", label: person}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:{role.span_start}", label: "{role}"}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:98", label: person}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:98", label: "{attribute}"}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:99", label: time}
+      - {fact: semantic_graph_edge, kind: modifier, source: "entity:{role.span_start}", target: "entity:0", label: of}
+
+  - id: semantic/possessive-role-synthetic-contract
+    phase: read
+    match:
+      sentence:
+        - {lit: my, at_start: true}
+        - {slot: role, cat: semantic_pmb_possessive_synthetic_role, bare: true}
+        - {lit: is}
+        - {slot: attribute, cat: semantic_pmb_possessive_synthetic_adjective,
+           single_word: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "entity:0", kind: entity}
+      - {fact: semantic_graph_node, ref: "entity:{role.span_start}", kind: entity}
+      - {fact: semantic_graph_node, ref: "entity:98", kind: entity}
+      - {fact: semantic_graph_node, ref: "entity:99", kind: entity}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:0", label: person}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:{role.span_start}", label: "{role}"}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:98", label: person}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:98", label: "{attribute}"}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:99", label: time}
+      - {fact: semantic_graph_edge, kind: modifier, source: "entity:{role.span_start}", target: "entity:0", label: of}

@@ -59,16 +59,29 @@ def test_pmb_adapter_normalizes_named_entities_and_adjectival_types() -> None:
     assert ("type", "p2", "", "radiant") in graph.edge_keys()
 
 
+def test_pmb_adapter_maps_nominal_of_as_owned_to_owner_attachment() -> None:
+    graph = parse_pmb_sbn(
+        "person.n.01 EQU speaker person.n.01 Role +1 "
+        "zephyrkin.n.01 Of -2 luminous.a.01 AttributeOf -1",
+        document_id="synthetic/p0002",
+    )
+    assert ("modifier", "p2", "p0", "of") in graph.edge_keys()
+    modifier = next(edge for edge in graph.edges if edge.kind == "modifier")
+    assert modifier.evidence_source == "pmb:synthetic/p0002:synset:2:role:0"
+
+
 def test_pmb_adapter_ignores_unsupported_roles_and_operators() -> None:
     graph = parse_pmb_sbn(
         "device.n.01 time.n.08 EQU now rotate.v.01 Theme -2 "
-        "Time -1 Manner +1 swiftly.r.01"
+        "Time -1 Manner +1 swiftly.r.01 person.n.01 "
+        "artifact.n.01 Owner -1"
     )
     assert ("role", "p2", "p0", "theme") in graph.edge_keys()
     assert not any(
         edge.kind == "role" and edge.label in {"time", "manner"}
         for edge in graph.edges
     )
+    assert not any(edge.kind == "modifier" for edge in graph.edges)
 
 
 def test_pmb_adapter_treats_escaping_offsets_as_constants() -> None:
@@ -80,6 +93,70 @@ def test_pmb_adapter_leaves_unclosed_name_uncollapsed() -> None:
     graph = parse_pmb_sbn('person.n.01 Name "Neris glow.v.01 Agent -1')
     assert ("p0", "entity") in graph.node_keys()
     assert not any(node.ref.startswith("const:") for node in graph.nodes)
+
+
+def test_pmb_possessive_role_attachment_projects_complete_graph() -> None:
+    text = "My zephyrkin is luminous."
+    project = load_project(Path("projects/pmb"))
+    result = solve(text, project.registry, tracing=False)
+    graph = project_result(
+        result, text, project.registry, allow_legacy_bridge=False
+    )
+    assert graph.node_keys() == {
+        ("x0", "entity"),
+        ("x1", "entity"),
+        ("x98", "entity"),
+        ("x99", "entity"),
+    }
+    assert graph.edge_keys() == {
+        ("type", "x0", "", "person"),
+        ("type", "x1", "", "zephyrkin"),
+        ("type", "x98", "", "person"),
+        ("type", "x98", "", "luminous"),
+        ("type", "x99", "", "time"),
+        ("modifier", "x1", "x0", "of"),
+    }
+    assert {edge.evidence_source for edge in graph.edges} == {
+        "semantic/possessive-role-synthetic-contract"
+    }
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Your zephyrkin is luminous.",
+        "Neris's zephyrkin is luminous.",
+        "Zephyrkin is luminous.",
+        "The zephyrkin is luminous.",
+        "A zephyrkin is luminous.",
+        "My zephyrkin was luminous.",
+        "My zephyrkin is not luminous.",
+        "My zephyrkin is more luminous.",
+        "My zephyrkin is luminous to Neris.",
+        "My zephyrkin and my relic are luminous.",
+        "Is my zephyrkin luminous?",
+        "My zephyrkin is radiant.",
+        "My relic is luminous.",
+    ],
+)
+def test_pmb_possessive_role_attachment_rejects_neighbours(text: str) -> None:
+    project = load_project(Path("projects/pmb"))
+    result = solve(text, project.registry, tracing=False)
+    facts = (
+        list(result.store.by_kind(SemanticGraphNode))
+        + list(result.store.by_kind(SemanticGraphEdge))
+    )
+    assert not any(
+        fact.provenance.source.startswith("semantic/possessive-role-")
+        for fact in facts
+    )
+
+
+def test_pmb_possessive_role_attachment_is_dormant_in_cogs() -> None:
+    text = "My zephyrkin is luminous."
+    project = load_project(Path("projects/cogs"))
+    result = solve(text, project.registry, tracing=False)
+    assert project_result(result, text, project.registry).empty
 
 
 def test_pmb_alignment_treats_local_variable_names_as_nonsemantic() -> None:
