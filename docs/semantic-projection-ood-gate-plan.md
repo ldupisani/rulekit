@@ -712,27 +712,28 @@ unopened.
 Selected and frozen from inspectable train evidence on 2026-07-24:
 
 1. **Licensed construction:** exactly anchored `TypedSubject FiniteVerb.`,
-   with five explicit subject identity/type classes: `this`, entity pronoun,
-   person pronoun/quantifier, common nominal, and male proper name.
+   with four explicit subject identity/type classes: entity pronoun, person
+   pronoun/quantifier, common nominal, and male proper name.
    Each class has its independently audited overt Theme-event forms.
 2. **Complete graph:** typed subject entity, event, and time entity; subject
    type, event predicate, time type, and Theme edge. Named subjects are
    constants; all others remain local entities.
-3. **Inspectable buyers:** exactly 15 currently declined train graphs, all
+3. **Inspectable buyers:** exactly 13 currently declined train graphs, all
    with the same three-node/four-edge topology and explicit SBN Theme role.
-4. **Lexical boundary:** four initially profiled graphs are excluded before
+4. **Lexical boundary:** six initially profiled graphs are excluded before
    implementation. `stopped` and `left` lack the required `stop`/`leave`
    event lemmas in the shared lexicon; `drops` is registered verb-only where
    the row requires a nominal subject. No one-off Python mapping or
    cross-project lexicon change is permitted. `That stinks.` is also excluded:
    its shared `complementizer` sense is not a registry category root, so a
-   declarative subject category cannot be compiled.
+   declarative subject category cannot be compiled. The two `this` graphs are
+   also excluded after focused matching showed that article-root tokens are
+   intentionally skipped rather than capturable as semantic subject slots.
 5. **Role quarantine:** `danced` remains quarantined from Agent projection,
    but this class may license its inspected Theme reading in the exact named
    subject construction. The role-specific categories remain disjoint.
-6. **Pairing boundary:** `this` receives a category rooted in its existing
-   article sense, and each identity/type class has its own event category and
-   rule. No generic two-token Theme inference is allowed.
+6. **Pairing boundary:** each identity/type class has its own event category
+   and rule. No generic two-token Theme inference is allowed.
    The logical person pronoun/quantifier class is implemented as two
    root-specific rules because those surfaces resolve to distinct registry
    roots; this is an architectural split, not an additional buyer class.
@@ -744,13 +745,13 @@ Selected and frozen from inspectable train evidence on 2026-07-24:
    than PMB sentences. Assert every identity/type variant, exact topology,
    Theme-not-Agent role, provenance, negative neighbours, quarantine
    separation, and dormant COGS behavior.
-9. **Locked expected train delta:** exactly 15 new complete graphs and 60
-   correct edges: train moves from 103 to 118 exact and from 475 to 535
+9. **Locked expected train delta:** exactly 13 new complete graphs and 52
+   correct edges: train moves from 103 to 116 exact and from 475 to 527
    correct edges, with zero partial / zero incorrect. Against the measured
-   52,991-edge train denominator, recall must be at least 1.0% (535/52,991 =
-   1.010%).
+   52,991-edge train denominator, recall remains just below 1.0%
+   (527/52,991 = 0.9945%).
 10. **Development expectation:** unknown and aggregate-safety-only under the
     recorded diagnostic quarantine.
-11. **Exit claim:** if the lock and all standing gates pass, every inspectable
-    Phase E threshold except the protected-test checkpoint is satisfied.
-    Freeze the candidate before spending that single protected look.
+11. **Non-claim:** this lock remains one complete four-edge graph short of the
+    1% threshold. A separately preregistered increment is still required
+    before freezing the protected-test candidate.
