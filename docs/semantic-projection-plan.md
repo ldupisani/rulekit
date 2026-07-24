@@ -468,14 +468,19 @@ Two valid next directions remain:
 1. **Continue DEV coverage outside the original phase sequence:** profile a
    determined common-subject intransitive class, lock agent/theme role
    membership before implementation, and run the normal increment gate.
-2. **Unblock original Phase E:** specify and freeze a new independent OOD
-   projection corpus/gate, including its licence, grouping, precision
-   threshold, role-diversity requirement, and one-look policy. The PMB
-   campaign reached 117 train exact / 531 correct edges / 0 incorrect and
-   passed every inspectable threshold, but its single protected look produced
-   only one intransitive-Agent exact graph. Precision stayed at 100%, while
-   the protected two-role and direct-object-versus-recipient condition failed.
-   The PMB look is spent and cannot be rerun or used for tuning.
+2. **Unblock original Phase E:** fabricate and seal the fit-for-purpose
+   controlled-English corpus specified in
+   [`synthetic-semantic-treebank-plan.md`](synthetic-semantic-treebank-plan.md).
+   It uses a neutral schema, bundle-level compositional splits, plaintext
+   train, separately encrypted aggregate-only development/test, and a CC0
+   target. The fabrication context receives no Rulekit code, schemas, outputs,
+   benchmark cases, or failures. Import begins only after the external release
+   is sealed. The PMB campaign reached 117 train exact / 531 correct edges /
+   0 incorrect and passed every inspectable threshold, but its single
+   protected look produced only one intransitive-Agent exact graph. Precision
+   stayed at 100%, while the protected two-role and
+   direct-object-versus-recipient condition failed. The PMB look is spent and
+   cannot be rerun or used for tuning.
 
 Do not tune to DEV-holdout items. Do not start by admitting the frequent COGS
 unknown words: vocabulary receives credit only as part of a complete

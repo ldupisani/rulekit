@@ -5,7 +5,9 @@
 **Active campaign:** COGS semantic projection
 
 **Status:** protected PMB look spent: 1 exact / 0 incorrect / 100% precision,
-but protected role diversity failed; Phase E remains blocked
+but protected role diversity failed; Phase E remains blocked. A
+fit-for-purpose synthetic semantic treebank is now specified as the next
+candidate gate.
 
 **Current safe DEV baseline:** `964f09f`
 (`Add COGS indefinite common subject projection`)
@@ -599,10 +601,11 @@ This fails conjunctive entry condition 6, so Phase E remains blocked.
 
 Do not rerun or inspect COGS TEST/generalization or PMB standard-test rows,
 identifiers, sentences, graphs, or failures. Do not tune PMB against the
-protected aggregate. If the campaign continues toward Phase E, the next step
-is to select and preregister a genuinely independent OOD projection gate with
-its own licence decision, frozen partitions, acceptance thresholds, and
-single-look policy.
+protected aggregate. The next step is to fabricate the independently sealed
+corpus specified in
+[`synthetic-semantic-treebank-plan.md`](synthetic-semantic-treebank-plan.md)
+in a separate context with no Rulekit access. Do not begin its Rulekit import
+until the external release is sealed.
 
 ## Phase C restart exit audit
 
