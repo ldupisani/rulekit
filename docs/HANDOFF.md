@@ -610,7 +610,8 @@ Coverage increment 6 hits its finalized 37-buyer lock: 103 exact / 475 correct
 edges / zero incorrect on train and four aggregate exact / zero incorrect on
 development. Its full standing gate is green. Preregister the train-only
 intransitive Theme sibling needed to cross 1% recall. That sibling is now
-frozen at 16 train buyers / 64 edges; implement it next.
+frozen at 15 train buyers / 60 edges after enforcing the category-root
+boundary; implement it next.
 
 This clears the precision prerequisite for coverage, not the Phase E entry
 gate: PMB has 66 complete train graphs and 327 correct edges, but only 0.6%
