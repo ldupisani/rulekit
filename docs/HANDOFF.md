@@ -4,8 +4,8 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** licence-first OOD selection complete; Phase E still blocked on
-independent human-gold categorical-role evidence
+**Status:** PMB annotation licence confirmed; metadata-only raw-text licence
+audit is the next Phase E prerequisite
 
 **Current safe DEV baseline:** `964f09f`
 (`Add COGS indefinite common subject projection`)
@@ -592,12 +592,11 @@ GSM8K, ASDiv, SVAMP, MAWPS, SciBench, and FOLIO diffs.
 
 Preserve completed post-D DEV campaign 2 as the DEV baseline. If continuing
 DEV coverage, profile a determined common-subject intransitive class and lock
-its role class before implementation. To advance the original plan, pin and
-preregister the UCCA English Web Treebank structural auxiliary described in
+its role class before implementation. To advance the original plan, pin PMB
+5.1.0 and perform the metadata-only `.met` raw-text licence audit described in
 [`semantic-projection-ood-gate-plan.md`](semantic-projection-ood-gate-plan.md).
-The licence-first selection found no explicitly licensed human-gold English
-corpus that also preserves categorical agent/theme/recipient roles, so even a
-passing UCCA gate will not by itself enter Phase E. No candidate data has been
+The PMB annotations are ODC-BY 1.0; admit only rows whose separate raw-text
+terms pass a frozen compatibility allowlist. No candidate data has been
 downloaded or inspected.
 Preserve the proper-object boundary and do not rerun TEST or generalization.
 

@@ -1,21 +1,20 @@
-# Semantic projection independent OOD corpus selection
+# Semantic projection independent OOD gate preregistration
 
-**Status:** licence-first selection complete; no candidate qualifies as the
-sole Phase E entry gate
+**Status:** PMB selected; annotation licence confirmed from the release
+materials; no corpus downloaded and no evaluation row inspected
 
-**Selection date:** 2026-07-24
+**Selected corpus:** Parallel Meaning Bank (PMB) 5.1.0, English gold meaning
+representations, restricted by raw-text licence metadata
 
-**Next admissible corpus:** UCCA English Web Treebank, as an independent
-**structural auxiliary gate only**
+**Annotation licence:** Open Data Commons Attribution License 1.0 (ODC-BY
+1.0). The release-side `PMB LICENSE` permits sharing, producing works, and
+adaptation with attribution and preservation of licence notices. The full
+licence is shipped as `ODC-BY.txt`.
 
-**Hard blocker:** no identified, explicitly licensed, human-gold English
-corpus simultaneously distinguishes the categorical agent/theme/recipient
-roles that the failed COGS checkpoint must independently validate. Do not
-weaken the role contract or treat automatically generated labels as gold to
-manufacture a pass.
-
-No corpus archive was downloaded and no evaluation row was inspected during
-this selection.
+**Remaining licence condition:** each raw text retains the licence recorded in
+its accompanying `.met` file. The builder must exclude any item whose raw-text
+terms are absent, ambiguous, incompatible with local benchmark use, or
+incompatible with redistribution of derived benchmark artifacts.
 
 ## Why this gate exists
 
@@ -25,208 +24,205 @@ unlock the original Phase E. The missing evidence is independent
 out-of-distribution transfer of the repaired semantic graph at the existing
 precision-first standard.
 
-The corpus search is licence-first:
+This gate is projection-level evidence only. It does not replace the later
+FraCaS inference gate and does not authorize answer-level claims.
 
-1. require an explicit data licence from the corpus owner or repository;
-2. require redistribution and local benchmark use to be compatible with this
-   repository;
-3. only then evaluate representation, annotation provenance, independence,
-   split integrity, and fitness for the failed role boundary.
+## Licence decision
 
-An open-source toolkit licence is not evidence that its bundled corpus has the
-same licence.
+The earlier PMB rejection was based on the official web page not visibly
+stating a dataset licence. The release materials resolve that ambiguity:
 
-## Selection result
+- PMB annotations are ODC-BY 1.0;
+- public use and redistribution require attribution;
+- the annotation licence and original notices must remain intact; and
+- raw texts are governed separately by the licence named in each `.met` file.
 
-### Admissible structural auxiliary — UCCA English Web Treebank
+The annotations therefore pass the licence-first screen. The mixed raw-text
+terms are a filtering obligation, not a reason to treat the whole annotation
+database as unlicensed.
 
-The official UCCA resource page states that its public corpora are
-CC BY-SA 3.0 and links the English Web Treebank corpus. UCCA is
-human-annotated, independently authored, and supplies semantic DAGs with
-categorical scene, participant, and attachment structure.
+On first authorized download, the builder must verify and record:
 
-It is the best next corpus for independently checking:
+1. the exact text of `PMB LICENSE` and its SHA-256;
+2. the bundled `ODC-BY.txt` and its SHA-256;
+3. the PMB archive URL, version, and SHA-256;
+4. the set of raw-text licence identifiers found in `.met` files, without
+   opening sentence text or DRS annotations;
+5. a conservative allowlist with a written compatibility rationale for every
+   admitted identifier; and
+6. counts excluded for missing, unknown, or incompatible raw-text terms.
 
-- event/scene discovery;
-- predicate and participant attachment;
-- embedded scene structure;
-- nominal elaboration and other categorical attachments; and
-- provenance-preserving projection over naturally occurring web text.
+Licence eligibility is computed from metadata before content access and is
+immutable for the campaign. No row may be admitted merely because its text is
+useful.
 
-It is not sufficient for Phase E entry. UCCA's `Participant` category does not
-distinguish agent, theme, and recipient. Collapsing Rulekit's three role labels
-to `Participant` would allow exactly the kind of proper-object role swap that
-failed COGS generalization to score as correct.
+## Why PMB is selected
 
-Primary source:
-<https://universalconceptualcognitiveannotation.github.io/>
+PMB supplies compositional Discourse Representation Structures with entities,
+predicates, thematic roles, discourse structure, and coreference. It is much
+closer to Rulekit's evaluation graph than a database query language and,
+unlike SLOG, is independently authored and represented.
 
-### Licence-clean but ineligible as human role gold — UDS 2.0 / Decomp 0.3.2
-
-The Decomp repository explicitly licences `decomp/data` under CC BY-SA 4.0;
-its English Web Treebank substrate is also CC BY-SA 4.0. UDS provides a useful
-predicate/argument graph with real-valued, crowd-sourced proto-role
-attributes.
-
-It is not selected as the protected role gate:
-
-- the categorical sentence-level predicate/argument backbone is generated by
-  PredPatt from Universal Dependencies rather than manually adjudicated
-  semantic gold;
-- the human proto-role annotations are continuous properties such as
-  volition and sentience, not categorical agent/theme/recipient labels; and
-- thresholding those attributes into Rulekit roles would add an unvalidated
-  modelling decision to the gold adapter.
-
-UDS remains useful as an inspectable research and property-diagnostic corpus,
-not as decisive evidence for the failed role boundary.
+The official release page reports 11,987 English gold instances in PMB 5.1.0
+and distinguishes fully human-corrected gold data from silver and bronze
+data. PMB5 also defines systematic splits intended to reduce overlap and a
+compositional-generalization challenge set.
 
 Primary sources:
+
+- release-side `PMB LICENSE` and bundled `ODC-BY.txt`;
+- <https://pmb.let.rug.nl/data.php>;
+- <https://aclanthology.org/2024.dmr-1.17/>; and
+- <https://opendatacommons.org/licenses/by/1-0/>.
+
+## Candidate disposition
+
+### Structural auxiliary — UCCA English Web Treebank
+
+UCCA remains a useful later auxiliary. Its public corpora are CC BY-SA 3.0,
+human-annotated semantic DAGs over natural text. Its `Participant` category
+does not distinguish agent, theme, and recipient, however, so it cannot detect
+the role swap exposed by COGS checkpoint 1. PMB takes precedence because its
+representation preserves explicit thematic roles.
+
+Source: <https://universalconceptualcognitiveannotation.github.io/>
+
+### Research diagnostic — UDS 2.0 / Decomp 0.3.2
+
+UDS data and English Web Treebank substrate are CC BY-SA 4.0, but the
+categorical predicate/argument backbone is generated by PredPatt and the human
+proto-role annotations are continuous rather than categorical
+agent/theme/recipient labels. It is not decisive human role gold.
+
+Sources:
 
 - <https://github.com/decompositional-semantics-initiative/decomp>
 - <https://decomp.readthedocs.io/en/latest/data/semantic-types.html>
-- <https://decomp.readthedocs.io/en/latest/data/sentence-graphs.html>
 - <https://universaldependencies.org/treebanks/en_ewt/index.html>
 
-### Rejected — PMB 5.1.0 English gold
+### Later provenance audit — UMR 1.0
 
-PMB remains the closest full compositional representation, but the official
-release page does not state an explicit dataset licence for the archive.
-Stable downloads and citation instructions are not a redistribution licence.
-Under a licence-first policy, PMB is rejected until authoritative licence
-terms appear; do not download it meanwhile.
-
-Primary sources:
-
-- <https://pmb.let.rug.nl/data.php>
-- <https://aclanthology.org/2024.dmr-1.17/>
-
-### Rejected — Universal Proposition Banks English EWT
-
-Universal Proposition Banks has explicit inherited treebank licensing and
-direct predicate/argument labels, but the project documents that its labels
-are predominantly model-generated. This is useful silver supervision, not an
-independent human-gold precision gate. The underlying manually annotated
-English Web Treebank PropBank is distributed under an LDC agreement, so the
-open derivative must not be described as equivalent gold.
-
-Primary sources:
-
-- <https://universalpropositions.github.io/>
-- <https://catalog.ldc.upenn.edu/LDC2017T15>
-
-### Licence-clean English subset but ineligible as independent human gold — UMR 1.0
-
-UMR has strong representational fit, and its release paper explicitly states
-that the English portion is CC BY-SA 4.0. It therefore passes the licence
-screen and corrects the initial concern raised by the multilingual bundle's
-combined terms.
-
-It still does not qualify as the decisive gate. The paper describes the
-87,038-sentence English set as a partially automated conversion of existing
-AMR 3.0, Little Prince, and Minecraft AMR data. The conversion includes
-role-changing decisions such as splitting AMR `destination` into UMR `goal`
-or `recipient`; the release description does not establish that every
-protected English graph and role was independently human-adjudicated after
-conversion. In addition, core `ARG0`/`ARG1` labels are frame-specific and
-cannot be treated globally as agent/theme without authoritative roleset
-mappings.
-
-UMR is the strongest candidate for a later provenance audit. It becomes
-eligible only if pinned release metadata identifies a human-reviewed English
-partition and a deterministic, licensed mapping for the categorical roles
-Rulekit emits.
+The English UMR portion is CC BY-SA 4.0 and representationally strong, but its
+87,038 English graphs are described as a partially automated conversion of
+existing AMR data. It remains secondary until a pinned partition establishes
+human adjudication of the converted categorical roles and a deterministic
+roleset mapping.
 
 Sources:
 
 - <https://aclanthology.org/2024.lrec-main.229/>
 - <https://aclanthology.org/2023.tlt-1.8/>
 
-### Rejected — SLOG and CFQ
+### Rejected — Universal Proposition Banks, SLOG, and CFQ
 
-SLOG is not independent: it extends COGS and retains its grammar and logical
-form family. CFQ is CC BY 4.0, but maps questions to Freebase SPARQL and would
-primarily test knowledge-base query normalization rather than sentence-level
+Universal Proposition Banks labels are predominantly model-generated and are
+silver supervision, not independent human-gold precision evidence. SLOG
+extends COGS and is not independent. CFQ is CC BY 4.0 but maps questions to
+Freebase SPARQL, testing query normalization rather than sentence-level
 entity/event/role projection.
 
 Sources:
 
+- <https://universalpropositions.github.io/>
 - <https://arxiv.org/abs/2310.15040>
 - <https://github.com/google-research/google-research/tree/master/cfq>
 
-## Frozen UCCA auxiliary scope
+## Frozen PMB scope
 
-Before inspecting data:
+Pin before inspecting any sentence or meaning representation:
 
-1. pin the exact UCCA English Web Treebank release/tag, archive URL, SHA-256,
-   guidelines version, citation, and CC BY-SA 3.0 text;
-2. preserve the release-provided train/development/test partitions;
-3. inspect train only for adapter design; permit development validation under
-   the normal increment protocol;
-4. reserve test for one aggregate look with no failed-row inspection; and
-5. record attribution and share-alike obligations in the builder and generated
-   metadata.
+1. exact PMB 5.1.0 archive URL, SHA-256, release citation, annotation licence,
+   and bundled notices;
+2. English **gold** meaning representations only—no silver or bronze data;
+3. only rows passing the frozen `.met` raw-text licence allowlist;
+4. the release-provided systematic train/development partition, filtered only
+   by that metadata rule, for adapter development;
+5. exactly one protected evaluation partition: the release-provided English
+   compositional-generalization challenge set, filtered by the identical
+   metadata rule, if its membership and gold status are present; and
+6. if the eligible challenge subset is absent or too small for the locked
+   thresholds, stop and revise the corpus decision before inspecting another
+   protected partition.
 
-The adapter may map only one-to-one categorical UCCA structure. It must not:
+Do not create a convenient random split. Do not inspect protected text, DRS
+clauses, or failure rows before or after the one aggregate evaluation.
 
-- map Participant to agent, theme, or recipient;
-- infer a role from syntax, token order, lexical identity, or proto-role
-  thresholds;
-- treat every UCCA unit as an entity;
-- silently discard remote edges or reentrancy; or
-- enumerate corpus vocabulary in Python.
+The committed builder may redistribute only metadata and derived artifacts
+whose upstream terms permit it. Raw PMB text and annotations remain
+gitignored unless every applicable licence and attribution condition is met.
 
-Every emitted element must retain the UCCA passage/node/edge identifier and
-terminal yield. Unsupported categories make the graph partial or declined.
+## Projection contract
 
-## Auxiliary acceptance contract
+The adapter may map only explicit PMB clauses with deterministic provenance:
 
-The UCCA auxiliary may be called a successful structural transfer gate only
-if its single protected look has:
+- discourse referents to entity or event nodes;
+- lexical predicates to type or event edges;
+- explicit thematic-role clauses to ordinary role edges;
+- explicit named-entity constants to constant entity nodes;
+- explicit definiteness or discourse-status evidence to definite edges only
+  when PMB distinguishes it safely; and
+- explicit attachment or clausal relations to modifier/complement edges only
+  through a documented one-to-one mapping.
 
-1. zero incorrect projected edges and 100% projected-edge precision;
-2. at least 25 complete adapter-representable graphs;
+Unsupported DRS operators, senses, roles, scope, discourse relations, or
+coreference must remain absent and make the graph partial or declined. The
+adapter must not infer a role from word order, convert every binary relation
+into a generic role, globally equate numbered roles with thematic roles, or
+enumerate PMB vocabulary in Python.
+
+Every emitted node and edge must retain the PMB document identifier, source
+clause, and source span or token alignment when supplied.
+
+## Development firewall
+
+- **Metadata audit:** licence fields and split membership only; no sentence or
+  DRS content.
+- **Eligible train:** inspectable for mapping design and category work.
+- **Eligible development:** aggregate and item-level validation permitted,
+  but every reader change needs a named construction and synthetic tests.
+- **Eligible protected compositional challenge:** one aggregate look only.
+- No protected failure row may be inspected after the look.
+- A ledger records archive and licence-file hashes, allowlist version, eligible
+  split counts, git commit, timestamp, command, aggregate result, and any
+  release-disclosed challenge-family aggregates.
+
+The COGS TEST and generalization ledgers remain unrelated and must stay at one
+row each.
+
+## Entry gate for original Phase E
+
+All conditions are conjunctive:
+
+1. zero incorrect graphs and 100% projected-edge precision;
+2. at least 25 complete graphs;
 3. at least 250 correct projected edges;
 4. at least 1% recall over adapter-representable gold edges;
-5. nonzero complete coverage in at least three preregistered structural
-   buckets: scene/event, participant attachment, and
-   elaboration/embedded-scene attachment;
-6. zero broken exact graphs and zero decline-to-wrong transitions on every
+5. nonzero complete coverage in at least three preregistered buckets:
+   entity/type/status, event/role, and attachment/complement;
+6. nonzero protected evidence for at least two distinct explicit thematic-role
+   labels, including a class capable of distinguishing direct objects from
+   recipients;
+7. zero broken exact graphs and zero decline-to-wrong transitions on every
    standing Rulekit gate; and
-7. a green full synthetic/unit suite and lint.
+8. full synthetic/unit suite and lint remain green.
 
-Passing this auxiliary does **not** start Phase E. It establishes independent
-structural transfer while leaving the categorical role boundary open.
-
-## Phase E entry condition
-
-Phase E still requires both:
-
-1. a passing independent structural gate such as the UCCA auxiliary; and
-2. independent human-gold evidence that preserves categorical
-   agent/theme/recipient distinctions and passes the same 100%-precision
-   boundary.
-
-The second condition may be satisfied by a newly found corpus with explicit
-compatible licensing, authoritative licence clarification for a suitable
-existing corpus, or a separately preregistered and independently annotated
-evaluation set with a clear licence. Its creation or commissioning is a new
-campaign decision, not authorized by this selection.
-
-The COGS TEST and generalization ledgers remain at one row each and must not be
-rerun.
+If any condition fails, original Phase E remains blocked. Revert the
+uncheckpointed OOD adapter batch if precision falls below 100%. Coverage
+shortfalls with perfect precision may return to eligible PMB
+train/development data under a newly recorded increment; they do not permit
+another protected look.
 
 ## Next implementation sequence
 
-1. Pin and hash the UCCA English Web Treebank release without opening test
-   rows.
-2. Add its project schema, immutable builder, licence metadata, and snapshot
-   ledger.
-3. Implement and self-test the UCCA-to-Rulekit structural gold adapter before
-   adding reader coverage.
-4. Establish an untouched-runtime baseline.
-5. Mine only train/development, one construction class per increment.
-6. Freeze the candidate commit and spend one protected aggregate look.
-7. In parallel with that campaign, continue the licence search specifically
-   for human categorical thematic-role gold; do not substitute UDS or
-   auto-generated UP labels.
+1. Download PMB 5.1.0 once and verify the archive and bundled licence files.
+2. Perform the metadata-only raw-text licence audit and freeze the allowlist.
+3. Materialize only eligible declared splits; record inclusion/exclusion
+   counts without exposing protected content.
+4. Add the project schema, immutable builder, attribution metadata, and
+   snapshot ledger.
+5. Implement the DRS-to-Rulekit gold adapter before adding reader coverage.
+6. Establish an untouched-runtime baseline.
+7. Mine only eligible train/development, one construction class per increment.
+8. Run all standing gates for every increment.
+9. Freeze the candidate commit and spend the single protected challenge look.
+10. Record pass/fail without inspecting failed rows.

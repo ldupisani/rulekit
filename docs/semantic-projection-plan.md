@@ -391,15 +391,13 @@ checkpoint 1, and the spent protected slices cannot be used again. Entering
 this phase requires a separately preregistered, independent OOD projection
 gate that demonstrates nonzero transfer without a precision failure.
 
-The corpus selection and frozen acceptance contract are recorded in
+The selected gate and frozen acceptance contract are recorded in
 [`semantic-projection-ood-gate-plan.md`](semantic-projection-ood-gate-plan.md).
-A licence-first review found no single eligible primary corpus. UCCA English
-Web Treebank is the next admissible structural auxiliary, but it collapses
-agent/theme/recipient to Participant and therefore cannot independently
-validate the role boundary that failed COGS generalization. PMB remains
-ineligible because its official release metadata does not state an explicit
-dataset licence; UDS and Universal Proposition Banks are not human categorical
-role gold.
+PMB 5.1.0 English gold is selected: its release materials licence annotations
+under ODC-BY 1.0. Because raw texts retain the terms recorded in accompanying
+`.met` files, corpus construction must first perform a metadata-only licence
+audit and admit only rows on a frozen compatible-licence allowlist. No corpus
+or evaluation row has yet been downloaded or inspected.
 
 After COGS demonstrates nonzero OOD transfer:
 
@@ -458,11 +456,10 @@ Two valid next directions remain:
    membership before implementation, and run the normal increment gate.
 2. **Unblock original Phase E:** first specify and freeze a fresh independent
    OOD projection corpus/gate, including its licence, grouping, precision
-   threshold, and one-look policy. The licence-first selection is complete:
-   implement the preregistered UCCA structural auxiliary next, while retaining
-   the separate requirement for explicitly licensed, independent human-gold
-   categorical role evidence. Phase E begins only after both gates demonstrate
-   nonzero transfer without a precision failure.
+   threshold, and one-look policy. PMB now satisfies the annotation-licence
+   requirement; audit its `.met` raw-text licences, freeze the eligible subset,
+   and implement the preregistered gate next. Phase E begins only if that gate
+   demonstrates nonzero thematic-role transfer without a precision failure.
 
 Do not tune to DEV-holdout items. Do not start by admitting the frequent COGS
 unknown words: vocabulary receives credit only as part of a complete
