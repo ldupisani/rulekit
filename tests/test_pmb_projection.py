@@ -315,3 +315,113 @@ def test_pmb_typed_name_rules_are_dormant_in_cogs() -> None:
         edge.kind == "type" and edge.label in {"male", "female", "time"}
         for edge in graph.edges
     )
+
+
+@pytest.mark.parametrize(
+    ("text", "subject_ref", "subject_type", "source"),
+    [
+        (
+            "Neris reserved a zephyrstone.",
+            "const:neris",
+            "male",
+            "semantic/transitive-male-name-simple-past-indefinite-theme",
+        ),
+        (
+            "He reserved a zephyrstone.",
+            "x0",
+            "male",
+            "semantic/transitive-male-pronoun-simple-past-indefinite-theme",
+        ),
+        (
+            "She reserved a zephyrstone.",
+            "x0",
+            "female",
+            "semantic/transitive-female-pronoun-simple-past-indefinite-theme",
+        ),
+        (
+            "We reserved a zephyrstone.",
+            "x0",
+            "person",
+            "semantic/transitive-person-pronoun-simple-past-indefinite-theme",
+        ),
+    ],
+)
+def test_pmb_typed_subject_past_transitive_projects_complete_graph(
+    text: str,
+    subject_ref: str,
+    subject_type: str,
+    source: str,
+) -> None:
+    project = load_project(Path("projects/pmb"))
+    result = solve(text, project.registry, tracing=False)
+    graph = project_result(
+        result, text, project.registry, allow_legacy_bridge=False
+    )
+    assert graph.node_keys() == {
+        (subject_ref, "entity"),
+        ("x1", "event"),
+        ("x3", "entity"),
+        ("x99", "entity"),
+    }
+    assert graph.edge_keys() == {
+        ("type", subject_ref, "", subject_type),
+        ("event", "x1", "", "reserve"),
+        ("type", "x3", "", "zephyrstone"),
+        ("type", "x99", "", "time"),
+        ("role", "x1", subject_ref, "agent"),
+        ("role", "x1", "x3", "theme"),
+    }
+    assert {edge.evidence_source for edge in graph.edges} == {source}
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "A zephyrstone reserved a chair.",
+        "Everybody reserved a chair.",
+        "Orin reserved a chair.",
+        "Neris reserved the chair.",
+        "Neris reserved chairs.",
+        "Neris reserved Alice.",
+        "Neris reserved a wooden chair.",
+        "Neris danced a chair.",
+        "Neris reserves a chair.",
+        "Neris was reserving a chair.",
+        "Neris might reserve a chair.",
+        "Neris did not reserve a chair.",
+        "Neris reserved a chair for Alice.",
+        "Neris reserved a chair quickly.",
+        "Neris reserved a chair and smiled.",
+        "Did Neris reserve a chair?",
+        "Alice said Neris reserved a chair.",
+    ],
+)
+def test_pmb_typed_subject_past_transitive_rejects_neighbours(
+    text: str,
+) -> None:
+    project = load_project(Path("projects/pmb"))
+    result = solve(text, project.registry, tracing=False)
+    facts = (
+        list(result.store.by_kind(SemanticGraphNode))
+        + list(result.store.by_kind(SemanticGraphEdge))
+    )
+    assert not any(
+        fact.provenance.source.startswith("semantic/transitive-")
+        and fact.provenance.source.endswith("-simple-past-indefinite-theme")
+        for fact in facts
+    )
+
+
+def test_pmb_past_transitive_categories_are_dormant_in_cogs() -> None:
+    text = "Neris reserved a zephyrstone."
+    project = load_project(Path("projects/cogs"))
+    result = solve(text, project.registry, tracing=False)
+    facts = (
+        list(result.store.by_kind(SemanticGraphNode))
+        + list(result.store.by_kind(SemanticGraphEdge))
+    )
+    assert not any(
+        fact.provenance.source.startswith("semantic/transitive-")
+        and fact.provenance.source.endswith("-simple-past-indefinite-theme")
+        for fact in facts
+    )

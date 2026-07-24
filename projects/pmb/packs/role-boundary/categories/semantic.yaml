@@ -15,3 +15,12 @@ members:
      grumbled, grunted, hesitated, intervened, kneeled, nodded, resigned,
      shrieked, sighed, smiled, sneezed, snickered, stammered, talked, yawned,
      yelled]
+  semantic_pmb_male_pronoun: [he]
+  semantic_pmb_female_pronoun: [she]
+  semantic_pmb_person_pronoun: [i, they, we]
+  semantic_pmb_simple_past_agent_theme_verb:
+    [booked, caused, cracked, dropped, installed, launched, ordered,
+     pressed, rented, reserved, scored, turned, used, watched]
+  semantic_pmb_indefinite_theme_noun:
+    [accident, beer, button, canoe, chair, goal, joke, movie, pizza, program,
+     rocket, room, seat, somersault, toothpick, vase, zephyrstone]

@@ -9,6 +9,7 @@ entries:
   neris: {senses: [noun]}
   sita: {senses: [noun]}
   tom: {senses: [noun]}
+  we: {senses: [pronoun], number: plural}
   accelerated: {senses: [verb], verb: {lemma: accelerate}}
   apologized: {senses: [verb], verb: {lemma: apologize}}
   applauded: {senses: [verb], verb: {lemma: applaud}}
@@ -35,3 +36,14 @@ entries:
   stammered: {senses: [verb], verb: {lemma: stammer}}
   yawned: {senses: [verb], verb: {lemma: yawn}}
   yelled: {senses: [verb], verb: {lemma: yell}}
+  booked: {senses: [verb], verb: {lemma: book}}
+  caused: {senses: [verb], verb: {lemma: cause}}
+  cracked: {senses: [verb], verb: {lemma: crack}}
+  installed: {senses: [verb], verb: {lemma: instal}}
+  launched: {senses: [verb], verb: {lemma: launch}}
+  pressed: {senses: [verb], verb: {lemma: press}}
+  reserved: {senses: [verb], verb: {lemma: reserve}}
+  beer: {senses: [noun]}
+  canoe: {senses: [noun]}
+  joke: {senses: [noun]}
+  somersault: {senses: [noun]}

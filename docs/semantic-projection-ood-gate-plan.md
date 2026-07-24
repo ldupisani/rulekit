@@ -439,11 +439,13 @@ Selected and frozen before implementation on 2026-07-24:
    temporal entity; subject type, event predicate, object type, time type,
    Agent edge to the subject, and Theme edge to the object. Pronouns remain
    local entities; only the typed-name rule emits a constant.
-3. **Inspectable buyers:** exactly 19 train graphs. All 19 contain the same
+3. **Inspectable buyers:** exactly 18 train graphs. All 18 contain the same
    six adapter-representable edges and assign both Agent and Theme. Every
    proposed event/object/subject member was audited across the exact anchored
    construction; there is no Patient/Experiencer/Stimulus or other role
-   collision inside the selected boundary.
+   collision inside the selected boundary. A nineteenth structural match was
+   rejected before evaluation because its event form is deliberately listed
+   in `difg-mined` quarantine; the PMB pack must not re-admit it.
 4. **Development expectation:** zero development graphs match the complete
    selected construction. No development row was inspected, and the locked
    delta is zero.
@@ -462,19 +464,33 @@ Selected and frozen before implementation on 2026-07-24:
    altered syntax, never a PMB sentence. Assert all four subject variants,
    exact six-edge graphs, pronoun-versus-constant identity, temporal identity,
    provenance, every negative boundary, and dormant COGS behavior.
-8. **Locked expected delta:** train moves from 34 to exactly 53 complete
-   graphs, remains at 0 partial / 0 incorrect, and reaches exactly 249 correct
-   projected edges (114 new). Development remains 0 exact / 0 partial /
+8. **Locked expected delta:** train moves from 34 to exactly 52 complete
+   graphs, remains at 0 partial / 0 incorrect, and reaches exactly 243 correct
+   projected edges (108 new). Development remains 0 exact / 0 partial /
    0 incorrect. Both diffs have zero broken exact and zero
    safe-to-incorrect transitions.
 9. **Non-claim:** this establishes inspectable Agent/Theme transfer and
-   complete event/role graphs, but leaves the 250-edge threshold short by one,
+   complete event/role graphs, but remains below the 250-edge threshold,
    recall below 1%, development transfer absent, and Recipient plus
    attachment/complement buckets uncovered. It does not authorize test.
 
+#### Coverage increment 3 result
+
+The quarantine-safe implementation hits its revised lock:
+
+| Split | exact | safe partial | declined | incorrect | edge precision | edge recall |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| train | 52 | 0 | 9,013 | 0 | 100% | 0.5% |
+| development | 0 | 0 | 990 | 0 | n/a | 0.0% |
+
+The 18 complete Agent/Theme graphs add 108 correct edges for 243 total.
+All 3,321 tests pass; COGS DEV remains 1,772/646/0 and 1,696/656/0, and every
+standing gate plus lint is green. The protected PMB test remains unspent.
+
 Remaining sequence:
 
-1. Implement the frozen typed-subject simple-past Agent/Theme class.
+1. Profile and preregister coverage increment 4, prioritizing Recipient or
+   attachment/complement plus enough volume to advance recall.
 2. Require 100% train/development edge precision and run
    all standing gates.
 3. Profile and preregister each subsequent complete-graph class until every
