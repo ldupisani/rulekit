@@ -87,6 +87,11 @@ uv run rulekit --project projects/gsm8k serve                          # visual 
   calibration, and aggregate-only TEST/generalization slices. `bench` routes
   this project through normalized graph scoring (exact/partial/declined/
   incorrect), not the answer judge. Data and snapshots remain gitignored.
+- `projects/pmb/` — the independent semantic-projection OOD gate. Its pinned
+  builder verifies the local PMB 5.1.0 release and admits only English gold
+  Tatoeba rows under the bundled CC BY 2.0 raw-text notice; PMB annotations
+  are ODC-BY 1.0. Train/development are inspectable and standard TEST is
+  aggregate-only and one-look. Data and snapshots remain gitignored.
 
 Mining scripts are throwaway: keep them in the session scratchpad, never the repo — recreate
 from `docs/methodology.md` §4.

@@ -239,17 +239,41 @@ another protected look.
 
 ## Next implementation sequence
 
-1. Add a builder that verifies the pinned local release and bundled licence
-   files without redistributing them.
-2. Enforce the frozen Tatoeba-only allowlist from `.met` metadata.
-3. Materialize only eligible declared splits; record inclusion/exclusion
-   counts without exposing protected content.
-4. Add the project schema, immutable builder, attribution metadata, and
-   snapshot ledger.
-5. Implement the DRS-to-Rulekit gold adapter before adding reader coverage.
-6. Establish an untouched-runtime baseline.
-7. Mine only eligible train/development, one construction class per increment.
-8. Run all standing gates for every increment.
-9. Freeze the candidate commit and spend the single protected standard-test
-   look.
-10. Record pass/fail without inspecting failed rows.
+Infrastructure steps 1–6 are complete. The builder verifies every pinned
+release/licence/split hash, enforces the Tatoeba-only metadata allowlist, and
+materializes 9,065 train, 990 development, and 923 aggregate-only test rows.
+The gold adapter parses all eligible train/development SBNs without errors and
+maps only nominal types, verbal events, adjectival `AttributeOf`, names, and
+the exact Agent/Theme/Recipient role labels. PMB synset ordinals are
+alpha-renamed against Rulekit-local token refs during scoring; constants
+remain value-anchored.
+
+### Untouched-runtime baseline
+
+| Split | exact | safe partial | declined | incorrect | edge precision | edge recall |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| train | 0 | 24 | 8,928 | 113 | 46.5% | 0.4% |
+| development | 0 | 2 | 969 | 19 | 38.4% | 0.5% |
+
+This is an honest failed baseline, not evidence for Phase E. The existing
+COGS-safe reader sometimes commits graph edges where PMB uses a different
+explicit role or concept analysis. The first PMB increment must therefore be a
+DEV-only safety class that moves incorrect graphs to correct partials or
+declines; coverage work cannot begin while precision is below 100%.
+
+The protected standard test remains materialized but unopened and unspent.
+
+Remaining sequence:
+
+1. Profile inspectable train mismatches by exact extra-edge signature and
+   select one general safety boundary.
+2. Preregister the construction, expected incorrect-to-safe delta, synthetic
+   positive/negative probes, and COGS non-regression requirement.
+3. Change only general reader/category machinery; never add PMB vocabulary to
+   Python or copy PMB text into tests.
+4. Require 100% train/development edge precision before any coverage
+   increment.
+5. Run all standing gates for every increment.
+6. Freeze the candidate commit and spend the single protected standard-test
+   look only after all entry thresholds are met on inspectable data.
+7. Record pass/fail without inspecting protected failed rows.

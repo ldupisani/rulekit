@@ -927,24 +927,29 @@ class ProjectionSplitDef(StrictModel):
 
 
 class ProjectionProjectDef(StrictModel):
-    adapter: Literal["cogs"]
+    adapter: Literal["cogs", "pmb"]
     splits: dict[str, ProjectionSplitDef]
 
     @model_validator(mode="after")
     def _required_slices(self) -> "ProjectionProjectDef":
-        required = {
-            "dev-train",
-            "dev-holdout",
-            "calibration",
-            "test",
-            "generalization",
-        }
+        if self.adapter == "cogs":
+            required = {
+                "dev-train",
+                "dev-holdout",
+                "calibration",
+                "test",
+                "generalization",
+            }
+            protected = {"test", "generalization"}
+        else:
+            required = {"train", "development", "test"}
+            protected = {"test"}
         missing = required - set(self.splits)
         if missing:
             raise ValueError(
                 f"projection project is missing required slices: {sorted(missing)}"
             )
-        for name in ("test", "generalization"):
+        for name in protected:
             if self.splits[name].firewall != "aggregate-only":
                 raise ValueError(
                     f"projection split {name!r} must be aggregate-only"

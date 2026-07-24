@@ -250,6 +250,129 @@ def parse_cogs_logical_form(logical_form: str) -> ProjectionGraph:
     return graph.build()
 
 
+_PMB_SYNSET = re.compile(r"^(.+)\.(n|v|a|r|x)\.(\d+)$")
+_PMB_OFFSET = re.compile(r"^[+-]\d+$")
+_PMB_TOKEN = re.compile(r'"(?:[^"\\]|\\.)*"|\S+')
+_PMB_ROLE_MAP = {
+    "Agent": "agent",
+    "Theme": "theme",
+    "Recipient": "recipient",
+}
+
+
+def parse_pmb_sbn(sbn: str, *, document_id: str = "") -> ProjectionGraph:
+    """Project explicit PMB SBN concepts and thematic roles.
+
+    PMB sequence notation addresses concepts by signed offsets from the
+    current synset.  The adapter deliberately maps only exact one-to-one
+    Rulekit graph elements: nominal concepts, verbal events, adjectival
+    ``AttributeOf`` properties, names, and the Agent/Theme/Recipient VerbNet
+    roles.  Temporal operators, scope boxes, senses, and all other roles remain
+    outside this projection view.
+    """
+
+    tokens = _PMB_TOKEN.findall(" ".join(str(sbn).split()))
+    entries: list[tuple[str, str, list[str]]] = []
+    index = 0
+    while index < len(tokens):
+        match = _PMB_SYNSET.match(tokens[index])
+        if match is None:
+            index += 1
+            continue
+        lemma, pos, _sense = match.groups()
+        index += 1
+        tail: list[str] = []
+        while index < len(tokens) and _PMB_SYNSET.match(tokens[index]) is None:
+            tail.append(tokens[index])
+            index += 1
+        entries.append((lemma.lower(), pos, tail))
+
+    if not entries:
+        raise ValueError(f"PMB SBN contains no synset: {sbn!r}")
+
+    refs = [f"p{index}" for index in range(len(entries))]
+    for current, (_lemma, pos, tail) in enumerate(entries):
+        if pos != "n":
+            continue
+        for role_index in range(0, len(tail) - 1):
+            if tail[role_index] == "Name":
+                raw_name = tail[role_index + 1]
+                if not (raw_name.startswith('"') and raw_name.endswith('"')):
+                    continue
+                name = " ".join(raw_name[1:-1].lower().split())
+                if name and not _PMB_OFFSET.match(name):
+                    refs[current] = f"const:{name}"
+                break
+
+    graph = _GraphBuilder()
+    for current, (lemma, pos, tail) in enumerate(entries):
+        ref = refs[current]
+        source = (
+            f"pmb:{document_id}:synset:{current}"
+            if document_id
+            else f"pmb:synset:{current}"
+        )
+        if pos == "v":
+            graph.node(ref, "event", evidence_source=source)
+            graph.edge("event", ref, label=lemma, evidence_source=source)
+        elif pos == "n":
+            graph.node(ref, "entity", evidence_source=source)
+            graph.edge("type", ref, label=lemma, evidence_source=source)
+
+        for role_index in range(0, len(tail) - 1):
+            role = tail[role_index]
+            target_token = tail[role_index + 1]
+            if not _PMB_OFFSET.match(target_token):
+                continue
+            target_index = current + int(target_token)
+            if not 0 <= target_index < len(entries):
+                # PMB's reference parser treats an out-of-range signed token
+                # as a numeric constant that merely resembles an offset.
+                continue
+            target_lemma, target_pos, _target_tail = entries[target_index]
+            target_ref = refs[target_index]
+            edge_source = f"{source}:role:{role_index}"
+            if (
+                pos == "v"
+                and target_pos == "n"
+                and role in _PMB_ROLE_MAP
+            ):
+                graph.node(
+                    target_ref,
+                    "entity",
+                    evidence_source=(
+                        f"pmb:{document_id}:synset:{target_index}"
+                        if document_id
+                        else f"pmb:synset:{target_index}"
+                    ),
+                )
+                graph.edge(
+                    "role",
+                    ref,
+                    target_ref,
+                    _PMB_ROLE_MAP[role],
+                    evidence_source=edge_source,
+                )
+            elif pos == "a" and target_pos == "n" and role == "AttributeOf":
+                graph.node(
+                    target_ref,
+                    "entity",
+                    evidence_source=(
+                        f"pmb:{document_id}:synset:{target_index}"
+                        if document_id
+                        else f"pmb:synset:{target_index}"
+                    ),
+                )
+                graph.edge(
+                    "type",
+                    target_ref,
+                    label=lemma,
+                    evidence_source=edge_source,
+                )
+
+    return graph.build()
+
+
 @dataclass(frozen=True)
 class ProjectionItem:
     id: str
@@ -257,6 +380,7 @@ class ProjectionItem:
     gold: ProjectionGraph
     case: str
     construction: str
+    adapter: str = "cogs"
 
 
 def classify_projection_graph(graph: ProjectionGraph, case: str = "") -> str:
@@ -297,7 +421,12 @@ def load_projection_items(
 ) -> list[ProjectionItem]:
     import pyarrow.parquet as pq
 
-    if adapter != "cogs":
+    parsers = {
+        "cogs": parse_cogs_logical_form,
+        "pmb": parse_pmb_sbn,
+    }
+    parser = parsers.get(adapter)
+    if parser is None:
         raise ValueError(f"unsupported projection adapter {adapter!r}")
     columns = [
         split.item_id,
@@ -314,18 +443,142 @@ def load_projection_items(
         if split.scored and not bool(values[split.scored][index]):
             continue
         logical_form = str(values[split.logical_form][index])
-        gold_graph = parse_cogs_logical_form(logical_form)
+        item_id = str(values[split.item_id][index])
+        gold_graph = (
+            parse_pmb_sbn(logical_form, document_id=item_id)
+            if adapter == "pmb"
+            else parser(logical_form)
+        )
         case = str(values[split.case][index])
         items.append(
             ProjectionItem(
-                id=str(values[split.item_id][index]),
+                id=item_id,
                 text=str(values[split.text][index]),
                 gold=gold_graph,
                 case=case,
                 construction=classify_projection_graph(gold_graph, case),
+                adapter=adapter,
             )
         )
     return items
+
+
+def _align_projection_refs(
+    got: ProjectionGraph,
+    expected: ProjectionGraph,
+) -> ProjectionGraph:
+    """Rename runtime-local refs onto an independently named gold graph.
+
+    PMB synset ordinals and Rulekit token anchors are both local identifiers,
+    not semantics. Constants remain anchored by value. Non-constant nodes are
+    injectively matched by kind and asserted unary labels, with edge agreement
+    selecting among otherwise equivalent candidates.
+    """
+
+    expected_nodes = {node.ref: node for node in expected.nodes}
+    got_nodes = {node.ref: node for node in got.nodes}
+
+    def unary(graph: ProjectionGraph, ref: str) -> frozenset[tuple[str, str]]:
+        return frozenset(
+            (edge.kind, edge.label)
+            for edge in graph.edges
+            if edge.source == ref
+            and not edge.target
+            and edge.kind in {"type", "event", "definite"}
+        )
+
+    candidates: dict[str, tuple[str, ...]] = {}
+    for ref, node in got_nodes.items():
+        if ref.startswith("const:"):
+            candidate = expected_nodes.get(ref)
+            candidates[ref] = (
+                (ref,)
+                if candidate is not None and candidate.kind == node.kind
+                else ()
+            )
+            continue
+        asserted = unary(got, ref)
+        candidates[ref] = tuple(
+            expected_ref
+            for expected_ref, expected_node in expected_nodes.items()
+            if not expected_ref.startswith("const:")
+            and expected_node.kind == node.kind
+            and asserted <= unary(expected, expected_ref)
+        )
+
+    ordered = sorted(
+        got_nodes,
+        key=lambda ref: (len(candidates[ref]), ref),
+    )
+    expected_edge_keys = expected.edge_keys()
+    best_mapping: dict[str, str] = {}
+    best_score = -1
+
+    def score(mapping: dict[str, str]) -> int:
+        matched_nodes = len(mapping)
+        matched_edges = sum(
+            (
+                edge.kind,
+                mapping.get(edge.source, f"got:{edge.source}"),
+                mapping.get(edge.target, f"got:{edge.target}") if edge.target else "",
+                edge.label,
+            )
+            in expected_edge_keys
+            for edge in got.edges
+        )
+        return matched_nodes + 2 * matched_edges
+
+    def visit(position: int, mapping: dict[str, str], used: set[str]) -> None:
+        nonlocal best_mapping, best_score
+        if position == len(ordered):
+            candidate_score = score(mapping)
+            if candidate_score > best_score:
+                best_score = candidate_score
+                best_mapping = dict(mapping)
+            return
+        ref = ordered[position]
+        choices = [value for value in candidates[ref] if value not in used]
+        if not choices:
+            visit(position + 1, mapping, used)
+            return
+        for value in choices:
+            mapping[ref] = value
+            used.add(value)
+            visit(position + 1, mapping, used)
+            used.remove(value)
+            del mapping[ref]
+
+    visit(0, {}, set())
+
+    def mapped(ref: str) -> str:
+        if not ref:
+            return ""
+        return best_mapping.get(ref, f"got:{ref}")
+
+    return ProjectionGraph(
+        nodes=tuple(sorted(
+            ProjectionNode(
+                mapped(node.ref),
+                node.kind,
+                node.evidence_source,
+                node.sentence,
+                node.span,
+            )
+            for node in got.nodes
+        )),
+        edges=tuple(sorted(
+            ProjectionEdge(
+                edge.kind,
+                mapped(edge.source),
+                mapped(edge.target),
+                edge.label,
+                edge.evidence_source,
+                edge.sentence,
+                edge.span,
+            )
+            for edge in got.edges
+        )),
+    )
 
 
 def _unit_key(unit) -> str:
@@ -728,6 +981,8 @@ def _score_item(index: int, item: ProjectionItem, reg: Registry) -> ProjectionIt
     try:
         result = solve(item.text, reg, tracing=False)
         got = project_result(result, item.text, reg)
+        if item.adapter == "pmb":
+            got = _align_projection_refs(got, item.gold)
         gold_nodes = item.gold.node_keys()
         gold_edges = item.gold.edge_keys()
         got_nodes = got.node_keys()
@@ -821,8 +1076,9 @@ def run_projection_suite(
             _score_item(index, item, reg)
             for index, item in enumerate(items)
         ]
+    adapters = ",".join(sorted({item.adapter for item in items}))
     fingerprint = hashlib.sha256(
-        f"{reg.fingerprint}:{PROJECTION_SCHEMA}:cogs@1".encode()
+        f"{reg.fingerprint}:{PROJECTION_SCHEMA}:{adapters}@1".encode()
     ).hexdigest()
     return ProjectionReport(
         results=results,

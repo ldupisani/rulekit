@@ -4,8 +4,8 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** PMB release and Tatoeba-only licence subset frozen; builder is the
-next Phase E prerequisite
+**Status:** PMB infrastructure and failed untouched-runtime baseline frozen;
+first inspectable PMB safety class is next
 
 **Current safe DEV baseline:** `964f09f`
 (`Add COGS indefinite common subject projection`)
@@ -592,14 +592,17 @@ GSM8K, ASDiv, SVAMP, MAWPS, SciBench, and FOLIO diffs.
 
 Preserve completed post-D DEV campaign 2 as the DEV baseline. If continuing
 DEV coverage, profile a determined common-subject intransitive class and lock
-its role class before implementation. To advance the original plan, implement
-the pinned PMB 5.1.0 builder and gold adapter described in
+its role class before implementation. To advance the original plan, profile
+and preregister the first inspectable PMB safety class described in
 [`semantic-projection-ood-gate-plan.md`](semantic-projection-ood-gate-plan.md).
 The PMB annotations are ODC-BY 1.0 and the frozen raw-text allowlist admits
 only Tatoeba under its bundled CC BY 2.0 notice: 9,065 train, 990 development,
-and 923 protected standard-test documents. The local release and licence files
-are hashed. No sentence, meaning representation, or protected failure row has
-been inspected, and no evaluation look has been spent.
+and 923 protected standard-test documents. The builder and SBN adapter parse
+the inspectable splits without errors. The untouched runtime has 24/2 safe
+partials and 113/19 incorrect train/development graphs at 46.5%/38.4% edge
+precision, so safety—not coverage—is the next worklist. No protected sentence,
+meaning representation, or failure row has been inspected, and no evaluation
+look has been spent.
 Preserve the proper-object boundary and do not rerun TEST or generalization.
 
 ## Phase C restart exit audit

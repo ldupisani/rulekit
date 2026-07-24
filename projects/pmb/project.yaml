@@ -1,0 +1,19 @@
+format: rulekit/project@1
+name: pmb
+
+# Independent semantic-projection gate over the licence-filtered PMB English
+# gold release. Reuse the COGS campaign's reader pack; the adapter remains
+# benchmark-only and is never imported by runtime parsing.
+packs:
+  [core-english, difg-mined, ../scratch/packs/logic,
+   ../cogs/packs/semantic-projection]
+
+projection:
+  adapter: pmb
+  splits:
+    train:
+      {parquet: data/pmb_train.parquet}
+    development:
+      {parquet: data/pmb_development.parquet}
+    test:
+      {parquet: data/pmb_test.parquet, firewall: aggregate-only}
