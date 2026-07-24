@@ -4,8 +4,8 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** PMB coverage increment 5 complete at 66 train exact / 327 correct
-edges / 0 incorrect; recall coverage is next
+**Status:** PMB coverage increment 6 typed finite intransitive Agent is
+preregistered; implementation is next
 
 **Current safe DEV baseline:** `964f09f`
 (`Add COGS indefinite common subject projection`)
@@ -606,7 +606,9 @@ The expected aggregate development buyer did not materialize and development
 stays at zero commitments. Coverage increment 5 adds the explicit SBN
 noun-to-noun `Of` relation and hits its four-buyer train lock: 66 complete
 graphs / 327 correct edges / zero incorrect. The full standing gate is green.
-Profile the next train-only complete-graph class needed to cross 1% recall.
+Coverage increment 6 is frozen as a 39-buyer typed finite intransitive Agent
+class. Implement it next; the locked train result is 105 exact / 483 correct
+edges / zero incorrect.
 
 This clears the precision prerequisite for coverage, not the Phase E entry
 gate: PMB has 66 complete train graphs and 327 correct edges, but only 0.6%

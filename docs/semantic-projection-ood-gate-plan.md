@@ -637,3 +637,44 @@ remains unopened.
 Increment 5 satisfies the inspectable attachment/complement coverage bucket.
 Phase E remains blocked by the 1% recall threshold and the absence of
 pristine development-transfer evidence.
+
+### Coverage increment 6 selection brief — typed finite intransitive Agent
+
+Selected and frozen from inspectable train evidence on 2026-07-24:
+
+1. **Licensed construction:** exactly anchored `TypedSubject FiniteVerb.`,
+   where the subject is one of six independently typed identity classes
+   (male/female/person local pronoun, quantified person, male name, or female
+   name) and the overt event form belongs to the separately audited Agent
+   set for that identity class.
+2. **Complete graph:** typed subject entity, event, and time entity; subject
+   type, event predicate, time type, and Agent edge. Proper names are
+   constants; pronoun and quantified subjects remain local entities.
+3. **Inspectable buyers:** exactly 39 currently declined train graphs:
+   29 local/quantified subjects and ten explicitly named subjects. Every
+   buyer has the same three-node/four-edge topology and an explicit SBN
+   Agent relation.
+4. **Tense boundary:** the class is finite rather than simple-past because
+   the audited train set contains both present and past overt forms with the
+   identical complete projection. Each overt form is declaratively listed;
+   no generic verb or suffix licence is introduced.
+5. **Pairing boundary:** subject identity/type and event membership remain in
+   six separate rules. This prevents a word admitted for one typed subject
+   class from licensing another class by positional analogy.
+6. **Quarantine audit:** none of the selected overt event forms appears in
+   `difg-mined` quarantine. Missing lexicon entries may be added only in the
+   PMB-local pack with their inspected lemmas.
+7. **Negative neighbours:** Theme readings; untyped/common subjects;
+   unlicensed subject/event pairings; objects; PPs; auxiliaries; modals;
+   passives; negation; adverbs; coordination; questions; embedding; and any
+   trailing material must emit nothing from these rules.
+8. **Synthetic contract:** use invented names and event forms, not PMB
+   sentences. Assert all identity/type variants, exact topology, event
+   lemmatization, provenance, negative neighbours, and dormant COGS behavior.
+9. **Locked expected train delta:** exactly 39 new complete graphs and 156
+   correct edges: train moves from 66 to 105 exact and from 327 to 483 correct
+   edges, with zero partial / zero incorrect and no broken exact graphs.
+10. **Development expectation:** unknown and aggregate-safety-only under the
+    recorded diagnostic quarantine.
+11. **Non-claim:** this should raise recall to approximately 0.9%, but it does
+    not itself cross the 1% threshold or authorize protected test.
