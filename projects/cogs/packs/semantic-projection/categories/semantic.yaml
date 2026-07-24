@@ -63,6 +63,17 @@ categories:
     parent: verb
   semantic_pmb_indefinite_theme_noun:
     parent: noun
+  # Empty reusable licences for PMB's exact Recipient-PP buyer.
+  semantic_pmb_person_quantified_pronoun:
+    parent: pronoun
+  semantic_pmb_female_object_pronoun:
+    parent: pronoun
+  semantic_pmb_person_object_pronoun:
+    parent: pronoun
+  semantic_pmb_recipient_at_verb:
+    parent: verb
+  semantic_pmb_recipient_to_verb:
+    parent: verb
 members:
   # Overt finite forms whose active direct-object construction licenses the
   # agent/theme interpretation in Phase B increment 1. Unsafe self-lemma

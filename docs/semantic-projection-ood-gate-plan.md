@@ -529,9 +529,24 @@ Selected and frozen before implementation on 2026-07-24:
    remains below 1% and attachment/complement completeness remains absent.
    It does not authorize a protected test look.
 
+#### Coverage increment 4 result
+
+Train hits the lock; the aggregate development expectation does not:
+
+| Split | exact | safe partial | declined | incorrect | edge precision | edge recall |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| train | 62 | 0 | 9,003 | 0 | 100% | 0.6% |
+| development | 0 | 0 | 990 | 0 | n/a | 0.0% |
+
+The ten Recipient graphs add 60 correct edges for 303 total. The one
+structurally compatible development graph did not join the full typed lexical
+boundary; its row remains unopened and no tuning follows. All 3,342 tests and
+every standing gate are green. The protected PMB test remains unspent.
+
 Remaining sequence:
 
-1. Implement the frozen typed simple-past Recipient-PP class.
+1. Profile and preregister coverage increment 5 for attachment/complement,
+   recall, and genuine aggregate development transfer.
 2. Require 100% train/development edge precision and run
    all standing gates.
 3. Profile and preregister each subsequent complete-graph class until every

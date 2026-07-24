@@ -24,3 +24,8 @@ members:
   semantic_pmb_indefinite_theme_noun:
     [accident, beer, button, canoe, chair, goal, joke, movie, pizza, program,
      rocket, room, seat, somersault, toothpick, vase, zephyrstone]
+  semantic_pmb_person_quantified_pronoun: [everyone]
+  semantic_pmb_female_object_pronoun: [her]
+  semantic_pmb_person_object_pronoun: [me]
+  semantic_pmb_recipient_at_verb: [smiled, snickered, waved, yelled]
+  semantic_pmb_recipient_to_verb: [apologized, nodded]

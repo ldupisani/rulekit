@@ -425,3 +425,70 @@ def test_pmb_past_transitive_categories_are_dormant_in_cogs() -> None:
         and fact.provenance.source.endswith("-simple-past-indefinite-theme")
         for fact in facts
     )
+
+
+@pytest.mark.parametrize(
+    ("text", "agent_ref", "recipient_ref", "agent_type", "recipient_type"),
+    [
+        ("Neris waved at Alice.", "const:neris", "const:alice", "male", "female"),
+        ("Neris apologized to her.", "const:neris", "x3", "male", "female"),
+        ("Neris nodded to me.", "const:neris", "x3", "male", "person"),
+        ("He smiled at her.", "x0", "x3", "male", "female"),
+        ("He apologized to me.", "x0", "x3", "male", "person"),
+        ("She waved at me.", "x0", "x3", "female", "person"),
+        ("Everyone waved at me.", "x0", "x3", "person", "person"),
+    ],
+)
+def test_pmb_recipient_pp_projects_complete_graph(
+    text: str,
+    agent_ref: str,
+    recipient_ref: str,
+    agent_type: str,
+    recipient_type: str,
+) -> None:
+    project = load_project(Path("projects/pmb"))
+    result = solve(text, project.registry, tracing=False)
+    graph = project_result(
+        result, text, project.registry, allow_legacy_bridge=False
+    )
+    event = project.registry.verb_lemmas[text.split()[1]]
+    assert graph.edge_keys() == {
+        ("type", agent_ref, "", agent_type),
+        ("event", "x1", "", event),
+        ("type", recipient_ref, "", recipient_type),
+        ("type", "x99", "", "time"),
+        ("role", "x1", agent_ref, "agent"),
+        ("role", "x1", recipient_ref, "recipient"),
+    }
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "A zephyrstone waved at Alice.",
+        "Orin waved at Alice.",
+        "Neris waved at a zephyrstone.",
+        "Neris waved Alice.",
+        "Neris waved to Alice.",
+        "Neris danced at Alice.",
+        "Neris waves at Alice.",
+        "Neris was waving at Alice.",
+        "Neris did not wave at Alice.",
+        "Neris waved at Alice yesterday.",
+        "Neris waved at Alice from a chair.",
+        "Neris waved at Alice and smiled.",
+        "Did Neris wave at Alice?",
+        "Mary said Neris waved at Alice.",
+    ],
+)
+def test_pmb_recipient_pp_rules_reject_neighbours(text: str) -> None:
+    project = load_project(Path("projects/pmb"))
+    result = solve(text, project.registry, tracing=False)
+    facts = (
+        list(result.store.by_kind(SemanticGraphNode))
+        + list(result.store.by_kind(SemanticGraphEdge))
+    )
+    assert not any(
+        fact.provenance.source.startswith("semantic/recipient-pp-")
+        for fact in facts
+    )

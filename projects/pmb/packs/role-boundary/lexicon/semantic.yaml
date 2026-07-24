@@ -10,6 +10,7 @@ entries:
   sita: {senses: [noun]}
   tom: {senses: [noun]}
   we: {senses: [pronoun], number: plural}
+  me: {senses: [pronoun]}
   accelerated: {senses: [verb], verb: {lemma: accelerate}}
   apologized: {senses: [verb], verb: {lemma: apologize}}
   applauded: {senses: [verb], verb: {lemma: applaud}}
@@ -43,6 +44,7 @@ entries:
   launched: {senses: [verb], verb: {lemma: launch}}
   pressed: {senses: [verb], verb: {lemma: press}}
   reserved: {senses: [verb], verb: {lemma: reserve}}
+  waved: {senses: [verb], verb: {lemma: wave}}
   beer: {senses: [noun]}
   canoe: {senses: [noun]}
   joke: {senses: [noun]}

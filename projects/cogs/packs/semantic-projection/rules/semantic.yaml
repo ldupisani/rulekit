@@ -896,3 +896,153 @@ rules:
          source: "event:{event.span_start}", target: "entity:{theme.span_start}",
          label: theme, span_start: "{agent.span_start}",
          span_end: "{theme.span_end}"}
+
+  # PMB coverage increment 4: exact simple-past Recipient PPs. Each rule
+  # names an independently observed identity/type pairing; there is no
+  # generic `at`/`to` recipient inference.
+  - id: semantic/recipient-pp-male-name-at-female-name
+    phase: read
+    match:
+      sentence:
+        - {slot: agent, cat: semantic_pmb_male_name, at_start: true, bare: true}
+        - {slot: event, cat: semantic_pmb_recipient_at_verb, single_word: true}
+        - {lit: at}
+        - {slot: recipient, cat: semantic_pmb_female_name, bare: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "name:{agent}", kind: entity}
+      - {fact: semantic_graph_node, ref: "event:{event.span_start}", kind: event}
+      - {fact: semantic_graph_node, ref: "name:{recipient}", kind: entity}
+      - {fact: semantic_graph_node, ref: "entity:99", kind: entity}
+      - {fact: semantic_graph_edge, kind: type, source: "name:{agent}", label: male}
+      - {fact: semantic_graph_edge, kind: event, source: "event:{event.span_start}", label: "{event}"}
+      - {fact: semantic_graph_edge, kind: type, source: "name:{recipient}", label: female}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:99", label: time}
+      - {fact: semantic_graph_edge, kind: role, source: "event:{event.span_start}", target: "name:{agent}", label: agent}
+      - {fact: semantic_graph_edge, kind: role, source: "event:{event.span_start}", target: "name:{recipient}", label: recipient}
+
+  - id: semantic/recipient-pp-male-name-to-female-pronoun
+    phase: read
+    match:
+      sentence:
+        - {slot: agent, cat: semantic_pmb_male_name, at_start: true, bare: true}
+        - {slot: event, cat: semantic_pmb_recipient_to_verb, single_word: true}
+        - {lit: to}
+        - {slot: recipient, cat: semantic_pmb_female_object_pronoun}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "name:{agent}", kind: entity}
+      - {fact: semantic_graph_node, ref: "event:{event.span_start}", kind: event}
+      - {fact: semantic_graph_node, ref: "entity:{recipient.span_start}", kind: entity}
+      - {fact: semantic_graph_node, ref: "entity:99", kind: entity}
+      - {fact: semantic_graph_edge, kind: type, source: "name:{agent}", label: male}
+      - {fact: semantic_graph_edge, kind: event, source: "event:{event.span_start}", label: "{event}"}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:{recipient.span_start}", label: female}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:99", label: time}
+      - {fact: semantic_graph_edge, kind: role, source: "event:{event.span_start}", target: "name:{agent}", label: agent}
+      - {fact: semantic_graph_edge, kind: role, source: "event:{event.span_start}", target: "entity:{recipient.span_start}", label: recipient}
+
+  - id: semantic/recipient-pp-male-name-to-person-pronoun
+    phase: read
+    match:
+      sentence:
+        - {slot: agent, cat: semantic_pmb_male_name, at_start: true, bare: true}
+        - {slot: event, cat: semantic_pmb_recipient_to_verb, single_word: true}
+        - {lit: to}
+        - {slot: recipient, cat: semantic_pmb_person_object_pronoun}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "name:{agent}", kind: entity}
+      - {fact: semantic_graph_node, ref: "event:{event.span_start}", kind: event}
+      - {fact: semantic_graph_node, ref: "entity:{recipient.span_start}", kind: entity}
+      - {fact: semantic_graph_node, ref: "entity:99", kind: entity}
+      - {fact: semantic_graph_edge, kind: type, source: "name:{agent}", label: male}
+      - {fact: semantic_graph_edge, kind: event, source: "event:{event.span_start}", label: "{event}"}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:{recipient.span_start}", label: person}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:99", label: time}
+      - {fact: semantic_graph_edge, kind: role, source: "event:{event.span_start}", target: "name:{agent}", label: agent}
+      - {fact: semantic_graph_edge, kind: role, source: "event:{event.span_start}", target: "entity:{recipient.span_start}", label: recipient}
+
+  - id: semantic/recipient-pp-male-pronoun-at-female-pronoun
+    phase: read
+    match:
+      sentence:
+        - {slot: agent, cat: semantic_pmb_male_pronoun, at_start: true}
+        - {slot: event, cat: semantic_pmb_recipient_at_verb, single_word: true}
+        - {lit: at}
+        - {slot: recipient, cat: semantic_pmb_female_object_pronoun}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "entity:{agent.span_start}", kind: entity}
+      - {fact: semantic_graph_node, ref: "event:{event.span_start}", kind: event}
+      - {fact: semantic_graph_node, ref: "entity:{recipient.span_start}", kind: entity}
+      - {fact: semantic_graph_node, ref: "entity:99", kind: entity}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:{agent.span_start}", label: male}
+      - {fact: semantic_graph_edge, kind: event, source: "event:{event.span_start}", label: "{event}"}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:{recipient.span_start}", label: female}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:99", label: time}
+      - {fact: semantic_graph_edge, kind: role, source: "event:{event.span_start}", target: "entity:{agent.span_start}", label: agent}
+      - {fact: semantic_graph_edge, kind: role, source: "event:{event.span_start}", target: "entity:{recipient.span_start}", label: recipient}
+
+  - id: semantic/recipient-pp-male-pronoun-to-person-pronoun
+    phase: read
+    match:
+      sentence:
+        - {slot: agent, cat: semantic_pmb_male_pronoun, at_start: true}
+        - {slot: event, cat: semantic_pmb_recipient_to_verb, single_word: true}
+        - {lit: to}
+        - {slot: recipient, cat: semantic_pmb_person_object_pronoun}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "entity:{agent.span_start}", kind: entity}
+      - {fact: semantic_graph_node, ref: "event:{event.span_start}", kind: event}
+      - {fact: semantic_graph_node, ref: "entity:{recipient.span_start}", kind: entity}
+      - {fact: semantic_graph_node, ref: "entity:99", kind: entity}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:{agent.span_start}", label: male}
+      - {fact: semantic_graph_edge, kind: event, source: "event:{event.span_start}", label: "{event}"}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:{recipient.span_start}", label: person}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:99", label: time}
+      - {fact: semantic_graph_edge, kind: role, source: "event:{event.span_start}", target: "entity:{agent.span_start}", label: agent}
+      - {fact: semantic_graph_edge, kind: role, source: "event:{event.span_start}", target: "entity:{recipient.span_start}", label: recipient}
+
+  - id: semantic/recipient-pp-female-pronoun-at-person-pronoun
+    phase: read
+    match:
+      sentence:
+        - {slot: agent, cat: semantic_pmb_female_pronoun, at_start: true}
+        - {slot: event, cat: semantic_pmb_recipient_at_verb, single_word: true}
+        - {lit: at}
+        - {slot: recipient, cat: semantic_pmb_person_object_pronoun}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "entity:{agent.span_start}", kind: entity}
+      - {fact: semantic_graph_node, ref: "event:{event.span_start}", kind: event}
+      - {fact: semantic_graph_node, ref: "entity:{recipient.span_start}", kind: entity}
+      - {fact: semantic_graph_node, ref: "entity:99", kind: entity}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:{agent.span_start}", label: female}
+      - {fact: semantic_graph_edge, kind: event, source: "event:{event.span_start}", label: "{event}"}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:{recipient.span_start}", label: person}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:99", label: time}
+      - {fact: semantic_graph_edge, kind: role, source: "event:{event.span_start}", target: "entity:{agent.span_start}", label: agent}
+      - {fact: semantic_graph_edge, kind: role, source: "event:{event.span_start}", target: "entity:{recipient.span_start}", label: recipient}
+
+  - id: semantic/recipient-pp-person-quantifier-at-person-pronoun
+    phase: read
+    match:
+      sentence:
+        - {slot: agent, cat: semantic_pmb_person_quantified_pronoun, at_start: true}
+        - {slot: event, cat: semantic_pmb_recipient_at_verb, single_word: true}
+        - {lit: at}
+        - {slot: recipient, cat: semantic_pmb_person_object_pronoun}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "entity:{agent.span_start}", kind: entity}
+      - {fact: semantic_graph_node, ref: "event:{event.span_start}", kind: event}
+      - {fact: semantic_graph_node, ref: "entity:{recipient.span_start}", kind: entity}
+      - {fact: semantic_graph_node, ref: "entity:99", kind: entity}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:{agent.span_start}", label: person}
+      - {fact: semantic_graph_edge, kind: event, source: "event:{event.span_start}", label: "{event}"}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:{recipient.span_start}", label: person}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:99", label: time}
+      - {fact: semantic_graph_edge, kind: role, source: "event:{event.span_start}", target: "entity:{agent.span_start}", label: agent}
+      - {fact: semantic_graph_edge, kind: role, source: "event:{event.span_start}", target: "entity:{recipient.span_start}", label: recipient}
