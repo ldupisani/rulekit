@@ -479,8 +479,9 @@ Two valid next directions remain:
    development remains unchanged. The typed-subject simple-past
    indefinite-object Agent/Theme class now brings PMB train to 52 exact /
    243 correct edges / 0 incorrect; development remains unchanged and one
-   structural match remains quarantined. Profile the next Recipient or
-   attachment/complement class. Phase E begins only if the full gate
+   structural match remains quarantined. The next typed simple-past Recipient
+   PP class is preregistered with ten train buyers and one expected
+   development buyer. Implement it next. Phase E begins only if the full gate
    demonstrates nonzero thematic-role transfer without a precision failure.
 
 Do not tune to DEV-holdout items. Do not start by admitting the frequent COGS

@@ -5,7 +5,7 @@
 **Active campaign:** COGS semantic projection
 
 **Status:** PMB coverage increment 3 complete at 52 train exact / 0 incorrect;
-coverage increment 4 profiling is next
+coverage increment 4 selected and preregistered
 
 **Current safe DEV baseline:** `964f09f`
 (`Add COGS indefinite common subject projection`)
@@ -600,8 +600,11 @@ proper-name simple-past Agent class and hit its lock: train is now 34 exact /
 recall; development remains unchanged. Coverage increment 3
 `Subject V-ed a/an N.` is complete at its quarantine-safe lock: 52 exact /
 243 correct edges / 0 incorrect on train; development remains unchanged.
-Profile coverage increment 4 for Recipient or attachment/complement evidence
-and enough volume to advance recall.
+Implement the frozen coverage increment 4
+`TypedSubject V-ed at/to TypedRecipient.` class. Its ten train buyers and one
+aggregate development buyer take the locked result to 62 train exact /
+303 correct edges and 1 development exact, adding explicit Recipient evidence
+with zero incorrect.
 
 This clears the precision prerequisite for coverage, not the Phase E entry
 gate: PMB has 52 complete train graphs but only 243 correct edges, 0.5%

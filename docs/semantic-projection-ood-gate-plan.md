@@ -487,10 +487,51 @@ The 18 complete Agent/Theme graphs add 108 correct edges for 243 total.
 All 3,321 tests pass; COGS DEV remains 1,772/646/0 and 1,696/656/0, and every
 standing gate plus lint is green. The protected PMB test remains unspent.
 
+### Coverage increment 4 selection brief — typed simple-past Recipient PP
+
+Selected and frozen before implementation on 2026-07-24:
+
+1. **Licensed construction:** exactly anchored
+   `TypedSubject V-ed at/to TypedRecipient.`, with separately licensed subject
+   and recipient identity/type classes and an audited event form. The
+   preposition is part of the exact role licence.
+2. **Complete graph:** subject entity, event, recipient entity, and temporal
+   entity; subject type, event predicate, recipient type, time type, Agent
+   edge to the subject, and Recipient edge to the PP object. Proper names are
+   constants; pronouns and quantified persons remain local entities.
+3. **Inspectable buyers:** exactly 10 train graphs. All ten have the same
+   four-node/six-edge topology and assign Agent plus Recipient. The admitted
+   event forms are limited to the six collision-free lemmas represented by
+   those exact surfaces.
+4. **Development expectation:** aggregate development contains exactly one
+   graph with the complete selected topology and a train-licensed event.
+   No development row was inspected. The locked expected delta is one exact
+   graph with zero incorrect.
+5. **Boundary architecture:** exact shared rules cover only the seven observed
+   subject/recipient identity-and-type pairings. Reusable categories remain
+   empty in COGS and are extended by PMB-local YAML. There is no generic rule
+   that assigns Recipient merely from `at` or `to`.
+6. **Negative neighbours:** unlicensed subject/recipient types or identities;
+   common-noun recipients; direct objects; Theme and Patient readings;
+   present, progressive, modal, passive, negated, ditransitive, adverb-tailed,
+   further-PP, coordinated, interrogative, and embedded clauses; and
+   unlicensed event/preposition pairings must emit nothing from these rules.
+7. **Synthetic contract:** use invented name/pronoun combinations and altered
+   syntax, not PMB sentences. Assert every identity/type pairing, exact
+   Agent/Recipient topology, temporal identity, provenance, the negative
+   neighbours, and dormant COGS behavior.
+8. **Locked expected delta:** train moves from 52 to exactly 62 complete
+   graphs and from 243 to 303 correct edges, with 0 partial / 0 incorrect.
+   Development moves from 0 to exactly 1 complete graph with 0 incorrect.
+   Both diffs have zero broken exact and zero safe-to-incorrect transitions.
+9. **Non-claim:** this crosses the complete-graph and 250-edge thresholds,
+   adds explicit Recipient and nonzero development transfer, but recall
+   remains below 1% and attachment/complement completeness remains absent.
+   It does not authorize a protected test look.
+
 Remaining sequence:
 
-1. Profile and preregister coverage increment 4, prioritizing Recipient or
-   attachment/complement plus enough volume to advance recall.
+1. Implement the frozen typed simple-past Recipient-PP class.
 2. Require 100% train/development edge precision and run
    all standing gates.
 3. Profile and preregister each subsequent complete-graph class until every
