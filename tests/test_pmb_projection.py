@@ -18,6 +18,7 @@ from rulekit.harness.projection import (
     project_result,
 )
 from rulekit.kernel.engine import solve
+from rulekit.kernel.model import SemanticGraphEdge, SemanticGraphNode
 
 
 def _load_builder():
@@ -227,3 +228,90 @@ def test_pmb_indefinite_common_agent_membership_is_dormant_in_cogs() -> None:
     project = load_project(Path("projects/cogs"))
     result = solve(text, project.registry, tracing=False)
     assert project_result(result, text, project.registry).empty
+
+
+@pytest.mark.parametrize(
+    ("text", "gender"),
+    [
+        ("Neris smiled.", "male"),
+        ("Alice sneezed.", "female"),
+    ],
+)
+def test_pmb_typed_name_simple_past_agent_projects_complete_graph(
+    text: str,
+    gender: str,
+) -> None:
+    project = load_project(Path("projects/pmb"))
+    result = solve(text, project.registry, tracing=False)
+    graph = project_result(
+        result, text, project.registry, allow_legacy_bridge=False
+    )
+    name = text.split()[0].casefold()
+    event = text.split()[1].removesuffix(".")
+    event = project.registry.verb_lemmas[event]
+    assert graph.node_keys() == {
+        (f"const:{name}", "entity"),
+        ("x0", "entity"),
+        ("x1", "event"),
+    }
+    assert graph.edge_keys() == {
+        ("type", f"const:{name}", "", gender),
+        ("type", "x0", "", "time"),
+        ("event", "x1", "", event),
+        ("role", "x1", f"const:{name}", "agent"),
+    }
+    expected_source = f"semantic/intransitive-{gender}-name-simple-past-agent"
+    assert {edge.evidence_source for edge in graph.edges} == {expected_source}
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "He smiled.",
+        "Everybody smiled.",
+        "A zephyrstone smiled.",
+        "The zephyrstone smiled.",
+        "Neris danced.",
+        "Neris smiles.",
+        "Neris was smiling.",
+        "Neris might smile.",
+        "Neris did not smile.",
+        "Neris smiled loudly.",
+        "Neris smiled near Alice.",
+        "Neris smiled a smile.",
+        "Neris smiled and sneezed.",
+        "Did Neris smile?",
+        "Alice said Neris smiled.",
+        "Orin smiled.",
+        "Neris laughed.",
+    ],
+)
+def test_pmb_typed_name_simple_past_agent_rules_reject_neighbours(
+    text: str,
+) -> None:
+    project = load_project(Path("projects/pmb"))
+    result = solve(text, project.registry, tracing=False)
+    facts = (
+        list(result.store.by_kind(SemanticGraphNode))
+        + list(result.store.by_kind(SemanticGraphEdge))
+    )
+    assert not any(
+        fact.provenance.source
+        in {
+            "semantic/intransitive-male-name-simple-past-agent",
+            "semantic/intransitive-female-name-simple-past-agent",
+        }
+        for fact in facts
+    )
+
+
+def test_pmb_typed_name_rules_are_dormant_in_cogs() -> None:
+    text = "Neris smiled."
+    project = load_project(Path("projects/cogs"))
+    result = solve(text, project.registry, tracing=False)
+    graph = project_result(result, text, project.registry)
+    assert ("event", "x1", "", "smile") in graph.edge_keys()
+    assert not any(
+        edge.kind == "type" and edge.label in {"male", "female", "time"}
+        for edge in graph.edges
+    )

@@ -44,6 +44,14 @@ categories:
     parent: noun
   semantic_indefinite_common_agent_verb:
     parent: verb
+  # Empty reusable licences for PMB's typed proper-name simple-past Agent
+  # graph. PMB supplies the independently audited members.
+  semantic_pmb_male_name:
+    parent: noun
+  semantic_pmb_female_name:
+    parent: noun
+  semantic_pmb_simple_past_agent_verb:
+    parent: verb
 members:
   # Overt finite forms whose active direct-object construction licenses the
   # agent/theme interpretation in Phase B increment 1. Unsafe self-lemma

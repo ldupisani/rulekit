@@ -10,8 +10,9 @@ coverage; its inspectable precision repair is complete.
 as an external semantic-inference gate, not as the projection worklist.
 
 **Current position:** the repaired baseline plus two explicitly post-D
-DEV-only common-subject campaigns reaches 1,765 exact / 653 safe partial /
-0 incorrect on DEV-train and 1,692 / 660 / 0 on DEV-holdout, at 100%
+DEV-only common-subject campaigns, plus a safe lexical normalization found by
+PMB, reaches 1,772 exact / 646 safe partial / 0 incorrect on DEV-train and
+1,696 / 656 / 0 on DEV-holdout, at 100%
 projected-edge precision and 11.6%/11.1% edge recall. These extensions are not
 Phase E and do not substitute DEV evidence for the failed OOD checkpoint.
 
@@ -473,10 +474,11 @@ Two valid next directions remain:
    protected test. The first complete-graph class, the exact indefinite
    common-subject agentive intransitive construction, now contributes one
    train exact graph and zero incorrect while leaving development unchanged.
-   The next class is preregistered as typed proper-name simple-past Agent,
-   with 33 train buyers and no expected development change. Implement that
-   frozen class next. Phase E begins only if the full gate demonstrates
-   nonzero thematic-role transfer without a precision failure.
+   Typed proper-name simple-past Agent now contributes 33 additional train
+   exact graphs, bringing PMB train to 34 exact / 0 incorrect while
+   development remains unchanged. Profile and preregister the next
+   higher-leverage Theme class. Phase E begins only if the full gate
+   demonstrates nonzero thematic-role transfer without a precision failure.
 
 Do not tune to DEV-holdout items. Do not start by admitting the frequent COGS
 unknown words: vocabulary receives credit only as part of a complete

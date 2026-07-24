@@ -7,3 +7,11 @@ members:
   semantic_projection_role_quarantined_verb: [danced, saw]
   semantic_indefinite_common_agent_subject_noun: [bee, zephyrstone]
   semantic_indefinite_common_agent_verb: [buzzes]
+  semantic_pmb_male_name: [javier, neris, tom]
+  semantic_pmb_female_name: [alice, lalita, mary, sita]
+  semantic_pmb_simple_past_agent_verb:
+    [accelerated, apologized, applauded, bowed, blushed, burped, called,
+     cheated, cheered, clapped, dozed, exaggerated, giggled, goofed, grinned,
+     grumbled, grunted, hesitated, intervened, kneeled, nodded, resigned,
+     shrieked, sighed, smiled, sneezed, snickered, stammered, talked, yawned,
+     yelled]

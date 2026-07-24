@@ -1086,6 +1086,8 @@ entries:
   called:
     senses:
     - verb
+    verb:
+      lemma: call
   calls:
     senses:
     - verb

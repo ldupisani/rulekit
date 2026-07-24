@@ -2,3 +2,36 @@ format: rulekit/lexicon@1
 entries:
   bee: {senses: [noun], plural: bees}
   buzzes: {senses: [verb], verb: {lemma: buzz}}
+  alice: {senses: [noun]}
+  javier: {senses: [noun]}
+  lalita: {senses: [noun]}
+  mary: {senses: [noun]}
+  neris: {senses: [noun]}
+  sita: {senses: [noun]}
+  tom: {senses: [noun]}
+  accelerated: {senses: [verb], verb: {lemma: accelerate}}
+  apologized: {senses: [verb], verb: {lemma: apologize}}
+  applauded: {senses: [verb], verb: {lemma: applaud}}
+  bowed: {senses: [verb], verb: {lemma: bow}}
+  blushed: {senses: [verb], verb: {lemma: blush}}
+  burped: {senses: [verb], verb: {lemma: burp}}
+  cheated: {senses: [verb], verb: {lemma: cheat}}
+  cheered: {senses: [verb], verb: {lemma: cheer}}
+  clapped: {senses: [verb], verb: {lemma: clap}}
+  dozed: {senses: [verb], verb: {lemma: doze}}
+  exaggerated: {senses: [verb], verb: {lemma: exaggerate}}
+  goofed: {senses: [verb], verb: {lemma: goof}}
+  grinned: {senses: [verb], verb: {lemma: grin}}
+  grumbled: {senses: [verb], verb: {lemma: grumble}}
+  grunted: {senses: [verb], verb: {lemma: grunt}}
+  hesitated: {senses: [verb], verb: {lemma: hesitate}}
+  intervened: {senses: [verb], verb: {lemma: intervene}}
+  kneeled: {senses: [verb], verb: {lemma: kneel}}
+  nodded: {senses: [verb], verb: {lemma: nod}}
+  resigned: {senses: [verb], verb: {lemma: resign}}
+  shrieked: {senses: [verb], verb: {lemma: shriek}}
+  sighed: {senses: [verb], verb: {lemma: sigh}}
+  snickered: {senses: [verb], verb: {lemma: snicker}}
+  stammered: {senses: [verb], verb: {lemma: stammer}}
+  yawned: {senses: [verb], verb: {lemma: yawn}}
+  yelled: {senses: [verb], verb: {lemma: yell}}

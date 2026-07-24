@@ -4,8 +4,8 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** PMB coverage increment 1 complete at 1 train exact / 0 incorrect;
-coverage increment 2 selected and preregistered
+**Status:** PMB coverage increment 2 complete at 34 train exact / 0 incorrect;
+coverage increment 3 profiling is next
 
 **Current safe DEV baseline:** `964f09f`
 (`Add COGS indefinite common subject projection`)
@@ -594,13 +594,17 @@ Preserve completed post-D DEV campaign 2 as the COGS DEV baseline. PMB
 coverage increment 1 implemented the exact anchored `A/An N V-s.`
 common-subject agentive-intransitive class and hit its locked delta: train is
 1 exact / 6 partial / 9,058 declined / 0 incorrect at 100% edge precision;
-development remains 0/0/990/0. Implement the frozen coverage-increment-2
-proper-name simple-past Agent class. Its audited YAML boundary has 33 train
-buyers, all Agent: the locked result is 34 exact / 0 partial / 0 incorrect
-with 135 correct edges in total, while development remains unchanged.
+development remains 0/0/990/0. Coverage increment 2 implemented the frozen
+proper-name simple-past Agent class and hit its lock: train is now 34 exact /
+0 partial / 9,031 declined / 0 incorrect with 135 correct edges and 0.3%
+recall; development remains unchanged. Profile and preregister coverage
+increment 3, prioritizing Theme edges and enough edge volume to approach the
+250-edge and 1%-recall thresholds.
 
 This clears the precision prerequisite for coverage, not the Phase E entry
-gate: PMB still has only one complete graph and effectively zero recall. No
+gate: PMB has 34 complete train graphs but only 135 correct edges, 0.3%
+recall, no development transfer, and no complete attachment/complement or
+Recipient bucket. No
 protected PMB test look has been spent. Preserve the proper-object boundary
 and do not rerun COGS TEST/generalization or PMB test.
 

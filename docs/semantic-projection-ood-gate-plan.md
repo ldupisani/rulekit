@@ -407,9 +407,29 @@ Selected and frozen before implementation on 2026-07-24:
    not supply attachment/complement, Theme, or Recipient coverage. It does
    not authorize a protected test look.
 
+#### Coverage increment 2 result
+
+The implementation hits the PMB lock exactly:
+
+| Split | exact | safe partial | declined | incorrect | edge precision | edge recall |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| train | 34 | 0 | 9,031 | 0 | 100% | 0.3% |
+| development | 0 | 0 | 990 | 0 | n/a | 0.0% |
+
+The six prior partials become exact and 27 declines become exact, yielding
+135 correct projected edges. The general missing `called → call` lemma also
+turns seven COGS DEV-train and four COGS DEV-holdout safe partials into exact
+graphs without adding an edge or changing precision: COGS is now
+1,772/646/0 and 1,696/656/0. This is a safe general lexical normalization,
+not PMB-specific kernel vocabulary.
+
+All 3,299 tests pass; curated twice, GSM8K train/holdout, ASDiv, SVAMP, MAWPS,
+SciBench, FOLIO, and lint are green. The protected PMB test remains unspent.
+
 Remaining sequence:
 
-1. Implement the frozen typed proper-name simple-past Agent class.
+1. Profile and preregister coverage increment 3, prioritizing Theme edges and
+   the remaining correct-edge/recall thresholds.
 2. Require 100% train/development edge precision and run
    all standing gates.
 3. Profile and preregister each subsequent complete-graph class until every
