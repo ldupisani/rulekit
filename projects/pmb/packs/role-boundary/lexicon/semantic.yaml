@@ -53,3 +53,22 @@ entries:
   luminous: {senses: [adjective]}
   aged: {senses: [adjective]}
   angry: {senses: [adjective]}
+  jesus: {senses: [noun]}
+  pua: {senses: [noun]}
+  holy: {senses: [noun]}
+  glimmered: {senses: [verb], verb: {lemma: glimmer}}
+  chuckled: {senses: [verb], verb: {lemma: chuckle}}
+  lies: {senses: [verb], verb: {lemma: lie}}
+  tried: {senses: [verb], verb: {lemma: try}}
+  quarreled: {senses: [verb], verb: {lemma: quarrel}}
+  relaxed: {senses: [verb], verb: {lemma: relax}}
+  phoned: {senses: [verb], verb: {lemma: phone}}
+  smoked: {senses: [verb], verb: {lemma: smoke}}
+  claps: {senses: [verb], verb: {lemma: clap}}
+  complained: {senses: [verb], verb: {lemma: complain}}
+  lied: {senses: [verb], verb: {lemma: lie}}
+  overslept: {senses: [verb], verb: {lemma: oversleep}}
+  wept: {senses: [verb], verb: {lemma: weep}}
+  exaggerates: {senses: [verb], verb: {lemma: exaggerate}}
+  sings: {senses: [verb], verb: {lemma: sing}}
+  smokes: {senses: [verb], verb: {lemma: smoke}}

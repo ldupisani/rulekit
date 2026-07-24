@@ -685,3 +685,24 @@ Pre-implementation lexical audit amendment: one initially counted named buyer,
 contract. A second buyer, `Somebody answered.`, is excluded because the
 shared verb entry has no declared `answer` lemma; a one-off rule mapping is
 not justified. The lock above reflects the 37-buyer class.
+
+#### Coverage increment 6 result
+
+The finalized lock is exact:
+
+| Split | exact | safe partial | declined | incorrect | edge precision | edge recall |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| train | 103 | 0 | 8,962 | 0 | 100% | 0.9% |
+| development | 4 | 0 | 986 | 0 | 100% | 0.3% |
+
+Train gains exactly 37 complete graphs and 148 correct edges for 475 total.
+Development gains four aggregate exact graphs with no precision failure; this
+is safety evidence only under the recorded diagnostic quarantine. Both diffs
+have zero broken exact graphs and zero safe-to-incorrect transitions.
+
+The complete gate is green: all 3,378 tests; unchanged COGS DEV-train
+1,772/646/0 and DEV-holdout 1,696/656/0 at 100% projected-edge precision;
+curated 65/65 twice; GSM8K 104/0 wrong and 40/0 wrong; ASDiv 44/0; SVAMP
+30/0; MAWPS 9/0; SciBench 6/0; FOLIO with zero commitments; and COGS lint
+with zero errors and seven pre-existing warnings. Protected PMB test remains
+unopened.

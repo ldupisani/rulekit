@@ -1161,3 +1161,114 @@ rules:
       - {fact: semantic_graph_edge, kind: type, source: "entity:98", label: "{attribute}"}
       - {fact: semantic_graph_edge, kind: type, source: "entity:99", label: time}
       - {fact: semantic_graph_edge, kind: modifier, source: "entity:{role.span_start}", target: "entity:0", label: of}
+
+  # PMB coverage increment 6: exact typed-subject finite intransitive Agents.
+  # Identity/type and event licences remain split so no role transfers across
+  # a subject class merely because the two-token surface shape is identical.
+  - id: semantic/intransitive-male-pronoun-finite-agent
+    phase: read
+    match:
+      sentence:
+        - {slot: agent, cat: semantic_pmb_finite_agent_male_pronoun,
+           at_start: true}
+        - {slot: event, cat: semantic_pmb_finite_agent_male_pronoun_verb,
+           single_word: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "entity:{agent.span_start}", kind: entity}
+      - {fact: semantic_graph_node, ref: "event:{event.span_start}", kind: event}
+      - {fact: semantic_graph_node, ref: "entity:99", kind: entity}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:{agent.span_start}", label: male}
+      - {fact: semantic_graph_edge, kind: event, source: "event:{event.span_start}", label: "{event}"}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:99", label: time}
+      - {fact: semantic_graph_edge, kind: role, source: "event:{event.span_start}", target: "entity:{agent.span_start}", label: agent}
+
+  - id: semantic/intransitive-female-pronoun-finite-agent
+    phase: read
+    match:
+      sentence:
+        - {slot: agent, cat: semantic_pmb_finite_agent_female_pronoun,
+           at_start: true}
+        - {slot: event, cat: semantic_pmb_finite_agent_female_pronoun_verb,
+           single_word: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "entity:{agent.span_start}", kind: entity}
+      - {fact: semantic_graph_node, ref: "event:{event.span_start}", kind: event}
+      - {fact: semantic_graph_node, ref: "entity:99", kind: entity}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:{agent.span_start}", label: female}
+      - {fact: semantic_graph_edge, kind: event, source: "event:{event.span_start}", label: "{event}"}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:99", label: time}
+      - {fact: semantic_graph_edge, kind: role, source: "event:{event.span_start}", target: "entity:{agent.span_start}", label: agent}
+
+  - id: semantic/intransitive-person-pronoun-finite-agent
+    phase: read
+    match:
+      sentence:
+        - {slot: agent, cat: semantic_pmb_finite_agent_person_pronoun,
+           at_start: true}
+        - {slot: event, cat: semantic_pmb_finite_agent_person_pronoun_verb,
+           single_word: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "entity:{agent.span_start}", kind: entity}
+      - {fact: semantic_graph_node, ref: "event:{event.span_start}", kind: event}
+      - {fact: semantic_graph_node, ref: "entity:99", kind: entity}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:{agent.span_start}", label: person}
+      - {fact: semantic_graph_edge, kind: event, source: "event:{event.span_start}", label: "{event}"}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:99", label: time}
+      - {fact: semantic_graph_edge, kind: role, source: "event:{event.span_start}", target: "entity:{agent.span_start}", label: agent}
+
+  - id: semantic/intransitive-person-quantified-finite-agent
+    phase: read
+    match:
+      sentence:
+        - {slot: agent, cat: semantic_pmb_finite_agent_quantified_pronoun,
+           at_start: true}
+        - {slot: event, cat: semantic_pmb_finite_agent_quantified_verb,
+           single_word: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "entity:{agent.span_start}", kind: entity}
+      - {fact: semantic_graph_node, ref: "event:{event.span_start}", kind: event}
+      - {fact: semantic_graph_node, ref: "entity:99", kind: entity}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:{agent.span_start}", label: person}
+      - {fact: semantic_graph_edge, kind: event, source: "event:{event.span_start}", label: "{event}"}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:99", label: time}
+      - {fact: semantic_graph_edge, kind: role, source: "event:{event.span_start}", target: "entity:{agent.span_start}", label: agent}
+
+  - id: semantic/intransitive-male-name-finite-agent
+    phase: read
+    match:
+      sentence:
+        - {slot: agent, cat: semantic_pmb_finite_agent_male_name,
+           at_start: true, bare: true}
+        - {slot: event, cat: semantic_pmb_finite_agent_male_name_verb,
+           single_word: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "name:{agent}", kind: entity}
+      - {fact: semantic_graph_node, ref: "event:{event.span_start}", kind: event}
+      - {fact: semantic_graph_node, ref: "entity:99", kind: entity}
+      - {fact: semantic_graph_edge, kind: type, source: "name:{agent}", label: male}
+      - {fact: semantic_graph_edge, kind: event, source: "event:{event.span_start}", label: "{event}"}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:99", label: time}
+      - {fact: semantic_graph_edge, kind: role, source: "event:{event.span_start}", target: "name:{agent}", label: agent}
+
+  - id: semantic/intransitive-female-name-finite-agent
+    phase: read
+    match:
+      sentence:
+        - {slot: agent, cat: semantic_pmb_finite_agent_female_name,
+           at_start: true, bare: true}
+        - {slot: event, cat: semantic_pmb_finite_agent_female_name_verb,
+           single_word: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "name:{agent}", kind: entity}
+      - {fact: semantic_graph_node, ref: "event:{event.span_start}", kind: event}
+      - {fact: semantic_graph_node, ref: "entity:99", kind: entity}
+      - {fact: semantic_graph_edge, kind: type, source: "name:{agent}", label: female}
+      - {fact: semantic_graph_edge, kind: event, source: "event:{event.span_start}", label: "{event}"}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:99", label: time}
+      - {fact: semantic_graph_edge, kind: role, source: "event:{event.span_start}", target: "name:{agent}", label: agent}

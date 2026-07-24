@@ -159,6 +159,115 @@ def test_pmb_possessive_role_attachment_is_dormant_in_cogs() -> None:
     assert project_result(result, text, project.registry).empty
 
 
+@pytest.mark.parametrize(
+    ("text", "subject_ref", "subject_type", "source"),
+    [
+        (
+            "He glimmered.",
+            "x0",
+            "male",
+            "semantic/intransitive-male-pronoun-finite-agent",
+        ),
+        (
+            "She glimmered.",
+            "x0",
+            "female",
+            "semantic/intransitive-female-pronoun-finite-agent",
+        ),
+        (
+            "We glimmered.",
+            "x0",
+            "person",
+            "semantic/intransitive-person-pronoun-finite-agent",
+        ),
+        (
+            "Everyone glimmered.",
+            "x0",
+            "person",
+            "semantic/intransitive-person-quantified-finite-agent",
+        ),
+        (
+            "Neris glimmered.",
+            "const:neris",
+            "male",
+            "semantic/intransitive-male-name-finite-agent",
+        ),
+        (
+            "Alice glimmered.",
+            "const:alice",
+            "female",
+            "semantic/intransitive-female-name-finite-agent",
+        ),
+    ],
+)
+def test_pmb_typed_finite_agent_projects_complete_graph(
+    text: str,
+    subject_ref: str,
+    subject_type: str,
+    source: str,
+) -> None:
+    project = load_project(Path("projects/pmb"))
+    result = solve(text, project.registry, tracing=False)
+    graph = project_result(
+        result, text, project.registry, allow_legacy_bridge=False
+    )
+    assert graph.node_keys() == {
+        (subject_ref, "entity"),
+        ("x1", "event"),
+        ("x99", "entity"),
+    }
+    assert graph.edge_keys() == {
+        ("type", subject_ref, "", subject_type),
+        ("event", "x1", "", "glimmer"),
+        ("type", "x99", "", "time"),
+        ("role", "x1", subject_ref, "agent"),
+    }
+    assert {edge.evidence_source for edge in graph.edges} == {source}
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "A zephyrkin glimmered.",
+        "The zephyrkin glimmered.",
+        "You glimmered.",
+        "He stopped.",
+        "He glimmered a relic.",
+        "He glimmered at Alice.",
+        "He was glimmered.",
+        "He might glimmer.",
+        "He did not glimmer.",
+        "He glimmered brightly.",
+        "He glimmered and smiled.",
+        "Did he glimmer?",
+        "Alice said he glimmered.",
+    ],
+)
+def test_pmb_typed_finite_agent_rejects_neighbours(text: str) -> None:
+    project = load_project(Path("projects/pmb"))
+    result = solve(text, project.registry, tracing=False)
+    facts = (
+        list(result.store.by_kind(SemanticGraphNode))
+        + list(result.store.by_kind(SemanticGraphEdge))
+    )
+    finite_sources = {
+        "semantic/intransitive-male-pronoun-finite-agent",
+        "semantic/intransitive-female-pronoun-finite-agent",
+        "semantic/intransitive-person-pronoun-finite-agent",
+        "semantic/intransitive-person-quantified-finite-agent",
+        "semantic/intransitive-male-name-finite-agent",
+        "semantic/intransitive-female-name-finite-agent",
+    }
+    assert not any(fact.provenance.source in finite_sources for fact in facts)
+
+
+def test_pmb_typed_finite_agent_categories_are_dormant_in_cogs() -> None:
+    text = "He glimmered."
+    project = load_project(Path("projects/cogs"))
+    result = solve(text, project.registry, tracing=False)
+    assert project_result(result, text, project.registry).empty
+
+
 def test_pmb_alignment_treats_local_variable_names_as_nonsemantic() -> None:
     expected = parse_pmb_sbn(
         'person.n.01 Name "Neris" polish.v.01 Agent -1 '

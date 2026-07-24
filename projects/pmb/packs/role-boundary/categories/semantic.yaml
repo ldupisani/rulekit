@@ -41,3 +41,24 @@ members:
   # Synthetic contract vocabulary; neither word occurs in PMB.
   semantic_pmb_possessive_synthetic_role: [zephyrkin]
   semantic_pmb_possessive_synthetic_adjective: [luminous]
+  semantic_pmb_finite_agent_male_pronoun: [he]
+  semantic_pmb_finite_agent_female_pronoun: [she]
+  semantic_pmb_finite_agent_person_pronoun: [i, they, we]
+  semantic_pmb_finite_agent_quantified_pronoun:
+    [everybody, everyone, nobody, somebody, someone]
+  semantic_pmb_finite_agent_male_name: [jesus, neris, tom]
+  semantic_pmb_finite_agent_female_name: [alice, holy, pua]
+  semantic_pmb_finite_agent_male_pronoun_verb:
+    [burped, chuckled, glimmered, lies, resigned, smiled]
+  semantic_pmb_finite_agent_female_pronoun_verb:
+    [chuckled, glimmered, tried]
+  semantic_pmb_finite_agent_person_pronoun_verb:
+    [agree, applauded, ate, exaggerated, glimmered, lost, phoned, quarreled,
+     relaxed, slept, smoked]
+  semantic_pmb_finite_agent_quantified_verb:
+    [applauded, called, claps, complained, glimmered, laughed, lied, lies,
+     paid, screamed]
+  semantic_pmb_finite_agent_male_name_verb:
+    [exaggerates, glimmered, overslept, quit, sings, wept, works]
+  semantic_pmb_finite_agent_female_name_verb:
+    [glimmered, sang, smokes]

@@ -96,6 +96,31 @@ categories:
     parent: noun
   semantic_pmb_possessive_synthetic_adjective:
     parent: adjective
+  # Empty typed-subject/event licences for PMB finite intransitive Agents.
+  semantic_pmb_finite_agent_male_pronoun:
+    parent: pronoun
+  semantic_pmb_finite_agent_female_pronoun:
+    parent: pronoun
+  semantic_pmb_finite_agent_person_pronoun:
+    parent: pronoun
+  semantic_pmb_finite_agent_quantified_pronoun:
+    parent: pronoun
+  semantic_pmb_finite_agent_male_name:
+    parent: noun
+  semantic_pmb_finite_agent_female_name:
+    parent: noun
+  semantic_pmb_finite_agent_male_pronoun_verb:
+    parent: verb
+  semantic_pmb_finite_agent_female_pronoun_verb:
+    parent: verb
+  semantic_pmb_finite_agent_person_pronoun_verb:
+    parent: verb
+  semantic_pmb_finite_agent_quantified_verb:
+    parent: verb
+  semantic_pmb_finite_agent_male_name_verb:
+    parent: verb
+  semantic_pmb_finite_agent_female_name_verb:
+    parent: verb
 members:
   # Overt finite forms whose active direct-object construction licenses the
   # agent/theme interpretation in Phase B increment 1. Unsafe self-lemma
