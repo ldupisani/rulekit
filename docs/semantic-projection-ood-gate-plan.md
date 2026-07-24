@@ -777,3 +777,37 @@ blocks skipped articles, and the test contract reflects the explicit
 Theme-only licence while retaining the Agent quarantine. The corrected full
 suite passes all 3,396 tests. All standing corpus and lint gates are neutral
 and green. Protected PMB test remains unopened.
+
+### Coverage increment 8 selection brief — typed Agent with adverb tail
+
+Selected and frozen from inspectable train evidence on 2026-07-24:
+
+1. **Licensed construction:** exactly anchored
+   `TypedMaleName LicensedAgentVerb LicensedAdverb.`, with one audited
+   event/adverb pairing and an explicitly typed named subject.
+2. **Complete graph:** male named entity, event, and time entity; male type,
+   event predicate, time type, and Agent edge. PMB's adverbial `Manner`
+   relation and adverb synset remain outside the frozen adapter view, so this
+   is the complete projected graph rather than a partial reading.
+3. **Inspectable buyer:** exactly one currently declined train graph with
+   three nodes and four edges. No other train surface joins the licensed
+   subject/event/adverb categories.
+4. **Lexical boundary:** the event and adverb are absent from the current
+   registry and from `difg-mined` quarantine. They may be added only to the
+   PMB-local lexicon, with the inspected event lemma and adverb sense.
+5. **Negative neighbours:** untyped or non-male subjects; pronouns; missing,
+   substituted, or additional adverbs; objects; PPs; auxiliaries; modals;
+   passives; negation; coordination; questions; embedding; and trailing
+   material must emit nothing from this rule.
+6. **Synthetic contract:** use an invented name/event/adverb triple, not a
+   PMB sentence. Assert exact topology, Agent role, event lemmatization,
+   provenance, negative neighbours, and dormant COGS behavior.
+7. **Locked expected train delta:** exactly one new complete graph and four
+   correct edges: train moves from 116 to 117 exact and from 527 to 531
+   correct edges, with zero partial / zero incorrect. Exact recall becomes
+   531/52,991 = 1.0021%.
+8. **Development expectation:** unknown and aggregate-safety-only under the
+   recorded diagnostic quarantine.
+9. **Exit claim:** if the lock and all standing gates pass, every inspectable
+   Phase E entry threshold is met. Freeze this candidate before the single
+   protected standard-test look.

@@ -4,8 +4,8 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** PMB coverage increment 7 complete at 116 train exact / 527 correct
-edges / 0 incorrect; one complete graph remains for exact 1% recall
+**Status:** PMB coverage increment 8 one-buyer Agent-adverb margin class is
+preregistered; implementation is next
 
 **Current safe DEV baseline:** `964f09f`
 (`Add COGS indefinite common subject projection`)
