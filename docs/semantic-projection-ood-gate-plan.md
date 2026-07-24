@@ -706,3 +706,46 @@ curated 65/65 twice; GSM8K 104/0 wrong and 40/0 wrong; ASDiv 44/0; SVAMP
 30/0; MAWPS 9/0; SciBench 6/0; FOLIO with zero commitments; and COGS lint
 with zero errors and seven pre-existing warnings. Protected PMB test remains
 unopened.
+
+### Coverage increment 7 selection brief — typed finite intransitive Theme
+
+Selected and frozen from inspectable train evidence on 2026-07-24:
+
+1. **Licensed construction:** exactly anchored `TypedSubject FiniteVerb.`,
+   with six explicit subject identity/type classes: `this`, `that`, entity
+   pronoun, person pronoun/quantifier, common nominal, and male proper name.
+   Each class has its independently audited overt Theme-event forms.
+2. **Complete graph:** typed subject entity, event, and time entity; subject
+   type, event predicate, time type, and Theme edge. Named subjects are
+   constants; all others remain local entities.
+3. **Inspectable buyers:** exactly 16 currently declined train graphs, all
+   with the same three-node/four-edge topology and explicit SBN Theme role.
+4. **Lexical boundary:** three initially profiled graphs are excluded before
+   implementation. `stopped` and `left` lack the required `stop`/`leave`
+   event lemmas in the shared lexicon; `drops` is registered verb-only where
+   the row requires a nominal subject. No one-off Python mapping or
+   cross-project lexicon change is permitted.
+5. **Role quarantine:** `danced` remains quarantined from Agent projection,
+   but this class may license its inspected Theme reading in the exact named
+   subject construction. The role-specific categories remain disjoint.
+6. **Pairing boundary:** `this` and `that` receive separate categories rooted
+   in their existing lexical senses, and each identity/type class has its own
+   event category and rule. No generic two-token Theme inference is allowed.
+7. **Negative neighbours:** Agent readings; unlicensed subject/event
+   pairings; objects; PPs; auxiliaries; modals; passives; negation; adverbs;
+   coordination; questions; embedding; and trailing material must emit
+   nothing from these rules.
+8. **Synthetic contract:** use an invented name, noun, and event form rather
+   than PMB sentences. Assert every identity/type variant, exact topology,
+   Theme-not-Agent role, provenance, negative neighbours, quarantine
+   separation, and dormant COGS behavior.
+9. **Locked expected train delta:** exactly 16 new complete graphs and 64
+   correct edges: train moves from 103 to 119 exact and from 475 to 539
+   correct edges, with zero partial / zero incorrect. Against the measured
+   52,991-edge train denominator, recall must be at least 1.0% (539/52,991 =
+   1.017%).
+10. **Development expectation:** unknown and aggregate-safety-only under the
+    recorded diagnostic quarantine.
+11. **Exit claim:** if the lock and all standing gates pass, every inspectable
+    Phase E threshold except the protected-test checkpoint is satisfied.
+    Freeze the candidate before spending that single protected look.

@@ -4,8 +4,8 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** PMB coverage increment 6 complete at 103 train exact / 475 correct
-edges / 0 incorrect; intransitive Theme recall increment is next
+**Status:** PMB coverage increment 7 finite intransitive Theme is
+preregistered; implementation is next
 
 **Current safe DEV baseline:** `964f09f`
 (`Add COGS indefinite common subject projection`)
@@ -609,7 +609,8 @@ graphs / 327 correct edges / zero incorrect. The full standing gate is green.
 Coverage increment 6 hits its finalized 37-buyer lock: 103 exact / 475 correct
 edges / zero incorrect on train and four aggregate exact / zero incorrect on
 development. Its full standing gate is green. Preregister the train-only
-intransitive Theme sibling needed to cross 1% recall.
+intransitive Theme sibling needed to cross 1% recall. That sibling is now
+frozen at 16 train buyers / 64 edges; implement it next.
 
 This clears the precision prerequisite for coverage, not the Phase E entry
 gate: PMB has 66 complete train graphs and 327 correct edges, but only 0.6%
