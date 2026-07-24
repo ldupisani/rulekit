@@ -1,7 +1,8 @@
 # Semantic projection independent OOD gate preregistration
 
-**Status:** PMB candidate frozen after all inspectable entry thresholds passed;
-protected standard-test look is next and remains unspent
+**Status:** protected PMB standard-test look spent; precision passed but
+preregistered protected role diversity failed; original Phase E remains
+blocked
 
 **Selected corpus:** Parallel Meaning Bank (PMB) 5.1.0, English gold meaning
 representations, restricted by raw-text licence metadata
@@ -846,3 +847,34 @@ The candidate is frozen at the commit containing this result. No further
 reader, adapter, lexicon, category, or test change is permitted before the
 single protected standard-test aggregate. Do not inspect protected rows or
 failure identifiers after the look.
+
+## Protected standard-test result
+
+The single aggregate-only look was spent on 2026-07-24 against frozen commit
+`696d563`. No protected row, document identifier, sentence, SBN graph, or
+failure was inspected.
+
+| items | exact | safe partial | declined | incorrect | edge precision | exact edge recall |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 923 | 1 | 0 | 922 | 0 | 100% | 0.0767% |
+
+The permitted construction aggregates contained one exact
+`intransitive-agent` graph out of 177. `intransitive-theme` (0/267),
+`transitive` (0/148), `ditransitive` (0/14), and `nominal-modifier` (0/39)
+had no exact graph.
+
+The protected result passes condition 1: there are zero incorrect graphs and
+projected-edge precision is 100%. It fails conjunctive condition 6: the only
+protected thematic-role evidence is Agent, so there is neither a second
+explicit role nor protected evidence capable of distinguishing a direct
+object from a recipient. The inspectable proxy for condition 6 did not
+transfer to the protected partition.
+
+The look is permanently recorded in
+`projects/pmb/snapshots/test-ledger.jsonl` with fingerprint
+`62d63138065caf0ccdefee0934e753158505eddc02839eb612f3df16e267f41c`.
+Under the preregistered one-look policy, this PMB gate has failed and cannot
+be rerun. Further PMB train/development coverage cannot repair the missing
+protected evidence claim. Original Phase E remains blocked; another attempt
+requires a newly preregistered independent OOD gate, not another PMB
+standard-test look.

@@ -4,8 +4,8 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** PMB candidate frozen at 117 train exact / 531 correct edges /
-0 incorrect; single protected standard-test look is next
+**Status:** protected PMB look spent: 1 exact / 0 incorrect / 100% precision,
+but protected role diversity failed; Phase E remains blocked
 
 **Current safe DEV baseline:** `964f09f`
 (`Add COGS indefinite common subject projection`)
@@ -590,41 +590,19 @@ GSM8K, ASDiv, SVAMP, MAWPS, SciBench, and FOLIO diffs.
 
 ## Immediate next step
 
-Preserve completed post-D DEV campaign 2 as the COGS DEV baseline. PMB
-coverage increment 1 implemented the exact anchored `A/An N V-s.`
-common-subject agentive-intransitive class and hit its locked delta: train is
-1 exact / 6 partial / 9,058 declined / 0 incorrect at 100% edge precision;
-development remains 0/0/990/0. Coverage increment 2 implemented the frozen
-proper-name simple-past Agent class and hit its lock: train is now 34 exact /
-0 partial / 9,031 declined / 0 incorrect with 135 correct edges and 0.3%
-recall; development remains unchanged. Coverage increment 3
-`Subject V-ed a/an N.` is complete at its quarantine-safe lock: 52 exact /
-243 correct edges / 0 incorrect on train; development remains unchanged.
-Coverage increment 4 `TypedSubject V-ed at/to TypedRecipient.` is complete at
-62 train exact / 303 correct edges / 0 incorrect, adding explicit Recipient.
-The expected aggregate development buyer did not materialize and development
-stays at zero commitments. Coverage increment 5 adds the explicit SBN
-noun-to-noun `Of` relation and hits its four-buyer train lock: 66 complete
-graphs / 327 correct edges / zero incorrect. The full standing gate is green.
-Coverage increment 6 hits its finalized 37-buyer lock: 103 exact / 475 correct
-edges / zero incorrect on train and four aggregate exact / zero incorrect on
-development. Its full standing gate is green. Preregister the train-only
-intransitive Theme sibling needed to cross 1% recall. Matcher reconciliation
-reduces that sibling to 13 supported train buyers / 52 edges. Increment 8 adds
-the separately frozen one-buyer Agent-adverb margin class. The final
-inspectable candidate has 117 train exact / 531 correct edges / zero
-incorrect, exact recall 1.0021%, three complete graph buckets, and all
-standing gates green. Freeze the code and spend the single protected PMB
-standard-test aggregate next; never inspect protected rows or failures.
+Preserve the frozen COGS DEV baseline and PMB candidate. The one permitted PMB
+protected standard-test aggregate has been spent: 923 items produced 1 exact,
+0 safe partial, 922 declined, and 0 incorrect at 100% projected-edge
+precision. The sole protected exact graph was `intransitive-agent`; no second
+explicit thematic role and no direct-object-versus-recipient class transferred.
+This fails conjunctive entry condition 6, so Phase E remains blocked.
 
-This clears the precision prerequisite for coverage, not the Phase E entry
-gate: PMB has 66 complete train graphs and 327 correct edges, but only 0.6%
-recall and no pristine development transfer. The attachment/complement bucket
-is now satisfied. A development profiling diagnostic accidentally printed inspectable
-rows despite the campaign's stricter aggregate-only choice; the observations
-are quarantined and the deviation is recorded in the gate plan. No protected
-PMB test look has been spent. Preserve the proper-object boundary and do not
-rerun COGS TEST/generalization or PMB test.
+Do not rerun or inspect COGS TEST/generalization or PMB standard-test rows,
+identifiers, sentences, graphs, or failures. Do not tune PMB against the
+protected aggregate. If the campaign continues toward Phase E, the next step
+is to select and preregister a genuinely independent OOD projection gate with
+its own licence decision, frozen partitions, acceptance thresholds, and
+single-look policy.
 
 ## Phase C restart exit audit
 

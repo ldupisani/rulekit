@@ -403,12 +403,15 @@ protected standard-test documents. The local release and licence files are
 hashed. The immutable builder, project schema, and conservative SBN gold
 adapter now exist. The untouched-runtime train/development baseline had zero
 exact graphs, 24/2 safe partials, and 113/19 incorrect graphs at 46.5%/38.4%
-edge precision. The completed safety repair now has 0/0 exact, 6/0 safe
-partials, and 0/0 incorrect graphs on train/development: 100% precision where
-it commits, but effectively zero recall. Coverage work may now begin, while
-Phase E remains blocked until the full PMB entry contract is met. No protected
-sentence, meaning representation, or failure row has been inspected, and no
-evaluation look has been spent.
+edge precision. The completed safety and coverage campaign froze at 117 train
+exact / 531 correct edges / 0 incorrect and passed every inspectable entry
+threshold. The single protected standard-test look has now been spent:
+1 exact / 0 incorrect / 100% precision across 923 items. Its only exact class
+was intransitive Agent, so the protected two-role and
+direct-object-versus-recipient condition failed. No protected row, identifier,
+sentence, meaning representation, or failure was inspected. The PMB gate
+cannot be rerun, and Phase E remains blocked pending a newly preregistered
+independent OOD gate.
 
 After COGS demonstrates nonzero OOD transfer:
 
@@ -465,34 +468,14 @@ Two valid next directions remain:
 1. **Continue DEV coverage outside the original phase sequence:** profile a
    determined common-subject intransitive class, lock agent/theme role
    membership before implementation, and run the normal increment gate.
-2. **Unblock original Phase E:** first specify and freeze a fresh independent
-   OOD projection corpus/gate, including its licence, grouping, precision
-   threshold, and one-look policy. PMB now satisfies the annotation-licence
-   requirement; its Tatoeba-only eligible subset, builder, adapter, and failed
-   untouched-runtime baseline are frozen. Its inspectable safety repair now
-   eliminates all 113/19 incorrect train/development graphs without touching
-   protected test. The first complete-graph class, the exact indefinite
-   common-subject agentive intransitive construction, now contributes one
-   train exact graph and zero incorrect while leaving development unchanged.
-   Typed proper-name simple-past Agent now contributes 33 additional train
-   exact graphs, bringing PMB train to 34 exact / 0 incorrect while
-   development remains unchanged. The typed-subject simple-past
-   indefinite-object Agent/Theme class now brings PMB train to 52 exact /
-   243 correct edges / 0 incorrect; development remains unchanged and one
-   structural match remains quarantined. The next typed simple-past Recipient
-   PP class adds ten train exact graphs and explicit Recipient, bringing PMB
-   train to 62 exact / 303 edges / 0 incorrect. Its expected development buyer
-   did not materialize. The possessive-role attachment class hits its frozen
-   four-buyer lock, bringing train to 66 exact / 327 edges / 0 incorrect and
-   satisfying the attachment/complement bucket. Subsequent typed finite
-   Agent, finite Theme, and one-buyer Agent-adverb increments bring the frozen
-   candidate to 117 train exact / 531 correct edges / 0 incorrect and exact
-   1.0021% recall. Four aggregate development exact graphs remain at 100%
-   precision. A development diagnostic protocol deviation is recorded in the
-   OOD gate plan and its observations are quarantined. Every inspectable entry
-   threshold now passes; the single protected PMB standard-test aggregate is
-   next. Phase E begins only if the full gate
-   demonstrates nonzero thematic-role transfer without a precision failure.
+2. **Unblock original Phase E:** specify and freeze a new independent OOD
+   projection corpus/gate, including its licence, grouping, precision
+   threshold, role-diversity requirement, and one-look policy. The PMB
+   campaign reached 117 train exact / 531 correct edges / 0 incorrect and
+   passed every inspectable threshold, but its single protected look produced
+   only one intransitive-Agent exact graph. Precision stayed at 100%, while
+   the protected two-role and direct-object-versus-recipient condition failed.
+   The PMB look is spent and cannot be rerun or used for tuning.
 
 Do not tune to DEV-holdout items. Do not start by admitting the frequent COGS
 unknown words: vocabulary receives credit only as part of a complete
