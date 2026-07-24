@@ -635,3 +635,34 @@ rules:
          source: "event:{event.span_start}", target: "entity:{theme.span_start}",
          label: theme, span_start: "{theme.span_start}",
          span_end: "{event.span_end}"}
+
+  # PMB coverage increment 1: an anchored indefinite common-noun subject
+  # with a separately licensed agentive finite event. The categories are
+  # empty in the COGS pack and gain members only in projects that have
+  # independently established this exact role boundary.
+  - id: semantic/intransitive-indefinite-common-agent
+    phase: read
+    match:
+      sentence:
+        - {lit: [a, an], consume_skipped: true, at_start: true}
+        - {slot: agent, cat: semantic_indefinite_common_agent_subject_noun,
+           bare: true}
+        - {slot: event, cat: semantic_indefinite_common_agent_verb,
+           single_word: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "entity:{agent.span_start}",
+         kind: entity, span_start: "{agent.span_start}",
+         span_end: "{agent.span_end}"}
+      - {fact: semantic_graph_node, ref: "event:{event.span_start}", kind: event,
+         span_start: "{event.span_start}", span_end: "{event.span_end}"}
+      - {fact: semantic_graph_edge, kind: type,
+         source: "entity:{agent.span_start}", label: "{agent}",
+         span_start: "{agent.span_start}", span_end: "{agent.span_end}"}
+      - {fact: semantic_graph_edge, kind: event,
+         source: "event:{event.span_start}", label: "{event}",
+         span_start: "{event.span_start}", span_end: "{event.span_end}"}
+      - {fact: semantic_graph_edge, kind: role,
+         source: "event:{event.span_start}", target: "entity:{agent.span_start}",
+         label: agent, span_start: "{agent.span_start}",
+         span_end: "{event.span_end}"}

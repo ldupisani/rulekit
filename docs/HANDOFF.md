@@ -4,8 +4,8 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** PMB inspectable safety repair complete at zero incorrect graphs;
-first complete-graph PMB coverage class selected and preregistered
+**Status:** PMB coverage increment 1 complete at 1 train exact / 0 incorrect;
+coverage increment 2 profiling is next
 
 **Current safe DEV baseline:** `964f09f`
 (`Add COGS indefinite common subject projection`)
@@ -590,18 +590,16 @@ GSM8K, ASDiv, SVAMP, MAWPS, SciBench, and FOLIO diffs.
 
 ## Immediate next step
 
-Preserve completed post-D DEV campaign 2 as the COGS DEV baseline. Implement
-the frozen PMB coverage-increment-1 brief in
-[`semantic-projection-ood-gate-plan.md`](semantic-projection-ood-gate-plan.md):
-the exact anchored `A/An N V-s.` common-subject agentive-intransitive class.
-Its first YAML-licensed buyer has the smallest supported role-bearing graph
-(one typed entity, one event, and one Agent edge), and the locked delta is
-exactly one new train complete graph with three correct edges, no change on
-development, and zero incorrect on both. Do not widen the class to definite,
-plural, modal, progressive, transitive, PP-tailed, or Theme-role neighbours.
+Preserve completed post-D DEV campaign 2 as the COGS DEV baseline. PMB
+coverage increment 1 implemented the exact anchored `A/An N V-s.`
+common-subject agentive-intransitive class and hit its locked delta: train is
+1 exact / 6 partial / 9,058 declined / 0 incorrect at 100% edge precision;
+development remains 0/0/990/0. Profile and preregister coverage increment 2
+for substantially more complete graphs and correct edges while retaining the
+new common-subject boundary.
 
 This clears the precision prerequisite for coverage, not the Phase E entry
-gate: PMB still has zero complete graphs and effectively zero recall. No
+gate: PMB still has only one complete graph and effectively zero recall. No
 protected PMB test look has been spent. Preserve the proper-object boundary
 and do not rerun COGS TEST/generalization or PMB test.
 

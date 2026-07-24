@@ -344,10 +344,26 @@ Selected and frozen before implementation on 2026-07-24:
    threshold beyond establishing nonzero train completeness and one explicit
    Agent role. It does not justify a protected test look.
 
+#### Coverage increment 1 result
+
+The implementation matches the frozen brief exactly. PMB-local YAML adds the
+two corpus-backed lexical entries and extends otherwise-empty reusable
+subject/event categories; the shared rule remains dormant in COGS.
+
+| Split | exact | safe partial | declined | incorrect | edge precision |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| train | 1 | 6 | 9,058 | 0 | 100% |
+| development | 0 | 0 | 990 | 0 | n/a (no commitments) |
+
+The single buyer adds exactly one typed entity, one event predicate, and one
+Agent edge. All 3,279 tests pass; COGS DEV, curated twice, GSM8K
+train/holdout, ASDiv, SVAMP, MAWPS, SciBench, FOLIO, and lint remain green.
+The protected PMB test remains unspent.
+
 Remaining sequence:
 
-1. Implement the frozen indefinite common-subject intransitive-Agent class
-   without widening its lexical or syntactic licence.
+1. Profile and preregister coverage increment 2 for greater complete-graph
+   and correct-edge leverage.
 2. Require 100% train/development edge precision and run
    all standing gates.
 3. Profile and preregister each subsequent complete-graph class until every

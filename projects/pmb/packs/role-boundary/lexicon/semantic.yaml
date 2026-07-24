@@ -1,0 +1,4 @@
+format: rulekit/lexicon@1
+entries:
+  bee: {senses: [noun], plural: bees}
+  buzzes: {senses: [verb], verb: {lemma: buzz}}

@@ -4,5 +4,5 @@ version: 0.1.0
 requires:
   - cogs-semantic-projection
 description: >
-  PMB-local fail-closed role licences for verbs whose inspectable gold
-  annotation disagrees with the COGS semantic projection role class.
+  PMB-local semantic role boundaries: fail-closed quarantines for disputed
+  roles and positive construction licences backed by inspectable gold.

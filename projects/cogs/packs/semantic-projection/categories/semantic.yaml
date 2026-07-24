@@ -38,6 +38,12 @@ categories:
   # not a change to the COGS lexical licence.
   semantic_projection_role_quarantined_verb:
     parent: verb
+  # Empty reusable licences for the PMB common-subject intransitive buyer.
+  # Project-local packs provide members; empty here keeps COGS unchanged.
+  semantic_indefinite_common_agent_subject_noun:
+    parent: noun
+  semantic_indefinite_common_agent_verb:
+    parent: verb
 members:
   # Overt finite forms whose active direct-object construction licenses the
   # agent/theme interpretation in Phase B increment 1. Unsafe self-lemma

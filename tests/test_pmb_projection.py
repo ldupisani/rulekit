@@ -172,3 +172,58 @@ def test_pmb_role_quarantine_does_not_change_cogs_projection(text: str) -> None:
     project = load_project(Path("projects/cogs"))
     result = solve(text, project.registry, tracing=False)
     assert not project_result(result, text, project.registry).empty
+
+
+def test_pmb_indefinite_common_agent_projects_complete_graph() -> None:
+    text = "A zephyrstone buzzes."
+    project = load_project(Path("projects/pmb"))
+    result = solve(text, project.registry, tracing=False)
+    graph = project_result(
+        result, text, project.registry, allow_legacy_bridge=False
+    )
+    assert graph.node_keys() == {
+        ("x1", "entity"),
+        ("x2", "event"),
+    }
+    assert graph.edge_keys() == {
+        ("type", "x1", "", "zephyrstone"),
+        ("event", "x2", "", "buzz"),
+        ("role", "x2", "x1", "agent"),
+    }
+    assert {edge.evidence_source for edge in graph.edges} == {
+        "semantic/intransitive-indefinite-common-agent"
+    }
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "The zephyrstone buzzes.",
+        "Zephyrstones buzzes.",
+        "Neris buzzes.",
+        "Someone buzzes.",
+        "Zephyrstone buzzes.",
+        "A zephyrstone might buzzes.",
+        "A zephyrstone is buzzes.",
+        "A zephyrstone does not buzzes.",
+        "A zephyrstone buzzes loudly.",
+        "A zephyrstone buzzes near Neris.",
+        "A zephyrstone buzzes a bell.",
+        "A zephyrstone buzzes and smiles.",
+    ],
+)
+def test_pmb_indefinite_common_agent_rejects_neighbouring_shapes(
+    text: str,
+) -> None:
+    project = load_project(Path("projects/pmb"))
+    result = solve(text, project.registry, tracing=False)
+    assert project_result(
+        result, text, project.registry, allow_legacy_bridge=False
+    ).empty
+
+
+def test_pmb_indefinite_common_agent_membership_is_dormant_in_cogs() -> None:
+    text = "A zephyrstone buzzes."
+    project = load_project(Path("projects/cogs"))
+    result = solve(text, project.registry, tracing=False)
+    assert project_result(result, text, project.registry).empty

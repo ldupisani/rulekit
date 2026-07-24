@@ -5,3 +5,5 @@ members:
   # independently licensed, emitting the COGS roles would be a confident
   # semantic commitment; PMB therefore declines these exact verb lemmas.
   semantic_projection_role_quarantined_verb: [danced, saw]
+  semantic_indefinite_common_agent_subject_noun: [bee, zephyrstone]
+  semantic_indefinite_common_agent_verb: [buzzes]
