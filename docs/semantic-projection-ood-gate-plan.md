@@ -1,7 +1,8 @@
 # Semantic projection independent OOD gate preregistration
 
-**Status:** PMB selected and local release verified; metadata-only raw-text
-licence audit complete; no sentence or meaning representation inspected
+**Status:** PMB selected and local release verified; inspectable
+train/development safety repair complete at zero incorrect graphs; coverage
+entry thresholds remain unmet and protected test remains unspent
 
 **Selected corpus:** Parallel Meaning Bank (PMB) 5.1.0, English gold meaning
 representations, restricted by raw-text licence metadata
@@ -255,25 +256,49 @@ remain value-anchored.
 | train | 0 | 24 | 8,928 | 113 | 46.5% | 0.4% |
 | development | 0 | 2 | 969 | 19 | 38.4% | 0.5% |
 
-This is an honest failed baseline, not evidence for Phase E. The existing
+This was an honest failed baseline, not evidence for Phase E. The existing
 COGS-safe reader sometimes commits graph edges where PMB uses a different
-explicit role or concept analysis. The first PMB increment must therefore be a
-DEV-only safety class that moves incorrect graphs to correct partials or
-declines; coverage work cannot begin while precision is below 100%.
+explicit role or concept analysis. The first PMB increment therefore had to
+be a DEV-only safety class that moved incorrect graphs to correct partials or
+declines; coverage could not begin while precision was below 100%.
 
 The protected standard test remains materialized but unopened and unspent.
 
+### Inspectable safety repair
+
+The extra-edge profile first separated the COGS Phase-A
+`VerbalRelation` compatibility bridge from first-class semantic facts. PMB
+now scores only explicit `SemanticGraphNode`/`SemanticGraphEdge` emissions.
+The five remaining train and one remaining development errors had two general
+causes: sentence-initial indefinite/universal pronouns were being promoted to
+proper names, and two overt verb forms carried role licences that disagreed
+with inspectable PMB roles. Pronouns are now declaratively lexicalized, and a
+PMB-local category makes the disputed role rules fail closed while leaving
+COGS unchanged.
+
+| Split | exact | safe partial | declined | incorrect | edge precision |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| train | 0 | 6 | 9,059 | 0 | 100% |
+| development | 0 | 0 | 990 | 0 | n/a (no commitments) |
+
+The baseline-to-candidate diffs move all 113 train and 19 development
+incorrect graphs to safe outcomes, with zero broken exact graphs and zero
+safe-to-incorrect transitions. COGS DEV remains 1,765/653/0 on train and
+1,692/660/0 on holdout at 100% edge precision. The full 3,265-test suite,
+lint, curated twice, GSM8K train/holdout, ASDiv, SVAMP, MAWPS, SciBench, and
+FOLIO gates are green.
+
+Safety is therefore sufficient to begin PMB coverage work, but Phase E is
+still blocked: the current PMB result has no complete graphs and effectively
+zero edge recall, so it does not meet entry conditions 2–6.
+
 Remaining sequence:
 
-1. Profile inspectable train mismatches by exact extra-edge signature and
-   select one general safety boundary.
-2. Preregister the construction, expected incorrect-to-safe delta, synthetic
-   positive/negative probes, and COGS non-regression requirement.
-3. Change only general reader/category machinery; never add PMB vocabulary to
-   Python or copy PMB text into tests.
-4. Require 100% train/development edge precision before any coverage
-   increment.
-5. Run all standing gates for every increment.
-6. Freeze the candidate commit and spend the single protected standard-test
-   look only after all entry thresholds are met on inspectable data.
-7. Record pass/fail without inspecting protected failed rows.
+1. Select and preregister one inspectable PMB coverage class that can produce
+   complete graphs without weakening the new safety boundaries.
+2. Require 100% train/development edge precision for every increment and run
+   all standing gates.
+3. Continue until every inspectable proxy for entry conditions 2–6 is met.
+4. Freeze the candidate commit and spend the single protected standard-test
+   look only then.
+5. Record pass/fail without inspecting protected failed rows.

@@ -1,0 +1,7 @@
+format: rulekit/categories@1
+members:
+  # Inspectable PMB train/development evidence assigns non-Agent/Theme roles
+  # to `see` and Theme rather than Agent to `dance`. Until a role mapping is
+  # independently licensed, emitting the COGS roles would be a confident
+  # semantic commitment; PMB therefore declines these exact verb lemmas.
+  semantic_projection_role_quarantined_verb: [danced, saw]

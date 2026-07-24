@@ -699,8 +699,16 @@ def _check_where(
             cat = pred.slot_not_category["cat"]
             unit = slots.get(slot_name)
             if unit is not None:
-                word = unit.features.get("lemma", unit.features.get("fold", ""))
-                if reg.word_in_category(word, cat):
+                # Mirror ordinary category-slot matching: a declarative
+                # boundary may name either the canonical lemma or an overt
+                # inflected form. This remains opt-in to rules that declare
+                # `slot_not_category`.
+                lemma = unit.features.get("lemma", unit.features.get("fold", ""))
+                fold = unit.features.get("fold", "")
+                if (
+                    reg.word_in_category(lemma, cat)
+                    or reg.word_in_category(fold, cat)
+                ):
                     return False
         if pred.absent is not None:
             cat = pred.absent["cat"]

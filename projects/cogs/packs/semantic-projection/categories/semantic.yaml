@@ -32,6 +32,12 @@ categories:
   # unserved neighbouring construction.
   semantic_projection_owned_verb:
     parent: verb
+  # Project-local members may withhold a verb from first-class role
+  # projection when an independent annotation scheme assigns a different
+  # semantic role. Empty for COGS; this is an explicit fail-closed boundary,
+  # not a change to the COGS lexical licence.
+  semantic_projection_role_quarantined_verb:
+    parent: verb
 members:
   # Overt finite forms whose active direct-object construction licenses the
   # agent/theme interpretation in Phase B increment 1. Unsafe self-lemma

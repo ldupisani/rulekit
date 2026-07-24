@@ -27,6 +27,10 @@ entries:
   she: {senses: [pronoun]}
   they: {senses: [pronoun], number: plural}
   it: {senses: [pronoun]}
+  someone: {senses: [pronoun]}
+  somebody: {senses: [pronoun]}
+  everybody: {senses: [pronoun]}
+  nobody: {senses: [pronoun]}
   i:
     senses: [pronoun]
     notes: >

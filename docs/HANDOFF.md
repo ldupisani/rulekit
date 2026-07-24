@@ -4,8 +4,8 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** PMB infrastructure and failed untouched-runtime baseline frozen;
-first inspectable PMB safety class is next
+**Status:** PMB inspectable safety repair complete at zero incorrect graphs;
+first complete-graph PMB coverage class is next
 
 **Current safe DEV baseline:** `964f09f`
 (`Add COGS indefinite common subject projection`)
@@ -590,20 +590,19 @@ GSM8K, ASDiv, SVAMP, MAWPS, SciBench, and FOLIO diffs.
 
 ## Immediate next step
 
-Preserve completed post-D DEV campaign 2 as the DEV baseline. If continuing
-DEV coverage, profile a determined common-subject intransitive class and lock
-its role class before implementation. To advance the original plan, profile
-and preregister the first inspectable PMB safety class described in
-[`semantic-projection-ood-gate-plan.md`](semantic-projection-ood-gate-plan.md).
-The PMB annotations are ODC-BY 1.0 and the frozen raw-text allowlist admits
-only Tatoeba under its bundled CC BY 2.0 notice: 9,065 train, 990 development,
-and 923 protected standard-test documents. The builder and SBN adapter parse
-the inspectable splits without errors. The untouched runtime has 24/2 safe
-partials and 113/19 incorrect train/development graphs at 46.5%/38.4% edge
-precision, so safety—not coverage—is the next worklist. No protected sentence,
-meaning representation, or failure row has been inspected, and no evaluation
-look has been spent.
-Preserve the proper-object boundary and do not rerun TEST or generalization.
+Preserve completed post-D DEV campaign 2 as the COGS DEV baseline. To advance
+the original plan, profile inspectable PMB train for the smallest
+complete-graph coverage class and preregister it before implementation. The
+first safety repair disabled the COGS-only legacy bridge for PMB, lexicalized
+indefinite/universal pronouns, and added a PMB-local fail-closed verb-role
+boundary. It moves all 113 train and 19 development incorrect graphs to safe
+outcomes: train is 0 exact / 6 partial / 9,059 declined / 0 incorrect at 100%
+edge precision, and development makes no commitment and has 0 incorrect.
+
+This clears the precision prerequisite for coverage, not the Phase E entry
+gate: PMB still has zero complete graphs and effectively zero recall. No
+protected PMB test look has been spent. Preserve the proper-object boundary
+and do not rerun COGS TEST/generalization or PMB test.
 
 ## Phase C restart exit audit
 

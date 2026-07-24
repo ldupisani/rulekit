@@ -15,7 +15,9 @@ from rulekit.harness.projection import (
     ProjectionNode,
     _align_projection_refs,
     parse_pmb_sbn,
+    project_result,
 )
+from rulekit.kernel.engine import solve
 
 
 def _load_builder():
@@ -118,6 +120,55 @@ def test_pmb_project_declares_protected_test() -> None:
     project = load_project(Path("projects/pmb"))
     assert project.doc.projection is not None
     assert project.doc.projection.adapter == "pmb"
+    assert not project.doc.projection.legacy_bridge
+    assert all(not item.legacy_bridge for item in project.projection_items("train"))
     assert project.projection_slice_inspectable("train")
     assert project.projection_slice_inspectable("development")
     assert not project.projection_slice_inspectable("test")
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Somebody giggled.",
+        "Nobody snoozed.",
+        "Everybody smirked.",
+        "Someone sneezed.",
+    ],
+)
+def test_indefinite_pronouns_are_not_promoted_to_sentence_initial_names(
+    text: str,
+) -> None:
+    project = load_project(Path("projects/pmb"))
+    result = solve(text, project.registry, tracing=False)
+    assert project_result(
+        result, text, project.registry, allow_legacy_bridge=False
+    ).empty
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Neris saw a zephyrstone.",
+        "Neris danced.",
+    ],
+)
+def test_pmb_role_quarantine_declines_disputed_verb_roles(text: str) -> None:
+    project = load_project(Path("projects/pmb"))
+    result = solve(text, project.registry, tracing=False)
+    assert project_result(
+        result, text, project.registry, allow_legacy_bridge=False
+    ).empty
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Neris saw a zephyrstone.",
+        "Neris danced.",
+    ],
+)
+def test_pmb_role_quarantine_does_not_change_cogs_projection(text: str) -> None:
+    project = load_project(Path("projects/cogs"))
+    result = solve(text, project.registry, tracing=False)
+    assert not project_result(result, text, project.registry).empty

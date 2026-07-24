@@ -6,10 +6,14 @@ name: pmb
 # benchmark-only and is never imported by runtime parsing.
 packs:
   [core-english, difg-mined, ../scratch/packs/logic,
-   ../cogs/packs/semantic-projection]
+   ../cogs/packs/semantic-projection, ./packs/role-boundary]
 
 projection:
   adapter: pmb
+  # The VerbalRelation bridge is COGS Phase-A compatibility machinery, not a
+  # first-class semantic fact. Independent PMB scoring admits only explicit
+  # SemanticGraphNode/SemanticGraphEdge facts.
+  legacy_bridge: false
   splits:
     train:
       {parquet: data/pmb_train.parquet}

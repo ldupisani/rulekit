@@ -79,7 +79,12 @@ class Project:
             raise ValueError(
                 f"unknown projection slice {slice_name!r} (one of {choices})"
             )
-        return load_projection_items(self.root, split, projection.adapter)
+        return load_projection_items(
+            self.root,
+            split,
+            projection.adapter,
+            legacy_bridge=projection.legacy_bridge,
+        )
 
     def projection_slice_inspectable(self, slice_name: str) -> bool:
         projection = self.doc.projection

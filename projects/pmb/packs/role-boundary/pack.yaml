@@ -1,0 +1,8 @@
+format: rulekit/pack@1
+name: pmb-semantic-role-boundary
+version: 0.1.0
+requires:
+  - cogs-semantic-projection
+description: >
+  PMB-local fail-closed role licences for verbs whose inspectable gold
+  annotation disagrees with the COGS semantic projection role class.

@@ -17,6 +17,9 @@ rules:
         - {lit: [a, an], consume_skipped: true}
         - {slot: theme, cat: semantic_bare_theme_noun, bare: true}
         - {lit: ".", consume_skipped: true}
+    where:
+      - slot_not_category:
+          {slot: event, cat: semantic_projection_role_quarantined_verb}
     emits:
       - {fact: semantic_graph_node, ref: "name:{agent}", kind: entity,
          span_start: "{agent.span_start}", span_end: "{agent.span_end}"}
@@ -453,6 +456,9 @@ rules:
         - {slot: event, cat: semantic_intransitive_agent_verb,
            single_word: true}
         - {lit: ".", consume_skipped: true}
+    where:
+      - slot_not_category:
+          {slot: event, cat: semantic_projection_role_quarantined_verb}
     emits:
       - {fact: semantic_graph_node, ref: "name:{agent}", kind: entity,
          span_start: "{agent.span_start}", span_end: "{agent.span_end}"}

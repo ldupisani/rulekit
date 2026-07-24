@@ -3,7 +3,8 @@
 **Status:** Phase D checkpoint 1 failed (2026-07-23), the batch was reverted,
 and the repaired Phase B/C DEV baseline is now frozen. One TEST and one
 generalization look are spent and ledgered; neither protected slice may be
-rerun. The original Phase E is blocked pending fresh independent OOD evidence.
+rerun. The original Phase E is blocked pending sufficient independent PMB OOD
+coverage; its inspectable precision repair is complete.
 
 **Decision:** use **COGS** as the first development corpus. Use **FraCaS** later
 as an external semantic-inference gate, not as the projection worklist.
@@ -399,11 +400,14 @@ under ODC-BY 1.0. Because raw texts retain the terms recorded in accompanying
 under the bundled CC BY 2.0 notice: 9,065 train, 990 development, and 923
 protected standard-test documents. The local release and licence files are
 hashed. The immutable builder, project schema, and conservative SBN gold
-adapter now exist. The untouched-runtime train/development baseline has zero
+adapter now exist. The untouched-runtime train/development baseline had zero
 exact graphs, 24/2 safe partials, and 113/19 incorrect graphs at 46.5%/38.4%
-edge precision. PMB safety repair must reach 100% on inspectable data before
-coverage work. No protected sentence, meaning representation, or failure row
-has been inspected, and no evaluation look has been spent.
+edge precision. The completed safety repair now has 0/0 exact, 6/0 safe
+partials, and 0/0 incorrect graphs on train/development: 100% precision where
+it commits, but effectively zero recall. Coverage work may now begin, while
+Phase E remains blocked until the full PMB entry contract is met. No protected
+sentence, meaning representation, or failure row has been inspected, and no
+evaluation look has been spent.
 
 After COGS demonstrates nonzero OOD transfer:
 
@@ -464,9 +468,11 @@ Two valid next directions remain:
    OOD projection corpus/gate, including its licence, grouping, precision
    threshold, and one-look policy. PMB now satisfies the annotation-licence
    requirement; its Tatoeba-only eligible subset, builder, adapter, and failed
-   untouched-runtime baseline are frozen. Profile and preregister the first
-   inspectable PMB safety class next. Phase E begins only if that gate
-   demonstrates nonzero thematic-role transfer without a precision failure.
+   untouched-runtime baseline are frozen. Its inspectable safety repair now
+   eliminates all 113/19 incorrect train/development graphs without touching
+   protected test. Preregister the first complete-graph PMB coverage class
+   next. Phase E begins only if the full gate demonstrates nonzero
+   thematic-role transfer without a precision failure.
 
 Do not tune to DEV-holdout items. Do not start by admitting the frequent COGS
 unknown words: vocabulary receives credit only as part of a complete

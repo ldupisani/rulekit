@@ -928,6 +928,7 @@ class ProjectionSplitDef(StrictModel):
 
 class ProjectionProjectDef(StrictModel):
     adapter: Literal["cogs", "pmb"]
+    legacy_bridge: bool = True
     splits: dict[str, ProjectionSplitDef]
 
     @model_validator(mode="after")

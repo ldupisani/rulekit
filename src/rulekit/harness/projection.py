@@ -381,6 +381,7 @@ class ProjectionItem:
     case: str
     construction: str
     adapter: str = "cogs"
+    legacy_bridge: bool = True
 
 
 def classify_projection_graph(graph: ProjectionGraph, case: str = "") -> str:
@@ -418,6 +419,8 @@ def load_projection_items(
     project_root: Path,
     split: ProjectionSplitDef,
     adapter: str,
+    *,
+    legacy_bridge: bool = True,
 ) -> list[ProjectionItem]:
     import pyarrow.parquet as pq
 
@@ -458,6 +461,7 @@ def load_projection_items(
                 case=case,
                 construction=classify_projection_graph(gold_graph, case),
                 adapter=adapter,
+                legacy_bridge=legacy_bridge,
             )
         )
     return items
@@ -622,6 +626,8 @@ def project_result(
     result,
     source_text: str,
     reg: Registry | None = None,
+    *,
+    allow_legacy_bridge: bool = True,
 ) -> ProjectionGraph:
     """Project only structures the current FactStore states exactly.
 
@@ -659,6 +665,8 @@ def project_result(
                     sentence=fact.provenance.sentence,
                     span=_semantic_span(fact.span_start, fact.span_end),
                 )
+            continue
+        if not allow_legacy_bridge:
             continue
         if not isinstance(fact, VerbalRelation) or not fact.polarity or fact.prep:
             continue
@@ -980,7 +988,12 @@ class ProjectionReport:
 def _score_item(index: int, item: ProjectionItem, reg: Registry) -> ProjectionItemResult:
     try:
         result = solve(item.text, reg, tracing=False)
-        got = project_result(result, item.text, reg)
+        got = project_result(
+            result,
+            item.text,
+            reg,
+            allow_legacy_bridge=item.legacy_bridge,
+        )
         if item.adapter == "pmb":
             got = _align_projection_refs(got, item.gold)
         gold_nodes = item.gold.node_keys()
