@@ -358,6 +358,68 @@ def test_pmb_typed_finite_theme_categories_are_dormant_in_cogs() -> None:
     assert project_result(result, text, project.registry).empty
 
 
+def test_pmb_typed_agent_adverb_projects_complete_graph() -> None:
+    text = "Neris zephyred serenely."
+    project = load_project(Path("projects/pmb"))
+    result = solve(text, project.registry, tracing=False)
+    graph = project_result(
+        result, text, project.registry, allow_legacy_bridge=False
+    )
+    assert graph.node_keys() == {
+        ("const:neris", "entity"),
+        ("x1", "event"),
+        ("x99", "entity"),
+    }
+    assert graph.edge_keys() == {
+        ("type", "const:neris", "", "male"),
+        ("event", "x1", "", "zephyr"),
+        ("type", "x99", "", "time"),
+        ("role", "x1", "const:neris", "agent"),
+    }
+    assert {edge.evidence_source for edge in graph.edges} == {
+        "semantic/intransitive-male-name-agent-adverb"
+    }
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "He zephyred serenely.",
+        "Alice zephyred serenely.",
+        "Neris zephyred.",
+        "Neris zephyred loudly.",
+        "Neris waned serenely.",
+        "Neris zephyred serenely again.",
+        "Neris was zephyred serenely.",
+        "Neris might zephyr serenely.",
+        "Neris did not zephyr serenely.",
+        "Neris zephyred a relic serenely.",
+        "Neris zephyred serenely and smiled.",
+        "Did Neris zephyr serenely?",
+        "Alice said Neris zephyred serenely.",
+    ],
+)
+def test_pmb_typed_agent_adverb_rejects_neighbours(text: str) -> None:
+    project = load_project(Path("projects/pmb"))
+    result = solve(text, project.registry, tracing=False)
+    facts = (
+        list(result.store.by_kind(SemanticGraphNode))
+        + list(result.store.by_kind(SemanticGraphEdge))
+    )
+    assert not any(
+        fact.provenance.source
+        == "semantic/intransitive-male-name-agent-adverb"
+        for fact in facts
+    )
+
+
+def test_pmb_typed_agent_adverb_categories_are_dormant_in_cogs() -> None:
+    text = "Neris zephyred serenely."
+    project = load_project(Path("projects/cogs"))
+    result = solve(text, project.registry, tracing=False)
+    assert project_result(result, text, project.registry).empty
+
+
 def test_pmb_alignment_treats_local_variable_names_as_nonsemantic() -> None:
     expected = parse_pmb_sbn(
         'person.n.01 Name "Neris" polish.v.01 Agent -1 '

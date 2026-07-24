@@ -484,10 +484,14 @@ Two valid next directions remain:
    train to 62 exact / 303 edges / 0 incorrect. Its expected development buyer
    did not materialize. The possessive-role attachment class hits its frozen
    four-buyer lock, bringing train to 66 exact / 327 edges / 0 incorrect and
-   satisfying the attachment/complement bucket. A development diagnostic
-   protocol deviation is recorded in the OOD gate plan and its observations
-   are quarantined. Profile the remaining 1% recall requirement next.
-   Phase E begins only if the full gate
+   satisfying the attachment/complement bucket. Subsequent typed finite
+   Agent, finite Theme, and one-buyer Agent-adverb increments bring the frozen
+   candidate to 117 train exact / 531 correct edges / 0 incorrect and exact
+   1.0021% recall. Four aggregate development exact graphs remain at 100%
+   precision. A development diagnostic protocol deviation is recorded in the
+   OOD gate plan and its observations are quarantined. Every inspectable entry
+   threshold now passes; the single protected PMB standard-test aggregate is
+   next. Phase E begins only if the full gate
    demonstrates nonzero thematic-role transfer without a precision failure.
 
 Do not tune to DEV-holdout items. Do not start by admitting the frequent COGS

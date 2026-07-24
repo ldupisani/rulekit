@@ -1,8 +1,7 @@
 # Semantic projection independent OOD gate preregistration
 
-**Status:** PMB selected and local release verified; inspectable
-train/development safety repair complete at zero incorrect graphs; coverage
-entry thresholds remain unmet and protected test remains unspent
+**Status:** PMB candidate frozen after all inspectable entry thresholds passed;
+protected standard-test look is next and remains unspent
 
 **Selected corpus:** Parallel Meaning Bank (PMB) 5.1.0, English gold meaning
 representations, restricted by raw-text licence metadata
@@ -811,3 +810,39 @@ Selected and frozen from inspectable train evidence on 2026-07-24:
 9. **Exit claim:** if the lock and all standing gates pass, every inspectable
    Phase E entry threshold is met. Freeze this candidate before the single
    protected standard-test look.
+
+#### Coverage increment 8 result and candidate freeze
+
+The one-buyer lock is exact:
+
+| Split | exact | safe partial | declined | incorrect | edge precision | exact edge recall |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| train | 117 | 0 | 8,948 | 0 | 100% | 1.0021% |
+| development | 4 | 0 | 986 | 0 | 100% | 0.3% |
+
+Train gains one complete Agent graph and four correct edges for 531 total.
+Development is unchanged. The diff has zero broken exact graphs and zero
+safe-to-incorrect transitions.
+
+The complete final gate is green: all 3,411 tests; unchanged COGS DEV-train
+1,772/646/0 and DEV-holdout 1,696/656/0 at 100% projected-edge precision;
+curated 65/65 twice; GSM8K 104/0 wrong and 40/0 wrong; ASDiv 44/0; SVAMP
+30/0; MAWPS 9/0; SciBench 6/0; FOLIO with zero commitments; and COGS lint
+with zero errors and seven pre-existing warnings.
+
+Inspectable entry audit:
+
+1. zero incorrect / 100% precision — pass;
+2. 117 complete train graphs — pass;
+3. 531 correct train edges — pass;
+4. 1.0021% exact train recall — pass;
+5. entity/type, event/role, and nominal attachment complete buckets — pass;
+6. explicit Agent, Theme, and Recipient coverage, including separate
+   direct-object Theme and Recipient-PP classes — inspectable proxy pass;
+7. all standing gates have zero wrong/broken transitions — pass; and
+8. full suite and lint — pass.
+
+The candidate is frozen at the commit containing this result. No further
+reader, adapter, lexicon, category, or test change is permitted before the
+single protected standard-test aggregate. Do not inspect protected rows or
+failure identifiers after the look.

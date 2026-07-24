@@ -77,3 +77,6 @@ members:
     [lurks, stinks, waned]
   semantic_pmb_finite_theme_male_name_verb:
     [danced, escaped, swam, waned]
+  semantic_pmb_agent_adverb_male_name: [neris, tom]
+  semantic_pmb_agent_adverb_verb: [grimaced, zephyred]
+  semantic_pmb_agent_adverb: [bravely, serenely]

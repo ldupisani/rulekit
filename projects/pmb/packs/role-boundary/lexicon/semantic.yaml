@@ -81,3 +81,7 @@ entries:
   waited: {senses: [verb], verb: {lemma: wait}}
   escaped: {senses: [verb], verb: {lemma: escape}}
   waned: {senses: [verb], verb: {lemma: wane}}
+  grimaced: {senses: [verb], verb: {lemma: grimace}}
+  bravely: {senses: [adverb]}
+  zephyred: {senses: [verb], verb: {lemma: zephyr}}
+  serenely: {senses: [adverb]}

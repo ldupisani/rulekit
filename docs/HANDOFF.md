@@ -4,8 +4,8 @@
 
 **Active campaign:** COGS semantic projection
 
-**Status:** PMB coverage increment 8 one-buyer Agent-adverb margin class is
-preregistered; implementation is next
+**Status:** PMB candidate frozen at 117 train exact / 531 correct edges /
+0 incorrect; single protected standard-test look is next
 
 **Current safe DEV baseline:** `964f09f`
 (`Add COGS indefinite common subject projection`)
@@ -610,8 +610,12 @@ Coverage increment 6 hits its finalized 37-buyer lock: 103 exact / 475 correct
 edges / zero incorrect on train and four aggregate exact / zero incorrect on
 development. Its full standing gate is green. Preregister the train-only
 intransitive Theme sibling needed to cross 1% recall. Matcher reconciliation
-reduces that sibling to 13 supported train buyers / 52 edges. It lands at 527
-total edges, one complete four-edge graph short of the 1% threshold.
+reduces that sibling to 13 supported train buyers / 52 edges. Increment 8 adds
+the separately frozen one-buyer Agent-adverb margin class. The final
+inspectable candidate has 117 train exact / 531 correct edges / zero
+incorrect, exact recall 1.0021%, three complete graph buckets, and all
+standing gates green. Freeze the code and spend the single protected PMB
+standard-test aggregate next; never inspect protected rows or failures.
 
 This clears the precision prerequisite for coverage, not the Phase E entry
 gate: PMB has 66 complete train graphs and 327 correct edges, but only 0.6%

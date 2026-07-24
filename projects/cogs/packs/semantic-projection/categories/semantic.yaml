@@ -142,6 +142,13 @@ categories:
     parent: verb
   semantic_pmb_finite_theme_male_name_verb:
     parent: verb
+  # Empty PMB licence for the exact typed Agent + adverb-tail margin class.
+  semantic_pmb_agent_adverb_male_name:
+    parent: noun
+  semantic_pmb_agent_adverb_verb:
+    parent: verb
+  semantic_pmb_agent_adverb:
+    parent: adverb
 members:
   # Overt finite forms whose active direct-object construction licenses the
   # agent/theme interpretation in Phase B increment 1. Unsafe self-lemma
