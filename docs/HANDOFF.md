@@ -606,8 +606,9 @@ The expected aggregate development buyer did not materialize and development
 stays at zero commitments. Coverage increment 5 adds the explicit SBN
 noun-to-noun `Of` relation and hits its four-buyer train lock: 66 complete
 graphs / 327 correct edges / zero incorrect. The full standing gate is green.
-Coverage increment 6 is frozen as a 39-buyer typed finite intransitive Agent
-class. Implement it next; the locked train result is 105 exact / 483 correct
+Coverage increment 6 is frozen as a 38-buyer typed finite intransitive Agent
+class after excluding noun-only `spoke`. Implement it next; the locked train
+result is 104 exact / 479 correct
 edges / zero incorrect.
 
 This clears the precision prerequisite for coverage, not the Phase E entry
