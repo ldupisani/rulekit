@@ -650,8 +650,8 @@ Selected and frozen from inspectable train evidence on 2026-07-24:
 2. **Complete graph:** typed subject entity, event, and time entity; subject
    type, event predicate, time type, and Agent edge. Proper names are
    constants; pronoun and quantified subjects remain local entities.
-3. **Inspectable buyers:** exactly 38 currently declined train graphs:
-   29 local/quantified subjects and nine explicitly named subjects. Every
+3. **Inspectable buyers:** exactly 37 currently declined train graphs:
+   28 local/quantified subjects and nine explicitly named subjects. Every
    buyer has the same three-node/four-edge topology and an explicit SBN
    Agent relation.
 4. **Tense boundary:** the class is finite rather than simple-past because
@@ -671,8 +671,8 @@ Selected and frozen from inspectable train evidence on 2026-07-24:
 8. **Synthetic contract:** use invented names and event forms, not PMB
    sentences. Assert all identity/type variants, exact topology, event
    lemmatization, provenance, negative neighbours, and dormant COGS behavior.
-9. **Locked expected train delta:** exactly 38 new complete graphs and 152
-   correct edges: train moves from 66 to 104 exact and from 327 to 479 correct
+9. **Locked expected train delta:** exactly 37 new complete graphs and 148
+   correct edges: train moves from 66 to 103 exact and from 327 to 475 correct
    edges, with zero partial / zero incorrect and no broken exact graphs.
 10. **Development expectation:** unknown and aggregate-safety-only under the
     recorded diagnostic quarantine.
@@ -682,4 +682,6 @@ Selected and frozen from inspectable train evidence on 2026-07-24:
 Pre-implementation lexical audit amendment: one initially counted named buyer,
 `Tom spoke.`, is excluded. The shared mined lexicon intentionally registers
 `spoke` as noun-only; PMB may not shadow or silently change that cross-project
-contract. The lock above reflects the quarantine-safe 38-buyer class.
+contract. A second buyer, `Somebody answered.`, is excluded because the
+shared verb entry has no declared `answer` lemma; a one-off rule mapping is
+not justified. The lock above reflects the 37-buyer class.
