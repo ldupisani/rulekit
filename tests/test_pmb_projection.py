@@ -268,6 +268,96 @@ def test_pmb_typed_finite_agent_categories_are_dormant_in_cogs() -> None:
     assert project_result(result, text, project.registry).empty
 
 
+@pytest.mark.parametrize(
+    ("text", "subject_ref", "subject_type", "source"),
+    [
+        ("It waned.", "x0", "entity",
+         "semantic/intransitive-entity-pronoun-finite-theme"),
+        ("Nobody waned.", "x0", "person",
+         "semantic/intransitive-person-pronoun-finite-theme"),
+        ("Some waned.", "x0", "person",
+         "semantic/intransitive-person-quantifier-finite-theme"),
+        ("Zephyrkin waned.", "x0", "zephyrkin",
+         "semantic/intransitive-common-noun-finite-theme"),
+        ("Neris waned.", "const:neris", "male",
+         "semantic/intransitive-male-name-finite-theme"),
+    ],
+)
+def test_pmb_typed_finite_theme_projects_complete_graph(
+    text: str,
+    subject_ref: str,
+    subject_type: str,
+    source: str,
+) -> None:
+    project = load_project(Path("projects/pmb"))
+    result = solve(text, project.registry, tracing=False)
+    graph = project_result(
+        result, text, project.registry, allow_legacy_bridge=False
+    )
+    assert graph.node_keys() == {
+        (subject_ref, "entity"),
+        ("x1", "event"),
+        ("x99", "entity"),
+    }
+    assert graph.edge_keys() == {
+        ("type", subject_ref, "", subject_type),
+        ("event", "x1", "", "wane"),
+        ("type", "x99", "", "time"),
+        ("role", "x1", subject_ref, "theme"),
+    }
+    assert {edge.evidence_source for edge in graph.edges} == {source}
+
+
+def test_pmb_danced_remains_theme_only_at_the_role_boundary() -> None:
+    text = "Neris danced."
+    project = load_project(Path("projects/pmb"))
+    result = solve(text, project.registry, tracing=False)
+    graph = project_result(
+        result, text, project.registry, allow_legacy_bridge=False
+    )
+    assert ("role", "x1", "const:neris", "theme") in graph.edge_keys()
+    assert not any(edge.label == "agent" for edge in graph.edges)
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "He waned.",
+        "A zephyrkin waned.",
+        "The zephyrkin waned.",
+        "Zephyrkin stopped.",
+        "Zephyrkin waned a relic.",
+        "Zephyrkin waned at Neris.",
+        "Zephyrkin was waned.",
+        "Zephyrkin might wane.",
+        "Zephyrkin did not wane.",
+        "Zephyrkin waned brightly.",
+        "Zephyrkin waned and stopped.",
+        "Did zephyrkin wane?",
+        "Neris said zephyrkin waned.",
+    ],
+)
+def test_pmb_typed_finite_theme_rejects_neighbours(text: str) -> None:
+    project = load_project(Path("projects/pmb"))
+    result = solve(text, project.registry, tracing=False)
+    facts = (
+        list(result.store.by_kind(SemanticGraphNode))
+        + list(result.store.by_kind(SemanticGraphEdge))
+    )
+    assert not any(
+        fact.provenance.source.startswith("semantic/intransitive-")
+        and fact.provenance.source.endswith("-finite-theme")
+        for fact in facts
+    )
+
+
+def test_pmb_typed_finite_theme_categories_are_dormant_in_cogs() -> None:
+    text = "It waned."
+    project = load_project(Path("projects/cogs"))
+    result = solve(text, project.registry, tracing=False)
+    assert project_result(result, text, project.registry).empty
+
+
 def test_pmb_alignment_treats_local_variable_names_as_nonsemantic() -> None:
     expected = parse_pmb_sbn(
         'person.n.01 Name "Neris" polish.v.01 Agent -1 '
@@ -337,7 +427,6 @@ def test_indefinite_pronouns_are_not_promoted_to_sentence_initial_names(
     "text",
     [
         "Neris saw a zephyrstone.",
-        "Neris danced.",
     ],
 )
 def test_pmb_role_quarantine_declines_disputed_verb_roles(text: str) -> None:
@@ -352,7 +441,6 @@ def test_pmb_role_quarantine_declines_disputed_verb_roles(text: str) -> None:
     "text",
     [
         "Neris saw a zephyrstone.",
-        "Neris danced.",
     ],
 )
 def test_pmb_role_quarantine_does_not_change_cogs_projection(text: str) -> None:

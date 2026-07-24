@@ -121,6 +121,27 @@ categories:
     parent: verb
   semantic_pmb_finite_agent_female_name_verb:
     parent: verb
+  # Empty typed-subject/event licences for PMB finite intransitive Themes.
+  semantic_pmb_finite_theme_entity_pronoun:
+    parent: pronoun
+  semantic_pmb_finite_theme_person_pronoun:
+    parent: pronoun
+  semantic_pmb_finite_theme_person_quantifier:
+    parent: quantifier
+  semantic_pmb_finite_theme_common_noun:
+    parent: noun
+  semantic_pmb_finite_theme_male_name:
+    parent: noun
+  semantic_pmb_finite_theme_entity_pronoun_verb:
+    parent: verb
+  semantic_pmb_finite_theme_person_pronoun_verb:
+    parent: verb
+  semantic_pmb_finite_theme_person_quantifier_verb:
+    parent: verb
+  semantic_pmb_finite_theme_common_noun_verb:
+    parent: verb
+  semantic_pmb_finite_theme_male_name_verb:
+    parent: verb
 members:
   # Overt finite forms whose active direct-object construction licenses the
   # agent/theme interpretation in Phase B increment 1. Unsafe self-lemma

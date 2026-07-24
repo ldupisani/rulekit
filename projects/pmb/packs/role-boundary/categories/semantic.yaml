@@ -62,3 +62,18 @@ members:
     [exaggerates, glimmered, overslept, quit, sings, wept, works]
   semantic_pmb_finite_agent_female_name_verb:
     [glimmered, sang, smokes]
+  semantic_pmb_finite_theme_entity_pronoun: [it]
+  semantic_pmb_finite_theme_person_pronoun: [everybody, nobody, you]
+  semantic_pmb_finite_theme_person_quantifier: [some]
+  semantic_pmb_finite_theme_common_noun: [shit, trouble, zephyrkin]
+  semantic_pmb_finite_theme_male_name: [neris, thomas, tom]
+  semantic_pmb_finite_theme_entity_pronoun_verb:
+    [stinks, waned, works]
+  semantic_pmb_finite_theme_person_pronoun_verb:
+    [came, jumped, run, waited, waned]
+  semantic_pmb_finite_theme_person_quantifier_verb:
+    [survived, waned]
+  semantic_pmb_finite_theme_common_noun_verb:
+    [lurks, stinks, waned]
+  semantic_pmb_finite_theme_male_name_verb:
+    [danced, escaped, swam, waned]

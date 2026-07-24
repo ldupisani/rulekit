@@ -1272,3 +1272,96 @@ rules:
       - {fact: semantic_graph_edge, kind: event, source: "event:{event.span_start}", label: "{event}"}
       - {fact: semantic_graph_edge, kind: type, source: "entity:99", label: time}
       - {fact: semantic_graph_edge, kind: role, source: "event:{event.span_start}", target: "name:{agent}", label: agent}
+
+  # PMB coverage increment 7: exact typed-subject finite intransitive Themes.
+  # These role-specific categories are independent of the Agent licences
+  # above; notably, `danced` is licensed only here for its inspected PMB role.
+  - id: semantic/intransitive-entity-pronoun-finite-theme
+    phase: read
+    match:
+      sentence:
+        - {slot: theme, cat: semantic_pmb_finite_theme_entity_pronoun,
+           at_start: true}
+        - {slot: event, cat: semantic_pmb_finite_theme_entity_pronoun_verb,
+           single_word: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "entity:{theme.span_start}", kind: entity}
+      - {fact: semantic_graph_node, ref: "event:{event.span_start}", kind: event}
+      - {fact: semantic_graph_node, ref: "entity:99", kind: entity}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:{theme.span_start}", label: entity}
+      - {fact: semantic_graph_edge, kind: event, source: "event:{event.span_start}", label: "{event}"}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:99", label: time}
+      - {fact: semantic_graph_edge, kind: role, source: "event:{event.span_start}", target: "entity:{theme.span_start}", label: theme}
+
+  - id: semantic/intransitive-person-pronoun-finite-theme
+    phase: read
+    match:
+      sentence:
+        - {slot: theme, cat: semantic_pmb_finite_theme_person_pronoun,
+           at_start: true}
+        - {slot: event, cat: semantic_pmb_finite_theme_person_pronoun_verb,
+           single_word: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "entity:{theme.span_start}", kind: entity}
+      - {fact: semantic_graph_node, ref: "event:{event.span_start}", kind: event}
+      - {fact: semantic_graph_node, ref: "entity:99", kind: entity}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:{theme.span_start}", label: person}
+      - {fact: semantic_graph_edge, kind: event, source: "event:{event.span_start}", label: "{event}"}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:99", label: time}
+      - {fact: semantic_graph_edge, kind: role, source: "event:{event.span_start}", target: "entity:{theme.span_start}", label: theme}
+
+  - id: semantic/intransitive-person-quantifier-finite-theme
+    phase: read
+    match:
+      sentence:
+        - {slot: theme, cat: semantic_pmb_finite_theme_person_quantifier,
+           at_start: true}
+        - {slot: event, cat: semantic_pmb_finite_theme_person_quantifier_verb,
+           single_word: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "entity:{theme.span_start}", kind: entity}
+      - {fact: semantic_graph_node, ref: "event:{event.span_start}", kind: event}
+      - {fact: semantic_graph_node, ref: "entity:99", kind: entity}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:{theme.span_start}", label: person}
+      - {fact: semantic_graph_edge, kind: event, source: "event:{event.span_start}", label: "{event}"}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:99", label: time}
+      - {fact: semantic_graph_edge, kind: role, source: "event:{event.span_start}", target: "entity:{theme.span_start}", label: theme}
+
+  - id: semantic/intransitive-common-noun-finite-theme
+    phase: read
+    match:
+      sentence:
+        - {slot: theme, cat: semantic_pmb_finite_theme_common_noun,
+           at_start: true, bare: true, blocks_skipped: article}
+        - {slot: event, cat: semantic_pmb_finite_theme_common_noun_verb,
+           single_word: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "entity:{theme.span_start}", kind: entity}
+      - {fact: semantic_graph_node, ref: "event:{event.span_start}", kind: event}
+      - {fact: semantic_graph_node, ref: "entity:99", kind: entity}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:{theme.span_start}", label: "{theme}"}
+      - {fact: semantic_graph_edge, kind: event, source: "event:{event.span_start}", label: "{event}"}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:99", label: time}
+      - {fact: semantic_graph_edge, kind: role, source: "event:{event.span_start}", target: "entity:{theme.span_start}", label: theme}
+
+  - id: semantic/intransitive-male-name-finite-theme
+    phase: read
+    match:
+      sentence:
+        - {slot: theme, cat: semantic_pmb_finite_theme_male_name,
+           at_start: true, bare: true}
+        - {slot: event, cat: semantic_pmb_finite_theme_male_name_verb,
+           single_word: true}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: semantic_graph_node, ref: "name:{theme}", kind: entity}
+      - {fact: semantic_graph_node, ref: "event:{event.span_start}", kind: event}
+      - {fact: semantic_graph_node, ref: "entity:99", kind: entity}
+      - {fact: semantic_graph_edge, kind: type, source: "name:{theme}", label: male}
+      - {fact: semantic_graph_edge, kind: event, source: "event:{event.span_start}", label: "{event}"}
+      - {fact: semantic_graph_edge, kind: type, source: "entity:99", label: time}
+      - {fact: semantic_graph_edge, kind: role, source: "event:{event.span_start}", target: "name:{theme}", label: theme}

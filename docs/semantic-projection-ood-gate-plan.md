@@ -755,3 +755,25 @@ Selected and frozen from inspectable train evidence on 2026-07-24:
 11. **Non-claim:** this lock remains one complete four-edge graph short of the
     1% threshold. A separately preregistered increment is still required
     before freezing the protected-test candidate.
+
+#### Coverage increment 7 result
+
+The reconciled 13-buyer lock is exact:
+
+| Split | exact | safe partial | declined | incorrect | edge precision | exact edge recall |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| train | 116 | 0 | 8,949 | 0 | 100% | 0.9945% |
+| development | 4 | 0 | 986 | 0 | 100% | 0.3% |
+
+Train gains exactly 13 complete Theme graphs and 52 correct edges for 527
+total. The CLI displays the rounded value as 1.0%, but the exact ratio is
+527/52,991 = 0.9945%; the threshold is therefore not met. Development is
+unchanged from increment 6. Both diffs have zero broken exact graphs and zero
+safe-to-incorrect transitions.
+
+The first full-suite run exposed two synthetic skipped-article negatives and
+one stale total-decline assertion for `danced`; the common-noun rule now
+blocks skipped articles, and the test contract reflects the explicit
+Theme-only licence while retaining the Agent quarantine. The corrected full
+suite passes all 3,396 tests. All standing corpus and lint gates are neutral
+and green. Protected PMB test remains unopened.

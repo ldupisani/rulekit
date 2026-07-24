@@ -72,3 +72,12 @@ entries:
   exaggerates: {senses: [verb], verb: {lemma: exaggerate}}
   sings: {senses: [verb], verb: {lemma: sing}}
   smokes: {senses: [verb], verb: {lemma: smoke}}
+  shit: {senses: [noun]}
+  trouble: {senses: [noun]}
+  thomas: {senses: [noun]}
+  stinks: {senses: [verb], verb: {lemma: stink}}
+  survived: {senses: [verb], verb: {lemma: survive}}
+  lurks: {senses: [verb], verb: {lemma: lurk}}
+  waited: {senses: [verb], verb: {lemma: wait}}
+  escaped: {senses: [verb], verb: {lemma: escape}}
+  waned: {senses: [verb], verb: {lemma: wane}}
