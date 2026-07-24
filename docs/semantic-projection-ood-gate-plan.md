@@ -554,3 +554,59 @@ Remaining sequence:
 4. Freeze the eventual candidate batch and spend the single protected
    standard-test look only then.
 5. Record pass/fail without inspecting protected failed rows.
+
+### Development diagnostic protocol deviation
+
+On 2026-07-24, the bounded `Of`-link profiler accidentally printed 34
+development surfaces and SBN records while sorting complete-graph sizes. The
+development split is repository-inspectable, but this campaign had elected a
+stricter aggregate-only development policy. Those printed observations are
+therefore quarantined: no development-only word, identity/type pairing,
+surface, role, or topology may select or widen a later rule. Subsequent
+selection briefs use train evidence only and preregister development outcomes
+as unknown. Aggregate development evaluation remains permitted as a safety
+check, but it can no longer be claimed as untouched transfer evidence.
+
+This deviation does not spend or inspect protected PMB test. The protected
+test remains unopened.
+
+### Coverage increment 5 selection brief — possessive role attachment
+
+Selected and frozen from inspectable train evidence on 2026-07-24:
+
+1. **Adapter contract:** an SBN noun-to-noun `Of` offset becomes one Rulekit
+   `modifier` edge from the role/owned nominal entity to the owner entity,
+   labelled `of`. This is an explicit one-to-one attachment projection, not a
+   general interpretation of unsupported SBN roles such as `Owner`, `User`,
+   `PartOf`, or `FeatureOf`.
+2. **Licensed construction:** exactly anchored
+   `My PossessedRole is/are LicensedAdjective.`, restricted to the four
+   train-observed role/adjective pairings. The possessive determiner denotes a
+   local person owner; the possessed role denotes a separate person entity.
+3. **Complete graph:** owner person entity, possessed person entity, and time
+   entity; owner and possessed `person` types, possessed role type,
+   adjectival type on the possessed entity, time type, and the `of`
+   attachment from possessed to owner. No copular event is projected because
+   this selected SBN class contains `AttributeOf`, not a verbal `be` concept.
+4. **Inspectable buyers:** exactly four train graphs, all with four nodes and
+   six edges after the adapter extension. The admitted pairings are frozen
+   from those four graphs; cross-product category reuse is forbidden.
+5. **Negative neighbours:** other possessive determiners; proper possessors;
+   bare, definite, or indefinite subjects; unlicensed role/adjective
+   pairings; past copulas; negation; comparison; complements; coordination;
+   questions; and any trailing material must emit nothing from this class.
+6. **Synthetic contract:** use invented role/adjective words, never a PMB
+   sentence. Assert the exact graph, attachment direction/label, provenance,
+   all negative neighbours, adapter refusal of unsupported nominal roles, and
+   dormant behavior when the PMB-local categories are empty.
+7. **Locked expected train delta:** the adapter increases the gold
+   denominator by 447 `Of` edges across 435 rows. The rule moves train from 62
+   to exactly 66 complete graphs and from 303 to 327 correct edges, with zero
+   partial and zero incorrect. Existing exact graphs must remain exact.
+8. **Development expectation:** unknown. The accidentally displayed
+   development observations are quarantined and supply no vocabulary,
+   pairing, or expected delta. Only aggregate safety metrics may be recorded
+   after implementation.
+9. **Non-claim:** this supplies the missing attachment/complement bucket but
+   does not reach 1% recall. It cannot by itself authorize the protected test
+   look.
