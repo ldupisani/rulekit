@@ -13,9 +13,15 @@ in [`HANDOFF.md`](HANDOFF.md), evaluation policy in
 [`methodology.md`](methodology.md), and project-wide engineering constraints in
 [`../CLAUDE.md`](../CLAUDE.md).
 
+The active designer direction is the deterministic single-sentence generation
+and human review workbench specified in
+[`generation-and-annotation-plan.md`](generation-and-annotation-plan.md).
+Its G1 vertical slice is implemented; premise explanations and source
+navigation are the next increment.
+
 ## Architectural boundaries
 
-The design is held together by five boundaries:
+The design is held together by six boundaries:
 
 1. **Language knowledge is data.** Word senses, lemmas, plurals, category
    membership, polarity, conversions, formulas, and reference facts live in
@@ -35,6 +41,9 @@ The design is held together by five boundaries:
 5. **Evaluation is part of the architecture.** Stable partitions, protected
    aggregate-only slices, per-item snapshot diffs, and fresh-process
    determinism checks constrain how the engine is allowed to evolve.
+6. **Authoring tools depend on the runtime, never the reverse.** Generation
+   may use the ordinary analyzer and matcher as an oracle. Parsing, solving,
+   benchmarks, and guards never import generation fixtures or human reviews.
 
 ## System map
 
@@ -344,6 +353,7 @@ rulekit --project P serve [--host HOST] [--port PORT]
 The optional `server` dependencies provide a local FastAPI application and a
 vanilla-JavaScript designer. The designer exposes:
 
+- a Generate mode for seeded rule realization and human review;
 - a reading decision stepper;
 - fact, gap, collision, and deficiency views;
 - semantic, deictic, proof, and clarification views;
@@ -355,11 +365,57 @@ from loaded packs. It excludes project files, datasets, snapshots, new paths,
 and symlinks escaping a pack. Projection benchmarking is currently a CLI
 surface; the designer's impact panel targets suites and answer datasets.
 
+### Generation and review workbench
+
+`rulekit.generation` is an authoring layer outside the runtime kernel. Its
+implemented G1 data flow is:
+
+```text
+loaded Project + project generation fixtures
+        ↓
+enumerate every premise rule with supported/blocker status
+        ↓
+seeded realization of one flat read-phase rule
+        ↓
+ordinary analyze() + run_document()
+        ↓
+target status + actual matches + facts + collisions + deficiencies
+        ↓
+human Valid / Invalid / Unclear review
+        ↓
+projects/<project>/generation/reviews.jsonl
+```
+
+The first realization boundary covers literals, project-fixture names, simple
+nouns/verbs/adjectives/prepositions/words, scalar number forms, compatible
+category gates, and the `distinct`/`same_lemma` constraints. Unsupported
+optional groups, spans, structured nominals, morphology, and predicates remain
+visible with exact blockers. A realized sentence that does not survive the
+round trip remains an inspectable candidate with status `absent`.
+
+`projects/<project>/generation.yaml` is read only by this authoring layer.
+The review API accepts no output path; it appends to the one project-owned
+JSONL location above. Neither file contributes to `Registry`, its fingerprint,
+or runtime results.
+
+The implemented endpoints are:
+
+```text
+GET  /api/generation/rules
+POST /api/generation/candidate
+POST /api/generation/review
+GET  /api/generation/history
+```
+
+Hypotheses, retesting, premise explanations, source locations, and editor
+navigation are later increments and are not implied by these G1 records.
+
 ## Repository map
 
 ```text
 src/rulekit/
   data/             strict schemas, pack loading, project loading, registry compilation
+  generation/       designer-only deterministic realization and review history
   kernel/           reading, facts, saturation, document context, answering, guards
   kernel/consumers/ named answer consumers
   harness/          answer/projection benches, firewalls, snapshots, diffs
@@ -396,6 +452,7 @@ get to perform runtime reading.
 | new normalized query operation | a focused consumer under `kernel/consumers/` |
 | new fact kind | model, emission table, store semantics, API/projection serialization, and tests |
 | new corpus or gold representation | project builder and harness adapter, never runtime reading |
+| new generation realizer or review behavior | `generation/` and project fixtures, never `kernel/` |
 
 Any shared matcher, learner, fact-store, synthesizer, consumer, or guard change
 has kernel-sized blast radius and must run the full standing gates.

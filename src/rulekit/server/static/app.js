@@ -16,6 +16,9 @@ const state = {
   cursor: -1,
   currentDoc: null,     // path of the doc in the editor
   interpretation: null, // explicitly confirmed query reading
+  generationRules: [],
+  candidate: null,
+  reviewVerdict: null,
 };
 
 async function api(method, path, body) {
@@ -63,6 +66,7 @@ async function loadProject() {
     f.onclick = () => openDoc(doc.path, f);
     tree.append(f);
   }
+  await loadGenerationRules();
 }
 
 async function openDoc(path, node) {
@@ -755,10 +759,185 @@ function renderField(t) {
 }
 
 function setView(which) {
-  for (const view of ["reading", "semantic", "field", "proof"]) {
+  for (const view of ["reading", "generate", "semantic", "field", "proof"]) {
     $(view).classList.toggle("hidden", which !== view);
     $(`view-${view}`).classList.toggle("on", which === view);
   }
+  document.body.classList.toggle("generate-mode", which === "generate");
+}
+
+/* ---------- generation and human review ---------- */
+
+async function loadGenerationRules() {
+  const payload = await api("GET", "/api/generation/rules");
+  state.generationRules = payload.rules || [];
+  const select = $("generation-rule");
+  select.replaceChildren();
+  const random = el("option", "", "Random supported rule");
+  random.value = "";
+  select.append(random);
+  for (const rule of state.generationRules) {
+    const suffix = rule.supported ? "" : ` — blocked: ${rule.blockers.join("; ")}`;
+    const option = el("option", "", rule.id + suffix);
+    option.value = rule.id;
+    option.dataset.supported = String(rule.supported);
+    select.append(option);
+  }
+  $("generation-coverage").textContent =
+    `${payload.supported}/${payload.total} premise rules realizable in G1`;
+  select.onchange = updateGenerationRuleState;
+  updateGenerationRuleState();
+}
+
+function selectedGenerationRule() {
+  const id = $("generation-rule").value;
+  return state.generationRules.find((rule) => rule.id === id) || null;
+}
+
+function updateGenerationRuleState() {
+  const rule = selectedGenerationRule();
+  const blocker = $("generation-blocker");
+  const blocked = rule && !rule.supported;
+  blocker.classList.toggle("hidden", !blocked);
+  blocker.textContent = blocked ? rule.blockers.join(" · ") : "";
+  $("generation-next").disabled = Boolean(blocked);
+}
+
+function generationFactCard(fact) {
+  const card = el("div", "fact");
+  card.append(
+    el("span", "type", fact.type),
+    el("span", "src", fact.source),
+    document.createTextNode(JSON.stringify(fact.fields)),
+  );
+  return card;
+}
+
+function renderGenerationCandidate(candidate) {
+  state.candidate = candidate;
+  state.reviewVerdict = null;
+  $("generation-empty").classList.add("hidden");
+  $("generation-candidate").classList.remove("hidden");
+  $("generation-target").textContent = candidate.target_rule;
+  $("generation-description").textContent = candidate.target_description || "";
+  $("generation-sentence").textContent = candidate.sentence;
+  const status = $("generation-status");
+  status.textContent = candidate.target_status;
+  status.className = `generation-status ${candidate.target_status}`;
+  $("generation-meta").textContent =
+    `seed ${candidate.seed} · ${candidate.attempts} attempt(s) · ${candidate.registry_fingerprint.slice(0, 16)}`;
+  $("generation-seed").value = candidate.seed;
+
+  const matches = $("generation-matches");
+  matches.replaceChildren();
+  for (const match of candidate.actual_matches) {
+    const card = el("div", `generation-match${match.shadowed ? " shadowed" : ""}`);
+    card.append(
+      el("span", "mono", match.rule_id),
+      el("span", "dim", match.shadowed ? "shadowed" : "survived"),
+      el("code", "", JSON.stringify(match.bindings)),
+    );
+    matches.append(card);
+  }
+  if (!candidate.actual_matches.length) {
+    matches.append(el("div", "dim", "no premise rule matched"));
+  }
+
+  const facts = $("generation-facts");
+  facts.replaceChildren();
+  for (const fact of candidate.facts) facts.append(generationFactCard(fact));
+  if (!candidate.facts.length) facts.append(el("div", "dim", "no surviving facts"));
+
+  const issues = $("generation-deficiencies");
+  issues.replaceChildren();
+  for (const collision of candidate.collisions) {
+    issues.append(
+      el("div", "generation-issue collision",
+        `collision ${collision.a_source} ↔ ${collision.b_source}: ${JSON.stringify(collision.key)}`),
+    );
+  }
+  for (const deficiency of candidate.deficiencies) {
+    issues.append(el("div", "generation-issue", deficiency));
+  }
+  if (!candidate.collisions.length && !candidate.deficiencies.length) {
+    issues.append(el("div", "dim", "none"));
+  }
+
+  document.querySelectorAll(".review-verdicts button").forEach((button) => {
+    button.classList.remove("selected");
+  });
+  $("generation-note").value = "";
+  $("generation-save-review").disabled = true;
+  $("generation-review-result").textContent = "";
+}
+
+async function generateNext() {
+  const selected = selectedGenerationRule();
+  if (selected && !selected.supported) return;
+  const seedInput = $("generation-seed");
+  const prior = Number(seedInput.value);
+  const seed = Number.isSafeInteger(prior) && seedInput.value !== ""
+    ? prior + (state.candidate ? 1 : 0)
+    : Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
+  setStatus("generating and round-tripping…");
+  $("generation-next").disabled = true;
+  try {
+    const candidate = await api("POST", "/api/generation/candidate", {
+      rule_id: selected?.id || null,
+      seed,
+    });
+    if (candidate.detail) {
+      setStatus(candidate.detail, "err");
+      return;
+    }
+    renderGenerationCandidate(candidate);
+    setStatus(
+      `${candidate.target_rule}: ${candidate.target_status} · ${candidate.actual_rule_ids.length} actual rule(s)`,
+      "ok",
+    );
+  } catch (exc) {
+    setStatus(`generation failed: ${exc}`, "err");
+  } finally {
+    updateGenerationRuleState();
+  }
+}
+
+function selectReviewVerdict(verdict, button) {
+  state.reviewVerdict = verdict;
+  document.querySelectorAll(".review-verdicts button").forEach((node) => {
+    node.classList.toggle("selected", node === button);
+  });
+  $("generation-save-review").disabled = false;
+}
+
+async function saveGenerationReview() {
+  const candidate = state.candidate;
+  if (!candidate || !state.reviewVerdict) return;
+  $("generation-save-review").disabled = true;
+  const payload = await api("POST", "/api/generation/review", {
+    candidate_id: candidate.id,
+    sentence: candidate.sentence,
+    target_rule: candidate.target_rule,
+    seed: candidate.seed,
+    registry_fingerprint: candidate.registry_fingerprint,
+    verdict: state.reviewVerdict,
+    note: $("generation-note").value,
+  });
+  if (!payload.ok) {
+    $("generation-review-result").textContent = payload.detail || "review rejected";
+    $("generation-save-review").disabled = false;
+    return;
+  }
+  $("generation-review-result").textContent =
+    `recorded ${state.reviewVerdict} · ${payload.review.timestamp}`;
+  setStatus("review recorded in project generation history", "ok");
+}
+
+function inspectGeneratedReading() {
+  if (!state.candidate) return;
+  $("trace-input").value = state.candidate.sentence;
+  setView("reading");
+  runTrace();
 }
 
 /* ---------- impact ---------- */
@@ -860,9 +1039,16 @@ $("editor").addEventListener("keydown", (e) => {
 $("impact-btn").onclick = runImpact;
 $("baseline-btn").onclick = setBaseline;
 $("view-reading").onclick = () => setView("reading");
+$("view-generate").onclick = () => setView("generate");
 $("view-semantic").onclick = () => setView("semantic");
 $("view-field").onclick = () => setView("field");
 $("view-proof").onclick = () => setView("proof");
+$("generation-next").onclick = generateNext;
+$("generation-reading").onclick = inspectGeneratedReading;
+$("generation-save-review").onclick = saveGenerationReview;
+document.querySelectorAll(".review-verdicts button").forEach((button) => {
+  button.onclick = () => selectReviewVerdict(button.dataset.verdict, button);
+});
 document.addEventListener("keydown", (e) => {
   if (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT") return;
   if (e.key === "ArrowDown" || e.key === "j") { e.preventDefault(); selectDecision(state.cursor + 1); }

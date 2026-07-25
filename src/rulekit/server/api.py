@@ -13,11 +13,19 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from ..data.packs import PackError
 from ..data.project import Project, load_project
 from ..data.registry import CompileError, Registry
+from ..generation import (
+    GenerationError,
+    ReviewRecord,
+    append_review,
+    generate_candidate,
+    list_rule_availability,
+    read_reviews,
+)
 from ..harness.bench import run_suite
 from ..harness.snapshot import diff as snapshot_diff
 from ..kernel.engine import solve
@@ -45,6 +53,11 @@ class ImpactBody(BaseModel):
     spend_test_look: bool = False
 
 
+class GenerationCandidateBody(BaseModel):
+    rule_id: str | None = Field(default=None, max_length=256)
+    seed: int | None = None
+
+
 class ServerState:
     def __init__(self, project_root: Path):
         self.project_root = project_root
@@ -55,6 +68,9 @@ class ServerState:
         # one bench run at a time — a second tab must not race the first
         # (and two concurrent TEST looks would double-spend the ledger)
         self.run_lock = threading.Lock()
+        # Generation/review I/O is independent from benchmark execution, but
+        # two tabs must not interleave JSONL writes.
+        self.generation_lock = threading.Lock()
 
     @property
     def registry(self) -> Registry:
@@ -687,5 +703,42 @@ def build_router(state: ServerState) -> APIRouter:
             {"level": f.level, "code": f.code, "message": f.message}
             for f in findings
         ]
+
+    @router.get("/generation/rules")
+    def generation_rules():
+        try:
+            rules = list_rule_availability(state.project)
+        except GenerationError as exc:
+            raise HTTPException(422, str(exc)) from exc
+        return {
+            "rules": [rule.to_json() for rule in rules],
+            "supported": sum(rule.supported for rule in rules),
+            "total": len(rules),
+        }
+
+    @router.post("/generation/candidate")
+    def generation_candidate(body: GenerationCandidateBody):
+        try:
+            candidate = generate_candidate(
+                state.project,
+                rule_id=body.rule_id,
+                seed=body.seed,
+            )
+        except GenerationError as exc:
+            raise HTTPException(422, str(exc)) from exc
+        return candidate.to_json()
+
+    @router.post("/generation/review")
+    def generation_review(body: ReviewRecord):
+        with state.generation_lock:
+            record = append_review(state.project, body)
+        return {"ok": True, "review": record}
+
+    @router.get("/generation/history")
+    def generation_history(limit: int = 100):
+        bounded = max(1, min(limit, 500))
+        with state.generation_lock:
+            reviews = read_reviews(state.project, bounded)
+        return {"reviews": reviews}
 
     return router

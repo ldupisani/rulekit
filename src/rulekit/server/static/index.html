@@ -13,6 +13,7 @@
   <span id="fingerprint" class="pill mono"></span>
   <span id="view-toggle" class="toggle">
     <button id="view-reading" class="on">reading</button
+    ><button id="view-generate">generate</button
     ><button id="view-semantic">semantic field</button
     ><button id="view-field">deictic field</button
     ><button id="view-proof">proof</button>
@@ -57,6 +58,76 @@
         <div id="facts"></div>
         <div class="pane-title">Gaps &amp; deficiencies</div>
         <div id="gaps"></div>
+      </div>
+    </div>
+
+    <!-- Designer-only generation and human review. It round-trips through the
+         ordinary reader; no generation state enters the runtime kernel. -->
+    <div id="generate" class="hidden">
+      <div class="generation-controls">
+        <div>
+          <div class="pane-title">Target premise rule</div>
+          <select id="generation-rule"></select>
+          <div id="generation-coverage" class="dim"></div>
+          <div id="generation-blocker" class="generation-blocker hidden"></div>
+        </div>
+        <label>
+          <span class="pane-title">Seed</span>
+          <input id="generation-seed" type="number" step="1">
+        </label>
+        <button id="generation-next" class="primary">Generate next</button>
+      </div>
+
+      <div id="generation-empty" class="generation-empty">
+        Choose a supported rule or leave the selector on random, then generate one specimen.
+      </div>
+
+      <div id="generation-candidate" class="hidden">
+        <div class="generation-heading">
+          <div>
+            <div id="generation-target" class="mono"></div>
+            <div id="generation-description" class="dim"></div>
+          </div>
+          <span id="generation-status" class="generation-status"></span>
+        </div>
+        <div id="generation-sentence" class="generation-sentence"></div>
+        <div class="generation-actions">
+          <button id="generation-reading">Inspect in Reading</button>
+          <span id="generation-meta" class="dim mono"></span>
+        </div>
+
+        <div class="generation-results">
+          <section>
+            <div class="pane-title">Actual rule matches</div>
+            <div id="generation-matches"></div>
+          </section>
+          <section>
+            <div class="pane-title">Surviving facts</div>
+            <div id="generation-facts"></div>
+          </section>
+          <section>
+            <div class="pane-title">Collisions &amp; deficiencies</div>
+            <div id="generation-deficiencies"></div>
+          </section>
+        </div>
+
+        <div class="generation-review">
+          <div>
+            <div class="pane-title">Human review</div>
+            <div class="review-verdicts">
+              <button data-verdict="valid">Valid</button>
+              <button data-verdict="invalid">Invalid</button>
+              <button data-verdict="unclear">Unclear</button>
+            </div>
+          </div>
+          <label>
+            <span class="pane-title">Note</span>
+            <textarea id="generation-note" maxlength="4000"
+                      placeholder="What premise appears correct or defective?"></textarea>
+          </label>
+          <button id="generation-save-review" disabled>Record review</button>
+          <span id="generation-review-result" class="dim"></span>
+        </div>
       </div>
     </div>
 

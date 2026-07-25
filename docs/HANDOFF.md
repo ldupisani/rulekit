@@ -1,19 +1,21 @@
-# rulekit handoff — semantic projection
+# rulekit handoff — generation workbench
 
 **Updated:** 2026-07-25
 
-**Active campaign:** none
+**Active campaign:** deterministic rule generation and human review
 
-**Parked campaign:** COGS/PMB semantic projection and the Phase E entry gate
+**Status:** G1 is complete and gated. The Designer can generate one seeded
+sentence for a selected or random supported premise rule, show its mechanical
+result, collect Valid/Invalid/Unclear with a note, and generate the next
+sentence. G2 premise inspection and source navigation are next.
 
-**Status:** parked at the failed PMB protected checkpoint. The independent
-synthetic treebank repository has produced a deterministic pre-review
-candidate, but its release status is `pending_review`; it has not been sealed
-or imported into RuleKit. Do not continue projection work until the user
-explicitly resumes the campaign after reviewing that dataset.
+**Active plan:**
+[`generation-and-annotation-plan.md`](generation-and-annotation-plan.md)
 
-**Parked RuleKit checkpoint:** `536ecc5`
-(`Record failed PMB protected checkpoint`)
+**Parked campaign:** COGS/PMB semantic projection and the Phase E entry gate.
+Its independent synthetic treebank candidate remains `pending_review`,
+unsealed, and unimported. Do not mix that work into the active generation
+workbench.
 
 This is the short operational handoff. The complete Session 1–105 history is
 preserved byte-for-byte in
@@ -24,23 +26,96 @@ semantic-projection work.
 ## Read before changing code
 
 1. [`../CLAUDE.md`](../CLAUDE.md) — project constitution and standing gates.
-2. [`semantic-projection-plan.md`](semantic-projection-plan.md) — campaign
-   contract, phase definitions, and increment protocol.
-3. [`methodology.md`](methodology.md) — DEV/TEST firewall and precision-first
-   measurement.
-4. [`architecture.md`](architecture.md) — runtime architecture.
+2. [`generation-and-annotation-plan.md`](generation-and-annotation-plan.md) —
+   active product contract, UI loop, architecture, and delivery increments.
+3. [`architecture.md`](architecture.md) — current runtime architecture.
+4. [`methodology.md`](methodology.md) — standing regression and precision
+   discipline.
 
-The campaign plan is the detailed source of truth. This file records where
-work is parked and the gate for resuming it.
+The generation plan is the detailed source of truth. This file records the
+active increment and preserves the parked semantic-projection handoff below.
 
-## Parked objective
+## Active objective
+
+Add a clear, rapid rule-exploration mode to the RuleKit designer:
+
+1. select or randomly choose a premise rule;
+2. randomly realize one sentence from its match premises and project lexicon;
+3. show why every premise passed;
+4. let a human mark the sentence Valid, Invalid, or Unclear and attach defects
+   to the implicated premises;
+5. form deterministic, trace-backed hypotheses about rule or lexical changes;
+6. open the relevant YAML in the existing editor;
+7. save, compile, and rerun the identical sentence; and
+8. show the before/after behavior before generating the next specimen.
+
+This is interactive grammar debugging, not corpus fabrication or model
+training. Reviews never alter runtime behavior automatically.
+
+## Completed increment — G1 vertical slice
+
+G1 now provides:
+
+- `src/rulekit/generation/`, isolated from the runtime import path;
+- deterministic realization of flat `phase: read` premise rules from literals,
+  simple slots, category domains, and `distinct`/`same_lemma`;
+- `projects/curated/generation.yaml` for open proper-name fixtures;
+- honest enumeration of all 93 curated premise rules: 8 supported in G1 and
+  85 visible with exact blockers;
+- ordinary-reader round trips with target `matched`/`shadowed`/`absent`,
+  co-firing rules, facts, collisions, and deficiencies;
+- Generate mode, seeded Generate next, Valid/Invalid/Unclear plus note, and
+  Inspect in Reading; and
+- fixed-path append-only review history under
+  `projects/<project>/generation/reviews.jsonl`.
+
+Validation on 2026-07-25:
+
+- 3,417 unit tests pass;
+- curated suite remains 65/65, 0 wrong, 100% precision;
+- curated lint remains 0 errors, 1 known overlap warning; and
+- live browser validation completed the generate/review-control/reading loop.
+
+## Immediate next step — G2 premise inspector and source index
+
+Implement the explanation layer without widening generation coverage:
+
+- add source indexes for rule ids, lexicon entries, category definitions and
+  memberships, and number/morphology declarations;
+- return required premise rows, selected bindings, type/category reasons,
+  category ancestry, predicate outcomes, consumed units, and specificity;
+- show those rows in Generate mode;
+- link each source-backed row to the existing allowlisted editor at its exact
+  file and line; and
+- keep unsupported and failed-round-trip explanations explicit.
+
+G2 exits when a reviewer can explain why every premise passed and open its
+source declaration without consulting the raw trace. Hypotheses, YAML retest
+diffs, structured slot realizers, and exploration coverage remain in later
+increments.
+
+## Active invariants
+
+- Generation tooling may call the existing kernel; the kernel may not import
+  generation tooling or review data.
+- Word-specific filler data lives in packs or project generation fixtures,
+  never Python.
+- The generator reports parser behavior; the human judges rule validity.
+- Hypotheses are inspectable suggestions and never automatic mutations.
+- The current sentence remains reproducible by project fingerprint and seed.
+- Saving uses the existing allowlist and compile-and-rollback boundary.
+- Reviews are a small debugging history, not a train/test dataset.
+- Existing runtime, bench, lint, and precision gates remain neutral when the
+  generation feature is unused.
+
+## Parked semantic-projection objective
 
 When resumed, extend the exact FOLIO-style reading layer with a compositional
 semantic view that can represent entities, events, roles, modifiers,
 complements, identity, and definiteness while retaining exact evidence and
-provenance. While parked, this section records the contract; it is not an
-instruction to mine another increment, inspect protected data, seal the
-external release, or build an importer.
+provenance. While parked, the remaining sections record that campaign's
+contract and evidence; they are not instructions to mine another increment,
+inspect protected data, seal the external release, or build an importer.
 
 The goal is not to print COGS logical-form strings or merely pass a benchmark.
 It is to make increasingly complex questions answerable from a lossless,
@@ -856,6 +931,7 @@ in the campaign plan. Its existence is not authorization to spend a look.
 
 The designer already separates:
 
+- **Generate** — seeded premise-rule specimens and human review;
 - **Reading** — tokens, decisions, exact facts, gaps, and deficiencies;
 - **Deictic field** — discourse/reference state;
 - **Semantic field** — projected semantic information and provenance; and

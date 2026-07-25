@@ -1,0 +1,10 @@
+format: rulekit/generation@1
+# Open proper names for designer-only sentence generation. These are authoring
+# fixtures, not runtime lexicon entries; parsing remains entirely unchanged.
+names:
+  - Aven
+  - Bira
+  - Cato
+  - Dena
+  - Eron
+  - Fia
