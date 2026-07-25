@@ -1,8 +1,9 @@
 # Semantic projection independent OOD gate preregistration
 
-**Status:** protected PMB standard-test look spent; precision passed but
-preregistered protected role diversity failed; original Phase E remains
-blocked
+**Status:** parked on 2026-07-25. The protected PMB standard-test look is
+spent; precision passed but preregistered protected role diversity failed, so
+the original Phase E remains blocked. Do not continue PMB work while the
+semantic-projection campaign is parked.
 
 **Selected corpus:** Parallel Meaning Bank (PMB) 5.1.0, English gold meaning
 representations, restricted by raw-text licence metadata
@@ -238,7 +239,7 @@ shortfalls with perfect precision may return to eligible PMB
 train/development data under a newly recorded increment; they do not permit
 another protected look.
 
-## Next implementation sequence
+## Implementation record
 
 Infrastructure steps 1–6 are complete. The builder verifies every pinned
 release/licence/split hash, enforces the Tatoeba-only metadata allowlist, and

@@ -1,16 +1,19 @@
 # rulekit handoff — semantic projection
 
-**Updated:** 2026-07-24
+**Updated:** 2026-07-25
 
-**Active campaign:** COGS semantic projection
+**Active campaign:** none
 
-**Status:** protected PMB look spent: 1 exact / 0 incorrect / 100% precision,
-but protected role diversity failed; Phase E remains blocked. A
-fit-for-purpose synthetic semantic treebank is now specified as the next
-candidate gate.
+**Parked campaign:** COGS/PMB semantic projection and the Phase E entry gate
 
-**Current safe DEV baseline:** `964f09f`
-(`Add COGS indefinite common subject projection`)
+**Status:** parked at the failed PMB protected checkpoint. The independent
+synthetic treebank repository has produced a deterministic pre-review
+candidate, but its release status is `pending_review`; it has not been sealed
+or imported into RuleKit. Do not continue projection work until the user
+explicitly resumes the campaign after reviewing that dataset.
+
+**Parked RuleKit checkpoint:** `536ecc5`
+(`Record failed PMB protected checkpoint`)
 
 This is the short operational handoff. The complete Session 1–105 history is
 preserved byte-for-byte in
@@ -27,14 +30,17 @@ semantic-projection work.
    measurement.
 4. [`architecture.md`](architecture.md) — runtime architecture.
 
-The campaign plan is the detailed source of truth. This file says where work
-currently stands and what to do next.
+The campaign plan is the detailed source of truth. This file records where
+work is parked and the gate for resuming it.
 
-## Current objective
+## Parked objective
 
-Extend the exact FOLIO-style reading layer with a compositional semantic view
-that can represent entities, events, roles, modifiers, complements, identity,
-and definiteness while retaining exact evidence and provenance.
+When resumed, extend the exact FOLIO-style reading layer with a compositional
+semantic view that can represent entities, events, roles, modifiers,
+complements, identity, and definiteness while retaining exact evidence and
+provenance. While parked, this section records the contract; it is not an
+instruction to mine another increment, inspect protected data, seal the
+external release, or build an importer.
 
 The goal is not to print COGS logical-form strings or merely pass a benchmark.
 It is to make increasingly complex questions answerable from a lossless,
@@ -590,22 +596,38 @@ safe-to-incorrect transitions. The complete gate is green: 179 focused COGS
 tests, 3,224 full-suite tests, zero lint errors, curated twice, and neutral
 GSM8K, ASDiv, SVAMP, MAWPS, SciBench, and FOLIO diffs.
 
-## Immediate next step
+## Parked resumption gate
 
 Preserve the frozen COGS DEV baseline and PMB candidate. The one permitted PMB
 protected standard-test aggregate has been spent: 923 items produced 1 exact,
 0 safe partial, 922 declined, and 0 incorrect at 100% projected-edge
 precision. The sole protected exact graph was `intransitive-agent`; no second
-explicit thematic role and no direct-object-versus-recipient class transferred.
-This fails conjunctive entry condition 6, so Phase E remains blocked.
+explicit thematic role and no direct-object-versus-recipient class
+transferred. This fails conjunctive entry condition 6, so Phase E remains
+blocked.
 
-Do not rerun or inspect COGS TEST/generalization or PMB standard-test rows,
-identifiers, sentences, graphs, or failures. Do not tune PMB against the
-protected aggregate. The next step is to fabricate the independently sealed
-corpus specified in
-[`synthetic-semantic-treebank-plan.md`](synthetic-semantic-treebank-plan.md)
-in a separate context with no Rulekit access. Do not begin its Rulekit import
-until the external release is sealed.
+The independent sibling repository `/Users/louis/Development/semantic-generator`
+is at pre-review candidate commit `af93ad0`; its public manifest records release
+fingerprint
+`b73f2bbd2ac027f2bbfa319b2cb02d3142eac6d5b23af2c0ec6659b2117f7ac2`
+and status `pending_review`. No protected bundle is sealed in that manifest.
+Human review must occur in the isolated fabrication context, not from inside
+RuleKit.
+
+While parked:
+
+- do not rerun or inspect COGS TEST/generalization or PMB standard-test rows,
+  identifiers, sentences, graphs, or failures;
+- do not tune PMB against the protected aggregate;
+- do not inspect protected synthetic plaintext from this repository context;
+- do not seal the external candidate or construct a RuleKit importer; and
+- do not claim that Phase E is unblocked.
+
+On explicit resumption, first confirm review completion, sealing, verification,
+licence, release fingerprint, and encryption manifests. Then preregister the
+one-way RuleKit import/adapter boundary and evaluation thresholds before
+running any candidate against encrypted development. Protected test remains a
+separate deliberate one-look decision.
 
 ## Phase C restart exit audit
 
@@ -877,4 +899,4 @@ Preserve that distinction as semantic projection grows:
 
 The FOLIO work remains a standing safety and answer-level gate. Resume its
 historical campaign only by deliberately choosing that direction; do not mix
-FOLIO reader mining into the current COGS Phase B worklist.
+FOLIO reader mining into a resumed semantic-projection campaign.

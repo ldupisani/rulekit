@@ -1,10 +1,12 @@
 # Semantic projection campaign — COGS → compositional meaning
 
-**Status:** Phase D checkpoint 1 failed (2026-07-23), the batch was reverted,
-and the repaired Phase B/C DEV baseline is now frozen. One TEST and one
-generalization look are spent and ledgered; neither protected slice may be
-rerun. The original Phase E is blocked pending sufficient independent PMB OOD
-coverage; its inspectable precision repair is complete.
+**Status:** parked on 2026-07-25. Phase D checkpoint 1 failed, the batch was
+reverted, and the repaired Phase B/C DEV baseline is frozen. One COGS TEST,
+one COGS generalization look, and one PMB protected look are spent and may not
+be rerun. The original Phase E remains blocked. An independent synthetic
+treebank candidate exists outside this repository but is still pending human
+review and sealing; no RuleKit import work is authorized while the campaign is
+parked.
 
 **Decision:** use **COGS** as the first development corpus. Use **FraCaS** later
 as an external semantic-inference gate, not as the projection worklist.
@@ -456,31 +458,38 @@ No increment receives credit merely for:
 - moving a parser category into the semantic field; or
 - answering from a partial graph while a required edge is absent.
 
-## 9. Next implementation step
+## 9. Resumption sequence
 
 The original A–E plan is at the Phase D/Phase E boundary: the repaired DEV
 baseline is frozen, but Phase E remains blocked by the failed OOD checkpoint.
 Do not rerun COGS TEST or generalization and do not describe the post-D
 common-subject campaigns as plan phases.
 
-Two valid next directions remain:
+There is no next implementation step while the campaign is parked. The sibling
+`semantic-generator` repository has produced a deterministic candidate using a
+neutral schema, bundle-level splits, inspectable train, and separately
+protected development/test. Its public manifest is still `pending_review`.
+RuleKit must not inspect protected plaintext, seal the release, or build an
+importer on the user's behalf before that review is complete.
 
-1. **Continue DEV coverage outside the original phase sequence:** profile a
-   determined common-subject intransitive class, lock agent/theme role
-   membership before implementation, and run the normal increment gate.
-2. **Unblock original Phase E:** fabricate and seal the fit-for-purpose
-   controlled-English corpus specified in
-   [`synthetic-semantic-treebank-plan.md`](synthetic-semantic-treebank-plan.md).
-   It uses a neutral schema, bundle-level compositional splits, plaintext
-   train, separately encrypted aggregate-only development/test, and a CC0
-   target. The fabrication context receives no Rulekit code, schemas, outputs,
-   benchmark cases, or failures. Import begins only after the external release
-   is sealed. The PMB campaign reached 117 train exact / 531 correct edges /
-   0 incorrect and passed every inspectable threshold, but its single
-   protected look produced only one intransitive-Agent exact graph. Precision
-   stayed at 100%, while the protected two-role and
-   direct-object-versus-recipient condition failed. The PMB look is spent and
-   cannot be rerun or used for tuning.
+After an explicit resume:
+
+1. verify the reviewed and sealed external release, licence, commit, release
+   fingerprint, schemas, encryption manifests, and review report;
+2. preregister a one-way neutral-schema adapter and exact evaluation contract
+   without reading encrypted development/test;
+3. import only the material permitted by the sealed release firewall;
+4. use encrypted development through its fixed aggregate evaluator; and
+5. reserve protected test for a later deliberate one-look checkpoint.
+
+Continuing COGS DEV coverage remains possible only as a newly authorized
+post-plan campaign; it cannot unblock Phase E and is not the default on resume.
+
+The PMB campaign reached 117 train exact / 531 correct edges / 0 incorrect and
+passed every inspectable threshold, but its single protected look produced only
+one intransitive-Agent exact graph. Precision stayed at 100%, while the
+protected two-role and direct-object-versus-recipient condition failed. The PMB
+look is spent and cannot be rerun or used for tuning.
 
 Do not tune to DEV-holdout items. Do not start by admitting the frequent COGS
 unknown words: vocabulary receives credit only as part of a complete

@@ -1,292 +1,420 @@
-# RuleKit — grammar-driven reading & reasoning engine (fresh start)
+# RuleKit architecture
 
-## Context
+**Updated:** 2026-07-25
+**Status:** current implementation, not a roadmap
 
-The predecessor (`~/Development/experiments/difg`) proved the thesis: a model-free **obligation
-parser** reads word problems into facts and answers deterministically (GSM8K TEST precision ~89%,
-0 LLM calls). It died of a representation problem, not a mechanism problem:
+RuleKit is a deterministic reading and reasoning engine for controlled,
+ordinary English. It turns text into typed facts, closes those facts under
+explicit derivations, and answers a recognized question through a named
+consumer. There is no model or LLM in the runtime path.
 
-- `reasoning/reading.py` = **28,871 lines**, ~382 functions, ~129 "system solvers" in two
-  hand-ordered first-match-wins dispatch lists (ordering constraints live in comments).
-- All grammar/lexical data are Python literals scattered through the file (LEXICON updated in
-  8 places with duplicate-key shadowing).
-- Conflicts are post-hoc: category registration is global state with invisible blast radius
-  (tagging `pet` once silently turned a correct decline into a confident wrong); collisions are
-  only caught by an offline audit; guards and solvers are mutually entangled.
-- An LLM translator fallback is woven into the `ask` surface.
+This document describes what the repository does today. Campaign state belongs
+in [`HANDOFF.md`](HANDOFF.md), evaluation policy in
+[`methodology.md`](methodology.md), and project-wide engineering constraints in
+[`../CLAUDE.md`](../CLAUDE.md).
 
-**RuleKit** (`~/Development/rulekit`, currently empty) keeps the mechanism and inverts the
-representation: **small frozen kernel, big declarative data; no LLM anywhere; conflict detection
-always on.**
+## Architectural boundaries
 
-User decisions already made: **Python engine + web UI** (FastAPI bridge, Vite/React/Monaco
-frontend) · **rules as schema-validated YAML** (no custom DSL) · **engine + harness first, mine
-difg's lexical data, GSM8K + visual tool after**.
+The design is held together by five boundaries:
 
-## What survives from difg (the DNA)
+1. **Language knowledge is data.** Word senses, lemmas, plurals, category
+   membership, polarity, conversions, formulas, and reference facts live in
+   YAML packs. Python may name grammatical senses and category interfaces, but
+   may not contain corpus vocabulary.
+2. **Reading and answering are separate.** Premise rules emit facts. Question
+   rules normalize an ask and select a generic consumer; they do not create
+   premise evidence.
+3. **One fact store owns commitments.** Exact facts, derived facts, and
+   first-class semantic-graph facts share the same conflict and provenance
+   discipline. UI projections and benchmark adapters do not form a second
+   inference engine.
+4. **Ambiguity fails closed.** A binding, derivation, or answer is accepted only
+   when its evidence is sufficiently specific. Conflict, unresolved reference,
+   incomplete structure, or an unread operative value causes a decline or
+   clarification—not a guess.
+5. **Evaluation is part of the architecture.** Stable partitions, protected
+   aggregate-only slices, per-item snapshot diffs, and fresh-process
+   determinism checks constrain how the engine is allowed to evolve.
 
-1. **Obligation-driven parsing** — every word carries a demand it discharges by binding; parsing
-   IS discharge; deficiency = unmet obligation; sense disambiguation = best obligation coverage;
-   reasoning = facts off the saturated graph. Obligations attach by ROLE (quantifier→collection,
-   verb→subject+dobj, preposition→anchor+object…).
-2. **Definitive-or-decline** — bind/commit only when exactly one candidate fits.
-3. **Epistemic surface** — diagnose (why declined), known_facts, question-requirements corpus
-   (shape → needed world-knowledge → supplied?), report; provider loop supplies missing facts.
-4. **Minimum-structure rule** — patterns hardcode only grammatical skeleton; content words are
-   captured + category-gated with cross-slot lemma consistency.
-5. **Category hierarchy** with sense roots, antonym links (polarity sets DERIVED, single source),
-   context synonyms (gated by governing category), quantitative attrs (dog→4 legs).
-6. **Rules emit FACTS, not answers** (SystemResult lesson) — one shared saturate/answer pipeline.
-7. **Every mutation a reversible Decision** through one chokepoint → serializable trace.
-8. **Value accounting** — every stated number must be consumed or the reading declines.
-9. **The testing methodology** (port `reading-coverage-methodology.md` near-verbatim): harm-ordered
-   outcomes (wrong ≫ declined), precision = correct/committed is THE metric, DEV/TEST firewall,
-   stable-md5 dev-train/dev-holdout split, per-increment diff with SOLVED/BROKE/DECL→WRONG ship
-   gate, collision audit, rule attribution, unknown-word worklist, coverage = ceiling × hit-rate.
+## System map
 
-## Architecture
+```mermaid
+flowchart LR
+    subgraph Load["Project loading"]
+        Project["project.yaml"] --> Packs["validated YAML packs"]
+        Packs --> Registry["frozen Registry + fingerprint"]
+    end
 
-### Repo layout
+    subgraph Read["Premise reading"]
+        Text["input text"] --> Normalize["math normalization + sentence/question split"]
+        Normalize --> Analyze["tokenize → numbers → senses → obligations → condense → bind"]
+        Normalize --> Question
+        Analyze --> Rules["all matching read-phase rules"]
+        Analyze --> Learn["generic fact learning"]
+        Rules --> Store["FactStore"]
+        Learn --> Store
+        Store --> Saturate["YAML synth rules + registered synthesizers"]
+        Saturate --> Store
+        Store --> Rebind["discourse and measure-anaphor rounds"]
+        Rebind --> Rules
+    end
 
-```
-rulekit/
-├── pyproject.toml            # uv, Python 3.12+; deps: pydantic v2, ruamel.yaml, pyarrow (+fastapi/uvicorn extra)
-├── docs/                     # methodology.md (ported), playbook.md (distilled), rule-authoring.md, architecture.md
-├── src/rulekit/
-│   ├── kernel/               # stable core, each module ≤ ~400 lines
-│   │   ├── model.py          # Word, Unit, Obligation, Decision(+rule provenance), Reading, Document, Fact types
-│   │   ├── tokenize.py  numbers.py  senses.py  obligations.py  condense.py
-│   │   ├── patterns.py       # pattern-rule compiler/matcher (catsearch successor), trigger index, subsumption
-│   │   ├── facts.py          # fact store: dedupe, agreement, conflict adjudication (always-on)
-│   │   ├── saturate.py       # synthesizer fixpoint: YAML synth rules + entry-point Python plugins
-│   │   ├── answer.py         # the few generic consumers (fold, combined, comparative, category-sum…)
-│   │   ├── guards.py         # value accounting etc., config-driven, may NOT reference rule ids (lint-enforced)
-│   │   ├── evaluate.py       # safe arithmetic evaluator (ast whitelist; the only math path; logs provenance)
-│   │   └── document.py       # document blackboard + re-parse fixpoint (gap table, rounds)
-│   ├── data/                 # schemas.py (pydantic = the one format truth), packs.py, registry.py (immutable compile)
-│   ├── epistemic/            # diagnose.py, requirements.py, providers.py
-│   ├── lint/                 # overlap.py, blast_radius.py, checks.py
-│   ├── harness/              # bench.py, firewall.py, snapshot.py, collisions.py, attribution.py, cache.py
-│   ├── server/               # FastAPI app + routes (trace, docs CRUD, impact, bench SSE, schema export)
-│   └── cli.py
-├── packs/core-english/       # migrated difg lexical data + core grammar
-├── packs/arithmetic/         # general solver families as pattern rules + plugin synthesizers
-├── projects/curated/         # phase-1 hand-written validation suite
-├── projects/gsm8k/           # parquets copied from difg/data (gitignored)
-├── tools/migrate_difg.py     # one-off: import difg reading.py, dump runtime tables → YAML
-├── web/                      # Vite + React + TS + Monaco designer
-└── tests/                    # pytest, synthetic strings only (firewall: never benchmark items)
+    subgraph Ask["Question answering"]
+        Question["analyzed question"] --> AskRule["most-specific ask shape"]
+        AskRule --> Consumer["named generic consumer"]
+        Store --> Consumer
+        Consumer --> Guards["commitment guards"]
+        Guards --> Result["Answer + proof + trace + gaps"]
+    end
+
+    Registry --> Analyze
+    Registry --> Rules
+    Registry --> Saturate
+    Registry --> AskRule
+    Registry --> Question
 ```
 
-### Execution model — the ordering fix
+The arrows back from discourse resolution represent a bounded rebuild, not
+in-place fact repair. When a pronoun or measure anaphor becomes resolvable, the
+affected sentence's rules are rerun and the complete premise store is rebuilt
+and saturated from source readings.
 
-- Per-sentence pipeline (difg's proven order): tokenize → numbers → senses → disambiguate →
-  obligations → condense → resolve → **pattern rules** → learn → saturate (fixpoint) → guards →
-  answer. Each stage a pure function `Reading → Reading` over the immutable compiled Registry.
-- **No ordered dispatch.** ALL triggered pattern rules match (no short-circuit); all emit facts.
-  Conflicts adjudicated in the fact store: **computed subsumption** (strictly-more-specific match
-  — wider consumed span + equal-or-narrower category gates — shadows silently; this replaces
-  "narrow the category" as the conflict lever), non-subsuming disagreement → both withheld, item
-  declines, `Collision` recorded. Agreement → dedupe. Only scheduling knob: `phase: read |
-  post-saturation`. difg's masked-collision failure mode is unrepresentable.
-- Rules match the annotated **unit sequence**, not raw text ("1,200" ≡ "twelve hundred" — retires
-  the comma-regex bug class). Matched slots discharge obligations to a PATTERN sentinel; a rule's
-  `consumes:` feeds value accounting so guards never know rule names.
-- **Determinism invariant**: immutable registries, sorted iteration everywhere, `bench --twice`
-  (two fresh processes, diff) in CI — the `next(iter(set))` lesson as tooling.
+## Configuration and compilation
 
-### YAML formats (all `format: rulekit/<kind>@1`, pydantic-validated; Monaco gets JSON Schema free)
+### Projects
 
-Lexicon (merges difg LEXICON+PLURALS+VERB_LEMMA; duplicate keys across a pack = load error):
-```yaml
-entries:
-  rose: {senses: [noun, verb], verb: {lemma: rise}, notes: "flower or past of rise"}
-  student: {senses: [noun], plural: students}
+A project directory contains `project.yaml`. Loading it:
+
+1. validates the document with `ProjectDoc`;
+2. resolves pack names against the nearest repository-level `packs/`
+   directory, while `./` and `../` entries resolve relative to the project;
+3. loads packs in declared order and checks `requires`;
+4. compiles the loaded data into one immutable `Registry`; and
+5. computes a SHA-256 fingerprint from the exact pack bytes.
+
+A project may expose:
+
+- a small YAML `suite`;
+- answer datasets backed by Parquet; or
+- a semantic `projection` corpus.
+
+Suites and answer datasets may coexist, as they do in the GSM8K project.
+Projection projects cannot also declare either one. A scratch project may
+declare no evaluation target. These boundaries keep graph scoring out of the
+answer judge.
+
+### Packs
+
+Every pack has a `rulekit/pack@1` manifest. Every other YAML document
+self-identifies with `format: rulekit/<kind>@1`; unknown formats fail loading.
+Models reject unknown fields except where a schema deliberately defines an
+open payload, such as fact-specific emission fields, reference rows, or guard
+settings. The canonical schemas are the Pydantic models in
+[`schemas.py`](../src/rulekit/data/schemas.py), not examples copied into
+documentation.
+
+The implemented document families are:
+
+| Concern | Document kinds |
+| --- | --- |
+| language | lexicon, categories, numbers, obligations, contractions |
+| reading and inference | rules/asks, synth, guards |
+| domain knowledge | conversions, affine conversions, geometry, formulas, calendar, elements, reference |
+| governance | quarantine, requirements, pack, project |
+
+Compilation rejects duplicate vocabulary across packs, duplicate rule ids,
+category cycles, dangling category roots, incompatible antonyms, invalid
+category members, conflicting conversions or reference values, and rule gates
+that name unknown categories. The resulting mappings and rule sequences are
+sorted and frozen.
+
+`quarantine.yaml` is negative knowledge: its entries are intentionally absent
+from the lexicon, and compilation rejects a word that appears in both.
+
+## Runtime reading pipeline
+
+The core runtime function is
+`rulekit.kernel.engine.solve(text, registry, tracing=True,
+interpretation=None)`. The CLI obtains the registry by loading a project.
+
+### 1. Normalize and separate the question
+
+Recognized LaTeX math spans are conservatively transcribed before tokenization.
+The text is split into premise sentences and, when identifiable, a trailing
+question. A small set of structural repairs handles explicitly licensed fused
+conditional/question forms; an unrecognized boundary remains unsplit and
+normally declines downstream.
+
+### 2. Analyze each sentence
+
+`analyze()` applies the same ordered stages to every premise and the question:
+
+1. `tokenize` creates `Word` and `Unit` objects;
+2. `annotate_numbers` identifies counts, fractions, percents, tuples, dates,
+   formulas, and other structured numeric forms;
+3. `annotate_senses` supplies pack-backed candidate senses and lemmas;
+4. `disambiguate` selects a sense only when obligation coverage licenses it;
+5. `attach_obligations` gives grammatical roles their declared needs;
+6. `condense` merges licensed multi-unit constructions; and
+7. `bind` discharges obligations against suitable units.
+
+Every mutating reading step records a `Decision` when tracing is enabled.
+Bench runs disable the expensive reversible snapshots while keeping the same
+semantic path.
+
+### 3. Build the premise store
+
+For each premise, every matching `phase: read` pattern rule runs. Rules match
+annotated units rather than raw strings and emit typed facts with rule and
+sentence provenance. Independently, `learn()` extracts general facts licensed
+by the analyzed structure.
+
+All emitted facts enter a `FactStore`, after which `saturate()` repeatedly
+applies:
+
+- declarative `rulekit/synth@1` joins; and
+- the kernel's statically registered algorithmic synthesizers.
+
+Saturation is monotone: synthesizers add facts, the store deduplicates them,
+and the loop stops when a round adds nothing. A 50-round cap turns
+non-termination into an error.
+
+### 4. Resolve document context
+
+The document loop currently resolves two cross-sentence phenomena:
+
+- personal discourse reference against prior compatible referents; and
+- measure anaphora such as a later “ones” referring to one prior counted noun
+  lemma.
+
+Resolution uses the deictic arbitration primitive and fails closed when no
+candidate strictly dominates. Changed sentences have their read rules rerun;
+the store is then rebuilt and saturated. The loop has a six-round cap.
+
+Gaps are collected after the loop as unknown words, ambiguous senses, and
+unmet obligations. They are diagnostic records, not instructions to an
+external provider.
+
+### 5. Interpret and answer the question
+
+The question is analyzed separately and its pronouns are resolved against the
+premise document. `match_ask()` chooses one ask by:
+
+1. number of consumed units;
+2. total category-gate depth; and
+3. stable rule-id order as the final tie-break.
+
+An ask renders a normalized query naming a consumer. An ask may instead
+declare several explicit interpretations; without a caller-selected
+interpretation, the result is a structured clarification request.
+
+Consumers are Python implementations registered by name under
+`kernel/consumers/`. They read only the normalized query, saturated store,
+registry, arithmetic log, match metadata, and premise readings. Consumers may
+return numeric answers, yes/no/undetermined verdicts, proofs, or declines.
+
+### 6. Guard the commitment
+
+Guards run only against a proposed commitment:
+
+- numeric answers are checked for unread vocabulary, unused or multiply used
+  operative values, unresolved derivations, and related accounting failures;
+- verdict answers use a supported-fragment guard that rejects unread
+  truth-scoping operators.
+
+A veto converts the proposed answer to a decline. Guards inspect structural
+state and fact use; they do not special-case rule ids.
+
+## Core representations
+
+| Type | Responsibility |
+| --- | --- |
+| `Registry` | immutable compiled pack data, rule/ask/synth sequences, and fingerprint |
+| `Reading` | one sentence's units, decisions, and deficiencies |
+| `Obligation` | a typed grammatical need and its binding |
+| `Decision` | reversible mutation record used by tracing and the designer |
+| `Fact` | immutable typed commitment with `Provenance` |
+| `FactStore` | admission, agreement, collision quarantine, and fact lookup |
+| `Document` | premise readings, store, arithmetic/deictic log, consumed units, rounds, and gaps |
+| `Answer` | number, verdict, or decline, optionally with proof or clarification |
+| `Result` | complete runtime surface: answer, readings, store, log, veto, and document |
+
+The fact model covers arithmetic quantities and relations, membership and
+logical structures, rates, prices, partitions, aliases, and explicit
+`SemanticGraphNode`/`SemanticGraphEdge` facts. Specialized fact classes keep
+their own identity keys and value parts; the store does not flatten all
+meaning into generic triples.
+
+## Rule execution and conflict handling
+
+Pattern rules have no authored priority. They may use literals for grammatical
+skeleton, typed or category-gated slots, optional groups, span capture,
+cross-slot predicates, anchoring, and explicit value consumption.
+
+All read-phase matches run. Before fact admission, one match may shadow another
+only when it consumes a superset of the other's units and has strictly greater
+computed specificity. Otherwise:
+
+- same fact key and same value records agreement and keeps one fact;
+- same key and different value quarantines both facts and records a
+  `Collision`; and
+- a dirty store cannot produce an answer commitment.
+
+The store has narrowly defined structural identity handling for owners,
+qualifiers, labels, and conjunct segments. These distinctions come from typed
+fact fields and are independent of rule execution order.
+
+Ask rules are different: exactly one normalized query must be selected before
+consumer dispatch. Their most-specific-match rule and explicit clarification
+mechanism make that selection visible.
+
+## Semantic projection
+
+Semantic projection is implemented in two layers:
+
+1. runtime rules may emit first-class semantic node and edge facts into the
+   ordinary store; and
+2. the benchmark harness converts those facts into a normalized evaluation
+   graph.
+
+COGS logical forms and PMB SBN are parsed only by
+[`harness/projection.py`](../src/rulekit/harness/projection.py). Gold adapters
+must not be imported by runtime parsing. Graph comparison alpha-normalizes
+references and preserves predicate, role, attachment, and status structure.
+
+Projection outcomes are harm ordered:
+
+- `incorrect`: at least one unsupported projected node or edge;
+- `partial`: every projection is correct but required graph content is
+  missing;
+- `declined`: no graph commitment; and
+- `exact`: the complete normalized graph matches.
+
+The optional `legacy_bridge` exposes pre-existing `VerbalRelation` facts for
+COGS compatibility. Independent PMB evaluation disables it and scores only
+explicit semantic graph facts.
+
+The semantic-projection expansion campaign is currently parked pending review
+of the independent synthetic dataset. That is project status, not a missing
+runtime dependency; see [`HANDOFF.md`](HANDOFF.md).
+
+## Evaluation, snapshots, and firewall
+
+The same `bench` command routes by project shape:
+
+- suite and answer projects run `harness/bench.py` and the answer judge;
+- projection projects run `harness/projection.py` and graph scoring.
+
+Answer datasets use a stable MD5 partition for `dev-train` and `dev-holdout`;
+a configured grouping key keeps related items on one side. The operating
+policy reserves `dev-train` for tuning and treats holdout as a delta gate.
+Protected TEST requires `--spend-test-look`, returns aggregates, and appends an
+auditable ledger entry.
+
+Projection projects declare each split's firewall mode. COGS test and
+generalization, and PMB test, are schema-required to be aggregate-only.
+Protected projection runs reject partial `--limit` looks, suppress item
+results, and are ledgered.
+
+Snapshots contain a registry fingerprint and stable per-item outcomes.
+`rulekit diff` rejects:
+
+- answer regressions from correct to non-correct or safe to wrong; and
+- projection regressions from exact to non-exact or safe to incorrect.
+
+`bench --twice` compares the current result with a fresh isolated Python
+process. With `--jobs N`, the harness also compares parallel and serial
+execution. Worker processes reload the project and verify the expected
+registry fingerprint.
+
+## CLI and designer
+
+The implemented CLI is:
+
+```text
+rulekit --project P solve TEXT [--trace] [--json]
+rulekit --project P diagnose TEXT
+rulekit --project P bench [--slice SLICE] [--snapshot FILE] [--twice] [--jobs N]
+rulekit --project P stats [--slice SLICE]
+rulekit --project P lint [--category CATEGORY] [--verbose]
+rulekit --project P diff BEFORE AFTER
+rulekit --project P serve [--host HOST] [--port PORT]
 ```
 
-Categories (hierarchy + antonyms + context synonyms + attrs in one kind; compile invariants:
-one root sense per category, antonym memberships disjoint, members must exist in lexicon):
-```yaml
-categories:
-  pet:  {parent: animal}
-  lose: {parent: verb, antonym: acquire}
-members: {animal: [dog, cat, lizard], lose: [lose, lost, spend, "give away"]}
-context_synonyms:
-  appendage: {gate: animal, forms: [leg, legs, foot, feet]}
-attrs: {dog: {legs: 4}, quarter: {cents: 25}}
+The optional `server` dependencies provide a local FastAPI application and a
+vanilla-JavaScript designer. The designer exposes:
+
+- a reading decision stepper;
+- fact, gap, collision, and deficiency views;
+- semantic, deictic, proof, and clarification views;
+- editing of existing pack YAML documents with validate-and-rollback; and
+- answer-project impact baselines and firewall-aware TEST spending.
+
+The editable-file boundary is an allowlist of the exact YAML files reported
+from loaded packs. It excludes project files, datasets, snapshots, new paths,
+and symlinks escaping a pack. Projection benchmarking is currently a CLI
+surface; the designer's impact panel targets suites and answer datasets.
+
+## Repository map
+
+```text
+src/rulekit/
+  data/             strict schemas, pack loading, project loading, registry compilation
+  kernel/           reading, facts, saturation, document context, answering, guards
+  kernel/consumers/ named answer consumers
+  harness/          answer/projection benches, firewalls, snapshots, diffs
+  lint/             static overlap, literal, and blast-radius checks
+  reference/        optional DuckDB-backed reference aggregation
+  server/           FastAPI API and bundled browser UI
+  cli.py            command-line surface
+
+packs/
+  core-english/     base language data
+  arithmetic/       general word-problem rules, asks, and synth rules
+  difg-mined/       migrated vocabulary and domain knowledge, including quarantine
+  reference/        curated reference lookup data and rules
+
+projects/           curated and corpus-specific project configurations/builders
+tests/              synthetic unit and regression tests; corpus strings are forbidden
+docs/               architecture, methodology, campaign records, and design notes
+tools/              migration and repository utilities
 ```
 
-Pattern rules (successor of the 129 solvers; literals allowed only as skeleton; **no priority
-field — specificity is computed**; `overrides:` escape hatch requires a reason and is lint-reported):
-```yaml
-rules:
-  - id: arithmetic/anchored-relation
-    phase: read
-    match:
-      sentence:
-        - {slot: who, type: name}
-        - {lit: has}
-        - {slot: n, type: number}
-        - {slot: dir, cat: comparative}
-        - {slot: item, type: noun}
-        - {lit: than}
-        - {slot: std, type: name}
-    where: [{distinct: [who, std]}, {name_count: {exactly: 2}}]
-    consumes: [n]
-    emits:
-      - {fact: relation, subject: "{who}", standard: "{std}",
-         measure: "{item.lemma}", offset: "n * sign(dir)"}
-asks:
-  - id: ask/how-many-entity
-    match: {question: [{lit: how}, {lit: many}, {slot: item, type: noun}, ...]}
-    resolves: {consumer: single-entity, entity: "{who}", measure: "{item.lemma}"}
-```
+Project-local packs are allowed when a corpus needs a narrower licence or
+semantic boundary. They must remain ordinary packs; benchmark adapters do not
+get to perform runtime reading.
 
-Synth rules (datalog-ish; monotone; safe-evaluator expressions; algorithmic ones — affine graph,
-partition saturation — stay Python plugins via `rulekit.synthesizers` entry points with declared
-reads/emits footprints):
-```yaml
-rules:
-  - id: synth/fraction-of-parent
-    when:
-      - {fact: subset, part: P, whole: W, fraction: F}
-      - {fact: quantity, entity: W, measure: M, value: N}
-    unless: [{fact: quantity, entity: P, measure: M}]
-    emit: [{fact: quantity, entity: P, measure: M, value: "N * F"}]
-```
+## Where extensions belong
 
-Plus: requirements corpus (question shape → needs → supplied_when), guards.yaml, pack.yaml
-(name, requires, `activation: {always | when: <condition over fact store>}`), project.yaml
-(packs, datasets, md5 splits, firewall config).
+| Change | Primary location |
+| --- | --- |
+| new word, sense, morphology, category, or domain constant | a YAML pack |
+| new sentence construction that emits existing facts | `rulekit/rules@1` plus synthetic tests |
+| monotone join over existing fact kinds | `rulekit/synth@1` |
+| genuinely algorithmic general derivation | a registered synthesizer in `saturate.py` |
+| new question surface | a pack ask |
+| new normalized query operation | a focused consumer under `kernel/consumers/` |
+| new fact kind | model, emission table, store semantics, API/projection serialization, and tests |
+| new corpus or gold representation | project builder and harness adapter, never runtime reading |
 
-### Conflict detection — four layers, cheapest first
+Any shared matcher, learner, fact-store, synthesizer, consumer, or guard change
+has kernel-sized blast radius and must run the full standing gates.
 
-1. **Compile invariants** (build fails loudly): duplicate lexicon keys, dangling parents, antonym
-   overlap, undeclared slot refs.
-2. **Static lint**: pattern-overlap analysis with synthesized witness sentences; specificity ties
-   between overlapping rules = error; **category blast-radius diff** — "tagging pet⊂animal with
-   {dog,cat} makes rules [category-sum, part-count] newly applicable to N dev-train items" —
-   printed BEFORE anything runs (the direct fix for the `pet` disaster).
-3. **Always-on runtime adjudication** (§ execution model) — collisions can't be masked by order.
-4. **`rulekit collisions`** — reads Collision records from the last snapshot (free; TEST-safe,
-   counts only). Ship gate: disagreeing collisions = 0.
+## Declared but not implemented
 
-### Document-level re-parse loop (the big new capability)
+Several schema fields preserve intended seams but do not yet have runtime
+behavior:
 
-`Document` blackboard: per-sentence Readings, global fact store, discourse referents, active
-packs, and a **gap table** (typed records: unknown-word / ambiguous-sense / unmet-obligation /
-missing-fact, keyed by what would fill them). Round 0 parses all sentences; each later round
-re-parses **only sentences owning a gap matched by a new event** (fact admitted, referent
-resolved, provider supplied, pack activated). Re-parse is a pure recompute with enriched context;
-old facts retracted atomically with provenance-chained retraction of downstream synthesized
-facts. Termination: each round must resolve a gap or grow the store; round cap (default 6) errors
-loudly. Between rounds: requirements corpus matches open gaps → deterministic **providers**
-(entry points: conversion tables, attr databases, project fact files — no LLM) supply
-document-scoped facts; **task-specific packs activate** on fact-store conditions (monotone,
-between rounds only). Superseded readings stay in the trace (`superseded_by_round=N`).
+- pack `activation` is validated but all project packs are loaded eagerly;
+- requirement shapes are compiled but no provider loop consumes them;
+- `phase: post-saturation` pattern rules are accepted but only `read` phase is
+  scheduled;
+- multi-sentence pattern sequences are accepted by the schema but not executed;
+- the document loop has no general event-indexed provider, pack-activation, or
+  provenance-retraction mechanism;
+- synthesizers and consumers are in-process registries, not external plugin
+  entry points; and
+- the package root exposes no stable high-level library or MCP API—the CLI and
+  internal Python functions are the current surfaces.
 
-### Harness & CLI
-
-```
-rulekit parse|solve|diagnose <text|file> [--trace --json]
-rulekit lint [--diff]              # static checks + blast radius
-rulekit bench --project P --slice dev-train [--twice]
-rulekit diff <snapA> <snapB>       # SOLVED/BROKE/DECL→WRONG + ship-gate exit code
-rulekit collisions | stats         # collision report; rule attribution + unknown-word worklist
-rulekit serve --project P          # web designer
-rulekit migrate-difg <path>
-```
-
-Firewall with teeth: md5 bucket is the only split path; `--slice test` is aggregate-only and
-requires `--spend-test-look`, appending to an auditable `test-ledger.jsonl`; `--limit` prints the
-PARTIAL-FIREWALL warning. Snapshot = per-item {outcome, answer, rule ids, collisions, decline
-reason} + registry fingerprint.
-
-**Honest incrementality**: per-item cache keyed on (item hash, relevant fingerprint) computed
-from the trigger index; kernel/guard/plugin/answer-fold changes invalidate everything (they're in
-every relevant set); category changes over-invalidate the whole subtree's items; TEST look always
-`--no-cache`; CI periodically asserts cache ≡ full run. Effect: the designer's impact panel
-re-runs tens of items, not thousands.
-
-### Web designer (v1)
-
-Engine records every mutation as a serializable Decision → **step-through needs no engine
-pauses**: server returns the full decision stream; UI steps a cursor, reconstructing state.
-The designer has four complementary lenses over one result: **Reading** shows
-the token ribbon, obligations, decisions, facts, and gaps; **Semantic field**
-groups facts by observed/knowledge/derived epistemic role and independently
-marks exact versus structured representation; **Deictic field** shows reference
-coordinates and declines; **Proof** shows a consumer-owned normalized query,
-named inference steps, and evidence fact ids. Semantic and proof views are
-projections of the result, never a second inference engine. The editor writes
-schema-validated YAML back with comments preserved, while the impact panel
-enforces the DEV/TEST firewall. Later: category graph, collision explorer,
-rule-from-example scaffolding.
-
-Ask ambiguity is represented before consumer dispatch. A pack ask may provide
-multiple normalized interpretations; without a caller selection the answer is
-a non-committing clarification request and Proof remains paused. The trace API
-round-trips an interpretation id, then reruns the ordinary solve path with only
-that query selected. This is distinct from `undetermined`, which means one
-query was understood but the fact store cannot decide it.
-
-### Semantic-projection evaluation
-
-A project may declare a `projection` corpus instead of answer datasets. The
-ordinary `bench` command then compares the result's structured semantic view
-with a normalized gold graph rather than routing a logical form through the
-answer judge. Graph equality ignores conjunct order and alpha-normalizes bound
-lambda variables while preserving COGS token anchors, predicates, semantic
-roles, attachment, complement structure, and definiteness.
-
-Projection outcomes are harm ordered: an extra node/edge is `incorrect`; an
-all-correct but incomplete graph is `partial`; an empty graph is `declined`;
-and a complete graph is `exact`. Snapshot diffing rejects exact→non-exact and
-safe→incorrect transitions. The current runtime bridge projects only the
-already-structured `VerbalRelation` fact; flat exact `Atom` phrase keys are
-never split by the evaluator.
-
-### Migration from difg
-
-`tools/migrate_difg.py`: **import, don't parse** — `import reasoning.reading` executes all 8
-LEXICON update sites and every `_register_category`/`_tag_word`/`_tag_attr`, so dumping the final
-runtime dicts captures true merged state. Dump (sorted, deterministic) → core-english pack:
-LEXICON/PLURALS/VERB_LEMMA → lexicon files; WORD_CATEGORIES/CATEGORY_PARENTS/CATEGORY_ANTONYMS/
-CONTEXT_SYNONYMS/WORD_ATTRS/PART_COUNTS → categories; CONVERSIONS/_UNIT_ALIAS → units;
-NUMBERS/SCALES/MULTIPLIERS/OPERATORS → numbers; ROLE_OBLIGATIONS → obligations.yaml.
-Cross-validate through the registry compiler. Mine the **poison list** (words withheld because
-they regressed holdout) into `quarantine.yaml` as documentation/lint data. **Not migrated**: the
-~90 per-problem `vocab_singles` branches (methodology §9 prices them dev-only — carrying them
-imports the sprawl). The general families that carry TEST (fold, anchored, affine, fraction,
-percent) are hand-ported as pattern rules + plugin synthesizers in `packs/arithmetic/`.
-
-## Phases (each with verification)
-
-- **P0 scaffold**: uv/pyproject, git init, pydantic schemas, pack loader + compile invariants,
-  determinism harness, CI. ✓ toy pack compiles; two fresh-process compiles → identical fingerprints.
-- **P1 kernel + curated suite** (the milestone): full pipeline, Decision/trace, evaluator, value
-  accounting, pattern matcher; starter core-english (~200 words, 5–10 rules, 3–5 asks, 2 synths);
-  `projects/curated` ~100 hand-written items covering fact types, consumers, ambiguity, negation,
-  declines; bench + snapshots + diff + ship gate. ✓ curated bench: 100% precision, >0 coverage;
-  `--twice` identical; every mutation in `--trace`.
-- **P2 migration + conflict tooling**: migrate-difg; lint overlap/blast-radius/ties; collision
-  surfacing. ✓ migrated pack compiles (documented exceptions); planted overlapping rule caught
-  statically with witness; the `pet` scenario reproduced as a test.
-- **P3 document loop + epistemic surface**: blackboard, gaps, rounds, retraction, providers,
-  requirements, diagnose, pack activation. ✓ multi-sentence curated docs reach fixpoint; a
-  round-2-dependent doc answers correctly with superseded trace visible; cyclic doc hits cap loudly.
-- **P4 GSM8K + arithmetic pack + cache**: parquets, splits/firewall/ledger, general families
-  ported, trigger-index cache + cache≡full CI check. ✓ precision matches difg's general machinery
-  at corresponding coverage; 0 disagreeing collisions; single-rule edit re-runs only affected items.
-- **P5 web designer v1**: routes, Monaco, stepper, impact panel. ✓ UI edit preserves YAML
-  comments; save→impact cycle < ~15 s via cache.
-- **P6 workflow surface**: library API (`rulekit.load_project(p).solve(text)`), MCP wrapper,
-  docs pass.
-
-## Verification (end-to-end)
-
-- `uv run pytest` green at every phase; `rulekit bench --project curated` = 100% precision.
-- Determinism: `rulekit bench --twice` byte-identical outcomes.
-- Conflict tooling proven by planted-failure tests (overlap witness, blast radius, collision).
-- P4 exit: GSM8K dev-train/holdout run clean; one audited TEST look recorded in the ledger.
-- P5 exit: full author-loop in the browser — edit rule → lint → step trace → impact buckets.
+These are roadmap candidates, not capabilities callers may rely on.
