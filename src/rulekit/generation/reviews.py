@@ -1,8 +1,17 @@
-"""Append-only, project-local human review history."""
+"""Append-only, project-local human review history.
+
+Corrections never rewrite the file. Editing a review appends a new record
+carrying `supersedes`, and deleting one appends a record carrying
+`tombstones`; `read_reviews` folds those chains into the current state. The
+designer therefore gets ordinary edit/delete behaviour while the ledger stays
+append-only and every prior human verdict remains recoverable from disk.
+"""
 
 from __future__ import annotations
 
+import hashlib
 import json
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Literal
@@ -32,14 +41,19 @@ def review_path(project: Project) -> Path:
     return project.root / "generation" / "reviews.jsonl"
 
 
-def append_review(project: Project, review: ReviewRecord) -> dict:
-    """Append a review and return the exact durable record."""
+def _legacy_id(record: dict) -> str:
+    """A stable id for rows written before ids existed.
 
-    record = {
-        **review.model_dump(),
-        "project": project.doc.name,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-    }
+    Derived from the immutable pair, so the same historical row always folds
+    to the same identity across reads — a random id would orphan any edit the
+    moment the designer reloaded.
+    """
+
+    seed = f"{record.get('candidate_id', '')}|{record.get('timestamp', '')}"
+    return "rev-" + hashlib.sha256(seed.encode("utf-8")).hexdigest()[:16]
+
+
+def _append(project: Project, record: dict) -> dict:
     path = review_path(project)
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a", encoding="utf-8") as fh:
@@ -47,11 +61,102 @@ def append_review(project: Project, review: ReviewRecord) -> dict:
     return record
 
 
-def read_reviews(project: Project, limit: int = 100) -> list[dict]:
-    """Return the newest bounded slice without involving the runtime."""
+def _raw_reviews(project: Project) -> list[dict]:
+    """Every record in write order, each guaranteed to carry an id."""
 
     path = review_path(project)
     if not path.exists():
         return []
-    lines = path.read_text(encoding="utf-8").splitlines()
-    return [json.loads(line) for line in lines[-limit:]][::-1]
+    rows = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        record = json.loads(line)
+        record.setdefault("id", _legacy_id(record))
+        rows.append(record)
+    return rows
+
+
+def _fold(rows: list[dict]) -> list[dict]:
+    """Collapse supersede/tombstone chains down to the live records."""
+
+    superseded = {r["supersedes"] for r in rows if r.get("supersedes")}
+    tombstoned = {r["tombstones"] for r in rows if r.get("tombstones")}
+    return [
+        r
+        for r in rows
+        # a tombstone is a marker, never itself a review
+        if not r.get("tombstones")
+        and r["id"] not in superseded
+        and r["id"] not in tombstoned
+    ]
+
+
+def append_review(project: Project, review: ReviewRecord) -> dict:
+    """Append a review and return the exact durable record."""
+
+    return _append(
+        project,
+        {
+            **review.model_dump(),
+            "id": "rev-" + uuid.uuid4().hex[:16],
+            "project": project.doc.name,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        },
+    )
+
+
+def update_review(
+    project: Project,
+    review_id: str,
+    verdict: str,
+    note: str,
+) -> dict:
+    """Append a correction that supersedes `review_id`.
+
+    Only a live record may be corrected: editing an already superseded or
+    tombstoned row would silently resurrect it when the chain is folded.
+    """
+
+    current = {r["id"]: r for r in _fold(_raw_reviews(project))}
+    previous = current.get(review_id)
+    if previous is None:
+        raise KeyError(review_id)
+    return _append(
+        project,
+        {
+            **{k: v for k, v in previous.items() if k not in {"id", "timestamp"}},
+            "id": "rev-" + uuid.uuid4().hex[:16],
+            "supersedes": review_id,
+            "verdict": verdict,
+            "note": note,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        },
+    )
+
+
+def delete_review(project: Project, review_id: str) -> dict:
+    """Append a tombstone hiding `review_id` from the folded history."""
+
+    current = {r["id"]: r for r in _fold(_raw_reviews(project))}
+    if review_id not in current:
+        raise KeyError(review_id)
+    return _append(
+        project,
+        {
+            "id": "rev-" + uuid.uuid4().hex[:16],
+            "tombstones": review_id,
+            "project": project.doc.name,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        },
+    )
+
+
+def read_reviews(project: Project, limit: int = 100) -> list[dict]:
+    """Return the newest bounded slice of LIVE reviews, newest first.
+
+    The bound applies after folding, so a heavily edited history still yields
+    a full page of current records rather than a page of spent corrections.
+    """
+
+    return _fold(_raw_reviews(project))[-limit:][::-1]

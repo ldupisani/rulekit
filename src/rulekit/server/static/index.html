@@ -14,6 +14,7 @@
   <span id="view-toggle" class="toggle">
     <button id="view-reading" class="on">reading</button
     ><button id="view-generate">generate</button
+    ><button id="view-reviews">reviews</button
     ><button id="view-semantic">semantic field</button
     ><button id="view-field">deictic field</button
     ><button id="view-proof">proof</button>
@@ -36,7 +37,9 @@
     <div class="editor-actions">
       <button id="save-btn">Save + validate</button>
       <span id="save-result"></span>
+      <span id="editor-syntax"></span>
     </div>
+    <div id="editor-problems" class="hidden"></div>
     <div id="lint-box"></div>
   </aside>
 
@@ -131,6 +134,10 @@
       </div>
     </div>
 
+    <!-- The project's human review history. Edits and deletes append
+         corrections to the append-only ledger; nothing is rewritten. -->
+    <div id="reviews" class="hidden"></div>
+
     <!-- Typed propositions grouped by epistemic role. This remains a view over
          the one FactStore; it does not run a second inference path. -->
     <div id="semantic" class="hidden"></div>
@@ -157,5 +164,6 @@
 </footer>
 
 <script src="/static/app.js"></script>
+<script src="/static/editor.js"></script>
 </body>
 </html>

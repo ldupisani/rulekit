@@ -10,10 +10,10 @@ from __future__ import annotations
 
 import traceback
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from ..data.packs import PackError
 from ..data.project import Project, load_project
@@ -22,9 +22,11 @@ from ..generation import (
     GenerationError,
     ReviewRecord,
     append_review,
+    delete_review,
     generate_candidate,
     list_rule_availability,
     read_reviews,
+    update_review,
 )
 from ..harness.bench import run_suite
 from ..harness.snapshot import diff as snapshot_diff
@@ -56,6 +58,16 @@ class ImpactBody(BaseModel):
 class GenerationCandidateBody(BaseModel):
     rule_id: str | None = Field(default=None, max_length=256)
     seed: int | None = None
+
+
+class ReviewEditBody(BaseModel):
+    """A correction. Only the human judgment is editable — the candidate,
+    seed and fingerprint stay pinned to what was actually reviewed."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    verdict: Literal["valid", "invalid", "unclear"]
+    note: str = Field(default="", max_length=4000)
 
 
 class ServerState:
@@ -740,5 +752,27 @@ def build_router(state: ServerState) -> APIRouter:
         with state.generation_lock:
             reviews = read_reviews(state.project, bounded)
         return {"reviews": reviews}
+
+    @router.patch("/generation/review/{review_id}")
+    def generation_review_edit(review_id: str, body: ReviewEditBody):
+        # a correction APPENDS; the superseded record stays on disk
+        with state.generation_lock:
+            try:
+                record = update_review(
+                    state.project, review_id, body.verdict, body.note
+                )
+            except KeyError as exc:
+                raise HTTPException(404, f"no live review {review_id}") from exc
+        return {"ok": True, "review": record}
+
+    @router.delete("/generation/review/{review_id}")
+    def generation_review_delete(review_id: str):
+        # a delete APPENDS a tombstone; nothing is removed from the ledger
+        with state.generation_lock:
+            try:
+                record = delete_review(state.project, review_id)
+            except KeyError as exc:
+                raise HTTPException(404, f"no live review {review_id}") from exc
+        return {"ok": True, "tombstone": record}
 
     return router

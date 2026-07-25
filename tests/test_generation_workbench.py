@@ -9,10 +9,13 @@ from rulekit.data.project import load_project
 from rulekit.generation import (
     ReviewRecord,
     append_review,
+    delete_review,
     generate_candidate,
     list_rule_availability,
     read_reviews,
+    update_review,
 )
+from rulekit.generation.reviews import _raw_reviews, review_path
 
 
 def _write_project(root: Path) -> None:
@@ -198,6 +201,135 @@ def test_reviews_can_only_use_the_fixed_project_path(tmp_path: Path) -> None:
             }
         )
     assert not (tmp_path / "elsewhere.jsonl").exists()
+
+
+def _review(candidate, verdict: str = "unclear", note: str = "") -> ReviewRecord:
+    return ReviewRecord(
+        candidate_id=candidate.id,
+        sentence=candidate.sentence,
+        target_rule=candidate.target_rule,
+        seed=candidate.seed,
+        registry_fingerprint=candidate.registry_fingerprint,
+        verdict=verdict,
+        note=note,
+    )
+
+
+def _seeded(tmp_path: Path):
+    _write_project(tmp_path)
+    project = load_project(tmp_path)
+    candidate = generate_candidate(project, rule_id="invented/simple", seed=5)
+    return project, candidate
+
+
+def test_editing_a_review_supersedes_without_destroying_the_original(
+    tmp_path: Path,
+) -> None:
+    project, candidate = _seeded(tmp_path)
+    first = append_review(project, _review(candidate, "unclear", "unsure"))
+
+    corrected = update_review(project, first["id"], "invalid", "decided")
+
+    live = read_reviews(project)
+    assert [r["id"] for r in live] == [corrected["id"]]
+    assert live[0]["verdict"] == "invalid"
+    assert live[0]["note"] == "decided"
+    assert corrected["supersedes"] == first["id"]
+    # the ledger keeps both rows: the correction is an APPEND, not a rewrite
+    raw = _raw_reviews(project)
+    assert [r["id"] for r in raw] == [first["id"], corrected["id"]]
+    assert raw[0]["verdict"] == "unclear"
+
+
+def test_editing_preserves_what_was_actually_reviewed(tmp_path: Path) -> None:
+    project, candidate = _seeded(tmp_path)
+    first = append_review(project, _review(candidate, "valid"))
+
+    corrected = update_review(project, first["id"], "invalid", "")
+
+    # only the human judgment may move; the reviewed artefact stays pinned
+    for field in ("candidate_id", "sentence", "target_rule", "seed",
+                  "registry_fingerprint"):
+        assert corrected[field] == first[field]
+
+
+def test_deleting_a_review_appends_a_tombstone(tmp_path: Path) -> None:
+    project, candidate = _seeded(tmp_path)
+    first = append_review(project, _review(candidate, "valid"))
+
+    delete_review(project, first["id"])
+
+    assert read_reviews(project) == []
+    raw = _raw_reviews(project)
+    assert len(raw) == 2
+    assert raw[0]["verdict"] == "valid"  # original untouched on disk
+    assert raw[1]["tombstones"] == first["id"]
+
+
+def test_an_edited_review_can_still_be_deleted(tmp_path: Path) -> None:
+    """The tombstone must target the live row, not the spent original."""
+
+    project, candidate = _seeded(tmp_path)
+    first = append_review(project, _review(candidate, "unclear"))
+    corrected = update_review(project, first["id"], "valid", "")
+
+    delete_review(project, corrected["id"])
+
+    assert read_reviews(project) == []
+    assert len(_raw_reviews(project)) == 3
+
+
+def test_a_superseded_review_cannot_be_edited_or_deleted(tmp_path: Path) -> None:
+    """Otherwise a stale designer tab would resurrect a spent verdict."""
+
+    project, candidate = _seeded(tmp_path)
+    first = append_review(project, _review(candidate, "unclear"))
+    update_review(project, first["id"], "valid", "")
+
+    with pytest.raises(KeyError):
+        update_review(project, first["id"], "invalid", "")
+    with pytest.raises(KeyError):
+        delete_review(project, first["id"])
+    with pytest.raises(KeyError):
+        delete_review(project, "rev-does-not-exist")
+
+
+def test_rows_written_before_ids_existed_stay_addressable(tmp_path: Path) -> None:
+    """Legacy history predates the id field; folding must not orphan it."""
+
+    _write_project(tmp_path)
+    project = load_project(tmp_path)
+    path = review_path(project)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        '{"candidate_id": "gen-legacy", "note": "", "project": "p", "seed": 1,'
+        ' "registry_fingerprint": "abcdef0123456789",'
+        ' "sentence": "A synthetic legacy row.", "target_rule": "probe/rule",'
+        ' "timestamp": "2026-01-01T00:00:00+00:00", "verdict": "unclear"}\n',
+        encoding="utf-8",
+    )
+
+    live = read_reviews(project)
+    assert len(live) == 1
+    legacy_id = live[0]["id"]
+    # the derived id must be stable across reads, or edits would miss it
+    assert read_reviews(project)[0]["id"] == legacy_id
+
+    update_review(project, legacy_id, "valid", "triaged")
+    assert [r["verdict"] for r in read_reviews(project)] == ["valid"]
+
+
+def test_history_limit_counts_live_reviews_not_spent_corrections(
+    tmp_path: Path,
+) -> None:
+    project, candidate = _seeded(tmp_path)
+    kept = append_review(project, _review(candidate, "valid"))
+    noisy = append_review(project, _review(candidate, "unclear"))
+    for _ in range(5):
+        noisy = update_review(project, noisy["id"], "unclear", "again")
+
+    live = read_reviews(project, limit=2)
+    assert {r["id"] for r in live} == {kept["id"], noisy["id"]}
 
 
 def test_designer_exposes_the_generation_review_loop() -> None:

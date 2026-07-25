@@ -19,6 +19,9 @@ const state = {
   generationRules: [],
   candidate: null,
   reviewVerdict: null,
+  reviews: [],
+  reviewSort: { key: "timestamp", dir: "desc" },
+  editingReview: null,   // id of the row being corrected
 };
 
 async function api(method, path, body) {
@@ -77,6 +80,7 @@ async function openDoc(path, node) {
   $("editor").value = doc.content;
   $("editor-title").textContent = path.split("/").slice(-2).join("/");
   $("save-result").textContent = "";
+  window.RulekitEditor?.refresh();  // repaint highlighting + syntax lint
 }
 
 async function saveDoc() {
@@ -759,11 +763,203 @@ function renderField(t) {
 }
 
 function setView(which) {
-  for (const view of ["reading", "generate", "semantic", "field", "proof"]) {
+  for (const view of ["reading", "generate", "reviews", "semantic", "field", "proof"]) {
     $(view).classList.toggle("hidden", which !== view);
     $(`view-${view}`).classList.toggle("on", which === view);
   }
   document.body.classList.toggle("generate-mode", which === "generate");
+  document.body.classList.toggle("reviews-mode", which === "reviews");
+  if (which === "reviews") loadReviews();
+}
+
+/* ---------- review history ----------
+
+   Edits and deletes POST corrections to the append-only ledger, so every
+   mutation here is a round trip: we never patch the local array and hope it
+   matches disk. `supersedes` on a record means it is itself a correction. */
+
+const VERDICTS = ["valid", "invalid", "unclear"];
+// worst-first, so sorting by verdict groups what still needs attention
+const VERDICT_RANK = { invalid: 0, unclear: 1, valid: 2 };
+
+async function loadReviews() {
+  const payload = await api("GET", "/api/generation/history?limit=500");
+  state.reviews = payload.reviews || [];
+  renderReviews();
+}
+
+function sortedReviews() {
+  const { key, dir } = state.reviewSort;
+  const sign = dir === "asc" ? 1 : -1;
+  const of = (r) =>
+    key === "verdict" ? VERDICT_RANK[r.verdict] ?? 9
+    : key === "target_rule" ? r.target_rule
+    : r.timestamp;
+  return [...state.reviews].sort((a, b) => {
+    const x = of(a), y = of(b);
+    return x < y ? -sign : x > y ? sign : 0;
+  });
+}
+
+function sortHeader(label, key) {
+  const { key: active, dir } = state.reviewSort;
+  const node = el("th", `rv-sort${active === key ? " on" : ""}`,
+                  `${label}${active === key ? (dir === "asc" ? " ▲" : " ▼") : ""}`);
+  node.onclick = () => {
+    state.reviewSort = active === key
+      ? { key, dir: dir === "asc" ? "desc" : "asc" }
+      : { key, dir: key === "timestamp" ? "desc" : "asc" };
+    renderReviews();
+  };
+  return node;
+}
+
+function renderReviews() {
+  const box = $("reviews");
+  box.replaceChildren();
+
+  const head = el("div", "rv-head");
+  head.append(el("div", "pane-title", "Human review history"));
+  head.append(el("span", "dim",
+    `${state.reviews.length} review${state.reviews.length === 1 ? "" : "s"} · ` +
+    `edits and deletes append corrections; nothing is overwritten`));
+  box.append(head);
+
+  if (!state.reviews.length) {
+    box.append(el("div", "rv-empty",
+      "No reviews recorded for this project yet. Record one from the generate tab."));
+    return;
+  }
+
+  const table = el("table", "rv-table");
+  const thead = el("thead");
+  const hrow = el("tr");
+  hrow.append(sortHeader("Verdict", "verdict"));
+  hrow.append(sortHeader("Recorded", "timestamp"));
+  hrow.append(sortHeader("Target rule", "target_rule"));
+  hrow.append(el("th", "", "Sentence"));
+  hrow.append(el("th", "", "Note"));
+  hrow.append(el("th", "", ""));
+  thead.append(hrow);
+  table.append(thead);
+
+  const body = el("tbody");
+  for (const r of sortedReviews()) {
+    body.append(
+      state.editingReview === r.id ? reviewEditRow(r) : reviewRow(r)
+    );
+  }
+  table.append(body);
+  box.append(table);
+}
+
+function reviewRow(r) {
+  const row = el("tr", "rv-row");
+
+  const verdict = el("td");
+  verdict.append(el("span", `rv-verdict ${r.verdict}`, r.verdict));
+  if (r.supersedes) {
+    const tag = el("span", "rv-edited", "edited");
+    tag.title = "this verdict supersedes an earlier one, still on disk";
+    verdict.append(tag);
+  }
+  row.append(verdict);
+
+  row.append(el("td", "rv-when mono", (r.timestamp || "").replace("T", " ").slice(0, 19)));
+  row.append(el("td", "rv-rule mono", r.target_rule));
+  row.append(el("td", "rv-sentence", r.sentence));
+  row.append(el("td", "rv-note", r.note || "—"));
+
+  const actions = el("td", "rv-actions");
+  const open = el("button", "", "Open in reader");
+  open.onclick = () => openReviewInReader(r);
+  const edit = el("button", "", "Edit");
+  edit.onclick = () => { state.editingReview = r.id; renderReviews(); };
+  const del = el("button", "rv-danger", "Delete");
+  // two-step in place: a modal confirm() would block the page
+  del.onclick = () => {
+    if (del.dataset.armed) return deleteReview(r);
+    del.dataset.armed = "1";
+    del.textContent = "Confirm?";
+    setTimeout(() => {
+      if (!del.isConnected) return;
+      delete del.dataset.armed;
+      del.textContent = "Delete";
+    }, 4000);
+  };
+  actions.append(open, edit, del);
+  row.append(actions);
+  return row;
+}
+
+function reviewEditRow(r) {
+  const row = el("tr", "rv-row editing");
+  const cell = el("td");
+  cell.colSpan = 6;
+
+  const form = el("div", "rv-edit");
+  form.append(el("div", "rv-edit-sentence", r.sentence));
+
+  let verdict = r.verdict;
+  const picker = el("div", "review-verdicts");
+  for (const v of VERDICTS) {
+    const b = el("button", v === verdict ? "selected" : "", v);
+    b.dataset.verdict = v;
+    b.onclick = () => {
+      verdict = v;
+      picker.querySelectorAll("button").forEach((n) =>
+        n.classList.toggle("selected", n.dataset.verdict === v));
+    };
+    picker.append(b);
+  }
+  form.append(picker);
+
+  const note = el("textarea", "rv-edit-note");
+  note.maxLength = 4000;
+  note.value = r.note || "";
+  note.placeholder = "why this verdict…";
+  form.append(note);
+
+  const actions = el("div", "rv-actions");
+  const save = el("button", "primary", "Save correction");
+  save.onclick = async () => {
+    save.disabled = true;
+    const res = await api("PATCH", `/api/generation/review/${encodeURIComponent(r.id)}`,
+                          { verdict, note: note.value });
+    if (!res.ok) {
+      setStatus(res.detail || "correction rejected", "err");
+      save.disabled = false;
+      return;
+    }
+    state.editingReview = null;
+    await loadReviews();
+    setStatus(`review corrected to ${verdict} — the previous verdict is still on disk`, "ok");
+  };
+  const cancel = el("button", "", "Cancel");
+  cancel.onclick = () => { state.editingReview = null; renderReviews(); };
+  actions.append(save, cancel);
+  form.append(actions);
+
+  cell.append(form);
+  row.append(cell);
+  return row;
+}
+
+async function deleteReview(r) {
+  const res = await api("DELETE", `/api/generation/review/${encodeURIComponent(r.id)}`);
+  if (!res.ok) {
+    setStatus(res.detail || "delete rejected", "err");
+    return;
+  }
+  await loadReviews();
+  setStatus("review deleted — a tombstone was appended, the record is recoverable", "ok");
+}
+
+function openReviewInReader(r) {
+  $("trace-input").value = r.sentence;
+  setView("reading");
+  $("view-reading").classList.add("on");
+  runTrace();
 }
 
 /* ---------- generation and human review ---------- */
@@ -1040,6 +1236,7 @@ $("impact-btn").onclick = runImpact;
 $("baseline-btn").onclick = setBaseline;
 $("view-reading").onclick = () => setView("reading");
 $("view-generate").onclick = () => setView("generate");
+$("view-reviews").onclick = () => setView("reviews");
 $("view-semantic").onclick = () => setView("semantic");
 $("view-field").onclick = () => setView("field");
 $("view-proof").onclick = () => setView("proof");

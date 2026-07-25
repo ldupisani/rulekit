@@ -5,7 +5,13 @@ the ordinary analyzer and matcher as its validation oracle.
 """
 
 from .candidate import GenerationCandidate, RuleAvailability
-from .reviews import ReviewRecord, append_review, read_reviews
+from .reviews import (
+    ReviewRecord,
+    append_review,
+    delete_review,
+    read_reviews,
+    update_review,
+)
 from .sample import GenerationError, generate_candidate, list_rule_availability
 
 __all__ = [
@@ -14,7 +20,9 @@ __all__ = [
     "ReviewRecord",
     "RuleAvailability",
     "append_review",
+    "delete_review",
     "generate_candidate",
     "list_rule_availability",
     "read_reviews",
+    "update_review",
 ]
