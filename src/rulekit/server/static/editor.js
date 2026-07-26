@@ -400,5 +400,11 @@
     schedule();
   });
 
-  window.RulekitEditor = { refresh, lint, highlight, problems: () => problems };
+  window.RulekitEditor = {
+    refresh,
+    lint,
+    highlight,
+    gotoLine,
+    problems: () => problems,
+  };
 })();

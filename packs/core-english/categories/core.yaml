@@ -46,8 +46,29 @@ categories:
       stative verbs — a quantity they state is a HOLDING (same-key
       disagreement is a conflict); any other verb is an EVENT (each
       occurrence is a distinct fact that accumulates, signed by polarity)
+  copula:
+    parent: state
+    notes: >
+      Finite forms of "be" used for identity and predication. This is
+      deliberately narrower than `state`: possession verbs such as
+      have/own may state quantities, but cannot grammatically connect a
+      partition to its attribute or a person to an age predicate.
+  plural_copula:
+    parent: copula
+    notes: >
+      The plural-agreeing copula forms. Fractional partitions always denote
+      a plural collection on their surface ("half of them ARE red"), so
+      they use this closed subcategory instead of the general copula.
   acquire: {parent: verb, antonym: lose, polarity: 1}
   lose: {parent: verb, antonym: acquire, polarity: -1}
+  transfer_out:
+    parent: lose
+    notes: >
+      Outbound transfer verbs that license a recipient argument in either
+      ditransitive ("gave Kim 3 apples") or prepositional ("gave 3 apples
+      to Kim") form. Loss, consumption, dropping, and spending remain in
+      `lose` but do not acquire a recipient merely because "to NAME"
+      follows them.
   spend_verb:
     parent: verb
     notes: >
@@ -135,9 +156,16 @@ categories:
       one to think twice about — it is a possessive determiner here ("half of
       her cookies"), never the object pronoun.
 
-      Members split by LEXICON HOME, not by taste: 'it' is core-english and is
-      tagged in this file's own `members:`; 'them' is a difg-mined word, so it
-      is tagged there (a core-only registry must still compile).
+      Both generic members live in core-english and are tagged in this file;
+      corpus-mined vocabulary is not required for this grammatical category.
+  plural_object_pronoun:
+    parent: pronoun
+    notes: >
+      Object-case plural pronouns licensed as the collection in cardinal and
+      fractional partition premises ("3 of THEM", "half of THEM"). This is
+      narrower than `pool_pronoun`: "it" can denote a fraction's source pool,
+      but singular "of it/he/she/I" is not the partition surface these rules
+      describe.
   currency:
     parent: noun
     interchangeable: true
@@ -522,12 +550,11 @@ categories:
       at packs/core-english/categories/core.yaml:65 plus
       src/rulekit/kernel/answer.py's `q.measure == "currency" or
       reg.word_in_category(q.measure, "currency")` is the reference
-      implementation this mirrors). 'year' is a difg-mined-only word — no
-      core-english word carries this sense as an age unit — so, mirroring
-      'temporal_marker's sibling pattern above, this category has NO
-      members here; it lives in packs/difg-mined/categories/semantic.yaml.
-      A core-english-only registry (no difg-mined) compiles with this
-      category simply empty (the synth then never fires, decline-safe).
+      implementation this mirrors). 'year' is generic English vocabulary
+      and therefore lives in core-english alongside this membership. That
+      keeps the grammar needed by arithmetic/stated-age available to every
+      project that loads core-english + arithmetic, without depending on a
+      corpus-mined vocabulary pack.
   partitive:
     parent: preposition
     notes: >
@@ -720,7 +747,8 @@ categories:
 members:
   currency: [dollar]
   partitive: [of]
-  pool_pronoun: [it]
+  pool_pronoun: [it, them]
+  plural_object_pronoun: [them]
   remnant_adj: [left]
   animal: [dog, cat, fish, bird, rabbit, hamster]
   pet: [dog, cat, hamster]
@@ -736,8 +764,11 @@ members:
   # the fallback binds a SUBJECT pronoun to a prior subject anyway.
   animate_pronoun: [he, she]
   state: [has, have, had, is, are, was, were, own, owns]
+  copula: [is, are, was, were]
+  plural_copula: [are, were]
   acquire: [get, gets, got, find, finds, found, buy, buys, bought, receive, receives, received, win, wins, won]
   lose: [lose, loses, lost, eat, eats, ate, give, gives, gave, sell, sells, sold, spend, spends, spent, dropped, drops]
+  transfer_out: [gives, gave, sells, sold]
   spend_verb: [spend, spends, spent]
   more_dir: [more]
   less_dir: [fewer, less]
@@ -749,6 +780,8 @@ members:
   indefinite_article: [a, an]
   compute_verb: [compute]  # 'calculate'/'determine' extend this from packs/difg-mined
   currency_measure: [dollar]  # 'cent'/'balance'/'earnings'/'cost' extend this from packs/difg-mined
+  time_measure: [year]  # generic age/duration unit; other units extend this from difg-mined
+  age_measure: [year]
 context_synonyms:
   appendage:
     gate: animal

@@ -2,9 +2,9 @@ format: rulekit/rules@1
 # The ditransitive transfer: "Tom gave Mary 3 apples" / "Tom gave 3 apples
 # to Mary". The rule emits TWO quantity facts and the CATEGORY DATA does the
 # signing: the giver's side carries the sentence's own verb (give/sold/… ∈
-# lose → −), the recipient's side carries `receive` (∈ acquire → +). No
-# arithmetic lives in the rule; tagging a new transfer verb in the lose
-# category is the only change "handed"/"donated" would ever need.
+# transfer_out ⊂ lose → −), the recipient's side carries `receive`
+# (∈ acquire → +). No arithmetic lives in the rule; tagging a new verb in
+# transfer_out is the only change "handed"/"donated" would ever need.
 rules:
   - id: arithmetic/transfer-ditransitive
     phase: read
@@ -12,7 +12,7 @@ rules:
     match:
       sentence:
         - {slot: giver, type: name}
-        - {slot: verb, cat: lose}
+        - {slot: verb, cat: transfer_out}
         - {slot: recipient, type: name}
         - {slot: item, type: counted}
     where:
@@ -36,7 +36,7 @@ rules:
     match:
       sentence:
         - {slot: giver, type: name}
-        - {slot: verb, cat: lose}
+        - {slot: verb, cat: transfer_out}
         - {slot: item, type: counted}
         - {lit: to}
         - {slot: recipient, type: name}

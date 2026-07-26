@@ -145,9 +145,15 @@ def annotate_numbers(reading: Reading, reg: Registry) -> Reading:
                 f"multiplier word {unit.surface!r}",
             )
         elif fold in reg.fractions:
+            singular = reg.fraction_plurals.get(fold)
             reading.record(
                 "annotate-number", unit,
-                {"value": reg.fractions[fold], "value_kind": "fraction"},
+                {
+                    "value": reg.fractions[fold],
+                    "value_kind": "fraction",
+                    "requires_count": singular is not None,
+                    "fraction_lemma": singular or fold,
+                },
                 f"fraction word {unit.surface!r}",
             )
         elif fold in reg.scales and i > 0 and "value" in units[i - 1].features:
@@ -224,7 +230,9 @@ def annotate_numbers(reading: Reading, reg: Registry) -> Reading:
                 reading.record(
                     "merge-number", merged,
                     {"value": a.features["value"] * b.features["value"],
-                     "value_kind": "fraction"},
+                     "value_kind": "fraction",
+                     "requires_count": False,
+                     "fraction_count": a.features["value"]},
                     f"word fraction {merged.surface!r}",
                 )
                 changed = True

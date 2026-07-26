@@ -1,13 +1,24 @@
 # rulekit handoff — generation workbench
 
-**Updated:** 2026-07-25
+**Updated:** 2026-07-26
 
 **Active campaign:** deterministic rule generation and human review
 
-**Status:** G1 is complete and gated. The Designer can generate one seeded
-sentence for a selected or random supported premise rule, show its mechanical
-result, collect Valid/Invalid/Unclear with a note, and generate the next
-sentence. G2 premise inspection and source navigation are next.
+**Status:** G1 through G4, G5a through G5f, G6, Reading-origin review,
+fact-level review, the fraction-plural morphology correction, scoped
+`GroupTotal`, and the first review-led grammar-boundary reconciliation are
+complete and gated. The Designer
+can generate and explain one seeded sentence or promote
+an exact Reading sentence through an explicitly selected actual premise-rule
+match, open the implicated source, edit through the existing
+compile-and-rollback boundary, retest the identical pinned sentence, compare
+the before/after behavior, form evidence-bounded hypotheses, explore a
+single-slot minimal pair, distinguish untouched from generated and reviewed
+coverage, and deliberately probe a source-linked lexicon entry. Declared
+plural, counted, bounded proper-name possessive, declared generic-pronoun, and
+declared pronoun-category slots are realizable, as are categories rooted at
+the lexicon sense `aggregate`. G5g core ownership of the generic `age_noun`
+domain is next.
 
 **Active plan:**
 [`generation-and-annotation-plan.md`](generation-and-annotation-plan.md)
@@ -43,7 +54,7 @@ Add a clear, rapid rule-exploration mode to the RuleKit designer:
 2. randomly realize one sentence from its match premises and project lexicon;
 3. show why every premise passed;
 4. let a human mark the sentence Valid, Invalid, or Unclear and attach defects
-   to the implicated premises;
+   to the implicated premises or surviving facts;
 5. form deterministic, trace-backed hypotheses about rule or lexical changes;
 6. open the relevant YAML in the existing editor;
 7. save, compile, and rerun the identical sentence; and
@@ -52,7 +63,7 @@ Add a clear, rapid rule-exploration mode to the RuleKit designer:
 This is interactive grammar debugging, not corpus fabrication or model
 training. Reviews never alter runtime behavior automatically.
 
-## Completed increment — G1 vertical slice
+## Completed increments — G1 vertical slice through G6 plus G5c–G5f
 
 G1 now provides:
 
@@ -69,30 +80,361 @@ G1 now provides:
 - fixed-path append-only review history under
   `projects/<project>/generation/reviews.jsonl`.
 
-Validation on 2026-07-25:
+G2 adds:
 
-- 3,417 unit tests pass;
+- a Project-owned authoring source index for rules, asks, premise tokens,
+  predicates, lexicon, categories and memberships, morphology, and numeric
+  declarations;
+- source-backed candidate premise rows with bindings, reasons, category
+  ancestry, `where` outcomes, consumed units, and target specificity;
+- explicit `unverified` rows when the target round trip is absent; and
+- Generate-mode source controls that reuse the existing editable-document
+  allowlist and jump to the exact source line.
+
+G3 adds:
+
+- deterministic fixed-sentence retesting without another realization pass;
+- `POST /api/generation/retest`, which accepts the pinned sentence, target
+  rule, seed, and prior bindings but no path or save authority;
+- a Save + retest pinned action that first reuses `/api/doc` and its
+  compile-and-rollback behavior;
+- honest retest records when the target becomes absent, unsupported, or is
+  removed from the reloaded project; and
+- a compact before/after table for registry fingerprint, target status and
+  specificity, premise outcomes, co-firing rules, facts, collisions, and
+  deficiencies.
+
+G4 adds:
+
+- all declared defect choices with whole-sentence or exact-premise attachment;
+- `POST /api/generation/hypotheses`, which replays the pinned sentence before
+  deriving any suggestion from the current target, premise, shadowing,
+  collision, morphology, lexical, and realizer evidence;
+- source-linked advisory cards with explicit observations, notes, and
+  open/confirmed/rejected/inconclusive statuses;
+- an explicit no-mechanical-hypothesis result for unsupported evidence rather
+  than a guessed recommendation;
+- append-only persistence of bindings, defects, hypotheses, and status
+  corrections in the existing fixed review ledger;
+- locked candidate-review controls after capture, with all later status or
+  verdict corrections routed through Review History → Edit; and
+- `POST /api/generation/minimal-pair`, which excludes one selected filler,
+  locks every other slot, preserves cross-slot constraints, and presents both
+  premise tables without changing the runtime parser.
+
+G5a adds:
+
+- `type: plural` fillers drawn only from the loaded registry's declared,
+  single-token plural surfaces;
+- singular-lemma filler identity, preserving `distinct` and `same_lemma`;
+- generator version `g5a` and generic current-realizer blocker wording; and
+- exactly three newly selectable curated rules, moving support from 8/93 to
+  11/93 without widening plain nouns or enabling counted, optional, or span
+  slots.
+
+G5b adds:
+
+- `type: counted` fillers composed from declared non-negative integer values
+  and declared single-token singular/plural noun pairs;
+- exact agreement: count `1` selects the singular and every other admitted
+  count selects the declared plural;
+- singular-lemma filler identity for `distinct`/`same_lemma`;
+- rule-token, number, lexicon, and conditional plural-morphology source
+  evidence;
+- generator version `g5b`; and
+- exactly five newly selectable curated rules, moving support from 11/93 to
+  16/93 without enabling any rule that retains an independent blocker.
+
+G6 adds:
+
+- a second fixed, schema-bounded Designer ledger at
+  `generation/exploration.jsonl` for successful fresh realizations only;
+- an honest fold of current availability, exploration observations, and live
+  reviews into per-rule and reachable-lexicon status;
+- conservative legacy handling: the existing review marks its rule reviewed
+  without fabricating a generation event or normalized filler review;
+- deterministic least-generated rule and filler selection with seeded,
+  sorted tie-breaking;
+- explicit compatible lexicon probing, exact incompatibility errors, and
+  source navigation through the existing allowlist;
+- no exploration writes for Reading promotion or pinned retest; and
+- generator version `g6`, with the runtime, benchmark, retest, and hypothesis
+  paths isolated from exploration metadata.
+
+G5c adds:
+
+- `type: possessed` fillers composed only from project-fixture single-token
+  proper names and unambiguous declared single-token noun heads;
+- exact `OWNER's HEAD` realization, gated by both the contraction declaration
+  and the possessive lexicon declaration;
+- singular-lemma identity for singular, declared plural, and invariant-plural
+  heads, preserving the ordinary matcher's `distinct`/`same_lemma` behavior;
+- rule-token, owner-fixture, contraction, possessive-lexicon, noun-lexicon,
+  and conditional plural-morphology source evidence;
+- generator version `g6-g5c`; and
+- exactly one newly selectable curated rule, moving support from 16/93 to
+  17/93 while its comparative affine sibling remains blocked.
+
+G5d adds:
+
+- direct `type: pronoun` fillers from every declared single-token pronoun
+  lexicon entry, with exact surface identity and no hidden case or number
+  repair;
+- relocation of all 18 pronoun-only entries formerly owned by `difg-mined`
+  into `core-english`, preserving the combined project inventory while making
+  generic language available to core-only projects;
+- relocation of `them`'s `pool_pronoun` membership beside the core category;
+- rule-token and lexicon source evidence plus normal exploration identity;
+- generator version `g6-g5d`; and
+- exactly four newly selectable partition rules, moving support from 17/93 to
+  21/93.
+
+G5e adds:
+
+- category-gated fillers for every declared category rooted at the grammatical
+  `pronoun` sense;
+- exact category membership plus root-sense filtering, without admitting the
+  broader direct-pronoun domain;
+- exact surface identity and rule-token, lexicon, category-membership, and
+  ancestry evidence;
+- generator version `g6-g5e`; and
+- exactly one newly selectable curated rule, moving support from 21/93 to
+  22/93.
+
+The fraction-plural morphology correction adds:
+
+- a declarative `fraction_plurals` mapping from each count-requiring plural
+  surface to its singular fraction lemma in `core-english`;
+- an incomplete-phrase marker on bare plural fractions, so `type: fraction`
+  rejects `fifths` while the existing word-count merge admits `two fifths`;
+- complete fraction generation from either a direct singular/complete surface
+  or an explicit declared word count plus declared plural fraction form;
+- singular-lemma filler identity and exact count, fraction-value, and
+  fraction-morphology source evidence;
+- generator version `g6-g5e-fractions`; and
+- preservation of the invalid human review: its pinned
+  `Dena had eighths of plum.` specimen now retests as `absent`, while
+  `Dena had two eighths of plum.` matches normally.
+
+G5f adds:
+
+- generic category-gated fillers for the lexicon-sense root `aggregate`,
+  using the same exact surface identity and category-path contract as the
+  other supported roots;
+- the complete loaded single-token domain: `altogether`, `average`,
+  `combined`, `together`, and `total`, with no semantic filtering or silent
+  repair;
+- rule-token and lexicon source evidence for this degenerate root category,
+  without fabricating a named category declaration or membership source;
+- explicit empty-domain failure when no project-owned single-token aggregate
+  lexicon entry exists;
+- generator version `g6-g5f`; and
+- exactly one newly selectable rule,
+  `arithmetic/group-total-leading-marker`, moving support from 22/93 to 23/93
+  while all three other aggregate occurrences retain their independent
+  blockers.
+
+The Reading-origin entry adds:
+
+- matched and shadowed premise-rule targets beside each non-question Reading
+  sentence;
+- explicit target selection when multiple rules fired;
+- `POST /api/generation/from-reading`, which preserves the exact sentence,
+  derives a stable identity seed, and performs no realization pass;
+- `origin: generated|reading` on candidates and durable reviews; and
+- reuse of the existing premise inspector, defect/hypothesis workflow,
+  append-only history, and Save + retest path.
+
+The fact-level review entry adds:
+
+- hover guidance for every defect checkbox, stating the evidence a reviewer
+  should look for;
+- stable numbering for every surviving fact and source navigation when its
+  emitting rule is indexed;
+- exact fact choices in the existing defect-attachment selector;
+- three explicit defect classes: an unjustified fact, an incorrect fact type
+  or field, and a fact that omits downstream context;
+- an immutable snapshot of the attached fact in the append-only review,
+  including its type, fields, provenance rule, sentence index, and optional
+  indexed source location; and
+- source-linked hypotheses about the emitting rule while leaving runtime facts
+  and reasoning unchanged.
+
+The scoped `GroupTotal` increment resolves the semantic boundary exposed by
+that fact review:
+
+- `GroupTotal` now carries optional `scope`, and its conflict key is
+  `(scope, measure)`;
+- `arithmetic/group-total-leading` and
+  `arithmetic/group-total-leading-marker` retain their exact normalized
+  `who` binding as the scope;
+- tail-only, existential, age, and synthesized totals remain unscoped rather
+  than guessing an identity;
+- different scopes over one measure coexist, while disagreement inside one
+  scope and disagreement between unscoped totals still quarantine normally;
+- named consumers admit only unscoped or exact-scope-compatible totals, and
+  entity-less consumers never widen a scoped group to the whole scene; and
+- both leading rules are structurally anchored at sentence start. This
+  prevents a trailing marker in a longer clause from floating into the
+  leading-marker rule with a conjunction misread as the group.
+
+The original `missing_fact_context` review remains valuable historical
+evidence. Its specimen now emits
+`GroupTotal(measure="bird", value=40, scope="blue", verb="have")`, so a later
+comparison mechanism can distinguish blue and red totals. This increment does
+not invent that comparison ask or infer relationships between scopes.
+
+The review-led grammar-boundary reconciliation then resolves every currently
+invalid live review without rewriting its evidence:
+
+- `plural_object_pronoun`, `copula`, and `plural_copula` narrow partition
+  collections and predicates; cardinal partitions declare `same_number`,
+  noun collections require their definite article, and membership predicates
+  require plural nouns;
+- `transfer_out ⊂ lose` keeps genuine recipient-bearing `gave`/`sold`
+  surfaces while excluding consumption, ordinary loss, dropping, and
+  spending;
+- category slots can declare `counted: true`, and `arithmetic/stated-age`
+  combines that with `age_measure`, a copula, and singular-name agreement;
+- generic `year/years` plus its age/time memberships move from `difg-mined`
+  to `core-english`, beside the grammar that needs them; and
+- generator version `g6-review-boundaries` realizes and explains the same
+  counted-category and grammatical-number constraints the matcher enforces.
+
+All nine live review specimens were pinned and retested: every invalid target
+is now `absent`, while the valid `arithmetic/group-total-leading` specimen
+remains `matched`. The ledger stays append-only and unchanged.
+
+Validation on 2026-07-26 after review reconciliation:
+
+- the 3,514-test full repository gate passes in four-worker mode, including
+  the review-boundary matrix and 16-seed generation round trips;
 - curated suite remains 65/65, 0 wrong, 100% precision;
-- curated lint remains 0 errors, 1 known overlap warning; and
-- live browser validation completed the generate/review-control/reading loop.
+- GSM8K DEV-train remains 104 correct / 0 wrong and DEV-holdout remains
+  40 / 0, with both snapshot diffs neutral;
+- ASDiv remains 44 / 0, SVAMP 30 / 0, MAWPS 9 / 0, SciBench 6 / 0, and
+  FOLIO makes zero commitments;
+- lint remains at 0 errors; anchoring removes the former
+  leading-marker overlap, leaving the fraction-rule shadow and the unrelated
+  trigonometric alternation warning; and
+- G3 live validation pinned `Discount of 15%.`, showed
+  `1/7 changed · identical sentence preserved`, exercised rollback, and
+  restored the original fingerprint; G4 live validation generated
+  `4% discount.`, rerolled only `pct` to `10% discount.`, produced a
+  source-linked broad-gate hypothesis, returned the explicit unsupported
+  fallback for a grammaticality defect, and preserved a status correction
+  through append-only history. G5a live validation showed the plural premise's
+  lexicon and morphology sources and rerolled `flowers` to `fish` while
+  holding the other three slots fixed. Reading-origin live validation promoted
+  `4% discount.` through its explicit
+  `arithmetic/discount-percent-noun` match, preserved the sentence and actual
+  binding, and enabled the normal verdict flow without recording the probe.
+  G5b live validation generated matched
+  `Bira sold Eron 19 rabbits.` for `arithmetic/transfer-ditransitive`, linked
+  the counted premise to all four declaration surfaces, and rerolled only
+  `item` to `10 eggs` while holding giver, verb, and recipient fixed. G6 live
+  validation selected untouched `rabbit`, opened `core.yaml:187`, generated
+  matched `Eron gives 18 rabbits to Aven.` for
+  `arithmetic/transfer-prepositional`, and showed the rule and both sampled
+  lexical identities as generated-but-unreviewed. G5c live validation then
+  generated matched `Bira has double Cato's plum.` for
+  `arithmetic/times-as-many-possessive-standard`, showed generator
+  `g6-g5c`, and exposed the owner fixture, contraction, possessive declaration,
+  noun declaration, and rule source. G5d live validation selected the
+  core-owned `them` entry and generated matched
+  `70 of them are blue.` for `arithmetic/partition-attribute`, with exact
+  pronoun evidence and honest unresolved-context deficiencies. G5e live
+  validation selected core-owned `it` and generated matched
+  `Eron has half of it.` for `arithmetic/fraction-of-pronoun`, displaying the
+  exact membership, category ancestry, and unresolved-reference deficiency.
+  The fraction correction live validation generated matched
+  `Cato received nine fifths of it.`, showed the explicit count and singular
+  `fifth` lemma, linked all three numeric declarations, and produced no
+  browser diagnostics. G5f live validation generated matched
+  `Together they bought 9 books.` for
+  `arithmetic/group-total-leading-marker`, reported generator `g6-g5f`,
+  displayed `together → aggregate` with its rule-token and lexicon sources,
+  emitted `GroupTotal`, and produced no browser diagnostics.
+  Fact-level live validation numbered that fact, exposed all checkbox
+  explanations, enabled the three fact-specific defects only after selecting
+  the fact, and formed a source-linked missing-context hypothesis without
+  recording a review.
+  Scoped-`GroupTotal` live validation then generated
+  `Combined everyone walked 16 friends.` on the current workspace server and
+  displayed
+  `{"measure":"friend","value":16,"scope":"everyone","verb":"walk"}` in both
+  the surviving-facts card and the fact-attachment selector.
+  The earlier probes left no human review, their temporary events were removed
+  without touching live user-authored ledger rows, and the browser console
+  remained clean. The scoped probe also left no review; its two temporary
+  exploration events were removed while preserving the user's original
+  `Total blue has 40 birds.` event.
 
-## Immediate next step — G2 premise inspector and source index
+## Test workflow
 
-Implement the explanation layer without widening generation coverage:
+Use the smallest relevant synthetic file or `-k` expression while editing,
+then run the complete parallel synthetic gate before declaring an increment
+green:
 
-- add source indexes for rule ids, lexicon entries, category definitions and
-  memberships, and number/morphology declarations;
-- return required premise rows, selected bindings, type/category reasons,
-  category ancestry, predicate outcomes, consumed units, and specificity;
-- show those rows in Generate mode;
-- link each source-backed row to the existing allowlisted editor at its exact
-  file and line; and
-- keep unsupported and failed-round-trip explanations explicit.
+```sh
+uv run pytest -q tests/test_generation_workbench.py -k aggregate
+uv run pytest -n 4 --dist=worksteal
+```
 
-G2 exits when a reviewer can explain why every premise passed and open its
-source declaration without consulting the raw trace. Hypotheses, YAML retest
-diffs, structured slot realizers, and exploration coverage remain in later
-increments.
+The serial equivalent remains `uv run pytest`. Relevant-only and last-failed
+runs shorten the inner loop; they do not replace the complete synthetic gate
+or any standing benchmark, lint, snapshot, and precision gate required by the
+constitution.
+
+`tests/conftest.py` now shares unchanged repository packs, compiled registries,
+projects, and parquet datasets inside each pytest worker. Temporary paths
+always bypass the cache, cached dataset calls return a fresh list of frozen
+items, and production processes are untouched. Set `RULEKIT_TEST_CACHE=0` for
+a focused loader/debug run that must exercise every physical reload.
+
+Do not use `--last-failed` as the standard inner loop: removed or renamed test
+node IDs can leave stale cache entries and make it fall back to the entire
+suite. An explicit file and `-k` expression has visible, deterministic scope.
+
+Local reference timings on 2026-07-26:
+
+- collection: 76.7 seconds → 1.89 seconds;
+- full serial: 625.42 seconds → 37.87 seconds;
+- full four-worker gate: 16.41 seconds; and
+- corpus-string constitution audit: 18.92 seconds → 1.52 seconds.
+
+The duplicate audit did not justify deleting tests: the repeated bodies
+mostly exercise different module-owned rule sets and negative-neighbour
+matrices, and fixture reuse removed their meaningful runtime cost. Broadly
+disabling traces was also rejected as a default because the isolated saving
+was only about 15.5% and several tests specify trace behavior directly.
+
+## Immediate next step — G5g `age_noun` ownership profiling
+
+Return to the still-open G5 coverage work rather than advancing to deferred
+question generation. The post-G5f frontier is 23 supported and 70 blocked.
+Its leading blockers are 51 optional groups, 19 comparative-category roots,
+and 14 `absent` predicates.
+
+The smallest next complete class is a pack-ownership defect rather than a new
+Python realizer. `age_noun` is a generic core category, but the only lexicon
+entry and category membership for `age` are still owned by `difg-mined`;
+therefore the curated core project has an empty domain. Restoring that generic
+English datum to `core-english` should remove the sole filler blocker from
+`arithmetic/group-total-of-age` and
+`arithmetic/times-as-old-as-possessive-standard`. The related
+`arithmetic/group-total-sum-of-age` must remain blocked by its optional group.
+
+For G5g:
+
+- prove the complete `age_noun` declaration, membership, lexicon, and rule
+  occurrence set across pack combinations;
+- preregister the exact curated support delta 23 → 25 and the two-rule unlock
+  set before moving data;
+- relocate rather than duplicate the generic `age` lexicon and membership,
+  preserving the combined inventory and source ownership; and
+- verify both generated surfaces through the ordinary matcher while keeping
+  optional, comparative, predicate, runtime, and review behavior neutral.
 
 ## Active invariants
 
@@ -912,7 +1254,7 @@ uv run rulekit --project projects/cogs diff \
   /tmp/cogs-before.json /tmp/cogs-after.json
 
 # Synthetic and standing gates
-uv run pytest
+uv run pytest -n 4 --dist=worksteal
 uv run rulekit --project projects/curated bench --slice suite
 uv run rulekit --project projects/gsm8k bench --slice dev-train --jobs 8
 uv run rulekit --project projects/gsm8k bench --slice dev-holdout --jobs 8

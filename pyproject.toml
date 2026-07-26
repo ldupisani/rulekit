@@ -22,7 +22,7 @@ rulekit = "rulekit.cli:main"
 
 [dependency-groups]
 # duckdb here so the test suite exercises the aggregate path, not its decline
-dev = ["pytest>=8", "duckdb>=1.0"]
+dev = ["pytest>=8", "pytest-xdist>=3.8", "duckdb>=1.0"]
 
 [build-system]
 requires = ["hatchling"]

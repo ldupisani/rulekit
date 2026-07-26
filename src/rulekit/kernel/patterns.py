@@ -163,6 +163,14 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
         # category gate cannot tell "the dot product" from "the product". An
         # operation-naming slot sets `bare: true` to demand the head itself.
         return False
+    if token.counted and not (
+        unit.sense() == "noun"
+        and unit.features.get("value_kind") == "count"
+    ):
+        # OPT-IN (schemas.MatchToken.counted): category membership alone
+        # admits the bare noun because a condensed count keeps its noun lemma.
+        # Require the counted-unit structure as an independent gate.
+        return False
     if token.type is not None:
         t = token.type
         sense = unit.sense()
@@ -170,7 +178,13 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
         if t == "number":
             return kind == "count"
         if t == "fraction":
-            return kind == "fraction"
+            # A declared plural fraction surface ("fifths") is an
+            # incomplete phrase until numbers.py merges an explicit word
+            # count with it ("two fifths"). Singular forms and completed
+            # counted forms remain ordinary fractions.
+            return kind == "fraction" and not unit.features.get(
+                "requires_count"
+            )
         if t == "percent":
             # mining candidate discounted-purchase-totals: the PERCENT
             # subset of fraction tokens only — numbers.py sets the
@@ -635,6 +649,23 @@ def _check_where(
                 if s in slots and not isinstance(slots[s], tuple)
             }
             if len(lemmas) > 1:
+                return False
+        if pred.same_number is not None:
+            numbers = []
+            for name in pred.same_number:
+                unit = slots.get(name)
+                if unit is None or isinstance(unit, tuple):
+                    return False
+                number = unit.features.get("number")
+                if unit.features.get("value_kind") == "count":
+                    value = unit.features.get("value")
+                    if not isinstance(value, (int, float)):
+                        return False
+                    number = "singular" if float(value) == 1 else "plural"
+                if number not in ("singular", "plural"):
+                    return False
+                numbers.append(number)
+            if len(set(numbers)) > 1:
                 return False
         if pred.same_phrase is not None:
             # Unlike same_lemma, this predicate is designed for span slots:

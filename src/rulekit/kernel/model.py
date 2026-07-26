@@ -1127,24 +1127,31 @@ class GroupTotal(Fact):
     """'There are 160 toys ALTOGETHER' / 'Tom and Devin have been teaching
     for a TOTAL of 70 years' — a stated SUM across whichever entities the
     passage names, never one entity's own holding (a sum-constraint linear
-    system: mining candidate sum-constraint-relations). This is exactly the
-    premise arithmetic/existential-premise-bare's own `absent: {cat:
-    aggregate}` guard REFUSES to read as a Quantity — it names the group
-    total explicitly rather than widening that guard.
+    system: mining candidate sum-constraint-relations). `scope` retains the
+    exact normalized subject when the total construction itself binds one
+    ("Total blue has 40 birds" -> scope='blue'). Tail-only constructions
+    ("23 birds altogether") and synthesized totals have no mechanically
+    available group identity and remain unscoped (`None`) rather than
+    guessing one. This is exactly the premise arithmetic/existential-
+    premise-bare's own `absent: {cat: aggregate}` guard REFUSES to read as a
+    Quantity — it names the group total explicitly rather than widening that
+    guard.
 
     USE-GATED for value accounting, like Rate/Price/Goal (the look #4-#7
     invariant every new fact kind must decide explicitly): a group total
     that merely EXISTS has not been read — only synth/sum-constraint
     actually solving a Relation against it (see saturate.py) counts as use.
-    Same-key (measure) disagreement is a genuine conflict, exactly like a
-    STATE Quantity — a document states at most one total per measure."""
+    Same-key (scope, measure) disagreement is a genuine conflict, exactly
+    like a STATE Quantity. Distinct non-null scopes may coexist for the same
+    measure; two unscoped totals still collide exactly as before."""
 
     measure: str
     value: float
+    scope: str | None = None
     verb: str = "have"
 
     def key(self) -> tuple:
-        return ("group_total", self.measure)
+        return ("group_total", self.scope, self.measure)
 
     def value_part(self) -> Any:
         return self.value

@@ -55,7 +55,13 @@ def unique_entity(ctx: ConsumerContext):
             f"{len(entities)} entities hold {singular!r} — an entity-less "
             "ask needs exactly one",
         )
-    entity_less_totals = [gt for gt in ctx.store.by_kind(GroupTotal) if gt.measure == singular]
+    # An entity-less ask has no group identity with which to select a scoped
+    # total. Only the legacy unscoped whole is compatible; choosing a named
+    # group's total here would silently widen that group to the whole scene.
+    entity_less_totals = [
+        gt for gt in ctx.store.by_kind(GroupTotal)
+        if gt.measure == singular and gt.scope is None
+    ]
     if entity_less_totals:
         # mining candidate distributive-each-totals: a GroupTotal for this
         # SAME measure means the lone entity's own Quantity is a PER-CONTAINER

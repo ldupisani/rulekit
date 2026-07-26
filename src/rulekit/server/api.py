@@ -8,6 +8,7 @@ registry stays live (a broken registry never serves traces).
 
 from __future__ import annotations
 
+import secrets
 import traceback
 from pathlib import Path
 from typing import Any, Literal
@@ -20,19 +21,28 @@ from ..data.project import Project, load_project
 from ..data.registry import CompileError, Registry
 from ..generation import (
     GenerationError,
+    HypothesisRecord,
     ReviewRecord,
+    ReviewDefect,
+    append_exploration,
     append_review,
+    choose_exploration_target,
     delete_review,
+    derive_hypotheses,
     generate_candidate,
+    generate_minimal_pair,
+    exploration_status,
     list_rule_availability,
+    promote_reading_candidate,
     read_reviews,
+    retest_candidate,
     update_review,
 )
 from ..harness.bench import run_suite
 from ..harness.snapshot import diff as snapshot_diff
 from ..kernel.engine import solve
 from ..kernel.model import PATTERN, Unit, _jsonable
-from ..kernel.patterns import match_ask
+from ..kernel.patterns import match_ask, subsumes
 from ..lint.checks import lint_checks
 from ..lint.overlap import lint_overlaps
 
@@ -56,8 +66,51 @@ class ImpactBody(BaseModel):
 
 
 class GenerationCandidateBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     rule_id: str | None = Field(default=None, max_length=256)
+    filler_identity: str | None = Field(default=None, max_length=256)
     seed: int | None = None
+
+
+class GenerationRetestBody(BaseModel):
+    """One pinned candidate re-evaluated after the project reloads."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    rule_id: str = Field(min_length=1, max_length=256)
+    sentence: str = Field(min_length=1, max_length=2000)
+    seed: int
+    requested_bindings: dict[str, str] = Field(default_factory=dict)
+    attempts: int = Field(default=1, ge=1, le=64)
+    origin: Literal["generated", "reading"] = "generated"
+
+
+class GenerationReadingBody(BaseModel):
+    """One sentence and explicit matched premise selected in Reading."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    rule_id: str = Field(min_length=1, max_length=256)
+    sentence: str = Field(min_length=1, max_length=2000)
+
+
+class GenerationMinimalPairBody(BaseModel):
+    """One controlled reroll with every other slot pinned."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    rule_id: str = Field(min_length=1, max_length=256)
+    base_seed: int
+    original_bindings: dict[str, str] = Field(max_length=64)
+    reroll_slot: str = Field(min_length=1, max_length=128)
+
+
+class GenerationHypothesisBody(GenerationRetestBody):
+    """Human-selected defects evaluated against a fresh matcher replay."""
+
+    verdict: Literal["valid", "invalid", "unclear"]
+    defects: list[ReviewDefect] = Field(min_length=1, max_length=16)
 
 
 class ReviewEditBody(BaseModel):
@@ -68,6 +121,9 @@ class ReviewEditBody(BaseModel):
 
     verdict: Literal["valid", "invalid", "unclear"]
     note: str = Field(default="", max_length=4000)
+    hypotheses: list[HypothesisRecord] | None = Field(
+        default=None, max_length=32
+    )
 
 
 class ServerState:
@@ -140,6 +196,33 @@ def _fact_json(fact) -> dict[str, Any]:
         "source": fact.provenance.source,
         "sentence": fact.provenance.sentence,
     }
+
+
+def _reading_review_targets(results: list[Any], registry: Registry) -> list[dict]:
+    """Deduplicate the ordinary matcher results for explicit UI selection."""
+
+    targets = []
+    for rule_id in sorted({result.match.rule.id for result in results}):
+        selected = [
+            result for result in results if result.match.rule.id == rule_id
+        ]
+        shadowed = all(
+            any(
+                other is not result
+                and subsumes(other.match, result.match, registry)
+                for other in results
+            )
+            for result in selected
+        )
+        rule = selected[0].match.rule
+        targets.append(
+            {
+                "rule_id": rule_id,
+                "description": rule.description,
+                "status": "shadowed" if shadowed else "matched",
+            }
+        )
+    return targets
 
 
 def _semantic_role(fact) -> str:
@@ -584,6 +667,16 @@ def build_router(state: ServerState) -> APIRouter:
                     "is_question": result.question is r,
                     "units": [_unit_json(u) for u in r.units],
                     "decisions": [d.to_json() for d in r.decisions],
+                    "review_targets": (
+                        []
+                        if result.question is r or result.document is None
+                        else _reading_review_targets(
+                            result.document.rule_results.get(
+                                r.sentence_index, []
+                            ),
+                            state.registry,
+                        )
+                    ),
                 }
                 for r in readings
             ],
@@ -728,17 +821,126 @@ def build_router(state: ServerState) -> APIRouter:
             "total": len(rules),
         }
 
+    @router.get("/generation/exploration")
+    def generation_exploration():
+        with state.generation_lock:
+            try:
+                return exploration_status(state.project)
+            except GenerationError as exc:
+                raise HTTPException(422, str(exc)) from exc
+
     @router.post("/generation/candidate")
     def generation_candidate(body: GenerationCandidateBody):
+        seed = secrets.randbits(53) if body.seed is None else body.seed
+        with state.generation_lock:
+            try:
+                selection = choose_exploration_target(
+                    state.project,
+                    rule_id=body.rule_id,
+                    filler_identity=body.filler_identity,
+                    seed=seed,
+                )
+                candidate = generate_candidate(
+                    state.project,
+                    rule_id=selection.rule_id,
+                    seed=seed,
+                    locked_bindings=selection.locked_bindings,
+                )
+                event = append_exploration(state.project, candidate)
+            except GenerationError as exc:
+                raise HTTPException(422, str(exc)) from exc
+        return {
+            **candidate.to_json(),
+            "exploration_event_id": event["id"],
+            "exploration_probe": selection.probe,
+        }
+
+    @router.post("/generation/from-reading")
+    def generation_from_reading(body: GenerationReadingBody):
         try:
-            candidate = generate_candidate(
+            candidate = promote_reading_candidate(
                 state.project,
                 rule_id=body.rule_id,
-                seed=body.seed,
+                sentence=body.sentence,
             )
         except GenerationError as exc:
             raise HTTPException(422, str(exc)) from exc
         return candidate.to_json()
+
+    @router.post("/generation/retest")
+    def generation_retest(body: GenerationRetestBody):
+        try:
+            candidate = retest_candidate(
+                state.project,
+                rule_id=body.rule_id,
+                sentence=body.sentence,
+                seed=body.seed,
+                requested_bindings=body.requested_bindings,
+                attempts=body.attempts,
+                origin=body.origin,
+            )
+        except GenerationError as exc:
+            raise HTTPException(422, str(exc)) from exc
+        return candidate.to_json()
+
+    @router.post("/generation/minimal-pair")
+    def generation_minimal_pair(body: GenerationMinimalPairBody):
+        with state.generation_lock:
+            try:
+                candidate = generate_minimal_pair(
+                    state.project,
+                    rule_id=body.rule_id,
+                    base_seed=body.base_seed,
+                    original_bindings=body.original_bindings,
+                    reroll_slot=body.reroll_slot,
+                )
+                event = append_exploration(state.project, candidate)
+            except GenerationError as exc:
+                raise HTTPException(422, str(exc)) from exc
+        return {
+            "reroll_slot": body.reroll_slot,
+            "locked_bindings": {
+                slot: surface
+                for slot, surface in body.original_bindings.items()
+                if slot != body.reroll_slot
+            },
+            "candidate": candidate.to_json(),
+            "exploration_event_id": event["id"],
+        }
+
+    @router.post("/generation/hypotheses")
+    def generation_hypotheses(body: GenerationHypothesisBody):
+        try:
+            candidate = retest_candidate(
+                state.project,
+                rule_id=body.rule_id,
+                sentence=body.sentence,
+                seed=body.seed,
+                requested_bindings=body.requested_bindings,
+                attempts=body.attempts,
+                origin=body.origin,
+            )
+        except GenerationError as exc:
+            raise HTTPException(422, str(exc)) from exc
+        hypotheses = derive_hypotheses(
+            candidate,
+            verdict=body.verdict,
+            defects=body.defects,
+        )
+        return {
+            "candidate": candidate.to_json(),
+            "hypotheses": [
+                hypothesis.model_dump() for hypothesis in hypotheses
+            ],
+            "detail": (
+                None
+                if hypotheses
+                else (
+                    "No mechanical hypothesis is available for the selected "
+                    "defect and current matcher evidence."
+                )
+            ),
+        }
 
     @router.post("/generation/review")
     def generation_review(body: ReviewRecord):
@@ -759,7 +961,11 @@ def build_router(state: ServerState) -> APIRouter:
         with state.generation_lock:
             try:
                 record = update_review(
-                    state.project, review_id, body.verdict, body.note
+                    state.project,
+                    review_id,
+                    body.verdict,
+                    body.note,
+                    body.hypotheses,
                 )
             except KeyError as exc:
                 raise HTTPException(404, f"no live review {review_id}") from exc

@@ -133,6 +133,8 @@ class NumbersDoc(StrictModel):
     scales: dict[str, float] = Field(default_factory=dict)  # "dozen" -> 12
     multipliers: dict[str, float] = Field(default_factory=dict)  # "twice" -> 2
     fractions: dict[str, float] = Field(default_factory=dict)  # "half" -> 0.5
+    # Count-requiring plural surface -> singular fraction lemma.
+    fraction_plurals: dict[str, str] = Field(default_factory=dict)
     operators: dict[str, str] = Field(default_factory=dict)  # "plus" -> "+"
     currencies: dict[str, str] = Field(default_factory=dict)  # "$" -> dollar
     percents: dict[str, float] = Field(default_factory=dict)  # "percent" -> 0.01
@@ -249,6 +251,13 @@ class MatchToken(StrictModel):
     slot: str | None = None
     type: str | None = None  # builtin slot type
     cat: str | None = None  # category gate (slot form)
+    # OPT-IN: a category-gated noun must also be a condensed counted unit
+    # ("4 years", not bare "year"/"years"). This is the category-aware
+    # counterpart of `type: counted`: the number/noun agreement remains the
+    # generic counted-unit machinery, while the noun lemma must satisfy the
+    # pack-declared category. Defaults False so every existing category slot
+    # remains byte-identical.
+    counted: bool = False
     # OPT-IN: require the slot's noun to be BARE — no compound modifier
     # (condense merge-compound) and no possessive owner. A category gate matches
     # on the unit's LEMMA, and a compound noun keeps its HEAD's lemma, so "the
@@ -398,10 +407,17 @@ class MatchToken(StrictModel):
             # (and by what the surrounding tokens demand), never by type/cat
             if self.slot is None:
                 raise ValueError("`span` only qualifies a slot")
-            if self.type is not None or self.cat is not None or self.bare:
-                raise ValueError("a span slot takes no type/cat/bare")
+            if (
+                self.type is not None
+                or self.cat is not None
+                or self.bare
+                or self.counted
+            ):
+                raise ValueError("a span slot takes no type/cat/bare/counted")
         elif self.slot is not None and (self.type is None) == (self.cat is None):
             raise ValueError("a slot needs exactly one of type/cat")
+        if self.counted and self.cat is None:
+            raise ValueError("`counted` only qualifies a category-gated slot")
         if self.span_blocks is not None and not self.span:
             raise ValueError("`span_blocks` only qualifies a span slot")
         if self.bare and self.slot is None:
@@ -429,6 +445,12 @@ class WherePredicate(StrictModel):
     """Closed set of cross-slot constraints."""
 
     same_lemma: list[str] | None = None
+    # All named slots must carry the same grammatical number. Count-valued
+    # units derive singular only from value 1 and plural otherwise; lexical
+    # units use their pack-declared `number`. This is grammar structure, not a
+    # word list, and lets a rule declare agreement without teaching the kernel
+    # which words are singular or plural.
+    same_number: list[str] | None = None
     # Opt-in equality for whole rendered slot values, including span slots.
     # `same_lemma` deliberately skips spans; constructions with repeated
     # multi-unit phrases need exact phrase identity, not head-lemma identity.
@@ -476,7 +498,8 @@ class WherePredicate(StrictModel):
     def _one(self) -> "WherePredicate":
         set_ = [
             v for v in (
-                self.same_lemma, self.same_phrase, self.distinct, self.distinct_measure,
+                self.same_lemma, self.same_number, self.same_phrase,
+                self.distinct, self.distinct_measure,
                 self.name_count, self.absent, self.unbound,
                 self.slot_not_category,
             )

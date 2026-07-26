@@ -36,6 +36,7 @@
     <textarea id="editor" spellcheck="false" placeholder="select a document…"></textarea>
     <div class="editor-actions">
       <button id="save-btn">Save + validate</button>
+      <button id="save-retest-btn" disabled>Save + retest pinned</button>
       <span id="save-result"></span>
       <span id="editor-syntax"></span>
     </div>
@@ -71,14 +72,19 @@
         <div>
           <div class="pane-title">Target premise rule</div>
           <select id="generation-rule"></select>
-          <div id="generation-coverage" class="dim"></div>
           <div id="generation-blocker" class="generation-blocker hidden"></div>
+        </div>
+        <div>
+          <div class="pane-title">Lexicon probe</div>
+          <select id="generation-filler"></select>
         </div>
         <label>
           <span class="pane-title">Seed</span>
           <input id="generation-seed" type="number" step="1">
         </label>
         <button id="generation-next" class="primary">Generate next</button>
+        <div id="generation-coverage" class="dim"></div>
+        <div id="generation-exploration-selection"></div>
       </div>
 
       <div id="generation-empty" class="generation-empty">
@@ -98,6 +104,32 @@
           <button id="generation-reading">Inspect in Reading</button>
           <span id="generation-meta" class="dim mono"></span>
         </div>
+        <div id="generation-probe" class="generation-probe hidden"></div>
+
+        <section class="generation-premise-inspector">
+          <div class="generation-premise-heading">
+            <div class="pane-title">Why the target premise matched</div>
+            <div id="generation-premise-summary" class="dim mono"></div>
+          </div>
+          <div id="generation-premise-list"></div>
+        </section>
+
+        <section id="generation-minimal-pair"
+                 class="generation-minimal-pair hidden">
+          <div class="generation-premise-heading">
+            <div class="pane-title">Single-slot minimal pair</div>
+            <div id="generation-minimal-pair-summary" class="dim mono"></div>
+          </div>
+          <div id="generation-minimal-pair-grid"></div>
+        </section>
+
+        <section id="generation-retest" class="generation-retest hidden">
+          <div class="generation-retest-heading">
+            <div class="pane-title">Pinned-sentence retest</div>
+            <div id="generation-retest-summary" class="dim mono"></div>
+          </div>
+          <div id="generation-retest-diff"></div>
+        </section>
 
         <div class="generation-results">
           <section>
@@ -123,14 +155,36 @@
               <button data-verdict="unclear">Unclear</button>
             </div>
           </div>
+          <fieldset class="generation-defect-fieldset">
+            <legend class="pane-title">Defects</legend>
+            <div id="generation-defects" class="generation-defects"></div>
+          </fieldset>
+          <label>
+            <span class="pane-title">Attach defects to</span>
+            <select id="generation-attachment"></select>
+          </label>
           <label>
             <span class="pane-title">Note</span>
             <textarea id="generation-note" maxlength="4000"
-                      placeholder="What premise appears correct or defective?"></textarea>
+                      placeholder="What premise or emitted fact appears correct or defective?"></textarea>
           </label>
-          <button id="generation-save-review" disabled>Record review</button>
-          <span id="generation-review-result" class="dim"></span>
+          <div class="generation-review-actions">
+            <button id="generation-form-hypotheses" disabled>
+              Form hypotheses
+            </button>
+            <button id="generation-save-review" disabled>Record review</button>
+            <span id="generation-review-result" class="dim"></span>
+          </div>
         </div>
+
+        <section id="generation-hypotheses"
+                 class="generation-hypotheses hidden">
+          <div class="generation-premise-heading">
+            <div class="pane-title">Advisory hypotheses</div>
+            <div id="generation-hypothesis-summary" class="dim"></div>
+          </div>
+          <div id="generation-hypothesis-list"></div>
+        </section>
       </div>
     </div>
 

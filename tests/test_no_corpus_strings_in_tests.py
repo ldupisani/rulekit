@@ -65,21 +65,17 @@ _PRE_EXISTING = {
     "Convert 100 centimeters to inches",
 }
 
-_SLICES = {
-    "gsm8k": ["dev-train", "dev-holdout", "test"],
-    "asdiv": ["dev", "test"],
-    "svamp": ["dev", "test"],
-    "mawps": ["dev", "test"],
-    "scibench": ["dev", "test"],
-    "difg": ["dev", "test"],
-    "folio": ["dev-train", "dev-holdout", "test"],
-}
+_PROJECTS = ("gsm8k", "asdiv", "svamp", "mawps", "scibench", "difg", "folio")
+_SLICES = ("dev", "test")
 
 
 def _corpus_sentences():
-    out = []
-    for proj, slices in _SLICES.items():
-        for sl in slices:
+    # One sentence can occur in several firewall slices or corpora. The guard
+    # only needs to test its text once; retain the first deterministic source
+    # solely for the failure report.
+    out = {}
+    for proj in _PROJECTS:
+        for sl in _SLICES:
             try:
                 items = load_project(ROOT / "projects" / proj).dataset_items(sl)
             except Exception:
@@ -89,8 +85,11 @@ def _corpus_sentences():
                     sent = sent.strip()
                     # short fragments collide by chance; a long sentence does not
                     if len(sent) > 28:
-                        out.append((proj, sl, sent))
-    return out
+                        out.setdefault(sent, (proj, sl))
+    return [
+        (proj, sl, sent)
+        for sent, (proj, sl) in out.items()
+    ]
 
 
 def test_no_new_corpus_sentence_appears_in_tests():
@@ -100,13 +99,47 @@ def test_no_new_corpus_sentence_appears_in_tests():
 
     sources = {p: p.read_text() for p in ROOT.joinpath("tests").glob("*.py")
                if p.name != Path(__file__).name}
+    # Searching every corpus sentence through every source file made this
+    # single guard one third of the suite. Keep the exact substring contract,
+    # but use three necessary fixed-width anchors to discard nearly every
+    # impossible match first. A real match necessarily contains every anchor,
+    # so this cannot hide a corpus borrowing; the final check below is still
+    # the original exact substring test.
+    anchor_width = 16
+    candidates = [
+        (proj, sl, sent)
+        for proj, sl, sent in corpus
+        if sent not in _PRE_EXISTING
+    ]
+
+    def anchors(sentence):
+        middle = (len(sentence) - anchor_width) // 2
+        return {
+            sentence[:anchor_width],
+            sentence[middle:middle + anchor_width],
+            sentence[-anchor_width:],
+        }
+
+    needed = {
+        anchor
+        for _proj, _sl, sentence in candidates
+        for anchor in anchors(sentence)
+    }
+    present = set()
+    for source in sources.values():
+        for offset in range(len(source) - anchor_width + 1):
+            anchor = source[offset:offset + anchor_width]
+            if anchor in needed:
+                present.add(anchor)
+
     found = {}
-    for proj, sl, sent in corpus:
-        if sent in _PRE_EXISTING:
+    for proj, sl, sent in candidates:
+        if not anchors(sent) <= present:
             continue
-        for path, text in sources.items():
-            if sent in text:
+        for path, source in sources.items():
+            if sent in source:
                 found.setdefault(sent, (path.name, proj, sl))
+                break
 
     assert not found, "corpus strings in tests/ (constitution rule 3):\n" + "\n".join(
         f"  {where[0]} <- [{where[1]}/{where[2]}] {sent!r}" for sent, where in sorted(found.items())

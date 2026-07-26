@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-from typing import Any
+from typing import Any, Literal
 
 
 @dataclass(frozen=True)
 class RuleAvailability:
-    """Whether G1 can realize a rule, with blockers kept user-visible."""
+    """Whether the current generator can realize a rule."""
 
     id: str
     description: str | None
@@ -31,8 +31,36 @@ class MatchSummary:
     rule_id: str
     bindings: dict[str, str]
     consumed: tuple[int, ...]
+    consumed_surfaces: tuple[str, ...]
     shadowed: bool
     emitted_facts: tuple[dict[str, Any], ...]
+
+
+@dataclass(frozen=True)
+class PremiseSummary:
+    """One rule token or cross-slot predicate explained for a reviewer."""
+
+    index: int
+    kind: str
+    expression: str
+    binding: str | None
+    status: str
+    reason: str
+    slot: str | None = None
+    slot_type: str | None = None
+    category_path: tuple[str, ...] = ()
+    consumed: tuple[int, ...] = ()
+    sources: tuple[dict[str, Any], ...] = ()
+
+
+@dataclass(frozen=True)
+class ConsumedUnitSummary:
+    """A unit consumed by the target match."""
+
+    uid: int
+    surface: str
+    sense: str | None
+    lemma: str | None
 
 
 @dataclass(frozen=True)
@@ -43,6 +71,7 @@ class GenerationCandidate:
     project: str
     registry_fingerprint: str
     generator_version: str
+    origin: Literal["generated", "reading"]
     seed: int
     target_rule: str
     target_description: str | None
@@ -50,6 +79,10 @@ class GenerationCandidate:
     requested_bindings: dict[str, str]
     target_bindings: dict[str, str]
     target_status: str
+    target_specificity: tuple[int, int, int] | None
+    target_source: dict[str, Any] | None
+    premises: tuple[PremiseSummary, ...]
+    consumed_units: tuple[ConsumedUnitSummary, ...]
     actual_matches: tuple[MatchSummary, ...]
     facts: tuple[dict[str, Any], ...]
     collisions: tuple[dict[str, Any], ...]

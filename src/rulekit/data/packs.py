@@ -15,6 +15,7 @@ from pathlib import Path
 
 from ruamel.yaml import YAML
 
+from .sources import SourceIndex, index_document
 from .schemas import (
     AffineConversionsDoc,
     CalendarDoc,
@@ -67,6 +68,7 @@ class LoadedPack:
     affine: list[AffineConversionsDoc] = field(default_factory=list)
     quarantine: list[QuarantineDoc] = field(default_factory=list)
     reference: list[ReferenceDoc] = field(default_factory=list)
+    source_index: SourceIndex = field(default_factory=SourceIndex)
     fingerprint: str = ""
 
 
@@ -100,6 +102,7 @@ def load_pack(root: Path) -> LoadedPack:
         except Exception as exc:  # pydantic ValidationError carries the path
             raise PackError(f"{path}: {exc}") from exc
         hasher.update(path.read_bytes())
+        pack.source_index.merge(index_document(path, raw, doc))
 
         if isinstance(doc, LexiconDoc):
             for word, entry in doc.entries.items():

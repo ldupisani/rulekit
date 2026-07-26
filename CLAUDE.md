@@ -39,7 +39,9 @@ commits are fast-forwarded to `main` by hand. `/mine --smoke` self-tests the pip
 ## Commands
 
 ```
-uv run pytest                                            # unit tests (synthetic only)
+uv run pytest -q tests/test_generation_workbench.py -k aggregate            # focused example
+uv run pytest -n 4 --dist=worksteal                      # full synthetic gate (parallel)
+uv run pytest                                            # equivalent serial/debug path
 uv run rulekit --project projects/curated bench --slice suite              # fast 65/65 regression gate (includes reference pack)
 uv run rulekit --project projects/gsm8k bench --slice dev-train|dev-holdout
 uv run rulekit --project projects/gsm8k bench --slice dev-train --snapshot before.json

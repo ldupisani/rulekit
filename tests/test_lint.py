@@ -88,6 +88,56 @@ def test_disjoint_gates_do_not_overlap(tmp_path):
     assert lint_overlaps(reg) == []
 
 
+def test_counted_qualifier_requires_a_noun_rooted_category(tmp_path):
+    from rulekit.data.registry import CompileError
+
+    categories = """format: rulekit/categories@1
+categories:
+  action: {parent: verb}
+members:
+  action: [has]
+"""
+    rule = """format: rulekit/rules@1
+rules:
+  - id: r/impossible-counted-verb
+    phase: read
+    match:
+      sentence:
+        - {slot: action, cat: action, counted: true}
+    emits:
+      - {fact: atom, entity: sample, pred: "{action}"}
+"""
+
+    with pytest.raises(CompileError, match="non-noun category 'action'"):
+        _mk(tmp_path, BASE_LEX, categories, rule)
+
+
+def test_counted_category_cannot_overlap_a_single_word_literal(tmp_path):
+    counted = """format: rulekit/rules@1
+rules:
+  - id: r/counted-animal
+    phase: read
+    match:
+      sentence:
+        - {slot: item, cat: animal, counted: true}
+    emits:
+      - {fact: atom, entity: sample, pred: "{item}"}
+"""
+    literal = """format: rulekit/rules@1
+rules:
+  - id: r/literal-dog
+    phase: read
+    match:
+      sentence:
+        - {lit: dog}
+    emits:
+      - {fact: atom, entity: sample, pred: dog}
+"""
+    reg = _mk(tmp_path, BASE_LEX, BASE_CATS, counted, literal)
+
+    assert lint_overlaps(reg) == []
+
+
 def test_pet_scenario_blast_radius(tmp_path):
     """The difg pet disaster, reproduced: registering a category must make
     every rule its members can newly reach ENUMERABLE before running."""

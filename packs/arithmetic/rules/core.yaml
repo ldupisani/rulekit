@@ -2914,12 +2914,10 @@ rules:
       the same "in total" marker fronts the clause (comma skippable punct)
       instead of trailing it, ahead of the ordinary SUBJ VERB N ITEM
       skeleton. `who` binds any single subject token generically (`type:
-      word` — a name, common noun, or pronoun, resolved or not) purely to
-      bridge across it from the marker to the verb; its identity is never
-      read in the emitted fact — like every sibling GroupTotal rule here,
-      the fact deliberately carries no subject/owner, exactly the unowned
-      "sum across the passage's entities" semantics synth/sum-constraint
-      (saturate.py, unchanged) already consumes. Requiring the real VERB
+      word` — a name, common noun, or pronoun, resolved or not) and its exact
+      normalized identity is retained as the GroupTotal's optional `scope`.
+      This distinguishes two explicitly named groups over the same measure
+      without pretending a tail-only total has an owner. Requiring the real VERB
       and counted ITEM slots (not a generic skip) means the matched item
       is the sentence's own dobj, so capturing it here suppresses
       learn.py's per-entity fold for the identical double-count reason
@@ -2928,7 +2926,7 @@ rules:
       same clause.
     match:
       sentence:
-        - {lit: in}
+        - {lit: in, at_start: true}
         - {lit: total}
         - {slot: who, type: word}
         - {slot: verb, type: verb}
@@ -2938,6 +2936,7 @@ rules:
       - fact: group_total
         measure: "{item}"
         value: "item"
+        scope: "{who}"
         verb: "{verb}"
 
   - id: arithmetic/group-total-leading-marker
@@ -2951,22 +2950,18 @@ rules:
       'altogether'/'total' itself) never satisfied its literal 'in'+
       'total' skeleton and declined outright. Same "SUBJ VERB N ITEM"
       tail, same generic `who, type: word` bridge slot whose identity is
-      never read (every sibling GroupTotal rule here emits an unowned
-      fact), same double-count discipline: capturing the counted ITEM
-      here suppresses learn.py's per-entity fold for this clause
+      retained as the emitted GroupTotal's optional `scope`, same
+      double-count discipline: capturing the counted ITEM here suppresses
+      learn.py's per-entity fold for this clause
       (arithmetic/group-total-leading's own comment). This rule's own
-      `agg` slot ALSO matches starting at the bare word 'total' inside
-      "In total, they sold 120 oranges." (that sentence's leading 'In' is
-      simply not part of THIS match) — harmless, not a collision: both
-      rules emit the byte-identical GroupTotal (same measure/value/verb,
-      the same "SUBJ VERB N ITEM" tail read twice under two provenance
-      tags), and the fact store treats two agreeing facts for one
-      (measure, sentence) key as one, never a double-count. Confirmed by
-      the full dev-train/holdout diff carrying zero new lint overlap
-      warnings beyond the one pre-existing known-good one.
+      `agg` is anchored to the sentence start. Without that structural
+      boundary, a TRAILING marker in "...birds together and have 30 birds"
+      could float into this rule as if `and` were the scoped subject. The
+      two-word "In total" surface remains owned by its anchored sibling
+      arithmetic/group-total-leading.
     match:
       sentence:
-        - {slot: agg, cat: aggregate}
+        - {slot: agg, cat: aggregate, at_start: true}
         - {slot: who, type: word}
         - {slot: verb, type: verb}
         - {slot: item, type: counted}
@@ -2975,6 +2970,7 @@ rules:
       - fact: group_total
         measure: "{item}"
         value: "item"
+        scope: "{who}"
         verb: "{verb}"
 
   - id: arithmetic/group-total-sum-of-age
@@ -3156,9 +3152,11 @@ rules:
       sentence:
         - {slot: n, type: number}
         - {lit: of}
-        - {slot: coll, type: pronoun}
-        - {slot: verb, type: verb}
+        - {slot: coll, cat: plural_object_pronoun}
+        - {slot: verb, cat: copula}
         - {slot: attr, type: adjective}
+    where:
+      - same_number: [n, verb]
     consumes: [n]
     emits:
       - fact: partition_quantity
@@ -3182,9 +3180,11 @@ rules:
       sentence:
         - {slot: n, type: number}
         - {lit: of}
-        - {slot: coll, type: pronoun}
-        - {slot: verb, type: verb}
-        - {slot: attr, type: noun}
+        - {slot: coll, cat: plural_object_pronoun}
+        - {slot: verb, cat: copula}
+        - {slot: attr, type: plural}
+    where:
+      - same_number: [n, verb, attr]
     consumes: [n]
     emits:
       - fact: partition_quantity
@@ -3209,8 +3209,8 @@ rules:
       sentence:
         - {slot: f, type: fraction}
         - {lit: of}
-        - {slot: coll, type: pronoun}
-        - {slot: verb, type: verb}
+        - {slot: coll, cat: plural_object_pronoun}
+        - {slot: verb, cat: plural_copula}
         - {slot: attr, type: adjective}
     consumes: [f]
     emits:
@@ -3236,9 +3236,9 @@ rules:
       sentence:
         - {slot: f, type: fraction}
         - {lit: of}
-        - {slot: coll, type: pronoun}
-        - {slot: verb, type: verb}
-        - {slot: attr, type: noun}
+        - {slot: coll, cat: plural_object_pronoun}
+        - {slot: verb, cat: plural_copula}
+        - {slot: attr, type: plural}
     consumes: [f]
     emits:
       - fact: partition_quantity
@@ -3253,9 +3253,10 @@ rules:
     phase: read
     description: >
       "6 of the marbles are red" — the definite-NP partition surface: the
-      collection is a plural common noun named directly ("the" is a
-      SKIPPABLE article, never a literal here) instead of the pronoun
-      placeholder partition-attribute matches. Since the noun IS the
+      collection is a plural common noun named directly. The definite
+      article is claimed explicitly: automatic article skipping must not
+      turn the ungrammatical "6 of marbles" into this construction. Since
+      the noun IS the
       measure, there is nothing to resolve — the partition synthesizer's
       "already names a real measure" branch leaves it as-is, and the
       unresolved-derivation guard's structural known-measure check (not a
@@ -3266,9 +3267,12 @@ rules:
       sentence:
         - {slot: n, type: number}
         - {lit: of}
+        - {lit: the, consume_skipped: true}
         - {slot: coll, type: plural}
-        - {slot: verb, type: verb}
+        - {slot: verb, cat: copula}
         - {slot: attr, type: adjective}
+    where:
+      - same_number: [n, verb]
     consumes: [n]
     emits:
       - fact: partition_quantity
@@ -3288,7 +3292,7 @@ rules:
       that already names a known measure directly (not only one resolved
       via synth/partition), a structural widening shared with the pronoun
       form, not a per-rule special case.
-      `verb, cat: state` (not the general `verb` type — mining candidate
+      `verb, cat: copula` (not the general `verb` type — mining candidate
       modal-spend-measure-price): a membership partition is always a
       COPULAR predication ("ARE dogs"), never any other verb; the
       unrestricted `type: verb` previously let this rule swallow an
@@ -3297,15 +3301,18 @@ rules:
       verb too), stealing it from learn.py's price-verb emission before it
       ever ran and producing a bogus PartitionQuantity(collection='bean')
       instead of any Price fact. Every real membership-partition instance
-      already uses a state verb (is/are/was/were), so this is a pure
+      already uses a copula (is/are/was/were), so this is a pure
       narrowing with no coverage loss.
     match:
       sentence:
         - {slot: n, type: number}
         - {lit: of}
+        - {lit: the, consume_skipped: true}
         - {slot: coll, type: plural}
-        - {slot: verb, cat: state}
-        - {slot: attr, type: noun}
+        - {slot: verb, cat: copula}
+        - {slot: attr, type: plural}
+    where:
+      - same_number: [n, verb, attr]
     consumes: [n]
     emits:
       - fact: partition_quantity
@@ -3328,17 +3335,19 @@ rules:
       but only once every earlier partition of that collection has itself
       resolved to a real count, at which point the value becomes the
       collection's own total as of this sentence minus their signed sum,
-      re-emitted with `is_rest` cleared. `verb, cat: state`: a rest
-      partition is always a copular predication (is/are/was/were), never
-      any other verb — narrower than partition-attribute's pronoun form on
-      purpose, since "the rest" (unlike "N of them") could otherwise sit in
-      front of an unrelated priced/rated verb.
+      re-emitted with `is_rest` cleared. `verb, cat: plural_copula`: a rest
+      partition is a plural copular predication (are/were), never a
+      possession or event verb. That is narrower than
+      partition-attribute's cardinal pronoun form on purpose, since "the
+      rest" (unlike "N of them") could otherwise sit in front of an
+      unrelated priced/rated verb.
 
       The optional "of the ITEM" span ("the rest OF THE CATS are grey") is
-      consumed but its noun is deliberately never bound into `collection`
-      — the collection stays the bare remnant-word placeholder either way,
-      resolved through the SAME unique-pool-in-play synth step as the bare
-      surface. A named `collection` (the -of-noun surface partition-
+      consumed, including its required definite article, but its noun is
+      deliberately never bound into `collection` — the collection stays the
+      bare remnant-word placeholder either way, resolved through the SAME
+      unique-pool-in-play synth step as the bare surface. A named
+      `collection` (the -of-noun surface partition-
       attribute-of-noun uses for the CARDINAL/stated form) would give this
       premise fact the exact same key as its own resolved-value re-
       emission (collection/attribute/verb, unchanged by sizing) and
@@ -3350,8 +3359,9 @@ rules:
         - {slot: r, cat: remnant}
         - opt:
             - {lit: of}
+            - {lit: the, consume_skipped: true}
             - {slot: item, type: plural}
-        - {slot: verb, cat: state}
+        - {slot: verb, cat: plural_copula}
         - {slot: attr, type: adjective}
     emits:
       - fact: partition_quantity
@@ -3379,9 +3389,10 @@ rules:
         - {slot: r, cat: remnant}
         - opt:
             - {lit: of}
+            - {lit: the, consume_skipped: true}
             - {slot: item, type: plural}
-        - {slot: verb, cat: state}
-        - {slot: attr, type: noun}
+        - {slot: verb, cat: plural_copula}
+        - {slot: attr, type: plural}
     emits:
       - fact: partition_quantity
         collection: "{r}"
@@ -3448,9 +3459,9 @@ rules:
     phase: read
     description: >
       "Sara is 4 years old" — the copula age predicate: a stated Quantity
-      fact scoped to the DATA measure 'year' (the copula + a counted noun +
-      the literal 'old' is the grammatical skeleton; the counted noun's own
-      word is not restricted in Python — only in this pack's data). This
+      fact scoped to the DATA measure 'year' (the copula + a counted
+      `age_measure` noun + the literal 'old' is the grammatical skeleton;
+      both the copula and permitted unit remain declared in pack data). This
       lets the general single-entity consumer answer "how old is WHO"
       directly, and the already-shipped anchored-relation-postfix
       synthesizer ("X is N years older/younger than Y") chain through it —
@@ -3458,9 +3469,11 @@ rules:
     match:
       sentence:
         - {slot: who, type: name}
-        - {slot: verb, cat: state}
-        - {slot: n, type: counted}
+        - {slot: verb, cat: copula}
+        - {slot: n, cat: age_measure, counted: true}
         - {lit: old}
+    where:
+      - same_number: [who, verb]
     consumes: [n]
     emits:
       - fact: quantity
@@ -4297,11 +4310,8 @@ asks:
     # which entities are summed (that's what `holder_count` below checks).
     #
     # `{lit: of}, {lit: them}` are grammatical-skeleton LITERALS, not a
-    # `type: pronoun` slot: "them"/"us" carry no lexicon entry (the base
-    # lexicon only registers 'they' — packs/core-english/lexicon/core.yaml
-    # comment on 'i': "GSM8K narratives are almost always third-person"),
-    # so matching the raw case-folded token avoids any lexicon change
-    # (constitution: literals are grammatical skeleton only).
+    # `type: pronoun` slot: this ask requires that exact surface rather than
+    # the complete generic-pronoun domain now declared by core-english.
     #
     # `holder_count: "{n.value}"` does double duty: (1) the `.value`
     # template is what marks the cardinal's own unit CONSUMED for value-

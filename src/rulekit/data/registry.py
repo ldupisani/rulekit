@@ -109,6 +109,7 @@ class Registry:
     scales: Mapping[str, float]
     multipliers: Mapping[str, float]
     fractions: Mapping[str, float]
+    fraction_plurals: Mapping[str, str]
     operators: Mapping[str, str]
     currencies: Mapping[str, str]
     percents: Mapping[str, float]
@@ -227,6 +228,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
     scales: dict[str, float] = {}
     multipliers: dict[str, float] = {}
     fractions: dict[str, float] = {}
+    fraction_plurals: dict[str, str] = {}
     operators: dict[str, str] = {}
     currencies: dict[str, str] = {}
     percents: dict[str, float] = {}
@@ -236,9 +238,37 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
             scales.update(doc.scales)
             multipliers.update(doc.multipliers)
             fractions.update(doc.fractions)
+            for plural, singular in doc.fraction_plurals.items():
+                prior = fraction_plurals.get(plural)
+                if prior is not None and prior != singular:
+                    raise CompileError(
+                        f"fraction plural {plural!r} maps to both "
+                        f"{prior!r} and {singular!r}"
+                    )
+                fraction_plurals[plural] = singular
             operators.update(doc.operators)
             currencies.update(doc.currencies)
             percents.update(doc.percents)
+    for plural, singular in sorted(fraction_plurals.items()):
+        if not plural or not singular or plural == singular:
+            raise CompileError(
+                f"fraction plural mapping {plural!r} -> {singular!r} "
+                "must name two distinct non-empty surfaces"
+            )
+        if plural not in fractions:
+            raise CompileError(
+                f"fraction plural {plural!r} has no declared fraction value"
+            )
+        if singular not in fractions:
+            raise CompileError(
+                f"fraction plural {plural!r} names undeclared singular "
+                f"{singular!r}"
+            )
+        if fractions[plural] != fractions[singular]:
+            raise CompileError(
+                f"fraction plural {plural!r} and singular {singular!r} "
+                "must have the same declared value"
+            )
 
     role_obligations: dict[str, RoleObligation] = {}
     for pack in packs:
@@ -566,6 +596,15 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                     cat = getattr(tok, "cat", None)
                     if cat and cat not in valid_gates:
                         raise CompileError(f"rule {rule.id!r} gates on unknown category {cat!r}")
+                    if cat and getattr(tok, "counted", False):
+                        root = cat
+                        while root in category_parents:
+                            root = category_parents[root]
+                        if root != "noun":
+                            raise CompileError(
+                                f"rule {rule.id!r} uses `counted: true` on "
+                                f"non-noun category {cat!r}"
+                            )
 
     # A LITERAL THAT CAN NEVER MATCH is an authoring mistake, and it fails at
     # LOAD for the same reason AskRule._anchor_is_first does: the auto-skip
@@ -620,6 +659,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
         scales=_freeze(scales),
         multipliers=_freeze(multipliers),
         fractions=_freeze(fractions),
+        fraction_plurals=_freeze(fraction_plurals),
         operators=_freeze(operators),
         currencies=_freeze(currencies),
         percents=_freeze(percents),

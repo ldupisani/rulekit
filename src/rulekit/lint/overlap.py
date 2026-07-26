@@ -82,6 +82,10 @@ def _tokens_intersect(a: MatchToken, b: MatchToken, reg: Registry) -> bool:
         return bool(set(a.lit_options) & set(b.lit_options))
     if a.lit is not None or b.lit is not None:
         lits, slot = (a.lit_options, b) if a.lit is not None else (b.lit_options, a)
+        if slot.counted:
+            # A category-qualified counted slot binds one condensed numeric
+            # noun unit; a fixed one-word literal can never be that unit.
+            return False
         if slot.type is not None:
             if slot.type == "word":
                 return True
@@ -129,7 +133,12 @@ def _witness_word(token: MatchToken, reg: Registry) -> str:
         return token.lit_options[0]
     if token.cat is not None:
         members = reg.cat_members_deep(token.cat)
-        return members[0] if members else f"<{token.cat}>"
+        if not members:
+            return f"<{token.cat}>"
+        member = members[0]
+        if token.counted:
+            return f"3 {reg.singular_to_plural.get(member, member)}"
+        return member
     return _TYPE_EXAMPLES.get(token.type, "<?>")
 
 

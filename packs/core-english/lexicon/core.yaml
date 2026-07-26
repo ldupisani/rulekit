@@ -43,6 +43,24 @@ entries:
       one label-distinguished noun. With this entry it keeps its own
       pronoun sense (its `refers` obligation then simply goes unmet, same
       decline discipline every other unresolved pronoun already has).
+  anything: {senses: [pronoun]}
+  either: {senses: [pronoun]}
+  everyone: {senses: [pronoun]}
+  everything: {senses: [pronoun]}
+  her: {senses: [pronoun]}
+  herself: {senses: [pronoun]}
+  him: {senses: [pronoun]}
+  himself: {senses: [pronoun]}
+  his: {senses: [pronoun]}
+  its: {senses: [pronoun]}
+  my: {senses: [pronoun]}
+  ones: {senses: [pronoun]}
+  their: {senses: [pronoun]}
+  theirs: {senses: [pronoun]}
+  them: {senses: [pronoun], number: plural}
+  themselves: {senses: [pronoun]}
+  you: {senses: [pronoun]}
+  your: {senses: [pronoun]}
 
   # negation
   not: {senses: [negator]}
@@ -98,10 +116,10 @@ entries:
   and: {senses: [conjunction]}
 
   # copula / possession verbs (state)
-  is: {senses: [verb], verb: {lemma: be}}
-  are: {senses: [verb], verb: {lemma: be}}
-  was: {senses: [verb], verb: {lemma: be}}
-  were: {senses: [verb], verb: {lemma: be}}
+  is: {senses: [verb], number: singular, verb: {lemma: be}}
+  are: {senses: [verb], number: plural, verb: {lemma: be}}
+  was: {senses: [verb], number: singular, verb: {lemma: be}}
+  were: {senses: [verb], number: plural, verb: {lemma: be}}
   has: {senses: [verb], verb: {lemma: have}}
   have: {senses: [verb], verb: {lemma: have}}
   had: {senses: [verb], verb: {lemma: have}}
@@ -159,6 +177,7 @@ entries:
 
   # common nouns
   apple: {senses: [noun], plural: apples}
+  year: {senses: [noun], plural: years}
   # promoted from difg-mined 2026-07-20: packs/reference needs it too, and
   # packs may not shadow — the shared base is the one home both can require
   area: {senses: [noun], plural: areas}

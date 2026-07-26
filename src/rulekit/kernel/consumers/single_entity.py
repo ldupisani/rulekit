@@ -87,7 +87,10 @@ def single_entity(ctx: ConsumerContext):
     # fold is genuinely correct and merely coexists with an unrelated
     # document total ("Tom has 15 books" + a stated total) is untouched —
     # `tom` is not a counted measure. Two rival totals stay a decline.
-    matching_totals = [gt for gt in ctx.store.by_kind(GroupTotal) if gt.measure == singular]
+    matching_totals = [
+        gt for gt in ctx.store.by_kind(GroupTotal)
+        if gt.measure == singular and (gt.scope is None or gt.scope == entity)
+    ]
     if matching_totals:
         # the held Quantity must genuinely STATE a per-container rate
         # (saturate's `_distributive_rate_source`, the same gate the two
@@ -316,7 +319,10 @@ def single_entity(ctx: ConsumerContext):
     # left. How many did she have in the beginning?" composes 40 + 12 = 52,
     # which is right. Dropping the packs answered 12. Not every path needs the
     # opt-out — only those that fold events without knowing about it.
-    group_totals = [gt for gt in ctx.store.by_kind(GroupTotal) if gt.measure == singular]
+    group_totals = [
+        gt for gt in ctx.store.by_kind(GroupTotal)
+        if gt.measure == singular and (gt.scope is None or gt.scope == entity)
+    ]
     if len(group_totals) == 1 and abs(group_totals[0].value - total) > 1e-9:
         g = group_totals[0].value
         for c_fact in ctx.store.by_kind(Quantity):

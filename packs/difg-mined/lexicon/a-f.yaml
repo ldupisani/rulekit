@@ -284,9 +284,6 @@ entries:
   any:
     senses:
     - article
-  anything:
-    senses:
-    - pronoun
   apartment:
     senses:
     - noun
@@ -2527,9 +2524,6 @@ entries:
   eighty:
     senses:
     - value
-  either:
-    senses:
-    - pronoun
   elder:
     senses:
     - adjective
@@ -2674,12 +2668,6 @@ entries:
     senses:
     - noun
     plural: events
-  everyone:
-    senses:
-    - pronoun
-  everything:
-    senses:
-    - pronoun
   exact:
     senses:
     - adjective

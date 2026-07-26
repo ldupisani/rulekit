@@ -1,6 +1,6 @@
 # RuleKit architecture
 
-**Updated:** 2026-07-25
+**Updated:** 2026-07-26
 **Status:** current implementation, not a roadmap
 
 RuleKit is a deterministic reading and reasoning engine for controlled,
@@ -16,8 +16,13 @@ in [`HANDOFF.md`](HANDOFF.md), evaluation policy in
 The active designer direction is the deterministic single-sentence generation
 and human review workbench specified in
 [`generation-and-annotation-plan.md`](generation-and-annotation-plan.md).
-Its G1 vertical slice is implemented; premise explanations and source
-navigation are the next increment.
+Its G1–G4 exploration loop, G5a declared-plural and G5b declared-counted
+realizers, G5c bounded proper-name possessive realizer, G5d declared generic
+pronoun realizer, G5e declared pronoun-category realizer, G5f aggregate-root
+category realizer, G6 exploration status, Reading-origin and fact-level review
+entries, declarative fraction-plural morphology correction, and scoped
+`GroupTotal` facts are implemented. The next increment profiles core ownership
+of the generic `age_noun` domain.
 
 ## Architectural boundaries
 
@@ -160,7 +165,8 @@ normally declines downstream.
 
 1. `tokenize` creates `Word` and `Unit` objects;
 2. `annotate_numbers` identifies counts, fractions, percents, tuples, dates,
-   formulas, and other structured numeric forms;
+   formulas, and other structured numeric forms; declared plural fraction
+   forms remain incomplete until merged with an explicit word count;
 3. `annotate_senses` supplies pack-backed candidate senses and lemmas;
 4. `disambiguate` selects a sense only when obligation coverage licenses it;
 5. `attach_obligations` gives grammatical roles their declared needs;
@@ -253,6 +259,14 @@ logical structures, rates, prices, partitions, aliases, and explicit
 `SemanticGraphNode`/`SemanticGraphEdge` facts. Specialized fact classes keep
 their own identity keys and value parts; the store does not flatten all
 meaning into generic triples.
+
+`GroupTotal` has an optional exact `scope`. A leading total construction that
+binds a subject retains its normalized identity, so blue and red totals for
+the same measure have distinct keys and may coexist. Tail-only and synthesized
+totals remain unscoped because no group identity is mechanically available.
+Same-scope disagreement still quarantines both facts. Entity-aware consumers
+accept only unscoped or exact-scope-compatible totals; entity-less consumers
+cannot silently widen a named group into a scene-wide total.
 
 ## Rule execution and conflict handling
 
@@ -354,6 +368,7 @@ The optional `server` dependencies provide a local FastAPI application and a
 vanilla-JavaScript designer. The designer exposes:
 
 - a Generate mode for seeded rule realization and human review;
+- an explicit Reading-sentence handoff into that same review workbench;
 - a reading decision stepper;
 - fact, gap, collision, and deficiency views;
 - semantic, deictic, proof, and clarification views;
@@ -368,47 +383,231 @@ surface; the designer's impact panel targets suites and answer datasets.
 ### Generation and review workbench
 
 `rulekit.generation` is an authoring layer outside the runtime kernel. Its
-implemented G1 data flow is:
+implemented G1–G6 data flow is:
 
 ```text
 loaded Project + project generation fixtures
         ↓
-enumerate every premise rule with supported/blocker status
+enumerate every premise rule with supported/blocker status + source index
         ↓
-seeded realization of one flat read-phase rule
+either seeded realization of one flat read-phase rule
+or exact Reading sentence + explicitly selected actual premise-rule match
         ↓
 ordinary analyze() + run_document()
         ↓
-target status + actual matches + facts + collisions + deficiencies
+source-backed premise reasons + target status + specificity + consumed units
         ↓
-human Valid / Invalid / Unclear review
+actual matches + facts + collisions + deficiencies
+        ↓
+human Valid / Invalid / Unclear + attached defects
+        ↓
+deterministic evidence-to-hypothesis rules
+        ↓
+source-linked advisory cards + human-controlled status
         ↓
 projects/<project>/generation/reviews.jsonl
+
+fresh realization only
+        ↓
+schema-bounded rule + normalized lexicon filler observation
+        ↓
+projects/<project>/generation/exploration.jsonl
+        ↓
+fold with current availability + live reviews
+        ↓
+blocked / untouched / generated-unreviewed / reviewed navigation
+
+one selected slot → exclude its current filler
+        ↓
+lock every other slot → seeded realization + ordinary round trip
+        ↓
+side-by-side sentence, premise, and mechanical-result comparison
+
+allowlisted YAML edit → compile/reload or rollback
+        ↓
+retest identical pinned sentence (no realization pass)
+        ↓
+before/after behavior diff
 ```
 
-The first realization boundary covers literals, project-fixture names, simple
-nouns/verbs/adjectives/prepositions/words, scalar number forms, compatible
-category gates, and the `distinct`/`same_lemma` constraints. Unsupported
-optional groups, spans, structured nominals, morphology, and predicates remain
-visible with exact blockers. A realized sentence that does not survive the
-round trip remains an inspectable candidate with status `absent`.
+The current realization boundary covers literals, project-fixture names,
+simple nouns/verbs/adjectives/prepositions/words, scalar number forms,
+compatible category gates, declared single-token plural nouns, declared
+integer-count-plus-noun compositions, bounded proper-name possessive noun
+phrases, declared single-token generic pronouns, and the
+`distinct`/`same_lemma` constraints. Plural and counted
+fillers come only from loaded numeric and singular/plural declarations. Count
+`1` selects the singular noun surface and every other admitted non-negative
+integer selects the declared plural; both retain the singular noun lemma as
+identity.
+
+Fraction fillers also follow declared morphology. `fraction_plurals` maps a
+count-requiring plural surface to its singular fraction lemma. A bare mapped
+surface such as `fifths` is annotated but cannot satisfy `type: fraction`;
+the existing word-count merge turns `two fifths` into one complete fraction
+unit. Generation therefore admits singular or already-complete fraction
+surfaces directly and composes mapped plurals only with declared
+non-negative word counts other than one. The singular lemma remains filler
+identity, and count, fraction value, and plural mapping remain separate
+source evidence.
+
+The possessed domain is exactly `OWNER's HEAD`, where `OWNER` is a declared
+single-token project generation fixture and `HEAD` is a canonical
+single-token lexicon entry with the sole sense `noun`, optionally using its
+declared single-token plural. Admission also requires the loaded contraction
+mapping to preserve `'s` and the lexicon to declare its possessive sense.
+Filler identity remains the singular head lemma; the owner fixture,
+contraction, possessive declaration, noun declaration, and conditional plural
+morphology remain separately inspectable evidence. No fixture owner is
+counted as lexicon exploration.
+
+Direct pronoun fillers are every loaded single-token lexicon surface carrying
+the `pronoun` sense, with exact case-folded surface identity. The realizer
+does not add unexpressed case, person, number, definiteness, possessive, or
+reference-resolution constraints; unsuitable surfaces accepted by a broad
+rule premise remain visible for human review. Generic pronoun declarations
+live in `core-english`: the 18 formerly stored in `difg-mined` were relocated
+without changing the compiled inventory of projects that load both packs.
+The pool-denoting membership of `them` moved with its declaration.
+
+Category-gated pronouns use the same declared-category mechanism as the
+existing noun-, verb-, adjective-, and preposition-rooted categories. A
+pronoun-rooted category admits only loaded single-token lexicon surfaces that
+both carry the `pronoun` sense and belong to that exact category. Identity
+remains the surface; evidence includes the lexical declaration, exact
+membership, and category ancestry. This does not infer a discourse referent
+or widen the category to every pronoun.
+
+Category slots may additionally declare `counted: true`. The ordinary
+counted-unit machinery still supplies the numeric value and noun agreement,
+while the slot's category independently restricts the noun lemma. This is how
+`arithmetic/stated-age` accepts counted `age_measure` units such as
+`4 years` without accepting every counted noun. Compilation refuses this
+qualifier on a category that does not root at `noun`.
+
+Rules may declare `same_number` across bound slots. Count-valued units derive
+singular only from value 1 and plural otherwise; lexical units use their
+pack-declared grammatical number. The matcher and generator share that
+predicate, so agreement such as `1 of them is red` versus
+`3 of them are red` is a rule premise rather than a word-specific repair.
+
+The generator does not infer productive morphology, articles, nested
+genitives, common-noun or pronoun owners, or agreement that a rule did not
+declare. Unsupported optional groups, spans, other structured nominals,
+morphology, and predicates remain visible with exact blockers. A realized
+sentence that does not survive the round trip remains an inspectable candidate
+with status `absent` and explicit `unverified` premise rows.
+
+Reading exposes the ordinary document matcher's deduplicated premise-rule
+results beside each non-question sentence. `/api/generation/from-reading`
+requires the user-selected target rule and exact sentence, derives a stable
+identity seed, and reruns that sentence without realization or rewriting.
+The resulting candidate records `origin: reading` and uses its actual target
+bindings for premise inspection. Generated and Reading-origin candidates then
+share the same defect, hypothesis, review-history, source-navigation, and
+pinned-retest paths.
+
+G6 keeps generation observations separate from human judgment. Successful
+fresh candidates and single-slot minimal pairs append candidate id, rule,
+seed, registry fingerprint, and the lexicon-backed filler identities,
+surfaces, slots, and declaration sources actually sampled to the one fixed
+`exploration.jsonl` path. Reading promotion and pinned retest append nothing.
+The status endpoint folds those events with current rule availability and the
+live append-only review history. A pre-G6 or Reading-origin review may
+therefore mark its rule reviewed without claiming any normalized filler
+history that was never recorded.
+
+The reachable filler universe is derived only from current supported-rule
+domains and lexicon source entries; fixture names, literals, and numeric
+surfaces are excluded. Generate next chooses among the least-generated
+compatible rules and fillers, with sorted seeded tie-breaking, or validates an
+explicit rule/lexicon pairing. The selected entry's existing `SourceIndex`
+location opens through the same editable-document allowlist. Exploration
+counts never enter candidate retesting or hypothesis evidence.
+
+Pack loading also retains an authoring-only `SourceIndex` on `Project`. It maps
+rules, asks, premise tokens and predicates, lexicon entries, category
+definitions and memberships, morphology declarations, contraction
+declarations, and numeric declarations to exact file/line coordinates from
+ruamel's round-trip YAML nodes. It does not enter `Registry`, its fingerprint,
+or inference. Generate mode turns those coordinates into source controls only
+when the path appears in the existing editable pack-document allowlist; a
+control opens the document and selects the declaration line in the editor.
+
+G3 keeps the candidate only in browser session state. Save + retest first calls
+the ordinary `/api/doc` write, so invalid YAML is rolled back before any
+retest. On success, `/api/generation/retest` sends the pinned sentence through
+the ordinary analyzer and document matcher against the reloaded Project. It
+does not accept a source path or mutate files. The browser compares the prior
+and current registry fingerprints, target result, premise explanations,
+co-firing rules, facts, collisions, and deficiencies; the sentence and seed
+remain unchanged.
+
+G4 keeps human judgment and mechanical inference separate. A defect record
+names the reviewer's concern and attaches it to the whole sentence or one
+premise row. `/api/generation/hypotheses` first replays the pinned sentence
+against the current Project, then applies a closed set of evidence rules for
+category/type breadth, absent targets, duplicate role fillers, shadowing,
+co-firing collisions, morphology, lexical senses, and realizer boundaries.
+Every returned hypothesis names its observations and carries source-index
+locations; it never drafts or applies YAML. If the selected defect lacks
+supporting matcher evidence, the API returns no cards and an explicit
+no-mechanical-hypothesis explanation.
+
+Single-slot minimal pairs use the same realizer rather than a parallel
+generator. The selected slot excludes its original surface, every other slot
+binding is locked, and `distinct`/`same_lemma` constraints still run before
+the ordinary reader validates the alternative. A slot with no compatible
+project-backed alternative fails explicitly. The derived pair seed includes
+the registry fingerprint, original seed, rule, slot, and bindings, so the same
+request is reproducible across fresh project loads.
 
 `projects/<project>/generation.yaml` is read only by this authoring layer.
-The review API accepts no output path; it appends to the one project-owned
-JSONL location above. Neither file contributes to `Registry`, its fingerprint,
-or runtime results.
+The review and exploration APIs accept no output path; each appends only to
+its project-owned JSONL location above. Reviews retain candidate origin, slot
+bindings, structured defects, source-linked hypotheses, notes, and hypothesis
+statuses. Defects may attach to the whole sentence, an exact
+rule/token/`where` premise, or a numbered surviving fact. A fact attachment
+carries an immutable bounded snapshot of its type, fields, provenance rule,
+sentence index, and optional indexed emitting-rule source, so append-only
+history does not
+reduce “fact 1” to an unstable display position. The three fact-specific
+defect kinds separate an unjustified emission, an incorrect type/field/value,
+and missing identity or other downstream context. Hypotheses remain advisory
+and link back to the emitting rule; this annotation does not alter the runtime
+fact schema.
+Corrections append a superseding record and may change statuses without
+rewriting history. Once a candidate review is recorded, its review controls
+lock in Generate mode;
+further changes use Review History → Edit so every correction is durable
+rather than browser-local. Neither authoring ledger contributes to `Registry`,
+its fingerprint, or runtime results.
 
 The implemented endpoints are:
 
 ```text
 GET  /api/generation/rules
+GET  /api/generation/exploration
 POST /api/generation/candidate
+POST /api/generation/from-reading
+POST /api/generation/retest
+POST /api/generation/minimal-pair
+POST /api/generation/hypotheses
 POST /api/generation/review
 GET  /api/generation/history
+PATCH /api/generation/review/{review_id}
+DELETE /api/generation/review/{review_id}
 ```
 
-Hypotheses, retesting, premise explanations, source locations, and editor
-navigation are later increments and are not implied by these G1 records.
+Supported category roots now include noun, verb, adjective, preposition,
+pronoun, and aggregate. Named categories contribute their declaration,
+membership, and ancestry sources. The degenerate `aggregate` root instead
+draws directly from loaded single-token lexicon entries carrying that sense,
+so its evidence is the rule token plus lexicon declaration and its path is
+`surface → aggregate`; the authoring layer does not invent a category-member
+source. Quantifier-, comparative-, complementizer-, and time-rooted
+categories, plus qualified, participial, optional, and span realizers, remain
+later increments.
 
 ## Repository map
 

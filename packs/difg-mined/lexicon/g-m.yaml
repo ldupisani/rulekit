@@ -394,15 +394,9 @@ entries:
   hens:
     senses:
     - noun
-  her:
-    senses:
-    - pronoun
   herb:
     senses:
     - noun
-  herself:
-    senses:
-    - pronoun
   hides:
     senses:
     - verb
@@ -426,12 +420,6 @@ entries:
     senses:
     - noun
     plural: hills
-  him:
-    senses:
-    - pronoun
-  himself:
-    senses:
-    - pronoun
   hire:
     senses:
     - verb
@@ -441,9 +429,6 @@ entries:
   hires:
     senses:
     - verb
-  his:
-    senses:
-    - pronoun
   historical:
     senses:
     - adjective
@@ -733,9 +718,6 @@ entries:
     senses:
     - noun
     plural: items
-  its:
-    senses:
-    - pronoun
   jack:
     senses:
     - noun
@@ -1879,9 +1861,6 @@ entries:
   mutual:
     senses:
     - adjective
-  my:
-    senses:
-    - pronoun
   myrtle:
     senses:
     - noun

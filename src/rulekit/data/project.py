@@ -10,6 +10,7 @@ from ruamel.yaml import YAML
 from .packs import LoadedPack, load_packs
 from .registry import Registry, compile_registry
 from .schemas import ProjectDoc
+from .sources import SourceIndex, merge_pack_sources
 
 _yaml = YAML(typ="rt")
 
@@ -20,6 +21,7 @@ class Project:
     doc: ProjectDoc
     packs: list[LoadedPack]
     registry: Registry
+    source_index: SourceIndex
 
     def suite_items(self) -> list[dict]:
         if not self.doc.suite:
@@ -110,4 +112,10 @@ def load_project(root: Path | str) -> Project:
         doc = ProjectDoc.model_validate(_yaml.load(fh))
     pack_paths = [_resolve_pack_path(name, root) for name in doc.packs]
     packs = load_packs(pack_paths)
-    return Project(root=root, doc=doc, packs=packs, registry=compile_registry(packs))
+    return Project(
+        root=root,
+        doc=doc,
+        packs=packs,
+        registry=compile_registry(packs),
+        source_index=merge_pack_sources(packs),
+    )

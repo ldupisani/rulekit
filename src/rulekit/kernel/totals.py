@@ -681,12 +681,17 @@ def _qualified_variant_total(
     never a partial sum). Fewer than two siblings is not a roll-up at
     all — a single qualified fact answering a bare-measure ask would
     silently assume no other variant exists — so this declines rather
-    than guess. A stated `GroupTotal` for the same bare measure means the
-    document already names an explicit total some OTHER mechanism should
-    reconcile against (mirroring the existing distributive-each guard
-    elsewhere in this module): summing the qualified variants here too
-    would risk double-counting against it, so this declines instead."""
-    if any(g.measure == measure for g in store.by_kind(GroupTotal)):
+    than guess. A compatible stated `GroupTotal` for the same bare measure
+    means the document already names an explicit total some OTHER mechanism
+    should reconcile against (mirroring the existing distributive-each guard
+    elsewhere in this module): summing the qualified variants here too would
+    risk double-counting against it, so this declines instead. A total
+    explicitly scoped to another entity is not compatible and cannot block
+    this entity's roll-up."""
+    if any(
+        g.measure == measure and (g.scope is None or g.scope == entity)
+        for g in store.by_kind(GroupTotal)
+    ):
         return None
     prefix = f"{measure}["
     siblings = sorted({
@@ -893,5 +898,4 @@ def _combined_holder_totals(
             f"{len(entities)} ({entities})",
         )
     return entities, totals
-
 

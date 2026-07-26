@@ -59,6 +59,16 @@ fractions:
   ninths: 0.1111111111111111
   tenth: 0.1
   tenths: 0.1
+fraction_plurals:
+  halves: half
+  thirds: third
+  fourths: fourth
+  fifths: fifth
+  sixths: sixth
+  sevenths: seventh
+  eighths: eighth
+  ninths: ninth
+  tenths: tenth
 operators:
   plus: "+"
   minus: "-"
