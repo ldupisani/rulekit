@@ -117,9 +117,27 @@ class CategoriesDoc(StrictModel):
     format: Literal["rulekit/categories@1"]
     categories: dict[str, CategoryDef] = Field(default_factory=dict)
     members: dict[str, list[str]] = Field(default_factory=dict)
+    # Adjective category -> one or more noun categories it can describe.
+    # This is deliberately many-to-many: words may belong to several
+    # categories on either side, and pack extensions may add another target
+    # category without redefining either lexeme.
+    attribute_compatibility: dict[str, list[str]] = Field(default_factory=dict)
     context_synonyms: dict[str, ContextSynonym] = Field(default_factory=dict)
     attrs: dict[str, dict[str, float]] = Field(default_factory=dict)
     part_counts: dict[str, str] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def _compatibility_targets(self) -> "CategoriesDoc":
+        for attribute, nouns in self.attribute_compatibility.items():
+            if not nouns:
+                raise ValueError(
+                    f"attribute compatibility {attribute!r} needs a noun category"
+                )
+            if len(nouns) != len(set(nouns)):
+                raise ValueError(
+                    f"attribute compatibility {attribute!r} repeats a noun category"
+                )
+        return self
 
 
 # ---------------------------------------------------------------------------
@@ -258,6 +276,16 @@ class MatchToken(StrictModel):
     # pack-declared category. Defaults False so every existing category slot
     # remains byte-identical.
     counted: bool = False
+    # OPT-IN: a category-gated noun must also be an owned/possessive merged
+    # unit ("Aven's age", not bare "age"). This composes the existing
+    # `type: possessed` structure with a semantic noun category without
+    # weakening the schema invariant that a slot names exactly one type OR
+    # category gate. Defaults False so existing category slots are unchanged.
+    possessed: bool = False
+    # OPT-IN grammatical-number constraint on any scalar slot. The matched
+    # unit must carry the declared singular/plural feature; it never infers a
+    # word's number. This is separate from `same_number`, which relates slots.
+    number: Literal["singular", "plural"] | None = None
     # OPT-IN: require the slot's noun to be BARE — no compound modifier
     # (condense merge-compound) and no possessive owner. A category gate matches
     # on the unit's LEMMA, and a compound noun keeps its HEAD's lemma, so "the
@@ -412,12 +440,22 @@ class MatchToken(StrictModel):
                 or self.cat is not None
                 or self.bare
                 or self.counted
+                or self.possessed
+                or self.number is not None
             ):
-                raise ValueError("a span slot takes no type/cat/bare/counted")
+                raise ValueError(
+                    "a span slot takes no type/cat/bare/counted/possessed/number"
+                )
         elif self.slot is not None and (self.type is None) == (self.cat is None):
             raise ValueError("a slot needs exactly one of type/cat")
         if self.counted and self.cat is None:
             raise ValueError("`counted` only qualifies a category-gated slot")
+        if self.possessed and self.cat is None:
+            raise ValueError("`possessed` only qualifies a category-gated slot")
+        if self.counted and self.possessed:
+            raise ValueError("a category slot cannot be both counted and possessed")
+        if self.number is not None and self.slot is None:
+            raise ValueError("`number` only qualifies a slot")
         if self.span_blocks is not None and not self.span:
             raise ValueError("`span_blocks` only qualifies a span slot")
         if self.bare and self.slot is None:
@@ -427,6 +465,8 @@ class MatchToken(StrictModel):
             # which is exactly what `bare` forbids — the combination is always
             # false, so it is a authoring mistake, not a narrow gate.
             raise ValueError(f"`bare` contradicts type {self.type!r} (always false)")
+        if self.bare and self.possessed:
+            raise ValueError("`bare` contradicts `possessed` (always false)")
         if self.consume_skipped and self.lit is None:
             raise ValueError("`consume_skipped` only qualifies a lit")
         if self.at_start and self.opt is not None:
@@ -439,6 +479,13 @@ class MatchToken(StrictModel):
         if self.type is not None and self.type not in SLOT_TYPES:
             raise ValueError(f"unknown slot type {self.type!r}")
         return self
+
+
+class AttributeCompatibilityPredicate(StrictModel):
+    """The adjective and noun slots participating in a compatibility check."""
+
+    attribute: str
+    noun: str
 
 
 class WherePredicate(StrictModel):
@@ -456,6 +503,16 @@ class WherePredicate(StrictModel):
     # multi-unit phrases need exact phrase identity, not head-lemma identity.
     same_phrase: list[str] | None = None
     distinct: list[str] | None = None
+    # Every named slot must carry a non-empty possessive owner, and those
+    # owners must be distinct. The noun lemmas may intentionally be identical
+    # ("Aven's age ... Bira's age"); ordinary `distinct` compares lemmas and
+    # therefore cannot express this relation.
+    distinct_owner: list[str] | None = None
+    # The adjective slot must be licensed for the noun slot by at least one
+    # pack-declared adjective-category -> noun-category compatibility pair.
+    # Both words may belong to multiple categories; this is existential over
+    # the cross-product, never a single hardwired category.
+    attribute_compatible: AttributeCompatibilityPredicate | None = None
     # mining candidate qualified-measure-keys: the SAME self-reference
     # guard as `distinct` (lemma, label), plus each slot's own `qualifier`
     # feature (condense.py merge-attribute/merge-compound) — "12 more
@@ -499,7 +556,8 @@ class WherePredicate(StrictModel):
         set_ = [
             v for v in (
                 self.same_lemma, self.same_number, self.same_phrase,
-                self.distinct, self.distinct_measure,
+                self.distinct, self.distinct_owner, self.attribute_compatible,
+                self.distinct_measure,
                 self.name_count, self.absent, self.unbound,
                 self.slot_not_category,
             )

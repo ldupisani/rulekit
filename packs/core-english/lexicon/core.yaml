@@ -1,215 +1,265 @@
 format: rulekit/lexicon@1
 # Definitive dictionary, never heuristics: absent = unknown = reportable.
 entries:
-  # articles (skippable structure words)
-  the: {senses: [article]}
-  a: {senses: [article]}
-  an: {senses: [article]}
+    # articles (skippable structure words)
+    the: {senses: [article]}
+    a: {senses: [article]}
+    an: {senses: [article]}
 
-  # quantifiers
-  each: {senses: [quantifier], notes: "distributive; singular agreement"}
-  every: {senses: [quantifier]}
-  some: {senses: [quantifier]}
-  all: {senses: [quantifier]}
-  no: {senses: [quantifier]}
+    # quantifiers
+    each: {senses: [quantifier], notes: "distributive; singular agreement"}
+    every: {senses: [quantifier]}
+    some: {senses: [quantifier]}
+    all: {senses: [quantifier]}
+    no: {senses: [quantifier]}
 
-  # prepositions
-  of: {senses: [preposition]}
-  in: {senses: [preposition]}
-  on: {senses: [preposition]}
-  with: {senses: [preposition]}
-  from: {senses: [preposition]}
-  to: {senses: [preposition]}
-  at: {senses: [preposition]}
+    # modal auxiliaries
+    can: {senses: [modal, noun], plural: cans}
+    could: {senses: [modal]}
+    may: {senses: [modal]}
+    might: {senses: [modal]}
+    must: {senses: [modal]}
+    should: {senses: [modal]}
+    will: {senses: [modal]}
+    would: {senses: [modal]}
 
-  # pronouns
-  he: {senses: [pronoun]}
-  she: {senses: [pronoun]}
-  they: {senses: [pronoun], number: plural}
-  it: {senses: [pronoun]}
-  someone: {senses: [pronoun]}
-  somebody: {senses: [pronoun]}
-  everybody: {senses: [pronoun]}
-  nobody: {senses: [pronoun]}
-  i:
-    senses: [pronoun]
-    notes: >
-      first-person singular — a base-lexicon gap this project never needed
-      until now (GSM8K narratives are almost always third-person), closed
-      as a decline-safety prerequisite for condense.py's merge-label pass
-      (mining candidate labeled-entity-identity): without a lexicon entry,
-      the single capital letter "I" is indistinguishable from a genuine
-      index label ("Jar B") and "the jar I have" would wrongly fuse into
-      one label-distinguished noun. With this entry it keeps its own
-      pronoun sense (its `refers` obligation then simply goes unmet, same
-      decline discipline every other unresolved pronoun already has).
-  anything: {senses: [pronoun]}
-  either: {senses: [pronoun]}
-  everyone: {senses: [pronoun]}
-  everything: {senses: [pronoun]}
-  her: {senses: [pronoun]}
-  herself: {senses: [pronoun]}
-  him: {senses: [pronoun]}
-  himself: {senses: [pronoun]}
-  his: {senses: [pronoun]}
-  its: {senses: [pronoun]}
-  my: {senses: [pronoun]}
-  ones: {senses: [pronoun]}
-  their: {senses: [pronoun]}
-  theirs: {senses: [pronoun]}
-  them: {senses: [pronoun], number: plural}
-  themselves: {senses: [pronoun]}
-  you: {senses: [pronoun]}
-  your: {senses: [pronoun]}
+    # deictic temporal markers
+    now: {senses: [time]}
+    today: {senses: [time]}
 
-  # negation
-  not: {senses: [negator]}
+    # state-anchor adverb
+    currently: {senses: [adverb]}
 
-  # the possessive clitic — tokenized as its own unit ("Tom's" -> Tom + 's)
-  "'s":
-    senses: [possessive]
-    notes: >
-      owner (left) + owned (right) bind and condense into an owner-attributed
-      noun. The copula reading ("he's got") leaves `owned` unmet and the
-      sentence declines — never a wrong fact.
+    # prepositions
+    of: {senses: [preposition]}
+    in: {senses: [preposition]}
+    on: {senses: [preposition]}
+    with: {senses: [preposition]}
+    from: {senses: [preposition]}
+    to: {senses: [preposition]}
+    at: {senses: [preposition]}
 
-  # auxiliaries / question words (structure)
-  does: {senses: [auxiliary]}
-  do: {senses: [auxiliary]}
-  did: {senses: [auxiliary]}
-  how: {senses: [interrogative]}
-  much: {senses: [interrogative, quantifier], notes: "moved from difg-mined; also the how-MUCH ask cue"}
-  many: {senses: [interrogative]}
-  what: {senses: [interrogative]}
-  who: {senses: [interrogative]}
+    # pronouns
+    he: {senses: [pronoun]}
+    she: {senses: [pronoun]}
+    they: {senses: [pronoun], number: plural}
+    it: {senses: [pronoun]}
+    someone: {senses: [pronoun]}
+    somebody: {senses: [pronoun]}
+    everybody: {senses: [pronoun]}
+    nobody: {senses: [pronoun]}
+    i:
+        senses: [pronoun]
+        notes: >
+            first-person singular — a base-lexicon gap this project never needed
+            until now (GSM8K narratives are almost always third-person), closed
+            as a decline-safety prerequisite for condense.py's merge-label pass
+            (mining candidate labeled-entity-identity): without a lexicon entry,
+            the single capital letter "I" is indistinguishable from a genuine
+            index label ("Jar B") and "the jar I have" would wrongly fuse into
+            one label-distinguished noun. With this entry it keeps its own
+            pronoun sense (its `refers` obligation then simply goes unmet, same
+            decline discipline every other unresolved pronoun already has).
+    anything: {senses: [pronoun]}
+    either: {senses: [pronoun]}
+    everyone: {senses: [pronoun]}
+    everything: {senses: [pronoun]}
+    her: {senses: [pronoun]}
+    herself: {senses: [pronoun]}
+    him: {senses: [pronoun]}
+    himself: {senses: [pronoun]}
+    his: {senses: [pronoun]}
+    its: {senses: [pronoun]}
+    my: {senses: [pronoun]}
+    ones: {senses: [pronoun]}
+    their: {senses: [pronoun]}
+    theirs: {senses: [pronoun]}
+    them: {senses: [pronoun], number: plural}
+    themselves: {senses: [pronoun]}
+    you: {senses: [pronoun]}
+    your: {senses: [pronoun]}
 
-  # imperative task cue ("Compute the total…") — a task sentence is a
-  # question even without a question mark; calculate/determine gain the
-  # imperative sense in difg-mined where their verb entries live
-  compute: {senses: [imperative]}
+    # negation
+    not: {senses: [negator]}
 
-  # question/remainder skeleton (moved from difg-mined)
-  left: {senses: [adjective], notes: "'are left' / 'have left' — the remainder frame"}
-  there: {senses: [existential]}
+    # the possessive clitic — tokenized as its own unit ("Tom's" -> Tom + 's)
+    "'s":
+        senses: [possessive]
+        notes: >
+            owner (left) + owned (right) bind and condense into an owner-attributed
+            noun. The copula reading ("he's got") leaves `owned` unmet and the
+            sentence declines — never a wrong fact.
 
-  # clause boundary — argument binding never crosses it
-  that: {senses: [complementizer], notes: "moved from difg-mined (was mis-lexiconed as article there)"}
+    # auxiliaries / question words (structure)
+    does: {senses: [auxiliary]}
+    do: {senses: [auxiliary]}
+    did: {senses: [auxiliary]}
+    how: {senses: [interrogative]}
+    much: {senses: [interrogative, quantifier], notes: "moved from difg-mined; also the how-MUCH ask cue"}
+    many: {senses: [interrogative]}
+    what: {senses: [interrogative]}
+    who: {senses: [interrogative]}
 
-  # comparatives
-  more: {senses: [comparative]}
-  fewer: {senses: [comparative]}
-  less: {senses: [comparative]}
-  than: {senses: [particle]}
-  as: {senses: [particle]}
-  altogether: {senses: [aggregate]}
-  total: {senses: [aggregate]}
-  combined: {senses: [aggregate]}
-  together: {senses: [aggregate]}
-  # moved from difg-mined (mining candidate average-asks): was mis-lexiconed
-  # as a bare noun there, which let condense.py's general NOUN+NOUN
-  # merge-compound pass eat it into a "average number"/"average amount"
-  # compound before any ask pattern ever saw a separate 'average' token —
-  # the same reason 'total'/'combined' above are tagged 'aggregate' rather
-  # than 'noun'. 'averaged'/'averages' (the verb forms) are untouched and
-  # stay in difg-mined.
-  average: {senses: [aggregate]}
-  and: {senses: [conjunction]}
+    # imperative task cue ("Compute the total…") — a task sentence is a
+    # question even without a question mark; calculate/determine gain the
+    # imperative sense in difg-mined where their verb entries live
+    compute: {senses: [imperative]}
 
-  # copula / possession verbs (state)
-  is: {senses: [verb], number: singular, verb: {lemma: be}}
-  are: {senses: [verb], number: plural, verb: {lemma: be}}
-  was: {senses: [verb], number: singular, verb: {lemma: be}}
-  were: {senses: [verb], number: plural, verb: {lemma: be}}
-  has: {senses: [verb], verb: {lemma: have}}
-  have: {senses: [verb], verb: {lemma: have}}
-  had: {senses: [verb], verb: {lemma: have}}
-  owns: {senses: [verb], verb: {lemma: own}}
-  own: {senses: [verb], verb: {lemma: own}}
+    # question/remainder skeleton (moved from difg-mined)
+    left: {senses: [adjective], notes: "'are left' / 'have left' — the remainder frame"}
+    there: {senses: [existential]}
 
-  # event verbs — gains
-  gets: {senses: [verb], verb: {lemma: get}}
-  get: {senses: [verb], verb: {lemma: get}}
-  got: {senses: [verb], verb: {lemma: get}}
-  finds: {senses: [verb], verb: {lemma: find}}
-  find: {senses: [verb], verb: {lemma: find}}
-  found: {senses: [verb], verb: {lemma: find}}
-  buys: {senses: [verb], verb: {lemma: buy}}
-  buy: {senses: [verb], verb: {lemma: buy}}
-  bought: {senses: [verb], verb: {lemma: buy}}
-  receives: {senses: [verb], verb: {lemma: receive}}
-  receive: {senses: [verb], verb: {lemma: receive}}
-  received: {senses: [verb], verb: {lemma: receive}}
-  wins: {senses: [verb], verb: {lemma: win}}
-  win: {senses: [verb], verb: {lemma: win}}
-  won: {senses: [verb], verb: {lemma: win}}
+    # clause boundary — argument binding never crosses it
+    that: {senses: [complementizer], notes: "moved from difg-mined (was mis-lexiconed as article there)"}
 
-  # event verbs — losses
-  loses: {senses: [verb], verb: {lemma: lose}}
-  lose: {senses: [verb], verb: {lemma: lose}}
-  lost: {senses: [verb], verb: {lemma: lose}}
-  eats: {senses: [verb], verb: {lemma: eat}}
-  eat: {senses: [verb], verb: {lemma: eat}}
-  ate: {senses: [verb], verb: {lemma: eat}}
-  gives: {senses: [verb], verb: {lemma: give}}
-  give: {senses: [verb], verb: {lemma: give}}
-  gave: {senses: [verb], verb: {lemma: give}}
-  sells: {senses: [verb], verb: {lemma: sell}}
-  sell: {senses: [verb], verb: {lemma: sell}}
-  sold: {senses: [verb], verb: {lemma: sell}}
-  spends: {senses: [verb], verb: {lemma: spend}}
-  spend: {senses: [verb], verb: {lemma: spend}}
-  spent: {senses: [verb], verb: {lemma: spend}}
-  drops: {senses: [verb], verb: {lemma: drop}}
-  dropped: {senses: [verb], verb: {lemma: drop}}
+    # comparatives
+    more: {senses: [comparative]}
+    fewer: {senses: [comparative]}
+    less: {senses: [comparative]}
+    # Generic age comparatives belong with the core relation grammar. The
+    # benchmark-mined pack still extends them with its higher/lower categories.
+    older: {senses: [comparative]}
+    younger: {senses: [comparative]}
+    # Generic physical-dimension comparatives. Their signed dimension category
+    # is core grammar; difg-mined may add broader magnitude memberships.
+    heavier: {senses: [comparative]}
+    higher: {senses: [comparative]}
+    larger: {senses: [comparative]}
+    lighter: {senses: [comparative]}
+    longer: {senses: [comparative]}
+    shorter: {senses: [comparative]}
+    smaller: {senses: [comparative]}
+    taller: {senses: [comparative]}
+    wider: {senses: [comparative]}
+    than: {senses: [particle]}
+    as: {senses: [particle]}
+    altogether: {senses: [aggregate]}
+    total: {senses: [aggregate]}
+    combined: {senses: [aggregate]}
+    together: {senses: [aggregate]}
+    # moved from difg-mined (mining candidate average-asks): was mis-lexiconed
+    # as a bare noun there, which let condense.py's general NOUN+NOUN
+    # merge-compound pass eat it into a "average number"/"average amount"
+    # compound before any ask pattern ever saw a separate 'average' token —
+    # the same reason 'total'/'combined' above are tagged 'aggregate' rather
+    # than 'noun'. 'averaged'/'averages' (the verb forms) are untouched and
+    # stay in difg-mined.
+    average: {senses: [aggregate]}
+    and: {senses: [conjunction]}
 
-  # other verbs
-  wilted: {senses: [verb], verb: {lemma: wilt}}
-  jumped: {senses: [verb], verb: {lemma: jump}}
-  walked: {senses: [verb], verb: {lemma: walk}}
-  ran: {senses: [verb], verb: {lemma: run}}
+    # copula / possession verbs (state)
+    is: {senses: [verb], number: singular, verb: {lemma: be}}
+    are: {senses: [verb], number: plural, verb: {lemma: be}}
+    was: {senses: [verb], number: singular, verb: {lemma: be}}
+    were: {senses: [verb], number: plural, verb: {lemma: be}}
+    has: {senses: [verb], verb: {lemma: have}}
+    have: {senses: [verb], verb: {lemma: have}}
+    had: {senses: [verb], verb: {lemma: have}}
+    owns: {senses: [verb], verb: {lemma: own}}
+    own: {senses: [verb], verb: {lemma: own}}
 
-  # the classic multi-sense demonstrator
-  rose:
-    senses: [noun, verb]
-    plural: roses
-    verb: {lemma: rise}
-    notes: "flower (noun) or past of rise (verb) — coverage arbitrates"
+    # event verbs — gains
+    gets: {senses: [verb], verb: {lemma: get}}
+    get: {senses: [verb], verb: {lemma: get}}
+    got: {senses: [verb], verb: {lemma: get}}
+    finds: {senses: [verb], verb: {lemma: find}}
+    find: {senses: [verb], verb: {lemma: find}}
+    found: {senses: [verb], verb: {lemma: find}}
+    buys: {senses: [verb], verb: {lemma: buy}}
+    buy: {senses: [verb], verb: {lemma: buy}}
+    bought: {senses: [verb], verb: {lemma: buy}}
+    receives: {senses: [verb], verb: {lemma: receive}}
+    receive: {senses: [verb], verb: {lemma: receive}}
+    received: {senses: [verb], verb: {lemma: receive}}
+    wins: {senses: [verb], verb: {lemma: win}}
+    win: {senses: [verb], verb: {lemma: win}}
+    won: {senses: [verb], verb: {lemma: win}}
 
-  # common nouns
-  apple: {senses: [noun], plural: apples}
-  year: {senses: [noun], plural: years}
-  # promoted from difg-mined 2026-07-20: packs/reference needs it too, and
-  # packs may not shadow — the shared base is the one home both can require
-  area: {senses: [noun], plural: areas}
-  plum: {senses: [noun], plural: plums}
-  marble: {senses: [noun], plural: marbles}
-  book: {senses: [noun], plural: books}
-  cookie: {senses: [noun], plural: cookies}
-  ball: {senses: [noun], plural: balls}
-  toy: {senses: [noun], plural: toys}
-  pencil: {senses: [noun], plural: pencils}
-  sticker: {senses: [noun], plural: stickers}
-  card: {senses: [noun], plural: cards}
-  coin: {senses: [noun], plural: coins}
-  dollar: {senses: [noun], plural: dollars}
-  egg: {senses: [noun], plural: eggs}
-  flower: {senses: [noun], plural: flowers}
-  garden: {senses: [noun], plural: gardens}
-  teacher: {senses: [noun], plural: teachers}
-  student: {senses: [noun], plural: students}
-  child: {senses: [noun], plural: children}
-  friend: {senses: [noun], plural: friends}
-  dog: {senses: [noun], plural: dogs}
-  cat: {senses: [noun], plural: cats}
-  fish: {senses: [noun], plural: fish}
-  bird: {senses: [noun], plural: birds}
-  rabbit: {senses: [noun], plural: rabbits}
-  hamster: {senses: [noun], plural: hamsters}
-  litter: {senses: [noun], plural: litter}
+    # event verbs — losses
+    loses: {senses: [verb], verb: {lemma: lose}}
+    lose: {senses: [verb], verb: {lemma: lose}}
+    lost: {senses: [verb], verb: {lemma: lose}}
+    eats: {senses: [verb], verb: {lemma: eat}}
+    eat: {senses: [verb], verb: {lemma: eat}}
+    ate: {senses: [verb], verb: {lemma: eat}}
+    gives: {senses: [verb], verb: {lemma: give}}
+    give: {senses: [verb], verb: {lemma: give}}
+    gave: {senses: [verb], verb: {lemma: give}}
+    sells: {senses: [verb], verb: {lemma: sell}}
+    sell: {senses: [verb], verb: {lemma: sell}}
+    sold: {senses: [verb], verb: {lemma: sell}}
+    spends: {senses: [verb], verb: {lemma: spend}}
+    spend: {senses: [verb], verb: {lemma: spend}}
+    spent: {senses: [verb], verb: {lemma: spend}}
+    drops: {senses: [verb], verb: {lemma: drop}}
+    dropped: {senses: [verb], verb: {lemma: drop}}
 
-  # adjectives
-  red: {senses: [adjective]}
-  green: {senses: [adjective]}
-  blue: {senses: [adjective]}
-  small: {senses: [adjective]}
-  large: {senses: [adjective]}
+    # other verbs
+    wilted: {senses: [verb], verb: {lemma: wilt}}
+    jumped: {senses: [verb], verb: {lemma: jump}}
+    walked: {senses: [verb], verb: {lemma: walk}}
+    ran: {senses: [verb], verb: {lemma: run}}
+    take: {senses: [verb]}
+    takes: {senses: [verb], verb: {lemma: take}}
+    took: {senses: [verb], verb: {lemma: take}}
+    want: {senses: [verb]}
+    wanted: {senses: [verb], verb: {lemma: want}}
+    wanting: {senses: [verb], verb: {lemma: want}}
+    wants: {senses: [verb], verb: {lemma: want}}
+    need: {senses: [verb]}
+    needed: {senses: [verb], verb: {lemma: need}}
+    needs: {senses: [verb], verb: {lemma: need}}
+
+    # the classic multi-sense demonstrator
+    rose:
+        senses: [noun, verb]
+        plural: roses
+        verb: {lemma: rise}
+        notes: "flower (noun) or past of rise (verb) — coverage arbitrates"
+
+    # common nouns
+    apple: {senses: [noun], plural: apples}
+    age: {senses: [noun], plural: ages}
+    amount: {senses: [noun], plural: amounts}
+    number: {senses: [noun], plural: numbers}
+    price: {senses: [noun], plural: prices}
+    cost: {senses: [noun, verb], plural: costs}
+    remainder: {senses: [noun]}
+    rest: {senses: [noun]}
+    year: {senses: [noun], plural: years}
+    # promoted from difg-mined 2026-07-20: packs/reference needs it too, and
+    # packs may not shadow — the shared base is the one home both can require
+    area: {senses: [noun], plural: areas}
+    plum: {senses: [noun], plural: plums}
+    marble: {senses: [noun], plural: marbles}
+    book: {senses: [noun], plural: books}
+    cookie: {senses: [noun], plural: cookies}
+    ball: {senses: [noun], plural: balls}
+    toy: {senses: [noun], plural: toys}
+    pencil: {senses: [noun], plural: pencils}
+    sticker: {senses: [noun], plural: stickers}
+    card: {senses: [noun], plural: cards}
+    coin: {senses: [noun], plural: coins}
+    dollar: {senses: [noun], plural: dollars}
+    egg: {senses: [noun], plural: eggs}
+    flower: {senses: [noun], plural: flowers}
+    garden: {senses: [noun], plural: gardens}
+    teacher: {senses: [noun], plural: teachers}
+    student: {senses: [noun], plural: students}
+    child: {senses: [noun], plural: children}
+    friend: {senses: [noun], plural: friends}
+    dog: {senses: [noun], plural: dogs}
+    cat: {senses: [noun], plural: cats}
+    fish: {senses: [noun], plural: fish}
+    bird: {senses: [noun], plural: birds}
+    rabbit: {senses: [noun], plural: rabbits}
+    hamster: {senses: [noun], plural: hamsters}
+    litter: {senses: [noun], plural: litter}
+    tree: {senses: [noun], plural: trees}
+
+    # adjectives
+    red: {senses: [adjective]}
+    green: {senses: [adjective]}
+    blue: {senses: [adjective]}
+    small: {senses: [adjective]}
+    large: {senses: [adjective]}

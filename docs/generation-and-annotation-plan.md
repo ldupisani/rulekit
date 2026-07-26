@@ -2,10 +2,22 @@
 
 **Status:** active project plan  
 **Accepted:** 2026-07-25  
-**Implementation:** G1–G6, G5c–G5f, Reading-origin and fact-level review, the
+**Implementation:** G1–G6, G5c–G5g, Reading-origin and fact-level review, the
 fraction-plural morphology correction, scoped `GroupTotal`, and the first
-review-led grammar-boundary reconciliation complete; G5g `age_noun` ownership
-profiling is next
+review-led grammar-boundary reconciliation complete; the adjective/noun
+compatibility and leading-`GroupTotal` subject boundaries are now complete,
+G5h core ownership of the seven project-empty exploratory category domains,
+G5i recursive optional-branch realization, and G5j comparative-category
+realization, G5k sentence-wide `absent` filtering, G5l matcher-confirmed
+`unbound` branch omission, and G5m exact `distinct_measure` realization are
+complete; G5n direct complementizer-category realization is complete and G5o
+direct quantifier-category realization is complete; G5p remaining-blocker
+vocabulary ownership profiling is complete and G5q age-comparative core
+ownership is complete; G5r dimension-comparative core ownership is complete
+and G5s modal core ownership and slot realization is complete; G5t
+temporal-marker core ownership and time-root realization is complete; G5u
+direct-adverb visibility is complete and G5v review-led premise auditing is
+next
 
 ## Current checkpoint
 
@@ -13,8 +25,8 @@ G1 shipped the first complete generate/review/next loop, G2 made its
 mechanical result directly inspectable, G3 closed the edit/retest loop, and G4
 added bounded hypothesis and minimal-pair exploration:
 
-- all 93 curated premise rules are listed, with 23 currently realizable and
-  exact blockers for the other 70;
+- all 95 curated premise rules are mechanically realizable, with no hidden
+  unsupported token or predicate blockers;
 - seeded candidates are identical across fresh project loads;
 - failed target round trips remain inspectable as `absent`;
 - the ordinary analyzer and document matcher supply actual matches, surviving
@@ -25,6 +37,9 @@ added bounded hypothesis and minimal-pair exploration:
   premise rules, requires an explicit target selection when more than one
   fired, and can open the exact sentence in the same review workbench without
   a realization pass;
+- identified Reading premise rules, rule-backed decisions, emitted and
+  semantic facts, and recognized ask rules can open their indexed YAML
+  declarations directly in the existing editor;
 - proper names come from `projects/curated/generation.yaml`;
 - reviews append only to `projects/curated/generation/reviews.jsonl`;
 - loaded projects retain exact source positions for rules, asks, premise
@@ -68,9 +83,15 @@ added bounded hypothesis and minimal-pair exploration:
 - rule status distinguishes blocked, untouched, generated-but-unreviewed, and
   reviewed, while reachable lexicon entries distinguish untouched,
   generated-but-unreviewed, and reviewed;
-- the current curated frontier contains 23 supported rules and 114 reachable
-  lexicon identities; nine live reviews cover seven rules, while exploration
-  remains separate from human judgment; and
+- generation support is deliberately mechanical rather than a human validity
+  judgment: if every declared token and predicate has a realizer and a
+  project-backed filler, the rule remains explorable even when the generated
+  sentence exposes a defective premise;
+- a `matched` or `shadowed` target status reports what the ordinary matcher
+  accepted, never that the resulting English or emitted fact is correct;
+- the current curated frontier contains 95 supported rules and 147 reachable
+  lexicon identities, while live reviews and continuing exploration remain
+  separate from mechanical availability; and
 - random Generate next chooses from the least-generated compatible rule and
   filler frontier with seeded tie-breaking, while an explicit word probe links
   directly to its editable lexicon declaration;
@@ -81,10 +102,10 @@ added bounded hypothesis and minimal-pair exploration:
   optional `GroupTotal.scope`, allowing independently reviewed blue/red totals
   over one measure to coexist without changing tail-only or synthesized totals.
 
-The current gate is green: the 3,514-test full repository run passes, the final
-scoped boundary file passes 7/7, curated remains deterministic at 65/65 and
-100% precision, both GSM8K development diffs are neutral, every standing
-cross-corpus gate retains zero wrong answers, and lint has zero errors.
+The current gate is green: all 3,828 repository tests pass in four-worker
+mode, curated remains deterministic at 65/65 and 100% precision, both GSM8K
+development diffs are neutral, every standing cross-corpus gate retains zero
+wrong answers, and lint has zero errors.
 G6 live validation selected untouched `rabbit`, opened its declaration, and
 generated matched `Eron gives 18 rabbits to Aven.` for
 `arithmetic/transfer-prepositional`. The rule moved from untouched to
@@ -748,6 +769,13 @@ append-only review ledger.
 matches, and complete the same human-review loop without asking the generator
 to fabricate or alter the text.
 
+Reading also exposes source controls without requiring promotion into Generate
+mode. A matched premise selection, a rule-backed decision, an emitted or
+semantic fact, and a recognized ask carry their authoring-only `SourceIndex`
+reference when one exists. The control opens only paths already present in the
+editable pack-document allowlist and jumps to the indexed line; derived or
+kernel-only identifiers without a YAML declaration remain plain text.
+
 ### G5 — Structured realizers — in progress
 
 Add counted, plural, possessed, qualified, participial, optional, and bounded
@@ -1213,23 +1241,980 @@ gate is neutral: 3,514 tests pass; curated is 65/65; GSM8K DEV train and
 holdout remain 104/0 and 40/0 with neutral diffs; ASDiv, SVAMP, MAWPS, SciBench,
 and FOLIO retain zero wrong commitments; lint has zero errors.
 
-#### G5g — core-owned `age_noun` domain — profiling
+#### G5g — core-owned age domain and owned-category boundary — complete
 
-The post-G5f frontier is 23 supported and 70 blocked. The next smallest
-complete class is a pack-ownership correction, not a new realizer:
+The post-G5f frontier was 23 supported and 70 blocked. The smallest
+candidate class began as a pack-ownership correction:
 `core-english` declares the generic noun category `age_noun`, but its only
 lexicon entry and membership are owned by `difg-mined`. A project such as
 curated that loads core language but not the mining pack therefore has no
 project-backed filler for this otherwise supported noun-rooted category.
 
-Before relocation, prove the complete declaration, membership, lexicon, and
-rule occurrence set. Preregister a 23 → 25 support delta that unlocks only
-`arithmetic/group-total-of-age` and
-`arithmetic/times-as-old-as-possessive-standard`; the related
-`arithmetic/group-total-sum-of-age` must retain its independent optional-group
-blocker. Move the generic `age` datum rather than copying it, preserve the
-combined inventory and source evidence, and round-trip both newly generated
-surface classes through the ordinary matcher.
+Complete occurrence profiling corrected the initial preregistration before it
+could become an unsafe implementation contract. There are five `age_noun`
+tokens across four rules, not only the two initially named rules. In
+particular, `arithmetic/times-as-old-as-both-possessive` contains two age
+slots and loses its last filler blocker at the same time. Merely moving the
+word would also let the two comparative rules generate and match bare or
+plural heads such as `Age is twice age.`, even though both emitted relations
+read a possessive owner.
+
+G5g therefore closes the complete structural class:
+
+- generic `age/ages` and its `age_noun`, `dimension_noun`, and `time_measure`
+  memberships move from `difg-mined` to `core-english` rather than being
+  duplicated;
+- a category slot may opt into `possessed: true`, composing the existing
+  owned-noun unit structure with an exact noun category. Compilation rejects
+  the qualifier on a category not rooted at `noun`;
+- any scalar slot may declare `number: singular|plural`, and both matcher and
+  generator require that exact project-declared grammatical feature;
+- `distinct_owner` requires every named slot to carry a possessive owner and
+  requires those owners to differ, without incorrectly comparing the shared
+  noun lemma;
+- the one-sided and two-sided age comparisons require singular possessed
+  `age_noun` slots, copulas, and declared number agreement; the two-sided rule
+  additionally refuses self-comparison; and
+- generated premise explanations expose the category, owner, singular lemma,
+  grammatical number, source declarations, and distinct-owner result.
+
+**G5g result:** the corrected support delta is 23 → 26, unlocking
+`arithmetic/group-total-of-age`,
+`arithmetic/times-as-old-as-possessive-standard`, and
+`arithmetic/times-as-old-as-both-possessive`.
+`arithmetic/group-total-sum-of-age` remains blocked by its independent
+optional group. Twenty-four seeded realizations of each comparative rule
+round-trip through the ordinary matcher; invented `relic` vocabulary proves
+the machinery is category-generic rather than age-specific. The cumulative
+generator version is `g6-g5g`. All 3,589 repository tests pass; curated stays
+65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 40/0 with neutral
+diffs; ASDiv, SVAMP, MAWPS, SciBench, and FOLIO retain zero wrong commitments;
+and lint remains at zero errors with the same two known warnings.
+
+The post-G5g frontier is 26 supported and 67 blocked. The dominant remaining
+blockers are unchanged in kind: 51 optional groups, 19 comparative-root
+occurrences, and 14 `absent` predicates. Several otherwise-supported
+core-declared categories also have project-empty slots whose members remain
+mining-owned. Profile their complete ownership and occurrence sets before
+preregistering G5h; do not infer that another isolated word move is safe.
+
+While G5g was being gated, the Designer captured a new invalid review for
+`10 of the years are large.` against
+`arithmetic/partition-attribute-of-noun`. It attaches both
+`premise_too_broad` and `semantically_implausible` to the adjective slot and
+confirms the source-linked hypothesis. That evidence is preserved but is not
+silently folded into G5g. Reconcile the complete adjective/noun compatibility
+boundary before preregistering another coverage increment.
+
+#### Review-led adjective/noun compatibility — complete
+
+The complete curated occurrence set contains four `type: adjective` premise
+slots: the cardinal, fractional, explicit-noun, and rest partition rules.
+Only `arithmetic/partition-attribute-of-noun` binds the described noun in the
+same rule. The two pronoun forms do not yet know their antecedent noun at
+match time, and the rest form is independently blocked. The compatibility
+premise therefore belongs only on the explicit-noun rule; adding it to the
+other three would pretend an unresolved pronoun or remnant already supplied a
+noun.
+
+Before correction, the curated generator admits the unrestricted Cartesian
+product of six adjectives and 31 declared plural noun lemmas: 186 pairs. The
+new premise will admit a deliberately conservative 152-pair domain:
+
+- `color_attribute` (`red`, `green`, `blue`) applies to 22 declared
+  `colorable_noun` members;
+- `size_attribute` (`small`, `large`) applies to both
+  `physical_size_noun` and `magnitude_noun`, whose disjoint memberships total
+  28 noun lemmas; and
+- `remnant_adj` (`left`) applies to 30
+  `remainder_collection_noun` members.
+
+This is explicitly many-to-many. A category document declares
+`attribute_compatibility` as an adjective-category key mapped to a list of
+compatible noun categories. An adjective and noun may each belong to
+multiple categories. Matching succeeds when any declared category pair
+licenses the two lemmas, and the premise explanation names that exact pair.
+Pack extensions may add adjective members, noun members, or another
+compatible noun category without redefining either word or category.
+
+The complete standing-corpus DEV sweep found nine current matches and these
+eight unique pairs:
+
+- GSM8K: `yellow/flower`, `red/flower`, `full/box`, `ripe/peach`, and
+  `white/rose`;
+- ASDiv: `good/carrot` and `red/ticket`; and
+- MAWPS: `married/woman`.
+
+SVAMP, SciBench, and FOLIO contain no current match for this rule. The
+cross-pack declarations must preserve all eight pairs. In particular,
+`size_attribute` will demonstrate more than one compatible noun category,
+while a synthetic project must prove that either branch licenses a pair and
+an unlisted third category is rejected.
+
+The preregistered result is a precision narrowing with no availability
+change: 26/93 rules remain selectable,
+`arithmetic/partition-attribute-of-noun` remains supported, all eight
+standing-corpus pairs remain matchable, and the reviewed `large/year` pair
+becomes absent. No review or exploration row is rewritten. The cumulative
+generator version becomes `g6-attribute-compatibility`.
+
+**Result:** the implementation matches that preregistration. Categories
+declare an adjective-category key with a list of noun-category targets;
+memberships on either side remain independently extensible, and the matcher
+accepts the existential union of every declared pair. `size_attribute`
+explicitly targets both `physical_size_noun` and `magnitude_noun`, while a
+generic invented project proves that either category licenses generation and
+matching and an unlisted third category does not. Registry compilation rejects
+unknown or wrongly rooted category targets and wrongly typed rule slots.
+
+Generation filters both ordinary and locked/minimal-pair fillers through the
+same registry predicate, and its `where` explanation names and source-links
+the exact compatibility declaration, both category definitions, and both
+memberships. Pack ownership remains local: reference-owned `population`
+extends the generic noun categories from `reference`, while difg-owned
+attributes and nouns extend the same boundary from `difg-mined`.
+
+The reviewed `10 of the years are large.` is now absent without changing its
+append-only review or exploration evidence. The generic core domain is exactly
+152 pairs. Curated also loads reference-owned `population`, whose explicitly
+declared size and remnant memberships add three licensed pairs, and G5g adds
+incompatible `age`; the current complete curated domain is therefore 155/192
+pairs. Support remains 26/93 at this historical checkpoint, and all eight
+standing DEV pairs remain licensed. The full 3,654-test gate passes; curated
+stays 65/65; GSM8K
+DEV-train and DEV-holdout stay 104/0 and 40/0 with neutral diffs; ASDiv,
+SVAMP, MAWPS, SciBench, and FOLIO retain zero wrong commitments; and lint
+remains at zero errors with the same two known warnings.
+
+#### Review-led leading GroupTotal subject boundary — complete
+
+The sole remaining live review is invalid
+`Altogether there drops 2 coins.` against
+`arithmetic/group-total-leading-marker`. Before correction it bound existential
+`there` through `who: type word`, bound unrestricted `drops` as the verb,
+emitted `GroupTotal(scope="there", measure="coin", value=2, verb="drop")`, and
+still reported that `drops` had no subject. The confirmed broad-verb
+hypothesis identifies a symptom, but narrowing the verb slot itself would
+remove valid aggregate actions.
+
+A first sweep undercounted this occurrence class as 19. The completed,
+post-change audit over both GSM8K DEV partitions and ASDiv DEV found 26
+matches across the leading GroupTotal family: 25 genuine scoped/action totals
+and one existential
+surface. The valid action verbs include `sold`, `weigh`, `ran`, `earned`,
+`watched`, `paid`, `picked`, `used`, `walked`, `spent`, `make`, `scored`, and
+`planted`; they require the existing broad verb slot. The one existential
+surface is `In total there are 96 flowers ...`. Before correction it emitted
+the same incorrect `scope="there"` representation and declined downstream.
+
+The implemented structural split is:
+
+- both existing scoped leading rules add
+  `slot_not_category: {slot: who, cat: existential}` while retaining their
+  broad action-verb slots and scoped emissions;
+- the generator realizes that generic negative category predicate by filtering
+  the named slot's project-backed domain, including locked fillers;
+- `arithmetic/group-total-leading-existential` owns
+  `In total there COPULA COUNTED`, and
+  `arithmetic/group-total-leading-marker-existential` owns
+  `TOTALITY_MARKER there COPULA COUNTED`;
+- both existential rules require declared copular number agreement, consume
+  the counted item, and emit an unscoped GroupTotal with holding semantics;
+  and
+- no coverage is inferred for other existential verbs or inverted surfaces.
+
+The availability delta is 26/93 → 28/95: the two existing rules stay
+supported and the two explicit existential rules are added. All 18 scoped DEV
+matches originally counted, plus the seven recovered by the complete audit,
+retain action/state verbs and non-`there` scopes; the one existential DEV
+match reroutes to an unscoped holding total. The marker-existential rule uses
+the exact totality-marker alternation `altogether|combined|together|total`,
+because the broader degenerate `aggregate` sense also contains `average` and
+would generate the invalid surface “Average there …”.
+
+The reviewed `drops` specimen now matches neither family and emits no
+`GroupTotal`. `slot_not_category` is enforced during ordinary, locked, and
+minimal-pair realization and explained as a source-backed `where` premise.
+Static overlap analysis recognizes the subtraction, so it does not report the
+scoped and existential siblings as overlapping. The append-only review and
+exploration evidence remain unchanged. The cumulative generator version is
+`g6-group-total-scope-boundary`.
+
+The complete gate is green: 3,672 tests pass in four-worker mode; curated is
+65/65; GSM8K DEV train and holdout remain 104/0 and 40/0 with neutral diffs;
+ASDiv, SVAMP, MAWPS, SciBench, and FOLIO retain zero wrong commitments; and
+lint has zero errors.
+
+#### G5h core-owned exploratory category frontier — complete
+
+The post-boundary curated frontier is 28 supported rules and 67 blocked rules.
+Recursive profiling corrected the handoff's preliminary “five empty slots”
+description. Seven noun/verb-rooted categories are empty in curated premise
+rules because their generic-looking lexicon entries and memberships remain
+owned by `difg-mined`. Optional nesting also exposes seven
+`aggregate_noun` ask occurrences. Ask-only empty categories and
+comparative/time/adverb roots remain outside G5 premise-generation scope and
+stay visible for G7 or their own structured realizer.
+
+| Empty category | Mining-owned entries | Premise occurrences | Ask occurrences | Standalone availability delta | Standing inspectable DEV matches |
+| --- | --- | ---: | ---: | ---: | ---: |
+| `duration_verb` | `take`, `takes`, `took` | 1 | 0 | +1 | 6 |
+| `remnant` | `remainder`, `rest` | 4 | 0 | +2, plus two optional rules lose this blocker | 97 |
+| `desire` | `want`, `wanted`, `wanting`, `wants` | 1 | 0 | +1 | 66 |
+| `need_premise` | `need`, `needed`, `needs` | 1 | 0 | +1 | 58 |
+| `aggregate_noun` | `amount`, `number` | 6 | 7 | +0 | 36 |
+| `quantity_anaphor` | `amount`, `number` | 1 | 0 | +0 | 17 |
+| `price_anaphor` | `cost`, `price` | 1 | 0 | +0 | 2 |
+
+The 282 matches above cover both GSM8K DEV partitions plus ASDiv, SVAMP,
+MAWPS, SciBench, and FOLIO DEV. SciBench and FOLIO have no matches in the
+class. The remnant count includes all four rule occurrences: one
+`fraction-of-remnant`, 20 `rest-of-pool`, 27 rest-attribute partitions, and
+49 rest-membership partitions. Ninety-six are explicitly definite (“the
+rest/remainder”); the sole bare occurrence is awkward ASDiv prose and already
+declines. All 66 desire matches use finite `wants`/`wanted` and a bare
+infinitive. All 58 need matches use finite `needs`/`needed`. All six duration
+matches use `takes` and a bare infinitive; five spans are already declared
+time measures, while one valid `seconds` surface exposes a separate
+lexicon/morphology gap (`second` is adjective-sensed and `seconds` is an
+unrelated bare noun entry).
+
+In-memory pack relocation proved the ownership operation itself is
+semantically neutral for projects that already load `difg-mined`: after
+moving each lexicon group and every core-declared membership, every compiled
+`Registry` field except the ownership-derived fingerprint is identical.
+Each individual move and the four apparent coverage moves together also keep
+the curated suite at 65/65. The four coverage moves would mechanically produce
+the exact 28/95 → 33/95 support delta:
+
+- `arithmetic/extraposed-duration-rate`;
+- `arithmetic/fraction-of-remnant`;
+- `arithmetic/rest-of-pool`;
+- `arithmetic/goal-desire-quantity`; and
+- `arithmetic/goal-need-quantity`.
+
+Seeded temporary realization exposed premises that the ordinary matcher
+accepts but ordinary English does not:
+
+- the duration rule permits any counted noun as the elapsed span, any entity
+  as the extraposed object, unrestricted `take/takes/took`, and any inflected
+  verb after infinitival `to`;
+- both newly selectable remnant rules omit the required definite article and
+  retain an unrestricted finite verb;
+- the desire rule admits bare `want` and participial `wanting` after a
+  singular proper-name subject, plus non-bare verbs after `to`; and
+- the need rule admits bare `need` after a singular proper-name subject.
+
+Those defects are the evidence this workbench exists to reveal. Mechanical
+support means that the generator can fill the declared structure and the
+ordinary matcher accepts the result. It does not mean that a rule's premises
+are grammatically or semantically adequate. Hiding the rule until its grammar
+was already correct would invert the review loop and prevent the user from
+observing the defect that should motivate the correction.
+
+The relocation also widens already-selectable rules through generic type
+domains. The four coverage groups together add nine filler positions across
+five existing supported rules; verb-only groups each affect seven positions
+across five rules, while remnant nouns affect four positions across four
+rules. Moving `amount/number` unlocks no rule but changes 18 positions across
+14 supported rules. Moving `cost/price` also unlocks no rule while changing
+23 positions across 15 rules. That is intended exploratory reach, not runtime
+approval: the reachable filler frontier should include all project-owned
+vocabulary that satisfies the rule as currently authored.
+
+**G5h result:** all seven generic domains and their 16 unique lexicon entries
+move from `difg-mined` to the defining `core-english` pack without copying.
+Mining-specific categories such as `accompany`, `need_ask_verb`,
+`price_verb`, `dimension_noun`, and `currency_measure` continue to extend
+those core-owned words. The combined GSM8K registry retains the same lexical
+and category content apart from ownership-derived provenance, and curated
+remains 65/65.
+
+The exact frontier is now 33/95: the five rules listed above are selectable,
+and all 125 lexicon identities reachable through supported slots can be
+probed. The cumulative generator version is
+`g6-g5h-core-category-frontier`. Generated missing definiteness, unsuitable
+duration spans, non-bare infinitives, and subject/verb disagreement are
+reviewable defects and hypotheses for later rule edits; they are not
+availability blockers.
+
+The complete gate remains green: 3,680 tests pass in four-worker mode;
+curated is 65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 40/0;
+ASDiv, SVAMP, MAWPS, and SciBench remain 44/0, 30/0, 9/0, and 6/0; FOLIO
+makes zero commitments; and lint has zero errors with the same two documented
+warnings.
+
+#### G5i recursive optional-branch realization — complete
+
+The complete curated premise-rule profile contains 114 optional groups across
+51 rules. Thirty-one groups are nested, the maximum nesting depth is three,
+and the whole class reduces to 16 recursive structural shapes. The dominant
+shapes are optional pronoun/noun qualification, a lone optional pronoun, and
+an optional preposition containing a nested pronoun plus noun.
+
+Support is deliberately branch-complete. An optional wrapper is realizable
+only when every token in its include branch is itself realizable, recursively.
+Omission cannot hide an unsupported child. This reveals the actual residual
+blocker—such as comparative, adverb, complementizer, modal, quantifier, or
+`where` predicate—on rules that previously reported only the generic optional
+blocker.
+
+The generator makes a seeded include/omit choice for every active group.
+Nested groups under an omitted parent are recorded as `inactive`, distinct
+from a group actively selected as `omitted`. Locked or excluded bindings
+inside a group force every enclosing group to be included, so a minimal pair
+cannot silently discard a binding it promises to preserve.
+
+The premise inspector walks the same recursive tree in stable preorder:
+
+- each group reports `included`, `omitted`, or `inactive`;
+- active child tokens retain their ordinary bindings, category paths,
+  morphology, and consumed-unit evidence;
+- children of an omitted branch remain visible as `unverified`, rather than
+  disappearing; and
+- every top-level or nested row carries its exact YAML token path through the
+  authoring-only source index.
+
+Exploration and lexicon probing also walk optional descendants, while only
+fillers actually selected into a successful candidate are recorded. This
+preserves the separation between mechanical sampling and human judgment.
+
+**G5i result:** 17 rules become newly selectable, moving the frontier from
+33/95 to 50/95. Reachable lexicon identity remains 125 because the optional
+branches reuse domains already reachable through other supported slots. The
+cumulative generator version is `g6-g5i-optional-branches`.
+
+The remaining 45 blocked rules no longer contain an optional-realizer
+placeholder. Their leading explicit blockers are 19 `delta` comparative-root
+occurrences, 14 `absent` predicates, eight `unbound` predicates, four
+`distinct_measure` predicates, and four `future_modal` slots. Smaller
+category-root gaps cover complementizers, quantifiers, adverbs, dimension and
+age comparatives, count intensifiers, temporal markers, and one ordinary
+modal slot.
+
+The complete gate is green: 3,703 tests pass in four-worker mode; curated is
+65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 40/0; ASDiv, SVAMP,
+MAWPS, and SciBench remain 44/0, 30/0, 9/0, and 6/0; FOLIO makes zero
+commitments; and lint has zero errors with the same two documented curated
+warnings.
+
+#### G5j comparative-category realization — complete
+
+The remaining category-root profile found 23 comparative-gated premise
+positions across 22 rules:
+
+- 20 `delta` positions across 19 rules;
+- one `age_comparative`;
+- one `dimension_comparative`; and
+- one `count_intensifier`.
+
+Curated has the complete three-member `delta` domain (`fewer`, `less`, `more`)
+and the one-member `count_intensifier` domain (`more`). Its age- and
+dimension-comparative categories remain empty because those mined forms are
+not owned by the curated project. Supporting the root therefore does not
+pretend those two slots are fillable: they now report an exact project-backed
+filler gap.
+
+Comparative realization uses the existing category-generic lexical domain,
+the same implementation used by noun-, verb-, adjective-, preposition-, and
+pronoun-rooted categories. No comparative words appear in Python. An invented
+`zigher → invented_delta → comparative` project proves that arbitrary loaded
+vocabulary generates, matches, and retains its lexicon, membership, category,
+and rule-token sources.
+
+**G5j result:** 12 rules become newly selectable, moving the frontier from
+50/95 to 62/95. All 12 produce ordinary matcher-confirmed specimens, and each
+core `delta` member can be deliberately locked and probed. No vocabulary is
+added, no previously supported rule is widened, and the reachable lexicon
+frontier remains 125. The cumulative generator version is
+`g6-g5j-comparative-categories`.
+
+Generated affine and comparative specimens are often awkward. They remain
+reviewable evidence of the authored grammar; G5j asserts only that their
+declared category premise can be realized.
+
+The complete gate is green: 3,722 tests pass in four-worker mode; curated is
+65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 40/0; ASDiv, SVAMP,
+MAWPS, and SciBench remain 44/0, 30/0, 9/0, and 6/0; FOLIO makes zero
+commitments; and lint has zero errors with the same two documented curated
+warnings.
+
+The remaining frontier is 62 supported and 33 blocked. The leading explicit
+blockers are 14 `absent` predicates, eight `unbound` predicates, four
+`distinct_measure` predicates, and four `future_modal` slots. Two
+complementizer and two quantifier roots remain, along with two empty
+comparative-category domains and one each of adverb, ordinary modal, and
+temporal-marker support.
+
+G5k should profile `absent` first. It is the sole blocker on ten rules, but its
+realizer must prove which declared slot or structure must be withheld rather
+than treating the predicate as automatically true. Generated defects remain
+review evidence, not a reason to hide a mechanically supported rule.
+
+#### G5k sentence-wide absent-category realization — complete
+
+The complete profile contains 14 rules and 17 predicate occurrences:
+
+- four `absent: {cat: aggregate}` predicates;
+- four `absent: {cat: partitive}` predicates;
+- three `absent: {cat: temporal_marker}` predicates;
+- three `absent: {cat: relational_marker}` predicates; and
+- three `absent: {cat: multiplier_marker}` predicates.
+
+This predicate names no slot. The ordinary matcher scans every analyzed unit
+in the sentence and rejects the match when a unit's lemma belongs to the
+forbidden category. Generation now enforces that same whole-sentence boundary:
+every literal and slot domain is filtered through the registry's
+analyzed-lemma membership predicate before a filler can be selected.
+Locked bindings cannot bypass the filter, and the exploration scheduler does
+not advertise a forbidden lexicon identity as a compatible probe.
+
+Availability remains conservative. It verifies that every declared leaf,
+including descendants of optional groups, retains at least one project-backed
+filler outside all of the rule's absent categories. If not, the rule reports
+the exact leaf and categories instead of assuming that an optional omission
+will hide the unsupported declaration. An invented two-noun project proves
+that a broad noun slot selects only the safe member, a locked forbidden member
+fails realization, exploration excludes that member, and an unavoidable
+forbidden literal blocks the rule.
+
+Every successful candidate retains one ordinary `where` premise row per
+negative predicate. The explanation records that no analyzed unit belonged to
+the named category and source-links the exact rule predicate plus the category
+definition when the loaded project declares one.
+
+**G5k result:** ten rules become newly selectable, moving the frontier from
+62/95 to 72/95. Four rules carrying `absent` remain blocked only by independent
+`future_modal` or `quantifier` gaps. All ten new rules produce ordinary
+matcher-confirmed specimens. No vocabulary or runtime matcher changes, and
+the reachable lexicon frontier remains 125. The cumulative generator version
+is `g6-g5k-absent-categories`.
+
+The complete gate is green: 3,736 tests pass in four-worker mode; curated is
+65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 40/0; ASDiv, SVAMP,
+MAWPS, and SciBench remain 44/0, 30/0, 9/0, and 6/0; FOLIO makes zero
+commitments; and lint has zero errors with three known warnings.
+
+The remaining frontier is 72 supported and 23 blocked. The leading explicit
+blockers are eight `unbound` predicates, four `distinct_measure` predicates,
+and four `future_modal` slots. Two complementizer and two quantifier roots
+remain, along with two empty comparative-category domains and one each of
+adverb, ordinary modal, and temporal-marker support.
+
+G5l should profile `unbound` next. It stands alone on eight rules. All nine
+named sentinel occurrences are descendants of top-level optional groups, and
+one rule names sentinels from two separate groups. The implementation must
+prove genuine matcher-level non-binding and reconcile forced omission with
+G5i's optional-branch exploration contract; deleting a requested binding
+after realizing its surface would not satisfy the premise.
+
+#### G5l matcher-confirmed unbound branch omission — complete
+
+The complete profile contains eight rules and nine sentinel occurrences:
+seven `std_seen` occurrences and two `item2_seen` occurrences. Seven rules
+declare one top-level optional negative-lookahead branch. The eighth,
+`arithmetic/times-as-many-conjunct-elided-item`, independently guards both an
+explicit item branch and an explicit standard branch.
+
+Every sentinel is a required leaf of its enclosing optional branch. If that
+branch is included, the sentinel necessarily binds and the ordinary matcher's
+`unbound` predicate rejects the target rule. The valid generation language
+therefore omits the nearest enclosing branch. It does not erase a requested
+binding after realization, and it does not force a wider ancestor branch out
+when a nested valid prefix can still be included.
+
+This is an intentional exception to random include/omit exploration, not a
+retreat from G5i's complete declaration inspection. The omitted branch and all
+of its descendants remain visible in the premise table. Its row explains that
+it is the rule's negative-lookahead branch, each descendant remains
+unverified, and the `where` row records every sentinel as `unbound` with a
+matcher-confirmed explanation.
+
+Locked and excluded bindings still force ordinary optional ancestors to be
+included. If they require a branch that `unbound` makes invalid, realization
+fails explicitly rather than silently ignoring the request. Exploration
+similarly excludes lexicon placements reachable only through a forced-omitted
+branch. An invented nested rule proves that a locked sibling can include the
+outer branch while the nearest inner sentinel branch stays omitted; the
+legitimate sibling remains probeable, the sentinel-only filler does not, and
+locking the sentinel fails.
+
+Availability also verifies that each named sentinel exists and is confined to
+optional structure. A required sentinel remains honestly blocked because no
+omission can make it unbound.
+
+**G5l result:** eight rules become newly selectable, moving the frontier from
+72/95 to 80/95. All eight produce ordinary matcher-confirmed elided specimens
+on their first deterministic attempt. No vocabulary or runtime matcher
+changes, and the reachable lexicon frontier remains 125. The cumulative
+generator version is `g6-g5l-unbound-branches`.
+
+The complete gate is green: 3,748 tests pass in four-worker mode; curated is
+65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 40/0; ASDiv, SVAMP,
+MAWPS, and SciBench remain 44/0, 30/0, 9/0, and 6/0; FOLIO makes zero
+commitments; and lint has zero errors with three known warnings.
+
+The remaining frontier is 80 supported and 15 blocked. Four
+`distinct_measure` rules and three otherwise-unblocked `future_modal` rules
+form the leading complete classes. Two complementizer and two quantifier roots
+remain, along with two empty comparative-category domains and one each of
+adverb and ordinary modal support. The fourth `future_modal` rule also needs
+the currently unsupported temporal-marker category.
+
+G5m should profile `distinct_measure` next. It stands alone on four rules
+through five slot-pair checks: `anchored-relation`, two checks in its
+conjoined-measures sibling, its possessive-kinship sibling, and its postfix
+sibling. The matcher compares `(lemma, label, qualifier)`, so the generator
+must model that exact key even though current single-token fillers carry null
+labels and qualifiers. Surface inequality alone is not the contract.
+
+#### G5m exact distinct-measure-key realization — complete
+
+The complete profile contains four rules and five pair checks:
+
+- `arithmetic/anchored-relation`: `item` / `std`;
+- `arithmetic/anchored-relation-conjoined-measures`: `item` / `std` and
+  `item2` / `std`;
+- `arithmetic/anchored-relation-possessive-kinship-standard`: `item` / `std`;
+  and
+- `arithmetic/anchored-relation-postfix`: `item` / `std`.
+
+All named slots are required and each predicate is the rule's sole blocker.
+Current plural, noun, and entity domains expose 36–42 canonical measure keys
+per slot and 1,263–1,479 valid pair assignments. The counted postfix domain
+contains 1,008 surfaces because every declared count combines with every noun,
+but those surfaces collapse to 36 canonical noun keys. Availability therefore
+cannot reason in surface space.
+
+`_Filler` now carries the matcher's complete `(lemma, label, qualifier)` key.
+The current single-token generators populate null label and qualifier fields,
+but the machinery deliberately retains them: two fillers sharing a lemma are
+validly distinct when either label or qualifier differs, matching the runtime
+predicate that admits “green apples” versus “red apples”.
+
+Availability solves all linked `distinct_measure` groups together and reports
+an exact blocker when no project-backed assignment exists. Realization filters
+against already chosen keys and metadata-resolved future locked bindings, so
+slot order cannot admit a collision. Minimal-pair generation retains the
+locked comparison slot and the excluded original surface while searching for
+a genuinely different key.
+
+Exploration applies the same satisfiability check per proposed slot/filler
+placement. It does not advertise a filler in a position that would leave no
+valid assignment for the remaining measure slots. An invented asymmetric
+three-noun project proves this placement filtering, successful locked
+generation, a forced third-key minimal pair, rejection of two locked identical
+keys, and an honestly blocked one-key rule. A direct qualified-filler test
+proves that qualifier and label differences independently satisfy the exact
+key contract.
+
+Each passed predicate explanation records the actual triples from the ordinary
+matcher, not just the generated surfaces.
+
+**G5m result:** four rules become newly selectable, moving the frontier from
+80/95 to 84/95. All four produce ordinary matcher-confirmed specimens. No
+vocabulary or runtime matcher changes, and the reachable lexicon frontier
+remains 125. The cumulative generator version is
+`g6-g5m-distinct-measures`.
+
+The complete gate is green: 3,757 tests pass in four-worker mode; curated is
+65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 40/0; ASDiv, SVAMP,
+MAWPS, and SciBench remain 44/0, 30/0, 9/0, and 6/0; FOLIO makes zero
+commitments; and lint has zero errors with three known warnings.
+
+The remaining frontier is 84 supported and 11 blocked. Two complementizer
+rules and one quantifier-only rule have project-backed fillers and no other
+blockers. Three `future_modal` rules are otherwise ready, but curated owns no
+members of that category; a fourth also needs `temporal_marker`, whose members
+are likewise absent. The two comparative filler gaps, one empty adverb
+category, and the periodic rule's combined modal/quantifier blockers complete
+the frontier.
+
+G5n should profile the complementizer root next. It has two premise
+occurrences—one mandatory and one optional—both backed by the core-owned word
+`that`, and should reuse the existing category-generic realizer by admitting
+the `complementizer` root. By contrast, admitting `future_modal` as a type
+without first resolving vocabulary ownership would unlock nothing and should
+only replace one honest blocker with another.
+
+#### G5n direct complementizer-category realization — complete
+
+The complete profile contains exactly two occurrences:
+
+- `arithmetic/affine-frame-relation` has a mandatory `c` slot; and
+- `arithmetic/fraction-frame-relation` places `c` inside an optional branch.
+
+Both use the direct `complementizer` root-sense category. It is not a declared
+category hierarchy in the current registry, and its sole curated filler is
+the core-owned lexicon entry `that`. G5n therefore admits the root to the
+existing category-generic generator without adding vocabulary, a literal word
+branch, or runtime matcher behavior.
+
+Both rules produce ordinary matcher-confirmed specimens. The fraction-frame
+rule remains validly explorable with its complementizer branch included or
+omitted, and the included premise reports `that → complementizer` with exact
+rule-token and lexicon sources. Exploration exposes the `c` placement in both
+rules. An invented project with a different complementizer-sensed word proves
+the realizer follows loaded project vocabulary rather than the curated
+surface.
+
+**G5n result:** two rules become newly selectable, moving the frontier from
+84/95 to 86/95. The reachable lexicon frontier remains 125 because `that` was
+already reachable through broader supported word slots. The cumulative
+generator version is `g6-g5n-complementizers`.
+
+The complete gate is green: 3,764 tests pass in four-worker mode; curated is
+65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 40/0; ASDiv, SVAMP,
+MAWPS, and SciBench remain 44/0, 30/0, 9/0, and 6/0; FOLIO makes zero
+commitments; and lint has zero errors with three known warnings.
+
+The remaining frontier is 86 supported and 9 blocked. `quantifier` is the next
+smallest complete project-backed root: it occurs on two rules and has six
+curated fillers (`all`, `each`, `every`, `much`, `no`, and `some`). Supporting
+it should unlock the otherwise-ready
+`arithmetic/existential-premise-distributive`; its periodic sibling will remain
+honestly blocked by the independent empty `modal` slot. The adverb category
+and both modal slot families have no curated fillers, two comparative
+categories remain empty, and the fourth future rule also lacks a temporal
+marker.
+
+G5o should profile the full quantifier-root occurrence and filler maps, admit
+only the existing category-generic root, prove all six project-backed fillers
+through exploration, round-trip the newly available distributive rule, and
+retain the periodic sibling's independent blocker.
+
+#### G5o direct quantifier-category realization — complete
+
+The complete profile contains exactly two direct root-sense occurrences:
+
+- `arithmetic/existential-premise-distributive.q`; and
+- `arithmetic/periodic-rate-every-span.freq`.
+
+Curated owns six direct quantifier fillers in `core-english`: `all`, `each`,
+`every`, `much`, `no`, and `some`. G5o admits the root to the existing
+category-generic generator without adding vocabulary, literal surfaces, or
+runtime matcher behavior.
+
+The distributive rule becomes selectable and every loaded quantifier can be
+locked into a matcher-confirmed specimen with exact token and lexicon sources.
+Exploration exposes all six only on that supported `q` placement. The periodic
+rule remains honestly blocked by its independent optional `type: modal`
+descendant, so generation does not advertise an unusable `freq` placement.
+An invented project with a different quantifier-sensed word proves the
+realizer follows loaded project vocabulary.
+
+The broad filler set is itself useful review evidence. The rule description
+names `each` and `every`, while the declared `cat: quantifier` premise also
+admits `all`, `much`, `no`, and `some`. G5o deliberately does not hide that
+possible premise defect behind a narrower generation-only domain.
+
+**G5o result:** one rule becomes newly selectable, moving the frontier from
+86/95 to 87/95. The reachable lexicon frontier remains 125 because all six
+quantifiers were already reachable through broader supported slots. The
+cumulative generator version is `g6-g5o-quantifiers`.
+
+The complete gate is green: 3,774 tests pass in four-worker mode; curated is
+65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 40/0; ASDiv, SVAMP,
+MAWPS, and SciBench remain 44/0, 30/0, 9/0, and 6/0; FOLIO makes zero
+commitments; and lint has zero errors with three known warnings.
+
+The remaining frontier is 87 supported and 8 blocked, and every rule now
+lacks project-backed vocabulary somewhere. One optional adverb slot has no
+loaded adverb-sensed filler; two comparative categories are declared in core
+but receive their members and lexicon entries from `difg-mined`; the periodic
+rule's modal type has no loaded modal word; four future rules depend on
+`future_modal` members `will`/`would` from `difg-mined`; and the fourth also
+needs the `temporal_marker` members `today`/`now` from that pack.
+
+G5p should profile every remaining repository member and ownership boundary,
+separate generic-English relocation candidates from mined or overly broad
+premises, measure each possible move's runtime and generation blast radius,
+and preregister the smallest complete ownership increment. It must not enable
+empty types or load `difg-mined` into curated merely to conceal the current
+project boundary.
+
+#### G5p remaining-blocker vocabulary ownership audit — complete
+
+All eight remaining blocked rules lack curated vocabulary somewhere. The
+repository-wide inventory is:
+
+| Boundary | Repository inventory | Current owner | Immediate delta |
+|---|---:|---|---:|
+| direct `adverb` root | 45 words | `difg-mined` | unsafe to infer from the broad root |
+| `age_comparative` | 2 words | `difg-mined` | +1 rule |
+| `dimension_comparative` | 9 words | `difg-mined` | +1 rule |
+| direct `modal` root | 8 words | `difg-mined` | needs a slot realizer |
+| `future_modal` | 2 of those modal words | `difg-mined` | needs a slot realizer |
+| `temporal_marker` | 2 of 5 time words | `difg-mined` | needs future-modal support first |
+
+The inventory was measured through loaded registries, not filename guesses.
+Every listed curated gap is empty; the same categories or senses become
+populated in the GSM8K project because it explicitly loads `difg-mined`.
+
+In-memory ownership overlays establish the decision boundary:
+
+- moving `older` and `younger` plus their core-declared
+  `age_comparative`/`more_dir`/`less_dir` memberships raises availability from
+  87 to 88 and unlocks only
+  `arithmetic/times-comparative-age-relation`;
+- moving the nine dimension comparatives also buys one rule, at a larger
+  vocabulary surface;
+- moving `will`/`would` or `now`/`today` without new type support buys no
+  rule; and
+- simulating both ordinary/future modal realizers with `will`/`would` raises
+  availability to 91, a four-rule jump that combines vocabulary, two slot
+  contracts, and the periodic rule's broad-modal semantics.
+
+The adverb occurrence is not a safe one-word ownership move. Its rule declares
+the root `adverb`, which would admit all 45 repository adverbs, while its
+comment motivates a much narrower optional trailing marker. It needs its own
+premise-shape decision.
+
+The age move is the smallest complete class and preserves extension behavior.
+An in-memory relocation removed the two lexicon entries and three
+core-declared memberships from `difg-mined`, added them to a core overlay, and
+recompiled the GSM8K pack set. Every semantic registry field remained equal;
+the mined-owned `higher`/`lower` memberships continued to extend the now
+core-owned words.
+
+G5q should implement exactly that two-word relocation, prove semantic registry
+equivalence for the combined pack set, assert the 88/95 frontier, generate
+matcher-confirmed specimens with both comparatives, and leave dimension,
+modal, temporal, and adverb work separate.
+
+#### G5q age-comparative core ownership — complete
+
+The two generic age comparatives now live with the core grammar:
+
+- `older` and `younger` moved from the mined lexicon to
+  `core-english`;
+- `age_comparative` now owns both words in core;
+- `more_dir` owns `older` and `less_dir` owns `younger` in core; and
+- the mined-only `higher`/`lower` memberships remain extension data in
+  `difg-mined`.
+
+This is an ownership move, not a duplicated vocabulary layer. Projects loading
+both packs compile one lexicon declaration per word. An exhaustive test
+reconstructs the legacy pack layout in memory and compares every semantic
+registry field except its source fingerprint. The combined project remains
+identical: `older` carries `age_comparative`/`higher`/`more_dir`, and
+`younger` carries `age_comparative`/`less_dir`/`lower`.
+
+Both words generate matcher-confirmed specimens for
+`arithmetic/times-comparative-age-relation`, with their exact lexical,
+membership, category, and rule-token sources. They also remain deliberately
+probeable through the existing additive `delta` rules; moving ownership does
+not suppress their previously declared `more_dir`/`less_dir` behavior.
+Exploration exposes both identities on the newly available rule.
+
+**G5q result:** one rule becomes newly selectable, moving the frontier from
+87/95 to 88/95. Reachable lexicon identities increase from 125 to 127. The
+cumulative generator version is `g6-g5q-age-comparatives`.
+
+The complete gate is green: 3,782 tests pass in four-worker mode; curated is
+65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 40/0; ASDiv, SVAMP,
+MAWPS, and SciBench remain 44/0, 30/0, 9/0, and 6/0; FOLIO makes zero
+commitments; and lint has zero errors with three known warnings.
+
+The remaining frontier is 88 supported and 7 blocked. The next isolated
+ownership-only class is the nine dimension comparatives already inventoried
+by G5p: six positive forms (`heavier`, `higher`, `larger`, `longer`, `taller`,
+`wider`) and three negative forms (`lighter`, `shorter`, `smaller`). Moving
+their `dimension_more`/`dimension_less` ownership should unlock exactly
+`arithmetic/anchored-relation-postfix-dimension` and yield 89/95.
+
+G5r should implement that class without modal, temporal, or adverb changes,
+preserve every mined extension membership, prove combined-registry
+equivalence, generate all nine forms, and measure the reachable-filler delta.
+
+#### G5r dimension-comparative core ownership — complete
+
+The complete signed dimension class now lives with the core grammar:
+
+- `dimension_more`: `heavier`, `higher`, `larger`, `longer`, `taller`, and
+  `wider`; and
+- `dimension_less`: `lighter`, `shorter`, and `smaller`.
+
+The nine lexicon entries moved from `difg-mined` to `core-english` together
+with those two core-declared memberships. The mined pack retains its broader
+`higher`/`lower` extensions. There is no duplicated vocabulary or
+generation-only surface list.
+
+Every form generates a matcher-confirmed specimen for
+`arithmetic/anchored-relation-postfix-dimension`. Its premise reports the
+exact signed category ancestry and source declarations, and exploration
+exposes all nine identities on the new rule. The registry's declared polarity
+remains `+1` for `dimension_more` and `-1` for `dimension_less`.
+
+An exhaustive test reconstructs the legacy ownership layout in memory and
+compares every semantic registry field except its source fingerprint.
+Projects loading both packs remain identical: positive forms retain mined
+`higher` where declared, negative forms retain `lower`, and `wider` remains
+dimension-only.
+
+**G5r result:** one rule becomes newly selectable, moving the frontier from
+88/95 to 89/95. Reachable lexicon identities increase from 127 to 136. The
+cumulative generator version is `g6-g5r-dimension-comparatives`.
+
+The complete gate is green: 3,795 tests pass in four-worker mode; curated is
+65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 40/0; ASDiv, SVAMP,
+MAWPS, and SciBench remain 44/0, 30/0, 9/0, and 6/0; FOLIO makes zero
+commitments; and lint has zero errors with three known warnings.
+
+The remaining frontier is 89 supported and 6 blocked. The next coherent class
+is modal ownership plus realization. Eight generic modal words remain
+mined-owned: six `capacity_modal` members (`can`, `could`, `may`, `might`,
+`must`, `should`) and two `future_modal` members (`will`, `would`).
+
+G5s should move those declarations and memberships to core, implement generic
+`modal` and category-filtered `future_modal` filler domains, prove
+combined-registry equivalence, and test the exact domains. It should unlock
+the periodic rule and three future rules for a 93/95 frontier. The fourth
+future rule must remain blocked solely by its empty `temporal_marker`.
+Temporal and broad-adverb support remain separate.
+
+#### G5s modal core ownership and realization — complete
+
+All eight generic modal declarations now live with the core grammar:
+
+- `capacity_modal`: `can`, `could`, `may`, `might`, `must`, and `should`;
+- `future_modal`: `will` and `would`; and
+- direct `type: modal`: the union selected from the loaded modal lexical
+  sense.
+
+The move does not duplicate vocabulary. `can` keeps both its modal and noun
+senses and its declared plural `cans`; a project loading `difg-mined` also
+retains that pack's `litter` membership. An exhaustive test reconstructs the
+legacy ownership layout in memory and compares every compiled registry field
+except the source fingerprint. Combined-pack semantics are identical.
+
+Generation derives both domains from the registry. The periodic rule exposes
+all eight loaded modals with exact lexical and subtype-category ancestry;
+future-only slots expose only `will` and `would`. A capacity modal cannot be
+forced through a future slot by a locked binding.
+
+The first periodic samples also exposed a valid exploratory edge: a declared
+zero count may become the denominator of its emitted rate. The ordinary
+runtime raises an arithmetic error for that unusable sample. Generation now
+records that attempt as rejected and deterministically tries the next
+candidate; exhausting the attempt budget reports a `GenerationError` instead
+of crashing or manufacturing a successful review item.
+
+**G5s result:** four rules become newly selectable, moving the frontier from
+89/95 to 93/95. Reachable lexicon identities increase from 136 to 144. The
+cumulative generator version is `g6-g5s-modals`.
+
+The complete gate is green: 3,814 tests pass in four-worker mode; curated is
+65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 40/0; ASDiv, SVAMP,
+MAWPS, and SciBench remain 44/0, 30/0, 9/0, and 6/0; FOLIO makes zero
+commitments; and lint has zero errors with three known warnings.
+
+The remaining frontier is 93 supported and 2 blocked. The next isolated
+ownership class is the temporal marker: `now` and `today` are generic
+time-sensed words currently owned by `difg-mined`, and both are members of
+the core-declared `temporal_marker` category. G5t should move the declarations
+and memberships to `core-english`, admit the loaded `time` root to
+category-generic generation, preserve combined-pack semantics, and expose
+both markers on
+`arithmetic/temporal-offset-times-as-old-as-future-std-now`. The expected
+frontier is exactly 94/95.
+
+The final direct-adverb blocker stays separate. Its root would expose the full
+45-word repository adverb inventory to a premise intended as a narrow
+trailing anchor marker; that premise shape must be reviewed before broad
+adverb realization is enabled.
+
+#### G5t temporal-marker core ownership and realization — complete
+
+The two generic deictic markers now live with the core grammar:
+
+- `now` and `today` are core lexical entries carrying the `time` sense; and
+- both are core members of the narrower `temporal_marker` category.
+
+The category-generic generator now admits the loaded `time` root. It therefore
+uses registry vocabulary and exact membership rather than a hidden list of
+deictic words. Both markers generate matcher-confirmed specimens for
+`arithmetic/temporal-offset-times-as-old-as-future-std-now`, with their
+lexicon, membership, category ancestry, and rule token source-linked. An
+invented time-rooted category and word follow the same path.
+
+An exhaustive in-memory reconstruction returns the two declarations and their
+membership to the mined pack and removes them from core. Every compiled
+registry field except the source fingerprint remains identical, proving that
+the move changes core-only availability rather than combined-project
+semantics.
+
+**G5t result:** one rule becomes newly selectable, moving the frontier from
+93/95 to 94/95. Reachable lexicon identities increase from 144 to 146. The
+cumulative generator version is `g6-g5t-temporal-markers`.
+
+The complete gate is green: 3,821 tests pass in four-worker mode; curated is
+65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 40/0; ASDiv, SVAMP,
+MAWPS, and SciBench remain 44/0, 30/0, 9/0, and 6/0; FOLIO makes zero
+commitments; and lint has zero errors with three known warnings.
+
+The remaining frontier is one rule:
+`arithmetic/anchored-relation-conjoined-anchor`. Its optional
+`trailing_adv` slot is authored against the direct `adverb` root. The combined
+repository contains 45 single-token adverbs, while curated currently contains
+none. The rule description's intended ordinary example uses `currently`, but
+the premise deliberately does not say that.
+
+G5u should move only generic `currently` into core, admit the direct loaded
+`adverb` root, and expose the authored breadth rather than applying a
+generation-only repair. Curated should reach 95/95 with `currently` plus the
+already valid omitted-adverb form. A project loading `difg-mined` should see
+all 45 loaded adverbs on that placement, allowing human review to determine
+whether a narrower declarative category is warranted. Combined-registry
+semantics must remain identical after the ownership move, and an invented
+adverb must prove the realizer is registry-backed.
+
+#### G5u direct-adverb visibility — complete
+
+The final direct lexical root is now mechanically visible:
+
+- generic `currently` moved from `difg-mined` to `core-english`;
+- direct `adverb` category slots draw from the complete loaded adverb sense;
+- the optional trailing branch generates both included and omitted forms; and
+- the generator version is `g6-g5u-adverbs`.
+
+This remains a project-relative domain. Curated owns one adverb and therefore
+offers `currently` on the final rule. The combined GSM8K project still owns 45
+single-token adverbs in total, and all 45 remain visible on the broad authored
+placement. Generation does not invent a narrower anchor category or discard a
+surface because it sounds awkward. A resulting `absent` round trip is honest
+review evidence about the rule, tokenizer, or realizer boundary.
+
+An exhaustive in-memory reconstruction returns `currently` to the mined pack
+and removes it from core. Every compiled registry field except the source
+fingerprint remains identical. An invented adverb-sensed word also generates
+normally, proving that no production surface list was introduced.
+
+**G5u result:** the final rule becomes selectable, moving the premise frontier
+from 94/95 to 95/95. Reachable lexicon identities increase from 146 to 147.
+
+The complete gate is green: 3,828 tests pass in four-worker mode; curated is
+65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 40/0; ASDiv, SVAMP,
+MAWPS, and SciBench remain 44/0, 30/0, 9/0, and 6/0; FOLIO makes zero
+commitments; and lint has zero errors with three known warnings.
+
+#### G5v review-led premise audit — active next step
+
+Mechanical completeness does not establish linguistic or semantic validity.
+The current live fold has 69 never-generated, 25 generated-but-unreviewed, and
+one reviewed rule. Of 147 reachable lexicon identities, 72 are never
+generated, 72 are generated-but-unreviewed, and three are reviewed.
+
+G5v uses the existing Designer loop rather than adding a bulk validator:
+Generate next selects a least-explored compatible rule/filler, the human
+reviews one sentence, attaches exact premise or fact defects, explores a
+source-backed hypothesis, edits declarative YAML when warranted, and retests
+the pinned sentence. Every accepted change continues through the complete
+test, benchmark, and lint gates. Reviews and exploration remain append-only.
+
+There is no automatic transition to G7. Ask-rule and derived-rule generation
+requires a separate decision after the premise audit demonstrates that the
+current single-sentence workbench is mature and useful.
 
 ### G7 — Questions and derived rules, if still useful
 
@@ -1286,14 +2271,16 @@ framework with no usable designer surface.
 1. Generation is deterministic random exploration, one sentence at a time.
 2. Premise pattern rules are the first and primary target.
 3. The human judges whether the rule premises licensed a valid sentence.
-4. Reviews are lightweight debugging evidence, not training data.
-5. Hypotheses are trace-backed suggestions, not learned or automatic edits.
-6. The user intentionally edits YAML and explicitly saves it.
-7. The pinned sentence is rerun immediately after a change.
-8. The normal parser never reads reviews or generation configuration.
-9. UI clarity and iteration speed take precedence over exhaustive validation
+4. Mechanical generation support never implies linguistic validity. Known
+   bad outputs remain explorable so the human can identify the faulty premise.
+5. Reviews are lightweight debugging evidence, not training data.
+6. Hypotheses are trace-backed suggestions, not learned or automatic edits.
+7. The user intentionally edits YAML and explicitly saves it.
+8. The pinned sentence is rerun immediately after a change.
+9. The normal parser never reads reviews or generation configuration.
+10. UI clarity and iteration speed take precedence over exhaustive validation
    machinery.
-10. Questions, multi-sentence documents, synth rules, and consumers are
+11. Questions, multi-sentence documents, synth rules, and consumers are
     deferred until the premise-rule workbench proves useful.
 
 ## Completion criterion
@@ -1301,7 +2288,8 @@ framework with no usable designer surface.
 The active plan succeeds when a non-expert rule author can:
 
 1. open the designer;
-2. generate a plausible example for a selected or random rule;
+2. generate a concrete mechanically matched example for a selected or random
+   rule, including examples that expose defective premises;
 3. understand why the rule accepted it;
 4. identify and record a questionable premise;
 5. follow a hypothesis to the relevant YAML;
@@ -1310,6 +2298,8 @@ The active plan succeeds when a non-expert rule author can:
 8. understand the before/after result; and
 9. continue exploring without leaving the workbench.
 
-The ideal of generating plausible examples across every project rule and
-lexicon remains the direction of travel. The product is useful before that
-ideal is complete, provided every unsupported area is visible and honest.
+The ideal is to generate across every project rule and reachable lexicon
+entry. Plausibility is an outcome for the reviewer to assess, not a condition
+the generator must establish before exposing a specimen. The product is
+useful before complete mechanical coverage, provided every unsupported area
+is visible and honest.

@@ -241,6 +241,7 @@ body.resizing iframe, body.resizing textarea { pointer-events: none; }
 }
 .reading-review-target { flex: 1; min-width: 160px; font-family: var(--mono); }
 .reading-review-button { white-space: nowrap; }
+.reading-review-source { display: inline-flex; white-space: nowrap; }
 .ribbon { display: flex; flex-wrap: wrap; gap: 5px; }
 .chip {
   background: var(--panel2); border: 1px solid var(--border); border-radius: 6px;
@@ -283,6 +284,9 @@ body.resizing iframe, body.resizing textarea { pointer-events: none; }
 }
 .detail .kv { display: flex; gap: 8px; margin: 2px 0; }
 .detail .k { color: var(--dim); min-width: 58px; }
+.reading-identified-source {
+  display: inline-flex; align-items: center; flex-wrap: wrap; gap: 7px;
+}
 .detail .diff { font-family: var(--mono); font-size: 0.6875rem; white-space: pre-wrap; word-break: break-word; }
 .detail .minus { color: var(--red); }
 .detail .plus { color: var(--green); }
@@ -291,8 +295,17 @@ body.resizing iframe, body.resizing textarea { pointer-events: none; }
   background: var(--panel); border: 1px solid var(--border); border-radius: 6px;
   padding: 4px 8px; margin: 3px 0; font-size: 0.7188rem; font-family: var(--mono);
 }
+.reading-fact-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; margin-bottom: 2px;
+}
 .fact .type { color: var(--accent); font-weight: 600; margin-right: 6px; }
-.fact .src { float: right; color: var(--dim); font-size: 0.625rem; }
+.fact .src {
+  display: inline-flex; align-items: center; justify-content: flex-end;
+  flex-wrap: wrap; gap: 6px; min-width: 0; color: var(--dim);
+  font-size: 0.625rem; text-align: right; overflow-wrap: anywhere;
+}
+.reading-fact-fields { display: block; overflow-wrap: anywhere; }
 .fact.collision { border-color: var(--red); }
 #gaps { overflow-y: auto; max-height: 20%; }
 .gap {
@@ -686,7 +699,10 @@ button.generation-source:hover { border-color: var(--accent); }
 .sem-role.role-knowledge { color: var(--amber); }
 .sem-repr.repr-structured { color: var(--green); }
 .sem-fields { margin-top: 4px; font-size: 0.6875rem; word-break: break-word; }
-.sem-source { margin-top: 5px; color: var(--dim); font-size: 0.625rem; }
+.sem-source {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+  margin-top: 5px; color: var(--dim); font-size: 0.625rem;
+}
 .sem-empty {
   border: 1px dashed var(--border); border-radius: 5px;
   padding: 9px; color: var(--dim); font-size: 0.6875rem;

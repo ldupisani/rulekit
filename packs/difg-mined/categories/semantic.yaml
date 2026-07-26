@@ -6,6 +6,12 @@ categories:
     parent: verb
   building:
     parent: noun
+  capacity_attribute:
+    parent: adjective
+    notes: "Capacity-state predicates such as 'full'."
+  capacity_noun:
+    parent: noun
+    notes: "Container nouns that license a capacity-state predicate."
   cashtoken:
     parent: noun
   charge:
@@ -34,6 +40,9 @@ categories:
     polarity: 1
   journey:
     parent: noun
+  marital_status_attribute:
+    parent: adjective
+    notes: "Marital-status predicates licensed only for animate nouns."
   lower:
     parent: comparative
     antonym: higher
@@ -67,6 +76,15 @@ categories:
       Price-fact emission site keyed on the subject noun, mirroring
       spend_verb's role as a pure consumer/emission gate (no polarity:
       a price is never a holding or an event quantity).
+  quality_attribute:
+    parent: adjective
+    notes: >
+      Broad evaluative adjectives. Compatibility is still explicit: the
+      adjective may describe either a declared quality bearer or an animate
+      noun without making those noun categories equivalent.
+  quality_bearer_noun:
+    parent: noun
+    notes: "Inanimate nouns with a measured ordinary quality predicate."
   purchase:
     parent: acquire
   receive:
@@ -121,7 +139,22 @@ categories:
     parent: noun
   vehicle:
     parent: noun
+attribute_compatibility:
+  capacity_attribute: [capacity_noun]
+  quality_attribute: [quality_bearer_noun, animate]
+  marital_status_attribute: [animate]
 members:
+  # Cross-pack extensions of the explicit adjective/noun compatibility
+  # boundary used by partition-attribute-of-noun.
+  color_attribute: [black, black-and-white, grey, pink, purple, white, yellow]
+  colorable_noun: [ticket]
+  ripeness_attribute: [ripe]
+  ripenable_noun: [peach]
+  capacity_attribute: [full]
+  capacity_noun: [box]
+  quality_attribute: [good]
+  quality_bearer_noun: [carrot]
+  marital_status_attribute: [married]
   # Extends core-english's reader-exclusion boundary with the copular forms
   # lexically defined in this pack. They are deliberately NOT `state` members:
   # that narrower subclass controls arithmetic holding/event semantics.
@@ -138,25 +171,18 @@ members:
             parent, person, clerk, manager, guest, captain, shopkeeper,
             carpenter, tailor, fisherman, hunter, artist, writer,
             soldier]
-  # mining candidate sum-constraint-premise-surfaces: 'age' is a difg-mined
-  # lexicon word (packs/difg-mined/lexicon/a-f.yaml); the category itself
-  # (parent/notes) is declared in core-english (packs/core-english/
-  # categories/core.yaml — see that file's notes for the full mechanism),
-  # mirroring 'child'/'toy'/'fish' below.
-  age_noun:
-  - age
-  # mining candidate dimension-aggregate-asks: the difg-mined-only member
-  # words of the core-english categories `compute_verb`/`dimension_noun`/
+  # mining candidate dimension-aggregate-asks: this pack's member extensions
+  # to the core-english categories `compute_verb`/`dimension_noun`/
   # `length_measure`/`mass_measure`/`time_measure`/`currency_measure`
-  # (packs/core-english/categories/core.yaml — see that file's notes for
-  # the full mechanism, mirroring `age_noun`'s own sibling pattern above).
+  # (packs/core-english/categories/core.yaml — see that file's notes for the
+  # full mechanism). Most lexemes are difg-mined-owned; `cost` is now
+  # core-owned while these more specialized memberships remain pack-local.
   compute_verb:
   - calculate
   - determine
   dimension_noun:
   - height
   - weight
-  - age
   - distance
   - balance
   - earnings
@@ -183,7 +209,6 @@ members:
   - day
   - week
   - month
-  - age
   currency_measure:
   - cent
   - balance
@@ -266,38 +291,6 @@ members:
   - win
   - wins
   - won
-  age_comparative:
-  # "X is 13 times older than Y" — the MULTIPLICATIVE age-comparative form
-  # (arithmetic/times-comparative-age-relation, no stated noun, measure
-  # hardcoded 'year' exactly like stated-age's literal-'old' anchor).
-  # Deliberately its OWN category, not folded into 'more_dir'/'less_dir'
-  # (which 'older'/'younger' ALSO tag, for the additive/offset relation
-  # forms) — those stay valid for the general 'delta' family including
-  # 'more'/'fewer'/'less', which must NOT get an implicit 'year' measure.
-  - older
-  - younger
-  dimension_more:
-  # mining candidate dimension-comparatives: the "+1" comparative half —
-  # 'taller/longer/heavier/wider/higher/larger' — sign carried by this
-  # category (arithmetic/anchored-relation-postfix-dimension's sign(dir)),
-  # deliberately NOT added to 'more_dir' (see core-english/categories/
-  # core.yaml's dimension_comparative note — that would silently widen
-  # 'delta' for every other delta-gated rule). 'deeper'/'narrower' are
-  # NOT admitted here: neither they nor their positive forms
-  # ('deep'/'narrow') exist anywhere in this lexicon yet — admitting them
-  # would be a genuine new-vocabulary increment, out of scope here.
-  - taller
-  - longer
-  - heavier
-  - wider
-  - higher
-  - larger
-  dimension_less:
-  # the "-1" comparative half — 'shorter/lighter/smaller' — sibling of
-  # dimension_more above.
-  - shorter
-  - lighter
-  - smaller
   dimension_adjective:
   # mining candidate dimension-comparatives: the POSITIVE (base) form,
   # gating the dimension asks ("how tall is X"). 'small'/'large' are
@@ -435,11 +428,6 @@ members:
   - money
   - pound
   - pounds
-  desire:
-  - want
-  - wanted
-  - wanting
-  - wants
   discount:
   - coupon
   - discount
@@ -456,37 +444,6 @@ members:
   - shares
   - split
   - splits
-  # 'take'/'takes'/'took' live in the difg-mined lexicon (not
-  # core-english); the 'duration_verb' category itself is declared in
-  # core-english/categories/core.yaml (parent: verb, no members there)
-  # — mirrors the 'negation'/'never' and 'future_modal'/'will'/'would'
-  # precedent above and below: a compile-time-safe category skeleton in
-  # core-english, filled by this pack, so a core-english-only registry
-  # (no difg-mined) still validates arithmetic/extraposed-duration-rate
-  # even though it would never match a sentence with no 'take' lexicon
-  # entry to tokenize.
-  duration_verb:
-  - take
-  - takes
-  - took
-  # mining candidate will-tense-asks: 'future_modal' is declared (parent:
-  # modal) in packs/core-english/categories/core.yaml with NO members
-  # there — both members are difg-mined-only words, exactly the
-  # 'negation'/'never' precedent this pack's own comment above documents.
-  future_modal:
-  - will
-  - would
-  # mining candidate rate-every-span-asks: 'capacity_modal' is declared
-  # (parent: modal) in packs/core-english/categories/core.yaml with NO
-  # members there — all six are difg-mined-only words, the same
-  # 'future_modal'/'will'/'would' split precedent immediately above.
-  capacity_modal:
-  - can
-  - could
-  - may
-  - might
-  - must
-  - should
   higher:
   - bigger
   - faster
@@ -502,18 +459,6 @@ members:
   - flight
   - journey
   - trip
-  # 'older'/'younger' already tag 'higher'/'lower' (general magnitude
-  # comparatives) but NOT the arithmetic pack's 'delta' family (more_dir/
-  # less_dir) — a genuinely separate sibling category under 'comparative'.
-  # Without this, "X is N years older/younger than Y" never satisfies any
-  # `cat: delta` gate, so arithmetic/anchored-relation-postfix never
-  # consumes the sentence and it falls through to the general SVO fold,
-  # which reads "is [N years]" as a bare stated Quantity of N — a
-  # confident-wrong once anything queries measure 'year' (mining
-  # candidate age-asks, dev-holdout look). Scoped to exactly these two
-  # age-comparative words, not the rest of 'higher'/'lower'.
-  less_dir:
-  - younger
   lose:
   - ate
   - broke
@@ -589,21 +534,6 @@ members:
   - went
   multiplier_marker:
   - times
-  more_dir:
-  - older
-  # 'temporal_marker' itself is declared in core-english/categories/core.yaml
-  # (parent: time, ROOT_SENSES-additive) — this pack only supplies the word,
-  # since 'today'/'now' are difg-mined-only lexicon entries (both sensed
-  # 'time'). 'now' joined (mining candidate temporal-offset-age-recut) so
-  # arithmetic/temporal-offset-times-as-old-as-future-std-now's trailing
-  # standard-marker slot ("as old as B is NOW", "as old as B TODAY") reads
-  # either deictic word the same way — purely additive: 'now' already
-  # carried the 'time' sense, so this only lets it satisfy a NEW category,
-  # changing no existing word's sense or any other time-sensed word's
-  # behavior.
-  temporal_marker:
-  - today
-  - now
   # 'never' lives in the difg-mined lexicon (not core-english); the
   # 'negation' category itself is declared in core-english/categories/
   # core.yaml — this pack only extends its membership with the mined word,
@@ -612,10 +542,6 @@ members:
   negation:
   - never
   need_ask_verb:
-  - need
-  - needed
-  - needs
-  need_premise:
   - need
   - needed
   - needs
@@ -744,12 +670,6 @@ members:
   - keeping
   - keeps
   - kept
-  aggregate_noun:
-  - amount
-  - number
-  quantity_anaphor:
-  - amount
-  - number
   measure_anaphor:
   # mining candidate measure-noun-anaphor (infrastructure): the elided
   # measure-noun anaphor head — see the category's own notes (packs/
@@ -757,12 +677,6 @@ members:
   # keeps its pre-existing lone 'pronoun' sense (n-s.yaml) unchanged; this
   # membership is what lets the category root there instead of at 'noun'.
   - ones
-  price_anaphor:
-  - price
-  - cost
-  remnant:
-  - remainder
-  - rest
   remnant_adj:
   - remaining
   sell:

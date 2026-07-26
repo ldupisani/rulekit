@@ -277,19 +277,26 @@ function renderAnswer(t) {
   const confirmed = clarification?.selected
     ? `   ·   confirmed ${clarification.selected}`
     : "";
+  const reason = el(
+    "span",
+    "reason",
+    t.answer.reason +
+      confirmed +
+      (t.ask ? `   ·   ask ${t.ask.id} → ${JSON.stringify(t.ask.query)}` : ""),
+  );
+  if (t.ask?.source_ref) {
+    reason.append(
+      " ",
+      generationSourceControl(t.ask.source_ref, "Open ask YAML"),
+    );
+  }
   b.replaceChildren(
     el(
       "span",
       "big",
       isUndetermined ? "undetermined" : isAnswer ? String(t.answer.value) : "declined",
     ),
-    el(
-      "span",
-      "reason",
-      t.answer.reason +
-        confirmed +
-        (t.ask ? `   ·   ask ${t.ask.id} → ${JSON.stringify(t.ask.query)}` : ""),
-    ),
+    reason,
   );
 }
 
@@ -396,6 +403,21 @@ function renderSentences(t) {
           select.value,
           button,
         );
+        const source = el("span", "reading-review-source");
+        const updateSource = () => {
+          const target = targets.find(
+            (candidate) => candidate.rule_id === select.value,
+          );
+          source.replaceChildren();
+          if (target?.source_ref) {
+            source.append(
+              generationSourceControl(target.source_ref, "Open rule YAML"),
+            );
+          }
+        };
+        select.onchange = updateSource;
+        updateSource();
+        review.append(source);
         review.append(
           el("span", "dim", "Matched premise"),
           select,
@@ -491,13 +513,23 @@ function selectDecision(i, scroll) {
   detail.replaceChildren();
   const kv = (k, v, cls) => {
     const row = el("div", "kv");
-    row.append(el("span", "k", k), el("span", cls || "", v));
+    row.append(
+      el("span", "k", k),
+      v instanceof Node ? v : el("span", cls || "", v),
+    );
     detail.append(row);
   };
   kv("kind", d.kind);
   kv("target", `${d.target_surface}  (u${d.target}, sentence ${d.sentence})`);
   kv("reason", d.reason);
-  if (d.rule_id) kv("rule", d.rule_id);
+  if (d.rule_id) {
+    const rule = el("span", "reading-identified-source");
+    rule.append(el("span", "mono", d.rule_id));
+    if (d.source_ref) {
+      rule.append(generationSourceControl(d.source_ref, "Open rule YAML"));
+    }
+    kv("rule", rule);
+  }
   const diff = el("div", "diff");
   const minus = el("div", "minus", `− ${fmtFeatures(d.before).replaceAll("\n", "\n− ")}`);
   const plus = el("div", "plus", `+ ${fmtFeatures(d.after).replaceAll("\n", "\n+ ")}`);
@@ -511,10 +543,16 @@ function renderFacts(t) {
   $("fact-count").textContent = `(${t.facts.length})`;
   for (const f of t.facts) {
     const card = el("div", "fact");
+    const header = el("div", "reading-fact-head");
+    const source = el("span", "src");
+    source.append(el("span", "", `${f.source} · s${f.sentence}`));
+    if (f.source_ref) {
+      source.append(generationSourceControl(f.source_ref, "Open rule YAML"));
+    }
+    header.append(el("span", "type", f.type), source);
     card.append(
-      el("span", "src", `${f.source} · s${f.sentence}`),
-      el("span", "type", f.type),
-      el("span", "", Object.entries(f.fields)
+      header,
+      el("span", "reading-fact-fields", Object.entries(f.fields)
         .filter(([k]) => k !== "polarity" || f.fields[k] !== true)
         .map(([k, v]) => `${k}=${v}`).join("  ")),
     );
@@ -564,7 +602,14 @@ function semanticFactCard(f, compact = false) {
   card.append(head);
   card.append(el("div", "sem-fields mono", semanticFields(f.fields)));
   if (!compact) {
-    card.append(el("div", "sem-source", `${f.source} · sentence ${f.sentence}`));
+    const source = el("div", "sem-source");
+    source.append(
+      el("span", "", `${f.source} · sentence ${f.sentence}`),
+    );
+    if (f.source_ref) {
+      source.append(generationSourceControl(f.source_ref, "Open rule YAML"));
+    }
+    card.append(source);
   }
   return card;
 }
@@ -719,6 +764,9 @@ function renderProof(t) {
       el("span", "proof-index mono", String(i + 1)),
       el("span", "proof-rule mono", step.rule),
     );
+    if (step.source_ref) {
+      head.append(generationSourceControl(step.source_ref, "Open rule YAML"));
+    }
     card.append(head);
 
     const evidence = el("div", "proof-evidence");
@@ -1376,16 +1424,18 @@ async function openGenerationSource(source) {
   window.RulekitEditor?.gotoLine(source.line);
 }
 
-function generationSourceControl(source) {
-  const label = `${source.label} · ${source.path.split("/").pop()}:${source.line}`;
+function generationSourceControl(source, compactLabel = null) {
+  const fullLabel = `${source.label} · ${source.path.split("/").pop()}:${source.line}`;
+  const label = compactLabel || fullLabel;
   const node = editableSourceNode(source);
   if (!node) {
     const unavailable = el("span", "generation-source unavailable", label);
-    unavailable.title = "Source is outside the editable pack-document allowlist";
+    unavailable.title = `${fullLabel}. Source is outside the editable pack-document allowlist`;
     return unavailable;
   }
   const button = el("button", "generation-source", label);
   button.type = "button";
+  if (compactLabel) button.title = fullLabel;
   button.onclick = () => openGenerationSource(source);
   return button;
 }

@@ -143,10 +143,6 @@ entries:
   against:
     senses:
     - preposition
-  age:
-    senses:
-    - noun
-    plural: ages
   ago:
     senses:
     - adverb
@@ -240,10 +236,6 @@ entries:
   amongst:
     senses:
     - preposition
-  amount:
-    senses:
-    - noun
-    plural: amounts
   andrena:
     senses:
     - noun
@@ -1112,11 +1104,6 @@ entries:
   camping:
     senses:
     - noun
-  can:
-    senses:
-    - modal
-    - noun
-    plural: cans
   candied:
     senses:
     - adjective
@@ -1783,11 +1770,6 @@ entries:
   correctly:
     senses:
     - adverb
-  cost:
-    senses:
-    - noun
-    - verb
-    plural: costs
   costing:
     senses:
     - verb
@@ -1812,9 +1794,6 @@ entries:
   coughs:
     senses:
     - verb
-  could:
-    senses:
-    - modal
   count:
     senses:
     - verb
@@ -1972,9 +1951,6 @@ entries:
   current:
     senses:
     - adjective
-  currently:
-    senses:
-    - adverb
   curtain:
     senses:
     - noun

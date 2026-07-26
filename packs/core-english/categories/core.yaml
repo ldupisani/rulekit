@@ -3,790 +3,904 @@ format: rulekit/categories@1
 # Polarity is declared HERE and only here — every consumer (signed folds,
 # sign() in rule expressions) derives from it (the difg LOSS_VERBS lesson).
 categories:
-  animal: {parent: noun}
-  pet: {parent: animal}
-  animate:
-    parent: noun
-    notes: >
-      PERSON-DENOTING common nouns — the antecedent-eligibility signal for
-      a singular personal pronoun, and the ONLY thing separating "Baker
-      made 157 cakes. He sold 158." (bindable) from "The basket has 7
-      peaches. He ..." (must stay unbound). Read ONLY by document.py's
-      zero-name coreference fallback.
+    animal: {parent: noun}
+    pet: {parent: animal}
+    animate:
+        parent: noun
+        notes: >
+            PERSON-DENOTING common nouns — the antecedent-eligibility signal for
+            a singular personal pronoun, and the ONLY thing separating "Baker
+            made 157 cakes. He sold 158." (bindable) from "The basket has 7
+            peaches. He ..." (must stay unbound). Read ONLY by document.py's
+            zero-name coreference fallback.
 
-      MEMBERSHIP IS A SOUNDNESS CLAIM, not a vocabulary list: a member
-      asserts a singular personal pronoun MAY corefer with this noun, so
-      an ambiguous word admitted here becomes a wrong-hazard in every
-      corpus at once. Three deliberate exclusions, do not re-add without
-      measuring: 'player' ("MP3 player" is a DEVICE — the documented trap
-      that cost 2 GSM8K items), 'cook' (verb sense; the 'paint'/'work'/
-      'second' precedent), 'king' (name-like; names are already
-      candidates). Animals are NOT members — `animal` is a sibling under
-      `noun`, and "the dog ... he" has no measured buyer.
-  animate_pronoun:
-    parent: pronoun
-    notes: >
-      Singular PERSONAL pronouns — the pronoun-side half of the `animate`
-      gate. The kernel has NO gender or person feature (a pronoun unit
-      carries only `number`), so without this category the zero-name
-      fallback would bind 'it' to a person noun. Excludes 'it' (already
-      `pool_pronoun`) and every plural (`_bind_discourse` refuses plurals
-      outright — group referents are unbuilt).
-  non_event_verb:
-    parent: verb
-    notes: >
-      verbs excluded from flat event-predicate readers. `state` is the
-      quantitative-holding subclass used by arithmetic folds; other forms may
-      be non-events for logic parsing without acquiring holding semantics.
-      The DSL type remains named `nonstate_verb` for compatibility, but its
-      structural exclusion boundary is this category.
-  state:
-    parent: non_event_verb
-    notes: >
-      stative verbs — a quantity they state is a HOLDING (same-key
-      disagreement is a conflict); any other verb is an EVENT (each
-      occurrence is a distinct fact that accumulates, signed by polarity)
-  copula:
-    parent: state
-    notes: >
-      Finite forms of "be" used for identity and predication. This is
-      deliberately narrower than `state`: possession verbs such as
-      have/own may state quantities, but cannot grammatically connect a
-      partition to its attribute or a person to an age predicate.
-  plural_copula:
-    parent: copula
-    notes: >
-      The plural-agreeing copula forms. Fractional partitions always denote
-      a plural collection on their surface ("half of them ARE red"), so
-      they use this closed subcategory instead of the general copula.
-  acquire: {parent: verb, antonym: lose, polarity: 1}
-  lose: {parent: verb, antonym: acquire, polarity: -1}
-  transfer_out:
-    parent: lose
-    notes: >
-      Outbound transfer verbs that license a recipient argument in either
-      ditransitive ("gave Kim 3 apples") or prepositional ("gave 3 apples
-      to Kim") form. Loss, consumption, dropping, and spending remain in
-      `lose` but do not acquire a recipient merely because "to NAME"
-      follows them.
-  spend_verb:
-    parent: verb
-    notes: >
-      'pay'/'spend' asks over priced purchases ("3 toys at $10 each") are a
-      DERIVED total, not a literal event verb — the purchase-total
-      consumer's gate, kept narrower than the general 'lose' category so
-      an unrelated 'sell' ask never answers from purchase data.
-  delta: {parent: comparative, notes: "direction words in 'N more/fewer X than Y'"}
-  age_comparative:
-    parent: comparative
-    notes: >
-      the age-specific comparative pair ('older'/'younger') — a sibling of
-      'delta', not a member of it, so a MULTIPLICATIVE age relation ("X is
-      13 times older than Y", no stated noun) never sweeps in the general
-      magnitude words 'more'/'fewer'/'less' that also sit in 'delta' (and
-      in 'higher'/'lower'). Scoped to exactly these two words; members
-      live in difg-mined alongside their 'more_dir'/'less_dir' tagging.
-  dimension_comparative:
-    parent: comparative
-    notes: >
-      mining candidate dimension-comparatives: physical-dimension
-      comparative adjectives ('taller'/'shorter', 'longer'/'shorter',
-      'heavier'/'lighter', 'wider'/'narrower', 'larger'/'smaller',
-      'higher'/...) that anchor a Relation exactly like 'age_comparative'
-      anchors the age family — a sibling of 'delta', NOT a member of it.
-      Unlike 'older'/'younger' (which ALSO tag 'more_dir'/'less_dir' for
-      their additive form), these words are otherwise unused elsewhere, so
-      admitting them to 'more_dir'/'less_dir' would silently widen
-      'delta' itself for every OTHER delta-gated rule (the shared-category
-      HANDOFF invariant) — the whole reason this is its OWN category
-      rather than an extension of an existing one. `dimension_more`/
-      `dimension_less` below carry the actual sign, mirroring 'more_dir'/
-      'less_dir's own polarity structure but scoped to this family only;
-      members live in difg-mined (the comparative forms are difg-mined
-      words) alongside their sign tagging.
-  dimension_more: {parent: dimension_comparative, antonym: dimension_less, polarity: 1}
-  dimension_less: {parent: dimension_comparative, antonym: dimension_more, polarity: -1}
-  dimension_adjective:
-    parent: adjective
-    notes: >
-      mining candidate dimension-comparatives: the POSITIVE (base) form of
-      a physical-dimension adjective ('tall', 'long', 'heavy', 'wide',
-      'high', 'large', 'small', 'short') — gates the dimension asks ("how
-      tall is X", "how many inches tall is X"), modelled on ask/how-old-is
-      but needing a CATEGORY (several base words) rather than one literal
-      ('old'). A sibling of 'dimension_comparative' (the comparative
-      forms), not a member of it: an ask needs the base form only, never
-      'taller'/'shorter' etc. Most members are difg-mined words; 'small'/
-      'large' are core-english, tagged in this file's own `members:`.
-  start_marker_verb:
-    parent: verb
-    notes: >
-      The VERB inside a trailing start-state marker — "to BEGIN with", "to
-      START with". Gates the start-state asks (packs/arithmetic/rules/
-      start-state.yaml), whose consumer UNDOES the narrated events.
+            MEMBERSHIP IS A SOUNDNESS CLAIM, not a vocabulary list: a member
+            asserts a singular personal pronoun MAY corefer with this noun, so
+            an ambiguous word admitted here becomes a wrong-hazard in every
+            corpus at once. Three deliberate exclusions, do not re-add without
+            measuring: 'player' ("MP3 player" is a DEVICE — the documented trap
+            that cost 2 GSM8K items), 'cook' (verb sense; the 'paint'/'work'/
+            'second' precedent), 'king' (name-like; names are already
+            candidates). Animals are NOT members — `animal` is a sibling under
+            `noun`, and "the dog ... he" has no measured buyer.
+    animate_pronoun:
+        parent: pronoun
+        notes: >
+            Singular PERSONAL pronouns — the pronoun-side half of the `animate`
+            gate. The kernel has NO gender or person feature (a pronoun unit
+            carries only `number`), so without this category the zero-name
+            fallback would bind 'it' to a person noun. Excludes 'it' (already
+            `pool_pronoun`) and every plural (`_bind_discourse` refuses plurals
+            outright — group referents are unbuilt).
+    non_event_verb:
+        parent: verb
+        notes: >
+            verbs excluded from flat event-predicate readers. `state` is the
+            quantitative-holding subclass used by arithmetic folds; other forms may
+            be non-events for logic parsing without acquiring holding semantics.
+            The DSL type remains named `nonstate_verb` for compatibility, but its
+            structural exclusion boundary is this category.
+    state:
+        parent: non_event_verb
+        notes: >
+            stative verbs — a quantity they state is a HOLDING (same-key
+            disagreement is a conflict); any other verb is an EVENT (each
+            occurrence is a distinct fact that accumulates, signed by polarity)
+    copula:
+        parent: state
+        notes: >
+            Finite forms of "be" used for identity and predication. This is
+            deliberately narrower than `state`: possession verbs such as
+            have/own may state quantities, but cannot grammatically connect a
+            partition to its attribute or a person to an age predicate.
+    plural_copula:
+        parent: copula
+        notes: >
+            The plural-agreeing copula forms. Fractional partitions always denote
+            a plural collection on their surface ("half of them ARE red"), so
+            they use this closed subcategory instead of the general copula.
+    acquire: {parent: verb, antonym: lose, polarity: 1}
+    lose: {parent: verb, antonym: acquire, polarity: -1}
+    transfer_out:
+        parent: lose
+        notes: >
+            Outbound transfer verbs that license a recipient argument in either
+            ditransitive ("gave Kim 3 apples") or prepositional ("gave 3 apples
+            to Kim") form. Loss, consumption, dropping, and spending remain in
+            `lose` but do not acquire a recipient merely because "to NAME"
+            follows them.
+    spend_verb:
+        parent: verb
+        notes: >
+            'pay'/'spend' asks over priced purchases ("3 toys at $10 each") are a
+            DERIVED total, not a literal event verb — the purchase-total
+            consumer's gate, kept narrower than the general 'lose' category so
+            an unrelated 'sell' ask never answers from purchase data.
+    delta: {parent: comparative, notes: "direction words in 'N more/fewer X than Y'"}
+    age_comparative:
+        parent: comparative
+        notes: >
+            the age-specific comparative pair ('older'/'younger') — a sibling of
+            'delta', not a member of it, so a MULTIPLICATIVE age relation ("X is
+            13 times older than Y", no stated noun) never sweeps in the general
+            magnitude words 'more'/'fewer'/'less' that also sit in 'delta' (and
+            in 'higher'/'lower'). Scoped to exactly these two words. Their
+            generic comparative lexicon and `more_dir`/`less_dir` memberships
+            live here; difg-mined may still extend them with its own
+            `higher`/`lower` categories.
+    dimension_comparative:
+        parent: comparative
+        notes: >
+            mining candidate dimension-comparatives: physical-dimension
+            comparative adjectives ('taller'/'shorter', 'longer'/'shorter',
+            'heavier'/'lighter', 'wider'/'narrower', 'larger'/'smaller',
+            'higher'/...) that anchor a Relation exactly like 'age_comparative'
+            anchors the age family — a sibling of 'delta', NOT a member of it.
+            Unlike 'older'/'younger' (which ALSO tag 'more_dir'/'less_dir' for
+            their additive form), these words are otherwise unused elsewhere, so
+            admitting them to 'more_dir'/'less_dir' would silently widen
+            'delta' itself for every OTHER delta-gated rule (the shared-category
+            HANDOFF invariant) — the whole reason this is its OWN category
+            rather than an extension of an existing one. `dimension_more`/
+            `dimension_less` below carry the actual sign, mirroring 'more_dir'/
+            'less_dir's own polarity structure but scoped to this family only;
+            the generic comparative words and their signed memberships live
+            here, while difg-mined may extend them with its broader
+            `higher`/`lower` categories.
+    dimension_more: {parent: dimension_comparative, antonym: dimension_less, polarity: 1}
+    dimension_less: {parent: dimension_comparative, antonym: dimension_more, polarity: -1}
+    dimension_adjective:
+        parent: adjective
+        notes: >
+            mining candidate dimension-comparatives: the POSITIVE (base) form of
+            a physical-dimension adjective ('tall', 'long', 'heavy', 'wide',
+            'high', 'large', 'small', 'short') — gates the dimension asks ("how
+            tall is X", "how many inches tall is X"), modelled on ask/how-old-is
+            but needing a CATEGORY (several base words) rather than one literal
+            ('old'). A sibling of 'dimension_comparative' (the comparative
+            forms), not a member of it: an ask needs the base form only, never
+            'taller'/'shorter' etc. Most members are difg-mined words; 'small'/
+            'large' are core-english, tagged in this file's own `members:`.
+    size_attribute:
+        parent: dimension_adjective
+        notes: >
+            Base adjectives that may describe the size or magnitude of a noun.
+            Compatibility remains separately declared: a size adjective can apply
+            to more than one noun category without making those noun categories
+            interchangeable.
+    color_attribute:
+        parent: adjective
+        notes: >
+            Color adjectives used in explicit-noun partition predicates. Membership
+            is extensible by packs; applicability is licensed independently through
+            `attribute_compatibility`.
+    ripeness_attribute:
+        parent: adjective
+        notes: >
+            Ripeness predicates. Core declares the reusable category boundary while
+            corpus-backed packs own their adjective members.
+    colorable_noun:
+        parent: noun
+        notes: "Nouns for which a color partition is an ordinary reading."
+    physical_size_noun:
+        parent: noun
+        notes: "Concrete nouns for which small/large is an ordinary size predicate."
+    magnitude_noun:
+        parent: noun
+        notes: "Aggregate or scalar nouns for which small/large describes magnitude."
+    remainder_collection_noun:
+        parent: noun
+        notes: "Countable collection nouns that license the remnant predicate 'left'."
+    ripenable_noun:
+        parent: noun
+        notes: "Produce nouns that license a ripeness predicate."
+    start_marker_verb:
+        parent: verb
+        notes: >
+            The VERB inside a trailing start-state marker — "to BEGIN with", "to
+            START with". Gates the start-state asks (packs/arithmetic/rules/
+            start-state.yaml), whose consumer UNDOES the narrated events.
 
-      That file explains why the markers there are LITERALS rather than a
-      category: they span four parts of speech ('before' preposition,
-      'beginning' noun, 'originally' adverb), and a category roots at exactly
-      ONE sense. That reasoning still holds and this does not contradict it —
-      it is the SUBSET that happens to share a sense. 'begin' and 'start' are
-      both `verb`, and "to _ with" is one frame around them, so one category
-      turns what would be (2 markers x N shapes) asks into (1 x N). Any marker
-      whose word is not a verb still needs its own literal ask.
+            That file explains why the markers there are LITERALS rather than a
+            category: they span four parts of speech ('before' preposition,
+            'beginning' noun, 'originally' adverb), and a category roots at exactly
+            ONE sense. That reasoning still holds and this does not contradict it —
+            it is the SUBSET that happens to share a sense. 'begin' and 'start' are
+            both `verb`, and "to _ with" is one frame around them, so one category
+            turns what would be (2 markers x N shapes) asks into (1 x N). Any marker
+            whose word is not a verb still needs its own literal ask.
 
-      Members live in difg-mined — both words are difg-mined lexicon entries,
-      so a core-only registry must still compile (the litter/age_noun rule).
-  pool_pronoun:
-    parent: pronoun
-    notes: >
-      A pronoun that DENOTES A POOL — "she lost one fourth OF IT", "half OF
-      THEM". Gates arithmetic/fraction-of-pronoun, whose synthesizer sizes the
-      fraction against the definite pool.
+            Members live in difg-mined — both words are difg-mined lexicon entries,
+            so a core-only registry must still compile (the litter/age_noun rule).
+    pool_pronoun:
+        parent: pronoun
+        notes: >
+            A pronoun that DENOTES A POOL — "she lost one fourth OF IT", "half OF
+            THEM". Gates arithmetic/fraction-of-pronoun, whose synthesizer sizes the
+            fraction against the definite pool.
 
-      It exists to keep that rule off the POSSESSIVE determiners, which sense
-      as plain 'pronoun' too and are a different construction: in "Ben gave
-      half of HIS marbles", 'his' does not denote the pool — it modifies
-      'marbles' and names a possessor whose holdings are the intended base.
-      Ungated, the rule read "half of his marbles" as half of THE POOL and, in
-      a two-holder document, sized Ben's half against Ben's 18 PLUS John's 17.
+            It exists to keep that rule off the POSSESSIVE determiners, which sense
+            as plain 'pronoun' too and are a different construction: in "Ben gave
+            half of HIS marbles", 'his' does not denote the pool — it modifies
+            'marbles' and names a possessor whose holdings are the intended base.
+            Ungated, the rule read "half of his marbles" as half of THE POOL and, in
+            a two-holder document, sized Ben's half against Ben's 18 PLUS John's 17.
 
-      MEMBERSHIP IS MEASURED, not intuited (all six corpora, the word after
-      "<fraction> of"): them 100 · it 23 are pool-denoting; his 78 · her 73 ·
-      its 18 · their 15 are possessive and deliberately EXCLUDED. 'her' is the
-      one to think twice about — it is a possessive determiner here ("half of
-      her cookies"), never the object pronoun.
+            MEMBERSHIP IS MEASURED, not intuited (all six corpora, the word after
+            "<fraction> of"): them 100 · it 23 are pool-denoting; his 78 · her 73 ·
+            its 18 · their 15 are possessive and deliberately EXCLUDED. 'her' is the
+            one to think twice about — it is a possessive determiner here ("half of
+            her cookies"), never the object pronoun.
 
-      Both generic members live in core-english and are tagged in this file;
-      corpus-mined vocabulary is not required for this grammatical category.
-  plural_object_pronoun:
-    parent: pronoun
-    notes: >
-      Object-case plural pronouns licensed as the collection in cardinal and
-      fractional partition premises ("3 of THEM", "half of THEM"). This is
-      narrower than `pool_pronoun`: "it" can denote a fraction's source pool,
-      but singular "of it/he/she/I" is not the partition surface these rules
-      describe.
-  currency:
-    parent: noun
-    interchangeable: true
-    notes: >
-      money words. A bare how-much ask resolves `measure: currency` to the
-      UNIQUE currency measure in the facts; mixed currencies decline.
-      `interchangeable` because denominations name the same stuff — the ONLY
-      category allowed to resolve a factless ask noun to its in-store
-      sibling (cat/dog in 'animal' must never stand in for each other).
-  age_noun:
-    parent: noun
-    notes: >
-      mining candidate sum-constraint-premise-surfaces: the noun 'age'
-      (singular lemma; 'ages' collapses onto it via the ordinary plural
-      mapping) — gates the sum-constraint premise surfaces that state an
-      AGE total ("the sum of their ages is N", "a combined age of N") so
-      they can emit the same DATA measure 'year' the age family already
-      commits to everywhere else (arithmetic/stated-age, ask/how-old-is),
-      never a bare 'age' measure key nothing else in the age family would
-      ever match. Scoped to exactly this one word — a separate class from
-      'age_comparative' (the comparative ADJECTIVES 'older'/'younger'),
-      which anchors a Relation, not a group total. Same structural-only
-      definition as 'child'/'fish' above: the word 'age' itself is a
-      difg-mined lexicon entry, so its membership lives in packs/difg-
-      mined/categories/semantic.yaml, not here (the shared core-english +
-      arithmetic-only test registry never sees it and must not need to).
-  compute_verb:
-    parent: imperative
-    notes: >
-      mining candidate dimension-aggregate-asks: the closed set of
-      IMPERATIVE task-cue verbs ('compute'/'calculate'/'determine') that
-      head the new imperative aggregate asks ("Calculate their combined
-      height", "Determine the average weight of the three"). Rooted at
-      'imperative' (added to registry.ROOT_SENSES the same way 'time'/
-      'article'/'pronoun' were — purely additive, see that file's own
-      comment), NOT 'verb': 'compute' carries ONLY the `imperative` sense
-      (packs/core-english/lexicon/core.yaml — it is never used as an
-      ordinary verb in this grammar), so a category rooted at 'verb'
-      could never admit it as a member (the "member carries the root
-      sense" compile invariant). 'calculate'/'determine' carry BOTH
-      `verb` and `imperative` senses and satisfy either root; rooting
-      here keeps all three members in one category. A separate category
-      from the bare `imperative` SENSE itself (which `cat: imperative`
-      would also match directly via the degenerate-sense fallback): this
-      ask family names its own precondition explicitly so a FUTURE
-      imperative-sensed word admitted for an unrelated purpose never
-      silently widens it too. 'compute' is core-english (tagged in this
-      file's own `members:` below); 'calculate'/'determine' are
-      difg-mined words, so their membership lives in packs/difg-mined/
-      categories/semantic.yaml.
-  dimension_noun:
-    parent: noun
-    notes: >
-      mining candidate dimension-aggregate-asks: nouns that name a
-      MEASURE by the DIMENSION being measured rather than by the unit
-      itself ('height'/'weight'/'age'/'distance'/'balance'/'earnings'/
-      'cost' — "their combined HEIGHT", "the average WEIGHT of the
-      three"). Gates the `item` slot on the new imperative-headed
-      aggregate asks (packs/arithmetic/rules/core.yaml,
-      ask/imperative-combined-dimension and ask/imperative-average-
-      dimension) — a PURE PATTERN-MATCHING gate, structurally analogous
-      to `age_noun`/`dimension_adjective` above, never itself consulted
-      for measure RESOLUTION (that is `length_measure`/`mass_measure`/
-      `time_measure`/`currency_measure` below, a deliberately SEPARATE
-      set of categories — see `dimension` in data/schemas.py's
-      CategoryDef for why resolution needs its own opt-in flag rather
-      than reusing `interchangeable`). Every member word is a difg-mined
-      lexicon entry, so membership lives in packs/difg-mined/categories/
-      semantic.yaml, not here (mirrors `age_noun`'s own sibling pattern).
-  length_measure:
-    parent: noun
-    dimension: true
-    notes: >
-      mining candidate dimension-aggregate-asks: the physical-LENGTH
-      unit family — concrete units ('foot'/'inch'/'yard'/'meter'/
-      'centimeter'/'kilometer'/'mile') AND the dimension nouns that name
-      the same family without naming a unit ('height'/'distance') are
-      members of this ONE category (both kinds are noun-sensed, so both
-      satisfy this category's root sense — see CategoryDef's `dimension`
-      field docstring). `answer.py`'s `_resolve_dimension_measure`
-      (called ONLY by the 'combined'/'average' consumers when an ask
-      opts in via `dimension_measure: true`) resolves a dimension-noun
-      ask like "their combined height" to whichever concrete length
-      unit is UNIQUELY present in the facts — the same UNIQUE-OR-DECLINE
-      discipline `currency`'s `interchangeable` resolution already uses,
-      via a SEPARATE registry set (`dimension_categories`, never
-      `interchangeable_categories`) so this never widens
-      `_resolve_measure`/`_resolve_measure_against`, which every OTHER
-      consumer keeps calling unchanged. Every member word is a
-      difg-mined lexicon entry; membership lives in packs/difg-mined/
-      categories/semantic.yaml.
-  mass_measure:
-    parent: noun
-    dimension: true
-    notes: >
-      sibling of `length_measure` for WEIGHT — concrete units
-      ('pound'/'ounce'/'kilogram'/'gram') plus the dimension noun
-      'weight'. See `length_measure`'s note for the shared mechanism.
-      'pound' is ALSO a member of the pre-existing `currency` category
-      (British pounds sterling) — harmless multi-category membership,
-      exactly like 'older'/'younger' already carrying two category tags
-      elsewhere in this file; the two categories are consulted by
-      entirely separate resolution paths (`interchangeable_categories`
-      vs `dimension_categories`) and never interact.
-  time_measure:
-    parent: noun
-    dimension: true
-    notes: >
-      sibling of `length_measure`/`mass_measure` for DURATION and AGE —
-      concrete units ('minute'/'hour'/'day'/'week'/'month'/'year') plus
-      the dimension noun 'age' (an age total always folds to 'year'
-      elsewhere in this grammar — arithmetic/stated-age, ask/how-old-is
-      — so resolving 'age' against whichever time unit is uniquely
-      in-store lands on the same place; "calculate their combined age" /
-      "determine the average age of the three" reuse the SAME
-      ask/imperative-*-dimension asks `length_measure`/`mass_measure`
-      already gate). A dimension-ADJECTIVE totality sibling ("how long
-      is the total X?", binding this category's OWN NAME directly as
-      `measure` — the same move `currency`'s `measure: currency`
-      precedent makes) was PROTOTYPED and DROPPED, then RE-LANDED
-      (mining candidate distributive-holder-enum) once its blocker was
-      fixed: dev-train's "Bart makes a mixtape... How long is the total
-      tape?" exposed a pre-existing latent oversum in the entity-less
-      'combined' consumer — a bare rate-defining sentence ("Each song is
-      4 minutes") left its OWN raw Quantity(entity='song',
-      measure='minute', value=4) fact behind ALONGSIDE the
-      container-contents synth's bridged per-side totals, and
-      enumerating every 'minute' holder summed all three (44 instead of
-      gold 40). `_combined_holder_totals`'s entity enumeration
-      (answer.py) now drops any entity whose Quantity was CONSUMED by a
-      bridging synth (synth/container-contents,
-      synth/distributive-container-total) to derive some other holder's
-      total — ArithmeticLog.consumed_rate_keys, populated at the synth's
-      own emission site, never guessed from the sentence's shape. The
-      ask itself is `ask/how-long-is-total-dimension` (packs/arithmetic/
-      rules/core.yaml), binding `measure: time_measure` directly and
-      `dimension_measure: true` — 'long' is deliberately NOT a member of
-      this category (adjective-sensed; this category is noun-rooted, so
-      it could never join anyway); the ask names the category directly
-      instead, exactly the `_resolve_dimension_measure` docstring already
-      anticipated.
-  currency_measure:
-    parent: noun
-    dimension: true
-    notes: >
-      sibling of `length_measure`/`mass_measure`/`time_measure` for
-      MONEY — the concrete unit 'dollar' (tagged in this file's own
-      `members:` below, a core-english word) plus 'cent' and the
-      dimension nouns 'balance'/'earnings'/'cost' (difg-mined words,
-      membership in that pack). Deliberately a SEPARATE category from
-      the pre-existing `currency` (`interchangeable: true`): adding
-      'balance'/'earnings'/'cost' to `currency` itself would widen
-      `_resolve_measure_against`, consulted by every OTHER consumer
-      (single-entity, difference, ...), not just 'combined'/'average' —
-      exactly the shared-function blast radius `length_measure`'s note
-      above avoids.
-  count_intensifier:
-    parent: comparative
-    notes: >
-      mining candidate relation-standard-frames: 'more' used as a bare
-      INTENSIFIER wedged between a bare count and its noun ("in eight MORE
-      years", "eight more years, ...") — never the comparative-DELTA use
-      of the same word ("5 MORE apples THAN Tom", cat: more_dir/delta).
-      'more' carries BOTH tags at once, exactly like 'older'/'younger'
-      already carry both 'age_comparative' and 'more_dir'/'less_dir'
-      elsewhere in this file: a word belonging to two categories never
-      widens either category's own membership, so every OTHER rule gated
-      on 'delta'/'more_dir' keeps matching exactly as before. Root sense
-      'comparative' (not 'adjective'): 'more's own lexicon sense above is
-      'comparative', and every category member must carry its category's
-      root sense (registry.py's compile-time invariant) — this is why
-      'additional' (an 'adjective'-sensed synonym) is NOT folded into this
-      same category rather than widening the root; it would need its own
-      sibling category, out of scope until a second proven pair needs it.
-  aggregate_noun:
-    parent: noun
-    notes: "'the NUMBER of X' / 'the AMOUNT of X' — frame nouns for ratio rules"
-  remnant:
-    parent: noun
-    notes: "'the REST' / 'the REMAINDER' — remainder-of-pool referents"
-  remnant_adj:
-    parent: adjective
-    notes: "'the REMAINING pages' / 'pages LEFT' — remainder-anchored fractions defer to the rest machinery"
-  more_dir: {parent: delta, antonym: less_dir, polarity: 1}
-  less_dir: {parent: delta, antonym: more_dir, polarity: -1}
-  desire:
-    parent: verb
-    notes: >
-      'wants/wishes to VERB N X' — a desire verb marks the stated quantity
-      as a GOAL, never an event: gates the goal-deficit Fact pattern.
-      Deliberately UNTAGGED for polarity — a wanted purchase is not a
-      purchase (the increment-14 kirsty lesson generalized): the generic
-      SVO fold's own Quantity(verb='want', ...) stays unsignable and keeps
-      declining the ordinary holdings fold. Members live in difg-mined.
-  need_premise:
-    parent: verb
-    notes: >
-      'WHO needs N X' — a stated NEED marks the quantity as a GOAL, never
-      a received event (mirrors 'desire's want/wishes rationale, but for
-      the direct-object form with no infinitive). Deliberately UNTAGGED
-      for polarity — a needed quantity is not a receipt: the generic SVO
-      fold's own Quantity(verb='need', ...) stays unsignable and declines
-      the ordinary holdings/event fold instead of silently folding +1 (the
-      increment-23 'a wanted purchase is not a purchase' lesson, same
-      invariant, applied to 'need'). Kept SEPARATE from 'desire' rather
-      than merged into it, so 'need's direct-object phrasing never widens
-      'want's own rule family. Members live in difg-mined.
-  need_ask_verb:
-    parent: verb
-    notes: >
-      the deficit ask's own verb gate ('how many more X does WHO need') —
-      kept SEPARATE from 'need_premise' (the stated-need goal gate) and
-      from the (mined) 'receive' category, so the ask stays specific to
-      the deficit phrasing and never widens via a premise/event verb's
-      own broader membership. Members live in difg-mined.
-  span_preposition:
-    parent: preposition
-    notes: >
-      the preposition introducing a COMPOUND rate's elapsed span ("sews 8
-      shirts IN 20 minutes") — kept as its own category, not a literal
-      string compared in Python, mirroring the 'per'->'rate' sense
-      precedent (a word-specific fact belongs in the pack, never the
-      kernel). Narrower than the general 'preposition' sense: 'in' keeps
-      its ordinary locative/temporal preposition uses everywhere else —
-      this category only gates the compound-rate-span scan in learn.py,
-      it never changes 'in's own committed sense or disambiguation.
-  negation:
-    parent: negator
-    notes: >
-      clause-level negation markers. learn.py's Quantity fold declines a
-      verb's numeric contribution whenever a negation-category token sits
-      in the SAME CLAUSE as that verb ("Tom does NOT have 5 apples" / "Tom
-      NEVER eats 5 apples") — decline-only, never computing negated
-      semantics (constitution rule 4). Scoped to single-token markers only;
-      multi-word negation ("no longer") is deliberately NOT a member here —
-      it needs its own phrase-level structural check, out of scope for this
-      increment.
-  future_modal:
-    parent: modal
-    notes: >
-      the FUTURE-TENSE modal pair (will/would) — a narrower cut of the
-      general 'modal' sense increment 14 split from 'auxiliary' (which
-      spans all 8 capacity/hypothetical modals: can/could/will/would/
-      should/may/might/must). Gates the new `future_modal` slot type
-      (data/schemas.py SLOT_TYPES, kernel/patterns.py _slot_ok) so an
-      ORDINARY factual ask ("how many X does WHO have") can also match
-      the identical question phrased in the future/conditional tense
-      ("how many X will WHO have") without widening to the capacity
-      modals — can/could/should/may/might/must stay excluded so a
-      hypothetical/capacity-shaped question can never satisfy a factual
-      ask's aux slot (the increment-14 kirsty lesson generalized: a
-      wanted/hypothetical purchase is not a purchase). 'modal' is added to
-      registry.ROOT_SENSES to let this category resolve — purely additive,
-      mirroring the earlier 'conjunction' root-sense addition; changes no
-      existing category or word behavior. Both members (will/would) are
-      difg-mined-only words — no core-english word carries 'modal' sense —
-      so, mirroring 'negation'/'desire'/'need_premise', this category has
-      NO members here; they live in packs/difg-mined/categories/
-      semantic.yaml. A core-english-only registry (no difg-mined) compiles
-      with this category simply empty.
-  capacity_modal:
-    parent: modal
-    notes: >
-      mining candidate rate-every-span-asks: the six CAPACITY/
-      HYPOTHETICAL modals (can/could/should/may/might/must) — the
-      general 'modal' sense with the future-tense pair (will/would, the
-      sibling 'future_modal' category above) explicitly EXCLUDED. Gates
-      ask/how-many-rate-span-modal / ask/how-much-rate-span-modal's
-      `aux` slot: those two asks read a Rate fact as a straightforward
-      "how many CAN WHO do" capacity question (dev-train: "Bob can eat
-      10 apples in 5 minutes. How many apples can he eat in 2 hours?"
-      -> 240.0), which is a DIFFERENT semantic commitment from a
-      future-tense factual question ("how many WILL WHO do") — a
-      future-tense question can carry an unrelated, un-modeled exception
-      clause (dev-train: "Adam teaches 50 students a year... in the
-      first year he only teaches 40" — the rate-span consumer has no
-      way to read that override, so answering it at all is a confident-
-      wrong) that a genuinely hypothetical-capacity question does not.
-      `future_modal` already documents this exact split as "a wanted/
-      hypothetical purchase is not a purchase" (its own comment, one
-      slot type over) — this category is that same split applied to the
-      rate-span consumer's aux slot instead of a factual ask's. Both
-      members are difg-mined-only words (no core-english word carries
-      'modal' sense), so, mirroring 'future_modal'/'negation' above,
-      this category has NO members here; they live in packs/difg-mined/
-      categories/semantic.yaml. A core-english-only registry (no
-      difg-mined) compiles with this category simply empty.
-  duration_verb:
-    parent: verb
-    notes: >
-      'takes'/'took' in the extraposed-infinitive duration idiom ("it
-      TAKES her 5 minutes to paint a lily", mining candidate
-      extraposed-duration-rates) — a narrow consumer gate for
-      arithmetic/extraposed-duration-rate, mirroring the spend_verb/
-      price_verb/wage_verb precedent: 'take' already carries no other
-      category (it is not 'acquire' — "it takes 5 minutes" is not a
-      possession event), so this exists purely so the pattern rule can
-      name the declarative-tense inflections (take/takes/took) directly,
-      since — unlike an ask's bare infinitive after a modal, a single
-      literal fold — a declarative premise inflects for tense. 'take' is
-      a difg-mined-only lexicon entry, so, mirroring 'negation'/
-      'future_modal' above, this category has NO members here; they live
-      in packs/difg-mined/categories/semantic.yaml. A core-english-only
-      registry (no difg-mined) compiles with this category simply empty
-      (and could never match the rule anyway — there is no 'take' word to
-      tokenize without difg-mined loaded).
-  relational_marker:
-    parent: particle
-    notes: >
-      the comparative/ratio clause-boundary word 'than' — sensed
-      'particle' in the lexicon (core.yaml), unchanged. engine.py's
-      `_is_relational_clause` (mining candidate conjoined-clause-holdings)
-      ORs membership in this category alongside 'comparative'/'multiplier'
-      to recognize a comparative/ratio clause structurally — the SAME
-      "test a category, never enumerate the word in Python" shape as
-      'clause_marker'/'clause_marker_prep' (packs/difg-mined/categories/
-      clauses.yaml). 'particle' was added to registry.ROOT_SENSES to let
-      this category resolve, purely additive (mirrors the earlier 'modal'
-      root-sense addition) — 'than' keeps its single existing sense, so no
-      new ambiguity is introduced for the many sentences that use it.
-  verb_particle:
-    parent: adverb
-    notes: >
-      the closed set of directional/completive particles that fuse to a
-      polarity-tagged event verb ("gives AWAY", "takes AWAY", "throws
-      AWAY") — sensed 'adverb' in the lexicon, unchanged. 'adverb' is added
-      to registry.ROOT_SENSES to let this category resolve, purely
-      additive (mirrors the earlier 'modal'/'particle' root-sense
-      additions) — no existing adverb-sensed word gains a new sense or new
-      behavior. condense.py's merge-particle-verb pass fuses a unit tagged
-      this category onto an IMMEDIATELY PRECEDING verb, but ONLY when that
-      verb already carries a polarity tag (_has_event_polarity, the
-      increment-45 invariant): an untagged verb + particle ("looked up")
-      stays exactly as today, decline-safe by construction. Deliberately
-      NOT "every adverb" — that would risk merging manner/locative adverbs
-      after an unrelated polarity verb ("sold quickly"). The four members
-      (away/out/off/up) are difg-mined-only words — no core-english word
-      carries the 'adverb' sense — so, mirroring 'future_modal'/
-      'relational_marker's sibling pattern, this category has NO members
-      here; they live in packs/difg-mined/categories/semantic.yaml. A
-      core-english-only registry (no difg-mined) compiles with this
-      category simply empty.
-  temporal_marker:
-    parent: time
-    notes: >
-      mining candidate age-equative-recut: the deictic word 'today' —
-      sensed 'time' in the lexicon, unchanged — that marks an equative age
-      relation's clause as relative to a SEPARATE temporal anchor stated
-      elsewhere in the document ("Diana is twice as old as Grace IS
-      TODAY. If Grace turned 3 a year ago, ..."). arithmetic/times-as-
-      old-as `absent`-gates on this category so that pairing declines
-      rather than committing the plain ratio over the anchor's raw
-      pre-offset number — decline-safety, not resolution; the offset
-      chain itself is a separate, unbuilt mechanism. 'time' is added to
-      registry.ROOT_SENSES to let this category resolve, purely additive
-      (mirrors the earlier 'modal'/'particle'/'adverb' root-sense
-      additions) — no existing time-sensed word gains a new sense or new
-      behavior elsewhere. 'today' is a difg-mined-only word — no
-      core-english word carries the 'time' sense — so, mirroring
-      'future_modal'/'relational_marker'/'verb_particle's sibling
-      pattern, this category has NO members here; it lives in
-      packs/difg-mined/categories/semantic.yaml. A core-english-only
-      registry (no difg-mined) compiles with this category simply empty.
-
-      'now' joined this category (mining candidate temporal-offset-age-
-      recut): a leading-temporal-offset equative relation ("In N years, A
-      will be K times as old as B is NOW/TODAY") uses the SAME deictic
-      word here to pin the standard's age to the CURRENT moment (offset
-      0) rather than the sentence's own future/past offset — the
-      positive mirror of this category's original absent-gate use above.
-      Both members already carry the 'time' sense, so no lexicon change
-      rides along with the membership widening.
-  age_measure:
-    parent: noun
-    notes: >
-      mining candidate age-equative-recut: the closed set of nouns that
-      name a person's AGE unit ('year') — sensed 'noun' in the lexicon,
-      unchanged. src/rulekit/kernel/saturate.py's `_bare_age_anchor_synth`
-      gates its bare-copula-number promotion on
-      `reg.word_in_category(measure, "age_measure")` rather than a
-      hardcoded `"year"` string literal (constitution rule 1; `currency`
-      at packs/core-english/categories/core.yaml:65 plus
-      src/rulekit/kernel/answer.py's `q.measure == "currency" or
-      reg.word_in_category(q.measure, "currency")` is the reference
-      implementation this mirrors). 'year' is generic English vocabulary
-      and therefore lives in core-english alongside this membership. That
-      keeps the grammar needed by arithmetic/stated-age available to every
-      project that loads core-english + arithmetic, without depending on a
-      corpus-mined vocabulary pack.
-  partitive:
-    parent: preposition
-    notes: >
-      'of' in a MEASURE-of-ITEM partitive noun phrase ("a pound OF coffee
-      beans", "4 pounds OF coffee beans") — exactly one member, so this is
-      never a general preposition widening (mining candidate
-      modal-spend-measure-price). learn.py's price-verb branch uses this
-      category structurally (never a literal 'of' string comparison) to
-      find the partitive phrase whose OBJECT is the price statement's
-      subject, so it can key the emitted Price fact on the MEASURE noun
-      the phrase anchors to (the SAME noun the purchase-verb premise's own
-      Quantity.measure already uses) rather than on the item noun itself.
-  complement_boy:
-    parent: noun
-    antonym: complement_girl
-    notes: >
-      mining candidate complement-labeled-subsets: a PACK-DECLARED
-      complementary-label PAIR — 'boy' and 'girl' EXHAUSTIVELY partition a
-      collection they both label (unlike an arbitrary sibling noun pair,
-      which increment 16 explicitly refused to assume exhaustive). Reuses
-      the SAME `antonym:` mechanism polarity pairs use (acquire/lose,
-      more_dir/less_dir), but deliberately carries NO `polarity` — this
-      pairing is not a signed direction, just two singleton categories so
-      saturate.py's `_complement_word` can look up 'the other label' by
-      category-antonym instead of a hardcoded word pair (constitution
-      rule 1). 'boy'/'girl' are difg-mined-only words — no core-english
-      word carries either sense — so, mirroring 'temporal_marker'/
-      'age_measure's sibling pattern above, this category has NO members
-      here; they live in packs/difg-mined/categories/semantic.yaml. A
-      core-english-only registry (no difg-mined) compiles with both
-      categories simply empty (the synth then never fires, decline-safe).
-  complement_girl:
-    parent: noun
-    antonym: complement_boy
-    notes: "the symmetric half of complement_boy — see its notes."
-  child:
-    parent: noun
-    # mining candidate subtype-total-asks: only a category EXPLICITLY
-    # opted in here may feed answer.py's `_superordinate_total` — see
-    # `superordinate`'s own schema docstring (data/schemas.py CategoryDef)
-    # for why this must be a SEPARATE flag from merely "has members":
-    # 'animal'/'pet' below also declare members, for unrelated decline-
-    # safety regression coverage, with a deliberately PARTIAL list that
-    # must never be read as an exhaustive subtype set.
-    superordinate: true
-    notes: >
-      a PACK-DECLARED SUPERORDINATE — 'daughter' and 'son' are SUBTYPES of
-      'child' ("Sandro has six times as many daughters as sons... how many
-      children does he have?"). The category's NAME IS the superordinate
-      WORD itself: a generic consumer (answer.py's `_superordinate_total`)
-      sums an entity's own subtype holdings into the asked measure's total
-      whenever the asked measure carries no fact of its own and every
-      measure the entity DOES hold is a declared member here — resolved
-      via `reg.category_members.get(asked_measure)`, never a hardcoded
-      word in Python (constitution rule 1). Deliberately NO `polarity`/
-      `interchangeable`: subtypes are not signed and are never
-      interchangeable stand-ins for each other (that would let a 'son'
-      fact answer a 'daughter' ask) — they only ever SUM into the
-      superordinate. 'daughter'/'son' are difg-mined-only words, so
-      (mirroring complement_boy/girl's sibling pattern above) this
-      category has NO members here; they live in packs/difg-mined/
-      categories/semantic.yaml. A core-english-only registry compiles with
-      this category simply empty (the consumer then never fires,
-      decline-safe).
-  toy:
-    parent: noun
-    superordinate: true
-    notes: >
-      sibling of 'child' (subtype-total-asks) — subtypes: toy soldier / toy
-      car ("James buys twice as many toy soldiers as toy cars... how many
-      total toys does he buy?"). Same structural-only definition; members
-      ('soldier'/'car', difg-mined-only) live in packs/difg-mined/
-      categories/semantic.yaml. See child's note for the full mechanism.
-  fish:
-    parent: noun
-    superordinate: true
-    notes: >
-      sibling of 'child' (subtype-total-asks) — subtypes: goldfish /
-      angelfish / guppy ("Catriona has 8 goldfish... 4 more angelfish than
-      goldfish... twice as many guppies as angelfish... how many fish does
-      Catriona have?"). Same structural-only definition; members (difg-
-      mined-only) live in packs/difg-mined/categories/semantic.yaml. See
-      child's note for the full mechanism.
-  litter:
-    parent: noun
-    superordinate: true
-    notes: >
-      sibling of 'child'/'toy'/'fish' (subtype-total-asks) — a discarded-item
-      superordinate whose subtypes are the container nouns a cleanup problem
-      counts as litter ("picked up 10 bottles and 8 cans... how many pieces of
-      litter altogether?" -> 18). Members 'bottle'/'can' are difg-mined-only
-      words, so (mirroring child/toy/fish above) they live in packs/difg-mined/
-      categories/semantic.yaml, and a core-english-only registry compiles with
-      this category simply empty (decline-safe). Same _superordinate_total guard
-      (fires only when EVERY held measure is a subtype and >=2 are held), so a
-      lone "5 bottles of water" never reads as a litter total.
-  indefinite_article:
-    parent: article
-    notes: >
-      mining candidate generic-unit-price-premises: 'a'/'an' mark a
-      SINGULAR noun as a GENERIC instance ('A book costs $5' means every
-      book of that kind, the same per-unit reading 'each book costs $5'
-      already carries) rather than one specific previously-established
-      referent — unlike 'the', which is deliberately NOT a member here
-      (a definite singular price statement is a separate, more ambiguous
-      class left out of scope). learn.py's price_verb branch reads this
-      structurally (an indefinite article immediately left of an
-      uncounted singular subject, crossing only adjectives) as an
-      ADDITIONAL per-unit signal alongside the existing distributive-
-      determiner/trailing-each/bare-measure gates — never a replacement
-      for any of them.
-  quantity_anaphor:
-    parent: noun
-    notes: >
-      mining candidate anaphoric-multiplier-standards: the closed set of
-      QUANTITY-anaphor head NOUNS that name a previously-stated amount
-      without repeating it — 'amount'/'number' extend this from packs/
-      difg-mined, where they are ALSO already members of 'aggregate_noun'
-      for a completely different frame-noun purpose ("the NUMBER of X")
-      — this is a separate, sibling category, never a widening of
-      aggregate_noun, so aggregate_noun's own gated rules never see a new
-      member from this. Deliberately EXCLUDES 'much'/'many' — the
-      lexicon's own root-sense invariant (registry.compile_registry)
-      requires every category member to actually carry that category's
-      root sense, and 'much'/'many' are sensed quantifier/interrogative,
-      not noun — so this pack's sibling pattern rules
-      (arithmetic/anaphoric-multiplier-standard-much/-many) gate on
-      those two literally instead, mirroring how 'much'/'many' are
-      ALREADY two separate literal-gated rule families everywhere else
-      in this file (times-as-much / times-as-many), never a shared
-      category. Gates arithmetic/anaphoric-multiplier-standard's
-      head-noun slot: "3 times THAT AMOUNT" / "twice THAT NUMBER" — a
-      demonstrative standard that names no ENTITY at all (unlike a name
-      or a common noun, "that"/"this" never denotes a holder); saturate.py's
-      `_relations_synth` resolves the emitted Relation's sentinel standard
-      against the UNIQUE prior Quantity known document-wide instead of
-      any entity's own holdings — zero or two-or-more candidates declines,
-      never a guess.
-  price_anaphor:
-    parent: noun
-    notes: >
-      mining candidate anaphoric-multiplier-standards: sibling of
-      'quantity_anaphor' for the PRICE-denominated anaphor head nouns
-      ('price'/'cost', difg-mined nouns — members extend from packs/
-      difg-mined/categories/semantic.yaml). Gates arithmetic/anaphoric-
-      price-standard ("3 times THAT PRICE"); saturate.py resolves the
-      emitted Relation's sentinel standard against the UNIQUE prior Price
-      known document-wide rather than a Quantity — kept a SEPARATE
-      category from 'quantity_anaphor' (never folded together) because
-      the two anchor against two entirely different fact kinds.
-  measure_anaphor:
-    parent: pronoun
-    notes: >
-      mining candidate measure-noun-anaphor (infrastructure): the measure-
-      NOUN sibling of 'quantity_anaphor' — where 'amount'/'number' stand in
-      for a whole prior QUANTITY (a demonstrative standard, "twice THAT
-      NUMBER"), this category's member ('ones', difg-mined-only — extends
-      from packs/difg-mined/categories/semantic.yaml) is the elided HEAD
-      NOUN of a counted, qualified NP ("12 yellow ONES", "twice as many
-      green ONES as yellow ones"): the word itself never denotes the real
-      measure, only its color/qualifier is genuine. Rooted at 'pronoun',
-      never 'noun' — 'ones' already carries the 'pronoun' sense alone (its
-      `refers` obligation simply goes unmet today, same decline discipline
-      every unresolved pronoun has), and giving it a SECOND, ambiguous
-      'noun' sense would make 'noun' always win obligations.disambiguate()'s
-      coverage race (a pronoun's mandatory, never-locally-bindable 'refers'
-      need is strictly worse-covering than a noun's none), silently
-      reinterpreting EVERY 'ones' in the corpus — including the unrelated
-      relative-clause/definite forms ("the ones she didn't do") — as a
-      noun from round 0 on, corpus-wide, for a change meant to touch only
-      this one counted-NP shape. Rooting at 'pronoun' keeps 'ones' single-
-      sensed everywhere except the one condense.py merge (adjective +
-      measure_anaphor pronoun) that opts in by category membership: that
-      merge explicitly re-declares the compound's own `senses` to
-      `[noun]` (so every EXISTING generic noun-consumption path — count-
-      merge, dobj/subject Quantity-building — picks it up unchanged,
-      untouched by this pack) while keeping the adjective's qualifier
-      LOCAL and marking the compound `measure_anaphor: true`. Resolution
-      of WHAT it stands for is a separate, later step — document.py's
-      `_bind_measure_anaphor` binds it to the UNIQUE prior counted-noun
-      lemma in the document (never a name, never a quantity — the
-      measure-noun sibling of `_bind_discourse`'s antecedent search),
-      exactly as the ordinary pronoun binder resolves "he" to its
-      antecedent: zero or two-or-more candidates leaves it unresolved, and
-      learn.py's `_lemma` then returns a reserved sentinel no ask can ever
-      match — a silent, harmless decline, never a guess. THIS CATEGORY
-      CANNOT MOVE A NUMBER ALONE: it only makes the anaphor resolvable;
-      summing the qualified variants it produces is the conjunct-
-      comparative class's job, built on top of this.
+            Both generic members live in core-english and are tagged in this file;
+            corpus-mined vocabulary is not required for this grammatical category.
+    plural_object_pronoun:
+        parent: pronoun
+        notes: >
+            Object-case plural pronouns licensed as the collection in cardinal and
+            fractional partition premises ("3 of THEM", "half of THEM"). This is
+            narrower than `pool_pronoun`: "it" can denote a fraction's source pool,
+            but singular "of it/he/she/I" is not the partition surface these rules
+            describe.
+    currency:
+        parent: noun
+        interchangeable: true
+        notes: >
+            money words. A bare how-much ask resolves `measure: currency` to the
+            UNIQUE currency measure in the facts; mixed currencies decline.
+            `interchangeable` because denominations name the same stuff — the ONLY
+            category allowed to resolve a factless ask noun to its in-store
+            sibling (cat/dog in 'animal' must never stand in for each other).
+    age_noun:
+        parent: noun
+        notes: >
+            mining candidate sum-constraint-premise-surfaces: the noun 'age'
+            (singular lemma; 'ages' collapses onto it via the ordinary plural
+            mapping) — gates the sum-constraint premise surfaces that state an
+            AGE total ("the sum of their ages is N", "a combined age of N") so
+            they can emit the same DATA measure 'year' the age family already
+            commits to everywhere else (arithmetic/stated-age, ask/how-old-is),
+            never a bare 'age' measure key nothing else in the age family would
+            ever match. Scoped to exactly this one word — a separate class from
+            'age_comparative' (the comparative ADJECTIVES 'older'/'younger'),
+            which anchors a Relation, not a group total. 'Age' is generic English
+            vocabulary and lives in core-english beside this membership, so every
+            project that loads the core grammar can realize and inspect these age
+            constructions without depending on corpus-mined vocabulary.
+    compute_verb:
+        parent: imperative
+        notes: >
+            mining candidate dimension-aggregate-asks: the closed set of
+            IMPERATIVE task-cue verbs ('compute'/'calculate'/'determine') that
+            head the new imperative aggregate asks ("Calculate their combined
+            height", "Determine the average weight of the three"). Rooted at
+            'imperative' (added to registry.ROOT_SENSES the same way 'time'/
+            'article'/'pronoun' were — purely additive, see that file's own
+            comment), NOT 'verb': 'compute' carries ONLY the `imperative` sense
+            (packs/core-english/lexicon/core.yaml — it is never used as an
+            ordinary verb in this grammar), so a category rooted at 'verb'
+            could never admit it as a member (the "member carries the root
+            sense" compile invariant). 'calculate'/'determine' carry BOTH
+            `verb` and `imperative` senses and satisfy either root; rooting
+            here keeps all three members in one category. A separate category
+            from the bare `imperative` SENSE itself (which `cat: imperative`
+            would also match directly via the degenerate-sense fallback): this
+            ask family names its own precondition explicitly so a FUTURE
+            imperative-sensed word admitted for an unrelated purpose never
+            silently widens it too. 'compute' is core-english (tagged in this
+            file's own `members:` below); 'calculate'/'determine' are
+            difg-mined words, so their membership lives in packs/difg-mined/
+            categories/semantic.yaml.
+    dimension_noun:
+        parent: noun
+        notes: >
+            mining candidate dimension-aggregate-asks: nouns that name a
+            MEASURE by the DIMENSION being measured rather than by the unit
+            itself ('height'/'weight'/'age'/'distance'/'balance'/'earnings'/
+            'cost' — "their combined HEIGHT", "the average WEIGHT of the
+            three"). Gates the `item` slot on the new imperative-headed
+            aggregate asks (packs/arithmetic/rules/core.yaml,
+            ask/imperative-combined-dimension and ask/imperative-average-
+            dimension) — a PURE PATTERN-MATCHING gate, structurally analogous
+            to `age_noun`/`dimension_adjective` above, never itself consulted
+            for measure RESOLUTION (that is `length_measure`/`mass_measure`/
+            `time_measure`/`currency_measure` below, a deliberately SEPARATE
+            set of categories — see `dimension` in data/schemas.py's
+            CategoryDef for why resolution needs its own opt-in flag rather
+            than reusing `interchangeable`). Generic `age` is core-owned below;
+            the remaining corpus-mined members extend this category from
+            packs/difg-mined/categories/semantic.yaml.
+    length_measure:
+        parent: noun
+        dimension: true
+        notes: >
+            mining candidate dimension-aggregate-asks: the physical-LENGTH
+            unit family — concrete units ('foot'/'inch'/'yard'/'meter'/
+            'centimeter'/'kilometer'/'mile') AND the dimension nouns that name
+            the same family without naming a unit ('height'/'distance') are
+            members of this ONE category (both kinds are noun-sensed, so both
+            satisfy this category's root sense — see CategoryDef's `dimension`
+            field docstring). `answer.py`'s `_resolve_dimension_measure`
+            (called ONLY by the 'combined'/'average' consumers when an ask
+            opts in via `dimension_measure: true`) resolves a dimension-noun
+            ask like "their combined height" to whichever concrete length
+            unit is UNIQUELY present in the facts — the same UNIQUE-OR-DECLINE
+            discipline `currency`'s `interchangeable` resolution already uses,
+            via a SEPARATE registry set (`dimension_categories`, never
+            `interchangeable_categories`) so this never widens
+            `_resolve_measure`/`_resolve_measure_against`, which every OTHER
+            consumer keeps calling unchanged. Every member word is a
+            difg-mined lexicon entry; membership lives in packs/difg-mined/
+            categories/semantic.yaml.
+    mass_measure:
+        parent: noun
+        dimension: true
+        notes: >
+            sibling of `length_measure` for WEIGHT — concrete units
+            ('pound'/'ounce'/'kilogram'/'gram') plus the dimension noun
+            'weight'. See `length_measure`'s note for the shared mechanism.
+            'pound' is ALSO a member of the pre-existing `currency` category
+            (British pounds sterling) — harmless multi-category membership,
+            exactly like 'older'/'younger' already carrying two category tags
+            elsewhere in this file; the two categories are consulted by
+            entirely separate resolution paths (`interchangeable_categories`
+            vs `dimension_categories`) and never interact.
+    time_measure:
+        parent: noun
+        dimension: true
+        notes: >
+            sibling of `length_measure`/`mass_measure` for DURATION and AGE —
+            concrete units ('minute'/'hour'/'day'/'week'/'month'/'year') plus
+            the dimension noun 'age' (an age total always folds to 'year'
+            elsewhere in this grammar — arithmetic/stated-age, ask/how-old-is
+            — so resolving 'age' against whichever time unit is uniquely
+            in-store lands on the same place; "calculate their combined age" /
+            "determine the average age of the three" reuse the SAME
+            ask/imperative-*-dimension asks `length_measure`/`mass_measure`
+            already gate). A dimension-ADJECTIVE totality sibling ("how long
+            is the total X?", binding this category's OWN NAME directly as
+            `measure` — the same move `currency`'s `measure: currency`
+            precedent makes) was PROTOTYPED and DROPPED, then RE-LANDED
+            (mining candidate distributive-holder-enum) once its blocker was
+            fixed: dev-train's "Bart makes a mixtape... How long is the total
+            tape?" exposed a pre-existing latent oversum in the entity-less
+            'combined' consumer — a bare rate-defining sentence ("Each song is
+            4 minutes") left its OWN raw Quantity(entity='song',
+            measure='minute', value=4) fact behind ALONGSIDE the
+            container-contents synth's bridged per-side totals, and
+            enumerating every 'minute' holder summed all three (44 instead of
+            gold 40). `_combined_holder_totals`'s entity enumeration
+            (answer.py) now drops any entity whose Quantity was CONSUMED by a
+            bridging synth (synth/container-contents,
+            synth/distributive-container-total) to derive some other holder's
+            total — ArithmeticLog.consumed_rate_keys, populated at the synth's
+            own emission site, never guessed from the sentence's shape. The
+            ask itself is `ask/how-long-is-total-dimension` (packs/arithmetic/
+            rules/core.yaml), binding `measure: time_measure` directly and
+            `dimension_measure: true` — 'long' is deliberately NOT a member of
+            this category (adjective-sensed; this category is noun-rooted, so
+            it could never join anyway); the ask names the category directly
+            instead, exactly the `_resolve_dimension_measure` docstring already
+            anticipated.
+    currency_measure:
+        parent: noun
+        dimension: true
+        notes: >
+            sibling of `length_measure`/`mass_measure`/`time_measure` for
+            MONEY — the concrete unit 'dollar' (tagged in this file's own
+            `members:` below, a core-english word) plus the dimension nouns
+            'cent'/'balance'/'earnings' and core-owned 'cost' (memberships in
+            the difg-mined extension pack). Deliberately a SEPARATE category from
+            the pre-existing `currency` (`interchangeable: true`): adding
+            'balance'/'earnings'/'cost' to `currency` itself would widen
+            `_resolve_measure_against`, consulted by every OTHER consumer
+            (single-entity, difference, ...), not just 'combined'/'average' —
+            exactly the shared-function blast radius `length_measure`'s note
+            above avoids.
+    count_intensifier:
+        parent: comparative
+        notes: >
+            mining candidate relation-standard-frames: 'more' used as a bare
+            INTENSIFIER wedged between a bare count and its noun ("in eight MORE
+            years", "eight more years, ...") — never the comparative-DELTA use
+            of the same word ("5 MORE apples THAN Tom", cat: more_dir/delta).
+            'more' carries BOTH tags at once, exactly like 'older'/'younger'
+            already carry both 'age_comparative' and 'more_dir'/'less_dir'
+            elsewhere in this file: a word belonging to two categories never
+            widens either category's own membership, so every OTHER rule gated
+            on 'delta'/'more_dir' keeps matching exactly as before. Root sense
+            'comparative' (not 'adjective'): 'more's own lexicon sense above is
+            'comparative', and every category member must carry its category's
+            root sense (registry.py's compile-time invariant) — this is why
+            'additional' (an 'adjective'-sensed synonym) is NOT folded into this
+            same category rather than widening the root; it would need its own
+            sibling category, out of scope until a second proven pair needs it.
+    aggregate_noun:
+        parent: noun
+        notes: >
+            'the NUMBER of X' / 'the AMOUNT of X' — frame nouns for ratio
+            rules. These generic frame nouns are core-owned so the generation
+            workbench can expose every rule premise they license.
+    remnant:
+        parent: noun
+        notes: "'the REST' / 'the REMAINDER' — remainder-of-pool referents"
+    remnant_adj:
+        parent: adjective
+        notes: "'the REMAINING pages' / 'pages LEFT' — remainder-anchored fractions defer to the rest machinery"
+    more_dir: {parent: delta, antonym: less_dir, polarity: 1}
+    less_dir: {parent: delta, antonym: more_dir, polarity: -1}
+    desire:
+        parent: verb
+        notes: >
+            'wants/wishes to VERB N X' — a desire verb marks the stated quantity
+            as a GOAL, never an event: gates the goal-deficit Fact pattern.
+            Deliberately UNTAGGED for polarity — a wanted purchase is not a
+            purchase (the increment-14 kirsty lesson generalized): the generic
+            SVO fold's own Quantity(verb='want', ...) stays unsignable and keeps
+            declining the ordinary holdings fold.
+    need_premise:
+        parent: verb
+        notes: >
+            'WHO needs N X' — a stated NEED marks the quantity as a GOAL, never
+            a received event (mirrors 'desire's want/wishes rationale, but for
+            the direct-object form with no infinitive). Deliberately UNTAGGED
+            for polarity — a needed quantity is not a receipt: the generic SVO
+            fold's own Quantity(verb='need', ...) stays unsignable and declines
+            the ordinary holdings/event fold instead of silently folding +1 (the
+            increment-23 'a wanted purchase is not a purchase' lesson, same
+            invariant, applied to 'need'). Kept SEPARATE from 'desire' rather
+            than merged into it, so 'need's direct-object phrasing never widens
+            'want's own rule family.
+    need_ask_verb:
+        parent: verb
+        notes: >
+            the deficit ask's own verb gate ('how many more X does WHO need') —
+            kept SEPARATE from 'need_premise' (the stated-need goal gate) and
+            from the (mined) 'receive' category, so the ask stays specific to
+            the deficit phrasing and never widens via a premise/event verb's
+            own broader membership. Memberships live in difg-mined; the
+            shared `need` lexicon forms are core-owned.
+    span_preposition:
+        parent: preposition
+        notes: >
+            the preposition introducing a COMPOUND rate's elapsed span ("sews 8
+            shirts IN 20 minutes") — kept as its own category, not a literal
+            string compared in Python, mirroring the 'per'->'rate' sense
+            precedent (a word-specific fact belongs in the pack, never the
+            kernel). Narrower than the general 'preposition' sense: 'in' keeps
+            its ordinary locative/temporal preposition uses everywhere else —
+            this category only gates the compound-rate-span scan in learn.py,
+            it never changes 'in's own committed sense or disambiguation.
+    negation:
+        parent: negator
+        notes: >
+            clause-level negation markers. learn.py's Quantity fold declines a
+            verb's numeric contribution whenever a negation-category token sits
+            in the SAME CLAUSE as that verb ("Tom does NOT have 5 apples" / "Tom
+            NEVER eats 5 apples") — decline-only, never computing negated
+            semantics (constitution rule 4). Scoped to single-token markers only;
+            multi-word negation ("no longer") is deliberately NOT a member here —
+            it needs its own phrase-level structural check, out of scope for this
+            increment.
+    future_modal:
+        parent: modal
+        notes: >
+            the FUTURE-TENSE modal pair (will/would) — a narrower cut of the
+            general 'modal' sense increment 14 split from 'auxiliary' (which
+            spans all 8 capacity/hypothetical modals: can/could/will/would/
+            should/may/might/must). Gates the new `future_modal` slot type
+            (data/schemas.py SLOT_TYPES, kernel/patterns.py _slot_ok) so an
+            ORDINARY factual ask ("how many X does WHO have") can also match
+            the identical question phrased in the future/conditional tense
+            ("how many X will WHO have") without widening to the capacity
+            modals — can/could/should/may/might/must stay excluded so a
+            hypothetical/capacity-shaped question can never satisfy a factual
+            ask's aux slot (the increment-14 kirsty lesson generalized: a
+            wanted/hypothetical purchase is not a purchase). 'modal' is added to
+            registry.ROOT_SENSES to let this category resolve. The generic
+            lexical declarations and this future-tense membership live in core;
+            extension packs may add other categories without duplicating the
+            words.
+    capacity_modal:
+        parent: modal
+        notes: >
+            mining candidate rate-every-span-asks: the six CAPACITY/
+            HYPOTHETICAL modals (can/could/should/may/might/must) — the
+            general 'modal' sense with the future-tense pair (will/would, the
+            sibling 'future_modal' category above) explicitly EXCLUDED. Gates
+            ask/how-many-rate-span-modal / ask/how-much-rate-span-modal's
+            `aux` slot: those two asks read a Rate fact as a straightforward
+            "how many CAN WHO do" capacity question (dev-train: "Bob can eat
+            10 apples in 5 minutes. How many apples can he eat in 2 hours?"
+            -> 240.0), which is a DIFFERENT semantic commitment from a
+            future-tense factual question ("how many WILL WHO do") — a
+            future-tense question can carry an unrelated, un-modeled exception
+            clause (dev-train: "Adam teaches 50 students a year... in the
+            first year he only teaches 40" — the rate-span consumer has no
+            way to read that override, so answering it at all is a confident-
+            wrong) that a genuinely hypothetical-capacity question does not.
+            `future_modal` already documents this exact split as "a wanted/
+            hypothetical purchase is not a purchase" (its own comment, one
+            slot type over) — this category is that same split applied to the
+            rate-span consumer's aux slot instead of a factual ask's. The six
+            generic lexical declarations and their capacity membership live
+            in core.
+    duration_verb:
+        parent: verb
+        notes: >
+            'takes'/'took' in the extraposed-infinitive duration idiom ("it
+            TAKES her 5 minutes to paint a lily", mining candidate
+            extraposed-duration-rates) — a narrow consumer gate for
+            arithmetic/extraposed-duration-rate, mirroring the spend_verb/
+            price_verb/wage_verb precedent: 'take' is not an `acquire` verb —
+            "it takes 5 minutes" is not a
+            possession event), so this exists purely so the pattern rule can
+            name the declarative-tense inflections (take/takes/took) directly,
+            since — unlike an ask's bare infinitive after a modal, a single
+            literal fold — a declarative premise inflects for tense. The forms
+            are core-owned so rule generation can expose whether that premise
+            is too broad; human review, not category availability, judges the
+            resulting sentence.
+    relational_marker:
+        parent: particle
+        notes: >
+            the comparative/ratio clause-boundary word 'than' — sensed
+            'particle' in the lexicon (core.yaml), unchanged. engine.py's
+            `_is_relational_clause` (mining candidate conjoined-clause-holdings)
+            ORs membership in this category alongside 'comparative'/'multiplier'
+            to recognize a comparative/ratio clause structurally — the SAME
+            "test a category, never enumerate the word in Python" shape as
+            'clause_marker'/'clause_marker_prep' (packs/difg-mined/categories/
+            clauses.yaml). 'particle' was added to registry.ROOT_SENSES to let
+            this category resolve, purely additive (mirrors the earlier 'modal'
+            root-sense addition) — 'than' keeps its single existing sense, so no
+            new ambiguity is introduced for the many sentences that use it.
+    verb_particle:
+        parent: adverb
+        notes: >
+            the closed set of directional/completive particles that fuse to a
+            polarity-tagged event verb ("gives AWAY", "takes AWAY", "throws
+            AWAY") — sensed 'adverb' in the lexicon, unchanged. 'adverb' is added
+            to registry.ROOT_SENSES to let this category resolve, purely
+            additive (mirrors the earlier 'modal'/'particle' root-sense
+            additions) — no existing adverb-sensed word gains a new sense or new
+            behavior. condense.py's merge-particle-verb pass fuses a unit tagged
+            this category onto an IMMEDIATELY PRECEDING verb, but ONLY when that
+            verb already carries a polarity tag (_has_event_polarity, the
+            increment-45 invariant): an untagged verb + particle ("looked up")
+            stays exactly as today, decline-safe by construction. Deliberately
+            NOT "every adverb" — that would risk merging manner/locative adverbs
+            after an unrelated polarity verb ("sold quickly"). The four members
+            (away/out/off/up) are difg-mined-only words — no core-english word
+            carries the 'adverb' sense — so, mirroring 'future_modal'/
+            'relational_marker's sibling pattern, this category has NO members
+            here; they live in packs/difg-mined/categories/semantic.yaml. A
+            core-english-only registry (no difg-mined) compiles with this
+            category simply empty.
+    temporal_marker:
+        parent: time
+        notes: >
+            The deictic words 'now' and 'today' mark a clause's value as
+            relative to the current moment. An equative age relation may use
+            this category as an `absent` gate, while the future standard-pinned
+            sibling consumes one marker to keep the standard's offset at zero.
+            The category is deliberately narrower than every time-sensed word.
+    age_measure:
+        parent: noun
+        notes: >
+            mining candidate age-equative-recut: the closed set of nouns that
+            name a person's AGE unit ('year') — sensed 'noun' in the lexicon,
+            unchanged. src/rulekit/kernel/saturate.py's `_bare_age_anchor_synth`
+            gates its bare-copula-number promotion on
+            `reg.word_in_category(measure, "age_measure")` rather than a
+            hardcoded `"year"` string literal (constitution rule 1; `currency`
+            at packs/core-english/categories/core.yaml:65 plus
+            src/rulekit/kernel/answer.py's `q.measure == "currency" or
+            reg.word_in_category(q.measure, "currency")` is the reference
+            implementation this mirrors). 'year' is generic English vocabulary
+            and therefore lives in core-english alongside this membership. That
+            keeps the grammar needed by arithmetic/stated-age available to every
+            project that loads core-english + arithmetic, without depending on a
+            corpus-mined vocabulary pack.
+    partitive:
+        parent: preposition
+        notes: >
+            'of' in a MEASURE-of-ITEM partitive noun phrase ("a pound OF coffee
+            beans", "4 pounds OF coffee beans") — exactly one member, so this is
+            never a general preposition widening (mining candidate
+            modal-spend-measure-price). learn.py's price-verb branch uses this
+            category structurally (never a literal 'of' string comparison) to
+            find the partitive phrase whose OBJECT is the price statement's
+            subject, so it can key the emitted Price fact on the MEASURE noun
+            the phrase anchors to (the SAME noun the purchase-verb premise's own
+            Quantity.measure already uses) rather than on the item noun itself.
+    complement_boy:
+        parent: noun
+        antonym: complement_girl
+        notes: >
+            mining candidate complement-labeled-subsets: a PACK-DECLARED
+            complementary-label PAIR — 'boy' and 'girl' EXHAUSTIVELY partition a
+            collection they both label (unlike an arbitrary sibling noun pair,
+            which increment 16 explicitly refused to assume exhaustive). Reuses
+            the SAME `antonym:` mechanism polarity pairs use (acquire/lose,
+            more_dir/less_dir), but deliberately carries NO `polarity` — this
+            pairing is not a signed direction, just two singleton categories so
+            saturate.py's `_complement_word` can look up 'the other label' by
+            category-antonym instead of a hardcoded word pair (constitution
+            rule 1). 'boy'/'girl' are difg-mined-only words — no core-english
+            word carries either sense — so, mirroring 'temporal_marker'/
+            'age_measure's sibling pattern above, this category has NO members
+            here; they live in packs/difg-mined/categories/semantic.yaml. A
+            core-english-only registry (no difg-mined) compiles with both
+            categories simply empty (the synth then never fires, decline-safe).
+    complement_girl:
+        parent: noun
+        antonym: complement_boy
+        notes: "the symmetric half of complement_boy — see its notes."
+    child:
+        parent: noun
+        # mining candidate subtype-total-asks: only a category EXPLICITLY
+        # opted in here may feed answer.py's `_superordinate_total` — see
+        # `superordinate`'s own schema docstring (data/schemas.py CategoryDef)
+        # for why this must be a SEPARATE flag from merely "has members":
+        # 'animal'/'pet' below also declare members, for unrelated decline-
+        # safety regression coverage, with a deliberately PARTIAL list that
+        # must never be read as an exhaustive subtype set.
+        superordinate: true
+        notes: >
+            a PACK-DECLARED SUPERORDINATE — 'daughter' and 'son' are SUBTYPES of
+            'child' ("Sandro has six times as many daughters as sons... how many
+            children does he have?"). The category's NAME IS the superordinate
+            WORD itself: a generic consumer (answer.py's `_superordinate_total`)
+            sums an entity's own subtype holdings into the asked measure's total
+            whenever the asked measure carries no fact of its own and every
+            measure the entity DOES hold is a declared member here — resolved
+            via `reg.category_members.get(asked_measure)`, never a hardcoded
+            word in Python (constitution rule 1). Deliberately NO `polarity`/
+            `interchangeable`: subtypes are not signed and are never
+            interchangeable stand-ins for each other (that would let a 'son'
+            fact answer a 'daughter' ask) — they only ever SUM into the
+            superordinate. 'daughter'/'son' are difg-mined-only words, so
+            (mirroring complement_boy/girl's sibling pattern above) this
+            category has NO members here; they live in packs/difg-mined/
+            categories/semantic.yaml. A core-english-only registry compiles with
+            this category simply empty (the consumer then never fires,
+            decline-safe).
+    toy:
+        parent: noun
+        superordinate: true
+        notes: >
+            sibling of 'child' (subtype-total-asks) — subtypes: toy soldier / toy
+            car ("James buys twice as many toy soldiers as toy cars... how many
+            total toys does he buy?"). Same structural-only definition; members
+            ('soldier'/'car', difg-mined-only) live in packs/difg-mined/
+            categories/semantic.yaml. See child's note for the full mechanism.
+    fish:
+        parent: noun
+        superordinate: true
+        notes: >
+            sibling of 'child' (subtype-total-asks) — subtypes: goldfish /
+            angelfish / guppy ("Catriona has 8 goldfish... 4 more angelfish than
+            goldfish... twice as many guppies as angelfish... how many fish does
+            Catriona have?"). Same structural-only definition; members (difg-
+            mined-only) live in packs/difg-mined/categories/semantic.yaml. See
+            child's note for the full mechanism.
+    litter:
+        parent: noun
+        superordinate: true
+        notes: >
+            sibling of 'child'/'toy'/'fish' (subtype-total-asks) — a discarded-item
+            superordinate whose subtypes are the container nouns a cleanup problem
+            counts as litter ("picked up 10 bottles and 8 cans... how many pieces of
+            litter altogether?" -> 18). Members 'bottle'/'can' are difg-mined-only
+            words, so (mirroring child/toy/fish above) they live in packs/difg-mined/
+            categories/semantic.yaml, and a core-english-only registry compiles with
+            this category simply empty (decline-safe). Same _superordinate_total guard
+            (fires only when EVERY held measure is a subtype and >=2 are held), so a
+            lone "5 bottles of water" never reads as a litter total.
+    indefinite_article:
+        parent: article
+        notes: >
+            mining candidate generic-unit-price-premises: 'a'/'an' mark a
+            SINGULAR noun as a GENERIC instance ('A book costs $5' means every
+            book of that kind, the same per-unit reading 'each book costs $5'
+            already carries) rather than one specific previously-established
+            referent — unlike 'the', which is deliberately NOT a member here
+            (a definite singular price statement is a separate, more ambiguous
+            class left out of scope). learn.py's price_verb branch reads this
+            structurally (an indefinite article immediately left of an
+            uncounted singular subject, crossing only adjectives) as an
+            ADDITIONAL per-unit signal alongside the existing distributive-
+            determiner/trailing-each/bare-measure gates — never a replacement
+            for any of them.
+    quantity_anaphor:
+        parent: noun
+        notes: >
+            mining candidate anaphoric-multiplier-standards: the closed set of
+            QUANTITY-anaphor head NOUNS that name a previously-stated amount
+            without repeating it — 'amount'/'number' are ALSO members of
+            'aggregate_noun'
+            for a completely different frame-noun purpose ("the NUMBER of X")
+            — this is a separate, sibling category, never a widening of
+            aggregate_noun, so aggregate_noun's own gated rules never see a new
+            member from this. Deliberately EXCLUDES 'much'/'many' — the
+            lexicon's own root-sense invariant (registry.compile_registry)
+            requires every category member to actually carry that category's
+            root sense, and 'much'/'many' are sensed quantifier/interrogative,
+            not noun — so this pack's sibling pattern rules
+            (arithmetic/anaphoric-multiplier-standard-much/-many) gate on
+            those two literally instead, mirroring how 'much'/'many' are
+            ALREADY two separate literal-gated rule families everywhere else
+            in this file (times-as-much / times-as-many), never a shared
+            category. Gates arithmetic/anaphoric-multiplier-standard's
+            head-noun slot: "3 times THAT AMOUNT" / "twice THAT NUMBER" — a
+            demonstrative standard that names no ENTITY at all (unlike a name
+            or a common noun, "that"/"this" never denotes a holder); saturate.py's
+            `_relations_synth` resolves the emitted Relation's sentinel standard
+            against the UNIQUE prior Quantity known document-wide instead of
+            any entity's own holdings — zero or two-or-more candidates declines,
+            never a guess.
+    price_anaphor:
+        parent: noun
+        notes: >
+            mining candidate anaphoric-multiplier-standards: sibling of
+            'quantity_anaphor' for the PRICE-denominated anaphor head nouns
+            ('price'/'cost'). Gates arithmetic/anaphoric-
+            price-standard ("3 times THAT PRICE"); saturate.py resolves the
+            emitted Relation's sentinel standard against the UNIQUE prior Price
+            known document-wide rather than a Quantity — kept a SEPARATE
+            category from 'quantity_anaphor' (never folded together) because
+            the two anchor against two entirely different fact kinds.
+    measure_anaphor:
+        parent: pronoun
+        notes: >
+            mining candidate measure-noun-anaphor (infrastructure): the measure-
+            NOUN sibling of 'quantity_anaphor' — where 'amount'/'number' stand in
+            for a whole prior QUANTITY (a demonstrative standard, "twice THAT
+            NUMBER"), this category's member ('ones', difg-mined-only — extends
+            from packs/difg-mined/categories/semantic.yaml) is the elided HEAD
+            NOUN of a counted, qualified NP ("12 yellow ONES", "twice as many
+            green ONES as yellow ones"): the word itself never denotes the real
+            measure, only its color/qualifier is genuine. Rooted at 'pronoun',
+            never 'noun' — 'ones' already carries the 'pronoun' sense alone (its
+            `refers` obligation simply goes unmet today, same decline discipline
+            every unresolved pronoun has), and giving it a SECOND, ambiguous
+            'noun' sense would make 'noun' always win obligations.disambiguate()'s
+            coverage race (a pronoun's mandatory, never-locally-bindable 'refers'
+            need is strictly worse-covering than a noun's none), silently
+            reinterpreting EVERY 'ones' in the corpus — including the unrelated
+            relative-clause/definite forms ("the ones she didn't do") — as a
+            noun from round 0 on, corpus-wide, for a change meant to touch only
+            this one counted-NP shape. Rooting at 'pronoun' keeps 'ones' single-
+            sensed everywhere except the one condense.py merge (adjective +
+            measure_anaphor pronoun) that opts in by category membership: that
+            merge explicitly re-declares the compound's own `senses` to
+            `[noun]` (so every EXISTING generic noun-consumption path — count-
+            merge, dobj/subject Quantity-building — picks it up unchanged,
+            untouched by this pack) while keeping the adjective's qualifier
+            LOCAL and marking the compound `measure_anaphor: true`. Resolution
+            of WHAT it stands for is a separate, later step — document.py's
+            `_bind_measure_anaphor` binds it to the UNIQUE prior counted-noun
+            lemma in the document (never a name, never a quantity — the
+            measure-noun sibling of `_bind_discourse`'s antecedent search),
+            exactly as the ordinary pronoun binder resolves "he" to its
+            antecedent: zero or two-or-more candidates leaves it unresolved, and
+            learn.py's `_lemma` then returns a reserved sentinel no ask can ever
+            match — a silent, harmless decline, never a guess. THIS CATEGORY
+            CANNOT MOVE A NUMBER ALONE: it only makes the anaphor resolvable;
+            summing the qualified variants it produces is the conjunct-
+            comparative class's job, built on top of this.
 members:
-  currency: [dollar]
-  partitive: [of]
-  pool_pronoun: [it, them]
-  plural_object_pronoun: [them]
-  remnant_adj: [left]
-  animal: [dog, cat, fish, bird, rabbit, hamster]
-  pet: [dog, cat, hamster]
-  # MEMBERS LIVE WHERE THE WORD IS LEXICALLY DEFINED. Only these five are
-  # core-english words; the other 43 occupation/kinship nouns are defined in
-  # packs/difg-mined and extend this category from there, exactly as
-  # `dimension_adjective` notes for 'tall'/'long'. A member that is not in
-  # the loading project's lexicon is a CompileError, so a minimal pack set
-  # must never see a member it cannot resolve.
-  # Deliberate exclusions ('player', 'cook', 'king') — see the category note.
-  animate: [teacher, student, friend, child]
-  # 'him'/'her' are OBJECT-case and have no lexicon entry of their own;
-  # the fallback binds a SUBJECT pronoun to a prior subject anyway.
-  animate_pronoun: [he, she]
-  state: [has, have, had, is, are, was, were, own, owns]
-  copula: [is, are, was, were]
-  plural_copula: [are, were]
-  acquire: [get, gets, got, find, finds, found, buy, buys, bought, receive, receives, received, win, wins, won]
-  lose: [lose, loses, lost, eat, eats, ate, give, gives, gave, sell, sells, sold, spend, spends, spent, dropped, drops]
-  transfer_out: [gives, gave, sells, sold]
-  spend_verb: [spend, spends, spent]
-  more_dir: [more]
-  less_dir: [fewer, less]
-  count_intensifier: [more]
-  dimension_adjective: [small, large]  # 'tall'/'long'/... extend this from packs/difg-mined
-  negation: [not]  # 'never' extends this from packs/difg-mined (its own lexicon)
-  relational_marker: [than]
-  span_preposition: [in]
-  indefinite_article: [a, an]
-  compute_verb: [compute]  # 'calculate'/'determine' extend this from packs/difg-mined
-  currency_measure: [dollar]  # 'cent'/'balance'/'earnings'/'cost' extend this from packs/difg-mined
-  time_measure: [year]  # generic age/duration unit; other units extend this from difg-mined
-  age_measure: [year]
+    currency: [dollar]
+    partitive: [of]
+    pool_pronoun: [it, them]
+    plural_object_pronoun: [them]
+    remnant_adj: [left]
+    color_attribute: [red, green, blue]
+    size_attribute: [small, large]
+    colorable_noun:
+        - apple
+        - ball
+        - bird
+        - book
+        - card
+        - cat
+        - coin
+        - cookie
+        - dog
+        - dollar
+        - egg
+        - fish
+        - flower
+        - garden
+        - hamster
+        - marble
+        - pencil
+        - plum
+        - rabbit
+        - rose
+        - sticker
+        - toy
+    physical_size_noun:
+        - apple
+        - ball
+        - bird
+        - book
+        - card
+        - cat
+        - child
+        - coin
+        - cookie
+        - dog
+        - egg
+        - fish
+        - flower
+        - friend
+        - garden
+        - hamster
+        - marble
+        - pencil
+        - plum
+        - rabbit
+        - rose
+        - sticker
+        - student
+        - teacher
+        - toy
+        - tree
+    magnitude_noun: [area, litter]
+    remainder_collection_noun:
+        - apple
+        - area
+        - ball
+        - bird
+        - book
+        - card
+        - cat
+        - child
+        - coin
+        - cookie
+        - dog
+        - dollar
+        - egg
+        - fish
+        - flower
+        - friend
+        - garden
+        - hamster
+        - litter
+        - marble
+        - pencil
+        - plum
+        - rabbit
+        - rose
+        - sticker
+        - student
+        - teacher
+        - toy
+        - year
+        - tree
+    ripenable_noun: [apple, plum]
+    animal: [dog, cat, fish, bird, rabbit, hamster]
+    pet: [dog, cat, hamster]
+    # MEMBERS LIVE WHERE THE WORD IS LEXICALLY DEFINED. Only these five are
+    # core-english words; the other 43 occupation/kinship nouns are defined in
+    # packs/difg-mined and extend this category from there, exactly as
+    # `dimension_adjective` notes for 'tall'/'long'. A member that is not in
+    # the loading project's lexicon is a CompileError, so a minimal pack set
+    # must never see a member it cannot resolve.
+    # Deliberate exclusions ('player', 'cook', 'king') — see the category note.
+    animate: [teacher, student, friend, child]
+    # 'him'/'her' are OBJECT-case and have no lexicon entry of their own;
+    # the fallback binds a SUBJECT pronoun to a prior subject anyway.
+    animate_pronoun: [he, she]
+    state: [has, have, had, is, are, was, were, own, owns]
+    copula: [is, are, was, were]
+    plural_copula: [are, were]
+    acquire: [get, gets, got, find, finds, found, buy, buys, bought, receive, receives, received, win, wins, won]
+    lose: [lose, loses, lost, eat, eats, ate, give, gives, gave, sell, sells, sold, spend, spends, spent, dropped, drops]
+    transfer_out: [gives, gave, sells, sold]
+    spend_verb: [spend, spends, spent]
+    age_comparative: [older, younger]
+    more_dir: [more, older]
+    less_dir: [fewer, less, younger]
+    dimension_more: [heavier, higher, larger, longer, taller, wider]
+    dimension_less: [lighter, shorter, smaller]
+    future_modal: [will, would]
+    capacity_modal: [can, could, may, might, must, should]
+    temporal_marker: [now, today]
+    count_intensifier: [more]
+    # small/large inherit this gate through `size_attribute`; tall/long/etc.
+    # extend the broader category from packs/difg-mined.
+    negation: [not] # 'never' extends this from packs/difg-mined (its own lexicon)
+    relational_marker: [than]
+    span_preposition: [in]
+    indefinite_article: [a, an]
+    compute_verb: [compute] # 'calculate'/'determine' extend this from packs/difg-mined
+    age_noun: [age]
+    dimension_noun: [age] # other dimension nouns extend this from difg-mined
+    currency_measure: [dollar] # 'cent'/'balance'/'earnings'/'cost' extend this from packs/difg-mined
+    time_measure: [year, age] # generic age forms; other units extend this from difg-mined
+    age_measure: [year]
+    aggregate_noun: [amount, number]
+    quantity_anaphor: [amount, number]
+    price_anaphor: [price, cost]
+    remnant: [remainder, rest]
+    desire: [want, wanted, wanting, wants]
+    need_premise: [need, needed, needs]
+    duration_verb: [take, takes, took]
+attribute_compatibility:
+    color_attribute: [colorable_noun]
+    # Multiple compatible noun categories are intentional. Either category
+    # licenses a pair; noun membership is not forced into one artificial class.
+    size_attribute: [physical_size_noun, magnitude_noun]
+    remnant_adj: [remainder_collection_noun]
+    ripeness_attribute: [ripenable_noun]
 context_synonyms:
-  appendage:
-    gate: animal
-    forms: [leg, legs, foot, feet]
+    appendage:
+        gate: animal
+        forms: [leg, legs, foot, feet]
 attrs:
-  dog: {legs: 4}
-  cat: {legs: 4}
-  bird: {legs: 2}
+    dog: {legs: 4}
+    cat: {legs: 4}
+    bird: {legs: 2}

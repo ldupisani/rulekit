@@ -353,9 +353,6 @@ entries:
   heating:
     senses:
     - adjective
-  heavier:
-    senses:
-    - comparative
   heavy:
     senses:
     - adjective
@@ -406,9 +403,6 @@ entries:
   high school:
     senses:
     - noun
-  higher:
-    senses:
-    - comparative
   highlighter:
     senses:
     - noun
@@ -1024,9 +1018,6 @@ entries:
     senses:
     - noun
     plural: laptops
-  larger:
-    senses:
-    - comparative
   largest:
     senses:
     - adjective
@@ -1190,9 +1181,6 @@ entries:
     senses:
     - noun
     plural: lights
-  lighter:
-    senses:
-    - comparative
   liked:
     senses:
     - verb
@@ -1301,9 +1289,6 @@ entries:
   long:
     senses:
     - adjective
-  longer:
-    senses:
-    - comparative
   looking:
     senses:
     - verb
@@ -1504,9 +1489,6 @@ entries:
     senses:
     - adjective
     - noun
-  may:
-    senses:
-    - modal
   meal:
     senses:
     - noun
@@ -1589,9 +1571,6 @@ entries:
   midnight:
     senses:
     - noun
-  might:
-    senses:
-    - modal
   migrated:
     senses:
     - verb
@@ -1855,9 +1834,6 @@ entries:
   musical:
     senses:
     - noun
-  must:
-    senses:
-    - modal
   mutual:
     senses:
     - adjective

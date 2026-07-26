@@ -171,6 +171,18 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
         # admits the bare noun because a condensed count keeps its noun lemma.
         # Require the counted-unit structure as an independent gate.
         return False
+    if token.possessed and not (
+        unit.sense() == "noun" and unit.features.get("owner")
+    ):
+        # OPT-IN (schemas.MatchToken.possessed): category membership follows
+        # the merged noun's lemma, so it otherwise also admits the bare head.
+        # Require the independently represented possessive owner.
+        return False
+    if (
+        token.number is not None
+        and unit.features.get("number") != token.number
+    ):
+        return False
     if token.type is not None:
         t = token.type
         sense = unit.sense()
@@ -696,6 +708,33 @@ def _check_where(
                 for s in pred.distinct if s in slots
             ]
             if len(values) != len(set(values)):
+                return False
+        if pred.distinct_owner is not None:
+            owners = [
+                slots[s].features.get("owner")
+                for s in pred.distinct_owner
+                if s in slots and not isinstance(slots[s], tuple)
+            ]
+            if (
+                len(owners) != len(pred.distinct_owner)
+                or any(not owner for owner in owners)
+                or len(owners) != len(set(owners))
+            ):
+                return False
+        if pred.attribute_compatible is not None:
+            attribute_name = pred.attribute_compatible.attribute
+            noun_name = pred.attribute_compatible.noun
+            attribute = slots.get(attribute_name)
+            noun = slots.get(noun_name)
+            if (
+                attribute is None
+                or noun is None
+                or isinstance(attribute, tuple)
+                or isinstance(noun, tuple)
+                or not reg.attribute_applies_to(
+                    _lemma_of(attribute), _lemma_of(noun)
+                )
+            ):
                 return False
         if pred.distinct_measure is not None:
             # mining candidate qualified-measure-keys: the (lemma, label)

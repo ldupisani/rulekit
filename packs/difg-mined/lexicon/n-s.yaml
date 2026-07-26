@@ -39,20 +39,7 @@ entries:
     senses:
     - noun
     plural: necklaces
-  need:
-    senses:
-    - verb
-  needed:
-    senses:
-    - verb
-    verb:
-      lemma: need
   needing:
-    senses:
-    - verb
-    verb:
-      lemma: need
-  needs:
     senses:
     - verb
     verb:
@@ -158,13 +145,6 @@ entries:
     # weekdays). Retagged 'noun' so it can join `timeperiod`, exactly as the weekdays did.
     senses:
     - noun
-  now:
-    senses:
-    - time
-  number:
-    senses:
-    - noun
-    plural: numbers
   nurse:
     senses:
     - noun
@@ -233,9 +213,6 @@ entries:
   old:
     senses:
     - adjective
-  older:
-    senses:
-    - comparative
   oldest:
     senses:
     - adjective
@@ -1027,10 +1004,6 @@ entries:
   previous:
     senses:
     - adjective
-  price:
-    senses:
-    - noun
-    plural: prices
   priced:
     senses:
     - verb
@@ -1436,9 +1409,6 @@ entries:
   remain:
     senses:
     - verb
-  remainder:
-    senses:
-    - noun
   remained:
     senses:
     - verb
@@ -1555,9 +1525,6 @@ entries:
   responds:
     senses:
     - verb
-  rest:
-    senses:
-    - noun
   restaurant:
     senses:
     - noun
@@ -2138,15 +2105,9 @@ entries:
   short:
     senses:
     - adjective
-  shorter:
-    senses:
-    - comparative
   shorts:
     senses:
     - noun
-  should:
-    senses:
-    - modal
   show:
     senses:
     - noun
@@ -2291,9 +2252,6 @@ entries:
     - noun
     plural: slices
   slower:
-    senses:
-    - comparative
-  smaller:
     senses:
     - comparative
   smallest:

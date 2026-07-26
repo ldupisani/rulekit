@@ -47,12 +47,18 @@ class SourceIndex:
     rules: dict[str, SourceRef] = field(default_factory=dict)
     asks: dict[str, SourceRef] = field(default_factory=dict)
     rule_tokens: dict[tuple[str, int], SourceRef] = field(default_factory=dict)
+    rule_token_paths: dict[tuple[str, tuple[int, ...]], SourceRef] = field(
+        default_factory=dict
+    )
     rule_where: dict[tuple[str, int], SourceRef] = field(default_factory=dict)
     lexicon: dict[str, SourceRef] = field(default_factory=dict)
     morphology: dict[tuple[str, str], SourceRef] = field(default_factory=dict)
     contractions: dict[str, SourceRef] = field(default_factory=dict)
     categories: dict[str, SourceRef] = field(default_factory=dict)
     category_members: dict[tuple[str, str], SourceRef] = field(default_factory=dict)
+    attribute_compatibility: dict[tuple[str, str], SourceRef] = field(
+        default_factory=dict
+    )
     numeric: dict[tuple[str, str], SourceRef] = field(default_factory=dict)
 
     def merge(self, other: "SourceIndex") -> None:
@@ -62,12 +68,14 @@ class SourceIndex:
             "rules",
             "asks",
             "rule_tokens",
+            "rule_token_paths",
             "rule_where",
             "lexicon",
             "morphology",
             "contractions",
             "categories",
             "category_members",
+            "attribute_compatibility",
             "numeric",
         ):
             target = getattr(self, name)
@@ -110,6 +118,31 @@ def _ref(
 
 
 def _index_rules(index: SourceIndex, path: Path, raw: Any, doc: RulesDoc) -> None:
+    def index_tokens(
+        rule_id: str,
+        raw_tokens: Any,
+        token_path: tuple[int, ...] = (),
+    ) -> None:
+        if not isinstance(raw_tokens, list):
+            return
+        for token_no, raw_token in enumerate(raw_tokens):
+            current_path = (*token_path, token_no)
+            ref = _ref(
+                path,
+                raw_tokens,
+                kind="rule-token",
+                label=(
+                    f"{rule_id} token "
+                    + ".".join(str(part + 1) for part in current_path)
+                ),
+                item=token_no,
+            )
+            index.rule_token_paths[(rule_id, current_path)] = ref
+            if len(current_path) == 1:
+                index.rule_tokens[(rule_id, token_no)] = ref
+            if isinstance(raw_token, dict):
+                index_tokens(rule_id, raw_token.get("opt"), current_path)
+
     raw_rules = raw.get("rules", [])
     for rule_no, rule in enumerate(doc.rules):
         if rule_no >= len(raw_rules):
@@ -119,15 +152,7 @@ def _index_rules(index: SourceIndex, path: Path, raw: Any, doc: RulesDoc) -> Non
             path, raw_rules, kind="rule", label=rule.id, item=rule_no
         )
         raw_sentence = raw_rule.get("match", {}).get("sentence")
-        if isinstance(raw_sentence, list):
-            for token_no in range(len(raw_sentence)):
-                index.rule_tokens[(rule.id, token_no)] = _ref(
-                    path,
-                    raw_sentence,
-                    kind="rule-token",
-                    label=f"{rule.id} token {token_no + 1}",
-                    item=token_no,
-                )
+        index_tokens(rule.id, raw_sentence)
         raw_where = raw_rule.get("where", [])
         if isinstance(raw_where, list):
             for where_no in range(len(raw_where)):
@@ -209,6 +234,20 @@ def _index_categories(
                 kind="category-member",
                 label=f"{member} ∈ {category}",
                 item=member_no,
+            )
+
+    raw_compatibility = raw.get("attribute_compatibility", {})
+    for attribute, nouns in doc.attribute_compatibility.items():
+        raw_values = raw_compatibility.get(attribute, [])
+        for noun_no, noun in enumerate(nouns):
+            if noun_no >= len(raw_values):
+                continue
+            index.attribute_compatibility[(attribute, noun)] = _ref(
+                path,
+                raw_values,
+                kind="attribute-compatibility",
+                label=f"{attribute} → {noun}",
+                item=noun_no,
             )
 
 

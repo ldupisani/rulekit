@@ -88,6 +88,37 @@ def test_disjoint_gates_do_not_overlap(tmp_path):
     assert lint_overlaps(reg) == []
 
 
+def test_slot_category_exclusion_makes_literal_sibling_disjoint(tmp_path):
+    lexicon = BASE_LEX + "  there: {senses: [existential]}\n"
+    broad = """format: rulekit/rules@1
+rules:
+  - id: r/scoped
+    phase: read
+    match:
+      sentence:
+        - {slot: subject, type: word}
+        - {slot: verb, type: verb}
+    where:
+      - slot_not_category: {slot: subject, cat: existential}
+    emits:
+      - {fact: atom, entity: "{subject}", pred: "{verb}"}
+"""
+    existential = """format: rulekit/rules@1
+rules:
+  - id: r/existential
+    phase: read
+    match:
+      sentence:
+        - {lit: there}
+        - {slot: verb, type: verb}
+    emits:
+      - {fact: atom, entity: world, pred: "{verb}"}
+"""
+    reg = _mk(tmp_path, lexicon, broad, existential)
+
+    assert lint_overlaps(reg) == []
+
+
 def test_counted_qualifier_requires_a_noun_rooted_category(tmp_path):
     from rulekit.data.registry import CompileError
 
@@ -134,6 +165,82 @@ rules:
       - {fact: atom, entity: sample, pred: dog}
 """
     reg = _mk(tmp_path, BASE_LEX, BASE_CATS, counted, literal)
+
+    assert lint_overlaps(reg) == []
+
+
+def test_possessed_qualifier_requires_a_noun_rooted_category(tmp_path):
+    from rulekit.data.registry import CompileError
+
+    categories = """format: rulekit/categories@1
+categories:
+  action: {parent: verb}
+members:
+  action: [has]
+"""
+    rule = """format: rulekit/rules@1
+rules:
+  - id: r/impossible-possessed-verb
+    phase: read
+    match:
+      sentence:
+        - {slot: action, cat: action, possessed: true}
+    emits:
+      - {fact: atom, entity: sample, pred: "{action}"}
+"""
+
+    with pytest.raises(CompileError, match="non-noun category 'action'"):
+        _mk(tmp_path, BASE_LEX, categories, rule)
+
+
+def test_possessed_category_cannot_overlap_a_single_word_literal(tmp_path):
+    possessed = """format: rulekit/rules@1
+rules:
+  - id: r/possessed-animal
+    phase: read
+    match:
+      sentence:
+        - {slot: item, cat: animal, possessed: true}
+    emits:
+      - {fact: atom, entity: sample, pred: "{item.owner}"}
+"""
+    literal = """format: rulekit/rules@1
+rules:
+  - id: r/literal-dog
+    phase: read
+    match:
+      sentence:
+        - {lit: dog}
+    emits:
+      - {fact: atom, entity: sample, pred: dog}
+"""
+    reg = _mk(tmp_path, BASE_LEX, BASE_CATS, possessed, literal)
+
+    assert lint_overlaps(reg) == []
+
+
+def test_opposed_number_qualifiers_are_statically_disjoint(tmp_path):
+    singular = """format: rulekit/rules@1
+rules:
+  - id: r/singular-owned-animal
+    phase: read
+    match:
+      sentence:
+        - {slot: item, cat: animal, possessed: true, number: singular}
+    emits:
+      - {fact: atom, entity: sample, pred: "{item.owner}"}
+"""
+    plural = """format: rulekit/rules@1
+rules:
+  - id: r/plural-owned-animal
+    phase: read
+    match:
+      sentence:
+        - {slot: item, cat: animal, possessed: true, number: plural}
+    emits:
+      - {fact: atom, entity: sample, pred: "{item.owner}"}
+"""
+    reg = _mk(tmp_path, BASE_LEX, BASE_CATS, singular, plural)
 
     assert lint_overlaps(reg) == []
 

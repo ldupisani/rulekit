@@ -22,9 +22,15 @@ from .candidate import GenerationCandidate
 from .reviews import SourceLocation, read_reviews
 from .sample import (
     GenerationError,
+    _absent_categories,
+    _distinct_measure_groups,
     _domain,
     _flat_sentence,
+    _leaf_tokens,
     _load_fixtures,
+    _measure_assignment_exists,
+    _outside_categories,
+    _unbound_optional_paths,
     list_rule_availability,
 )
 
@@ -96,11 +102,56 @@ def _probe_catalog(project: Project) -> tuple[ProbePlacement, ...]:
     for rule in project.registry.rules:
         if rule.id not in supported:
             continue
-        for token_index, token in enumerate(_flat_sentence(rule) or ()):
-            if token.slot is None:
+        absent_categories = _absent_categories(rule)
+        seq = _flat_sentence(rule) or []
+        unbound_optional_paths = _unbound_optional_paths(rule, seq)
+        distinct_measure_groups = _distinct_measure_groups(rule)
+        tokens_by_slot = {
+            token.slot: token
+            for _, token, _ in _leaf_tokens(seq)
+            if token.slot is not None
+        }
+        measure_slots = {
+            name for group in distinct_measure_groups for name in group
+        }
+        measure_domains = {
+            name: [
+                filler
+                for filler in _domain(
+                    tokens_by_slot[name], project.registry, fixtures
+                )
+                if _outside_categories(
+                    filler, absent_categories, project.registry
+                )
+            ]
+            for name in measure_slots
+            if name in tokens_by_slot
+        }
+        for token_index, (_, token, optional_ancestors) in enumerate(
+            _leaf_tokens(seq)
+        ):
+            if (
+                token.slot is None
+                or any(
+                    ancestor in unbound_optional_paths
+                    for ancestor in optional_ancestors
+                )
+            ):
                 continue
             for filler in _domain(token, project.registry, fixtures):
                 if (
+                    _outside_categories(
+                        filler, absent_categories, project.registry
+                    )
+                    and (
+                        token.slot not in measure_slots
+                        or _measure_assignment_exists(
+                            distinct_measure_groups,
+                            measure_domains,
+                            {token.slot: filler},
+                        )
+                    )
+                    and
                     filler.identity in project.registry.lexicon
                     and filler.identity in project.source_index.lexicon
                 ):
@@ -137,7 +188,9 @@ def _candidate_fillers(
         return []
     fillers: list[ExplorationFiller] = []
     seen: set[tuple[str, int, str, str]] = set()
-    for token_index, token in enumerate(_flat_sentence(rule) or ()):
+    for token_index, (_, token, _) in enumerate(
+        _leaf_tokens(_flat_sentence(rule) or [])
+    ):
         if token.slot is None:
             continue
         surface = candidate.requested_bindings.get(token.slot)

@@ -8,3 +8,8 @@ categories:
   reference_attribute: {parent: noun}
 members:
   reference_attribute: [population, area]
+  # `population` is lexically owned by this pack. Extend the generic
+  # compatibility categories here rather than making core-english depend on a
+  # word unavailable to core-only and benchmark projects.
+  magnitude_noun: [population]
+  remainder_collection_noun: [population]

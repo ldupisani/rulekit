@@ -78,13 +78,15 @@ def _tokens_intersect(a: MatchToken, b: MatchToken, reg: Registry) -> bool:
     # is "do ANY of the options intersect" rather than a scalar comparison.
     # Equality on `.lit` would read False for two overlapping alternations and
     # silently under-report real overlaps.
+    if a.number is not None and b.number is not None and a.number != b.number:
+        return False
     if a.lit is not None and b.lit is not None:
         return bool(set(a.lit_options) & set(b.lit_options))
     if a.lit is not None or b.lit is not None:
         lits, slot = (a.lit_options, b) if a.lit is not None else (b.lit_options, a)
-        if slot.counted:
-            # A category-qualified counted slot binds one condensed numeric
-            # noun unit; a fixed one-word literal can never be that unit.
+        if slot.counted or slot.possessed:
+            # A category-qualified counted/possessed slot binds one condensed
+            # multiword noun unit; a fixed one-word literal can never be it.
             return False
         if slot.type is not None:
             if slot.type == "word":
@@ -138,6 +140,12 @@ def _witness_word(token: MatchToken, reg: Registry) -> str:
         member = members[0]
         if token.counted:
             return f"3 {reg.singular_to_plural.get(member, member)}"
+        if token.possessed:
+            if token.number == "plural":
+                member = reg.singular_to_plural.get(member, member)
+            return f"Alex's {member}"
+        if token.number == "plural":
+            return reg.singular_to_plural.get(member, member)
         return member
     return _TYPE_EXAMPLES.get(token.type, "<?>")
 
@@ -147,6 +155,50 @@ def _sentence_seq(rule: PatternRule) -> list[MatchToken] | None:
     if seq and not isinstance(seq[0], list):
         return seq
     return None
+
+
+def _slot_excludes_token(
+    rule: PatternRule,
+    slot: MatchToken,
+    other: MatchToken,
+    reg: Registry,
+) -> bool:
+    """Whether one slot predicate makes the aligned token disjoint.
+
+    ``slot_not_category`` is a semantic subtraction from an otherwise broad
+    slot. Treating the slot as unconstrained invents overlap witnesses that the
+    runtime matcher necessarily rejects.
+    """
+
+    if slot.slot is None:
+        return False
+    exclusions = {
+        predicate.slot_not_category.get("cat")
+        for predicate in rule.where
+        if predicate.slot_not_category is not None
+        and predicate.slot_not_category.get("slot") == slot.slot
+    }
+    exclusions.discard(None)
+    for category in exclusions:
+        assert category is not None
+        if other.lit is not None and all(
+            reg.word_in_category(literal, category)
+            for literal in other.lit_options
+        ):
+            return True
+        if other.cat is not None and (
+            category == other.cat
+            or category in reg.cat_ancestors(other.cat)
+        ):
+            return True
+        other_root = (
+            _type_of_cat(other.cat, reg)
+            if other.cat is not None
+            else other.type
+        )
+        if other_root == category:
+            return True
+    return False
 
 
 def rules_overlap(a: PatternRule, b: PatternRule, reg: Registry) -> str | None:
@@ -159,6 +211,10 @@ def rules_overlap(a: PatternRule, b: PatternRule, reg: Registry) -> str | None:
         return None  # conservative: only equal-arity shapes compared (v1)
     words = []
     for ta, tb in zip(ra, rb):
+        if _slot_excludes_token(a, ta, tb, reg) or _slot_excludes_token(
+            b, tb, ta, reg
+        ):
+            return None
         if not _tokens_intersect(ta, tb, reg):
             return None
         # the witness uses the MORE specific side (lit > cat > type)

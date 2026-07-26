@@ -19,6 +19,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from ..data.packs import PackError
 from ..data.project import Project, load_project
 from ..data.registry import CompileError, Registry
+from ..data.sources import SourceIndex
 from ..generation import (
     GenerationError,
     HypothesisRecord,
@@ -184,21 +185,47 @@ def _unit_json(unit: Unit) -> dict[str, Any]:
     }
 
 
-def _fact_json(fact) -> dict[str, Any]:
+def _identifier_source_json(
+    source_index: SourceIndex | None, identifier: str | None
+) -> dict[str, Any] | None:
+    """Resolve an identified YAML rule or ask through the authoring index."""
+
+    if source_index is None or identifier is None:
+        return None
+    source = (
+        source_index.rules.get(identifier)
+        or source_index.asks.get(identifier)
+    )
+    return source.to_json() if source is not None else None
+
+
+def _fact_json(
+    fact, source_index: SourceIndex | None = None
+) -> dict[str, Any]:
     fields = {
         k: _jsonable(v)
         for k, v in fact.__dict__.items()
         if k != "provenance" and v is not None
     }
-    return {
+    payload = {
         "type": type(fact).__name__,
         "fields": fields,
         "source": fact.provenance.source,
         "sentence": fact.provenance.sentence,
     }
+    source_ref = _identifier_source_json(
+        source_index, fact.provenance.source
+    )
+    if source_ref is not None:
+        payload["source_ref"] = source_ref
+    return payload
 
 
-def _reading_review_targets(results: list[Any], registry: Registry) -> list[dict]:
+def _reading_review_targets(
+    results: list[Any],
+    registry: Registry,
+    source_index: SourceIndex | None = None,
+) -> list[dict]:
     """Deduplicate the ordinary matcher results for explicit UI selection."""
 
     targets = []
@@ -215,14 +242,26 @@ def _reading_review_targets(results: list[Any], registry: Registry) -> list[dict
             for result in selected
         )
         rule = selected[0].match.rule
-        targets.append(
-            {
-                "rule_id": rule_id,
-                "description": rule.description,
-                "status": "shadowed" if shadowed else "matched",
-            }
-        )
+        target = {
+            "rule_id": rule_id,
+            "description": rule.description,
+            "status": "shadowed" if shadowed else "matched",
+        }
+        source_ref = _identifier_source_json(source_index, rule_id)
+        if source_ref is not None:
+            target["source_ref"] = source_ref
+        targets.append(target)
     return targets
+
+
+def _decision_json(decision, source_index: SourceIndex) -> dict[str, Any]:
+    payload = decision.to_json()
+    source_ref = _identifier_source_json(
+        source_index, payload.get("rule_id")
+    )
+    if source_ref is not None:
+        payload["source_ref"] = source_ref
+    return payload
 
 
 def _semantic_role(fact) -> str:
@@ -235,8 +274,12 @@ def _semantic_role(fact) -> str:
     return "observed"
 
 
-def _semantic_fact_json(fact, fact_id: str) -> dict[str, Any]:
-    payload = _fact_json(fact)
+def _semantic_fact_json(
+    fact,
+    fact_id: str,
+    source_index: SourceIndex | None = None,
+) -> dict[str, Any]:
+    payload = _fact_json(fact, source_index)
     payload.update({
         "id": fact_id,
         "role": _semantic_role(fact),
@@ -269,7 +312,11 @@ def _clarification_json(clarification) -> dict[str, Any] | None:
     }
 
 
-def _semantic_json(result, ask=None) -> dict[str, Any]:
+def _semantic_json(
+    result,
+    ask=None,
+    source_index: SourceIndex | None = None,
+) -> dict[str, Any]:
     """Designer projection of typed facts and structured answer proof.
 
     This is a view over the result, never a second inference engine. The
@@ -279,7 +326,7 @@ def _semantic_json(result, ask=None) -> dict[str, Any]:
     facts = list(result.store.facts)
     fact_ids = {id(fact): f"f{i}" for i, fact in enumerate(facts)}
     fact_payloads = [
-        _semantic_fact_json(fact, fact_ids[id(fact)])
+        _semantic_fact_json(fact, fact_ids[id(fact)], source_index)
         for fact in facts
     ]
 
@@ -329,19 +376,23 @@ def _semantic_json(result, ask=None) -> dict[str, Any]:
                     )
                 evidence.append({
                     "id": fact_id,
-                    **_fact_json(fact),
+                    **_fact_json(fact, source_index),
                     "role": _semantic_role(fact),
                     "representation": (
                         "exact" if type(fact).__name__ == "Atom" else "structured"
                     ),
                 })
-            steps.append({
+            step_payload = {
                 "id": f"p{i}",
                 "rule": step.rule,
                 "conclusion": _semantic_node_json(step.conclusion),
                 "evidence": evidence,
                 "detail": step.detail,
-            })
+            }
+            source_ref = _identifier_source_json(source_index, step.rule)
+            if source_ref is not None:
+                step_payload["source_ref"] = source_ref
+            steps.append(step_payload)
         proof = {
             "query": _semantic_node_json(answer_proof.query),
             "steps": steps,
@@ -657,6 +708,9 @@ def build_router(state: ServerState) -> APIRouter:
                             if not key.startswith("__")
                         } or None
                     ),
+                    "source_ref": _identifier_source_json(
+                        state.project.source_index, ask[0].id
+                    ),
                 }
                 if ask is not None else None
             ),
@@ -666,7 +720,10 @@ def build_router(state: ServerState) -> APIRouter:
                     "text": r.text,
                     "is_question": result.question is r,
                     "units": [_unit_json(u) for u in r.units],
-                    "decisions": [d.to_json() for d in r.decisions],
+                    "decisions": [
+                        _decision_json(d, state.project.source_index)
+                        for d in r.decisions
+                    ],
                     "review_targets": (
                         []
                         if result.question is r or result.document is None
@@ -675,13 +732,19 @@ def build_router(state: ServerState) -> APIRouter:
                                 r.sentence_index, []
                             ),
                             state.registry,
+                            state.project.source_index,
                         )
                     ),
                 }
                 for r in readings
             ],
-            "facts": [_fact_json(f) for f in result.store.facts],
-            "semantic": _semantic_json(result, ask),
+            "facts": [
+                _fact_json(f, state.project.source_index)
+                for f in result.store.facts
+            ],
+            "semantic": _semantic_json(
+                result, ask, state.project.source_index
+            ),
             "collisions": [
                 {"key": _jsonable(list(c.key)), "a": c.a_source, "b": c.b_source,
                  "a_value": _jsonable(c.a_value), "b_value": _jsonable(c.b_value)}

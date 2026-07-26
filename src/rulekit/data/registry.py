@@ -22,6 +22,7 @@ from .packs import LoadedPack, PackError
 from .schemas import (
     AskRule,
     LexiconEntry,
+    MatchToken,
     PatternRule,
     RequirementShape,
     RoleObligation,
@@ -122,6 +123,7 @@ class Registry:
     interchangeable_categories: frozenset[str]
     superordinate_categories: frozenset[str]
     dimension_categories: frozenset[str]
+    attribute_compatibility: Mapping[str, tuple[str, ...]]
     context_synonyms: Mapping[str, tuple[str, tuple[str, ...]]]  # concept -> (gate, forms)
     attrs: Mapping[str, Mapping[str, float]]
     part_counts: Mapping[str, str]
@@ -194,6 +196,24 @@ class Registry:
         if category == "plural":
             return word in self.plural_to_singular
         return False
+
+    def attribute_compatibility_pairs(
+        self, attribute: str, noun: str
+    ) -> tuple[tuple[str, str], ...]:
+        """Every declared category pair that licenses ATTRIBUTE for NOUN."""
+
+        pairs: set[tuple[str, str]] = set()
+        for direct in self.word_categories.get(attribute, ()):
+            for attribute_category in self.cat_ancestors(direct):
+                for noun_category in self.attribute_compatibility.get(
+                    attribute_category, ()
+                ):
+                    if self.word_in_category(noun, noun_category):
+                        pairs.add((attribute_category, noun_category))
+        return tuple(sorted(pairs))
+
+    def attribute_applies_to(self, attribute: str, noun: str) -> bool:
+        return bool(self.attribute_compatibility_pairs(attribute, noun))
 
 
 def _freeze(d: dict) -> Mapping:
@@ -285,6 +305,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
     interchangeable_categories: set[str] = set()
     superordinate_categories: set[str] = set()
     dimension_categories: set[str] = set()
+    attribute_compatibility: dict[str, list[str]] = {}
     category_members: dict[str, list[str]] = {}
     context_synonyms: dict[str, tuple[str, tuple[str, ...]]] = {}
     attrs: dict[str, dict[str, float]] = {}
@@ -307,6 +328,8 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                     dimension_categories.add(name)
             for cat, words in doc.members.items():
                 category_members.setdefault(cat, []).extend(words)
+            for attribute, nouns in doc.attribute_compatibility.items():
+                attribute_compatibility.setdefault(attribute, []).extend(nouns)
             for concept, syn in doc.context_synonyms.items():
                 context_synonyms[concept] = (syn.gate, tuple(syn.forms))
             for word, table in doc.attrs.items():
@@ -327,6 +350,33 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                 f"category {cat!r} does not resolve to a root sense "
                 f"(chain ends at {chain[-1]!r}; roots are {ROOT_SENSES})"
             )
+
+    for attribute, nouns in sorted(attribute_compatibility.items()):
+        if attribute not in category_parents:
+            raise CompileError(
+                f"attribute compatibility names unknown category {attribute!r}"
+            )
+        root = attribute
+        while root in category_parents:
+            root = category_parents[root]
+        if root != "adjective":
+            raise CompileError(
+                f"attribute compatibility key {attribute!r} is not "
+                "adjective-rooted"
+            )
+        for noun in nouns:
+            if noun not in category_parents:
+                raise CompileError(
+                    f"attribute compatibility {attribute!r} names unknown "
+                    f"noun category {noun!r}"
+                )
+            root = noun
+            while root in category_parents:
+                root = category_parents[root]
+            if root != "noun":
+                raise CompileError(
+                    f"attribute compatibility target {noun!r} is not noun-rooted"
+                )
 
     # invariant: antonyms symmetric + memberships disjoint
     for a, b in sorted(category_antonyms.items()):
@@ -588,23 +638,84 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
     # valid degenerate category
     known_senses = {s for entry in lexicon.values() for s in entry.senses}
     valid_gates = set(category_parents) | set(ROOT_SENSES) | known_senses
+
+    def _slot_root(token: MatchToken) -> str | None:
+        if token.cat is not None:
+            root = token.cat
+            while root in category_parents:
+                root = category_parents[root]
+            return root
+        if token.type in {
+            "noun",
+            "plural",
+            "bare_plural",
+            "common_noun",
+            "counted",
+            "possessed",
+        }:
+            return "noun"
+        return token.type
+
     for rule in rules:
+        slots: dict[str, MatchToken] = {}
         for seq in rule.match.values():
             tokens = seq if seq and isinstance(seq[0], list) else [seq]
             for sub in tokens:
                 for tok in sub:
+                    if tok.slot is not None:
+                        slots.setdefault(tok.slot, tok)
                     cat = getattr(tok, "cat", None)
                     if cat and cat not in valid_gates:
                         raise CompileError(f"rule {rule.id!r} gates on unknown category {cat!r}")
-                    if cat and getattr(tok, "counted", False):
+                    if cat and (
+                        getattr(tok, "counted", False)
+                        or getattr(tok, "possessed", False)
+                    ):
                         root = cat
                         while root in category_parents:
                             root = category_parents[root]
                         if root != "noun":
+                            qualifier = (
+                                "counted"
+                                if getattr(tok, "counted", False)
+                                else "possessed"
+                            )
                             raise CompileError(
-                                f"rule {rule.id!r} uses `counted: true` on "
+                                f"rule {rule.id!r} uses `{qualifier}: true` on "
                                 f"non-noun category {cat!r}"
                             )
+        for predicate in rule.where:
+            compatibility = predicate.attribute_compatible
+            if compatibility is not None:
+                attribute = slots.get(compatibility.attribute)
+                noun = slots.get(compatibility.noun)
+                if attribute is None or noun is None:
+                    missing = (
+                        compatibility.attribute if attribute is None
+                        else compatibility.noun
+                    )
+                    raise CompileError(
+                        f"rule {rule.id!r} compatibility names unknown slot "
+                        f"{missing!r}"
+                    )
+                if _slot_root(attribute) != "adjective":
+                    raise CompileError(
+                        f"rule {rule.id!r} compatibility attribute slot "
+                        f"{compatibility.attribute!r} is not adjective-rooted"
+                    )
+                if _slot_root(noun) != "noun":
+                    raise CompileError(
+                        f"rule {rule.id!r} compatibility noun slot "
+                        f"{compatibility.noun!r} is not noun-rooted"
+                    )
+            exclusion = predicate.slot_not_category
+            if exclusion is not None:
+                slot_name = exclusion.get("slot")
+                if slot_name not in slots:
+                    raise CompileError(
+                        f"rule {rule.id!r} slot exclusion names unknown slot "
+                        f"{slot_name!r}"
+                    )
 
     # A LITERAL THAT CAN NEVER MATCH is an authoring mistake, and it fails at
     # LOAD for the same reason AskRule._anchor_is_first does: the auto-skip
@@ -672,6 +783,12 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
         interchangeable_categories=frozenset(interchangeable_categories),
         superordinate_categories=frozenset(superordinate_categories),
         dimension_categories=frozenset(dimension_categories),
+        attribute_compatibility=_freeze(
+            {
+                key: tuple(sorted(set(values)))
+                for key, values in attribute_compatibility.items()
+            }
+        ),
         context_synonyms=_freeze(context_synonyms),
         attrs=_freeze({k: _freeze(v) for k, v in attrs.items()}),
         part_counts=_freeze(part_counts),

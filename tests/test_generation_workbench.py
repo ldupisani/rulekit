@@ -344,7 +344,7 @@ def test_declared_plural_slots_are_reproducible_and_source_linked(
     )
 
     assert first.to_json() == second.to_json()
-    assert first.generator_version == "g6-review-boundaries"
+    assert first.generator_version == "g6-g5u-adverbs"
     assert first.target_status == "matched"
     assert first.requested_bindings["group"] in {"mivs", "zors"}
     premise = first.premises[0]
@@ -563,7 +563,7 @@ def test_possessed_slots_compose_declared_owner_and_noun_sources(
     )
 
     assert singular.to_json() == replay.to_json()
-    assert singular.generator_version == "g6-review-boundaries"
+    assert singular.generator_version == "g6-g5u-adverbs"
     assert singular.target_status == "matched"
     assert plural.target_status == "matched"
     singular_premise = next(
@@ -696,7 +696,7 @@ def test_pronoun_slots_use_the_complete_declared_domain_and_sources(
     )
 
     assert candidate.to_json() == replay.to_json()
-    assert candidate.generator_version == "g6-review-boundaries"
+    assert candidate.generator_version == "g6-g5u-adverbs"
     assert candidate.target_status in {"matched", "shadowed"}
     assert candidate.requested_bindings == {"ref": "vem"}
     premise = candidate.premises[0]
@@ -760,7 +760,7 @@ def test_pronoun_category_slots_use_membership_and_ancestry_sources(
     )
 
     assert candidate.to_json() == replay.to_json()
-    assert candidate.generator_version == "g6-review-boundaries"
+    assert candidate.generator_version == "g6-g5u-adverbs"
     assert candidate.target_status == "matched"
     premise = candidate.premises[0]
     assert premise.slot_type == "invented_pool"
@@ -814,7 +814,7 @@ def test_aggregate_root_slots_use_the_complete_declared_domain_and_sources(
         )
 
         assert candidate.to_json() == replay.to_json()
-        assert candidate.generator_version == "g6-review-boundaries"
+        assert candidate.generator_version == "g6-g5u-adverbs"
         assert candidate.target_status == "matched"
         assert candidate.requested_bindings == {"marker": surface}
         premise = candidate.premises[0]
@@ -897,7 +897,7 @@ def test_g5b_unlocks_exactly_the_five_preregistered_curated_rules() -> None:
             }
 
 
-def test_g5c_unlocks_only_the_preregistered_possessed_rule() -> None:
+def test_g5c_possessed_rules_remain_supported_after_g5j() -> None:
     project = load_project(Path("projects/curated"))
     availability = {
         rule.id: rule for rule in list_rule_availability(project)
@@ -906,14 +906,9 @@ def test_g5c_unlocks_only_the_preregistered_possessed_rule() -> None:
     assert availability[
         "arithmetic/times-as-many-possessive-standard"
     ].supported
-    assert not availability[
-        "arithmetic/affine-times-as-many-possessive-standard"
-    ].supported
     assert availability[
         "arithmetic/affine-times-as-many-possessive-standard"
-    ].blockers == (
-        "category 'delta' roots at unsupported sense 'comparative'",
-    )
+    ].supported
 
     candidate = generate_candidate(
         project,
@@ -969,12 +964,9 @@ def test_g5d_unlocks_only_the_four_preregistered_partition_rules() -> None:
     }
 
     assert all(availability[rule_id].supported for rule_id in unlocked)
-    assert not availability[
-        "arithmetic/times-as-many-possessive-kinship-standard"
-    ].supported
     assert availability[
         "arithmetic/times-as-many-possessive-kinship-standard"
-    ].blockers == ("optional groups have no current realizer",)
+    ].supported
     assert all(
         project.source_index.lexicon[surface].path
         == Path("packs/core-english/lexicon/core.yaml").resolve()
@@ -1054,23 +1046,16 @@ def test_g5e_unlocks_only_the_preregistered_pool_pronoun_rule() -> None:
         )
 
 
-def test_g5f_unlocks_only_the_preregistered_aggregate_marker_rule() -> None:
+def test_g5f_aggregate_boundary_remains_narrow_after_later_increments() -> None:
     project = load_project(Path("projects/curated"))
     availability = {
         rule.id: rule for rule in list_rule_availability(project)
     }
 
-    assert sum(rule.supported for rule in availability.values()) == 23
     assert availability["arithmetic/group-total-leading-marker"].supported
-    assert availability["arithmetic/existential-premise-total"].blockers == (
-        "optional groups have no current realizer",
-    )
-    assert availability["arithmetic/group-total-of-age"].blockers == (
-        "no project-backed filler exists for noun",
-    )
-    assert availability["arithmetic/group-total-trailing"].blockers == (
-        "optional groups have no current realizer",
-    )
+    assert availability["arithmetic/existential-premise-total"].supported
+    assert availability["arithmetic/group-total-of-age"].supported
+    assert availability["arithmetic/group-total-trailing"].supported
 
     members = {"altogether", "average", "combined", "together", "total"}
     for surface in sorted(members):
@@ -1565,13 +1550,39 @@ def test_trace_exposes_explicit_targets_and_promotes_the_selected_rule(
     sentence = "Luma dax miv."
     trace = endpoint("/api/trace", "POST")(TraceBody(text=sentence))
     targets = trace["sentences"][0]["review_targets"]
-    assert targets == [
+    assert [
+        {
+            key: value
+            for key, value in target.items()
+            if key != "source_ref"
+        }
+        for target in targets
+    ] == [
         {
             "rule_id": "invented/simple",
             "description": "a flat invented premise",
             "status": "matched",
         }
     ]
+    rule_path = (tmp_path / "pack" / "rules.yaml").resolve()
+    assert targets[0]["source_ref"]["path"] == str(rule_path)
+    assert targets[0]["source_ref"]["kind"] == "rule"
+    fact = next(
+        fact for fact in trace["facts"] if fact["source"] == "invented/simple"
+    )
+    assert fact["source_ref"] == targets[0]["source_ref"]
+    decision = next(
+        decision
+        for decision in trace["sentences"][0]["decisions"]
+        if decision.get("rule_id") == "invented/simple"
+    )
+    assert decision["source_ref"] == targets[0]["source_ref"]
+    semantic_fact = next(
+        fact
+        for fact in trace["semantic"]["facts"]
+        if fact["source"] == "invented/simple"
+    )
+    assert semantic_fact["source_ref"] == targets[0]["source_ref"]
 
     candidate = endpoint("/api/generation/from-reading", "POST")(
         GenerationReadingBody(
@@ -1583,6 +1594,31 @@ def test_trace_exposes_explicit_targets_and_promotes_the_selected_rule(
     assert candidate["sentence"] == sentence
     assert candidate["target_rule"] == targets[0]["rule_id"]
     assert candidate["requested_bindings"] == candidate["target_bindings"]
+
+
+def test_trace_exposes_the_identified_ask_source() -> None:
+    router = build_router(ServerState(Path("projects/curated")))
+    endpoint = next(
+        route.endpoint
+        for route in router.routes
+        if route.path == "/api/trace" and "POST" in route.methods
+    )
+
+    trace = endpoint(
+        TraceBody(
+            text=(
+                "Aven has 2 apples. "
+                "How many apples does Aven have?"
+            )
+        )
+    )
+
+    assert trace["ask"]["id"] == "ask/how-many-entity"
+    assert trace["ask"]["source_ref"]["kind"] == "ask"
+    assert trace["ask"]["source_ref"]["label"] == "ask/how-many-entity"
+    assert trace["ask"]["source_ref"]["path"].endswith(
+        "/packs/arithmetic/rules/core.yaml"
+    )
 
 
 def test_hypothesis_and_minimal_pair_routes_recompute_project_evidence(
@@ -2127,6 +2163,11 @@ def test_designer_exposes_the_generation_review_loop() -> None:
     assert "reviewRecorded" in js
     assert "promoteReadingSentence" in js
     assert "Review premise" in js
+    assert "Open rule YAML" in js
+    assert "Open ask YAML" in js
+    assert "reading-fact-head" in js
+    assert "d.source_ref" in js
+    assert "f.source_ref" in js
     assert "loadGenerationExploration" in js
     assert "use Review history → Edit for corrections" in js
     assert "control.title = help" in js

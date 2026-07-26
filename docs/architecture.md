@@ -19,10 +19,42 @@ and human review workbench specified in
 Its G1–G4 exploration loop, G5a declared-plural and G5b declared-counted
 realizers, G5c bounded proper-name possessive realizer, G5d declared generic
 pronoun realizer, G5e declared pronoun-category realizer, G5f aggregate-root
-category realizer, G6 exploration status, Reading-origin and fact-level review
-entries, declarative fraction-plural morphology correction, and scoped
-`GroupTotal` facts are implemented. The next increment profiles core ownership
-of the generic `age_noun` domain.
+category realizer, G5g owned category nouns and number constraints, G6
+exploration status, Reading-origin and fact-level review entries, declarative
+fraction-plural morphology correction, scoped `GroupTotal` facts, and
+many-to-many adjective/noun compatibility and the leading-total
+scoped/existential subject split are implemented. G5h moves the seven generic
+exploratory category domains found during project-empty profiling into
+`core-english`, exposing five more premise rules and every compatible filler
+to human review. G5i recursively realizes optional groups, including nested
+groups to depth three in the current packs, and exposes every active, omitted,
+or parent-inactive branch in the premise inspector. G5j extends the same
+category-generic lexical realizer to comparative-rooted categories; empty
+loaded categories remain blocked by their missing filler domain. G5k realizes
+sentence-wide negative category premises by filtering every literal and slot
+domain with the matcher's analyzed-lemma membership test; locked probes
+and exploration use the same boundary. G5l maps `unbound` sentinels to their
+nearest optional negative-lookahead branch, forces that branch omitted, and
+keeps the omission and matcher-confirmed non-binding inspectable. Generated
+G5m realizes linked `distinct_measure` predicates with the matcher's exact
+`(lemma, label, qualifier)` key, including availability, locked bindings,
+minimal pairs, and exploration placement. G5n admits the direct
+`complementizer` lexical root to the category-generic realizer, including both
+mandatory and optional occurrences and exact source evidence. G5o does the
+same for direct `quantifier` slots while preserving independent blockers on
+rules whose other descendants remain unrealizable. G5q moves the generic age
+comparatives and their core direction memberships into `core-english` while
+preserving mined-only category extensions. G5r applies the same ownership
+boundary to the signed physical-dimension comparative class. G5s moves the
+eight generic modal forms into core and realizes both the complete modal
+domain and its declared future-only subtype. G5t moves the two deictic
+temporal markers into core and admits registry-backed time-rooted category
+generation. G5u moves generic `currently` into core and admits the complete
+loaded direct-adverb domain, bringing curated premise availability to 95/95.
+Generated
+defects remain visible by design: mechanical
+support reports that a rule can be realized and matched, not that its premises
+license valid English.
 
 ## Architectural boundaries
 
@@ -139,8 +171,11 @@ The implemented document families are:
 Compilation rejects duplicate vocabulary across packs, duplicate rule ids,
 category cycles, dangling category roots, incompatible antonyms, invalid
 category members, conflicting conversions or reference values, and rule gates
-that name unknown categories. The resulting mappings and rule sequences are
-sorted and frozen.
+that name unknown categories. Attribute-compatibility declarations must map an
+adjective-rooted category to one or more distinct noun-rooted categories, and
+an `attribute_compatible` rule predicate must name an adjective-rooted slot and
+a noun-rooted slot. The resulting mappings and rule sequences are sorted and
+frozen.
 
 `quarantine.yaml` is negative knowledge: its entries are intentionally absent
 from the lexicon, and compilation rejects a word that appears in both.
@@ -264,6 +299,10 @@ meaning into generic triples.
 binds a subject retains its normalized identity, so blue and red totals for
 the same measure have distinct keys and may coexist. Tail-only and synthesized
 totals remain unscoped because no group identity is mechanically available.
+Leading existential totals are also unscoped: their literal `there` is a
+construction marker rather than an entity. They require an agreeing copula
+and normalize to holding semantics; arbitrary verbs on an existential surface
+do not emit a total.
 Same-scope disagreement still quarantines both facts. Entity-aware consumers
 accept only unscoped or exact-scope-compatible totals; entity-less consumers
 cannot silently widen a named group into a scene-wide total.
@@ -430,13 +469,30 @@ retest identical pinned sentence (no realization pass)
 before/after behavior diff
 ```
 
+Availability is intentionally structural. A rule is supported when the
+generator has a realizer for every declared token and predicate and at least
+one project-backed filler survives its constraints. The subsequent ordinary
+round trip reports whether the existing matcher accepts the specimen. Neither
+condition asserts that the prose is grammatical, the premises are well
+scoped, or the emitted facts are useful; those are the human review questions.
+This separation lets missing definiteness, agreement, and other bad
+commitments become inspectable evidence instead of hidden prerequisites.
+
 The current realization boundary covers literals, project-fixture names,
 simple nouns/verbs/adjectives/prepositions/words, scalar number forms,
 compatible category gates, declared single-token plural nouns, declared
 integer-count-plus-noun compositions, bounded proper-name possessive noun
-phrases, declared single-token generic pronouns, and the
-`distinct`/`same_lemma` constraints. Plural and counted
-fillers come only from loaded numeric and singular/plural declarations. Count
+phrases, declared single-token generic pronouns, loaded direct-modal,
+future-modal, direct-adverb, and time-rooted category domains, and the
+`distinct`/`same_lemma`/`same_number`/`distinct_owner`/`distinct_measure`
+constraints plus
+pack-declared adjective/noun compatibility and negative slot-category
+constraints. Arbitrarily nested optional groups compose those same token
+realizers. Each active group makes a seeded include/omit choice; all
+descendants must be supported before the containing rule is available.
+Locked or excluded child bindings force their ancestor groups to be included.
+Plural and counted fillers come
+only from loaded numeric and singular/plural declarations. Count
 `1` selects the singular noun surface and every other admitted non-negative
 integer selects the declared plural; both retain the singular noun lemma as
 identity.
@@ -461,6 +517,15 @@ contraction, possessive declaration, noun declaration, and conditional plural
 morphology remain separately inspectable evidence. No fixture owner is
 counted as lexicon exploration.
 
+A category-gated noun slot may additionally declare `possessed: true`. This
+does not create a second possessive representation: it filters the same
+merged `OWNER's HEAD` units by the head lemma's exact category membership.
+Registry compilation rejects the qualifier on non-noun-rooted categories.
+The optional `number: singular|plural` slot qualifier then constrains the
+unit's declared grammatical number; it does not generate or infer morphology.
+Together these qualifiers let an age rule require a singular owned
+`age_noun` without admitting bare `age` or plural `ages`.
+
 Direct pronoun fillers are every loaded single-token lexicon surface carrying
 the `pronoun` sense, with exact case-folded surface identity. The realizer
 does not add unexpressed case, person, number, definiteness, possessive, or
@@ -478,6 +543,88 @@ remains the surface; evidence includes the lexical declaration, exact
 membership, and category ancestry. This does not infer a discourse referent
 or widen the category to every pronoun.
 
+Direct complementizer slots use that same lexical-domain machinery with the
+`complementizer` sense as their root gate. The current registry treats this as
+a direct root-sense category rather than a declared hierarchy: any loaded
+single-token entry carrying the sense is eligible, and no surface is embedded
+in Python. Optional complementizer branches retain the normal include/omit
+state. Included premises expose the lexical declaration and rule token; an
+omitted branch remains explicitly inactive rather than silently consuming a
+clause marker.
+
+Direct quantifier slots also draw from the loaded lexical sense rather than a
+generation-only word list. Every eligible surface remains explorable even when
+the rule description suggests a narrower semantic subclass: the workbench must
+expose a broad declared premise for review, not silently repair it. A rule
+whose quantifier slot is fillable but whose other token is unsupported remains
+blocked as a whole, and exploration does not advertise the otherwise viable
+quantifier placement.
+
+Direct modal slots likewise draw every loaded single-token entry carrying the
+`modal` sense. `future_modal` is a strict category-filtered subtype, so its
+domain contains only modal-sensed words with that declared membership.
+Evidence retains both the lexical source and the exact
+`word → subtype → modal` path. Locked bindings pass through the same domain;
+an ordinary capacity modal cannot enter a future-only slot.
+
+Time-rooted category slots use the same registry-backed mechanism. The core
+`temporal_marker` category deliberately selects `now` and `today` from the
+broader `time` sense, and premise evidence retains
+`word → temporal_marker → time` ancestry. No deictic surface is embedded in
+the generator; another loaded time category and member are immediately
+eligible under the same contract.
+
+Direct adverb slots expose every loaded single-token entry carrying the
+`adverb` sense. The optional conjoined-anchor placement therefore has one
+curated filler, `currently`, while projects loading the mining extension see
+all 45 of their declared adverbs. This breadth is the rule's actual premise
+contract: generation may produce awkward or failed round trips, but it does
+not substitute a hidden anchor-only vocabulary. The human review loop is
+where a narrower declarative category may be proposed and tested.
+
+Generation availability is project-relative, including pack ownership. A
+category declared in `core-english` may intentionally remain empty there and
+receive members only from an extension pack; a project that does not load that
+extension must see an honest filler gap. Moving a generally useful lexical
+entry between packs is therefore an architectural change even when projects
+loading both packs compile to identical semantic tables: core-only projects
+gain parser and generation vocabulary. Ownership increments must preserve all
+extension memberships, measure the newly reachable rules and fillers, and
+must not load an unrelated pack merely to make an availability count rise.
+
+The age-comparative move demonstrates that contract. `older` and `younger`
+are core lexical entries and core members of `age_comparative`; their
+`more_dir`/`less_dir` memberships also live there because additive age
+comparisons are general grammar. A project that additionally loads
+`difg-mined` extends the same identities with its `higher`/`lower` categories.
+There is still one compiled word and one combined membership set—pack
+ownership changes availability, not identity.
+
+The dimension-comparative class follows the same layout.
+`dimension_more` and `dimension_less` own the nine generic signed forms in
+core. Projects loading `difg-mined` may add broader `higher`/`lower`
+memberships to those same identities. Generation uses the declared category
+polarity and ancestry; it does not carry a second sign table.
+
+The modal class uses the same ownership contract. All eight generic modal
+lexicon entries live in `core-english`; six belong to `capacity_modal` and
+`will`/`would` belong to `future_modal`. Extension packs may add unrelated
+memberships to those identities—`difg-mined` adds `litter` to noun-sensed
+`can`—without duplicating their lexical declarations or changing the broad
+modal generation domain.
+
+Temporal markers follow the same ownership rule. The generally useful
+time-sensed words `now` and `today` and their `temporal_marker` memberships
+live in core. Extension packs may contribute other time vocabulary, but a
+category slot receives only members of its declared category rather than
+every word sharing the root sense.
+
+The core adverb ownership move is intentionally smaller. Only generally useful
+`currently` moved with the grammar that needs at least one ordinary anchor;
+the 44 other adverbs remain extension vocabulary. A combined project compiles
+the same 45-word adverb inventory as before, while a core-only project gains
+one reviewable filler instead of importing corpus-specific vocabulary.
+
 Category slots may additionally declare `counted: true`. The ordinary
 counted-unit machinery still supplies the numeric value and noun agreement,
 while the slot's category independently restricts the noun lemma. This is how
@@ -491,12 +638,94 @@ pack-declared grammatical number. The matcher and generator share that
 predicate, so agreement such as `1 of them is red` versus
 `3 of them are red` is a rule premise rather than a word-specific repair.
 
+Rules may also declare `distinct_owner` across possessed slots. Every named
+slot must carry a non-empty owner and the owners must be pairwise distinct.
+This is separate from `distinct`, which compares noun identity: two valid
+phrases such as `Aven's age` and `Bira's age` intentionally share the lemma
+`age` while denoting different standards. The generator filters candidate
+owners by the same predicate before the ordinary matcher verifies the result.
+
+`distinct_measure` is a separate linked-slot predicate. It compares the
+ordinary matcher's complete `(lemma, label, qualifier)` measure key, not the
+surface or lemma alone. Generation fillers preserve all three fields even
+though current single-token domains normally leave label and qualifier null.
+Availability solves every linked group together, realization accounts for
+already chosen and future locked keys, and minimal-pair and exploration
+queries use the same satisfiability boundary. This permits two measures with
+the same lemma but different labels or qualifiers while rejecting an exact
+key collision. A passed premise reports the actual compared triples returned
+by the ordinary matcher.
+
+An explicit-noun attribute rule may declare
+`attribute_compatible: {attribute: ATTR_SLOT, noun: NOUN_SLOT}`. Category
+documents separately declare `attribute_compatibility` as an adjective
+category mapped to a list of noun categories. This is many-to-many rather than
+a word-pair table: either word may belong to several categories, and the match
+succeeds when any declared category pair covers both lemmas. One adjective
+category can therefore target physical-size and magnitude nouns without
+collapsing those noun categories into one semantic class. Packs extend
+memberships or add another compatible target beside the vocabulary they own.
+
+The matcher and realizer call the same frozen registry predicate. Generation
+filters both normal and locked/minimal-pair fillers, including a noun selected
+before a later locked adjective. A passed premise names the exact category
+pair and source-links the compatibility declaration, both category
+definitions, and both memberships. Pronoun attribute rules do not use this
+predicate because their antecedent noun is not bound in the same premise
+match.
+
+A rule may declare
+`slot_not_category: {slot: SLOT, cat: CATEGORY}` to subtract a semantic
+category from an otherwise broad slot. The matcher, availability analysis, and
+realizer use the same registry membership predicate; locked and minimal-pair
+fillers cannot bypass it. The premise explanation records the chosen identity
+and excluded category. Static overlap analysis applies the same subtraction
+when an aligned literal or narrower category is wholly excluded, avoiding
+impossible overlap witnesses. This is how leading action totals retain a broad
+`who: type word` domain while existential `there` routes only to its dedicated
+copular siblings.
+
+A rule may instead declare `absent: {cat: CATEGORY}` as a sentence-wide
+negative premise. Unlike `slot_not_category`, this has no named slot: the
+ordinary matcher scans every analyzed unit and rejects the rule if any lemma
+belongs to the category. Availability and realization therefore filter every
+literal and slot filler by the canonical identity that the analyzer will
+expose as its lemma (or fold when no lemma exists). Locked bindings and
+exploration probes pass through the same filter. If any declared leaf has no
+safe project-backed filler, the rule stays
+blocked with an exact diagnostic. A passed premise row records that no
+analyzed unit belonged to the category and links the rule predicate and
+available category declaration.
+
 The generator does not infer productive morphology, articles, nested
 genitives, common-noun or pronoun owners, or agreement that a rule did not
-declare. Unsupported optional groups, spans, other structured nominals,
-morphology, and predicates remain visible with exact blockers. A realized
-sentence that does not survive the round trip remains an inspectable candidate
-with status `absent` and explicit `unverified` premise rows.
+declare. Unsupported spans, other structured nominals, morphology, category
+roots, and predicates remain visible with exact blockers. A realized sentence
+that does not survive the round trip remains an inspectable candidate with
+status `absent` and explicit `unverified` premise rows.
+
+If the ordinary document run cannot complete because sampled numeric values
+produce an arithmetic error, there is no coherent reading to inspect.
+Generation records the reason against that deterministic attempt and
+resamples within the existing bounded attempt budget. Exhaustion raises a
+`GenerationError`; it never emits a partially evaluated candidate or changes
+the runtime's arithmetic semantics.
+
+Optional-group inspection retains the complete recursive declaration. A group
+row reports `included`, `omitted`, or `inactive`; descendants of an omitted
+group remain visible as unverified rows. `SourceIndex.rule_token_paths` maps
+each recursive integer path to its exact YAML line while the original
+top-level token index remains available for compatibility.
+
+An `unbound: [SLOT, ...]` predicate turns the optional structure containing
+each named sentinel into a positional negative lookahead. Availability
+requires every sentinel to exist only under optional structure. Realization
+forces its nearest optional ancestor omitted, preserving wider valid branches
+when the sentinel is nested. A locked or excluded binding that requires the
+same branch is rejected explicitly, and exploration does not advertise
+fillers reachable only through it. The premise inspector retains the omitted
+branch and descendants and records a passed `where` row only after the
+ordinary matcher confirms the named slots are genuinely unbound.
 
 Reading exposes the ordinary document matcher's deduplicated premise-rule
 results beside each non-question sentence. `/api/generation/from-reading`
@@ -506,6 +735,14 @@ The resulting candidate records `origin: reading` and uses its actual target
 bindings for premise inspection. Generated and Reading-origin candidates then
 share the same defect, hypothesis, review-history, source-navigation, and
 pinned-retest paths.
+
+Source navigation is also available directly in Reading. The trace projection
+attaches authoring-only source references to matched premise choices,
+rule-backed decisions, emitted and semantic facts, and recognized ask rules.
+Their compact controls reuse the same editable pack-document allowlist and
+line jump as Generate mode. An identifier produced only by kernel code or an
+unindexed derivation remains visible as plain text rather than gaining a
+fabricated source.
 
 G6 keeps generation observations separate from human judgment. Successful
 fresh candidates and single-slot minimal pairs append candidate id, rule,
@@ -527,12 +764,13 @@ counts never enter candidate retesting or hypothesis evidence.
 
 Pack loading also retains an authoring-only `SourceIndex` on `Project`. It maps
 rules, asks, premise tokens and predicates, lexicon entries, category
-definitions and memberships, morphology declarations, contraction
-declarations, and numeric declarations to exact file/line coordinates from
-ruamel's round-trip YAML nodes. It does not enter `Registry`, its fingerprint,
-or inference. Generate mode turns those coordinates into source controls only
-when the path appears in the existing editable pack-document allowlist; a
-control opens the document and selects the declaration line in the editor.
+definitions and memberships, adjective/noun compatibility pairs, morphology
+declarations, contraction declarations, and numeric declarations to exact
+file/line coordinates from ruamel's round-trip YAML nodes. It does not enter
+`Registry`, its fingerprint, or inference. Generate mode turns those
+coordinates into source controls only when the path appears in the existing
+editable pack-document allowlist; a control opens the document and selects
+the declaration line in the editor.
 
 G3 keeps the candidate only in browser session state. Save + retest first calls
 the ordinary `/api/doc` write, so invalid YAML is rolled back before any
@@ -556,9 +794,10 @@ no-mechanical-hypothesis explanation.
 
 Single-slot minimal pairs use the same realizer rather than a parallel
 generator. The selected slot excludes its original surface, every other slot
-binding is locked, and `distinct`/`same_lemma` constraints still run before
-the ordinary reader validates the alternative. A slot with no compatible
-project-backed alternative fails explicitly. The derived pair seed includes
+binding is locked, and `distinct`/`same_lemma`/adjective-compatibility
+constraints still run before the ordinary reader validates the alternative.
+A slot with no compatible project-backed alternative fails explicitly. The
+derived pair seed includes
 the registry fingerprint, original seed, rule, slot, and bindings, so the same
 request is reproducible across fresh project loads.
 
@@ -600,14 +839,14 @@ DELETE /api/generation/review/{review_id}
 ```
 
 Supported category roots now include noun, verb, adjective, preposition,
-pronoun, and aggregate. Named categories contribute their declaration,
-membership, and ancestry sources. The degenerate `aggregate` root instead
-draws directly from loaded single-token lexicon entries carrying that sense,
-so its evidence is the rule token plus lexicon declaration and its path is
+pronoun, comparative, and aggregate. Named categories contribute their
+declaration, membership, and ancestry sources. The degenerate `aggregate`
+root instead draws directly from loaded single-token lexicon entries carrying
+that sense, so its evidence is the rule token plus lexicon declaration and its path is
 `surface → aggregate`; the authoring layer does not invent a category-member
-source. Quantifier-, comparative-, complementizer-, and time-rooted
-categories, plus qualified, participial, optional, and span realizers, remain
-later increments.
+source. Quantifier-, complementizer-, adverb-, and time-rooted categories,
+plus qualified, participial, modal, and span realizers, remain later
+increments.
 
 ## Repository map
 

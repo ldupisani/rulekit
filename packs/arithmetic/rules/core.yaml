@@ -756,15 +756,14 @@ rules:
       standard is stated as an owned age noun ("Louis' age") instead of
       the equative "as old as Y" frame, so there is no 'as'/'old'/'as'
       literal skeleton to anchor on at all — the multiplier is immediately
-      followed by the possessive NP. `std, cat: age_noun` (declared in
-      packs/core-english/categories/core.yaml, membered in packs/difg-
-      mined/categories/semantic.yaml — the SAME single-word category
+      followed by the possessive NP. `std, cat: age_noun, possessed: true`
+      (declared and membered in packs/core-english/categories/core.yaml —
+      the SAME single-word category
       arithmetic/group-total-sum-of-age already gates on) matches the noun
-      REGARDLESS of whether condense.py's merge-possessive folded an
-      "OWNER 's" prefix onto it first, so this rule fires on both a bare
-      age noun (never useful here, since no relation without an owner
-      resolves to anything) and the owned form — the class this candidate
-      targets. `standard: "{std.owner}"` (not "{std}") is the whole
+      only after condense.py's merge-possessive has folded an "OWNER 's"
+      prefix onto it. The category-qualified possessive premise rejects bare
+      `age`, which never supplies a relation standard. `standard:
+      "{std.owner}"` (not "{std}") is the whole
       mechanism: `_slot_value`'s `owner` attribute (patterns.py, the same
       lookup ask/how-many-entity-possessed already uses for `entity_
       owner`) reads the possessive's OWNER off the merged noun's own
@@ -776,17 +775,15 @@ rules:
       Python word list). PROVEN minimal pair on unmodified main: "Jerica
       is twice as old as Louis..." commits 35.0 (the gold) while "Jerica
       is twice Louis' age..." declines outright — this rule is what
-      closes that gap. A bare (unowned) 'age' noun right after a
-      multiplier is not a grammatical English possessive-standard
-      sentence in this corpus, so it never arises in practice; if it ever
-      did, `{std.owner}` reads empty and the Relation's standard resolves
-      to no known quantity, declining exactly as safely as today.
+      closes that gap.
     match:
       sentence:
         - {slot: who, type: name}
-        - {slot: verb, cat: state}
+        - {slot: verb, cat: copula}
         - {slot: k, type: multiplier}
-        - {slot: std, cat: age_noun}
+        - {slot: std, cat: age_noun, possessed: true, number: singular}
+    where:
+      - same_number: [who, verb, std]
     emits:
       - fact: relation
         subject: "{who}"
@@ -804,7 +801,8 @@ rules:
       old-as-possessive-standard: BOTH the subject and the standard are
       owned age NPs, so `who` ALSO needs `{std.owner}`'s own treatment
       (`"{who.owner}"`) rather than the bare-name `"{who}"` the one-sided
-      sibling uses. Gated the same way (`cat: age_noun` on both slots,
+      sibling uses. Gated the same way (`cat: age_noun, possessed: true`
+      on both slots,
       never `type: possessed` combined with a category gate — the schema
       forbids a slot naming both `type` and `cat`), so this rule and its
       one-sided sibling both fire off the exact same underlying merge
@@ -814,10 +812,13 @@ rules:
       two are structurally disjoint, not a specificity tie-break.
     match:
       sentence:
-        - {slot: who, cat: age_noun}
-        - {slot: verb, cat: state}
+        - {slot: who, cat: age_noun, possessed: true, number: singular}
+        - {slot: verb, cat: copula}
         - {slot: k, type: multiplier}
-        - {slot: std, cat: age_noun}
+        - {slot: std, cat: age_noun, possessed: true, number: singular}
+    where:
+      - distinct_owner: [who, std]
+      - same_number: [who, verb, std]
     emits:
       - fact: relation
         subject: "{who.owner}"
@@ -2931,6 +2932,8 @@ rules:
         - {slot: who, type: word}
         - {slot: verb, type: verb}
         - {slot: item, type: counted}
+    where:
+      - slot_not_category: {slot: who, cat: existential}
     consumes: [item]
     emits:
       - fact: group_total
@@ -2965,6 +2968,8 @@ rules:
         - {slot: who, type: word}
         - {slot: verb, type: verb}
         - {slot: item, type: counted}
+    where:
+      - slot_not_category: {slot: who, cat: existential}
     consumes: [item]
     emits:
       - fact: group_total
@@ -2972,6 +2977,64 @@ rules:
         value: "item"
         scope: "{who}"
         verb: "{verb}"
+
+  - id: arithmetic/group-total-leading-existential
+    phase: read
+    description: >
+      "In total, there are 12 coins." — the existential sibling of
+      arithmetic/group-total-leading. The scoped rule deliberately excludes
+      existential subjects: 'there' introduces the existence of an unscoped
+      collection and is not itself a group identity. Requiring the literal
+      existential marker followed by an agreeing copula separates this
+      construction from action clauses such as "there drops 2 coins", whose
+      missing semantic subject must remain declined. The normalized holding
+      verb gives the resulting unscoped GroupTotal the same semantics as
+      other existential quantities without treating the surface copula as an
+      event.
+    match:
+      sentence:
+        - {lit: in, at_start: true}
+        - {lit: total}
+        - {lit: there}
+        - {slot: verb, cat: copula}
+        - {slot: item, type: counted}
+    where:
+      - same_number: [verb, item]
+    consumes: [item]
+    emits:
+      - fact: group_total
+        measure: "{item}"
+        value: "item"
+        verb: have
+
+  - id: arithmetic/group-total-leading-marker-existential
+    phase: read
+    description: >
+      "Altogether, there is 1 coin." — the bare-marker existential sibling
+      of arithmetic/group-total-leading-marker. A leading aggregate marker
+      plus literal existential 'there' and an agreeing copula states an
+      unscoped collection total; it does not license 'there' as GroupTotal
+      scope and does not admit arbitrary event verbs. The explicit totality
+      alternation excludes 'average': that word shares the broad `aggregate`
+      lexical sense for average asks, but "Average there is..." is not an
+      English existential-total marker. A subcategory cannot express this
+      subset because `aggregate` is a degenerate lexicon sense rather than a
+      category root. The counted item is consumed for the same single-reading
+      discipline as the scoped leading rules.
+    match:
+      sentence:
+        - {lit: [altogether, combined, together, total], at_start: true}
+        - {lit: there}
+        - {slot: verb, cat: copula}
+        - {slot: item, type: counted}
+    where:
+      - same_number: [verb, item]
+    consumes: [item]
+    emits:
+      - fact: group_total
+        measure: "{item}"
+        value: "item"
+        verb: have
 
   - id: arithmetic/group-total-sum-of-age
     phase: read
@@ -3262,7 +3325,10 @@ rules:
       unresolved-derivation guard's structural known-measure check (not a
       rule-identity check) recognizes it as resolved directly. Same
       PartitionQuantity fact and partition-complement consumer as
-      partition-attribute, reused unchanged.
+      partition-attribute, reused unchanged. The adjective must additionally
+      be licensed for the named noun by a project-declared compatibility
+      category pair; this prevents a grammatical token sequence from making
+      an unsupported semantic commitment.
     match:
       sentence:
         - {slot: n, type: number}
@@ -3273,6 +3339,7 @@ rules:
         - {slot: attr, type: adjective}
     where:
       - same_number: [n, verb]
+      - attribute_compatible: {attribute: attr, noun: coll}
     consumes: [n]
     emits:
       - fact: partition_quantity
