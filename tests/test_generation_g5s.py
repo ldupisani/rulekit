@@ -182,7 +182,7 @@ def test_g5s_unlocks_exactly_the_preregistered_frontier() -> None:
     assert availability[
         "arithmetic/anchored-relation-conjoined-anchor"
     ].supported
-    assert len(exploration_status(project)["fillers"]) == 147
+    assert len(exploration_status(project)["fillers"]) == 150
 
 
 @pytest.mark.parametrize("modal", sorted(MOVED_WORDS))
@@ -196,7 +196,7 @@ def test_periodic_rule_exposes_every_loaded_modal(modal: str) -> None:
     premise = next(row for row in candidate.premises if row.slot == "aux")
     direct = "capacity_modal" if modal in CAPACITY else "future_modal"
 
-    assert candidate.generator_version == "g6-g5u-adverbs"
+    assert candidate.generator_version == "g6-reviewed-premise-boundaries"
     assert candidate.target_status == "matched"
     assert premise.binding == modal
     assert premise.category_path == (modal, direct, "modal")

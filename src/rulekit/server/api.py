@@ -26,6 +26,7 @@ from ..generation import (
     ReviewRecord,
     ReviewDefect,
     append_exploration,
+    append_exploration_failure,
     append_review,
     choose_exploration_target,
     delete_review,
@@ -896,6 +897,7 @@ def build_router(state: ServerState) -> APIRouter:
     def generation_candidate(body: GenerationCandidateBody):
         seed = secrets.randbits(53) if body.seed is None else body.seed
         with state.generation_lock:
+            selection = None
             try:
                 selection = choose_exploration_target(
                     state.project,
@@ -911,6 +913,13 @@ def build_router(state: ServerState) -> APIRouter:
                 )
                 event = append_exploration(state.project, candidate)
             except GenerationError as exc:
+                if selection is not None:
+                    append_exploration_failure(
+                        state.project,
+                        selection,
+                        seed=seed,
+                        error=str(exc),
+                    )
                 raise HTTPException(422, str(exc)) from exc
         return {
             **candidate.to_json(),

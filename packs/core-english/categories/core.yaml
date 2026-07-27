@@ -23,6 +23,70 @@ categories:
             'second' precedent), 'king' (name-like; names are already
             candidates). Animals are NOT members — `animal` is a sibling under
             `noun`, and "the dog ... he" has no measured buyer.
+    definite_article:
+        parent: article
+        notes: >
+            Articles that make a common-noun phrase referential. Premise
+            patterns use this category through `referential: true`; the matcher
+            never hardcodes an article word.
+    possessive_determiner:
+        parent: pronoun
+        notes: >
+            Pronoun-sensed forms that can determine a following noun ("her
+            cousin", "their garden"). This is narrower than `pronoun`: subject,
+            object, reflexive, and standalone possessive forms do not license a
+            noun merely by preceding it.
+    bare_pp_object:
+        parent: noun
+        notes: >
+            Nouns independently licensed as bare prepositional adjunct objects
+            ("by day", "at night"). Other PP nouns require a definite article
+            or possessive determiner when a rule opts into `referential`.
+            Corpus-owned temporal members extend this category from their own
+            pack.
+    quantity_location:
+        parent: noun
+        notes: >
+            Ordinary place/container nouns admitted as the object of an
+            optional quantitative locative adjunct. Referentiality alone makes
+            "in the dog" syntactically complete but does not make it a useful
+            holder context.
+    quantity_location_preposition:
+        parent: preposition
+        notes: >
+            Locative prepositions compatible with `quantity_location`.
+    quantity_remainder_preposition:
+        parent: preposition
+        notes: >
+            The preposition class that can attach a declared remnant to a
+            quantitative conjunct ("with the rest").
+    many_incompatible_noun:
+        parent: noun
+        notes: >
+            Noun heads whose declared plural morphology does not license the
+            arithmetic "many" count frame. This is a narrow refusal boundary:
+            ordinary plural nouns remain available without requiring an
+            exhaustive count-noun vocabulary.
+    non_quantity_holder:
+        parent: noun
+        notes: >
+            Noun readings known not to denote the subject of an arithmetic
+            quantity clause. This is a narrow refusal boundary rather than an
+            exhaustive allowlist, so name-like and newly loaded entities stay
+            available unless evidence places them here.
+    mass_quantity_noun:
+        parent: noun
+        notes: >
+            Non-count quantity heads licensed by "much". Kept separate from
+            `mass_measure`, which denotes physical weight units rather than
+            mass-noun countability.
+    non_quantity_object_verb:
+        parent: verb
+        notes: >
+            Verb forms known not to license the direct quantitative object
+            frame used by arithmetic comparative premises. Rules exclude this
+            category declaratively while leaving newly loaded transitive
+            quantity verbs available for human review.
     animate_pronoun:
         parent: pronoun
         notes: >
@@ -59,6 +123,12 @@ categories:
             The plural-agreeing copula forms. Fractional partitions always denote
             a plural collection on their surface ("half of them ARE red"), so
             they use this closed subcategory instead of the general copula.
+    past_copula:
+        parent: copula
+        notes: >
+            Past-tense copulas used by explicitly past age constructions.
+            Keeping this separate from general `copula` prevents "three years
+            ago Fia is..." while retaining ordinary present/past age premises.
     acquire: {parent: verb, antonym: lose, polarity: 1}
     lose: {parent: verb, antonym: acquire, polarity: -1}
     transfer_out:
@@ -77,6 +147,13 @@ categories:
             consumer's gate, kept narrower than the general 'lose' category so
             an unrelated 'sell' ask never answers from purchase data.
     delta: {parent: comparative, notes: "direction words in 'N more/fewer X than Y'"}
+    quantity_delta:
+        parent: comparative
+        notes: >
+            General additive amount directions for explicit quantity and
+            count-measure relations. Age-specific "older/younger" remain in
+            `delta` for age constructions but do not license phrases such as
+            "older than twice as many apples".
     age_comparative:
         parent: comparative
         notes: >
@@ -109,6 +186,18 @@ categories:
             `higher`/`lower` categories.
     dimension_more: {parent: dimension_comparative, antonym: dimension_less, polarity: 1}
     dimension_less: {parent: dimension_comparative, antonym: dimension_more, polarity: -1}
+    linear_dimension_comparative:
+        parent: comparative
+        notes: >
+            Dimension comparatives licensed with declared length units; the
+            duration-compatible pair also licenses time units through the
+            compatibility table below.
+    mass_dimension_comparative:
+        parent: comparative
+        notes: "Dimension comparatives licensed with declared mass units."
+    duration_dimension_comparative:
+        parent: comparative
+        notes: "Duration comparatives licensed with concrete elapsed-time units."
     dimension_adjective:
         parent: adjective
         notes: >
@@ -289,16 +378,19 @@ categories:
             via a SEPARATE registry set (`dimension_categories`, never
             `interchangeable_categories`) so this never widens
             `_resolve_measure`/`_resolve_measure_against`, which every OTHER
-            consumer keeps calling unchanged. Every member word is a
-            difg-mined lexicon entry; membership lives in packs/difg-mined/
-            categories/semantic.yaml.
+            consumer keeps calling unchanged. Generic `inch` and its
+            membership are core-owned; the remaining corpus-mined members
+            extend this category from packs/difg-mined/categories/
+            semantic.yaml.
     mass_measure:
         parent: noun
         dimension: true
         notes: >
             sibling of `length_measure` for WEIGHT — concrete units
             ('pound'/'ounce'/'kilogram'/'gram') plus the dimension noun
-            'weight'. See `length_measure`'s note for the shared mechanism.
+            'weight'. Generic `pound` is core-owned; the remaining
+            corpus-mined members extend this category from difg-mined. See
+            `length_measure`'s note for the shared mechanism.
             'pound' is ALSO a member of the pre-existing `currency` category
             (British pounds sterling) — harmless multi-category membership,
             exactly like 'older'/'younger' already carrying two category tags
@@ -342,6 +434,12 @@ categories:
             it could never join anyway); the ask names the category directly
             instead, exactly the `_resolve_dimension_measure` docstring already
             anticipated.
+    duration_measure:
+        parent: noun
+        notes: >
+            Concrete elapsed-time units accepted by duration-rate premises.
+            This is narrower than `time_measure`, which also contains the
+            abstract dimension noun `age`; "70 ages" is not a duration span.
     currency_measure:
         parent: noun
         dimension: true
@@ -381,6 +479,23 @@ categories:
             'the NUMBER of X' / 'the AMOUNT of X' — frame nouns for ratio
             rules. These generic frame nouns are core-owned so the generation
             workbench can expose every rule premise they license.
+    count_aggregate_noun:
+        parent: noun
+        notes: >
+            Aggregate frame nouns that govern plural count nouns ("the number
+            of books"). Mass frames remain outside this rule family until a
+            declared mass-noun realization exists.
+    frame_prepositional_verb:
+        parent: verb
+        notes: >
+            Verbs licensed when a ratio-frame head includes the optional
+            destination preposition and repeats it after the relative-clause
+            standard.
+    destination_preposition:
+        parent: preposition
+        notes: >
+            Destination prepositions paired across a prepositional ratio-frame
+            relative clause.
     remnant:
         parent: noun
         notes: "'the REST' / 'the REMAINDER' — remainder-of-pool referents"
@@ -495,12 +610,14 @@ categories:
             price_verb/wage_verb precedent: 'take' is not an `acquire` verb —
             "it takes 5 minutes" is not a
             possession event), so this exists purely so the pattern rule can
-            name the declarative-tense inflections (take/takes/took) directly,
+            name the compatible declarative-tense inflections (takes/took)
+            directly,
             since — unlike an ask's bare infinitive after a modal, a single
             literal fold — a declarative premise inflects for tense. The forms
             are core-owned so rule generation can expose whether that premise
             is too broad; human review, not category availability, judges the
-            resulting sentence.
+            resulting sentence. Bare `take` is deliberately excluded: the
+            construction's finite subject is expletive singular `it`.
     relational_marker:
         parent: particle
         notes: >
@@ -751,6 +868,32 @@ categories:
             summing the qualified variants it produces is the conjunct-
             comparative class's job, built on top of this.
 members:
+    definite_article: [the]
+    possessive_determiner: [her, his, its, my, their, your]
+    many_incompatible_noun: [age, litter, rest]
+    non_quantity_holder: [amount, cost, number, price]
+    mass_quantity_noun: [litter, rest]
+    non_quantity_object_verb:
+        - are
+        - cost
+        - is
+        - jumped
+        - need
+        - needed
+        - needs
+        - ran
+        - rose
+        - take
+        - takes
+        - took
+        - walked
+        - was
+        - were
+        - want
+        - wanted
+        - wanting
+        - wants
+        - wilted
     currency: [dollar]
     partitive: [of]
     pool_pronoun: [it, them]
@@ -857,6 +1000,7 @@ members:
     state: [has, have, had, is, are, was, were, own, owns]
     copula: [is, are, was, were]
     plural_copula: [are, were]
+    past_copula: [was, were]
     acquire: [get, gets, got, find, finds, found, buy, buys, bought, receive, receives, received, win, wins, won]
     lose: [lose, loses, lost, eat, eats, ate, give, gives, gave, sell, sells, sold, spend, spends, spent, dropped, drops]
     transfer_out: [gives, gave, sells, sold]
@@ -864,8 +1008,12 @@ members:
     age_comparative: [older, younger]
     more_dir: [more, older]
     less_dir: [fewer, less, younger]
+    quantity_delta: [fewer, less, more]
     dimension_more: [heavier, higher, larger, longer, taller, wider]
     dimension_less: [lighter, shorter, smaller]
+    linear_dimension_comparative: [higher, larger, longer, taller, wider, shorter, smaller]
+    mass_dimension_comparative: [heavier, lighter]
+    duration_dimension_comparative: [longer, shorter]
     future_modal: [will, would]
     capacity_modal: [can, could, may, might, must, should]
     temporal_marker: [now, today]
@@ -879,16 +1027,25 @@ members:
     compute_verb: [compute] # 'calculate'/'determine' extend this from packs/difg-mined
     age_noun: [age]
     dimension_noun: [age] # other dimension nouns extend this from difg-mined
+    length_measure: [inch] # other concrete units extend this from packs/difg-mined
+    mass_measure: [pound] # other concrete units extend this from packs/difg-mined
     currency_measure: [dollar] # 'cent'/'balance'/'earnings'/'cost' extend this from packs/difg-mined
     time_measure: [year, age] # generic age forms; other units extend this from difg-mined
+    duration_measure: [year]
     age_measure: [year]
     aggregate_noun: [amount, number]
+    count_aggregate_noun: [number]
     quantity_anaphor: [amount, number]
     price_anaphor: [price, cost]
     remnant: [remainder, rest]
     desire: [want, wanted, wanting, wants]
     need_premise: [need, needed, needs]
-    duration_verb: [take, takes, took]
+    duration_verb: [takes, took]
+    frame_prepositional_verb: [travel, traveled, travels]
+    destination_preposition: [to]
+    quantity_location: [area, garden, tree]
+    quantity_location_preposition: [at, in, on]
+    quantity_remainder_preposition: [with]
 attribute_compatibility:
     color_attribute: [colorable_noun]
     # Multiple compatible noun categories are intentional. Either category
@@ -896,6 +1053,11 @@ attribute_compatibility:
     size_attribute: [physical_size_noun, magnitude_noun]
     remnant_adj: [remainder_collection_noun]
     ripeness_attribute: [ripenable_noun]
+    linear_dimension_comparative: [length_measure]
+    mass_dimension_comparative: [mass_measure]
+    duration_dimension_comparative: [duration_measure]
+    quantity_location_preposition: [quantity_location]
+    quantity_remainder_preposition: [remnant]
 context_synonyms:
     appendage:
         gate: animal

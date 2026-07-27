@@ -197,7 +197,7 @@ def test_g5t_unlocks_exactly_the_preregistered_frontier() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 147
+    assert len(exploration_status(project)["fillers"]) == 150
 
 
 @pytest.mark.parametrize("marker", sorted(MOVED_WORDS))
@@ -212,7 +212,7 @@ def test_every_temporal_marker_generates_a_matcher_confirmed_specimen(
     )
     premise = next(row for row in candidate.premises if row.slot == "mark")
 
-    assert candidate.generator_version == "g6-g5u-adverbs"
+    assert candidate.generator_version == "g6-reviewed-premise-boundaries"
     assert candidate.target_status == "matched"
     assert premise.binding == marker
     assert premise.status == "passed"

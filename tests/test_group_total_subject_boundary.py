@@ -188,7 +188,7 @@ def test_existential_rules_generate_agreeing_unscoped_totals(
     for seed in range(24):
         candidate = generate_candidate(project, rule_id=rule_id, seed=seed)
         assert candidate.target_status == "matched"
-        assert candidate.generator_version == "g6-g5u-adverbs"
+        assert candidate.generator_version == "g6-reviewed-premise-boundaries"
         assert candidate.requested_bindings["verb"] in {
             "is",
             "are",

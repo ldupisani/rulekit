@@ -158,7 +158,7 @@ def test_g5l_unlocks_exactly_the_preregistered_frontier() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 147
+    assert len(exploration_status(project)["fillers"]) == 150
 
 
 @pytest.mark.parametrize("rule_id", sorted(EXPECTED_PATHS))
@@ -184,7 +184,7 @@ def test_every_unbound_rule_generates_only_its_valid_elided_shape(
         if row.kind == "where" and row.expression.startswith("unbound(")
     ]
 
-    assert candidate.generator_version == "g6-g5u-adverbs"
+    assert candidate.generator_version == "g6-reviewed-premise-boundaries"
     assert candidate.target_status == "matched"
     assert len(forced_rows) == len(EXPECTED_PATHS[rule_id])
     assert all(row.binding == "omitted" for row in forced_rows)

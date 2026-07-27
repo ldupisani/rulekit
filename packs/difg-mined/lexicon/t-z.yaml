@@ -181,9 +181,6 @@ entries:
     thirty-six:
         senses:
             - value
-    this:
-        senses:
-            - article
     those:
         senses:
             - article
@@ -395,24 +392,11 @@ entries:
     trash:
         senses:
             - noun
-    travel:
-        senses:
-            - verb
-    traveled:
-        senses:
-            - verb
-        verb:
-            lemma: travel
     traveler:
         senses:
             - noun
         plural: travelers
     traveling:
-        senses:
-            - verb
-        verb:
-            lemma: travel
-    travels:
         senses:
             - verb
         verb:

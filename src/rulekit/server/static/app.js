@@ -19,6 +19,7 @@ const state = {
   generationRules: [],
   generationExploration: { rules: [], fillers: [], summary: {} },
   candidate: null,
+  lastGenerationSeed: null,
   reviewVerdict: null,
   reviewRecorded: false,
   hypotheses: [],
@@ -1278,10 +1279,21 @@ async function loadGenerationRules() {
 
 function explorationLabel(item) {
   if (item.status === "never_generated") return `untouched — ${item.identity}`;
-  if (item.status === "generated_unreviewed") {
-    return `generated ${item.generated_count}× — ${item.identity}`;
+  if (item.status === "attempted_failed") {
+    return `attempted ${item.failed_count}×, not realized — ${item.identity}`;
   }
-  return `reviewed ${item.reviewed_count}× — ${item.identity}`;
+  if (item.status === "generated_unreviewed") {
+    return (
+      `generated ${item.generated_count}×` +
+      `${item.failed_count ? ` · failed ${item.failed_count}×` : ""}` +
+      ` — ${item.identity}`
+    );
+  }
+  return (
+    `reviewed ${item.reviewed_count}×` +
+    `${item.failed_count ? ` · failed ${item.failed_count}×` : ""}` +
+    ` — ${item.identity}`
+  );
 }
 
 async function loadGenerationExploration() {
@@ -1303,11 +1315,13 @@ async function loadGenerationExploration() {
   select.append(automatic);
   const rank = {
     never_generated: 0,
-    generated_unreviewed: 1,
-    reviewed: 2,
+    attempted_failed: 1,
+    generated_unreviewed: 2,
+    reviewed: 3,
   };
   const fillers = [...(payload.fillers || [])].sort((a, b) =>
-    (rank[a.status] ?? 9) - (rank[b.status] ?? 9)
+    (a.attempt_count || 0) - (b.attempt_count || 0)
+    || (rank[a.status] ?? 9) - (rank[b.status] ?? 9)
     || a.identity.localeCompare(b.identity)
   );
   for (const filler of fillers) {
@@ -1326,10 +1340,12 @@ async function loadGenerationExploration() {
   $("generation-coverage").textContent =
     `${supported}/${state.generationRules.length} premise rules realizable · ` +
     `${ruleCounts.never_generated || 0} untouched rules · ` +
+    `${ruleCounts.attempted_failed || 0} attempted, not realized · ` +
     `${ruleCounts.generated_unreviewed || 0} generated, unreviewed · ` +
     `${ruleCounts.reviewed || 0} reviewed · ` +
     `${fillerCounts.never_generated || 0}/${(payload.fillers || []).length} ` +
-    `reachable lexicon entries untouched`;
+    `reachable lexicon entries untouched · ` +
+    `${fillerCounts.attempted_failed || 0} attempted, not realized`;
   updateGenerationRuleState();
 }
 
@@ -1354,8 +1370,8 @@ function renderGenerationExplorationSelection(rule, filler) {
       "span",
       "mono",
       ruleStatus
-        ? `rule ${ruleStatus.status.replaceAll("_", " ")} · generated ${ruleStatus.generated_count} · reviewed ${ruleStatus.reviewed_count}`
-        : "rule frontier: least generated, with seeded tie-breaking",
+        ? `rule ${ruleStatus.status.replaceAll("_", " ")} · generated ${ruleStatus.generated_count} · failed ${ruleStatus.failed_count || 0} · reviewed ${ruleStatus.reviewed_count}`
+        : "rule frontier: least attempted, with seeded tie-breaking",
     ),
   );
   if (filler) {
@@ -1363,7 +1379,7 @@ function renderGenerationExplorationSelection(rule, filler) {
       el(
         "span",
         "mono",
-        `lexicon ${filler.status.replaceAll("_", " ")} · generated ${filler.generated_count} · reviewed ${filler.reviewed_count}`,
+        `lexicon ${filler.status.replaceAll("_", " ")} · generated ${filler.generated_count} · failed ${filler.failed_count || 0} · reviewed ${filler.reviewed_count}`,
       ),
       generationSourceControl(filler.source),
     );
@@ -1970,6 +1986,7 @@ function renderGenerationCandidate(
     probe.classList.add("hidden");
   }
   $("generation-seed").value = candidate.seed;
+  state.lastGenerationSeed = candidate.seed;
   renderGenerationPremises(candidate);
   populateGenerationAttachments(candidate);
   if (
@@ -2096,8 +2113,12 @@ async function generateNext() {
   const seedInput = $("generation-seed");
   const prior = Number(seedInput.value);
   const seed = Number.isSafeInteger(prior) && seedInput.value !== ""
-    ? prior + (state.candidate ? 1 : 0)
+    ? prior + (prior === state.lastGenerationSeed ? 1 : 0)
     : Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
+  // Consume the seed before realization.  A failed request must not leave the
+  // next click pinned to the same deterministically impossible candidate.
+  seedInput.value = seed;
+  state.lastGenerationSeed = seed;
   setStatus("generating and round-tripping…");
   $("generation-next").disabled = true;
   try {
@@ -2107,7 +2128,8 @@ async function generateNext() {
       seed,
     });
     if (candidate.detail) {
-      setStatus(candidate.detail, "err");
+      await loadGenerationExploration();
+      setStatus(`seed ${seed}: ${candidate.detail}`, "err");
       return;
     }
     renderGenerationCandidate(candidate);
@@ -2117,7 +2139,7 @@ async function generateNext() {
       "ok",
     );
   } catch (exc) {
-    setStatus(`generation failed: ${exc}`, "err");
+    setStatus(`generation failed for seed ${seed}: ${exc}`, "err");
   } finally {
     updateGenerationRuleState();
   }
@@ -2283,6 +2305,10 @@ $("view-semantic").onclick = () => setView("semantic");
 $("view-field").onclick = () => setView("field");
 $("view-proof").onclick = () => setView("proof");
 $("generation-next").onclick = generateNext;
+$("generation-seed").addEventListener("input", () => {
+  // A user-entered seed is an explicit request to try that exact seed once.
+  state.lastGenerationSeed = null;
+});
 $("generation-reading").onclick = inspectGeneratedReading;
 $("generation-form-hypotheses").onclick = formGenerationHypotheses;
 $("generation-save-review").onclick = saveGenerationReview;

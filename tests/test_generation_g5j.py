@@ -100,7 +100,8 @@ def test_g5j_profiles_the_complete_comparative_category_class() -> None:
     )
 
     assert occurrences == {
-        "delta": 20,
+        "delta": 16,
+        "quantity_delta": 4,
         "age_comparative": 1,
         "count_intensifier": 1,
         "dimension_comparative": 1,
@@ -122,7 +123,7 @@ def test_g5j_unlocks_exactly_the_preregistered_frontier() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 147
+    assert len(exploration_status(project)["fillers"]) == 150
 
 
 def test_owned_comparative_categories_have_project_backed_fillers() -> None:
@@ -154,21 +155,23 @@ def test_every_new_comparative_rule_generates_a_reviewable_match(
         seed=0,
     )
 
-    assert candidate.generator_version == "g6-g5u-adverbs"
+    assert candidate.generator_version == "g6-reviewed-premise-boundaries"
     assert candidate.target_status == "matched"
     premise = next(
         row
         for row in candidate.premises
-        if row.slot_type == "delta"
+        if row.slot_type in {"delta", "quantity_delta"}
     )
-    assert premise.binding in {
-        "fewer",
-        "less",
-        "more",
-        "older",
-        "younger",
-    }
-    assert premise.category_path[-2:] == ("delta", "comparative")
+    assert premise.binding in {"fewer", "less", "more", "older", "younger"}
+    assert premise.category_path[-1] == "comparative"
+    if premise.slot_type == "quantity_delta":
+        assert premise.binding in {"fewer", "less", "more"}
+        assert premise.category_path[-2:] == (
+            "quantity_delta",
+            "comparative",
+        )
+    else:
+        assert premise.category_path[-2:] == ("delta", "comparative")
     assert {"lexicon", "category-member", "category"} <= {
         source["kind"] for source in premise.sources
     }

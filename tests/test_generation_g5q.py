@@ -139,7 +139,7 @@ def test_g5q_unlocks_exactly_the_preregistered_rule() -> None:
     assert availability[
         "arithmetic/anchored-relation-postfix-dimension"
     ].supported
-    assert len(exploration_status(project)["fillers"]) == 147
+    assert len(exploration_status(project)["fillers"]) == 150
 
 
 @pytest.mark.parametrize("comparative", sorted(MOVED_WORDS))
@@ -154,7 +154,7 @@ def test_both_age_comparatives_generate_matcher_confirmed_specimens(
     )
     premise = next(row for row in candidate.premises if row.slot == "dir")
 
-    assert candidate.generator_version == "g6-g5u-adverbs"
+    assert candidate.generator_version == "g6-reviewed-premise-boundaries"
     assert candidate.target_status == "matched"
     assert premise.binding == comparative
     assert premise.status == "passed"

@@ -161,7 +161,7 @@ def test_compile_rejects_an_unknown_compatible_noun_category(
         load_project(tmp_path)
 
 
-def test_compile_rejects_a_non_adjective_compatibility_slot(
+def test_compile_rejects_a_non_descriptor_compatibility_slot(
     tmp_path: Path,
 ) -> None:
     _write_many_to_many_project(tmp_path)
@@ -173,7 +173,7 @@ def test_compile_rejects_a_non_adjective_compatibility_slot(
         )
     )
 
-    with pytest.raises(CompileError, match="is not adjective-rooted"):
+    with pytest.raises(CompileError, match="is not descriptor-rooted"):
         load_project(tmp_path)
 
 
@@ -191,10 +191,11 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
     }
 
     assert adjectives == {"blue", "green", "large", "left", "red", "small"}
-    # G5h adds four generic plural nouns (amount, number, price, cost), and
-    # G5s preserves the noun/plural half of modal `can`. None is licensed by
-    # an adjective category.
-    assert len(plural_nouns) == 37
+    # G5h adds four generic plural nouns (amount, number, price, cost), G5s
+    # preserves the noun/plural half of modal `can`, and the reviewed dimension
+    # boundary adds generic inch/pound units. None is licensed by an adjective
+    # category.
+    assert len(plural_nouns) == 39
     assert sum(
         registry.attribute_applies_to(attribute, noun)
         for attribute in adjectives
@@ -202,7 +203,7 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
     ) == 155
 
 
-def test_only_the_explicit_noun_partition_has_the_compatibility_premise() -> None:
+def test_only_reviewed_descriptor_noun_rules_have_compatibility_premises() -> None:
     registry = load_project(CURATED).registry
     adjective_rules = {
         rule.id
@@ -221,7 +222,11 @@ def test_only_the_explicit_noun_partition_has_the_compatibility_premise() -> Non
         "arithmetic/partition-attribute-of-noun",
         "arithmetic/partition-rest-attribute",
     }
-    assert compatible_rules == {RULE_ID}
+    assert compatible_rules == {
+        RULE_ID,
+        "arithmetic/anchored-relation-postfix-dimension",
+        "arithmetic/times-as-many-conjunct-elided-item",
+    }
 
 
 def test_compatibility_rule_remains_supported_after_g5j_expansion() -> None:

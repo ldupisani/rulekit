@@ -22,6 +22,17 @@ MOVED_WORDS = MORE | LESS
 MOVED_MEMBERS = {
     "dimension_more": sorted(MORE),
     "dimension_less": sorted(LESS),
+    "linear_dimension_comparative": sorted(
+        {"higher", "larger", "longer", "taller", "wider", "shorter", "smaller"}
+    ),
+    "mass_dimension_comparative": ["heavier", "lighter"],
+    "duration_dimension_comparative": ["longer", "shorter"],
+}
+CORE_MEMBERSHIPS = {
+    word: tuple(
+        sorted(category for category, words in MOVED_MEMBERS.items() if word in words)
+    )
+    for word in MOVED_WORDS
 }
 
 
@@ -50,12 +61,8 @@ def test_dimension_comparatives_and_signed_memberships_share_ownership() -> None
         for word in MOVED_WORDS
     } == {expected_source}
     assert all(
-        project.registry.word_categories[word] == ("dimension_more",)
-        for word in MORE
-    )
-    assert all(
-        project.registry.word_categories[word] == ("dimension_less",)
-        for word in LESS
+        project.registry.word_categories[word] == CORE_MEMBERSHIPS[word]
+        for word in MOVED_WORDS
     )
     assert project.registry.category_polarity["dimension_more"] == 1
     assert project.registry.category_polarity["dimension_less"] == -1
@@ -116,16 +123,16 @@ def test_combined_pack_semantics_are_identical_to_legacy_ownership() -> None:
         if getattr(project.registry, name) != getattr(legacy, name)
     } == set()
     for word in MORE - {"wider"}:
-        assert project.registry.word_categories[word] == (
-            "dimension_more",
+        assert set(project.registry.word_categories[word]) == {
+            *CORE_MEMBERSHIPS[word],
             "higher",
-        )
-    assert project.registry.word_categories["wider"] == ("dimension_more",)
+        }
+    assert project.registry.word_categories["wider"] == CORE_MEMBERSHIPS["wider"]
     for word in LESS:
-        assert project.registry.word_categories[word] == (
-            "dimension_less",
+        assert set(project.registry.word_categories[word]) == {
+            *CORE_MEMBERSHIPS[word],
             "lower",
-        )
+        }
 
 
 def test_g5r_unlocks_exactly_the_preregistered_rule() -> None:
@@ -143,7 +150,7 @@ def test_g5r_unlocks_exactly_the_preregistered_rule() -> None:
     assert availability[
         "arithmetic/anchored-relation-conjoined-anchor"
     ].supported
-    assert len(exploration_status(project)["fillers"]) == 147
+    assert len(exploration_status(project)["fillers"]) == 150
 
 
 @pytest.mark.parametrize("comparative", sorted(MOVED_WORDS))
@@ -159,7 +166,7 @@ def test_every_dimension_comparative_generates_a_matcher_confirmed_specimen(
     premise = next(row for row in candidate.premises if row.slot == "dir")
     direct = "dimension_more" if comparative in MORE else "dimension_less"
 
-    assert candidate.generator_version == "g6-g5u-adverbs"
+    assert candidate.generator_version == "g6-reviewed-premise-boundaries"
     assert candidate.target_status == "matched"
     assert premise.binding == comparative
     assert premise.status == "passed"

@@ -151,7 +151,7 @@ def test_g5k_unlocks_exactly_the_preregistered_frontier() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 147
+    assert len(exploration_status(project)["fillers"]) == 150
 
 
 @pytest.mark.parametrize("rule_id", sorted(NEWLY_SUPPORTED))
@@ -164,7 +164,7 @@ def test_every_new_absent_rule_generates_a_reviewable_match(
         seed=0,
     )
 
-    assert candidate.generator_version == "g6-g5u-adverbs"
+    assert candidate.generator_version == "g6-reviewed-premise-boundaries"
     assert candidate.target_status == "matched"
     absent_rows = [
         row

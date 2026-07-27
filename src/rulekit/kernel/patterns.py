@@ -104,7 +104,7 @@ class RuleMatchResult:
     facts: list[Fact] = field(default_factory=list)
 
 
-def _looks_third_person_singular(fold: str) -> bool:
+def looks_third_person_singular(fold: str) -> bool:
     """Does this verb surface carry the -s AGREEMENT suffix?
 
     `bare_form` reads `fold == lemma` as "uninflected", which is only ever as
@@ -124,6 +124,17 @@ def _looks_third_person_singular(fold: str) -> bool:
         and fold.endswith("s")
         and not fold.endswith(("ss", "us"))
     )
+
+
+def is_bare_verb_form(fold: str, lemma: str) -> bool:
+    """Whether one analyzed verb surface supplies bare-form evidence.
+
+    Kept public so the authoring-only generator and the runtime matcher use
+    one structural definition.  Lexical lemma declarations still come from
+    packs; the suffix check only fails closed when that declaration is absent.
+    """
+
+    return fold == lemma and not looks_third_person_singular(fold)
 
 
 def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
@@ -147,9 +158,9 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
             # needs non-finite participial morphology. The lemma-change guard
             # rejects bare verbs that merely happen to end in the same suffix.
             return False
-    if token.bare_form and (
-        unit.features.get("fold") != _lemma_of(unit)
-        or _looks_third_person_singular(unit.features.get("fold") or "")
+    if token.bare_form and not is_bare_verb_form(
+        unit.features.get("fold") or "",
+        _lemma_of(unit),
     ):
         # OPT-IN (schemas.MatchToken.bare_form): only the verb's BARE form —
         # plural agreement is the structural generic-vs-ground signal after a
@@ -182,6 +193,12 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
         token.number is not None
         and unit.features.get("number") != token.number
     ):
+        return False
+    if token.standalone and unit.sense() == "noun":
+        # A condensed count ("6 marbles") deliberately retains
+        # value_kind=count, so it satisfies the broad `number` type. Elided
+        # scalar constructions opt out of that reading without constraining
+        # how many source words formed the standalone number itself.
         return False
     if token.type is not None:
         t = token.type
@@ -347,6 +364,41 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
     )
 
 
+def _referential_slot_ok(
+    units: list[Unit],
+    index: int,
+    unit: Unit,
+    token: MatchToken,
+    reg: Registry,
+) -> bool:
+    """Check the opt-in surface-reference boundary for one matched slot."""
+
+    if not token.referential:
+        return True
+    if unit.sense() in {"name", "pronoun"}:
+        return True
+    if unit.sense() != "noun":
+        return False
+    if unit.features.get("owner"):
+        return True
+    if unit.features.get("value_kind") == "count":
+        return True
+    lemma = _lemma_of(unit)
+    if (
+        token.bare_reference_category is not None
+        and reg.word_in_category(lemma, token.bare_reference_category)
+    ):
+        return True
+    if index <= 0:
+        return False
+    predecessor = units[index - 1]
+    fold = predecessor.features.get("fold", "")
+    return (
+        reg.word_in_category(fold, "definite_article")
+        or reg.word_in_category(fold, "possessive_determiner")
+    )
+
+
 _MEASURE_ANAPHOR_UNRESOLVED = "$anaphor:measure-unresolved$"
 
 
@@ -504,6 +556,8 @@ def _try_match_at(
             # predecessor, NOT this attempt's own skip walk: match_all
             # floats, and a retry that starts AFTER the article would
             # otherwise never see it.
+            return None
+        if not _referential_slot_ok(units, i, units[i], token, reg):
             return None
         if token.span:
             # OPT-IN phrase capture (schemas.MatchToken.span): bind a RUN of
@@ -679,6 +733,52 @@ def _check_where(
                 numbers.append(number)
             if len(set(numbers)) > 1:
                 return False
+        if pred.number_compatible is not None:
+            numbers = []
+            for name in pred.number_compatible:
+                unit = slots.get(name)
+                if unit is None or isinstance(unit, tuple):
+                    return False
+                number = unit.features.get("number")
+                if unit.features.get("value_kind") == "count":
+                    value = unit.features.get("value")
+                    if not isinstance(value, (int, float)):
+                        return False
+                    number = "singular" if float(value) == 1 else "plural"
+                if number in ("singular", "plural"):
+                    numbers.append(number)
+            if len(set(numbers)) > 1:
+                return False
+        if pred.same_presence is not None:
+            presence = [name in slots for name in pred.same_presence]
+            if len(set(presence)) > 1:
+                return False
+        if pred.bound_requires_type is not None:
+            requirement = pred.bound_requires_type
+            if requirement.bound not in slots:
+                continue
+            unit = slots.get(requirement.slot)
+            if unit is None or isinstance(unit, tuple):
+                return False
+            if not _slot_ok(
+                unit,
+                MatchToken(slot=requirement.slot, type=requirement.type),
+                reg,
+            ):
+                return False
+        if pred.bound_requires_category is not None:
+            requirement = pred.bound_requires_category
+            if requirement.bound not in slots:
+                continue
+            unit = slots.get(requirement.slot)
+            if unit is None or isinstance(unit, tuple):
+                return False
+            if not _slot_ok(
+                unit,
+                MatchToken(slot=requirement.slot, cat=requirement.cat),
+                reg,
+            ):
+                return False
         if pred.same_phrase is not None:
             # Unlike same_lemma, this predicate is designed for span slots:
             # compare the exact canonical value each slot would emit. Missing
@@ -726,6 +826,10 @@ def _check_where(
             noun_name = pred.attribute_compatible.noun
             attribute = slots.get(attribute_name)
             noun = slots.get(noun_name)
+            if attribute is None and noun is None:
+                # Compatibility may qualify a paired OPTIONAL adjunct.  When
+                # the whole pair is absent there is no semantic claim to test.
+                continue
             if (
                 attribute is None
                 or noun is None

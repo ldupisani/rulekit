@@ -30,11 +30,8 @@ categories:
     # Stage 8: the bare-plural universal rules refuse a DEFINITE subject —
     # "The dogs are hungry" / "The Beatles are a band" are GROUND statements
     # about particular referents, not generics, and 'the' is auto-skipped
-    # (article sense) so only a blocks_skipped gate can see it. Mirror of
-    # core-english's indefinite_article (the same a/an-vs-the distinction,
-    # from the other side).
-    definite_article:
-        parent: article
+    # (article sense) so only a blocks_skipped gate can see it. This pack
+    # reuses CORE-ENGLISH's `definite_article` category; no definition here.
     # S2 (composition-design.md): 'by' as the PASSIVE-AGENT marker. The
     # embedded-copular ASKS' pred spans refuse it (span_blocks) so a
     # passive-agent conclusion ("…is designed by a British architect?")
@@ -100,7 +97,6 @@ members:
     conjunctive_marker: [and]
     disjunctive_marker: [or]
     either_marker: [either]
-    definite_article: [the]
     agent_marker: [by]
     neither_marker: [neither]
     appointive_verb: [appointed]

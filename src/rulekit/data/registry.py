@@ -359,10 +359,10 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
         root = attribute
         while root in category_parents:
             root = category_parents[root]
-        if root != "adjective":
+        if root not in {"adjective", "comparative", "preposition"}:
             raise CompileError(
                 f"attribute compatibility key {attribute!r} is not "
-                "adjective-rooted"
+                "descriptor-rooted (adjective/comparative/preposition)"
             )
         for noun in nouns:
             if noun not in category_parents:
@@ -656,12 +656,18 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
             return "noun"
         return token.type
 
+    def _walk_match_tokens(tokens: list[MatchToken]):
+        for token in tokens:
+            yield token
+            if token.opt is not None:
+                yield from _walk_match_tokens(token.opt)
+
     for rule in rules:
         slots: dict[str, MatchToken] = {}
         for seq in rule.match.values():
             tokens = seq if seq and isinstance(seq[0], list) else [seq]
             for sub in tokens:
-                for tok in sub:
+                for tok in _walk_match_tokens(sub):
                     if tok.slot is not None:
                         slots.setdefault(tok.slot, tok)
                     cat = getattr(tok, "cat", None)
@@ -698,16 +704,45 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                         f"rule {rule.id!r} compatibility names unknown slot "
                         f"{missing!r}"
                     )
-                if _slot_root(attribute) != "adjective":
+                if _slot_root(attribute) not in {
+                    "adjective",
+                    "comparative",
+                    "preposition",
+                }:
                     raise CompileError(
                         f"rule {rule.id!r} compatibility attribute slot "
-                        f"{compatibility.attribute!r} is not adjective-rooted"
+                        f"{compatibility.attribute!r} is not "
+                        "descriptor-rooted"
                     )
                 if _slot_root(noun) != "noun":
                     raise CompileError(
                         f"rule {rule.id!r} compatibility noun slot "
                         f"{compatibility.noun!r} is not noun-rooted"
                     )
+            conditional = predicate.bound_requires_category
+            if conditional is not None:
+                for slot_name in (conditional.bound, conditional.slot):
+                    if slot_name not in slots:
+                        raise CompileError(
+                            f"rule {rule.id!r} conditional category names "
+                            f"unknown slot {slot_name!r}"
+                        )
+                if conditional.cat not in valid_gates:
+                    raise CompileError(
+                        f"rule {rule.id!r} conditional category names "
+                        f"unknown category {conditional.cat!r}"
+                    )
+            if predicate.same_presence is not None:
+                if len(predicate.same_presence) < 2:
+                    raise CompileError(
+                        f"rule {rule.id!r} same_presence needs at least two slots"
+                    )
+                for slot_name in predicate.same_presence:
+                    if slot_name not in slots:
+                        raise CompileError(
+                            f"rule {rule.id!r} same_presence names unknown "
+                            f"slot {slot_name!r}"
+                        )
             exclusion = predicate.slot_not_category
             if exclusion is not None:
                 slot_name = exclusion.get("slot")

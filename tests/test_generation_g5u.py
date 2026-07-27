@@ -141,7 +141,7 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
     assert sum(item.supported for item in availability) == 95
     assert sum(not item.supported for item in availability) == 0
     assert all(not item.blockers for item in availability)
-    assert len(exploration_status(project)["fillers"]) == 147
+    assert len(exploration_status(project)["fillers"]) == 150
 
 
 def test_currently_generates_a_matcher_confirmed_anchor() -> None:
@@ -155,7 +155,7 @@ def test_currently_generates_a_matcher_confirmed_anchor() -> None:
         row for row in candidate.premises if row.slot == "trailing_adv"
     )
 
-    assert candidate.generator_version == "g6-g5u-adverbs"
+    assert candidate.generator_version == "g6-reviewed-premise-boundaries"
     assert candidate.target_status == "matched"
     assert premise.binding == MOVED_WORD
     assert premise.status == "passed"

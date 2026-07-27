@@ -1,7 +1,8 @@
 """Designer-only generation observations and exploration status.
 
-This ledger records successful fresh realizations, not human judgments.
-Runtime reading, matching, inference, and benchmarks never import it.
+Successful fresh realizations and failed fresh attempts use separate
+append-only ledgers. Neither contains human judgments, and runtime reading,
+matching, inference, and benchmarks never import them.
 """
 
 from __future__ import annotations
@@ -30,6 +31,8 @@ from .sample import (
     _load_fixtures,
     _measure_assignment_exists,
     _outside_categories,
+    _outside_slot_categories,
+    _slot_category_exclusions,
     _unbound_optional_paths,
     list_rule_availability,
 )
@@ -67,6 +70,26 @@ class DurableExplorationEvent(ExplorationEvent):
     timestamp: str = Field(min_length=20, max_length=64)
 
 
+class ExplorationFailure(BaseModel):
+    """The bounded durable input for one unsuccessful fresh attempt."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    rule_id: str = Field(min_length=1, max_length=256)
+    seed: int
+    registry_fingerprint: str = Field(min_length=8, max_length=128)
+    probe: ExplorationFiller | None = None
+    error: str = Field(min_length=1, max_length=4000)
+
+
+class DurableExplorationFailure(ExplorationFailure):
+    """A failed attempt after server-owned identity and time are attached."""
+
+    id: str = Field(pattern=r"^fail-[0-9a-f]{16}$")
+    project: str = Field(min_length=1, max_length=256)
+    timestamp: str = Field(min_length=20, max_length=64)
+
+
 @dataclass(frozen=True)
 class ProbePlacement:
     """One rule slot through which a lexicon identity can be realized."""
@@ -93,6 +116,12 @@ def exploration_path(project: Project) -> Path:
     return project.root / "generation" / "exploration.jsonl"
 
 
+def exploration_failure_path(project: Project) -> Path:
+    """The fixed failed-attempt path; callers cannot supply another."""
+
+    return project.root / "generation" / "failures.jsonl"
+
+
 def _probe_catalog(project: Project) -> tuple[ProbePlacement, ...]:
     fixtures = _load_fixtures(project.root)
     supported = {
@@ -103,6 +132,7 @@ def _probe_catalog(project: Project) -> tuple[ProbePlacement, ...]:
         if rule.id not in supported:
             continue
         absent_categories = _absent_categories(rule)
+        slot_category_exclusions = _slot_category_exclusions(rule)
         seq = _flat_sentence(rule) or []
         unbound_optional_paths = _unbound_optional_paths(rule, seq)
         distinct_measure_groups = _distinct_measure_groups(rule)
@@ -123,6 +153,12 @@ def _probe_catalog(project: Project) -> tuple[ProbePlacement, ...]:
                 if _outside_categories(
                     filler, absent_categories, project.registry
                 )
+                and _outside_slot_categories(
+                    filler,
+                    name,
+                    slot_category_exclusions,
+                    project.registry,
+                )
             ]
             for name in measure_slots
             if name in tokens_by_slot
@@ -142,6 +178,12 @@ def _probe_catalog(project: Project) -> tuple[ProbePlacement, ...]:
                 if (
                     _outside_categories(
                         filler, absent_categories, project.registry
+                    )
+                    and _outside_slot_categories(
+                        filler,
+                        token.slot,
+                        slot_category_exclusions,
+                        project.registry,
                     )
                     and (
                         token.slot not in measure_slots
@@ -250,6 +292,52 @@ def append_exploration(
     return record
 
 
+def append_exploration_failure(
+    project: Project,
+    selection: ExplorationSelection,
+    *,
+    seed: int,
+    error: str,
+) -> dict[str, Any]:
+    """Append one failed fresh attempt without claiming a generation."""
+
+    raw_probe = selection.probe
+    probe = (
+        ExplorationFiller.model_validate(
+            {
+                key: raw_probe[key]
+                for key in (
+                    "slot",
+                    "token_index",
+                    "identity",
+                    "surface",
+                    "source",
+                )
+            }
+        )
+        if raw_probe is not None
+        else None
+    )
+    failure = ExplorationFailure(
+        rule_id=selection.rule_id,
+        seed=seed,
+        registry_fingerprint=project.registry.fingerprint,
+        probe=probe,
+        error=error,
+    )
+    record = DurableExplorationFailure(
+        **failure.model_dump(),
+        id="fail-" + uuid.uuid4().hex[:16],
+        project=project.doc.name,
+        timestamp=datetime.now(timezone.utc).isoformat(),
+    ).model_dump()
+    path = exploration_failure_path(project)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as fh:
+        fh.write(json.dumps(record, sort_keys=True) + "\n")
+    return record
+
+
 def read_exploration_events(project: Project) -> list[dict[str, Any]]:
     """Read and schema-check every generation observation in write order."""
 
@@ -278,10 +366,39 @@ def read_exploration_events(project: Project) -> list[dict[str, Any]]:
     return events
 
 
+def read_exploration_failures(project: Project) -> list[dict[str, Any]]:
+    """Read and schema-check every failed attempt in write order."""
+
+    path = exploration_failure_path(project)
+    if not path.exists():
+        return []
+    failures: list[dict[str, Any]] = []
+    for line_no, line in enumerate(
+        path.read_text(encoding="utf-8").splitlines(), start=1
+    ):
+        if not line.strip():
+            continue
+        try:
+            raw = json.loads(line)
+            checked = DurableExplorationFailure.model_validate(raw)
+        except Exception as exc:  # noqa: BLE001 - report corrupt authoring state
+            raise GenerationError(
+                f"{path}:{line_no}: invalid exploration failure: {exc}"
+            ) from exc
+        failures.append(
+            {
+                **raw,
+                **checked.model_dump(),
+            }
+        )
+    return failures
+
+
 def _status(
     generated_count: int,
     reviewed_count: int,
     *,
+    failed_count: int = 0,
     supported: bool = True,
 ) -> str:
     if not supported:
@@ -290,6 +407,8 @@ def _status(
         return "reviewed"
     if generated_count:
         return "generated_unreviewed"
+    if failed_count:
+        return "attempted_failed"
     return "never_generated"
 
 
@@ -297,12 +416,18 @@ def exploration_status(project: Project) -> dict[str, Any]:
     """Fold current availability, observations, and live human reviews."""
 
     events = read_exploration_events(project)
+    failures = [
+        failure
+        for failure in read_exploration_failures(project)
+        if failure["registry_fingerprint"] == project.registry.fingerprint
+    ]
     reviews = read_reviews(project, limit=100_000)
     availability = {
         item.id: item for item in list_rule_availability(project)
     }
 
     rule_generated = Counter(event["rule_id"] for event in events)
+    rule_failed = Counter(failure["rule_id"] for failure in failures)
     rule_reviewed = Counter(review["target_rule"] for review in reviews)
     rule_verdicts: dict[str, Counter[str]] = defaultdict(Counter)
     for review in reviews:
@@ -314,6 +439,14 @@ def exploration_status(project: Project) -> dict[str, Any]:
         if isinstance(timestamp, str):
             rule_last_generated[event["rule_id"]] = max(
                 timestamp, rule_last_generated.get(event["rule_id"], timestamp)
+            )
+    rule_last_failed: dict[str, str] = {}
+    for failure in failures:
+        timestamp = failure.get("timestamp")
+        if isinstance(timestamp, str):
+            rule_last_failed[failure["rule_id"]] = max(
+                timestamp,
+                rule_last_failed.get(failure["rule_id"], timestamp),
             )
     rule_last_reviewed: dict[str, str] = {}
     for review in reviews:
@@ -329,6 +462,7 @@ def exploration_status(project: Project) -> dict[str, Any]:
         current = availability[rule.id]
         source = project.source_index.rules.get(rule.id)
         generated_count = rule_generated[rule.id]
+        failed_count = rule_failed[rule.id]
         reviewed_count = rule_reviewed[rule.id]
         rules.append(
             {
@@ -336,15 +470,19 @@ def exploration_status(project: Project) -> dict[str, Any]:
                 "status": _status(
                     generated_count,
                     reviewed_count,
+                    failed_count=failed_count,
                     supported=current.supported,
                 ),
                 "generated_count": generated_count,
+                "failed_count": failed_count,
+                "attempt_count": generated_count + failed_count,
                 "reviewed_count": reviewed_count,
                 "verdict_counts": {
                     verdict: rule_verdicts[rule.id][verdict]
                     for verdict in ("valid", "invalid", "unclear")
                 },
                 "last_generated_at": rule_last_generated.get(rule.id),
+                "last_failed_at": rule_last_failed.get(rule.id),
                 "last_reviewed_at": rule_last_reviewed.get(rule.id),
                 "source": source.to_json() if source is not None else None,
             }
@@ -352,7 +490,9 @@ def exploration_status(project: Project) -> dict[str, Any]:
 
     candidate_fillers: dict[str, set[str]] = defaultdict(set)
     filler_generated: Counter[str] = Counter()
+    filler_failed: Counter[str] = Counter()
     filler_last_generated: dict[str, str] = {}
+    filler_last_failed: dict[str, str] = {}
     for event in events:
         identities = {filler["identity"] for filler in event["fillers"]}
         candidate_fillers[event["candidate_id"]].update(identities)
@@ -363,6 +503,17 @@ def exploration_status(project: Project) -> dict[str, Any]:
                 filler_last_generated[identity] = max(
                     timestamp, filler_last_generated.get(identity, timestamp)
                 )
+    for failure in failures:
+        probe = failure.get("probe")
+        if not isinstance(probe, dict):
+            continue
+        identity = probe["identity"]
+        filler_failed[identity] += 1
+        timestamp = failure.get("timestamp")
+        if isinstance(timestamp, str):
+            filler_last_failed[identity] = max(
+                timestamp, filler_last_failed.get(identity, timestamp)
+            )
 
     filler_reviewed: Counter[str] = Counter()
     filler_last_reviewed: dict[str, str] = {}
@@ -384,14 +535,22 @@ def exploration_status(project: Project) -> dict[str, Any]:
     for identity, placements in sorted(placements_by_identity.items()):
         source = project.source_index.lexicon[identity]
         generated_count = filler_generated[identity]
+        failed_count = filler_failed[identity]
         reviewed_count = filler_reviewed[identity]
         fillers.append(
             {
                 "identity": identity,
-                "status": _status(generated_count, reviewed_count),
+                "status": _status(
+                    generated_count,
+                    reviewed_count,
+                    failed_count=failed_count,
+                ),
                 "generated_count": generated_count,
+                "failed_count": failed_count,
+                "attempt_count": generated_count + failed_count,
                 "reviewed_count": reviewed_count,
                 "last_generated_at": filler_last_generated.get(identity),
+                "last_failed_at": filler_last_failed.get(identity),
                 "last_reviewed_at": filler_last_reviewed.get(identity),
                 "source": source.to_json(),
                 "surfaces": sorted(
@@ -424,6 +583,7 @@ def exploration_status(project: Project) -> dict[str, Any]:
             "rules": dict(Counter(item["status"] for item in rules)),
             "fillers": dict(Counter(item["status"] for item in fillers)),
             "events": len(events),
+            "failures": len(failures),
             "live_reviews": len(reviews),
         },
     }
@@ -479,11 +639,11 @@ def choose_exploration_target(
         ]
         if not eligible:
             raise GenerationError("this project has no supported premise rules")
-        least = min(item["generated_count"] for item in eligible)
+        least = min(item["attempt_count"] for item in eligible)
         tied = sorted(
             item["id"]
             for item in eligible
-            if item["generated_count"] == least
+            if item["attempt_count"] == least
         )
         chosen_rule = tied[rng.randrange(len(tied))]
 
@@ -502,14 +662,14 @@ def choose_exploration_target(
 
     if identity is None:
         least = min(
-            fillers[placement.identity]["generated_count"]
+            fillers[placement.identity]["attempt_count"]
             for placement in placements
         )
         identities = sorted(
             {
                 placement.identity
                 for placement in placements
-                if fillers[placement.identity]["generated_count"] == least
+                if fillers[placement.identity]["attempt_count"] == least
             }
         )
         identity = identities[rng.randrange(len(identities))]

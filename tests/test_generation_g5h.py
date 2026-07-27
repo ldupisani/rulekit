@@ -26,7 +26,7 @@ CORE_DOMAINS = {
     "remnant": {"remainder", "rest"},
     "desire": {"want", "wanted", "wanting", "wants"},
     "need_premise": {"need", "needed", "needs"},
-    "duration_verb": {"take", "takes", "took"},
+    "duration_verb": {"takes", "took"},
 }
 
 NEWLY_SUPPORTED = {
@@ -85,7 +85,7 @@ def test_newly_exposed_rules_generate_reviewable_matching_specimens(
         seed=0,
     )
 
-    assert candidate.generator_version == "g6-g5u-adverbs"
+    assert candidate.generator_version == "g6-reviewed-premise-boundaries"
     assert candidate.target_status in {"matched", "shadowed"}
     assert candidate.sentence
     assert rule_id in {match.rule_id for match in candidate.actual_matches}

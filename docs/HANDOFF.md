@@ -1,12 +1,12 @@
 # rulekit handoff — generation workbench
 
-**Updated:** 2026-07-26
+**Updated:** 2026-07-27
 
 **Active campaign:** deterministic rule generation and human review
 
 **Status:** G1 through G4, G5a through G5g, G6, Reading-origin review,
 fact-level review, the fraction-plural morphology correction, scoped
-`GroupTotal`, and the first review-led grammar-boundary reconciliation are
+`GroupTotal`, and both review-led grammar-boundary reconciliations are
 complete and gated. The review-led adjective/noun compatibility boundary is
 also complete and gated. The review-led leading-`GroupTotal` subject boundary
 is complete and gated: existential `there` no longer becomes a group scope or
@@ -56,7 +56,8 @@ time-root realization is complete: both deictic markers are core-owned and
 reviewable, and the standard-pinned future rule unlocks. G5u direct-adverb
 visibility is complete: `currently` is core-owned, project-relative adverb
 breadth remains visible, and all 95 curated premise rules are selectable. G5v
-review-led premise auditing is next.
+review-led premise auditing is active; its second six-review boundary pass is
+implemented and fully gated.
 
 **Active plan:**
 [`generation-and-annotation-plan.md`](generation-and-annotation-plan.md)
@@ -187,11 +188,14 @@ G6 adds:
 
 - a second fixed, schema-bounded Designer ledger at
   `generation/exploration.jsonl` for successful fresh realizations only;
+- a separate fixed `generation/failures.jsonl` ledger for failed fresh
+  attempts, scoped to the current registry fingerprint for frontier scoring;
 - an honest fold of current availability, exploration observations, and live
-  reviews into per-rule and reachable-lexicon status;
+  reviews into per-rule and reachable-lexicon successful, failed, attempted,
+  and reviewed status;
 - conservative legacy handling: the existing review marks its rule reviewed
   without fabricating a generation event or normalized filler review;
-- deterministic least-generated rule and filler selection with seeded,
+- deterministic least-attempted rule and filler selection with seeded,
   sorted tie-breaking;
 - explicit compatible lexicon probing, exact incompatibility errors, and
   source navigation through the existing allowlist;
@@ -405,7 +409,7 @@ invalid live review without rewriting its evidence:
   combines that with `age_measure`, a copula, and singular-name agreement;
 - generic `year/years` plus its age/time memberships move from `difg-mined`
   to `core-english`, beside the grammar that needs them; and
-- generator version `g6-review-boundaries` realizes and explains the same
+- generator version `g6-reviewed-premise-boundaries` realizes and explains the same
   counted-category and grammatical-number constraints the matcher enforces.
 
 All nine reviews that existed during that reconciliation were pinned and
@@ -413,9 +417,9 @@ retested: every invalid target
 is now `absent`, while the valid `arithmetic/group-total-leading` specimen
 remains `matched`. The ledger stays append-only and unchanged.
 
-Current validation on 2026-07-26:
+Current validation on 2026-07-27:
 
-- the 3,828-test full repository gate passes in four-worker mode, including
+- the 3,900-test full repository gate passes in four-worker mode, including
   the 155-pair complete curated compatibility-domain check, all eight standing
   DEV pairs, 48 seeded
   compatible round trips, a generic two-target invented category, locked
@@ -444,16 +448,15 @@ Current validation on 2026-07-26:
   complete direct-adverb occurrence and ownership maps, matcher-confirmed
   included and omitted adverb branches, an invented adverb-root check, all 45
   combined-project adverbs retained as inspectable placements, the exact
-  95/95 availability and 147-filler frontier, and one reviewable matching
+  95/95 availability and 150-filler frontier, and one reviewable matching
   specimen for each newly exposed G5h–G5u rule;
 - curated suite remains 65/65, 0 wrong, 100% precision;
 - GSM8K DEV-train remains 104 correct / 0 wrong and DEV-holdout remains
   40 / 0, with both snapshot diffs neutral;
 - ASDiv remains 44 / 0, SVAMP 30 / 0, MAWPS 9 / 0, SciBench 6 / 0, and
   FOLIO makes zero commitments;
-- lint remains at 0 errors and three known warnings: the fraction-rule shadow,
-  the documented totality-marker alternation, and the existing trigonometric
-  literal-alternation warning; and
+- lint remains at 0 errors and two known warnings: the fraction-rule shadow
+  and the documented totality-marker alternation; and
 - G3 live validation pinned `Discount of 15%.`, showed
   `1/7 changed · identical sentence preserved`, exercised rollback, and
   restored the original fingerprint; G4 live validation generated
@@ -546,13 +549,19 @@ matrices, and fixture reuse removed their meaningful runtime cost. Broadly
 disabling traces was also rejected as a default because the isolated saving
 was only about 15.5% and several tests specify trace behavior directly.
 
-## Immediate next step — G5v review-led premise audit
+## Active step — continue the G5v review-led premise audit
 
 The adjective/noun compatibility and leading-`GroupTotal` subject reviews are
 reconciled as complete declarative classes, not `year`/`large` or
 `there`/`drops` exceptions. Their candidates, exploration history, and
 append-only review rows remain user-authored evidence and must continue to be
 preserved.
+
+The next action is to generate or inspect the next least-explored premise and
+review it in the Designer. The six live reviews handled by the second G5v
+batch all retest `absent`; keep their append-only evidence, and reopen a fixed
+class only if a pinned retest regresses or a new neighboring review shows the
+boundary is incomplete.
 
 Generation is an exploratory microscope, not a linguistic-validity oracle.
 If every declared token and predicate has a realizer and a project-backed
@@ -652,15 +661,15 @@ trips. Those are review evidence, not candidates for silent filtering.
 G5u unlocks the final
 `arithmetic/anchored-relation-conjoined-anchor` rule. Curated premise
 availability is now 95/95 with 147 reachable lexicon identities. The
-cumulative generator version is `g6-g5u-adverbs`.
+cumulative generator version at that checkpoint was `g6-g5u-adverbs`.
 
-Mechanical premise generation is complete, but human validation is not. The
-current append-only fold contains:
+Mechanical premise generation is complete, but human validation is not. At
+that checkpoint the append-only fold contained:
 
-- 69 never-generated, 25 generated-but-unreviewed, and 1 reviewed rule;
-- 72 never-generated, 72 generated-but-unreviewed, and 3 reviewed reachable
+- 64 never-generated, 26 generated-but-unreviewed, and 5 reviewed rules;
+- 65 never-generated, 67 generated-but-unreviewed, and 16 reviewed reachable
   lexicon identities; and
-- 163 recorded generation events and one current live review.
+- 168 recorded generation events and five current live reviews.
 
 G5v is therefore an interactive review campaign, not another realizer:
 
@@ -672,6 +681,96 @@ G5v is therefore an interactive review campaign, not another realizer:
 5. retest the pinned sentence and rerun all standing gates after each accepted
    boundary change; and
 6. keep the review and exploration ledgers append-only.
+
+The first G5v batch fixes all five live reviewed surfaces without rewriting or
+tombstoning their evidence:
+
+- quantitative comparative subjects and verbs now refuse the narrow
+  `non_quantity_holder` and `non_quantity_object_verb` categories and enforce
+  explicit subject/verb number compatibility;
+- `many` rules retain the open plural-noun domain while excluding the narrow
+  `many_incompatible_noun` class, so established count nouns do not require an
+  exhaustive allowlist;
+- `much` rules use the declared `mass_quantity_noun` boundary;
+- comparative appositive prefixes use `possessive_determiner`, `animate`, and
+  `bound_requires_type` to require a proper-name standard only when the role
+  prefix is present;
+- optional comparative PPs require a referential object, with
+  `bare_pp_object` as the explicit bare-adjunct exception;
+- additive affine many/much rules use `quantity_delta`, excluding age-specific
+  directions; and
+- anaphoric conjuncts require an overt `that`/`this`, while the elided scalar
+  relation requires `standalone: true` so a counted noun cannot double-fire.
+
+All five pinned reviews from that batch retest `absent`; valid neighboring
+constructions remain matcher-confirmed. At that checkpoint curated
+availability remained 95/95 and the reachable lexicon frontier was 147.
+Moving generic `this` into `core-english` added one valid probe identity,
+while applying authored `slot_not_category` refusals to the exploration
+catalogue retired the historical invalid `there`-as-holder placement.
+
+Exploration compatibility now shares the realizer's slot-local category
+boundary. Without that filter, least-explored selection could permanently
+alternate among `need`, `take`, and `want` on
+`arithmetic/affine-fraction-as-many`; every locked surface was explicitly
+forbidden by the rule and therefore failed all 64 attempts. Those dead
+placements are no longer advertised as compatible. The append-only event
+that historically generated `there` through the now-forbidden holder slot
+remains on disk, but it does not define current reachability.
+
+Failed selected probes are now durable attempts rather than invisible
+non-events. The success ledger and `generated_count` remain unchanged;
+`failures.jsonl` supplies separate `failed_count` and `attempt_count` fields,
+and least-explored selection ranks rules and fillers by attempts. A
+failure-only item is shown as `attempted_failed`, the Designer refreshes the
+frontier immediately after the failed request, and only rows matching the
+current registry fingerprint affect ranking. This prevents any mechanically
+unrealizable probe from starving untouched alternatives while allowing an
+authored edit to reopen it for immediate testing.
+
+The second G5v batch reconciles all six current live invalid reviews as
+complete declarative boundaries:
+
+- the age-comparison family uses copular agreement and a dedicated past-copula
+  category, preventing ordinary lexical verbs from occupying its predicate;
+- elapsed-duration rates require a counted `duration_measure`, a finite
+  expletive duration verb, and a bare-form infinitive. The generator and
+  matcher now share the same `bare_form` morphology check;
+- physical-dimension comparatives use descriptor/noun compatibility, so
+  linear, mass, and duration comparatives pair only with compatible measure
+  families;
+- the fraction-frame relation now requires its determiner, count-aggregate
+  noun, plural item, repeated verb, and paired optional destination
+  prepositions rather than accepting an incomplete prefix;
+- optional many-conjunct PPs use the same compatibility mechanism for their
+  preposition/object pairing, retaining declared locative and remainder
+  constructions while rejecting arbitrary objects; and
+- conjoined aggregate anchors enforce agreement and exclude narrow
+  non-quantity holders and verbs, preventing generic `amount`/`number`
+  surfaces from being treated as concrete group relations.
+
+`same_presence` now couples optional slots declaratively, while
+`bound_requires_category` applies a category premise only when its controlling
+slot binds. Attribute compatibility accepts adjective-, comparative-, or
+preposition-rooted descriptor categories against noun categories. Generic
+`inch`, `pound`, and `travel` forms moved into `core-english`, beside the
+grammar that consumes them; mined packs retain only their domain extensions.
+
+All six current pinned reviews retest `absent`, and valid direct,
+prepositional, present/past, compatible-dimension, duration, and aggregate
+neighbors remain matcher-confirmed. Curated availability remains 95/95 and
+the reachable lexicon frontier is now 150. The current generator version is
+`g6-reviewed-premise-boundaries`. The live fold contains 48 never-generated,
+41 generated-but-unreviewed, and 6 reviewed rules; its 150 reachable
+identities contain 45 never-generated, 80 generated-but-unreviewed, and 25
+reviewed fillers. The append-only success ledger contains 218 observations
+and there are six current live reviews.
+
+The complete gate is green: 3,900 tests pass in four-worker mode; curated is
+65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 40/0 with neutral
+before/after diffs; ASDiv, SVAMP, MAWPS, and SciBench remain 44/0, 30/0, 9/0,
+and 6/0; FOLIO makes zero commitments; and lint has zero errors with two known
+warnings.
 
 Do not interpret 95/95 as proof that every sentence is valid, bulk-label the
 frontier, or advance to deferred question generation before the premise audit

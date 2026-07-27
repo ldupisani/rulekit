@@ -15,6 +15,7 @@ from rulekit.generation import (
 from rulekit.generation.exploration import exploration_status
 from rulekit.generation.sample import (
     _Filler,
+    _Fixtures,
     _allowed_fillers,
     _distinct_measure_groups,
 )
@@ -150,7 +151,7 @@ def test_g5m_unlocks_exactly_the_preregistered_frontier() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 147
+    assert len(exploration_status(project)["fillers"]) == 150
 
 
 @pytest.mark.parametrize("rule_id", sorted(EXPECTED_GROUPS))
@@ -171,7 +172,7 @@ def test_every_distinct_measure_rule_generates_exact_distinct_keys(
         )
     ]
 
-    assert candidate.generator_version == "g6-g5u-adverbs"
+    assert candidate.generator_version == "g6-reviewed-premise-boundaries"
     assert candidate.target_status == "matched"
     assert len(rows) == len(EXPECTED_GROUPS[rule_id])
     assert all(row.status == "passed" for row in rows)
@@ -207,20 +208,23 @@ def test_qualifier_and_label_are_parts_of_the_measure_key(
     )
 
     allowed = _allowed_fillers(
-        MatchToken(slot="right", type="noun"),
-        [same, different_qualifier, different_label],
-        {"left": same},
-        project.registry,
-        {},
-        {},
-        [],
-        [],
-        [],
-        [],
-        (("left", "right"),),
-        [],
-        [],
-        (),
+        token=MatchToken(slot="right", type="noun"),
+        domain=[same, different_qualifier, different_label],
+        chosen={"left": same},
+        reg=project.registry,
+        fixtures=_Fixtures((), {}),
+        locked_bindings={},
+        locked_fillers={},
+        same_groups=[],
+        same_number_groups=[],
+        distinct_groups=[],
+        distinct_owner_groups=[],
+        distinct_measure_groups=(("left", "right"),),
+        attribute_pairs=[],
+        tokens_by_slot={},
+        active_slots=set(),
+        slot_category_exclusions=[],
+        absent_categories=(),
     )
 
     assert allowed == [different_qualifier, different_label]

@@ -1,6 +1,6 @@
 # RuleKit architecture
 
-**Updated:** 2026-07-26
+**Updated:** 2026-07-27
 **Status:** current implementation, not a roadmap
 
 RuleKit is a deterministic reading and reasoning engine for controlled,
@@ -51,10 +51,14 @@ domain and its declared future-only subtype. G5t moves the two deictic
 temporal markers into core and admits registry-backed time-rooted category
 generation. G5u moves generic `currently` into core and admits the complete
 loaded direct-adverb domain, bringing curated premise availability to 95/95.
-Generated
-defects remain visible by design: mechanical
-support reports that a rule can be realized and matched, not that its premises
-license valid English.
+G5v's review-led boundary passes add declarative definiteness, agreement,
+appositive-role, quantitative-verb, count/mass, additive-direction,
+finite/bare-form verb, complete-frame, optional-slot-coupling, and
+descriptor/noun compatibility constraints. They also distinguish standalone
+scalar numbers from condensed counted nouns so an elided rule cannot
+double-fire on an explicit measure.
+Generated defects remain visible by design: mechanical support reports that a
+rule can be realized and matched, not that its premises license valid English.
 
 ## Architectural boundaries
 
@@ -479,18 +483,22 @@ This separation lets missing definiteness, agreement, and other bad
 commitments become inspectable evidence instead of hidden prerequisites.
 
 The current realization boundary covers literals, project-fixture names,
-simple nouns/verbs/adjectives/prepositions/words, scalar number forms,
+simple nouns/verbs/adjectives/prepositions/words, shared finite-versus-bare
+verb morphology, scalar number forms,
 compatible category gates, declared single-token plural nouns, declared
 integer-count-plus-noun compositions, bounded proper-name possessive noun
 phrases, declared single-token generic pronouns, loaded direct-modal,
 future-modal, direct-adverb, and time-rooted category domains, and the
 `distinct`/`same_lemma`/`same_number`/`distinct_owner`/`distinct_measure`
-constraints plus
-pack-declared adjective/noun compatibility and negative slot-category
-constraints. Arbitrarily nested optional groups compose those same token
-realizers. Each active group makes a seeded include/omit choice; all
-descendants must be supported before the containing rule is available.
-Locked or excluded child bindings force their ancestor groups to be included.
+constraints plus `number_compatible`, conditional `bound_requires_type` and
+`bound_requires_category`, optional-slot `same_presence`, pack-declared
+descriptor/noun compatibility, referential noun-phrase qualification, and
+negative slot-category constraints. A number slot may
+declare `standalone: true` when a condensed counted noun is not grammatical in
+that position. Arbitrarily nested optional groups compose those same token
+realizers. Each active group makes a seeded include/omit choice; all descendants
+must be supported before the containing rule is available. Locked or excluded
+child bindings force their ancestor groups to be included.
 Plural and counted fillers come
 only from loaded numeric and singular/plural declarations. Count
 `1` selects the singular noun surface and every other admitted non-negative
@@ -638,6 +646,47 @@ pack-declared grammatical number. The matcher and generator share that
 predicate, so agreement such as `1 of them is red` versus
 `3 of them are red` is a rule premise rather than a word-specific repair.
 
+`number_compatible: [SUBJECT, VERB]` is the less restrictive agreement
+predicate for ordinary clauses. It refuses an explicit singular/plural
+conflict while allowing a number-neutral form, such as a past-tense verb, to
+pass. Neither matcher nor generator guesses a missing grammatical number.
+
+A verb token may declare `bare_form: true`. The matcher and generator share
+one lemma-aware morphology check: the lemma itself and declared non-third-
+person surface are admitted, while a third-person singular inflection is not.
+This supports infinitival complements such as `to travel` without silently
+turning every verb slot into an unrestricted surface domain.
+
+A slot may opt into `referential: true`. Names, resolved pronouns, possessed
+nouns, and counted nouns are already referential; an otherwise bare common noun
+requires a preceding member of the pack-declared `definite_article` or
+`possessive_determiner` category. `bare_reference_category` provides an exact
+pack-owned exception for independently licensed bare adjuncts such as temporal
+PP objects. Generation realizes and explains the same determiner boundary.
+
+`bound_requires_type: {bound: PREFIX_SLOT, slot: TARGET, type: TYPE}` makes an
+optional prefix constrain what follows only when that prefix actually matched.
+The comparative appositive family uses it to require a proper name after a
+possessive role phrase, while retaining ordinary entity standards when the
+prefix is absent.
+
+`bound_requires_category: {bound: CONTROL_SLOT, slot: TARGET, cat: CATEGORY}`
+is the category-backed sibling. It applies the target membership premise only
+when the controlling slot bound. The fraction-frame relation uses this to
+require a prepositional frame verb only when its optional destination
+preposition is present.
+
+`same_presence: [SLOT_A, SLOT_B, ...]` requires linked optional slots to be
+either all bound or all absent. This describes paired surface structure
+without making either branch mandatory. The matcher checks the final bindings,
+and the generator coordinates the corresponding optional choices before it
+selects fillers.
+
+A `type: number` token may add `standalone: true` to exclude a condensed
+counted-noun unit. Both plain `6` and condensed `6 marbles` intentionally carry
+`value_kind: count`; the opt-in sense check separates them without rejecting
+multiword scalars such as `twenty three`.
+
 Rules may also declare `distinct_owner` across possessed slots. Every named
 slot must carry a non-empty owner and the owners must be pairwise distinct.
 This is separate from `distinct`, which compares noun identity: two valid
@@ -656,15 +705,18 @@ the same lemma but different labels or qualifiers while rejecting an exact
 key collision. A passed premise reports the actual compared triples returned
 by the ordinary matcher.
 
-An explicit-noun attribute rule may declare
+An explicit-noun descriptor rule may declare
 `attribute_compatible: {attribute: ATTR_SLOT, noun: NOUN_SLOT}`. Category
-documents separately declare `attribute_compatibility` as an adjective
-category mapped to a list of noun categories. This is many-to-many rather than
-a word-pair table: either word may belong to several categories, and the match
-succeeds when any declared category pair covers both lemmas. One adjective
-category can therefore target physical-size and magnitude nouns without
-collapsing those noun categories into one semantic class. Packs extend
-memberships or add another compatible target beside the vocabulary they own.
+documents separately declare `attribute_compatibility` as an adjective-,
+comparative-, or preposition-rooted descriptor category mapped to a list of
+noun categories. This is many-to-many rather than a word-pair table: either
+word may belong to several categories, and the match succeeds when any
+declared category pair covers both lemmas. One descriptor category can
+therefore target physical-size and magnitude nouns without collapsing those
+noun categories into one semantic class. The same mechanism can separate
+linear, mass, and duration comparatives or constrain an optional preposition
+to compatible object categories. Packs extend memberships or add another
+compatible target beside the vocabulary they own.
 
 The matcher and realizer call the same frozen registry predicate. Generation
 filters both normal and locked/minimal-pair fillers, including a noun selected

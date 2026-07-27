@@ -136,7 +136,7 @@ categories:
       'lose'. Gated additionally on the fact's measure resolving to
       `currency` — an ordinary "gives 3 apples" never qualifies.
   timeperiod:
-    parent: noun
+    parent: bare_pp_object
   vehicle:
     parent: noun
 attribute_compatibility:
@@ -144,6 +144,7 @@ attribute_compatibility:
   quality_attribute: [quality_bearer_noun, animate]
   marital_status_attribute: [animate]
 members:
+  mass_quantity_noun: [chicken, coffee, flour, food, milk, money, rice, sugar]
   # Cross-pack extensions of the explicit adjective/noun compatibility
   # boundary used by partition-attribute-of-noun.
   color_attribute: [black, black-and-white, grey, pink, purple, white, yellow]
@@ -189,7 +190,6 @@ members:
   - cost
   length_measure:
   - foot
-  - inch
   - yard
   - meter
   - centimeter
@@ -198,12 +198,17 @@ members:
   - height
   - distance
   mass_measure:
-  - pound
   - ounce
   - kilogram
   - gram
   - weight
   time_measure:
+  - minute
+  - hour
+  - day
+  - week
+  - month
+  duration_measure:
   - minute
   - hour
   - day

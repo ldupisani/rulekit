@@ -117,7 +117,10 @@ class CategoriesDoc(StrictModel):
     format: Literal["rulekit/categories@1"]
     categories: dict[str, CategoryDef] = Field(default_factory=dict)
     members: dict[str, list[str]] = Field(default_factory=dict)
-    # Adjective category -> one or more noun categories it can describe.
+    # Descriptor category -> one or more noun categories it can describe or
+    # govern.  The original adjective use remains the common case; comparative
+    # and preposition categories let rules declare dimension/unit and
+    # adjunct/object compatibility without putting vocabulary in Python.
     # This is deliberately many-to-many: words may belong to several
     # categories on either side, and pack extensions may add another target
     # category without redefining either lexeme.
@@ -188,7 +191,8 @@ class ObligationsDoc(StrictModel):
 
 SLOT_TYPES = (
     "number", "fraction", "multiplier", "name", "noun", "plural", "counted",
-    "entity", "verb", "auxiliary", "modal", "future_modal", "pronoun", "word",
+    "entity", "verb", "auxiliary", "modal", "future_modal",
+    "pronoun", "word",
     "adjective", "possessed", "qualified", "percent",
     # an EVENT verb: verb-sensed and NOT in the `state` category — the
     # verbal logic rules gate on this so 'is'/'was' sentences stay the
@@ -286,6 +290,23 @@ class MatchToken(StrictModel):
     # unit must carry the declared singular/plural feature; it never infers a
     # word's number. This is separate from `same_number`, which relates slots.
     number: Literal["singular", "plural"] | None = None
+    # OPT-IN: a `type: number` slot must bind a standalone scalar, not the
+    # condensed counted-noun unit produced from "6 marbles". Both carry
+    # `value_kind: count`, so the ordinary number type intentionally accepts
+    # both; rules whose grammar elides the measure noun need this additional
+    # structural distinction. Multiword scalars such as "twenty three" remain
+    # valid because this checks the unit's sense, not its original word count.
+    standalone: bool = False
+    # OPT-IN: a common-noun slot must be realized as a referential noun phrase,
+    # not as a floating bare singular. A name or resolved pronoun is already
+    # referential; a noun must carry a possessive owner or have a
+    # pack-declared definite article / possessive determiner immediately to
+    # its left. Defaults False so existing slots are unchanged.
+    referential: bool = False
+    # OPT-IN exception to `referential`: nouns in this category may occur bare.
+    # This is for independently licensed adverbial nouns ("by day", "at
+    # night"), not a general weakening of noun-phrase definiteness.
+    bare_reference_category: str | None = None
     # OPT-IN: require the slot's noun to be BARE — no compound modifier
     # (condense merge-compound) and no possessive owner. A category gate matches
     # on the unit's LEMMA, and a compound noun keeps its HEAD's lemma, so "the
@@ -442,9 +463,14 @@ class MatchToken(StrictModel):
                 or self.counted
                 or self.possessed
                 or self.number is not None
+                or self.standalone
+                or self.referential
+                or self.bare_reference_category is not None
             ):
                 raise ValueError(
-                    "a span slot takes no type/cat/bare/counted/possessed/number"
+                    "a span slot takes no "
+                    "type/cat/bare/counted/possessed/number/standalone/"
+                    "referential"
                 )
         elif self.slot is not None and (self.type is None) == (self.cat is None):
             raise ValueError("a slot needs exactly one of type/cat")
@@ -456,6 +482,16 @@ class MatchToken(StrictModel):
             raise ValueError("a category slot cannot be both counted and possessed")
         if self.number is not None and self.slot is None:
             raise ValueError("`number` only qualifies a slot")
+        if self.standalone and self.type != "number":
+            raise ValueError(
+                "`standalone` only qualifies a `type: number` slot"
+            )
+        if self.referential and self.slot is None:
+            raise ValueError("`referential` only qualifies a slot")
+        if self.bare_reference_category is not None and not self.referential:
+            raise ValueError(
+                "`bare_reference_category` requires `referential: true`"
+            )
         if self.span_blocks is not None and not self.span:
             raise ValueError("`span_blocks` only qualifies a span slot")
         if self.bare and self.slot is None:
@@ -482,10 +518,38 @@ class MatchToken(StrictModel):
 
 
 class AttributeCompatibilityPredicate(StrictModel):
-    """The adjective and noun slots participating in a compatibility check."""
+    """The descriptor and noun slots participating in a compatibility check.
+
+    The historical field names remain ``attribute``/``noun`` because the
+    first consumer was adjective/noun compatibility.  The descriptor may now
+    also be comparative- or preposition-rooted; the pack-declared category
+    pair remains the sole lexical authority.
+    """
 
     attribute: str
     noun: str
+
+
+class BoundRequiresTypePredicate(StrictModel):
+    """Require one slot type only when another optional slot was bound."""
+
+    bound: str
+    slot: str
+    type: str
+
+    @model_validator(mode="after")
+    def _known_type(self) -> "BoundRequiresTypePredicate":
+        if self.type not in SLOT_TYPES:
+            raise ValueError(f"unknown slot type {self.type!r}")
+        return self
+
+
+class BoundRequiresCategoryPredicate(StrictModel):
+    """Require a slot category only when another optional slot was bound."""
+
+    bound: str
+    slot: str
+    cat: str
 
 
 class WherePredicate(StrictModel):
@@ -498,6 +562,26 @@ class WherePredicate(StrictModel):
     # word list, and lets a rule declare agreement without teaching the kernel
     # which words are singular or plural.
     same_number: list[str] | None = None
+    # Reject an EXPLICIT grammatical-number conflict while allowing a
+    # number-neutral form (notably English past tense) to remain compatible.
+    # This differs deliberately from `same_number`, which requires every slot
+    # to carry singular/plural evidence.
+    number_compatible: list[str] | None = None
+    # Conditional phrase structure. An optional prefix may narrow the type of
+    # the following head: an appositive "his friend Sam" requires a proper
+    # name after the bound role, while the prefix-free sibling may still admit
+    # a definite common-noun standard.
+    bound_requires_type: BoundRequiresTypePredicate | None = None
+    # Category-qualified sibling of ``bound_requires_type``.  This is useful
+    # when an optional grammatical continuation changes the lexical class of
+    # an earlier slot, e.g. an optional destination preposition requires a
+    # motion verb while the direct-object form remains open.
+    bound_requires_category: BoundRequiresCategoryPredicate | None = None
+    # The named optional slots must either all be present or all be absent.
+    # This makes discontinuous paired structure declarative: a repeated
+    # preposition can surround an intervening relative clause without either
+    # half being independently optional.
+    same_presence: list[str] | None = None
     # Opt-in equality for whole rendered slot values, including span slots.
     # `same_lemma` deliberately skips spans; constructions with repeated
     # multi-unit phrases need exact phrase identity, not head-lemma identity.
@@ -508,8 +592,9 @@ class WherePredicate(StrictModel):
     # ("Aven's age ... Bira's age"); ordinary `distinct` compares lemmas and
     # therefore cannot express this relation.
     distinct_owner: list[str] | None = None
-    # The adjective slot must be licensed for the noun slot by at least one
-    # pack-declared adjective-category -> noun-category compatibility pair.
+    # The descriptor slot must be licensed for the noun slot by at least one
+    # pack-declared descriptor-category -> noun-category compatibility pair.
+    # Descriptors may be adjectives, comparatives, or prepositions.
     # Both words may belong to multiple categories; this is existential over
     # the cross-product, never a single hardwired category.
     attribute_compatible: AttributeCompatibilityPredicate | None = None
@@ -555,7 +640,9 @@ class WherePredicate(StrictModel):
     def _one(self) -> "WherePredicate":
         set_ = [
             v for v in (
-                self.same_lemma, self.same_number, self.same_phrase,
+                self.same_lemma, self.same_number, self.number_compatible,
+                self.bound_requires_type, self.bound_requires_category,
+                self.same_presence, self.same_phrase,
                 self.distinct, self.distinct_owner, self.attribute_compatible,
                 self.distinct_measure,
                 self.name_count, self.absent, self.unbound,

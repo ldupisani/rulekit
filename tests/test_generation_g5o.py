@@ -109,7 +109,7 @@ def test_g5o_unlocks_only_the_preregistered_rule() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 147
+    assert len(exploration_status(project)["fillers"]) == 150
 
 
 @pytest.mark.parametrize("quantifier", sorted(EXPECTED_FILLERS))
@@ -124,7 +124,7 @@ def test_every_loaded_quantifier_is_exposed_for_human_review(
     )
     premise = next(row for row in candidate.premises if row.slot == "q")
 
-    assert candidate.generator_version == "g6-g5u-adverbs"
+    assert candidate.generator_version == "g6-reviewed-premise-boundaries"
     assert candidate.target_status == "matched"
     assert premise.binding == quantifier
     assert premise.status == "passed"

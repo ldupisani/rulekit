@@ -3,11 +3,13 @@
 from pathlib import Path
 
 import pytest
+from fastapi import HTTPException
 from pydantic import ValidationError
 
 from rulekit.data.project import load_project
 from rulekit.generation import (
     ExplorationEvent,
+    ExplorationFailure,
     FactEvidence,
     GenerationError,
     PremiseAttachment,
@@ -19,12 +21,14 @@ from rulekit.generation import (
     delete_review,
     derive_hypotheses,
     exploration_status,
+    exploration_failure_path,
     generate_candidate,
     generate_minimal_pair,
     list_rule_availability,
     promote_reading_candidate,
     read_reviews,
     read_exploration_events,
+    read_exploration_failures,
     retest_candidate,
     update_review,
 )
@@ -344,7 +348,7 @@ def test_declared_plural_slots_are_reproducible_and_source_linked(
     )
 
     assert first.to_json() == second.to_json()
-    assert first.generator_version == "g6-g5u-adverbs"
+    assert first.generator_version == "g6-reviewed-premise-boundaries"
     assert first.target_status == "matched"
     assert first.requested_bindings["group"] in {"mivs", "zors"}
     premise = first.premises[0]
@@ -563,7 +567,7 @@ def test_possessed_slots_compose_declared_owner_and_noun_sources(
     )
 
     assert singular.to_json() == replay.to_json()
-    assert singular.generator_version == "g6-g5u-adverbs"
+    assert singular.generator_version == "g6-reviewed-premise-boundaries"
     assert singular.target_status == "matched"
     assert plural.target_status == "matched"
     singular_premise = next(
@@ -696,7 +700,7 @@ def test_pronoun_slots_use_the_complete_declared_domain_and_sources(
     )
 
     assert candidate.to_json() == replay.to_json()
-    assert candidate.generator_version == "g6-g5u-adverbs"
+    assert candidate.generator_version == "g6-reviewed-premise-boundaries"
     assert candidate.target_status in {"matched", "shadowed"}
     assert candidate.requested_bindings == {"ref": "vem"}
     premise = candidate.premises[0]
@@ -760,7 +764,7 @@ def test_pronoun_category_slots_use_membership_and_ancestry_sources(
     )
 
     assert candidate.to_json() == replay.to_json()
-    assert candidate.generator_version == "g6-g5u-adverbs"
+    assert candidate.generator_version == "g6-reviewed-premise-boundaries"
     assert candidate.target_status == "matched"
     premise = candidate.premises[0]
     assert premise.slot_type == "invented_pool"
@@ -814,7 +818,7 @@ def test_aggregate_root_slots_use_the_complete_declared_domain_and_sources(
         )
 
         assert candidate.to_json() == replay.to_json()
-        assert candidate.generator_version == "g6-g5u-adverbs"
+        assert candidate.generator_version == "g6-reviewed-premise-boundaries"
         assert candidate.target_status == "matched"
         assert candidate.requested_bindings == {"marker": surface}
         premise = candidate.premises[0]
@@ -1843,9 +1847,51 @@ def test_least_explored_selection_is_seeded_and_probe_compatible(
             seed=55,
         )
 
+    curated = load_project(Path("projects/curated"))
+    curated_fillers = {
+        item["identity"]: item
+        for item in exploration_status(curated)["fillers"]
+    }
+    excluded_rule = "arithmetic/affine-fraction-as-many"
+    for identity in ("need", "take", "want"):
+        assert excluded_rule not in curated_fillers[identity]["compatible_rules"]
+        assert all(
+            placement["rule_id"] != excluded_rule
+            for placement in curated_fillers[identity]["placements"]
+        )
+        with pytest.raises(
+            ValueError,
+            match=f"cannot fill a supported slot in {excluded_rule}",
+        ):
+            choose_exploration_target(
+                curated,
+                rule_id=excluded_rule,
+                filler_identity=identity,
+                seed=55,
+            )
+
 
 def test_generation_api_records_only_fresh_realizations(tmp_path: Path) -> None:
     _write_project(tmp_path)
+    rules_path = tmp_path / "pack" / "rules.yaml"
+    rules_path.write_text(
+        rules_path.read_text()
+        + """\
+
+  - id: invented/impossible-same
+    phase: read
+    match:
+      sentence:
+        - {slot: verb, cat: invented_action}
+        - {slot: item, type: noun}
+    where:
+      - same_lemma: [verb, item]
+    emits:
+      - fact: atom
+        entity: "{item}"
+        pred: "{verb}"
+"""
+    )
     router = build_router(ServerState(tmp_path))
 
     def endpoint(path: str, method: str):
@@ -1854,6 +1900,59 @@ def test_generation_api_records_only_fresh_realizations(tmp_path: Path) -> None:
             for route in router.routes
             if route.path == path and method in route.methods
         )
+
+    project = load_project(tmp_path)
+    first_selection = choose_exploration_target(
+        project,
+        rule_id="invented/impossible-same",
+        seed=8128,
+    )
+    with pytest.raises(HTTPException, match="could not realize"):
+        endpoint("/api/generation/candidate", "POST")(
+            GenerationCandidateBody(
+                rule_id="invented/impossible-same",
+                seed=8128,
+            )
+        )
+
+    failures = read_exploration_failures(load_project(tmp_path))
+    assert len(failures) == 1
+    assert failures[0]["id"].startswith("fail-")
+    assert failures[0]["rule_id"] == "invented/impossible-same"
+    assert failures[0]["probe"]["identity"] == first_selection.probe["identity"]
+    assert exploration_failure_path(project).exists()
+    assert not exploration_path(project).exists()
+
+    attempted = exploration_status(load_project(tmp_path))
+    attempted_rule = next(
+        item
+        for item in attempted["rules"]
+        if item["id"] == "invented/impossible-same"
+    )
+    attempted_filler = next(
+        item
+        for item in attempted["fillers"]
+        if item["identity"] == first_selection.probe["identity"]
+    )
+    assert attempted_rule["status"] == "attempted_failed"
+    assert attempted_rule["generated_count"] == 0
+    assert attempted_rule["failed_count"] == 1
+    assert attempted_rule["attempt_count"] == 1
+    assert attempted_filler["status"] == "attempted_failed"
+    assert attempted_filler["generated_count"] == 0
+    assert attempted_filler["failed_count"] == 1
+    assert attempted_filler["attempt_count"] == 1
+
+    second_selection = choose_exploration_target(
+        load_project(tmp_path),
+        rule_id="invented/impossible-same",
+        seed=8129,
+    )
+    assert second_selection.probe["identity"] != first_selection.probe["identity"]
+    assert (
+        choose_exploration_target(load_project(tmp_path), seed=8130).rule_id
+        != "invented/impossible-same"
+    )
 
     generated = endpoint("/api/generation/candidate", "POST")(
         GenerationCandidateBody(
@@ -1894,6 +1993,21 @@ def test_generation_api_records_only_fresh_realizations(tmp_path: Path) -> None:
     assert paired["exploration_event_id"].startswith("exp-")
     assert len(read_exploration_events(load_project(tmp_path))) == 2
 
+    lexicon_path = tmp_path / "pack" / "lexicon.yaml"
+    lexicon_path.write_text(
+        lexicon_path.read_text() + "  nova: {senses: [noun], plural: novas}\n"
+    )
+    revised = exploration_status(load_project(tmp_path))
+    revised_rule = next(
+        item
+        for item in revised["rules"]
+        if item["id"] == "invented/impossible-same"
+    )
+    assert revised_rule["status"] == "never_generated"
+    assert revised_rule["failed_count"] == 0
+    assert revised_rule["attempt_count"] == 0
+    assert len(read_exploration_failures(load_project(tmp_path))) == 1
+
     with pytest.raises(ValidationError):
         GenerationCandidateBody.model_validate(
             {
@@ -1914,6 +2028,17 @@ def test_exploration_event_schema_rejects_unbounded_or_extra_data() -> None:
                 "registry_fingerprint": "abcdef0123456789",
                 "fillers": [],
                 "note": "exploration rows do not accept free text",
+            }
+        )
+
+    with pytest.raises(ValidationError):
+        ExplorationFailure.model_validate(
+            {
+                "rule_id": "invented/simple",
+                "seed": 1,
+                "registry_fingerprint": "abcdef0123456789",
+                "error": "could not realize",
+                "path": "/tmp/not-allowed.jsonl",
             }
         )
 
@@ -2129,6 +2254,7 @@ def test_designer_exposes_the_generation_review_loop() -> None:
     root = Path("src/rulekit/server/static")
     html = (root / "index.html").read_text()
     js = (root / "app.js").read_text()
+    css = (root / "style.css").read_text()
 
     assert 'id="view-generate"' in html
     assert 'id="generation-rule"' in html
@@ -2169,9 +2295,22 @@ def test_designer_exposes_the_generation_review_loop() -> None:
     assert "d.source_ref" in js
     assert "f.source_ref" in js
     assert "loadGenerationExploration" in js
+    assert "attempted_failed" in js
+    assert "least attempted, with seeded tie-breaking" in js
     assert "use Review history → Edit for corrections" in js
     assert "control.title = help" in js
     assert "Fact omits needed context" in js
     assert "fact drops an identity, qualifier, role, time" in js
     assert 'option.value = `fact:${index}`' in js
     assert "fact ? { fact }" in js
+    generate_next = js[js.index("async function generateNext()"):]
+    assert "await loadGenerationExploration();" in generate_next
+    seed_consumed = generate_next.index("state.lastGenerationSeed = seed")
+    candidate_request = generate_next.index(
+        'await api("POST", "/api/generation/candidate"'
+    )
+    assert seed_consumed < candidate_request
+    assert 'prior === state.lastGenerationSeed ? 1 : 0' in generate_next
+    assert '$("generation-seed").addEventListener("input"' in js
+    assert "seed ${seed}: ${candidate.detail}" in generate_next
+    assert "minmax(22ch, 260px)" in css

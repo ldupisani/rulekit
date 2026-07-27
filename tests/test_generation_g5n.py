@@ -15,7 +15,7 @@ CURATED = ROOT / "projects" / "curated"
 
 EXPECTED_OCCURRENCES = {
     "arithmetic/affine-frame-relation": ((10,), ()),
-    "arithmetic/fraction-frame-relation": ((7, 0), ((7,),)),
+    "arithmetic/fraction-frame-relation": ((8, 0), ((8,),)),
 }
 
 
@@ -109,7 +109,7 @@ def test_g5n_unlocks_exactly_the_preregistered_frontier() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 147
+    assert len(exploration_status(project)["fillers"]) == 150
 
 
 @pytest.mark.parametrize("rule_id", sorted(EXPECTED_OCCURRENCES))
@@ -123,7 +123,7 @@ def test_every_complementizer_rule_generates_a_reviewable_match(
     )
     premise = next(row for row in candidate.premises if row.slot == "c")
 
-    assert candidate.generator_version == "g6-g5u-adverbs"
+    assert candidate.generator_version == "g6-reviewed-premise-boundaries"
     assert candidate.target_status == "matched"
     assert premise.binding == "that"
     assert premise.status == "passed"
@@ -143,7 +143,7 @@ def test_optional_complementizer_can_remain_present_or_absent() -> None:
     omitted = generate_candidate(
         project,
         rule_id="arithmetic/fraction-frame-relation",
-        seed=4,
+        seed=1,
     )
     included_row = next(row for row in included.premises if row.slot == "c")
     omitted_row = next(row for row in omitted.premises if row.slot == "c")

@@ -5,6 +5,7 @@ entries:
     the: {senses: [article]}
     a: {senses: [article]}
     an: {senses: [article]}
+    this: {senses: [article]}
 
     # quantifiers
     each: {senses: [quantifier], notes: "distributive; singular agreement"}
@@ -152,46 +153,46 @@ entries:
     are: {senses: [verb], number: plural, verb: {lemma: be}}
     was: {senses: [verb], number: singular, verb: {lemma: be}}
     were: {senses: [verb], number: plural, verb: {lemma: be}}
-    has: {senses: [verb], verb: {lemma: have}}
-    have: {senses: [verb], verb: {lemma: have}}
+    has: {senses: [verb], number: singular, verb: {lemma: have}}
+    have: {senses: [verb], number: plural, verb: {lemma: have}}
     had: {senses: [verb], verb: {lemma: have}}
-    owns: {senses: [verb], verb: {lemma: own}}
-    own: {senses: [verb], verb: {lemma: own}}
+    owns: {senses: [verb], number: singular, verb: {lemma: own}}
+    own: {senses: [verb], number: plural, verb: {lemma: own}}
 
     # event verbs — gains
-    gets: {senses: [verb], verb: {lemma: get}}
-    get: {senses: [verb], verb: {lemma: get}}
+    gets: {senses: [verb], number: singular, verb: {lemma: get}}
+    get: {senses: [verb], number: plural, verb: {lemma: get}}
     got: {senses: [verb], verb: {lemma: get}}
-    finds: {senses: [verb], verb: {lemma: find}}
-    find: {senses: [verb], verb: {lemma: find}}
+    finds: {senses: [verb], number: singular, verb: {lemma: find}}
+    find: {senses: [verb], number: plural, verb: {lemma: find}}
     found: {senses: [verb], verb: {lemma: find}}
-    buys: {senses: [verb], verb: {lemma: buy}}
-    buy: {senses: [verb], verb: {lemma: buy}}
+    buys: {senses: [verb], number: singular, verb: {lemma: buy}}
+    buy: {senses: [verb], number: plural, verb: {lemma: buy}}
     bought: {senses: [verb], verb: {lemma: buy}}
-    receives: {senses: [verb], verb: {lemma: receive}}
-    receive: {senses: [verb], verb: {lemma: receive}}
+    receives: {senses: [verb], number: singular, verb: {lemma: receive}}
+    receive: {senses: [verb], number: plural, verb: {lemma: receive}}
     received: {senses: [verb], verb: {lemma: receive}}
-    wins: {senses: [verb], verb: {lemma: win}}
-    win: {senses: [verb], verb: {lemma: win}}
+    wins: {senses: [verb], number: singular, verb: {lemma: win}}
+    win: {senses: [verb], number: plural, verb: {lemma: win}}
     won: {senses: [verb], verb: {lemma: win}}
 
     # event verbs — losses
-    loses: {senses: [verb], verb: {lemma: lose}}
-    lose: {senses: [verb], verb: {lemma: lose}}
+    loses: {senses: [verb], number: singular, verb: {lemma: lose}}
+    lose: {senses: [verb], number: plural, verb: {lemma: lose}}
     lost: {senses: [verb], verb: {lemma: lose}}
-    eats: {senses: [verb], verb: {lemma: eat}}
-    eat: {senses: [verb], verb: {lemma: eat}}
+    eats: {senses: [verb], number: singular, verb: {lemma: eat}}
+    eat: {senses: [verb], number: plural, verb: {lemma: eat}}
     ate: {senses: [verb], verb: {lemma: eat}}
-    gives: {senses: [verb], verb: {lemma: give}}
-    give: {senses: [verb], verb: {lemma: give}}
+    gives: {senses: [verb], number: singular, verb: {lemma: give}}
+    give: {senses: [verb], number: plural, verb: {lemma: give}}
     gave: {senses: [verb], verb: {lemma: give}}
-    sells: {senses: [verb], verb: {lemma: sell}}
-    sell: {senses: [verb], verb: {lemma: sell}}
+    sells: {senses: [verb], number: singular, verb: {lemma: sell}}
+    sell: {senses: [verb], number: plural, verb: {lemma: sell}}
     sold: {senses: [verb], verb: {lemma: sell}}
-    spends: {senses: [verb], verb: {lemma: spend}}
-    spend: {senses: [verb], verb: {lemma: spend}}
+    spends: {senses: [verb], number: singular, verb: {lemma: spend}}
+    spend: {senses: [verb], number: plural, verb: {lemma: spend}}
     spent: {senses: [verb], verb: {lemma: spend}}
-    drops: {senses: [verb], verb: {lemma: drop}}
+    drops: {senses: [verb], number: singular, verb: {lemma: drop}}
     dropped: {senses: [verb], verb: {lemma: drop}}
 
     # other verbs
@@ -199,14 +200,17 @@ entries:
     jumped: {senses: [verb], verb: {lemma: jump}}
     walked: {senses: [verb], verb: {lemma: walk}}
     ran: {senses: [verb], verb: {lemma: run}}
-    take: {senses: [verb]}
+    travel: {senses: [verb], number: plural}
+    traveled: {senses: [verb], verb: {lemma: travel}}
+    travels: {senses: [verb], number: singular, verb: {lemma: travel}}
+    take: {senses: [verb], number: plural}
     takes: {senses: [verb], verb: {lemma: take}}
     took: {senses: [verb], verb: {lemma: take}}
-    want: {senses: [verb]}
+    want: {senses: [verb], number: plural}
     wanted: {senses: [verb], verb: {lemma: want}}
     wanting: {senses: [verb], verb: {lemma: want}}
     wants: {senses: [verb], verb: {lemma: want}}
-    need: {senses: [verb]}
+    need: {senses: [verb], number: plural}
     needed: {senses: [verb], verb: {lemma: need}}
     needs: {senses: [verb], verb: {lemma: need}}
 
@@ -227,6 +231,8 @@ entries:
     remainder: {senses: [noun]}
     rest: {senses: [noun]}
     year: {senses: [noun], plural: years}
+    inch: {senses: [noun], plural: inches}
+    pound: {senses: [noun], plural: pounds}
     # promoted from difg-mined 2026-07-20: packs/reference needs it too, and
     # packs may not shadow — the shared base is the one home both can require
     area: {senses: [noun], plural: areas}

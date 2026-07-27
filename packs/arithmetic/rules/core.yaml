@@ -6,20 +6,23 @@ format: rulekit/rules@1
 # EVERY relation rule's `std` slot is preceded by an optional, SKIPPABLE
 # appositive prefix (mining candidate appositive-relation-standards):
 #   - opt:
-#       - {slot: appos_det, type: pronoun}
-#       - {slot: appos_role, type: noun}
+#       - {slot: appos_det, cat: possessive_determiner}
+#       - {slot: appos_role, cat: animate}
 # "than his friend Sam" / "than her sister, Gigi" — a possessive determiner
-# (his/her/their/its; lexicon sense `pronoun`, unconditional — the slot type
-# never requires the pronoun's cross-sentence `refers` to resolve) plus a
-# common noun (any word sensed `noun` — no kinship/role word list) directly
-# describes an upcoming NAME rather than being the standard itself. When both
+# (his/her/their/its; pack-declared `possessive_determiner`, unconditional —
+# the category never requires the pronoun's cross-sentence `refers` to
+# resolve) plus a person-denoting `animate` role noun directly describes an
+# upcoming NAME rather than being the standard itself. The shared
+# `bound_requires_type` predicate enforces that last condition: without the
+# optional prefix a referential common-noun standard remains supported; once
+# the role binds, the following standard must be a proper name. When both
 # are present immediately after 'than'/'as' (SKIPPABLE_SENSES already
 # auto-skips a trailing comma between the role noun and the name, same as
 # every other punct-adjacent match today), the opt block consumes them and
 # `std` binds the NAME that follows, exactly as arithmetic/anchored-
 # relation's own header comment already does for a bare possessive common
-# noun. When no such [pronoun, noun] pair sits there, the opt block cannot
-# match at all (a NAME's own sense is never `pronoun`) and the sequence is
+# noun. When no such [possessive determiner, animate role] pair sits there,
+# the opt block cannot match at all and the sequence is
 # byte-identical to before this candidate — `std` binds the very next
 # unit exactly as every existing rule already does. When the appositive
 # pair IS present but nothing entity-shaped follows it (a bare "than his
@@ -27,7 +30,7 @@ format: rulekit/rules@1
 # same net decline as today (a bare possessive pronoun immediately after
 # 'than' only ever satisfied `type: entity` when independently resolved,
 # which a bare kinship-noun tail does not change). No word list enters
-# Python: the gate is purely structural (pronoun sense + noun sense).
+# Python: the vocabulary boundary is pack-declared category data.
 #
 # EVERY same-holder comparative relation rule whose measure NP sits
 # directly before the 'as'/'than' that introduces the standard (mining
@@ -36,18 +39,18 @@ format: rulekit/rules@1
 #   - opt:
 #       - {slot: pp_prep, cat: preposition}
 #       - opt:
-#           - {slot: pp_det, type: pronoun}
-#       - {slot: pp_obj, type: noun}
+#           - {slot: pp_det, cat: possessive_determiner}
+#       - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
 # "twice as many shoes IN HIS WARDROBE as belts" — a locative PP
 # interrupting the measure noun and the comparative literal. `pp_prep`
 # is gated on the (pre-existing) `preposition` sense-category — 'as' and
 # 'than' are lexiconed `particle`, never `preposition`, so this opt block
 # can never fire ON the comparative literal itself and steal its span.
-# The inner opt for `pp_det` exists only for a POSSESSIVE pronoun
-# ('his'/'her'/'their'/'its'); a plain article ('in THE wardrobe') needs
-# no slot at all — SKIPPABLE_SENSES already auto-skips 'article' between
-# any two explicit tokens, exactly as it does everywhere else in this
-# grammar. `pp_obj` is bound but never read by any `emits:` template
+# The inner opt for `pp_det` is explicitly gated to a POSSESSIVE determiner.
+# A definite article ('in THE wardrobe') needs no slot at all —
+# SKIPPABLE_SENSES auto-skips it, while `referential: true` verifies the
+# phrase. Pack-declared `bare_pp_object` nouns retain independently licensed
+# adjuncts such as "by day". `pp_obj` is bound but never read by any `emits:` template
 # (structural consumption only, so the general fold can't independently
 # misread the PP as something else) — the same "widen the match span,
 # add no new emitted field" shape increment 90's appositive prefix uses.
@@ -96,14 +99,19 @@ rules:
         - opt:
             - {slot: pp_prep, cat: preposition}
             - opt:
-                - {slot: pp_det, type: pronoun}
-            - {slot: pp_obj, type: noun}
+                - {slot: pp_det, cat: possessive_determiner}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
         - {lit: than}
         - opt:
-            - {slot: appos_det, type: pronoun}
-            - {slot: appos_role, type: noun}
+            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_role, cat: animate}
         - {slot: std, type: entity}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - number_compatible: [who, verb]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: std, cat: non_quantity_holder}
       - distinct: [who, std]
       - distinct_measure: [item, std]
       # a TIME PERIOD is not a holder — see slot_not_category in schemas.py
@@ -222,10 +230,10 @@ rules:
         - opt:
             - {slot: pp_prep, cat: preposition}
             - opt:
-                - {slot: pp_det, type: pronoun}
-            - {slot: pp_obj, type: noun}
+                - {slot: pp_det, cat: possessive_determiner}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
         - {lit: than}
-        - {slot: std_det, type: pronoun}
+        - {slot: std_det, cat: possessive_determiner}
         - {slot: std, type: noun}
     where:
       - distinct: [who, std]
@@ -302,12 +310,12 @@ rules:
         - opt:
             - {slot: pp_prep, cat: preposition}
             - opt:
-                - {slot: pp_det, type: pronoun}
-            - {slot: pp_obj, type: noun}
+                - {slot: pp_det, cat: possessive_determiner}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
         - {lit: than}
         - opt:
-            - {slot: appos_det, type: pronoun}
-            - {slot: appos_role, type: noun}
+            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_role, cat: animate}
         - {slot: std, type: entity}
         - {lit: and}
         - opt:
@@ -315,6 +323,12 @@ rules:
         - {slot: trailing_verb, cat: state}
         - {slot: std_echo, type: counted}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - number_compatible: [who, verb]
+      - number_compatible: [who, trailing_verb]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: std, cat: non_quantity_holder}
       - distinct: [who, std]
       - distinct: [item, std]
       - same_lemma: [std, std_echo]
@@ -349,11 +363,12 @@ rules:
       partition-of-collection already use): the standard holding exactly
       one measure resolves it; zero or two-or-more measures declines,
       never guesses (see that function's comment). This rule's sequence
-      requires 'than' IMMEDIATELY after the delta word, so it can never
-      match text that states the item noun — arithmetic/anchored-relation
-      is the only rule whose sequence matches there, with zero arbitration
-      needed (the two spans are structurally disjoint, not merely
-      differently-specific). Covers the postfix idiom too ("Ben picked 3
+      requires 'than' IMMEDIATELY after the delta word, and its number slot is
+      `standalone`: the condensed counted-noun unit in "6 marbles more than"
+      cannot satisfy it. Arithmetic/anchored-relation-postfix is therefore
+      the only rule whose sequence matches that stated-item surface, with
+      zero arbitration needed (the two spans are structurally disjoint, not
+      merely differently-specific). Covers the postfix idiom too ("Ben picked 3
       more than Ann"): with the item elided, prefix and postfix comparatives
       collapse to the identical NUMBER-DELTA-'than'-STD token stream, so no
       separate postfix-elided rule is needed. `who`/`std, type: entity`:
@@ -363,14 +378,18 @@ rules:
       sentence:
         - {slot: who, type: entity}
         - {slot: verb, type: verb}
-        - {slot: n, type: number}
+        - {slot: n, type: number, standalone: true}
         - {slot: dir, cat: delta}
         - {lit: than}
         - opt:
-            - {slot: appos_det, type: pronoun}
-            - {slot: appos_role, type: noun}
+            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_role, cat: animate}
         - {slot: std, type: entity}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - number_compatible: [who, verb]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
       - distinct: [who, std]
     consumes: [n]
     emits:
@@ -402,10 +421,11 @@ rules:
         - {slot: dir, cat: delta}
         - {lit: than}
         - opt:
-            - {slot: appos_det, type: pronoun}
-            - {slot: appos_role, type: noun}
+            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_role, cat: animate}
         - {slot: std, type: entity}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - distinct: [who, std]
       - distinct_measure: [item, std]
       # a TIME PERIOD is not a holder — see slot_not_category in schemas.py
@@ -445,15 +465,20 @@ rules:
     match:
       sentence:
         - {slot: who, type: entity}
-        - {slot: verb, type: verb}
+        - {slot: verb, cat: copula}
         - {slot: item, type: counted}
         - {slot: dir, cat: dimension_comparative}
         - {lit: than}
         - opt:
-            - {slot: appos_det, type: pronoun}
-            - {slot: appos_role, type: noun}
+            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_role, cat: animate}
         - {slot: std, type: entity}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - number_compatible: [who, verb]
+      - attribute_compatible: {attribute: dir, noun: item}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: std, cat: non_quantity_holder}
       - distinct: [who, std]
       - distinct: [item, std]
     consumes: [item]
@@ -487,9 +512,11 @@ rules:
     match:
       sentence:
         - {slot: who, type: name}
-        - {slot: verb, cat: state}
+        - {slot: verb, cat: copula}
         - {slot: n, type: counted}
         - {slot: dir, cat: delta}
+    where:
+      - number_compatible: [who, verb]
     emits: []
 
   - id: arithmetic/times-comparative-age-relation
@@ -515,15 +542,17 @@ rules:
     match:
       sentence:
         - {slot: who, type: name}
-        - {slot: verb, cat: state}
+        - {slot: verb, cat: copula}
         - {slot: k, type: multiplier}
         - {slot: dir, cat: age_comparative}
         - {lit: than}
         - opt:
-            - {slot: appos_det, type: pronoun}
-            - {slot: appos_role, type: noun}
+            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_role, cat: animate}
         - {slot: std, type: name}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - number_compatible: [who, verb]
       - distinct: [who, std]
     emits:
       - fact: relation
@@ -558,16 +587,18 @@ rules:
     match:
       sentence:
         - {slot: who, type: name}
-        - {slot: verb, cat: state}
+        - {slot: verb, cat: copula}
         - {slot: k, type: multiplier}
         - {lit: as}
         - {lit: old}
         - {lit: as}
         - opt:
-            - {slot: appos_det, type: pronoun}
-            - {slot: appos_role, type: noun}
+            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_role, cat: animate}
         - {slot: std, type: name}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - number_compatible: [who, verb]
       - distinct: [who, std]
       - absent: {cat: temporal_marker}
     emits:
@@ -631,10 +662,11 @@ rules:
         - {lit: old}
         - {lit: as}
         - opt:
-            - {slot: appos_det, type: pronoun}
-            - {slot: appos_role, type: noun}
+            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_role, cat: animate}
         - {slot: std, type: name}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - distinct: [who, std]
       - absent: {cat: temporal_marker}
     consumes: [n]
@@ -685,13 +717,14 @@ rules:
         - {lit: old}
         - {lit: as}
         - opt:
-            - {slot: appos_det, type: pronoun}
-            - {slot: appos_role, type: noun}
+            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_role, cat: animate}
         - {slot: std, type: name}
         - opt:
             - {lit: is}
         - {slot: mark, cat: temporal_marker}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - distinct: [who, std]
     consumes: [n]
     emits:
@@ -714,7 +747,7 @@ rules:
       arithmetic/temporal-offset-age-future: same bare-comparative-
       inherits-the-sentence's-own-offset convention, just NEGATIVE (N
       years ago = -n from today) and the ordinary state verb ('was'/
-      'were', already `cat: state`) instead of a bare infinitive after a
+      'were', gated by `cat: past_copula`) instead of a bare infinitive after a
       modal — a past tense needs no modal at all. Symmetric completion of
       the same class, not a guess: shipped once the full dev-train/
       holdout diff (0 BROKE, 0 DECL->WRONG) confirmed it, the same gate
@@ -724,16 +757,18 @@ rules:
         - {slot: n, type: counted}
         - {lit: ago}
         - {slot: who, type: name}
-        - {slot: verb, cat: state}
+        - {slot: verb, cat: past_copula}
         - {slot: k, type: multiplier}
         - {lit: as}
         - {lit: old}
         - {lit: as}
         - opt:
-            - {slot: appos_det, type: pronoun}
-            - {slot: appos_role, type: noun}
+            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_role, cat: animate}
         - {slot: std, type: name}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - number_compatible: [who, verb]
       - distinct: [who, std]
       - absent: {cat: temporal_marker}
     consumes: [n]
@@ -848,14 +883,19 @@ rules:
         - opt:
             - {slot: pp_prep, cat: preposition}
             - opt:
-                - {slot: pp_det, type: pronoun}
-            - {slot: pp_obj, type: noun}
+                - {slot: pp_det, cat: possessive_determiner}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
         - {lit: as}
         - opt:
-            - {slot: appos_det, type: pronoun}
-            - {slot: appos_role, type: noun}
+            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_role, cat: animate}
         - {slot: std, type: entity}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - number_compatible: [who, verb]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - distinct: [who, std]
       - distinct: [item, std]
     emits:
@@ -891,10 +931,14 @@ rules:
         - {lit: many}
         - {lit: as}
         - opt:
-            - {slot: appos_det, type: pronoun}
-            - {slot: appos_role, type: noun}
+            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_role, cat: animate}
         - {slot: std, type: entity}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - number_compatible: [who, verb]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
       - distinct: [who, std]
     emits:
       - fact: relation
@@ -955,15 +999,20 @@ rules:
         - opt:
             - {slot: pp_prep, cat: preposition}
             - opt:
-                - {slot: pp_det, type: pronoun}
-            - {slot: pp_obj, type: noun}
+                - {slot: pp_det, cat: possessive_determiner}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
         - opt:
             - {lit: as}
             - opt:
-                - {slot: appos_det, type: pronoun}
-                - {slot: appos_role, type: noun}
+                - {slot: appos_det, cat: possessive_determiner}
+                - {slot: appos_role, cat: animate}
             - {slot: std_seen, type: entity}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std_seen, type: proper_name}
+      - number_compatible: [who, verb]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - unbound: [std_seen]
     emits:
       - fact: relation
@@ -1014,12 +1063,16 @@ rules:
         - opt:
             - {slot: pp_prep, cat: preposition}
             - opt:
-                - {slot: pp_det, type: pronoun}
-            - {slot: pp_obj, type: noun}
+                - {slot: pp_det, cat: possessive_determiner}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
         - {lit: as}
-        - {slot: std_det, type: pronoun}
+        - {slot: std_det, cat: possessive_determiner}
         - {slot: std, type: noun}
     where:
+      - number_compatible: [who, verb]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - distinct: [who, std]
       - distinct: [item, std]
     emits:
@@ -1085,8 +1138,8 @@ rules:
         - opt:
             - {slot: pp_prep, cat: preposition}
             - opt:
-                - {slot: pp_det, type: pronoun}
-            - {slot: pp_obj, type: noun}
+                - {slot: pp_det, cat: possessive_determiner}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
         - {lit: and}
         - {slot: k, type: multiplier}
         - {lit: as}
@@ -1094,10 +1147,16 @@ rules:
         - {slot: item2, type: plural}
         - {lit: as}
         - opt:
-            - {slot: appos_det, type: pronoun}
-            - {slot: appos_role, type: noun}
+            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_role, cat: animate}
         - {slot: std, type: entity}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - number_compatible: [who, verb]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: item1, cat: many_incompatible_noun}
+      - slot_not_category: {slot: item2, cat: many_incompatible_noun}
       - distinct: [who, std]
     emits:
       - fact: quantity
@@ -1139,8 +1198,8 @@ rules:
         - opt:
             - {slot: pp_prep, cat: preposition}
             - opt:
-                - {slot: pp_det, type: pronoun}
-            - {slot: pp_obj, type: noun}
+                - {slot: pp_det, cat: possessive_determiner}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
         - {lit: and}
         - {slot: k, type: multiplier}
         - {lit: as}
@@ -1149,10 +1208,16 @@ rules:
         - opt:
             - {lit: as}
             - opt:
-                - {slot: appos_det, type: pronoun}
-                - {slot: appos_role, type: noun}
+                - {slot: appos_det, cat: possessive_determiner}
+                - {slot: appos_role, cat: animate}
             - {slot: std_seen, type: entity}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std_seen, type: proper_name}
+      - number_compatible: [who, verb]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: item1, cat: many_incompatible_noun}
+      - slot_not_category: {slot: item2, cat: many_incompatible_noun}
       - unbound: [std_seen]
     emits:
       - fact: quantity
@@ -1211,8 +1276,8 @@ rules:
         - opt:
             - {slot: pp_prep, cat: preposition}
             - opt:
-                - {slot: pp_det, type: pronoun}
-            - {slot: pp_obj, type: noun}
+                - {slot: pp_det, cat: possessive_determiner}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
         - {lit: and}
         - {slot: k, type: multiplier}
         - {lit: as}
@@ -1222,10 +1287,16 @@ rules:
         - opt:
             - {lit: as}
             - opt:
-                - {slot: appos_det, type: pronoun}
-                - {slot: appos_role, type: noun}
+                - {slot: appos_det, cat: possessive_determiner}
+                - {slot: appos_role, cat: animate}
             - {slot: std_seen, type: entity}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std_seen, type: proper_name}
+      - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
+      - number_compatible: [who, verb]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: item1, cat: many_incompatible_noun}
       - unbound: [item2_seen, std_seen]
     emits:
       - fact: quantity
@@ -1253,9 +1324,11 @@ rules:
       "The bird caught 8 fish by day and twice this many by night" — the
       DEMONSTRATIVE-anaphor sibling (arithmetic/anaphoric-multiplier-
       standard-many's own "twice THAT/THIS MANY" shape — no `{lit: as}`
-      anywhere in that idiom, 'this'/'these'/'those' are sensed `article`
-      and already SKIPPABLE, 'that' takes an explicit optional literal
-      here, same as that rule) read from a CONJUNCT position instead of a
+      anywhere in that idiom. The demonstrative is consumed explicitly:
+      `that` is complementizer-sensed while `this` is article-sensed, so
+      `consume_skipped` lets one literal alternation claim either without
+      ever admitting the ungrammatical bare "twice many". This rule is read
+      from a CONJUNCT position instead of a
       fresh sentence: the antecedent is the IMMEDIATELY PRECEDING
       conjunct's own literal count (`item1`'s own bound value), not a
       document-wide unique prior Quantity, so — exactly like the
@@ -1277,16 +1350,19 @@ rules:
         - opt:
             - {slot: pp_prep, cat: preposition}
             - opt:
-                - {slot: pp_det, type: pronoun}
-            - {slot: pp_obj, type: noun}
+                - {slot: pp_det, cat: possessive_determiner}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
         - {lit: and}
         - {slot: k, type: multiplier}
-        - opt:
-            - {lit: that}
+        - {lit: [that, this], consume_skipped: true}
         - {lit: many}
         - opt:
             - {slot: item2_seen, type: plural}
     where:
+      - number_compatible: [who, verb]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: item1, cat: many_incompatible_noun}
       - unbound: [item2_seen]
     emits:
       - fact: quantity
@@ -1324,18 +1400,22 @@ rules:
         - {slot: k, type: multiplier}
         - {lit: as}
         - {lit: much}
-        - {slot: item, type: noun}
+        - {slot: item, cat: mass_quantity_noun}
         - opt:
             - {slot: pp_prep, cat: preposition}
             - opt:
-                - {slot: pp_det, type: pronoun}
-            - {slot: pp_obj, type: noun}
+                - {slot: pp_det, cat: possessive_determiner}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
         - {lit: as}
         - opt:
-            - {slot: appos_det, type: pronoun}
-            - {slot: appos_role, type: noun}
+            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_role, cat: animate}
         - {slot: std, type: name}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - number_compatible: [who, verb]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
       - distinct: [who, std]
     emits:
       - fact: relation
@@ -1366,10 +1446,14 @@ rules:
         - {lit: much}
         - {lit: as}
         - opt:
-            - {slot: appos_det, type: pronoun}
-            - {slot: appos_role, type: noun}
+            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_role, cat: animate}
         - {slot: std, type: name}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - number_compatible: [who, verb]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
       - distinct: [who, std]
     emits:
       - fact: relation
@@ -1402,19 +1486,23 @@ rules:
         - {slot: k, type: multiplier}
         - {lit: as}
         - {lit: much}
-        - {slot: item, type: noun}
+        - {slot: item, cat: mass_quantity_noun}
         - opt:
             - {slot: pp_prep, cat: preposition}
             - opt:
-                - {slot: pp_det, type: pronoun}
-            - {slot: pp_obj, type: noun}
+                - {slot: pp_det, cat: possessive_determiner}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
         - opt:
             - {lit: as}
             - opt:
-                - {slot: appos_det, type: pronoun}
-                - {slot: appos_role, type: noun}
+                - {slot: appos_det, cat: possessive_determiner}
+                - {slot: appos_role, cat: animate}
             - {slot: std_seen, type: name}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std_seen, type: proper_name}
+      - number_compatible: [who, verb]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
       - unbound: [std_seen]
     emits:
       - fact: relation
@@ -1534,14 +1622,15 @@ rules:
         - opt:
             - {slot: pp_prep, cat: preposition}
             - opt:
-                - {slot: pp_det, type: pronoun}
-            - {slot: pp_obj, type: noun}
+                - {slot: pp_det, cat: possessive_determiner}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
         - {lit: than}
         - opt:
-            - {slot: appos_det, type: pronoun}
-            - {slot: appos_role, type: noun}
+            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_role, cat: animate}
         - {slot: std, type: name}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - distinct: [who, std]
     consumes: [f]
     emits:
@@ -1573,10 +1662,11 @@ rules:
         - {slot: dir, cat: delta}
         - {lit: than}
         - opt:
-            - {slot: appos_det, type: pronoun}
-            - {slot: appos_role, type: noun}
+            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_role, cat: animate}
         - {slot: std, type: name}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - distinct: [who, std]
     consumes: [f]
     emits:
@@ -1637,14 +1727,15 @@ rules:
             - opt:
                 - {slot: pp_prep, cat: preposition}
                 - opt:
-                    - {slot: pp_det, type: pronoun}
-                - {slot: pp_obj, type: noun}
+                    - {slot: pp_det, cat: possessive_determiner}
+                - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
             - {lit: than}
             - opt:
-                - {slot: appos_det, type: pronoun}
-                - {slot: appos_role, type: noun}
+                - {slot: appos_det, cat: possessive_determiner}
+                - {slot: appos_role, cat: animate}
             - {slot: std_seen, type: name}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std_seen, type: proper_name}
       - unbound: [std_seen]
     consumes: [f]
     emits:
@@ -1686,14 +1777,15 @@ rules:
         - opt:
             - {slot: pp_prep, cat: preposition}
             - opt:
-                - {slot: pp_det, type: pronoun}
-            - {slot: pp_obj, type: noun}
+                - {slot: pp_det, cat: possessive_determiner}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
         - {lit: as}
         - opt:
-            - {slot: appos_det, type: pronoun}
-            - {slot: appos_role, type: noun}
+            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_role, cat: animate}
         - {slot: std, type: entity}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - distinct: [who, std]
       - distinct: [item, std]
     emits:
@@ -1756,10 +1848,11 @@ rules:
         - {lit: of}
         - {slot: item, type: noun}
         - opt:
-            - {slot: appos_det, type: pronoun}
-            - {slot: appos_role, type: noun}
+            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_role, cat: animate}
         - {slot: std, type: entity}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - distinct: [who, std]
       - distinct: [item, std]
     emits:
@@ -1812,10 +1905,11 @@ rules:
         - {slot: item, type: noun}
         - {slot: c, cat: complementizer}
         - opt:
-            - {slot: appos_det, type: pronoun}
-            - {slot: appos_role, type: noun}
+            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_role, cat: animate}
         - {slot: std, type: entity}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - distinct: [who, std]
       - distinct: [item, std]
     consumes: [n]
@@ -1871,14 +1965,15 @@ rules:
         - opt:
             - {slot: pp_prep, cat: preposition}
             - opt:
-                - {slot: pp_det, type: pronoun}
-            - {slot: pp_obj, type: noun}
+                - {slot: pp_det, cat: possessive_determiner}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
         - {lit: as}
         - opt:
-            - {slot: appos_det, type: pronoun}
-            - {slot: appos_role, type: noun}
+            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_role, cat: animate}
         - {slot: std, type: entity}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - distinct: [who, std]
       - distinct: [item, std]
     consumes: [n]
@@ -1933,10 +2028,11 @@ rules:
         - {lit: of}
         - {slot: item, type: noun}
         - opt:
-            - {slot: appos_det, type: pronoun}
-            - {slot: appos_role, type: noun}
+            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_role, cat: animate}
         - {slot: std, type: entity}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - distinct: [who, std]
       - distinct: [item, std]
     consumes: [n]
@@ -2010,35 +2106,50 @@ rules:
   - id: arithmetic/fraction-frame-relation
     phase: read
     description: >
-      "Kelcie has read 1/4 the amount of books that Megan has read" — a
-      pure-fraction ratio in the frame form. mining candidate relation-
-      count-frames: complementizer `c` is now OPTIONAL ("...half the
-      number of countries George traveled to", no 'that'); `std, type:
-      entity` (same widening as arithmetic/fraction-as-many, plus its
-      `distinct: [item, std]` guard) so a common-noun standard anchors
-      too; an OPTIONAL `verb_prep` (cat: preposition) between `verb` and
-      `f` tolerates "Joseph traveled TO half the number of countries..."
-      — the same proven sub-gap arithmetic/times-the-number-of's own
-      comment names. None of these widenings touch the rule's own literal
-      skeleton (f/frame/of), so a bare "the number of X" with no preceding
-      fraction still never matches.
+      "Kelcie reads 1/4 the number of books that Megan reads" / "Joseph
+      traveled to half the number of countries George traveled to" — a
+      complete pure-fraction count-frame relation. The determiner, plural
+      count noun, and repeated relative-clause verb are premises rather than
+      material silently skipped beyond the matched span. `same_lemma` keeps
+      both event verbs aligned while independent number compatibility admits
+      their appropriate inflections. The paired destination prepositions are
+      discontinuous optionals, so `same_presence` and `same_lemma` require
+      both or neither; when present, the event verb must belong to the
+      pack-declared frame-prepositional class. The complementizer remains
+      optional because both "that Megan reads" and "Megan reads" are complete
+      relative clauses.
     match:
       sentence:
         - {slot: who, type: entity}
         - {slot: verb, type: verb}
         - opt:
-            - {slot: verb_prep, cat: preposition}
+            - {slot: verb_prep, cat: destination_preposition}
         - {slot: f, type: fraction}
-        - {slot: frame, cat: aggregate_noun}
+        - {lit: the, consume_skipped: true}
+        - {slot: frame, cat: count_aggregate_noun}
         - {lit: of}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         - opt:
             - {slot: c, cat: complementizer}
         - opt:
-            - {slot: appos_det, type: pronoun}
-            - {slot: appos_role, type: noun}
+            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_role, cat: animate}
         - {slot: std, type: entity}
+        - {slot: echo_verb, type: verb}
+        - opt:
+            - {slot: echo_prep, cat: destination_preposition}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - bound_requires_category: {bound: verb_prep, slot: verb, cat: frame_prepositional_verb}
+      - same_presence: [verb_prep, echo_prep]
+      - same_lemma: [verb_prep, echo_prep]
+      - same_lemma: [verb, echo_verb]
+      - number_compatible: [who, verb]
+      - number_compatible: [std, echo_verb]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: std, cat: non_quantity_holder}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - distinct: [who, std]
       - distinct: [item, std]
     consumes: [f]
@@ -2072,14 +2183,19 @@ rules:
         - opt:
             - {slot: pp_prep, cat: preposition}
             - opt:
-                - {slot: pp_det, type: pronoun}
-            - {slot: pp_obj, type: noun}
+                - {slot: pp_det, cat: possessive_determiner}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
         - {lit: as}
         - opt:
-            - {slot: appos_det, type: pronoun}
-            - {slot: appos_role, type: noun}
+            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_role, cat: animate}
         - {slot: std, type: entity}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - number_compatible: [who, verb]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - distinct: [who, std]
       - distinct: [item, std]
     consumes: [f]
@@ -2113,10 +2229,14 @@ rules:
         - {lit: many}
         - {lit: as}
         - opt:
-            - {slot: appos_det, type: pronoun}
-            - {slot: appos_role, type: noun}
+            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_role, cat: animate}
         - {slot: std, type: entity}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - number_compatible: [who, verb]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
       - distinct: [who, std]
     consumes: [f]
     emits:
@@ -2161,15 +2281,20 @@ rules:
         - opt:
             - {slot: pp_prep, cat: preposition}
             - opt:
-                - {slot: pp_det, type: pronoun}
-            - {slot: pp_obj, type: noun}
+                - {slot: pp_det, cat: possessive_determiner}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
         - opt:
             - {lit: as}
             - opt:
-                - {slot: appos_det, type: pronoun}
-                - {slot: appos_role, type: noun}
+                - {slot: appos_det, cat: possessive_determiner}
+                - {slot: appos_role, cat: animate}
             - {slot: std_seen, type: entity}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std_seen, type: proper_name}
+      - number_compatible: [who, verb]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - unbound: [std_seen]
     consumes: [f]
     emits:
@@ -2196,18 +2321,22 @@ rules:
         - {slot: f, type: fraction}
         - {lit: as}
         - {lit: much}
-        - {slot: item, type: noun}
+        - {slot: item, cat: mass_quantity_noun}
         - opt:
             - {slot: pp_prep, cat: preposition}
             - opt:
-                - {slot: pp_det, type: pronoun}
-            - {slot: pp_obj, type: noun}
+                - {slot: pp_det, cat: possessive_determiner}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
         - {lit: as}
         - opt:
-            - {slot: appos_det, type: pronoun}
-            - {slot: appos_role, type: noun}
+            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_role, cat: animate}
         - {slot: std, type: name}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - number_compatible: [who, verb]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
       - distinct: [who, std]
     consumes: [f]
     emits:
@@ -2238,10 +2367,14 @@ rules:
         - {lit: much}
         - {lit: as}
         - opt:
-            - {slot: appos_det, type: pronoun}
-            - {slot: appos_role, type: noun}
+            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_role, cat: animate}
         - {slot: std, type: name}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - number_compatible: [who, verb]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
       - distinct: [who, std]
     consumes: [f]
     emits:
@@ -2271,19 +2404,23 @@ rules:
         - {slot: f, type: fraction}
         - {lit: as}
         - {lit: much}
-        - {slot: item, type: noun}
+        - {slot: item, cat: mass_quantity_noun}
         - opt:
             - {slot: pp_prep, cat: preposition}
             - opt:
-                - {slot: pp_det, type: pronoun}
-            - {slot: pp_obj, type: noun}
+                - {slot: pp_det, cat: possessive_determiner}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
         - opt:
             - {lit: as}
             - opt:
-                - {slot: appos_det, type: pronoun}
-                - {slot: appos_role, type: noun}
+                - {slot: appos_det, cat: possessive_determiner}
+                - {slot: appos_role, cat: animate}
             - {slot: std_seen, type: name}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std_seen, type: proper_name}
+      - number_compatible: [who, verb]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
       - unbound: [std_seen]
     consumes: [f]
     emits:
@@ -2480,7 +2617,7 @@ rules:
         - {slot: who, type: entity}
         - {slot: verb, type: verb}
         - {slot: n, type: number}
-        - {slot: dir, cat: delta}
+        - {slot: dir, cat: quantity_delta}
         - {lit: than}
         - {slot: k, type: multiplier}
         - {lit: as}
@@ -2489,14 +2626,19 @@ rules:
         - opt:
             - {slot: pp_prep, cat: preposition}
             - opt:
-                - {slot: pp_det, type: pronoun}
-            - {slot: pp_obj, type: noun}
+                - {slot: pp_det, cat: possessive_determiner}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
         - {lit: as}
         - opt:
-            - {slot: appos_det, type: pronoun}
-            - {slot: appos_role, type: noun}
+            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_role, cat: animate}
         - {slot: std, type: entity}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - number_compatible: [who, verb]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - distinct: [who, std]
       - distinct: [item, std]
     consumes: [n]
@@ -2526,7 +2668,7 @@ rules:
         - {slot: who, type: entity}
         - {slot: verb, type: verb}
         - {slot: n, type: number}
-        - {slot: dir, cat: delta}
+        - {slot: dir, cat: quantity_delta}
         - {lit: than}
         - {slot: f, type: fraction}
         - {lit: as}
@@ -2535,14 +2677,19 @@ rules:
         - opt:
             - {slot: pp_prep, cat: preposition}
             - opt:
-                - {slot: pp_det, type: pronoun}
-            - {slot: pp_obj, type: noun}
+                - {slot: pp_det, cat: possessive_determiner}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
         - {lit: as}
         - opt:
-            - {slot: appos_det, type: pronoun}
-            - {slot: appos_role, type: noun}
+            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_role, cat: animate}
         - {slot: std, type: entity}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - number_compatible: [who, verb]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - distinct: [who, std]
       - distinct: [item, std]
     consumes: [n]
@@ -2579,23 +2726,27 @@ rules:
         - {slot: who, type: name}
         - {slot: verb, type: verb}
         - {slot: n, type: number}
-        - {slot: dir, cat: delta}
+        - {slot: dir, cat: quantity_delta}
         - {lit: than}
         - {slot: k, type: multiplier}
         - {lit: as}
         - {lit: much}
-        - {slot: item, type: noun}
+        - {slot: item, cat: mass_quantity_noun}
         - opt:
             - {slot: pp_prep, cat: preposition}
             - opt:
-                - {slot: pp_det, type: pronoun}
-            - {slot: pp_obj, type: noun}
+                - {slot: pp_det, cat: possessive_determiner}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
         - {lit: as}
         - opt:
-            - {slot: appos_det, type: pronoun}
-            - {slot: appos_role, type: noun}
+            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_role, cat: animate}
         - {slot: std, type: name}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - number_compatible: [who, verb]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
       - distinct: [who, std]
     consumes: [n]
     emits:
@@ -2638,17 +2789,21 @@ rules:
         - {slot: who, type: name}
         - {slot: verb, type: verb}
         - {slot: n, type: number}
-        - {slot: dir, cat: delta}
+        - {slot: dir, cat: quantity_delta}
         - {lit: than}
         - {slot: k, type: multiplier}
         - {lit: as}
         - {lit: much}
         - {lit: as}
         - opt:
-            - {slot: appos_det, type: pronoun}
-            - {slot: appos_role, type: noun}
+            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_role, cat: animate}
         - {slot: std, type: name}
     where:
+      - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - number_compatible: [who, verb]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
       - distinct: [who, std]
     consumes: [n]
     emits:
@@ -3605,8 +3760,8 @@ rules:
       temporal-offset-age-premises) — the mirrored PAST form of
       arithmetic/temporal-offset-age-future: the entity's age N years ago,
       resolved to its current age by ADDING the offset (the past form
-      naturally uses an ordinary state verb — 'was'/'were' — already
-      tagged `cat: state`, no bare-infinitive skeleton needed here). Same
+      naturally uses a past copula — 'was'/'were' — gated by
+      `cat: past_copula`, no bare-infinitive skeleton needed here). Same
       Quantity shape, same decline-safety gate, same consumes-based value
       accounting as the future sibling above.
     match:
@@ -3614,10 +3769,11 @@ rules:
         - {slot: n, type: counted}
         - {lit: ago}
         - {slot: who, type: name}
-        - {slot: verb, cat: state}
+        - {slot: verb, cat: past_copula}
         - {slot: m, type: counted}
         - {lit: old}
     where:
+      - number_compatible: [who, verb]
       - absent: {cat: relational_marker}
       - absent: {cat: multiplier_marker}
     consumes: [n, m]
@@ -3782,9 +3938,9 @@ rules:
         - {lit: it}
         - {slot: v, cat: duration_verb}
         - {slot: who, type: entity}
-        - {slot: span, type: counted}
+        - {slot: span, cat: duration_measure, counted: true}
         - {lit: to}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, bare_form: true}
         - {slot: item, type: counted}
     consumes: [span, item]
     emits:

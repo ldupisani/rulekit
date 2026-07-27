@@ -3,8 +3,8 @@
 **Status:** active project plan  
 **Accepted:** 2026-07-25  
 **Implementation:** G1–G6, G5c–G5g, Reading-origin and fact-level review, the
-fraction-plural morphology correction, scoped `GroupTotal`, and the first
-review-led grammar-boundary reconciliation complete; the adjective/noun
+fraction-plural morphology correction, scoped `GroupTotal`, and both
+review-led grammar-boundary reconciliations complete; the adjective/noun
 compatibility and leading-`GroupTotal` subject boundaries are now complete,
 G5h core ownership of the seven project-empty exploratory category domains,
 G5i recursive optional-branch realization, and G5j comparative-category
@@ -16,8 +16,8 @@ vocabulary ownership profiling is complete and G5q age-comparative core
 ownership is complete; G5r dimension-comparative core ownership is complete
 and G5s modal core ownership and slot realization is complete; G5t
 temporal-marker core ownership and time-root realization is complete; G5u
-direct-adverb visibility is complete and G5v review-led premise auditing is
-next
+direct-adverb visibility is complete; G5v review-led premise auditing is
+active and its second six-review boundary pass is complete
 
 ## Current checkpoint
 
@@ -80,19 +80,20 @@ added bounded hypothesis and minimal-pair exploration:
 - successful fresh realizations append schema-bounded observations to the
   separate fixed exploration ledger, while Reading promotion and pinned
   retests do not fabricate sampling history;
-- rule status distinguishes blocked, untouched, generated-but-unreviewed, and
-  reviewed, while reachable lexicon entries distinguish untouched,
-  generated-but-unreviewed, and reviewed;
+- failed fresh attempts append separately to a fixed failure ledger, so they
+  advance exploration without being miscounted as generated specimens;
+- rule and reachable-lexicon status distinguish blocked, untouched,
+  attempted-but-unrealized, generated-but-unreviewed, and reviewed;
 - generation support is deliberately mechanical rather than a human validity
   judgment: if every declared token and predicate has a realizer and a
   project-backed filler, the rule remains explorable even when the generated
   sentence exposes a defective premise;
 - a `matched` or `shadowed` target status reports what the ordinary matcher
   accepted, never that the resulting English or emitted fact is correct;
-- the current curated frontier contains 95 supported rules and 147 reachable
+- the current curated frontier contains 95 supported rules and 150 reachable
   lexicon identities, while live reviews and continuing exploration remain
   separate from mechanical availability; and
-- random Generate next chooses from the least-generated compatible rule and
+- random Generate next chooses from the least-attempted compatible rule and
   filler frontier with seeded tie-breaking, while an explicit word probe links
   directly to its editable lexicon declaration;
 - plural fraction forms are declared separately from their singular lemmas,
@@ -102,7 +103,7 @@ added bounded hypothesis and minimal-pair exploration:
   optional `GroupTotal.scope`, allowing independently reviewed blue/red totals
   over one measure to coexist without changing tail-only or synthesized totals.
 
-The current gate is green: all 3,828 repository tests pass in four-worker
+The current gate is green: all 3,900 repository tests pass in four-worker
 mode, curated remains deterministic at 65/65 and 100% precision, both GSM8K
 development diffs are neutral, every standing cross-corpus gate retains zero
 wrong answers, and lint has zero errors.
@@ -896,20 +897,29 @@ surfaces, slots, and declaration sources actually used. It contains no verdict,
 defect, hypothesis, benchmark result, or free text. Human reviews remain in
 their existing ledger and retain their existing meaning.
 
+Failed fresh attempts use the separate fixed path
+`projects/<project>/generation/failures.jsonl`. A bounded row records the
+selected rule, seed, registry fingerprint, exact selected lexicon probe when
+one exists, and the realization error. It does not claim a candidate or
+increment generated coverage. Only failures matching the current registry
+fingerprint affect selection, so an authored rule or lexicon change makes the
+probe eligible for a fresh test while preserving the historical row.
+
 Exploration status is a read-time fold over the current project, all
 exploration rows, and the live folded reviews:
 
-- every premise rule reports `blocked`, `never_generated`,
-  `generated_unreviewed`, or `reviewed`, plus generated count, reviewed count,
-  verdict counts, last-generated time, last-reviewed time, current
+- every premise rule reports `blocked`, `never_generated`, `attempted_failed`,
+  `generated_unreviewed`, or `reviewed`, plus successful, failed, attempted,
+  and reviewed counts, verdict counts, timestamps, current
   availability/blockers, and its source declaration;
 - the filler universe is exactly the lexicon identities reachable through at
   least one slot of a currently supported premise rule. Fixture names,
   literals, numbers, fractions, multipliers, and other non-lexicon surfaces do
   not masquerade as lexicon coverage;
-- every reachable filler reports `never_generated`, `generated_unreviewed`, or
-  `reviewed`, its generated/reviewed counts, last timestamps, declared source,
-  admitted surfaces, and compatible rule/slot placements;
+- every reachable filler reports `never_generated`, `attempted_failed`,
+  `generated_unreviewed`, or `reviewed`, its successful, failed, attempted,
+  and reviewed counts, timestamps, declared source, admitted surfaces, and
+  compatible rule/slot placements;
 - a live Reading-origin or pre-G6 review can make its rule `reviewed` even
   without a matching exploration event. Filler review status is asserted only
   when the reviewed candidate has a recorded exploration event, because older
@@ -920,15 +930,16 @@ exploration rows, and the live folded reviews:
 
 Generate next uses the supplied seed against the current folded status. An
 explicit rule and filler must be compatible. If the rule is omitted, choose
-among compatible supported rules with the smallest generated count; ties are
+among compatible supported rules with the smallest attempt count; ties are
 sorted by rule id and selected by the seeded RNG. If the filler is omitted,
 choose among lexicon identities admitted by the chosen rule with the smallest
-generated count; ties are sorted by identity, token index, and slot and selected
+attempt count; ties are sorted by identity, token index, and slot and selected
 by the same seeded RNG. If an identity admits multiple surfaces at that
 placement, choose from the sorted surfaces with the seeded RNG. A supported
 rule with no lexicon-backed slot still generates normally. The ordinary
 realizer, constraints, and round-trip matcher remain the final authority and
-fail without fallback if the selected probe cannot realize.
+fail without fallback if the selected probe cannot realize; that failure
+advances the attempt frontier without fabricating a generation event.
 
 The Designer exposes the rule and reachable-lexicon status totals, orders
 untouched filler choices first, links the selected lexicon declaration through
@@ -940,8 +951,9 @@ never import or consult the exploration ledger.
 **G6 exit:** fresh and reviewed coverage are visibly distinct, an untouched
 reachable lexicon entry can be selected and generated through a compatible
 rule, seeded least-explored choices replay against identical ledger state,
-Reading/retest actions do not fabricate sampling history, source links remain
-editable-document bounded, and every standing runtime gate remains neutral.
+failed probes do not starve untouched alternatives, Reading/retest actions do
+not fabricate sampling history, source links remain editable-document bounded,
+and every standing runtime gate remains neutral.
 
 **G6 result:** met exactly. The initial curated fold reports 77 blocked rules,
 15 untouched supported rules, one reviewed rule with zero fabricated
@@ -1229,7 +1241,7 @@ ledger unchanged and expresses each boundary in reusable pack data or schema:
 - `arithmetic/stated-age` requires a copula and a counted `age_measure`, with
   generic `year/years` and its age/time memberships owned by `core-english`;
   and
-- the generator version is `g6-review-boundaries`, and its explanations show
+- the generator version is `g6-reviewed-premise-boundaries`, and its explanations show
   counted-category and grammatical-number premises from the same declarations
   the matcher enforces.
 
@@ -2176,7 +2188,7 @@ The final direct lexical root is now mechanically visible:
 - generic `currently` moved from `difg-mined` to `core-english`;
 - direct `adverb` category slots draw from the complete loaded adverb sense;
 - the optional trailing branch generates both included and omitted forms; and
-- the generator version is `g6-g5u-adverbs`.
+- the generator version at this checkpoint was `g6-g5u-adverbs`.
 
 This remains a project-relative domain. Curated owns one adverb and therefore
 offers `currently` on the final rule. The combined GSM8K project still owns 45
@@ -2193,17 +2205,19 @@ normally, proving that no production surface list was introduced.
 **G5u result:** the final rule becomes selectable, moving the premise frontier
 from 94/95 to 95/95. Reachable lexicon identities increase from 146 to 147.
 
-The complete gate is green: 3,828 tests pass in four-worker mode; curated is
+The complete gate is green: 3,900 tests pass in four-worker mode; curated is
 65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 40/0; ASDiv, SVAMP,
 MAWPS, and SciBench remain 44/0, 30/0, 9/0, and 6/0; FOLIO makes zero
-commitments; and lint has zero errors with three known warnings.
+commitments; and lint has zero errors with two known warnings.
 
-#### G5v review-led premise audit — active next step
+#### G5v review-led premise audit — active; second batch complete
 
 Mechanical completeness does not establish linguistic or semantic validity.
-The current live fold has 69 never-generated, 25 generated-but-unreviewed, and
-one reviewed rule. Of 147 reachable lexicon identities, 72 are never
-generated, 72 are generated-but-unreviewed, and three are reviewed.
+The current live fold has 48 never-generated, 41 generated-but-unreviewed, and
+6 reviewed rules. Of 150 reachable lexicon identities, 45 are never
+generated, 80 are generated-but-unreviewed, and 25 are reviewed. The
+append-only success ledger contains 218 exploration events and there are six
+current live reviews.
 
 G5v uses the existing Designer loop rather than adding a bulk validator:
 Generate next selects a least-explored compatible rule/filler, the human
@@ -2211,6 +2225,77 @@ reviews one sentence, attaches exact premise or fact defects, explores a
 source-backed hypothesis, edits declarative YAML when warranted, and retests
 the pinned sentence. Every accepted change continues through the complete
 test, benchmark, and lint gates. Reviews and exploration remain append-only.
+
+The first batch reconciles five invalid generated/read surfaces as complete
+grammar classes:
+
+- subject/verb compatibility is explicit through `number_compatible`, while
+  reviewed non-holder nouns and non-quantitative verbs are narrow
+  pack-declared exclusions rather than exhaustive allowlists;
+- `many_incompatible_noun` subtracts the known non-count readings from the
+  open plural/count domain, preserving every established benchmark count noun;
+- `mass_quantity_noun` gates `much`, and `quantity_delta` separates additive
+  amount directions from age-specific comparatives;
+- optional appositive standards require a possessive determiner and animate
+  role, and `bound_requires_type` requires the following standard to be a
+  proper name only when that prefix binds;
+- optional PP objects opt into the `referential` boundary, with
+  `bare_pp_object` as the declared bare-adjunct exception;
+- demonstrative anaphoric conjuncts require overt `that` or `this`; and
+- `standalone: true` separates an elided scalar from a condensed counted noun,
+  preventing the elided and postfix relation rules from double-firing.
+
+Generic `this` moved into `core-english` in that batch. Exploration applies
+each rule's `slot_not_category` refusals before advertising lexical
+compatibility; this removed the invalid historical `there`-as-holder
+placement and left a 147-identity reachable frontier at that checkpoint. In
+particular, `need`, `take`, and `want` can no longer starve
+`arithmetic/affine-fraction-as-many` by remaining permanently least-explored
+probes that the realizer must reject. All five pinned reviews from that batch
+retest `absent`, all five target rules generate matcher-confirmed specimens
+across the bounded seed test, and the existing valid neighbours remain
+accepted.
+
+Failed fresh attempts now append to `generation/failures.jsonl` rather than
+vanishing. `generated_count` remains successful-realization coverage;
+`failed_count` and `attempt_count` are separate, and least-explored selection
+ranks by attempts. The Designer labels a failure-only target
+`attempted_failed` and refreshes the frontier immediately after the 422
+response. Failure scores are registry-fingerprint scoped, so saving a relevant
+rule or lexicon change makes the target eligible for rapid retesting without
+rewriting its historical attempt.
+
+The second batch reconciles all six current invalid reviews:
+
+- present and past age-comparison rules require the appropriate copula class
+  and subject/verb agreement;
+- duration rates require a counted `duration_measure`, a finite expletive
+  duration verb, and a `bare_form` infinitive;
+- descriptor/noun compatibility now covers adjective-, comparative-, and
+  preposition-rooted categories, separating linear, mass, and duration
+  measure pairings and constraining optional PP objects;
+- the fraction-frame relation requires its complete determiner, aggregate
+  noun, plural item, repeated verb, and paired optional destination
+  preposition structure;
+- `same_presence` declaratively couples paired optional slots, while
+  `bound_requires_category` applies a category requirement only when its
+  controlling slot is present; and
+- conjoined aggregate anchors enforce agreement and refuse narrow
+  non-quantity holders and verbs.
+
+Generic `inch`, `pound`, and `travel` forms now live in `core-english`;
+mined packs retain their corpus-specific category extensions. The current
+generator version is `g6-reviewed-premise-boundaries`. All six current pinned
+reviews retest `absent`, while direct and prepositional fraction frames,
+present and past age comparisons, compatible dimension relations, valid
+duration rates, and concrete aggregate anchors remain matcher-confirmed.
+Curated remains 95/95 and the reachable frontier is now 150 identities.
+
+The complete gate is green: 3,900 tests pass in four-worker mode; curated is
+65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 40/0; ASDiv, SVAMP,
+MAWPS, and SciBench remain 44/0, 30/0, 9/0, and 6/0; FOLIO makes zero
+commitments; all before/after diffs are neutral; and lint has zero errors with
+two known warnings.
 
 There is no automatic transition to G7. Ask-rule and derived-rule generation
 requires a separate decision after the premise audit demonstrates that the
