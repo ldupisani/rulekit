@@ -43,6 +43,32 @@ def test_start_state_undoes_a_gain(reg):
     assert r.answer.value == pytest.approx(12.0)  # 20 - (+8)
 
 
+def test_originally_undoes_a_gain(reg):
+    """The one-token marker uses the same start-state inversion as its
+    multi-token sibling."""
+    r = solve(
+        "Nadia found 8 shells and had 20 shells left. "
+        "How many shells did Nadia have originally?",
+        reg,
+        tracing=False,
+    )
+    assert r.answer.committed, (r.answer.reason or "")
+    assert r.answer.value == pytest.approx(12.0)
+
+
+def test_originally_declines_a_differently_qualified_event_history(reg):
+    """A scalar qualifier cannot prove whether one modifier is nested under
+    another, so a start-state fold must not silently drop the event."""
+    r = solve(
+        "Nadia bought 5 new toy cars. Nadia has 40 toy cars now. "
+        "How many toy cars did Nadia have originally?",
+        reg,
+        tracing=False,
+    )
+    assert not r.answer.committed
+    assert "modifier scope is ambiguous" in (r.answer.reason or "")
+
+
 def test_the_same_premises_without_the_marker_are_UNCHANGED(reg):
     """THE blast-radius test. `invert_events` defaults off, so the identical
     premises under an ordinary ask must fold exactly as they always did. If this

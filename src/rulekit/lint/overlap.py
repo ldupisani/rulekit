@@ -18,6 +18,7 @@ _TYPE_EXAMPLES = {
     "number": "7",
     "fraction": "half",
     "multiplier": "twice",
+    "nonunit_multiplier": "twice",
     "name": "Alex",
     "noun": "apple",
     "plural": "apples",
@@ -91,11 +92,16 @@ def _tokens_intersect(a: MatchToken, b: MatchToken, reg: Registry) -> bool:
         if slot.type is not None:
             if slot.type == "word":
                 return True
+            if slot.type in {
+                "number",
+                "fraction",
+                "multiplier",
+                "nonunit_multiplier",
+            }:
+                return False  # a fixed literal is never a value slot
             senses = _TYPE_SENSES.get(slot.type)
             if senses is None:
                 return True
-            if slot.type in ("number", "fraction", "multiplier"):
-                return False  # a fixed literal is never a value slot
             def _ok(lit: str) -> bool:
                 entry = reg.lexicon.get(lit)
                 hit = entry is not None and bool(set(entry.senses) & senses)
@@ -118,7 +124,10 @@ def _tokens_intersect(a: MatchToken, b: MatchToken, reg: Registry) -> bool:
     # slot vs slot
     ta = a.type or _type_of_cat(a.cat, reg)
     tb = b.type or _type_of_cat(b.cat, reg)
-    base = {"plural": "noun"}
+    base = {
+        "plural": "noun",
+        "nonunit_multiplier": "multiplier",
+    }
     if a.cat and b.cat:
         if a.cat in reg.cat_ancestors(b.cat) or b.cat in reg.cat_ancestors(a.cat):
             return True

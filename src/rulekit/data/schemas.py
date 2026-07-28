@@ -190,7 +190,8 @@ class ObligationsDoc(StrictModel):
 # ---------------------------------------------------------------------------
 
 SLOT_TYPES = (
-    "number", "fraction", "multiplier", "name", "noun", "plural", "counted",
+    "number", "fraction", "multiplier", "nonunit_multiplier",
+    "name", "noun", "plural", "counted",
     "entity", "verb", "auxiliary", "modal", "future_modal",
     "pronoun", "word",
     "adjective", "possessed", "qualified", "percent",
@@ -619,6 +620,21 @@ class VerbRoleCompatibilityPredicate(StrictModel):
         return self
 
 
+class DistinctFromOwnerPredicate(StrictModel):
+    """Keep an entity distinct from a possessed noun's declared owner."""
+
+    entity: str
+    possessed: str
+
+    @model_validator(mode="after")
+    def _different_slots(self) -> "DistinctFromOwnerPredicate":
+        if self.entity == self.possessed:
+            raise ValueError(
+                "entity/possessed owner comparison needs two different slots"
+            )
+        return self
+
+
 class WherePredicate(StrictModel):
     """Closed set of cross-slot constraints."""
 
@@ -672,6 +688,11 @@ class WherePredicate(StrictModel):
     # ("Aven's age ... Bira's age"); ordinary `distinct` compares lemmas and
     # therefore cannot express this relation.
     distinct_owner: list[str] | None = None
+    # Compare one ordinary entity slot with the independently represented
+    # owner of a possessed noun slot. Ordinary ``distinct`` compares slot
+    # lemmas, so "Fia ... Fia's apples" otherwise compares `fia` with `apple`
+    # and misses the self-reference.
+    distinct_from_owner: DistinctFromOwnerPredicate | None = None
     # The descriptor slot must be licensed for the noun slot by at least one
     # pack-declared descriptor-category -> noun-category compatibility pair.
     # Descriptors may be adjectives, comparatives, or prepositions.
@@ -725,7 +746,8 @@ class WherePredicate(StrictModel):
                 self.bound_requires_form, self.polarity_compatible,
                 self.same_presence,
                 self.verb_role_compatible, self.same_phrase,
-                self.distinct, self.distinct_owner, self.attribute_compatible,
+                self.distinct, self.distinct_owner, self.distinct_from_owner,
+                self.attribute_compatible,
                 self.distinct_measure,
                 self.name_count, self.absent, self.unbound,
                 self.slot_not_category,

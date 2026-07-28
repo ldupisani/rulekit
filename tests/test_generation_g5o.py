@@ -97,8 +97,8 @@ def test_g5o_unlocks_only_the_preregistered_rule() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 95
-    assert sum(item.supported for item in availability.values()) == 95
+    assert len(availability) == 99
+    assert sum(item.supported for item in availability.values()) == 99
     assert sum(not item.supported for item in availability.values()) == 0
     assert availability[
         "arithmetic/existential-premise-distributive"
@@ -109,7 +109,7 @@ def test_g5o_unlocks_only_the_preregistered_rule() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 151
+    assert len(exploration_status(project)["fillers"]) == 152
 
 
 @pytest.mark.parametrize("quantifier", sorted(EXPECTED_FILLERS))

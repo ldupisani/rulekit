@@ -75,11 +75,22 @@ def annotate_senses(reading: Reading, reg: Registry) -> Reading:
         entry = reg.lexicon.get(fold)
         number = "singular"
         singular = fold
+        implicit_plural = False
         if fold in reg.plural_to_singular:
             singular = reg.plural_to_singular[fold]
             number = "plural"
             if entry is None:
                 entry = reg.lexicon.get(singular)
+                # A declared plural is morphology for the NOUN sense. If its
+                # singular lemma is independently polysemous ("can" is modal
+                # + noun, with noun plural "cans"), inheriting every singular
+                # sense lets coverage arbitration reinterpret the plural as
+                # an impossible inflected modal. A non-noun sense survives
+                # only when the PLURAL SURFACE itself has a declarative
+                # category rooted at that sense ("costs" is explicitly a
+                # price verb as well as the plural noun). An explicit
+                # plural-surface lexicon entry remains authoritative too.
+                implicit_plural = entry is not None
 
         # A capitalized mid-sentence word WITHOUT a preceding article is a
         # name even when the lowercase word is known ("Is Rose a teacher?"
@@ -135,7 +146,26 @@ def annotate_senses(reading: Reading, reg: Registry) -> Reading:
         if entry is not None:
             if entry.number is not None:
                 number = entry.number
-            changes: dict = {"senses": list(entry.senses), "number": number}
+            implicit_senses = ["noun"]
+            if implicit_plural:
+                surface_categories = reg.word_categories.get(fold, ())
+                implicit_senses.extend(
+                    sense
+                    for sense in entry.senses
+                    if sense != "noun"
+                    and any(
+                        reg.root_sense(category) == sense
+                        for category in surface_categories
+                    )
+                )
+            changes: dict = {
+                "senses": (
+                    implicit_senses
+                    if implicit_plural
+                    else list(entry.senses)
+                ),
+                "number": number,
+            }
             if singular != fold and "noun" in entry.senses:
                 changes["lemma"] = singular
             elif "verb" in entry.senses:

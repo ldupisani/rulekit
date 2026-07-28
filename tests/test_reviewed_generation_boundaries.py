@@ -13,7 +13,7 @@ from pydantic import ValidationError
 from rulekit.data.project import load_project
 from rulekit.data.schemas import MatchToken, WherePredicate
 from rulekit.generation import generate_candidate, retest_candidate
-from rulekit.kernel.engine import solve
+from rulekit.kernel.engine import analyze, solve
 from rulekit.kernel.model import PartitionQuantity, Quantity, Rate, Relation
 from rulekit.kernel.patterns import is_bare_verb_form
 
@@ -523,6 +523,9 @@ def test_conditional_standard_type_is_inspectable() -> None:
         "arithmetic/affine-times-as-many",
         "arithmetic/fraction-as-much-elided-standard",
         "arithmetic/anchored-relation-elided",
+        "arithmetic/anaphoric-multiplier-standard",
+        "arithmetic/anaphoric-multiplier-standard-many",
+        "arithmetic/anaphoric-multiplier-standard-much",
         "arithmetic/anaphoric-multiplier-conjunct-many",
         "arithmetic/times-as-many-conjunct",
         "arithmetic/extraposed-duration-rate",
@@ -541,6 +544,8 @@ def test_conditional_standard_type_is_inspectable() -> None:
         "arithmetic/times-as-many-elided",
         "arithmetic/partition-rest-membership",
         "arithmetic/fraction-as-many",
+        "arithmetic/fraction-delta-relation",
+        "arithmetic/fraction-delta-relation-mass",
         "arithmetic/periodic-rate-every-span",
         "arithmetic/times-as-much",
         "arithmetic/anchored-relation-possessive-kinship-standard",
@@ -960,14 +965,14 @@ def test_affine_money_frame_requires_its_relative_clause_predicate(
     registry,
 ) -> None:
     rule_id = "arithmetic/affine-item-relation-clause"
-    anchor = " Dena has 30 apples."
+    anchor = " Dena has 30 dollars."
 
     assert rule_id in _matched_rules(
-        "Cato has 2 less than twice the apple Dena has." + anchor,
+        "Cato has 2 dollars less than twice the money Dena has." + anchor,
         registry,
     )
     assert rule_id not in _matched_rules(
-        "Cato has 2 less than twice the apple Dena." + anchor,
+        "Cato has 2 dollars less than twice the money Dena." + anchor,
         registry,
     )
 
@@ -1353,3 +1358,377 @@ def test_scoped_polarity_is_an_explicit_schema_predicate() -> None:
                 ],
             }
         )
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Bira finds 40 older than once Fia's fish.",
+        "Cato walked 90 younger than once Bira's flower.",
+        "Fia need 20 fewer than once Cato's pencil.",
+        "Aven owns 11 older than twice Fia's apple.",
+        # Each boundary is independently observable, not only in the exact
+        # reviewed combinations.
+        "Bira has 40 more than once Fia's fish.",
+        "Bira has 40 more than twice Fia's apple.",
+        "Bira finds 40 more than twice Fia's apples.",
+        "Bira was 40 more than twice Fia's apples.",
+        "Bira has 40 less than twice Fia's apples.",
+        "Fia has 40 more than twice Fia's apples.",
+    ],
+)
+def test_affine_possessive_relation_rejects_reviewed_boundary_defects(
+    text: str, registry
+) -> None:
+    assert (
+        "arithmetic/affine-times-as-many-possessive-standard"
+        not in _matched_rules(text, registry)
+    )
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Bira has 40 more than twice Fia's fish.",
+        "Aven owns 11 fewer than triple Fia's apples.",
+    ],
+)
+def test_affine_possessive_relation_keeps_state_count_neighbours(
+    text: str, registry
+) -> None:
+    assert (
+        "arithmetic/affine-times-as-many-possessive-standard"
+        in _matched_rules(text, registry)
+    )
+
+
+@pytest.mark.parametrize(
+    ("text", "matched"),
+    [
+        ("Bira has 40 less than twice Fia's rest.", True),
+        ("Bira owns 40 more than triple Fia's rest.", True),
+        ("Bira has 40 fewer than twice Fia's rest.", False),
+        ("Bira has 40 less than twice Fia's rests.", False),
+        ("Fia has 40 less than twice Fia's rest.", False),
+    ],
+)
+def test_affine_possessive_mass_relation_has_its_own_countability_boundary(
+    text: str, matched: bool, registry
+) -> None:
+    assert (
+        "arithmetic/affine-times-as-much-possessive-standard"
+        in _matched_rules(text, registry)
+    ) is matched
+
+
+def test_affine_possessive_relation_still_emits_the_scoped_relation(
+    registry,
+) -> None:
+    result = solve(
+        "Bira has 40 more than twice Fia's fish.",
+        registry,
+    )
+    relation = next(
+        fact
+        for fact in result.store.by_kind(Relation)
+        if fact.provenance.source
+        == "arithmetic/affine-times-as-many-possessive-standard"
+    )
+
+    assert relation.subject == "bira"
+    assert relation.standard == "fia"
+    assert relation.measure == "fish"
+    assert relation.factor == 2
+    assert relation.offset == 40
+    assert relation.verb == "have"
+
+
+@pytest.mark.parametrize(
+    ("rule_id", "valid", "invalid"),
+    [
+        (
+            "arithmetic/times-as-many-possessive-standard",
+            "Bira has twice Fia's apples.",
+            "Fia has twice Fia's apples.",
+        ),
+        (
+            "arithmetic/times-as-much-possessive-standard",
+            "Bira has twice Fia's rest.",
+            "Fia has twice Fia's rest.",
+        ),
+    ],
+)
+def test_possessive_ratio_siblings_keep_subject_and_owner_distinct(
+    rule_id: str, valid: str, invalid: str, registry
+) -> None:
+    assert rule_id in _matched_rules(valid, registry)
+    assert rule_id not in _matched_rules(invalid, registry)
+
+
+def test_entity_owner_distinction_is_an_explicit_schema_predicate() -> None:
+    predicate = WherePredicate(
+        distinct_from_owner={"entity": "who", "possessed": "std"}
+    )
+
+    assert predicate.distinct_from_owner is not None
+    assert predicate.distinct_from_owner.entity == "who"
+    assert predicate.distinct_from_owner.possessed == "std"
+
+
+@pytest.mark.parametrize(
+    "rule_id",
+    [
+        "arithmetic/times-as-many-possessive-standard",
+        "arithmetic/times-as-much-possessive-standard",
+        "arithmetic/affine-times-as-many-possessive-standard",
+        "arithmetic/affine-times-as-much-possessive-standard",
+    ],
+)
+def test_possessive_ratio_generation_respects_owner_and_multiplier_boundaries(
+    rule_id: str,
+) -> None:
+    project = load_project(Path("projects/curated"))
+
+    for seed in range(16):
+        candidate = generate_candidate(project, rule_id=rule_id, seed=seed)
+        bindings = {
+            row.slot: row.binding
+            for row in candidate.premises
+            if row.slot is not None
+        }
+        assert candidate.target_status == "matched"
+        assert bindings["k"] != "once"
+        assert bindings["who"].casefold() != bindings["std"].split(
+            "'", 1
+        )[0].casefold()
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Fia travels double as much rest at his number.",
+        "Fia has double as much rest at his number.",
+        "Fia travels double as much rest.",
+    ],
+)
+def test_elided_mass_standard_rejects_reviewed_verb_and_pp_defects(
+    text: str, registry
+) -> None:
+    assert (
+        "arithmetic/times-as-much-elided-standard"
+        not in _matched_rules(text, registry)
+    )
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Fia has double as much rest.",
+        "Fia has double as much rest in her garden.",
+    ],
+)
+def test_elided_mass_standard_keeps_declared_neighbours(
+    text: str, registry
+) -> None:
+    assert (
+        "arithmetic/times-as-much-elided-standard"
+        in _matched_rules(text, registry)
+    )
+
+
+def test_comparative_need_is_a_dedicated_premise_relation(registry) -> None:
+    result = solve("Fia needs 20 fewer pencils than Cato.", registry)
+    rule_id = "arithmetic/goal-need-comparative-quantity"
+    relation = next(
+        fact
+        for fact in result.store.by_kind(Relation)
+        if fact.provenance.source == rule_id
+    )
+
+    assert rule_id in _matched_rules(
+        "Fia needs 20 fewer pencils than Cato.", registry
+    )
+    assert relation.subject == "fia"
+    assert relation.standard == "cato"
+    assert relation.measure == "pencil"
+    assert relation.factor == 1
+    assert relation.offset == -20
+    assert relation.verb == "need"
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Fia need 20 fewer pencils than Cato.",
+        "Fia needs 20 less pencils than Cato.",
+        "Fia needs 20 younger pencils than Cato.",
+        "Fia needs 20 fewer pencil than Cato.",
+        "Fia needs 20 fewer pencils than Fia.",
+    ],
+)
+def test_comparative_need_rejects_agreement_and_frame_defects(
+    text: str, registry
+) -> None:
+    assert (
+        "arithmetic/goal-need-comparative-quantity"
+        not in _matched_rules(text, registry)
+    )
+
+
+def test_declared_plural_morphology_does_not_inherit_an_unlicensed_modal(
+    registry,
+) -> None:
+    reading = analyze("Cato needs 16 fewer cans than Eron.", registry)
+    cans = next(unit for unit in reading.units if unit.surface == "cans")
+
+    assert cans.senses() == ["noun"]
+    assert (
+        "arithmetic/goal-need-comparative-quantity"
+        in _matched_rules("Cato needs 16 fewer cans than Eron.", registry)
+    )
+
+
+def test_declared_plural_keeps_a_surface_declared_verb_reading(registry) -> None:
+    reading = analyze("A book costs three times that price.", registry)
+    costs = next(unit for unit in reading.units if unit.surface == "costs")
+
+    assert costs.senses() == ["verb"]
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Plum won 4 older than thrice dollar Dena won.",
+        "Plum won 4 dollars older than thrice the money Dena won.",
+        "Plum won 4 dollars more than thrice the dollar Dena won.",
+        "Plum won 4 dollars more than thrice money Dena won.",
+    ],
+)
+def test_affine_currency_clause_rejects_reviewed_frame_defects(
+    text: str, registry
+) -> None:
+    assert (
+        "arithmetic/affine-item-relation-clause"
+        not in _matched_rules(text, registry)
+    )
+
+
+def test_affine_currency_clause_keeps_the_mass_money_frame(registry) -> None:
+    assert "arithmetic/affine-item-relation-clause" in _matched_rules(
+        "Plum won 4 dollars more than thrice the money Dena won.",
+        registry,
+    )
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Mary owns ninety sixths older dog on their remainder than her friend Eron.",
+        "Mary owns two fifths older dogs than Eron.",
+        "Mary owns two fifths more dog than Eron.",
+        "Mary owns two fifths more dogs on the remainder than Eron.",
+    ],
+)
+def test_fraction_delta_relation_rejects_reviewed_frame_defects(
+    text: str, registry
+) -> None:
+    assert (
+        "arithmetic/fraction-delta-relation"
+        not in _matched_rules(text, registry)
+    )
+
+
+def test_fraction_delta_relation_keeps_count_and_compatible_pp_neighbours(
+    registry,
+) -> None:
+    rule_id = "arithmetic/fraction-delta-relation"
+
+    assert rule_id in _matched_rules(
+        "Mary owns two fifths more dogs than Eron.", registry
+    )
+    assert rule_id in _matched_rules(
+        "Mary owns two fifths fewer dogs in the garden than Eron.", registry
+    )
+
+
+def test_fraction_delta_count_and_mass_siblings_are_disjoint() -> None:
+    registry = load_project(Path("projects/gsm8k")).registry
+    count_id = "arithmetic/fraction-delta-relation"
+    mass_id = "arithmetic/fraction-delta-relation-mass"
+
+    assert count_id in _matched_rules(
+        "Mary owns two fifths fewer dogs than Eron.", registry
+    )
+    assert mass_id not in _matched_rules(
+        "Mary owns two fifths fewer dogs than Eron.", registry
+    )
+    assert mass_id in _matched_rules(
+        "Mary owns two fifths less chicken than Eron.", registry
+    )
+    assert count_id not in _matched_rules(
+        "Mary owns two fifths less chicken than Eron.", registry
+    )
+    assert not {
+        count_id,
+        mass_id,
+    } & _matched_rules("Mary owns two fifths fewer chicken than Eron.", registry)
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Mary gets twice as many.",
+        "Mary gets twice that many.",
+        "Mary gets twice this many.",
+        "Mary gets twice as much.",
+        "Mary gets twice that much.",
+        "Mary gets twice this much.",
+    ],
+)
+def test_anaphoric_multiplier_requires_a_grammatical_introducer(
+    text: str, registry
+) -> None:
+    assert {
+        "arithmetic/anaphoric-multiplier-standard-many",
+        "arithmetic/anaphoric-multiplier-standard-much",
+    } & _matched_rules(text, registry)
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Mary gets twice many.",
+        "Mary gets twice much.",
+        "Mary gets twice amount.",
+        "The scarf costs twice price.",
+    ],
+)
+def test_anaphoric_multiplier_rejects_bare_heads(
+    text: str, registry
+) -> None:
+    assert not {
+        "arithmetic/anaphoric-multiplier-standard-many",
+        "arithmetic/anaphoric-multiplier-standard-much",
+        "arithmetic/anaphoric-multiplier-standard",
+        "arithmetic/anaphoric-price-standard",
+    } & _matched_rules(text, registry)
+
+
+def test_generation_fact_exposes_emit_expression_and_bindings() -> None:
+    project = load_project(Path("projects/curated"))
+    candidate = retest_candidate(
+        project,
+        rule_id="arithmetic/fraction-delta-relation",
+        sentence="Mary owns two fifths more dogs than Eron.",
+        seed=0,
+    )
+    relation = next(
+        fact for fact in candidate.facts if fact["type"] == "Relation"
+    )
+
+    assert relation["fields"]["factor"] == pytest.approx(1.4)
+    assert relation["derivation"]["templates"]["factor"] == (
+        "1 + f * sign(dir)"
+    )
+    assert relation["derivation"]["bindings"]["f"] == "two fifths"
+    assert relation["derivation"]["bindings"]["dir"] == "more"

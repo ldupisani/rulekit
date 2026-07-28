@@ -428,9 +428,12 @@ def exploration_status(project: Project) -> dict[str, Any]:
 
     rule_generated = Counter(event["rule_id"] for event in events)
     rule_failed = Counter(failure["rule_id"] for failure in failures)
-    rule_reviewed = Counter(review["target_rule"] for review in reviews)
+    rule_reviews = [
+        review for review in reviews if review.get("target_rule") is not None
+    ]
+    rule_reviewed = Counter(review["target_rule"] for review in rule_reviews)
     rule_verdicts: dict[str, Counter[str]] = defaultdict(Counter)
-    for review in reviews:
+    for review in rule_reviews:
         rule_verdicts[review["target_rule"]][review["verdict"]] += 1
 
     rule_last_generated: dict[str, str] = {}
@@ -449,7 +452,7 @@ def exploration_status(project: Project) -> dict[str, Any]:
                 rule_last_failed.get(failure["rule_id"], timestamp),
             )
     rule_last_reviewed: dict[str, str] = {}
-    for review in reviews:
+    for review in rule_reviews:
         timestamp = review.get("timestamp")
         if isinstance(timestamp, str):
             rule_last_reviewed[review["target_rule"]] = max(
@@ -517,7 +520,7 @@ def exploration_status(project: Project) -> dict[str, Any]:
 
     filler_reviewed: Counter[str] = Counter()
     filler_last_reviewed: dict[str, str] = {}
-    for review in reviews:
+    for review in rule_reviews:
         for identity in candidate_fillers.get(review["candidate_id"], ()):
             filler_reviewed[identity] += 1
             timestamp = review.get("timestamp")

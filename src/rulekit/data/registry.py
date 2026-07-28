@@ -657,6 +657,8 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
             "possessed",
         }:
             return "noun"
+        if token.type == "nonunit_multiplier":
+            return "multiplier"
         return token.type
 
     def _category_chain(category: str) -> tuple[str, ...]:
@@ -850,6 +852,26 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                             f"category {category!r} is not "
                             f"{expected_root}-rooted"
                         )
+            owner_distinction = predicate.distinct_from_owner
+            if owner_distinction is not None:
+                for slot_name in (
+                    owner_distinction.entity,
+                    owner_distinction.possessed,
+                ):
+                    if slot_name not in slots:
+                        raise CompileError(
+                            f"rule {rule.id!r} entity/owner distinction names "
+                            f"unknown slot {slot_name!r}"
+                        )
+                possessed_token = slots[owner_distinction.possessed]
+                if not (
+                    possessed_token.type == "possessed"
+                    or possessed_token.possessed
+                ):
+                    raise CompileError(
+                        f"rule {rule.id!r} entity/owner distinction target "
+                        f"{owner_distinction.possessed!r} is not possessed"
+                    )
             exclusion = predicate.slot_not_category
             if exclusion is not None:
                 slot_name = exclusion.get("slot")

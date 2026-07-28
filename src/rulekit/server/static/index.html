@@ -108,7 +108,7 @@
 
         <section class="generation-premise-inspector">
           <div class="generation-premise-heading">
-            <div class="pane-title">Why the target premise matched</div>
+            <div id="generation-premise-title" class="pane-title">Why the target premise matched</div>
             <div id="generation-premise-summary" class="dim mono"></div>
           </div>
           <div id="generation-premise-list"></div>
@@ -148,7 +148,7 @@
 
         <div class="generation-review">
           <div>
-            <div class="pane-title">Human review</div>
+            <div id="generation-review-title" class="pane-title">Human review</div>
             <div class="review-verdicts">
               <button data-verdict="valid">Valid</button>
               <button data-verdict="invalid">Invalid</button>
@@ -168,6 +168,19 @@
             <textarea id="generation-note" maxlength="4000"
                       placeholder="What premise or emitted fact appears correct or defective?"></textarea>
           </label>
+          <div id="generation-sentence-review-fields"
+               class="generation-sentence-review-fields hidden">
+            <label>
+              <span class="pane-title">Intended interpretation</span>
+              <textarea id="generation-interpretation" maxlength="4000"
+                        placeholder="In ordinary language, what does this sentence mean?"></textarea>
+            </label>
+            <label>
+              <span class="pane-title">Missing rule suggestion (optional)</span>
+              <textarea id="generation-rule-suggestion" maxlength="4000"
+                        placeholder="What sentence shape or premise rule should recognize it?"></textarea>
+            </label>
+          </div>
           <div class="generation-review-actions">
             <button id="generation-form-hypotheses" disabled>
               Form hypotheses

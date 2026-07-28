@@ -56,7 +56,13 @@ def _attached_fact(
         key: fact[key]
         for key in ("type", "fields", "source", "sentence")
     }
-    snapshot = defect.fact.model_dump(exclude={"source_ref"})
+    # Source navigation and the declarative derivation are explanatory
+    # metadata. Fact identity remains the exact resolved type/fields/source/
+    # sentence tuple, so adding either explanation cannot orphan an otherwise
+    # immutable attachment.
+    snapshot = defect.fact.model_dump(
+        exclude={"source_ref", "derivation"}
+    )
     return fact if current == snapshot else None
 
 

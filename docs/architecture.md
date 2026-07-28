@@ -50,7 +50,7 @@ eight generic modal forms into core and realizes both the complete modal
 domain and its declared future-only subtype. G5t moves the two deictic
 temporal markers into core and admits registry-backed time-rooted category
 generation. G5u moves generic `currently` into core and admits the complete
-loaded direct-adverb domain, bringing curated premise availability to 95/95.
+loaded direct-adverb domain, bringing its checkpoint availability to 95/95.
 G5v's review-led boundary passes add declarative definiteness, agreement,
 appositive-role, quantitative-verb, count/mass, additive-direction,
 finite/bare-form verb, complete-frame, optional-slot-coupling, and
@@ -66,7 +66,20 @@ prepositional totals to declared collocations, and makes bare/`that`
 count-frame relative clauses include a lemma-aligned, independently agreeing
 predicate plus an optional counted duration span. Standalone scalar
 numbers remain distinct from condensed counted nouns so an elided rule cannot
-double-fire on an explicit measure.
+double-fire on an explicit measure. The seventh review pass adds a structural
+non-unit multiplier type, a subject-versus-possessive-owner distinction, and
+separate count/mass possessive ratio rules with declared possession verbs,
+direction classes, and morphology. It also gives comparative need premises
+their own goal-scoped rule and brings the current curated premise inventory to
+98/98 selectable rules. The eighth review pass makes implicit plural senses
+declaration-bounded, completes the affine item-clause frame, splits fractional
+delta relations into disjoint count/mass siblings, and requires grammatical
+introducers plus negative-lookahead continuations for standalone anaphoric
+many/much. Curated now has 99/99 selectable premise rules and 152 reachable
+lexicon identities. The explicit `originally` ask routes through the existing
+start-state event inversion; a qualified start state with differently
+qualified same-measure events declines until modifier nesting is represented
+losslessly.
 Generated defects remain visible by design: mechanical support reports that a
 rule can be realized and matched, not that its premises license valid English.
 
@@ -422,6 +435,8 @@ vanilla-JavaScript designer. The designer exposes:
 
 - a Generate mode for seeded rule realization and human review;
 - an explicit Reading-sentence handoff into that same review workbench;
+- targetless Reading reviews for intended interpretations and missing-rule
+  suggestions;
 - a reading decision stepper;
 - fact, gap, collision, and deficiency views;
 - semantic, deictic, proof, and clarification views;
@@ -445,6 +460,7 @@ enumerate every premise rule with supported/blocker status + source index
         ↓
 either seeded realization of one flat read-phase rule
 or exact Reading sentence + explicitly selected actual premise-rule match
+or exact Reading sentence with no target-rule claim
         ↓
 ordinary analyze() + run_document()
         ↓
@@ -454,7 +470,9 @@ actual matches + facts + collisions + deficiencies
         ↓
 human Valid / Invalid / Unclear + attached defects
         ↓
-deterministic evidence-to-hypothesis rules
+optional intended interpretation + missing-rule suggestion
+        ↓
+deterministic evidence-to-hypothesis rules (targeted premise reviews only)
         ↓
 source-linked advisory cards + human-controlled status
         ↓
@@ -850,12 +868,13 @@ ordinary matcher confirms the named slots are genuinely unbound.
 
 Reading exposes the ordinary document matcher's deduplicated premise-rule
 results beside each non-question sentence. `/api/generation/from-reading`
-requires the user-selected target rule and exact sentence, derives a stable
-identity seed, and reruns that sentence without realization or rewriting.
-The resulting candidate records `origin: reading` and uses its actual target
-bindings for premise inspection. Generated and Reading-origin candidates then
-share the same defect, hypothesis, review-history, source-navigation, and
-pinned-retest paths.
+accepts the exact sentence plus either a user-selected target rule or no
+target, derives a stable identity seed, and reruns that sentence without
+realization or rewriting. A targeted candidate records `origin: reading` and
+uses its actual target bindings for premise inspection. A targetless candidate
+records `target_rule: null`, retains incidental matches and facts as evidence,
+and exposes intended-interpretation and missing-rule fields instead of
+pretending an existing premise was reviewed.
 
 Source navigation is also available directly in Reading. The trace projection
 attaches authoring-only source references to matched premise choices,
@@ -871,9 +890,11 @@ seed, registry fingerprint, and the lexicon-backed filler identities,
 surfaces, slots, and declaration sources actually sampled to the one fixed
 `exploration.jsonl` path. Reading promotion and pinned retest append nothing.
 The status endpoint folds those events with current rule availability and the
-live append-only review history. A pre-G6 or Reading-origin review may
+live append-only review history. A pre-G6 or targeted Reading-origin review may
 therefore mark its rule reviewed without claiming any normalized filler
-history that was never recorded.
+history that was never recorded. Targetless sentence reviews count only
+toward the overall live-review total; they cannot mark a rule or lexicon entry
+reviewed.
 
 The reachable filler universe is derived only from current supported-rule
 domains and lexicon source entries; fixture names, literals, and numeric
@@ -926,7 +947,9 @@ request is reproducible across fresh project loads.
 The review and exploration APIs accept no output path; each appends only to
 its project-owned JSONL location above. Reviews retain candidate origin, slot
 bindings, structured defects, source-linked hypotheses, notes, and hypothesis
-statuses. Defects may attach to the whole sentence, an exact
+statuses. Targetless Reading reviews additionally retain their intended
+interpretation and optional missing-rule suggestion, with append-only
+corrections for both. Defects may attach to the whole sentence, an exact
 rule/token/`where` premise, or a numbered surviving fact. A fact attachment
 carries an immutable bounded snapshot of its type, fields, provenance rule,
 sentence index, and optional indexed emitting-rule source, so append-only
@@ -936,6 +959,11 @@ defect kinds separate an unjustified emission, an incorrect type/field/value,
 and missing identity or other downstream context. Hypotheses remain advisory
 and link back to the emitting rule; this annotation does not alter the runtime
 fact schema.
+When one authored emit unambiguously explains a generated fact, the
+authoring projection additionally carries that emit's expression templates
+and resolved slot bindings. The Designer exposes this as a collapsible
+derivation explanation, and review snapshots preserve it as metadata; fact
+identity and runtime fact models remain unchanged.
 Corrections append a superseding record and may change statuses without
 rewriting history. Once a candidate review is recorded, its review controls
 lock in Generate mode;

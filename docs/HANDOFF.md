@@ -5,15 +5,19 @@
 **Active campaign:** deterministic rule generation and human review
 
 **Status:** G1 through G4, G5a through G5g, G6, Reading-origin review,
-fact-level review, the fraction-plural morphology correction, scoped
-`GroupTotal`, and all six review-led grammar-boundary reconciliations are
+targetless sentence-interpretation review, fact-level review, the
+fraction-plural morphology correction, scoped
+`GroupTotal`, and all eight review-led grammar-boundary reconciliations are
 complete and gated. The review-led adjective/noun compatibility boundary is
 also complete and gated. The review-led leading-`GroupTotal` subject boundary
 is complete and gated: existential `there` no longer becomes a group scope or
 licenses an arbitrary verb. The Designer
 can generate and explain one seeded sentence or promote
 an exact Reading sentence through an explicitly selected actual premise-rule
-match, open the implicated source, edit through the existing
+match. It can also capture any non-question Reading sentence without a target
+rule, preserve the intended interpretation or an optional missing-rule
+suggestion, and keep that evidence out of premise-rule coverage. It can open
+the implicated source, edit through the existing
 compile-and-rollback boundary, retest the identical pinned sentence, compare
 the before/after behavior, form evidence-bounded hypotheses, explore a
 single-slot minimal pair, distinguish untouched from generated and reviewed
@@ -55,9 +59,11 @@ distinct, and four more rules unlock. G5t temporal-marker core ownership and
 time-root realization is complete: both deictic markers are core-owned and
 reviewable, and the standard-pinned future rule unlocks. G5u direct-adverb
 visibility is complete: `currently` is core-owned, project-relative adverb
-breadth remains visible, and all 95 curated premise rules are selectable. G5v
-review-led premise auditing is active; its fifth twelve-review boundary pass
-and sixth five-review boundary pass are implemented and fully gated.
+breadth remains visible, and all 99 curated premise rules are selectable. G5v
+review-led premise auditing is active; its fifth twelve-review boundary pass,
+sixth five-review boundary pass, and seventh five-review boundary pass are
+implemented and fully gated; its eighth four-review pass is implemented and
+fully gated.
 
 **Active plan:**
 [`generation-and-annotation-plan.md`](generation-and-annotation-plan.md)
@@ -98,6 +104,12 @@ Add a clear, rapid rule-exploration mode to the RuleKit designer:
 6. open the relevant YAML in the existing editor;
 7. save, compile, and rerun the identical sentence; and
 8. show the before/after behavior before generating the next specimen.
+
+Reading also supports a targetless interpretation review when no premise rule
+consumed the sentence, or when the reviewer deliberately wants to describe
+the sentence independently of incidental matches. These rows use
+`review_kind: sentence` and `target_rule: null`; they may suggest a missing
+rule but never fabricate one or mark rule/lexicon coverage reviewed.
 
 This is interactive grammar debugging, not corpus fabrication or model
 training. Reviews never alter runtime behavior automatically.
@@ -560,7 +572,9 @@ preserved.
 The next action is to generate or inspect the next least-explored premise and
 review it in the Designer. The ten reviews handled by the third G5v batch,
 the two handled by the fourth batch, the twelve handled by the fifth batch,
-and the five handled by the sixth batch all retest `absent`; keep their
+the five handled by the sixth batch, the five handled by the seventh batch,
+and the two malformed surfaces handled by the eighth batch all retest
+`absent`; its two intended-valid surfaces now match. Keep their
 append-only evidence, and reopen a fixed class only if a pinned retest
 regresses or a new neighboring review shows the boundary is incomplete.
 
@@ -921,20 +935,115 @@ premise boundaries:
 
 All five pinned surfaces retest `absent`, and every corrected target continues
 to generate matcher-confirmed candidates across the bounded seed gate. The
-append-only fold contains 282 successful exploration events and 100 review
-rows; two post-reconciliation tombstones leave three live reviews while
+append-only fold contains 289 successful exploration events and 108 review
+rows; the existing corrections and tombstones leave five live reviews while
 preserving every original row as evidence. Current coverage is
-7 never-generated, 86 generated-but-unreviewed, and 2 reviewed rules; the 151
-reachable lexicon identities are 38 never-generated, 103
-generated-but-unreviewed, and 10 reviewed.
+4 never-generated, 89 generated-but-unreviewed, and 2 reviewed rules; the 151
+reachable lexicon identities are 38 never-generated, 98
+generated-but-unreviewed, and 15 reviewed.
 
-The complete gate is green: 4,029 tests pass in four-worker mode; curated is
+The complete gate is green: 4,033 tests pass in four-worker mode; curated is
 65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 40/0 with neutral
 before/after diffs; ASDiv, SVAMP, MAWPS, and SciBench remain 44/0, 30/0, 9/0,
 and 6/0; FOLIO makes zero commitments; and lint has zero errors with two known
 warnings. No protected TEST look was spent.
 
-Do not interpret 95/95 as proof that every sentence is valid, bulk-label the
+The seventh G5v batch reconciles the five latest live reviews as three general
+premise boundaries:
+
+- possessive ratio relations now distinguish plural count standards from
+  singular mass standards. Both the affine and non-affine families require a
+  declared `possession_state`, a non-unit multiplier, grammatical count/mass
+  direction and morphology, and a subject distinct from the possessive
+  owner. The general `distinct_from_owner` predicate makes that final
+  constraint inspectable; ordinary `distinct` compares the possessed noun
+  lemma and cannot detect `Fia ... Fia's apples`;
+- `arithmetic/times-as-much-elided-standard` now inherits the full sibling's
+  declared sale/remnant and preposition/object compatibility premises. Both
+  full and standard-elided mass relations refuse the separately declared
+  frame-prepositional verb class when their own surface has no such frame;
+  and
+- `arithmetic/goal-need-comparative-quantity` owns the ordinary
+  `WHO needs N fewer/more PLURAL than WHO` construction. It keeps
+  `need_premise` goal-scoped instead of weakening the general
+  `non_quantity_object_verb` refusal.
+
+The first count/mass split correctly rejected the reviewed generations but
+temporarily broke the established `$50 more than twice Cecil's money` buyer
+by requiring a standalone offset. The benchmark diff caught that exact
+regression; allowing both bare and explicitly measured offsets restored
+`bacb0d512ef7` through the new mass sibling without reopening any reviewed
+surface.
+
+All five live target rules retest `absent`; the corrected comparative-need
+surface and count/mass neighbours are matcher-confirmed. Curated premise
+availability is 98/98. The append-only fold contains 298 successful
+exploration events and five live reviews. Current coverage is 3
+never-generated, 93 generated-but-unreviewed, and 2 reviewed rules; the 151
+reachable lexicon identities are 38 never-generated, 98
+generated-but-unreviewed, and 15 reviewed. There are no failures at the
+current registry fingerprint.
+
+The complete gate is green: 4,069 tests pass in four-worker mode; curated is
+65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 40/0 with neutral
+before/after diffs; ASDiv, SVAMP, MAWPS, and SciBench remain 44/0, 30/0, 9/0,
+and 6/0; FOLIO makes zero commitments; and lint has zero errors with two known
+warnings. No protected TEST look was spent.
+
+The eighth G5v batch reconciles four live reviews as four inspectable
+boundaries and one fact-explanation addition:
+
+- `arithmetic/affine-item-relation-clause` now requires a counted currency
+  offset, the complete definite frame, a mass-currency measure, and a
+  mass-compatible direction. Generic `money` is core-owned; mined packs only
+  extend its domain. The malformed `Plum won 4 older than thrice dollar Dena
+  won.` surface is absent, while the complete measured frame remains valid;
+- fraction-delta comparisons are split into disjoint count and mass siblings.
+  Count comparisons require a declared plural non-mass measure and count
+  direction; mass comparisons require a declared mass measure and mass
+  direction. Both retain agreement, quantitative-verb, distinct-standard,
+  and optional PP compatibility premises. The reviewed singular/plural,
+  adjective, and PP defects are absent;
+- `twice as many/much` requires the overt `as`/`that`/`this` introducer and
+  rejects a following explicit-standard continuation through inspectable
+  `unbound` sentinels. The targetless `Mary gets twice as many.` interpretation
+  now matches without weakening the explicit-standard families;
+- implicitly derived plural surfaces receive the noun sense plus only
+  non-noun senses licensed by a category explicitly declared on that plural
+  surface. Thus `cans` is no longer fabricated as a verb, while an explicitly
+  licensed form such as price-relation `costs` retains its verb reading; and
+- generated facts now retain the applicable authored `emits` expression and
+  its resolved bindings. The Designer exposes these under “How this fact was
+  derived,” and exact review snapshots preserve the explanation without
+  making it part of fact identity.
+
+The benchmark gate caught an initially unsafe downstream consequence rather
+than hiding it in the premise rule: once the valid anaphoric multiplier was
+represented, a question ending in `originally` could incorrectly return its
+current qualified anchor. A dedicated start-state ask now invokes the existing
+event inversion. Histories containing differently qualified same-measure
+events decline because the current scalar modifier representation cannot
+prove whether the event is nested or disjoint. GSM8K DEV-holdout therefore
+moves from 40/0 to 41/0 by solving `c3ac53fdd650`; the originally-marked buyer
+returns to a safe decline.
+
+Both malformed reviewed surfaces retest `absent`; the targetless anaphoric
+surface and the comparative-need sentence now match their intended rules.
+Curated premise availability is 99/99 with 152 reachable lexicon identities.
+The append-only fold contains 314 successful generation events, 117 review
+rows folded to four live reviews, and no failure under the current
+fingerprint. Current rule coverage is 1 never-generated, 95
+generated-but-unreviewed, and 3 reviewed; filler coverage is 37
+never-generated, 101 generated-but-unreviewed, and 14 reviewed.
+
+The complete gate is green: 4,103 tests pass in four-worker mode; curated is
+65/65; GSM8K DEV-train remains 104/0 with a neutral diff and DEV-holdout is
+41/0 with one solve, no break, and no new wrong commitment. ASDiv, SVAMP,
+MAWPS, and SciBench are 44/0, 30/0, 10/0, and 6/0; FOLIO makes zero
+commitments; and lint has zero errors with two known warnings. No protected
+TEST look was spent.
+
+Do not interpret 99/99 as proof that every sentence is valid, bulk-label the
 frontier, or advance to deferred question generation before the premise audit
 is mature enough for a deliberate product decision.
 

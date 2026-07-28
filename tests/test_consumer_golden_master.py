@@ -21,9 +21,9 @@ identically before and after because the probe never reached the shape). The
 consumer comes from `match_ask`, the same function `answer()` dispatches on, so
 the assertion is on the real dispatch and not a reimplementation of it.
 
-COVERAGE IS COMPLETE AND MEASURED: 41 consumers, 120 probes — 24 answering
-paths and 96 GUARDS — reaching all 90 distinct guard messages across the
-consumer surface: 67 from text rows here, 23 via direct unit probes
+COVERAGE IS COMPLETE AND MEASURED: 41 consumers, 121 probes — 24 answering
+paths and 97 GUARDS — reaching all 91 distinct guard messages across the
+consumer surface: 68 from text rows here, 23 via direct unit probes
 (`_COVERED_BY_UNIT_TEST` + tests/test_consumer_guard_probes.py, for guards
 text cannot phrase — the reason is stated per entry). The first 102 probes
 were mined from the existing suite; the session-4 rows were found by probing
@@ -230,6 +230,15 @@ GOLDEN = [
      'single-entity', 'decline', None, "no 'eat' events known for 'carla'/'apple'"),
     ('gsm8k', 'How many apples did Sam eat?',
      'single-entity', 'decline', None, "no 'eat' events known for 'sam'/'apple'"),
+    (
+        'gsm8k',
+        'Nadia bought 5 new toy cars. Nadia has 40 toy cars now. '
+        'How many toy cars did Nadia have originally?',
+        'single-entity',
+        'decline',
+        None,
+        'qualified start state has differently qualified even',
+    ),
     ('gsm8k', 'How many did Oscar make?',
      'single-entity-elided-measure', 'decline', None, "'oscar' holds 0 measures — an elided-measure ask nee"),
     ('gsm8k', 'How many does Priya have?',
@@ -377,10 +386,10 @@ def test_the_guards_are_the_bulk_of_the_coverage():
 
 # --- the coverage of this file, measured and enforced ----------------------
 
-_GUARD_FLOOR = 90   # guards WITH a probe: raise as probes are added, never lower
+_GUARD_FLOOR = 91   # guards WITH a probe: raise as probes are added, never lower
 _GAP_CEILING = 0    # guards WITHOUT one: lower as probes are added, never raise
 
-# The denominator is 90, and it was 92 until the boundary bug above was fixed:
+# The denominator is 91, and it was 92 until the boundary bug above was fixed:
 # the naive split credited `geometry` with the temporal origo's decline and let
 # one branch absorb its neighbour's. Verified against the PRE-refactor file with
 # the corrected boundary — also 90 — so the extraction lost nothing; the old

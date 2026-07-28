@@ -455,9 +455,12 @@ members:
   currency:
   - dollar
   - dollars
-  - money
   - pound
   - pounds
+  mass_currency_noun:
+  - balance
+  - cash
+  - earnings
   discount:
   - coupon
   - discount

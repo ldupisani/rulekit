@@ -26,6 +26,7 @@ from rulekit.generation import (
     generate_minimal_pair,
     list_rule_availability,
     promote_reading_candidate,
+    promote_sentence_review_candidate,
     read_reviews,
     read_exploration_events,
     read_exploration_failures,
@@ -923,7 +924,7 @@ def test_g5c_possessed_rules_remain_supported_after_g5j() -> None:
     possessed = next(
         premise
         for premise in candidate.premises
-        if premise.slot_type == "possessed"
+        if premise.slot == "std"
     )
     assert {
         "rule-token",
@@ -1282,6 +1283,69 @@ def test_reading_sentence_is_promoted_without_realization_or_rewriting(
     assert 0 <= first.seed <= (1 << 53) - 1
 
 
+def test_unmatched_reading_sentence_becomes_a_targetless_interpretation_review(
+    tmp_path: Path,
+) -> None:
+    _write_project(tmp_path)
+    project = load_project(tmp_path)
+    sentence = "Miv."
+
+    first = promote_sentence_review_candidate(project, sentence=sentence)
+    second = promote_sentence_review_candidate(
+        load_project(tmp_path), sentence=sentence
+    )
+
+    assert first.to_json() == second.to_json()
+    assert first.origin == "reading"
+    assert first.sentence == sentence
+    assert first.target_rule is None
+    assert first.target_status == "unmatched"
+    assert first.actual_matches == ()
+    assert first.premises == ()
+
+    review = append_review(
+        project,
+        ReviewRecord(
+            candidate_id=first.id,
+            origin="reading",
+            review_kind="sentence",
+            sentence=first.sentence,
+            target_rule=None,
+            seed=first.seed,
+            registry_fingerprint=first.registry_fingerprint,
+            verdict="valid",
+            interpretation="A single entity is being named.",
+            suggested_rule="Recognize a bare nominal utterance.",
+        ),
+    )
+    assert review["target_rule"] is None
+    assert review["interpretation"] == "A single entity is being named."
+    assert review["suggested_rule"] == "Recognize a bare nominal utterance."
+
+    status = exploration_status(project)
+    assert status["summary"]["live_reviews"] == 1
+    assert all(item["reviewed_count"] == 0 for item in status["rules"])
+
+
+def test_sentence_review_cannot_claim_a_target_or_generated_origin() -> None:
+    common = {
+        "candidate_id": "gen-targetless",
+        "review_kind": "sentence",
+        "sentence": "A sentence.",
+        "seed": 1,
+        "registry_fingerprint": "abcdef0123456789",
+        "verdict": "unclear",
+    }
+    with pytest.raises(ValidationError):
+        ReviewRecord.model_validate(
+            {**common, "origin": "reading", "target_rule": "invented/simple"}
+        )
+    with pytest.raises(ValidationError):
+        ReviewRecord.model_validate(
+            {**common, "origin": "generated", "target_rule": None}
+        )
+
+
 def test_minimal_pair_rerolls_one_slot_and_locks_every_other_binding(
     tmp_path: Path,
 ) -> None:
@@ -1610,6 +1674,33 @@ def test_trace_exposes_explicit_targets_and_promotes_the_selected_rule(
     assert candidate["sentence"] == sentence
     assert candidate["target_rule"] == targets[0]["rule_id"]
     assert candidate["requested_bindings"] == candidate["target_bindings"]
+
+
+def test_trace_can_promote_a_sentence_without_selecting_a_rule(
+    tmp_path: Path,
+) -> None:
+    _write_project(tmp_path)
+    router = build_router(ServerState(tmp_path))
+
+    def endpoint(path: str, method: str):
+        return next(
+            route.endpoint
+            for route in router.routes
+            if route.path == path and method in route.methods
+        )
+
+    sentence = "Miv."
+    trace = endpoint("/api/trace", "POST")(TraceBody(text=sentence))
+    assert trace["sentences"][0]["review_targets"] == []
+
+    candidate = endpoint("/api/generation/from-reading", "POST")(
+        GenerationReadingBody(sentence=sentence)
+    )
+    assert candidate["origin"] == "reading"
+    assert candidate["sentence"] == sentence
+    assert candidate["target_rule"] is None
+    assert candidate["target_status"] == "unmatched"
+    assert candidate["actual_rule_ids"] == []
 
 
 def test_trace_exposes_the_identified_ask_source() -> None:
@@ -2183,6 +2274,47 @@ def test_editing_preserves_what_was_actually_reviewed(tmp_path: Path) -> None:
         assert corrected[field] == first[field]
 
 
+def test_sentence_interpretation_and_rule_suggestion_are_append_only_edits(
+    tmp_path: Path,
+) -> None:
+    _write_project(tmp_path)
+    project = load_project(tmp_path)
+    candidate = promote_sentence_review_candidate(project, sentence="Miv.")
+    first = append_review(
+        project,
+        ReviewRecord(
+            candidate_id=candidate.id,
+            origin="reading",
+            review_kind="sentence",
+            sentence=candidate.sentence,
+            target_rule=None,
+            seed=candidate.seed,
+            registry_fingerprint=candidate.registry_fingerprint,
+            verdict="unclear",
+            interpretation="An entity is mentioned.",
+            suggested_rule="Consider a nominal utterance rule.",
+        ),
+    )
+
+    corrected = update_review(
+        project,
+        first["id"],
+        "valid",
+        "ordinary elliptical language",
+        interpretation="The named entity is the topic.",
+        suggested_rule="Add a deliberately scoped nominal-utterance rule.",
+    )
+
+    assert corrected["supersedes"] == first["id"]
+    assert corrected["target_rule"] is None
+    assert corrected["interpretation"] == "The named entity is the topic."
+    assert (
+        corrected["suggested_rule"]
+        == "Add a deliberately scoped nominal-utterance rule."
+    )
+    assert _raw_reviews(project)[0]["interpretation"] == "An entity is mentioned."
+
+
 def test_deleting_a_review_appends_a_tombstone(tmp_path: Path) -> None:
     project, candidate = _seeded(tmp_path)
     first = append_review(project, _review(candidate, "valid"))
@@ -2281,6 +2413,9 @@ def test_designer_exposes_the_generation_review_loop() -> None:
     assert 'id="generation-defects"' in html
     assert 'id="generation-attachment"' in html
     assert 'id="generation-hypotheses"' in html
+    assert 'id="generation-interpretation"' in html
+    assert 'id="generation-rule-suggestion"' in html
+    assert 'id="generation-review-title"' in html
     assert 'id="save-retest-btn"' in html
     assert 'id="generation-retest-diff"' in html
     assert "/api/generation/candidate" in js
@@ -2292,6 +2427,10 @@ def test_designer_exposes_the_generation_review_loop() -> None:
     assert '"fact generation-fact"' in js
     assert '"generation-fact-header"' in js
     assert '"generation-fact-fields"' in js
+    assert '"generation-fact-derivation"' in js
+    assert "How this fact was derived" in js
+    assert "displayedFact.source_ref" in js
+    assert ".generation-fact-derivation" in css
     assert "/api/generation/review" in js
     assert "openGenerationSource" in js
     assert "RulekitEditor?.gotoLine" in js
@@ -2301,6 +2440,12 @@ def test_designer_exposes_the_generation_review_loop() -> None:
     assert "reviewRecorded" in js
     assert "promoteReadingSentence" in js
     assert "Review premise" in js
+    assert "Review sentence meaning" in js
+    assert 'review_kind: candidate.target_rule ? "premise" : "sentence"' in js
+    assert 'candidate.target_rule || "Sentence-level interpretation review"' in js
+    assert '"Sentence meaning review"' in js
+    assert 'r.target_rule || "No target rule"' in js
+    assert "suggested_rule" in js
     assert "Open rule YAML" in js
     assert "Open ask YAML" in js
     assert "reading-fact-head" in js

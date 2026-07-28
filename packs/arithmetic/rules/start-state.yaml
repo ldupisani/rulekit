@@ -29,6 +29,13 @@ format: rulekit/rules@1
 # for one. The shapes below cannot match those: an if-clause is split off as a
 # premise before the ask is tried.
 #
+# The name-subject "originally" sibling is now licensed by a DEV-holdout
+# regression exposed when the anaphoric multiplier premise began accounting
+# for "twice as many" in a larger sentence. The ordinary base ask had ignored
+# "originally" and returned the current anchor. Reusing the same event
+# inversion is exact for this shape: the current state is known, and every
+# same-entity event is represented.
+#
 # SOURCE-TRANSFER items are STILL NOT READ, and that is still deliberate —
 # "Rachel picked 3 apples FROM HER TREE. Now the tree has 4." The tree holds NO
 # event (the pick folds as rachel/apple/3), so there is nothing to undo and
@@ -100,6 +107,31 @@ asks:
       # wearing this ask's name. Opting out means a multi-variant start-state
       # question declines instead, which is the safe half of the trade. Binding
       # it requires threading the inversion through that helper first.
+
+  - id: ask/how-many-entity-start-state-originally
+    # The name-subject sibling above, with the single-token trailing marker
+    # "originally". This must be a separate ask: the implemented
+    # "in [the] beginning" marker has a different token shape, and optional
+    # marker branches would tie the base ask on questions with no marker.
+    # Every resolve field and safety boundary deliberately mirrors the
+    # sibling: state verb only, exact item qualifier, event inversion, and
+    # no variant roll-up.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {slot: aux, type: future_modal}
+        - {slot: who, type: name}
+        - {slot: verb, cat: state}
+        - {lit: originally}
+    resolves:
+      consumer: single-entity
+      entity: "{who}"
+      measure: "{item}"
+      verb: have
+      start_state: "true"
+      measure_qualifier: "{item.qualifier}"
 
   - id: ask/how-many-entity-common-noun-start-state
     # ask/how-many-entity-common-noun's slots + the required marker. Checked

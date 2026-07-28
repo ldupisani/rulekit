@@ -246,6 +246,13 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
             return kind == "fraction" and bool(unit.features.get("percent"))
         if t == "multiplier":
             return kind == "multiplier"
+        if t == "nonunit_multiplier":
+            value = unit.features.get("value")
+            return (
+                kind == "multiplier"
+                and isinstance(value, (int, float))
+                and float(value) != 1.0
+            )
         if t == "formula":
             # a CHEMICAL FORMULA token (numbers.py `_FORMULA`, validated
             # against the element table). Disjoint from every scalar slot type
@@ -912,6 +919,18 @@ def _check_where(
                 len(owners) != len(pred.distinct_owner)
                 or any(not owner for owner in owners)
                 or len(owners) != len(set(owners))
+            ):
+                return False
+        if pred.distinct_from_owner is not None:
+            entity = slots.get(pred.distinct_from_owner.entity)
+            possessed = slots.get(pred.distinct_from_owner.possessed)
+            if (
+                entity is None
+                or possessed is None
+                or isinstance(entity, tuple)
+                or isinstance(possessed, tuple)
+                or not possessed.features.get("owner")
+                or _lemma_of(entity) == possessed.features.get("owner")
             ):
                 return False
         if pred.attribute_compatible is not None:

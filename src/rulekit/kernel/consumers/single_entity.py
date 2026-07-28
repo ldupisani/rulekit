@@ -215,6 +215,36 @@ def single_entity(ctx: ConsumerContext):
     # `place_fallback_entity` precedent: a shared consumer widened for one
     # caller via a defaulted-off parameter, never globally).
     invert = ctx.query.get("start_state") == "true"
+    if invert and measure_qualifier:
+        # A qualified current anchor does not prove that a differently
+        # qualified event is outside its history. "new toy cars" currently
+        # carries only the nearest scalar qualifier while an ask about "toy
+        # cars" carries another; silently dropping the purchase would return
+        # the current 40 for "how many ... originally?" instead of undoing it.
+        # Conversely, blindly folding every differently qualified event would
+        # mix genuinely disjoint variants such as red and green. Until modifier
+        # nesting is represented losslessly, either choice is a guess.
+        #
+        # State facts are harmless sibling anchors and remain eligible for the
+        # existing exact-qualified lookup. Only a same-holder, same-base-measure
+        # EVENT with a different explicit qualifier makes the start history
+        # ambiguous. This applies to every declarative start-state ask, not to a
+        # rule id or an English-word exception.
+        ambiguous_events = [
+            q
+            for q in ctx.store.by_kind(Quantity)
+            if q.entity == entity
+            and q.measure == singular
+            and q.measure_qualifier not in (None, measure_qualifier)
+            and not ctx.reg.word_in_category(q.verb, "state")
+        ]
+        if ambiguous_events:
+            return Answer(
+                "decline",
+                None,
+                "qualified start state has differently qualified events; "
+                "modifier scope is ambiguous",
+            )
     total = (
         _entity_total(ctx.store, ctx.reg, f"{entity}[{owner}]", singular, ctx.log, invert_events=invert)
         if owner else None

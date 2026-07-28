@@ -228,6 +228,10 @@ entries:
     amount: {senses: [noun], plural: amounts}
     number: {senses: [noun], plural: numbers}
     price: {senses: [noun], plural: prices}
+    # Generic mass currency language is needed by the core arithmetic
+    # relation grammar; corpus-mined packs may extend the category with
+    # narrower financial heads.
+    money: {senses: [noun]}
     cost: {senses: [noun, verb], plural: costs}
     remainder: {senses: [noun]}
     rest: {senses: [noun]}

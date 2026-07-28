@@ -53,6 +53,15 @@ class SourceLocation(BaseModel):
     label: str = Field(min_length=1, max_length=512)
 
 
+class FactDerivationEvidence(BaseModel):
+    """The bounded declarative template and bindings shown beside a fact."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    templates: dict[str, Any] = Field(default_factory=dict, max_length=64)
+    bindings: dict[str, str] = Field(default_factory=dict, max_length=64)
+
+
 class FactEvidence(BaseModel):
     """The exact emitted fact selected when a human records a defect."""
 
@@ -63,6 +72,7 @@ class FactEvidence(BaseModel):
     source: str = Field(min_length=1, max_length=256)
     sentence: int = Field(ge=-1)
     source_ref: SourceLocation | None = None
+    derivation: FactDerivationEvidence | None = None
 
 
 class PremiseAttachment(BaseModel):
@@ -133,15 +143,28 @@ class ReviewRecord(BaseModel):
 
     candidate_id: str = Field(min_length=1, max_length=128)
     origin: Literal["generated", "reading"] = "generated"
+    review_kind: Literal["premise", "sentence"] = "premise"
     sentence: str = Field(min_length=1, max_length=2000)
-    target_rule: str = Field(min_length=1, max_length=256)
+    target_rule: str | None = Field(default=None, min_length=1, max_length=256)
     seed: int
     registry_fingerprint: str = Field(min_length=8, max_length=128)
     verdict: Literal["valid", "invalid", "unclear"]
     requested_bindings: dict[str, str] = Field(default_factory=dict, max_length=64)
     defects: list[ReviewDefect] = Field(default_factory=list, max_length=16)
     hypotheses: list[HypothesisRecord] = Field(default_factory=list, max_length=32)
+    interpretation: str = Field(default="", max_length=4000)
+    suggested_rule: str = Field(default="", max_length=4000)
     note: str = Field(default="", max_length=4000)
+
+    @model_validator(mode="after")
+    def _subject_matches_review_kind(self) -> "ReviewRecord":
+        if self.review_kind == "premise" and self.target_rule is None:
+            raise ValueError("a premise review requires a target rule")
+        if self.review_kind == "sentence" and self.target_rule is not None:
+            raise ValueError("a sentence review cannot claim a target rule")
+        if self.review_kind == "sentence" and self.origin != "reading":
+            raise ValueError("a sentence review must originate in Reading")
+        return self
 
 
 def review_path(project: Project) -> Path:
@@ -221,6 +244,8 @@ def update_review(
     verdict: str,
     note: str,
     hypotheses: list[HypothesisRecord] | None = None,
+    interpretation: str | None = None,
+    suggested_rule: str | None = None,
 ) -> dict:
     """Append a correction that supersedes `review_id`.
 
@@ -244,6 +269,10 @@ def update_review(
         corrected["hypotheses"] = [
             hypothesis.model_dump() for hypothesis in hypotheses
         ]
+    if interpretation is not None:
+        corrected["interpretation"] = interpretation
+    if suggested_rule is not None:
+        corrected["suggested_rule"] = suggested_rule
     return _append(
         project,
         corrected,

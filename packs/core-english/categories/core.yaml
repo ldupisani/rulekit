@@ -130,6 +130,13 @@ categories:
             stative verbs — a quantity they state is a HOLDING (same-key
             disagreement is a conflict); any other verb is an EVENT (each
             occurrence is a distinct fact that accumulates, signed by polarity)
+    possession_state:
+        parent: state
+        notes: >
+            Stative possession forms that can head a direct quantitative
+            holding relation. Copulas remain in sibling `copula`: they state
+            quantities in other grammatical frames but cannot connect a
+            subject directly to a possessive quantity standard.
     copula:
         parent: state
         notes: >
@@ -348,6 +355,13 @@ categories:
             `interchangeable` because denominations name the same stuff — the ONLY
             category allowed to resolve a factless ask noun to its in-store
             sibling (cat/dog in 'animal' must never stand in for each other).
+    mass_currency_noun:
+        parent: currency
+        notes: >
+            Currency-denoting mass nouns that can head a direct proportional
+            amount phrase ("twice the money Sam has"). Denomination count nouns
+            such as "dollar" remain in the parent currency category but cannot
+            fill this narrower grammatical role.
     age_noun:
         parent: noun
         notes: >
@@ -588,6 +602,12 @@ categories:
             Additive directions licensed before an overt plural count noun.
             `less` remains available to mass-quantity siblings but not to the
             count-frame family, which requires `fewer` or neutral `more`.
+    mass_quantity_delta:
+        parent: quantity_delta
+        notes: >
+            Additive directions licensed for a declared singular mass noun.
+            `fewer` remains available to count-quantity siblings but not to a
+            mass frame, which requires `less` or neutral `more`.
     desire:
         parent: verb
         notes: >
@@ -964,7 +984,8 @@ members:
     many_incompatible_noun: [age, litter, rest]
     non_quantity_holder:
         [amount, cost, dollar, inch, number, pound, price, remainder, rest, year]
-    mass_quantity_noun: [litter, rest]
+    mass_quantity_noun: [litter, money, rest]
+    mass_currency_noun: [money]
     non_quantity_object_verb:
         - are
         - cost
@@ -986,7 +1007,7 @@ members:
         - wanting
         - wants
         - wilted
-    currency: [dollar]
+    currency: [dollar, money]
     partitive: [of]
     pool_pronoun: [it, them]
     plural_object_pronoun: [them]
@@ -1090,6 +1111,7 @@ members:
     # the fallback binds a SUBJECT pronoun to a prior subject anyway.
     animate_pronoun: [he, she]
     state: [has, have, had, is, are, was, were, own, owns]
+    possession_state: [has, have, had, own, owns]
     copula: [is, are, was, were]
     plural_copula: [are, were]
     past_copula: [was, were]
@@ -1104,6 +1126,7 @@ members:
     less_dir: [fewer, less, younger]
     quantity_delta: [fewer, less, more]
     count_quantity_delta: [fewer, more]
+    mass_quantity_delta: [less, more]
     dimension_more: [heavier, higher, larger, longer, taller, wider]
     dimension_less: [lighter, shorter, smaller]
     linear_dimension_comparative: [higher, larger, longer, taller, wider, shorter, smaller]

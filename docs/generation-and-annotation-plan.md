@@ -2,7 +2,8 @@
 
 **Status:** active project plan  
 **Accepted:** 2026-07-25  
-**Implementation:** G1–G6, G5c–G5g, Reading-origin and fact-level review, the
+**Implementation:** G1–G6, G5c–G5g, Reading-origin, targetless sentence-
+interpretation, and fact-level review, the
 fraction-plural morphology correction, scoped `GroupTotal`, and the completed
 review-led grammar-boundary reconciliations; the adjective/noun
 compatibility and leading-`GroupTotal` subject boundaries are now complete,
@@ -18,7 +19,8 @@ and G5s modal core ownership and slot realization is complete; G5t
 temporal-marker core ownership and time-root realization is complete; G5u
 direct-adverb visibility is complete; G5v review-led premise auditing is
 active and its fifth twelve-review plus sixth five-review boundary passes are
-complete
+complete; its seventh five-review and eighth four-review boundary passes are
+also complete
 
 ## Current checkpoint
 
@@ -26,7 +28,7 @@ G1 shipped the first complete generate/review/next loop, G2 made its
 mechanical result directly inspectable, G3 closed the edit/retest loop, and G4
 added bounded hypothesis and minimal-pair exploration:
 
-- all 95 curated premise rules are mechanically realizable, with no hidden
+- all 99 curated premise rules are mechanically realizable, with no hidden
   unsupported token or predicate blockers;
 - seeded candidates are identical across fresh project loads;
 - failed target round trips remain inspectable as `absent`;
@@ -38,6 +40,10 @@ added bounded hypothesis and minimal-pair exploration:
   premise rules, requires an explicit target selection when more than one
   fired, and can open the exact sentence in the same review workbench without
   a realization pass;
+- every non-question Reading sentence can also open a targetless sentence
+  review, including when no premise rule matched; that review can preserve an
+  intended interpretation and an optional missing-rule suggestion without
+  claiming rule coverage;
 - identified Reading premise rules, rule-backed decisions, emitted and
   semantic facts, and recognized ask rules can open their indexed YAML
   declarations directly in the existing editor;
@@ -64,6 +70,9 @@ added bounded hypothesis and minimal-pair exploration:
 - fact attachments preserve an immutable type/fields/provenance/source
   snapshot, and distinguish unjustified facts, incorrect fields, and missing
   downstream context;
+- when one authored emit unambiguously explains a generated fact, its
+  expression templates and resolved slot bindings are preserved and exposed
+  under “How this fact was derived” without changing fact identity;
 - hypothesis formation first replays the pinned sentence, then returns only
   deterministic suggestions supported by the selected defect and matcher
   evidence;
@@ -91,7 +100,7 @@ added bounded hypothesis and minimal-pair exploration:
   sentence exposes a defective premise;
 - a `matched` or `shadowed` target status reports what the ordinary matcher
   accepted, never that the resulting English or emitted fact is correct;
-- the current curated frontier contains 95 supported rules and 151 reachable
+- the current curated frontier contains 99 supported rules and 152 reachable
   lexicon identities, while live reviews and continuing exploration remain
   separate from mechanical availability; and
 - random Generate next chooses from the least-attempted compatible rule and
@@ -104,10 +113,11 @@ added bounded hypothesis and minimal-pair exploration:
   optional `GroupTotal.scope`, allowing independently reviewed blue/red totals
   over one measure to coexist without changing tail-only or synthesized totals.
 
-The current gate is green: all 4,029 repository tests pass in four-worker
-mode, curated remains deterministic at 65/65 and 100% precision, both GSM8K
-development diffs are neutral, every standing cross-corpus gate retains zero
-wrong answers, and lint has zero errors.
+The current gate is green: all 4,103 repository tests pass in four-worker
+mode, curated remains deterministic at 65/65 and 100% precision, GSM8K
+DEV-train is neutral at 104/0 and DEV-holdout is 41/0 with one solve and no
+regression, every standing cross-corpus gate retains zero wrong answers, and
+lint has zero errors.
 G6 live validation selected untouched `rabbit`, opened its declaration, and
 generated matched `Eron gives 18 rabbits to Aven.` for
 `arithmetic/transfer-prepositional`. The rule moved from untouched to
@@ -577,6 +587,12 @@ the reviewer chooses the intended target explicitly, then opens that exact
 sentence in Generate mode. Questions are excluded because this loop reviews
 premise rules, not ask rules.
 
+The same sentence also offers a sentence-meaning review. This targetless path
+does not invent a rule id: it records `target_rule: null`, preserves ordinary
+Reading evidence, and lets the reviewer describe the intended interpretation
+or suggest a premise-rule shape that is missing. Such reviews do not increment
+rule or lexicon coverage.
+
 ### Generation controls
 
 - project and loaded-pack summary;
@@ -595,7 +611,8 @@ premise rules, not ask rules.
 ### Main candidate panel
 
 - large, editable generated sentence;
-- target rule id and description;
+- target rule id and description, or an explicit targetless
+  sentence-interpretation label;
 - mechanical result badge;
 - premise inspector;
 - actual rule matches;
@@ -608,6 +625,8 @@ premise rules, not ask rules.
 - defect choices;
 - premise attachment;
 - note;
+- intended interpretation and optional missing-rule suggestion for a
+  targetless Reading review;
 - hypothesis cards;
 - hypothesis status; and
 - Next sentence.
@@ -639,9 +658,11 @@ GET  /api/generation/history
 ```
 
 Candidate requests may identify a rule or request a random target. A
-Reading-origin request supplies only the exact sentence and explicitly chosen
-matched rule; the server derives its stable seed and replays it through the
-ordinary reader.
+Reading-origin request supplies the exact sentence and either an explicitly
+chosen matched rule or no target. The server derives its stable seed and
+replays it through the ordinary reader. A targetless response retains
+incidental matches and facts for inspection but does not claim that any rule
+was the review subject.
 
 The server retains the currently pinned candidate and before-state only as UI
 session state. Durable reviews are written through one fixed project-local
@@ -660,10 +681,12 @@ records containing:
 ```text
 candidate id and sentence
 origin: generated or reading
-target rule
+review kind: premise or sentence
+target rule, or null for a sentence review
 seed and slot bindings
 registry fingerprint
 human verdict
+intended interpretation and optional missing-rule suggestion
 defects and attached premises
 note
 hypotheses and their statuses
@@ -777,6 +800,30 @@ semantic fact, and a recognized ask carry their authoring-only `SourceIndex`
 reference when one exists. The control opens only paths already present in the
 editable pack-document allowlist and jumps to the indexed line; derived or
 kernel-only identifiers without a YAML declaration remain plain text.
+
+### Targetless sentence-interpretation review entry — complete
+
+Expose a separate `Review sentence meaning` action for every non-question
+Reading sentence, including sentences with no premise-rule result. Promote the
+unchanged text into a targetless, deterministic Reading candidate; retain
+ordinary matches, facts, collisions, and deficiencies as inspectable evidence;
+and record the review with an intended interpretation and optional missing-rule
+suggestion.
+
+The durable review uses `review_kind: sentence` and `target_rule: null`.
+Append-only corrections can revise both human text fields. The exploration
+fold excludes these rows from per-rule and per-lexicon reviewed counts while
+still reporting them in the overall live-review total.
+
+**Exit:** a user can preserve what an unmatched sentence means, or describe
+the rule that ought to recognize it, without fabricating an existing premise
+match or contaminating rule-coverage status.
+
+The complete gate is green: 4,033 tests pass in four-worker mode; curated is
+65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 40/0 with neutral
+before/after diffs; ASDiv, SVAMP, MAWPS, and SciBench remain 44/0, 30/0, 9/0,
+and 6/0; FOLIO makes zero commitments; and lint has zero errors with two known
+warnings. No protected TEST look was spent.
 
 ### G5 — Structured realizers — in progress
 
@@ -2211,17 +2258,16 @@ The complete gate is green: 3,900 tests pass in four-worker mode; curated is
 MAWPS, and SciBench remain 44/0, 30/0, 9/0, and 6/0; FOLIO makes zero
 commitments; and lint has zero errors with two known warnings.
 
-#### G5v review-led premise audit — active; sixth batch complete
+#### G5v review-led premise audit — active; eighth batch complete
 
 Mechanical completeness does not establish linguistic or semantic validity.
-The current live fold has 7 never-generated, 86 generated-but-unreviewed,
-and 2 reviewed rules. Of 151 reachable lexicon identities, 38 are never
-generated, 103 are generated-but-unreviewed, and 10 are reviewed. The
-append-only success ledger contains 282 exploration events; 100 append-only
-review rows fold to three current live reviews after two post-reconciliation
-tombstones. The separate failure ledger
-retains three historical attempts, none matching the current registry
-fingerprint.
+The current live fold has 1 never-generated, 95 generated-but-unreviewed,
+and 3 reviewed rules. Of 152 reachable lexicon identities, 37 are never
+generated, 101 are generated-but-unreviewed, and 14 are reviewed. The
+append-only success ledger contains 314 exploration events; 117 append-only
+review rows fold to four current live reviews after the existing corrections
+and tombstones. The separate failure ledger retains four historical attempts,
+none matching the current registry fingerprint.
 
 G5v uses the existing Designer loop rather than adding a bulk validator:
 Generate next selects a least-explored compatible rule/filler, the human
@@ -2440,6 +2486,95 @@ The complete gate is green: 4,029 tests pass in four-worker mode; curated is
 before/after diffs are neutral; ASDiv, SVAMP, MAWPS, and SciBench remain 44/0,
 30/0, 9/0, and 6/0; FOLIO makes zero commitments; and lint has zero errors
 with two known warnings. No protected TEST look was spent.
+
+The seventh batch reconciles five live reviews around possessive ratios and
+elided mass relations:
+
+- both affine and non-affine possessive ratios are split into explicit count
+  and mass siblings. Count standards require a declared plural non-mass noun
+  plus `count_quantity_delta`; mass standards require a declared singular
+  `mass_quantity_noun` plus `mass_quantity_delta`;
+- `possession_state` excludes copulas and unrelated event verbs from the
+  possessive ratio frame. `nonunit_multiplier` excludes adverbial `once`
+  structurally, without a multiplier word list in Python;
+- `distinct_from_owner` compares the subject with the possessed noun's owner,
+  closing the self-comparison that ordinary lemma-based `distinct` cannot
+  see. Availability, ordinary generation, locked bindings, matcher premises,
+  and explanations all share the new predicate;
+- the standard-elided mass rule inherits the full rule's sale/remnant and
+  preposition/object compatibility checks, while both refuse the declared
+  prepositional-frame verb class on their unframed surfaces; and
+- the common `WHO needs N fewer/more PLURAL than WHO` surface gets a dedicated
+  comparative-need premise. It retains `need_premise` goal semantics and does
+  not relax the generic quantitative-object verb boundary.
+
+The first split produced one deliberate gate failure: requiring the affine
+offset to be standalone dropped the established
+`$50 more than twice Cecil's money` buyer. The harm-ordered snapshot identified
+exactly `bacb0d512ef7`; retaining the original number slot's support for both
+bare and explicitly measured offsets restored it through the mass sibling.
+The final GSM8K train and holdout diffs are neutral.
+
+All five live reviewed targets retest `absent`, while the corrected
+comparative-need sentence and valid count/mass neighbours match. Curated now
+contains 98/98 selectable premise rules. The fold contains 298 successful
+generation events, five live reviews, and no failures under the current
+fingerprint; rule coverage is 3 never-generated, 93
+generated-but-unreviewed, and 2 reviewed.
+
+The complete gate is green: 4,069 tests pass in four-worker mode; curated is
+65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 40/0; both
+before/after diffs are neutral; ASDiv, SVAMP, MAWPS, and SciBench remain 44/0,
+30/0, 9/0, and 6/0; FOLIO makes zero commitments; and lint has zero errors
+with two known warnings. No protected TEST look was spent.
+
+The eighth batch reconciles the four latest live reviews:
+
+- the affine item-clause relation requires a counted currency offset, the
+  complete definite frame, a `mass_currency_noun`, and a mass-compatible
+  direction. Generic `money` moves to `core-english`; mined packs extend its
+  category domains without owning the common word;
+- fractional delta relations split into disjoint count and mass siblings.
+  The count sibling requires a declared plural non-mass measure and count
+  direction; the mass sibling requires a declared mass measure and mass
+  direction. Both share agreement, quantitative-verb, distinct-standard, and
+  optional PP compatibility premises;
+- the anaphoric much/many siblings require overt `as`/`that`/`this` and use
+  inspectable `unbound` continuations to refuse explicit comparison
+  standards. The targetless reviewed sentence `Mary gets twice as many.`
+  matches the intended anaphoric rule;
+- implicit plural surfaces inherit the noun sense plus only non-noun senses
+  licensed by a category declaration on that plural surface. This removes
+  the fabricated verb reading from `cans` while preserving explicitly
+  licensed readings such as price-relation `costs`; and
+- fact cards retain an unambiguous authored emit expression and its resolved
+  slot bindings. The Designer presents the template and substitutions under
+  “How this fact was derived,” and review snapshots preserve that explanatory
+  metadata without including it in fact identity.
+
+The first benchmark pass found one semantic safety failure:
+`arithmetic/anaphoric-multiplier-standard-many` correctly represented a
+previously unaccounted `twice as many`, after which a base ask ignored the
+question's trailing `originally` and returned a current qualified anchor.
+A dedicated `originally` start-state ask now invokes the existing event
+inversion. If same-holder, same-measure events carry a different explicit
+qualifier, the consumer declines: the current scalar qualifier field cannot
+prove whether those modifiers are nested or disjoint. This preserves the
+valid anaphoric premise rather than narrowing it to benchmark sentence ends.
+
+Both malformed reviewed surfaces retest `absent`; the targetless anaphoric
+surface and comparative-need sentence now match their intended rules.
+Curated contains 99/99 selectable premise rules and 152 reachable lexicon
+identities. The live fold contains 314 successful generation events, four
+reviews, and no failures under the current fingerprint; rule coverage is 1
+never-generated, 95 generated-but-unreviewed, and 3 reviewed.
+
+The complete gate is green: 4,103 tests pass in four-worker mode; curated is
+65/65; GSM8K DEV-train remains 104/0 with a neutral diff and DEV-holdout moves
+from 40/0 to 41/0 with one solve, no break, and no new wrong commitment.
+ASDiv, SVAMP, MAWPS, and SciBench are 44/0, 30/0, 10/0, and 6/0; FOLIO makes
+zero commitments; and lint has zero errors with two known warnings. No
+protected TEST look was spent.
 
 There is no automatic transition to G7. Ask-rule and derived-rule generation
 requires a separate decision after the premise audit demonstrates that the

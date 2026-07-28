@@ -178,7 +178,8 @@ async function openDoc(path, node) {
 function updateSaveRetestState() {
   $("save-btn").disabled = state.editorSaveBusy;
   $("save-retest-btn").disabled =
-    state.editorSaveBusy || !state.currentDoc || !state.candidate;
+    state.editorSaveBusy || !state.currentDoc || !state.candidate
+    || !state.candidate.target_rule;
 }
 
 async function saveCurrentDoc({ rerunTrace = true } = {}) {
@@ -433,6 +434,20 @@ function renderSentences(t) {
           ),
         );
       }
+      const sentenceButton = el(
+        "button",
+        "reading-review-button",
+        "Review sentence meaning",
+      );
+      sentenceButton.type = "button";
+      sentenceButton.title =
+        "Record an intended interpretation or suggest a missing premise rule without claiming an existing rule matched.";
+      sentenceButton.onclick = () => promoteReadingSentence(
+        s,
+        null,
+        sentenceButton,
+      );
+      review.append(sentenceButton);
       card.append(review);
     }
     box.append(card);
@@ -440,9 +455,9 @@ function renderSentences(t) {
 }
 
 async function promoteReadingSentence(sentence, ruleId, button) {
-  if (!ruleId) return;
   button.disabled = true;
-  setStatus(`opening ${ruleId} for human review…`);
+  const subject = ruleId || "sentence meaning";
+  setStatus(`opening ${subject} for human review…`);
   try {
     const candidate = await api("POST", "/api/generation/from-reading", {
       rule_id: ruleId,
@@ -461,7 +476,7 @@ async function promoteReadingSentence(sentence, ruleId, button) {
     renderGenerationCandidate(candidate);
     setView("generate");
     setStatus(
-      `${candidate.target_rule}: Reading sentence ready for review · ${candidate.target_status}`,
+      `${candidate.target_rule || "sentence meaning"}: Reading sentence ready for review · ${candidate.target_status}`,
       "ok",
     );
   } catch (exc) {
@@ -1029,7 +1044,7 @@ function sortedReviews() {
   const sign = dir === "asc" ? 1 : -1;
   const of = (r) =>
     key === "verdict" ? VERDICT_RANK[r.verdict] ?? 9
-    : key === "target_rule" ? r.target_rule
+    : key === "target_rule" ? r.target_rule || ""
     : r.timestamp;
   return [...state.reviews].sort((a, b) => {
     const x = of(a), y = of(b);
@@ -1104,13 +1119,19 @@ function reviewRow(r) {
   row.append(el("td", "rv-when mono", (r.timestamp || "").replace("T", " ").slice(0, 19)));
   const rule = el("td", "rv-rule mono");
   rule.append(
-    document.createTextNode(r.target_rule),
+    document.createTextNode(r.target_rule || "No target rule"),
     el("span", "rv-origin", r.origin || "generated"),
   );
   row.append(rule);
   row.append(el("td", "rv-sentence", r.sentence));
   const note = el("td", "rv-note");
   note.append(document.createTextNode(r.note || "—"));
+  if (r.interpretation) {
+    note.append(el("div", "rv-structured", `interpretation: ${r.interpretation}`));
+  }
+  if (r.suggested_rule) {
+    note.append(el("div", "rv-structured", `missing rule: ${r.suggested_rule}`));
+  }
   if (r.defects?.length) {
     note.append(el("div", "rv-structured",
       `defects: ${r.defects.map((defect) =>
@@ -1177,6 +1198,22 @@ function reviewEditRow(r) {
   }
   form.append(picker);
 
+  let interpretation = null;
+  let suggestedRule = null;
+  if ((r.review_kind || "premise") === "sentence") {
+    interpretation = el("textarea", "rv-edit-note");
+    interpretation.maxLength = 4000;
+    interpretation.value = r.interpretation || "";
+    interpretation.placeholder = "In ordinary language, what does this sentence mean?";
+    form.append(el("div", "pane-title", "Intended interpretation"), interpretation);
+
+    suggestedRule = el("textarea", "rv-edit-note");
+    suggestedRule.maxLength = 4000;
+    suggestedRule.value = r.suggested_rule || "";
+    suggestedRule.placeholder = "What sentence shape or premise rule should recognize it?";
+    form.append(el("div", "pane-title", "Missing rule suggestion"), suggestedRule);
+  }
+
   const note = el("textarea", "rv-edit-note");
   note.maxLength = 4000;
   note.value = r.note || "";
@@ -1213,7 +1250,17 @@ function reviewEditRow(r) {
   save.onclick = async () => {
     save.disabled = true;
     const res = await api("PATCH", `/api/generation/review/${encodeURIComponent(r.id)}`,
-                          { verdict, note: note.value, hypotheses });
+                          {
+                            verdict,
+                            note: note.value,
+                            hypotheses,
+                            ...(interpretation
+                              ? { interpretation: interpretation.value }
+                              : {}),
+                            ...(suggestedRule
+                              ? { suggested_rule: suggestedRule.value }
+                              : {}),
+                          });
     if (!res.ok) {
       setStatus(res.detail || "correction rejected", "err");
       save.disabled = false;
@@ -1420,6 +1467,34 @@ function generationFactCard(fact, index) {
     header,
     el("code", "generation-fact-fields", JSON.stringify(fact.fields)),
   );
+  if (fact.derivation) {
+    const detail = el("details", "generation-fact-derivation");
+    detail.append(el("summary", "", "How this fact was derived"));
+    const templates = fact.derivation.templates || {};
+    for (const [field, expression] of Object.entries(templates)) {
+      const resolved = Object.prototype.hasOwnProperty.call(fact.fields, field)
+        ? fact.fields[field]
+        : null;
+      detail.append(
+        el(
+          "code",
+          "generation-fact-derivation-row",
+          `${field}: ${JSON.stringify(expression)} → ${JSON.stringify(resolved)}`,
+        ),
+      );
+    }
+    const bindings = fact.derivation.bindings || {};
+    if (Object.keys(bindings).length) {
+      detail.append(
+        el(
+          "code",
+          "generation-fact-derivation-bindings",
+          `bindings: ${JSON.stringify(bindings)}`,
+        ),
+      );
+    }
+    card.append(detail);
+  }
   if (fact.source_ref) {
     const source = el("div", "generation-fact-source");
     source.append(generationSourceControl(fact.source_ref));
@@ -1494,8 +1569,22 @@ function selectedGenerationAttachment() {
 
 function selectedGenerationDefects() {
   const attachment = selectedGenerationAttachment();
-  const fact = attachment.kind === "fact"
+  const displayedFact = attachment.kind === "fact"
     ? state.candidate?.facts[attachment.index]
+    : null;
+  const fact = displayedFact
+    ? {
+        type: displayedFact.type,
+        fields: displayedFact.fields,
+        source: displayedFact.source,
+        sentence: displayedFact.sentence,
+        ...(displayedFact.source_ref
+          ? { source_ref: displayedFact.source_ref }
+          : {}),
+        ...(displayedFact.derivation
+          ? { derivation: displayedFact.derivation }
+          : {}),
+      }
     : null;
   return Array.from(
     document.querySelectorAll("#generation-defects input:checked"),
@@ -1559,21 +1648,38 @@ function updateGenerationReviewState() {
   });
   $("generation-attachment").disabled = unavailable;
   $("generation-note").disabled = unavailable;
+  $("generation-interpretation").disabled = unavailable;
+  $("generation-rule-suggestion").disabled = unavailable;
   $("generation-form-hypotheses").disabled =
-    unavailable || !hasVerdict || !hasDefects;
+    unavailable || !state.candidate?.target_rule || !hasVerdict || !hasDefects;
   $("generation-save-review").disabled = unavailable || !hasVerdict;
 }
 
 function renderGenerationPremises(candidate) {
   const summary = $("generation-premise-summary");
+  const sentenceReview = !candidate.target_rule;
+  $("generation-premise-title").textContent = sentenceReview
+    ? "Reading evidence"
+    : "Why the target premise matched";
   const specificity = candidate.target_specificity
     ? candidate.target_specificity.join("/")
     : "unavailable";
-  summary.textContent =
-    `specificity ${specificity} · ${candidate.consumed_units.length} consumed unit(s)`;
+  summary.textContent = sentenceReview
+    ? "no target rule selected · no rule coverage claimed"
+    : `specificity ${specificity} · ${candidate.consumed_units.length} consumed unit(s)`;
 
   const list = $("generation-premise-list");
   list.replaceChildren();
+  if (sentenceReview) {
+    list.append(
+      el(
+        "div",
+        "generation-premise unverified",
+        "This review preserves the sentence and its ordinary Reading evidence without asserting that any premise rule consumed it.",
+      ),
+    );
+    return;
+  }
   if (candidate.target_source) {
     const target = el("div", "generation-target-source");
     target.append(el("span", "dim", "Target declaration"), generationSourceControl(candidate.target_source));
@@ -1905,7 +2011,7 @@ function renderGenerationHypotheses(detail = "") {
 async function formGenerationHypotheses() {
   const candidate = state.candidate;
   const defects = selectedGenerationDefects();
-  if (!candidate || !state.reviewVerdict || !defects.length) return;
+  if (!candidate?.target_rule || !state.reviewVerdict || !defects.length) return;
   const button = $("generation-form-hypotheses");
   button.disabled = true;
   setStatus("replaying matcher evidence and forming bounded hypotheses…");
@@ -1943,6 +2049,7 @@ function renderGenerationCandidate(
   candidate,
   { resetRetest = true, preserveReview = false } = {},
 ) {
+  const sentenceReview = !candidate.target_rule;
   const priorAttachment = preserveReview
     ? $("generation-attachment").value
     : "sentence";
@@ -1959,8 +2066,15 @@ function renderGenerationCandidate(
   }
   $("generation-empty").classList.add("hidden");
   $("generation-candidate").classList.remove("hidden");
-  $("generation-target").textContent = candidate.target_rule;
+  $("generation-target").textContent =
+    candidate.target_rule || "Sentence-level interpretation review";
   $("generation-description").textContent = candidate.target_description || "";
+  $("generation-review-title").textContent = sentenceReview
+    ? "Sentence meaning review"
+    : "Human review";
+  $("generation-note").placeholder = sentenceReview
+    ? "What is ambiguous, unsupported, or otherwise worth preserving?"
+    : "What premise or emitted fact appears correct or defective?";
   $("generation-sentence").textContent = candidate.sentence;
   const status = $("generation-status");
   status.textContent = candidate.target_status;
@@ -1987,6 +2101,10 @@ function renderGenerationCandidate(
   }
   $("generation-seed").value = candidate.seed;
   state.lastGenerationSeed = candidate.seed;
+  $("generation-sentence-review-fields").classList.toggle(
+    "hidden",
+    !sentenceReview,
+  );
   renderGenerationPremises(candidate);
   populateGenerationAttachments(candidate);
   if (
@@ -2047,6 +2165,8 @@ function renderGenerationCandidate(
       input.checked = false;
     });
     $("generation-note").value = "";
+    $("generation-interpretation").value = "";
+    $("generation-rule-suggestion").value = "";
     $("generation-review-result").textContent = "";
     clearGenerationHypotheses();
   } else if (state.hypotheses.length) {
@@ -2164,6 +2284,7 @@ async function saveGenerationReview() {
   const payload = await api("POST", "/api/generation/review", {
     candidate_id: candidate.id,
     origin: candidate.origin || "generated",
+    review_kind: candidate.target_rule ? "premise" : "sentence",
     sentence: candidate.sentence,
     target_rule: candidate.target_rule,
     seed: candidate.seed,
@@ -2172,6 +2293,12 @@ async function saveGenerationReview() {
     requested_bindings: candidate.requested_bindings,
     defects: selectedGenerationDefects(),
     hypotheses: state.hypotheses,
+    interpretation: candidate.target_rule
+      ? ""
+      : $("generation-interpretation").value,
+    suggested_rule: candidate.target_rule
+      ? ""
+      : $("generation-rule-suggestion").value,
     note: $("generation-note").value,
   });
   if (!payload.ok) {

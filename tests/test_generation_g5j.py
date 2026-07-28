@@ -100,9 +100,10 @@ def test_g5j_profiles_the_complete_comparative_category_class() -> None:
     )
 
     assert occurrences == {
-        "delta": 13,
+        "delta": 10,
         "quantity_delta": 4,
-        "count_quantity_delta": 3,
+        "count_quantity_delta": 6,
+        "mass_quantity_delta": 3,
         "age_comparative": 1,
         "count_intensifier": 1,
         "dimension_comparative": 1,
@@ -115,8 +116,8 @@ def test_g5j_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 95
-    assert sum(item.supported for item in availability.values()) == 95
+    assert len(availability) == 99
+    assert sum(item.supported for item in availability.values()) == 99
     assert sum(not item.supported for item in availability.values()) == 0
     assert all(availability[rule_id].supported for rule_id in NEWLY_SUPPORTED)
     assert all(
@@ -124,7 +125,7 @@ def test_g5j_unlocks_exactly_the_preregistered_frontier() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 151
+    assert len(exploration_status(project)["fillers"]) == 152
 
 
 def test_owned_comparative_categories_have_project_backed_fillers() -> None:
@@ -165,6 +166,7 @@ def test_every_new_comparative_rule_generates_a_reviewable_match(
             "delta",
             "quantity_delta",
             "count_quantity_delta",
+            "mass_quantity_delta",
         }
     )
     assert premise.binding in {"fewer", "less", "more", "older", "younger"}
@@ -179,6 +181,13 @@ def test_every_new_comparative_rule_generates_a_reviewable_match(
     elif premise.slot_type == "quantity_delta":
         assert premise.binding in {"fewer", "less", "more"}
         assert premise.category_path[-2:] == (
+            "quantity_delta",
+            "comparative",
+        )
+    elif premise.slot_type == "mass_quantity_delta":
+        assert premise.binding in {"less", "more"}
+        assert premise.category_path[-3:] == (
+            "mass_quantity_delta",
             "quantity_delta",
             "comparative",
         )

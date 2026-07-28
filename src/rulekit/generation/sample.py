@@ -44,6 +44,7 @@ _SUPPORTED_SLOT_TYPES = frozenset(
         "number",
         "fraction",
         "multiplier",
+        "nonunit_multiplier",
         "name",
         "noun",
         "entity",
@@ -206,6 +207,7 @@ def _where_blocker(rule: PatternRule) -> list[str]:
         if (
             pred.distinct is not None
             or pred.distinct_owner is not None
+            or pred.distinct_from_owner is not None
             or pred.same_lemma is not None
             or pred.same_number is not None
             or pred.number_compatible is not None
@@ -502,6 +504,13 @@ def _raw_domain(
             for surface in sorted(reg.multipliers)
             if not any(ch.isspace() for ch in surface)
         ]
+    if slot_type == "nonunit_multiplier":
+        return [
+            _Filler(surface, surface)
+            for surface, value in sorted(reg.multipliers.items())
+            if not any(ch.isspace() for ch in surface)
+            and float(value) != 1.0
+        ]
     if slot_type == "percent":
         return [
             _Filler(f"{filler.surface}%", f"{filler.identity}%")
@@ -603,6 +612,21 @@ def _slot_category_exclusions(
         if slot is not None and category is not None:
             exclusions.append((slot, category))
     return tuple(exclusions)
+
+
+def _entity_owner_distinctions(
+    rule: PatternRule,
+) -> tuple[tuple[str, str], ...]:
+    """Return ordinary-entity/possessed-owner inequality constraints."""
+
+    return tuple(
+        (
+            pred.distinct_from_owner.entity,
+            pred.distinct_from_owner.possessed,
+        )
+        for pred in rule.where
+        if pred.distinct_from_owner is not None
+    )
 
 
 def _outside_slot_categories(
@@ -988,6 +1012,26 @@ def _rule_blockers(
                     f"{'/'.join(compatibility.roles)}"
                 )
         for pred in rule.where:
+            if pred.distinct_from_owner is None:
+                continue
+            entity_name = pred.distinct_from_owner.entity
+            possessed_name = pred.distinct_from_owner.possessed
+            entity_token = tokens_by_slot.get(entity_name)
+            possessed_token = tokens_by_slot.get(possessed_name)
+            if (
+                entity_token is None
+                or possessed_token is None
+                or not any(
+                    entity.identity != possessed.owner
+                    for entity in safe_domain(entity_token)
+                    for possessed in safe_domain(possessed_token)
+                )
+            ):
+                blockers.append(
+                    "no project-backed distinct entity/owner assignment "
+                    f"exists for {entity_name}/{possessed_name}"
+                )
+        for pred in rule.where:
             if pred.slot_not_category is None:
                 continue
             slot_name = pred.slot_not_category.get("slot")
@@ -1209,6 +1253,7 @@ def _allowed_fillers(
             ...,
         ]
     ) = (),
+    entity_owner_distinctions: tuple[tuple[str, str], ...] = (),
 ) -> list[_Filler]:
     domain = [
         filler
@@ -1342,6 +1387,22 @@ def _allowed_fillers(
                     reg,
                 )
             }
+
+        for entity_name, possessed_name in entity_owner_distinctions:
+            if token.slot == entity_name:
+                possessed = known_filler(possessed_name)
+                if (
+                    possessed is not None
+                    and possessed.owner == filler.identity
+                ):
+                    return False
+            if token.slot == possessed_name:
+                entity = known_filler(entity_name)
+                if (
+                    entity is not None
+                    and filler.owner == entity.identity
+                ):
+                    return False
 
         for attribute_name, noun_name in attribute_pairs:
             noun = known_identity(noun_name)
@@ -1614,6 +1675,7 @@ def _realize(
     locked_fillers = _resolve_locked_fillers(
         seq, reg, fixtures, locked_bindings
     )
+    entity_owner_distinctions = _entity_owner_distinctions(rule)
     chosen: dict[str, _Filler] = {}
     surfaces: list[str] = []
     optional_choices: dict[tuple[int, ...], bool] = {}
@@ -1730,6 +1792,7 @@ def _realize(
                 bound_category_requirements,
                 bound_form_requirements,
                 verb_role_requirements,
+                entity_owner_distinctions=entity_owner_distinctions,
             )
             if token.slot in locked_bindings:
                 locked = locked_bindings[token.slot].casefold()
@@ -1770,7 +1833,59 @@ def _realize(
     )
 
 
-def _fact_json(fact: Any, project: Project | None = None) -> dict[str, Any]:
+def _fact_kind_type_name(kind: str) -> str:
+    """Return the runtime dataclass spelling for a declarative fact kind."""
+
+    return "".join(part.capitalize() for part in kind.split("_"))
+
+
+def _fact_derivation(
+    fact: Any,
+    project: Project,
+    bindings: dict[str, str] | None,
+) -> dict[str, Any] | None:
+    """Expose the declarative emit template behind one matched fact.
+
+    Runtime facts intentionally retain only their resolved fields and compact
+    provenance. The Designer has the loaded registry and exact match bindings,
+    so it can reconstruct the authoring explanation without changing kernel
+    fact identity or serialization.
+    """
+
+    rule = next(
+        (
+            candidate
+            for candidate in project.registry.rules
+            if candidate.id == fact.provenance.source
+        ),
+        None,
+    )
+    if rule is None:
+        return None
+    emits = [
+        emit
+        for emit in rule.emits
+        if _fact_kind_type_name(emit.fact) == type(fact).__name__
+    ]
+    if len(emits) != 1:
+        # Several same-kind emits need per-emission provenance before they can
+        # be explained honestly. Do not guess which template produced a fact.
+        return None
+    return {
+        "templates": {
+            key: _jsonable(value)
+            for key, value in sorted(emits[0].fields.items())
+        },
+        "bindings": dict(sorted((bindings or {}).items())),
+    }
+
+
+def _fact_json(
+    fact: Any,
+    project: Project | None = None,
+    *,
+    bindings: dict[str, str] | None = None,
+) -> dict[str, Any]:
     payload = {
         "type": type(fact).__name__,
         "fields": {
@@ -1785,6 +1900,9 @@ def _fact_json(fact: Any, project: Project | None = None) -> dict[str, Any]:
         source = project.source_index.rules.get(fact.provenance.source)
         if source is not None:
             payload["source_ref"] = source.to_json()
+        derivation = _fact_derivation(fact, project, bindings)
+        if derivation is not None:
+            payload["derivation"] = derivation
     return payload
 
 
@@ -1818,11 +1936,36 @@ def _match_summaries(
                 for other in results
             ),
             emitted_facts=tuple(
-                _fact_json(fact, project) for fact in result.facts
+                _fact_json(
+                    fact,
+                    project,
+                    bindings=_bindings(result),
+                )
+                for fact in result.facts
             ),
         )
         for result in results
     )
+
+
+def _matched_fact_bindings(
+    fact: Any,
+    results: list[RuleMatchResult],
+) -> dict[str, str] | None:
+    """Return bindings only when one ordinary match owns FACT unambiguously."""
+
+    owners = [
+        _bindings(result)
+        for result in results
+        if any(
+            emitted is fact or emitted == fact
+            for emitted in result.facts
+        )
+    ]
+    if not owners:
+        return None
+    first = owners[0]
+    return first if all(owner == first for owner in owners[1:]) else None
 
 
 def _source_json(ref: SourceRef | None) -> dict[str, Any] | None:
@@ -2032,7 +2175,7 @@ def _numeric_sources(
                 index.numeric.get(("fraction_plurals", plural)),
             ]
         return [index.numeric.get(("fractions", fold))]
-    if slot_type == "multiplier":
+    if slot_type in {"multiplier", "nonunit_multiplier"}:
         return [index.numeric.get(("multipliers", fold))]
     if slot_type == "counted" or token.counted:
         value = unit.features.get("value")
@@ -2179,6 +2322,7 @@ _WHERE_FIELDS = (
     "same_phrase",
     "distinct",
     "distinct_owner",
+    "distinct_from_owner",
     "attribute_compatible",
     "distinct_measure",
     "name_count",
@@ -2238,6 +2382,11 @@ def _where_expression(rule: PatternRule, index: int) -> tuple[str, tuple[str, ..
         rendered = (
             f"verb={value.verb!r}, roles={value.roles!r}, "
             f"verb_cat={value.verb_cat!r}, {role_boundary}"
+        )
+    elif kind == "distinct_from_owner":
+        names = (value.entity, value.possessed)
+        rendered = (
+            f"entity={value.entity!r}, possessed={value.possessed!r}"
         )
     elif isinstance(value, dict):
         slot = value.get("slot")
@@ -2376,6 +2525,19 @@ def _where_reason(
         return (
             f"{attribute_name}={attribute!r}, {noun_name}={noun!r} matched "
             f"{rendered}"
+        )
+    if pred.distinct_from_owner is not None:
+        entity_name = pred.distinct_from_owner.entity
+        possessed_name = pred.distinct_from_owner.possessed
+        entity_units = _slot_units(slots.get(entity_name))
+        possessed_units = _slot_units(slots.get(possessed_name))
+        if not entity_units or not possessed_units:
+            return "the target match did not expose both owner roles"
+        entity = _unit_lemma(entity_units[0], reg)
+        owner = possessed_units[0].features.get("owner")
+        return (
+            f"{entity_name}={entity!r} differed from "
+            f"{possessed_name}.owner={owner!r}"
         )
     if pred.slot_not_category is not None:
         slot_name = pred.slot_not_category.get("slot", "")
@@ -2884,7 +3046,12 @@ def _candidate_from_reading(
         consumed_units=consumed_units,
         actual_matches=_match_summaries(results, project, reading),
         facts=tuple(
-            _fact_json(fact, project) for fact in document.store.facts
+            _fact_json(
+                fact,
+                project,
+                bindings=_matched_fact_bindings(fact, results),
+            )
+            for fact in document.store.facts
         ),
         collisions=tuple(
             _collision_json(collision)
@@ -2967,6 +3134,86 @@ def promote_reading_candidate(
         sentence=sentence,
         seed=seed,
         origin="reading",
+    )
+
+
+def promote_sentence_review_candidate(
+    project: Project,
+    *,
+    sentence: str,
+) -> GenerationCandidate:
+    """Promote Reading evidence without claiming that a rule consumed it.
+
+    This is the sentence-interpretation sibling of
+    :func:`promote_reading_candidate`. It runs the ordinary analyzer and
+    document matcher, preserves any incidental matches and facts for
+    inspection, but deliberately leaves the target rule unset. The review can
+    therefore describe an intended meaning or missing rule without polluting
+    premise-rule coverage.
+    """
+
+    if not sentence.strip():
+        raise GenerationError("the Reading sentence must not be empty")
+    seed = int.from_bytes(
+        hashlib.sha256(
+            (
+                f"sentence-review\0{project.registry.fingerprint}\0"
+                f"{sentence}"
+            ).encode()
+        ).digest()[:8],
+        "big",
+    ) & ((1 << 53) - 1)
+    try:
+        reading = analyze(sentence, project.registry, tracing=True)
+        document = run_document([reading], project.registry)
+    except Exception as exc:  # noqa: BLE001 - authoring API surfaces the defect
+        raise GenerationError(
+            "could not inspect the Reading sentence: "
+            f"{type(exc).__name__}: {exc}"
+        ) from exc
+    results = document.rule_results.get(reading.sentence_index, [])
+    digest = hashlib.sha256(
+        (
+            f"{project.registry.fingerprint}\0reading\0{seed}\0"
+            f"sentence-review\0{sentence}"
+        ).encode()
+    ).hexdigest()[:20]
+    return GenerationCandidate(
+        id=f"gen-{digest}",
+        project=project.doc.name,
+        registry_fingerprint=project.registry.fingerprint,
+        generator_version=GENERATOR_VERSION,
+        origin="reading",
+        seed=seed,
+        target_rule=None,
+        target_description=(
+            "No premise rule matched this sentence."
+            if not results
+            else "No premise rule was selected for this sentence-level review."
+        ),
+        sentence=sentence,
+        requested_bindings={},
+        target_bindings={},
+        target_status="unmatched" if not results else "unassigned",
+        target_specificity=None,
+        target_source=None,
+        premises=(),
+        consumed_units=(),
+        actual_matches=_match_summaries(results, project, reading),
+        facts=tuple(
+            _fact_json(
+                fact,
+                project,
+                bindings=_matched_fact_bindings(fact, results),
+            )
+            for fact in document.store.facts
+        ),
+        collisions=tuple(
+            _collision_json(collision)
+            for collision in document.store.collisions
+        ),
+        deficiencies=tuple(reading.deficiencies()),
+        attempts=1,
     )
 
 

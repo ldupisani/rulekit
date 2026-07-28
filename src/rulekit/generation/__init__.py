@@ -37,6 +37,7 @@ from .sample import (
     generate_minimal_pair,
     list_rule_availability,
     promote_reading_candidate,
+    promote_sentence_review_candidate,
     retest_candidate,
 )
 
@@ -66,6 +67,7 @@ __all__ = [
     "exploration_status",
     "list_rule_availability",
     "promote_reading_candidate",
+    "promote_sentence_review_candidate",
     "read_reviews",
     "read_exploration_events",
     "read_exploration_failures",

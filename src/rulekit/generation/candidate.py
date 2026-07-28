@@ -73,7 +73,7 @@ class GenerationCandidate:
     generator_version: str
     origin: Literal["generated", "reading"]
     seed: int
-    target_rule: str
+    target_rule: str | None
     target_description: str | None
     sentence: str
     requested_bindings: dict[str, str]

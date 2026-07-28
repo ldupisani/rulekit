@@ -36,6 +36,7 @@ from ..generation import (
     exploration_status,
     list_rule_availability,
     promote_reading_candidate,
+    promote_sentence_review_candidate,
     read_reviews,
     retest_candidate,
     update_review,
@@ -89,11 +90,11 @@ class GenerationRetestBody(BaseModel):
 
 
 class GenerationReadingBody(BaseModel):
-    """One sentence and explicit matched premise selected in Reading."""
+    """One Reading sentence, optionally with an explicit matched premise."""
 
     model_config = ConfigDict(extra="forbid")
 
-    rule_id: str = Field(min_length=1, max_length=256)
+    rule_id: str | None = Field(default=None, min_length=1, max_length=256)
     sentence: str = Field(min_length=1, max_length=2000)
 
 
@@ -126,6 +127,8 @@ class ReviewEditBody(BaseModel):
     hypotheses: list[HypothesisRecord] | None = Field(
         default=None, max_length=32
     )
+    interpretation: str | None = Field(default=None, max_length=4000)
+    suggested_rule: str | None = Field(default=None, max_length=4000)
 
 
 class ServerState:
@@ -930,10 +933,17 @@ def build_router(state: ServerState) -> APIRouter:
     @router.post("/generation/from-reading")
     def generation_from_reading(body: GenerationReadingBody):
         try:
-            candidate = promote_reading_candidate(
-                state.project,
-                rule_id=body.rule_id,
-                sentence=body.sentence,
+            candidate = (
+                promote_reading_candidate(
+                    state.project,
+                    rule_id=body.rule_id,
+                    sentence=body.sentence,
+                )
+                if body.rule_id is not None
+                else promote_sentence_review_candidate(
+                    state.project,
+                    sentence=body.sentence,
+                )
             )
         except GenerationError as exc:
             raise HTTPException(422, str(exc)) from exc
@@ -1038,6 +1048,8 @@ def build_router(state: ServerState) -> APIRouter:
                     body.verdict,
                     body.note,
                     body.hypotheses,
+                    body.interpretation,
+                    body.suggested_rule,
                 )
             except KeyError as exc:
                 raise HTTPException(404, f"no live review {review_id}") from exc

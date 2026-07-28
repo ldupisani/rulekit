@@ -1428,6 +1428,7 @@ rules:
       - number_compatible: [who, verb]
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: sell, excluded_role_cat: remnant}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: verb, cat: frame_prepositional_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - distinct: [who, std]
@@ -1515,8 +1516,11 @@ rules:
     where:
       - bound_requires_type: {bound: appos_role, slot: std_seen, type: proper_name}
       - number_compatible: [who, verb]
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: sell, excluded_role_cat: remnant}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: verb, cat: frame_prepositional_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - unbound: [std_seen]
     emits:
       - fact: relation
@@ -1531,10 +1535,10 @@ rules:
     phase: read
     description: >
       mining candidate relation-standard-frames: "Carmela has twice
-      Cecil's money" — the GENERAL possessive-NP standard, one measure
-      family over from arithmetic/times-as-old-as-possessive-standard: any
-      owned measure noun (money/savings/marbles/...), never restricted to
-      'age' — that rule's own `cat: age_noun` gate makes it strictly MORE
+      Cecil's marbles" — the count possessive-NP standard, one measure
+      family over from arithmetic/times-as-old-as-possessive-standard: a
+      declared plural owned measure noun, never restricted to 'age' — that
+      rule's own `cat: age_noun` gate makes it strictly MORE
       specific on the identical span whenever the possessed noun really is
       'age' (patterns.subsumes: same consumed tokens, higher gate depth),
       so the two never double-emit; this rule is the one that survives
@@ -1551,7 +1555,10 @@ rules:
       own lemma separately off the SAME merged unit (`_slot_value`'s
       `owner` attribute vs. its default lemma lookup, patterns.py) — the
       Relation's standard is the PERSON ('cecil'), its measure the noun
-      itself ('money'), never the reverse. PROVEN minimal pair on
+      itself ('marble'), never the reverse. A distinct owner predicate
+      rejects self-comparisons such as "Fia has twice Fia's marbles";
+      ordinary `distinct` compares the slot lemmas `fia` and `marble` and
+      cannot express that boundary. PROVEN minimal pair on
       unmodified main: "Catherine has twice as much money as Cecil"
       commits while "Catherine has twice Cecil's money" declines outright.
       `who, type: name`: unwidened, matching times-as-much's own
@@ -1561,11 +1568,39 @@ rules:
     match:
       sentence:
         - {slot: who, type: name}
-        - {slot: verb, type: verb}
-        - {slot: k, type: multiplier}
-        - {slot: std, type: possessed}
+        - {slot: verb, cat: possession_state}
+        - {slot: k, type: nonunit_multiplier}
+        - {slot: std, cat: noun, possessed: true, number: plural}
     where:
-      - distinct: [who, std]
+      - number_compatible: [who, verb]
+      - slot_not_category: {slot: std, cat: mass_quantity_noun}
+      - distinct_from_owner: {entity: who, possessed: std}
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std.owner}"
+        measure: "{std}"
+        factor: "k"
+        offset: 0.0
+        verb: "{verb}"
+
+  - id: arithmetic/times-as-much-possessive-standard
+    phase: read
+    description: >
+      "Carmela has twice Cecil's money" — the singular mass-noun sibling
+      of times-as-many-possessive-standard. It requires a possession-state
+      verb, non-unit multiplier, declared singular `mass_quantity_noun`, and
+      a standard owner distinct from the subject. Count possessive standards
+      remain the plural sibling's territory.
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: verb, cat: possession_state}
+        - {slot: k, type: nonunit_multiplier}
+        - {slot: std, cat: mass_quantity_noun, possessed: true, number: singular}
+    where:
+      - number_compatible: [who, verb]
+      - distinct_from_owner: {entity: who, possessed: std}
     emits:
       - fact: relation
         subject: "{who}"
@@ -1595,7 +1630,14 @@ rules:
       NP directly after `k` can never satisfy any of those rules' own
       'as'-anchored continuations, so the spans never tie. `who, type:
       name`: unwidened, matching times-as-many-possessive-standard's own
-      (not-yet-widened) slot type. PROVEN minimal pair on unmodified main:
+      (not-yet-widened) slot type. The possessive standard is a count
+      quantity NP and therefore requires declared plural morphology; the
+      mass-noun sibling below owns singular mass standards. Its verb is a
+      possession state because the
+      possessed standard denotes the owner's holding, not an unrelated event
+      performed by the subject. The additive direction is quantity-only, and
+      the multiplier must be non-unit: English does not use adverbial "once"
+      directly before this possessive NP. PROVEN minimal pair on unmodified main:
       "Ben has 50 more than twice Ana's money. Ana has 600 dollars. How
       much money does Ben have?" declines outright even though the
       identical non-affine ratio ("Ben has twice Ana's money") already
@@ -1603,14 +1645,49 @@ rules:
     match:
       sentence:
         - {slot: who, type: name}
-        - {slot: verb, type: verb}
+        - {slot: verb, cat: possession_state}
         - {slot: n, type: number}
-        - {slot: dir, cat: delta}
+        - {slot: dir, cat: count_quantity_delta}
         - {lit: than}
-        - {slot: k, type: multiplier}
-        - {slot: std, type: possessed}
+        - {slot: k, type: nonunit_multiplier}
+        - {slot: std, cat: noun, possessed: true, number: plural}
     where:
-      - distinct: [who, std]
+      - number_compatible: [who, verb]
+      - slot_not_category: {slot: std, cat: mass_quantity_noun}
+      - distinct_from_owner: {entity: who, possessed: std}
+    consumes: [n]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std.owner}"
+        measure: "{std}"
+        factor: "k"
+        offset: "n * sign(dir)"
+        verb: "{verb}"
+
+  - id: arithmetic/affine-times-as-much-possessive-standard
+    phase: read
+    description: >
+      "Ben has 50 less than twice Ana's money" — the singular mass-noun
+      sibling of affine-times-as-many-possessive-standard. The two rules are
+      disjoint on declared noun countability and morphology: this rule
+      requires a possessed `mass_quantity_noun` head in singular form and a
+      mass-compatible additive direction, while the count sibling requires a
+      non-mass plural head and `count_quantity_delta`. Both retain the same
+      possession-state, non-unit multiplier, owner/measure projection, and
+      affine Relation semantics.
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: verb, cat: possession_state}
+        - {slot: n, type: number}
+        - {slot: dir, cat: mass_quantity_delta}
+        - {lit: than}
+        - {slot: k, type: nonunit_multiplier}
+        - {slot: std, cat: mass_quantity_noun, possessed: true, number: singular}
+    where:
+      - number_compatible: [who, verb]
+      - distinct_from_owner: {entity: who, possessed: std}
     consumes: [n]
     emits:
       - fact: relation
@@ -1625,14 +1702,19 @@ rules:
     phase: read
     description: >
       "twenty percent FEWER frogs than Lassie Lake" / "50% MORE X than Y" —
-      a proportional delta: subject = (1 + f·sign(dir)) × standard.
+      a proportional delta over an overt count noun:
+      subject = (1 + f·sign(dir)) × standard. The direction is count-only and
+      the measure must be a declared plural, so age comparatives and singular
+      count nouns cannot enter this quantity frame. An optional locative or
+      remainder phrase is admitted only through the shared declarative
+      preposition/object compatibility boundary.
     match:
       sentence:
         - {slot: who, type: name}
         - {slot: verb, type: verb}
         - {slot: f, type: fraction}
-        - {slot: dir, cat: delta}
-        - {slot: item, type: noun}
+        - {slot: dir, cat: count_quantity_delta}
+        - {slot: item, type: plural}
         - opt:
             - {slot: pp_prep, cat: preposition}
             - opt:
@@ -1645,6 +1727,53 @@ rules:
         - {slot: std, type: name}
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - number_compatible: [who, verb]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - slot_not_category: {slot: item, cat: mass_quantity_noun}
+      - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
+      - distinct: [who, std]
+    consumes: [f]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: "{item}"
+        factor: "1 + f * sign(dir)"
+        offset: 0.0
+        verb: "{verb}"
+
+  - id: arithmetic/fraction-delta-relation-mass
+    phase: read
+    description: >
+      "Elena has 20% more money than Farah" — the singular mass-noun
+      sibling of fraction-delta-relation. It preserves the same proportional
+      Relation semantics while making countability and comparative morphology
+      explicit: mass_quantity_delta supplies "less/more", and
+      mass_quantity_noun supplies an independently declared mass measure.
+      Optional PP material retains the same declarative compatibility gate.
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: verb, type: verb}
+        - {slot: f, type: fraction}
+        - {slot: dir, cat: mass_quantity_delta}
+        - {slot: item, cat: mass_quantity_noun}
+        - opt:
+            - {slot: pp_prep, cat: preposition}
+            - opt:
+                - {slot: pp_det, cat: possessive_determiner}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
+        - {lit: than}
+        - opt:
+            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_role, cat: animate}
+        - {slot: std, type: name}
+    where:
+      - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - number_compatible: [who, verb]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - distinct: [who, std]
     consumes: [f]
     emits:
@@ -2148,15 +2277,12 @@ rules:
       Omar has"), ending in a bare RELATIVE-CLAUSE standard with no
       complementizer, mirroring times-frame-relation-clause's own
       deliberate absence of 'that'/'as' (see its comment) one frame level
-      up from the aggregate-noun form. `item, type: noun` (any common
-      noun, never gated on `aggregate_noun` — 'money' is the MEASURE
-      itself here, not a frame noun like 'number'/'amount') sits directly
-      after the multiplier — no explicit `{lit: the}` token: 'the' is
-      sense `article`, already in `SKIPPABLE_SENSES`, so the shared
-      pattern-matcher (patterns.py's `_try_match_at`) silently steps past
-      it before ANY token check runs, the same way every other rule in
-      this file already relies on (none of them spell out a literal
-      'the' either). This can NEVER collide with the 'the number of'/'the
+      up from the aggregate-noun form. The offset is an overt counted
+      currency amount, the direction is mass-quantity compatible, and the
+      direct item is a currency mass noun such as 'money'. A required
+      definite article makes the relative-clause NP explicit rather than
+      relying on the reader's general article skipping. This can NEVER
+      collide with the 'the number of'/'the
       amount of' frame rules: on that text, `item`
       would instead bind the FRAME noun ('number'/'amount') and the very
       next token would be the literal 'of' — never noun/name-sensed — so
@@ -2175,11 +2301,12 @@ rules:
       sentence:
         - {slot: who, type: entity}
         - {slot: verb, type: verb}
-        - {slot: n, type: number}
-        - {slot: dir, cat: delta}
+        - {slot: n, cat: currency, counted: true}
+        - {slot: dir, cat: mass_quantity_delta}
         - {lit: than}
         - {slot: k, type: multiplier}
-        - {slot: item, type: noun}
+        - {lit: the, consume_skipped: true}
+        - {slot: item, cat: mass_currency_noun}
         - {slot: std, type: entity}
         - {slot: echo_verb, type: verb}
         - opt:
@@ -2552,23 +2679,15 @@ rules:
       anaphorically points BACK at a quantity already stated earlier in
       the document. `k, type: multiplier` already absorbs a leading "N
       times" as one token (numbers.py), so no separate 'times' literal is
-      needed, mirroring every other relation rule in this file. No
-      `{lit: that}`/`{lit: this}` token is written for the demonstrative
-      itself in a way that would REQUIRE 'this' specifically: 'that' is
-      fine (it takes the literal), but 'this'/'these'/'those' are sensed
-      `article` — already in SKIPPABLE_SENSES — so patterns.py's matcher
-      skips them BEFORE testing any token at all (ask/how-many-plural-
-      combined-cardinal-subject's own comment documents this same
-      invariant for its optional `q, cat: quantifier` slot); a literal
-      token can therefore never require or forbid 'this' either way. An
-      `opt: [{lit: that}]` consumes 'that' when present and is a no-op
-      otherwise (the skip loop already passes through unmatched non-'that'
-      skippable filler on its own), so ONE rule per head word covers "that
-      HEAD" and "this HEAD" alike, with the demonstrative-less bare "HEAD"
-      span never independently reachable by any other existing rule (no
-      rule in this pack matches a bare multiplier immediately followed by
-      'much'/'many'/'amount'/'number'/'price'/'cost' with nothing
-      structural between). Each sibling gates its OWN head word literally
+      needed, mirroring every other relation rule in this file. The
+      introducer is mandatory. `consume_skipped` lets one literal
+      alternation claim complementizer-sensed "that", article-sensed
+      "this", or comparative particle "as" for the much/many siblings;
+      the noun-headed amount/number/price siblings instead require
+      "that", "this", or the definite article "the". This accepts ordinary
+      "twice that many", "twice this much", "twice as many", and "three
+      times the amount" while refusing bare "twice many/much/amount".
+      Each sibling gates its OWN head word literally
       rather than through one shared category: the lexicon's own
       root-sense invariant (registry.compile_registry) requires every
       category member to carry that category's root sense, and 'much'
@@ -2599,11 +2718,19 @@ rules:
         - {slot: who, type: entity}
         - {slot: verb, type: verb}
         - {slot: k, type: multiplier}
-        - opt:
-            - {lit: that}
+        - {lit: [that, this, as], consume_skipped: true}
         - {lit: much}
+        - opt:
+            - {lit: as}
+            - {slot: direct_std_seen, type: entity}
+        - opt:
+            - {slot: item_std_seen, type: noun}
+            - {lit: as}
+            - {slot: item_anchor_seen, type: entity}
     where:
+      - number_compatible: [who, verb]
       - absent: {cat: partitive}
+      - unbound: [direct_std_seen, item_anchor_seen]
     emits:
       - fact: relation
         subject: "{who}"
@@ -2619,19 +2746,29 @@ rules:
     description: >
       mining candidate anaphoric-multiplier-standards: the '-many' sibling
       of arithmetic/anaphoric-multiplier-standard-much — see its
-      description for the full mechanism. Literally gated on 'many'
-      rather than through a shared category for the same lexicon
-      root-sense reason (also documented there).
+      description for the full mechanism. The quantity anaphor must be
+      introduced by demonstrative "that/this" or comparative "as"; bare
+      "twice many" is not English. Literally gated on 'many' rather than
+      through a shared category for the same lexicon root-sense reason
+      (also documented there).
     match:
       sentence:
         - {slot: who, type: entity}
         - {slot: verb, type: verb}
         - {slot: k, type: multiplier}
-        - opt:
-            - {lit: that}
+        - {lit: [that, this, as], consume_skipped: true}
         - {lit: many}
+        - opt:
+            - {lit: as}
+            - {slot: direct_std_seen, type: entity}
+        - opt:
+            - {slot: item_std_seen, type: plural}
+            - {lit: as}
+            - {slot: item_anchor_seen, type: entity}
     where:
+      - number_compatible: [who, verb]
       - absent: {cat: partitive}
+      - unbound: [direct_std_seen, item_anchor_seen]
     emits:
       - fact: relation
         subject: "{who}"
@@ -2652,17 +2789,18 @@ rules:
       (packs/core-english/categories/core.yaml) gates them through one
       category rather than two more literal siblings. See
       arithmetic/anaphoric-multiplier-standard-much's description for the
-      full mechanism (demonstrative handling, sentinel standard,
-      saturate.py resolution) — identical here but for the head slot.
+      full mechanism (mandatory demonstrative/definite introducer, sentinel
+      standard, saturate.py resolution) — identical here but for the head
+      slot.
     match:
       sentence:
         - {slot: who, type: entity}
         - {slot: verb, type: verb}
         - {slot: k, type: multiplier}
-        - opt:
-            - {lit: that}
+        - {lit: [that, this, the], consume_skipped: true}
         - {slot: head, cat: quantity_anaphor}
     where:
+      - number_compatible: [who, verb]
       - absent: {cat: partitive}
     emits:
       - fact: relation
@@ -2694,8 +2832,7 @@ rules:
         - {slot: who, type: entity}
         - {slot: verb, cat: price_relation_verb}
         - {slot: k, type: multiplier}
-        - opt:
-            - {lit: that}
+        - {lit: [that, this, the], consume_skipped: true}
         - {slot: head, cat: price_anaphor}
     where:
       - absent: {cat: partitive}
@@ -4022,6 +4159,39 @@ rules:
         entity: "{who}"
         measure: "{item}"
         value: "item"
+        verb: "{need}"
+
+  - id: arithmetic/goal-need-comparative-quantity
+    phase: read
+    description: >
+      "Fia needs 20 fewer pencils than Cato" — a comparative stated NEED.
+      This is not the ordinary holdings/event relation: `need_premise` keeps
+      the subject quantity goal-scoped, while the explicit plural measure,
+      count-only direction, and named standard state the relative target.
+      It is deliberately separate from goal-need-quantity's absolute counted
+      object and from anchored-relation, whose quantitative-object verb guard
+      correctly excludes need.
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: need, cat: need_premise}
+        - {slot: n, type: number, standalone: true}
+        - {slot: dir, cat: count_quantity_delta}
+        - {slot: item, type: plural}
+        - {lit: than}
+        - {slot: std, type: name}
+    where:
+      - number_compatible: [who, need]
+      - distinct: [who, std]
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+    consumes: [n]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: "{item}"
+        factor: 1.0
+        offset: "n * sign(dir)"
         verb: "{need}"
 
   - id: arithmetic/extraposed-duration-rate
