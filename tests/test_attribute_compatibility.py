@@ -193,9 +193,10 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
     assert adjectives == {"blue", "green", "large", "left", "red", "small"}
     # G5h adds four generic plural nouns (amount, number, price, cost), G5s
     # preserves the noun/plural half of modal `can`, and the reviewed dimension
-    # boundary adds generic inch/pound units. None is licensed by an adjective
-    # category.
-    assert len(plural_nouns) == 39
+    # boundary adds generic inch/pound units. The review-led membership
+    # boundary adds generic animal; none of those additions is licensed by an
+    # adjective category.
+    assert len(plural_nouns) == 40
     assert sum(
         registry.attribute_applies_to(attribute, noun)
         for attribute in adjectives
@@ -203,7 +204,7 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
     ) == 155
 
 
-def test_only_reviewed_descriptor_noun_rules_have_compatibility_premises() -> None:
+def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> None:
     registry = load_project(CURATED).registry
     adjective_rules = {
         rule.id
@@ -224,8 +225,21 @@ def test_only_reviewed_descriptor_noun_rules_have_compatibility_premises() -> No
     }
     assert compatible_rules == {
         RULE_ID,
+        "arithmetic/affine-fraction-as-many",
+        "arithmetic/affine-frame-relation-as-standard",
+        "arithmetic/affine-times-as-much",
+        "arithmetic/anchored-relation-possessive-kinship-standard",
         "arithmetic/anchored-relation-postfix-dimension",
+        "arithmetic/fraction-as-many",
+        "arithmetic/fraction-as-many-elided-standard",
+        "arithmetic/partition-rest-attribute",
+        "arithmetic/times-as-many",
+        "arithmetic/times-as-many-conjunct-elided-standard",
         "arithmetic/times-as-many-conjunct-elided-item",
+        "arithmetic/times-as-many-elided-standard",
+        "arithmetic/times-as-many-possessive-kinship-standard",
+        "arithmetic/times-as-much",
+        "arithmetic/times-the-number-of",
     }
 
 

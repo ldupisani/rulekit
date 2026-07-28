@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CURATED = ROOT / "projects" / "curated"
 
 EXPECTED_OCCURRENCES = {
-    "arithmetic/affine-frame-relation": ((10,), ()),
+    "arithmetic/affine-frame-relation": ((11,), ()),
     "arithmetic/fraction-frame-relation": ((8, 0), ((8,),)),
 }
 
@@ -109,7 +109,7 @@ def test_g5n_unlocks_exactly_the_preregistered_frontier() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 150
+    assert len(exploration_status(project)["fillers"]) == 151
 
 
 @pytest.mark.parametrize("rule_id", sorted(EXPECTED_OCCURRENCES))

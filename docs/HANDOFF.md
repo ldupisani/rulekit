@@ -1,12 +1,12 @@
 # rulekit handoff — generation workbench
 
-**Updated:** 2026-07-27
+**Updated:** 2026-07-28
 
 **Active campaign:** deterministic rule generation and human review
 
 **Status:** G1 through G4, G5a through G5g, G6, Reading-origin review,
 fact-level review, the fraction-plural morphology correction, scoped
-`GroupTotal`, and both review-led grammar-boundary reconciliations are
+`GroupTotal`, and all six review-led grammar-boundary reconciliations are
 complete and gated. The review-led adjective/noun compatibility boundary is
 also complete and gated. The review-led leading-`GroupTotal` subject boundary
 is complete and gated: existential `there` no longer becomes a group scope or
@@ -56,8 +56,8 @@ time-root realization is complete: both deictic markers are core-owned and
 reviewable, and the standard-pinned future rule unlocks. G5u direct-adverb
 visibility is complete: `currently` is core-owned, project-relative adverb
 breadth remains visible, and all 95 curated premise rules are selectable. G5v
-review-led premise auditing is active; its second six-review boundary pass is
-implemented and fully gated.
+review-led premise auditing is active; its fifth twelve-review boundary pass
+and sixth five-review boundary pass are implemented and fully gated.
 
 **Active plan:**
 [`generation-and-annotation-plan.md`](generation-and-annotation-plan.md)
@@ -558,10 +558,11 @@ append-only review rows remain user-authored evidence and must continue to be
 preserved.
 
 The next action is to generate or inspect the next least-explored premise and
-review it in the Designer. The six live reviews handled by the second G5v
-batch all retest `absent`; keep their append-only evidence, and reopen a fixed
-class only if a pinned retest regresses or a new neighboring review shows the
-boundary is incomplete.
+review it in the Designer. The ten reviews handled by the third G5v batch,
+the two handled by the fourth batch, the twelve handled by the fifth batch,
+and the five handled by the sixth batch all retest `absent`; keep their
+append-only evidence, and reopen a fixed class only if a pinned retest
+regresses or a new neighboring review shows the boundary is incomplete.
 
 Generation is an exploratory microscope, not a linguistic-validity oracle.
 If every declared token and predicate has a realizer and a project-backed
@@ -570,7 +571,7 @@ exposes a defect. `matched` means the ordinary matcher accepted the current
 premises; only the human review determines whether those premises licensed
 valid and useful language.
 
-G5o profiles exactly two direct `quantifier`-rooted occurrences:
+G5o originally profiled exactly two direct `quantifier`-rooted occurrences:
 `arithmetic/existential-premise-distributive.q` and
 `arithmetic/periodic-rate-every-span.freq`. Curated owns six direct fillers in
 `core-english`: `all`, `each`, `every`, `much`, `no`, and `some`.
@@ -583,10 +584,12 @@ matcher-confirmed specimen, retain exact token and lexicon sources, and appear
 in exploration only on the supported `q` placement. An invented project proves
 the realizer is not tied to the curated surfaces.
 
-This deliberately exposes that the rule description names `each`/`every`
-while its actual `cat: quantifier` premise accepts all six words. Generation
-does not silently narrow that contract; human review can now determine
-whether the premise needs a distributive subcategory.
+That deliberately exposed that the rule description named `each`/`every`
+while its authored `cat: quantifier` premise accepted all six words.
+Generation did not silently narrow that contract. The fourth G5v human review
+has now supplied the evidence for a dedicated `frequency_quantifier`: the
+existential rule still exposes all six quantifiers, while the explicit-count
+periodic placement admits only `every`.
 
 The exact frontier is now 87 supported and 8 blocked, with the same 125
 reachable lexicon identities. The cumulative generator version is
@@ -771,6 +774,165 @@ The complete gate is green: 3,900 tests pass in four-worker mode; curated is
 before/after diffs; ASDiv, SVAMP, MAWPS, and SciBench remain 44/0, 30/0, 9/0,
 and 6/0; FOLIO makes zero commitments; and lint has zero errors with two known
 warnings.
+
+The third G5v batch reconciles all ten new live invalid reviews as complete
+boundaries:
+
+- temporal age-offset rules require declared `age_measure` units, with exact
+  singular/plural agreement for the intensified `N more years` form;
+- desire goals separate a finite matrix desire verb from a bare infinitival
+  complement through shared matcher/generator morphology;
+- nominal count frames require a determiner, declared count-frame noun,
+  plural item, additive count direction, and viable holders and verbs while
+  preserving both established `amount of PLURAL` and `number of PLURAL`
+  forms;
+- optional repeated item nouns agree with their offset when present, without
+  making the optional slot mandatory;
+- quantitative PP objects and animate appositive standards use declared
+  compatibility and determiner classes;
+- explicit remainder membership separates collection and member noun
+  categories, with generic `animal` moved into `core-english`; and
+- `verb_role_compatible` applies animate/proper-name role requirements only
+  when the selected verb belongs to the declared agentive class.
+
+The benchmark snapshot caught and prevented an early overconstraint that
+excluded valid `amount of frogs/apples` and singular `1 more gallon` forms.
+The corrected boundary restores all four established GSM8K commitments while
+retaining every reviewed rejection. All ten pinned reviews retest `absent`,
+all ten target rules generate matcher-confirmed specimens across the bounded
+seed test, curated remains 95/95, and the reachable lexicon frontier is now
+151.
+
+The live fold contains 32 never-generated, 53 generated-but-unreviewed, and
+10 reviewed rules. Its 151 reachable identities contain 42 never-generated,
+77 generated-but-unreviewed, and 32 reviewed fillers. The append-only success
+ledger contains 234 observations; the review ledger contains 55 rows folded
+to ten live reviews, and the separate failure ledger contains two historical
+attempts.
+
+The complete gate is green: 3,948 tests pass in four-worker mode; curated is
+65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 40/0 with neutral
+before/after diffs; ASDiv, SVAMP, MAWPS, and SciBench remain 44/0, 30/0, 9/0,
+and 6/0; FOLIO makes zero commitments; and lint has zero errors with three
+known warnings.
+
+The fourth G5v batch reconciles both new live invalid reviews as general
+boundaries:
+
+- `arithmetic/periodic-rate-every-span` now requires the dedicated
+  `frequency_quantifier` class and an explicitly counted
+  `duration_measure`. When its optional modal binds, the general
+  `bound_requires_form` predicate requires a bare following verb; ordinary
+  non-modal finite clauses remain valid. This rejects the reviewed
+  `should gets ... some 6 apples` class while preserving both
+  `should get ... every 6 years` and `gets ... every 6 years`;
+- the generic sales-verb category is now core-owned, and
+  `verb_role_compatible` supports a declarative negative role category.
+  `arithmetic/times-as-much` uses it to reject a sales verb whose mass object
+  is a declared remnant, without closing the class to saleable mass nouns or
+  to non-sales verbs. Its optional PP also reuses the existing declared
+  preposition/noun compatibility boundary.
+
+Both current pinned reviews retest `absent`, both target rules continue to
+generate matcher-confirmed candidates, and valid neighboring constructions
+are pinned. The live fold contains 30 never-generated, 63
+generated-but-unreviewed, and 2 reviewed rules. Its 151 reachable identities
+contain 39 never-generated, 101 generated-but-unreviewed, and 11 reviewed
+fillers. The append-only success ledger contains 236 observations; the review
+ledger contains 67 rows folded to two live reviews, and the separate failure
+ledger retains two historical attempts.
+
+The complete gate is green: 3,963 tests pass in four-worker mode; curated is
+65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 40/0 with neutral
+before/after diffs; ASDiv, SVAMP, MAWPS, and SciBench remain 44/0, 30/0, 9/0,
+and 6/0; FOLIO makes zero commitments; and lint has zero errors with three
+known warnings.
+
+The fifth G5v batch reconciles all twelve new live invalid reviews as
+declarative boundaries:
+
+- the possessive-kinship anchored relation adds ordinary agreement and the
+  existing narrow holder, verb, count-noun, and quantitative-PP constraints;
+- the price-anaphor rule uses a dedicated `price_relation_verb` category,
+  retaining copular and cost forms while excluding unrelated events;
+- optional comparative PPs on the reviewed many and fraction families share
+  the existing preposition/noun compatibility relation. The declared
+  quantitative-location class now includes every valid location witnessed by
+  the DEV snapshot, including `side`, while measure, population, and arbitrary
+  animate nouns remain outside it;
+- all five existential quantity-premise siblings require a copula and
+  agreement, so constructional `there` cannot license an event verb;
+- rest-of-pool applies ordinary agreement and the narrow
+  `non_quantity_object_verb` refusal;
+- affine comparison appositives require animate possessive determiners, the
+  affine fraction-many form refuses the declared prepositional-frame verb
+  class, and their optional PPs use the same compatibility relation;
+- the optional noun in `partition-rest-attribute` is now checked against the
+  adjective only when that noun is present. Bare discourse-backed `Rest were
+  small` remains valid, while an explicit incompatible `ages/small` pair is
+  rejected; and
+- the generic `polarity_compatible` predicate compares each slot only inside
+  its declared category scope. Percent-change events use it to reject an
+  explicit increase verb with a decreasing direction while leaving
+  direction-neutral event verbs valid.
+
+All twelve reviewed surfaces retest `absent`; valid copular price, existential,
+remainder, quantitative-location, affine, partition, and percent-direction
+neighbors remain matcher-confirmed. The initial DEV snapshot correctly caught
+three overconstrained valid location examples (`mall`, `wardrobe`, and
+`wheel`); those nouns and the full-suite `side` example now belong to the
+general quantitative-location class rather than receiving rule-specific
+exceptions.
+
+The live fold contains 10 never-generated, 73 generated-but-unreviewed, and
+12 reviewed rules. Its 151 reachable identities contain 38 never-generated,
+73 generated-but-unreviewed, and 40 reviewed fillers. The append-only success
+ledger contains 256 observations; the review ledger contains 81 rows folded
+to twelve live reviews. The separate failure ledger contains three historical
+attempts, none matching the current registry fingerprint.
+
+The complete gate is green: 4,004 tests pass in four-worker mode; curated is
+65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 40/0 with neutral
+before/after diffs; ASDiv, SVAMP, MAWPS, and SciBench remain 44/0, 30/0, 9/0,
+and 6/0; FOLIO makes zero commitments; and lint has zero errors with three
+known warnings.
+
+The sixth G5v batch reconciles all five new invalid reviews as two shared
+premise boundaries:
+
+- `GroupTotal` premise rules now use the declared `group_total_marker`
+  category rather than the broad `aggregate` sense. `average` remains an
+  aggregate operation but can no longer assert a sum. Existential and
+  trailing totals accept bare `altogether`/`combined`/`together`/`total` and
+  the declared `in total` pairing; arbitrary `at`/`to`/`with` combinations
+  are rejected through `group_total_preposition` plus conditional
+  `prepositional_group_total_marker` compatibility. The aggregate root is now
+  a legal category root, allowing this distinction without adding a second
+  ambiguous lexical sense;
+- bare and `that` count-frame relative clauses now require a repeated verb
+  whose lemma matches the matrix verb and whose number agrees independently
+  with the standard. Paired frame-head prepositions and optional counted
+  duration spans remain explicit premises. This prevents an incomplete
+  `that bird` tail and the reviewed `Garden lose` disagreement without
+  narrowing complete clauses; and
+- the measured DEV-holdout buyer exposed one missing morphology declaration:
+  `drinks` is now explicitly singular. Its valid `... Paul drinks in one
+  day` clause remains readable through the declared duration-span branch.
+
+All five pinned surfaces retest `absent`, and every corrected target continues
+to generate matcher-confirmed candidates across the bounded seed gate. The
+append-only fold contains 282 successful exploration events and 100 review
+rows; two post-reconciliation tombstones leave three live reviews while
+preserving every original row as evidence. Current coverage is
+7 never-generated, 86 generated-but-unreviewed, and 2 reviewed rules; the 151
+reachable lexicon identities are 38 never-generated, 103
+generated-but-unreviewed, and 10 reviewed.
+
+The complete gate is green: 4,029 tests pass in four-worker mode; curated is
+65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 40/0 with neutral
+before/after diffs; ASDiv, SVAMP, MAWPS, and SciBench remain 44/0, 30/0, 9/0,
+and 6/0; FOLIO makes zero commitments; and lint has zero errors with two known
+warnings. No protected TEST look was spent.
 
 Do not interpret 95/95 as proof that every sentence is valid, bulk-label the
 frontier, or advance to deferred question generation before the premise audit

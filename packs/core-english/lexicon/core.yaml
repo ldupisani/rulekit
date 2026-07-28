@@ -223,6 +223,7 @@ entries:
 
     # common nouns
     apple: {senses: [noun], plural: apples}
+    animal: {senses: [noun], plural: animals}
     age: {senses: [noun], plural: ages}
     amount: {senses: [noun], plural: amounts}
     number: {senses: [noun], plural: numbers}

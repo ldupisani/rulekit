@@ -65,7 +65,7 @@ def _optional_profile(project) -> tuple[int, int, int, int]:
 def test_g5i_profiles_the_complete_recursive_optional_class() -> None:
     project = load_project(CURATED)
 
-    assert _optional_profile(project) == (51, 114, 31, 3)
+    assert _optional_profile(project) == (52, 120, 31, 3)
 
 
 def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
@@ -183,6 +183,11 @@ def test_minimal_pair_preserves_an_included_optional_binding() -> None:
         project,
         rule_id="arithmetic/partition-rest-attribute",
         seed=0,
+        # The compatibility boundary deliberately gives temporal collections
+        # only the remnant adjective ("years left").  Use a collection with
+        # more than one valid predicate so rerolling attr remains satisfiable
+        # while this test continues to exercise optional-binding preservation.
+        locked_bindings={"item": "apples"},
     )
     paired = generate_minimal_pair(
         project,

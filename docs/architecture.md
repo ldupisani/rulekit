@@ -1,6 +1,6 @@
 # RuleKit architecture
 
-**Updated:** 2026-07-27
+**Updated:** 2026-07-28
 **Status:** current implementation, not a roadmap
 
 RuleKit is a deterministic reading and reasoning engine for controlled,
@@ -54,8 +54,18 @@ loaded direct-adverb domain, bringing curated premise availability to 95/95.
 G5v's review-led boundary passes add declarative definiteness, agreement,
 appositive-role, quantitative-verb, count/mass, additive-direction,
 finite/bare-form verb, complete-frame, optional-slot-coupling, and
-descriptor/noun compatibility constraints. They also distinguish standalone
-scalar numbers from condensed counted nouns so an elided rule cannot
+descriptor/noun compatibility constraints. They also add category-qualified
+age units, explicit membership collection/member roles, and conditional
+verb/semantic-role compatibility, including negative role classes; optional
+controller-dependent verb morphology; and explicit frequency/duration
+boundaries for periodic rates. The latest pass adds scoped cross-slot polarity,
+price-relation verbs, copular existential premises, optional explicit-noun
+compatibility, and shared quantitative-PP boundaries. The newest pass
+separates sum markers from the broader aggregate operation, restricts
+prepositional totals to declared collocations, and makes bare/`that`
+count-frame relative clauses include a lemma-aligned, independently agreeing
+predicate plus an optional counted duration span. Standalone scalar
+numbers remain distinct from condensed counted nouns so an elided rule cannot
 double-fire on an explicit measure.
 Generated defects remain visible by design: mechanical support reports that a
 rule can be realized and matched, not that its premises license valid English.
@@ -491,9 +501,10 @@ phrases, declared single-token generic pronouns, loaded direct-modal,
 future-modal, direct-adverb, and time-rooted category domains, and the
 `distinct`/`same_lemma`/`same_number`/`distinct_owner`/`distinct_measure`
 constraints plus `number_compatible`, conditional `bound_requires_type` and
-`bound_requires_category`, optional-slot `same_presence`, pack-declared
-descriptor/noun compatibility, referential noun-phrase qualification, and
-negative slot-category constraints. A number slot may
+`bound_requires_category` and `bound_requires_form`, optional-slot
+`same_presence`, pack-declared descriptor/noun compatibility, conditional
+positive or negative `verb_role_compatible`, referential noun-phrase
+qualification, and negative slot-category constraints. A number slot may
 declare `standalone: true` when a condensed counted noun is not grammatical in
 that position. Arbitrarily nested optional groups compose those same token
 realizers. Each active group makes a seeded include/omit choice; all descendants
@@ -640,6 +651,18 @@ while the slot's category independently restricts the noun lemma. This is how
 `4 years` without accepting every counted noun. Compilation refuses this
 qualifier on a category that does not root at `noun`.
 
+The `count_aggregate_noun` category owns nominal count frames separately from
+mass-noun frames. Core currently declares both `amount` and `number`; rules
+using the category also require a plural item, so accepted established
+language such as `the amount of frogs` does not reopen the reviewed incomplete
+`number of coin` surface. The frame vocabulary remains pack data.
+
+Explicit remainder-membership clauses use two other noun categories:
+`membership_collection_noun` for the stated superclass and
+`membership_member_noun` for its predicate member. The condition is attached
+only when the optional collection phrase is present, leaving discourse-backed
+bare `the rest were rabbits` unchanged.
+
 Rules may declare `same_number` across bound slots. Count-valued units derive
 singular only from value 1 and plural otherwise; lexical units use their
 pack-declared grammatical number. The matcher and generator share that
@@ -649,13 +672,36 @@ predicate, so agreement such as `1 of them is red` versus
 `number_compatible: [SUBJECT, VERB]` is the less restrictive agreement
 predicate for ordinary clauses. It refuses an explicit singular/plural
 conflict while allowing a number-neutral form, such as a past-tense verb, to
-pass. Neither matcher nor generator guesses a missing grammatical number.
+pass. An absent optional member contributes no conflicting evidence, which
+also permits `number_compatible: [COUNT, OPTIONAL_NOUN]` to constrain an
+item echo only when it is present. Neither matcher nor generator guesses a
+missing grammatical number.
+
+`polarity_compatible: {slots: [SLOT_A, SLOT_B, ...], categories:
+[SCOPE_A, SCOPE_B, ...]}` compares lexical polarity only inside the category
+scope paired with each slot. A filler with no polarity inside its scope is
+neutral even if it carries polarity in another category family. The predicate
+rejects two or more explicit, conflicting polarities; it does not manufacture
+direction for a neutral word. Registry compilation requires equal-length,
+distinct slots with compatible category roots and a real polarity-bearing
+descendant in every scope. The percent-change event rule uses this to reject
+`rose ... fewer` while retaining both `rose ... more` and a neutral
+`had ... fewer`. Matcher, availability, locked probes, realization, and
+premise evidence use the same scoped calculation.
 
 A verb token may declare `bare_form: true`. The matcher and generator share
 one lemma-aware morphology check: the lemma itself and declared non-third-
 person surface are admitted, while a third-person singular inflection is not.
 This supports infinitival complements such as `to travel` without silently
 turning every verb slot into an unrestricted surface domain.
+
+A verb token may instead declare `finite_form: true`. This admits the
+registered base, finite present, and simple-past surfaces while refusing a
+productive `-ing` form whose surface differs from its lemma. It is separate
+from `bare_form`: a matrix desire verb may be finite as `wants` or `wanted`
+while its `to` complement must remain bare. Registry compilation requires
+both qualifiers to sit on verb-rooted scalar slots and rejects the
+contradictory combination.
 
 A slot may opt into `referential: true`. Names, resolved pronouns, possessed
 nouns, and counted nouns are already referential; an otherwise bare common noun
@@ -675,6 +721,26 @@ is the category-backed sibling. It applies the target membership premise only
 when the controlling slot bound. The fraction-frame relation uses this to
 require a prepositional frame verb only when its optional destination
 preposition is present.
+
+`bound_requires_form: {bound: CONTROL_SLOT, slot: TARGET, form: bare|finite}`
+is the morphology-backed sibling. When the optional controller binds, the
+target must have the declared verb form; without the controller the predicate
+is neutral. Periodic rates use it to require a bare lexical verb after a
+modal while preserving an ordinary finite verb when the modal branch is
+absent. Registry compilation requires the target to be verb-rooted, and the
+matcher and generator share the same morphology helpers.
+
+`verb_role_compatible: {verb: VERB_SLOT, roles: [...], verb_cat: VERB_CAT,
+role_cat: ROLE_CAT}` is another conditional category boundary. Its positive
+mode requires every named role to be a proper name or belong to `ROLE_CAT`
+when the selected verb belongs to `VERB_CAT`. Its mutually exclusive
+`excluded_role_cat: ROLE_CAT` mode instead rejects roles in that category;
+proper names receive no special bypass in the negative mode. Verbs outside
+the triggering class are unchanged. The matcher, availability solver, locked
+probes, and generator share the same predicate. This represents agentivity
+and object-role exclusions in pack data—for example, spending requires
+animate actors and selling refuses declared remnants—without embedding a verb
+or noun inventory in Python.
 
 `same_presence: [SLOT_A, SLOT_B, ...]` requires linked optional slots to be
 either all bound or all absent. This describes paired surface structure
@@ -724,7 +790,10 @@ before a later locked adjective. A passed premise names the exact category
 pair and source-links the compatibility declaration, both category
 definitions, and both memberships. Pronoun attribute rules do not use this
 predicate because their antecedent noun is not bound in the same premise
-match.
+match. If either named slot belongs to an omitted optional branch, the
+predicate is neutral: it constrains an explicit descriptor/noun pair rather
+than making optional syntax mandatory. This lets `Rest were small` remain
+discourse-backed while `Rest of the ages were small` is rejected.
 
 A rule may declare
 `slot_not_category: {slot: SLOT, cat: CATEGORY}` to subtract a semantic
@@ -890,15 +959,17 @@ PATCH /api/generation/review/{review_id}
 DELETE /api/generation/review/{review_id}
 ```
 
-Supported category roots now include noun, verb, adjective, preposition,
-pronoun, comparative, and aggregate. Named categories contribute their
-declaration, membership, and ancestry sources. The degenerate `aggregate`
-root instead draws directly from loaded single-token lexicon entries carrying
-that sense, so its evidence is the rule token plus lexicon declaration and its path is
-`surface → aggregate`; the authoring layer does not invent a category-member
-source. Quantifier-, complementizer-, adverb-, and time-rooted categories,
-plus qualified, participial, modal, and span realizers, remain later
-increments.
+Supported generator category roots now include noun, verb, adjective,
+preposition, pronoun, comparative, aggregate, quantifier, complementizer,
+time, and adverb. Named categories contribute their declaration, membership,
+and ancestry sources. A direct degenerate root such as `aggregate` still
+draws from loaded single-token lexicon entries carrying that sense and reports
+the path `surface → aggregate`; a named aggregate-rooted subset such as
+`group_total_marker` instead reports its membership and full ancestry. This
+lets packs distinguish sums from averages without adding a second ambiguous
+lexical sense. Direct modal and future-modal slot types, qualified and
+participial forms, recursive optional groups, and counted category slots are
+also implemented.
 
 ## Repository map
 

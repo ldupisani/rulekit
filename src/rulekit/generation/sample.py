@@ -7,6 +7,7 @@ import random
 import re
 import secrets
 from dataclasses import dataclass
+from itertools import product
 from pathlib import Path
 from typing import Any, Literal
 
@@ -23,7 +24,12 @@ from ..data.sources import SourceRef
 from ..kernel.document import run_document
 from ..kernel.engine import analyze
 from ..kernel.model import Unit, _jsonable
-from ..kernel.patterns import RuleMatchResult, is_bare_verb_form, subsumes
+from ..kernel.patterns import (
+    RuleMatchResult,
+    is_bare_verb_form,
+    is_finite_verb_form,
+    subsumes,
+)
 from .candidate import (
     ConsumedUnitSummary,
     GenerationCandidate,
@@ -205,7 +211,10 @@ def _where_blocker(rule: PatternRule) -> list[str]:
             or pred.number_compatible is not None
             or pred.bound_requires_type is not None
             or pred.bound_requires_category is not None
+            or pred.bound_requires_form is not None
+            or pred.polarity_compatible is not None
             or pred.same_presence is not None
+            or pred.verb_role_compatible is not None
             or pred.attribute_compatible is not None
             or pred.slot_not_category is not None
             or pred.absent is not None
@@ -231,6 +240,7 @@ def _lexical_fillers(
     sense: str | None = None,
     category: str | None = None,
     bare_form: bool = False,
+    finite_form: bool = False,
 ) -> list[_Filler]:
     out: list[_Filler] = []
     for surface, entry in sorted(reg.lexicon.items()):
@@ -246,6 +256,8 @@ def _lexical_fillers(
             surface, reg.verb_lemmas.get(surface, surface)
         )
         if bare_form and not is_bare_verb_form(surface, identity):
+            continue
+        if finite_form and not is_finite_verb_form(surface, identity):
             continue
         number = entry.number
         if sense == "noun" and surface not in reg.plural_to_singular:
@@ -413,6 +425,7 @@ def _raw_domain(
             sense=root,
             category=token.cat,
             bare_form=token.bare_form,
+            finite_form=token.finite_form,
         )
 
     slot_type = token.type
@@ -460,7 +473,12 @@ def _raw_domain(
             category="future_modal",
         )
     if slot_type == "verb":
-        return _lexical_fillers(reg, sense="verb", bare_form=token.bare_form)
+        return _lexical_fillers(
+            reg,
+            sense="verb",
+            bare_form=token.bare_form,
+            finite_form=token.finite_form,
+        )
     if slot_type == "nonstate_verb":
         return [
             filler
@@ -634,6 +652,27 @@ def _measure_key(
     """Return the matcher's exact distinct-measure comparison key."""
 
     return filler.identity, filler.label, filler.qualifier
+
+
+def _scoped_filler_polarity(
+    filler: _Filler, scope: str, reg: Registry
+) -> int | None:
+    """Declared filler polarity below one category scope, if any."""
+
+    best_depth, best = -1, None
+    for word in {filler.identity, filler.surface.casefold()}:
+        for tag in reg.word_categories.get(word, ()):
+            chain = reg.cat_ancestors(tag)
+            if scope not in chain:
+                continue
+            for depth, category in enumerate(reversed(chain)):
+                if (
+                    category in reg.category_polarity
+                    and depth > best_depth
+                ):
+                    best_depth = depth
+                    best = reg.category_polarity[category]
+    return best
 
 
 def _distinct_measure_groups(rule: PatternRule) -> tuple[tuple[str, ...], ...]:
@@ -850,6 +889,105 @@ def _rule_blockers(
                     f"for {attribute_name}/{noun_name}"
                 )
         for pred in rule.where:
+            if pred.polarity_compatible is None:
+                continue
+            pairs = tuple(
+                zip(
+                    pred.polarity_compatible.slots,
+                    pred.polarity_compatible.categories,
+                    strict=True,
+                )
+            )
+            pair_tokens = [
+                tokens_by_slot.get(slot_name)
+                for slot_name, _ in pairs
+            ]
+            has_omittable_slot = any(
+                all(ancestors for _, ancestors in slot_occurrences[slot_name])
+                for slot_name, _ in pairs
+            )
+            if (
+                any(token is None for token in pair_tokens)
+                or (
+                    not has_omittable_slot
+                    and not any(
+                        len(
+                            {
+                                polarity
+                                for filler, (_, category) in zip(
+                                    fillers, pairs, strict=True
+                                )
+                                if (
+                                    polarity := _scoped_filler_polarity(
+                                        filler, category, reg
+                                    )
+                                )
+                                is not None
+                            }
+                        )
+                        <= 1
+                        for fillers in product(
+                            *(
+                                safe_domain(token)
+                                for token in pair_tokens
+                                if token is not None
+                            )
+                        )
+                    )
+                )
+            ):
+                blockers.append(
+                    "no project-backed scoped polarity assignment exists "
+                    f"for {'/'.join(slot for slot, _ in pairs)}"
+                )
+        for pred in rule.where:
+            if pred.verb_role_compatible is None:
+                continue
+            compatibility = pred.verb_role_compatible
+            verb_token = tokens_by_slot.get(compatibility.verb)
+            role_tokens = [
+                tokens_by_slot.get(role)
+                for role in compatibility.roles
+            ]
+
+            def role_ok(verb: _Filler, role: _Filler) -> bool:
+                if not reg.word_in_category(
+                    verb.identity, compatibility.verb_cat
+                ):
+                    return True
+                if compatibility.role_cat is not None:
+                    return (
+                        role.kind == "name"
+                        or reg.word_in_category(
+                            role.identity, compatibility.role_cat
+                        )
+                    )
+                assert compatibility.excluded_role_cat is not None
+                return not reg.word_in_category(
+                    role.identity, compatibility.excluded_role_cat
+                )
+
+            if (
+                verb_token is None
+                or any(token is None for token in role_tokens)
+                or not any(
+                    all(
+                        any(
+                            role_ok(verb, role)
+                            for role in safe_domain(role_token)
+                        )
+                        for role_token in role_tokens
+                        if role_token is not None
+                    )
+                    for verb in safe_domain(verb_token)
+                )
+            ):
+                blockers.append(
+                    "no project-backed verb/role compatibility exists for "
+                    f"{compatibility.verb}/"
+                    f"{'/'.join(compatibility.roles)}"
+                )
+        for pred in rule.where:
             if pred.slot_not_category is None:
                 continue
             slot_name = pred.slot_not_category.get("slot")
@@ -893,25 +1031,47 @@ def _constraint_groups(
     list[set[str]],
     list[set[str]],
     list[set[str]],
+    list[tuple[tuple[str, str], ...]],
     list[set[str]],
     list[set[str]],
+    list[tuple[str, str, str]],
     list[tuple[str, str, str]],
     list[tuple[str, str, str]],
     list[set[str]],
     tuple[tuple[str, ...], ...],
     list[tuple[str, str]],
+    list[
+        tuple[
+            str,
+            tuple[str, ...],
+            str,
+            str | None,
+            str | None,
+        ]
+    ],
     list[tuple[str, str]],
     tuple[str, ...],
 ]:
     same: list[set[str]] = []
     same_number: list[set[str]] = []
     number_compatible: list[set[str]] = []
+    polarity_compatible: list[tuple[tuple[str, str], ...]] = []
     distinct: list[set[str]] = []
     distinct_owner: list[set[str]] = []
     bound_type_requirements: list[tuple[str, str, str]] = []
     bound_category_requirements: list[tuple[str, str, str]] = []
+    bound_form_requirements: list[tuple[str, str, str]] = []
     same_presence: list[set[str]] = []
     attribute_pairs: list[tuple[str, str]] = []
+    verb_role_requirements: list[
+        tuple[
+            str,
+            tuple[str, ...],
+            str,
+            str | None,
+            str | None,
+        ]
+    ] = []
     slot_category_exclusions = list(_slot_category_exclusions(rule))
     for pred in rule.where:
         if pred.same_lemma is not None:
@@ -920,6 +1080,16 @@ def _constraint_groups(
             same_number.append(set(pred.same_number))
         if pred.number_compatible is not None:
             number_compatible.append(set(pred.number_compatible))
+        if pred.polarity_compatible is not None:
+            polarity_compatible.append(
+                tuple(
+                    zip(
+                        pred.polarity_compatible.slots,
+                        pred.polarity_compatible.categories,
+                        strict=True,
+                    )
+                )
+            )
         if pred.distinct is not None:
             distinct.append(set(pred.distinct))
         if pred.distinct_owner is not None:
@@ -940,6 +1110,14 @@ def _constraint_groups(
                     pred.bound_requires_category.cat,
                 )
             )
+        if pred.bound_requires_form is not None:
+            bound_form_requirements.append(
+                (
+                    pred.bound_requires_form.bound,
+                    pred.bound_requires_form.slot,
+                    pred.bound_requires_form.form,
+                )
+            )
         if pred.same_presence is not None:
             same_presence.append(set(pred.same_presence))
         if pred.attribute_compatible is not None:
@@ -949,17 +1127,30 @@ def _constraint_groups(
                     pred.attribute_compatible.noun,
                 )
             )
+        if pred.verb_role_compatible is not None:
+            verb_role_requirements.append(
+                (
+                    pred.verb_role_compatible.verb,
+                    tuple(pred.verb_role_compatible.roles),
+                    pred.verb_role_compatible.verb_cat,
+                    pred.verb_role_compatible.role_cat,
+                    pred.verb_role_compatible.excluded_role_cat,
+                )
+            )
     return (
         same,
         same_number,
         number_compatible,
+        polarity_compatible,
         distinct,
         distinct_owner,
         bound_type_requirements,
         bound_category_requirements,
+        bound_form_requirements,
         same_presence,
         _distinct_measure_groups(rule),
         attribute_pairs,
+        verb_role_requirements,
         slot_category_exclusions,
         _absent_categories(rule),
     )
@@ -984,11 +1175,39 @@ def _allowed_fillers(
     slot_category_exclusions: list[tuple[str, str]],
     absent_categories: tuple[str, ...],
     number_compatible_groups: list[set[str]] | tuple[set[str], ...] = (),
+    polarity_compatible_groups: (
+        list[tuple[tuple[str, str], ...]]
+        | tuple[tuple[tuple[str, str], ...], ...]
+    ) = (),
     bound_type_requirements: (
         list[tuple[str, str, str]] | tuple[tuple[str, str, str], ...]
     ) = (),
     bound_category_requirements: (
         list[tuple[str, str, str]] | tuple[tuple[str, str, str], ...]
+    ) = (),
+    bound_form_requirements: (
+        list[tuple[str, str, str]] | tuple[tuple[str, str, str], ...]
+    ) = (),
+    verb_role_requirements: (
+        list[
+            tuple[
+                str,
+                tuple[str, ...],
+                str,
+                str | None,
+                str | None,
+            ]
+        ]
+        | tuple[
+            tuple[
+                str,
+                tuple[str, ...],
+                str,
+                str | None,
+                str | None,
+            ],
+            ...,
+        ]
     ) = (),
 ) -> list[_Filler]:
     domain = [
@@ -1000,6 +1219,27 @@ def _allowed_fillers(
         return domain
     if token.slot in chosen:
         return [chosen[token.slot]]
+    if (
+        token.cat is not None
+        and reg.root_sense(token.cat) == "noun"
+        and any(token.slot in group for group in same_number_groups)
+    ):
+        existing = {(filler.surface, filler.identity) for filler in domain}
+        domain = [
+            *domain,
+            *[
+                _Filler(
+                    surface=plural,
+                    identity=filler.identity,
+                    number="plural",
+                    kind=filler.kind,
+                )
+                for filler in domain
+                if (plural := reg.singular_to_plural.get(filler.identity))
+                is not None
+                and (plural, filler.identity) not in existing
+            ],
+        ]
 
     required_identities = {
         chosen[name].identity
@@ -1069,11 +1309,13 @@ def _allowed_fillers(
     }
 
     def compatible(filler: _Filler) -> bool:
+        def known_filler(name: str) -> _Filler | None:
+            return chosen.get(name) or locked_fillers.get(name)
+
         def known_identity(name: str) -> str | None:
-            if name in chosen:
-                return chosen[name].identity
-            if name in locked_fillers:
-                return locked_fillers[name].identity
+            known = known_filler(name)
+            if known is not None:
+                return known.identity
             surface = locked_bindings.get(name)
             if surface is None:
                 return None
@@ -1134,6 +1376,59 @@ def _allowed_fillers(
                 )
             ):
                 return False
+        for (
+            verb_name,
+            role_names,
+            verb_category,
+            role_category,
+            excluded_role_category,
+        ) in verb_role_requirements:
+            def role_ok(verb: _Filler, role: _Filler) -> bool:
+                if not reg.word_in_category(
+                    verb.identity, verb_category
+                ):
+                    return True
+                if role_category is not None:
+                    return (
+                        role.kind == "name"
+                        or reg.word_in_category(
+                            role.identity, role_category
+                        )
+                    )
+                assert excluded_role_category is not None
+                return not reg.word_in_category(
+                    role.identity, excluded_role_category
+                )
+
+            if token.slot == verb_name:
+                for role_name in role_names:
+                    role = known_filler(role_name)
+                    if role is not None and not role_ok(filler, role):
+                        return False
+                    if (
+                        role is None
+                        and role_name in active_slots
+                        and not any(
+                            role_ok(filler, candidate)
+                            for candidate in _domain(
+                                tokens_by_slot[role_name], reg, fixtures
+                            )
+                            if _outside_categories(
+                                candidate, absent_categories, reg
+                            )
+                            and _outside_slot_categories(
+                                candidate,
+                                role_name,
+                                slot_category_exclusions,
+                                reg,
+                            )
+                        )
+                    ):
+                        return False
+            if token.slot in role_names:
+                verb = known_filler(verb_name)
+                if verb is not None and not role_ok(verb, filler):
+                    return False
         return True
 
     def satisfies_conditional_categories(filler: _Filler) -> bool:
@@ -1156,6 +1451,79 @@ def _allowed_fillers(
                 )
                 if target is not None and not in_category(target, category):
                     return False
+        return True
+
+    def satisfies_conditional_forms(filler: _Filler) -> bool:
+        def has_form(candidate: _Filler, form: str) -> bool:
+            if form == "bare":
+                return is_bare_verb_form(
+                    candidate.surface.casefold(), candidate.identity
+                )
+            return is_finite_verb_form(
+                candidate.surface.casefold(), candidate.identity
+            )
+
+        for bound_slot, target_slot, form in bound_form_requirements:
+            if (
+                token.slot == target_slot
+                and bound_slot in active_slots
+                and not has_form(filler, form)
+            ):
+                return False
+            if token.slot == bound_slot:
+                target = chosen.get(target_slot) or locked_fillers.get(
+                    target_slot
+                )
+                if target is not None and not has_form(target, form):
+                    return False
+                if (
+                    target is None
+                    and target_slot in active_slots
+                    and not any(
+                        has_form(candidate, form)
+                        for candidate in _domain(
+                            tokens_by_slot[target_slot], reg, fixtures
+                        )
+                        if _outside_categories(
+                            candidate, absent_categories, reg
+                        )
+                        and _outside_slot_categories(
+                            candidate,
+                            target_slot,
+                            slot_category_exclusions,
+                            reg,
+                        )
+                    )
+                ):
+                    return False
+        return True
+
+    def satisfies_scoped_polarity(filler: _Filler) -> bool:
+        for requirement in polarity_compatible_groups:
+            scopes = dict(requirement)
+            if token.slot not in scopes:
+                continue
+            polarities = {
+                polarity
+                for slot_name, category in requirement
+                if (
+                    candidate := (
+                        filler
+                        if slot_name == token.slot
+                        else chosen.get(slot_name)
+                        or locked_fillers.get(slot_name)
+                    )
+                )
+                is not None
+                if (
+                    polarity := _scoped_filler_polarity(
+                        candidate, category, reg
+                    )
+                )
+                is not None
+            }
+            if len(polarities) > 1:
+                return False
         return True
 
     return [
@@ -1201,6 +1569,8 @@ def _allowed_fillers(
         )
         and compatible(filler)
         and satisfies_conditional_categories(filler)
+        and satisfies_conditional_forms(filler)
+        and satisfies_scoped_polarity(filler)
         and _outside_slot_categories(
             filler,
             token.slot,
@@ -1227,13 +1597,16 @@ def _realize(
         same_groups,
         same_number_groups,
         number_compatible_groups,
+        polarity_compatible_groups,
         distinct_groups,
         distinct_owner_groups,
         bound_type_requirements,
         bound_category_requirements,
+        bound_form_requirements,
         same_presence_groups,
         distinct_measure_groups,
         attribute_pairs,
+        verb_role_requirements,
         slot_category_exclusions,
         absent_categories,
     ) = _constraint_groups(rule)
@@ -1352,8 +1725,11 @@ def _realize(
                 slot_category_exclusions,
                 absent_categories,
                 number_compatible_groups,
+                polarity_compatible_groups,
                 bound_type_requirements,
                 bound_category_requirements,
+                bound_form_requirements,
+                verb_role_requirements,
             )
             if token.slot in locked_bindings:
                 locked = locked_bindings[token.slot].casefold()
@@ -1690,6 +2066,10 @@ def _token_expression(token: MatchToken) -> str:
         gates.append("counted")
     if token.possessed:
         gates.append("possessed")
+    if token.bare_form:
+        gates.append("bare form")
+    if token.finite_form:
+        gates.append("finite form")
     if token.number is not None:
         gates.append(f"number {token.number!r}")
     if token.standalone:
@@ -1792,7 +2172,10 @@ _WHERE_FIELDS = (
     "number_compatible",
     "bound_requires_type",
     "bound_requires_category",
+    "bound_requires_form",
+    "polarity_compatible",
     "same_presence",
+    "verb_role_compatible",
     "same_phrase",
     "distinct",
     "distinct_owner",
@@ -1830,6 +2213,31 @@ def _where_expression(rule: PatternRule, index: int) -> tuple[str, tuple[str, ..
         rendered = (
             f"bound={value.bound!r}, slot={value.slot!r}, "
             f"cat={value.cat!r}"
+        )
+    elif kind == "bound_requires_form":
+        names = (value.bound, value.slot)
+        rendered = (
+            f"bound={value.bound!r}, slot={value.slot!r}, "
+            f"form={value.form!r}"
+        )
+    elif kind == "polarity_compatible":
+        names = tuple(value.slots)
+        rendered = ", ".join(
+            f"{slot} within {category!r}"
+            for slot, category in zip(
+                value.slots, value.categories, strict=True
+            )
+        )
+    elif kind == "verb_role_compatible":
+        names = (value.verb, *value.roles)
+        role_boundary = (
+            f"role_cat={value.role_cat!r}"
+            if value.role_cat is not None
+            else f"excluded_role_cat={value.excluded_role_cat!r}"
+        )
+        rendered = (
+            f"verb={value.verb!r}, roles={value.roles!r}, "
+            f"verb_cat={value.verb_cat!r}, {role_boundary}"
         )
     elif isinstance(value, dict):
         slot = value.get("slot")
@@ -1871,6 +2279,83 @@ def _where_reason(
             f"{requirement.bound!r} was bound, so "
             f"{requirement.slot}={identity!r} satisfied category "
             f"{requirement.cat!r}"
+        )
+    if pred.bound_requires_form is not None:
+        requirement = pred.bound_requires_form
+        if requirement.bound not in slots:
+            return (
+                f"{requirement.bound!r} was unbound, so no morphology "
+                f"restriction applied to {requirement.slot!r}"
+            )
+        units = _slot_units(slots.get(requirement.slot))
+        if not units:
+            return (
+                f"{requirement.bound!r} was bound but "
+                f"{requirement.slot!r} was not exposed"
+            )
+        return (
+            f"{requirement.bound!r} was bound, so "
+            f"{requirement.slot}={units[0].surface!r} satisfied "
+            f"{requirement.form!r} verb form"
+        )
+    if pred.polarity_compatible is not None:
+        rendered = []
+        for slot_name, category in zip(
+            pred.polarity_compatible.slots,
+            pred.polarity_compatible.categories,
+            strict=True,
+        ):
+            units = _slot_units(slots.get(slot_name))
+            if not units:
+                rendered.append(f"{slot_name}=unbound")
+                continue
+            polarity = _scoped_filler_polarity(
+                _Filler(
+                    surface=units[0].surface,
+                    identity=_unit_lemma(units[0], reg),
+                ),
+                category,
+                reg,
+            )
+            rendered.append(
+                f"{slot_name}={units[0].surface!r}"
+                + (
+                    " was neutral"
+                    if polarity is None
+                    else f" declared polarity {polarity:+d}"
+                )
+                + f" within {category!r}"
+            )
+        return "; ".join(rendered)
+    if pred.verb_role_compatible is not None:
+        compatibility = pred.verb_role_compatible
+        verb_units = _slot_units(slots.get(compatibility.verb))
+        if not verb_units:
+            return "the target match did not expose the governing verb"
+        verb = _unit_lemma(verb_units[0], reg)
+        if not reg.word_in_category(verb, compatibility.verb_cat):
+            return (
+                f"{compatibility.verb}={verb!r} was outside triggering "
+                f"category {compatibility.verb_cat!r}"
+            )
+        rendered_roles = []
+        for role_name in compatibility.roles:
+            units = _slot_units(slots.get(role_name))
+            if units:
+                rendered_roles.append(
+                    f"{role_name}={_unit_lemma(units[0], reg)!r}"
+                )
+        if compatibility.role_cat is not None:
+            boundary = (
+                f"required {compatibility.role_cat!r} or proper-name roles"
+            )
+        else:
+            boundary = (
+                f"excluded {compatibility.excluded_role_cat!r} roles"
+            )
+        return (
+            f"{compatibility.verb}={verb!r} {boundary}: "
+            + ", ".join(rendered_roles)
         )
     if pred.attribute_compatible is not None:
         attribute_name = pred.attribute_compatible.attribute
@@ -2231,6 +2716,26 @@ def _explain_candidate(
             where_sources.append(
                 project.source_index.categories.get(
                     predicate.bound_requires_category.cat
+                )
+            )
+        if predicate.polarity_compatible is not None:
+            where_sources.extend(
+                project.source_index.categories.get(category)
+                for category in predicate.polarity_compatible.categories
+            )
+        if predicate.verb_role_compatible is not None:
+            role_category = (
+                predicate.verb_role_compatible.role_cat
+                or predicate.verb_role_compatible.excluded_role_cat
+            )
+            where_sources.extend(
+                (
+                    project.source_index.categories.get(
+                        predicate.verb_role_compatible.verb_cat
+                    ),
+                    project.source_index.categories.get(
+                        role_category
+                    ),
                 )
             )
         premises.append(

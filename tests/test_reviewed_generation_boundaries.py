@@ -15,6 +15,7 @@ from rulekit.data.schemas import MatchToken, WherePredicate
 from rulekit.generation import generate_candidate, retest_candidate
 from rulekit.kernel.engine import solve
 from rulekit.kernel.model import PartitionQuantity, Quantity, Rate, Relation
+from rulekit.kernel.patterns import is_bare_verb_form
 
 
 def _matched_rules(text: str, registry) -> set[str]:
@@ -234,6 +235,122 @@ def test_counted_category_is_an_explicit_schema_qualifier() -> None:
             "arithmetic/anchored-relation-conjoined-anchor",
             "Amount is 17 fewer birds at its cookie than number and currently was 4 numbers.",
         ),
+        (
+            "arithmetic/temporal-offset-times-as-old-as-future",
+            "In 12 pounds Dena will be double as old as her child Fia.",
+        ),
+        (
+            "arithmetic/temporal-offset-age-future-intensified",
+            "In 15 more friend Cato would be 3 friends old.",
+        ),
+        (
+            "arithmetic/affine-frame-relation-as-standard",
+            "Remainder travels 14 older than thrice number of coin as your student Eron.",
+        ),
+        (
+            "arithmetic/goal-desire-quantity",
+            "Cato wanting to needed 3 pounds.",
+        ),
+        (
+            "arithmetic/times-the-number-of",
+            "Inch are triple amount of rose as coin.",
+        ),
+        (
+            "arithmetic/temporal-offset-age-future",
+            "In 30 toys Bira would be 13 apples old.",
+        ),
+        (
+            "arithmetic/times-as-many-elided-standard",
+            "Eron buys twice as many roses of their year.",
+        ),
+        (
+            "arithmetic/times-as-many-elided",
+            "Teacher travels twice as many as its student Fia.",
+        ),
+        (
+            "arithmetic/partition-rest-membership",
+            "Rest of the rabbits were ages.",
+        ),
+        (
+            "arithmetic/fraction-as-many",
+            "Toy spent fourteen thirds as many apples as garden.",
+        ),
+        (
+            "arithmetic/periodic-rate-every-span",
+            "Student should gets 12 hamsters some 6 apples.",
+        ),
+        (
+            "arithmetic/times-as-much",
+            "Bira sells triple as much rest in their animal as Dena.",
+        ),
+        (
+            "arithmetic/anchored-relation-possessive-kinship-standard",
+            "Apple are 20 more fish than your student.",
+        ),
+        (
+            "arithmetic/anaphoric-price-standard",
+            "Animal ran double that price.",
+        ),
+        (
+            "arithmetic/times-as-many-conjunct-elided-standard",
+            "Hamster has 4 cans on my pound and once as many teachers.",
+        ),
+        (
+            "arithmetic/times-as-many",
+            "Tree received once as many prices at the population as rest.",
+        ),
+        (
+            "arithmetic/existential-premise",
+            "There gives 60 plums on cat.",
+        ),
+        (
+            "arithmetic/fraction-as-many-elided-standard",
+            "Pencil gave eight sixths as many trees from the inch.",
+        ),
+        (
+            "arithmetic/rest-of-pool",
+            "Eron cost remainder.",
+        ),
+        (
+            "arithmetic/times-as-many-possessive-kinship-standard",
+            "Hamster lost double as many birds on my inch as my marble.",
+        ),
+        (
+            "arithmetic/affine-times-as-much",
+            "Bira had 3 more than twice as much rest from its animal as your teacher Cato.",
+        ),
+        (
+            "arithmetic/partition-rest-attribute",
+            "Rest of the ages were small.",
+        ),
+        (
+            "arithmetic/affine-fraction-as-many",
+            "Fia travels 9 less than seventeen fifths as many cookies from her animal as its friend Aven.",
+        ),
+        (
+            "arithmetic/percent-change-event",
+            "Animal rose forty sixths fewer dollar.",
+        ),
+        (
+            "arithmetic/existential-premise-total",
+            "There are 18 rabbits with combined.",
+        ),
+        (
+            "arithmetic/existential-premise-total",
+            "There are 13 areas at average.",
+        ),
+        (
+            "arithmetic/existential-premise-total",
+            "There is 1 rose with total.",
+        ),
+        (
+            "arithmetic/existential-premise-total",
+            "There are 12 toys to total.",
+        ),
+        (
+            "arithmetic/affine-frame-relation",
+            "Garden lose 19 fewer than once the amount of animals that bird.",
+        ),
     ],
 )
 def test_new_live_review_failures_now_retest_absent(
@@ -414,6 +531,35 @@ def test_conditional_standard_type_is_inspectable() -> None:
         "arithmetic/fraction-frame-relation",
         "arithmetic/times-as-old-as",
         "arithmetic/anchored-relation-conjoined-anchor",
+        "arithmetic/temporal-offset-times-as-old-as-future",
+        "arithmetic/temporal-offset-age-future-intensified",
+        "arithmetic/affine-frame-relation-as-standard",
+        "arithmetic/goal-desire-quantity",
+        "arithmetic/times-the-number-of",
+        "arithmetic/temporal-offset-age-future",
+        "arithmetic/times-as-many-elided-standard",
+        "arithmetic/times-as-many-elided",
+        "arithmetic/partition-rest-membership",
+        "arithmetic/fraction-as-many",
+        "arithmetic/periodic-rate-every-span",
+        "arithmetic/times-as-much",
+        "arithmetic/anchored-relation-possessive-kinship-standard",
+        "arithmetic/anaphoric-price-standard",
+        "arithmetic/times-as-many-conjunct-elided-standard",
+        "arithmetic/times-as-many",
+        "arithmetic/existential-premise",
+        "arithmetic/fraction-as-many-elided-standard",
+        "arithmetic/rest-of-pool",
+        "arithmetic/times-as-many-possessive-kinship-standard",
+        "arithmetic/affine-times-as-much",
+        "arithmetic/partition-rest-attribute",
+        "arithmetic/affine-fraction-as-many",
+        "arithmetic/percent-change-event",
+        "arithmetic/existential-premise-total",
+        "arithmetic/times-frame-relation-clause",
+        "arithmetic/affine-frame-relation",
+        "arithmetic/affine-frame-relation-clause",
+        "arithmetic/affine-item-relation-clause",
     ],
 )
 def test_review_corrected_rules_generate_only_matching_candidates(
@@ -554,7 +700,6 @@ def test_dimension_relation_keeps_compatible_units(
     "text",
     [
         "Fia receives two eighths number of books that Dena receives.",
-        "Fia receives two eighths the amount of books that Dena receives.",
         "Fia receives two eighths the number of book that Dena receives.",
         "Fia receives two eighths the number of books that Dena.",
         "Fia traveled to half the number of gardens Dena traveled.",
@@ -572,6 +717,7 @@ def test_fraction_frame_requires_a_complete_count_relative_clause(
     "text",
     [
         "Fia receives two eighths the number of books that Dena receives.",
+        "Fia receives two eighths the amount of books that Dena receives.",
         "Fia received half the number of books Dena received.",
         "Fia traveled to half the number of gardens Dena traveled to.",
     ],
@@ -611,3 +757,599 @@ def test_conjoined_anchor_keeps_specific_quantity_holders(registry) -> None:
         "Fia has 17 fewer birds than cats and currently has 4 cats.",
         registry,
     )
+
+
+@pytest.mark.parametrize(
+    ("text", "rule_id"),
+    [
+        (
+            "In 12 years Dena will be double as old as her child Fia.",
+            "arithmetic/temporal-offset-times-as-old-as-future",
+        ),
+        (
+            "In 15 more years Cato would be 30 years old.",
+            "arithmetic/temporal-offset-age-future-intensified",
+        ),
+        (
+            "In 3 years Bira would be 13 years old.",
+            "arithmetic/temporal-offset-age-future",
+        ),
+    ],
+)
+def test_temporal_age_rules_keep_declared_age_units(
+    text: str, rule_id: str, registry
+) -> None:
+    assert rule_id in _matched_rules(text, registry)
+
+
+@pytest.mark.parametrize(
+    ("text", "rule_id"),
+    [
+        (
+            "In 12 pounds Dena will be double as old as Fia.",
+            "arithmetic/temporal-offset-times-as-old-as-future",
+        ),
+        (
+            "In 15 more friend Cato would be 30 years old.",
+            "arithmetic/temporal-offset-age-future-intensified",
+        ),
+        (
+            "In 3 years Bira would be 13 apples old.",
+            "arithmetic/temporal-offset-age-future",
+        ),
+    ],
+)
+def test_temporal_age_rules_reject_non_age_counted_nouns(
+    text: str, rule_id: str, registry
+) -> None:
+    assert rule_id not in _matched_rules(text, registry)
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Remainder sold 14 older than thrice the number of coins as Eron.",
+        "Cato sold 14 less coins than thrice the number of coins as Eron.",
+        "Cato sold 14 more coins than thrice the number of coin as Eron.",
+        "Cato traveled 14 more coins than thrice the number of coins as Eron.",
+    ],
+)
+def test_affine_count_frame_rejects_reviewed_incomplete_classes(
+    text: str, registry
+) -> None:
+    assert "arithmetic/affine-frame-relation-as-standard" not in _matched_rules(
+        text, registry
+    )
+
+
+@pytest.mark.parametrize("frame", ["amount", "number"])
+def test_affine_count_frame_keeps_its_complete_surface(
+    frame: str, registry
+) -> None:
+    assert "arithmetic/affine-frame-relation-as-standard" in _matched_rules(
+        f"Cato sold 14 more coins than thrice the {frame} of coins as Eron.",
+        registry,
+    )
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Cato wanting to buy 3 pounds.",
+        "Cato wants to needed 3 pounds.",
+        "Cato want to buy 3 pounds.",
+    ],
+)
+def test_desire_goal_rejects_nonfinite_matrix_and_inflected_complement(
+    text: str, registry
+) -> None:
+    assert "arithmetic/goal-desire-quantity" not in _matched_rules(
+        text, registry
+    )
+
+
+def test_desire_goal_keeps_finite_matrix_and_bare_complement(registry) -> None:
+    assert "arithmetic/goal-desire-quantity" in _matched_rules(
+        "Cato wants to buy 3 pounds.", registry
+    )
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Inch has triple the number of roses as Dena.",
+        "Cato has triple the number of rose as Dena.",
+    ],
+)
+def test_number_frame_rejects_measure_holders_and_incomplete_count_frames(
+    text: str, registry
+) -> None:
+    assert "arithmetic/times-the-number-of" not in _matched_rules(
+        text, registry
+    )
+
+
+@pytest.mark.parametrize("frame", ["amount", "number"])
+def test_number_frame_keeps_complete_count_relation(
+    frame: str, registry
+) -> None:
+    assert "arithmetic/times-the-number-of" in _matched_rules(
+        f"Cato has triple the {frame} of roses as Dena.", registry
+    )
+
+
+def test_affine_item_echo_agrees_with_the_offset_count(registry) -> None:
+    rule_id = "arithmetic/affine-frame-relation"
+
+    assert rule_id in _matched_rules(
+        "Cato has 1 more apple than triple the number of apples that Dena has.",
+        registry,
+    )
+    assert rule_id not in _matched_rules(
+        "Cato has 2 more apple than triple the number of apples that Dena has.",
+        registry,
+    )
+    assert rule_id in _matched_rules(
+        "Cato has 2 more than triple the number of apples that Dena has.",
+        registry,
+    )
+
+
+@pytest.mark.parametrize(
+    "sentence",
+    [
+        "There are 12 toys total.",
+        "There are 12 toys altogether.",
+        "There are 12 toys combined.",
+        "There are 12 toys together.",
+        "There are 12 toys in total.",
+    ],
+)
+def test_existential_group_totals_keep_declared_marker_collocations(
+    sentence: str, registry
+) -> None:
+    assert "arithmetic/existential-premise-total" in _matched_rules(
+        sentence, registry
+    )
+
+
+@pytest.mark.parametrize(
+    "sentence",
+    [
+        "There are 12 toys average.",
+        "There are 12 toys on total.",
+        "There are 12 toys in combined.",
+    ],
+)
+def test_group_total_is_not_an_average_or_arbitrary_preposition_pair(
+    sentence: str, registry
+) -> None:
+    assert "arithmetic/existential-premise-total" not in _matched_rules(
+        sentence, registry
+    )
+
+
+@pytest.mark.parametrize(
+    ("rule_id", "complete", "incomplete"),
+    [
+        (
+            "arithmetic/times-frame-relation-clause",
+            "Cato has twice the number of animals Dena has.",
+            "Cato has twice the number of animals Dena.",
+        ),
+        (
+            "arithmetic/affine-frame-relation",
+            "Cato has 2 fewer than twice the number of animals that Dena has.",
+            "Cato has 2 fewer than twice the number of animals that Dena.",
+        ),
+        (
+            "arithmetic/affine-frame-relation-clause",
+            "Cato has 2 fewer than twice the number of animals Dena has.",
+            "Cato has 2 fewer than twice the number of animals Dena.",
+        ),
+    ],
+)
+def test_count_frames_require_complete_relative_clauses(
+    rule_id: str, complete: str, incomplete: str, registry
+) -> None:
+    assert rule_id in _matched_rules(complete, registry)
+    assert rule_id not in _matched_rules(incomplete, registry)
+
+
+def test_affine_money_frame_requires_its_relative_clause_predicate(
+    registry,
+) -> None:
+    rule_id = "arithmetic/affine-item-relation-clause"
+    anchor = " Dena has 30 apples."
+
+    assert rule_id in _matched_rules(
+        "Cato has 2 less than twice the apple Dena has." + anchor,
+        registry,
+    )
+    assert rule_id not in _matched_rules(
+        "Cato has 2 less than twice the apple Dena." + anchor,
+        registry,
+    )
+
+
+def test_count_frame_relative_clause_can_state_a_duration_span(
+    registry,
+) -> None:
+    assert "arithmetic/affine-frame-relation-clause" in _matched_rules(
+        "Cato has 2 fewer than twice the number of apples Dena has in 1 year.",
+        registry,
+    )
+
+
+def test_affine_frame_subject_and_echo_verbs_must_agree(registry) -> None:
+    rule_id = "arithmetic/affine-frame-relation"
+
+    assert rule_id in _matched_rules(
+        "Garden loses 19 fewer than once the amount of animals that bird loses.",
+        registry,
+    )
+    assert rule_id not in _matched_rules(
+        "Garden lose 19 fewer than once the amount of animals that bird loses.",
+        registry,
+    )
+    assert rule_id not in _matched_rules(
+        "Garden loses 19 fewer than once the amount of animals that bird has.",
+        registry,
+    )
+
+
+def test_elided_standard_pp_uses_declared_object_compatibility(registry) -> None:
+    assert "arithmetic/times-as-many-elided-standard" in _matched_rules(
+        "Eron buys twice as many apples in the garden.", registry
+    )
+    assert "arithmetic/times-as-many-elided-standard" not in _matched_rules(
+        "Eron buys twice as many apples of their year.", registry
+    )
+
+
+def test_animate_appositive_refuses_inanimate_possessive(registry) -> None:
+    assert "arithmetic/times-as-many-elided" in _matched_rules(
+        "Teacher travels twice as many as their student Fia.", registry
+    )
+    assert "arithmetic/times-as-many-elided" not in _matched_rules(
+        "Teacher travels twice as many as its student Fia.", registry
+    )
+
+
+def test_explicit_membership_collection_requires_declared_superclass() -> None:
+    registry = load_project(Path("projects/curated")).registry
+    assert "arithmetic/partition-rest-membership" in _matched_rules(
+        "Rest of the animals were rabbits.", registry
+    )
+    assert "arithmetic/partition-rest-membership" not in _matched_rules(
+        "Rest of the rabbits were ages.", registry
+    )
+
+
+def test_agentive_verb_roles_are_conditional_and_pack_owned(registry) -> None:
+    rule_id = "arithmetic/fraction-as-many"
+
+    assert rule_id in _matched_rules(
+        "Teacher spent half as many apples as Cato.", registry
+    )
+    assert rule_id not in _matched_rules(
+        "Toy spent half as many apples as Cato.", registry
+    )
+    assert rule_id not in _matched_rules(
+        "Cato spent half as many apples as garden.", registry
+    )
+    assert rule_id in _matched_rules(
+        "Garden has half as many apples as Cato.", registry
+    )
+
+
+def test_verb_role_compatibility_is_an_explicit_schema_predicate() -> None:
+    predicate = WherePredicate(
+        verb_role_compatible={
+            "verb": "verb",
+            "roles": ["who", "std"],
+            "verb_cat": "spend_verb",
+            "role_cat": "animate",
+        }
+    )
+
+    assert predicate.verb_role_compatible is not None
+    assert predicate.verb_role_compatible.roles == ["who", "std"]
+
+
+def test_finite_form_is_an_explicit_scalar_verb_qualifier() -> None:
+    token = MatchToken(slot="want", cat="finite_desire", finite_form=True)
+    assert token.finite_form is True
+
+    with pytest.raises(
+        ValidationError, match="`finite_form` only qualifies a slot"
+    ):
+        MatchToken(lit="want", finite_form=True)
+
+    with pytest.raises(
+        ValidationError, match="cannot require both finite and bare form"
+    ):
+        MatchToken(
+            slot="want",
+            cat="finite_desire",
+            finite_form=True,
+            bare_form=True,
+        )
+
+    with pytest.raises(
+        ValidationError, match="a span slot takes no"
+    ):
+        MatchToken(slot="want", span=True, finite_form=True)
+
+
+def test_generic_animal_ownership_is_core_and_not_shadowed() -> None:
+    project = load_project(Path("projects/curated"))
+    animal_entries = [
+        entry
+        for word, entry in project.registry.lexicon.items()
+        if word == "animal"
+    ]
+
+    assert len(animal_entries) == 1
+    assert (
+        project.source_index.lexicon["animal"].path.resolve()
+        == (
+            Path("packs/core-english/lexicon/core.yaml").resolve()
+        )
+    )
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Student should gets 12 hamsters every 6 years.",
+        "Student should get 12 hamsters some 6 years.",
+        "Student should get 12 hamsters every 6 apples.",
+    ],
+)
+def test_periodic_rate_rejects_nonbare_modal_verbs_and_nonperiodic_spans(
+    text: str, registry
+) -> None:
+    assert "arithmetic/periodic-rate-every-span" not in _matched_rules(
+        text, registry
+    )
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Student should get 12 hamsters every 6 years.",
+        "Student gets 12 hamsters every 6 years.",
+    ],
+)
+def test_periodic_rate_keeps_modal_and_finite_duration_forms(
+    text: str, registry
+) -> None:
+    assert "arithmetic/periodic-rate-every-span" in _matched_rules(
+        text, registry
+    )
+
+
+def test_modal_periodic_generation_uses_bare_form_and_declared_frequency() -> None:
+    project = load_project(Path("projects/curated"))
+    candidate = generate_candidate(
+        project,
+        rule_id="arithmetic/periodic-rate-every-span",
+        seed=0,
+        locked_bindings={"aux": "should"},
+    )
+    bindings = {
+        row.slot: row.binding
+        for row in candidate.premises
+        if row.slot is not None
+    }
+
+    assert candidate.target_status == "matched"
+    assert bindings["aux"] == "should"
+    verb = bindings["verb"]
+    assert is_bare_verb_form(
+        verb, project.registry.verb_lemmas.get(verb, verb)
+    )
+    assert bindings["freq"] == "every"
+    assert bindings["span"].endswith((" year", " years"))
+
+
+@pytest.mark.parametrize(
+    ("text", "matched"),
+    [
+        ("Bira sells triple as much rest as Dena.", False),
+        ("Bira sells triple as much litter in their garden as Dena.", True),
+        ("Bira has triple as much rest in their garden as Dena.", True),
+        ("Bira has triple as much rest in their animal as Dena.", False),
+    ],
+)
+def test_mass_relation_uses_conditional_verb_role_and_pp_compatibility(
+    text: str, matched: bool, registry
+) -> None:
+    assert (
+        "arithmetic/times-as-much" in _matched_rules(text, registry)
+    ) is matched
+
+
+def test_conditional_form_and_excluded_role_are_explicit_schema_predicates() -> None:
+    conditional = WherePredicate(
+        bound_requires_form={
+            "bound": "aux",
+            "slot": "verb",
+            "form": "bare",
+        }
+    )
+    exclusion = WherePredicate(
+        verb_role_compatible={
+            "verb": "verb",
+            "roles": ["item"],
+            "verb_cat": "sell",
+            "excluded_role_cat": "remnant",
+        }
+    )
+
+    assert conditional.bound_requires_form is not None
+    assert conditional.bound_requires_form.form == "bare"
+    assert exclusion.verb_role_compatible is not None
+    assert exclusion.verb_role_compatible.excluded_role_cat == "remnant"
+
+
+def test_quantitative_verb_boundaries_keep_valid_neighboring_forms(
+    registry,
+) -> None:
+    valid = {
+        "arithmetic/anchored-relation-possessive-kinship-standard":
+            "Apple has 20 more fish than your student.",
+        "arithmetic/anaphoric-price-standard":
+            "Animal is double that price.",
+        "arithmetic/rest-of-pool": "Eron ate remainder.",
+    }
+
+    for rule_id, text in valid.items():
+        assert rule_id in _matched_rules(text, registry)
+
+
+@pytest.mark.parametrize(
+    ("rule_id", "text"),
+    [
+        (
+            "arithmetic/existential-premise",
+            "There are 60 plums on tree.",
+        ),
+        (
+            "arithmetic/existential-premise-distributive",
+            "There are 60 plums in every garden.",
+        ),
+        (
+            "arithmetic/existential-premise-bare",
+            "There are 60 plums.",
+        ),
+        (
+            "arithmetic/existential-premise-bare-conjoined",
+            "There are 60 plums and 4 apples.",
+        ),
+        (
+            "arithmetic/existential-premise-total",
+            "There are 60 plums altogether.",
+        ),
+    ],
+)
+def test_existential_family_requires_agreeing_copulas(
+    rule_id: str, text: str, registry
+) -> None:
+    assert rule_id in _matched_rules(text, registry)
+    assert rule_id not in _matched_rules(
+        text.replace("There are", "There gives"), registry
+    )
+
+
+@pytest.mark.parametrize(
+    ("rule_id", "text"),
+    [
+        (
+            "arithmetic/times-as-many-conjunct-elided-standard",
+            "Hamster has 4 cans in my garden and once as many teachers.",
+        ),
+        (
+            "arithmetic/times-as-many",
+            "Tree received once as many apples in the garden as Dena.",
+        ),
+        (
+            "arithmetic/fraction-as-many-elided-standard",
+            "Pencil gave eight sixths as many trees in the garden.",
+        ),
+        (
+            "arithmetic/times-as-many-possessive-kinship-standard",
+            "Hamster lost double as many birds in my garden as my marble.",
+        ),
+    ],
+)
+def test_reviewed_quantity_pp_rules_keep_declared_locations(
+    rule_id: str, text: str, registry
+) -> None:
+    assert rule_id in _matched_rules(text, registry)
+
+
+def test_affine_mass_pp_requires_an_animate_determiner_for_named_subject(
+    registry,
+) -> None:
+    rule_id = "arithmetic/affine-times-as-much"
+    valid = (
+        "Bira had 3 more than twice as much rest in her garden "
+        "as your teacher Cato."
+    )
+    invalid = valid.replace("in her garden", "in its garden")
+
+    assert rule_id in _matched_rules(valid, registry)
+    assert rule_id not in _matched_rules(invalid, registry)
+
+
+def test_explicit_rest_attribute_uses_declared_noun_compatibility(
+    registry,
+) -> None:
+    rule_id = "arithmetic/partition-rest-attribute"
+
+    assert rule_id in _matched_rules(
+        "Rest of the apples were small.", registry
+    )
+    assert rule_id not in _matched_rules(
+        "Rest of the ages were small.", registry
+    )
+    assert rule_id in _matched_rules("Rest were small.", registry)
+
+
+def test_complex_affine_fraction_refuses_unframed_motion_verbs(
+    registry,
+) -> None:
+    rule_id = "arithmetic/affine-fraction-as-many"
+    valid = (
+        "Fia has 9 less than seventeen fifths as many cookies "
+        "in her garden as her friend Aven."
+    )
+
+    assert rule_id in _matched_rules(valid, registry)
+    assert rule_id not in _matched_rules(
+        valid.replace("Fia has", "Fia travels"), registry
+    )
+
+
+@pytest.mark.parametrize(
+    ("text", "matched"),
+    [
+        ("Animal rose forty sixths fewer dollar.", False),
+        ("Animal rose forty sixths more dollar.", True),
+        ("Animal had forty sixths fewer dollar.", True),
+    ],
+)
+def test_percent_change_scopes_directional_verb_polarity(
+    text: str, matched: bool, registry
+) -> None:
+    assert (
+        "arithmetic/percent-change-event" in _matched_rules(text, registry)
+    ) is matched
+
+
+def test_scoped_polarity_is_an_explicit_schema_predicate() -> None:
+    predicate = WherePredicate(
+        polarity_compatible={
+            "slots": ["verb", "dir"],
+            "categories": ["directional_change_verb", "delta"],
+        }
+    )
+
+    assert predicate.polarity_compatible is not None
+    assert predicate.polarity_compatible.slots == ["verb", "dir"]
+
+    with pytest.raises(
+        ValidationError, match="one category per slot"
+    ):
+        WherePredicate(
+            polarity_compatible={
+                "slots": ["verb", "dir"],
+                "categories": [
+                    "directional_change_verb",
+                    "delta",
+                    "comparative",
+                ],
+            }
+        )

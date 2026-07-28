@@ -236,6 +236,11 @@ rules:
         - {slot: std_det, cat: possessive_determiner}
         - {slot: std, type: noun}
     where:
+      - number_compatible: [who, verb]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - distinct: [who, std]
       - distinct_measure: [item, std]
       # a TIME PERIOD is not a holder — see slot_not_category in schemas.py
@@ -513,7 +518,7 @@ rules:
       sentence:
         - {slot: who, type: name}
         - {slot: verb, cat: copula}
-        - {slot: n, type: counted}
+        - {slot: n, cat: age_measure, counted: true}
         - {slot: dir, cat: delta}
     where:
       - number_compatible: [who, verb]
@@ -653,7 +658,7 @@ rules:
     match:
       sentence:
         - {lit: in}
-        - {slot: n, type: counted}
+        - {slot: n, cat: age_measure, counted: true}
         - {slot: who, type: name}
         - {slot: aux, type: future_modal}
         - {lit: be}
@@ -708,7 +713,7 @@ rules:
     match:
       sentence:
         - {lit: in}
-        - {slot: n, type: counted}
+        - {slot: n, cat: age_measure, counted: true}
         - {slot: who, type: name}
         - {slot: aux, type: future_modal}
         - {lit: be}
@@ -754,7 +759,7 @@ rules:
       every increment in this file goes through.
     match:
       sentence:
-        - {slot: n, type: counted}
+        - {slot: n, cat: age_measure, counted: true}
         - {lit: ago}
         - {slot: who, type: name}
         - {slot: verb, cat: past_copula}
@@ -896,6 +901,7 @@ rules:
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - distinct: [who, std]
       - distinct: [item, std]
     emits:
@@ -931,7 +937,7 @@ rules:
         - {lit: many}
         - {lit: as}
         - opt:
-            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_det, cat: animate_possessive_determiner}
             - {slot: appos_role, cat: animate}
         - {slot: std, type: entity}
     where:
@@ -1013,6 +1019,7 @@ rules:
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - unbound: [std_seen]
     emits:
       - fact: relation
@@ -1073,6 +1080,7 @@ rules:
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - distinct: [who, std]
       - distinct: [item, std]
     emits:
@@ -1218,6 +1226,7 @@ rules:
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: item1, cat: many_incompatible_noun}
       - slot_not_category: {slot: item2, cat: many_incompatible_noun}
+      - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - unbound: [std_seen]
     emits:
       - fact: quantity
@@ -1388,11 +1397,14 @@ rules:
     description: >
       "Catherine has twice as much money as Cecil" — times-as-many's
       MASS-NOUN counterpart: 'much' in place of 'many', and the item slot
-      is `type: noun` (any common noun) rather than `type: plural`, since a
-      mass noun (money, water, sand...) never carries plural morphology.
-      Same Relation fact and downstream resolution as times-as-many; the
-      anchor-measure resolver (saturate.py) is what lets a 'money'-measured
-      relation resolve against an anchor's own currency holding ('dollar').
+      is the declared `mass_quantity_noun` class rather than `type: plural`,
+      since a mass noun never carries plural morphology. The optional PP
+      reuses declared preposition/noun compatibility. Sales verbs also refuse
+      the declared `remnant` object class: "sells ... rest" is not a sale
+      event, while other verbs and saleable mass nouns remain open. Same
+      Relation fact and downstream resolution as times-as-many; the anchor-
+      measure resolver (saturate.py) is what lets a 'money'-measured relation
+      resolve against an anchor's own currency holding ('dollar').
     match:
       sentence:
         - {slot: who, type: name}
@@ -1414,8 +1426,10 @@ rules:
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - number_compatible: [who, verb]
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: sell, excluded_role_cat: remnant}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - distinct: [who, std]
     emits:
       - fact: relation
@@ -1715,7 +1729,10 @@ rules:
       type: entity`: resolves a pronoun subject ("she puts...") the same
       way every other widened rule in this file already does, once
       discourse binding resolves it (document.py's re-run-after-binding
-      round).
+      round). `polarity_compatible` compares the verb only inside the
+      directional-change subtree and the direction word inside `delta`.
+      Thus an explicit increase verb cannot pair with a decreasing direction,
+      while a direction-neutral event verb remains valid.
     match:
       sentence:
         - {slot: who, type: entity}
@@ -1737,6 +1754,9 @@ rules:
     where:
       - bound_requires_type: {bound: appos_role, slot: std_seen, type: proper_name}
       - unbound: [std_seen]
+      - polarity_compatible:
+          slots: [verb, dir]
+          categories: [directional_change_verb, delta]
     consumes: [f]
     emits:
       - fact: percent_change
@@ -1769,11 +1789,12 @@ rules:
         - {slot: who, type: entity}
         - {slot: verb, type: verb}
         - opt:
-            - {slot: verb_prep, cat: preposition}
+            - {slot: verb_prep, cat: frame_head_preposition}
         - {slot: k, type: multiplier}
-        - {slot: frame, cat: aggregate_noun}
+        - {lit: the, consume_skipped: true}
+        - {slot: frame, cat: count_aggregate_noun}
         - {lit: of}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         - opt:
             - {slot: pp_prep, cat: preposition}
             - opt:
@@ -1781,11 +1802,17 @@ rules:
             - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
         - {lit: as}
         - opt:
-            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_det, cat: animate_possessive_determiner}
             - {slot: appos_role, cat: animate}
         - {slot: std, type: entity}
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - bound_requires_category: {bound: verb_prep, slot: verb, cat: frame_prepositional_verb}
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: std, cat: non_quantity_holder}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - distinct: [who, std]
       - distinct: [item, std]
     emits:
@@ -1807,7 +1834,8 @@ rules:
       ratio in the frame form, ending in a bare RELATIVE-CLAUSE standard
       instead of arithmetic/times-the-number-of's mandatory "as STD"
       continuation: the standard NP is read directly off "STD" with NO
-      complementizer at all — the minimal pair the candidate's own
+      complementizer at all, but the following repeated verb is required to
+      make that bare relative clause complete — the minimal pair the candidate's own
       evidence proves ("Zara has twice the number of marbles Bob has"
       declines today even though the ask is already recognized; only the
       Relation is missing). Deliberately does NOT accept a 'that' here
@@ -1836,25 +1864,45 @@ rules:
       relations ("Patrick traveled to three times the number of countries
       Joseph traveled to") where the existing saturate.py relation
       fixpoint (increment 48) walks the chain to whichever sentence
-      anchors it with a stated count.
+      anchors it with a stated count. The main and repeated verbs share a
+      lemma and agree independently with their subjects; paired frame-head
+      prepositions must both be present with the same lemma.
     match:
       sentence:
         - {slot: who, type: entity}
         - {slot: verb, type: verb}
         - opt:
-            - {slot: verb_prep, cat: preposition}
+            - {slot: verb_prep, cat: frame_head_preposition}
         - {slot: k, type: multiplier}
-        - {slot: frame, cat: aggregate_noun}
+        - {lit: the, consume_skipped: true}
+        - {slot: frame, cat: count_aggregate_noun}
         - {lit: of}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         - opt:
-            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_det, cat: animate_possessive_determiner}
             - {slot: appos_role, cat: animate}
         - {slot: std, type: entity}
+        - {slot: echo_verb, type: verb}
+        - opt:
+            - {slot: echo_prep, cat: frame_head_preposition}
+        - opt:
+            - {slot: echo_span_prep, cat: span_preposition}
+            - {slot: echo_span, cat: duration_measure, counted: true}
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - bound_requires_category: {bound: verb_prep, slot: verb, cat: frame_prepositional_verb}
+      - same_presence: [verb_prep, echo_prep]
+      - same_lemma: [verb_prep, echo_prep]
+      - same_lemma: [verb, echo_verb]
+      - number_compatible: [who, verb]
+      - number_compatible: [std, echo_verb]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: std, cat: non_quantity_holder}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - distinct: [who, std]
       - distinct: [item, std]
+    consumes: [echo_span]
     emits:
       - fact: relation
         subject: "{who}"
@@ -1889,30 +1937,48 @@ rules:
       never this one's). Neither of these two widenings touches the
       rule's own literal skeleton (n/dir/than/k/frame/of), so they cannot
       introduce a new false-positive span that wasn't already gated on
-      the multiplier immediately preceding 'the number of'.
+      the multiplier immediately preceding 'the number of'. The standard is
+      followed by a required repeated verb with the same lemma as the matrix
+      verb, and each verb agrees with its own subject; `that STD` alone is
+      not a complete relative clause.
     match:
       sentence:
         - {slot: who, type: entity}
         - {slot: verb, type: verb}
         - {slot: n, type: number}
-        - {slot: dir, cat: delta}
+        - {slot: dir, cat: count_quantity_delta}
         - opt:
             - {slot: item_echo, type: noun}
         - {lit: than}
         - {slot: k, type: multiplier}
-        - {slot: frame, cat: aggregate_noun}
+        - {lit: the, consume_skipped: true}
+        - {slot: frame, cat: count_aggregate_noun}
         - {lit: of}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         - {slot: c, cat: complementizer}
         - opt:
-            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_det, cat: animate_possessive_determiner}
             - {slot: appos_role, cat: animate}
         - {slot: std, type: entity}
+        - {slot: echo_verb, type: verb}
+        - opt:
+            - {slot: echo_span_prep, cat: span_preposition}
+            - {slot: echo_span, cat: duration_measure, counted: true}
     where:
+      - same_lemma: [item_echo, item]
+      - number_compatible: [n, item_echo]
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - same_lemma: [verb, echo_verb]
+      - number_compatible: [who, verb]
+      - number_compatible: [std, echo_verb]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: verb, cat: frame_prepositional_verb}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: std, cat: non_quantity_holder}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - distinct: [who, std]
       - distinct: [item, std]
-    consumes: [n]
+    consumes: [n, echo_span]
     emits:
       - fact: relation
         subject: "{who}"
@@ -1954,14 +2020,15 @@ rules:
         - {slot: who, type: entity}
         - {slot: verb, type: verb}
         - {slot: n, type: number}
-        - {slot: dir, cat: delta}
+        - {slot: dir, cat: count_quantity_delta}
         - opt:
             - {slot: item_echo, type: noun}
         - {lit: than}
         - {slot: k, type: multiplier}
-        - {slot: frame, cat: aggregate_noun}
+        - {lit: the, consume_skipped: true}
+        - {slot: frame, cat: count_aggregate_noun}
         - {lit: of}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         - opt:
             - {slot: pp_prep, cat: preposition}
             - opt:
@@ -1969,11 +2036,19 @@ rules:
             - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
         - {lit: as}
         - opt:
-            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_det, cat: animate_possessive_determiner}
             - {slot: appos_role, cat: animate}
         - {slot: std, type: entity}
     where:
+      - same_lemma: [item_echo, item]
+      - number_compatible: [n, item_echo]
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: verb, cat: frame_prepositional_verb}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: std, cat: non_quantity_holder}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - distinct: [who, std]
       - distinct: [item, std]
     consumes: [n]
@@ -2013,29 +2088,45 @@ rules:
       even though the identical non-affine ratio ("Ben has twice the
       number of pens Ana has") already resolves via arithmetic/times-
       frame-relation-clause — this rule closes the affine-offset gap in
-      that same frame.
+      that same frame. The standard's repeated verb is required, lemma-
+      aligned with the matrix verb, and independently number-agreeing.
     match:
       sentence:
         - {slot: who, type: entity}
         - {slot: verb, type: verb}
         - {slot: n, type: number}
-        - {slot: dir, cat: delta}
+        - {slot: dir, cat: count_quantity_delta}
         - opt:
             - {slot: item_echo, type: noun}
         - {lit: than}
         - {slot: k, type: multiplier}
-        - {slot: frame, cat: aggregate_noun}
+        - {lit: the, consume_skipped: true}
+        - {slot: frame, cat: count_aggregate_noun}
         - {lit: of}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         - opt:
-            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_det, cat: animate_possessive_determiner}
             - {slot: appos_role, cat: animate}
         - {slot: std, type: entity}
+        - {slot: echo_verb, type: verb}
+        - opt:
+            - {slot: echo_span_prep, cat: span_preposition}
+            - {slot: echo_span, cat: duration_measure, counted: true}
     where:
+      - same_lemma: [item_echo, item]
+      - number_compatible: [n, item_echo]
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - same_lemma: [verb, echo_verb]
+      - number_compatible: [who, verb]
+      - number_compatible: [std, echo_verb]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: verb, cat: frame_prepositional_verb}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: std, cat: non_quantity_holder}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - distinct: [who, std]
       - distinct: [item, std]
-    consumes: [n]
+    consumes: [n, echo_span]
     emits:
       - fact: relation
         subject: "{who}"
@@ -2077,7 +2168,9 @@ rules:
       holding) — no saturate.py change. PROVEN minimal pair on unmodified
       main: "Priya has $25 less than twice the money Omar has. If Omar has
       40 dollars, how much money do they have together?" declines outright
-      before this rule.
+      before this rule. The bare relative clause is nevertheless complete:
+      its standard is followed by a required, lemma-aligned, independently
+      agreeing repeated verb.
     match:
       sentence:
         - {slot: who, type: entity}
@@ -2088,10 +2181,17 @@ rules:
         - {slot: k, type: multiplier}
         - {slot: item, type: noun}
         - {slot: std, type: entity}
+        - {slot: echo_verb, type: verb}
+        - opt:
+            - {slot: echo_span_prep, cat: span_preposition}
+            - {slot: echo_span, cat: duration_measure, counted: true}
     where:
+      - same_lemma: [verb, echo_verb]
+      - number_compatible: [who, verb]
+      - number_compatible: [std, echo_verb]
       - distinct: [who, std]
       - distinct: [item, std]
-    consumes: [n]
+    consumes: [n, echo_span]
     emits:
       - fact: relation
         subject: "{who}"
@@ -2138,6 +2238,9 @@ rules:
         - {slot: echo_verb, type: verb}
         - opt:
             - {slot: echo_prep, cat: destination_preposition}
+        - opt:
+            - {slot: echo_span_prep, cat: span_preposition}
+            - {slot: echo_span, cat: duration_measure, counted: true}
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - bound_requires_category: {bound: verb_prep, slot: verb, cat: frame_prepositional_verb}
@@ -2152,7 +2255,7 @@ rules:
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - distinct: [who, std]
       - distinct: [item, std]
-    consumes: [f]
+    consumes: [f, echo_span]
     emits:
       - fact: relation
         subject: "{who}"
@@ -2187,15 +2290,17 @@ rules:
             - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
         - {lit: as}
         - opt:
-            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_det, cat: animate_possessive_determiner}
             - {slot: appos_role, cat: animate}
         - {slot: std, type: entity}
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - number_compatible: [who, verb]
+      - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: spend_verb, role_cat: animate}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - distinct: [who, std]
       - distinct: [item, std]
     consumes: [f]
@@ -2295,6 +2400,7 @@ rules:
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - unbound: [std_seen]
     consumes: [f]
     emits:
@@ -2580,10 +2686,13 @@ rules:
       UNIQUE prior Price fact document-wide instead of a Quantity — the
       two sentinels are never conflated, keeping this a genuinely separate
       sibling branch there (never a widening of the quantity one).
+      `price_relation_verb` limits the predicate to declared copular and cost
+      forms; an unrelated event verb does not state a price merely because it
+      precedes this anaphoric frame.
     match:
       sentence:
         - {slot: who, type: entity}
-        - {slot: verb, type: verb}
+        - {slot: verb, cat: price_relation_verb}
         - {slot: k, type: multiplier}
         - opt:
             - {lit: that}
@@ -2681,15 +2790,17 @@ rules:
             - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
         - {lit: as}
         - opt:
-            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_det, cat: animate_possessive_determiner}
             - {slot: appos_role, cat: animate}
         - {slot: std, type: entity}
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - number_compatible: [who, verb]
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: verb, cat: frame_prepositional_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - distinct: [who, std]
       - distinct: [item, std]
     consumes: [n]
@@ -2735,11 +2846,11 @@ rules:
         - opt:
             - {slot: pp_prep, cat: preposition}
             - opt:
-                - {slot: pp_det, cat: possessive_determiner}
+                - {slot: pp_det, cat: animate_possessive_determiner}
             - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
         - {lit: as}
         - opt:
-            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_det, cat: animate_possessive_determiner}
             - {slot: appos_role, cat: animate}
         - {slot: std, type: name}
     where:
@@ -2747,6 +2858,7 @@ rules:
       - number_compatible: [who, verb]
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - distinct: [who, std]
     consumes: [n]
     emits:
@@ -2819,7 +2931,9 @@ rules:
     phase: read
     description: >
       "There are 15 trees in the grove" — a located existential: the place
-      holds the counted noun as a state quantity. `measure_qualifier:
+      holds the counted noun as a state quantity. The surface requires an
+      agreeing copula; constructional `there` cannot turn an arbitrary event
+      verb into an existential holding. `measure_qualifier:
       "{item.qualifier}"` (mining candidate qualified-measure-keys): the
       SVO fold has carried this since increment 70 (learn.py's `_qualifier`
       helper at every emission site) but this existential premise never
@@ -2832,12 +2946,13 @@ rules:
     match:
       sentence:
         - {lit: there}
-        - {slot: verb, type: verb}
+        - {slot: verb, cat: copula}
         - {slot: item, type: counted}
         - {slot: prep, cat: preposition}
         - {slot: place, type: noun}
     where:
       - absent: {cat: aggregate}
+      - number_compatible: [item, verb]
     consumes: [item]
     emits:
       - fact: quantity
@@ -2874,13 +2989,14 @@ rules:
     match:
       sentence:
         - {lit: there}
-        - {slot: verb, type: verb}
+        - {slot: verb, cat: copula}
         - {slot: item, type: counted}
         - {slot: prep, cat: preposition}
         - {slot: q, cat: quantifier}
         - {slot: place, type: noun}
     where:
       - absent: {cat: aggregate}
+      - number_compatible: [item, verb]
     consumes: [item]
     emits:
       - fact: quantity
@@ -2899,12 +3015,13 @@ rules:
     match:
       sentence:
         - {lit: there}
-        - {slot: verb, type: verb}
+        - {slot: verb, cat: copula}
         - {slot: item, type: counted}
     where:
       # "There are 160 toys ALTOGETHER" is a group TOTAL (a sum constraint
       # over the entities), never an independent holding
       - absent: {cat: aggregate}
+      - number_compatible: [item, verb]
     consumes: [item]
     emits:
       - fact: quantity
@@ -2943,12 +3060,13 @@ rules:
     match:
       sentence:
         - {lit: there}
-        - {slot: verb, type: verb}
+        - {slot: verb, cat: copula}
         - {slot: item, type: counted}
         - {lit: and}
         - {slot: item2, type: counted}
     where:
       - absent: {cat: aggregate}
+      - number_compatible: [item, verb]
     consumes: [item, item2]
     emits:
       - fact: quantity
@@ -2970,22 +3088,26 @@ rules:
       "There are 160 toys altogether." — the totality-marked sibling of
       arithmetic/existential-premise-bare (mining candidate sum-constraint-
       relations): the identical "there VERB N ITEM" shape, but a REQUIRED
-      trailing aggregate marker (total/altogether/together/combined —
-      cat: aggregate) makes this a GROUP TOTAL across whichever entities
-      the passage names, never an independent holding of the bare `world`
-      scene-holder — exactly the reading existential-premise-bare's own
-      `absent: {cat: aggregate}` guard refuses. The two rules never both
-      fire on the same sentence: that guard declines whenever an aggregate
-      word appears ANYWHERE in the sentence, and this rule's own required
-      `agg` slot only matches when one is actually present.
+      trailing declared totality marker makes this a GROUP TOTAL across
+      whichever entities the passage names, never an independent holding
+      of the bare `world` scene-holder. `aggregate` also includes `average`,
+      which is an operation but not a sum marker, so this rule uses the
+      narrower lexicon sense `group_total_marker`. The optional preposition
+      is likewise restricted to the declared "in total" collocation;
+      arbitrary combinations such as "with combined" or "to total" are not
+      premises. The bare rule's broader `absent: {cat: aggregate}` remains
+      conservative.
     match:
       sentence:
         - {lit: there}
-        - {slot: verb, type: verb}
+        - {slot: verb, cat: copula}
         - {slot: item, type: counted}
         - opt:
-            - {slot: p, cat: preposition}
-        - {slot: agg, cat: aggregate}
+            - {slot: p, cat: group_total_preposition}
+        - {slot: agg, cat: group_total_marker}
+    where:
+      - number_compatible: [item, verb]
+      - bound_requires_category: {bound: p, slot: agg, cat: prepositional_group_total_marker}
     consumes: [item]
     emits:
       - fact: group_total
@@ -3025,10 +3147,11 @@ rules:
     description: >
       "Tom and Jerry have 29 apples together." / "They picked 274 apples
       total." (mining candidate group-total-phrasings) — a stated quantity
-      followed by a TRAILING totality marker (cat: aggregate — together/
-      altogether/total/combined, packs/core-english/lexicon/core.yaml,
-      optionally preceded by the quantifier 'all' — "all together" — or a
-      preposition — "in total") is a GROUP TOTAL across whichever entities
+      followed by a TRAILING totality marker (the narrower
+      `group_total_marker` sense — together/altogether/total/combined,
+      packs/core-english/lexicon/core.yaml, optionally preceded by the
+      quantifier 'all' — "all together" — or the declared "in total"
+      preposition/marker pair) is a GROUP TOTAL across whichever entities
       the passage names, never one entity's own independent holding —
       exactly the reading arithmetic/existential-premise-bare's own
       `absent: {cat: aggregate}` guard refuses for the bare "there are N
@@ -3053,8 +3176,10 @@ rules:
         - opt:
             - {lit: all}
         - opt:
-            - {slot: p, cat: preposition}
-        - {slot: agg, cat: aggregate}
+            - {slot: p, cat: group_total_preposition}
+        - {slot: agg, cat: group_total_marker}
+    where:
+      - bound_requires_category: {bound: p, slot: agg, cat: prepositional_group_total_marker}
     consumes: [item]
     emits:
       - fact: group_total
@@ -3119,7 +3244,7 @@ rules:
       arithmetic/group-total-leading.
     match:
       sentence:
-        - {slot: agg, cat: aggregate, at_start: true}
+        - {slot: agg, cat: group_total_marker, at_start: true}
         - {slot: who, type: word}
         - {slot: verb, type: verb}
         - {slot: item, type: counted}
@@ -3169,16 +3294,14 @@ rules:
       of arithmetic/group-total-leading-marker. A leading aggregate marker
       plus literal existential 'there' and an agreeing copula states an
       unscoped collection total; it does not license 'there' as GroupTotal
-      scope and does not admit arbitrary event verbs. The explicit totality
-      alternation excludes 'average': that word shares the broad `aggregate`
-      lexical sense for average asks, but "Average there is..." is not an
-      English existential-total marker. A subcategory cannot express this
-      subset because `aggregate` is a degenerate lexicon sense rather than a
-      category root. The counted item is consumed for the same single-reading
-      discipline as the scoped leading rules.
+      scope and does not admit arbitrary event verbs. The narrow
+      `group_total_marker` sense excludes 'average': that word shares the
+      broad `aggregate` sense for average asks, but "Average there is..." is
+      not an English existential-total marker. The counted item is consumed
+      for the same single-reading discipline as the scoped leading rules.
     match:
       sentence:
-        - {lit: [altogether, combined, together, total], at_start: true}
+        - {slot: agg, cat: group_total_marker, at_start: true}
         - {lit: there}
         - {slot: verb, cat: copula}
         - {slot: item, type: counted}
@@ -3241,11 +3364,11 @@ rules:
       the counted noun TRAILING the number); here the aggregate word
       QUALIFIES the age noun itself, and the age noun FRONTS the number
       ("combined AGE of 132"), an entirely disjoint token order group-
-      total-of's own skeleton cannot match. `agg, cat: aggregate` (the
-      full category, 'total' included — unlike the leading-marker rule
-      above, there is no "In total, ..." literal to collide with here:
-      the position right before 'age' can never be confused with that
-      other rule's own two-literal skeleton) plus `noun, cat: age_noun`
+      total-of's own skeleton cannot match. `agg, cat: group_total_marker`
+      excludes `average`, which is not a sum. There is no "In total, ..."
+      literal to collide with here: the position right before 'age' can
+      never be confused with that other rule's own two-literal skeleton.
+      `noun, cat: age_noun`
       (the same single-word category arithmetic/group-total-sum-of-age
       uses) resolves to the hardcoded DATA measure 'year' the age family
       already commits to everywhere. `n, type: number` also accepts an
@@ -3254,7 +3377,7 @@ rules:
       does not depend on capturing that trailing unit word at all).
     match:
       sentence:
-        - {slot: agg, cat: aggregate}
+        - {slot: agg, cat: group_total_marker}
         - {slot: noun, cat: age_noun}
         - {lit: of}
         - {slot: n, type: number}
@@ -3347,12 +3470,17 @@ rules:
     description: >
       "He picked THE REST" — the remainder of the unique pool after its
       events. Emits a RestQuantity; the synthesizer supplies the value or
-      the unresolved-derivation guard declines.
+      the unresolved-derivation guard declines. Ordinary subject/verb
+      agreement applies, and the narrow `non_quantity_object_verb` category
+      excludes predicates that cannot take this quantitative object.
     match:
       sentence:
         - {slot: who, type: name}
         - {slot: verb, type: verb}
         - {slot: r, cat: remnant}
+    where:
+      - number_compatible: [who, verb]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
     emits:
       - fact: rest_quantity
         entity: "{who}"
@@ -3576,6 +3704,9 @@ rules:
       self-collide the moment the value changed from the 0 placeholder to
       the real count — is_fraction sizing has the identical constraint,
       which is why it too only ever fires from a placeholder collection.
+      When that optional noun is present, `attribute_compatible` requires a
+      declared adjective/noun pairing. With no explicit noun the predicate is
+      neutral and the discourse-backed bare-rest reading remains available.
     match:
       sentence:
         - {slot: r, cat: remnant}
@@ -3585,6 +3716,8 @@ rules:
             - {slot: item, type: plural}
         - {slot: verb, cat: plural_copula}
         - {slot: attr, type: adjective}
+    where:
+      - attribute_compatible: {attribute: attr, noun: item}
     emits:
       - fact: partition_quantity
         collection: "{r}"
@@ -3615,6 +3748,9 @@ rules:
             - {slot: item, type: plural}
         - {slot: verb, cat: plural_copula}
         - {slot: attr, type: plural}
+    where:
+      - bound_requires_category: {bound: item, slot: item, cat: membership_collection_noun}
+      - bound_requires_category: {bound: item, slot: attr, cat: membership_member_noun}
     emits:
       - fact: partition_quantity
         collection: "{r}"
@@ -3736,11 +3872,11 @@ rules:
     match:
       sentence:
         - {lit: in}
-        - {slot: n, type: counted}
+        - {slot: n, cat: age_measure, counted: true}
         - {slot: who, type: name}
         - {slot: aux, type: future_modal}
         - {lit: be}
-        - {slot: m, type: counted}
+        - {slot: m, cat: age_measure, counted: true}
         - {lit: old}
     where:
       - absent: {cat: relational_marker}
@@ -3766,11 +3902,11 @@ rules:
       accounting as the future sibling above.
     match:
       sentence:
-        - {slot: n, type: counted}
+        - {slot: n, cat: age_measure, counted: true}
         - {lit: ago}
         - {slot: who, type: name}
         - {slot: verb, cat: past_copula}
-        - {slot: m, type: counted}
+        - {slot: m, cat: age_measure, counted: true}
         - {lit: old}
     where:
       - number_compatible: [who, verb]
@@ -3820,13 +3956,14 @@ rules:
         - {lit: in}
         - {slot: n, type: number}
         - {slot: mod, cat: count_intensifier}
-        - {slot: yr, type: noun}
+        - {slot: yr, cat: age_measure}
         - {slot: who, type: name}
         - {slot: aux, type: future_modal}
         - {lit: be}
-        - {slot: m, type: counted}
+        - {slot: m, cat: age_measure, counted: true}
         - {lit: old}
     where:
+      - same_number: [n, yr]
       - absent: {cat: relational_marker}
       - absent: {cat: multiplier_marker}
     consumes: [n, yr, m]
@@ -3849,10 +3986,12 @@ rules:
     match:
       sentence:
         - {slot: who, type: name}
-        - {slot: want, cat: desire}
+        - {slot: want, cat: finite_desire, finite_form: true}
         - {lit: to}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, bare_form: true}
         - {slot: item, type: counted}
+    where:
+      - number_compatible: [who, want]
     consumes: [item]
     emits:
       - fact: goal
@@ -3960,14 +4099,13 @@ rules:
       rate-every-span-asks) — a PERIODIC rate premise: the SVO-direct
       twin of the compound-rate fold already read for "reads 8 pages in
       20 minutes" (`_compound_rate_span`, learn.py), just marked with a
-      quantifier ('every') instead of the `span_preposition` category
-      ('in'). `{slot: freq, cat: quantifier}` is the SAME word class
-      arithmetic/existential-premise-distributive's own `{slot: q, cat:
-      quantifier}` already gates on for "in EACH row" — 'every'/'each'
-      carry the `quantifier` sense in the lexicon directly (a root-sense
-      degenerate category, registry.py's `word_in_category` fallback),
-      so no lexicon or category change. Emits the SAME Rate fact shape
-      as arithmetic/extraposed-duration-rate above (a COMPOUND rate,
+      definite frequency quantifier ('every') instead of the
+      `span_preposition` category ('in'). The dedicated
+      `frequency_quantifier` class excludes existential/amount quantifiers
+      such as `some`, while `duration_measure, counted: true` requires an
+      explicit denominator such as "6 years" rather than an unrelated
+      counted object. Emits the SAME Rate fact shape as
+      arithmetic/extraposed-duration-rate above (a COMPOUND rate,
       numerator/denominator preserved for value-accounting), read by the
       existing rate-span/rate-span-inverse consumers unchanged.
 
@@ -4004,11 +4142,11 @@ rules:
       not surface adjacency), but this rule matches raw TOKEN sequence,
       so without the optional slot a modal premise fails to match at all
       and falls through to the same junk distributive-multiply reading
-      this rule exists to subsume. The slot binds nothing downstream
-      (never referenced in `emits`) — it exists purely so the token is
-      consumed (and the match still succeeds) when present; an ordinary
-      non-modal premise is unaffected, the opt group simply matching
-      zero tokens.
+      this rule exists to subsume. When that optional modal binds,
+      `bound_requires_form` requires the following verb's bare form; without
+      a modal, ordinary finite SVO agreement remains valid. The auxiliary
+      binds nothing downstream (never referenced in `emits`) — it exists so
+      the token is consumed when present.
     match:
       sentence:
         - {slot: who, type: entity}
@@ -4016,8 +4154,10 @@ rules:
             - {slot: aux, type: modal}
         - {slot: verb, type: verb}
         - {slot: item, type: counted}
-        - {slot: freq, cat: quantifier}
-        - {slot: span, type: counted}
+        - {slot: freq, cat: frequency_quantifier}
+        - {slot: span, cat: duration_measure, counted: true}
+    where:
+      - bound_requires_form: {bound: aux, slot: verb, form: bare}
     consumes: [item, span]
     emits:
       - fact: rate

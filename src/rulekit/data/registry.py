@@ -88,11 +88,14 @@ from .schemas import (
 # only by engine.py's ASK_CUE_SENSES to detect a task sentence with no
 # question mark), so this only permits a NEW category to root here; it
 # changes no existing word's sense or any other imperative-sensed word's
-# behavior.
+# behavior. 'aggregate' follows the same rule: total and average markers
+# already carry that single sense and are already valid direct pattern gates;
+# rooting a category here only permits pack-owned semantic subsets such as
+# sum markers without adding a second ambiguous sense to any word.
 ROOT_SENSES = (
     "noun", "verb", "adjective", "quantifier", "preposition", "comparative",
     "negator", "conjunction", "modal", "particle", "adverb", "time",
-    "article", "pronoun", "imperative",
+    "article", "pronoun", "imperative", "aggregate",
 )
 
 
@@ -656,6 +659,12 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
             return "noun"
         return token.type
 
+    def _category_chain(category: str) -> tuple[str, ...]:
+        chain = [category]
+        while chain[-1] in category_parents:
+            chain.append(category_parents[chain[-1]])
+        return tuple(chain)
+
     def _walk_match_tokens(tokens: list[MatchToken]):
         for token in tokens:
             yield token
@@ -690,6 +699,11 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                                 f"rule {rule.id!r} uses `{qualifier}: true` on "
                                 f"non-noun category {cat!r}"
                             )
+                    if getattr(tok, "finite_form", False) and _slot_root(tok) != "verb":
+                        raise CompileError(
+                            f"rule {rule.id!r} uses `finite_form: true` on "
+                            f"non-verb slot {tok.slot!r}"
+                        )
         for predicate in rule.where:
             compatibility = predicate.attribute_compatible
             if compatibility is not None:
@@ -732,6 +746,60 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                         f"rule {rule.id!r} conditional category names "
                         f"unknown category {conditional.cat!r}"
                     )
+            conditional_form = predicate.bound_requires_form
+            if conditional_form is not None:
+                for slot_name in (
+                    conditional_form.bound,
+                    conditional_form.slot,
+                ):
+                    if slot_name not in slots:
+                        raise CompileError(
+                            f"rule {rule.id!r} conditional form names "
+                            f"unknown slot {slot_name!r}"
+                        )
+                if _slot_root(slots[conditional_form.slot]) != "verb":
+                    raise CompileError(
+                        f"rule {rule.id!r} conditional form target "
+                        f"{conditional_form.slot!r} is not verb-rooted"
+                    )
+            polarity_compatibility = predicate.polarity_compatible
+            if polarity_compatibility is not None:
+                for slot_name, category in zip(
+                    polarity_compatibility.slots,
+                    polarity_compatibility.categories,
+                    strict=True,
+                ):
+                    token = slots.get(slot_name)
+                    if token is None:
+                        raise CompileError(
+                            f"rule {rule.id!r} polarity compatibility names "
+                            f"unknown slot {slot_name!r}"
+                        )
+                    if category not in valid_gates:
+                        raise CompileError(
+                            f"rule {rule.id!r} polarity compatibility names "
+                            f"unknown category {category!r}"
+                        )
+                    category_root = category
+                    while category_root in category_parents:
+                        category_root = category_parents[category_root]
+                    if _slot_root(token) != category_root:
+                        raise CompileError(
+                            f"rule {rule.id!r} polarity compatibility pairs "
+                            f"{slot_name!r} with incompatible category "
+                            f"{category!r}"
+                        )
+                    scoped_polarities = {
+                        polarity
+                        for candidate, polarity in category_polarity.items()
+                        if category
+                        in _category_chain(candidate)
+                    }
+                    if not scoped_polarities:
+                        raise CompileError(
+                            f"rule {rule.id!r} polarity compatibility category "
+                            f"{category!r} has no polarity-bearing descendants"
+                        )
             if predicate.same_presence is not None:
                 if len(predicate.same_presence) < 2:
                     raise CompileError(
@@ -742,6 +810,45 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                         raise CompileError(
                             f"rule {rule.id!r} same_presence names unknown "
                             f"slot {slot_name!r}"
+                        )
+            role_compatibility = predicate.verb_role_compatible
+            if role_compatibility is not None:
+                for slot_name in (
+                    role_compatibility.verb,
+                    *role_compatibility.roles,
+                ):
+                    if slot_name not in slots:
+                        raise CompileError(
+                            f"rule {rule.id!r} verb-role compatibility names "
+                            f"unknown slot {slot_name!r}"
+                        )
+                if _slot_root(slots[role_compatibility.verb]) != "verb":
+                    raise CompileError(
+                        f"rule {rule.id!r} verb-role compatibility governor "
+                        f"{role_compatibility.verb!r} is not verb-rooted"
+                    )
+                role_category = (
+                    role_compatibility.role_cat
+                    or role_compatibility.excluded_role_cat
+                )
+                assert role_category is not None
+                for category, expected_root in (
+                    (role_compatibility.verb_cat, "verb"),
+                    (role_category, "noun"),
+                ):
+                    if category not in valid_gates:
+                        raise CompileError(
+                            f"rule {rule.id!r} verb-role compatibility names "
+                            f"unknown category {category!r}"
+                        )
+                    root = category
+                    while root in category_parents:
+                        root = category_parents[root]
+                    if root != expected_root:
+                        raise CompileError(
+                            f"rule {rule.id!r} verb-role compatibility "
+                            f"category {category!r} is not "
+                            f"{expected_root}-rooted"
                         )
             exclusion = predicate.slot_not_category
             if exclusion is not None:

@@ -247,10 +247,6 @@ entries:
     senses:
     - noun
     plural: angles
-  animal:
-    senses:
-    - noun
-    plural: animals
   annual:
     senses:
     - adjective
@@ -2380,6 +2376,7 @@ entries:
   drinks:
     senses:
     - verb
+    number: singular
     verb:
       lemma: drink
   drips:

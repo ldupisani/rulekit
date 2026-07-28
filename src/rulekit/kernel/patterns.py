@@ -137,6 +137,18 @@ def is_bare_verb_form(fold: str, lemma: str) -> bool:
     return fold == lemma and not looks_third_person_singular(fold)
 
 
+def is_finite_verb_form(fold: str, lemma: str) -> bool:
+    """Whether a verb surface can head a finite matrix clause.
+
+    Productive ``-ing`` forms are the structurally observable non-finite class
+    represented by the current lexicon. Simple past remains admitted because
+    regular ``-ed`` is ambiguous between finite past and participial form
+    without an auxiliary; the surrounding rule owns that distinction.
+    """
+
+    return not (fold.endswith("ing") and fold != lemma)
+
+
 def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
     if token.single_word and len(unit.words) != 1:
         # OPT-IN (schemas.MatchToken.single_word): condensation preserves the
@@ -165,6 +177,11 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
         # OPT-IN (schemas.MatchToken.bare_form): only the verb's BARE form —
         # plural agreement is the structural generic-vs-ground signal after a
         # bare-plural subject ("Writers CREATE" ∀ vs "Mary CREATES" ground)
+        return False
+    if token.finite_form and not is_finite_verb_form(
+        unit.features.get("fold") or "",
+        _lemma_of(unit),
+    ):
         return False
     if token.bare and (
         unit.features.get("qualifier") is not None or unit.features.get("owner") is not None
@@ -737,7 +754,11 @@ def _check_where(
             numbers = []
             for name in pred.number_compatible:
                 unit = slots.get(name)
-                if unit is None or isinstance(unit, tuple):
+                # This predicate rejects an EXPLICIT conflict. An optional
+                # slot that is absent contributes no contrary evidence.
+                if unit is None:
+                    continue
+                if isinstance(unit, tuple):
                     return False
                 number = unit.features.get("number")
                 if unit.features.get("value_kind") == "count":
@@ -749,10 +770,68 @@ def _check_where(
                     numbers.append(number)
             if len(set(numbers)) > 1:
                 return False
+        if pred.polarity_compatible is not None:
+            polarities = [
+                polarity
+                for slot_name, category in zip(
+                    pred.polarity_compatible.slots,
+                    pred.polarity_compatible.categories,
+                    strict=True,
+                )
+                if (
+                    unit := slots.get(slot_name)
+                ) is not None
+                and not isinstance(unit, tuple)
+                if (
+                    polarity := _scoped_polarity_of(
+                        unit, category, reg
+                    )
+                )
+                is not None
+            ]
+            if len(set(polarities)) > 1:
+                return False
         if pred.same_presence is not None:
             presence = [name in slots for name in pred.same_presence]
             if len(set(presence)) > 1:
                 return False
+        if pred.verb_role_compatible is not None:
+            compatibility = pred.verb_role_compatible
+            verb = slots.get(compatibility.verb)
+            if verb is None or isinstance(verb, tuple):
+                return False
+            if reg.word_in_category(
+                _lemma_of(verb), compatibility.verb_cat
+            ):
+                for role_name in compatibility.roles:
+                    role = slots.get(role_name)
+                    if role is None or isinstance(role, tuple):
+                        return False
+                    if (
+                        compatibility.role_cat is not None
+                        and not (
+                            _slot_ok(
+                                role,
+                                MatchToken(
+                                    slot=role_name,
+                                    type="proper_name",
+                                ),
+                                reg,
+                            )
+                            or reg.word_in_category(
+                                _lemma_of(role), compatibility.role_cat
+                            )
+                        )
+                    ):
+                        return False
+                    if (
+                        compatibility.excluded_role_cat is not None
+                        and reg.word_in_category(
+                            _lemma_of(role),
+                            compatibility.excluded_role_cat,
+                        )
+                    ):
+                        return False
         if pred.bound_requires_type is not None:
             requirement = pred.bound_requires_type
             if requirement.bound not in slots:
@@ -778,6 +857,20 @@ def _check_where(
                 MatchToken(slot=requirement.slot, cat=requirement.cat),
                 reg,
             ):
+                return False
+        if pred.bound_requires_form is not None:
+            requirement = pred.bound_requires_form
+            if requirement.bound not in slots:
+                continue
+            unit = slots.get(requirement.slot)
+            if unit is None or isinstance(unit, tuple):
+                return False
+            fold = unit.features.get("fold") or ""
+            lemma = _lemma_of(unit)
+            if requirement.form == "bare":
+                if not is_bare_verb_form(fold, lemma):
+                    return False
+            elif not is_finite_verb_form(fold, lemma):
                 return False
         if pred.same_phrase is not None:
             # Unlike same_lemma, this predicate is designed for span slots:
@@ -826,14 +919,13 @@ def _check_where(
             noun_name = pred.attribute_compatible.noun
             attribute = slots.get(attribute_name)
             noun = slots.get(noun_name)
-            if attribute is None and noun is None:
-                # Compatibility may qualify a paired OPTIONAL adjunct.  When
-                # the whole pair is absent there is no semantic claim to test.
+            if attribute is None or noun is None:
+                # Compatibility asserts a relation only when both roles bind.
+                # This covers both a wholly optional adjunct and a rule whose
+                # optional explicit noun qualifies a mandatory descriptor.
                 continue
             if (
-                attribute is None
-                or noun is None
-                or isinstance(attribute, tuple)
+                isinstance(attribute, tuple)
                 or isinstance(noun, tuple)
                 or not reg.attribute_applies_to(
                     _lemma_of(attribute), _lemma_of(noun)
@@ -1315,6 +1407,27 @@ def _polarity_of(unit: Unit, reg: Registry) -> int:
             for depth, cat in enumerate(reversed(chain)):
                 if cat in reg.category_polarity and depth > best_depth:
                     best_depth, best = depth, reg.category_polarity[cat]
+    return best
+
+
+def _scoped_polarity_of(
+    unit: Unit, scope: str, reg: Registry
+) -> int | None:
+    """Declared polarity below one category scope, or neutral when absent."""
+
+    best_depth, best = -1, None
+    for word in (_lemma_of(unit), unit.features.get("fold", "")):
+        for tag in reg.word_categories.get(word, ()):
+            chain = reg.cat_ancestors(tag)
+            if scope not in chain:
+                continue
+            for depth, category in enumerate(reversed(chain)):
+                if (
+                    category in reg.category_polarity
+                    and depth > best_depth
+                ):
+                    best_depth = depth
+                    best = reg.category_polarity[category]
     return best
 
 

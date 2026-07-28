@@ -109,7 +109,7 @@ def test_g5o_unlocks_only_the_preregistered_rule() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 150
+    assert len(exploration_status(project)["fillers"]) == 151
 
 
 @pytest.mark.parametrize("quantifier", sorted(EXPECTED_FILLERS))
@@ -128,13 +128,17 @@ def test_every_loaded_quantifier_is_exposed_for_human_review(
     assert candidate.target_status == "matched"
     assert premise.binding == quantifier
     assert premise.status == "passed"
-    assert premise.category_path == (quantifier, "quantifier")
+    assert premise.category_path == (
+        (quantifier, "frequency_quantifier", "quantifier")
+        if quantifier == "every"
+        else (quantifier, "quantifier")
+    )
     assert {"rule-token", "lexicon"} <= {
         source["kind"] for source in premise.sources
     }
 
 
-def test_exploration_exposes_quantifiers_on_both_supported_rules() -> None:
+def test_exploration_exposes_only_frequency_quantifiers_on_periodic_rule() -> None:
     fillers = {
         item["identity"]: item
         for item in exploration_status(load_project(CURATED))["fillers"]
@@ -147,10 +151,14 @@ def test_exploration_exposes_quantifiers_on_both_supported_rules() -> None:
             for placement in fillers[quantifier]["placements"]
             if placement["slot"] in {"q", "freq"}
         }
-        assert placements == {
-            ("arithmetic/existential-premise-distributive", "q"),
-            ("arithmetic/periodic-rate-every-span", "freq"),
+        expected = {
+            ("arithmetic/existential-premise-distributive", "q")
         }
+        if quantifier == "every":
+            expected.add(
+                ("arithmetic/periodic-rate-every-span", "freq")
+            )
+        assert placements == expected
 
 
 def test_quantifier_realization_is_category_generic(tmp_path: Path) -> None:

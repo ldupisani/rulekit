@@ -390,6 +390,12 @@ class MatchToken(StrictModel):
     # sibling of the copular rules' plural-agreeing {lit: are}. Defaults
     # False: every existing verb slot is byte-identical.
     bare_form: bool = False
+    # OPT-IN: this verb slot must carry a finite-capable surface. Productive
+    # non-finite ``-ing`` forms whose registered lemma differs are refused;
+    # bare present, third-person present, and simple past remain available.
+    # This is intentionally separate from ``bare_form`` because a matrix verb
+    # such as "wants/wanted" is finite without being the lemma surface.
+    finite_form: bool = False
     # OPT-IN: require a slot to bind one original token, not a unit produced by
     # condensation. Logic implication keys use this on verb slots because a
     # merged particle verb intentionally keeps the base verb's lemma ("gets
@@ -466,11 +472,13 @@ class MatchToken(StrictModel):
                 or self.standalone
                 or self.referential
                 or self.bare_reference_category is not None
+                or self.bare_form
+                or self.finite_form
             ):
                 raise ValueError(
                     "a span slot takes no "
                     "type/cat/bare/counted/possessed/number/standalone/"
-                    "referential"
+                    "referential/bare_form/finite_form"
                 )
         elif self.slot is not None and (self.type is None) == (self.cat is None):
             raise ValueError("a slot needs exactly one of type/cat")
@@ -496,6 +504,10 @@ class MatchToken(StrictModel):
             raise ValueError("`span_blocks` only qualifies a span slot")
         if self.bare and self.slot is None:
             raise ValueError("`bare` only qualifies a slot")
+        if self.finite_form and self.slot is None:
+            raise ValueError("`finite_form` only qualifies a slot")
+        if self.finite_form and self.bare_form:
+            raise ValueError("a verb slot cannot require both finite and bare form")
         if self.bare and self.type in ("possessed", "qualified"):
             # `possessed`/`qualified` are DEFINED by carrying an owner/qualifier,
             # which is exactly what `bare` forbids — the combination is always
@@ -552,6 +564,61 @@ class BoundRequiresCategoryPredicate(StrictModel):
     cat: str
 
 
+class BoundRequiresFormPredicate(StrictModel):
+    """Require verb morphology only when another optional slot was bound."""
+
+    bound: str
+    slot: str
+    form: Literal["bare", "finite"]
+
+
+class PolarityCompatibilityPredicate(StrictModel):
+    """Reject contradictory declared polarity within category scopes.
+
+    Each slot is paired with the category subtree whose polarity counts.
+    A slot with no polarity-bearing membership inside its scope is neutral.
+    """
+
+    slots: list[str] = Field(min_length=2)
+    categories: list[str] = Field(min_length=2)
+
+    @model_validator(mode="after")
+    def _parallel_scopes(self) -> "PolarityCompatibilityPredicate":
+        if len(self.slots) != len(self.categories):
+            raise ValueError(
+                "polarity compatibility needs one category per slot"
+            )
+        if len(self.slots) != len(set(self.slots)):
+            raise ValueError("polarity compatibility repeats a slot")
+        return self
+
+
+class VerbRoleCompatibilityPredicate(StrictModel):
+    """Constrain lexical roles only for a declared verb class.
+
+    Positive constraints admit proper names or common nouns in ``role_cat``.
+    Negative constraints reject roles in ``excluded_role_cat``. Exactly one
+    role boundary must be declared.
+    """
+
+    verb: str
+    roles: list[str] = Field(min_length=1)
+    verb_cat: str
+    role_cat: str | None = None
+    excluded_role_cat: str | None = None
+
+    @model_validator(mode="after")
+    def _valid_boundary(self) -> "VerbRoleCompatibilityPredicate":
+        if len(self.roles) != len(set(self.roles)):
+            raise ValueError("verb-role compatibility repeats a role slot")
+        if (self.role_cat is None) == (self.excluded_role_cat is None):
+            raise ValueError(
+                "verb-role compatibility needs exactly one of "
+                "role_cat/excluded_role_cat"
+            )
+        return self
+
+
 class WherePredicate(StrictModel):
     """Closed set of cross-slot constraints."""
 
@@ -577,11 +644,24 @@ class WherePredicate(StrictModel):
     # an earlier slot, e.g. an optional destination preposition requires a
     # motion verb while the direct-object form remains open.
     bound_requires_category: BoundRequiresCategoryPredicate | None = None
+    # Morphology-qualified sibling. A modal auxiliary, for example, requires
+    # the following verb to be bare while the auxiliary-free clause retains
+    # its ordinary finite surface.
+    bound_requires_form: BoundRequiresFormPredicate | None = None
+    # Compare only polarity declarations inside each slot's paired category
+    # subtree. Unscoped meanings remain neutral: an explicitly directional
+    # change verb must agree with its direction word, while a general event
+    # verb is not reinterpreted through an unrelated acquire/lose category.
+    polarity_compatible: PolarityCompatibilityPredicate | None = None
     # The named optional slots must either all be present or all be absent.
     # This makes discontinuous paired structure declarative: a repeated
     # preposition can surround an intervening relative clause without either
     # half being independently optional.
     same_presence: list[str] | None = None
+    # A verb in ``verb_cat`` requires each named semantic role to be a proper
+    # name or a common noun in ``role_cat``. Verbs outside the triggering
+    # category remain unchanged. This keeps agency knowledge in pack data.
+    verb_role_compatible: VerbRoleCompatibilityPredicate | None = None
     # Opt-in equality for whole rendered slot values, including span slots.
     # `same_lemma` deliberately skips spans; constructions with repeated
     # multi-unit phrases need exact phrase identity, not head-lemma identity.
@@ -642,7 +722,9 @@ class WherePredicate(StrictModel):
             v for v in (
                 self.same_lemma, self.same_number, self.number_compatible,
                 self.bound_requires_type, self.bound_requires_category,
-                self.same_presence, self.same_phrase,
+                self.bound_requires_form, self.polarity_compatible,
+                self.same_presence,
+                self.verb_role_compatible, self.same_phrase,
                 self.distinct, self.distinct_owner, self.attribute_compatible,
                 self.distinct_measure,
                 self.name_count, self.absent, self.unbound,

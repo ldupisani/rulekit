@@ -1061,7 +1061,7 @@ def test_g5f_aggregate_boundary_remains_narrow_after_later_increments() -> None:
     assert availability["arithmetic/group-total-of-age"].supported
     assert availability["arithmetic/group-total-trailing"].supported
 
-    members = {"altogether", "average", "combined", "together", "total"}
+    members = {"altogether", "combined", "together", "total"}
     for surface in sorted(members):
         candidate = generate_candidate(
             project,
@@ -1075,14 +1075,26 @@ def test_g5f_aggregate_boundary_remains_narrow_after_later_increments() -> None:
             item for item in candidate.premises
             if item.slot == "agg"
         )
-        assert premise.slot_type == "aggregate"
-        assert premise.category_path == (surface, "aggregate")
-        assert {"rule-token", "lexicon"} <= {
+        assert premise.slot_type == "group_total_marker"
+        assert premise.category_path == (
+            surface,
+            "group_total_marker",
+            "aggregate",
+        )
+        assert {"rule-token", "lexicon", "category-member", "category"} <= {
             source["kind"] for source in premise.sources
         }
         assert surface in {
             source["label"] for source in premise.sources
         }
+
+    with pytest.raises(GenerationError, match="no filler for agg"):
+        generate_candidate(
+            project,
+            rule_id="arithmetic/group-total-leading-marker",
+            seed=517,
+            locked_bindings={"agg": "average"},
+        )
 
     meaningful = generate_candidate(
         project,

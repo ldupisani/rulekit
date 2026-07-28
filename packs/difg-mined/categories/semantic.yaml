@@ -92,17 +92,6 @@ categories:
     polarity: 1
   retain:
     parent: verb
-  sell:
-    parent: lose
-    notes: >
-      narrow gate for the sales-revenue consumer (answer.py's
-      _revenue_total, the sell-side mirror of increment 10's
-      purchase-total) — same multi-membership pattern as 'purchase'/
-      'acquire': 'sell'/'sold' stays tagged 'lose' too for the general
-      event fold (an item sold is an item no longer held), while this
-      narrower tag lets the revenue consumer name sell-events
-      specifically without picking up 'ate'/'gave'/'threw'/etc, which
-      also live under 'lose'.
   spend_target_prep:
     parent: preposition
     notes: >
@@ -144,6 +133,8 @@ attribute_compatibility:
   quality_attribute: [quality_bearer_noun, animate]
   marital_status_attribute: [animate]
 members:
+  increase_verb: [increase, increased, increases, rise]
+  decrease_verb: [decrease, decreased, decreases, fall, fell]
   mass_quantity_noun: [chicken, coffee, flour, food, milk, money, rice, sugar]
   # Cross-pack extensions of the explicit adjective/noun compatibility
   # boundary used by partition-attribute-of-noun.
@@ -172,6 +163,40 @@ members:
             parent, person, clerk, manager, guest, captain, shopkeeper,
             carpenter, tailor, fisherman, hunter, artist, writer,
             soldier]
+  # Generic unit nouns are measures rather than bare quantity holders. The
+  # core category owns the refusal boundary; this pack extends it beside the
+  # specialized unit vocabulary it owns.
+  non_quantity_holder:
+  - cent
+  - foot
+  - yard
+  - meter
+  - centimeter
+  - kilometer
+  - mile
+  - ounce
+  - kilogram
+  - gram
+  - minute
+  - hour
+  - day
+  - week
+  - month
+  # Container/place heads proven in quantitative PP adjuncts.
+  quantity_location:
+  - aquarium
+  - bag
+  - basket
+  - binder
+  - box
+  - jar
+  - mall
+  - side
+  - wardrobe
+  - wheel
+  frame_prepositional_verb:
+  - threw
+  - throws
   # mining candidate dimension-aggregate-asks: this pack's member extensions
   # to the core-english categories `compute_verb`/`dimension_noun`/
   # `length_measure`/`mass_measure`/`time_measure`/`currency_measure`
@@ -684,10 +709,6 @@ members:
   - ones
   remnant_adj:
   - remaining
-  sell:
-  - sell
-  - sells
-  - sold
   spend_target_prep:
   - for
   - on

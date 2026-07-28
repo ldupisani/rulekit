@@ -3,8 +3,8 @@
 **Status:** active project plan  
 **Accepted:** 2026-07-25  
 **Implementation:** G1–G6, G5c–G5g, Reading-origin and fact-level review, the
-fraction-plural morphology correction, scoped `GroupTotal`, and both
-review-led grammar-boundary reconciliations complete; the adjective/noun
+fraction-plural morphology correction, scoped `GroupTotal`, and the completed
+review-led grammar-boundary reconciliations; the adjective/noun
 compatibility and leading-`GroupTotal` subject boundaries are now complete,
 G5h core ownership of the seven project-empty exploratory category domains,
 G5i recursive optional-branch realization, and G5j comparative-category
@@ -17,7 +17,8 @@ ownership is complete; G5r dimension-comparative core ownership is complete
 and G5s modal core ownership and slot realization is complete; G5t
 temporal-marker core ownership and time-root realization is complete; G5u
 direct-adverb visibility is complete; G5v review-led premise auditing is
-active and its second six-review boundary pass is complete
+active and its fifth twelve-review plus sixth five-review boundary passes are
+complete
 
 ## Current checkpoint
 
@@ -90,7 +91,7 @@ added bounded hypothesis and minimal-pair exploration:
   sentence exposes a defective premise;
 - a `matched` or `shadowed` target status reports what the ordinary matcher
   accepted, never that the resulting English or emitted fact is correct;
-- the current curated frontier contains 95 supported rules and 150 reachable
+- the current curated frontier contains 95 supported rules and 151 reachable
   lexicon identities, while live reviews and continuing exploration remain
   separate from mechanical availability; and
 - random Generate next chooses from the least-attempted compatible rule and
@@ -103,7 +104,7 @@ added bounded hypothesis and minimal-pair exploration:
   optional `GroupTotal.scope`, allowing independently reviewed blue/red totals
   over one measure to coexist without changing tail-only or synthesized totals.
 
-The current gate is green: all 3,900 repository tests pass in four-worker
+The current gate is green: all 4,029 repository tests pass in four-worker
 mode, curated remains deterministic at 65/65 and 100% precision, both GSM8K
 development diffs are neutral, every standing cross-corpus gate retains zero
 wrong answers, and lint has zero errors.
@@ -2210,14 +2211,17 @@ The complete gate is green: 3,900 tests pass in four-worker mode; curated is
 MAWPS, and SciBench remain 44/0, 30/0, 9/0, and 6/0; FOLIO makes zero
 commitments; and lint has zero errors with two known warnings.
 
-#### G5v review-led premise audit — active; second batch complete
+#### G5v review-led premise audit — active; sixth batch complete
 
 Mechanical completeness does not establish linguistic or semantic validity.
-The current live fold has 48 never-generated, 41 generated-but-unreviewed, and
-6 reviewed rules. Of 150 reachable lexicon identities, 45 are never
-generated, 80 are generated-but-unreviewed, and 25 are reviewed. The
-append-only success ledger contains 218 exploration events and there are six
-current live reviews.
+The current live fold has 7 never-generated, 86 generated-but-unreviewed,
+and 2 reviewed rules. Of 151 reachable lexicon identities, 38 are never
+generated, 103 are generated-but-unreviewed, and 10 are reviewed. The
+append-only success ledger contains 282 exploration events; 100 append-only
+review rows fold to three current live reviews after two post-reconciliation
+tombstones. The separate failure ledger
+retains three historical attempts, none matching the current registry
+fingerprint.
 
 G5v uses the existing Designer loop rather than adding a bulk validator:
 Generate next selects a least-explored compatible rule/filler, the human
@@ -2291,11 +2295,151 @@ present and past age comparisons, compatible dimension relations, valid
 duration rates, and concrete aggregate anchors remain matcher-confirmed.
 Curated remains 95/95 and the reachable frontier is now 150 identities.
 
-The complete gate is green: 3,900 tests pass in four-worker mode; curated is
+The third batch reconciles all ten new live invalid reviews while preserving
+the established count-frame benchmark class:
+
+- temporal age-offset rules require declared `age_measure` units rather than
+  arbitrary counted nouns; the intensified form also couples the offset
+  number to singular/plural `year`;
+- desire goals distinguish a `finite_form` matrix desire verb from the
+  existing `bare_form` infinitival complement, rejecting participial matrix
+  forms and inflected complements without a word list in Python;
+- count-frame relations require an overt determiner, a declared
+  `count_aggregate_noun`, plural item, additive count direction, and
+  semantically viable holder and verb. Both established `amount of PLURAL`
+  and `number of PLURAL` frames remain valid;
+- an optional repeated item noun is number-compatible with its offset when
+  present, while its absence remains neutral; this preserves valid
+  `1 more gallon than ... gallons` and rejects plural disagreement;
+- optional quantitative PP objects reuse declared preposition/noun
+  compatibility, and animate appositive standards exclude the inanimate
+  possessive determiner;
+- explicit remainder membership uses separate declared collection and member
+  noun classes, with generic `animal` owned by `core-english`; and
+- `verb_role_compatible` conditionally requires animate/proper-name roles for
+  agentive verbs such as the declared spending class while leaving other
+  verbs and role domains open.
+
+The generator uses the same constraints, including declared plural surfaces
+for category slots participating in number agreement. Every reviewed target
+still has matcher-confirmed candidates across the bounded seed gate; all ten
+pinned invalid surfaces now retest `absent`. Curated remains 95/95 and the
+reachable frontier is now 151 identities. The cumulative generator version
+remains `g6-reviewed-premise-boundaries`.
+
+The complete gate is green: 3,948 tests pass in four-worker mode; curated is
 65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 40/0; ASDiv, SVAMP,
 MAWPS, and SciBench remain 44/0, 30/0, 9/0, and 6/0; FOLIO makes zero
 commitments; all before/after diffs are neutral; and lint has zero errors with
-two known warnings.
+three known warnings.
+
+The fourth batch reconciles both new live invalid reviews:
+
+- periodic rates now use the dedicated `frequency_quantifier` category and
+  require an explicitly counted `duration_measure`, so existential/amount
+  quantifiers and unrelated counted nouns cannot masquerade as a frequency;
+- the general `bound_requires_form` predicate makes an optional controller
+  require a bare or finite target form only when the controller is present.
+  The periodic rule uses its bare mode after a modal, preserving ordinary
+  non-modal finite clauses;
+- generic sales-verb ownership moves to `core-english` without changing the
+  combined registry, and `verb_role_compatible` gains a mutually exclusive
+  `excluded_role_cat` mode. The mass-relation rule therefore rejects a sales
+  verb with a declared remnant object while leaving non-sales verbs and
+  saleable mass nouns open; and
+- the same rule's optional PP applies the existing declared
+  preposition/noun compatibility relation.
+
+The reviewed `Student should gets 12 hamsters some 6 apples.` and
+`Bira sells triple as much rest in their animal as Dena.` surfaces both
+retest `absent`. Valid modal and non-modal duration rates, saleable mass
+objects, and non-sales remnant relations remain matcher-confirmed. Both
+targets also remain generatable across the bounded seed gate.
+
+The complete gate is green: 3,963 tests pass in four-worker mode; curated is
+65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 40/0; both
+before/after diffs are neutral; ASDiv, SVAMP, MAWPS, and SciBench remain 44/0,
+30/0, 9/0, and 6/0; FOLIO makes zero commitments; and lint has zero errors
+with three known warnings.
+
+The fifth batch reconciles all twelve new live invalid reviews:
+
+- the possessive-kinship anchored relation adopts ordinary agreement and the
+  existing narrow holder, verb, count-noun, and quantitative-PP boundaries;
+- `price_relation_verb` distinguishes copular/cost price relations from
+  unrelated events without embedding a verb list in Python;
+- the reviewed many and fraction comparison PPs reuse the declared
+  preposition/noun compatibility relation. DEV snapshot witnesses complete
+  the current quantitative-location class with `mall`, `wardrobe`, `wheel`,
+  and `side`;
+- every existential quantity-premise sibling requires an agreeing copula, and
+  rest-of-pool applies agreement plus the narrow non-quantity-object refusal;
+- affine appositive determiners must be animate possessives, the affine
+  fraction-many form refuses the declared prepositional-frame verb class, and
+  both reviewed affine PPs use descriptor/noun compatibility;
+- `partition-rest-attribute` checks adjective/noun compatibility only when its
+  optional explicit noun is bound, preserving discourse-backed bare rest
+  clauses while rejecting incompatible explicit pairs; and
+- `polarity_compatible` compares two or more slots inside independently
+  declared category scopes. Percent-change events use it to reject an
+  explicitly increasing verb paired with a decreasing direction while
+  accepting a neutral verb with either direction.
+
+The matcher, availability analysis, normal generation, locked probes, minimal
+pairs, and premise explanations share these predicates. All twelve pinned
+invalid surfaces retest `absent`; all twelve target rules continue to generate
+matcher-confirmed candidates across the bounded seed gate, and valid
+neighbors are pinned.
+
+The initial DEV snapshot exposed three valid quantitative locations excluded
+by the first boundary draft. Extending the general location category restored
+all three commitments. The final DEV-train and DEV-holdout diffs are neutral.
+
+The complete gate is green: 4,004 tests pass in four-worker mode; curated is
+65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 40/0; both
+before/after diffs are neutral; ASDiv, SVAMP, MAWPS, and SciBench remain 44/0,
+30/0, 9/0, and 6/0; FOLIO makes zero commitments; and lint has zero errors
+with three known warnings.
+
+The sixth batch reconciles all five new live invalid reviews:
+
+- a named category rooted at the existing `aggregate` sense separates
+  `group_total_marker` from `average`, so a GroupTotal fact can only be
+  licensed by a true sum marker. The existential and trailing rules retain
+  every valid bare total marker and the declared `in total` construction;
+- `group_total_preposition` and
+  `prepositional_group_total_marker` express the two halves of that
+  collocation. `bound_requires_category` activates the marker restriction
+  only when the optional preposition binds, rejecting the reviewed
+  `with combined`, `at average`, `with total`, and `to total` surfaces;
+- count-frame bare and `that` relative clauses require a repeated predicate,
+  `same_lemma` alignment with the matrix predicate, and independent
+  subject/verb agreement. The same complete-clause premise applies to the
+  plain, affine count-frame, and affine bare-item siblings; and
+- an optional declared span-preposition plus counted `duration_measure`
+  preserves complete duration-bearing relative clauses. The neutral
+  DEV-holdout buyer also established the missing singular morphology of
+  `drinks`, now declared in the mined lexicon.
+
+The aggregate-root registry extension is structural: it enables pack-owned
+subcategories without adding a new sense to any marker, so obligation
+disambiguation remains unchanged. The matcher, availability analysis,
+generation, locked probes, source evidence, and minimal pairs all see the
+same category ancestry and conditional collocation premise.
+
+All five pinned invalid surfaces retest `absent`; valid bare totals, `in
+total`, complete relative clauses, paired prepositional frames, and counted
+duration spans remain matcher-confirmed. Every corrected target generates
+matched or shadowed candidates across the bounded seed gate. The first
+holdout draft correctly exposed the undeclared `drinks` number and the
+duration-bearing clause; after representing both premises, the final
+DEV-train and DEV-holdout diffs are neutral.
+
+The complete gate is green: 4,029 tests pass in four-worker mode; curated is
+65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 40/0; both
+before/after diffs are neutral; ASDiv, SVAMP, MAWPS, and SciBench remain 44/0,
+30/0, 9/0, and 6/0; FOLIO makes zero commitments; and lint has zero errors
+with two known warnings. No protected TEST look was spent.
 
 There is no automatic transition to G7. Ask-rule and derived-rule generation
 requires a separate decision after the premise audit demonstrates that the

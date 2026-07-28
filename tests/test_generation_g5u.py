@@ -141,7 +141,7 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
     assert sum(item.supported for item in availability) == 95
     assert sum(not item.supported for item in availability) == 0
     assert all(not item.blockers for item in availability)
-    assert len(exploration_status(project)["fillers"]) == 150
+    assert len(exploration_status(project)["fillers"]) == 151
 
 
 def test_currently_generates_a_matcher_confirmed_anchor() -> None:
@@ -166,10 +166,23 @@ def test_currently_generates_a_matcher_confirmed_anchor() -> None:
 
 
 def test_optional_adverb_can_remain_omitted() -> None:
-    candidate = generate_candidate(
-        load_project(CURATED),
-        rule_id=TARGET_RULE,
-        seed=0,
+    project = load_project(CURATED)
+    candidates = (
+        generate_candidate(
+            project,
+            rule_id=TARGET_RULE,
+            seed=seed,
+        )
+        for seed in range(16)
+    )
+    candidate = next(
+        candidate
+        for candidate in candidates
+        if next(
+            row
+            for row in candidate.premises
+            if row.slot == "trailing_adv"
+        ).binding is None
     )
     premise = next(
         row for row in candidate.premises if row.slot == "trailing_adv"

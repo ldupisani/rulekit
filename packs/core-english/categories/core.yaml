@@ -3,7 +3,13 @@ format: rulekit/categories@1
 # Polarity is declared HERE and only here — every consumer (signed folds,
 # sign() in rule expressions) derives from it (the difg LOSS_VERBS lesson).
 categories:
-    animal: {parent: noun}
+    membership_member_noun:
+        parent: noun
+        notes: >
+            Predicate nouns licensed beneath an explicit remainder-membership
+            superclass. `animal` is the first declared member family; other
+            ontologies can extend this category without widening `animal`.
+    animal: {parent: membership_member_noun}
     pet: {parent: animal}
     animate:
         parent: noun
@@ -36,6 +42,12 @@ categories:
             cousin", "their garden"). This is narrower than `pronoun`: subject,
             object, reflexive, and standalone possessive forms do not license a
             noun merely by preceding it.
+    animate_possessive_determiner:
+        parent: possessive_determiner
+        notes: >
+            Possessive determiners licensed before an animate appositive role.
+            Excludes inanimate `its`; person-neutral `my`, `your`, and `their`
+            remain valid without inventing a gender feature in the kernel.
     bare_pp_object:
         parent: noun
         notes: >
@@ -60,6 +72,14 @@ categories:
         notes: >
             The preposition class that can attach a declared remnant to a
             quantitative conjunct ("with the rest").
+    membership_collection_noun:
+        parent: noun
+        notes: >
+            Explicit superclass nouns licensed in a remainder-membership
+            clause ("the rest of the animals were dogs"). When the collection
+            noun is stated, the predicate noun must also belong to its
+            separately declared member class; a bare "the rest were dogs"
+            continues to resolve from discourse without this gate.
     many_incompatible_noun:
         parent: noun
         notes: >
@@ -131,6 +151,28 @@ categories:
             ago Fia is..." while retaining ordinary present/past age premises.
     acquire: {parent: verb, antonym: lose, polarity: 1}
     lose: {parent: verb, antonym: acquire, polarity: -1}
+    directional_change_verb:
+        parent: verb
+        notes: >
+            Verbs whose lexical meaning itself declares an increase or
+            decrease. This is deliberately separate from acquire/lose:
+            "received less" is valid quantity comparison, while "rose less"
+            carries contradictory change directions.
+    increase_verb:
+        parent: directional_change_verb
+        antonym: decrease_verb
+        polarity: 1
+    decrease_verb:
+        parent: directional_change_verb
+        antonym: increase_verb
+        polarity: -1
+    price_relation_verb:
+        parent: verb
+        notes: >
+            Finite copular and cost forms that can relate an item to an
+            anaphoric price ("the bed is ten times that price", "the refill
+            costs twice that price"). General motion and event verbs do not
+            state a price merely by preceding the frame.
     transfer_out:
         parent: lose
         notes: >
@@ -146,6 +188,12 @@ categories:
             DERIVED total, not a literal event verb — the purchase-total
             consumer's gate, kept narrower than the general 'lose' category so
             an unrelated 'sell' ask never answers from purchase data.
+    sell:
+        parent: lose
+        notes: >
+            Sales verbs. This narrower class remains distinct from general
+            outbound loss so rules can constrain sales-specific objects and
+            consumers without treating eating, giving, or spending as sales.
     delta: {parent: comparative, notes: "direction words in 'N more/fewer X than Y'"}
     quantity_delta:
         parent: comparative
@@ -440,6 +488,14 @@ categories:
             Concrete elapsed-time units accepted by duration-rate premises.
             This is narrower than `time_measure`, which also contains the
             abstract dimension noun `age`; "70 ages" is not a duration span.
+    frequency_quantifier:
+        parent: quantifier
+        notes: >
+            Quantifiers that license an explicit counted recurring rate span
+            ("every six months"). Existential and amount quantifiers such as
+            "some" do not state a definite frequency. The valid implicit-one
+            "each year" shape needs its own representation rather than
+            pretending that `each 6 years` is grammatical.
     currency_measure:
         parent: noun
         dimension: true
@@ -485,12 +541,34 @@ categories:
             Aggregate frame nouns that govern plural count nouns ("the number
             of books"). Mass frames remain outside this rule family until a
             declared mass-noun realization exists.
+    group_total_marker:
+        parent: aggregate
+        notes: >
+            Aggregate words that assert a sum rather than an average. This
+            semantic subset is the marker domain for GroupTotal premises.
+    prepositional_group_total_marker:
+        parent: group_total_marker
+        notes: >
+            Group-total markers licensed after the declared total-marker
+            preposition. This keeps "in total" without admitting combinations
+            such as "in combined".
+    group_total_preposition:
+        parent: preposition
+        notes: >
+            Prepositions licensed immediately before a prepositional
+            GroupTotal marker.
     frame_prepositional_verb:
         parent: verb
         notes: >
             Verbs licensed when a ratio-frame head includes the optional
             destination preposition and repeats it after the relative-clause
             standard.
+    frame_head_preposition:
+        parent: preposition
+        notes: >
+            Prepositions licensed between a ratio-frame verb and multiplier.
+            A bound member conditionally requires a declared frame-
+            prepositional verb; direct heads remain unaffected.
     destination_preposition:
         parent: preposition
         notes: >
@@ -504,6 +582,12 @@ categories:
         notes: "'the REMAINING pages' / 'pages LEFT' — remainder-anchored fractions defer to the rest machinery"
     more_dir: {parent: delta, antonym: less_dir, polarity: 1}
     less_dir: {parent: delta, antonym: more_dir, polarity: -1}
+    count_quantity_delta:
+        parent: quantity_delta
+        notes: >
+            Additive directions licensed before an overt plural count noun.
+            `less` remains available to mass-quantity siblings but not to the
+            count-frame family, which requires `fewer` or neutral `more`.
     desire:
         parent: verb
         notes: >
@@ -513,6 +597,12 @@ categories:
             purchase (the increment-14 kirsty lesson generalized): the generic
             SVO fold's own Quantity(verb='want', ...) stays unsignable and keeps
             declining the ordinary holdings fold.
+    finite_desire:
+        parent: desire
+        notes: >
+            Finite desire forms that can head "WHO wants/wanted to VERB".
+            Participial `wanting` remains in the broader semantic `desire`
+            category but cannot occupy this matrix-clause slot.
     need_premise:
         parent: verb
         notes: >
@@ -870,8 +960,10 @@ categories:
 members:
     definite_article: [the]
     possessive_determiner: [her, his, its, my, their, your]
+    animate_possessive_determiner: [her, his, my, their, your]
     many_incompatible_noun: [age, litter, rest]
-    non_quantity_holder: [amount, cost, number, price]
+    non_quantity_holder:
+        [amount, cost, dollar, inch, number, pound, price, remainder, rest, year]
     mass_quantity_noun: [litter, rest]
     non_quantity_object_verb:
         - are
@@ -1003,12 +1095,15 @@ members:
     past_copula: [was, were]
     acquire: [get, gets, got, find, finds, found, buy, buys, bought, receive, receives, received, win, wins, won]
     lose: [lose, loses, lost, eat, eats, ate, give, gives, gave, sell, sells, sold, spend, spends, spent, dropped, drops]
+    increase_verb: [rose]
+    price_relation_verb: [are, cost, costs, is, was, were]
     transfer_out: [gives, gave, sells, sold]
     spend_verb: [spend, spends, spent]
     age_comparative: [older, younger]
     more_dir: [more, older]
     less_dir: [fewer, less, younger]
     quantity_delta: [fewer, less, more]
+    count_quantity_delta: [fewer, more]
     dimension_more: [heavier, higher, larger, longer, taller, wider]
     dimension_less: [lighter, shorter, smaller]
     linear_dimension_comparative: [higher, larger, longer, taller, wider, shorter, smaller]
@@ -1032,20 +1127,28 @@ members:
     currency_measure: [dollar] # 'cent'/'balance'/'earnings'/'cost' extend this from packs/difg-mined
     time_measure: [year, age] # generic age forms; other units extend this from difg-mined
     duration_measure: [year]
+    frequency_quantifier: [every]
     age_measure: [year]
     aggregate_noun: [amount, number]
-    count_aggregate_noun: [number]
+    count_aggregate_noun: [amount, number]
+    group_total_marker: [altogether, combined, together, total]
+    prepositional_group_total_marker: [total]
+    group_total_preposition: [in]
     quantity_anaphor: [amount, number]
     price_anaphor: [price, cost]
     remnant: [remainder, rest]
     desire: [want, wanted, wanting, wants]
+    finite_desire: [want, wanted, wants]
     need_premise: [need, needed, needs]
     duration_verb: [takes, took]
     frame_prepositional_verb: [travel, traveled, travels]
+    sell: [sell, sells, sold]
+    frame_head_preposition: [in, to]
     destination_preposition: [to]
     quantity_location: [area, garden, tree]
     quantity_location_preposition: [at, in, on]
     quantity_remainder_preposition: [with]
+    membership_collection_noun: [animal]
 attribute_compatibility:
     color_attribute: [colorable_noun]
     # Multiple compatible noun categories are intentional. Either category

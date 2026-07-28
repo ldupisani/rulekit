@@ -97,6 +97,28 @@ def test_member_lacks_root_sense(tmp_path):
         compile_registry([load_pack(root)])
 
 
+def test_aggregate_sense_can_root_a_semantic_subset(tmp_path):
+    root = _pack(
+        tmp_path,
+        lex=(
+            "format: rulekit/lexicon@1\nentries:\n"
+            "  sumwise: {senses: [aggregate]}\n"
+            "  meanwise: {senses: [aggregate]}\n"
+        ),
+        cats=(
+            "format: rulekit/categories@1\ncategories:\n"
+            "  sum_marker: {parent: aggregate}\n"
+            "members:\n  sum_marker: [sumwise]\n"
+        ),
+    )
+
+    registry = compile_registry([load_pack(root)])
+
+    assert registry.root_sense("sum_marker") == "aggregate"
+    assert registry.cat_members_deep("sum_marker") == ["sumwise"]
+    assert not registry.word_in_category("meanwise", "sum_marker")
+
+
 def test_antonym_same_polarity(tmp_path):
     root = _pack(
         tmp_path,
