@@ -27,11 +27,17 @@ EXPECTED_PATHS = {
     },
     "arithmetic/anaphoric-multiplier-standard-many": {
         (5,): ("direct_std_seen",),
-        (6,): ("item_anchor_seen",),
     },
     "arithmetic/anaphoric-multiplier-standard-much": {
         (5,): ("direct_std_seen",),
-        (6,): ("item_anchor_seen",),
+    },
+    "arithmetic/anaphoric-multiplier-standard-as-many": {
+        (5,): ("direct_std_seen",),
+        (6,): ("item_std_seen",),
+    },
+    "arithmetic/anaphoric-multiplier-standard-as-much": {
+        (5,): ("direct_std_seen",),
+        (6,): ("item_std_seen",),
     },
     "arithmetic/fraction-as-many-elided-standard": {
         (7,): ("std_seen",),
@@ -145,9 +151,9 @@ def test_g5l_profiles_the_complete_unbound_branch_class() -> None:
 
     assert set(rules) == set(EXPECTED_PATHS)
     assert sentinels == {
-        "direct_std_seen": 2,
+        "direct_std_seen": 4,
         "item2_seen": 3,
-        "item_anchor_seen": 2,
+        "item_std_seen": 2,
         "std_seen": 7,
         "tail_prep_seen": 1,
     }
@@ -165,8 +171,8 @@ def test_g5l_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 99
-    assert sum(item.supported for item in availability.values()) == 99
+    assert len(availability) == 101
+    assert sum(item.supported for item in availability.values()) == 101
     assert sum(not item.supported for item in availability.values()) == 0
     assert all(
         availability[rule_id].supported for rule_id in EXPECTED_PATHS

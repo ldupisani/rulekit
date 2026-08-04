@@ -2258,7 +2258,7 @@ The complete gate is green: 3,900 tests pass in four-worker mode; curated is
 MAWPS, and SciBench remain 44/0, 30/0, 9/0, and 6/0; FOLIO makes zero
 commitments; and lint has zero errors with two known warnings.
 
-#### G5v review-led premise audit — active; tenth batch complete
+#### G5v review-led premise audit — active; eleventh batch complete
 
 Mechanical completeness does not establish linguistic or semantic validity.
 The current live fold has 1 never-generated, 96 generated-but-unreviewed,
@@ -2662,6 +2662,81 @@ The complete gate is green: 4,124 tests pass in four-worker mode; curated is
 before/after diffs; ASDiv, SVAMP, MAWPS, and SciBench remain 44/0, 30/0, 10/0,
 and 6/0; FOLIO makes zero commitments; and lint has zero errors with two known
 warnings. No protected TEST look was spent.
+
+The eleventh batch reconciles the final live comparison review as a layered
+declarative boundary:
+
+- explicit comparative subjects and standards are complete references. Bare
+  plurals remain valid measured classes, but a floating singular common noun
+  does not become an entity merely by occupying the slot;
+- `quantity_event_verb` groups the existing acquire/loss polarity families,
+  and `quantity_event_participant` admits proper actors through pack-owned
+  noun membership. Proper names and their resolved pronouns remain
+  structurally valid without lexical enumeration;
+- `verb_role_compatible.allow_plural_class` distinguishes an actor standard
+  from an alternative measured class, preserving ordinary `nuts as bolts`
+  comparisons without admitting singular `as pencil`;
+- `in`, `on`, and `at` use separate compatible location subclasses, so a
+  general locative label no longer makes every preposition/place pair valid;
+  and
+- the DEV gate identified two legitimate lexical neighbours. The mined
+  `quarter` entry now owns its `quarters` morphology, and `Bill` uses a
+  pack-declared `bare_entity_reference` through the referential matcher's
+  existing category escape hatch. Neither repair introduces a surface branch
+  in Python; and
+- demonstrative anaphors and comparative anaphors have separate rules.
+  `that many pounds` remains valid, while item-elided `as many`/`as much`
+  rules use an immediate explicit-item sentinel and cannot claim the prefix
+  of a longer comparison.
+
+The exact reviewed sentence is absent from the complete-comparison and both
+anaphoric rule families, while the participant, possession-state,
+plural-class, resolved-pronoun, and location minimal pairs all pass.
+The live fold contains 353 exploration events and 134 retained review rows.
+The rule split changes the registry fingerprint, so no historical review is
+current. Rule coverage is 2 untouched and 99 generated-but-unreviewed; filler
+coverage is 33 untouched and 119 generated-but-unreviewed. The optional
+profile is 55 rules, 131 groups, 33 nested groups, and maximum depth three.
+There are no current-fingerprint failures.
+
+All 4,134 tests pass in four-worker mode. Curated remains 65/65; GSM8K
+DEV-train and DEV-holdout remain 104/0 and 41/0 with neutral diffs; ASDiv,
+SVAMP, MAWPS, and SciBench remain 44/0, 30/0, 10/0, and 6/0; FOLIO makes zero
+commitments; and lint has zero errors with two known warnings. No protected
+TEST look was spent.
+
+The twelfth batch reconciles the reviewed fractional mass comparison without
+removing useful vocabulary:
+
+- `rest` remains a mass quantity for compatible verbs, while the existing
+  verb/role predicate requires spend-governed count and mass objects to be
+  currency. This preserves `spends less money` and `spends fewer dollars` but
+  rejects `spends less rest`;
+- optional PPs on fractional delta comparisons retain declared location
+  compatibility but exclude remnant prepositions. Remnant PPs remain
+  available to their owning conjunct rules; and
+- `proportional_delta_compatible` makes the mathematical premise inspectable:
+  declared increases are unbounded, while decreases greater than 100% decline
+  before a negative factor can be emitted. The compiler, matcher, generator,
+  availability solver, probes, and premise cards share the same predicate.
+
+`Cato spends nineteen tenths less rest with its remainder than your friend
+Eron.` now has no target-rule match. Valid rest, currency, count, location,
+and greater-than-100% increase neighbours remain matcher-confirmed. Across 32
+seeds, generated mass-delta candidates remain matched and satisfy all three
+new boundaries.
+
+The live fold contains 354 exploration events and 136 review rows folding to
+one live review. Rule coverage is 1 untouched, 99 generated-but-unreviewed,
+and 1 reviewed; filler coverage is 33 untouched, 111
+generated-but-unreviewed, and 8 reviewed. There are no current-fingerprint
+failures.
+
+All 4,149 tests pass in four-worker mode. Curated remains 65/65; GSM8K
+DEV-train and DEV-holdout remain 104/0 and 41/0 with exact neutral diffs;
+ASDiv, SVAMP, MAWPS, and SciBench remain 44/0, 30/0, 10/0, and 6/0; FOLIO
+makes zero commitments; and lint has zero errors with two known warnings. No
+protected TEST look was spent.
 
 There is no automatic transition to G7. Ask-rule and derived-rule generation
 requires a separate decision after the premise audit demonstrates that the

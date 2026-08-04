@@ -1,13 +1,13 @@
 # rulekit handoff — generation workbench
 
-**Updated:** 2026-07-28
+**Updated:** 2026-08-04
 
 **Active campaign:** deterministic rule generation and human review
 
 **Status:** G1 through G4, G5a through G5g, G6, Reading-origin review,
 targetless sentence-interpretation review, fact-level review, the
 fraction-plural morphology correction, scoped
-`GroupTotal`, and all ten review-led grammar-boundary reconciliations are
+`GroupTotal`, and all eleven review-led grammar-boundary reconciliations are
 complete and gated. The review-led adjective/noun compatibility boundary is
 also complete and gated. The review-led leading-`GroupTotal` subject boundary
 is complete and gated: existential `there` no longer becomes a group scope or
@@ -60,10 +60,10 @@ time-root realization is complete: both deictic markers are core-owned and
 reviewable, and the standard-pinned future rule unlocks. G5u direct-adverb
 visibility is complete: `currently` is core-owned, project-relative adverb
 breadth remains visible, and all 99 curated premise rules are selectable. G5v
-review-led premise auditing is active; its fifth twelve-review boundary pass,
-sixth five-review boundary pass, and seventh five-review boundary pass are
-implemented and fully gated; its eighth four-review pass is implemented and
-fully gated.
+review-led premise auditing is active; eleven review batches are implemented
+and fully gated. The latest adds referential comparative roles, declared
+quantity-event participants, plural comparison-class standards, and exact
+locative preposition/place compatibility.
 
 **Active plan:**
 [`generation-and-annotation-plan.md`](generation-and-annotation-plan.md)
@@ -1139,7 +1139,87 @@ before/after diffs; ASDiv, SVAMP, MAWPS, and SciBench remain 44/0, 30/0, 10/0,
 and 6/0; FOLIO makes zero commitments; and lint has zero errors with two known
 warnings. No protected TEST look was spent.
 
-Do not interpret 99/99 as proof that every sentence is valid, bulk-label the
+The eleventh G5v batch reconciles the remaining comparison review:
+
+- `Population received thrice as many trees at your area as pencil.` no
+  longer matches `arithmetic/times-as-many`. Singular common-noun subjects
+  and standards must be complete references, while ordinary bare plural
+  comparison classes such as `nickels as dimes` remain valid;
+- quantity-changing event verbs require each common-noun actor to belong to
+  the declared `quantity_event_participant` class. Proper names and resolved
+  pronouns remain valid, and stative possession comparisons retain their
+  broader holder semantics;
+- a standard may be a declared event participant or a plural measured class.
+  This preserves `toy soldiers as toy cars` without treating singular
+  `pencil` as a recipient. The distinction is explicit through
+  `allow_plural_class`, not guessed from a surface word;
+- locative compatibility now distinguishes `in` locations, `on` surfaces,
+  and `at` sites. `in your area` and `on the tree` remain valid, while
+  `at your area` and `on the area` do not inherit a generic locative pass;
+  and
+- mined `quarter` now declares `quarters` as its plural, and the referential
+  matcher's existing pack-category escape hatch records the `Bill` name
+  homograph through `bare_entity_reference`. These preserve the two benchmark
+  neighbours exposed by the safety gate without adding a word-specific parser
+  branch; and
+- demonstrative anaphors and comparative anaphors now have separate rules.
+  `that many pounds` remains a valid measured demonstrative, while item-elided
+  `as many`/`as much` rules decline as soon as an explicit measure follows.
+  The former shared rule let a rejected complete comparison survive as a
+  shorter anaphoric prefix.
+
+The reviewed sentence retests absent from the complete comparison and both
+anaphoric rule families. A received-event minimal pair with a teacher and
+student matches and generates normally; possessive-state and bare-plural
+comparison neighbours remain matcher-confirmed. The append-only
+fold now contains 353 successful generation events and 134 review rows.
+The rule split changes the registry fingerprint, so those historical reviews
+are retained but none is current. Current rule coverage is 2 never-generated
+and 99 generated-but-unreviewed; filler coverage is 33 never-generated and
+119 generated-but-unreviewed. The optional profile is 55 rules, 131 groups,
+33 nested groups, and maximum depth three. There are no current-fingerprint
+failures.
+
+The gate is green: 4,134 tests pass in four-worker mode; curated remains
+65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 41/0 with neutral
+diffs; ASDiv, SVAMP, MAWPS, and SciBench remain 44/0, 30/0, 10/0, and 6/0;
+FOLIO makes zero commitments; and lint has zero errors with two known
+warnings. No protected TEST look was spent.
+
+The twelfth G5v batch reconciles the next mass-comparison review:
+
+- `Cato spends nineteen tenths less rest with its remainder than your friend
+  Eron.` no longer matches `arithmetic/fraction-delta-relation-mass`;
+- `rest` remains a valid `mass_quantity_noun` for constructions such as
+  `gets less rest`. Instead, the existing declarative `verb_role_compatible`
+  boundary now requires a `spend_verb` object's measure to be `currency` in
+  both count and mass delta rules. `spends less money` and `spends fewer
+  dollars` remain valid;
+- fractional-delta optional PPs still use the shared location compatibility
+  table, but explicitly exclude `quantity_remainder_preposition`. `in the
+  garden` remains valid, while `with the rest/remainder` stays available only
+  to the conjunct constructions that own remnant semantics; and
+- the new reusable `proportional_delta_compatible` predicate checks the
+  fraction against declared direction polarity. Increases remain unbounded;
+  decreases above 100% decline instead of emitting a negative Relation
+  factor. Matcher, compiler, availability, generation, locked probes, and
+  premise explanations share the boundary.
+
+The reviewed sentence retests absent, and 32 generated mass-delta candidates
+all match their target with non-negative factors, compatible spend objects,
+and no remnant PP. The fold contains 354 exploration events and 136 review
+rows folding to one live review. Rule coverage is 1 never-generated, 99
+generated-but-unreviewed, and 1 reviewed; filler coverage is 33
+never-generated, 111 generated-but-unreviewed, and 8 reviewed. There are no
+current-fingerprint failures.
+
+The gate is green: 4,149 tests pass in four-worker mode; curated remains
+65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 41/0 with exact neutral
+before/after diffs; ASDiv, SVAMP, MAWPS, and SciBench remain 44/0, 30/0, 10/0,
+and 6/0; FOLIO makes zero commitments; and lint has zero errors with two known
+warnings. No protected TEST look was spent.
+
+Do not interpret 101/101 as proof that every sentence is valid, bulk-label the
 frontier, or advance to deferred question generation before the premise audit
 is mature enough for a deliberate product decision.
 

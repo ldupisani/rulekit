@@ -751,7 +751,7 @@ def test_same_presence_is_an_explicit_discontinuous_structure_predicate() -> Non
     [
         (
             "Dena receives 30 years in the garden and double as many "
-            "on the area."
+            "on the tree."
         ),
         (
             "Dena receives 30 years with the rest and double as many "
@@ -1024,10 +1024,10 @@ def test_elided_standard_pp_uses_declared_object_compatibility(registry) -> None
 
 def test_animate_appositive_refuses_inanimate_possessive(registry) -> None:
     assert "arithmetic/times-as-many-elided" in _matched_rules(
-        "Teacher travels twice as many as their student Fia.", registry
+        "The teacher travels twice as many as their student Fia.", registry
     )
     assert "arithmetic/times-as-many-elided" not in _matched_rules(
-        "Teacher travels twice as many as its student Fia.", registry
+        "The teacher travels twice as many as its student Fia.", registry
     )
 
 
@@ -1045,16 +1045,16 @@ def test_agentive_verb_roles_are_conditional_and_pack_owned(registry) -> None:
     rule_id = "arithmetic/fraction-as-many"
 
     assert rule_id in _matched_rules(
-        "Teacher spent half as many apples as Cato.", registry
+        "The teacher spent half as many apples as Cato.", registry
     )
     assert rule_id not in _matched_rules(
-        "Toy spent half as many apples as Cato.", registry
+        "The toy spent half as many apples as Cato.", registry
     )
     assert rule_id not in _matched_rules(
-        "Cato spent half as many apples as garden.", registry
+        "Cato spent half as many apples as the garden.", registry
     )
     assert rule_id in _matched_rules(
-        "Garden has half as many apples as Cato.", registry
+        "The garden has half as many apples as Cato.", registry
     )
 
 
@@ -1070,6 +1070,32 @@ def test_verb_role_compatibility_is_an_explicit_schema_predicate() -> None:
 
     assert predicate.verb_role_compatible is not None
     assert predicate.verb_role_compatible.roles == ["who", "std"]
+
+    plural_standard = WherePredicate(
+        verb_role_compatible={
+            "verb": "verb",
+            "roles": ["std"],
+            "verb_cat": "quantity_event_verb",
+            "role_cat": "quantity_event_participant",
+            "allow_plural_class": True,
+        }
+    )
+    assert plural_standard.verb_role_compatible is not None
+    assert plural_standard.verb_role_compatible.allow_plural_class is True
+
+    with pytest.raises(
+        ValidationError,
+        match="plural comparison classes require a positive role category",
+    ):
+        WherePredicate(
+            verb_role_compatible={
+                "verb": "verb",
+                "roles": ["item"],
+                "verb_cat": "sell",
+                "excluded_role_cat": "remnant",
+                "allow_plural_class": True,
+            }
+        )
 
 
 def test_finite_form_is_an_explicit_scalar_verb_qualifier() -> None:
@@ -1263,19 +1289,19 @@ def test_existential_family_requires_agreeing_copulas(
     [
         (
             "arithmetic/times-as-many-conjunct-elided-standard",
-            "Hamster has 4 cans in my garden and once as many teachers.",
+            "The hamster has 4 cans in my garden and once as many teachers.",
         ),
         (
             "arithmetic/times-as-many",
-            "Tree received once as many apples in the garden as Dena.",
+            "The teacher received once as many apples in the garden as Dena.",
         ),
         (
             "arithmetic/fraction-as-many-elided-standard",
-            "Pencil gave eight sixths as many trees in the garden.",
+            "The student gave eight sixths as many trees in the garden.",
         ),
         (
             "arithmetic/times-as-many-possessive-kinship-standard",
-            "Hamster lost double as many birds in my garden as my marble.",
+            "The hamster lost double as many birds in my garden as my teacher.",
         ),
     ],
 )
@@ -1366,6 +1392,30 @@ def test_scoped_polarity_is_an_explicit_schema_predicate() -> None:
                     "delta",
                     "comparative",
                 ],
+            }
+        )
+
+
+def test_proportional_delta_is_an_explicit_schema_predicate() -> None:
+    predicate = WherePredicate(
+        proportional_delta_compatible={
+            "fraction": "f",
+            "direction": "dir",
+            "direction_cat": "delta",
+        }
+    )
+
+    assert predicate.proportional_delta_compatible is not None
+    assert predicate.proportional_delta_compatible.fraction == "f"
+
+    with pytest.raises(
+        ValidationError, match="different fraction/direction slots"
+    ):
+        WherePredicate(
+            proportional_delta_compatible={
+                "fraction": "f",
+                "direction": "f",
+                "direction_cat": "delta",
             }
         )
 
@@ -1684,6 +1734,131 @@ def test_fraction_delta_count_and_mass_siblings_are_disjoint() -> None:
     } & _matched_rules("Mary owns two fifths fewer chicken than Eron.", registry)
 
 
+def test_fraction_delta_mass_rejects_the_latest_reviewed_composition(
+    registry,
+) -> None:
+    rule_id = "arithmetic/fraction-delta-relation-mass"
+
+    assert rule_id not in _matched_rules(
+        (
+            "Cato spends nineteen tenths less rest with its remainder "
+            "than your friend Eron."
+        ),
+        registry,
+    )
+
+
+@pytest.mark.parametrize(
+    ("rule_id", "text"),
+    [
+        (
+            "arithmetic/fraction-delta-relation-mass",
+            "Cato spends one tenth less rest than Eron.",
+        ),
+        (
+            "arithmetic/fraction-delta-relation-mass",
+            "Cato spends one tenth less money with its remainder than Eron.",
+        ),
+        (
+            "arithmetic/fraction-delta-relation",
+            "Mary spends one tenth fewer dogs than Eron.",
+        ),
+        (
+            "arithmetic/fraction-delta-relation",
+            "Mary owns one tenth fewer dogs with the remainder than Eron.",
+        ),
+    ],
+)
+def test_fraction_delta_rejects_incompatible_objects_and_remnant_pps(
+    rule_id: str, text: str, registry
+) -> None:
+    assert rule_id not in _matched_rules(text, registry)
+
+
+@pytest.mark.parametrize(
+    ("rule_id", "text"),
+    [
+        (
+            "arithmetic/fraction-delta-relation-mass",
+            "Cato gets one tenth less rest than Eron.",
+        ),
+        (
+            "arithmetic/fraction-delta-relation-mass",
+            "Cato spends one tenth less money than Eron.",
+        ),
+        (
+            "arithmetic/fraction-delta-relation-mass",
+            "Cato spends one tenth less money in the garden than Eron.",
+        ),
+        (
+            "arithmetic/fraction-delta-relation",
+            "Mary spends one tenth fewer dollars than Eron.",
+        ),
+        (
+            "arithmetic/fraction-delta-relation",
+            "Mary owns one tenth fewer dogs in the garden than Eron.",
+        ),
+    ],
+)
+def test_fraction_delta_keeps_compatible_mass_count_and_location_neighbours(
+    rule_id: str, text: str, registry
+) -> None:
+    assert rule_id in _matched_rules(text, registry)
+
+
+@pytest.mark.parametrize(
+    ("rule_id", "rejected", "accepted"),
+    [
+        (
+            "arithmetic/fraction-delta-relation-mass",
+            "Cato gets eleven tenths less rest than Eron.",
+            "Cato gets eleven tenths more rest than Eron.",
+        ),
+        (
+            "arithmetic/fraction-delta-relation",
+            "Mary owns eleven tenths fewer dogs than Eron.",
+            "Mary owns eleven tenths more dogs than Eron.",
+        ),
+        (
+            "arithmetic/fraction-delta-relation-elided",
+            "Mary owns eleven tenths less than Eron.",
+            "Mary owns eleven tenths more than Eron.",
+        ),
+    ],
+)
+def test_proportional_decrease_cannot_exceed_the_whole(
+    rule_id: str, rejected: str, accepted: str, registry
+) -> None:
+    assert rule_id not in _matched_rules(rejected, registry)
+    assert rule_id in _matched_rules(accepted, registry)
+
+
+def test_fraction_delta_mass_generation_respects_composed_boundaries() -> None:
+    project = load_project(Path("projects/curated"))
+    rule_id = "arithmetic/fraction-delta-relation-mass"
+
+    for seed in range(32):
+        candidate = generate_candidate(project, rule_id=rule_id, seed=seed)
+        bindings = candidate.requested_bindings
+        relation = next(
+            fact for fact in candidate.facts if fact["type"] == "Relation"
+        )
+
+        assert candidate.target_status == "matched"
+        assert relation["fields"]["factor"] >= 0.0
+        if project.registry.word_in_category(
+            bindings["verb"].casefold(), "spend_verb"
+        ):
+            assert project.registry.word_in_category(
+                bindings["item"].casefold(), "currency"
+            )
+        if "pp_prep" in bindings:
+            assert not project.registry.word_in_category(
+                bindings["pp_prep"].casefold(),
+                "quantity_remainder_preposition",
+            )
+
+
 @pytest.mark.parametrize(
     "text",
     [
@@ -1701,6 +1876,8 @@ def test_anaphoric_multiplier_requires_a_grammatical_introducer(
     assert {
         "arithmetic/anaphoric-multiplier-standard-many",
         "arithmetic/anaphoric-multiplier-standard-much",
+        "arithmetic/anaphoric-multiplier-standard-as-many",
+        "arithmetic/anaphoric-multiplier-standard-as-much",
     } & _matched_rules(text, registry)
 
 
@@ -1719,9 +1896,37 @@ def test_anaphoric_multiplier_rejects_bare_heads(
     assert not {
         "arithmetic/anaphoric-multiplier-standard-many",
         "arithmetic/anaphoric-multiplier-standard-much",
+        "arithmetic/anaphoric-multiplier-standard-as-many",
+        "arithmetic/anaphoric-multiplier-standard-as-much",
         "arithmetic/anaphoric-multiplier-standard",
         "arithmetic/anaphoric-price-standard",
     } & _matched_rules(text, registry)
+
+
+@pytest.mark.parametrize(
+    ("rule_id", "text"),
+    [
+        (
+            "arithmetic/anaphoric-multiplier-standard-as-many",
+            (
+                "Population received thrice as many trees at your area "
+                "as pencil."
+            ),
+        ),
+        (
+            "arithmetic/anaphoric-multiplier-standard-as-many",
+            "Mary gets twice as many apples in the garden as Eron.",
+        ),
+        (
+            "arithmetic/anaphoric-multiplier-standard-as-much",
+            "Mary gets twice as much money in the purse as Eron.",
+        ),
+    ],
+)
+def test_anaphoric_multiplier_does_not_claim_an_explicit_item_prefix(
+    rule_id: str, text: str, registry
+) -> None:
+    assert rule_id not in _matched_rules(text, registry)
 
 
 def test_generation_fact_exposes_emit_expression_and_bindings() -> None:
@@ -1775,28 +1980,140 @@ def test_latest_reviewed_comparative_surfaces_are_rejected(
     assert rule_id not in _matched_rules(text, registry)
 
 
+def test_received_comparison_requires_referential_event_participants(
+    registry,
+) -> None:
+    rule_id = "arithmetic/times-as-many"
+    anaphoric_rule_id = "arithmetic/anaphoric-multiplier-standard-many"
+    anaphoric_as_rule_id = (
+        "arithmetic/anaphoric-multiplier-standard-as-many"
+    )
+
+    # The reviewed sentence fails independently on bare common-noun reference,
+    # an implausible event participant, and the preposition/place pairing.
+    reviewed_matches = _matched_rules(
+        (
+            "Population received thrice as many trees at your area "
+            "as pencil."
+        ),
+        registry,
+    )
+    assert rule_id not in reviewed_matches
+    assert anaphoric_rule_id not in reviewed_matches
+    assert anaphoric_as_rule_id not in reviewed_matches
+
+    # A demonstrative anaphor may still state its measure; this is the
+    # legitimate DEV-train neighbour that requires the rule-family split.
+    demonstrative_matches = _matched_rules(
+        "Jerome lost three times that many pounds.", registry
+    )
+    assert anaphoric_rule_id in demonstrative_matches
+    assert anaphoric_as_rule_id not in demonstrative_matches
+    assert rule_id not in _matched_rules(
+        (
+            "The population received thrice as many trees in your area "
+            "as the pencil."
+        ),
+        registry,
+    )
+    assert rule_id not in _matched_rules(
+        (
+            "The teacher received thrice as many trees at your area "
+            "as the student."
+        ),
+        registry,
+    )
+    assert rule_id in _matched_rules(
+        (
+            "The teacher received thrice as many trees in your area "
+            "as the student."
+        ),
+        registry,
+    )
+
+
+def test_event_role_boundary_does_not_restrict_possession_states(
+    registry,
+) -> None:
+    assert "arithmetic/times-as-many" in _matched_rules(
+        (
+            "The garden has thrice as many trees in your area "
+            "as the pencil."
+        ),
+        registry,
+    )
+    assert "arithmetic/times-as-many" in _matched_rules(
+        "Cato has thrice as many apples as pencils.", registry
+    )
+    assert "arithmetic/times-as-many" not in _matched_rules(
+        "Cato has thrice as many apples as pencil.", registry
+    )
+
+
+def test_mined_quarter_morphology_declares_its_plural() -> None:
+    registry = load_project(Path("projects/gsm8k")).registry
+
+    assert registry.singular_to_plural["quarter"] == "quarters"
+    assert registry.plural_to_singular["quarters"] == "quarter"
+
+
+def test_received_comparison_generation_uses_declared_participants() -> None:
+    project = load_project(Path("projects/curated"))
+    candidate = generate_candidate(
+        project,
+        rule_id="arithmetic/times-as-many",
+        seed=2,
+        locked_bindings={
+            "verb": "received",
+            "pp_prep": "in",
+            "pp_det": "your",
+            "pp_obj": "area",
+        },
+    )
+    bindings = {
+        row.slot: row.binding
+        for row in candidate.premises
+        if row.slot is not None
+    }
+
+    assert candidate.target_status == "matched"
+    assert candidate.sentence.startswith("Cato received")
+    assert bindings["std"] == "hamster"
+    assert "in your area" in candidate.sentence
+
+
+def test_event_role_boundary_follows_a_resolved_name_pronoun(registry) -> None:
+    assert "arithmetic/times-as-many" in _matched_rules(
+        (
+            "Cato has 10 apples. He received twice as many books "
+            "as Dena."
+        ),
+        registry,
+    )
+
+
 def test_elided_item_conjunct_requires_paired_compatible_contexts(
     registry,
 ) -> None:
     rule_id = "arithmetic/times-as-many-conjunct-elided-item"
 
     assert rule_id in _matched_rules(
-        "Plum has 90 cards and thrice as many.", registry
+        "Cato has 90 cards and thrice as many.", registry
     )
     assert rule_id in _matched_rules(
         (
-            "Plum has 90 cards in her garden and thrice as many "
-            "on the area."
+            "Cato has 90 cards in her garden and thrice as many "
+            "on the tree."
         ),
         registry,
     )
     assert rule_id not in _matched_rules(
-        "Plum has 90 cards in her garden and thrice as many.", registry
+        "Cato has 90 cards in her garden and thrice as many.", registry
     )
     assert rule_id not in _matched_rules(
         (
-            "Plum traveled 90 cards in her garden and thrice as many "
-            "on the area."
+            "Cato traveled 90 cards in her garden and thrice as many "
+            "on the tree."
         ),
         registry,
     )
@@ -1829,8 +2146,8 @@ def test_located_existential_requires_a_referential_compatible_place(
     [
         (
             "arithmetic/fraction-as-many",
-            "Fia sells eleven thirds as many animals as the area.",
-            "Fia sells eleven thirds as many animals as area.",
+            "Fia sells eleven thirds as many animals as the teacher.",
+            "Fia sells eleven thirds as many animals as teacher.",
         ),
         (
             "arithmetic/fraction-as-many-elided",
@@ -1840,12 +2157,12 @@ def test_located_existential_requires_a_referential_compatible_place(
         (
             "arithmetic/affine-fraction-as-many",
             (
-                "Marble found 2 less than nine tenths as many animals "
-                "as the area."
+                "The teacher found 2 less than nine tenths as many animals "
+                "as the student."
             ),
             (
-                "Marble found 2 less than nine tenths as many animals "
-                "as area."
+                "The teacher found 2 less than nine tenths as many animals "
+                "as student."
             ),
         ),
     ],

@@ -149,6 +149,19 @@ def is_finite_verb_form(fold: str, lemma: str) -> bool:
     return not (fold.endswith("ing") and fold != lemma)
 
 
+def proportional_delta_is_compatible(
+    value: object, polarity: int | None
+) -> bool:
+    """Whether ``1 + value * polarity`` stays in its valid quantity domain."""
+
+    return (
+        isinstance(value, (int, float))
+        and float(value) >= 0.0
+        and polarity is not None
+        and (polarity >= 0 or float(value) <= 1.0)
+    )
+
+
 def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
     if token.single_word and len(unit.words) != 1:
         # OPT-IN (schemas.MatchToken.single_word): condensation preserves the
@@ -413,6 +426,12 @@ def _referential_slot_ok(
         return True
     if unit.features.get("value_kind") == "count":
         return True
+    # Bare plural noun phrases are grammatically complete arguments and can
+    # name a comparison class ("twice as many nickels as dimes"). The
+    # determiner requirement is for otherwise-unanchored singular common
+    # nouns such as "as pencil" or "in garden".
+    if unit.features.get("number") == "plural":
+        return True
     lemma = _lemma_of(unit)
     if (
         token.bare_reference_category is not None
@@ -453,6 +472,26 @@ def _lemma_of(unit: Unit) -> str:
                     "lemma", ob.target.features.get("fold", "")
                 )
     return unit.features.get("lemma", unit.features.get("fold", unit.surface.lower()))
+
+
+def _role_is_proper_name(unit: Unit, reg: Registry) -> bool:
+    """Whether a semantic role denotes a proper name, directly or by reference."""
+
+    if _slot_ok(unit, MatchToken(slot="role", type="proper_name"), reg):
+        return True
+    if unit.sense() != "pronoun":
+        return False
+    return any(
+        ob.need == "refers"
+        and ob.met
+        and isinstance(ob.target, Unit)
+        and _slot_ok(
+            ob.target,
+            MatchToken(slot="role", type="proper_name"),
+            reg,
+        )
+        for ob in unit.obligations()
+    )
 
 
 def _span_article_units(span: tuple, reading) -> list[tuple]:
@@ -804,6 +843,23 @@ def _check_where(
             ]
             if len(set(polarities)) > 1:
                 return False
+        if pred.proportional_delta_compatible is not None:
+            compatibility = pred.proportional_delta_compatible
+            fraction = slots.get(compatibility.fraction)
+            direction = slots.get(compatibility.direction)
+            if (
+                fraction is None
+                or direction is None
+                or isinstance(fraction, tuple)
+                or isinstance(direction, tuple)
+            ):
+                return False
+            value = fraction.features.get("value")
+            polarity = _scoped_polarity_of(
+                direction, compatibility.direction_cat, reg
+            )
+            if not proportional_delta_is_compatible(value, polarity):
+                return False
         if pred.same_presence is not None:
             presence = [name in slots for name in pred.same_presence]
             if len(set(presence)) > 1:
@@ -823,13 +879,10 @@ def _check_where(
                     if (
                         compatibility.role_cat is not None
                         and not (
-                            _slot_ok(
-                                role,
-                                MatchToken(
-                                    slot=role_name,
-                                    type="proper_name",
-                                ),
-                                reg,
+                            _role_is_proper_name(role, reg)
+                            or (
+                                compatibility.allow_plural_class
+                                and role.features.get("number") == "plural"
                             )
                             or reg.word_in_category(
                                 _lemma_of(role), compatibility.role_cat

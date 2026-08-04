@@ -802,6 +802,51 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                             f"rule {rule.id!r} polarity compatibility category "
                             f"{category!r} has no polarity-bearing descendants"
                         )
+            proportional_delta = predicate.proportional_delta_compatible
+            if proportional_delta is not None:
+                fraction = slots.get(proportional_delta.fraction)
+                direction = slots.get(proportional_delta.direction)
+                if fraction is None or direction is None:
+                    missing = (
+                        proportional_delta.fraction
+                        if fraction is None
+                        else proportional_delta.direction
+                    )
+                    raise CompileError(
+                        f"rule {rule.id!r} proportional delta names unknown "
+                        f"slot {missing!r}"
+                    )
+                if fraction.type != "fraction":
+                    raise CompileError(
+                        f"rule {rule.id!r} proportional delta magnitude "
+                        f"{proportional_delta.fraction!r} is not a fraction slot"
+                    )
+                category = proportional_delta.direction_cat
+                if category not in valid_gates:
+                    raise CompileError(
+                        f"rule {rule.id!r} proportional delta names unknown "
+                        f"direction category {category!r}"
+                    )
+                category_root = category
+                while category_root in category_parents:
+                    category_root = category_parents[category_root]
+                if (
+                    _slot_root(direction) != "comparative"
+                    or category_root != "comparative"
+                ):
+                    raise CompileError(
+                        f"rule {rule.id!r} proportional delta direction "
+                        f"{proportional_delta.direction!r}/{category!r} is not "
+                        "comparative-rooted"
+                    )
+                if not any(
+                    category in _category_chain(candidate)
+                    for candidate in category_polarity
+                ):
+                    raise CompileError(
+                        f"rule {rule.id!r} proportional delta direction "
+                        f"category {category!r} has no declared polarity"
+                    )
             if predicate.same_presence is not None:
                 if len(predicate.same_presence) < 2:
                     raise CompileError(

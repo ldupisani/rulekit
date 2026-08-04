@@ -133,6 +133,10 @@ attribute_compatibility:
   quality_attribute: [quality_bearer_noun, animate]
   marital_status_attribute: [animate]
 members:
+  # `Bill` is a common first name as well as the monetary noun owned by this
+  # pack. Sentence-initial sense selection retains the noun reading, so the
+  # entity-role exception must stay lexical and explicit.
+  bare_entity_reference: [bill]
   increase_verb: [increase, increased, increases, rise]
   decrease_verb: [decrease, decreased, decreases, fall, fell]
   mass_quantity_noun: [chicken, coffee, flour, food, milk, money, rice, sugar]
@@ -201,6 +205,20 @@ members:
   - side
   - wardrobe
   - wheel
+  # Narrower surface/site readings extend the core pairing without making
+  # every locative preposition interchangeable with every place noun.
+  quantity_surface_location:
+  - farm
+  - side
+  - wheel
+  quantity_site_location:
+  - class
+  - classroom
+  - farm
+  - mall
+  - office
+  - party
+  - school
   # Idiomatic institutional location: "students in class" is referential
   # without an article, unlike arbitrary bare common-noun PP objects.
   bare_pp_object:

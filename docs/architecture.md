@@ -707,6 +707,16 @@ descendant in every scope. The percent-change event rule uses this to reject
 `had ... fewer`. Matcher, availability, locked probes, realization, and
 premise evidence use the same scoped calculation.
 
+`proportional_delta_compatible: {fraction: FRACTION_SLOT, direction:
+DIRECTION_SLOT, direction_cat: DIRECTION_CATEGORY}` is the value-aware
+boundary for relations that emit `1 + fraction * sign(direction)`. The
+direction category must expose declared polarity. Positive deltas are
+unbounded; negative deltas require a fraction between zero and one, so the
+resulting relation factor cannot become negative. Registry compilation checks
+the slot and category roots, while matching, availability, locked generation,
+ordinary realization, and premise explanations use the same magnitude and
+scoped-polarity calculation.
+
 A verb token may declare `bare_form: true`. The matcher and generator share
 one lemma-aware morphology check: the lemma itself and declared non-third-
 person surface are admitted, while a third-person singular inflection is not.
@@ -722,11 +732,14 @@ both qualifiers to sit on verb-rooted scalar slots and rejects the
 contradictory combination.
 
 A slot may opt into `referential: true`. Names, resolved pronouns, possessed
-nouns, and counted nouns are already referential; an otherwise bare common noun
-requires a preceding member of the pack-declared `definite_article` or
-`possessive_determiner` category. `bare_reference_category` provides an exact
-pack-owned exception for independently licensed bare adjuncts such as temporal
-PP objects. Generation realizes and explains the same determiner boundary.
+nouns, counted nouns, and bare plurals are already complete arguments; an
+otherwise bare singular common noun requires a preceding member of the
+pack-declared `definite_article` or `possessive_determiner` category. This
+preserves ordinary comparison classes such as "twice as many nickels as
+dimes" while rejecting a floating singular such as "as pencil".
+`bare_reference_category` provides an exact pack-owned exception for
+independently licensed bare adjuncts such as temporal PP objects. Generation
+realizes and explains the same determiner boundary.
 
 `bound_requires_type: {bound: PREFIX_SLOT, slot: TARGET, type: TYPE}` makes an
 optional prefix constrain what follows only when that prefix actually matched.
@@ -759,6 +772,19 @@ probes, and generator share the same predicate. This represents agentivity
 and object-role exclusions in pack data—for example, spending requires
 animate actors and selling refuses declared remnants—without embedding a verb
 or noun inventory in Python.
+
+Object slots use the same role predicate. Fractional delta comparisons require
+an `item` governed by `spend_verb` to belong to `currency`; this keeps
+`spend less money` and `spend fewer dollars` while rejecting `spend less
+rest`. The item slot's own noun grammar remains independent, so the role
+boundary does not turn currency membership into a general object allowlist.
+
+A positive role boundary may add `allow_plural_class: true` when that role can
+instead name a measured comparison class. This is intended for a standard
+slot such as `toy soldiers as toy cars`: a plural standard is not being asked
+to act as the event's recipient. Subject and standard premises are declared
+separately so this exception cannot make a plural subject bypass its actor
+category. The option is invalid with negative role boundaries.
 
 `same_presence: [SLOT_A, SLOT_B, ...]` requires linked optional slots to be
 either all bound or all absent. This describes paired surface structure

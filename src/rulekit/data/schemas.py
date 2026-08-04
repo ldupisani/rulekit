@@ -298,9 +298,9 @@ class MatchToken(StrictModel):
     # structural distinction. Multiword scalars such as "twenty three" remain
     # valid because this checks the unit's sense, not its original word count.
     standalone: bool = False
-    # OPT-IN: a common-noun slot must be realized as a referential noun phrase,
-    # not as a floating bare singular. A name or resolved pronoun is already
-    # referential; a noun must carry a possessive owner or have a
+    # OPT-IN: a common-noun slot must be a complete argument, not a floating
+    # bare singular. Names, resolved pronouns, counted nouns, possessed nouns,
+    # and bare plurals are already complete; another common noun needs a
     # pack-declared definite article / possessive determiner immediately to
     # its left. Defaults False so existing slots are unchanged.
     referential: bool = False
@@ -594,10 +594,34 @@ class PolarityCompatibilityPredicate(StrictModel):
         return self
 
 
+class ProportionalDeltaCompatibilityPredicate(StrictModel):
+    """Keep a proportional decrease inside the non-negative domain.
+
+    ``fraction`` supplies the magnitude and ``direction`` supplies a declared
+    polarity inside ``direction_cat``. Positive deltas are unbounded; a
+    negative delta may be at most one, because ``1 - fraction`` is the emitted
+    relation factor.
+    """
+
+    fraction: str
+    direction: str
+    direction_cat: str
+
+    @model_validator(mode="after")
+    def _different_slots(self) -> "ProportionalDeltaCompatibilityPredicate":
+        if self.fraction == self.direction:
+            raise ValueError(
+                "proportional delta needs different fraction/direction slots"
+            )
+        return self
+
+
 class VerbRoleCompatibilityPredicate(StrictModel):
     """Constrain lexical roles only for a declared verb class.
 
     Positive constraints admit proper names or common nouns in ``role_cat``.
+    A separately declared ``allow_plural_class`` lets a plural noun occupy a
+    comparison-standard role as a measured class rather than an event actor.
     Negative constraints reject roles in ``excluded_role_cat``. Exactly one
     role boundary must be declared.
     """
@@ -607,6 +631,7 @@ class VerbRoleCompatibilityPredicate(StrictModel):
     verb_cat: str
     role_cat: str | None = None
     excluded_role_cat: str | None = None
+    allow_plural_class: bool = False
 
     @model_validator(mode="after")
     def _valid_boundary(self) -> "VerbRoleCompatibilityPredicate":
@@ -616,6 +641,10 @@ class VerbRoleCompatibilityPredicate(StrictModel):
             raise ValueError(
                 "verb-role compatibility needs exactly one of "
                 "role_cat/excluded_role_cat"
+            )
+        if self.allow_plural_class and self.role_cat is None:
+            raise ValueError(
+                "plural comparison classes require a positive role category"
             )
         return self
 
@@ -669,6 +698,12 @@ class WherePredicate(StrictModel):
     # change verb must agree with its direction word, while a general event
     # verb is not reinterpreted through an unrelated acquire/lose category.
     polarity_compatible: PolarityCompatibilityPredicate | None = None
+    # A proportional relation emits ``1 + fraction * sign(direction)``.
+    # Declared positive directions remain unbounded; declared negative
+    # directions require fraction <= 1 so the result cannot become negative.
+    proportional_delta_compatible: (
+        ProportionalDeltaCompatibilityPredicate | None
+    ) = None
     # The named optional slots must either all be present or all be absent.
     # This makes discontinuous paired structure declarative: a repeated
     # preposition can surround an intervening relative clause without either
@@ -744,6 +779,7 @@ class WherePredicate(StrictModel):
                 self.same_lemma, self.same_number, self.number_compatible,
                 self.bound_requires_type, self.bound_requires_category,
                 self.bound_requires_form, self.polarity_compatible,
+                self.proportional_delta_compatible,
                 self.same_presence,
                 self.verb_role_compatible, self.same_phrase,
                 self.distinct, self.distinct_owner, self.distinct_from_owner,

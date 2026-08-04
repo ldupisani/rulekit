@@ -11,8 +11,17 @@ categories:
             ontologies can extend this category without widening `animal`.
     animal: {parent: membership_member_noun}
     pet: {parent: animal}
-    animate:
+    quantity_event_participant:
         parent: noun
+        notes: >
+            Common nouns that can plausibly perform or undergo an arithmetic
+            quantity event such as receiving, buying, eating, giving, or
+            losing counted items. Proper names remain independently valid in
+            verb-role premises. This category is deliberately narrower than
+            `noun`: an object may possess features in a stative comparison
+            without being a plausible participant in an event.
+    animate:
+        parent: quantity_event_participant
         notes: >
             PERSON-DENOTING common nouns — the antecedent-eligibility signal for
             a singular personal pronoun, and the ONLY thing separating "Baker
@@ -56,6 +65,12 @@ categories:
             or possessive determiner when a rule opts into `referential`.
             Corpus-owned temporal members extend this category from their own
             pack.
+    bare_entity_reference:
+        parent: noun
+        notes: >
+            Common-noun-sensed forms also attested as bare entity labels in
+            arithmetic prose. This is an exact pack-owned exception for lexical
+            name homographs, not a general capitalization heuristic.
     quantity_location:
         parent: noun
         notes: >
@@ -73,7 +88,26 @@ categories:
     quantity_location_preposition:
         parent: preposition
         notes: >
-            Locative prepositions compatible with `quantity_location`.
+            The general inside/within locative compatible with every declared
+            `quantity_location`. Surface and point-location readings use their
+            own narrower categories so a preposition is not treated as
+            interchangeable merely because all of them are locative.
+    quantity_surface_location:
+        parent: quantity_location
+        notes: >
+            Quantity locations that license a surface attachment with "on".
+    quantity_surface_preposition:
+        parent: preposition
+        notes: >
+            Surface locatives compatible with `quantity_surface_location`.
+    quantity_site_location:
+        parent: quantity_location
+        notes: >
+            Quantity locations that license a point/site attachment with "at".
+    quantity_site_preposition:
+        parent: preposition
+        notes: >
+            Point locatives compatible with `quantity_site_location`.
     quantity_remainder_preposition:
         parent: preposition
         notes: >
@@ -163,8 +197,14 @@ categories:
             Past-tense copulas used by explicitly past age constructions.
             Keeping this separate from general `copula` prevents "three years
             ago Fia is..." while retaining ordinary present/past age premises.
-    acquire: {parent: verb, antonym: lose, polarity: 1}
-    lose: {parent: verb, antonym: acquire, polarity: -1}
+    quantity_event_verb:
+        parent: verb
+        notes: >
+            Quantity-changing event verbs whose common-noun subjects and
+            comparison standards must be declared plausible event
+            participants. Stative possession verbs remain outside this class.
+    acquire: {parent: quantity_event_verb, antonym: lose, polarity: 1}
+    lose: {parent: quantity_event_verb, antonym: acquire, polarity: -1}
     directional_change_verb:
         parent: verb
         notes: >
@@ -1114,6 +1154,10 @@ members:
     # must never see a member it cannot resolve.
     # Deliberate exclusions ('player', 'cook', 'king') — see the category note.
     animate: [teacher, student, friend, child]
+    # Animals can participate in quantity-changing events (notably eating,
+    # finding, receiving, or losing items) while retaining their independent
+    # membership ontology under `animal`.
+    quantity_event_participant: [dog, cat, fish, bird, rabbit, hamster]
     # 'him'/'her' are OBJECT-case and have no lexicon entry of their own;
     # the fallback binds a SUBJECT pronoun to a prior subject anyway.
     animate_pronoun: [he, she]
@@ -1176,7 +1220,11 @@ members:
     frame_head_preposition: [in, to]
     destination_preposition: [to]
     quantity_location: [area, garden, tree]
-    quantity_location_preposition: [at, in, on]
+    quantity_location_preposition: [in]
+    quantity_surface_location: [tree]
+    quantity_surface_preposition: [on]
+    quantity_site_location: [garden, tree]
+    quantity_site_preposition: [at]
     quantity_remainder_preposition: [with]
     membership_collection_noun: [animal]
 attribute_compatibility:
@@ -1190,6 +1238,8 @@ attribute_compatibility:
     mass_dimension_comparative: [mass_measure]
     duration_dimension_comparative: [duration_measure]
     quantity_location_preposition: [quantity_location]
+    quantity_surface_preposition: [quantity_surface_location]
+    quantity_site_preposition: [quantity_site_location]
     quantity_remainder_preposition: [remnant]
 context_synonyms:
     appendage:

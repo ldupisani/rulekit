@@ -28,6 +28,7 @@ from ..kernel.patterns import (
     RuleMatchResult,
     is_bare_verb_form,
     is_finite_verb_form,
+    proportional_delta_is_compatible,
     subsumes,
 )
 from .candidate import (
@@ -97,6 +98,7 @@ class _Filler:
     qualifier: str | None = None
     reference_form: Literal["bare", "definite"] | None = None
     kind: str | None = None
+    value: float | None = None
 
 
 @dataclass(frozen=True)
@@ -215,6 +217,7 @@ def _where_blocker(rule: PatternRule) -> list[str]:
             or pred.bound_requires_category is not None
             or pred.bound_requires_form is not None
             or pred.polarity_compatible is not None
+            or pred.proportional_delta_compatible is not None
             or pred.same_presence is not None
             or pred.verb_role_compatible is not None
             or pred.attribute_compatible is not None
@@ -297,7 +300,11 @@ def _fraction_fillers(reg: Registry) -> list[_Filler]:
     """Realize complete fraction phrases from declared number morphology."""
 
     direct = [
-        _Filler(surface, reg.fraction_plurals.get(surface, surface))
+        _Filler(
+            surface,
+            reg.fraction_plurals.get(surface, surface),
+            value=float(reg.fractions[surface]),
+        )
         for surface in sorted(reg.fractions)
         if (
             surface not in reg.fraction_plurals
@@ -305,7 +312,11 @@ def _fraction_fillers(reg: Registry) -> list[_Filler]:
         )
     ]
     counted = [
-        _Filler(f"{count_surface} {plural}", singular)
+        _Filler(
+            f"{count_surface} {plural}",
+            singular,
+            value=float(value) * float(reg.fractions[plural]),
+        )
         for count_surface, value in sorted(reg.numbers.items())
         for plural, singular in sorted(reg.fraction_plurals.items())
         if (
@@ -699,6 +710,22 @@ def _scoped_filler_polarity(
     return best
 
 
+def _proportional_delta_requirements(
+    rule: PatternRule,
+) -> tuple[tuple[str, str, str], ...]:
+    """Return fraction/direction/category triples declared by one rule."""
+
+    return tuple(
+        (
+            pred.proportional_delta_compatible.fraction,
+            pred.proportional_delta_compatible.direction,
+            pred.proportional_delta_compatible.direction_cat,
+        )
+        for pred in rule.where
+        if pred.proportional_delta_compatible is not None
+    )
+
+
 def _distinct_measure_groups(rule: PatternRule) -> tuple[tuple[str, ...], ...]:
     return tuple(
         tuple(pred.distinct_measure)
@@ -965,6 +992,35 @@ def _rule_blockers(
                     f"for {'/'.join(slot for slot, _ in pairs)}"
                 )
         for pred in rule.where:
+            if pred.proportional_delta_compatible is None:
+                continue
+            compatibility = pred.proportional_delta_compatible
+            fraction_token = tokens_by_slot.get(compatibility.fraction)
+            direction_token = tokens_by_slot.get(compatibility.direction)
+
+            def delta_ok(fraction: _Filler, direction: _Filler) -> bool:
+                polarity = _scoped_filler_polarity(
+                    direction, compatibility.direction_cat, reg
+                )
+                return proportional_delta_is_compatible(
+                    fraction.value, polarity
+                )
+
+            if (
+                fraction_token is None
+                or direction_token is None
+                or not any(
+                    delta_ok(fraction, direction)
+                    for fraction in safe_domain(fraction_token)
+                    for direction in safe_domain(direction_token)
+                )
+            ):
+                blockers.append(
+                    "no project-backed proportional delta assignment exists "
+                    f"for {compatibility.fraction}/"
+                    f"{compatibility.direction}"
+                )
+        for pred in rule.where:
             if pred.verb_role_compatible is None:
                 continue
             compatibility = pred.verb_role_compatible
@@ -982,6 +1038,10 @@ def _rule_blockers(
                 if compatibility.role_cat is not None:
                     return (
                         role.kind == "name"
+                        or (
+                            compatibility.allow_plural_class
+                            and role.number == "plural"
+                        )
                         or reg.word_in_category(
                             role.identity, compatibility.role_cat
                         )
@@ -1091,6 +1151,7 @@ def _constraint_groups(
             str,
             str | None,
             str | None,
+            bool,
         ]
     ],
     list[tuple[str, str]],
@@ -1114,6 +1175,7 @@ def _constraint_groups(
             str,
             str | None,
             str | None,
+            bool,
         ]
     ] = []
     slot_category_exclusions = list(_slot_category_exclusions(rule))
@@ -1179,6 +1241,7 @@ def _constraint_groups(
                     pred.verb_role_compatible.verb_cat,
                     pred.verb_role_compatible.role_cat,
                     pred.verb_role_compatible.excluded_role_cat,
+                    pred.verb_role_compatible.allow_plural_class,
                 )
             )
     return (
@@ -1218,6 +1281,7 @@ def _allowed_fillers(
     active_slots: set[str],
     slot_category_exclusions: list[tuple[str, str]],
     absent_categories: tuple[str, ...],
+    proportional_delta_requirements: tuple[tuple[str, str, str], ...] = (),
     number_compatible_groups: list[set[str]] | tuple[set[str], ...] = (),
     polarity_compatible_groups: (
         list[tuple[tuple[str, str], ...]]
@@ -1437,12 +1501,54 @@ def _allowed_fillers(
                 )
             ):
                 return False
+        for fraction_name, direction_name, direction_category in (
+            proportional_delta_requirements
+        ):
+            def delta_ok(
+                fraction: _Filler, direction: _Filler
+            ) -> bool:
+                polarity = _scoped_filler_polarity(
+                    direction, direction_category, reg
+                )
+                return proportional_delta_is_compatible(
+                    fraction.value, polarity
+                )
+
+            if token.slot == fraction_name:
+                direction = known_filler(direction_name)
+                if direction is not None and not delta_ok(filler, direction):
+                    return False
+                if (
+                    direction is None
+                    and direction_name in active_slots
+                    and not any(
+                        delta_ok(filler, candidate)
+                        for candidate in _domain(
+                            tokens_by_slot[direction_name], reg, fixtures
+                        )
+                        if _outside_categories(
+                            candidate, absent_categories, reg
+                        )
+                        and _outside_slot_categories(
+                            candidate,
+                            direction_name,
+                            slot_category_exclusions,
+                            reg,
+                        )
+                    )
+                ):
+                    return False
+            if token.slot == direction_name:
+                fraction = known_filler(fraction_name)
+                if fraction is not None and not delta_ok(fraction, filler):
+                    return False
         for (
             verb_name,
             role_names,
             verb_category,
             role_category,
             excluded_role_category,
+            allow_plural_class,
         ) in verb_role_requirements:
             def role_ok(verb: _Filler, role: _Filler) -> bool:
                 if not reg.word_in_category(
@@ -1452,6 +1558,10 @@ def _allowed_fillers(
                 if role_category is not None:
                     return (
                         role.kind == "name"
+                        or (
+                            allow_plural_class
+                            and role.number == "plural"
+                        )
                         or reg.word_in_category(
                             role.identity, role_category
                         )
@@ -1672,6 +1782,7 @@ def _realize(
         absent_categories,
     ) = _constraint_groups(rule)
     unbound_optional_paths = _unbound_optional_paths(rule, seq)
+    proportional_delta_requirements = _proportional_delta_requirements(rule)
     locked_fillers = _resolve_locked_fillers(
         seq, reg, fixtures, locked_bindings
     )
@@ -1786,6 +1897,7 @@ def _realize(
                 active_slots,
                 slot_category_exclusions,
                 absent_categories,
+                proportional_delta_requirements,
                 number_compatible_groups,
                 polarity_compatible_groups,
                 bound_type_requirements,
@@ -2317,6 +2429,7 @@ _WHERE_FIELDS = (
     "bound_requires_category",
     "bound_requires_form",
     "polarity_compatible",
+    "proportional_delta_compatible",
     "same_presence",
     "verb_role_compatible",
     "same_phrase",
@@ -2372,6 +2485,13 @@ def _where_expression(rule: PatternRule, index: int) -> tuple[str, tuple[str, ..
                 value.slots, value.categories, strict=True
             )
         )
+    elif kind == "proportional_delta_compatible":
+        names = (value.fraction, value.direction)
+        rendered = (
+            f"fraction={value.fraction!r}, "
+            f"direction={value.direction!r}, "
+            f"direction_cat={value.direction_cat!r}"
+        )
     elif kind == "verb_role_compatible":
         names = (value.verb, *value.roles)
         role_boundary = (
@@ -2381,7 +2501,8 @@ def _where_expression(rule: PatternRule, index: int) -> tuple[str, tuple[str, ..
         )
         rendered = (
             f"verb={value.verb!r}, roles={value.roles!r}, "
-            f"verb_cat={value.verb_cat!r}, {role_boundary}"
+            f"verb_cat={value.verb_cat!r}, {role_boundary}, "
+            f"allow_plural_class={value.allow_plural_class!r}"
         )
     elif kind == "distinct_from_owner":
         names = (value.entity, value.possessed)
@@ -2476,6 +2597,28 @@ def _where_reason(
                 + f" within {category!r}"
             )
         return "; ".join(rendered)
+    if pred.proportional_delta_compatible is not None:
+        compatibility = pred.proportional_delta_compatible
+        fraction_units = _slot_units(slots.get(compatibility.fraction))
+        direction_units = _slot_units(slots.get(compatibility.direction))
+        if not fraction_units or not direction_units:
+            return "the target match did not expose both proportional roles"
+        value = fraction_units[0].features.get("value")
+        direction = direction_units[0]
+        polarity = _scoped_filler_polarity(
+            _Filler(
+                surface=direction.surface,
+                identity=_unit_lemma(direction, reg),
+            ),
+            compatibility.direction_cat,
+            reg,
+        )
+        boundary = "unbounded increase" if polarity == 1 else "at most 1"
+        return (
+            f"{compatibility.fraction}={value!r}, "
+            f"{compatibility.direction}={direction.surface!r} had declared "
+            f"polarity {polarity!r}; allowed magnitude was {boundary}"
+        )
     if pred.verb_role_compatible is not None:
         compatibility = pred.verb_role_compatible
         verb_units = _slot_units(slots.get(compatibility.verb))
@@ -2498,6 +2641,8 @@ def _where_reason(
             boundary = (
                 f"required {compatibility.role_cat!r} or proper-name roles"
             )
+            if compatibility.allow_plural_class:
+                boundary += " or a plural comparison class"
         else:
             boundary = (
                 f"excluded {compatibility.excluded_role_cat!r} roles"
@@ -2884,6 +3029,12 @@ def _explain_candidate(
             where_sources.extend(
                 project.source_index.categories.get(category)
                 for category in predicate.polarity_compatible.categories
+            )
+        if predicate.proportional_delta_compatible is not None:
+            where_sources.append(
+                project.source_index.categories.get(
+                    predicate.proportional_delta_compatible.direction_cat
+                )
             )
         if predicate.verb_role_compatible is not None:
             role_category = (

@@ -1,63 +1,23 @@
 format: rulekit/rules@1
-# Minimum-structure rule: only the grammatical skeleton is literal; every
-# content word is a captured, gated slot. Rules emit FACTS — the shared
-# saturate/answer pipeline finishes. There is no priority field anywhere.
+# Authoring principles
 #
-# EVERY relation rule's `std` slot is preceded by an optional, SKIPPABLE
-# appositive prefix (mining candidate appositive-relation-standards):
-#   - opt:
-#       - {slot: appos_det, cat: possessive_determiner}
-#       - {slot: appos_role, cat: animate}
-# "than his friend Sam" / "than her sister, Gigi" — a possessive determiner
-# (his/her/their/its; pack-declared `possessive_determiner`, unconditional —
-# the category never requires the pronoun's cross-sentence `refers` to
-# resolve) plus a person-denoting `animate` role noun directly describes an
-# upcoming NAME rather than being the standard itself. The shared
-# `bound_requires_type` predicate enforces that last condition: without the
-# optional prefix a referential common-noun standard remains supported; once
-# the role binds, the following standard must be a proper name. When both
-# are present immediately after 'than'/'as' (SKIPPABLE_SENSES already
-# auto-skips a trailing comma between the role noun and the name, same as
-# every other punct-adjacent match today), the opt block consumes them and
-# `std` binds the NAME that follows, exactly as arithmetic/anchored-
-# relation's own header comment already does for a bare possessive common
-# noun. When no such [possessive determiner, animate role] pair sits there,
-# the opt block cannot match at all and the sequence is
-# byte-identical to before this candidate — `std` binds the very next
-# unit exactly as every existing rule already does. When the appositive
-# pair IS present but nothing entity-shaped follows it (a bare "than his
-# sister" with no trailing name) the whole match fails at this position,
-# same net decline as today (a bare possessive pronoun immediately after
-# 'than' only ever satisfied `type: entity` when independently resolved,
-# which a bare kinship-noun tail does not change). No word list enters
-# Python: the vocabulary boundary is pack-declared category data.
+# Keep literal text to the grammatical frame. Capture content words in typed
+# or category-gated slots. Read rules emit facts; later stages combine those
+# facts and answer questions. Rule order does not set priority.
 #
-# EVERY same-holder comparative relation rule whose measure NP sits
-# directly before the 'as'/'than' that introduces the standard (mining
-# candidate cross-measure-relation-fixes) ALSO gets a second, independent
-# SKIPPABLE prefix right before that literal:
-#   - opt:
-#       - {slot: pp_prep, cat: preposition}
-#       - opt:
-#           - {slot: pp_det, cat: possessive_determiner}
-#       - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
-# "twice as many shoes IN HIS WARDROBE as belts" — a locative PP
-# interrupting the measure noun and the comparative literal. `pp_prep`
-# is gated on the (pre-existing) `preposition` sense-category — 'as' and
-# 'than' are lexiconed `particle`, never `preposition`, so this opt block
-# can never fire ON the comparative literal itself and steal its span.
-# The inner opt for `pp_det` is explicitly gated to a POSSESSIVE determiner.
-# An article ('in THE wardrobe', 'at A school') needs no slot at all —
-# SKIPPABLE_SENSES auto-skips it, while `referential: true` verifies the
-# phrase. Pack-declared `bare_pp_object` nouns retain independently licensed
-# adjuncts such as "by day". `pp_obj` is bound but never read by any `emits:` template
-# (structural consumption only, so the general fold can't independently
-# misread the PP as something else) — the same "widen the match span,
-# add no new emitted field" shape increment 90's appositive prefix uses.
-# When no preposition sits there, `_slot_ok` fails on the very first
-# token of the opt block and `_try_match_at` falls straight through
-# (patterns.py) with zero units consumed — the no-PP case is
-# byte-identical to before this candidate.
+# A relation standard may include a short description before a proper name:
+# "than his friend Sam" or "than her sister, Gigi". In that case,
+# `appos_det` and `appos_role` consume the description and `std` binds the
+# name. If no description is present, `std` may still bind any supported
+# entity. `bound_requires_type` prevents an unfinished description such as
+# "than his sister" from being treated as a complete standard.
+#
+# A comparative measure may include a location before "as" or "than":
+# "twice as many shoes in his wardrobe as belts". The optional PP is part of
+# the sentence structure but does not add fields to the emitted fact. Its noun
+# must be referential, unless its category explicitly allows a bare PP object.
+# Because "as" and "than" are particles, they cannot be mistaken for the
+# optional preposition.
 rules:
   - id: arithmetic/anchored-relation
     phase: read
@@ -879,7 +839,7 @@ rules:
       arithmetic/anchored-relation — see its comment.
     match:
       sentence:
-        - {slot: who, type: entity}
+        - {slot: who, type: entity, referential: true, bare_reference_category: bare_entity_reference}
         - {slot: verb, type: verb}
         - {slot: k, type: multiplier}
         - {lit: as}
@@ -894,12 +854,15 @@ rules:
         - opt:
             - {slot: appos_det, cat: possessive_determiner}
             - {slot: appos_role, cat: animate}
-        - {slot: std, type: entity}
+        - {slot: std, type: entity, referential: true}
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - number_compatible: [who, verb]
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: std, cat: non_quantity_holder}
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - distinct: [who, std]
@@ -930,7 +893,7 @@ rules:
       same self-reference guard as arithmetic/times-as-many.
     match:
       sentence:
-        - {slot: who, type: entity}
+        - {slot: who, type: entity, referential: true}
         - {slot: verb, type: verb}
         - {slot: k, type: multiplier}
         - {lit: as}
@@ -939,12 +902,15 @@ rules:
         - opt:
             - {slot: appos_det, cat: animate_possessive_determiner}
             - {slot: appos_role, cat: animate}
-        - {slot: std, type: entity}
+        - {slot: std, type: entity, referential: true}
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - number_compatible: [who, verb]
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: std, cat: non_quantity_holder}
       - distinct: [who, std]
     emits:
       - fact: relation
@@ -996,7 +962,7 @@ rules:
       `who, type: entity`: same widening as arithmetic/times-as-many.
     match:
       sentence:
-        - {slot: who, type: entity}
+        - {slot: who, type: entity, referential: true}
         - {slot: verb, type: verb}
         - {slot: k, type: multiplier}
         - {lit: as}
@@ -1016,6 +982,7 @@ rules:
     where:
       - bound_requires_type: {bound: appos_role, slot: std_seen, type: proper_name}
       - number_compatible: [who, verb]
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
@@ -1061,7 +1028,7 @@ rules:
       and THIS rule's match is in turn dropped by the same mechanism.
     match:
       sentence:
-        - {slot: who, type: entity}
+        - {slot: who, type: entity, referential: true}
         - {slot: verb, type: verb}
         - {slot: k, type: multiplier}
         - {lit: as}
@@ -1077,8 +1044,11 @@ rules:
         - {slot: std, type: noun}
     where:
       - number_compatible: [who, verb]
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: std, cat: non_quantity_holder}
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - distinct: [who, std]
@@ -1094,41 +1064,17 @@ rules:
         subject_label: "{who.label}"
         standard_label: "{std.label}"
 
-  # mining candidate conjunct-comparative-quantities: the four rules below
-  # read a comparative multiplier standing as the SECOND conjunct of a
-  # verb's object list — "Sam has 21 pens and twice as many pencils (as
-  # Jamie)", "a truck holds 20 large boxes and twice as many small ones",
-  # "the bird caught 8 fish by day and twice this many by night" — a shape
-  # the general verb->dobj binding cannot reach at all: it only ever
-  # captures the FIRST conjunct (HANDOFF's own invariant; increment 11/35
-  # closed the gap for purchase/state BARE-NOUN second conjuncts only — a
-  # comparative conjunct is a different, unbuilt shape neither one covers).
-  # Each rule below matches the WHOLE conjoined clause structurally, the
-  # same "read the full span, emit every fact the general fold would have"
-  # design arithmetic/anchored-relation-conjoined-anchor already uses for a
-  # relation-bearing trailing clause: because the match necessarily spans
-  # the verb and the FIRST conjunct's own dobj too, `pattern_consumed`
-  # (document.py) marks them consumed and learn.py's general fold (its own
-  # `verb.features.get("pattern_consumed")` check) skips this verb
-  # ENTIRELY — so every rule here re-emits the first conjunct's own
-  # Quantity (`item1`) byte-identical to what the general fold would have
-  # produced alone, alongside whatever the second conjunct contributes.
-  # `item1, type: counted` (not a separate number+plural pair): condense.py
-  # merges a bare "NUMBER NOUN" span into ONE unit ("20 parts") carrying
-  # both the lemma and the numeric `value` — the same merged shape
-  # arithmetic/anchored-relation-postfix's own item slot and arithmetic/
-  # anchored-relation-conjoined-anchor's own `std_echo` slot already use.
-  # Unlike every demonstrative/elided-standard sibling ELSEWHERE in this
-  # file (which recover an unknown antecedent via a reserved sentinel
-  # resolved in saturate.py, because the antecedent is a genuinely separate
-  # sentence), the antecedent here is `item1`'s own bound `value` — a
-  # literal ALREADY BOUND in this SAME clause — so the "implicit standard"
-  # rules below emit the second conjunct's Quantity DIRECTLY (`k *
-  # item1`), no Relation, no saturate.py change, no sentinel at all.
-  # `who`/`std, type: entity`: same widening as every other relation rule
-  # in this file. Only the 'many'/plural-countable surface is covered (not
-  # 'much'/mass nouns) — none of this candidate's structural samples used
-  # a mass noun; that sibling is left for follow-up.
+  # Comparative second conjuncts
+  #
+  # These rules read clauses such as "Sam has 21 pens and twice as many
+  # pencils". The general object reader only sees the first conjunct, so a
+  # rule here consumes the whole clause and emits both quantities itself.
+  # `item1` is a counted unit: it carries both the noun and its value.
+  #
+  # When the second conjunct omits a standard, its standard is `item1` in
+  # this same clause. The rule can therefore emit `k * item1` directly.
+  # This family currently covers plural count nouns with "many", not mass
+  # nouns with "much".
   - id: arithmetic/times-as-many-conjunct
     phase: read
     description: >
@@ -1140,7 +1086,7 @@ rules:
       shared consumption/re-emission mechanism.
     match:
       sentence:
-        - {slot: who, type: entity}
+        - {slot: who, type: entity, referential: true}
         - {slot: verb, type: verb}
         - {slot: item1, type: counted}
         - opt:
@@ -1157,12 +1103,15 @@ rules:
         - opt:
             - {slot: appos_det, cat: possessive_determiner}
             - {slot: appos_role, cat: animate}
-        - {slot: std, type: entity}
+        - {slot: std, type: entity, referential: true}
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - number_compatible: [who, verb]
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: std, cat: non_quantity_holder}
       - slot_not_category: {slot: item1, cat: many_incompatible_noun}
       - slot_not_category: {slot: item2, cat: many_incompatible_noun}
       - distinct: [who, std]
@@ -1200,7 +1149,7 @@ rules:
       two rules never both fire on the same clause.
     match:
       sentence:
-        - {slot: who, type: entity}
+        - {slot: who, type: entity, referential: true}
         - {slot: verb, type: verb}
         - {slot: item1, type: counted}
         - opt:
@@ -1222,6 +1171,7 @@ rules:
     where:
       - bound_requires_type: {bound: appos_role, slot: std_seen, type: proper_name}
       - number_compatible: [who, verb]
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: item1, cat: many_incompatible_noun}
@@ -1241,22 +1191,10 @@ rules:
         measure_qualifier: "{item2.qualifier}"
         value: "k * item1"
         verb: "{verb}"
-        # mining candidate conjunct-comparative-quantities: a within-
-        # sentence CONJUNCT index (model.py's `segment`, the increment
-        # 11/35 "conjoined-event-conjuncts" mirror) — when item1 and item2
-        # bare-fold to the SAME (measure, measure_qualifier) pair ("20
-        # parts... twice as many parts"), this fact would otherwise
-        # collide at facts.py's admission time with the sibling fact
-        # above, sharing an identical key(). Any non-None value distinct
-        # from the first fact's (implicit) 0 makes facts.py's fifth
-        # collision mirror admit BOTH facts as-is (no rename, unlike the
-        # qualifier/owner/label mirrors) so the ordinary single-entity
-        # fold sums them — exactly the established discipline, just
-        # applied to a genuinely additive COMPARATIVE conjunct (never an
-        # accidental restatement) rather than a bare repeated count. A
-        # cross-measure pair (different lemma or qualifier) never even
-        # reaches this comparison (keys already differ), so `segment` is
-        # inert there — harmless on every path that doesn't need it.
+        # Keep this conjunct separate when both conjuncts use the same
+        # measure. Without `segment`, the two facts would have the same key
+        # and one could be treated as a duplicate. Different measures already
+        # have different keys, so the field has no effect on them.
         segment: 1
 
   - id: arithmetic/times-as-many-conjunct-elided-item
@@ -1279,7 +1217,7 @@ rules:
       family, keeping all three rules mutually exclusive on any one clause.
     match:
       sentence:
-        - {slot: who, type: entity}
+        - {slot: who, type: entity, referential: true}
         - {slot: verb, type: verb}
         - {slot: item1, type: counted}
         - opt:
@@ -1310,6 +1248,7 @@ rules:
       - attribute_compatible: {attribute: pp2_prep, noun: pp2_obj}
       - same_presence: [pp_prep, pp2_prep]
       - number_compatible: [who, verb]
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: verb, cat: frame_prepositional_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
@@ -1328,11 +1267,8 @@ rules:
         measure_qualifier: "{item1.qualifier}"
         value: "k * item1"
         verb: "{verb}"
-        # mining candidate conjunct-comparative-quantities: same-measure
-        # by construction (the item noun is elided, reusing item1's own
-        # measure) — this fact ALWAYS shares its key() with the sibling
-        # fact above, so `segment` (see the elided-standard sibling's own
-        # comment for the full mechanism) always applies here.
+        # The elided item reuses `item1`, so both facts have the same measure
+        # key. `segment` keeps them as separate conjuncts.
         segment: 1
 
   - id: arithmetic/anaphoric-multiplier-conjunct-many
@@ -1361,7 +1297,7 @@ rules:
       machinery rather than risk mis-eliding a stated noun.
     match:
       sentence:
-        - {slot: who, type: entity}
+        - {slot: who, type: entity, referential: true}
         - {slot: verb, type: verb}
         - {slot: item1, type: counted}
         - opt:
@@ -1377,6 +1313,7 @@ rules:
             - {slot: item2_seen, type: plural}
     where:
       - number_compatible: [who, verb]
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: item1, cat: many_incompatible_noun}
@@ -1394,10 +1331,8 @@ rules:
         measure_qualifier: "{item1.qualifier}"
         value: "k * item1"
         verb: "{verb}"
-        # mining candidate conjunct-comparative-quantities: same-measure by
-        # construction (the item noun is elided, anaphoric to item1's own
-        # measure) — see arithmetic/times-as-many-conjunct-elided-item's
-        # comment for the full `segment` mechanism.
+        # The anaphor reuses `item1`, so both facts have the same measure key.
+        # `segment` keeps them as separate conjuncts.
         segment: 1
 
   - id: arithmetic/times-as-much
@@ -1713,9 +1648,11 @@ rules:
       a proportional delta over an overt count noun:
       subject = (1 + f·sign(dir)) × standard. The direction is count-only and
       the measure must be a declared plural, so age comparatives and singular
-      count nouns cannot enter this quantity frame. An optional locative or
-      remainder phrase is admitted only through the shared declarative
-      preposition/object compatibility boundary.
+      count nouns cannot enter this quantity frame. An optional locative is
+      admitted only through the shared declarative preposition/object
+      compatibility boundary; remnant PPs belong to conjunct constructions,
+      not to this comparison. Spending comparisons require a currency object.
+      A proportional decrease cannot exceed the whole standard quantity.
     match:
       sentence:
         - {slot: who, type: name}
@@ -1737,9 +1674,12 @@ rules:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - number_compatible: [who, verb]
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: spend_verb, role_cat: currency}
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - slot_not_category: {slot: item, cat: mass_quantity_noun}
+      - slot_not_category: {slot: pp_prep, cat: quantity_remainder_preposition}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
+      - proportional_delta_compatible: {fraction: f, direction: dir, direction_cat: delta}
       - distinct: [who, std]
     consumes: [f]
     emits:
@@ -1759,7 +1699,10 @@ rules:
       Relation semantics while making countability and comparative morphology
       explicit: mass_quantity_delta supplies "less/more", and
       mass_quantity_noun supplies an independently declared mass measure.
-      Optional PP material retains the same declarative compatibility gate.
+      Optional PP material is location-only; remnant PPs belong to conjunct
+      constructions. Spending comparisons require a currency object, while
+      other verbs can still expose legitimate mass measures such as rest.
+      A proportional decrease cannot exceed the whole standard quantity.
     match:
       sentence:
         - {slot: who, type: name}
@@ -1781,7 +1724,10 @@ rules:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - number_compatible: [who, verb]
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: spend_verb, role_cat: currency}
+      - slot_not_category: {slot: pp_prep, cat: quantity_remainder_preposition}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
+      - proportional_delta_compatible: {fraction: f, direction: dir, direction_cat: delta}
       - distinct: [who, std]
     consumes: [f]
     emits:
@@ -1805,6 +1751,8 @@ rules:
       IMMEDIATELY after the delta word, so this can never match text that
       states the item noun. `who`/`std, type: name`: unwidened, matching
       fraction-delta-relation's own (not-yet-widened) slot types.
+      The shared proportional-delta guard keeps decreases at or below 100%;
+      increases remain unbounded.
     match:
       sentence:
         - {slot: who, type: name}
@@ -1818,6 +1766,7 @@ rules:
         - {slot: std, type: name}
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - proportional_delta_compatible: {fraction: f, direction: dir, direction_cat: delta}
       - distinct: [who, std]
     consumes: [f]
     emits:
@@ -2412,7 +2361,7 @@ rules:
       arithmetic/anchored-relation — see its comment.
     match:
       sentence:
-        - {slot: who, type: entity}
+        - {slot: who, type: entity, referential: true}
         - {slot: verb, type: verb}
         - {slot: f, type: fraction}
         - {lit: as}
@@ -2431,7 +2380,10 @@ rules:
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - number_compatible: [who, verb]
-      - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: spend_verb, role_cat: animate}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: spend_verb, role_cat: animate}
+      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: spend_verb, role_cat: animate, allow_plural_class: true}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: std, cat: non_quantity_holder}
@@ -2463,7 +2415,7 @@ rules:
       type: entity`: same widening as arithmetic/fraction-as-many.
     match:
       sentence:
-        - {slot: who, type: entity}
+        - {slot: who, type: entity, referential: true}
         - {slot: verb, type: verb}
         - {slot: f, type: fraction}
         - {lit: as}
@@ -2476,6 +2428,8 @@ rules:
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - number_compatible: [who, verb]
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: std, cat: non_quantity_holder}
@@ -2514,7 +2468,7 @@ rules:
       arithmetic/fraction-as-many.
     match:
       sentence:
-        - {slot: who, type: entity}
+        - {slot: who, type: entity, referential: true}
         - {slot: verb, type: verb}
         - {slot: f, type: fraction}
         - {lit: as}
@@ -2534,6 +2488,7 @@ rules:
     where:
       - bound_requires_type: {bound: appos_role, slot: std_seen, type: proper_name}
       - number_compatible: [who, verb]
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
@@ -2692,9 +2647,10 @@ rules:
       times" as one token (numbers.py), so no separate 'times' literal is
       needed, mirroring every other relation rule in this file. The
       introducer is mandatory. `consume_skipped` lets one literal
-      alternation claim complementizer-sensed "that", article-sensed
-      "this", or comparative particle "as" for the much/many siblings;
-      the noun-headed amount/number/price siblings instead require
+      alternation claim complementizer-sensed "that" or article-sensed
+      "this"; the `-as-much` and `-as-many` siblings below own the
+      comparative particle separately because only that form must be
+      item-elided. The noun-headed amount/number/price siblings require
       "that", "this", or the definite article "the". This accepts ordinary
       "twice that many", "twice this much", "twice as many", and "three
       times the amount" while refusing bare "twice many/much/amount".
@@ -2724,24 +2680,56 @@ rules:
       general gate is: decline this whole family whenever 'of' appears
       ANYWHERE in the sentence, rather than risk binding the wrong
       standard to whichever entity the frame construction actually names.
+      Demonstrative anaphors may name their measure ("that many pounds"),
+      so they cannot share the explicit-item guard required by "as many".
     match:
       sentence:
         - {slot: who, type: entity}
         - {slot: verb, type: verb}
         - {slot: k, type: multiplier}
-        - {lit: [that, this, as], consume_skipped: true}
+        - {lit: [that, this], consume_skipped: true}
+        - {lit: much}
+        - opt:
+            - {lit: as}
+            - {slot: direct_std_seen, type: entity}
+    where:
+      - number_compatible: [who, verb]
+      - absent: {cat: partitive}
+      - unbound: [direct_std_seen]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "$anaphor:quantity$"
+        measure: null
+        factor: "k"
+        offset: 0.0
+        verb: "{verb}"
+        subject_label: "{who.label}"
+
+  - id: arithmetic/anaphoric-multiplier-standard-as-much
+    phase: read
+    description: >
+      The item-elided "twice as much" form. It points back to the unique
+      earlier quantity, but only when no explicit measure or comparison
+      standard follows. The two optional slots are continuation sentinels:
+      if either binds, this short anaphoric rule declines and leaves the
+      complete comparison to its owning rule.
+    match:
+      sentence:
+        - {slot: who, type: entity}
+        - {slot: verb, type: verb}
+        - {slot: k, type: multiplier}
+        - {lit: as, consume_skipped: true}
         - {lit: much}
         - opt:
             - {lit: as}
             - {slot: direct_std_seen, type: entity}
         - opt:
             - {slot: item_std_seen, type: noun}
-            - {lit: as}
-            - {slot: item_anchor_seen, type: entity}
     where:
       - number_compatible: [who, verb]
       - absent: {cat: partitive}
-      - unbound: [direct_std_seen, item_anchor_seen]
+      - unbound: [direct_std_seen, item_std_seen]
     emits:
       - fact: relation
         subject: "{who}"
@@ -2758,28 +2746,59 @@ rules:
       mining candidate anaphoric-multiplier-standards: the '-many' sibling
       of arithmetic/anaphoric-multiplier-standard-much — see its
       description for the full mechanism. The quantity anaphor must be
-      introduced by demonstrative "that/this" or comparative "as"; bare
-      "twice many" is not English. Literally gated on 'many' rather than
+      introduced by demonstrative "that/this"; the item-elided comparative
+      "as" form belongs to the sibling below. Bare "twice many" is not
+      English. Literally gated on 'many' rather than
       through a shared category for the same lexicon root-sense reason
-      (also documented there).
+      (also documented there). Demonstrative forms may retain an explicit
+      measure, as in "three times that many pounds".
     match:
       sentence:
         - {slot: who, type: entity}
         - {slot: verb, type: verb}
         - {slot: k, type: multiplier}
-        - {lit: [that, this, as], consume_skipped: true}
+        - {lit: [that, this], consume_skipped: true}
+        - {lit: many}
+        - opt:
+            - {lit: as}
+            - {slot: direct_std_seen, type: entity}
+    where:
+      - number_compatible: [who, verb]
+      - absent: {cat: partitive}
+      - unbound: [direct_std_seen]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "$anaphor:quantity$"
+        measure: null
+        factor: "k"
+        offset: 0.0
+        verb: "{verb}"
+        subject_label: "{who.label}"
+
+  - id: arithmetic/anaphoric-multiplier-standard-as-many
+    phase: read
+    description: >
+      The item-elided "twice as many" form. It points back to the unique
+      earlier quantity, but only when no explicit plural measure or
+      comparison standard follows. This prevents the short rule from
+      accepting the prefix of a longer comparison that another rule rejects.
+    match:
+      sentence:
+        - {slot: who, type: entity}
+        - {slot: verb, type: verb}
+        - {slot: k, type: multiplier}
+        - {lit: as, consume_skipped: true}
         - {lit: many}
         - opt:
             - {lit: as}
             - {slot: direct_std_seen, type: entity}
         - opt:
             - {slot: item_std_seen, type: plural}
-            - {lit: as}
-            - {slot: item_anchor_seen, type: entity}
     where:
       - number_compatible: [who, verb]
       - absent: {cat: partitive}
-      - unbound: [direct_std_seen, item_anchor_seen]
+      - unbound: [direct_std_seen, item_std_seen]
     emits:
       - fact: relation
         subject: "{who}"
@@ -2871,7 +2890,7 @@ rules:
       arithmetic/anchored-relation — see its comment.
     match:
       sentence:
-        - {slot: who, type: entity}
+        - {slot: who, type: entity, referential: true}
         - {slot: verb, type: verb}
         - {slot: n, type: number}
         - {slot: dir, cat: quantity_delta}
@@ -2889,13 +2908,17 @@ rules:
         - opt:
             - {slot: appos_det, cat: possessive_determiner}
             - {slot: appos_role, cat: animate}
-        - {slot: std, type: entity}
+        - {slot: std, type: entity, referential: true}
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - number_compatible: [who, verb]
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: std, cat: non_quantity_holder}
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - distinct: [who, std]
       - distinct: [item, std]
     consumes: [n]
@@ -2922,7 +2945,7 @@ rules:
       referential guard as arithmetic/anchored-relation — see its comment.
     match:
       sentence:
-        - {slot: who, type: entity}
+        - {slot: who, type: entity, referential: true}
         - {slot: verb, type: verb}
         - {slot: n, type: number}
         - {slot: dir, cat: quantity_delta}
@@ -2944,6 +2967,8 @@ rules:
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - number_compatible: [who, verb]
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: verb, cat: frame_prepositional_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
@@ -4531,17 +4556,9 @@ rules:
 
 asks:
   - id: ask/how-many-in-place
-    # `place_fallback_entity: world` (mining candidate complement-labeled-
-    # subsets): the single-entity consumer's OWN opt-in fallback (see its
-    # comment, answer.py) — bound ONLY here, mirroring the existing
-    # `exclude_entity: world` precedent (bound only by
-    # ask/how-many-there-combined for the 'combined' consumer): a shared
-    # consumer widened for ONE caller via a defaulted-off parameter, never
-    # globally (the HANDOFF invariant), and the fallback entity itself is
-    # pack DATA (the `world` scene constant), never a hardcoded string in
-    # the Python consumer. Every other single-entity ask in this file
-    # (named-entity asks like ask/how-many-entity) leaves it unset and is
-    # therefore untouched by the fallback.
+    # If the named place has no matching fact, this rule alone may retry the
+    # pack-owned `world` scene. Other single-entity questions do not use this
+    # fallback.
     match:
       question:
         - {lit: how}
@@ -4556,55 +4573,19 @@ asks:
       measure: "{item}"
       verb: have
       place_fallback_entity: world
-      # mining candidate qualified-measure-keys, gap (b): "There are 16 red
-      # apples in a bowl. There are 28 green apples in the bowl. How many
-      # apples are in the bowl?" — both existential premises now carry
-      # `measure_qualifier` (see arithmetic/existential-premise's own
-      # comment), so facts.py's admit-time split re-keys them into
-      # 'apple[red]'/'apple[green]' instead of conflicting; this bare
-      # "how many apples" ask sums the qualified siblings the same opt-in
-      # way ask/how-many-entity does — see `_qualified_variant_total`'s
-      # decline-safety docstring.
+      # A bare measure may sum compatible qualified variants. For example,
+      # "red apples" and "green apples" can answer "how many apples?"
       sum_measure_variants: "true"
-      # the PLACE's own qualifier ("how many pages are in the FIRST
-      # chapter?") — the entity-side twin of `measure_qualifier` above,
-      # and the same opt-in no-op-when-empty contract: without it this
-      # ask silently WIDENED a qualified place to its bare noun, and the
-      # single-entity fold answered the SECOND chapter's 36 pages for a
-      # question about the FIRST (a live confident-wrong; the consumer's
-      # qualifier_store machinery existed all along — nothing bound it).
+      # Preserve a place qualifier so "the first chapter" cannot resolve to
+      # facts about another chapter.
       entity_qualifier: "{place.qualifier}"
 
   - id: ask/how-many-in-place-partitive
-    # "how many CUPS OF FLOUR are/were left in the bowl?" (mining candidate
-    # partitive-measure-asks) — the PARTITIVE-NP sibling of
-    # ask/how-many-in-place: that ask's `item` slot binds only a BARE
-    # measure noun immediately followed by verb/prep/place; no ask in this
-    # file could bind a POSTNOMINAL "of SUBSTANCE" qualifier on an
-    # entity-less in-place read at all (postnominal partitives were only
-    # ever wired to the entity-less "there"/"left" siblings' DECLINE-SAFETY
-    # guard via `measure_substance`, never to a real qualified-key lookup).
-    # Here `qual` instead feeds `measure_qualifier`, the SAME field
-    # condense.py's merge-attribute/merge-compound already writes for
-    # adjective-qualified measures ("12 white marbles") and learn.py's
-    # `_measure_substance` mirrors for partitive substances (see
-    # `_measure_substance`'s own docstring) — so "how many cups of flour"
-    # resolves the exact premise key `cup[flour]` the single-entity
-    # consumer's `measure_qualifier` branch already knows how to retry
-    # (answer.py, increment 70's qualified-measure-keys), not a bare
-    # 'cup' fold across every substance in the document.
-    #
-    # `of`/`qual` are REQUIRED (not optional): this is a NEW ask id, not a
-    # widening of ask/how-many-in-place's own match, so it consumes 2 MORE
-    # units (item/of/qual/verb/prep/place = 6) than that ask's own
-    # (item/verb/prep/place = 4) whenever both could apply — but in fact
-    # they never both apply to the same text: ask/how-many-in-place
-    # requires `verb` immediately after `item` with no token in between, so
-    # a genuine partitive tail ("of flour") fails THAT ask's match outright
-    # (not a partial/tied match) the moment the literal 'of' appears where
-    # `verb` was expected. Symmetrically, non-partitive text has no 'of'
-    # token here for this ask to consume, so this ask simply fails to
-    # match it. Never a tie either direction.
+    # Handles a qualified measure in a location question, such as "how many
+    # cups of flour are left in the bowl?" `qual` selects the exact
+    # `cup[flour]` measure instead of combining cups of different substances.
+    # The "of QUALIFIER" tail is required, so this rule cannot compete with
+    # the bare-measure `ask/how-many-in-place` rule.
     match:
       question:
         - {lit: how}
@@ -4630,10 +4611,7 @@ asks:
         - {lit: many}
         - {slot: item, type: noun}
         - opt:
-            # `future_modal`, not `auxiliary` (mining candidate
-            # will-tense-asks): also accepts "how many X will/would they
-            # have altogether" alongside the ordinary "do/does/did" form —
-            # see ask/how-many-entity's comment for the class rationale.
+            # Accept ordinary and will/would forms, but not capacity modals.
             - {slot: aux, type: future_modal}
             - {slot: who, type: pronoun}
             - {slot: verb, type: verb}
@@ -4646,32 +4624,11 @@ asks:
       verb: "{verb}"
 
   - id: ask/how-many-combined-in-all
-    # mining candidate combined-ask-holder-surfaces (parked-pile reland,
-    # originally mined as mining/parked/in-all-totality-tails): sibling
-    # of ask/how-many-combined for the "in all" totality tail, which the
-    # matcher cannot express as an alternative WITHIN that ask (there is
-    # no alternation over token SEQUENCES — `all` also carries the
-    # unrelated `quantifier` sense, so it cannot simply join the
-    # `aggregate` category the way 'total'/'altogether'/'combined'/
-    # 'together' do without also flipping the `absent: {cat: aggregate}`
-    # premise gates in arithmetic/existential-premise(-bare) for every
-    # quantifier-'all' sentence). A literal [in, all] tail, scoped to
-    # this ask id only, is the constitution-clean fix: literals are
-    # grammatical skeleton.
-    #
-    # ⚠ THIS COMMENT USED TO READ "there is no OR primitive over match
-    # tokens". There is one now — `lit` accepts a list (schemas.MatchToken) —
-    # and it was built for exactly this shape of blocker: a word whose extra
-    # sense bars it from the category it belongs to. IT STILL DOES NOT SOLVE
-    # THIS CASE, and the distinction is the useful part: what varies here is
-    # not one WORD but a two-token RUN ("in all") standing where
-    # ask/how-many-combined has a single `{slot: agg, cat: aggregate}`. That
-    # needs alternation over token SEQUENCES, which does not exist and is not
-    # planned. Do not "finish the job" by reaching for `lit:` here.
-    # Never a tie/shadow risk with ask/how-many-
-    # combined: 'all' fails that ask's required `agg, cat: aggregate`
-    # token outright (no partial match), so the two asks never compete
-    # for the same question.
+    # Handles the two-word total marker "in all". It needs its own rule
+    # because the base rule expects one aggregate token, while this marker is
+    # a two-token sequence. Do not add `all` to the aggregate category: it is
+    # also a general quantifier. The base rule cannot match this tail, so the
+    # two rules do not compete.
     match:
       question:
         - {lit: how}
@@ -4689,20 +4646,9 @@ asks:
       verb: "{verb}"
 
   - id: ask/how-many-combined-named
-    # "how many ITEM do/does/did NAME and NAME have together/in total/
-    # altogether?" (mining candidate named-pair-combined) — the named-pair
-    # sibling of ask/how-many-combined, binding the two holders DIRECTLY
-    # the same way ask/what-is-the-difference-named binds its a/b instead
-    # of resolving them from the pronoun-only fact enumeration. `aux,
-    # type: auxiliary` (not `future_modal` like the pronoun sibling): the
-    # do/does/did class is the narrower, exact cut this candidate targets.
-    #
-    # Never a tie/shadow risk with ask/how-many-combined: that ask's own
-    # opt group binds `who, type: pronoun`, which a proper name can never
-    # satisfy, so it fails to match a named-pair question at all rather
-    # than partially matching and tying on consumed units. This ask is
-    # also strictly more specific regardless (required item/aux/a/and/b/
-    # verb tokens vs. the pronoun sibling's mostly-optional group).
+    # Handles totals for two named holders, such as "how many books do Ana
+    # and Ben have together?" It binds both names directly. The pronoun form
+    # cannot match a named pair, so it remains separate.
     match:
       question:
         - {lit: how}
@@ -4724,14 +4670,8 @@ asks:
       verb: "{verb}"
 
   - id: ask/how-many-combined-named-in-all
-    # mining candidate combined-ask-holder-surfaces (parked-pile reland):
-    # sibling of ask/how-many-combined-named for the "in all" totality
-    # tail — see ask/how-many-combined-in-all's comment for the class
-    # rationale (no alternation over token SEQUENCES; a literal [in, all]
-    # tail scoped to this ask id is the constitution-clean fix). Never a
-    # tie/shadow risk with ask/how-many-combined-named for the same
-    # reason documented there: 'all' fails that ask's required `agg`
-    # token outright.
+    # Named-pair form with the two-word marker "in all". The ordinary named
+    # form expects one aggregate token and therefore cannot match this tail.
     match:
       question:
         - {lit: how}
@@ -4752,32 +4692,12 @@ asks:
       verb: "{verb}"
 
   - id: ask/how-many-combined-partitive
-    # "how many CUPS OF FLOUR do they have altogether?" (mining candidate
-    # partitive-measure-asks) — the partitive-NP sibling of
-    # ask/how-many-combined, mirroring ask/how-many-in-place-partitive's
-    # `measure_qualifier` mechanism one consumer over: `qual` feeds
-    # `measure_qualifier` in the query, but `_combined_holder_totals`
-    # itself never reads that key for the FOLD — `measure: "{item}"`
-    # resolving the bare 'cup' measure across the enumerated holders is
-    # what actually drives the total, exactly as ask/how-many-combined
-    # already does.
-    #
-    # `qual` ALSO feeds `measure_substance` (the SAME field ask/how-many-
-    # there-combined and ask/how-many-passive-combined already bind,
-    # partitive-measure-ask-slot's `_measure_substance_guard`, wired into
-    # `_combined_holder_totals` unconditionally): this enumerate-ALL-
-    # holders consumer is the widest-surface case for the sibling-borrow
-    # hazard (a DIFFERENT substance under the same bare measure noun on
-    # some OTHER holder — "Nita has 9 pairs of SOCKS" — would otherwise
-    # silently join the sum for a "pairs of SHOES" question) so the guard
-    # is load-bearing here, not just symmetry.
-    #
-    # `of`/`qual` REQUIRED, inserted right after `item` and before the
-    # existing optional aux/who/verb group: a partitive tail fails ask/
-    # how-many-combined's own match outright (that ask's first token after
-    # `item` must satisfy its opt group's `aux` or fall through to `p`/
-    # `agg`; 'of' satisfies none of them) so there is no partial match to
-    # tie against, in either direction.
+    # Handles combined partitive measures, such as "how many cups of flour
+    # do they have altogether?" `measure_substance` prevents values for a
+    # different substance under the same unit from joining the total—for
+    # example, pairs of socks must not answer a question about pairs of
+    # shoes. The required "of QUALIFIER" tail keeps this rule separate from
+    # the bare-measure form.
     match:
       question:
         - {lit: how}
@@ -4800,15 +4720,8 @@ asks:
       verb: "{verb}"
 
   - id: ask/how-many-combined-partitive-in-all
-    # mining candidate combined-ask-holder-surfaces: the "in all" tail
-    # sibling of ask/how-many-combined-partitive ("how many pairs of
-    # shoes do they have in all?") — same class rationale as ask/how-
-    # many-combined-in-all (no alternation over token SEQUENCES; a literal
-    # [in, all] tail scoped to this ask id, no lexicon change to 'all').
-    # Never a tie with ask/how-many-combined-partitive: that ask's
-    # required trailing `agg, cat: aggregate` token fails outright
-    # against 'all' (a `quantifier`-sense word, not `aggregate`), so the
-    # two never compete for the same question.
+    # Partitive form with the two-word marker "in all". The ordinary
+    # partitive form expects one aggregate token and cannot match this tail.
     match:
       question:
         - {lit: how}
@@ -4830,18 +4743,9 @@ asks:
       verb: "{verb}"
 
   - id: ask/how-many-combined-named-partitive
-    # named-pair sibling of ask/how-many-combined-partitive, mirroring
-    # ask/how-many-combined-named exactly the same way that ask mirrors
-    # ask/how-many-combined (a/b bound directly instead of enumerated) —
-    # see that ask's own comment for the non-tie argument against its
-    # pronoun sibling, which applies here unchanged (a proper name can
-    # never satisfy `who, type: pronoun`, so the two partitive siblings
-    # never compete for the same text either). Binds `measure_substance`
-    # the same way its pronoun sibling does — `_measure_substance_guard`
-    # runs unconditionally inside `_combined_holder_totals` regardless of
-    # whether a/b were named directly or enumerated, so a named pair
-    # holding DIFFERENT substances under the same bare measure still
-    # declines rather than mixing them.
+    # Partitive form for two named holders. It binds both names directly and
+    # uses `measure_substance` to avoid mixing different substances that use
+    # the same unit.
     match:
       question:
         - {lit: how}
@@ -4867,50 +4771,12 @@ asks:
       verb: "{verb}"
 
   - id: ask/how-many-combined-cardinal-pronoun
-    # "how many ITEM do/does/did the CARDINAL of them have TOTAL-MARKER?"
-    # (mining candidate combined-ask-holder-surfaces) — the holder set is
-    # a bare cardinal ("the three") with an optional "of them" tail,
-    # instead of a pronoun (ask/how-many-combined) or an explicit named
-    # pair (ask/how-many-combined-named). Routes to the SAME 'combined'
-    # consumer, entity-less: no a/b bound, so `_combined_holder_totals`
-    # enumerates every holder of the measure exactly as the pronoun ask
-    # does — the cardinal only ASSERTS the group size, it never selects
-    # which entities are summed (that's what `holder_count` below checks).
-    #
-    # `{lit: of}, {lit: them}` are grammatical-skeleton LITERALS, not a
-    # `type: pronoun` slot: this ask requires that exact surface rather than
-    # the complete generic-pronoun domain now declared by core-english.
-    #
-    # `holder_count: "{n.value}"` does double duty: (1) the `.value`
-    # template is what marks the cardinal's own unit CONSUMED for value-
-    # accounting (engine.py's ask-consume scan keys off any
-    # `{slot.value}` reference in `resolves` — the `who_value` precedent
-    # on ask/how-many-plural-combined) — without it, the stated cardinal
-    # would sit unaccounted and a value-accounting guard would veto the
-    # answer outright; (2) `answer.py`'s `combined` branch checks it
-    # against the number of holders actually enumerated from the
-    # premises and declines on a mismatch — "the ask names 3 holders; the
-    # premises give 2" — the precision guard for every story where the
-    # premises under-read a holder (see this candidate's brief risk
-    # note).
-    #
-    # Never a tie with ask/how-many-combined: that ask's own opt group
-    # binds [aux(future_modal), who(pronoun), verb] as ONE atomic
-    # subsequence, and a bare cardinal ("three") satisfies neither
-    # `type: future_modal` nor `type: pronoun`, so it fails outright
-    # rather than partially matching. Never a tie/mismatch risk with
-    # ask/how-many-combined-named ({type: name} pair): a cardinal number
-    # is never `type: name`. May TIE (same consumed-unit count) with the
-    # marked siblings of ask/how-many-plural-combined-cardinal-subject's
-    # OWN family when the subject is a cardinal-merged NOUN carrying an
-    # aggregate marker too (e.g. "the 3 children ... in total" — a
-    # cardinal-merged noun's `value_kind` is also `count`, so it can
-    # satisfy this ask's bare `n, type: number` slot the same way it
-    # satisfies `who, type: plural`/`type: counted` elsewhere): resolved
-    # by the SAME consumer performing the SAME entity-less enumeration
-    # either way, so the computed total is identical regardless of which
-    # ask wins the id-order tie-break, and `holder_count` still checks
-    # out (the cardinal names the same group either family reads it as).
+    # Handles a numbered holder group, such as "how many books do the three
+    # of them have in total?" The cardinal states the expected group size;
+    # it does not choose the holders. `holder_count` makes the consumer check
+    # that the premises actually contain that many holders and also marks the
+    # cardinal as used. The pronoun and named-pair forms cannot match a bare
+    # cardinal.
     match:
       question:
         - {lit: how}
@@ -4951,32 +4817,11 @@ asks:
       verb: "{verb}"
 
   - id: ask/how-many-more-partitive
-    # "how many more PAIRS OF SHOES does Ann have than Bob?" (mining
-    # candidate partitive-measure-asks) — the partitive-NP sibling of
-    # ask/how-many-more: `qual` feeds `measure_qualifier` in the query, but
-    # the `difference` consumer's TOTAL still comes from `measure:
-    # "{item}"` resolved bare and folded per named holder, exactly as
-    # ask/how-many-more already does — sufficient for the class this
-    # candidate evidences ("Ann has 7 pairs of shoes. Bob has 5 pairs of
-    # shoes...") because each holder states only ONE substance under that
-    # measure, so no qualified key is even needed to find it.
-    #
-    # `qual` ALSO feeds `measure_substance` — this candidate's own new
-    # opt-in guard in the `difference` branch of answer.py (mirroring the
-    # pre-existing `single-entity`/`unique-entity`/`combined` call sites of
-    # `_measure_substance_guard`, never called before for this consumer):
-    # a `difference` ask previously had NO decline-safety against Bob
-    # holding a DIFFERENT substance under the same bare measure ("Bob has
-    # 5 pairs of SOCKS") — the guard, scoped to exactly the two resolved
-    # holders, catches that and declines instead of silently answering a
-    # 'shoes' question from Bob's sock count. Every EXISTING (non-
-    # partitive) `difference` ask never binds `measure_substance`, so the
-    # new guard call is a no-op for all of them — zero behavior change.
-    #
-    # `of`/`qual` REQUIRED, inserted right after `item` and before `aux`:
-    # ask/how-many-more's own match requires `aux` immediately after
-    # `item`, so a partitive tail ("of shoes") fails that ask's match
-    # outright — never a partial match to tie against.
+    # Handles differences between qualified measures, such as "how many more
+    # pairs of shoes does Ann have than Bob?" `measure_substance` prevents a
+    # holder's pairs of socks from answering a question about shoes. The
+    # required "of QUALIFIER" tail keeps this rule separate from the bare
+    # measure form.
     match:
       question:
         - {lit: how}
@@ -5000,21 +4845,10 @@ asks:
       verb: "{verb}"
 
   - id: ask/how-many-more-label-comparative
-    # "how many more BOYS than GIRLS are there?" (mining candidate
-    # ratio-split-premises) — an ENTITY-LESS existential comparative
-    # between TWO MEASURE LABELS, never two named holders (ask/how-many-
-    # more's own territory: `a`/`b, type: name` there, completely
-    # untouched by this ask). Routed to a BRAND-NEW consumer
-    # (`label-difference`, answer.py) rather than widening the shared
-    # `difference` branch's own name-comparand slots — the exact
-    # shared-function blast-radius invariant docs/HANDOFF.md's
-    # `_is_rate`/`_price_each_value` lesson and this candidate's own
-    # brief both call out. `a`/`b, type: plural`: plain common nouns, not
-    # names — the consumer resolves each independently to its unique
-    # holder (the SAME exactly-one-holder discipline the pre-existing
-    # 'unique-entity' consumer already uses for "how many X are there?"),
-    # then requires them to share exactly ONE holder, the shape a
-    # ratio-derived label pair always has by construction.
+    # Compares two measure labels, as in "how many more boys than girls are
+    # there?" This is not a comparison between named holders. The consumer
+    # resolves both measures and requires them to belong to exactly one
+    # shared holder.
     match:
       question:
         - {lit: how}
@@ -5031,35 +4865,12 @@ asks:
       b: "{b}"
 
   - id: ask/how-many-more-label-comparative-held
-    # "How many more peaches than apples does Steven have?" (SVAMP
-    # comparative stage) — the HELD sibling of ask/how-many-more-label-
-    # comparative: identical through `b`, differing only in the TAIL. The
-    # existential form ends "are there"; this one names a holder clause
-    # ("does Steven have", "did baker sell", "does he have left").
-    #
-    # The two never tie: that ask requires {cat: state} + {lit: there};
-    # this one requires an AUXILIARY at the same position, and a unit is
-    # never both. `who, type: entity` admits the three holder surfaces the
-    # class actually uses (name 'baker', common noun 'the school',
-    # resolved pronoun 'he') — see patterns.py `type: entity`.
-    #
-    # ⚠ WORD ORDER IS THE GATE, and it is load-bearing. Requiring `than
-    # {b, type: plural}` BEFORE the auxiliary structurally excludes the
-    # 63-item aux-first family ("how many more crayons did he lose THAN
-    # those he gave", "...on monday THAN on tuesday", "...does Jake have
-    # THAN Jill"), which is verb-vs-verb / time-vs-time / entity-vs-entity
-    # wearing a comparative surface — NOT a measure pair. That family
-    # includes the measured misreading hazard "How many more games does
-    # Katie have than her friend?" (gold 62 = (57+39)-34, an entity
-    # difference over a measure FOLD); a rule matching it would commit
-    # 57-39=18. Do NOT relax the tail to reach those items — they are a
-    # different class and need their own reading.
-    #
-    # `who`/`aux`/`verb` bind nothing the consumer reads: `label-
-    # difference` resolves the holder ITSELF from the facts, by the
-    # exactly-one-SHARED-holder discipline, and declines otherwise. So
-    # this increment is ASK-ONLY — no kernel change, no consumer change,
-    # and the consumer's existing decline-safety covers it unmodified.
+    # Held form of the label comparison: "how many more peaches than apples
+    # does Steven have?" The order "A than B" before the auxiliary is
+    # essential. It excludes questions that compare people, times, or
+    # actions instead of two measures. Do not relax that order. The named
+    # holder is a hint; the consumer still requires one shared holder for
+    # both measures.
     match:
       question:
         - {lit: how}
@@ -5091,27 +4902,15 @@ asks:
       verb: "{verb}"
 
   - id: ask/how-many-entity
-    # NOTE (mining candidate pronoun-entity-asks): a widening of `who` to
-    # `type: entity` was tried here and DROPPED — it ties on consumed-unit
-    # count with ask/how-many-entity-possessed and ask/how-many-entity-
-    # qualified (both also 6 tokens: how/many/item/aux/who/verb) and the
-    # alphabetical id tie-break (patterns.match_ask) then routes a
-    # possessive- or attribute-qualified subject HERE instead of to the
-    # narrower ask, dropping their `entity_owner`/`entity_qualifier`
-    # binding and breaking the owner/qualifier-scoped fallback (caught by
-    # tests/test_mining_increment_25.py and _34.py). Left as `type: name`.
+    # Keep `who` restricted to a name. A general entity would overlap the
+    # possessed and qualified forms, losing their owner or qualifier data.
     match:
       question:
         - {lit: how}
         - {lit: many}
         - {slot: item, type: noun}
-        # `future_modal`, not `auxiliary` (mining candidate
-        # will-tense-asks): also accepts "how many X will/would WHO have"
-        # alongside the ordinary "do/does/did" form — a future/conditional-
-        # tense phrasing of the SAME factual question, over the same
-        # premises. The 6 capacity/hypothetical modals (can/could/should/
-        # may/might/must) are excluded, so this can never widen into
-        # ask/how-many-capacity's own territory (increment 19/14).
+        # `future_modal` accepts do/does/did and will/would forms, but excludes
+        # capacity modals such as can or must.
         - {slot: aux, type: future_modal}
         - {slot: who, type: name}
         - {slot: verb, type: verb}
@@ -5120,55 +4919,22 @@ asks:
       entity: "{who}"
       measure: "{item}"
       verb: "{verb}"
-      # mining candidate qualified-measure-keys: `item`'s OWN qualifier
-      # feature (condense.py merge-attribute/merge-compound — "how many
-      # GREEN apples does Sam have?"), a no-op empty string whenever the
-      # item noun carries no adjective. Retries the exact qualified key
-      # ("apple[green]") when the bare fold comes back empty, and scopes
-      # the bare fallback to compatible siblings only — see the
-      # single-entity consumer's own comment.
+      # Preserve an item qualifier so "green apples" first looks for the
+      # exact `apple[green]` measure.
       measure_qualifier: "{item.qualifier}"
-      # opt-in per this ask id only (mining candidate qualified-measure-
-      # keys, mirroring increment 26/19's opt-in fallback flags): "how many
-      # balls does Sam have?" over 'red'/'green' qualified siblings with
-      # no bare 'ball' fact of its own sums them, but ONLY once every
-      # other lookup above has already come back empty and only for a
-      # BARE (non-qualifier) ask — see `_qualified_variant_total`'s own
-      # decline-safety docstring.
+      # A bare item may sum compatible qualified variants, but only after
+      # exact lookups fail. A qualified question never uses this fallback.
       sum_measure_variants: "true"
-      # NOT given a partitive tail (mining candidate
-      # partitive-measure-ask-slot considered it and DROPPED it): "how many
-      # OUNCES of milk does James have left?" over premises stating a
-      # DIFFERENT-but-convertible measure ("3 GALLONS of milk... 128 ounces
-      # in a gallon") newly matched here and answered from the 'ounce'-only
-      # event fold alone (-13, a confident wrong — gsm8k item b2d02b893826
-      # on dev-train, caught by the dev-train gate) because the fold has no
-      # unit-conversion step at all; that class needs `ask/how-many-
-      # capacity`'s own machinery, not this consumer. The entity-LESS
-      # siblings below (unique-entity/combined) got the partitive tail
-      # instead — none of this candidate's structural samples were this
-      # ask's own shape, so scope stays exactly at what was evidenced.
+      # Do not add a partitive tail here. The single-entity fold does not
+      # convert units, so a question in ounces over premises in gallons could
+      # produce a confident wrong answer. That form needs conversion-aware
+      # consumer logic.
 
   - id: ask/how-many-entity-prenominal-marker
-    # "how many TOTAL-MARKER toys does WHO buy?" (mining candidate
-    # subtype-total-asks) — sibling of ask/how-many-entity for the
-    # PRENOMINAL aggregate-marker placement, mirroring ask/how-many-
-    # plural-combined-prenominal-marker's shape (increment 75) but routed
-    # to the SINGLE-entity consumer, not `combined` — the marker here
-    # names ONE holder's own superordinate total ("how many total toys
-    # does he buy" sums James's own car/soldier holdings), never several
-    # holders'. `pre, cat: aggregate` is a REQUIRED token (not optional):
-    # this ask exists ONLY for the marker-before-noun placement; a bare
-    # "how many toys does he buy" (no marker anywhere) still matches
-    # ask/how-many-entity exactly as before, unaffected.
-    #
-    # Never a tie with ask/how-many-entity: that ask's `item` slot sits
-    # IMMEDIATELY after "many" with no marker token between — a prenominal
-    # marker fails its match before specificity is ever compared (the
-    # marker's `aggregate` sense fails `type: noun` and is not in
-    # SKIPPABLE_SENSES), exactly the same non-tie ask/how-many-plural-
-    # combined-prenominal-marker already established against its own
-    # bare sibling.
+    # Handles an aggregate marker before the measure, such as "how many total
+    # toys does James buy?" The total belongs to one holder, so this uses the
+    # single-entity consumer. The marker is required; without it, the base
+    # single-entity rule applies.
     match:
       question:
         - {lit: how}
@@ -5185,21 +4951,10 @@ asks:
       verb: "{verb}"
 
   - id: ask/how-many-entity-elided-measure
-    # mining candidate elided-measure-entity-asks: sibling of
-    # ask/how-many-entity with NO `item` slot at all — "How many does Tom
-    # have?" / "How many did Tom make?" elide the measure entirely; the
-    # consumer supplies it as the entity's own unique measure in play (see
-    # answer.py's `single-entity-elided-measure` branch). Exactly 5
-    # consumed units (how/many/aux/who/verb) vs. every itemed sibling's 6
-    # (how/many/item/aux/who/verb) — this ALWAYS loses the specificity
-    # tie-break in patterns.match_ask whenever an item noun is present, so
-    # it can never shadow ask/how-many-entity or its
-    # possessed/qualified siblings. It also can never match the same
-    # sentence as those asks in the first place: with no item slot, this
-    # ask requires `aux` to immediately follow "how many" (skippable units
-    # are articles/punctuation only — see patterns.SKIPPABLE_SENSES), so
-    # any sentence with an item noun there fails this ask's own match
-    # before specificity is ever compared.
+    # Handles questions that omit the measure, such as "how many does Tom
+    # have?" The consumer can answer only when Tom has one clear measure.
+    # Because the auxiliary must follow "how many" immediately, this rule
+    # cannot claim a question that names an item.
     match:
       question:
         - {lit: how}
@@ -5219,13 +4974,8 @@ asks:
         - {lit: many}
         - {slot: item, type: noun}
         - {slot: aux, type: auxiliary}
-        # `possessed`, not `name`/`entity`: matches ONLY a noun merged from
-        # "OWNER 's NOUN" (condense.py merge-possessive tags it with an
-        # `owner` feature) — "Kennedy's house", never a bare common noun
-        # ("the store"). A separate ask id (not a widened `who` slot on
-        # ask/how-many-entity) so this can never shadow that ask's existing
-        # name-subject matches; scoped precisely to the possessive-qualified
-        # entity class this candidate targets.
+        # `possessed` requires an owner, as in "Kennedy's house". Keeping it
+        # separate preserves that owner and excludes a bare common noun.
         - {slot: who, type: possessed}
         - {slot: verb, type: verb}
     resolves:
@@ -5233,28 +4983,14 @@ asks:
       entity: "{who}"
       measure: "{item}"
       verb: "{verb}"
-      # the fold side only re-keys entity to "house[kennedy]" when a real
-      # same-key VALUE conflict forced the split (facts.py); the bare
-      # "{who}" above still resolves the common (non-conflicting) case
-      # unchanged. This is the fallback the single-entity consumer retries
-      # when the bare entity comes back empty.
+      # If the bare entity lookup is empty, retry the owner-qualified key.
       entity_owner: "{who.owner}"
 
   - id: ask/what-is-the-number-of-possessed
-    # mining candidate affine-nominal-relations: "What is the number of
-    # Ana's siblings?" — a NOMINAL single-entity ask with no verb/aux at
-    # all, the question-side counterpart to arithmetic/affine-frame-
-    # relation-clause's premise frame (and every other rule that emits a
-    # possessive-standard Relation — arithmetic/times-as-many-possessive-
-    # standard, arithmetic/affine-times-as-many-possessive-standard). The
-    # OWNER is the entity being asked about ('ana'), the possessed noun's
-    # own bare lemma is the measure ('sibling') — the exact `{who.owner}`/
-    # `{who}` split arithmetic/times-as-many-possessive-standard's own
-    # `emits:` block already uses for `standard`/`measure` one field over.
-    # No `verb` slot is bound (the question has none) — answer.py's
-    # single-entity consumer defaults an absent `verb` to 'have'
-    # (`query.get("verb", "have")`), the same fallback every entity-less
-    # verb ask in this file already relies on.
+    # Handles a nominal possessive question such as "what is the number of
+    # Ana's siblings?" The possessive owner is the entity and the possessed
+    # noun is the measure. With no verb in the question, the consumer uses
+    # "have".
     match:
       question:
         - {lit: what}
@@ -5274,15 +5010,8 @@ asks:
         - {lit: many}
         - {slot: item, type: noun}
         - {slot: aux, type: auxiliary}
-        # `qualified`, not `name`/`entity`/`possessed`: matches ONLY a noun
-        # merged from ADJECTIVE+NOUN or NOUN+NOUN (condense.py merge-
-        # attribute / merge-compound tags it with a `qualifier` feature) —
-        # "coconut trees", "red apples", never a bare common noun ("the
-        # store"). A separate ask id (not a widened `who` slot on
-        # ask/how-many-entity) so this can never shadow that ask's existing
-        # name-subject matches; scoped precisely to the attribute-qualified
-        # entity class this candidate targets. Increment 34, mirroring
-        # increment 25's ask/how-many-entity-possessed.
+        # `qualified` requires a merged modifier, as in "coconut trees" or
+        # "red apples". Keeping it separate preserves the qualifier.
         - {slot: who, type: qualified}
         - {slot: verb, type: verb}
     resolves:
@@ -5290,34 +5019,14 @@ asks:
       entity: "{who}"
       measure: "{item}"
       verb: "{verb}"
-      # the fold side only re-keys entity to "tree[coconut]" when a real
-      # same-key VALUE conflict forced the split (facts.py); the bare
-      # "{who}" above still resolves the common (non-conflicting) case
-      # unchanged. This is the fallback the single-entity consumer retries
-      # when the bare entity comes back empty.
+      # If the bare entity lookup is empty, retry the qualified key.
       entity_qualifier: "{who.qualifier}"
 
   - id: ask/how-many-entity-common-noun
-    # mining candidate conjunct-comparative-quantities: sibling of
-    # ask/how-many-entity for a BARE common-noun holder ("how many parts
-    # does the vehicle have?") — a NEW slot type `common_noun` (schemas.py
-    # SLOT_TYPES, gated in patterns.py's `_slot_ok`), never a widening of
-    # ask/how-many-entity's own `who, type: name` (that widening to `type:
-    # entity` was tried and reverted right there — see its own comment: it
-    # ties on consumed-unit count with ask/how-many-entity-possessed and
-    # ask/how-many-entity-qualified, and the alphabetical id tie-break then
-    # wrongly routes a possessive/qualified subject HERE instead, dropping
-    # their entity_owner/entity_qualifier fallback). `common_noun` is
-    # structurally DISJOINT from both `possessed` (requires an `owner`
-    # feature) and `qualified` (requires a `qualifier` feature) — no unit
-    # can ever satisfy two of the three, so no tie-break collision is
-    # possible in either direction; a bare holder ("the vehicle") only ever
-    # matches here, a possessive/qualified one only ever matches its own
-    # existing ask, exactly as before this candidate. Singular-only (never
-    # plural) so this cannot steal a plural common-noun subject from
-    # ask/how-many-plural-combined ("these three boys") — measured 1 BROKE
-    # during development with a plural-inclusive gate; the number check
-    # inside `common_noun` itself is the fix.
+    # Handles a singular common-noun holder, such as "how many parts does the
+    # vehicle have?" `common_noun` deliberately excludes names, possessives,
+    # qualified nouns, and plurals. Those forms have separate rules whose
+    # owner, qualifier, or group information must be preserved.
     match:
       question:
         - {lit: how}
@@ -5334,34 +5043,12 @@ asks:
       measure_qualifier: "{item.qualifier}"
       sum_measure_variants: "true"
 
-  # NOTE (mining candidate partitive-measure-asks): a single-holder
-  # partitive sibling of ask/how-many-entity ("how many PAIRS OF SHOES does
-  # Ann have?", routed to the `single-entity` consumer with `measure` +
-  # `measure_qualifier` bound to the exact "{item}[{qual}]" key) was
-  # DRAFTED and DROPPED — the dev-train gate caught TWO confident wrongs
-  # the moment it started matching questions this ask family had always
-  # declined before: (1) gsm8k item b2d02b893826, "how many OUNCES of milk
-  # does James have left?" over premises stated in a DIFFERENT, non-
-  # interchangeable measure ("3 gallons... 128 ounces in a gallon") — the
-  # EXACT same wrong ask/how-many-entity's own "NOT given a partitive tail"
-  # comment above already documents for a widened match; a brand-new ask
-  # id with a REQUIRED tail hits the identical failure because the root
-  # cause is the single-entity consumer's conversion-blind bare-measure
-  # fallback, not which ask id reaches it. (2) gsm8k item 2cd6de761c9f,
-  # "John buys 4 pounds of beef... twice as many pounds of vegetables...
-  # how many pounds of vegetables did he use?" — the vegetables total is a
-  # RELATION (twice the beef total), never a Quantity of its own, so no
-  # "pound[vegetable]" key exists; the qualified lookup falls through to a
-  # bare 'pound' fold that mixes beef and vegetable events and commits 1.0
-  # instead of declining. Both are single-entity-consumer fallback-chain
-  # failures, not YAML-fixable without either a kernel-side decline guard
-  # (out of scope: this candidate is YAML-only) or a real relation/
-  # conversion consumer (a different candidate's job). The `combined`/
-  # `difference`/single-entity-in-place siblings below do NOT read
-  # `measure_qualifier` for their totals (or, for in-place, matched neither
-  # dev-train item above) and gated clean — scope stays exactly at what
-  # gated, the single-holder partitive-NP class is left for follow-up work
-  # with its own decline-safety guard.
+  # There is intentionally no single-holder partitive rule for questions
+  # such as "how many pairs of shoes does Ann have?" The current consumer
+  # cannot safely distinguish unit conversions or a qualified measure that
+  # exists only through a relation. Its bare-measure fallback can mix
+  # substances or units and produce a confident wrong answer. Add this form
+  # only with a consumer that can guard those cases.
 
   - id: ask/how-many-left-entityless
     match:
@@ -5369,11 +5056,8 @@ asks:
         - {lit: how}
         - {lit: many}
         - {slot: item, type: noun}
-        # optional partitive tail (mining candidate
-        # partitive-measure-ask-slot): "how many CONTAINERS OF MEAT were
-        # left?" — see ask/how-many-entity's identical opt group for the
-        # full rationale (item still binds the bare measure noun only;
-        # `substance` is consumed and feeds ONLY the decline-safety guard).
+        # Optional "of SUBSTANCE" tail. The substance is used only to prevent
+        # a measure with the same name but different contents from answering.
         - opt:
             - {lit: of}
             - {slot: substance, type: noun}
@@ -5390,10 +5074,7 @@ asks:
         - {lit: how}
         - {lit: many}
         - {slot: item, type: noun}
-        # optional partitive tail (mining candidate
-        # partitive-measure-ask-slot): "how many KILOGRAMS OF MEAT are
-        # there?" — see ask/how-many-entity's identical opt group for the
-        # full rationale.
+        # Optional "of SUBSTANCE" tail, used as a decline-safety guard.
         - opt:
             - {lit: of}
             - {slot: substance, type: noun}
@@ -5405,78 +5086,15 @@ asks:
       measure_substance: "{substance}"
 
   - id: ask/how-many-there-combined
-    # "how many X are/were there in total/altogether/together/combined?"
-    # (mining candidate entityless-total-recut, re-cutting parked candidate
-    # entityless-total-there-asks) — the totality-marked sibling of
-    # ask/how-many-there: the same entity-less "how many X ARE THERE"
-    # premise-read shape, but with a REQUIRED trailing aggregate marker
-    # (cat: aggregate — total/altogether/together/combined, packs/
-    # core-english/lexicon/core.yaml; optionally preceded by a
-    # preposition, so "in total" parses as prep 'in' + agg 'total' exactly
-    # like ask/how-many-combined's own tail). That marker is explicit
-    # license to sum EVERY holder of the measure, so this routes to the
-    # SAME 'combined' consumer (answer.py) the pronoun/named-pair combined
-    # asks already use — no new consumer logic: _combined_holder_totals
-    # already enumerates every holder of the measure when no a/b is bound
-    # (mining candidates how-many-combined / average-asks), which is
-    # exactly the entity-less read this ask needs.
+    # Handles an entity-less total, such as "how many chairs are there in
+    # total?" The aggregate marker is required because it authorizes a sum
+    # across holders; without it, the bare rule requires one unique holder.
     #
-    # ask/how-many-there keeps its exactly-one-holder discipline (unique-
-    # entity consumer) unaffected — that gate exists precisely because a
-    # bare "how many X are there?" over 2+ holders is ambiguous without a
-    # totality marker. This ask's tail (item/[of substance]/verb/there/
-    # [prep]/agg) always consumes MORE units than the bare sibling's
-    # (item/[of substance]/verb/there — mining candidate
-    # partitive-measure-ask-slot gave both siblings the identical optional
-    # partitive group, so it can never itself break the tie), so
-    # patterns.match_ask's max-consumed-units rule (the ask/how-much-
-    # money-entity-left "money-left" precedent) always prefers this ask
-    # when the marker is present, and this ask simply fails to match at
-    # all when it's absent — never a partial-match tie.
-    #
-    # `exclude_entity: world` (pack data, not a Python constant — see
-    # HANDOFF's "'world' entity ... pack-owned data constants" invariant):
-    # the bare `world` scene-holder (arithmetic/existential-premise-bare's
-    # unlocated "There are N X" fact, entity literally named `world` in
-    # THAT rule's own emits block above) can co-occur with a real named
-    # holder of the same measure ("Sam has 5 chairs. There are 12 chairs.
-    # How many chairs are there in total?") — summing it alongside a real
-    # holder would double-count a scene-level restatement as an
-    # independent third holding. This ask alone opts a specific entity out
-    # of the sum by naming it here as data; answer.py's
-    # `_combined_holder_totals` reads it via a generic `exclude_entity`
-    # parameter (default None — every existing combined/average ask is
-    # byte-unchanged) and never hardcodes the literal itself.
-    #
-    # OUT of scope (named at ship time): conjoined-item totality tails
-    # ("how many dogs and cats are there in all?") — single measure only.
-    # 'in all' itself is also OUT — 'all' is a bare quantifier sense
-    # (packs/core-english/lexicon/core.yaml), not tagged `aggregate`, and
-    # admitting that sense is a separate mining candidate (in-all-
-    # totality-tails) with its own blast-radius review.
-    #
-    # Trailing optional group (mining candidate plural-np-totality-asks):
-    # "...are there in total IN THE TWO LAKES?" — a collective NP naming
-    # the holders, appended after the aggregate marker. This NEVER binds a
-    # new query field (the consumer still enumerates every holder from the
-    # facts, unchanged) — it exists solely so the collective NP's own
-    # cardinal ("two") is CONSUMED (the `{grp.value}` precedent below,
-    # mirroring `span_value`/`item_value` elsewhere in this file) rather
-    # than left as an unaccounted stated count that trips value-accounting
-    # (methodology §5.2's "the 3 people" case). `grp, type: plural` alone
-    # (no new slot type): the SAME slot type as `arithmetic/anchored-
-    # relation`'s `item` binds a bare plural noun OR a cardinal-merged one
-    # ("lakes"/"two lakes") identically, since condense.py's count-merge
-    # keeps the head noun's `number: plural` feature on the merged unit.
-    #
-    # Optional partitive tail right after `item` (mining candidate
-    # partitive-measure-ask-slot): "how many KILOGRAMS OF MEAT are there in
-    # total?" — see ask/how-many-entity's identical opt group for the full
-    # rationale. Sits BEFORE the totality-marker tail this ask already
-    # requires, so it never competes with that tail's own tokens for the
-    # same units; it only ever adds MORE consumed units on top, keeping
-    # this ask's existing always-wins-over-the-bare-sibling specificity
-    # argument (above) unaffected.
+    # `exclude_entity: world` prevents an unlocated scene-level fact from
+    # being counted again beside named holders. An optional partitive tail
+    # guards the substance, and an optional trailing group such as "in the
+    # two lakes" lets `grp_value` mark its cardinal as used. This rule still
+    # supports only one measure at a time.
     match:
       question:
         - {lit: how}
@@ -5502,75 +5120,16 @@ asks:
       measure_substance: "{substance}"
 
   - id: ask/how-many-passive-combined
-    # "how many X WAS/WERE PAST-PARTICIPLE (in total/altogether/together/
-    # combined)?" (mining candidate passive-event-totality-asks) — the
-    # PASSIVE-VOICE sibling of ask/how-many-there-combined. Every ask in
-    # this file up to now requires either an auxiliary/modal + subject
-    # ("did they eat", "will she have") or the literal existential 'there'
-    # ("are there") — none of them can match a copula ({cat: state}: is/
-    # was/are/were, the SAME slot ask/what-total-combined already calls
-    # "the copula") immediately followed by a bare past-participle verb
-    # form with NO subject at all ("were eaten", "was sold", "were given",
-    # "was bought"). That is exactly the passive frame: the same
-    # entity-less premise-read this file's other combined asks already
-    # answer (Σ over every holder of the resolved measure), phrased without
-    # an agent.
+    # Passive total form: "how many pies were eaten in total?" The copula and
+    # participle identify a subjectless passive clause. The verb slot resolves
+    # the participle to its lemma, so the existing combined consumer can sum
+    # the event facts.
     #
-    # No new vocabulary: 'eaten'/'sold'/'given'/'bought' etc. are already
-    # lexiconed with sense=verb and their own `verb.lemma` feature (e.g.
-    # difg-mined's `eaten: {senses: [verb], verb: {lemma: eat}}`) — the
-    # SAME feature `{verb}`'s template resolution already reads by default
-    # (patterns._slot_value falls through to `_lemma_of`), so binding
-    # {slot: verb, type: verb} to the participle and writing `verb:
-    # "{verb}"` below yields the LEMMA ("eat", not "eaten") exactly the way
-    # ask/how-many-combined's own {verb} slot yields "eat" from the base
-    # form after do-support. The 'combined' consumer's existing ask_verb
-    # branch (`answer.py::_combined_holder_totals`: state verbs anchor via
-    # `_entity_total`, event verbs sum unsigned via `_verb_total`) is
-    # therefore driven correctly regardless of voice — this ask changes
-    # nothing in answer.py.
-    #
-    # Reuses ask/how-many-there-combined's identical optional groups
-    # (partitive substance tail, optional preposition before the aggregate
-    # marker, optional trailing collective-NP group so its own cardinal is
-    # consumed rather than tripping value-accounting) and its
-    # `exclude_entity: world` discipline (the bare existential scene-holder
-    # must never be double-counted alongside a real named holder) —
-    # verbatim, not re-derived.
-    #
-    # Zero ordering/overlap risk with any existing ask: a copula
-    # immediately followed by a bare past-participle with no subject/aux/
-    # 'there' in between is a token sequence no other ask's literal
-    # skeleton can consume (ask/how-many-there-combined itself requires
-    # the literal 'there' right after its own {verb} slot; ask/how-many-
-    # combined's optional aux/who/verb group requires either a
-    # future_modal or a pronoun subject, neither of which a copula
-    # satisfies) — this ask simply fails to match active-voice questions,
-    # and they simply fail to match this one; never a partial-match tie.
-    #
-    # Verified end-to-end against real dev-train text (increment
-    # development, not a shipped test): "...If Sierra ate 12 pies, how
-    # many pies were eaten in total?" now commits 27.0 via this ask,
-    # identically to its already-shipped active twin "...how many pies did
-    # they eat in total?".
-    #
-    # SCOPED OUT at ship time (found during development, not forced):
-    # (1) a passive COMPARATIVE sibling ("how many more X were sold on A
-    # than B") was drafted but dropped — tracing a real candidate item
-    # showed the two compared quantities are TIME-scoped facts on one
-    # shared entity (Quantity.time, e.g. 'on saturday'/'on sunday'), not
-    # two separate named entities the existing 'difference' consumer's a/b
-    # binding can address; closing that gap needs a time-scoped consumer,
-    # not a YAML-only ask, so it stays future work. (2) a passive BARE
-    # sibling with no totality marker ("how many X were eaten?") was also
-    # dropped: routing it to the 'unique-entity' consumer (ask/how-many-
-    # there's own consumer) would unconditionally apply `_entity_total`'s
-    # SIGNED state-fold to an event verb's own holder — "Sam ate 5
-    # cookies. How many cookies were eaten?" would commit -5.0 instead of
-    # 5.0, a confident wrong (verified live against unmodified `combined`/
-    # `unique-entity` behavior during development). `unique-entity` has no
-    # ask_verb branch to fix this without kernel changes, so that sibling
-    # is out of scope for a YAML-only increment.
+    # This rule shares the substance, trailing-group, and `world` safeguards
+    # of the preceding entity-less total rule. The total marker is essential:
+    # a bare passive question would use the wrong signed fold. Passive
+    # comparisons by time also remain unsupported because they need a
+    # time-scoped consumer.
     match:
       question:
         - {lit: how}
@@ -5596,35 +5155,11 @@ asks:
       measure_substance: "{substance}"
 
   - id: ask/how-many-plural-combined
-    # "how many ITEM do/does/did (THE) PLURAL-COMMON-NOUN have TOTAL-
-    # MARKER?" (mining candidate plural-np-totality-asks) — the definite-
-    # plural / collective-subject sibling of ask/how-many-combined
-    # (pronoun subject: "how many ITEM do THEY have combined?") and
-    # ask/how-many-combined-named (named-pair subject). Here the subject
-    # is a PLURAL COMMON NOUN standing in for two or more holders named
-    # earlier ("the two boys", "the girls") rather than a pronoun or an
-    # explicit name pair. `who, type: plural` (no new slot type): matches
-    # a bare plural noun OR a cardinal-merged one ("boys"/"two boys")
-    # identically — condense.py's count-merge keeps the head noun's
-    # `number: plural` feature, so a leading cardinal never needs its own
-    # slot. `who` itself is captured ONLY to consume the subject NP
-    # structurally (mirrors ask/how-many-combined's own pronoun `who`,
-    # which the resolves block below also never binds to a query field);
-    # this ask NEVER names a specific entity, so it routes to the SAME
-    # entity-less enumeration `_combined_holder_totals` performs when no
-    # a/b is bound — summing every holder of the measure is exactly the
-    # collective read "the boys" asserts.
-    #
-    # A leading cardinal on `who` ("the two boys") is explicitly consumed
-    # via `who_value: "{who.value}"` (the `span_value`/`item_value`
-    # precedent elsewhere in this file) so value-accounting never rejects
-    # it as an unaccounted stated count.
-    #
-    # Never a tie with ask/how-many-combined (pronoun `who`) or ask/how-
-    # many-combined-named (`type: name` a/b pair): both require a
-    # DIFFERENT slot type on the same position that a plural common noun
-    # can never satisfy, so at most one of the three asks matches a given
-    # question at all.
+    # Handles a collective plural subject, such as "how many books do the
+    # two boys have in total?" The subject identifies a group rather than a
+    # particular holder, so the consumer enumerates the holders. `who_value`
+    # marks any merged cardinal as used. Pronoun and named-pair subjects have
+    # separate, non-overlapping rules.
     match:
       question:
         - {lit: how}
@@ -5643,24 +5178,10 @@ asks:
       who_value: "{who.value}"
 
   - id: ask/how-many-all-combined
-    # "how many ITEM do/does/did ALL OF THEM have TOTAL-MARKER?" (mining
-    # candidate plural-np-totality-asks) — the plural-pronoun collective
-    # sibling of ask/how-many-plural-combined above: "all of them" instead
-    # of a definite plural common noun. `all`/`of` are literal skeleton
-    # (both known words — `all` a `quantifier` sense, packs/core-english/
-    # lexicon/core.yaml); `who, type: pronoun` — a bare pronoun slot never
-    # requires a resolved antecedent (unlike `type: name`/`type: entity`)
-    # because, exactly like ask/how-many-combined's own pronoun `who`,
-    # this ask's resolves block never binds `who` to a query field — it
-    # is consumed purely to satisfy the match skeleton, and the 'combined'
-    # consumer enumerates every holder of the measure from the facts.
-    #
-    # A separate ask id from ask/how-many-combined (not a widened `who`
-    # slot there): that ask's own opt group binds [aux, who, verb] as ONE
-    # inseparable subsequence, so inserting "all of" between `aux` and
-    # `who` makes it fail to match at all rather than partially matching —
-    # this ask alone claims the "all of them" surface, never shadowing the
-    # bare "they"/"we" form.
+    # Handles "all of them" as a collective subject. The pronoun is only
+    # part of the sentence shape; the consumer finds every holder from the
+    # facts. The inserted words "all of" keep this form separate from the
+    # bare "they" or "we" rule.
     match:
       question:
         - {lit: how}
@@ -5680,32 +5201,10 @@ asks:
       verb: "{verb}"
 
   - id: ask/how-many-plural-combined-prenominal-marker
-    # "how many TOTAL-MARKER ITEM do/does/did (THE) PLURAL-COMMON-NOUN
-    # have?" (mining candidate collective-totality-asks) — sibling of
-    # ask/how-many-plural-combined for the case where the aggregate
-    # marker sits PRENOMINALLY, right after "how many", instead of
-    # trailing the verb ("how many total toys do the boys have?" vs.
-    # "how many toys do the boys have in total?"). `pre, cat: aggregate`
-    # is a REQUIRED token (not optional): this ask exists ONLY to place
-    # the marker before the item noun, so the marker itself must be
-    # present or the sentence matches nothing here — a bare "how many
-    # toys do the boys have?" still declines (no marker anywhere, no
-    # cardinal on `who`). `total`/`combined` already carry the
-    # `aggregate` sense (packs/core-english/lexicon/core.yaml); this is
-    # grammatical skeleton, no new vocabulary. `who, type: plural` and
-    # `who_value: "{who.value}"` mirror ask/how-many-plural-combined
-    # exactly (a leading cardinal, "the two boys", is consumed the same
-    # way). Consumer is the EXISTING `combined` (answer.py untouched).
-    #
-    # Never a tie with ask/how-many-plural-combined: that ask's `item`
-    # slot sits IMMEDIATELY after "many" with no marker token between —
-    # a prenominal marker breaks its match before specificity is ever
-    # compared (the marker's `aggregate` sense fails `type: noun` and is
-    # not in SKIPPABLE_SENSES). Never a tie with ask/how-many-combined
-    # (pronoun `who`) or ask/how-many-combined-named (`type: name` a/b
-    # pair) for the same reason those two never tie with ask/how-many-
-    # plural-combined: a plural common noun subject satisfies neither
-    # slot type.
+    # Handles the aggregate marker before the measure: "how many total toys
+    # do the boys have?" The marker is required. A bare plural question
+    # still needs either a trailing total marker or an explicit cardinal.
+    # `who_value` marks a cardinal in the plural subject as used.
     match:
       question:
         - {lit: how}
@@ -5722,29 +5221,10 @@ asks:
       who_value: "{who.value}"
 
   - id: ask/how-many-plural-combined-quantified-subject
-    # "how many ITEM do/does/did ALL/BOTH PLURAL-COMMON-NOUN have TOTAL-
-    # MARKER?" (mining candidate collective-totality-asks) — sibling of
-    # ask/how-many-plural-combined widening the subject NP's leading word
-    # from a bare `opt: {lit: the}` to any `quantifier`-sense word
-    # ('all'/'both' — packs/core-english/lexicon/core.yaml already tags
-    # both) IN ADDITION to keeping the trailing aggregate marker
-    # REQUIRED: "all the boys have ... combined" carries no cardinal to
-    # license the totality read on its own (unlike the cardinal-gated
-    # sibling below), so the marker still has to do that work here. `q,
-    # cat: quantifier` is REQUIRED (not optional) — this ask exists only
-    # to widen that one leading-word slot; a bare "how many X do the boys
-    # have combined?" is already ask/how-many-plural-combined's own
-    # territory and stays there.
-    #
-    # Never a tie with ask/how-many-plural-combined: that ask's subject
-    # position is `opt: {lit: the}` then `who` directly — a quantifier
-    # word there is neither the literal "the" (so the opt group simply
-    # doesn't match, consuming nothing) nor a `type: plural` noun, so
-    # that ask's own match fails on a quantified subject entirely rather
-    # than partially matching. Never a tie with ask/how-many-all-combined
-    # ("all of them" — pronoun `who`, literal "of" required): a bare
-    # quantifier immediately before a plural NOUN (no "of", no pronoun)
-    # cannot satisfy that ask's fixed [all, of, who:pronoun] subsequence.
+    # Handles a quantifier before a plural noun, such as "all boys" or
+    # "both teams". A trailing aggregate marker is still required because
+    # the subject has no cardinal of its own. This is distinct from the bare
+    # plural form and from the pronoun phrase "all of them".
     match:
       question:
         - {lit: how}
@@ -5764,40 +5244,11 @@ asks:
       who_value: "{who.value}"
 
   - id: ask/how-many-plural-combined-cardinal-subject
-    # "how many ITEM do/does/did (DEMONSTRATIVE|ALL/BOTH) CARDINAL PLURAL-
-    # COMMON-NOUN have?" (mining candidate collective-totality-asks) —
-    # sibling of ask/how-many-plural-combined for the case where the
-    # subject NP itself carries an EXPLICIT CARDINAL ("these three boys",
-    # "all three friends", "the two boys") and NO aggregate marker
-    # appears anywhere: the cardinal alone asserts the group and licenses
-    # the totality read, so the trailing marker this whole family
-    # otherwise requires becomes unnecessary. `who, type: counted` (not
-    # `type: plural`) is the load-bearing gate — `counted` requires the
-    # noun unit to carry a merged numeric VALUE (condense.py's count-
-    # merge folds "three boys" into one plural noun unit with
-    # value_kind: count), so a bare "the boys"/"these boys" (no cardinal)
-    # still fails this ask's own match and still declines exactly as
-    # before. `q, cat: quantifier` is OPTIONAL: a demonstrative
-    # ('these'/'this'/'those', sense `article`) is already in
-    # SKIPPABLE_SENSES and needs no slot at all, while a true quantifier
-    # ('all'/'both') is a `quantifier`-sense word that is NOT skippable
-    # and must be consumed explicitly when present — "the two boys" (bare
-    # article, auto-skipped) is licensed by the cardinal exactly the same
-    # as "these three boys" or "all three friends" are.
-    #
-    # This is the ONE hazard of this whole increment (see the mining
-    # brief's risk note): dropping the required marker widens what
-    # `combined` can claim, so the gate MUST be the explicit cardinal —
-    # never a bare plural subject. Verified no overlap-witness regression
-    # via `rulekit lint`.
-    #
-    # Never a tie with ask/how-many-plural-combined-quantified-subject
-    # (also requires `q`) nor with ask/how-many-plural-combined (marker
-    # required): both consume the trailing `agg` token when a marker is
-    # present, so on a marked+cardinal sentence they consume strictly
-    # MORE units than this ask and win outright (max-consumed-units) —
-    # this ask only wins when no marker is present at all, which is
-    # exactly its reason to exist.
+    # Handles an explicit cardinal in the subject, such as "the two boys",
+    # "these three boys", or "all three friends". The cardinal itself makes
+    # the group total clear, so no aggregate marker is required. `counted` is
+    # the essential guard: never widen it to a bare plural subject. If a
+    # trailing marker is present, the more specific marked rule wins.
     match:
       question:
         - {lit: how}
@@ -5815,25 +5266,10 @@ asks:
       who_value: "{who.value}"
 
   - id: ask/how-many-combined-named-elided-measure
-    # "how many do/does/did NAME and NAME have TOTAL-MARKER?" (mining
-    # candidate plural-np-totality-asks) — the elided-measure sibling of
-    # ask/how-many-combined-named: no `item` slot at all, the same elision
-    # ask/how-many-entity-elided-measure (increment 62) already admits for
-    # a SINGLE named entity, here over a NAMED PAIR. Routed to a NEW
-    # consumer (`combined-elided-measure`, answer.py) rather than
-    # `single-entity-elided-measure`: that consumer resolves the elided
-    # measure as the entity's own unique held measure, which has no
-    # meaning for TWO entities — the new consumer instead takes the
-    # measure BOTH named holders share (set intersection of their held
-    # measures), declining unless exactly one is common to both, then
-    # reuses `_combined_holder_totals` UNCHANGED (a/b bound, so it sums
-    # exactly those two, never the enumerate-all-holders fallback).
-    #
-    # Exactly 8 consumed units (how/many/aux/a/and/b/verb/agg) vs. ask/
-    # how-many-combined-named's 9+ (item present) — this ask's `aux`
-    # position immediately follows "many" with no item noun in between,
-    # so any question with an item noun there fails THIS ask's own match
-    # before the two could ever tie on specificity.
+    # Handles a named pair when the measure is omitted: "how many do Ana and
+    # Ben have in total?" The consumer finds the one measure shared by both
+    # holders and declines if there is not exactly one. Because the auxiliary
+    # follows "how many" immediately, this rule cannot claim an itemed form.
     match:
       question:
         - {lit: how}
@@ -5853,23 +5289,14 @@ asks:
       verb: "{verb}"
 
   - id: ask/how-much-bare-entity
-    # NOTE (mining candidate pronoun-entity-asks): a widening of `who` to
-    # `type: entity` was tried here and DROPPED — it ties on consumed-unit
-    # count with ask/how-much-item-cost (both 5 tokens once `who` admits a
-    # bare noun: how/much/aux/who/verb here vs. how/much/aux/item/verb
-    # there) and the alphabetical id tie-break (patterns.match_ask) then
-    # routes an item-subject cost question ("how much do the jackets
-    # cost?") HERE — a `have`-style single-entity read with no matching
-    # fact — instead of to the item-cost consumer (caught by
-    # tests/test_mining_increment_38.py). Left as `type: name`.
+    # Keep `who` restricted to a name. Allowing any entity would make an
+    # item-cost question such as "how much do the jackets cost?" look like a
+    # question about one holder and route it to the wrong consumer.
     match:
       question:
         - {lit: how}
         - {lit: much}
-        # `future_modal`, not `auxiliary` (mining candidate
-        # modal-spend-measure-price): also accepts "how much will/would
-        # WHO pay?" alongside the ordinary "do/does/did" form — see
-        # ask/how-many-entity's comment for the class rationale.
+        # Accept ordinary and will/would forms, but not capacity modals.
         - {slot: aux, type: future_modal}
         - {slot: who, type: name}
         - {slot: verb, type: verb}
@@ -5882,24 +5309,11 @@ asks:
       verb: "{verb}"
 
   - id: ask/how-much-noun-entity
-    # `who, type: entity` (mining candidate pronoun-entity-asks): widened
-    # from `type: name` — see ask/how-many-entity's comment for the class
-    # rationale and ask/how-much-bare-entity's comment for why a plural
-    # pronoun subject can never collide with ask/how-much-combined.
-    #
-    # The `opt: [in, req_unit]` group (mining candidate unit-parenthetical-
-    # asks) matches a parenthetical unit qualifier inserted mid-question
-    # ("How much money, in dollars, does Tom have?") — the surrounding
-    # commas are already globally-skippable punct (patterns.
-    # SKIPPABLE_SENSES), so only the literal 'in' plus a noun slot need
-    # authoring. Unbound when the parenthetical is absent (the ordinary
-    # "how much money does Tom have?" case is unchanged — the opt group
-    # simply fails to match and contributes nothing, exactly like every
-    # other optional group in this file). When bound, answer.py's
-    # single-entity consumer checks `req_unit` against the measure it
-    # actually resolves and DECLINES on a mismatch (asked dollars, facts
-    # in quarters) rather than silently answering in the wrong unit —
-    # never a new vocabulary admission, `type: noun` is structural.
+    # `who` accepts any supported entity because the named item keeps this
+    # form distinct from the bare "how much" rules. The optional "in UNIT"
+    # phrase handles questions such as "how much money, in dollars, does Tom
+    # have?" When supplied, `req_unit` must match the resolved unit; otherwise
+    # the consumer declines instead of returning the value in another unit.
     match:
       question:
         - {lit: how}
@@ -5908,10 +5322,7 @@ asks:
         - opt:
             - {lit: in}
             - {slot: req_unit, type: noun}
-        # `future_modal`, not `auxiliary` (mining candidate
-        # will-tense-asks): see ask/how-many-entity's comment for the class
-        # rationale — "how much ITEM will/would WHO have" alongside the
-        # ordinary "do/does/did" form.
+        # Accept ordinary and will/would forms, but not capacity modals.
         - {slot: aux, type: future_modal}
         - {slot: who, type: entity}
         - {slot: verb, type: verb}
@@ -5923,22 +5334,9 @@ asks:
       req_unit: "{req_unit}"
 
   - id: ask/how-much-noun-entity-uninverted
-    # mining candidate percent-change-values: "how much money SHE WILL
-    # have?" — the NON-inverted embedded-question word order (who BEFORE
-    # aux, the ordinary declarative-clause order), sibling of ask/how-much-
-    # noun-entity's own subject-aux-inverted "how much money WILL SHE
-    # have?". A genuinely different, general clause-order CLASS (not a
-    # one-off for any single problem) — GSM8K's own generated questions
-    # use both orders interchangeably after "how much ITEM". Routed to the
-    # SAME 'single-entity' consumer, so this can never commit anything the
-    # inverted form couldn't also commit; it only widens WHICH SURFACE
-    # ORDER reaches that consumer. Cannot collide with ask/how-much-noun-
-    # entity: that ask's very next token after `item` must satisfy
-    # `type: future_modal` (auxiliary/will/would), which 'she'/'he'/a name
-    # never does, and this ask's next token must satisfy `type: entity`,
-    # which 'will'/'would' never does — the two match sequences are
-    # mutually exclusive at the SAME position, never a specificity
-    # tie-break.
+    # Handles non-inverted word order: "how much money she will have?" The
+    # ordinary form places the modal before the subject. The next token after
+    # the item is different in each form, so the two rules cannot overlap.
     match:
       question:
         - {lit: how}
@@ -5954,19 +5352,10 @@ asks:
       verb: "{verb}"
 
   - id: ask/how-much-combined
-    # "how much money do they have in total/altogether?" — the how-much
-    # sibling of ask/how-many-combined (mining candidate how-much-combined):
-    # identical shape, 'much' in place of 'many', routed to the SAME
-    # 'combined' consumer (answer.py) that already sums N entities' totals
-    # for a measure. 'item' is a required noun right after 'how much'
-    # ('money', or any counted noun) — this can never collide with
-    # ask/how-much-noun-entity or ask/how-much-bare-entity because those
-    # require {who, type: name}, a proper name, while this ask's who slot
-    # is {type: pronoun} ('they'/'we') — a name-subject question never
-    # matches here and a pronoun-subject question never matches those.
-    # measure: currency resolution for the bare 'money' item is the
-    # existing interchangeable-category machinery (_resolve_measure,
-    # increment 26 precedent) — no new vocabulary needed.
+    # Combined "how much" form, such as "how much money do they have in
+    # total?" It uses the same total consumer as the "how many" form. The
+    # required item and pronoun subject keep it separate from single-holder
+    # questions.
     match:
       question:
         - {lit: how}
@@ -5990,13 +5379,8 @@ asks:
       subject_number: "{who.number}"
 
   - id: ask/how-much-combined-in-all
-    # mining candidate combined-ask-holder-surfaces (parked-pile reland):
-    # sibling of ask/how-much-combined for the "in all" totality tail —
-    # see ask/how-many-combined-in-all's comment for the class rationale
-    # (no alternation over token SEQUENCES; a literal [in, all] tail scoped
-    # to this ask id is the constitution-clean fix). Never a tie with
-    # ask/how-much-combined for the same reason documented there: 'all'
-    # fails that ask's required `agg` token outright.
+    # "How much" form with the two-word marker "in all". The ordinary form
+    # expects one aggregate token and cannot match this tail.
     match:
       question:
         - {lit: how}
@@ -6014,19 +5398,9 @@ asks:
       verb: "{verb}"
 
   - id: ask/how-much-combined-named
-    # "how much ITEM do/does/did NAME and NAME have together/in total/
-    # altogether?" — the how-much sibling of ask/how-many-combined-named,
-    # identical rationale: named holders bind DIRECTLY instead of the
-    # pronoun-only enumeration ask/how-much-combined above uses. Cannot
-    # tie/shadow that ask for the same reason documented there: its own
-    # opt group binds `who, type: pronoun`, which a proper name never
-    # satisfies, so it fails to match a named-pair question outright
-    # rather than partially matching. Also cannot collide with ask/how-
-    # much-noun-entity or ask/how-much-bare-entity (both require a SINGLE
-    # `who, type: name` immediately followed by `verb` — "NAME and NAME
-    # have" has 'and' between the first name and the verb, which neither
-    # of those asks' sequences can skip over, so they fail to match here
-    # too).
+    # Combined "how much" form for two named holders. It binds both names
+    # directly. The pronoun form and the single-name forms cannot match the
+    # "NAME and NAME" sequence.
     match:
       question:
         - {lit: how}
@@ -6048,13 +5422,8 @@ asks:
       verb: "{verb}"
 
   - id: ask/how-much-combined-named-in-all
-    # mining candidate combined-ask-holder-surfaces (parked-pile reland):
-    # sibling of ask/how-much-combined-named for the "in all" totality
-    # tail — see ask/how-many-combined-in-all's comment for the class
-    # rationale (no alternation over token SEQUENCES; a literal [in, all]
-    # tail scoped to this ask id is the constitution-clean fix). Never a
-    # tie with ask/how-much-combined-named for the same reason documented
-    # there: 'all' fails that ask's required `agg` token outright.
+    # Named-pair "how much" form with the two-word marker "in all". The
+    # ordinary named form expects one aggregate token and cannot match it.
     match:
       question:
         - {lit: how}
@@ -6180,57 +5549,15 @@ asks:
       verb: "{verb}"
 
   - id: ask/how-many-unit-dimension-comparative-than
-    # mining candidate dimension-difference-asks: "How many inches taller
-    # is Vlad than his sister?" — the ASK side of the dimension-comparative
-    # family (arithmetic/anchored-relation-postfix-dimension shipped the
-    # RELATION half in increment 68; this class never had an ask at all,
-    # so the question declined with "no ask shape" no matter how the
-    # premises read). One rule for BOTH directions ('taller'/'shorter',
-    # 'heavier'/'lighter', ...): `dir, cat: dimension_comparative` is the
-    # SHARED PARENT of `dimension_more`/`dimension_less` (packs/core-
-    # english/categories/core.yaml) and the `difference` consumer always
-    # takes `abs(ta - tb)` — direction never changes a difference's sign,
-    # so there is no reason to split this into a `-more-than`/`-less-than`
-    # pair the way the RELATION rules must (those add a signed offset).
+    # Handles dimensional differences, such as "how many inches taller is
+    # Vlad than his sister?" Taller/shorter and heavier/lighter use one rule
+    # because the answer is an absolute difference.
     #
-    # `aux, type: verb` (NOT `type: auxiliary`): the copula in "... is Vlad
-    # than ..." is sensed `[verb]` with lemma 'be' in this lexicon (core-
-    # english/lexicon/core.yaml), never `auxiliary` — probe-verified; the
-    # ask never matches with `type: auxiliary` here (unlike ask/how-many-
-    # more's "does ... have", where the auxiliary genuinely IS an
-    # auxiliary). `verb: "{aux}"` renders that unit's lemma ('be'),
-    # accepted by the `difference` consumer's own `ask_verb in ("have",
-    # "be")` branch with no consumer change needed.
-    #
-    # `a`/`b, type: entity`: this is a BRAND NEW ask id, so widening past
-    # `type: name` here does not touch any of the ~18 other name-only asks
-    # (the HANDOFF invariant is about blanket find-replace on EXISTING
-    # slots, not about a new rule's own first choice). `entity` is what
-    # lets a common-noun standard ("his sister") resolve at all.
-    #
-    # `opt: [{slot: poss, type: pronoun}]` right before `b`: "than his
-    # sister" is TWO units (a bare possessive pronoun + a noun; there is no
-    # merged "OWNER's NOUN" compound here, unlike the 's-clitic case
-    # condense.py's merge-possessive already handles) — without this, `b`
-    # (a single-unit slot) binds the FIRST thing satisfying `type: entity`
-    # after "than", which is the pronoun ITSELF (a resolved pronoun also
-    # satisfies `entity`), silently resolving the standard back to the
-    # pronoun's antecedent — the ask's OWN subject ("Vlad than Vlad" — a
-    # confident-wrong the dev-train prototype actually committed). `poss`
-    # is matched and discarded (never referenced by `resolves`); with it
-    # consumed first, `b` reaches the NOUN ("sister") instead, the bare
-    # entity lemma the premise fold already keys the fact on (model.py's
-    # `entity` identity note: bare lemma stays identity everywhere it
-    # already worked). A bare-name standard ("than Mark") is unaffected —
-    # the opt sub-sequence simply doesn't fire when nothing pronoun-shaped
-    # follows "than".
-    #
-    # `measure: "{item}"` + `fold_units: "true"`: the difference consumer's
-    # opt-in convertible-sibling-units fold (`_entity_total_convertible`) —
-    # "Vlad is 6 feet, 3 inches tall" is TWO Quantity facts (foot=6, inch=3)
-    # for one entity; asked in inches, the fold must see 75, not the bare
-    # inch component 3 (the naive prototype's OTHER confident-wrong on
-    # this same class, dev-train efdb037f7387).
+    # The copula is a verb here, not an auxiliary. The optional possessive
+    # pronoun must be consumed before `b`; otherwise "his" could be mistaken
+    # for the standard instead of "sister". `fold_units` combines compatible
+    # units—for example, 6 feet 3 inches must become 75 inches before the
+    # comparison.
     match:
       question:
         - {lit: how}
@@ -6252,21 +5579,9 @@ asks:
       fold_units: "true"
 
   - id: ask/how-much-dimension-comparative-than-unit
-    # mining candidate dimension-difference-asks: the TRAILING-unit sibling
-    # of ask/how-many-unit-dimension-comparative-than — "Mark is 5 feet 3
-    # inches tall and Mike is 6 feet and 1 inch tall. How much taller is
-    # Mike than Mark IN INCHES ...?" states the unit AFTER the standard
-    # instead of before the comparative; both orderings are ordinary
-    # English and read the same fact shape, so this is the same CLASS
-    # under a second, common word order — not a per-problem rule. Same
-    # `dir`/`aux`/`a`/`poss`/`b` shape and reasoning as the sibling rule
-    # (see its comment for the `type: verb` copula note and the possessive-
-    # standard guard); only the trailing `{lit: in}, {slot: item, type:
-    # noun}` differs, and anything further in the sentence (a stated
-    # "if 1 foot is equal to 12 inches" conversion clause) is simply left
-    # unconsumed — reg.conversions already declares foot/inch statically,
-    # so nothing needs to be LEARNED from that clause for this ask to
-    # answer correctly.
+    # Same dimensional comparison with the requested unit at the end:
+    # "how much taller is Mike than Mark in inches?" It uses the same
+    # possessive guard and compatible-unit folding as the preceding rule.
     match:
       question:
         - {lit: how}
@@ -6289,18 +5604,9 @@ asks:
       fold_units: "true"
 
   - id: ask/how-much-age-comparative-than
-    # mining candidate dimension-difference-asks: the AGE sibling —
-    # "How much older is Andy than Rahim, right now, in years?" — of the
-    # same ask class, gated on `age_comparative` (older/younger) instead of
-    # `dimension_comparative`. `measure: year` is a pack-owned DATA constant
-    # (constitution rule 1), exactly like arithmetic/times-comparative-age-
-    # relation's own hardcoded 'year' and ask/how-old-is's — 'old' is
-    # implicit in the comparative itself, never a stated noun, so there is
-    # no `item` slot to read a measure from the way the dimension asks do.
-    # No `fold_units` here: ages are never stated as a feet+inches-style
-    # compound, so the bare `_entity_total` is sufficient — this ask simply
-    # never sets the flag, leaving `difference`'s pre-existing behavior
-    # untouched for it too.
+    # Age form of the dimensional comparison: "how much older is Andy than
+    # Rahim?" The comparative implies years, so the rule supplies `year`
+    # directly. Ages do not need mixed-unit folding.
     match:
       question:
         - {lit: how}
@@ -6355,35 +5661,11 @@ asks:
       span_value: "{span.value}"
 
   - id: ask/how-many-rate-span-modal
-    # mining candidate rate-every-span-asks: the MODAL twin of
-    # ask/how-many-rate-span above — "how many apples CAN he eat in 2
-    # hours?" instead of "how many apples DOES he eat in 2 hours?". An
-    # EXACT copy of that ask with `{slot: aux, cat: capacity_modal}` in
-    # place of `type: auxiliary`; `capacity_modal` (declared alongside
-    # `future_modal` in packs/core-english/categories/core.yaml) covers
-    # the six capacity/hypothetical modals (can/could/should/may/might/
-    # must) and DELIBERATELY EXCLUDES will/would — a future-tense
-    # question is a different semantic commitment (see that category's
-    # own comment: dev-train's "Adam teaches 50 students a year... in
-    # the first year he only teaches 40" is a future-tense rate question
-    # the rate-span consumer answers WRONG because it cannot read the
-    # stated exception, whereas the genuinely hypothetical "Bob can eat
-    # 10 apples in 5 minutes; how many CAN he eat in 2 hours?" has no
-    # such trap and is dev-train's own SOLVED evidence for this ask).
-    #
-    # Overlap risk (this candidate's own hardest-gated concern):
-    # ask/how-many-capacity ALSO claims a `{slot: modal, type: modal}`
-    # token (a strict superset of `capacity_modal`), but its own `verb`
-    # slot is narrowed to `cat: purchase` (increment 96's capacity-
-    # overmatch fix) and its trailing clause is an OPTIONAL "with
-    # BUDGET", never a required "in SPAN". The two asks can only tie on
-    # the SAME sentence if it is BOTH a purchase-verb question AND
-    # carries a trailing "in COUNTED-NOUN" clause after the verb — a
-    # shape no genuine capacity question in dev-train/holdout exhibits
-    # (verified via the full diff this candidate's gate ran); an
-    # ordinary "how many cookies can she buy with $5?" has no "in SPAN"
-    # tail at all, so this ask simply fails to match it, leaving
-    # ask/how-many-capacity as the only candidate exactly as before.
+    # Modal rate question: "how many apples can he eat in 2 hours?"
+    # `capacity_modal` covers capacity or hypothetical modals, but excludes
+    # future "will/would" questions because stated future exceptions may make
+    # simple rate projection unsafe. The required "in SPAN" tail keeps this
+    # separate from budget-based purchase-capacity questions.
     match:
       question:
         - {lit: how}
@@ -6402,13 +5684,8 @@ asks:
       span_value: "{span.value}"
 
   - id: ask/how-much-rate-span-modal
-    # mining candidate rate-every-span-asks: the MODAL twin of
-    # ask/how-much-rate-span above, the same widening
-    # ask/how-many-rate-span-modal applies to its how-many sibling — see
-    # that ask's comment for the `cat: capacity_modal` and overlap-risk
-    # reasoning (identical here: currency measure, no purchase-verb
-    # narrowing on this side either, and still no "in SPAN" tail on any
-    # genuine capacity question to tie against).
+    # Modal currency-rate question. As in the "how many" form, the required
+    # "in SPAN" tail keeps it separate from purchase-capacity questions.
     match:
       question:
         - {lit: how}
@@ -6426,20 +5703,11 @@ asks:
       span_value: "{span.value}"
 
   - id: ask/earn-span
-    # 'how much does WHO earn/make (in SPAN)?' — wage-earnings asks (rate
-    # x worked span). The verb is gated to the narrow wage_verb category
-    # (packs/arithmetic/categories/wage.yaml), not the general 'acquire'/
-    # 'produce' categories, so an unrelated 'how much did Mary buy' never
-    # matches here. The 'in SPAN' clause is OPTIONAL: a span may instead
-    # be stated in an earlier sentence ("Rob works 8 hours") and read off
-    # a plain quantity fact by the rate-span consumer itself. This id is
-    # sorted (alphabetically) before ask/how-much-bare-entity on purpose —
-    # both shapes consume the same units when no span clause is present,
-    # and the earlier id wins the deterministic tie (patterns.match_ask),
-    # so a wage-verb question is routed to rate-span instead of the
-    # event-fold, which never had a matching event to fold in the first
-    # place (dev-train probe: 0 correct answers from event-fold on any
-    # earn/make question — see mining candidate wage-span-earnings).
+    # Wage question: "how much does Rob earn in 8 hours?" The narrow
+    # `wage_verb` category prevents unrelated buying or producing questions
+    # from matching. The span is optional because an earlier premise may
+    # already state it. This rule sorts before the general bare-entity form
+    # so wage verbs reach the rate consumer when their shapes tie.
     match:
       question:
         - {lit: how}
@@ -6458,29 +5726,10 @@ asks:
       span_value: "{span.value}"
 
   - id: ask/how-long-take-span
-    # 'how long does/did it take WHO to VERB N ITEM?' — the INVERSE of the
-    # forward rate-span asks above: amount ASKED divided by a known Rate,
-    # instead of a known span multiplied by a known Rate. "it take" is
-    # structural skeleton (the extraposed-infinitive idiom), not lexicon.
-    # `aux, type: future_modal` (mining candidate modal-how-long-asks):
-    # widened from `type: auxiliary` — also accepts "how long will/would it
-    # take" alongside the ordinary "do/does/did" form, the SAME future/
-    # conditional-tense widening already applied to ask/how-many-entity and
-    # ask/how-much-money-entity-left (see their comments for the class
-    # rationale). The 6 capacity/hypothetical modals (can/could/should/
-    # may/might/must) are excluded — only will/would are in the
-    # `future_modal` category — so a genuinely hypothetical/capacity-shaped
-    # question still cannot bind here. Routed to a NEW consumer
-    # (rate-span-inverse) — the forward 'rate-span' consumer/branch above
-    # is untouched byte-for-byte.
-    #
-    # `opt: [{lit: for}]` (mining candidate duration-rate-item-asks,
-    # FOR-variant): "how long does it take FOR WHO to VERB..." is the same
-    # extraposed-infinitive idiom with an optional dative 'for' inserted
-    # before `who` -- pure grammatical skeleton ('for' already a known
-    # preposition-sense word, packs/difg-mined/lexicon/a-f.yaml), never
-    # bound to a query field, so a question without it matches exactly as
-    # before.
+    # Inverse rate question: "how long will it take Ana to paint 8 doors?"
+    # The consumer divides the requested amount by a known rate. `future_modal`
+    # accepts ordinary and future forms but excludes capacity modals. "for"
+    # before the person is optional.
     match:
       question:
         - {lit: how}
@@ -6501,33 +5750,10 @@ asks:
       item_value: "{item.value}"
 
   - id: ask/how-long-take-span-totality-item
-    # 'how long does/did it take (FOR) WHO to VERB ALL (OF) (THE) ITEM?'
-    # (mining candidate duration-rate-item-asks) -- sibling of
-    # ask/how-long-take-span above for a TOTALITY-MARKED bare item ("all
-    # of the windows") instead of a stated count ("64 windows"): the asked
-    # count is never spelled out, so the consumer resolves it from the
-    # entity's own uniquely-stated Quantity of that measure elsewhere in
-    # the text (the increment-10/16 whole-total-decline discipline --
-    # unique-or-decline, zero or ambiguous totals both refuse). `all` is a
-    # REQUIRED `quantifier`-sense literal word -- the same totality marker
-    # ask/how-many-all-combined and ask/how-many-plural-combined-
-    # quantified-subject already use as a bare `{lit: all}` token; `of`/
-    # `the` are each independently optional so "all X", "all the X" and
-    # "all of the X" bind identically. `item, type: noun` (not `counted`):
-    # a totality-marked item never carries its own numeral.
-    #
-    # A SEPARATE ask id from ask/how-long-take-span, never a widened
-    # `item` slot there: the two item shapes are structurally disjoint (a
-    # numeral vs. a totality marker), and the base ask's own
-    # `item_value: "{item.value}"` template would silently break on an
-    # unnumbered noun -- the increment-64 precedent (a new sibling ask for
-    # a totality-marked reading) rather than a shared slot widening. Never
-    # a tie with the base ask either: that ask's `item` position sits
-    # directly after `verb` with no `all` literal, so a question carrying
-    # "all (of) (the)" fails the base ask's fixed sequence at that point
-    # (no opt group there to skip it) while satisfying this one instead,
-    # and a question WITHOUT "all" fails this ask's own required literal
-    # and falls through to the base ask exactly as before.
+    # Totality form of the inverse rate question: "how long will it take Ana
+    # to paint all of the doors?" The item count comes from one unambiguous
+    # quantity in the premises. The required "all" marker keeps this form
+    # separate from the rule that expects a stated numeral.
     match:
       question:
         - {lit: how}
@@ -6550,35 +5776,10 @@ asks:
       item: "{item}"
 
   - id: ask/how-many-timeunit-take-span
-    # 'how many TIMEUNIT does/did it take WHO to VERB N ITEM?' — same
-    # inverse class as ask/how-long-take-span above, but the asked time
-    # UNIT is named explicitly ("how many hours...") instead of left to the
-    # rate's own per-unit; the consumer additionally requires the named
-    # unit to match the committing rate's per-unit, or declines.
-    #
-    # `aux, type: future_modal` (mining candidate modal-how-long-asks):
-    # same will/would widening as ask/how-long-take-span above. This is the
-    # one ask of the pair with a real adjacency risk: ask/how-many-capacity
-    # ALSO gates on a will/would-capable `modal` slot ("how many hours will
-    # WHO VERB" — increment 14/19) and could in principle tie on the same
-    # question. It cannot in practice: this ask's literal 'it'/'take'/'to'
-    # tokens are required, non-optional, and ask/how-many-capacity has no
-    # such literals in its shape, so a question that satisfies THIS ask's
-    # full 9-token span (how/many/span_unit/aux/it/take/who/to/verb, plus
-    # the counted item — 10 consumed units) either fails capacity's shape
-    # entirely (the expletive "it" cannot satisfy capacity's `who, type:
-    # entity` slot — an unresolved pronoun never does, per `_slot_ok`) or,
-    # on the rare reading where it did, loses on specificity (10 consumed
-    # units here vs. capacity's 6, `patterns.specificity` — the same
-    # max-consumed-units check increment 49 verified for its own modal
-    # widening). Confirmed against packs/difg-mined/quarantine.yaml: no new
-    # vocabulary admitted, this is a pure slot-type widening.
-    #
-    # `opt: [{lit: for}]` (mining candidate duration-rate-item-asks,
-    # FOR-variant): same optional dative 'for' before `who` as
-    # ask/how-long-take-span's own widening, unaffected in the adjacency
-    # argument above (the literal is consumed either way, so the token
-    # count this ask wins specificity on only grows).
+    # Inverse rate question with an explicit time unit: "how many hours will
+    # it take Ana to paint 8 doors?" The requested unit must match the rate's
+    # unit. The required "it take ... to" frame keeps this distinct from a
+    # general purchase-capacity question. "for" before the person is optional.
     match:
       question:
         - {lit: how}
@@ -6601,15 +5802,8 @@ asks:
       span_unit: "{span_unit}"
 
   - id: ask/how-many-timeunit-take-span-totality-item
-    # totality-item sibling of ask/how-many-timeunit-take-span, mirroring
-    # ask/how-long-take-span-totality-item's own widening for the
-    # explicit-time-unit form (mining candidate duration-rate-item-asks).
-    # See that ask's comment for the totality-marker/decline discipline
-    # and the never-a-tie argument against its own base ask; the
-    # adjacency argument against ask/how-many-capacity in the base ask's
-    # comment applies here a fortiori (this ask's own required span is
-    # even longer, so it only wins the max-consumed-units tie-break by a
-    # wider margin).
+    # Explicit-time-unit form for "all of the ITEM". The required totality
+    # marker separates it from the version that expects a stated count.
     match:
       question:
         - {lit: how}
@@ -6649,20 +5843,9 @@ asks:
       verb: "{verb}"
 
   - id: ask/how-many-years-old-is
-    # mining candidate relation-standard-frames: "How many years old is
-    # Rachel?" — the UNIT-EXPLICIT sibling of ask/how-old-is: the same
-    # literal-'old' age anchor, with 'how many years' spelled out instead
-    # of the bare 'how'. Routes to the SAME `single-entity` consumer with
-    # the SAME hardcoded `measure: year` — no new consumer, no category
-    # resolution. 'years' is grammatical skeleton here exactly like 'old'
-    # already is in ask/how-old-is (constitution rule 2: literals are
-    # skeleton, not lexicon facts) — its own fold survives condense.py's
-    # plural-lemma canonicalization unchanged (`fold` stays the surface
-    # 'years'; only `lemma` collapses to 'year'), so the literal token
-    # matches directly. Cannot tie with ask/how-many-entity ('how many
-    # ITEM will/would WHO VERB' — 'old' can never satisfy that ask's
-    # `aux, type: future_modal` slot) or with ask/how-old-is itself (whose
-    # own literal 'old' must immediately follow 'how', never true here).
+    # Unit-explicit age question: "how many years old is Rachel?" It resolves
+    # the same `year` measure as the shorter "how old" form. Their literal
+    # word order keeps the rules separate.
     match:
       question:
         - {lit: how}
@@ -6678,22 +5861,9 @@ asks:
       verb: "{verb}"
 
   - id: ask/how-old-will-be-projected
-    # mining candidate relation-standard-frames: "How old will Rachel be in
-    # 8 years?" / "...after 8 years?" — a PROJECTED age ask: the entity's
-    # CURRENT age plus a stated future offset, resolved by the new
-    # `age-projected` consumer (answer.py) rather than `single-entity` —
-    # that consumer ADDS the offset instead of doing a bare lookup, which
-    # `single-entity` has no field for. `prep, cat: preposition` (matches
-    # both 'in' and 'after' — packs/core-english/lexicon/core.yaml senses
-    # 'in' as `preposition` directly; 'after' is a difg-mined preposition —
-    # never a word list in Python) keeps this to ONE ask id for both
-    # prepositions rather than two near-duplicates. `n, type: counted`
-    # binds the offset (a plain "N years" — no intensifier tolerance
-    # needed here, since asks are never fed through condense.py's ordinary
-    # merge fixpoint any differently than premises are); `offset:
-    # "{n.value}"` reads the raw numeral (patterns.py's `_slot_value`
-    # `value` attribute — NOT the default lemma lookup, which would
-    # return 'year').
+    # Projected age question: "how old will Rachel be in 8 years?" or
+    # "after 8 years?" The consumer adds the counted offset to Rachel's
+    # current age. The preposition category covers both wordings.
     match:
       question:
         - {lit: how}
@@ -6713,12 +5883,8 @@ asks:
       measure: year
 
   - id: ask/how-old-will-be-projected-from-now
-    # mining candidate relation-standard-frames: "How old will Rachel be
-    # 8 years from now?" — the trailing 'from now' sibling of ask/how-
-    # old-will-be-projected (same class, one preposition-less variant:
-    # 'now' is sensed 'time' in the lexicon, mirroring arithmetic/
-    # temporal-offset-age-past's own trailing 'ago' — a SYMMETRIC future
-    # anchor, never a Python word list). Same `age-projected` consumer.
+    # Projected-age form with a trailing anchor: "how old will Rachel be
+    # 8 years from now?" It uses the same age-plus-offset consumer.
     match:
       question:
         - {lit: how}
@@ -6736,34 +5902,11 @@ asks:
       measure: year
 
   - id: ask/how-many-unit-dimension-is
-    # mining candidate dimension-comparatives: "How many inches tall is
-    # Jake?" — a unit-qualified dimension ask: the unit is named
-    # explicitly, so the ordinary `single-entity` consumer resolves the
-    # measure from it exactly like every other itemed ask (`item, type:
-    # noun` = "inches"). Modelled on ask/how-old-is directly above, but
-    # needs a CATEGORY of base adjectives (`dimension_adjective`:
-    # tall/heavy/wide/high/large/small/short) rather than one literal
-    # ('old'), since several words gate this ask, not one. The `adj`
-    # slot is matched skeletally (not referenced by `resolves`) — it is
-    # what distinguishes this shape from ask/how-many-entity ("how many
-    # inches does Jake have"), which has no adjective at all; the two
-    # never tie because ask/how-many-entity's `aux, type: future_modal`
-    # slot can never match an adjective word and vice versa, so at most
-    # one of them fully matches any given question.
-    #
-    # A sibling BARE ask ("How tall is Jake?", no unit named, resolving
-    # via the `single-entity-elided-measure` consumer) was tried and
-    # DROPPED: it caught a genuine DECL->WRONG on dev-train ("How long is
-    # their combined experience?" answered -40 instead of declining —
-    # 'long' is the standard English DURATION idiom as much as a physical
-    # one, and its `who` slot bound a mis-resolved plural pronoun). Every
-    # OTHER member of `dimension_adjective` narrowed the collision but
-    # didn't eliminate the underlying risk (an elided, unit-less measure
-    # resolved off a resolved-pronoun entity, on a category that keeps
-    # growing) revealed again on dev-holdout — so the whole no-stated-unit
-    # ask shape was dropped rather than chasing it word by word. This
-    # unit-qualified ask keeps working: the stated unit forces an exact
-    # measure match or a decline, never a wrong guess.
+    # Unit-qualified dimension question: "how many inches tall is Jake?"
+    # The adjective identifies a dimension frame and the stated unit selects
+    # the exact measure. Do not add a unit-less sibling such as "how tall is
+    # Jake?" An elided measure can confuse physical dimensions with duration
+    # or other meanings; requiring the unit makes the rule safe.
     match:
       question:
         - {lit: how}
@@ -6808,37 +5951,11 @@ asks:
       collection: "{coll.qualified}"
 
   - id: ask/how-many-capacity
-    # `verb, cat: purchase` (mining candidate capacity-ask-overmatch): the
-    # `modal` slot alone ("how many X can/will/must WHO VERB") is satisfied
-    # by essentially ANY verb — "how many stickers will she have left",
-    # "how many pages must she read", "how many students can this school
-    # accommodate" all match the OLD `type: verb` slot just as well as the
-    # genuine "how many pens can Mary buy" this ask exists for. Because it
-    # is the most-specific (or only) matching ask on every one of those
-    # questions, it wins ask-specificity and then unconditionally declines
-    # on its own precondition (`0 price facts known for X`) — masking
-    # dozens of fully-read dev-train items from every OTHER consumer that
-    # could have been consulted (remainder folds, goal-deficit, rate-span,
-    # per-unit-rate). The capacity consumer's entire semantics (budget ÷
-    # unit price) is about SPENDING MONEY on an item, which in this
-    # grammar is exactly what the `purchase` category (buy/buys/bought/
-    # buying/purchase/purchased/purchases/order/orders/ordered —
-    # packs/difg-mined/categories/semantic.yaml, already the gate
-    # `_purchase_total`/the remaining-budget subtraction in answer.py use
-    # to recognise a genuine purchase) names structurally. Narrowing the
-    # verb slot to this category is therefore not a surface "budget cue"
-    # regex but the ask finally requiring the one thing its own consumer
-    # requires: a purchase. `acquire` (purchase's broader parent, which
-    # also holds get/receive/collect/earn/find/win) is deliberately NOT
-    # used here — those verbs don't imply money changed hands and are
-    # exactly the kind of non-price verb this narrowing exists to exclude.
-    # A question whose verb IS a purchase verb still matches and reaches
-    # the unchanged capacity consumer exactly as before (increments 14/19/
-    # 22's own suite, none of which use any verb outside this set); a
-    # question with any other verb no longer ties on this ask at all and
-    # falls through to ask-specificity among the remaining asks, or to no
-    # ask and a decline — never a reroute into a wrong commit, since no
-    # committing logic changed, only which questions may reach it.
+    # Purchase capacity question: "how many pens can Mary buy with £10?"
+    # The consumer divides a budget by a unit price, so the verb must be in
+    # the narrow `purchase` category. Do not widen it to every verb or to the
+    # broader `acquire` category: reading, receiving, earning, or merely
+    # having an item does not imply that money was spent.
     match:
       question:
         - {lit: how}
@@ -6886,34 +6003,11 @@ asks:
       negated: "true"
 
   - id: ask/how-many-attribute-partition-in-place
-    # mining candidate rest-partitions-qualified: PRENOMINAL sibling of
-    # ask/how-many-partition ("how many X are ADJ") — "how many ADJ X are
-    # in PLACE?" states the attribute BEFORE the noun instead of after a
-    # copula ("how many GREY cats are in this house?"). `type: qualified`
-    # (not a separate `type: adjective` slot before `item`): condense.py's
-    # merge-attribute already fuses ADJECTIVE+NOUN into ONE unit before
-    # asks ever run (the same convention ask/how-many-entity-qualified
-    # relies on for its subject), so there is no standalone adjective
-    # token left to match — `item.qualifier` reads the fused modifier off
-    # that single unit. Same partition-complement consumer and target
-    # fact (a resolved PartitionQuantity keyed on item/attribute — the
-    # rest-partition payoff and the ordinary "N of them are ADJ"
-    # partitions alike) as the postfix ask/how-many-partition.
-    #
-    # `type: qualified` is a STRICT SUBSET of ask/how-many-in-place's bare
-    # `type: noun` item (a qualified unit is still sense=='noun', so that
-    # ask still matches this sentence too, consuming the identical number
-    # of units — merge-attribute already fused the modifier into one
-    # unit, so there is no extra token left to out-consume it with,
-    # unlike ask/how-many-partition's postfix attr). patterns.match_ask
-    # breaks that tie by rule-id sort order alone (its own documented
-    # mechanism — see ask/how-many-entity's comment for the precedent of
-    # reasoning about it explicitly); this id is spelled to sort BEFORE
-    # "ask/how-many-in-place" ('a' < 'i' right after the shared
-    # "ask/how-many-" prefix) so a qualified item always routes here
-    # first. Never shadows the bare ask for an unqualified item — a
-    # `type: qualified` mismatch means this ask simply fails to match at
-    # all, leaving ask/how-many-in-place as the only candidate.
+    # Prenominal partition question: "how many grey cats are in this house?"
+    # The adjective and noun have already merged into one `qualified` unit,
+    # so `item.qualifier` supplies the attribute. A qualified noun also fits
+    # the general in-place rule; this rule's id intentionally sorts first so
+    # the attribute is preserved. An unqualified noun cannot match here.
     match:
       question:
         - {lit: how}
@@ -6929,15 +6023,9 @@ asks:
       negated: "false"
 
   - id: ask/how-many-attribute-partition-there
-    # mining candidate rest-partitions-qualified: the entity-less sibling
-    # of ask/how-many-attribute-partition-in-place, mirroring
-    # ask/how-many-there the same way that ask mirrors
-    # ask/how-many-in-place — "how many ADJ X are there?" with no place
-    # named. Same partition-complement consumer and `type: qualified`
-    # item (see the in-place sibling's comment for the merge-attribute
-    # and id-sort-order reasoning); "attribute-partition-there" sorts
-    # before "there" the same way, so it wins the tie against the bare
-    # ask/how-many-there whenever the modifier is present.
+    # Entity-less qualified partition: "how many grey cats are there?" As
+    # above, the rule id sorts before the bare "there" rule so the modifier
+    # is preserved.
     match:
       question:
         - {lit: how}
@@ -6952,32 +6040,11 @@ asks:
       negated: "false"
 
   - id: ask/how-many-of-collection-are-label
-    # mining candidate complement-labeled-subsets: the PARTITIVE ask form
-    # "how many OF (THE) COLLECTION are LABEL?" — a distinct subject
-    # surface from ask/how-many-partition's postfix copula ("how many
-    # COLLECTION are LABEL?", item BEFORE the verb) and from
-    # ask/how-many-attribute-partition-in-place's prenominal form (LABEL
-    # BEFORE the noun): here the collection is the PARTITIVE object of
-    # 'of' right after "how many" — no other ask in this file starts with
-    # a literal 'of' in that position (grepped), so this never shadows or
-    # collides with an existing ask.
-    # `collection` is captured ONLY to consume the partitive subject NP
-    # structurally — never referenced below, mirrors
-    # ask/how-many-plural-combined's own unused `who` slot — because the
-    # asked LABEL is a plain measure word routed to the SAME entity-less
-    # 'unique-entity' consumer ask/how-many-there already uses (no new
-    # consumer): it resolves iff exactly one entity holds a Quantity of
-    # that measure. That Quantity for a COMPLEMENT label ('girl' when the
-    # stated partition was 'boy') comes from saturate.py's
-    # synth/partition-complement-quantity plugin — this ask form simply
-    # lets the question NAME the complement directly instead of negating
-    # the stated attribute; with no such fact (or the stated label
-    # itself, already a real measure via synth/partition-membership-
-    # quantity) this declines exactly like any other unique-entity ask
-    # over an unresolvable measure. `verb, cat: state` (not the general
-    # `verb` type): a membership label is always a COPULAR predication
-    # ("ARE girls"), mirroring arithmetic/partition-membership-of-noun's
-    # identical narrowing rationale.
+    # Partitive label question: "how many of the children are girls?" The
+    # collection is consumed as sentence structure; the label is the measure
+    # to resolve for one unique holder. Complement labels may come from a
+    # synthesized partition fact. The verb must be copular because this is a
+    # membership statement, not a general action.
     match:
       question:
         - {lit: how}
@@ -7006,28 +6073,12 @@ asks:
       measure: "{item}"
 
   - id: ask/how-much-money-entity-left
-    # "how much money does WHO have left" — the remaining-money class: a
-    # stated single money holding minus the entity's priced purchases
-    # (the money-left consumer, answer.py). The literal 'money' plus the
-    # trailing 'left' make this ask consume MORE units than the existing
-    # ask/how-much-noun-entity ("how much money does Tom have", no 'left')
-    # over the same question, so max-consumed specificity (patterns.
-    # match_ask) routes a 'left' question here instead of to the raw-
-    # holding read that ask would otherwise give. The verb is gated to the
-    # `state` category (have/has/had/...), never the general `verb` type,
-    # because only a STATED HOLDING — not an event fold — is a valid base
-    # to subtract purchases from.
-    # `who, type: entity` (mining candidate pronoun-entity-asks): widened
-    # from `type: name` — see ask/how-many-entity's comment for the class
-    # rationale.
-    #
-    # The `opt: [in, req_unit]` group (mining candidate unit-parenthetical-
-    # asks): same mid-question parenthetical-unit mechanism as
-    # ask/how-much-noun-entity's comment above, applied here between the
-    # literal 'money' and 'aux' — "How much money, in dollars, does Ian
-    # have left?". Unbound when absent; bound, answer.py's money-left
-    # consumer checks it against the resolved currency measure the same
-    # way.
+    # Remaining-money question: "how much money does Ian have left?" The
+    # consumer subtracts Ian's priced purchases from one stated holding. The
+    # verb must describe a state, because an event total is not a valid
+    # starting balance. The optional "in UNIT" phrase requires the result to
+    # use that currency unit. The word "left" makes this more specific than a
+    # plain money-holding question.
     match:
       question:
         - {lit: how}
@@ -7036,10 +6087,7 @@ asks:
         - opt:
             - {lit: in}
             - {slot: req_unit, type: noun}
-        # `future_modal`, not `auxiliary` (mining candidate
-        # will-tense-asks): see ask/how-many-entity's comment for the class
-        # rationale — "how much money will/would WHO have left" alongside
-        # the ordinary "do/does/did" form.
+        # Accept ordinary and will/would forms, but not capacity modals.
         - {slot: aux, type: future_modal}
         - {slot: who, type: entity}
         - {slot: verb, cat: state}
@@ -7051,32 +6099,11 @@ asks:
       req_unit: "{req_unit}"
 
   - id: ask/how-much-change
-    # "how much change does/did/will WHO get/receive/take (back)" (mining
-    # candidate change-asks): the buyer's TENDER — a stated payment amount
-    # handed over ("pays with a $50 bill" / "paid $200" / "gave $250 [to
-    # the cashier]", any tender_verb-category event whose measure is
-    # currency; packs/difg-mined/categories/semantic.yaml) — minus the
-    # SAME priced-purchase total ask/how-much-money-entity-left's
-    # money-left consumer already uses (answer.py's _purchase_total,
-    # UNCHANGED: the increment-10 invariant travels with it unscoped —
-    # any unpriced purchase or a cost-splitting predicate on this entity
-    # declines the whole total). 'change' is a specific, rare surface
-    # literal (methodology §5.3) rather than a category gate: no other
-    # ask in this file matches it, so a change question is never
-    # confused with a plain money-holding one.
-    #
-    # `verb, type: verb` deliberately UNCONSTRAINED (not gated to a
-    # receive/get category): the dev-train evidence for this class uses
-    # several different verbs for the identical "how much change did
-    # WHO ___?" shape ("get back" / "receive back" / "receive" / "take")
-    # and the answer never depends on which one — the change consumer
-    # computes tender minus spend regardless, so gating the verb would
-    # only narrow coverage with no safety benefit. The optional trailing
-    # 'back' group is unbound (and harmless) whenever the question omits
-    # it. `aux, type: future_modal` (not `auxiliary`): "will/would WHO
-    # receive" is the majority phrasing in the evidence, alongside the
-    # ordinary "does/did" form — see ask/how-many-entity's comment for
-    # the class rationale.
+    # Change question: "how much change did Ana get back?" The consumer
+    # subtracts priced purchases from the tendered amount. Any unpriced or
+    # split-cost purchase makes it decline. The answer does not depend on
+    # whether the question says get, receive, or take, so the verb remains
+    # general; "back" is optional.
     match:
       question:
         - {lit: how}
@@ -7113,53 +6140,20 @@ asks:
       item: "{item}"
 
   - id: ask/how-much-pay-for-quantity
-    # "how much did WHO pay/spend for/on N ITEM" (mining candidate priced-
-    # quantity-cost-asks): the ask itself states the quantity ("4 shirts",
-    # one merge-count unit) rather than relying on an existing Quantity
-    # fact — this is the class of question that INTRODUCES its own
-    # hypothetical count over a priced item, routed to the new
-    # 'cost-of-quantity' consumer (answer.py), which commits N (the
-    # question's own count) times the item's unique Price fact and checks
-    # the buyer's own cost-splitting predicates (increment 10's
-    # invariant) before committing.
+    # Cost for a stated quantity: "how much did Ana pay for 4 shirts?" The
+    # consumer multiplies the question's count by the item's unique price and
+    # checks cost-splitting constraints. `spend_target_prep` is limited to
+    # "for" and "on" so a time-span question such as "pay in 3 months" is
+    # not misrouted.
     #
-    # NOTE: the sibling no-buyer surface ("how much does it cost to buy N
-    # ITEM") was tried and DROPPED — 'cost' is a noun/verb homograph
-    # (charge-category noun vs price_verb), and a trailing purchase
-    # infinitive ("...to buy 4 shirts") gives the infinitive's own verb a
-    # SECOND viable subject candidate (the noun reading of 'cost' itself,
-    # nearer than the pronoun 'it'), which ties the coverage-arbitration
-    # score between the noun and verb readings of 'cost' for EVERY
-    # instance of that surface form (obligations.py's disambiguate(),
-    # confirmed via --trace on synthetic probes) — 'much'/'cost' stay
-    # permanently flagged ambiguous and the guard vetoes any commit
-    # regardless of ask/consumer design. Out of scope to fix here (a
-    # shared disambiguation tie-break, not this candidate's files); worth
-    # its own future mining candidate.
-    #
-    # The verb is gated to the EXISTING `spend_verb` category (pay/paid/
-    # pays/spend/spends/spent — already members via packs/core-english
-    # and packs/difg-mined, no new vocabulary), and the trailing
-    # preposition to the narrow `spend_target_prep` category ('for'/'on'
-    # only — see that category's own note for why the general
-    # `preposition` sense is NOT used here: it would tie ask/how-much-
-    # rate-span and ask/earn-span on consumed-unit count for "how much
-    # did WHO pay IN N months" and let alphabetical id order silently
-    # mis-route a span question here). Consumes MORE units than the
-    # existing ask/how-much-bare-entity ("how much did Tom pay", 5
-    # tokens) whenever this trailing clause is present, so max-consumed
-    # specificity (patterns.match_ask) routes here instead —
-    # ask/how-much-bare-entity's own spend_verb branch (answer.py's
-    # _purchase_total) still wins unchanged on the bare form, with no
-    # trailing "for/on N ITEM" clause to consume.
+    # The subjectless form "how much does it cost to buy 4 shirts?" remains
+    # unsupported because the noun and verb readings of "cost" are ambiguous
+    # in that structure.
     match:
       question:
         - {lit: how}
         - {lit: much}
-        # `future_modal`, not `auxiliary` (mining candidate
-        # modal-spend-measure-price): also accepts "how much will/would
-        # WHO pay for N ITEM" alongside the ordinary "do/does/did" form —
-        # see ask/how-many-entity's comment for the class rationale.
+        # Accept ordinary and will/would forms, but not capacity modals.
         - {slot: aux, type: future_modal}
         - {slot: who, type: name}
         - {slot: verb, cat: spend_verb}
@@ -7172,18 +6166,9 @@ asks:
       qty_value: "{qty.value}"
 
   - id: ask/how-much-each-item-cost
-    # "how much do/does/did each ITEM cost?" (mining candidate unit-price-
-    # from-total, re-cut of the batch-47 review kill: HANDOFF's own "Re-
-    # cut" instruction) — the leading-distributive twin of ask/how-much-
-    # item-cost: the required 'each' literal between `aux` and `item`
-    # means this can never tie that sibling ask (which has no 'each' slot
-    # at all — a bare "how much does ITEM cost" simply fails this
-    # skeleton's extra literal and stays with the other ask). Routes to
-    # the NEW `unit-price-from-total` consumer (answer.py) rather than
-    # item-cost's own single-Price lookup: this class asks about an item
-    # whose PRICE IS NOT STATED anywhere — only a grand total for the
-    # whole purchase is — so the consumer recovers it by subtraction
-    # instead of reading an existing Price fact.
+    # Unit-price question with "each". When no individual Price fact exists,
+    # the consumer recovers the unit price from the stated purchase total.
+    # The required "each" keeps this separate from a direct item-cost lookup.
     match:
       question:
         - {lit: how}
@@ -7197,17 +6182,9 @@ asks:
       item: "{item}"
 
   - id: ask/what-is-the-cost-of-quantity
-    # "what is the cost of N ITEM?" (mining candidate unit-price-from-
-    # total) — the question STATES its own quantity ('2 pans') rather than
-    # relying on an existing per-unit Price fact, exactly like ask/how-
-    # much-pay-for-quantity's `qty_value` shape, but fronts with 'what
-    # is/was the cost of' (a copula + the `cost` noun) instead of a named
-    # buyer paying/spending — a disjoint literal skeleton that can never
-    # tie any existing ask ('the' between 'is' and 'cost' is a globally-
-    # skippable article, same discipline as ask/what-total-combined's own
-    # comment). Routes to the SAME new `unit-price-from-total` consumer as
-    # ask/how-much-each-item-cost: the recovered unit price is multiplied
-    # by this ask's own stated `qty_value` rather than left bare.
+    # Cost question with a stated quantity: "what is the cost of 2 pans?"
+    # The consumer recovers the unit price from the purchase total, then
+    # multiplies it by `qty_value`.
     match:
       question:
         - {lit: what}
@@ -7221,23 +6198,10 @@ asks:
       qty_value: "{qty.value}"
 
   - id: ask/what-total-combined
-    # "What is/was the total (number/amount) of ITEM (that) they VERB?" —
-    # the wh-copular total ask (mining candidate wh-total-asks): 'what'
-    # plus a copula ({cat: state}: is/was/are/were) FRONTS the aggregate
-    # word instead of ask/how-many-combined's item-first "how many X ...
-    # in total" phrasing; both route to the same unchanged 'combined'
-    # consumer (Σ over every holder of the resolved measure). The
-    # 'number'/'amount' frame noun and the trailing "(that) WHO VERB"
-    # clause are both optional — a bare "what is the total of X?" needs
-    # neither. The trailing clause is scoped to a bare pronoun ('they'),
-    # never a counted/named subject ("the two have", "Mia and Leo have"):
-    # those need holder-count or multi-name binding logic this candidate
-    # does not add, so a counted/named subject simply fails the
-    # {type: pronoun} slot and that optional clause goes unconsumed —
-    # the ask still resolves via the SAME default verb ('have') the
-    # combined consumer already falls back to for how-many-combined's own
-    # unbound {verb} (answer.py's `query.get("verb", "have")`), so no new
-    # fallback path is introduced.
+    # Copular total question: "what is the total number of books that they
+    # have?" The frame noun and trailing pronoun clause are optional. Named
+    # or counted subjects need other rules with explicit holder binding. If
+    # the verb is omitted, the combined consumer defaults to "have".
     match:
       question:
         # no literal 'the': article is a globally-skippable sense
@@ -7263,19 +6227,9 @@ asks:
       verb: "{verb}"
 
   - id: ask/what-total-combined-contracted
-    # Same class as ask/what-total-combined, for the "what's" contraction.
-    # tokenize.py's _CONTRACTIONS table never expands "'s" (unlike n't/
-    # 're/'ll/'ve — see tokenize.py's comment: "kept as its own token,
-    # possessive/copula resolved later"), so "what's" always splits into
-    # the literal units 'what' + "'s" and the copula slot there can never
-    # be a {cat: state} verb. A literal "'s" token plays the skeletal role
-    # {slot: be, cat: state} plays in the is/was form above. Kept as a
-    # SEPARATE ask id rather than widening the shared 'state' category to
-    # admit "'s": "'s" is lexiconed as sense=possessive, not verb, and
-    # admitting it into 'state' would change every other state-gated rule
-    # and ask (ask/how-old-is, ask/how-much-money-entity-left, the
-    # goal/state sentence rules, ...), not just this one — the HANDOFF
-    # invariant against widening a shared gate for one caller.
+    # Contracted form of the preceding rule. The tokenizer keeps "'s" as its
+    # own token rather than resolving it as a state verb. Matching it literally
+    # here avoids widening the shared `state` category for every other rule.
     match:
       question:
         - {lit: what}
@@ -7296,30 +6250,11 @@ asks:
       verb: "{verb}"
 
   - id: ask/what-average-combined
-    # "What is/was the average (number/amount) of ITEM (that) they VERB?"
-    # (mining candidate average-asks): the average sibling of
-    # ask/what-total-combined — IDENTICAL shape, 'average' in place of
-    # 'total', routed to a NEW 'average' consumer (answer.py) that reuses
-    # ask/what-total-combined's own 'combined' holder-enumeration helper
-    # UNCHANGED (same Σ over every holder of the resolved measure, same
-    # >=2-holders-or-decline discipline, same state/event-verb fallback)
-    # and divides by the holder count. Can never collide with
-    # ask/what-total-combined: the two asks differ on the required literal
-    # right after the copula ('average' vs 'total'), so a question can
-    # only ever supply one of them — mutually exclusive matches, not a
-    # specificity contest. The trailing "(that) WHO VERB" clause is
-    # scoped to a bare pronoun exactly as in ask/what-total-combined, for
-    # the same reason: a counted/named subject needs holder-count/multi-
-    # name binding this candidate does not add, so it is left unconsumed
-    # and the ask still resolves via the same default verb ('have').
-    # Weighted-average and per-unit-rate phrasing ("average speed ... per
-    # hour", "average X per day/month/game") never reaches a WRONG answer
-    # here: those measures are not the kind of >=2 named holders the
-    # 'average' consumer enumerates (Quantity facts keyed by a real
-    # holder), so the consumer's own decline path — inherited unchanged
-    # from 'combined' — catches them (fewer than two holders, or no
-    # resolvable per-entity total), exactly as it already does for
-    # ask/what-total-combined's own equivalent risk surface.
+    # Average form of the preceding total question. It enumerates at least
+    # two holders, sums their values, and divides by the holder count. The
+    # literal "average" keeps it separate from "total". Weighted averages
+    # and per-unit rates decline because they do not provide the required set
+    # of per-holder quantities.
     match:
       question:
         - {lit: what}
@@ -7364,39 +6299,12 @@ asks:
       verb: "{verb}"
 
   - id: ask/imperative-combined-dimension
-    # mining candidate dimension-aggregate-asks: "Calculate their combined
-    # height." / "Determine the combined weight of the three." — an
-    # IMPERATIVE task-cue verb (`compute_verb`: compute/calculate/
-    # determine, packs/core-english/categories/core.yaml) heads the
-    # sentence instead of "what is/was" (ask/what-total-combined's own
-    # shape); the aggregate marker is the literal 'combined' (never `cat:
-    # aggregate` — that also matches 'average', which needs the DIFFERENT
-    # 'average' consumer below, and this match engine has no NOT-gate to
-    # exclude it, so the two asks stay mutually exclusive by construction,
-    # exactly like ask/what-total-combined/ask/what-average-combined
-    # already are via their own literal 'total'/'average' tokens); the
-    # measure is a `dimension_noun` ('height'/'weight'/'age'/'distance'/
-    # 'balance'/'earnings'/'cost' — NAMES the dimension, not the unit),
-    # resolved by `answer.py`'s `_resolve_dimension_measure` (opt-in via
-    # `dimension_measure: true` — see that function's own docstring for
-    # the family-membership mechanism and why it can never affect any
-    # OTHER ask).
-    #
-    # The holder set is EITHER a leading possessive pronoun ("THEIR
-    # combined height", optional — 'their' is sense=pronoun, same lexicon
-    # entry as 'they') OR a trailing cardinal ("of the THREE", optional —
-    # reuses ask/how-many-combined-cardinal-pronoun's own `{slot: n, type:
-    # number}` + `holder_count` mechanism, packs/arithmetic/rules/
-    # core.yaml's own comment on that ask explains the double duty). Both
-    # are optional and independent, so either surface (or neither, "the
-    # combined height" alone) matches the same ask; `_combined_holder_
-    # totals` enumerates every holder of the resolved measure exactly as
-    # ask/how-many-combined's own pronoun path does — entity-less, never
-    # named/counted-subject binding. No event-verb slot: a dimension total
-    # is always a STATE quantity (copula/possession-anchored — 'is'/'has'
-    # tall/heavy/old/...), so the consumer's own default verb ('have')
-    # applies unchanged, the same fallback ask/what-total-combined already
-    # relies on for its own unbound `{verb}`.
+    # Imperative dimension total: "calculate their combined height" or
+    # "determine the combined weight of the three". `dimension_noun` names
+    # a dimension rather than a unit, so `dimension_measure` resolves the
+    # compatible measure from the facts. The optional cardinal supplies an
+    # expected holder count. "combined" is literal so this rule cannot be
+    # confused with the average form below.
     match:
       question:
         - {slot: verb, cat: compute_verb}
@@ -7414,13 +6322,9 @@ asks:
       holder_count: "{n.value}"
 
   - id: ask/imperative-average-dimension
-    # mining candidate dimension-aggregate-asks: sibling of
-    # ask/imperative-combined-dimension for 'average' — IDENTICAL shape,
-    # 'average' in place of 'combined', routed to the 'average' consumer
-    # (reuses `_combined_holder_totals` unchanged, then divides by holder
-    # count, exactly like ask/what-average-combined mirrors ask/what-
-    # total-combined). Mutually exclusive with ask/imperative-combined-
-    # dimension by construction — see that ask's own comment.
+    # Average counterpart to the preceding imperative total rule. The literal
+    # "average" selects the average consumer and prevents overlap with
+    # "combined".
     match:
       question:
         - {slot: verb, cat: compute_verb}
@@ -7438,41 +6342,12 @@ asks:
       holder_count: "{n.value}"
 
   - id: ask/how-long-is-total-dimension
-    # mining candidate distributive-holder-enum: "How long is the total
-    # tape?" — a dimension-ADJECTIVE totality sibling of
-    # ask/imperative-combined-dimension above, PROTOTYPED and DROPPED
-    # (packs/core-english/categories/core.yaml's time_measure note) until
-    # this candidate fixed its blocker: `_combined_holder_totals`'s
-    # entity enumeration used to oversum a bare per-unit rate fact
-    # ALONGSIDE the bridged totals it was consumed to derive ("Each song
-    # is 4 minutes" summed in on top of the two side-totals it fed,
-    # 44 instead of gold 40).
-    #
-    # 'long' is deliberately NOT admitted into `dimension_adjective`
-    # (adjective-sensed; that category's OTHER members — tall/heavy/
-    # wide/high/large/small/short — are noun-rooted and could join, but
-    # 'long' is the standard English DURATION idiom as much as a
-    # physical-length one, and admitting it there would let it drift
-    # into ask/how-many-unit-dimension-is's own `dimension_adjective`
-    # gate for an UNRELATED bare-adjective ask, risking the exact
-    # DECL->WRONG that ask's own comment records for "how long is
-    # their combined experience"). Here 'long' is a LITERAL, this ask's
-    # own skeleton — never a category member — bound directly to
-    # `measure: time_measure` (a category NAME, not a word; the same
-    # move `currency`'s `measure: currency` precedent makes,
-    # `_resolve_dimension_measure`'s own docstring already anticipates
-    # this exact ask id) rather than resolved from any slot value. The
-    # required literal 'total' is the totality marker: it is what
-    # licenses summing every rate-net holder of `time_measure` rather
-    # than reading a single stated duration, and it is what keeps this
-    # ask from ever colliding with a bare, non-aggregate "how long is
-    # X?" (not admitted anywhere in this grammar — see the
-    # `dimension_adjective` bare-ask drop above).
-    #
-    # `item` is skeletal only (never referenced by `resolves`, exactly
-    # like `adj` in ask/how-many-unit-dimension-is) — it exists so "the
-    # total TAPE" consumes the head noun rather than leaving it dangling
-    # mid-question.
+    # Total-duration question: "how long is the total tape?" `long` is a
+    # literal here and resolves through `time_measure`. Do not add it to the
+    # general dimension-adjective category: without an explicit duration
+    # context it can mean physical length or experience. The required "total"
+    # authorizes summing the duration holders. `item` only consumes the head
+    # noun; it is not used as the measure.
     match:
       question:
         - {lit: how}
