@@ -73,6 +73,7 @@ rules:
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: std, cat: non_quantity_holder}
       - distinct: [who, std]
+      - category_nonoverlap: [who, std]
       - distinct_measure: [item, std]
       # a TIME PERIOD is not a holder — see slot_not_category in schemas.py
       - slot_not_category: {slot: std, cat: timeperiod}
@@ -129,6 +130,7 @@ rules:
         - {slot: std, type: entity}
     where:
       - distinct: [who, std]
+      - category_nonoverlap: [who, std]
       - distinct_measure: [item, std]
       # a TIME PERIOD is not a holder — see slot_not_category in schemas.py
       - slot_not_category: {slot: std, cat: timeperiod}
@@ -295,6 +297,7 @@ rules:
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: std, cat: non_quantity_holder}
       - distinct: [who, std]
+      - category_nonoverlap: [who, std]
       - distinct: [item, std]
       - same_lemma: [std, std_echo]
     consumes: [n, std_echo]
@@ -356,6 +359,7 @@ rules:
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - distinct: [who, std]
+      - category_nonoverlap: [who, std]
     consumes: [n]
     emits:
       - fact: relation
@@ -371,27 +375,35 @@ rules:
   - id: arithmetic/anchored-relation-postfix
     phase: read
     description: >
-      "X picked 12 apples more than Y" — the POSTFIX comparative order: the
-      count has already condensed into the noun, and the direction word
-      follows it. Same Relation fact as the prefix form. `who`/`std,
-      type: entity` (mining candidate common-noun-relation-subjects):
-      same widening and same `distinct_measure: [item, std]` qualifier-
-      aware self-referential guard as arithmetic/anchored-relation — see
-      its comment (mining candidate qualified-measure-keys).
+      "X picked 12 apples more than Y" — the POSTFIX count-comparative
+      order: the count has already condensed into the noun, and a declared
+      quantity direction (`more`/`fewer`/`less`) follows it. Same Relation fact as the
+      prefix form. Age words do not belong to this count frame; the copular
+      `N years older/younger than` construction has its own sibling below.
+      Both holders must be complete references. This keeps names,
+      determiner-backed and possessed common nouns, labeled entities, and
+      bare plural comparison classes while refusing an unanchored singular
+      such as `than can`. The qualifier-aware `distinct_measure: [item,
+      std]` guard remains the same as arithmetic/anchored-relation — see its
+      comment (mining candidate qualified-measure-keys).
     match:
       sentence:
-        - {slot: who, type: entity}
+        - {slot: who, type: entity, referential: true, bare_reference_category: bare_entity_reference}
         - {slot: verb, type: verb}
         - {slot: item, type: counted}
-        - {slot: dir, cat: delta}
+        - {slot: dir, cat: quantity_delta}
         - {lit: than}
         - opt:
             - {slot: appos_det, cat: possessive_determiner}
             - {slot: appos_role, cat: animate}
-        - {slot: std, type: entity}
+        - {slot: std, type: entity, referential: true, bare_reference_category: bare_entity_reference}
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - number_compatible: [who, verb]
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: std, cat: non_quantity_holder}
       - distinct: [who, std]
+      - category_nonoverlap: [who, std]
       - distinct_measure: [item, std]
       # a TIME PERIOD is not a holder — see slot_not_category in schemas.py
       - slot_not_category: {slot: std, cat: timeperiod}
@@ -403,6 +415,49 @@ rules:
         measure: "{item}"
         measure_qualifier: "{item.qualifier}"
         standard_qualifier: "{std.qualifier}"
+        factor: 1.0
+        offset: "item * sign(dir)"
+        verb: "{verb}"
+        subject_label: "{who.label}"
+        standard_label: "{std.label}"
+
+  - id: arithmetic/anchored-relation-postfix-age
+    phase: read
+    description: >
+      "Fia is 19 years older than Cato" — the age-specific sibling of
+      arithmetic/anchored-relation-postfix. The direction must be a declared
+      age comparative, its counted measure must be a declared age unit, and
+      the predicate must be a number-compatible copula. Keeping those three
+      premises together prevents event/count cross-products such as "sells
+      19 areas older" or "sells 19 years older" without banning `sell` from
+      ordinary `more`/`fewer` quantity comparisons. Both sides are complete
+      references for the same reason as the count sibling; a bare plural may
+      still name a comparison class, while a bare singular cannot silently
+      become an individual holder.
+    match:
+      sentence:
+        - {slot: who, type: entity, referential: true, bare_reference_category: bare_entity_reference}
+        - {slot: verb, cat: copula}
+        - {slot: item, cat: age_measure, counted: true}
+        - {slot: dir, cat: age_comparative}
+        - {lit: than}
+        - opt:
+            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_role, cat: animate}
+        - {slot: std, type: entity, referential: true, bare_reference_category: bare_entity_reference}
+    where:
+      - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - number_compatible: [who, verb]
+      - distinct: [who, std]
+      - category_nonoverlap: [who, std]
+      - distinct: [item, std]
+      - slot_not_category: {slot: std, cat: timeperiod}
+    consumes: [item]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: "{item}"
         factor: 1.0
         offset: "item * sign(dir)"
         verb: "{verb}"
@@ -445,6 +500,7 @@ rules:
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: std, cat: non_quantity_holder}
       - distinct: [who, std]
+      - category_nonoverlap: [who, std]
       - distinct: [item, std]
     consumes: [item]
     emits:
@@ -860,12 +916,15 @@ rules:
       - number_compatible: [who, verb]
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
+      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: motion_comparison_verb, role_cat: motion_participant}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: std, cat: non_quantity_holder}
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - distinct: [who, std]
+      - category_nonoverlap: [who, std]
       - distinct: [item, std]
     emits:
       - fact: relation
@@ -909,9 +968,11 @@ rules:
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: verb, cat: motion_comparison_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: std, cat: non_quantity_holder}
       - distinct: [who, std]
+      - category_nonoverlap: [who, std]
     emits:
       - fact: relation
         subject: "{who}"
@@ -1115,6 +1176,7 @@ rules:
       - slot_not_category: {slot: item1, cat: many_incompatible_noun}
       - slot_not_category: {slot: item2, cat: many_incompatible_noun}
       - distinct: [who, std]
+      - category_nonoverlap: [who, std]
     emits:
       - fact: quantity
         entity: "{who}"
@@ -1342,9 +1404,11 @@ rules:
       MASS-NOUN counterpart: 'much' in place of 'many', and the item slot
       is the declared `mass_quantity_noun` class rather than `type: plural`,
       since a mass noun never carries plural morphology. The optional PP
-      reuses declared preposition/noun compatibility. Sales verbs also refuse
-      the declared `remnant` object class: "sells ... rest" is not a sale
-      event, while other verbs and saleable mass nouns remain open. Same
+      reuses declared preposition/noun compatibility but excludes remnant
+      adjuncts, which belong to explicit conjunct rules. Outbound transfers
+      also refuse a declared `remnant` object: "sells/gives ... rest" is not
+      a transferred arithmetic quantity, while other verbs and transferable
+      mass nouns remain open. Same
       Relation fact and downstream resolution as times-as-many; the anchor-
       measure resolver (saturate.py) is what lets a 'money'-measured relation
       resolve against an anchor's own currency holding ('dollar').
@@ -1369,10 +1433,11 @@ rules:
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - number_compatible: [who, verb]
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: sell, excluded_role_cat: remnant}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: transfer_out, excluded_role_cat: remnant}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: verb, cat: frame_prepositional_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: pp_prep, cat: quantity_remainder_preposition}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - distinct: [who, std]
     emits:
@@ -1459,10 +1524,11 @@ rules:
     where:
       - bound_requires_type: {bound: appos_role, slot: std_seen, type: proper_name}
       - number_compatible: [who, verb]
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: sell, excluded_role_cat: remnant}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: transfer_out, excluded_role_cat: remnant}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: verb, cat: frame_prepositional_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: pp_prep, cat: quantity_remainder_preposition}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - unbound: [std_seen]
     emits:
@@ -1700,8 +1766,9 @@ rules:
       explicit: mass_quantity_delta supplies "less/more", and
       mass_quantity_noun supplies an independently declared mass measure.
       Optional PP material is location-only; remnant PPs belong to conjunct
-      constructions. Spending comparisons require a currency object, while
-      other verbs can still expose legitimate mass measures such as rest.
+      constructions. Spending comparisons require a currency object, and
+      outbound transfers reject remnant objects; other compatible verbs can
+      still expose legitimate mass measures such as rest.
       A proportional decrease cannot exceed the whole standard quantity.
     match:
       sentence:
@@ -1725,6 +1792,7 @@ rules:
       - number_compatible: [who, verb]
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: spend_verb, role_cat: currency}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: transfer_out, excluded_role_cat: remnant}
       - slot_not_category: {slot: pp_prep, cat: quantity_remainder_preposition}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - proportional_delta_compatible: {fraction: f, direction: dir, direction_cat: delta}
@@ -1781,51 +1849,21 @@ rules:
   - id: arithmetic/percent-change-event
     phase: read
     description: >
-      mining candidate percent-change-values: "Susie puts 20% MORE money
-      into her piggy bank" — a stated percent INCREASE/DECREASE on the
-      SUBJECT'S OWN existing currency holding (self-referential: unlike
-      fraction-delta-relation's "20% more pines THAN Ann", there is no
-      second entity — `who` names the SAME holder the change applies to).
-      Emits a PercentChange fact (model.py) that `_entity_total`
-      (answer.py) multiplies into that entity's state+event fold, USE-
-      gated for value accounting exactly like Discount — see PercentChange's
-      own docstring for the full mechanism.
-
-      `item, cat: currency` (never `type: noun`) is what keeps this rule
-      structurally scoped to MONEY changes only: "Tom gets 20% more candy"
-      never matches (no currency-category dobj), so a non-monetary percent
-      delta can never reach this fact kind or contaminate an unrelated
-      entity's currency fold — the whole reason `_entity_total`'s own
-      percent-change application could safely be made UNCONDITIONAL
-      instead of opt-in (see its docstring).
-
-      The trailing `opt: [..., than, ..., std_seen]` group mirrors
-      arithmetic/times-as-many-elided's own `unbound: [std_seen]`
-      negative-lookahead guard (schemas.py's own comment on `unbound`):
-      without it, "Tom has 20% more money than Ann" — a genuine percent-
-      COMPARATIVE, already owned by fraction-delta-relation above — would
-      ALSO satisfy this rule's own shorter prefix match (who/verb/f/dir/
-      item, with nothing yet requiring 'than' to be ABSENT) and wrongly
-      emit a self-referential PercentChange for Tom's own money on top of
-      the correct cross-entity Relation, corrupting Tom's fold with a
-      spurious multiplier. Binding the "than STANDARD" continuation into
-      `std_seen` and rejecting whenever it binds means this rule only ever
-      survives when no comparative continuation is grammatically present
-      at all — exactly the self-referential case it exists for. `who,
-      type: entity`: resolves a pronoun subject ("she puts...") the same
-      way every other widened rule in this file already does, once
-      discourse binding resolves it (document.py's re-run-after-binding
-      round). `polarity_compatible` compares the verb only inside the
-      directional-change subtree and the direction word inside `delta`.
-      Thus an explicit increase verb cannot pair with a decreasing direction,
-      while a direction-neutral event verb remains valid.
+      "Susie has 20% more money" — a proportional change to the subject's
+      own currency holding. This mass-noun form accepts `less/more money`.
+      The count sibling below accepts `fewer/more dollars`; keeping the two
+      forms separate prevents count/mass agreement errors. A decrease cannot
+      exceed 100%, and an explicit increase/decrease verb must agree with the
+      direction. A trailing `than STANDARD` belongs to the comparative
+      relation rules, so the optional lookahead binds it and `unbound` rejects
+      this self-change reading whenever such a standard is present.
     match:
       sentence:
         - {slot: who, type: entity}
         - {slot: verb, type: verb}
         - {slot: f, type: fraction}
-        - {slot: dir, cat: delta}
-        - {slot: item, cat: currency}
+        - {slot: dir, cat: mass_quantity_delta}
+        - {slot: item, cat: mass_currency_noun, number: singular}
         - opt:
             - opt:
                 - {slot: pp_prep, cat: preposition}
@@ -1839,10 +1877,57 @@ rules:
             - {slot: std_seen, type: name}
     where:
       - bound_requires_type: {bound: appos_role, slot: std_seen, type: proper_name}
+      - number_compatible: [who, verb]
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
       - unbound: [std_seen]
       - polarity_compatible:
           slots: [verb, dir]
           categories: [directional_change_verb, delta]
+      - proportional_delta_compatible: {fraction: f, direction: dir, direction_cat: delta}
+    consumes: [f]
+    emits:
+      - fact: percent_change
+        entity: "{who}"
+        value: "f"
+        sign: "sign(dir)"
+        measure: currency
+        verb: "{verb}"
+
+  - id: arithmetic/percent-change-event-count
+    phase: read
+    description: >
+      "Susie has 20% fewer dollars" — the plural denomination sibling of
+      arithmetic/percent-change-event. It requires a declared plural currency
+      noun and the count-compatible directions `fewer/more`. Agreement,
+      comparative lookahead, polarity, and proportional-decrease safety are
+      identical to the mass form.
+    match:
+      sentence:
+        - {slot: who, type: entity}
+        - {slot: verb, type: verb}
+        - {slot: f, type: fraction}
+        - {slot: dir, cat: count_quantity_delta}
+        - {slot: item, cat: currency, number: plural}
+        - opt:
+            - opt:
+                - {slot: pp_prep, cat: preposition}
+                - opt:
+                    - {slot: pp_det, cat: possessive_determiner}
+                - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
+            - {lit: than}
+            - opt:
+                - {slot: appos_det, cat: possessive_determiner}
+                - {slot: appos_role, cat: animate}
+            - {slot: std_seen, type: name}
+    where:
+      - bound_requires_type: {bound: appos_role, slot: std_seen, type: proper_name}
+      - number_compatible: [who, verb]
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - unbound: [std_seen]
+      - polarity_compatible:
+          slots: [verb, dir]
+          categories: [directional_change_verb, delta]
+      - proportional_delta_compatible: {fraction: f, direction: dir, direction_cat: delta}
     consumes: [f]
     emits:
       - fact: percent_change
@@ -1900,6 +1985,7 @@ rules:
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - distinct: [who, std]
+      - category_nonoverlap: [who, std]
       - distinct: [item, std]
     emits:
       - fact: relation
@@ -1987,6 +2073,7 @@ rules:
       - slot_not_category: {slot: std, cat: non_quantity_holder}
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - distinct: [who, std]
+      - category_nonoverlap: [who, std]
       - distinct: [item, std]
     consumes: [echo_span]
     emits:
@@ -2063,6 +2150,7 @@ rules:
       - slot_not_category: {slot: std, cat: non_quantity_holder}
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - distinct: [who, std]
+      - category_nonoverlap: [who, std]
       - distinct: [item, std]
     consumes: [n, echo_span]
     emits:
@@ -2136,6 +2224,7 @@ rules:
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - distinct: [who, std]
+      - category_nonoverlap: [who, std]
       - distinct: [item, std]
     consumes: [n]
     emits:
@@ -2211,6 +2300,7 @@ rules:
       - slot_not_category: {slot: std, cat: non_quantity_holder}
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - distinct: [who, std]
+      - category_nonoverlap: [who, std]
       - distinct: [item, std]
     consumes: [n, echo_span]
     emits:
@@ -2274,6 +2364,7 @@ rules:
       - number_compatible: [who, verb]
       - number_compatible: [std, echo_verb]
       - distinct: [who, std]
+      - category_nonoverlap: [who, std]
       - distinct: [item, std]
     consumes: [n, echo_span]
     emits:
@@ -2338,6 +2429,7 @@ rules:
       - slot_not_category: {slot: std, cat: non_quantity_holder}
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - distinct: [who, std]
+      - category_nonoverlap: [who, std]
       - distinct: [item, std]
     consumes: [f, echo_span]
     emits:
@@ -2382,6 +2474,8 @@ rules:
       - number_compatible: [who, verb]
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
+      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: motion_comparison_verb, role_cat: motion_participant}
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: spend_verb, role_cat: animate}
       - verb_role_compatible: {verb: verb, roles: [std], verb_cat: spend_verb, role_cat: animate, allow_plural_class: true}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
@@ -2390,6 +2484,7 @@ rules:
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - distinct: [who, std]
+      - category_nonoverlap: [who, std]
       - distinct: [item, std]
     consumes: [f]
     emits:
@@ -2397,6 +2492,43 @@ rules:
         subject: "{who}"
         standard: "{std}"
         measure: "{item}"
+        factor: "f"
+        offset: 0.0
+        verb: "{verb}"
+        subject_label: "{who.label}"
+        standard_label: "{std.label}"
+
+  - id: arithmetic/fraction-as-far
+    phase: read
+    description: >
+      "The rabbit traveled half as far as the dog" — an explicit motion-
+      distance comparison. Unlike item-elided `as many`, `far` states the
+      missing dimension, so the Relation carries `distance` as its measure.
+      Common-noun subjects and standards must be declared plausible motion
+      participants; proper names remain valid independently.
+    match:
+      sentence:
+        - {slot: who, type: entity, referential: true}
+        - {slot: verb, cat: motion_comparison_verb}
+        - {slot: f, type: fraction}
+        - {lit: as}
+        - {lit: far}
+        - {lit: as}
+        - {slot: std, type: entity, referential: true}
+    where:
+      - number_compatible: [who, verb]
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
+      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: motion_comparison_verb, role_cat: motion_participant}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: std, cat: non_quantity_holder}
+      - distinct: [who, std]
+      - category_nonoverlap: [who, std]
+    consumes: [f]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: distance
         factor: "f"
         offset: 0.0
         verb: "{verb}"
@@ -2431,9 +2563,11 @@ rules:
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: verb, cat: motion_comparison_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: std, cat: non_quantity_holder}
       - distinct: [who, std]
+      - category_nonoverlap: [who, std]
     consumes: [f]
     emits:
       - fact: relation
@@ -2510,8 +2644,10 @@ rules:
     description: >
       "Ian has half as much money as Jessica" — fraction-as-many's
       MASS-NOUN counterpart, exactly mirroring how times-as-much relates
-      to times-as-many: 'much' in place of 'many', item slot `type: noun`
-      in place of `type: plural`.
+      to times-as-many: 'much' in place of 'many', with a declared
+      `mass_quantity_noun` item. Outbound transfers reject remnant objects,
+      and optional PPs are ordinary compatible locations rather than remnant
+      adjuncts owned by conjunct rules.
     match:
       sentence:
         - {slot: who, type: name}
@@ -2533,8 +2669,10 @@ rules:
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - number_compatible: [who, verb]
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: transfer_out, excluded_role_cat: remnant}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: pp_prep, cat: quantity_remainder_preposition}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - distinct: [who, std]
     consumes: [f]
@@ -2595,7 +2733,8 @@ rules:
       comment for the full mechanism, including the `where: unbound:
       [std_seen]` self-decline guard on the trailing `opt` block. `who,
       type: name`: unwidened, matching fraction-as-much's own
-      (not-yet-widened) slot type.
+      (not-yet-widened) slot type. It inherits the full sibling's transfer-
+      object and optional-PP boundaries.
     match:
       sentence:
         - {slot: who, type: name}
@@ -2618,8 +2757,11 @@ rules:
     where:
       - bound_requires_type: {bound: appos_role, slot: std_seen, type: proper_name}
       - number_compatible: [who, verb]
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: transfer_out, excluded_role_cat: remnant}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: pp_prep, cat: quantity_remainder_preposition}
+      - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - unbound: [std_seen]
     consumes: [f]
     emits:
@@ -2920,6 +3062,7 @@ rules:
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - distinct: [who, std]
+      - category_nonoverlap: [who, std]
       - distinct: [item, std]
     consumes: [n]
     emits:
@@ -2976,6 +3119,7 @@ rules:
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - distinct: [who, std]
+      - category_nonoverlap: [who, std]
       - distinct: [item, std]
     consumes: [n]
     emits:
@@ -3005,7 +3149,9 @@ rules:
       relation-standard-frames candidate's own structural sample names
       directly. PROVEN minimal pair on unmodified main: "250 less than
       twice as many dollars as Cecil" commits while "250 less than twice
-      as much money as Cecil" declines outright.
+      as much money as Cecil" declines outright. As in the non-affine mass
+      siblings, outbound transfers reject remnant objects and optional PPs
+      exclude remnant-only adjuncts.
     match:
       sentence:
         - {slot: who, type: name}
@@ -3030,8 +3176,10 @@ rules:
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - number_compatible: [who, verb]
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: transfer_out, excluded_role_cat: remnant}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: pp_prep, cat: quantity_remainder_preposition}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - distinct: [who, std]
     consumes: [n]
@@ -3169,7 +3317,7 @@ rules:
         - {slot: verb, cat: copula}
         - {slot: item, type: counted}
         - {slot: prep, cat: preposition}
-        - {slot: q, cat: quantifier}
+        - {slot: q, cat: distributive_quantifier}
         - {slot: place, type: noun}
     where:
       - absent: {cat: aggregate}
@@ -3346,10 +3494,13 @@ rules:
       total." (mining candidate group-total-phrasings) — a stated quantity
       followed by a TRAILING totality marker (the narrower
       `group_total_marker` sense — together/altogether/total/combined,
-      packs/core-english/lexicon/core.yaml, optionally preceded by the
-      quantifier 'all' — "all together" — or the declared "in total"
-      preposition/marker pair) is a GROUP TOTAL across whichever entities
-      the passage names, never one entity's own independent holding —
+      packs/core-english/lexicon/core.yaml). A declared optional totality
+      quantifier is compatible only with its declared marker ("all
+      together"), just as a declared preposition is compatible only with its
+      own marker ("in total"). These paired categories prevent arbitrary
+      cross-products such as "all total" or "in combined". The complete
+      phrase is a GROUP TOTAL across whichever entities the passage names,
+      never one entity's own independent holding —
       exactly the reading arithmetic/existential-premise-bare's own
       `absent: {cat: aggregate}` guard refuses for the bare "there are N
       X" shape. Matching scans every starting position (mirrors
@@ -3371,12 +3522,36 @@ rules:
       sentence:
         - {slot: item, type: counted}
         - opt:
-            - {lit: all}
+            - {slot: q, cat: group_total_quantifier}
         - opt:
             - {slot: p, cat: group_total_preposition}
         - {slot: agg, cat: group_total_marker}
     where:
+      - bound_requires_category: {bound: q, slot: agg, cat: quantified_group_total_marker}
       - bound_requires_category: {bound: p, slot: agg, cat: prepositional_group_total_marker}
+    consumes: [item]
+    emits:
+      - fact: group_total
+        measure: "{item}"
+        value: "item"
+        verb: have
+
+  - id: arithmetic/group-total-trailing-in-all
+    phase: read
+    description: >
+      "There are 11 areas in all" / "A and B have 11 areas in all" — the
+      conventional two-word total marker sibling of
+      arithmetic/group-total-trailing. `all` is correctly quantifier-sensed,
+      so it cannot belong to the aggregate-rooted `group_total_marker`
+      category used by "in total" and bare "together". This literal grammar
+      keeps the two senses honest while emitting the same unscoped GroupTotal.
+      The counted item is consumed so the sentence cannot also become an
+      independent holder quantity.
+    match:
+      sentence:
+        - {slot: item, type: counted}
+        - {lit: in}
+        - {lit: all}
     consumes: [item]
     emits:
       - fact: group_total
@@ -4306,11 +4481,17 @@ rules:
       sentence:
         - {lit: it}
         - {slot: v, cat: duration_verb}
-        - {slot: who, type: entity}
+        - {slot: who, type: entity, referential: true, bare_reference_category: bare_entity_reference}
         - {slot: span, cat: duration_measure, counted: true}
         - {lit: to}
         - {slot: verb, type: verb, bare_form: true}
         - {slot: item, type: counted}
+    where:
+      # The intervening entity controls the infinitive: in "It takes the
+      # teacher 5 minutes to receive 4 parcels", the teacher is the receiver.
+      # Quantity-changing verbs therefore require a declared plausible event
+      # participant. Other infinitives keep their existing entity breadth.
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
     consumes: [span, item]
     emits:
       - fact: rate

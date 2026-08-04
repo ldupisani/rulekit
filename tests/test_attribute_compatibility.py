@@ -196,7 +196,7 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
     # boundary adds generic inch/pound units. The review-led membership
     # boundary adds generic animal; none of those additions is licensed by an
     # adjective category.
-    assert len(plural_nouns) == 40
+    assert len(plural_nouns) == 41
     assert sum(
         registry.attribute_applies_to(attribute, noun)
         for attribute in adjectives
@@ -235,6 +235,7 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
         "arithmetic/fraction-as-many",
         "arithmetic/fraction-as-many-elided-standard",
         "arithmetic/fraction-as-much",
+        "arithmetic/fraction-as-much-elided-standard",
         "arithmetic/fraction-delta-relation",
         "arithmetic/fraction-delta-relation-mass",
         "arithmetic/partition-rest-attribute",
@@ -252,7 +253,7 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
 def test_compatibility_rule_remains_supported_after_g5j_expansion() -> None:
     availability = list_rule_availability(load_project(CURATED))
 
-    assert sum(item.supported for item in availability) == 101
+    assert sum(item.supported for item in availability) == 105
     target = next(item for item in availability if item.id == RULE_ID)
     assert target.supported
     assert target.blockers == ()

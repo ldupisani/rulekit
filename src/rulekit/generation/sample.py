@@ -101,6 +101,30 @@ class _Filler:
     value: float | None = None
 
 
+def _filler_in_category(
+    filler: _Filler, category: str, reg: Registry
+) -> bool:
+    """Mirror scalar matching: category membership may use surface or lemma."""
+
+    return reg.word_in_category(
+        filler.identity, category
+    ) or reg.word_in_category(filler.surface.casefold(), category)
+
+
+def _filler_categories_overlap(
+    left: _Filler, right: _Filler, reg: Registry
+) -> bool:
+    """Whether generated noun roles have unresolved category containment."""
+
+    if left.kind != "noun" or right.kind != "noun":
+        return False
+    if left.label and right.label and left.label != right.label:
+        return False
+    if left.owner and right.owner and left.owner != right.owner:
+        return False
+    return reg.category_terms_overlap(left.identity, right.identity)
+
+
 @dataclass(frozen=True)
 class _Fixtures:
     names: tuple[str, ...]
@@ -208,6 +232,7 @@ def _where_blocker(rule: PatternRule) -> list[str]:
     for pred in rule.where:
         if (
             pred.distinct is not None
+            or pred.category_nonoverlap is not None
             or pred.distinct_owner is not None
             or pred.distinct_from_owner is not None
             or pred.same_lemma is not None
@@ -1031,8 +1056,8 @@ def _rule_blockers(
             ]
 
             def role_ok(verb: _Filler, role: _Filler) -> bool:
-                if not reg.word_in_category(
-                    verb.identity, compatibility.verb_cat
+                if not _filler_in_category(
+                    verb, compatibility.verb_cat, reg
                 ):
                     return True
                 if compatibility.role_cat is not None:
@@ -1042,13 +1067,13 @@ def _rule_blockers(
                             compatibility.allow_plural_class
                             and role.number == "plural"
                         )
-                        or reg.word_in_category(
-                            role.identity, compatibility.role_cat
+                        or _filler_in_category(
+                            role, compatibility.role_cat, reg
                         )
                     )
                 assert compatibility.excluded_role_cat is not None
-                return not reg.word_in_category(
-                    role.identity, compatibility.excluded_role_cat
+                return not _filler_in_category(
+                    role, compatibility.excluded_role_cat, reg
                 )
 
             if (
@@ -1162,6 +1187,7 @@ def _constraint_groups(
     number_compatible: list[set[str]] = []
     polarity_compatible: list[tuple[tuple[str, str], ...]] = []
     distinct: list[set[str]] = []
+    category_nonoverlap: list[set[str]] = []
     distinct_owner: list[set[str]] = []
     bound_type_requirements: list[tuple[str, str, str]] = []
     bound_category_requirements: list[tuple[str, str, str]] = []
@@ -1198,6 +1224,8 @@ def _constraint_groups(
             )
         if pred.distinct is not None:
             distinct.append(set(pred.distinct))
+        if pred.category_nonoverlap is not None:
+            category_nonoverlap.append(set(pred.category_nonoverlap))
         if pred.distinct_owner is not None:
             distinct_owner.append(set(pred.distinct_owner))
         if pred.bound_requires_type is not None:
@@ -1250,6 +1278,7 @@ def _constraint_groups(
         number_compatible,
         polarity_compatible,
         distinct,
+        category_nonoverlap,
         distinct_owner,
         bound_type_requirements,
         bound_category_requirements,
@@ -1274,6 +1303,7 @@ def _allowed_fillers(
     same_groups: list[set[str]],
     same_number_groups: list[set[str]],
     distinct_groups: list[set[str]],
+    category_nonoverlap_groups: list[set[str]],
     distinct_owner_groups: list[set[str]],
     distinct_measure_groups: tuple[tuple[str, ...], ...],
     attribute_pairs: list[tuple[str, str]],
@@ -1468,6 +1498,17 @@ def _allowed_fillers(
                 ):
                     return False
 
+        for group in category_nonoverlap_groups:
+            if token.slot not in group:
+                continue
+            for other_name in group - {token.slot}:
+                other = known_filler(other_name)
+                if (
+                    other is not None
+                    and _filler_categories_overlap(filler, other, reg)
+                ):
+                    return False
+
         for attribute_name, noun_name in attribute_pairs:
             noun = known_identity(noun_name)
             attribute = known_identity(attribute_name)
@@ -1551,9 +1592,7 @@ def _allowed_fillers(
             allow_plural_class,
         ) in verb_role_requirements:
             def role_ok(verb: _Filler, role: _Filler) -> bool:
-                if not reg.word_in_category(
-                    verb.identity, verb_category
-                ):
+                if not _filler_in_category(verb, verb_category, reg):
                     return True
                 if role_category is not None:
                     return (
@@ -1562,13 +1601,13 @@ def _allowed_fillers(
                             allow_plural_class
                             and role.number == "plural"
                         )
-                        or reg.word_in_category(
-                            role.identity, role_category
+                        or _filler_in_category(
+                            role, role_category, reg
                         )
                     )
                 assert excluded_role_category is not None
-                return not reg.word_in_category(
-                    role.identity, excluded_role_category
+                return not _filler_in_category(
+                    role, excluded_role_category, reg
                 )
 
             if token.slot == verb_name:
@@ -1770,6 +1809,7 @@ def _realize(
         number_compatible_groups,
         polarity_compatible_groups,
         distinct_groups,
+        category_nonoverlap_groups,
         distinct_owner_groups,
         bound_type_requirements,
         bound_category_requirements,
@@ -1890,6 +1930,7 @@ def _realize(
                 same_groups,
                 same_number_groups,
                 distinct_groups,
+                category_nonoverlap_groups,
                 distinct_owner_groups,
                 distinct_measure_groups,
                 attribute_pairs,
@@ -2434,6 +2475,7 @@ _WHERE_FIELDS = (
     "verb_role_compatible",
     "same_phrase",
     "distinct",
+    "category_nonoverlap",
     "distinct_owner",
     "distinct_from_owner",
     "attribute_compatible",
@@ -2619,13 +2661,32 @@ def _where_reason(
             f"{compatibility.direction}={direction.surface!r} had declared "
             f"polarity {polarity!r}; allowed magnitude was {boundary}"
         )
+    if pred.category_nonoverlap is not None:
+        rendered = []
+        for role_name in pred.category_nonoverlap:
+            units = _slot_units(slots.get(role_name))
+            if not units:
+                rendered.append(f"{role_name}=unbound")
+                continue
+            rendered.append(
+                f"{role_name}={_unit_lemma(units[0], reg)!r}"
+            )
+        return (
+            ", ".join(rendered)
+            + " had no unresolved declared category/member containment"
+        )
     if pred.verb_role_compatible is not None:
         compatibility = pred.verb_role_compatible
         verb_units = _slot_units(slots.get(compatibility.verb))
         if not verb_units:
             return "the target match did not expose the governing verb"
-        verb = _unit_lemma(verb_units[0], reg)
-        if not reg.word_in_category(verb, compatibility.verb_cat):
+        verb_unit = verb_units[0]
+        verb = _unit_lemma(verb_unit, reg)
+        if not _filler_in_category(
+            _Filler(surface=verb_unit.surface, identity=verb),
+            compatibility.verb_cat,
+            reg,
+        ):
             return (
                 f"{compatibility.verb}={verb!r} was outside triggering "
                 f"category {compatibility.verb_cat!r}"
@@ -3036,6 +3097,15 @@ def _explain_candidate(
                     predicate.proportional_delta_compatible.direction_cat
                 )
             )
+        if predicate.category_nonoverlap is not None and target is not None:
+            for role_name in predicate.category_nonoverlap:
+                role_units = _slot_units(slots.get(role_name))
+                if role_units:
+                    where_sources.append(
+                        project.source_index.categories.get(
+                            _unit_lemma(role_units[0], project.registry)
+                        )
+                    )
         if predicate.verb_role_compatible is not None:
             role_category = (
                 predicate.verb_role_compatible.role_cat

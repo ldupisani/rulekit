@@ -12,9 +12,19 @@ from pydantic import ValidationError
 
 from rulekit.data.project import load_project
 from rulekit.data.schemas import MatchToken, WherePredicate
-from rulekit.generation import generate_candidate, retest_candidate
+from rulekit.generation import (
+    GenerationError,
+    generate_candidate,
+    retest_candidate,
+)
 from rulekit.kernel.engine import analyze, solve
-from rulekit.kernel.model import PartitionQuantity, Quantity, Rate, Relation
+from rulekit.kernel.model import (
+    GroupTotal,
+    PartitionQuantity,
+    Quantity,
+    Rate,
+    Relation,
+)
 from rulekit.kernel.patterns import is_bare_verb_form
 
 
@@ -544,6 +554,7 @@ def test_conditional_standard_type_is_inspectable() -> None:
         "arithmetic/times-as-many-elided",
         "arithmetic/partition-rest-membership",
         "arithmetic/fraction-as-many",
+        "arithmetic/fraction-as-far",
         "arithmetic/fraction-as-many-elided",
         "arithmetic/fraction-delta-relation",
         "arithmetic/fraction-delta-relation-mass",
@@ -564,6 +575,7 @@ def test_conditional_standard_type_is_inspectable() -> None:
         "arithmetic/partition-rest-attribute",
         "arithmetic/affine-fraction-as-many",
         "arithmetic/percent-change-event",
+        "arithmetic/percent-change-event-count",
         "arithmetic/existential-premise-total",
         "arithmetic/times-frame-relation-clause",
         "arithmetic/affine-frame-relation",
@@ -667,6 +679,216 @@ def test_duration_rate_keeps_a_finite_matrix_and_bare_infinitive(
         and fact.denominator == 70
         for fact in result.store.by_kind(Rate)
     )
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "It takes money 60 years to receive 13 animals.",
+        "It takes the money 60 years to receive 13 animals.",
+    ],
+)
+def test_duration_rate_rejects_nonparticipant_infinitive_actor(
+    text: str, registry
+) -> None:
+    assert "arithmetic/extraposed-duration-rate" not in _matched_rules(
+        text, registry
+    )
+
+
+def test_duration_rate_keeps_a_named_infinitive_actor(registry) -> None:
+    text = "It takes Cato 60 years to receive 13 animals."
+    assert "arithmetic/extraposed-duration-rate" in _matched_rules(
+        text, registry
+    )
+
+
+def test_duration_rate_declares_the_infinitive_actor_boundaries(
+    registry,
+) -> None:
+    rule = next(
+        rule
+        for rule in registry.rules
+        if rule.id == "arithmetic/extraposed-duration-rate"
+    )
+    who = next(
+        token
+        for token in rule.match["sentence"]
+        if isinstance(token, MatchToken) and token.slot == "who"
+    )
+    compatibility = next(
+        predicate.verb_role_compatible
+        for predicate in rule.where
+        if predicate.verb_role_compatible is not None
+    )
+
+    assert who.referential is True
+    assert who.bare_reference_category == "bare_entity_reference"
+    assert compatibility.verb == "verb"
+    assert compatibility.roles == ["who"]
+    assert compatibility.verb_cat == "quantity_event_verb"
+    assert compatibility.role_cat == "quantity_event_participant"
+    assert registry.word_in_category(
+        "teacher", compatibility.role_cat
+    )
+    assert not registry.word_in_category(
+        "money", compatibility.role_cat
+    )
+
+
+def test_latest_duration_rate_review_cannot_be_regenerated() -> None:
+    project = load_project(Path("projects/curated"))
+
+    with pytest.raises(GenerationError, match="no filler for who"):
+        generate_candidate(
+            project,
+            rule_id="arithmetic/extraposed-duration-rate",
+            seed=2257502023170305,
+            locked_bindings={"who": "money", "verb": "receive"},
+        )
+
+    retest = retest_candidate(
+        project,
+        rule_id="arithmetic/extraposed-duration-rate",
+        sentence="It takes money 60 years to receive 13 animals.",
+        seed=2257502023170305,
+        origin="generated",
+    )
+    assert retest.target_status == "absent"
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "The animal drops double as many as the hamster.",
+        "The hamster drops double as many as the animal.",
+        "Animals have double as many as hamsters.",
+    ],
+)
+def test_comparison_roles_reject_category_member_overlap(
+    text: str, registry
+) -> None:
+    assert "arithmetic/times-as-many-elided" not in _matched_rules(
+        text, registry
+    )
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "The dog drops double as many as the hamster.",
+        "Cato drops double as many as the hamster.",
+        "Cato's animal drops double as many as Dena's hamster.",
+    ],
+)
+def test_comparison_roles_keep_separate_entities(
+    text: str, registry
+) -> None:
+    assert "arithmetic/times-as-many-elided" in _matched_rules(
+        text, registry
+    )
+
+
+def test_event_role_compatibility_uses_surface_and_lemma(registry) -> None:
+    rule_id = "arithmetic/times-as-many-elided"
+
+    assert rule_id in _matched_rules(
+        "The animal drops double as many as Cato.", registry
+    )
+    assert rule_id not in _matched_rules(
+        "The garden drops double as many as Cato.", registry
+    )
+
+
+def test_category_nonoverlap_is_an_explicit_schema_predicate() -> None:
+    predicate = WherePredicate(category_nonoverlap=["who", "std"])
+
+    assert predicate.category_nonoverlap == ["who", "std"]
+    with pytest.raises(ValidationError, match="repeats a slot"):
+        WherePredicate(category_nonoverlap=["who", "who"])
+
+
+def test_every_common_noun_comparison_declares_nonoverlap() -> None:
+    registry = load_project(Path("projects/curated")).registry
+
+    for rule in registry.rules:
+        if not any(
+            predicate.distinct == ["who", "std"]
+            for predicate in rule.where
+        ):
+            continue
+        slots: dict[str, MatchToken] = {}
+
+        def collect(tokens: list[MatchToken]) -> None:
+            for token in tokens:
+                if token.slot is not None:
+                    slots.setdefault(token.slot, token)
+                if token.opt is not None:
+                    collect(token.opt)
+
+        sentence = rule.match.get("sentence", [])
+        if sentence and isinstance(sentence[0], list):
+            for alternative in sentence:
+                collect(alternative)
+        else:
+            collect(sentence)
+        if (
+            slots.get("who") is not None
+            and slots["who"].type == "entity"
+            and slots.get("std") is not None
+            and slots["std"].type == "entity"
+        ):
+            assert any(
+                predicate.category_nonoverlap == ["who", "std"]
+                for predicate in rule.where
+            ), rule.id
+
+
+def test_latest_category_overlap_review_cannot_be_regenerated() -> None:
+    project = load_project(Path("projects/curated"))
+    rule_id = "arithmetic/times-as-many-elided"
+
+    with pytest.raises(GenerationError, match="no filler for who"):
+        generate_candidate(
+            project,
+            rule_id=rule_id,
+            seed=2257502023170308,
+            locked_bindings={
+                "who": "the animal",
+                "verb": "drops",
+                "k": "double",
+                "std": "the hamster",
+            },
+        )
+
+    valid = generate_candidate(
+        project,
+        rule_id=rule_id,
+        seed=2257502023170308,
+        locked_bindings={
+            "who": "the dog",
+            "verb": "drops",
+            "k": "double",
+            "std": "the hamster",
+        },
+    )
+    overlap = next(
+        premise
+        for premise in valid.premises
+        if premise.expression.startswith("category_nonoverlap(")
+    )
+    assert valid.target_status == "matched"
+    assert overlap.status == "passed"
+    assert "category/member containment" in overlap.reason
+
+    retest = retest_candidate(
+        project,
+        rule_id=rule_id,
+        sentence="The animal drops double as many as the hamster.",
+        seed=2257502023170308,
+        origin="generated",
+    )
+    assert retest.target_status == "absent"
 
 
 @pytest.mark.parametrize(
@@ -1024,10 +1246,10 @@ def test_elided_standard_pp_uses_declared_object_compatibility(registry) -> None
 
 def test_animate_appositive_refuses_inanimate_possessive(registry) -> None:
     assert "arithmetic/times-as-many-elided" in _matched_rules(
-        "The teacher travels twice as many as their student Fia.", registry
+        "The teacher has twice as many as their student Fia.", registry
     )
     assert "arithmetic/times-as-many-elided" not in _matched_rules(
-        "The teacher travels twice as many as its student Fia.", registry
+        "The teacher has twice as many as its student Fia.", registry
     )
 
 
@@ -1355,19 +1577,76 @@ def test_complex_affine_fraction_refuses_unframed_motion_verbs(
 
 
 @pytest.mark.parametrize(
-    ("text", "matched"),
+    ("rule_id", "text", "matched"),
     [
-        ("Animal rose forty sixths fewer dollar.", False),
-        ("Animal rose forty sixths more dollar.", True),
-        ("Animal had forty sixths fewer dollar.", True),
+        (
+            "arithmetic/percent-change-event",
+            "Sticker own nineteen eighths less dollar.",
+            False,
+        ),
+        (
+            "arithmetic/percent-change-event",
+            "Sticker owns one eighth less money.",
+            True,
+        ),
+        (
+            "arithmetic/percent-change-event-count",
+            "Sticker owns one eighth fewer dollars.",
+            True,
+        ),
+        (
+            "arithmetic/percent-change-event",
+            "Sticker owns one eighth fewer dollars.",
+            False,
+        ),
+        (
+            "arithmetic/percent-change-event-count",
+            "Sticker owns one eighth less money.",
+            False,
+        ),
+        (
+            "arithmetic/percent-change-event",
+            "Sticker owns nineteen eighths less money.",
+            False,
+        ),
+        (
+            "arithmetic/percent-change-event-count",
+            "Sticker owns nineteen eighths fewer dollars.",
+            False,
+        ),
+        (
+            "arithmetic/percent-change-event",
+            "Animal rose forty sixths less money.",
+            False,
+        ),
+        (
+            "arithmetic/percent-change-event",
+            "Animal rose forty sixths more money.",
+            True,
+        ),
+        (
+            "arithmetic/percent-change-event-count",
+            "Animal had forty sixths more dollars.",
+            True,
+        ),
     ],
 )
-def test_percent_change_scopes_directional_verb_polarity(
-    text: str, matched: bool, registry
+def test_percent_change_enforces_agreement_countability_and_safe_polarity(
+    rule_id: str, text: str, matched: bool, registry
 ) -> None:
-    assert (
-        "arithmetic/percent-change-event" in _matched_rules(text, registry)
-    ) is matched
+    assert (rule_id in _matched_rules(text, registry)) is matched
+
+
+def test_latest_percent_change_review_retests_absent() -> None:
+    candidate = retest_candidate(
+        load_project(Path("projects/curated")),
+        rule_id="arithmetic/percent-change-event",
+        sentence="Sticker own nineteen eighths less dollar.",
+        seed=912618241230539,
+        origin="generated",
+    )
+
+    assert candidate.target_status == "absent"
 
 
 def test_scoped_polarity_is_an_explicit_schema_predicate() -> None:
@@ -2068,6 +2347,7 @@ def test_received_comparison_generation_uses_declared_participants() -> None:
             "pp_prep": "in",
             "pp_det": "your",
             "pp_obj": "area",
+            "std": "the hamster",
         },
     )
     bindings = {
@@ -2221,3 +2501,466 @@ def test_bare_and_conjoined_existentials_keep_complete_count_populations(
     assert "arithmetic/existential-premise-bare-conjoined" in _matched_rules(
         "There are 14 hamsters and 40 fish.", registry
     )
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "7 inches all total.",
+        "7 inches all combined.",
+        "7 inches all altogether.",
+        "7 inches all in total.",
+    ],
+)
+def test_trailing_group_total_rejects_incompatible_marker_pairs(
+    text: str, registry
+) -> None:
+    assert "arithmetic/group-total-trailing" not in _matched_rules(
+        text, registry
+    )
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "7 inches total.",
+        "7 inches combined.",
+        "7 inches altogether.",
+        "7 inches together.",
+        "7 inches all together.",
+        "7 inches in total.",
+    ],
+)
+def test_trailing_group_total_keeps_declared_marker_pairs(
+    text: str, registry
+) -> None:
+    assert "arithmetic/group-total-trailing" in _matched_rules(text, registry)
+
+
+def test_trailing_group_total_generation_respects_marker_compatibility() -> None:
+    project = load_project(Path("projects/curated"))
+    rule_id = "arithmetic/group-total-trailing"
+
+    for seed in range(32):
+        candidate = generate_candidate(project, rule_id=rule_id, seed=seed)
+        bindings = candidate.requested_bindings
+
+        assert candidate.target_status == "matched"
+        if "q" in bindings:
+            assert bindings["agg"] == "together"
+        if "p" in bindings:
+            assert bindings["agg"] == "total"
+
+    quantified = generate_candidate(
+        project,
+        rule_id=rule_id,
+        seed=0,
+        locked_bindings={"q": "all", "agg": "together"},
+    )
+    quantified_requirement = next(
+        row
+        for row in quantified.premises
+        if row.kind == "where"
+        and row.expression.startswith("bound_requires_category(")
+        and "bound='q'" in row.expression
+    )
+
+    assert quantified.target_status == "matched"
+    assert quantified.sentence.endswith("all together.")
+    assert quantified_requirement.status == "passed"
+    assert "quantified_group_total_marker" in quantified_requirement.expression
+
+    with pytest.raises(GenerationError):
+        generate_candidate(
+            project,
+            rule_id=rule_id,
+            seed=0,
+            locked_bindings={"q": "all", "agg": "total"},
+        )
+
+
+def test_latest_group_total_review_retests_absent() -> None:
+    candidate = retest_candidate(
+        load_project(Path("projects/curated")),
+        rule_id="arithmetic/group-total-trailing",
+        sentence="7 inches all total.",
+        seed=8193571096638527,
+        origin="generated",
+    )
+
+    assert candidate.target_status == "absent"
+
+
+def test_latest_postfix_age_review_retests_absent() -> None:
+    candidate = retest_candidate(
+        load_project(Path("projects/curated")),
+        rule_id="arithmetic/anchored-relation-postfix",
+        sentence="Fia sells 19 areas older than can.",
+        seed=2682948670209000,
+        origin="generated",
+    )
+
+    assert candidate.target_status == "absent"
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Fia sells 19 areas older than can.",
+        "Fia sells 19 years older than Cato.",
+        "Fia is 19 areas older than Cato.",
+        "Fia is 19 years older than can.",
+    ],
+)
+def test_postfix_age_relation_rejects_incompatible_compositions(
+    text: str, registry
+) -> None:
+    assert not {
+        "arithmetic/anchored-relation-postfix",
+        "arithmetic/anchored-relation-postfix-age",
+    } & _matched_rules(text, registry)
+
+
+def test_postfix_count_and_age_siblings_keep_their_valid_classes(
+    registry,
+) -> None:
+    assert "arithmetic/anchored-relation-postfix" in _matched_rules(
+        "Fia sells 19 cans fewer than Cato.", registry
+    )
+    assert "arithmetic/anchored-relation-postfix" in _matched_rules(
+        "Fia sells 19 cans more than apples.", registry
+    )
+    assert "arithmetic/anchored-relation-postfix-age" in _matched_rules(
+        "Fia is 19 years older than Cato.", registry
+    )
+    assert "arithmetic/anchored-relation-postfix-age" in _matched_rules(
+        "Fia was 19 years younger than her friend Cato.", registry
+    )
+
+
+def test_postfix_count_and_age_generation_stays_disjoint() -> None:
+    project = load_project(Path("projects/curated"))
+
+    for seed in range(16):
+        count = generate_candidate(
+            project,
+            rule_id="arithmetic/anchored-relation-postfix",
+            seed=seed,
+        )
+        age = generate_candidate(
+            project,
+            rule_id="arithmetic/anchored-relation-postfix-age",
+            seed=seed,
+        )
+
+        assert count.target_status == "matched"
+        assert count.requested_bindings["dir"] in {"fewer", "less", "more"}
+        assert age.target_status == "matched"
+        assert age.requested_bindings["dir"] in {"older", "younger"}
+        assert project.registry.word_in_category(
+            age.requested_bindings["verb"].casefold(), "copula"
+        )
+        age_item = next(row for row in age.premises if row.slot == "item")
+        assert age_item.slot_type == "age_measure"
+        assert age_item.category_path[-2:] == ("age_measure", "noun")
+
+
+def test_postfix_age_keeps_declared_name_homographs_referential() -> None:
+    registry = load_project(Path("projects/gsm8k")).registry
+
+    assert "arithmetic/anchored-relation-postfix-age" in _matched_rules(
+        "Mark is 8 years older than Bira, who is 12.", registry
+    )
+
+
+def test_postfix_quantity_relation_keeps_distance_events() -> None:
+    registry = load_project(Path("projects/asdiv")).registry
+
+    assert "arithmetic/anchored-relation-postfix" in _matched_rules(
+        "Aven ran 8 miles more than Bira.", registry
+    )
+
+
+def test_distributive_existential_rejects_the_latest_totality_review(
+    registry,
+) -> None:
+    rule_id = "arithmetic/existential-premise-distributive"
+
+    assert rule_id not in _matched_rules(
+        "There are 11 areas in all amount.", registry
+    )
+    assert rule_id in _matched_rules(
+        "There are 11 areas in each garden.", registry
+    )
+    assert rule_id in _matched_rules(
+        "There are 11 areas in every garden.", registry
+    )
+
+
+def test_in_all_is_an_explicit_group_total_surface(registry) -> None:
+    rule_id = "arithmetic/group-total-trailing-in-all"
+    result = solve("There are 11 areas in all.", registry)
+    total = next(
+        fact
+        for fact in result.store.by_kind(GroupTotal)
+        if fact.provenance.source == rule_id
+    )
+
+    assert rule_id in _matched_rules("There are 11 areas in all.", registry)
+    assert total.measure == "area"
+    assert total.value == 11
+    assert total.scope is None
+    assert not result.store.by_kind(Quantity)
+
+
+def test_in_all_group_total_is_realisable_and_matcher_confirmed() -> None:
+    candidate = generate_candidate(
+        load_project(Path("projects/curated")),
+        rule_id="arithmetic/group-total-trailing-in-all",
+        seed=0,
+        locked_bindings={"item": "11 areas"},
+    )
+
+    assert candidate.sentence == "11 areas in all."
+    assert candidate.target_status == "matched"
+    fact = next(fact for fact in candidate.facts if fact["type"] == "GroupTotal")
+    assert fact["fields"] == {
+        "measure": "area",
+        "value": 11.0,
+        "verb": "have",
+    }
+    assert fact["source"] == "arithmetic/group-total-trailing-in-all"
+
+
+def test_latest_distributive_review_retests_absent() -> None:
+    candidate = retest_candidate(
+        load_project(Path("projects/curated")),
+        rule_id="arithmetic/existential-premise-distributive",
+        sentence="There are 11 areas in all amount.",
+        seed=781980287943751,
+        origin="generated",
+    )
+
+    assert candidate.target_status == "absent"
+
+
+MASS_RATIO_CONTEXT_RULES = {
+    "arithmetic/times-as-much",
+    "arithmetic/times-as-much-elided-standard",
+    "arithmetic/fraction-delta-relation-mass",
+    "arithmetic/fraction-as-much",
+    "arithmetic/fraction-as-much-elided-standard",
+    "arithmetic/affine-times-as-much",
+}
+
+
+@pytest.mark.parametrize(
+    ("rule_id", "text"),
+    [
+        (
+            "arithmetic/times-as-much",
+            "Mary gave twice as much rest with the remainder as Eron.",
+        ),
+        (
+            "arithmetic/times-as-much-elided-standard",
+            "Mary gave twice as much rest with the remainder.",
+        ),
+        (
+            "arithmetic/fraction-delta-relation-mass",
+            "Mary gave one tenth more rest with the remainder than Eron.",
+        ),
+        (
+            "arithmetic/fraction-as-much",
+            "Mary gave half as much rest with the remainder as Eron.",
+        ),
+        (
+            "arithmetic/fraction-as-much-elided-standard",
+            "Mary gave half as much rest with the remainder.",
+        ),
+        (
+            "arithmetic/affine-times-as-much",
+            (
+                "Mary gave 3 more than twice as much rest with the "
+                "remainder as Eron."
+            ),
+        ),
+    ],
+)
+def test_mass_ratio_family_rejects_transfer_remnants_and_remnant_pps(
+    rule_id: str, text: str, registry
+) -> None:
+    assert rule_id not in _matched_rules(text, registry)
+
+
+@pytest.mark.parametrize(
+    ("text", "matched"),
+    [
+        ("Mary gave twice as much rest.", False),
+        ("Mary has twice as much rest with the remainder.", False),
+        ("Mary gave twice as much money with the remainder.", False),
+        ("Mary has twice as much rest in the garden.", True),
+        ("Mary gave twice as much money in the garden.", True),
+    ],
+)
+def test_elided_mass_standard_separates_verb_object_and_pp_boundaries(
+    text: str, matched: bool, registry
+) -> None:
+    assert (
+        "arithmetic/times-as-much-elided-standard"
+        in _matched_rules(text, registry)
+    ) is matched
+
+
+def test_mass_ratio_generation_respects_transfer_and_remnant_boundaries() -> None:
+    project = load_project(Path("projects/curated"))
+
+    for rule_id in MASS_RATIO_CONTEXT_RULES:
+        for seed in range(16):
+            candidate = generate_candidate(
+                project,
+                rule_id=rule_id,
+                seed=seed,
+            )
+            bindings = candidate.requested_bindings
+
+            assert candidate.target_status == "matched"
+            if project.registry.word_in_category(
+                bindings["verb"].casefold(), "transfer_out"
+            ):
+                assert not project.registry.word_in_category(
+                    bindings["item"].casefold(), "remnant"
+                )
+            if "pp_prep" in bindings:
+                assert not project.registry.word_in_category(
+                    bindings["pp_prep"].casefold(),
+                    "quantity_remainder_preposition",
+                )
+
+
+def test_latest_mass_ratio_review_retests_absent() -> None:
+    candidate = retest_candidate(
+        load_project(Path("projects/curated")),
+        rule_id="arithmetic/times-as-much-elided-standard",
+        sentence="Mary gave twice as much rest with the remainder.",
+        seed=781980287943752,
+        origin="generated",
+    )
+
+    assert candidate.target_status == "absent"
+
+
+def test_motion_comparisons_require_an_explicit_measure(registry) -> None:
+    reviewed = "The rabbit traveled nine ninths as many as the pencil."
+
+    assert "arithmetic/fraction-as-many-elided" not in _matched_rules(
+        reviewed, registry
+    )
+    assert "arithmetic/times-as-many-elided" not in _matched_rules(
+        "The rabbit traveled twice as many as the dog.", registry
+    )
+
+
+def test_motion_frequency_uses_the_overt_times_measure(registry) -> None:
+    rule_id = "arithmetic/fraction-as-many"
+    valid = "The rabbit traveled nine ninths as many times as the dog."
+    invalid = "The rabbit traveled nine ninths as many times as the pencil."
+    result = solve(valid, registry)
+    relation = next(
+        fact
+        for fact in result.store.by_kind(Relation)
+        if fact.provenance.source == rule_id
+    )
+
+    assert rule_id in _matched_rules(valid, registry)
+    assert rule_id not in _matched_rules(invalid, registry)
+    assert relation.subject == "rabbit"
+    assert relation.standard == "dog"
+    assert relation.measure == "time"
+    assert relation.factor == 1.0
+
+
+def test_as_far_is_a_separate_motion_distance_relation(registry) -> None:
+    rule_id = "arithmetic/fraction-as-far"
+    valid = "The rabbit traveled nine ninths as far as the dog."
+    invalid = "The rabbit traveled nine ninths as far as the pencil."
+    result = solve(valid, registry)
+    relation = next(
+        fact
+        for fact in result.store.by_kind(Relation)
+        if fact.provenance.source == rule_id
+    )
+
+    assert rule_id in _matched_rules(valid, registry)
+    assert rule_id not in _matched_rules(invalid, registry)
+    assert relation.subject == "rabbit"
+    assert relation.standard == "dog"
+    assert relation.measure == "distance"
+    assert relation.factor == 1.0
+
+
+def test_mined_vehicle_classes_are_motion_participants() -> None:
+    registry = load_project(Path("projects/gsm8k")).registry
+
+    assert "arithmetic/fraction-as-far" in _matched_rules(
+        "The car traveled half as far as the truck.", registry
+    )
+    assert "arithmetic/fraction-as-many" in _matched_rules(
+        "The car traveled half as many times as the truck.", registry
+    )
+
+
+@pytest.mark.parametrize(
+    ("rule_id", "locked_bindings", "expected_measure"),
+    [
+        (
+            "arithmetic/fraction-as-many",
+            {
+                "who": "the rabbit",
+                "verb": "traveled",
+                "f": "nine ninths",
+                "item": "times",
+                "std": "the dog",
+            },
+            "time",
+        ),
+        (
+            "arithmetic/fraction-as-far",
+            {
+                "who": "the rabbit",
+                "verb": "traveled",
+                "f": "nine ninths",
+                "std": "the dog",
+            },
+            "distance",
+        ),
+    ],
+)
+def test_explicit_motion_comparisons_are_reviewable(
+    rule_id: str,
+    locked_bindings: dict[str, str],
+    expected_measure: str,
+) -> None:
+    candidate = generate_candidate(
+        load_project(Path("projects/curated")),
+        rule_id=rule_id,
+        seed=0,
+        locked_bindings=locked_bindings,
+    )
+
+    assert candidate.target_status == "matched"
+    relation = next(
+        fact for fact in candidate.facts if fact["type"] == "Relation"
+    )
+    assert relation["fields"]["measure"] == expected_measure
+
+
+def test_latest_motion_review_retests_absent() -> None:
+    candidate = retest_candidate(
+        load_project(Path("projects/curated")),
+        rule_id="arithmetic/fraction-as-many-elided",
+        sentence="The rabbit traveled nine ninths as many as the pencil.",
+        seed=912618241230548,
+        origin="generated",
+    )
+
+    assert candidate.target_status == "absent"

@@ -52,6 +52,9 @@ EXPECTED_PATHS = {
     "arithmetic/percent-change-event": {
         (5,): ("std_seen",),
     },
+    "arithmetic/percent-change-event-count": {
+        (5,): ("std_seen",),
+    },
     "arithmetic/times-as-many-conjunct-elided-item": {
         (8,): ("item2_seen",),
         (9,): ("std_seen",),
@@ -154,7 +157,7 @@ def test_g5l_profiles_the_complete_unbound_branch_class() -> None:
         "direct_std_seen": 4,
         "item2_seen": 3,
         "item_std_seen": 2,
-        "std_seen": 7,
+        "std_seen": 8,
         "tail_prep_seen": 1,
     }
     assert {
@@ -171,8 +174,8 @@ def test_g5l_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 101
-    assert sum(item.supported for item in availability.values()) == 101
+    assert len(availability) == 105
+    assert sum(item.supported for item in availability.values()) == 105
     assert sum(not item.supported for item in availability.values()) == 0
     assert all(
         availability[rule_id].supported for rule_id in EXPECTED_PATHS
@@ -182,7 +185,7 @@ def test_g5l_unlocks_exactly_the_preregistered_frontier() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 152
+    assert len(exploration_status(project)["fillers"]) == 154
 
 
 @pytest.mark.parametrize("rule_id", sorted(EXPECTED_PATHS))

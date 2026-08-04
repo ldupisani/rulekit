@@ -5,7 +5,11 @@ from pathlib import Path
 import pytest
 
 from rulekit.data.project import load_project
-from rulekit.generation import generate_candidate, list_rule_availability
+from rulekit.generation import (
+    GenerationError,
+    generate_candidate,
+    list_rule_availability,
+)
 from rulekit.generation.exploration import exploration_status
 from rulekit.generation.sample import _flat_sentence, _leaf_tokens
 
@@ -15,9 +19,11 @@ CURATED = ROOT / "projects" / "curated"
 
 EXPECTED_OCCURRENCES = {
     "arithmetic/existential-premise-distributive": ((4,), "q"),
+    "arithmetic/group-total-trailing": ((1, 0), "q"),
     "arithmetic/periodic-rate-every-span": ((4,), "freq"),
 }
 EXPECTED_FILLERS = {"all", "each", "every", "much", "no", "some"}
+EXPECTED_DISTRIBUTIVE_FILLERS = {"each", "every"}
 
 
 def _write_invented_project(root: Path) -> None:
@@ -97,8 +103,8 @@ def test_g5o_unlocks_only_the_preregistered_rule() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 101
-    assert sum(item.supported for item in availability.values()) == 101
+    assert len(availability) == 105
+    assert sum(item.supported for item in availability.values()) == 105
     assert sum(not item.supported for item in availability.values()) == 0
     assert availability[
         "arithmetic/existential-premise-distributive"
@@ -109,11 +115,11 @@ def test_g5o_unlocks_only_the_preregistered_rule() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 152
+    assert len(exploration_status(project)["fillers"]) == 154
 
 
-@pytest.mark.parametrize("quantifier", sorted(EXPECTED_FILLERS))
-def test_every_loaded_quantifier_is_exposed_for_human_review(
+@pytest.mark.parametrize("quantifier", sorted(EXPECTED_DISTRIBUTIVE_FILLERS))
+def test_every_distributive_quantifier_is_exposed_for_human_review(
     quantifier: str,
 ) -> None:
     candidate = generate_candidate(
@@ -129,16 +135,31 @@ def test_every_loaded_quantifier_is_exposed_for_human_review(
     assert premise.binding == quantifier
     assert premise.status == "passed"
     assert premise.category_path == (
-        (quantifier, "frequency_quantifier", "quantifier")
-        if quantifier == "every"
-        else (quantifier, "quantifier")
+        quantifier,
+        "distributive_quantifier",
+        "quantifier",
     )
     assert {"rule-token", "lexicon"} <= {
         source["kind"] for source in premise.sources
     }
 
 
-def test_exploration_exposes_only_frequency_quantifiers_on_periodic_rule() -> None:
+@pytest.mark.parametrize(
+    "quantifier", sorted(EXPECTED_FILLERS - EXPECTED_DISTRIBUTIVE_FILLERS)
+)
+def test_non_distributive_quantifiers_cannot_fill_the_container_slot(
+    quantifier: str,
+) -> None:
+    with pytest.raises(GenerationError):
+        generate_candidate(
+            load_project(CURATED),
+            rule_id="arithmetic/existential-premise-distributive",
+            seed=0,
+            locked_bindings={"q": quantifier},
+        )
+
+
+def test_exploration_exposes_quantifiers_only_on_compatible_rules() -> None:
     fillers = {
         item["identity"]: item
         for item in exploration_status(load_project(CURATED))["fillers"]
@@ -151,13 +172,17 @@ def test_exploration_exposes_only_frequency_quantifiers_on_periodic_rule() -> No
             for placement in fillers[quantifier]["placements"]
             if placement["slot"] in {"q", "freq"}
         }
-        expected = {
-            ("arithmetic/existential-premise-distributive", "q")
-        }
+        expected = set()
+        if quantifier in EXPECTED_DISTRIBUTIVE_FILLERS:
+            expected.add(
+                ("arithmetic/existential-premise-distributive", "q")
+            )
         if quantifier == "every":
             expected.add(
                 ("arithmetic/periodic-rate-every-span", "freq")
             )
+        if quantifier == "all":
+            expected.add(("arithmetic/group-total-trailing", "q"))
         assert placements == expected
 
 

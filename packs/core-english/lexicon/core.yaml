@@ -30,6 +30,7 @@ entries:
 
     # state-anchor adverb
     currently: {senses: [adverb]}
+    far: {senses: [adverb]}
 
     # prepositions
     of: {senses: [preposition]}
@@ -236,6 +237,7 @@ entries:
     remainder: {senses: [noun]}
     rest: {senses: [noun]}
     year: {senses: [noun], plural: years}
+    time: {senses: [noun], plural: times}
     inch: {senses: [noun], plural: inches}
     pound: {senses: [noun], plural: pounds}
     # promoted from difg-mined 2026-07-20: packs/reference needs it too, and

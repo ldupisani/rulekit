@@ -48,7 +48,7 @@ categories:
     antonym: higher
     polarity: -1
   motion:
-    parent: verb
+    parent: motion_comparison_verb
   multiplier_marker:
     parent: noun
     notes: >
@@ -127,7 +127,7 @@ categories:
   timeperiod:
     parent: bare_pp_object
   vehicle:
-    parent: noun
+    parent: motion_participant
 attribute_compatibility:
   capacity_attribute: [capacity_noun]
   quality_attribute: [quality_bearer_noun, animate]
@@ -136,7 +136,7 @@ members:
   # `Bill` is a common first name as well as the monetary noun owned by this
   # pack. Sentence-initial sense selection retains the noun reading, so the
   # entity-role exception must stay lexical and explicit.
-  bare_entity_reference: [bill]
+  bare_entity_reference: [bill, mark]
   increase_verb: [increase, increased, increases, rise]
   decrease_verb: [decrease, decreased, decreases, fall, fell]
   mass_quantity_noun: [chicken, coffee, flour, food, milk, money, rice, sugar]

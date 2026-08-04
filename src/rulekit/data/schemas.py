@@ -718,6 +718,14 @@ class WherePredicate(StrictModel):
     # multi-unit phrases need exact phrase identity, not head-lemma identity.
     same_phrase: list[str] | None = None
     distinct: list[str] | None = None
+    # Opt-in semantic complement to lexical ``distinct``. The named entity or
+    # noun roles must not be an unqualified category/member pair in either
+    # direction (``animal`` versus ``hamster``). Sibling members remain
+    # compatible, and the matcher preserves independently distinguished names,
+    # labels, and owners. Category structure stays wholly pack-declared.
+    category_nonoverlap: list[str] | None = Field(
+        default=None, min_length=2
+    )
     # Every named slot must carry a non-empty possessive owner, and those
     # owners must be distinct. The noun lemmas may intentionally be identical
     # ("Aven's age ... Bira's age"); ordinary `distinct` compares lemmas and
@@ -774,6 +782,12 @@ class WherePredicate(StrictModel):
 
     @model_validator(mode="after")
     def _one(self) -> "WherePredicate":
+        if (
+            self.category_nonoverlap is not None
+            and len(self.category_nonoverlap)
+            != len(set(self.category_nonoverlap))
+        ):
+            raise ValueError("category nonoverlap repeats a slot")
         set_ = [
             v for v in (
                 self.same_lemma, self.same_number, self.number_compatible,
@@ -782,7 +796,8 @@ class WherePredicate(StrictModel):
                 self.proportional_delta_compatible,
                 self.same_presence,
                 self.verb_role_compatible, self.same_phrase,
-                self.distinct, self.distinct_owner, self.distinct_from_owner,
+                self.distinct, self.category_nonoverlap,
+                self.distinct_owner, self.distinct_from_owner,
                 self.attribute_compatible,
                 self.distinct_measure,
                 self.name_count, self.absent, self.unbound,

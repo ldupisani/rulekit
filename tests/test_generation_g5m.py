@@ -140,8 +140,8 @@ def test_g5m_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 101
-    assert sum(item.supported for item in availability.values()) == 101
+    assert len(availability) == 105
+    assert sum(item.supported for item in availability.values()) == 105
     assert sum(not item.supported for item in availability.values()) == 0
     assert all(
         availability[rule_id].supported for rule_id in EXPECTED_GROUPS
@@ -151,7 +151,7 @@ def test_g5m_unlocks_exactly_the_preregistered_frontier() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 152
+    assert len(exploration_status(project)["fillers"]) == 154
 
 
 @pytest.mark.parametrize("rule_id", sorted(EXPECTED_GROUPS))
@@ -218,6 +218,7 @@ def test_qualifier_and_label_are_parts_of_the_measure_key(
         same_groups=[],
         same_number_groups=[],
         distinct_groups=[],
+        category_nonoverlap_groups=[],
         distinct_owner_groups=[],
         distinct_measure_groups=(("left", "right"),),
         attribute_pairs=[],

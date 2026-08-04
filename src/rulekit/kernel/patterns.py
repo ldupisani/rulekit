@@ -494,6 +494,32 @@ def _role_is_proper_name(unit: Unit, reg: Registry) -> bool:
     )
 
 
+def _unit_in_category(unit: Unit, category: str, reg: Registry) -> bool:
+    """Match category membership through either canonical or surface form."""
+
+    return reg.word_in_category(
+        _lemma_of(unit), category
+    ) or reg.word_in_category(
+        unit.features.get("fold", unit.surface.casefold()), category
+    )
+
+
+def _category_roles_overlap(left: Unit, right: Unit, reg: Registry) -> bool:
+    """Whether unqualified noun roles are a declared category/member pair."""
+
+    if left.sense() != "noun" or right.sense() != "noun":
+        return False
+    left_label = left.features.get("label")
+    right_label = right.features.get("label")
+    if left_label and right_label and left_label != right_label:
+        return False
+    left_owner = left.features.get("owner")
+    right_owner = right.features.get("owner")
+    if left_owner and right_owner and left_owner != right_owner:
+        return False
+    return reg.category_terms_overlap(_lemma_of(left), _lemma_of(right))
+
+
 def _span_article_units(span: tuple, reading) -> list[tuple]:
     """(article_unit, successors) pairs for a span — its INTERNAL articles
     plus any article on its physical LEADING EDGE. The pre-token skip loop
@@ -869,9 +895,7 @@ def _check_where(
             verb = slots.get(compatibility.verb)
             if verb is None or isinstance(verb, tuple):
                 return False
-            if reg.word_in_category(
-                _lemma_of(verb), compatibility.verb_cat
-            ):
+            if _unit_in_category(verb, compatibility.verb_cat, reg):
                 for role_name in compatibility.roles:
                     role = slots.get(role_name)
                     if role is None or isinstance(role, tuple):
@@ -884,20 +908,32 @@ def _check_where(
                                 compatibility.allow_plural_class
                                 and role.features.get("number") == "plural"
                             )
-                            or reg.word_in_category(
-                                _lemma_of(role), compatibility.role_cat
+                            or _unit_in_category(
+                                role, compatibility.role_cat, reg
                             )
                         )
                     ):
                         return False
                     if (
                         compatibility.excluded_role_cat is not None
-                        and reg.word_in_category(
-                            _lemma_of(role),
-                            compatibility.excluded_role_cat,
+                        and _unit_in_category(
+                            role, compatibility.excluded_role_cat, reg
                         )
                     ):
                         return False
+        if pred.category_nonoverlap is not None:
+            roles = []
+            for role_name in pred.category_nonoverlap:
+                role = slots.get(role_name)
+                if role is None or isinstance(role, tuple):
+                    return False
+                roles.append(role)
+            if any(
+                _category_roles_overlap(left, right, reg)
+                for index, left in enumerate(roles)
+                for right in roles[index + 1:]
+            ):
+                return False
         if pred.bound_requires_type is not None:
             requirement = pred.bound_requires_type
             if requirement.bound not in slots:

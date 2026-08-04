@@ -89,7 +89,7 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
         word
         for word, entry in sorted(project.registry.lexicon.items())
         if "adverb" in entry.senses
-    ] == [MOVED_WORD]
+    ] == [MOVED_WORD, "far"]
 
 
 def test_combined_pack_semantics_are_identical_to_legacy_ownership() -> None:
@@ -137,11 +137,11 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
     project = load_project(CURATED)
     availability = list_rule_availability(project)
 
-    assert len(availability) == 101
-    assert sum(item.supported for item in availability) == 101
+    assert len(availability) == 105
+    assert sum(item.supported for item in availability) == 105
     assert sum(not item.supported for item in availability) == 0
     assert all(not item.blockers for item in availability)
-    assert len(exploration_status(project)["fillers"]) == 152
+    assert len(exploration_status(project)["fillers"]) == 154
 
 
 def test_currently_generates_a_matcher_confirmed_anchor() -> None:

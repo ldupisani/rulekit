@@ -1,6 +1,6 @@
 # RuleKit architecture
 
-**Updated:** 2026-07-28
+**Updated:** 2026-08-04
 **Status:** current implementation, not a roadmap
 
 RuleKit is a deterministic reading and reasoning engine for controlled,
@@ -42,7 +42,10 @@ minimal pairs, and exploration placement. G5n admits the direct
 `complementizer` lexical root to the category-generic realizer, including both
 mandatory and optional occurrences and exact source evidence. G5o does the
 same for direct `quantifier` slots while preserving independent blockers on
-rules whose other descendants remain unrealizable. G5q moves the generic age
+rules whose other descendants remain unrealizable. Later premise review
+narrows distributive container quantifiers to the declared `each`/`every`
+subset and represents the differently sensed `in all` total as its own
+GroupTotal rule. G5q moves the generic age
 comparatives and their core direction memberships into `core-english` while
 preserving mined-only category extensions. G5r applies the same ownership
 boundary to the signed physical-dimension comparative class. G5s moves the
@@ -53,33 +56,23 @@ generation. G5u moves generic `currently` into core and admits the complete
 loaded direct-adverb domain, bringing its checkpoint availability to 95/95.
 G5v's review-led boundary passes add declarative definiteness, agreement,
 appositive-role, quantitative-verb, count/mass, additive-direction,
-finite/bare-form verb, complete-frame, optional-slot-coupling, and
-descriptor/noun compatibility constraints. They also add category-qualified
-age units, explicit membership collection/member roles, and conditional
-verb/semantic-role compatibility, including negative role classes; optional
-controller-dependent verb morphology; and explicit frequency/duration
-boundaries for periodic rates. The latest pass adds scoped cross-slot polarity,
-price-relation verbs, copular existential premises, optional explicit-noun
-compatibility, and shared quantitative-PP boundaries. The newest pass
-separates sum markers from the broader aggregate operation, restricts
-prepositional totals to declared collocations, and makes bare/`that`
-count-frame relative clauses include a lemma-aligned, independently agreeing
-predicate plus an optional counted duration span. Standalone scalar
-numbers remain distinct from condensed counted nouns so an elided rule cannot
-double-fire on an explicit measure. The seventh review pass adds a structural
-non-unit multiplier type, a subject-versus-possessive-owner distinction, and
-separate count/mass possessive ratio rules with declared possession verbs,
-direction classes, and morphology. It also gives comparative need premises
-their own goal-scoped rule and brings the current curated premise inventory to
-98/98 selectable rules. The eighth review pass makes implicit plural senses
-declaration-bounded, completes the affine item-clause frame, splits fractional
-delta relations into disjoint count/mass siblings, and requires grammatical
-introducers plus negative-lookahead continuations for standalone anaphoric
-many/much. Curated now has 99/99 selectable premise rules and 152 reachable
-lexicon identities. The explicit `originally` ask routes through the existing
-start-state event inversion; a qualified start state with differently
-qualified same-measure events declines until modifier nesting is represented
-losslessly.
+finite/bare-form verb, complete-frame, optional-slot-coupling,
+descriptor/noun compatibility, category overlap, and conditional
+verb/semantic-role constraints. They also distinguish location PPs from
+remnant-only PPs, require outbound transfers to take compatible quantity
+objects, separate sum markers from broader aggregate operations, and retain
+`GroupTotal.scope` only for surfaces that identify a real group. Standalone
+scalar numbers remain distinct from condensed counted nouns so an elided rule
+cannot double-fire on an explicit measure. Percent-change premises now split
+mass currency from plural denominations, enforce agreement, and reject
+decreases beyond the whole quantity. Motion comparisons reject an unstated
+`as many` measure, accept explicit frequency through `as many times`, and use
+a separate distance relation for `as far`; common-noun motion roles must be
+declared plausible people, animals, or vehicles. The current curated project
+has 105/105 selectable premise rules and 154 reachable lexicon identities. The
+explicit `originally` ask routes through the existing start-state event
+inversion; a qualified start state with differently qualified same-measure
+events declines until modifier nesting is represented losslessly.
 Generated defects remain visible by design: mechanical support reports that a
 rule can be realized and matched, not that its premises license valid English.
 

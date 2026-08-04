@@ -18,9 +18,8 @@ ownership is complete; G5r dimension-comparative core ownership is complete
 and G5s modal core ownership and slot realization is complete; G5t
 temporal-marker core ownership and time-root realization is complete; G5u
 direct-adverb visibility is complete; G5v review-led premise auditing is
-active and its fifth twelve-review plus sixth five-review boundary passes are
-complete; its seventh five-review and eighth four-review boundary passes are
-also complete
+active and all eighteen review-led boundary passes are complete through the
+current currency-countability and motion-comparison reconciliation
 
 ## Current checkpoint
 
@@ -100,7 +99,7 @@ added bounded hypothesis and minimal-pair exploration:
   sentence exposes a defective premise;
 - a `matched` or `shadowed` target status reports what the ordinary matcher
   accepted, never that the resulting English or emitted fact is correct;
-- the current curated frontier contains 99 supported rules and 152 reachable
+- the current curated frontier contains 105 supported rules and 154 reachable
   lexicon identities, while live reviews and continuing exploration remain
   separate from mechanical availability; and
 - random Generate next chooses from the least-attempted compatible rule and
@@ -113,11 +112,11 @@ added bounded hypothesis and minimal-pair exploration:
   optional `GroupTotal.scope`, allowing independently reviewed blue/red totals
   over one measure to coexist without changing tail-only or synthesized totals.
 
-The current gate is green: all 4,103 repository tests pass in four-worker
+The current gate is green: all 4,220 repository tests pass in four-worker
 mode, curated remains deterministic at 65/65 and 100% precision, GSM8K
-DEV-train is neutral at 104/0 and DEV-holdout is 41/0 with one solve and no
-regression, every standing cross-corpus gate retains zero wrong answers, and
-lint has zero errors.
+DEV-train is neutral at 104/0 and DEV-holdout is 41/0, every standing
+cross-corpus gate retains zero wrong answers, and lint has zero errors with
+two known warnings. No protected TEST look was spent.
 G6 live validation selected untouched `rabbit`, opened its declaration, and
 generated matched `Eron gives 18 rabbits to Aven.` for
 `arithmetic/transfer-prepositional`. The rule moved from untouched to

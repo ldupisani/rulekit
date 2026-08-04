@@ -11,8 +11,15 @@ categories:
             ontologies can extend this category without widening `animal`.
     animal: {parent: membership_member_noun}
     pet: {parent: animal}
-    quantity_event_participant:
+    motion_participant:
         parent: noun
+        notes: >
+            Common nouns that can plausibly perform a motion event. Proper
+            names remain independently valid in verb-role premises. Quantity-
+            event participants inherit this role because the currently
+            declared people and animals can also move; ordinary objects do not.
+    quantity_event_participant:
+        parent: motion_participant
         notes: >
             Common nouns that can plausibly perform or undergo an arithmetic
             quantity event such as receiving, buying, eating, giving, or
@@ -557,6 +564,14 @@ categories:
             "some" do not state a definite frequency. The valid implicit-one
             "each year" shape needs its own representation rather than
             pretending that `each 6 years` is grammatical.
+    distributive_quantifier:
+        parent: quantifier
+        notes: >
+            Quantifiers that distribute a stated quantity over each member of
+            a container class ("in each row" / "in every box"). This is
+            separate from the broad `quantifier` sense so amount and totality
+            words such as "some" and "all" cannot become container
+            determiners.
     currency_measure:
         parent: noun
         dimension: true
@@ -607,6 +622,20 @@ categories:
         notes: >
             Aggregate words that assert a sum rather than an average. This
             semantic subset is the marker domain for GroupTotal premises.
+    group_total_quantifier:
+        parent: quantifier
+        notes: >
+            Quantifiers licensed before a trailing GroupTotal marker. The
+            marker itself has a separate compatibility category so declaring
+            "all" here does not create "all total" or other arbitrary
+            quantifier/aggregate combinations.
+    quantified_group_total_marker:
+        parent: group_total_marker
+        notes: >
+            Group-total markers licensed after the declared totality
+            quantifier. This represents the conventional "all together"
+            pairing without narrowing bare "together", "total", "combined",
+            or "altogether".
     prepositional_group_total_marker:
         parent: group_total_marker
         notes: >
@@ -630,6 +659,13 @@ categories:
             Prepositions licensed between a ratio-frame verb and multiplier.
             A bound member conditionally requires a declared frame-
             prepositional verb; direct heads remain unaffected.
+    motion_comparison_verb:
+        parent: verb
+        notes: >
+            Motion verbs licensed in explicit frequency and distance ratio
+            comparisons. This category is separate from the prepositional-
+            frame category: it controls participant plausibility and whether
+            an elided `as many` measure is informative enough to accept.
     destination_preposition:
         parent: preposition
         notes: >
@@ -1156,8 +1192,11 @@ members:
     animate: [teacher, student, friend, child]
     # Animals can participate in quantity-changing events (notably eating,
     # finding, receiving, or losing items) while retaining their independent
-    # membership ontology under `animal`.
-    quantity_event_participant: [dog, cat, fish, bird, rabbit, hamster]
+    # membership ontology under `animal`. The generic head `animal` is also a
+    # plausible actor; category_nonoverlap separately prevents it from being
+    # compared with one of its own declared member kinds as if the roles were
+    # necessarily disjoint.
+    quantity_event_participant: [animal, dog, cat, fish, bird, rabbit, hamster]
     # 'him'/'her' are OBJECT-case and have no lexicon entry of their own;
     # the fallback binds a SUBJECT pronoun to a prior subject anyway.
     animate_pronoun: [he, she]
@@ -1202,10 +1241,13 @@ members:
     time_measure: [year, age] # generic age forms; other units extend this from difg-mined
     duration_measure: [year]
     frequency_quantifier: [every]
+    distributive_quantifier: [each, every]
     age_measure: [year]
     aggregate_noun: [amount, number]
     count_aggregate_noun: [amount, number]
     group_total_marker: [altogether, combined, together, total]
+    group_total_quantifier: [all]
+    quantified_group_total_marker: [together]
     prepositional_group_total_marker: [total]
     group_total_preposition: [in]
     quantity_anaphor: [amount, number]
@@ -1216,6 +1258,7 @@ members:
     need_premise: [need, needed, needs]
     duration_verb: [takes, took]
     frame_prepositional_verb: [travel, traveled, travels]
+    motion_comparison_verb: [travel, traveled, travels]
     sell: [sell, sells, sold]
     frame_head_preposition: [in, to]
     destination_preposition: [to]

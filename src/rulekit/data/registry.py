@@ -200,6 +200,32 @@ class Registry:
             return word in self.plural_to_singular
         return False
 
+    def category_terms_overlap(self, left: str, right: str) -> bool:
+        """Whether two noun terms are identical or one subsumes the other.
+
+        A pack may use a noun-category name as the lexical supertype itself:
+        ``animal`` contains ``hamster``, ``fish`` contains ``goldfish``, and
+        so on.  This helper reads only that declared category structure.  It
+        does not infer disjointness between siblings or treat arbitrary shared
+        memberships as identity evidence.
+        """
+
+        left = self.plural_to_singular.get(left, left)
+        right = self.plural_to_singular.get(right, right)
+        if left == right:
+            return True
+
+        categories = set(self.category_parents) | set(self.category_members)
+
+        def contains(category_term: str, member_term: str) -> bool:
+            return (
+                category_term in categories
+                and self.root_sense(category_term) == "noun"
+                and self.word_in_category(member_term, category_term)
+            )
+
+        return contains(left, right) or contains(right, left)
+
     def attribute_compatibility_pairs(
         self, attribute: str, noun: str
     ) -> tuple[tuple[str, str], ...]:
@@ -896,6 +922,23 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                             f"rule {rule.id!r} verb-role compatibility "
                             f"category {category!r} is not "
                             f"{expected_root}-rooted"
+                        )
+            category_nonoverlap = predicate.category_nonoverlap
+            if category_nonoverlap is not None:
+                for slot_name in category_nonoverlap:
+                    token = slots.get(slot_name)
+                    if token is None:
+                        raise CompileError(
+                            f"rule {rule.id!r} category nonoverlap names "
+                            f"unknown slot {slot_name!r}"
+                        )
+                    if not (
+                        token.type in {"entity", "name", "proper_name"}
+                        or _slot_root(token) == "noun"
+                    ):
+                        raise CompileError(
+                            f"rule {rule.id!r} category nonoverlap slot "
+                            f"{slot_name!r} is not entity/noun-rooted"
                         )
             owner_distinction = predicate.distinct_from_owner
             if owner_distinction is not None:

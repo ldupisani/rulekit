@@ -257,14 +257,6 @@ entries:
     tile:
         senses:
             - noun
-    time:
-        senses:
-            - noun
-        plural: times
-    times:
-        senses:
-            - operator
-            - noun
     tin:
         senses:
             - noun

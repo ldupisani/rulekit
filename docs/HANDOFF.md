@@ -7,7 +7,7 @@
 **Status:** G1 through G4, G5a through G5g, G6, Reading-origin review,
 targetless sentence-interpretation review, fact-level review, the
 fraction-plural morphology correction, scoped
-`GroupTotal`, and all eleven review-led grammar-boundary reconciliations are
+`GroupTotal`, and all eighteen review-led grammar-boundary reconciliations are
 complete and gated. The review-led adjective/noun compatibility boundary is
 also complete and gated. The review-led leading-`GroupTotal` subject boundary
 is complete and gated: existential `there` no longer becomes a group scope or
@@ -60,10 +60,22 @@ time-root realization is complete: both deictic markers are core-owned and
 reviewable, and the standard-pinned future rule unlocks. G5u direct-adverb
 visibility is complete: `currently` is core-owned, project-relative adverb
 breadth remains visible, and all 99 curated premise rules are selectable. G5v
-review-led premise auditing is active; eleven review batches are implemented
+review-led premise auditing is active; eighteen review batches are implemented
 and fully gated. The latest adds referential comparative roles, declared
-quantity-event participants, plural comparison-class standards, and exact
-locative preposition/place compatibility.
+quantity-event participants, plural comparison-class standards, exact
+locative preposition/place compatibility, and declared compatibility between
+trailing GroupTotal quantifiers and markers. The postfix comparison family now
+also separates ordinary quantity directions from copular age comparisons, and
+the extraposed-duration family now relates its infinitive verb to a plausible
+controlling participant. Common-noun comparison roles now also refuse an
+unresolved category/member overlap while preserving genuinely distinct
+siblings, names, labels, and owners. Distributive existentials now admit only
+`each`/`every`; the ordinary `in all` total surface has its own GroupTotal
+rule; and non-conjunct mass-ratio rules reject remnant transfer objects and
+remnant-only PPs. Percent changes now separate singular mass currency from
+plural denominations, enforce agreement, and reject impossible decreases.
+Motion comparisons require an explicit frequency or distance measure and a
+declared plausible common-noun participant.
 
 **Active plan:**
 [`generation-and-annotation-plan.md`](generation-and-annotation-plan.md)
@@ -1219,7 +1231,213 @@ before/after diffs; ASDiv, SVAMP, MAWPS, and SciBench remain 44/0, 30/0, 10/0,
 and 6/0; FOLIO makes zero commitments; and lint has zero errors with two known
 warnings. No protected TEST look was spent.
 
-Do not interpret 101/101 as proof that every sentence is valid, bulk-label the
+The thirteenth G5v batch reconciles the latest trailing-total review:
+
+- `7 inches all total.` no longer matches
+  `arithmetic/group-total-trailing`;
+- the optional `all` literal is now a source-visible
+  `group_total_quantifier` slot. Its conditional compatibility premise
+  requires the aggregate marker to belong to
+  `quantified_group_total_marker`, whose declared member is `together`;
+- the existing prepositional compatibility premise remains independent and
+  continues to license only `in total`. If both optional prefixes bind, no
+  marker can satisfy both conditions, so the previously hidden `all in total`
+  cross-product is rejected as well; and
+- bare `total`, `combined`, `altogether`, and `together`, plus `all together`
+  and `in total`, remain accepted. Locked generation probes expose the new
+  condition and cannot force `all total`.
+
+The reviewed sentence retests absent. The fold contains 356 exploration
+events and 138 review rows folding to one live review. Rule coverage is 100
+generated-but-unreviewed and one reviewed; filler coverage is 33
+never-generated, 117 generated-but-unreviewed, and two reviewed. There are no
+current-fingerprint failures.
+
+The gate is green: 4,161 tests pass in four-worker mode; curated remains
+65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 41/0 with exact neutral
+before/after diffs; ASDiv, SVAMP, MAWPS, and SciBench remain 44/0, 30/0, 10/0,
+and 6/0; FOLIO makes zero commitments; and lint has zero errors with two known
+warnings. No protected TEST look was spent.
+
+The fourteenth G5v batch reconciles the next postfix-comparison review:
+
+- `Fia sells 19 areas older than can.` no longer matches
+  `arithmetic/anchored-relation-postfix`;
+- that rule now owns only the declared quantity directions
+  `more`/`fewer`/`less`. Its subject and standard must be complete references,
+  preserving names, determiner-backed or possessed common nouns, labeled
+  entities, and bare plural comparison classes while refusing a bare singular
+  such as `than can`;
+- the new `arithmetic/anchored-relation-postfix-age` sibling owns
+  `WHO COPULA N AGE-UNIT older/younger than STANDARD`. The age unit,
+  comparative, copula, agreement, and complete-reference premises are all
+  explicit and generation-visible, so an event verb or non-age counted noun
+  cannot enter the age construction;
+- `mark` joins the existing pack-declared `bare_entity_reference` homograph
+  class beside `bill`. This retains a person-name reading when the lexical
+  noun wins sense selection, without weakening referentiality for arbitrary
+  singular common nouns; and
+- ordinary quantity and distance events remain valid. In particular, the
+  established cross-corpus distance-comparison solve remains intact; no broad
+  event-verb exclusion is applied to the count sibling.
+
+The reviewed sentence retests absent. The fold contains 360 exploration
+events and 140 review rows folding to one live review. Rule coverage is one
+never-generated, 100 generated-but-unreviewed, and one reviewed; filler
+coverage is 33 never-generated, 115 generated-but-unreviewed, and four
+reviewed. There are no current-fingerprint failures. All 102 premise rules are
+selectable; the new age sibling is the one not yet recorded in exploration.
+
+The gate is green: 4,170 tests pass in four-worker mode; curated remains
+65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 41/0 with exact neutral
+before/after diffs; ASDiv, SVAMP, MAWPS, and SciBench remain 44/0, 30/0, 10/0,
+and 6/0; FOLIO makes zero commitments; and lint has zero errors with two known
+warnings. No protected TEST look was spent.
+
+The fifteenth G5v batch reconciles the extraposed-duration actor review:
+
+- `It takes money 60 years to receive 13 animals.` no longer survives as
+  `arithmetic/extraposed-duration-rate` and cannot be reproduced by locking
+  the reviewed `money`/`receive` bindings;
+- the intervening `who` slot is now explicitly referential. A bare singular
+  common noun therefore cannot silently act as the controller of the
+  infinitive;
+- the existing generic `verb_role_compatible` predicate now relates the
+  infinitive verb to `who`. When the verb is a declared
+  `quantity_event_verb`, a common-noun controller must belong to
+  `quantity_event_participant`; proper names remain independently valid; and
+- the condition is scoped to quantity-changing verbs, so it does not invent a
+  universal world model for unrelated infinitives or add another verb list to
+  the kernel.
+
+The reviewed sentence retests absent, and a locked generation probe fails
+before realization because no compatible `who` remains. The ledgers currently
+contain 363 exploration events and 143 review rows folding to two live reviews.
+The newer `The animal drops double as many as the hamster.` review remains
+open and is deliberately not conflated with this increment.
+
+The gate is green: 4,175 tests pass in four-worker mode; curated remains
+65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 41/0; ASDiv, SVAMP,
+MAWPS, and SciBench remain 44/0, 30/0, 10/0, and 6/0; FOLIO makes zero
+commitments; and lint has zero errors with two known warnings. No protected
+TEST look was spent.
+
+The sixteenth G5v batch reconciles the category-overlap comparison review:
+
+- `The animal drops double as many as the hamster.` no longer survives as
+  `arithmetic/times-as-many-elided`; the reverse order and plural comparison
+  classes are rejected as the same ambiguity;
+- the new inspectable `category_nonoverlap: [who, std]` premise reads only the
+  loaded category graph. It fails when one unqualified noun role names a
+  category containing the other role's noun, without treating two siblings
+  that merely share a superclass as identical;
+- all 21 comparison rules that admit common-noun subjects and standards carry
+  the premise. Name-only rules and possessive-kinship standard shapes retain
+  their narrower independent contracts;
+- proper names remain valid, as do sibling descriptions such as `dog` versus
+  `hamster` and category/member heads distinguished by two different owners or
+  labels;
+- `verb_role_compatible` now checks both a verb's canonical lemma and its
+  surface form, matching ordinary category-slot semantics. Thus `drops`, whose
+  lemma is `drop`, can no longer route around the declared quantity-event role
+  boundary; and
+- the generic noun `animal` is explicitly a valid quantity-event participant.
+  Rejecting every animal actor would have hidden the reviewed ambiguity for the
+  wrong reason; the independent overlap premise is what separates the roles.
+
+The reviewed sentence retests absent and its exact locked generation fails,
+while the locked `dog`/`hamster` neighbor round-trips with the new premise in
+its Designer trace. The ledgers currently contain 365 exploration events, 146
+review rows, and 14 failure observations, folding to three live reviews. The
+two newer `There are 11 areas in all amount.` and `Mary gave twice as much rest
+with the remainder.` reviews remain open and are deliberately not conflated
+with this increment.
+
+The gate is green: 4,185 tests pass in four-worker mode; curated remains
+65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 41/0; ASDiv, SVAMP,
+MAWPS, and SciBench remain 44/0, 30/0, 10/0, and 6/0; FOLIO makes zero
+commitments; and lint has zero errors with two known warnings. No protected
+TEST look was spent.
+
+The seventeenth G5v batch reconciles the two remaining aggregate and mass-ratio
+reviews:
+
+- `There are 11 areas in all amount.` no longer matches
+  `arithmetic/existential-premise-distributive`. Its quantifier slot now uses
+  the dedicated `distributive_quantifier` category, whose complete declared
+  domain is `each`/`every`; broad amount and totality quantifiers cannot become
+  container determiners;
+- `There are 11 areas in all.` now matches the new
+  `arithmetic/group-total-trailing-in-all` sibling and emits one unscoped
+  `GroupTotal`, not an independent `Quantity`. The two-word surface is a
+  separate literal grammar because `all` is correctly quantifier-sensed and
+  cannot be added to the aggregate-rooted total-marker category;
+- `Mary gave twice as much rest with the remainder.` no longer matches
+  `arithmetic/times-as-much-elided-standard`. The conditional verb/role
+  boundary now makes declared outbound transfers reject `remnant` measures,
+  and non-conjunct mass-ratio optional PPs reject the declared remnant
+  preposition class;
+- the same two premises cover the full, fractional, fractional-delta, and
+  affine mass-ratio siblings. The generator enforces them through the same
+  ordinary matcher predicates; and
+- compatible neighbours remain available: stative `rest` comparisons,
+  outbound `money` comparisons, ordinary location PPs, and both distributive
+  quantifiers all round-trip normally. Explicit conjunct rules retain their
+  separately owned remnant semantics.
+
+Both reviewed sentences retest absent. The human-owned ledger contains 365
+exploration events, 147 review rows, and 14 historical failure observations,
+folding to two live review rows. Under the new registry fingerprint, rule
+coverage is 2 never generated, 99 generated but unreviewed, and 2 reviewed;
+filler coverage is 30 never generated, 114 generated but unreviewed, and 8
+reviewed. All 103 curated premise rules are selectable and 152 lexicon
+identities remain reachable.
+
+The gate is green: 4,202 tests pass in four-worker mode; curated remains 65/65;
+GSM8K DEV-train and DEV-holdout remain 104/0 and 41/0 with exact neutral
+before/after diffs; ASDiv, SVAMP, MAWPS, and SciBench remain 44/0, 30/0, 10/0,
+and 6/0; FOLIO makes zero commitments; and lint has zero errors with the same
+two known warnings. No protected TEST look was spent.
+
+The eighteenth G5v batch reconciles the currency-change and motion-comparison
+reviews:
+
+- `Sticker own nineteen eighths less dollar.` no longer matches
+  `arithmetic/percent-change-event`. Subject/verb agreement is explicit, a
+  decrease cannot exceed the whole quantity, and declared non-holder nouns
+  cannot become currency owners;
+- the existing percent-change rule now owns singular mass currency such as
+  `less money`. The new `arithmetic/percent-change-event-count` sibling owns
+  plural denominations such as `fewer dollars`. Exact number constraints make
+  the siblings disjoint even where their direction domains share `more`;
+- `The rabbit traveled nine ninths as many as the pencil.` no longer matches
+  the fractional elided-measure rule. Multiplier and fractional `as many`
+  siblings both reject motion when the measure is omitted;
+- generic `time/times` and `far` move to `core-english`. The existing explicit
+  `fraction-as-many` rule now reads `as many times` as a `time`-measured
+  Relation, while the new `arithmetic/fraction-as-far` rule emits the separate
+  `distance`-measured Relation; and
+- the declarative `motion_comparison_verb` and `motion_participant` boundaries
+  preserve people, animals, vehicles, and proper names while refusing an
+  ordinary object such as `pencil` as a common-noun motion standard. The mined
+  motion and vehicle categories extend the same boundaries without adding
+  vocabulary to Python.
+
+Both reviewed sentences retest absent. The human-owned ledgers contain 379
+exploration events, 151 review rows, and 21 historical failure observations,
+folding to two live reviews. Under the final registry fingerprint, rule
+coverage is 2 never generated, 101 generated but unreviewed, and 2 reviewed;
+filler coverage is 32 never generated, 115 generated but unreviewed, and 7
+reviewed. All 105 curated premise rules are selectable and 154 lexicon
+identities are reachable.
+
+The gate is green: 4,220 tests pass in four-worker mode; curated remains 65/65;
+GSM8K DEV-train and DEV-holdout remain 104/0 and 41/0 with exact neutral
+before/after diffs; ASDiv, SVAMP, MAWPS, and SciBench remain 44/0, 30/0, 10/0,
+and 6/0 with neutral diffs; FOLIO makes zero commitments; and lint has zero
+errors with the same two known warnings. No protected TEST look was spent.
+
+Do not interpret 105/105 as proof that every sentence is valid, bulk-label the
 frontier, or advance to deferred question generation before the premise audit
 is mature enough for a deliberate product decision.
 
