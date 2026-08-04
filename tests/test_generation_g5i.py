@@ -65,7 +65,7 @@ def _optional_profile(project) -> tuple[int, int, int, int]:
 def test_g5i_profiles_the_complete_recursive_optional_class() -> None:
     project = load_project(CURATED)
 
-    assert _optional_profile(project) == (51, 123, 32, 3)
+    assert _optional_profile(project) == (53, 129, 33, 3)
 
 
 def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:

@@ -2258,16 +2258,16 @@ The complete gate is green: 3,900 tests pass in four-worker mode; curated is
 MAWPS, and SciBench remain 44/0, 30/0, 9/0, and 6/0; FOLIO makes zero
 commitments; and lint has zero errors with two known warnings.
 
-#### G5v review-led premise audit — active; eighth batch complete
+#### G5v review-led premise audit — active; tenth batch complete
 
 Mechanical completeness does not establish linguistic or semantic validity.
-The current live fold has 1 never-generated, 95 generated-but-unreviewed,
-and 3 reviewed rules. Of 152 reachable lexicon identities, 37 are never
-generated, 101 are generated-but-unreviewed, and 14 are reviewed. The
-append-only success ledger contains 314 exploration events; 117 append-only
-review rows fold to four current live reviews after the existing corrections
-and tombstones. The separate failure ledger retains four historical attempts,
-none matching the current registry fingerprint.
+The current live fold has 1 never-generated, 96 generated-but-unreviewed,
+and 2 reviewed rules. Of 152 reachable lexicon identities, 33 are never
+generated, 114 are generated-but-unreviewed, and 5 are reviewed. The
+append-only success ledger contains 351 exploration events; 131 append-only
+review rows fold to two current live reviews after the existing corrections
+and tombstones. The separate failure ledger retains historical attempts, none
+matching the current registry fingerprint.
 
 G5v uses the existing Designer loop rather than adding a bulk validator:
 Generate next selects a least-explored compatible rule/filler, the human
@@ -2575,6 +2575,93 @@ from 40/0 to 41/0 with one solve, no break, and no new wrong commitment.
 ASDiv, SVAMP, MAWPS, and SciBench are 44/0, 30/0, 10/0, and 6/0; FOLIO makes
 zero commitments; and lint has zero errors with two known warnings. No
 protected TEST look was spent.
+
+The ninth batch reconciles five live reviews through four reusable premises:
+
+- an item-elided comparison conjunct either has no location contexts or has a
+  compatible context on both conjuncts. `same_presence` exposes that pairing,
+  and the unframed surface refuses the separately declared
+  frame-prepositional verb class;
+- a located existential requires a referential place compatible with its
+  preposition. Article-bearing and possessive locations remain available to
+  the matcher, while deterministic generation retains its grammatical
+  definite and possessive forms;
+- the full, item-elided, and affine fraction-`many` rules require explicit
+  standards to be referential quantity holders. Common noun standards need
+  definiteness, productive index labels such as `team A` provide structural
+  definiteness, while `non_quantity_holder` excludes units such as `inch`;
+  and
+- the optional context in `fraction-as-much` uses the same authored
+  preposition/noun compatibility relation as its quantitative siblings.
+
+The exact five reviewed targets are absent, while context-free and paired
+conjuncts, grammatical existentials, definite common-noun standards,
+proper-name standards, and compatible mass contexts remain
+matcher-confirmed. Every affected rule form generates only matched or
+shadowed candidates over sixteen deterministic seeds. The resulting optional
+shape is preregistered at 52 rules, 126 optional groups, 33 nested groups, and
+maximum depth three.
+
+The full synthetic and cross-corpus gates preserved three existing neighbours
+by completing the same general contracts: the mined `quantity_location`
+extension now includes the already-tested `office` and ASDiv's valid `school`,
+while the referential matcher recognizes article-bearing noun phrases and
+productive index labels on common-noun entities such as `team A` and `jar B`.
+The label case uses parser structure already retained in relation identity
+rather than a surface-specific exception.
+
+The append-only fold now contains 338 successful generation events and 126
+review rows folding to five live reviews. Rule coverage is 1 untouched, 93
+generated-but-unreviewed, and 5 reviewed; filler coverage is 36 untouched, 96
+generated-but-unreviewed, and 20 reviewed. There are no current-fingerprint
+failures. Curated remains 65/65; GSM8K DEV-train and DEV-holdout remain 104/0
+and 41/0 with neutral before/after diffs. No protected TEST look was spent.
+
+The complete gate is green: 4,116 tests pass in four-worker mode; curated is
+65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 41/0 with neutral
+before/after diffs; ASDiv, SVAMP, MAWPS, and SciBench remain 44/0, 30/0, 10/0,
+and 6/0; FOLIO makes zero commitments; and lint has zero errors with two known
+warnings. No protected TEST look was spent.
+
+The tenth batch closes both open existential reviews through explicit
+continuation ownership:
+
+- the located rule had already rejected `There are 40 fish of rabbit.`, but
+  the bare sibling still accepted the shorter `There are 40 fish` prefix.
+  Optional preposition/conjunct sentinels plus `unbound` now make a failed
+  longer continuation decline rather than produce a partial fact;
+- a new `quantity_container` category preserves valid container-content
+  partitives such as `30 boxes of apples` and `15 shelves of boxes`. The
+  condition is activated only when the `of NOUN` tail binds, and arbitrary
+  item heads such as `fish` cannot use it; and
+- both items in the conjoined existential refuse `mass_measure`, so
+  `There are 14 hamsters and 40 pounds.` cannot represent a weight amount as
+  a second entity population. The bare sibling's conjunct sentinel also
+  prevents a silent first-conjunct-only reading.
+
+DEV witnesses completed `quantity_location` with `bowl`, `class`,
+`classroom`, `farm`, and `party`; `class` alone receives the independently
+declared bare-PP license needed by idiomatic `in class`. These pack-owned
+members preserve valid located, ratio, and distributive classes without
+admitting either reviewed surface.
+
+Both current reviewed sentences now have no existential-rule match. Valid
+bare, conjoined, located, distributive, and container-partitive neighbours
+remain matcher-confirmed, and the changed rules generate only matched or
+shadowed candidates over the bounded seed gate. The optional profile is now
+53 rules, 129 groups, 33 nested groups, and maximum depth three.
+
+The live append-only fold contains 351 successful generation events and 131
+review rows folding to two reviews. Rule coverage is 1 untouched, 96
+generated-but-unreviewed, and 2 reviewed; filler coverage is 33 untouched, 114
+generated-but-unreviewed, and 5 reviewed. There are no current-fingerprint
+failures.
+
+The complete gate is green: 4,124 tests pass in four-worker mode; curated is
+65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 41/0 with neutral
+before/after diffs; ASDiv, SVAMP, MAWPS, and SciBench remain 44/0, 30/0, 10/0,
+and 6/0; FOLIO makes zero commitments; and lint has zero errors with two known
+warnings. No protected TEST look was spent.
 
 There is no automatic transition to G7. Ask-rule and derived-rule generation
 requires a separate decision after the premise audit demonstrates that the

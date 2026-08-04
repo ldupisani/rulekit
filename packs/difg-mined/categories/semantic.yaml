@@ -188,12 +188,26 @@ members:
   - bag
   - basket
   - binder
+  - bowl
   - box
+  - class
+  - classroom
+  - farm
   - jar
   - mall
+  - office
+  - party
+  - school
   - side
   - wardrobe
   - wheel
+  # Idiomatic institutional location: "students in class" is referential
+  # without an article, unlike arbitrary bare common-noun PP objects.
+  bare_pp_object:
+  - class
+  quantity_container:
+  - box
+  - shelf
   frame_prepositional_verb:
   - threw
   - throws

@@ -63,6 +63,13 @@ categories:
             optional quantitative locative adjunct. Referentiality alone makes
             "in the dog" syntactically complete but does not make it a useful
             holder context.
+    quantity_container:
+        parent: noun
+        notes: >
+            Enumerable container heads licensed before an "of NOUN" content
+            tail in a bare existential ("30 boxes of apples"). This is narrower
+            than `quantity_location`: a place can hold a quantity without its
+            own counted instances licensing a container-content partitive.
     quantity_location_preposition:
         parent: preposition
         notes: >

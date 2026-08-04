@@ -544,15 +544,19 @@ def test_conditional_standard_type_is_inspectable() -> None:
         "arithmetic/times-as-many-elided",
         "arithmetic/partition-rest-membership",
         "arithmetic/fraction-as-many",
+        "arithmetic/fraction-as-many-elided",
         "arithmetic/fraction-delta-relation",
         "arithmetic/fraction-delta-relation-mass",
         "arithmetic/periodic-rate-every-span",
         "arithmetic/times-as-much",
+        "arithmetic/fraction-as-much",
         "arithmetic/anchored-relation-possessive-kinship-standard",
         "arithmetic/anaphoric-price-standard",
         "arithmetic/times-as-many-conjunct-elided-standard",
         "arithmetic/times-as-many",
         "arithmetic/existential-premise",
+        "arithmetic/existential-premise-bare",
+        "arithmetic/existential-premise-bare-conjoined",
         "arithmetic/fraction-as-many-elided-standard",
         "arithmetic/rest-of-pool",
         "arithmetic/times-as-many-possessive-kinship-standard",
@@ -745,8 +749,14 @@ def test_same_presence_is_an_explicit_discontinuous_structure_predicate() -> Non
 @pytest.mark.parametrize(
     "text",
     [
-        "Dena receives 30 years in the garden and double as many.",
-        "Dena receives 30 years with the rest and double as many.",
+        (
+            "Dena receives 30 years in the garden and double as many "
+            "on the area."
+        ),
+        (
+            "Dena receives 30 years with the rest and double as many "
+            "with the remainder."
+        ),
     ],
 )
 def test_elided_conjunct_keeps_declared_pp_compatibility(
@@ -1219,7 +1229,7 @@ def test_quantitative_verb_boundaries_keep_valid_neighboring_forms(
     [
         (
             "arithmetic/existential-premise",
-            "There are 60 plums on tree.",
+            "There are 60 plums on the tree.",
         ),
         (
             "arithmetic/existential-premise-distributive",
@@ -1732,3 +1742,165 @@ def test_generation_fact_exposes_emit_expression_and_bindings() -> None:
     )
     assert relation["derivation"]["bindings"]["f"] == "two fifths"
     assert relation["derivation"]["bindings"]["dir"] == "more"
+
+
+@pytest.mark.parametrize(
+    ("rule_id", "text"),
+    [
+        (
+            "arithmetic/times-as-many-conjunct-elided-item",
+            "Plum traveled 90 cards on her garden and thrice as many.",
+        ),
+        (
+            "arithmetic/existential-premise",
+            "There are 40 fish of rabbit.",
+        ),
+        (
+            "arithmetic/affine-fraction-as-many",
+            "Marble found 2 less than nine tenths as many animals as area.",
+        ),
+        (
+            "arithmetic/fraction-as-much",
+            "Dena ate sixty halves as much money to the plum as her teacher Fia.",
+        ),
+        (
+            "arithmetic/fraction-as-many-elided",
+            "Fia sells eleven thirds as many as inch.",
+        ),
+    ],
+)
+def test_latest_reviewed_comparative_surfaces_are_rejected(
+    rule_id: str, text: str, registry
+) -> None:
+    assert rule_id not in _matched_rules(text, registry)
+
+
+def test_elided_item_conjunct_requires_paired_compatible_contexts(
+    registry,
+) -> None:
+    rule_id = "arithmetic/times-as-many-conjunct-elided-item"
+
+    assert rule_id in _matched_rules(
+        "Plum has 90 cards and thrice as many.", registry
+    )
+    assert rule_id in _matched_rules(
+        (
+            "Plum has 90 cards in her garden and thrice as many "
+            "on the area."
+        ),
+        registry,
+    )
+    assert rule_id not in _matched_rules(
+        "Plum has 90 cards in her garden and thrice as many.", registry
+    )
+    assert rule_id not in _matched_rules(
+        (
+            "Plum traveled 90 cards in her garden and thrice as many "
+            "on the area."
+        ),
+        registry,
+    )
+
+
+def test_located_existential_requires_a_referential_compatible_place(
+    registry,
+) -> None:
+    rule_id = "arithmetic/existential-premise"
+
+    assert rule_id in _matched_rules(
+        "There are 40 fish in the garden.", registry
+    )
+    assert rule_id in _matched_rules(
+        "There are 40 fish in a garden.", registry
+    )
+    assert rule_id in _matched_rules(
+        "There are 40 fish on her tree.", registry
+    )
+    assert rule_id not in _matched_rules(
+        "There are 40 fish in garden.", registry
+    )
+    assert rule_id not in _matched_rules(
+        "There are 40 fish in the rabbit.", registry
+    )
+
+
+@pytest.mark.parametrize(
+    ("rule_id", "valid", "invalid"),
+    [
+        (
+            "arithmetic/fraction-as-many",
+            "Fia sells eleven thirds as many animals as the area.",
+            "Fia sells eleven thirds as many animals as area.",
+        ),
+        (
+            "arithmetic/fraction-as-many-elided",
+            "Fia sells eleven thirds as many as Eron.",
+            "Fia sells eleven thirds as many as the inch.",
+        ),
+        (
+            "arithmetic/affine-fraction-as-many",
+            (
+                "Marble found 2 less than nine tenths as many animals "
+                "as the area."
+            ),
+            (
+                "Marble found 2 less than nine tenths as many animals "
+                "as area."
+            ),
+        ),
+    ],
+)
+def test_fraction_many_standards_are_referential_quantity_holders(
+    rule_id: str, valid: str, invalid: str, registry
+) -> None:
+    assert rule_id in _matched_rules(valid, registry)
+    assert rule_id not in _matched_rules(invalid, registry)
+
+
+def test_fraction_much_optional_context_uses_declared_compatibility(
+    registry,
+) -> None:
+    rule_id = "arithmetic/fraction-as-much"
+
+    assert rule_id in _matched_rules(
+        (
+            "Dena ate sixty halves as much money in the garden "
+            "as her teacher Fia."
+        ),
+        registry,
+    )
+    assert rule_id not in _matched_rules(
+        (
+            "Dena ate sixty halves as much money to the plum "
+            "as her teacher Fia."
+        ),
+        registry,
+    )
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "There are 40 fish of rabbit.",
+        "There are 14 hamsters and 40 pounds.",
+    ],
+)
+def test_rejected_existential_continuations_do_not_fall_back_to_bare_prefix(
+    text: str, registry
+) -> None:
+    assert not {
+        rule_id
+        for rule_id in _matched_rules(text, registry)
+        if rule_id.startswith("arithmetic/existential-premise")
+    }
+
+
+def test_bare_and_conjoined_existentials_keep_complete_count_populations(
+    registry,
+) -> None:
+    assert "arithmetic/existential-premise-bare" in _matched_rules(
+        "There are 40 fish.", registry
+    )
+    assert "arithmetic/existential-premise-bare-conjoined" in _matched_rules(
+        "There are 14 hamsters and 40 fish.", registry
+    )

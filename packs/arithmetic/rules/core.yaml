@@ -47,7 +47,7 @@ format: rulekit/rules@1
 # 'than' are lexiconed `particle`, never `preposition`, so this opt block
 # can never fire ON the comparative literal itself and steal its span.
 # The inner opt for `pp_det` is explicitly gated to a POSSESSIVE determiner.
-# A definite article ('in THE wardrobe') needs no slot at all —
+# An article ('in THE wardrobe', 'at A school') needs no slot at all —
 # SKIPPABLE_SENSES auto-skips it, while `referential: true` verifies the
 # phrase. Pack-declared `bare_pp_object` nouns retain independently licensed
 # adjuncts such as "by day". `pp_obj` is bound but never read by any `emits:` template
@@ -1299,11 +1299,19 @@ rules:
                 - {slot: appos_det, cat: possessive_determiner}
                 - {slot: appos_role, cat: animate}
             - {slot: std_seen, type: entity}
+        - opt:
+            - {slot: pp2_prep, cat: preposition}
+            - opt:
+                - {slot: pp2_det, cat: possessive_determiner}
+            - {slot: pp2_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
     where:
       - bound_requires_type: {bound: appos_role, slot: std_seen, type: proper_name}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
+      - attribute_compatible: {attribute: pp2_prep, noun: pp2_obj}
+      - same_presence: [pp_prep, pp2_prep]
       - number_compatible: [who, verb]
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: verb, cat: frame_prepositional_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: item1, cat: many_incompatible_noun}
       - unbound: [item2_seen, std_seen]
@@ -2419,13 +2427,14 @@ rules:
         - opt:
             - {slot: appos_det, cat: animate_possessive_determiner}
             - {slot: appos_role, cat: animate}
-        - {slot: std, type: entity}
+        - {slot: std, type: entity, referential: true}
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - number_compatible: [who, verb]
       - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: spend_verb, role_cat: animate}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: std, cat: non_quantity_holder}
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - distinct: [who, std]
@@ -2463,12 +2472,13 @@ rules:
         - opt:
             - {slot: appos_det, cat: possessive_determiner}
             - {slot: appos_role, cat: animate}
-        - {slot: std, type: entity}
+        - {slot: std, type: entity, referential: true}
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - number_compatible: [who, verb]
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: std, cat: non_quantity_holder}
       - distinct: [who, std]
     consumes: [f]
     emits:
@@ -2570,6 +2580,7 @@ rules:
       - number_compatible: [who, verb]
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - distinct: [who, std]
     consumes: [f]
     emits:
@@ -2929,13 +2940,14 @@ rules:
         - opt:
             - {slot: appos_det, cat: animate_possessive_determiner}
             - {slot: appos_role, cat: animate}
-        - {slot: std, type: entity}
+        - {slot: std, type: entity, referential: true}
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - number_compatible: [who, verb]
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: verb, cat: frame_prepositional_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: std, cat: non_quantity_holder}
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - distinct: [who, std]
@@ -3086,10 +3098,13 @@ rules:
         - {slot: verb, cat: copula}
         - {slot: item, type: counted}
         - {slot: prep, cat: preposition}
-        - {slot: place, type: noun}
+        - opt:
+            - {slot: place_det, cat: possessive_determiner}
+        - {slot: place, type: noun, referential: true, bare_reference_category: bare_pp_object}
     where:
       - absent: {cat: aggregate}
       - number_compatible: [item, verb]
+      - attribute_compatible: {attribute: prep, noun: place}
     consumes: [item]
     emits:
       - fact: quantity
@@ -3148,17 +3163,33 @@ rules:
     description: >
       "There are 12 chairs." — an unlocated existential; the holder is the
       scene itself (the `world` entity, a data constant this pack owns).
-      The located form strictly subsumes this one on shared matches.
+      The located form strictly subsumes this one on shared matches. Optional
+      continuation sentinels make that ownership explicit: a following
+      preposition or complete counted conjunction must be validated by the
+      corresponding longer sibling and cannot fall back to this rule's prefix.
+      A declared `quantity_container` may retain its own count before an
+      explicit partitive content tail ("30 boxes of apples"); arbitrary
+      `ITEM of NOUN` sequences receive no such exception.
     match:
       sentence:
         - {lit: there}
         - {slot: verb, cat: copula}
         - {slot: item, type: counted}
+        - opt:
+            - {slot: tail_partitive, cat: partitive}
+            - {slot: tail_content, type: noun}
+        - opt:
+            - {slot: tail_prep_seen, cat: preposition}
+        - opt:
+            - {lit: and}
+            - {slot: item2_seen, type: counted}
     where:
       # "There are 160 toys ALTOGETHER" is a group TOTAL (a sum constraint
       # over the entities), never an independent holding
       - absent: {cat: aggregate}
       - number_compatible: [item, verb]
+      - bound_requires_category: {bound: tail_partitive, slot: item, cat: quantity_container}
+      - unbound: [tail_prep_seen, item2_seen]
     consumes: [item]
     emits:
       - fact: quantity
@@ -3193,7 +3224,9 @@ rules:
       The `absent: {cat: aggregate}` guard is inherited verbatim: "There
       are 34 girls and 841 boys ALTOGETHER" is a group TOTAL (a sum
       constraint), never two independent holdings, and must keep routing
-      to arithmetic/existential-premise-total.
+      to arithmetic/existential-premise-total. Both conjuncts also refuse the
+      declared mass-measure class: a unit amount such as "40 pounds" is not a
+      second independently enumerable population.
     match:
       sentence:
         - {lit: there}
@@ -3204,6 +3237,8 @@ rules:
     where:
       - absent: {cat: aggregate}
       - number_compatible: [item, verb]
+      - slot_not_category: {slot: item, cat: mass_measure}
+      - slot_not_category: {slot: item2, cat: mass_measure}
     consumes: [item, item2]
     emits:
       - fact: quantity

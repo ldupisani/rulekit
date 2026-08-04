@@ -405,6 +405,12 @@ def _referential_slot_ok(
         return False
     if unit.features.get("owner"):
         return True
+    # A productive index label makes a common-noun entity specific without
+    # an article: "team A", "jar B", and "period 3" identify one member of
+    # the named series. The label is structural condense output, not a
+    # lexical exception, and is already part of relation identity.
+    if unit.features.get("label"):
+        return True
     if unit.features.get("value_kind") == "count":
         return True
     lemma = _lemma_of(unit)
@@ -418,7 +424,7 @@ def _referential_slot_ok(
     predecessor = units[index - 1]
     fold = predecessor.features.get("fold", "")
     return (
-        reg.word_in_category(fold, "definite_article")
+        predecessor.sense() == "article"
         or reg.word_in_category(fold, "possessive_determiner")
     )
 

@@ -60,6 +60,18 @@ def test_single_item_existential_is_untouched(reg):
     assert sources == {"arithmetic/existential-premise-bare"}
 
 
+def test_container_partitive_keeps_only_its_valid_head_count(reg):
+    r = solve("There are 30 boxes of apples.", reg)
+    assert _quantities(r).get(("world", "box")) == 30.0
+    sources = {f.provenance.source for f in r.store.by_kind(Quantity)}
+    assert sources == {"arithmetic/existential-premise-bare"}
+
+
+def test_noncontainer_partitive_cannot_fall_back_to_a_bare_prefix(reg):
+    r = solve("There are 40 fish of rabbit.", reg)
+    assert ("world", "fish") not in _quantities(r)
+
+
 def test_aggregate_marker_still_routes_to_total(reg):
     """`absent: {cat: aggregate}` is inherited verbatim: a totality marker
     makes this a SUM CONSTRAINT, never two independent holdings."""

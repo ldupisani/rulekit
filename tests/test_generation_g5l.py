@@ -39,6 +39,10 @@ EXPECTED_PATHS = {
     "arithmetic/fraction-as-much-elided-standard": {
         (7,): ("std_seen",),
     },
+    "arithmetic/existential-premise-bare": {
+        (4,): ("tail_prep_seen",),
+        (5,): ("item2_seen",),
+    },
     "arithmetic/percent-change-event": {
         (5,): ("std_seen",),
     },
@@ -142,9 +146,10 @@ def test_g5l_profiles_the_complete_unbound_branch_class() -> None:
     assert set(rules) == set(EXPECTED_PATHS)
     assert sentinels == {
         "direct_std_seen": 2,
-        "item2_seen": 2,
+        "item2_seen": 3,
         "item_anchor_seen": 2,
         "std_seen": 7,
+        "tail_prep_seen": 1,
     }
     assert {
         rule_id: _unbound_optional_paths(
