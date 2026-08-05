@@ -97,8 +97,8 @@ def test_g5n_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 106
-    assert sum(item.supported for item in availability.values()) == 106
+    assert len(availability) == 108
+    assert sum(item.supported for item in availability.values()) == 108
     assert sum(not item.supported for item in availability.values()) == 0
     assert all(
         availability[rule_id].supported

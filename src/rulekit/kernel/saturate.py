@@ -159,11 +159,11 @@ _ANAPHOR_PRICE_STANDARD = "$anaphor:price$"
 # of the two anaphor ones: an anaphor sentinel's standard is a DEMONSTRATIVE
 # ("that much") naming no entity AND no measure noun either (the pattern
 # rule never states one), so it resolves against the unique prior fact of
-# the right KIND document-wide; this sentinel's relation ALWAYS carries a
-# real, stated `measure` (the item noun IS present in the text — only the
-# comparison entity is missing), so it resolves differently: against the
-# unique OTHER entity already holding that SAME measure, not against "the
-# unique prior quantity of any kind".
+# the right KIND document-wide. This sentinel normally carries a real,
+# stated `measure` and resolves against the unique OTHER entity already
+# holding that SAME measure. The fully elided additive sibling also leaves
+# `measure` null; that narrower shape resolves both omissions from the
+# unique prior Quantity belonging to another entity.
 _ELIDED_STANDARD = "$elided:standard$"
 
 
@@ -469,14 +469,14 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
             # arithmetic/anaphoric-multiplier-standard-* for "twice that
             # many") already holding the SAME stated measure in an EARLIER
             # sentence — the same unique-pool-in-play, never-guess
-            # discipline every other branch here uses, just keyed by
-            # MEASURE instead of by a stated standard name. Reuses the
-            # `quantities` index built above (state overrides event per
-            # entity/measure, exactly like every entity-anchored branch
-            # here). Zero or two-or-more same-measure holders is ambiguous
-            # and declines this round rather than guessing which one is
-            # meant — a document with two independent prior holders of the
-            # same measure leaves the antecedent genuinely unresolved.
+            # discipline every other branch here uses. A stated measure
+            # filters candidates to that same measure. The additive
+            # fully-elided sibling carries `measure=None`; there the one
+            # winning prior Quantity supplies BOTH its holder and measure.
+            # Reuses the `quantities` index built above (state overrides
+            # event per entity/measure, exactly like every entity-anchored
+            # branch here). Zero or two-or-more candidates is ambiguous and
+            # declines this round rather than guessing.
             #
             # "never the relation's own subject" is a PRECISION FILTER, not part of the
             # candidate set — so it is expressed as one. deixis.Filter may only SHRINK a
@@ -495,7 +495,7 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
                         sentence=q.provenance.sentence,
                     )
                     for (ent, meas), q in quantities.items()
-                    if meas == rel.measure
+                    if (rel.measure is None or meas == rel.measure)
                     and q.provenance.sentence < rel.provenance.sentence
                 ],
                 deixis.Origo(sentence=rel.provenance.sentence),
@@ -507,18 +507,25 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
             )
             if anchor is not None:
                 anchor_q = anchor.payload
-                already = (rel.subject, rel.measure, verb_key(rel.verb)) in by_verb
+                resolved_measure = rel.measure or anchor_q.measure
+                already = (
+                    rel.subject,
+                    resolved_measure,
+                    verb_key(rel.verb),
+                ) in by_verb
                 if not already:
                     value = evaluate(
                         f"{rel.factor} * {anchor_q.value} + {rel.offset}", {}, log,
                         source=f"relation-elided-standard:{rel.provenance.source}",
                     )
+                    if value < 0:
+                        continue
                     out.append(
                         Quantity(
                             provenance=Provenance(
                                 source="synth/relation", sentence=rel.provenance.sentence
                             ),
-                            entity=rel.subject, measure=rel.measure, value=value,
+                            entity=rel.subject, measure=resolved_measure, value=value,
                             verb=rel.verb, label=rel.subject_label or None,
                         )
                     )

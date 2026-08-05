@@ -893,13 +893,16 @@ class AskInterpretation(StrictModel):
     label: str
     description: str = ""
     kind: str
-    resolves: dict[str, str]  # consumer + query fields, templated
+    # Most query fields are one templated scalar. Exact coordinated-holder
+    # asks preserve their explicitly named members as a templated list so a
+    # consumer never has to recover scope by enumerating every fact holder.
+    resolves: dict[str, str | list[str]]
 
 
 class AskRule(StrictModel):
     id: str
     match: dict[Literal["question"], list[MatchToken]]
-    resolves: dict[str, str] = Field(default_factory=dict)
+    resolves: dict[str, str | list[str]] = Field(default_factory=dict)
     clarification: str | None = None
     interpretations: list[AskInterpretation] = Field(default_factory=list)
 

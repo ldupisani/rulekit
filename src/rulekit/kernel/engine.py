@@ -637,15 +637,17 @@ def solve(
     # only slots whose VALUE the consumer uses ({slot.value} templates)
     # count as read — matching "four-minute songs" as an item does NOT read
     # the four, and value accounting must still decline it
-    from .patterns import match_ask as _match_ask
+    from .patterns import match_ask as _match_ask, resolution_templates
 
     matched_ask = _match_ask(question, reg)
     if matched_ask is not None:
         import re as _re
 
-        resolve_templates = list(matched_ask[0].resolves.values())
+        resolve_templates = list(
+            resolution_templates(matched_ask[0].resolves)
+        )
         for choice in matched_ask[0].interpretations:
-            resolve_templates.extend(choice.resolves.values())
+            resolve_templates.extend(resolution_templates(choice.resolves))
         value_slots = {
             m.group(1)
             for raw in resolve_templates

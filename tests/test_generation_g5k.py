@@ -123,13 +123,14 @@ def test_g5k_profiles_the_complete_absent_predicate_class() -> None:
             for rule in project.registry.rules
             if any(predicate.absent is not None for predicate in rule.where)
         }
-    ) == 16
+    ) == 18
     assert Counter(predicates) == {
         "aggregate": 4,
         "multiplier_marker": 3,
         "partitive": 6,
-        "relational_marker": 3,
+        "relational_marker": 5,
         "temporal_marker": 3,
+        "conjunction": 2,
     }
 
 
@@ -139,8 +140,8 @@ def test_g5k_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 106
-    assert sum(item.supported for item in availability.values()) == 106
+    assert len(availability) == 108
+    assert sum(item.supported for item in availability.values()) == 108
     assert sum(not item.supported for item in availability.values()) == 0
     assert all(availability[rule_id].supported for rule_id in NEWLY_SUPPORTED)
     # G5s subsequently supplied the future-modal domain for this historical

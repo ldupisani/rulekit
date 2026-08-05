@@ -64,6 +64,12 @@ categories:
             Possessive determiners licensed before an animate appositive role.
             Excludes inanimate `its`; person-neutral `my`, `your`, and `their`
             remain valid without inventing a gender feature in the kernel.
+    holder_list_conjunction:
+        parent: conjunction
+        notes: >
+            Additive coordinator licensed between explicitly named holders in
+            an exact combined-total question. A general conjunction sense is
+            insufficient because disjunction must never become summation.
     bare_pp_object:
         parent: noun
         notes: >
@@ -1096,6 +1102,7 @@ categories:
             comparative class's job, built on top of this.
 members:
     non_event_verb: [be]
+    holder_list_conjunction: [and]
     definite_article: [the]
     possessive_determiner: [her, his, its, my, their, your]
     animate_possessive_determiner: [her, his, my, their, your]

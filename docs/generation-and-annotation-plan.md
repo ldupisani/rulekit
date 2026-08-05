@@ -100,7 +100,7 @@ added bounded hypothesis and minimal-pair exploration:
   sentence exposes a defective premise;
 - a `matched` or `shadowed` target status reports what the ordinary matcher
   accepted, never that the resulting English or emitted fact is correct;
-- the current curated frontier contains 106 supported rules and 184 reachable
+- the current curated frontier contains 108 supported rules and 184 reachable
   lexicon identities, while live reviews and continuing exploration remain
   separate from mechanical availability; and
 - random Generate next chooses from the least-attempted compatible rule and
@@ -116,9 +116,9 @@ added bounded hypothesis and minimal-pair exploration:
 - fraction-valued comparisons and changes require a strictly positive
   magnitude, while pool and partition facts retain zero as a meaningful value.
 
-The current gate is green: all 4,334 repository tests pass in four-worker
+The current gate is green: all 4,363 repository tests pass in four-worker
 mode, curated remains deterministic at 65/65 and 100% precision, GSM8K
-DEV-train is neutral at 104/0 and DEV-holdout is 41/0, every standing
+DEV-train is 105/0 and DEV-holdout is 43/0, every standing
 cross-corpus gate retains zero wrong answers, and lint has zero errors with
 two known warnings. No protected TEST look was spent.
 G6 live validation selected untouched `rabbit`, opened its declaration, and
@@ -3091,6 +3091,65 @@ DEV-train and DEV-holdout remain 104/0 and 41/0; ASDiv, SVAMP, MAWPS, and
 SciBench remain 45/0, 30/0, 11/0, and 6/0; FOLIO makes zero commitments; all
 before/after diffs are neutral; and lint has zero errors with two known
 warnings. No protected TEST or generalization look was spent.
+
+#### Additive elided comparison — complete
+
+Two premise rules cover the ordinary state/ownership continuations
+`Mary has 5 more apples` and `Mary has 5 more`. The first states the measure
+and omits the comparison standard; the second omits both. They emit the
+ordinary Relation fact with `$elided:standard$`, and the generic relation
+synthesizer resolves the omission only when one earlier Quantity belongs to
+a different holder. In the fully elided form that same fact supplies the
+measure. Zero or multiple candidates, self-reference, and a derived negative
+quantity produce no new Quantity rather than guessing.
+
+Sentence-wide absence premises keep explicit `than` clauses and conjunctions
+with their existing fuller rules. Both new rules require a
+`possession_state` verb, excluding both event changes and copular generations
+such as `Mary is 5 more apples`. This is the critical semantic boundary found
+by cross-corpus profiling:
+`Mary buys/gets/earns 5 more` changes Mary's own quantity and must not be read
+as an omitted comparison with another holder. A broad verb draft produced
+seven wrong ASDiv commitments and two wrong MAWPS commitments; the state-only
+form removes all of them.
+
+The final rule pair adds one clean GSM8K DEV-train solve: `Ellie has 8 pairs
+of shoes. Riley has 3 fewer.` now supports the later total. The live
+generation frontier is 108/108 rules with the same 184 reachable identities.
+All 4,354 tests pass; curated is 65/65 twice; GSM8K DEV-train and DEV-holdout
+are 105/0 and 41/0; ASDiv, SVAMP, MAWPS, and SciBench are 45/0, 30/0, 11/0,
+and 6/0; FOLIO makes zero commitments; and lint has zero errors with the same
+two warnings. No protected TEST or generalization look was spent.
+
+#### Variadic exact-name combined totals — complete
+
+Ask resolutions can now preserve a list of templated scalar values. The first
+consumer-facing use is `holders`: one variadic `how many ... together` ask
+captures a coordinated span and resolves the exact names stated in the
+question. Every segment must be one name; every conjunction must belong to
+the pack-declared `holder_list_conjunction`; and the final two names must be
+overtly conjoined. Comma-only lists, disjunctions, and arbitrary noun phrases
+therefore stay outside the ask. The combined consumer validates at least two
+non-empty unique names and sums precisely their independently resolved totals.
+It never expands an explicit list by enumerating other same-measure holders.
+Historical `a`/`b` named pairs remain supported, while pronoun totals retain
+their intentionally different enumeration behavior.
+
+The ordinary serial-comma and non-serial-comma forms share one ask because
+punctuation is already a skippable reading unit. Synthetic tests
+pin three-, four-, and five-holder lists, the extended relation-chain total,
+exact scope in the presence of an unasked holder, decline on a missing holder,
+decline on a repeated name, rejection of comma-only/disjunctive scope, and
+unchanged two-name behavior. The supplied Seattle/London/Manchester/Brighton
+question returns 111 after deriving 72, 24, 12, and 3.
+
+GSM8K DEV-holdout gains two correct three-holder totals and no wrong
+commitments; a third matching question remains declined because one named
+holder is unresolved. All 4,363 tests pass; curated is 65/65 twice; GSM8K
+DEV-train and DEV-holdout are 105/0 and 43/0; ASDiv, SVAMP, MAWPS, and
+SciBench are 45/0, 30/0, 11/0, and 6/0; FOLIO makes zero commitments; and
+lint has zero errors with the same two warnings. No protected TEST or
+generalization look was spent.
 
 There is no automatic transition to G7. Ask-rule and derived-rule generation
 requires a separate decision after the premise audit demonstrates that the

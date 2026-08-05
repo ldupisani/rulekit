@@ -722,14 +722,14 @@ def _combined_holder_totals(
     resolves no totals. Returns either (entities, totals) or a decline
     Answer — never partial results.
 
-    A named-pair ask (ask/how-many-combined-named, ask/how-much-combined-
-    named — mining candidate named-pair-combined) binds `a`/`b` directly
-    instead of leaving them unbound: sum EXACTLY those two named holders,
-    never the enumerate-all-holders fallback below, so a third unnamed
-    holder mentioned elsewhere in the passage can never silently inflate
-    the sum. The pronoun path ('they'/'we', ask/how-many-combined/ask/
-    how-much-combined, and the 'average' consumer that reuses this
-    helper) is unchanged.
+    A named ask binds either the historical `a`/`b` pair or an exact
+    `holders` list instead of leaving holder scope unbound. Sum EXACTLY those
+    named holders, never the enumerate-all-holders fallback below, so an
+    unnamed holder elsewhere in the passage can never silently inflate the
+    result. A repeated or malformed explicit holder list declines rather
+    than counting one entity twice. The pronoun path ('they'/'we', ask/
+    how-many-combined, ask/how-much-combined, and the 'average' consumer that
+    reuses this helper) is unchanged.
 
     `exclude_entity` (mining candidate entityless-total-recut, opt-in,
     default None — every existing caller above is UNCHANGED): the ask's
@@ -761,8 +761,29 @@ def _combined_holder_totals(
         guard = _measure_substance_guard(store, singular, measure_substance)
         if guard is not None:
             return guard
+    explicit_holders = query.get("holders")
     a, b = query.get("a"), query.get("b")
-    if a is not None and b is not None:
+    if explicit_holders is not None:
+        if (
+            not isinstance(explicit_holders, list)
+            or len(explicit_holders) < 2
+            or not all(
+                isinstance(holder, str) and holder
+                for holder in explicit_holders
+            )
+        ):
+            return Answer(
+                "decline", None,
+                "an explicit combined-holder list must contain at least "
+                "two named entities",
+            )
+        entities = list(explicit_holders)
+        if len(set(entities)) != len(entities):
+            return Answer(
+                "decline", None,
+                f"a combined ask repeats a named holder: {entities}",
+            )
+    elif a is not None and b is not None:
         entities = [a, b]
     else:
         entities = sorted(
@@ -898,4 +919,3 @@ def _combined_holder_totals(
             f"{len(entities)} ({entities})",
         )
     return entities, totals
-

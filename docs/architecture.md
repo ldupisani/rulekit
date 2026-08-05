@@ -98,13 +98,36 @@ singular proper name admits `needs` or a number-neutral past form, not the
 plural/base `need`. The comparative form also applies `same_number` between
 its standalone count and noun, admitting `1 fewer shopper` and
 `2 fewer shoppers` while rejecting both mismatches. The current curated
-project has 106/106 selectable premise
+project has 108/108 selectable premise
 rules and 184 reachable lexicon identities. The
 explicit `originally` ask routes through the existing start-state event
 inversion; a qualified start state with differently qualified same-measure
 events declines until modifier nesting is represented losslessly.
 Generated defects remain visible by design: mechanical support reports that a
 rule can be realized and matched, not that its premises license valid English.
+
+Additive comparisons may omit their standard in state/ownership clauses.
+`Mary has 5 more apples` carries its measure in the Relation, while
+`Mary has 5 more` leaves it null. Both use the ordinary reserved elided-standard
+sentinel. Saturation resolves the omission only from one unique earlier
+Quantity held by another entity; the fully elided form obtains both the
+standard and measure from that fact. Event verbs are excluded from these two
+premise rules because `Mary buys 5 more` is a same-holder quantity change, not
+an omitted cross-holder comparison. The narrower `possession_state` category
+also excludes copular generations such as `Mary is 5 more apples`. Explicit
+standards and conjoined
+comparisons remain owned by their existing rule families.
+
+Ask resolution fields are normally scalar templates, but may also be lists of
+scalar templates when the question itself names an exact set. A variadic
+combined-total ask captures a coordinated span and resolves it structurally
+to `holders` only when every segment is one name, every coordinator is the
+pack-declared additive holder-list conjunction, and the final pair is overtly
+coordinated. The combined consumer validates uniqueness and sums only those
+named entities. The historical named-pair `a`/`b` query remains backward compatible;
+pronoun totals deliberately retain their different enumerate-all-holders
+semantics. This keeps question scope in the ask evidence rather than trying to
+reconstruct it from whichever facts happen to exist.
 
 ## Architectural boundaries
 

@@ -7,9 +7,15 @@
 **Status:** G1 through G4, G5a through G5g, G6, Reading-origin review,
 targetless sentence-interpretation review, fact-level review, the
 fraction-plural morphology correction, scoped
-`GroupTotal`, and all twenty-eight review-led grammar-boundary reconciliations are
-complete and gated. Plain count equatives such as `Tom buys as many roses as
-Mary` now emit a factor-one Relation through their own generated premise rule.
+`GroupTotal`, all twenty-eight review-led grammar-boundary reconciliations,
+and the additive elided-comparison increment are complete and gated. Plain
+count equatives such as `Tom buys as many roses as Mary` now emit a factor-one
+Relation through their own generated premise rule. State comparisons such as
+`Tom has 3 apples. Mary has 5 more.` now recover the uniquely implied earlier
+holder and measure; event changes such as `Mary buys 5 more` remain outside
+that rule family. Combined-total asks can also preserve an exact coordinated
+name list of any length, so adding Seattle to a London/Manchester/Brighton
+total extends the same question rather than requiring another ask rule.
 The review-led adjective/noun compatibility boundary is
 also complete and gated. The review-led leading-`GroupTotal` subject boundary
 is complete and gated: existential `there` no longer becomes a group scope or
@@ -64,7 +70,7 @@ visibility is complete: `currently` is core-owned, project-relative adverb
 breadth remains visible, and all 99 curated premise rules are selectable. G5v
 review-led premise auditing is active; twenty-eight review batches are implemented
 and fully gated. The core exploration vocabulary now contributes 25 additional
-category-aware identities, bringing the live frontier to 106/106 premise rules
+category-aware identities, bringing the live frontier to 108/108 premise rules
 and 184 reachable identities. The latest review batch separates noun-phrase
 predeterminers from demonstrative quantity pro-forms and couples a comparative-
 need count to its noun's declared grammatical number. The preceding batch
@@ -1860,6 +1866,53 @@ and DEV-holdout are 104/0 and 41/0; ASDiv, SVAMP, MAWPS, and SciBench are
 45/0, 30/0, 11/0, and 6/0; FOLIO makes zero commitments; and lint has zero
 errors with the current two warnings. Every isolated before/after diff is
 neutral. No protected TEST or generalization look was spent.
+
+The additive elided-comparison increment adds two possession-state premise rules.
+`Mary has 5 more apples` states the measure and omits the standard;
+`Mary has 5 more` omits both. Both emit the ordinary Relation shape with the
+reserved `$elided:standard$` sentinel. The generic relation synthesizer
+resolves that sentinel only from the unique earlier Quantity belonging to a
+different holder; the fully elided form also takes its measure from that same
+fact. Missing, ambiguous, self, or negative-result resolutions do not produce
+a derived Quantity. Explicit `than` continuations and conjunctions remain
+owned by their existing fuller rules.
+
+The verb boundary is deliberately `possession_state`, not a broad verb slot
+or the wider `state` category, which also contains copulas. Corpus
+profiling showed that `buys/gets/earns N more` describes an event change to
+the subject's own quantity, not a comparison with an omitted holder; allowing
+those forms caused seven ASDiv and two MAWPS wrong commitments. The narrowed
+rules preserve the clean GSM8K DEV-train buyer `Ellie has 8 pairs of shoes.
+Riley has 3 fewer.` and add exactly one correct answer.
+
+The complete gate is green at 4,354 tests. Curated is deterministic at 65/65
+twice; GSM8K DEV-train is 105/0 and DEV-holdout is 41/0; ASDiv, SVAMP, MAWPS,
+and SciBench are 45/0, 30/0, 11/0, and 6/0; FOLIO makes zero commitments; and
+lint has zero errors with the same two warnings. The live frontier is now
+108/108 premise rules and 184 reachable identities. No protected TEST or
+generalization look was spent.
+
+The exact named-holder total increment generalizes ask resolutions from scalar
+templates to scalar-or-list templates and adds a variadic named
+`how many ... together` surface. A backtracking span captures the coordinated
+subject, then the structural `name_list` resolution accepts it only when every
+segment is one name and the final pair uses the declared
+`holder_list_conjunction`. The ask preserves the result as an ordered
+`holders` list. The combined consumer sums exactly that list, refuses malformed
+or repeated names, and declines if any named holder lacks a resolvable total.
+The historical `a`/`b` named-pair contract remains supported for third-party
+packs, and pronoun totals continue to enumerate the fact holders normally.
+
+The extended supplied relation chain derives Seattle = 72, London = 24,
+Manchester = 12, and Brighton = 3 before the ask returns 111. An unrelated
+unnamed holder is not included. GSM8K DEV-holdout gains two independently correct
+three-holder
+totals, while a third matching ask with an unresolved holder remains a safe
+decline. The complete gate is green at 4,363 tests. Curated is 65/65 twice;
+GSM8K DEV-train is 105/0 and DEV-holdout is 43/0; ASDiv, SVAMP, MAWPS, and
+SciBench remain 45/0, 30/0, 11/0, and 6/0; FOLIO makes zero commitments; and
+lint has zero errors with the same two warnings. No protected TEST or
+generalization look was spent.
 
 ## Active invariants
 

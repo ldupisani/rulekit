@@ -240,6 +240,7 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
         "arithmetic/affine-frame-relation-as-standard",
         "arithmetic/affine-times-as-many",
         "arithmetic/affine-times-as-much",
+        "arithmetic/anchored-relation-elided-standard",
         "arithmetic/anchored-relation-possessive-kinship-standard",
         "arithmetic/anchored-relation-postfix-dimension",
         "arithmetic/existential-premise",
@@ -265,7 +266,7 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
 def test_compatibility_rule_remains_supported_after_g5j_expansion() -> None:
     availability = list_rule_availability(load_project(CURATED))
 
-    assert sum(item.supported for item in availability) == 106
+    assert sum(item.supported for item in availability) == 108
     target = next(item for item in availability if item.id == RULE_ID)
     assert target.supported
     assert target.blockers == ()

@@ -22,6 +22,9 @@ ROOT = Path(__file__).resolve().parents[1]
 CURATED = ROOT / "projects" / "curated"
 
 EXPECTED_PATHS = {
+    "arithmetic/anchored-relation-fully-elided": {
+        (4,): ("item_seen",),
+    },
     "arithmetic/anaphoric-multiplier-conjunct-many": {
         (8,): ("item2_seen",),
     },
@@ -155,6 +158,7 @@ def test_g5l_profiles_the_complete_unbound_branch_class() -> None:
     assert set(rules) == set(EXPECTED_PATHS)
     assert sentinels == {
         "direct_std_seen": 4,
+        "item_seen": 1,
         "item2_seen": 3,
         "item_std_seen": 2,
         "std_seen": 8,
@@ -174,8 +178,8 @@ def test_g5l_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 106
-    assert sum(item.supported for item in availability.values()) == 106
+    assert len(availability) == 108
+    assert sum(item.supported for item in availability.values()) == 108
     assert sum(not item.supported for item in availability.values()) == 0
     assert all(
         availability[rule_id].supported for rule_id in EXPECTED_PATHS

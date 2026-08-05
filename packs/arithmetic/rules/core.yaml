@@ -372,6 +372,101 @@ rules:
         subject_label: "{who.label}"
         standard_label: "{std.label}"
 
+  - id: arithmetic/anchored-relation-elided-standard
+    phase: read
+    description: >
+      "Tom has 3 apples. Mary has 5 more apples." — a possession-state
+      comparative states its measure but elides the comparison standard.
+      This is the additive sibling of the existing multiplicative
+      elided-standard rules. It emits the ordinary Relation shape with
+      standard: $elided:standard$; _relations_synth resolves that sentinel
+      only from the unique OTHER entity holding the same measure in an
+      earlier sentence. Zero or multiple candidates decline.
+
+      Sentence-wide negative premises require both a relational marker and a
+      conjunction to be absent. That rejects every explicit-standard or
+      conjoined continuation independently of how its noun phrase parses, so
+      the existing fuller rules remain their sole owners. The possession-state
+      requirement is intentional: "Mary buys 5 more apples" describes a
+      change to Mary's own quantity, not an omitted comparison with Tom.
+    match:
+      sentence:
+        - {slot: who, type: entity, referential: true}
+        - {slot: verb, cat: possession_state}
+        - {slot: n, type: number, standalone: true}
+        - {slot: dir, cat: delta}
+        - {slot: item, cat: noun}
+        - opt:
+            - {slot: pp_prep, cat: preposition}
+            - opt:
+                - {slot: pp_det, cat: possessive_determiner}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
+    where:
+      - number_compatible: [who, verb]
+      - same_number: [n, item]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
+      - absent: {cat: relational_marker}
+      - absent: {cat: conjunction}
+    consumes: [n]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "$elided:standard$"
+        measure: "{item}"
+        measure_qualifier: "{item.qualifier}"
+        factor: 1.0
+        offset: "n * sign(dir)"
+        verb: "{verb}"
+        subject_label: "{who.label}"
+
+  - id: arithmetic/anchored-relation-fully-elided
+    phase: read
+    description: >
+      "Tom has 3 apples. Mary has 5 more." — a possession-state comparison
+      elides both the measure and standard. The Relation keeps those
+      omissions explicit:
+      measure: null and standard: $elided:standard$. The same generic
+      elided-standard resolver recovers both fields only when exactly one
+      earlier Quantity belongs to another entity; that fact supplies its
+      holder as the standard and its measure as the comparison measure.
+      No antecedent or multiple antecedents decline rather than guessing.
+
+      The optional item slot rejects a stated measure through unbound.
+      Sentence-wide absence premises reject every relational-marker or
+      conjoined continuation. Consequently this rule cannot claim a prefix
+      of "5 more apples", "5 more than Tom", or the fully explicit
+      "5 more apples than Tom"; those surfaces remain owned by their
+      stated-measure or stated-standard siblings. Event/change verbs are
+      excluded because "Mary buys 5 more" adds to Mary's own quantity.
+    match:
+      sentence:
+        - {slot: who, type: entity, referential: true}
+        - {slot: verb, cat: possession_state}
+        - {slot: n, type: number, standalone: true}
+        - {slot: dir, cat: delta}
+        - opt:
+            - {slot: item_seen, cat: noun}
+    where:
+      - number_compatible: [who, verb]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - absent: {cat: relational_marker}
+      - absent: {cat: conjunction}
+      - unbound: [item_seen]
+    consumes: [n]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "$elided:standard$"
+        measure: null
+        factor: 1.0
+        offset: "n * sign(dir)"
+        verb: "{verb}"
+        subject_label: "{who.label}"
+
   - id: arithmetic/anchored-relation-postfix
     phase: read
     description: >
@@ -4970,6 +5065,33 @@ asks:
       consumer: combined
       a: "{a}"
       b: "{b}"
+      measure: "{item}"
+      verb: "{verb}"
+
+  - id: ask/how-many-combined-named-list
+    # Two or more explicitly named holders, including serial-comma surfaces:
+    # "How many books do Ana, Ben, Cato, and Dena have together?" The span
+    # backtracks against the required verb, then `{holders.name_list}` checks
+    # that every enumeration segment is exactly one name and that the final
+    # pair is joined by a declared conjunctive marker. It therefore rejects
+    # comma-only lists, disjunctions, and arbitrary noun phrases. The older
+    # two-name rule wins its equal-length tie by id and stays byte-compatible.
+    # Longer lists preserve exact scope in `holders`; the combined consumer
+    # must not enumerate an unrelated same-measure holder.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {slot: aux, type: auxiliary}
+        - {slot: holders, span: true}
+        - {slot: verb, type: verb}
+        - opt:
+            - {slot: p, cat: preposition}
+        - {slot: agg, cat: aggregate}
+    resolves:
+      consumer: combined
+      holders: "{holders.name_list}"
       measure: "{item}"
       verb: "{verb}"
 

@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
+from collections.abc import Iterable, Mapping
 from typing import Any
 
 from ..data.registry import Registry
@@ -570,6 +571,17 @@ def span_swallowed_indefinite(span: tuple, reading, reg: Registry) -> bool:
     )
 
 
+def resolution_templates(
+    fields: Mapping[str, str | list[str]],
+) -> Iterable[str]:
+    """Yield scalar templates from an ask's scalar-or-list query fields."""
+    for value in fields.values():
+        if isinstance(value, str):
+            yield value
+        else:
+            yield from value
+
+
 def field_definite_common(ask, field: str, match, reading, reg: Registry) -> bool:
     """True when the ask FIELD's span carries a DEFINITE article (internal
     or leading-edge) whose next nominal — past adjectives and skippables —
@@ -580,8 +592,17 @@ def field_definite_common(ask, field: str, match, reading, reg: Registry) -> boo
     part of the name's surface — so a name successor passes. Scoped to the
     one field: a definite article in the question's OTHER spans must not
     poison unrelated matches."""
-    templates = [ask.resolves.get(field, "")]
-    templates.extend(choice.resolves.get(field, "") for choice in ask.interpretations)
+    templates = list(
+        resolution_templates(
+            {field: ask.resolves.get(field, "")}
+        )
+    )
+    for choice in ask.interpretations:
+        templates.extend(
+            resolution_templates(
+                {field: choice.resolves.get(field, "")}
+            )
+        )
     tpl = " ".join(templates)
     for mm in _TEMPLATE.finditer(tpl):
         span = match.slots.get(mm.group(1))
@@ -1234,6 +1255,50 @@ def _enumeration_segments(span: tuple) -> list[tuple]:
     ]
 
 
+def _named_enumeration(span: tuple, reg: Registry) -> list[str] | None:
+    """Return an exact coordinated-name list, or refuse malformed scope.
+
+    A span is only a named enumeration when every segment contains exactly
+    one name, every conjunction is the pack-declared conjunctive marker, and
+    the final two names are joined by a conjunction. Commas alone do not state
+    coordination, and a disjunction must never become a sum.
+    """
+    segments = _enumeration_segments(span)
+    if len(segments) < 2:
+        return None
+
+    conjunction_indexes: list[int] = []
+    names: list[tuple[int, str]] = []
+    for index, unit in enumerate(span):
+        if unit.sense() == "conjunction":
+            if not reg.word_in_category(
+                unit.features.get("fold", ""), "holder_list_conjunction"
+            ):
+                return None
+            conjunction_indexes.append(index)
+        elif (
+            unit.sense() == "punct"
+            and unit.features.get("fold") != ","
+        ):
+            return None
+
+    for segment in segments:
+        content = [
+            unit for unit in segment
+            if unit.sense() not in SKIPPABLE_SENSES
+        ]
+        if len(content) != 1 or content[0].sense() != "name":
+            return None
+        unit = content[0]
+        names.append((span.index(unit), _lemma_of(unit)))
+
+    if not conjunction_indexes:
+        return None
+    if not names[-2][0] < conjunction_indexes[-1] < names[-1][0]:
+        return None
+    return [name for _index, name in names]
+
+
 # Which fact kinds decompose, and on WHICH field. Only UPWARD-monotone
 # positions may ever appear here: Atom.pred (a ground predicate),
 # Quantified.pred and Conditional.then_pred (consequents). Quantified.cls and
@@ -1811,16 +1876,41 @@ def match_ask(
     a PLACE and declines) purely because 'h' < 'u'. Ties are the only matches
     affected; any match that already won on length still wins.
     """
+    class AskResolutionMismatch(Exception):
+        pass
+
     def render(raw: str, match: Match) -> str:
         return _TEMPLATE.sub(
             lambda mm: _slot_value(match.slots[mm.group(1)], mm.group(2)), raw
         )
 
-    def resolve(fields: dict[str, str], match: Match) -> dict[str, str]:
-        resolved_fields = {}
+    def resolve_template(raw: str, match: Match) -> str | list[str]:
+        whole = _TEMPLATE.fullmatch(raw)
+        if whole is not None and whole.group(2) == "name_list":
+            span = match.slots.get(whole.group(1))
+            if not isinstance(span, tuple):
+                raise AskResolutionMismatch
+            names = _named_enumeration(span, reg)
+            if names is None:
+                raise AskResolutionMismatch
+            return names
+        return render(raw, match)
+
+    def resolve(
+        fields: dict[str, str | list[str]], match: Match
+    ) -> dict[str, Any]:
+        resolved_fields: dict[str, Any] = {}
         for key, raw in fields.items():
             try:
-                resolved_fields[key] = render(raw, match)
+                if isinstance(raw, str):
+                    resolved_fields[key] = resolve_template(raw, match)
+                else:
+                    values = [
+                        resolve_template(template, match) for template in raw
+                    ]
+                    if not all(isinstance(value, str) for value in values):
+                        raise AskResolutionMismatch
+                    resolved_fields[key] = values
             except KeyError:
                 # the template references an OPTIONAL slot that didn't bind
                 # ("verb: {verb}" with the opt-group absent) — omit the key
@@ -1834,22 +1924,25 @@ def match_ask(
         m = match_sequence(reading, seq, reg)
         if m is None:
             continue
-        if ask.interpretations:
-            resolved = {
-                "__clarification__": render(ask.clarification or "", m),
-                "__interpretations__": tuple(
-                    {
-                        "id": choice.id,
-                        "label": render(choice.label, m),
-                        "description": render(choice.description, m),
-                        "kind": choice.kind,
-                        "query": resolve(choice.resolves, m),
-                    }
-                    for choice in ask.interpretations
-                ),
-            }
-        else:
-            resolved = resolve(ask.resolves, m)
+        try:
+            if ask.interpretations:
+                resolved = {
+                    "__clarification__": render(ask.clarification or "", m),
+                    "__interpretations__": tuple(
+                        {
+                            "id": choice.id,
+                            "label": render(choice.label, m),
+                            "description": render(choice.description, m),
+                            "kind": choice.kind,
+                            "query": resolve(choice.resolves, m),
+                        }
+                        for choice in ask.interpretations
+                    ),
+                }
+            else:
+                resolved = resolve(ask.resolves, m)
+        except AskResolutionMismatch:
+            continue
         if best is None or _ask_rank(m, ask, reg) > _ask_rank(best[2], best[0], reg):
             best = (ask, resolved, m)
     return best
