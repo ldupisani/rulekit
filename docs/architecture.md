@@ -1,6 +1,6 @@
 # RuleKit architecture
 
-**Updated:** 2026-08-04
+**Updated:** 2026-08-05
 **Status:** current implementation, not a roadmap
 
 RuleKit is a deterministic reading and reasoning engine for controlled,
@@ -68,8 +68,38 @@ mass currency from plural denominations, enforce agreement, and reject
 decreases beyond the whole quantity. Motion comparisons reject an unstated
 `as many` measure, accept explicit frequency through `as many times`, and use
 a separate distance relation for `as far`; common-noun motion roles must be
-declared plausible people, animals, or vehicles. The current curated project
-has 105/105 selectable premise rules and 154 reachable lexicon identities. The
+declared plausible people, animals, or vehicles. The conjunct quantity family
+uses the same role boundary for its common-noun subject and, where present,
+its explicit standard. Its full conjunct rule also validates an optional PP
+through the pack-declared preposition/noun compatibility table. This remains
+separate from verb/measure compatibility: no global membership says that
+`travel` rejects every quantitative object or that an ordinary object such as
+`book` can never hold a quantity. Comparative `as many/as much`
+rules accept adverbial multipliers such as `twice`, `thrice`, and explicit
+`N times`, while the pack-declared `double`/`triple` predeterminers remain
+available for noun-phrase frames such as `double the amount`. The established
+count-affine compatibility surface remains accepted to keep the DEV ship gate
+neutral; the reviewed mass-affine and conjunct rules apply the narrower form
+boundary. Adverbial age-ratio rules and demonstrative
+`that/this many|much` pro-forms apply the same predeterminer subtraction,
+while possessive noun-phrase ratios such as `double Cato's age` retain it.
+Every anaphoric quantity-relation sibling also subtracts the declared
+`non_quantity_holder` category from its subject rather than relying on
+per-rule guard coverage. The same adverbial families also require a non-unit multiplier, so
+factor-one `once` remains a frequency adverb rather than an `as many/as much`
+ratio. The plain count equative `X VERB as many ITEM as Y` is a separate rule
+that emits the same Relation with a fixed factor of 1; it does not need an
+artificial multiplier token. Existential quantity rules locally exclude
+temporal `times`; periodic rates require referential subjects, and sum-of-ages
+owns its definite,
+possessive, plural-noun, singular-copula frame. Both absolute and
+comparative stated-need goals apply ordinary subject/verb compatibility: a
+singular proper name admits `needs` or a number-neutral past form, not the
+plural/base `need`. The comparative form also applies `same_number` between
+its standalone count and noun, admitting `1 fewer shopper` and
+`2 fewer shoppers` while rejecting both mismatches. The current curated
+project has 106/106 selectable premise
+rules and 184 reachable lexicon identities. The
 explicit `originally` ask routes through the existing start-state event
 inversion; a qualified start state with differently qualified same-measure
 events declines until modifier nesting is represented losslessly.
@@ -525,7 +555,19 @@ Plural and counted fillers come
 only from loaded numeric and singular/plural declarations. Count
 `1` selects the singular noun surface and every other admitted non-negative
 integer selects the declared plural; both retain the singular noun lemma as
-identity.
+identity. A composed count is not advertised when its selected noun surface is
+also the declared multiplication operator marker: the ordinary number pass
+folds that complete surface into one multiplier unit, so it cannot satisfy a
+`counted` slot. The number pass derives that marker from the registry's
+operator declaration rather than naming its English surface in Python.
+
+Sense-specific lexical domains also respect the analyzer's structural numeric
+precedence. If a surface is declared as a number, fraction, or multiplier, the
+ordinary reader commits that numeric interpretation before lexical sense
+selection; generation therefore does not advertise the same surface through a
+conflicting verb, noun, or category-rooted lexical placement. Broad `word`
+exploration and the explicit numeric slot domains remain unchanged, so the
+entry is still inspectable wherever the runtime can actually realize it.
 
 Fraction fillers also follow declared morphology. `fraction_plurals` maps a
 count-requiring plural surface to its singular fraction lemma. A bare mapped
@@ -622,6 +664,16 @@ gain parser and generation vocabulary. Ownership increments must preserve all
 extension memberships, measure the newly reachable rules and fillers, and
 must not load an unrelated pack merely to make an availability count rise.
 
+Core also owns a small category-aware exploration vocabulary for ordinary
+arithmetic premises. It includes countable objects and produce, people,
+animals, quantitative locations, mass materials, and colours. These are not a
+fallback word list in the generator: every word is an ordinary lexicon entry
+with declared morphology, and every narrower use comes from explicit category
+membership such as `animate`, `mass_quantity_noun`, `quantity_location`, or
+`color_attribute`. Consequently a new word becomes reachable only where its
+loaded grammar licenses it; broad noun or adjective senses alone do not make
+all generated combinations acceptable.
+
 The age-comparative move demonstrates that contract. `older` and `younger`
 are core lexical entries and core members of `age_comparative`; their
 `more_dir`/`less_dir` memberships also live there because additive age
@@ -655,6 +707,15 @@ the 44 other adverbs remain extension vocabulary. A combined project compiles
 the same 45-word adverb inventory as before, while a core-only project gains
 one reviewable filler instead of importing corpus-specific vocabulary.
 
+Core also owns the generic age-frame literals `ago`, `be`, and `old`. The
+arithmetic grammar uses those words as genuine literal skeletons in age
+premises and asks, so a core-only project must not report them as unknown after
+the declared rule matches. Their ordinary adverb, verb, and adjective senses
+remain pack data, and `be` belongs to `non_event_verb` so direct verb domains
+do not reinterpret the infinitive as an event. `difg-mined` retains `been` and
+`being` plus their extension membership; projects loading both packs compile
+the same semantic registry as the former mining-owned layout.
+
 Category slots may additionally declare `counted: true`. The ordinary
 counted-unit machinery still supplies the numeric value and noun agreement,
 while the slot's category independently restricts the noun lemma. This is how
@@ -668,11 +729,22 @@ using the category also require a plural item, so accepted established
 language such as `the amount of frogs` does not reopen the reviewed incomplete
 `number of coin` surface. The frame vocabulary remains pack data.
 
+When a fraction count frame binds the paired destination prepositions, its
+plural measure must belong to the existing `quantity_location` class and its
+subject and standard must satisfy the shared referential and motion-role
+predicates. Direct frames remain unaffected. Location vocabulary stays in the
+owning packs: core supplies the general witness `garden`, while mined
+vocabulary extends the class with `city` and `country`.
+
 Explicit remainder-membership clauses use two other noun categories:
 `membership_collection_noun` for the stated superclass and
 `membership_member_noun` for its predicate member. The condition is attached
-only when the optional collection phrase is present, leaving discourse-backed
-bare `the rest were rabbits` unchanged.
+only when the optional collection phrase is present. The subject uses the
+narrower `partition_remnant` category and is referential, so the plural subset
+surface is definite `the rest`; bare `Rest ...` and singular `remainder` do
+not enter this rule. `membership_predicate_incompatible_noun` locally keeps
+temporal `times` from becoming a member label without removing it from
+explicit frequency comparisons.
 
 Rules may declare `same_number` across bound slots. Count-valued units derive
 singular only from value 1 and plural otherwise; lexical units use their
@@ -709,6 +781,26 @@ resulting relation factor cannot become negative. Registry compilation checks
 the slot and category roots, while matching, availability, locked generation,
 ordinary realization, and premise explanations use the same magnitude and
 scoped-polarity calculation.
+
+A fraction token may opt into `fraction_within_whole: true` when its emitted
+value denotes a part of one finite whole. The qualifier accepts only declared
+fraction values in the closed interval `[0, 1]`; matcher and generator use the
+same unit/filler value, so locked improper-fraction probes fail at the filler
+boundary and an analyzed improper fraction cannot match. The qualifier is not
+the default: ratio, affine, and proportional-increase positions remain
+unbounded unless their own authored semantics say otherwise.
+
+A fraction token may independently opt into `fraction_positive: true` when
+its numeric value supplies a comparison or change magnitude. The matcher and
+generator then require a value strictly greater than zero, including locked
+probes and availability analysis. All fraction-valued `Relation` and
+percent-change premise rules declare this boundary: a zero factor would erase
+the standard, while a zero proportional delta would contradict its stated
+direction by reducing to equality. `FractionQuantity` and partition rules do
+not declare it, so zero remains available when the fact itself meaningfully
+states that none of a pool or collection participates. The qualifier does not
+impose an upper bound; positive improper fractions remain valid in unbounded
+ratio and affine positions.
 
 A verb token may declare `bare_form: true`. The matcher and generator share
 one lemma-aware morphology check: the lemma itself and declared non-third-

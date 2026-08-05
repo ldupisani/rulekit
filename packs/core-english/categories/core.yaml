@@ -135,6 +135,27 @@ categories:
             arithmetic "many" count frame. This is a narrow refusal boundary:
             ordinary plural nouns remain available without requiring an
             exhaustive count-noun vocabulary.
+    membership_predicate_incompatible_noun:
+        parent: noun
+        notes: >
+            Noun heads that cannot name the member class in a remainder
+            partition. This boundary is local to membership predicates: a
+            noun such as `time` remains available as an explicit frequency
+            measure in comparison rules.
+    conjunct_comparison_incompatible_noun:
+        parent: noun
+        notes: >
+            Noun heads that cannot be the second counted object when an
+            elided-standard conjunct derives its value from the first object.
+            This is local to that direct-object construction, so explicit
+            motion-frequency comparisons may still use `times`.
+    existential_incompatible_noun:
+        parent: noun
+        notes: >
+            Counted noun heads whose ordinary plural surface is not an entity
+            population in an existential quantity premise. Temporal `times`
+            remains available to explicit frequency and duration relations;
+            it does not become a scene-held collection through "there are".
     non_quantity_holder:
         parent: noun
         notes: >
@@ -142,6 +163,19 @@ categories:
             quantity clause. This is a narrow refusal boundary rather than an
             exhaustive allowlist, so name-like and newly loaded entities stay
             available unless evidence places them here.
+    partition_remnant:
+        parent: remnant
+        notes: >
+            Remnant nouns that support the plural subset construction "the
+            rest are ...". Singular `remainder` remains available to other
+            remnant rules but is not interchangeable with this construction.
+    predeterminer_multiplier:
+        parent: quantifier
+        notes: >
+            Multiplicative predeterminers used before a noun phrase, as in
+            "double the amount" or "triple the number". They do not license
+            the adverbial comparative frame "as many/as much"; that frame
+            uses `twice`, `thrice`, or an explicit "N times" multiplier.
     mass_quantity_noun:
         parent: noun
         notes: >
@@ -1061,13 +1095,18 @@ categories:
             summing the qualified variants it produces is the conjunct-
             comparative class's job, built on top of this.
 members:
+    non_event_verb: [be]
     definite_article: [the]
     possessive_determiner: [her, his, its, my, their, your]
     animate_possessive_determiner: [her, his, my, their, your]
     many_incompatible_noun: [age, litter, rest]
+    membership_predicate_incompatible_noun: [time]
+    conjunct_comparison_incompatible_noun: [time]
+    existential_incompatible_noun: [time]
     non_quantity_holder:
-        [amount, cost, dollar, inch, number, pound, price, remainder, rest, year]
-    mass_quantity_noun: [litter, money, rest]
+        [amount, clay, cost, dollar, inch, money, number, paper, pound, price,
+         remainder, rest, sand, time, wool, year]
+    mass_quantity_noun: [clay, litter, money, paper, rest, sand, wool]
     mass_currency_noun: [money]
     non_quantity_object_verb:
         - are
@@ -1095,34 +1134,50 @@ members:
     pool_pronoun: [it, them]
     plural_object_pronoun: [them]
     remnant_adj: [left]
-    color_attribute: [red, green, blue]
+    color_attribute: [beige, blue, green, red, turquoise, violet]
     size_attribute: [small, large]
     colorable_noun:
         - apple
         - ball
+        - drum
+        - bench
         - bird
         - book
         - card
         - cat
         - coin
         - cookie
+        - cupboard
         - dog
         - dollar
         - egg
+        - envelope
         - fish
         - flower
         - garden
+        - grape
         - hamster
+        - key
         - marble
+        - apricot
+        - pantry
+        - paper
         - pencil
+        - pear
         - plum
         - rabbit
         - rose
+        - alpaca
+        - puzzle
         - sticker
+        - storeroom
+        - tomato
         - toy
     physical_size_noun:
         - apple
         - ball
+        - drum
+        - bench
         - bird
         - book
         - card
@@ -1130,28 +1185,47 @@ members:
         - child
         - coin
         - cookie
+        - cupboard
         - dog
         - egg
+        - envelope
         - fish
         - flower
         - friend
         - garden
+        - gardener
+        - grape
+        - guardian
         - hamster
+        - key
+        - librarian
         - marble
+        - apricot
+        - pantry
+        - paper
         - pencil
+        - pear
         - plum
         - rabbit
         - rose
+        - alpaca
+        - shopper
+        - puzzle
         - sticker
         - student
+        - storeroom
         - teacher
+        - tomato
         - toy
         - tree
+        - violinist
     magnitude_noun: [area, litter]
     remainder_collection_noun:
         - apple
         - area
         - ball
+        - drum
+        - bench
         - bird
         - book
         - card
@@ -1159,44 +1233,64 @@ members:
         - child
         - coin
         - cookie
+        - cupboard
         - dog
         - dollar
         - egg
+        - envelope
         - fish
         - flower
         - friend
         - garden
+        - gardener
+        - grape
+        - guardian
         - hamster
+        - key
+        - librarian
         - litter
         - marble
+        - apricot
+        - pantry
+        - paper
         - pencil
+        - pear
         - plum
         - rabbit
         - rose
+        - alpaca
+        - shopper
+        - puzzle
         - sticker
         - student
+        - storeroom
         - teacher
+        - tomato
         - toy
         - year
         - tree
-    ripenable_noun: [apple, plum]
-    animal: [dog, cat, fish, bird, rabbit, hamster]
+        - violinist
+    ripenable_noun: [apple, apricot, grape, pear, plum, tomato]
+    animal: [alpaca, dog, cat, fish, bird, rabbit, hamster]
     pet: [dog, cat, hamster]
-    # MEMBERS LIVE WHERE THE WORD IS LEXICALLY DEFINED. Only these five are
-    # core-english words; the other 43 occupation/kinship nouns are defined in
-    # packs/difg-mined and extend this category from there, exactly as
+    # MEMBERS LIVE WHERE THE WORD IS LEXICALLY DEFINED. The entries below are
+    # core-owned; corpus-specific occupation and kinship nouns extend this
+    # category from packs/difg-mined, exactly as
     # `dimension_adjective` notes for 'tall'/'long'. A member that is not in
     # the loading project's lexicon is a CompileError, so a minimal pack set
     # must never see a member it cannot resolve.
     # Deliberate exclusions ('player', 'cook', 'king') — see the category note.
-    animate: [teacher, student, friend, child]
+    animate:
+        [teacher, student, friend, child, gardener, guardian, librarian,
+         shopper, violinist]
     # Animals can participate in quantity-changing events (notably eating,
     # finding, receiving, or losing items) while retaining their independent
     # membership ontology under `animal`. The generic head `animal` is also a
     # plausible actor; category_nonoverlap separately prevents it from being
     # compared with one of its own declared member kinds as if the roles were
     # necessarily disjoint.
-    quantity_event_participant: [animal, dog, cat, fish, bird, rabbit, hamster]
+    quantity_event_participant:
+        [animal, alpaca, dog, cat, fish, bird, rabbit, hamster]
     # 'him'/'her' are OBJECT-case and have no lexicon entry of their own;
     # the fallback binds a SUBJECT pronoun to a prior subject anyway.
     animate_pronoun: [he, she]
@@ -1253,6 +1347,8 @@ members:
     quantity_anaphor: [amount, number]
     price_anaphor: [price, cost]
     remnant: [remainder, rest]
+    partition_remnant: [rest]
+    predeterminer_multiplier: [double, triple]
     desire: [want, wanted, wanting, wants]
     finite_desire: [want, wanted, wants]
     need_premise: [need, needed, needs]
@@ -1262,11 +1358,11 @@ members:
     sell: [sell, sells, sold]
     frame_head_preposition: [in, to]
     destination_preposition: [to]
-    quantity_location: [area, garden, tree]
+    quantity_location: [area, bench, cupboard, garden, pantry, storeroom, tree]
     quantity_location_preposition: [in]
-    quantity_surface_location: [tree]
+    quantity_surface_location: [bench, tree]
     quantity_surface_preposition: [on]
-    quantity_site_location: [garden, tree]
+    quantity_site_location: [bench, garden, tree]
     quantity_site_preposition: [at]
     quantity_remainder_preposition: [with]
     membership_collection_noun: [animal]

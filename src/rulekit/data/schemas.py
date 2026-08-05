@@ -298,6 +298,16 @@ class MatchToken(StrictModel):
     # structural distinction. Multiword scalars such as "twenty three" remain
     # valid because this checks the unit's sense, not its original word count.
     standalone: bool = False
+    # OPT-IN: a fraction used as a part of one finite whole must remain in
+    # [0, 1]. Improper fractions remain valid in ratios, affine relations, and
+    # other unbounded scalar positions; only an authored part-of-whole slot
+    # declares this semantic magnitude boundary.
+    fraction_within_whole: bool = False
+    # OPT-IN: a fraction that contributes a comparison or change magnitude
+    # must be strictly positive.  Zero remains valid for independently useful
+    # part-of-pool and partition statements; rules whose standard would become
+    # mathematically irrelevant declare this narrower boundary explicitly.
+    fraction_positive: bool = False
     # OPT-IN: a common-noun slot must be a complete argument, not a floating
     # bare singular. Names, resolved pronouns, counted nouns, possessed nouns,
     # and bare plurals are already complete; another common noun needs a
@@ -471,6 +481,8 @@ class MatchToken(StrictModel):
                 or self.possessed
                 or self.number is not None
                 or self.standalone
+                or self.fraction_within_whole
+                or self.fraction_positive
                 or self.referential
                 or self.bare_reference_category is not None
                 or self.bare_form
@@ -479,7 +491,8 @@ class MatchToken(StrictModel):
                 raise ValueError(
                     "a span slot takes no "
                     "type/cat/bare/counted/possessed/number/standalone/"
-                    "referential/bare_form/finite_form"
+                    "fraction_within_whole/fraction_positive/referential/"
+                    "bare_form/finite_form"
                 )
         elif self.slot is not None and (self.type is None) == (self.cat is None):
             raise ValueError("a slot needs exactly one of type/cat")
@@ -494,6 +507,14 @@ class MatchToken(StrictModel):
         if self.standalone and self.type != "number":
             raise ValueError(
                 "`standalone` only qualifies a `type: number` slot"
+            )
+        if self.fraction_within_whole and self.type != "fraction":
+            raise ValueError(
+                "`fraction_within_whole` only qualifies a `type: fraction` slot"
+            )
+        if self.fraction_positive and self.type != "fraction":
+            raise ValueError(
+                "`fraction_positive` only qualifies a `type: fraction` slot"
             )
         if self.referential and self.slot is None:
             raise ValueError("`referential` only qualifies a slot")

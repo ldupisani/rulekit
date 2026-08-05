@@ -28,9 +28,10 @@ entries:
     now: {senses: [time]}
     today: {senses: [time]}
 
-    # state-anchor adverb
+    # core temporal/adverbial grammar
     currently: {senses: [adverb]}
     far: {senses: [adverb]}
+    ago: {senses: [adverb]}
 
     # prepositions
     of: {senses: [preposition]}
@@ -99,6 +100,8 @@ entries:
     how: {senses: [interrogative]}
     much: {senses: [interrogative, quantifier], notes: "moved from difg-mined; also the how-MUCH ask cue"}
     many: {senses: [interrogative]}
+    double: {senses: [quantifier]}
+    triple: {senses: [quantifier, verb]}
     what: {senses: [interrogative]}
     who: {senses: [interrogative]}
 
@@ -109,6 +112,7 @@ entries:
 
     # question/remainder skeleton (moved from difg-mined)
     left: {senses: [adjective], notes: "'are left' / 'have left' — the remainder frame"}
+    old: {senses: [adjective]}
     there: {senses: [existential]}
 
     # clause boundary — argument binding never crosses it
@@ -150,6 +154,7 @@ entries:
     and: {senses: [conjunction]}
 
     # copula / possession verbs (state)
+    be: {senses: [verb]}
     is: {senses: [verb], number: singular, verb: {lemma: be}}
     are: {senses: [verb], number: plural, verb: {lemma: be}}
     was: {senses: [verb], number: singular, verb: {lemma: be}}
@@ -270,9 +275,46 @@ entries:
     litter: {senses: [noun], plural: litter}
     tree: {senses: [noun], plural: trees}
 
+    # Broad, ordinary vocabulary for deterministic rule exploration. These
+    # words are useful across several count, comparison, partition, and
+    # location frames; their narrower semantic roles are declared in the
+    # category file rather than inferred by the generator.
+    drum: {senses: [noun], plural: drums}
+    puzzle: {senses: [noun], plural: puzzles}
+    key: {senses: [noun], plural: keys}
+    envelope: {senses: [noun], plural: envelopes}
+    tomato: {senses: [noun], plural: tomatoes}
+    pear: {senses: [noun], plural: pears}
+    grape: {senses: [noun], plural: grapes}
+    apricot: {senses: [noun], plural: apricots}
+    alpaca: {senses: [noun], plural: alpacas}
+
+    # Unambiguous people for referential common-noun subjects and standards.
+    gardener: {senses: [noun], plural: gardeners}
+    librarian: {senses: [noun], plural: librarians}
+    violinist: {senses: [noun], plural: violinists}
+    shopper: {senses: [noun], plural: shoppers}
+    guardian: {senses: [noun], plural: guardians}
+
+    # Common quantitative locations. Their compatible prepositions are
+    # declared separately, so adding them does not make every PP acceptable.
+    pantry: {senses: [noun], plural: pantries}
+    cupboard: {senses: [noun], plural: cupboards}
+    storeroom: {senses: [noun], plural: storerooms}
+    bench: {senses: [noun], plural: benches}
+
+    # Ordinary mass quantities. Paper also has a valid count reading.
+    sand: {senses: [noun]}
+    clay: {senses: [noun]}
+    wool: {senses: [noun]}
+    paper: {senses: [noun], plural: papers}
+
     # adjectives
     red: {senses: [adjective]}
     green: {senses: [adjective]}
     blue: {senses: [adjective]}
+    beige: {senses: [adjective]}
+    turquoise: {senses: [adjective]}
+    violet: {senses: [adjective]}
     small: {senses: [adjective]}
     large: {senses: [adjective]}

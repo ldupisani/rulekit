@@ -22,7 +22,16 @@ EXPECTED_OCCURRENCES = {
     "arithmetic/group-total-trailing": ((1, 0), "q"),
     "arithmetic/periodic-rate-every-span": ((4,), "freq"),
 }
-EXPECTED_FILLERS = {"all", "each", "every", "much", "no", "some"}
+EXPECTED_FILLERS = {
+    "all",
+    "double",
+    "each",
+    "every",
+    "much",
+    "no",
+    "some",
+    "triple",
+}
 EXPECTED_DISTRIBUTIVE_FILLERS = {"each", "every"}
 
 
@@ -103,8 +112,8 @@ def test_g5o_unlocks_only_the_preregistered_rule() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 105
-    assert sum(item.supported for item in availability.values()) == 105
+    assert len(availability) == 106
+    assert sum(item.supported for item in availability.values()) == 106
     assert sum(not item.supported for item in availability.values()) == 0
     assert availability[
         "arithmetic/existential-premise-distributive"
@@ -115,7 +124,7 @@ def test_g5o_unlocks_only_the_preregistered_rule() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 154
+    assert len(exploration_status(project)["fillers"]) == 184
 
 
 @pytest.mark.parametrize("quantifier", sorted(EXPECTED_DISTRIBUTIVE_FILLERS))

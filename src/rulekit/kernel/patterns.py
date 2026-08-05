@@ -230,6 +230,19 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
         # scalar constructions opt out of that reading without constraining
         # how many source words formed the standalone number itself.
         return False
+    if token.fraction_within_whole:
+        value = unit.features.get("value")
+        if not (
+            isinstance(value, (int, float))
+            and 0.0 <= float(value) <= 1.0
+        ):
+            return False
+    if token.fraction_positive:
+        value = unit.features.get("value")
+        if not (
+            isinstance(value, (int, float)) and float(value) > 0.0
+        ):
+            return False
     if token.type is not None:
         t = token.type
         sense = unit.sense()

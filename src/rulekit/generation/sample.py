@@ -276,6 +276,18 @@ def _lexical_fillers(
     for surface, entry in sorted(reg.lexicon.items()):
         if any(ch.isspace() for ch in surface) or not surface:
             continue
+        if sense is not None and (
+            surface in reg.numbers
+            or surface in reg.fractions
+            or surface in reg.multipliers
+        ):
+            # The ordinary analyzer commits declared numeric surfaces before
+            # lexical sense selection.  A homograph such as an authored
+            # multiplier/verb can therefore never round-trip through a
+            # sense-specific lexical slot as that verb.  Keep it available to
+            # broad `word` exploration, but do not advertise an unreachable
+            # lexical reading that every generated candidate must reject.
+            continue
         if category is not None and not reg.word_in_category(surface, category):
             continue
         if sense is not None and sense not in entry.senses:
@@ -376,15 +388,24 @@ def _counted_fillers(reg: Registry) -> list[_Filler]:
             and "noun" in entry.senses
         )
     ]
-    return [
-        _Filler(
-            surface=f"{count} {singular if count == 1 else plural}",
-            identity=singular,
-            number="singular" if count == 1 else "plural",
-        )
-        for count in counts
-        for singular, plural in noun_pairs
-    ]
+    out: list[_Filler] = []
+    for count in counts:
+        for singular, plural in noun_pairs:
+            noun_surface = singular if count == 1 else plural
+            if reg.operators.get(noun_surface) == "*":
+                # The ordinary number pass structurally folds
+                # "COUNT MULTIPLICATION-MARKER" into one multiplier unit.
+                # It can therefore never round-trip through a counted slot,
+                # even when the marker is also a declared noun plural.
+                continue
+            out.append(
+                _Filler(
+                    surface=f"{count} {noun_surface}",
+                    identity=singular,
+                    number="singular" if count == 1 else "plural",
+                )
+            )
+    return out
 
 
 def _possessed_fillers(reg: Registry, fixtures: _Fixtures) -> list[_Filler]:
@@ -559,6 +580,20 @@ def _domain(
     token: MatchToken, reg: Registry, fixtures: _Fixtures
 ) -> list[_Filler]:
     fillers = _raw_domain(token, reg, fixtures)
+    if token.fraction_within_whole:
+        fillers = [
+            filler
+            for filler in fillers
+            if isinstance(filler.value, (int, float))
+            and 0.0 <= float(filler.value) <= 1.0
+        ]
+    if token.fraction_positive:
+        fillers = [
+            filler
+            for filler in fillers
+            if isinstance(filler.value, (int, float))
+            and float(filler.value) > 0.0
+        ]
     if token.referential:
         articles = [
             filler.surface
@@ -2370,6 +2405,10 @@ def _token_expression(token: MatchToken) -> str:
         gates.append(f"number {token.number!r}")
     if token.standalone:
         gates.append("standalone")
+    if token.fraction_within_whole:
+        gates.append("within one whole")
+    if token.fraction_positive:
+        gates.append("positive")
     if token.referential:
         gates.append("referential")
     if token.bare_reference_category is not None:
@@ -2439,10 +2478,30 @@ def _token_reason(
         and units[0].features.get("fraction_count") is not None
     ):
         unit = units[0]
+        boundaries = []
+        if token.fraction_positive:
+            boundaries.append("strictly positive")
+        if token.fraction_within_whole:
+            boundaries.append("within the declared whole")
+        boundary = f", {' and '.join(boundaries)}" if boundaries else ""
         return (
             f"{surface!r} satisfied type 'fraction' through explicit count "
             f"{unit.features.get('fraction_count')!r} and declared plural "
             f"fraction lemma {unit.features.get('fraction_lemma')!r}"
+            f"{boundary}"
+        )
+    if token.type == "fraction" and (
+        token.fraction_within_whole or token.fraction_positive
+    ):
+        value = units[0].features.get("value") if len(units) == 1 else None
+        boundaries = []
+        if token.fraction_positive:
+            boundaries.append("strictly positive")
+        if token.fraction_within_whole:
+            boundaries.append("within the declared whole")
+        return (
+            f"{surface!r} satisfied type 'fraction' with value {value!r} "
+            f"that is {' and '.join(boundaries)}"
         )
     senses = sorted({unit.sense() for unit in units if unit.sense()})
     value_kinds = sorted(

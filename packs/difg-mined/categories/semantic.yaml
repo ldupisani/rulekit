@@ -154,7 +154,7 @@ members:
   # Extends core-english's reader-exclusion boundary with the copular forms
   # lexically defined in this pack. They are deliberately NOT `state` members:
   # that narrower subclass controls arithmetic holding/event semantics.
-  non_event_verb: [be, been, being]
+  non_event_verb: [been, being]
   # extends core-english's `animate` (see its note there): these 43
   # person-denoting nouns are lexically defined in THIS pack, so their
   # membership must be declared here — a member absent from the loading
@@ -194,8 +194,10 @@ members:
   - binder
   - bowl
   - box
+  - city
   - class
   - classroom
+  - country
   - farm
   - jar
   - mall

@@ -190,18 +190,28 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
         if "noun" in entry.senses and entry.plural is not None
     }
 
-    assert adjectives == {"blue", "green", "large", "left", "red", "small"}
-    # G5h adds four generic plural nouns (amount, number, price, cost), G5s
-    # preserves the noun/plural half of modal `can`, and the reviewed dimension
-    # boundary adds generic inch/pound units. The review-led membership
-    # boundary adds generic animal; none of those additions is licensed by an
-    # adjective category.
-    assert len(plural_nouns) == 41
+    assert adjectives == {
+        "beige",
+        "blue",
+        "green",
+        "large",
+        "left",
+        "old",
+        "red",
+        "small",
+        "turquoise",
+        "violet",
+    }
+    # The core generation vocabulary adds ordinary count nouns and three
+    # explicitly colour-compatible adjectives. Core-owned literal adjective
+    # `old` also remains outside every descriptor category. Compatibility
+    # still comes from category membership, never broader lexical senses.
+    assert len(plural_nouns) == 60
     assert sum(
         registry.attribute_applies_to(attribute, noun)
         for attribute in adjectives
         for noun in plural_nouns
-    ) == 155
+    ) == 362
 
 
 def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> None:
@@ -225,6 +235,7 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
     }
     assert compatible_rules == {
         RULE_ID,
+        "arithmetic/as-many",
         "arithmetic/affine-fraction-as-many",
         "arithmetic/affine-frame-relation-as-standard",
         "arithmetic/affine-times-as-many",
@@ -239,8 +250,9 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
         "arithmetic/fraction-delta-relation",
         "arithmetic/fraction-delta-relation-mass",
         "arithmetic/partition-rest-attribute",
-        "arithmetic/times-as-many",
-        "arithmetic/times-as-many-conjunct-elided-standard",
+            "arithmetic/times-as-many",
+            "arithmetic/times-as-many-conjunct",
+            "arithmetic/times-as-many-conjunct-elided-standard",
         "arithmetic/times-as-many-conjunct-elided-item",
         "arithmetic/times-as-many-elided-standard",
         "arithmetic/times-as-many-possessive-kinship-standard",
@@ -253,7 +265,7 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
 def test_compatibility_rule_remains_supported_after_g5j_expansion() -> None:
     availability = list_rule_availability(load_project(CURATED))
 
-    assert sum(item.supported for item in availability) == 105
+    assert sum(item.supported for item in availability) == 106
     target = next(item for item in availability if item.id == RULE_ID)
     assert target.supported
     assert target.blockers == ()

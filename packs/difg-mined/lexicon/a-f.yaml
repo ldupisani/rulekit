@@ -143,9 +143,6 @@ entries:
   against:
     senses:
     - preposition
-  ago:
-    senses:
-    - adverb
   agree:
     senses:
     - verb
@@ -573,9 +570,6 @@ entries:
   battle:
     senses:
     - noun
-  be:
-    senses:
-    - verb
   beach:
     senses:
     - noun
@@ -2286,10 +2280,6 @@ entries:
   dots:
     senses:
     - noun
-  double:
-    senses:
-    - adjective
-    - multiplier
   double-flip:
     senses:
     - noun

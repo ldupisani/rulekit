@@ -97,8 +97,8 @@ def test_g5n_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 105
-    assert sum(item.supported for item in availability.values()) == 105
+    assert len(availability) == 106
+    assert sum(item.supported for item in availability.values()) == 106
     assert sum(not item.supported for item in availability.values()) == 0
     assert all(
         availability[rule_id].supported
@@ -109,7 +109,7 @@ def test_g5n_unlocks_exactly_the_preregistered_frontier() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 154
+    assert len(exploration_status(project)["fillers"]) == 184
 
 
 @pytest.mark.parametrize("rule_id", sorted(EXPECTED_OCCURRENCES))
@@ -120,6 +120,7 @@ def test_every_complementizer_rule_generates_a_reviewable_match(
         load_project(CURATED),
         rule_id=rule_id,
         seed=0,
+        locked_bindings={"c": "that"},
     )
     premise = next(row for row in candidate.premises if row.slot == "c")
 
@@ -139,6 +140,7 @@ def test_optional_complementizer_can_remain_present_or_absent() -> None:
         project,
         rule_id="arithmetic/fraction-frame-relation",
         seed=0,
+        locked_bindings={"c": "that"},
     )
     omitted = generate_candidate(
         project,

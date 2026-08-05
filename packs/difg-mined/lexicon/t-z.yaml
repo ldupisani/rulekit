@@ -426,10 +426,6 @@ entries:
         senses:
             - noun
         plural: trips
-    triple:
-        senses:
-            - multiplier
-            - verb
     triple-flip:
         senses:
             - noun

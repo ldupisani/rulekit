@@ -253,10 +253,11 @@ def annotate_numbers(reading: Reading, reg: Registry) -> Reading:
             a, b = units[j], units[j + 1]
             if (
                 a.features.get("value_kind") == "count"
-                and b.features.get("fold") == "times"
+                and reg.operators.get(b.features.get("fold", "")) == "*"
             ):
+                marker = b.features["fold"]
                 merged = reading.new_unit(a.words + b.words, dict(a.features))
-                merged.features["fold"] = f"{a.features['fold']} times"
+                merged.features["fold"] = f"{a.features['fold']} {marker}"
                 units[j : j + 2] = [merged]
                 reading.record(
                     "merge-number", merged,

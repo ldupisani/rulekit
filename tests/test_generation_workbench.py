@@ -35,6 +35,7 @@ from rulekit.generation import (
 )
 from rulekit.generation.exploration import exploration_path
 from rulekit.generation.reviews import _raw_reviews, review_path
+from rulekit.kernel.engine import analyze
 from rulekit.server.api import (
     DocBody,
     GenerationCandidateBody,
@@ -471,6 +472,44 @@ def test_counted_domain_refuses_nouns_without_declared_plural_morphology(
     assert availability["invented/counted"].blockers == (
         "no project-backed filler exists for item",
     )
+
+
+def test_counted_domain_refuses_declared_multiplication_marker_homographs(
+    tmp_path: Path,
+) -> None:
+    _write_project(tmp_path)
+    numbers = tmp_path / "pack" / "numbers.yaml"
+    numbers.write_text(numbers.read_text() + 'operators:\n  zors: "*"\n')
+    project = load_project(tmp_path)
+
+    reading = analyze("2 zors", project.registry)
+    assert len(reading.units) == 1
+    assert reading.units[0].features["value_kind"] == "multiplier"
+
+    with pytest.raises(
+        GenerationError, match="constraints left no filler for item"
+    ):
+        generate_candidate(
+            project,
+            rule_id="invented/counted",
+            seed=0,
+            locked_bindings={"item": "2 zors"},
+        )
+
+    singular = generate_candidate(
+        project,
+        rule_id="invented/counted",
+        seed=0,
+        locked_bindings={"item": "1 zor"},
+    )
+    ordinary_plural = generate_candidate(
+        project,
+        rule_id="invented/counted",
+        seed=0,
+        locked_bindings={"item": "2 mivs"},
+    )
+    assert singular.target_status == "matched"
+    assert ordinary_plural.target_status == "matched"
 
 
 def test_fraction_slots_require_counts_for_declared_plural_forms(

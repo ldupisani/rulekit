@@ -18,8 +18,9 @@ ownership is complete; G5r dimension-comparative core ownership is complete
 and G5s modal core ownership and slot realization is complete; G5t
 temporal-marker core ownership and time-root realization is complete; G5u
 direct-adverb visibility is complete; G5v review-led premise auditing is
-active and all eighteen review-led boundary passes are complete through the
-current currency-countability and motion-comparison reconciliation
+active and all twenty-eight review-led boundary passes are complete through
+the current demonstrative-pro-form and comparative-need agreement
+reconciliation
 
 ## Current checkpoint
 
@@ -99,7 +100,7 @@ added bounded hypothesis and minimal-pair exploration:
   sentence exposes a defective premise;
 - a `matched` or `shadowed` target status reports what the ordinary matcher
   accepted, never that the resulting English or emitted fact is correct;
-- the current curated frontier contains 105 supported rules and 154 reachable
+- the current curated frontier contains 106 supported rules and 184 reachable
   lexicon identities, while live reviews and continuing exploration remain
   separate from mechanical availability; and
 - random Generate next chooses from the least-attempted compatible rule and
@@ -110,9 +111,12 @@ added bounded hypothesis and minimal-pair exploration:
   retain complete numeric source evidence; and
 - leading total constructions retain their exact normalized subject as an
   optional `GroupTotal.scope`, allowing independently reviewed blue/red totals
-  over one measure to coexist without changing tail-only or synthesized totals.
+  over one measure to coexist without changing tail-only or synthesized totals;
+  and
+- fraction-valued comparisons and changes require a strictly positive
+  magnitude, while pool and partition facts retain zero as a meaningful value.
 
-The current gate is green: all 4,220 repository tests pass in four-worker
+The current gate is green: all 4,334 repository tests pass in four-worker
 mode, curated remains deterministic at 65/65 and 100% precision, GSM8K
 DEV-train is neutral at 104/0 and DEV-holdout is 41/0, every standing
 cross-corpus gate retains zero wrong answers, and lint has zero errors with
@@ -1949,10 +1953,16 @@ The complete profile contains exactly two direct root-sense occurrences:
 - `arithmetic/existential-premise-distributive.q`; and
 - `arithmetic/periodic-rate-every-span.freq`.
 
-Curated owns six direct quantifier fillers in `core-english`: `all`, `each`,
+Curated owns six general quantifier fillers in `core-english`: `all`, `each`,
 `every`, `much`, `no`, and `some`. G5o admits the root to the existing
 category-generic generator without adding vocabulary, literal surfaces, or
 runtime matcher behavior.
+
+The current core inventory also owns `double` and `triple` as the two members
+of `predeterminer_multiplier`. They were added later by G5v to distinguish
+noun-phrase forms such as `double the amount` from reviewed adverbial
+`as many/as much` frames; they do not widen the dedicated distributive or
+frequency categories established after G5o.
 
 The distributive rule becomes selectable and every loaded quantifier can be
 locked into a matcher-confirmed specimen with exact token and lexicon sources.
@@ -2257,16 +2267,14 @@ The complete gate is green: 3,900 tests pass in four-worker mode; curated is
 MAWPS, and SciBench remain 44/0, 30/0, 9/0, and 6/0; FOLIO makes zero
 commitments; and lint has zero errors with two known warnings.
 
-#### G5v review-led premise audit — active; eleventh batch complete
+#### G5v review-led premise audit — active; twenty-eighth batch complete
 
 Mechanical completeness does not establish linguistic or semantic validity.
-The current live fold has 1 never-generated, 96 generated-but-unreviewed,
-and 2 reviewed rules. Of 152 reachable lexicon identities, 33 are never
-generated, 114 are generated-but-unreviewed, and 5 are reviewed. The
-append-only success ledger contains 351 exploration events; 131 append-only
-review rows fold to two current live reviews after the existing corrections
-and tombstones. The separate failure ledger retains historical attempts, none
-matching the current registry fingerprint.
+The twenty-fourth bounded run began with 406 exploration events, 189 review
+rows, and 30 historical failure observations. Folding exactly those 189 rows
+produced twelve live reviews; later concurrent rows are explicitly deferred
+to the next scheduled reconciliation rather than being folded into a moving
+implementation target.
 
 G5v uses the existing Designer loop rather than adding a bulk validator:
 Generate next selects a least-explored compatible rule/filler, the human
@@ -2736,6 +2744,353 @@ DEV-train and DEV-holdout remain 104/0 and 41/0 with exact neutral diffs;
 ASDiv, SVAMP, MAWPS, and SciBench remain 44/0, 30/0, 10/0, and 6/0; FOLIO
 makes zero commitments; and lint has zero errors with two known warnings. No
 protected TEST look was spent.
+
+Batches thirteen through eighteen continued the same review-led method. They
+separated trailing totals from prepositional aggregates, constrained postfix
+comparisons, made extraposed-duration actors referential and role-compatible,
+prevented category/member comparison overlap, narrowed distributive
+quantifiers and mass-ratio remnants, split mass and plural currency change,
+and separated explicit motion frequency (`as many times`) from distance
+(`as far`). The detailed review IDs and individual gate records remain in
+`docs/HANDOFF.md`; none of these batches changed the product loop or introduced
+automatic rule mutation.
+
+The nineteenth batch fixes the six-review snapshot that followed:
+
+- `time` and `money` are declared non-holders for quantity subjects;
+- plural remainder partitions require definite `the rest`, not bare `Rest`
+  or singular `remainder`;
+- temporal `times` is excluded locally from membership labels and from the
+  second derived object in an elided-standard conjunct, while remaining valid
+  in explicit motion-frequency comparisons;
+- affine mass comparisons use `less`/`more`, never count-only `fewer`; and
+- `double`/`triple` are declared predeterminers. Fourteen reviewed comparison
+  rules exclude them from adverbial `as many/as much` positions while keeping
+  `twice`, `thrice`, and explicit `N times`. The established affine-count
+  compatibility remains accepted because removing it violated the 0-BROKE
+  DEV ship gate.
+
+The valid control `Cato buys thrice as much as my friend Aven.` remains
+matched. The complete gate is 4,232 tests, curated 65/65, GSM8K DEV 104/0 and
+41/0, ASDiv/SVAMP/MAWPS/SciBench 44/0, 30/0, 10/0, and 6/0, FOLIO at zero
+commitments, and lint at zero errors with two known warnings. No protected
+TEST look was spent.
+
+The twentieth batch handles the six later rows in the same bounded snapshot:
+
+- temporal `times` is a declared existential-incompatible noun but remains an
+  explicit frequency measure;
+- adverbial `as many/as much` rules require a non-unit multiplier, so the
+  numeric value-one boundary rejects `once` generically;
+- the sum-of-ages rule requires literal `the`, optional possessive-determiner
+  ownership, plural `ages`, and a singular copula;
+- periodic-rate subjects are referential rather than bare singular common
+  nouns disguised by sentence-initial capitalization; and
+- the destination-bearing fraction frame requires referential motion
+  participants and a declared location measure. Mined `city` and `country`
+  extend the existing location class beside the core `garden` witness.
+
+All five invalid surfaces retest absent and the valid conjoined existential
+control remains matched. The broader `amount of PLURAL` count-frame surface
+is deliberately unchanged because it is an explicit existing synthetic and
+DEV contract; narrowing it remains a product decision.
+
+The complete gate is 4,242 tests, curated 65/65, GSM8K DEV 104/0 and 41/0
+with exact neutral diffs, ASDiv/SVAMP/MAWPS/SciBench 44/0, 30/0, 10/0, and
+6/0, FOLIO at zero commitments, and lint at zero errors with two known
+warnings. No protected TEST look was spent.
+
+The twenty-first batch folds the next 180-row bounded snapshot to three live
+reviews. The valid dangling-comparative control remains matched with its
+intended no-fact consumption and real missing-standard deficiency. Both
+invalid specimens select `triple` through a verb slot even though the ordinary
+reader deterministically commits that declared surface as a multiplier before
+lexical sense selection.
+
+The generator now treats structural numeric precedence as a generic filler
+boundary: a declared number, fraction, or multiplier surface is omitted from
+conflicting sense-specific lexical domains. It remains available to broad
+`word` exploration and its explicit numeric domain. This removes the
+unrealizable verb placement from both reviewed rules without a word-specific
+Python branch, keeps ordinary verb neighbours matched, and leaves the current
+106-rule / 156-identity frontier unchanged.
+
+The complete gate is green: 4,249 tests pass in four-worker mode; curated is
+65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 41/0 with exact neutral
+diffs; ASDiv, SVAMP, MAWPS, and SciBench remain 44/0, 30/0, 10/0, and 6/0;
+FOLIO makes zero commitments; and lint has zero errors with the same two known
+warnings. No protected TEST or generalization look was spent.
+
+The next 182-row scheduled snapshot adds one repeated `triple` review and one
+new trailing-total review. The repeated verb placement is already excluded by
+the twenty-first batch. The new `18 times in all.` specimen combines a clear
+structural domain defect with an unresolved contextual-generation decision.
+
+The clear boundary is implemented without vocabulary in the generator. When a
+declared noun plural is also the declared multiplication operator marker, a
+preceding count makes the ordinary number pass fold the complete surface into
+a multiplier. Such a surface can never round-trip through `type: counted`, so
+the counted domain now omits it. The number pass reads the multiplication
+marker from the registry operator table rather than comparing a fixed English
+word. Singular and ordinary-plural counted neighbours remain available, and
+the 106-rule / 156-identity frontier does not change.
+
+The same review also asks the single-sentence generator to supply a host clause
+for a rule intentionally authored as a trailing tail matcher. That is not a
+slot or matcher-premise correction: it requires choosing whether contextual
+rules become honest blockers or whether generation gains generic multi-rule
+host composition. Runtime narrowing would lose the arbitrary host clauses the
+tail rule exists to cover. This plan leaves that product choice open rather
+than encoding a one-rule wrapper or silently treating a matched fragment as a
+full sentence.
+
+The implemented structural boundary passes all 4,250 repository tests.
+Curated remains 65/65; GSM8K DEV-train and DEV-holdout remain 104/0 and 41/0
+with exact neutral diffs; ASDiv, SVAMP, MAWPS, and SciBench remain 44/0, 30/0,
+10/0, and 6/0; FOLIO makes zero commitments; and lint retains zero errors with
+the same two known warnings. No protected TEST or generalization look was
+spent.
+
+The twenty-second batch freezes the next 184-row snapshot and folds it to
+seven live reviews. One addition is another already-fixed `triple` verb probe.
+The other exact specimen is already blocked because its counted noun plural
+is the multiplication marker, but it also reveals a separate agreement hole
+that still reproduces with an ordinary counted noun.
+
+`arithmetic/goal-need-quantity` now mirrors its comparative stated-need
+sibling by declaring `number_compatible: [who, need]`. A singular proper name
+therefore admits singular `needs` and the number-neutral past `needed`, but not
+the plural/base form `need`. Matching, ordinary generation, locked probes, and
+premise explanations share the existing generic predicate. No vocabulary,
+kernel mechanism, rule availability, or reachable filler identity changes.
+
+The exact reviewed sentence still leaves a generic learned `Predication` even
+though its target premise is absent. Target-aware fold suppression would
+couple runtime meaning to an authoring selection, while a global agreement
+boundary on learned Predications is a separate kernel-wide product decision.
+Neither is inferred from this one review.
+
+The complete gate is green at 4,252 tests. Curated remains 65/65; GSM8K
+DEV-train and DEV-holdout remain 104/0 and 41/0 with exact neutral diffs
+against the prior gated snapshots; ASDiv, SVAMP, MAWPS, and SciBench remain
+44/0, 30/0, 10/0, and 6/0; FOLIO makes zero commitments; and lint retains zero
+errors with the same two known warnings. No protected TEST or generalization
+look was spent.
+
+The twenty-third batch freezes 186 rows and inspects the two additions,
+`rev-29af767401ff4b62` and `rev-eb142f262bb84c65`. The latter is already
+absent on its exact `triple` verb placement, but a normal finite verb proves
+its independent magnitude defect: a part of one remainder could still bind
+an improper fraction greater than one.
+
+`fraction_within_whole: true` is now a generic opt-in qualifier on a
+`type: fraction` slot. Matching and generation read the same numeric value and
+admit only the closed interval from zero through one. The three
+`FractionQuantity` rules that take a fraction of one finite whole—an explicit
+pool, a pool pronoun, and a remainder—declare that qualifier and ordinary
+subject/verb `number_compatible` premises. Improper fractions remain legal in
+ratio and affine slots whose semantic domain is not one bounded whole.
+
+The affine-frame review remains open. Same-lemma matrix/echo predicates do not
+establish that the two clauses describe the same time, and English can
+legitimately compare a past event against a habitual present rate. The
+alternative referential/participant narrowing conflicts with a standing valid
+bare-common-noun frame test. The plan therefore records rather than guesses
+whether this family should model temporal alignment or retire its older common
+noun widening. It also leaves the remnant article question open because the
+broader pool rule has an established reviewed-valid bare-noun neighbor.
+
+All 4,264 tests pass in four-worker mode. Curated remains 65/65; GSM8K
+DEV-train and DEV-holdout remain 104/0 and 41/0 with exact neutral diffs;
+ASDiv, SVAMP, MAWPS, and SciBench remain 44/0, 30/0, 10/0, and 6/0; FOLIO
+makes zero commitments; and lint has zero errors with the same two known
+warnings. No protected TEST or generalization look was spent.
+
+The twenty-fourth batch freezes 189 review rows and inspects the three
+additions: `rev-bfb4d8122bfd4d4f`, `rev-64e0fe60e538488b`, and
+`rev-6cc6c869e71e4f49`.
+
+The goal-desire and leading-existential targets are already absent. The
+existing structural-numeric precedence boundary excludes a declared numeric
+homograph from a sense-specific verb slot, while the multiplication-marker
+boundary excludes `COUNT MARKER` from a composed counted-noun domain. Locked
+generation verifies both mechanisms, so neither review justifies a duplicate
+rule edit. The learned `Quantity` that survives the goal-desire sentence is a
+separate kernel-wide decision: target-aware fold suppression would make
+authoring state affect runtime semantics, while interpreting a multiplier
+goal requires an explicit event representation.
+
+The affine-fraction review also contains an independent, reproducible zero
+magnitude. With an ordinary finite verb, `zero sixths` matched and emitted a
+factor-zero Relation, making the comparison standard irrelevant. The new
+`fraction_positive: true` token qualifier is shared by matcher, availability,
+normal and locked generation, and premise explanations. Every fraction-valued
+Relation rule and both percent-change rules declares it—fourteen rules in
+total. Zero remains legal in `FractionQuantity` and partition facts, and the
+qualifier has no upper bound, so positive improper ratios and affine
+coefficients remain available.
+
+The complete gate is green at 4,271 tests. Curated remains 65/65; GSM8K
+DEV-train and DEV-holdout remain 104/0 and 41/0 with exact neutral diffs;
+ASDiv, SVAMP, MAWPS, and SciBench remain 44/0, 30/0, 10/0, and 6/0; FOLIO
+makes zero commitments; and lint retains zero errors with the same two known
+warnings. No protected TEST or generalization look was spent. The affine-frame
+tense policy, learned-fold suppression/representation, contextual total-host
+composition, universal remnant definiteness, and `amount of PLURAL` remain
+explicit product questions.
+
+The twenty-fifth batch freezes 195 review rows / 155,416 bytes with SHA-256
+`0ed974807ffe3070504d9537a13a03b16433e4d4c7ef4e5ddebc58e9bdc77969`
+and folds them to eighteen live reviews. The prior sixteen preserve their
+gated behavior. The two additions close two complete guard-coverage classes:
+
+- all five anaphoric quantity-relation siblings now subtract the existing
+  `non_quantity_holder` category from `who`. The reviewed
+  `Time dropped thrice as much.` target is absent, and proper-name minimal
+  pairs remain matched. The unrelated generic learned `Predication` still
+  survives, so fold suppression remains an explicit kernel-wide product
+  question rather than becoming target-aware authoring behavior; and
+- all five adverbial age-ratio siblings subtract the existing
+  `predeterminer_multiplier` category from `k`. `double`/`triple` remain
+  available before noun phrases such as possessive ages, while `twice`,
+  `thrice`, and explicit `N times` remain available in comparative/equative
+  age frames. The separately documented affine-count compatibility exception
+  is unchanged.
+
+Both exact reviewed targets retest absent, both locked invalid probes fail at
+filler selection, and every synthetic valid neighbour remains matched. The
+106-rule / 156-identity mechanical frontier is unchanged.
+
+The complete gate is green at 4,284 tests. Curated remains 65/65; GSM8K
+DEV-train and DEV-holdout are 104/0 and 41/0; ASDiv, SVAMP, MAWPS, and
+SciBench are 44/0, 30/0, 10/0, and 6/0; FOLIO makes zero commitments; and
+lint has zero errors with the same two known warnings. All diffs have 0 BROKE
+and 0 DECL-to-WRONG; the older R24 holdout and MAWPS baselines show only the
+already-gated one-item solves. No protected TEST or generalization look was
+spent.
+
+#### Core exploration-vocabulary expansion — complete
+
+The 106-rule premise frontier was mechanically complete but lexically narrow:
+only four core animate common nouns, three mass-quantity nouns, three
+quantitative locations, and three colour attributes were available. Core now
+adds 25 ordinary, globally unclaimed exploration identities across six
+explicit domains: countable objects and produce, one animal, people,
+quantitative locations, mass materials, and colours. Count forms declare
+their plurals in the lexicon; semantic suitability remains in YAML categories
+such as `animate`, `quantity_event_participant`, `mass_quantity_noun`,
+`non_quantity_holder`, `quantity_location`, `color_attribute`, and
+`ripenable_noun`.
+
+This is a vocabulary increment, not a generator exception. There is no word
+list or preference in Python, and broad lexical senses do not bypass the
+existing compatibility premises. Exact tests cover morphology, category
+boundaries, count and mass comparisons, locative and colour surfaces, locked
+generation, and the complete reachable identity set. The curated frontier is
+now 106/106 supported rules and 181 reachable identities.
+
+Candidate selection was precision-led. Quarantined or already owned words
+were excluded. An initially considered `bead` entry made one GSM8K
+DEV-holdout item commit to an incomplete initial quantity (40 instead of 10),
+so it was removed rather than accepting coverage at the cost of precision.
+With the final vocabulary the complete suite, inspectable arithmetic corpora,
+FOLIO, and lint gates are green; no protected TEST or generalization look was
+spent.
+
+#### Twenty-sixth review reconciliation — complete
+
+The bounded 218-row review snapshot folds to three live reviews. The valid
+remainder-membership control stays matched, and the earlier same-measure
+demonstrative-conjunct review remains an explicit product-semantics question.
+The one new actionable review is
+`rev-61f4aadb65cc4df4`, whose full conjunct comparison admitted a non-motion
+common-noun subject and an incompatible optional PP.
+
+The correction reuses two existing declarative predicates rather than adding
+word memberships. Every conjunct quantity sibling applies
+`verb_role_compatible` for `motion_comparison_verb` and
+`motion_participant` to its common-noun subject; the full explicit-standard
+rule applies the same boundary to its standard. The full rule also applies
+the existing `attribute_compatible` predicate to its optional PP. The exact
+review is now absent, while synthetic motion-participant and compatible-PP
+minimal pairs remain matched. The anaphoric conjunct deliberately retains its
+established broad temporal `by day`/`by night` adjunct contract.
+
+Adding `book` globally to `non_quantity_holder` or `travel` globally to
+`non_quantity_object_verb` would reject legitimate page holdings and distance
+quantities. The separate question—whether motion comparisons that state an
+item should require a declared distance/frequency measure—remains open until
+that measure-role union is specified and audited as a product boundary.
+
+The complete gate is 4,321 tests, curated 65/65, GSM8K DEV 104/0 and 41/0,
+ASDiv/SVAMP/MAWPS/SciBench 45/0, 30/0, 11/0, and 6/0, FOLIO at zero
+commitments, and lint at zero errors with two known warnings. All isolated
+pre-change/current diffs are neutral. No protected TEST or generalization
+look was spent.
+
+#### Twenty-seventh review reconciliation — complete
+
+The bounded 219-row / 169,703-byte review snapshot (SHA-256
+`323869c3e9a3cdbec0c8cc732d0d8183d686c103854f30caef946da757e8554c`)
+folds to four live reviews. The new valid future-age review confirms the
+target rule and its subtraction semantics, but exposes repeated unknown-word
+noise on required literal tokens. The same class was previously observed on
+the past and temporal-ratio siblings.
+
+The three affected generic English words—`ago`, `be`, and `old`—now live in
+`core-english` beside the arithmetic grammar that requires them. This is a
+declarative ownership move, not a generator or deficiency-reporter exception.
+The existing `be ∈ non_event_verb` membership moves with the infinitive; the
+mining pack retains `been` and `being` as its extension vocabulary. An
+in-memory legacy reconstruction proves every combined GSM8K registry field
+except the ownership-derived fingerprint is unchanged.
+
+Curated gains exactly the three newly core-owned identities, moving the
+frontier from 181 to 184 while keeping all 106 premise rules selectable.
+Synthetic future, past, and temporal-ratio age frames match without unknown
+deficiencies; a nonce-tail minimal pair remains unknown and does not match.
+The complete gate is 4,327 tests, curated 65/65, GSM8K DEV 104/0 and 41/0,
+ASDiv/SVAMP/MAWPS/SciBench 45/0, 30/0, 11/0, and 6/0, FOLIO at zero
+commitments, and lint at zero errors with the current two warnings. All
+isolated before/after diffs are neutral. No protected TEST or generalization
+look was spent.
+
+#### Twenty-eighth review reconciliation — complete
+
+The bounded 222-row / 177,650-byte review snapshot (SHA-256
+`d69f11c17f6c0d8720537f80d179a951be793805a3440639b852a8c57063fb49`)
+folds to seven live reviews. Two new invalid surfaces expose complete existing
+grammar boundaries:
+
+- the demonstrative `that/this many|much` quantity pro-forms accept adverbial
+  multipliers such as `twice`, `thrice`, and explicit `N times`, but subtract
+  the declared noun-phrase `predeterminer_multiplier` class. The same premise
+  applies to the standalone `many`, standalone `much`, and conjunct pro-form
+  rules. `double`/`triple` remain available before actual noun heads such as
+  `the amount` and `the number`; and
+- the comparative stated-need rule uses a noun-rooted item slot with
+  `same_number: [n, item]`. One rule now generates and matches both
+  `1 fewer shopper` and `2 fewer shoppers`, while rejecting both mismatches.
+
+The exact predeterminer and count-disagreement reviews now retest absent and
+cannot be recreated through locked generation. The earlier exact
+`double that many` conjunct also becomes absent for the same independent
+surface boundary, while the `twice that many` minimal pair stays matched; its
+same-measure addition semantics remain a product question.
+
+The improper-fraction increase review stays matched. A standing synthetic
+contract deliberately accepts positive improper fractions for unbounded
+proportional increases, so choosing between a proper-fraction surface limit
+and a different realization is an explicit product decision. Likewise, the
+generic learned Predications left after the two target rules decline remain
+the existing kernel-wide fold-policy question, not target-aware authoring
+behavior.
+
+All 4,334 tests pass in four-worker mode. Curated remains 65/65; GSM8K
+DEV-train and DEV-holdout remain 104/0 and 41/0; ASDiv, SVAMP, MAWPS, and
+SciBench remain 45/0, 30/0, 11/0, and 6/0; FOLIO makes zero commitments; all
+before/after diffs are neutral; and lint has zero errors with two known
+warnings. No protected TEST or generalization look was spent.
 
 There is no automatic transition to G7. Ask-rule and derived-rule generation
 requires a separate decision after the premise audit demonstrates that the

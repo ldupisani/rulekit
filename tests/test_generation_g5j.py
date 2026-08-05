@@ -101,9 +101,9 @@ def test_g5j_profiles_the_complete_comparative_category_class() -> None:
 
     assert occurrences == {
         "delta": 8,
-        "quantity_delta": 5,
+        "quantity_delta": 3,
         "count_quantity_delta": 7,
-        "mass_quantity_delta": 4,
+        "mass_quantity_delta": 6,
         "age_comparative": 2,
         "count_intensifier": 1,
         "dimension_comparative": 1,
@@ -116,8 +116,8 @@ def test_g5j_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 105
-    assert sum(item.supported for item in availability.values()) == 105
+    assert len(availability) == 106
+    assert sum(item.supported for item in availability.values()) == 106
     assert sum(not item.supported for item in availability.values()) == 0
     assert all(availability[rule_id].supported for rule_id in NEWLY_SUPPORTED)
     assert all(
@@ -125,7 +125,7 @@ def test_g5j_unlocks_exactly_the_preregistered_frontier() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 154
+    assert len(exploration_status(project)["fillers"]) == 184
 
 
 def test_owned_comparative_categories_have_project_backed_fillers() -> None:

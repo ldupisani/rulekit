@@ -83,7 +83,7 @@ def test_age_noun_has_one_complete_occurrence_set() -> None:
             "arithmetic/group-total-sum-of-age",
             "noun",
             False,
-            None,
+            "plural",
         ),
         (
             "arithmetic/times-as-old-as-possessive-standard",
