@@ -4,7 +4,12 @@ The runtime kernel never imports this package. Generation deliberately calls
 the ordinary analyzer and matcher as its validation oracle.
 """
 
-from .candidate import GenerationCandidate, RuleAvailability
+from .candidate import (
+    GenerationCandidate,
+    GenerationMode,
+    LexicalRelaxation,
+    RuleAvailability,
+)
 from .exploration import (
     ExplorationEvent,
     ExplorationFailure,
@@ -44,12 +49,14 @@ from .sample import (
 __all__ = [
     "GenerationCandidate",
     "GenerationError",
+    "GenerationMode",
     "ExplorationEvent",
     "ExplorationFailure",
     "ExplorationFiller",
     "ExplorationSelection",
     "FactEvidence",
     "HypothesisRecord",
+    "LexicalRelaxation",
     "PremiseAttachment",
     "ReviewRecord",
     "ReviewDefect",

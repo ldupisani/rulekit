@@ -124,6 +124,13 @@ entries:
   afford:
     senses:
     - verb
+    number: plural
+  affords:
+    senses:
+    - verb
+    number: singular
+    verb:
+      lemma: afford
   after:
     senses:
     - preposition
@@ -1520,9 +1527,11 @@ entries:
   come:
     senses:
     - verb
+    number: plural
   comes:
     senses:
     - verb
+    number: singular
     verb:
       lemma: come
   coming:
@@ -1831,6 +1840,7 @@ entries:
   cover:
     senses:
     - verb
+    number: plural
   covered:
     senses:
     - verb
@@ -1839,9 +1849,12 @@ entries:
   covering:
     senses:
     - verb
+    verb:
+      lemma: cover
   covers:
     senses:
     - verb
+    number: singular
     verb:
       lemma: cover
   cow:

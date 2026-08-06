@@ -27,6 +27,7 @@ MOVED_MEMBERS = {
     ),
     "mass_dimension_comparative": ["heavier", "lighter"],
     "duration_dimension_comparative": ["longer", "shorter"],
+    "measured_comparative": sorted(MOVED_WORDS),
 }
 CORE_MEMBERSHIPS = {
     word: tuple(
@@ -166,7 +167,7 @@ def test_every_dimension_comparative_generates_a_matcher_confirmed_specimen(
     premise = next(row for row in candidate.premises if row.slot == "dir")
     direct = "dimension_more" if comparative in MORE else "dimension_less"
 
-    assert candidate.generator_version == "g6-reviewed-premise-boundaries"
+    assert candidate.generator_version == "g6-strict-boundary-modes"
     assert candidate.target_status == "matched"
     assert premise.binding == comparative
     assert premise.status == "passed"

@@ -6,6 +6,20 @@ from dataclasses import asdict, dataclass
 from typing import Any, Literal
 
 
+GenerationMode = Literal["strict", "lexical_boundary"]
+
+
+@dataclass(frozen=True)
+class LexicalRelaxation:
+    """One slot deliberately sampled outside its declared lexical gate."""
+
+    slot: str
+    surface: str
+    identity: str
+    requirement: str
+    broader_domain: str
+
+
 @dataclass(frozen=True)
 class RuleAvailability:
     """Whether the current generator can realize a rule."""
@@ -72,6 +86,7 @@ class GenerationCandidate:
     registry_fingerprint: str
     generator_version: str
     origin: Literal["generated", "reading"]
+    generation_mode: GenerationMode
     seed: int
     target_rule: str | None
     target_description: str | None
@@ -88,6 +103,7 @@ class GenerationCandidate:
     collisions: tuple[dict[str, Any], ...]
     deficiencies: tuple[str, ...]
     attempts: int
+    lexical_relaxations: tuple[LexicalRelaxation, ...] = ()
 
     def to_json(self) -> dict[str, Any]:
         payload = asdict(self)

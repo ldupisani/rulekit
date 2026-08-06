@@ -614,6 +614,14 @@ def _superordinate_total(
     subtype", so it stays declined rather than risk answering a bare
     restatement as if it were the whole superordinate total.
 
+    Closed categories opt in with `superordinate: true` and may compose
+    subtype facts across premises. Open-ended categories opt in separately
+    with `coordinated_superordinate: true`; those facts must all come from
+    one coordinated pattern emission in one sentence, with a segment marker
+    proving that the premise was a list. This permits explicit enumerations
+    such as penguins + bears -> animals without reviving the rejected global
+    animal roll-up, where an unresolved third subtype could be silently lost.
+
     `verb` (opt-in, default None — the STATE-ask caller is unaffected):
     when given (an EVENT ask, e.g. "how many total toys does he BUY"),
     scopes both which measures count as "held" and how each subtype is
@@ -624,30 +632,40 @@ def _superordinate_total(
     `_entity_total`, event asks reuse `_verb_total`, so an ambiguous
     subtype (mixed times, unsigned event) declines the WHOLE total,
     definitive-or-decline exactly like `_purchase_total`/`_revenue_total`."""
-    if measure not in reg.superordinate_categories:
-        # NOT merely "measure has declared members" — 'animal'/'pet' also
-        # have members (a different, deliberately PARTIAL list, for
-        # unrelated decline-safety regression coverage) and reading them
-        # here would silently sum only the CAPTURED subset while an
-        # uncaptured subtype phrase in the text (e.g. an unresolved
-        # relation) drops out unaccounted — a genuine confident-wrong the
-        # dev-train gate caught. Only a category the pack explicitly marks
-        # `superordinate: true` (data/schemas.py CategoryDef) is eligible.
+    closed_superordinate = measure in reg.superordinate_categories
+    coordinated_superordinate = (
+        measure in reg.coordinated_superordinate_categories
+    )
+    if not (closed_superordinate or coordinated_superordinate):
+        # NOT merely "measure has declared members" — `pet` also has a
+        # deliberately partial list for unrelated decline-safety coverage.
+        # Only an explicitly closed or coordinated superordinate is eligible.
         return None
     members = set(reg.category_members.get(measure, ()))
     if not members:
         return None
     if verb is None:
-        held_measures = {q.measure for q in store.by_kind(Quantity) if q.entity == entity}
+        quantities = [
+            q for q in store.by_kind(Quantity) if q.entity == entity
+        ]
     else:
-        held_measures = {
-            q.measure for q in store.by_kind(Quantity)
+        quantities = [
+            q for q in store.by_kind(Quantity)
             if q.entity == entity and q.verb == verb
-        }
+        ]
+    held_measures = {q.measure for q in quantities}
     if not held_measures or not held_measures <= members:
         return None
     if len(held_measures) < 2:
         return None
+    if coordinated_superordinate and not closed_superordinate:
+        emission_sites = {
+            (q.provenance.sentence, q.provenance.source) for q in quantities
+        }
+        if len(emission_sites) != 1 or not any(
+            q.segment is not None for q in quantities
+        ):
+            return None
     parts: list[str] = []
     for m in sorted(held_measures):
         subtotal = (
@@ -819,8 +837,15 @@ def _combined_holder_totals(
         # otherwise reachable only from the single-entity consumer.
         if not entities:
             super_measure = next(
-                (c for c in (singular, measure_substance)
-                 if c and c in reg.superordinate_categories),
+                (
+                    c
+                    for c in (singular, measure_substance)
+                    if c
+                    and (
+                        c in reg.superordinate_categories
+                        or c in reg.coordinated_superordinate_categories
+                    )
+                ),
                 None,
             )
             if super_measure is not None:

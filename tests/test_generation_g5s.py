@@ -196,7 +196,7 @@ def test_periodic_rule_exposes_every_loaded_modal(modal: str) -> None:
     premise = next(row for row in candidate.premises if row.slot == "aux")
     direct = "capacity_modal" if modal in CAPACITY else "future_modal"
 
-    assert candidate.generator_version == "g6-reviewed-premise-boundaries"
+    assert candidate.generator_version == "g6-strict-boundary-modes"
     assert candidate.target_status == "matched"
     assert premise.binding == modal
     assert premise.category_path == (modal, direct, "modal")

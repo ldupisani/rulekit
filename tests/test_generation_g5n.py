@@ -124,7 +124,7 @@ def test_every_complementizer_rule_generates_a_reviewable_match(
     )
     premise = next(row for row in candidate.premises if row.slot == "c")
 
-    assert candidate.generator_version == "g6-reviewed-premise-boundaries"
+    assert candidate.generator_version == "g6-strict-boundary-modes"
     assert candidate.target_status == "matched"
     assert premise.binding == "that"
     assert premise.status == "passed"

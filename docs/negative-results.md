@@ -1600,3 +1600,33 @@ coverage requires a designed inference frontier (restricted-class universals,
 exclusive disjunction, case analysis, definite descriptions) with this
 section's ladder as its baseline measurement — not a third thin re-landing,
 and not before the indefinite-subject gate exists.
+
+## A locative proper name is not a complete-holder proof (2026-08-06)
+
+The located-holder candidate began with two structurally separate ask forms:
+
+- `how many ITEM are there in NAME?` queried the proper name directly;
+- `how many ITEM are there in OWNER's PLACE?` queried the explicit owner of a
+  pack-declared quantitative location.
+
+Both were YAML-only and reused the existing `single-entity` consumer. Together
+they produced two clean DEV-train solves and no regressions, moving 105/0 to
+107/0. DEV-holdout, however, produced one correct solve and one new confident
+wrong (43/0 to 44/1). The wrong committed a quantity keyed to the named place,
+but that quantity was not the requested complete total. The same name-shaped
+subclass also contained the correct holdout solve, so narrowing by name length
+or capitalization morphology would have been item tuning rather than a
+semantic boundary.
+
+The bare-name ask was therefore removed in full. A preposition can establish
+that a name is being used locatively, but it does not establish that every
+relevant quantity in that location is stored directly under the name. Revisit
+this only after the fact graph represents a declared place/contents relation
+or another independent completeness proof; do not reintroduce it through a
+surface heuristic.
+
+The possessed-location sibling survives independently. Its possessed noun
+must belong to `quantity_location`, and the query entity comes from the
+structurally explicit owner. It buys one DEV-train item (105/0 to 106/0), is
+byte-neutral on DEV-holdout at 43/0, and preserves every standing cross-corpus
+gate.

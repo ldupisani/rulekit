@@ -64,7 +64,7 @@ categories:
   person:
     parent: noun
   persongroup:
-    parent: noun
+    parent: quantity_holder
   produce:
     parent: verb
     polarity: 1
@@ -155,6 +155,32 @@ members:
   # lexically defined in this pack. They are deliberately NOT `state` members:
   # that narrower subclass controls arithmetic holding/event semantics.
   non_event_verb: [been, being]
+  # These transitive surfaces do not assert possession or acquisition of a
+  # counted object. They may be useful elsewhere, but not in the direct
+  # arithmetic quantity-object frame.
+  non_quantity_object_verb:
+  - afford
+  - affords
+  - came
+  - come
+  - comes
+  - equals
+  - measure
+  - measured
+  - measures
+  quantity_event_verb:
+  - repaint
+  - repainted
+  - repainting
+  - repaints
+  - trade
+  - traded
+  - trades
+  - meet
+  - meets
+  - met
+  shucking_verb: [shuck, shucked, shucking, shucks]
+  shuckable_item: [corn, ear, oyster, peas]
   # extends core-english's `animate` (see its note there): these 43
   # person-denoting nouns are lexically defined in THIS pack, so their
   # membership must be declared here — a member absent from the loading
@@ -186,6 +212,15 @@ members:
   - day
   - week
   - month
+  # Proven bare/common holder classes that are not locations, people, or
+  # motion participants. Keep this separate from quantity_location: treating
+  # `store` as a PP location changes container-scoping semantics.
+  quantity_holder:
+  - plank
+  - store
+  duration_holder: [gap, journey, trip]
+  linear_dimension_holder: [box, gift, pyramid, rope, snake]
+  mass_dimension_holder: [box, gift, macaron, pyramid]
   # Container/place heads proven in quantitative PP adjuncts.
   quantity_location:
   - aquarium
@@ -207,6 +242,7 @@ members:
   - side
   - wardrobe
   - wheel
+  - zoo
   # Narrower surface/site readings extend the core pairing without making
   # every locative preposition interchangeable with every place noun.
   quantity_surface_location:
@@ -414,6 +450,8 @@ members:
   - lions
   - monkey
   - monkeys
+  - penguin
+  - penguins
   - pig
   - pigs
   - rabbit
@@ -819,6 +857,7 @@ members:
   - taxis
   - tractor
   - tractors
+  - vehicle
   - tricycle
   - tricycles
   - truck

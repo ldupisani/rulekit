@@ -1121,6 +1121,11 @@ function reviewRow(r) {
   rule.append(
     document.createTextNode(r.target_rule || "No target rule"),
     el("span", "rv-origin", r.origin || "generated"),
+    el(
+      "span",
+      "rv-origin",
+      (r.generation_mode || "strict").replaceAll("_", " "),
+    ),
   );
   row.append(rule);
   row.append(el("td", "rv-sentence", r.sentence));
@@ -1401,6 +1406,10 @@ function selectedGenerationRule() {
   return state.generationRules.find((rule) => rule.id === id) || null;
 }
 
+function selectedGenerationMode() {
+  return $("generation-mode").value || "strict";
+}
+
 function selectedGenerationFiller() {
   const identity = $("generation-filler").value;
   return (state.generationExploration.fillers || [])
@@ -1412,16 +1421,27 @@ function renderGenerationExplorationSelection(rule, filler) {
   box.replaceChildren();
   const ruleStatus = (state.generationExploration.rules || [])
     .find((item) => item.id === rule?.id);
+  const mode = selectedGenerationMode();
   box.append(
     el(
       "span",
       "mono",
-      ruleStatus
+      mode === "lexical_boundary"
+        ? "lexical boundary: one category-gated slot may draw from its broader declared root sense"
+        : ruleStatus
         ? `rule ${ruleStatus.status.replaceAll("_", " ")} · generated ${ruleStatus.generated_count} · failed ${ruleStatus.failed_count || 0} · reviewed ${ruleStatus.reviewed_count}`
         : "rule frontier: least attempted, with seeded tie-breaking",
     ),
   );
-  if (filler) {
+  if (mode === "lexical_boundary") {
+    box.append(
+      el(
+        "span",
+        "mono",
+        "boundary probes do not count as strict rule or lexicon coverage",
+      ),
+    );
+  } else if (filler) {
     box.append(
       el(
         "span",
@@ -1440,10 +1460,11 @@ function renderGenerationExplorationSelection(rule, filler) {
 function updateGenerationRuleState() {
   const rule = selectedGenerationRule();
   const filler = selectedGenerationFiller();
+  const strict = selectedGenerationMode() === "strict";
   const blocker = $("generation-blocker");
   const blocked = rule && !rule.supported;
   const incompatible = Boolean(
-    rule && filler && !filler.compatible_rules.includes(rule.id),
+    strict && rule && filler && !filler.compatible_rules.includes(rule.id),
   );
   blocker.classList.toggle("hidden", !blocked && !incompatible);
   blocker.textContent = blocked
@@ -1452,6 +1473,7 @@ function updateGenerationRuleState() {
       ? `${filler.identity} cannot fill a supported slot in ${rule.id}`
       : "";
   $("generation-next").disabled = Boolean(blocked || incompatible);
+  $("generation-filler").disabled = !strict;
   renderGenerationExplorationSelection(rule, filler);
 }
 
@@ -1658,15 +1680,22 @@ function updateGenerationReviewState() {
 function renderGenerationPremises(candidate) {
   const summary = $("generation-premise-summary");
   const sentenceReview = !candidate.target_rule;
+  const boundary = candidate.generation_mode === "lexical_boundary";
   $("generation-premise-title").textContent = sentenceReview
     ? "Reading evidence"
-    : "Why the target premise matched";
+    : boundary
+      ? "Target premise boundary"
+      : candidate.target_status === "matched"
+        ? "Why the target premise matched"
+        : "Target premise result";
   const specificity = candidate.target_specificity
     ? candidate.target_specificity.join("/")
     : "unavailable";
   summary.textContent = sentenceReview
     ? "no target rule selected · no rule coverage claimed"
-    : `specificity ${specificity} · ${candidate.consumed_units.length} consumed unit(s)`;
+    : boundary
+      ? `${candidate.lexical_relaxations?.length || 0} lexical gate(s) relaxed · target ${candidate.target_status}`
+      : `specificity ${specificity} · ${candidate.consumed_units.length} consumed unit(s)`;
 
   const list = $("generation-premise-list");
   list.replaceChildren();
@@ -1718,6 +1747,7 @@ function renderGenerationPremises(candidate) {
     }
     if (
       targetAvailability?.supported
+      && candidate.generation_mode !== "lexical_boundary"
       && premise.slot
       && candidate.requested_bindings[premise.slot]
     ) {
@@ -2023,6 +2053,8 @@ async function formGenerationHypotheses() {
       requested_bindings: candidate.requested_bindings,
       attempts: candidate.attempts,
       origin: candidate.origin || "generated",
+      generation_mode: candidate.generation_mode || "strict",
+      lexical_relaxations: candidate.lexical_relaxations || [],
       verdict: state.reviewVerdict,
       defects,
     });
@@ -2050,6 +2082,7 @@ function renderGenerationCandidate(
   { resetRetest = true, preserveReview = false } = {},
 ) {
   const sentenceReview = !candidate.target_rule;
+  const generationMode = candidate.generation_mode || "strict";
   const priorAttachment = preserveReview
     ? $("generation-attachment").value
     : "sentence";
@@ -2081,8 +2114,37 @@ function renderGenerationCandidate(
   status.className = `generation-status ${candidate.target_status}`;
   $("generation-meta").textContent =
     `${candidate.origin || "generated"} · ${candidate.generator_version} · ` +
+    `${generationMode.replaceAll("_", " ")} · ` +
     `seed ${candidate.seed} · ` +
     `${candidate.attempts} attempt(s) · ${candidate.registry_fingerprint.slice(0, 16)}`;
+  if (candidate.origin === "generated") {
+    $("generation-mode").value = generationMode;
+    updateGenerationRuleState();
+  }
+  const modeNote = $("generation-mode-note");
+  modeNote.replaceChildren();
+  if (generationMode === "lexical_boundary") {
+    const relaxations = candidate.lexical_relaxations || [];
+    modeNote.append(
+      el(
+        "div",
+        "mono",
+        relaxations.length
+          ? `Lexical boundary probe · ${relaxations.map((item) =>
+              `${item.slot}=${item.surface}: ${item.requirement} → ${item.broader_domain}`
+            ).join(" · ")}`
+          : "Lexical boundary mode found no active category gate with an outside filler; this specimen remained strict.",
+      ),
+      el(
+        "div",
+        "",
+        "A missing target match is an expected boundary observation, not proof that the sentence itself is invalid.",
+      ),
+    );
+    modeNote.classList.remove("hidden");
+  } else {
+    modeNote.classList.add("hidden");
+  }
   const probe = $("generation-probe");
   probe.replaceChildren();
   if (candidate.exploration_probe) {
@@ -2191,6 +2253,8 @@ async function saveAndRetest() {
       requested_bindings: before.requested_bindings,
       attempts: before.attempts,
       origin: before.origin || "generated",
+      generation_mode: before.generation_mode || "strict",
+      lexical_relaxations: before.lexical_relaxations || [],
     });
     if (after.detail) {
       $("generation-retest").classList.remove("hidden");
@@ -2229,6 +2293,7 @@ async function saveAndRetest() {
 
 async function generateNext() {
   const selected = selectedGenerationRule();
+  const generationMode = selectedGenerationMode();
   if (selected && !selected.supported) return;
   const seedInput = $("generation-seed");
   const prior = Number(seedInput.value);
@@ -2244,8 +2309,11 @@ async function generateNext() {
   try {
     const candidate = await api("POST", "/api/generation/candidate", {
       rule_id: selected?.id || null,
-      filler_identity: selectedGenerationFiller()?.identity || null,
+      filler_identity: generationMode === "strict"
+        ? selectedGenerationFiller()?.identity || null
+        : null,
       seed,
+      generation_mode: generationMode,
     });
     if (candidate.detail) {
       await loadGenerationExploration();
@@ -2253,7 +2321,7 @@ async function generateNext() {
       return;
     }
     renderGenerationCandidate(candidate);
-    await loadGenerationExploration();
+    if (generationMode === "strict") await loadGenerationExploration();
     setStatus(
       `${candidate.target_rule}: ${candidate.target_status} · ${candidate.actual_rule_ids.length} actual rule(s)`,
       "ok",
@@ -2284,6 +2352,8 @@ async function saveGenerationReview() {
   const payload = await api("POST", "/api/generation/review", {
     candidate_id: candidate.id,
     origin: candidate.origin || "generated",
+    generation_mode: candidate.generation_mode || "strict",
+    lexical_relaxations: candidate.lexical_relaxations || [],
     review_kind: candidate.target_rule ? "premise" : "sentence",
     sentence: candidate.sentence,
     target_rule: candidate.target_rule,
@@ -2432,6 +2502,12 @@ $("view-semantic").onclick = () => setView("semantic");
 $("view-field").onclick = () => setView("field");
 $("view-proof").onclick = () => setView("proof");
 $("generation-next").onclick = generateNext;
+$("generation-mode").onchange = () => {
+  if (selectedGenerationMode() === "lexical_boundary") {
+    $("generation-filler").value = "";
+  }
+  updateGenerationRuleState();
+};
 $("generation-seed").addEventListener("input", () => {
   // A user-entered seed is an explicit request to try that exact seed once.
   state.lastGenerationSeed = null;

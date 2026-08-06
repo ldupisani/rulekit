@@ -230,6 +230,9 @@ GOLDEN = [
      'single-entity', 'decline', None, "no 'eat' events known for 'carla'/'apple'"),
     ('gsm8k', 'How many apples did Sam eat?',
      'single-entity', 'decline', None, "no 'eat' events known for 'sam'/'apple'"),
+    ('gsm8k', 'Calculate the age of Arden and Briar.',
+     'single-entity', 'decline', None,
+     'a single-dimension ask must name exactly one entity'),
     (
         'gsm8k',
         'Nadia bought 5 new toy cars. Nadia has 40 toy cars now. '

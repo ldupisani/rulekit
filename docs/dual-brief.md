@@ -56,7 +56,7 @@ after  the frame:  item blocked on {premise}        -> ONE fix converts it
 The items it parses are the **only place in the corpus where a premise fix can convert
 anything.** They are the seed pool for every dual brief below.
 
-## 3. ~~THE SEED INCREMENT — superordinate aggregation~~ **RETRACTED — IT IS ALREADY BUILT, AND THE EXTENSION WAS ALREADY REJECTED**
+## 3. ~~THE SEED INCREMENT — global superordinate aggregation~~ **RETRACTED; THE COORDINATED FORM LANDED 2026-08-06**
 
 **Do not build this. Read this section as a WARNING, not a brief.**
 
@@ -65,8 +65,8 @@ subtype-total-asks"), reached from the `single-entity` decline site. It already 
 exact guard derived from first principles here (*fires ONLY when EVERY measure the entity holds
 is a declared member of the asked category, AND ≥2 distinct subtypes are held*).
 
-And the specific extension this section proposed — admitting `animal` — **was already tried and
-rejected on measured evidence.** From the code:
+And the specific extension this section proposed — admitting `animal` as an ordinary closed
+superordinate — **was tried and rejected on measured evidence.** The historical code warning was:
 
 > `'animal'/'pet' also have members (a deliberately PARTIAL list) and reading them here would
 > silently sum only the CAPTURED subset while an uncaptured subtype drops out unaccounted —
@@ -82,7 +82,7 @@ superordinate: true  ->  child <- (daughter, son)             CLOSED class
 animal               ->  47 members, UNBOUNDED                OPEN class  -> EXCLUDED
 ```
 
-> **Superordinate totalling is sound only for CLOSED-CLASS categories.**
+> **Cross-premise superordinate totalling is sound only for CLOSED-CLASS categories.**
 
 The guard is `held_measures ⊆ members`. Its safety rests on being able to reason about
 COMPLETENESS. With `child = {son, daughter}` the subtypes are exhaustively enumerable. With
@@ -93,6 +93,22 @@ confident wrong instead of a decline.
 
 Closed vs open class is a real, canonical linguistic distinction, and here it is load-bearing
 for precision. **Do not admit an open class to `superordinate: true`.**
+
+### The bounded resolution (2026-08-06)
+
+The later implementation does not relax that rule. It adds a separate schema contract,
+`coordinated_superordinate: true`, for an open category whose members may be summed only when
+all contributing quantities were emitted by one pattern source in one sentence and at least one
+fact carries a conjunct segment marker. The explicit `N penguins and K times as many bears`
+premise proves such coordination; two independent animal premises do not. `animal` uses this
+new contract, while `child`, `fish`, `toy`, and `litter` keep the closed `superordinate` contract.
+
+That distinction solves the DEV zoo case without repeating the old partial-ontology mistake:
+one subtype declines, independent subtype facts decline, an unrelated held measure declines,
+and the ordinary held-measure subset and direct-total guards remain intact. The new prenominal
+pronoun total ask is a declarative sibling of the existing combined-total asks. DEV-train gains
+exactly the intended item (106/0 -> 107/0); DEV-holdout and all cross-corpus precision gates are
+neutral. No protected TEST look was spent.
 
 ### The meta-lesson, which cost this brief
 

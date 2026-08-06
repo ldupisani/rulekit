@@ -19,6 +19,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from ..data.project import Project
+from .candidate import GenerationMode, LexicalRelaxation
 
 
 DefectKind = Literal[
@@ -143,6 +144,10 @@ class ReviewRecord(BaseModel):
 
     candidate_id: str = Field(min_length=1, max_length=128)
     origin: Literal["generated", "reading"] = "generated"
+    generation_mode: GenerationMode = "strict"
+    lexical_relaxations: list[LexicalRelaxation] = Field(
+        default_factory=list, max_length=16
+    )
     review_kind: Literal["premise", "sentence"] = "premise"
     sentence: str = Field(min_length=1, max_length=2000)
     target_rule: str | None = Field(default=None, min_length=1, max_length=256)

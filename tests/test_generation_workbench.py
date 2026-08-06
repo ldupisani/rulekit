@@ -12,6 +12,7 @@ from rulekit.generation import (
     ExplorationFailure,
     FactEvidence,
     GenerationError,
+    LexicalRelaxation,
     PremiseAttachment,
     ReviewRecord,
     ReviewDefect,
@@ -298,6 +299,225 @@ def test_same_seed_is_identical_across_fresh_project_loads(tmp_path: Path) -> No
     assert first.facts
 
 
+def test_strict_round_trip_rejects_a_partial_requested_binding(
+    tmp_path: Path,
+) -> None:
+    _write_project(tmp_path)
+    lexicon = tmp_path / "pack" / "lexicon.yaml"
+    lexicon.write_text(
+        lexicon.read_text().replace(
+            "  jel: {senses: [adjective]}\n",
+            (
+                "  jel: {senses: [adjective]}\n"
+                "  hand: {senses: [noun]}\n"
+                "  hand-written: {senses: [noun]}\n"
+            ),
+        )
+    )
+    project = load_project(tmp_path)
+
+    partial = generate_candidate(
+        project,
+        rule_id="invented/simple",
+        seed=8128,
+        max_attempts=1,
+        locked_bindings={
+            "who": "Luma",
+            "verb": "dax",
+            "item": "hand-written",
+        },
+    )
+    complete = generate_candidate(
+        project,
+        rule_id="invented/simple",
+        seed=8128,
+        max_attempts=1,
+        locked_bindings={
+            "who": "Luma",
+            "verb": "dax",
+            "item": "hand",
+        },
+    )
+
+    assert partial.target_status == "absent"
+    assert partial.requested_bindings["item"] == "hand-written"
+    assert any(
+        match.rule_id == "invented/simple"
+        for match in partial.actual_matches
+    )
+    assert "written" in " ".join(partial.deficiencies)
+    assert complete.target_status == "matched"
+
+
+def test_lexical_boundary_mode_widens_one_gate_without_claiming_a_match(
+    tmp_path: Path,
+) -> None:
+    _write_project(tmp_path)
+    lexicon = tmp_path / "pack" / "lexicon.yaml"
+    lexicon.write_text(
+        lexicon.read_text().replace(
+            "  dax: {senses: [verb]}\n",
+            "  dax: {senses: [verb]}\n  nax: {senses: [verb]}\n",
+        )
+    )
+    project = load_project(tmp_path)
+
+    strict = generate_candidate(
+        project,
+        rule_id="invented/simple",
+        seed=8128,
+        generation_mode="strict",
+    )
+    boundary = generate_candidate(
+        project,
+        rule_id="invented/simple",
+        seed=8128,
+        generation_mode="lexical_boundary",
+    )
+    replay = generate_candidate(
+        load_project(tmp_path),
+        rule_id="invented/simple",
+        seed=8128,
+        generation_mode="lexical_boundary",
+    )
+
+    assert strict.target_status == "matched"
+    assert strict.requested_bindings["verb"] == "dax"
+    assert strict.lexical_relaxations == ()
+    assert boundary.to_json() == replay.to_json()
+    assert boundary.generation_mode == "lexical_boundary"
+    assert boundary.requested_bindings["verb"] == "nax"
+    assert boundary.target_status == "absent"
+    assert [item.slot for item in boundary.lexical_relaxations] == ["verb"]
+    assert boundary.lexical_relaxations[0].requirement == (
+        "category 'invented_action'"
+    )
+    relaxed = next(
+        premise
+        for premise in boundary.premises
+        if premise.slot == "verb"
+    )
+    assert relaxed.status == "relaxed"
+    assert "outside the strict category 'invented_action'" in relaxed.reason
+    assert all(
+        premise.status == "unverified"
+        for premise in boundary.premises
+        if premise.kind == "where"
+    )
+
+
+def test_boundary_mode_survives_retest_and_review_without_counting_coverage(
+    tmp_path: Path,
+) -> None:
+    _write_project(tmp_path)
+    lexicon = tmp_path / "pack" / "lexicon.yaml"
+    lexicon.write_text(
+        lexicon.read_text().replace(
+            "  dax: {senses: [verb]}\n",
+            "  dax: {senses: [verb]}\n  nax: {senses: [verb]}\n",
+        )
+    )
+    project = load_project(tmp_path)
+    state = ServerState(tmp_path)
+    router = build_router(state)
+    endpoint = next(
+        route.endpoint
+        for route in router.routes
+        if route.path == "/api/generation/candidate"
+        and "POST" in route.methods
+    )
+
+    payload = endpoint(
+        GenerationCandidateBody(
+            rule_id="invented/simple",
+            seed=8128,
+            generation_mode="lexical_boundary",
+        )
+    )
+
+    assert payload["target_status"] == "absent"
+    assert payload["exploration_event_id"] is None
+    assert payload["exploration_probe"] is None
+    assert read_exploration_events(project) == []
+
+    exploration_endpoint = next(
+        route.endpoint
+        for route in router.routes
+        if route.path == "/api/generation/exploration"
+        and "GET" in route.methods
+    )
+    compact_status = exploration_endpoint()
+    assert compact_status["fillers"]
+    assert all(
+        "surfaces" not in filler and "placements" not in filler
+        for filler in compact_status["fillers"]
+    )
+
+    relaxation = tuple(
+        LexicalRelaxation(**item) for item in payload["lexical_relaxations"]
+    )
+    replay = retest_candidate(
+        project,
+        rule_id=payload["target_rule"],
+        sentence=payload["sentence"],
+        seed=payload["seed"],
+        requested_bindings=payload["requested_bindings"],
+        attempts=payload["attempts"],
+        generation_mode="lexical_boundary",
+        lexical_relaxations=relaxation,
+    )
+    assert replay.generation_mode == "lexical_boundary"
+    assert replay.lexical_relaxations == relaxation
+    review = append_review(
+        project,
+        ReviewRecord(
+            candidate_id=replay.id,
+            generation_mode=replay.generation_mode,
+            lexical_relaxations=list(replay.lexical_relaxations),
+            sentence=replay.sentence,
+            target_rule=replay.target_rule,
+            seed=replay.seed,
+            registry_fingerprint=replay.registry_fingerprint,
+            requested_bindings=replay.requested_bindings,
+            verdict="unclear",
+        ),
+    )
+    assert review["generation_mode"] == "lexical_boundary"
+    assert review["lexical_relaxations"][0]["slot"] == "verb"
+
+
+def test_gsm8k_generation_fixtures_make_every_premise_rule_available() -> None:
+    availability = list_rule_availability(load_project(Path("projects/gsm8k")))
+
+    assert len(availability) == 108
+    assert all(rule.supported for rule in availability)
+
+
+def test_every_gsm8k_premise_rule_has_a_strict_round_trip() -> None:
+    project = load_project(Path("projects/gsm8k"))
+    availability = list_rule_availability(project)
+
+    for index, rule in enumerate(availability):
+        candidate = generate_candidate(
+            project,
+            rule_id=rule.id,
+            seed=1000 + index,
+        )
+        assert candidate.target_status in {"matched", "shadowed"}, rule.id
+
+
+def test_flat_currency_discount_realizes_as_one_symbolic_count() -> None:
+    candidate = generate_candidate(
+        load_project(Path("projects/curated")),
+        rule_id="arithmetic/discount-flat-noun",
+        seed=0,
+    )
+
+    assert candidate.target_status == "matched"
+    assert candidate.requested_bindings["amt"].startswith("$")
+    assert " " not in candidate.requested_bindings["amt"]
+
+
 def test_every_rule_is_listed_and_unsupported_rules_name_the_blocker(
     tmp_path: Path,
 ) -> None:
@@ -350,7 +570,7 @@ def test_declared_plural_slots_are_reproducible_and_source_linked(
     )
 
     assert first.to_json() == second.to_json()
-    assert first.generator_version == "g6-reviewed-premise-boundaries"
+    assert first.generator_version == "g6-strict-boundary-modes"
     assert first.target_status == "matched"
     assert first.requested_bindings["group"] in {"mivs", "zors"}
     premise = first.premises[0]
@@ -607,7 +827,7 @@ def test_possessed_slots_compose_declared_owner_and_noun_sources(
     )
 
     assert singular.to_json() == replay.to_json()
-    assert singular.generator_version == "g6-reviewed-premise-boundaries"
+    assert singular.generator_version == "g6-strict-boundary-modes"
     assert singular.target_status == "matched"
     assert plural.target_status == "matched"
     singular_premise = next(
@@ -740,7 +960,7 @@ def test_pronoun_slots_use_the_complete_declared_domain_and_sources(
     )
 
     assert candidate.to_json() == replay.to_json()
-    assert candidate.generator_version == "g6-reviewed-premise-boundaries"
+    assert candidate.generator_version == "g6-strict-boundary-modes"
     assert candidate.target_status in {"matched", "shadowed"}
     assert candidate.requested_bindings == {"ref": "vem"}
     premise = candidate.premises[0]
@@ -804,7 +1024,7 @@ def test_pronoun_category_slots_use_membership_and_ancestry_sources(
     )
 
     assert candidate.to_json() == replay.to_json()
-    assert candidate.generator_version == "g6-reviewed-premise-boundaries"
+    assert candidate.generator_version == "g6-strict-boundary-modes"
     assert candidate.target_status == "matched"
     premise = candidate.premises[0]
     assert premise.slot_type == "invented_pool"
@@ -858,7 +1078,7 @@ def test_aggregate_root_slots_use_the_complete_declared_domain_and_sources(
         )
 
         assert candidate.to_json() == replay.to_json()
-        assert candidate.generator_version == "g6-reviewed-premise-boundaries"
+        assert candidate.generator_version == "g6-strict-boundary-modes"
         assert candidate.target_status == "matched"
         assert candidate.requested_bindings == {"marker": surface}
         premise = candidate.premises[0]
@@ -2441,9 +2661,12 @@ def test_designer_exposes_the_generation_review_loop() -> None:
 
     assert 'id="view-generate"' in html
     assert 'id="generation-rule"' in html
+    assert 'id="generation-mode"' in html
+    assert 'value="lexical_boundary"' in html
     assert 'id="generation-filler"' in html
     assert 'id="generation-exploration-selection"' in html
     assert 'id="generation-probe"' in html
+    assert 'id="generation-mode-note"' in html
     assert 'data-verdict="valid"' in html
     assert 'data-verdict="invalid"' in html
     assert 'data-verdict="unclear"' in html
@@ -2491,6 +2714,9 @@ def test_designer_exposes_the_generation_review_loop() -> None:
     assert "d.source_ref" in js
     assert "f.source_ref" in js
     assert "loadGenerationExploration" in js
+    assert "selectedGenerationMode" in js
+    assert 'generation_mode: generationMode' in js
+    assert "boundary probes do not count as strict rule or lexicon coverage" in js
     assert "attempted_failed" in js
     assert "least attempted, with seeded tie-breaking" in js
     assert "use Review history → Edit for corrections" in js

@@ -106,6 +106,26 @@ events declines until modifier nesting is represented losslessly.
 Generated defects remain visible by design: mechanical support reports that a
 rule can be realized and matched, not that its premises license valid English.
 
+Entity slots can now declare `common_noun_cat` when names and common nouns
+share a grammatical position but only a positive subset of common nouns is
+licensed for the semantic role. Names and resolved pronouns keep the ordinary
+entity path; nouns must follow the named YAML category. The arithmetic ratio
+family uses `quantity_holder` on its subject, while leaving its polymorphic
+standard open to measure-class nouns. Strict generation follows this role
+boundary and lexical-boundary generation may relax it explicitly.
+An optional animate appositive is narrower still: its conditional-category
+premise requires the subject to be a declared quantity-event participant or
+an explicitly permitted proper name. This keeps holder eligibility separate
+from kinship/animate-role eligibility.
+
+Cross-slot semantic-class agreement is separate from lexical identity.
+`same_category_membership` requires all named slots either to belong to a
+declared category or all to remain outside it. The conjunct ratio rules use
+this for temporal measures, preserving both ordinary object/object and
+timeperiod/timeperiod pairs without accepting a mixed pair. Matching,
+generation feasibility, compatible probes, explanations, and source links
+all read the same predicate.
+
 Additive comparisons may omit their standard in state/ownership clauses.
 `Mary has 5 more apples` carries its measure in the Relation, while
 `Mary has 5 more` leaves it null. Both use the ordinary reserved elided-standard
@@ -128,6 +148,34 @@ named entities. The historical named-pair `a`/`b` query remains backward compati
 pronoun totals deliberately retain their different enumerate-all-holders
 semantics. This keeps question scope in the ask evidence rather than trying to
 reconstruct it from whichever facts happen to exist.
+
+A located-holder ask may use a possessed, pack-declared quantitative location:
+`how many ITEM are there in OWNER's PLACE?`. The place head must belong to
+`quantity_location`, the preposition to `quantity_location_preposition`, and
+the question verb to `state`. The ask then routes the explicit possessive owner
+to the ordinary `single-entity` consumer; unsupported heads, prepositions,
+verbs, or missing owner totals decline. A bare proper name after `in` is not
+enough evidence: capitalization identifies a name, not whether that name's
+stored quantity is the complete located total, so bare-name locations remain
+on the entity-less safe-decline path.
+
+Superclass totals have two explicit completeness contracts. A category marked
+`superordinate: true` is a closed, author-vetted subtype family such as
+`child -> {daughter, son}`; its subtype quantities may be composed across
+premises. A category marked `coordinated_superordinate: true` is open-ended,
+such as `animal`, and may be totalled only when all contributing quantities
+share one pattern source and sentence and at least one carries a conjunct
+segment marker. Thus an explicit premise that states penguins and bears
+together can answer a marked `total animals` question, while independently
+stated animal quantities cannot be mistaken for an exhaustive zoo inventory.
+The two flags are schema-level mutually exclusive. Both paths retain the
+existing safeguards: at least two distinct declared subtypes, no unrelated
+held measure, and no fallback past a direct superclass fact.
+
+The corresponding pronoun question shape is also declarative:
+`how many AGGREGATE ITEM AUX PRONOUN VERB`. The aggregate marker is mandatory
+and routes to the existing combined consumer; the pronoun does not select or
+invent a holder. Unmarked pronoun questions remain unclaimed.
 
 ## Architectural boundaries
 
@@ -504,7 +552,8 @@ loaded Project + project generation fixtures
         ↓
 enumerate every premise rule with supported/blocker status + source index
         ↓
-either seeded realization of one flat read-phase rule
+either seeded realization of one flat read-phase rule in strict-positive
+or one-slot lexical-boundary mode
 or exact Reading sentence + explicitly selected actual premise-rule match
 or exact Reading sentence with no target-rule claim
         ↓
@@ -524,7 +573,7 @@ source-linked advisory cards + human-controlled status
         ↓
 projects/<project>/generation/reviews.jsonl
 
-fresh realization only
+fresh strict-positive realization only
         ↓
 schema-bounded rule + normalized lexicon filler observation
         ↓
@@ -555,6 +604,24 @@ condition asserts that the prose is grammatical, the premises are well
 scoped, or the emitted facts are useful; those are the human review questions.
 This separation lets missing definiteness, agreement, and other bad
 commitments become inspectable evidence instead of hidden prerequisites.
+
+Generated candidates carry an explicit authoring mode. `strict` draws every
+slot from its complete declared domain and retries until the ordinary matcher
+retains the target. `lexical_boundary` chooses at most one active category or
+narrow typed slot, draws it from the broader declared root sense, and leaves
+all other morphology, agreement, absence, and cross-slot constraints intact.
+The candidate records the widened slot, chosen surface, original requirement,
+and broader domain. An absent target is therefore useful boundary evidence,
+not a generation error. Boundary specimens can be reviewed and pinned for
+retest, but never enter the strict exploration or coverage ledgers.
+
+Authoring-domain, availability, and compatible-probe catalogs are bounded
+in-memory indexes keyed by the compiled registry fingerprint and generation
+fixtures. They are invalidated naturally by any semantic project edit. The
+Designer exploration endpoint omits per-filler placement expansions that the
+UI does not consume; direct authoring callers can still request the complete
+catalog. These indexes affect only generation latency and never the runtime
+reader, matcher, or benchmark path.
 
 The current realization boundary covers literals, project-fixture names,
 simple nouns/verbs/adjectives/prepositions/words, shared finite-versus-bare

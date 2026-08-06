@@ -20,9 +20,9 @@ Mechanism, three pieces:
     subtype holdings into the asked superordinate measure's total — but
     ONLY for a category the pack marks `superordinate: true`. This is a
     separate, mandatory opt-in flag from merely "the category has members":
-    pre-existing categories like 'animal'/'pet' also declare members, for
-    an unrelated purpose (decline-safety regression coverage), with a
-    deliberately PARTIAL, non-exhaustive list — reading `members` alone
+    pre-existing categories like 'pet' also declare members for an unrelated
+    purpose (decline-safety regression coverage), with a deliberately
+    PARTIAL, non-exhaustive list — reading `members` alone
     would silently under-count whenever the text mentions an uncaptured
     sibling measure.
 

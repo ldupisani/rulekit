@@ -74,6 +74,14 @@
           <select id="generation-rule"></select>
           <div id="generation-blocker" class="generation-blocker hidden"></div>
         </div>
+        <label>
+          <span class="pane-title">Generation mode</span>
+          <select id="generation-mode"
+                  title="Strict expects every slot gate to pass. Lexical boundary widens one category-gated slot and permits the target rule to reject it.">
+            <option value="strict">Strict positive</option>
+            <option value="lexical_boundary">Lexical boundary probe</option>
+          </select>
+        </label>
         <div>
           <div class="pane-title">Lexicon probe</div>
           <select id="generation-filler"></select>
@@ -104,6 +112,7 @@
           <button id="generation-reading">Inspect in Reading</button>
           <span id="generation-meta" class="dim mono"></span>
         </div>
+        <div id="generation-mode-note" class="generation-mode-note hidden"></div>
         <div id="generation-probe" class="generation-probe hidden"></div>
 
         <section class="generation-premise-inspector">

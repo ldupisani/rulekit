@@ -353,12 +353,20 @@ entries:
     trade:
         senses:
             - verb
+        number: plural
+        verb:
+            lemma: trade
     traded:
         senses:
             - verb
+        verb:
+            lemma: trade
     trades:
         senses:
             - verb
+        number: singular
+        verb:
+            lemma: trade
     trading:
         senses:
             - noun

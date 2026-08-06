@@ -59,6 +59,9 @@ class SourceIndex:
     attribute_compatibility: dict[tuple[str, str], SourceRef] = field(
         default_factory=dict
     )
+    measure_holder_compatibility: dict[tuple[str, str], SourceRef] = field(
+        default_factory=dict
+    )
     numeric: dict[tuple[str, str], SourceRef] = field(default_factory=dict)
 
     def merge(self, other: "SourceIndex") -> None:
@@ -76,6 +79,7 @@ class SourceIndex:
             "categories",
             "category_members",
             "attribute_compatibility",
+            "measure_holder_compatibility",
             "numeric",
         ):
             target = getattr(self, name)
@@ -248,6 +252,20 @@ def _index_categories(
                 kind="attribute-compatibility",
                 label=f"{attribute} → {noun}",
                 item=noun_no,
+            )
+
+    raw_measure_holders = raw.get("measure_holder_compatibility", {})
+    for measure, holders in doc.measure_holder_compatibility.items():
+        raw_values = raw_measure_holders.get(measure, [])
+        for holder_no, holder in enumerate(holders):
+            if holder_no >= len(raw_values):
+                continue
+            index.measure_holder_compatibility[(measure, holder)] = _ref(
+                path,
+                raw_values,
+                kind="measure-holder-compatibility",
+                label=f"{measure} → {holder}",
+                item=holder_no,
             )
 
 

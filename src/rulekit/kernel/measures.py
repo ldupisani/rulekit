@@ -84,7 +84,11 @@ def _resolve_measure(
 
 
 def _resolve_dimension_measure(
-    measure: str, store: FactStore, reg: Registry, journal=None
+    measure: str,
+    store: FactStore,
+    reg: Registry,
+    journal=None,
+    entities: list[str] | None = None,
 ) -> str | None:
     """mining candidate dimension-aggregate-asks: resolve a DIMENSION word
     ('height'/'weight'/'age'/'distance'/'balance'/'earnings'/'cost' — an
@@ -104,12 +108,16 @@ def _resolve_dimension_measure(
     (`reg.dimension_categories`, never `interchangeable_categories`) —
     called ONLY from `_combined_holder_totals` when the ask opts in via
     `dimension_measure: true` (the new imperative-headed / dimension-
-    adjective totality asks). Every OTHER consumer (single-entity,
-    unique-entity, difference, ...) keeps calling `_resolve_measure`
-    unchanged, so a question that happens to bind 'height'/'weight' as a
-    measure through any OTHER, PRE-EXISTING ask id is completely
-    unaffected (the shared-function blast-radius HANDOFF invariant)."""
-    in_store = {q.measure for q in store.by_kind(Quantity)}
+    adjective totality asks) and the imperative single-dimension ask. The
+    single-holder caller supplies ``entities`` so an unrelated holder's unit
+    cannot make its dimension ambiguous; aggregate callers retain the global
+    fact scope. Every other ask keeps calling `_resolve_measure` unchanged
+    (the shared-function blast-radius HANDOFF invariant)."""
+    in_store = {
+        q.measure
+        for q in store.by_kind(Quantity)
+        if entities is None or q.entity in entities
+    }
     if measure in reg.dimension_categories:
         families = [measure]
     else:
@@ -214,5 +222,4 @@ def _measure_substance_guard(
             f"no {substance!r} facts known for measure {measure!r}",
         )
     return None
-
 

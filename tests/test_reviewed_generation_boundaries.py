@@ -17,6 +17,10 @@ from rulekit.generation import (
     generate_candidate,
     retest_candidate,
 )
+from rulekit.generation.sample import (
+    _broader_lexical_domain,
+    _load_fixtures,
+)
 from rulekit.kernel.engine import analyze, solve
 from rulekit.kernel.model import (
     GroupTotal,
@@ -61,6 +65,64 @@ def test_positive_fraction_is_an_explicit_slot_qualifier() -> None:
         match="only qualifies a `type: fraction` slot",
     ):
         MatchToken(slot="n", type="number", fraction_positive=True)
+
+
+def test_common_noun_role_is_an_explicit_entity_qualifier() -> None:
+    token = MatchToken(
+        slot="who", type="entity", common_noun_cat="quantity_holder"
+    )
+    assert token.common_noun_cat == "quantity_holder"
+
+    with pytest.raises(
+        ValidationError,
+        match="only qualifies a `type: entity` slot",
+    ):
+        MatchToken(
+            slot="who", type="noun", common_noun_cat="quantity_holder"
+        )
+
+
+def test_category_membership_agreement_is_a_closed_where_predicate() -> None:
+    predicate = WherePredicate(
+        same_category_membership={
+            "slots": ["left", "right"],
+            "cat": "timeperiod",
+        }
+    )
+    assert predicate.same_category_membership is not None
+    assert predicate.same_category_membership.slots == ["left", "right"]
+
+    with pytest.raises(
+        ValidationError, match="category membership agreement repeats a slot"
+    ):
+        WherePredicate(
+            same_category_membership={
+                "slots": ["left", "left"],
+                "cat": "timeperiod",
+            }
+        )
+
+
+def test_measure_holder_compatibility_is_a_closed_where_predicate() -> None:
+    predicate = WherePredicate(
+        measure_holder_compatible={
+            "measure": "item",
+            "holders": ["who", "std"],
+            "allow_proper_name": True,
+        }
+    )
+    assert predicate.measure_holder_compatible is not None
+    assert predicate.measure_holder_compatible.holders == ["who", "std"]
+
+    with pytest.raises(
+        ValidationError, match="measure-holder compatibility repeats a holder"
+    ):
+        WherePredicate(
+            measure_holder_compatible={
+                "measure": "item",
+                "holders": ["who", "who"],
+            }
+        )
 
 
 POSITIVE_FRACTION_RULES = {
@@ -971,6 +1033,20 @@ def test_latest_duration_rate_review_cannot_be_regenerated() -> None:
     assert retest.target_status == "absent"
 
 
+def test_duration_rate_generator_uses_a_nonmerging_actor_before_the_count() -> None:
+    candidate = generate_candidate(
+        load_project(Path("projects/curated")),
+        rule_id="arithmetic/extraposed-duration-rate",
+        seed=1103,
+    )
+
+    assert candidate.target_status == "matched"
+    actor = next(
+        premise for premise in candidate.premises if premise.slot == "who"
+    )
+    assert any(source["kind"] == "generation-fixture" for source in actor.sources)
+
+
 @pytest.mark.parametrize(
     "text",
     [
@@ -1126,14 +1202,15 @@ def test_dimension_relation_rejects_wrong_verb_and_unit_classes(
 @pytest.mark.parametrize(
     "text",
     [
-        "Book is 30 inches smaller than Bira.",
-        "Book is 30 pounds heavier than Bira.",
-        "Book was 30 years longer than Bira.",
+        "The book is 30 inches smaller than Bira.",
+        "The book is 30 pounds heavier than Bira.",
+        "The gap was 30 years longer than the trip.",
     ],
 )
 def test_dimension_relation_keeps_compatible_units(
-    text: str, registry
+    text: str,
 ) -> None:
+    registry = load_project(Path("projects/gsm8k")).registry
     result = solve(text, registry)
     assert "arithmetic/anchored-relation-postfix-dimension" in {
         match.match.rule.id for match in result.document.rule_results[0]
@@ -1436,11 +1513,11 @@ def test_affine_frame_subject_and_echo_verbs_must_agree(registry) -> None:
     rule_id = "arithmetic/affine-frame-relation"
 
     assert rule_id in _matched_rules(
-        "Garden loses 19 fewer than once the amount of animals that bird loses.",
+        "Teacher loses 19 fewer than once the amount of animals that bird loses.",
         registry,
     )
     assert rule_id not in _matched_rules(
-        "Garden lose 19 fewer than once the amount of animals that bird loses.",
+        "Teacher lose 19 fewer than once the amount of animals that bird loses.",
         registry,
     )
     assert rule_id not in _matched_rules(
@@ -2721,7 +2798,7 @@ def test_event_role_boundary_does_not_restrict_possession_states(
     assert "arithmetic/times-as-many" in _matched_rules(
         (
             "The garden has thrice as many trees in your area "
-            "as the pencil."
+            "as the teacher."
         ),
         registry,
     )
@@ -3565,6 +3642,195 @@ def test_anaphoric_quantity_holder_minimal_pairs(
     assert rule_id in _matched_rules(valid, registry)
 
 
+def test_positive_holder_role_rejects_the_reviewed_unit_subjects() -> None:
+    project = load_project(Path("projects/gsm8k"))
+
+    reviewed = {
+        "arithmetic/times-as-many-conjunct-elided-standard": (
+            "The millions measure 4 libraries in the wardrobe and twice "
+            "as many afternoons."
+        ),
+        "arithmetic/times-as-many": (
+            "The joule afford twice as many parents as its sister Aven."
+        ),
+    }
+    for rule_id, sentence in reviewed.items():
+        candidate = retest_candidate(
+            project,
+            rule_id=rule_id,
+            sentence=sentence,
+            seed=0,
+            origin="generated",
+        )
+        assert candidate.target_status == "absent"
+
+
+@pytest.mark.parametrize(
+    ("sentence", "matches"),
+    [
+        (
+            "The teacher has 4 libraries in the wardrobe and twice as "
+            "many afternoons.",
+            False,
+        ),
+        (
+            "The teacher has 4 libraries in the wardrobe and twice as "
+            "many books.",
+            True,
+        ),
+        (
+            "The teacher has 4 mornings in the wardrobe and twice as "
+            "many afternoons.",
+            True,
+        ),
+    ],
+)
+def test_conjunct_measures_agree_on_temporal_membership(
+    sentence: str, matches: bool
+) -> None:
+    registry = load_project(Path("projects/gsm8k")).registry
+    rule_id = "arithmetic/times-as-many-conjunct-elided-standard"
+    assert (rule_id in _matched_rules(sentence, registry)) is matches
+
+
+def test_reviewed_verbs_do_not_claim_direct_quantity_objects() -> None:
+    registry = load_project(Path("projects/gsm8k")).registry
+    for surface in ("afford", "affords", "measure", "measured", "measures"):
+        assert registry.word_in_category(
+            surface, "non_quantity_object_verb"
+        )
+
+    assert "arithmetic/times-as-many" in _matched_rules(
+        "The teacher has twice as many parents as her sister Aven.",
+        registry,
+    )
+
+
+def test_reviewed_morphology_shares_one_lemma_and_number() -> None:
+    registry = load_project(Path("projects/gsm8k")).registry
+
+    assert registry.singular_to_plural["million"] == "millions"
+    assert registry.plural_to_singular["millions"] == "million"
+    assert registry.lexicon["measure"].number == "plural"
+    assert registry.lexicon["measures"].number == "singular"
+    assert registry.verb_lemmas["measures"] == "measure"
+    assert registry.lexicon["afford"].number == "plural"
+    assert registry.lexicon["affords"].number == "singular"
+    assert registry.verb_lemmas["affords"] == "afford"
+
+
+def test_strict_generation_filters_unlicensed_common_noun_holders() -> None:
+    project = load_project(Path("projects/gsm8k"))
+
+    with pytest.raises(GenerationError, match="no filler for who"):
+        generate_candidate(
+            project,
+            rule_id="arithmetic/times-as-many",
+            seed=0,
+            locked_bindings={
+                "who": "the joule",
+                "verb": "has",
+                "k": "twice",
+                "item": "parents",
+                "std": "Aven",
+            },
+        )
+
+    candidate = generate_candidate(
+        project,
+        rule_id="arithmetic/times-as-many",
+        seed=0,
+        locked_bindings={
+            "who": "the teacher",
+            "verb": "has",
+            "k": "twice",
+            "item": "parents",
+            "std": "Aven",
+        },
+    )
+    assert candidate.target_status == "matched"
+    who = next(premise for premise in candidate.premises if premise.slot == "who")
+    assert "quantity_holder" in who.expression
+    assert "common noun" in who.reason
+
+
+def test_holder_gate_remains_available_to_lexical_boundary_probes() -> None:
+    project = load_project(Path("projects/gsm8k"))
+    rule = next(
+        rule
+        for rule in project.registry.rules
+        if rule.id == "arithmetic/times-as-many"
+    )
+    token = next(
+        token for token in rule.match["sentence"] if token.slot == "who"
+    )
+    broader = _broader_lexical_domain(
+        token, project.registry, _load_fixtures(project.root)
+    )
+
+    assert broader is not None
+    fillers, requirement, parent = broader
+    assert requirement == "common-noun category 'quantity_holder'"
+    assert parent == "root sense 'noun'"
+    assert any(filler.identity == "joule" for filler in fillers)
+
+
+def test_declared_name_homographs_remain_quantity_holders() -> None:
+    registry = load_project(Path("projects/gsm8k")).registry
+
+    assert registry.word_in_category("bill", "bare_entity_reference")
+    assert registry.word_in_category("bill", "quantity_holder")
+    assert "arithmetic/times-as-many" in _matched_rules(
+        "Bill has twice as many nuts as Harry.", registry
+    )
+
+
+def test_animate_appositive_requires_a_compatible_possessor() -> None:
+    project = load_project(Path("projects/gsm8k"))
+    registry = project.registry
+    rule_id = "arithmetic/times-as-many"
+
+    assert rule_id not in _matched_rules(
+        "The store has twice as many parents as its sister Aven.",
+        registry,
+    )
+    assert rule_id in _matched_rules(
+        "The dog has twice as many parents as its sister Aven.",
+        registry,
+    )
+    assert rule_id in _matched_rules(
+        "Tom has twice as many parents as his sister Aven.",
+        registry,
+    )
+
+    rule = next(rule for rule in registry.rules if rule.id == rule_id)
+    requirement = next(
+        predicate.bound_requires_category
+        for predicate in rule.where
+        if predicate.bound_requires_category is not None
+        and predicate.bound_requires_category.bound == "appos_role"
+        and predicate.bound_requires_category.slot == "who"
+    )
+    assert requirement.cat == "quantity_event_participant"
+    assert requirement.allow_proper_name is True
+
+    with pytest.raises(GenerationError, match="no filler for who"):
+        generate_candidate(
+            project,
+            rule_id=rule_id,
+            seed=0,
+            locked_bindings={
+                "who": "the store",
+                "verb": "has",
+                "k": "twice",
+                "item": "parents",
+                "appos_det": "its",
+                "appos_role": "sister",
+                "std": "Aven",
+            },
+        )
+
+
 ADVERBIAL_AGE_MULTIPLIER_RULES = {
     "arithmetic/temporal-offset-times-as-old-as-future",
     "arithmetic/temporal-offset-times-as-old-as-future-std-now",
@@ -3890,3 +4156,187 @@ def test_periodic_rate_requires_a_referential_subject(registry) -> None:
     assert rule_id in _matched_rules(
         "Dena might need 17 hamsters every 18 years.", registry
     )
+
+
+LATEST_PREMISE_REVIEW_REJECTIONS = {
+    "arithmetic/fraction-frame-relation": (
+        "The clamp threw to thirty halves the number of wheels the cookie "
+        "threw to."
+    ),
+    "arithmetic/anchored-relation-possessive-kinship-standard": (
+        "Ball came 7 less nails than his exhibit."
+    ),
+    "arithmetic/times-as-many-conjunct-elided-item": (
+        "The laptop met 13 trains with the rest and thrice as many in the "
+        "aquarium."
+    ),
+    "arithmetic/anchored-relation-elided": (
+        "Lists collects 0 older than rabbit."
+    ),
+    "arithmetic/affine-frame-relation-clause": (
+        "Noon equals 7 fewer than once the number of aquariums her customer "
+        "Fia equals."
+    ),
+    "arithmetic/affine-frame-relation-as-standard": (
+        "Pumpkin repainting 19 fewer than once the number of strips as "
+        "his mother Bira."
+    ),
+    "arithmetic/anaphoric-multiplier-conjunct-many": (
+        "The gems traded 19 cups and twice this many."
+    ),
+    "arithmetic/anchored-relation-postfix-dimension": (
+        "Gap is 18 days shorter than gift."
+    ),
+    "arithmetic/times-the-number-of": (
+        "Footage buy once the number of robins as my baker Mary."
+    ),
+    "arithmetic/anchored-relation-postfix": (
+        "The macaron shuck 14 teams more than the hand-written."
+    ),
+}
+
+
+@pytest.mark.parametrize(
+    ("rule_id", "sentence"), LATEST_PREMISE_REVIEW_REJECTIONS.items()
+)
+def test_latest_premise_review_rejections_are_absent(
+    rule_id: str, sentence: str
+) -> None:
+    candidate = retest_candidate(
+        load_project(Path("projects/gsm8k")),
+        rule_id=rule_id,
+        sentence=sentence,
+        seed=0,
+        origin="generated",
+    )
+
+    assert candidate.target_status == "absent"
+
+
+def test_latest_valid_temporal_review_remains_matched() -> None:
+    candidate = retest_candidate(
+        load_project(Path("projects/gsm8k")),
+        rule_id=(
+            "arithmetic/temporal-offset-times-as-old-as-future-std-now"
+        ),
+        sentence=(
+            "In 40 years Dena will be twice as old as my seller John is now."
+        ),
+        seed=0,
+        origin="generated",
+    )
+
+    assert candidate.target_status == "matched"
+    relation = next(fact for fact in candidate.facts if fact["type"] == "Relation")
+    assert relation["fields"]["factor"] == 2
+    assert relation["fields"]["subject_offset"] == 40
+    assert relation["fields"]["standard_offset"] == 0
+
+
+def test_reviewed_event_boundaries_keep_ordinary_neighbours() -> None:
+    registry = load_project(Path("projects/gsm8k")).registry
+    assert "arithmetic/affine-frame-relation-as-standard" in _matched_rules(
+        (
+            "The painter repainted 19 fewer than twice the number of strips "
+            "as her mother Bira."
+        ),
+        registry,
+    )
+    assert "arithmetic/anaphoric-multiplier-conjunct-many" in _matched_rules(
+        "The teacher traded 19 cups and twice this many.", registry
+    )
+    assert "arithmetic/times-the-number-of" in _matched_rules(
+        "The buyer buys twice the number of robins as her baker Mary.",
+        registry,
+    )
+    assert "arithmetic/anchored-relation-postfix" in _matched_rules(
+        "The farmer shucked 14 ears more than the worker.", registry
+    )
+
+
+def test_latest_review_boundaries_keep_ordinary_neighbours() -> None:
+    registry = load_project(Path("projects/gsm8k")).registry
+
+    assert "arithmetic/anchored-relation-possessive-kinship-standard" in (
+        _matched_rules(
+            "The sister has 7 fewer nails than her brother.", registry
+        )
+    )
+    assert "arithmetic/anchored-relation-elided" in _matched_rules(
+        "The teacher has 7 fewer than the student.", registry
+    )
+    assert "arithmetic/times-as-many-conjunct-elided-item" in _matched_rules(
+        (
+            "The teacher met 13 students at the school and thrice as many "
+            "at the party."
+        ),
+        registry,
+    )
+    assert "arithmetic/fraction-frame-relation" in _matched_rules(
+        (
+            "Dena receives half the number of books that Fia receives."
+        ),
+        registry,
+    )
+    assert "arithmetic/affine-frame-relation-clause" in _matched_rules(
+        (
+            "Dena has 7 fewer than twice the number of aquariums Fia has."
+        ),
+        registry,
+    )
+
+
+def test_reviewed_relative_clause_echo_must_agree() -> None:
+    registry = load_project(Path("projects/gsm8k")).registry
+    rule_id = "arithmetic/times-frame-relation-clause"
+
+    assert rule_id not in _matched_rules(
+        "The planks cover double the number of bonsais her captain Mary cover.",
+        registry,
+    )
+    assert rule_id in _matched_rules(
+        "The planks cover double the number of bonsais her captain Mary covers.",
+        registry,
+    )
+
+
+def test_dimension_relation_requires_measure_compatible_holders() -> None:
+    registry = load_project(Path("projects/gsm8k")).registry
+    rule_id = "arithmetic/anchored-relation-postfix-dimension"
+
+    assert rule_id not in _matched_rules(
+        "The gap is 18 days shorter than the gift.", registry
+    )
+    assert rule_id in _matched_rules(
+        "The gap is 18 days shorter than the trip.", registry
+    )
+    assert rule_id in _matched_rules(
+        "The gift is 2 inches shorter than the box.", registry
+    )
+    assert rule_id in _matched_rules(
+        "The gift is 2 pounds lighter than the box.", registry
+    )
+
+
+def test_dangling_dimension_comparative_is_consumed_without_a_fact(
+) -> None:
+    registry = load_project(Path("projects/gsm8k")).registry
+    result = solve("The gap is 18 days shorter.", registry)
+
+    assert "arithmetic/dangling-comparative-relation" in {
+        match.match.rule.id for match in result.document.rule_results[0]
+    }
+    assert not result.store.by_kind(Relation)
+    assert not result.store.by_kind(Quantity)
+
+
+def test_reviewed_morphology_normalizes_inflected_event_verbs() -> None:
+    registry = load_project(Path("projects/gsm8k")).registry
+    assert registry.singular_to_plural["gem"] == "gems"
+    assert registry.verb_lemmas["repainting"] == "repaint"
+    assert registry.verb_lemmas["traded"] == "trade"
+    assert registry.verb_lemmas["shucked"] == "shuck"
+    assert registry.lexicon["trade"].number == "plural"
+    assert registry.lexicon["trades"].number == "singular"
+    assert registry.lexicon["shuck"].number == "plural"
+    assert registry.lexicon["shucks"].number == "singular"

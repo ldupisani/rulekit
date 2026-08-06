@@ -125,8 +125,10 @@ class Registry:
     category_polarity: Mapping[str, int]
     interchangeable_categories: frozenset[str]
     superordinate_categories: frozenset[str]
+    coordinated_superordinate_categories: frozenset[str]
     dimension_categories: frozenset[str]
     attribute_compatibility: Mapping[str, tuple[str, ...]]
+    measure_holder_compatibility: Mapping[str, tuple[str, ...]]
     context_synonyms: Mapping[str, tuple[str, tuple[str, ...]]]  # concept -> (gate, forms)
     attrs: Mapping[str, Mapping[str, float]]
     part_counts: Mapping[str, str]
@@ -244,6 +246,26 @@ class Registry:
     def attribute_applies_to(self, attribute: str, noun: str) -> bool:
         return bool(self.attribute_compatibility_pairs(attribute, noun))
 
+    def measure_holder_compatibility_pairs(
+        self, measure: str, holder: str
+    ) -> tuple[tuple[str, str], ...]:
+        """Every declared measure-category/holder-category licence."""
+
+        pairs: set[tuple[str, str]] = set()
+        measure = self.plural_to_singular.get(measure, measure)
+        holder = self.plural_to_singular.get(holder, holder)
+        for direct in self.word_categories.get(measure, ()):
+            for measure_category in self.cat_ancestors(direct):
+                for holder_category in self.measure_holder_compatibility.get(
+                    measure_category, ()
+                ):
+                    if self.word_in_category(holder, holder_category):
+                        pairs.add((measure_category, holder_category))
+        return tuple(sorted(pairs))
+
+    def measure_applies_to_holder(self, measure: str, holder: str) -> bool:
+        return bool(self.measure_holder_compatibility_pairs(measure, holder))
+
 
 def _freeze(d: dict) -> Mapping:
     return MappingProxyType(dict(sorted(d.items())))
@@ -333,8 +355,10 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
     category_polarity: dict[str, int] = {}
     interchangeable_categories: set[str] = set()
     superordinate_categories: set[str] = set()
+    coordinated_superordinate_categories: set[str] = set()
     dimension_categories: set[str] = set()
     attribute_compatibility: dict[str, list[str]] = {}
+    measure_holder_compatibility: dict[str, list[str]] = {}
     category_members: dict[str, list[str]] = {}
     context_synonyms: dict[str, tuple[str, tuple[str, ...]]] = {}
     attrs: dict[str, dict[str, float]] = {}
@@ -353,12 +377,18 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                     interchangeable_categories.add(name)
                 if cdef.superordinate:
                     superordinate_categories.add(name)
+                if cdef.coordinated_superordinate:
+                    coordinated_superordinate_categories.add(name)
                 if cdef.dimension:
                     dimension_categories.add(name)
             for cat, words in doc.members.items():
                 category_members.setdefault(cat, []).extend(words)
             for attribute, nouns in doc.attribute_compatibility.items():
                 attribute_compatibility.setdefault(attribute, []).extend(nouns)
+            for measure, holders in doc.measure_holder_compatibility.items():
+                measure_holder_compatibility.setdefault(measure, []).extend(
+                    holders
+                )
             for concept, syn in doc.context_synonyms.items():
                 context_synonyms[concept] = (syn.gate, tuple(syn.forms))
             for word, table in doc.attrs.items():
@@ -405,6 +435,24 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
             if root != "noun":
                 raise CompileError(
                     f"attribute compatibility target {noun!r} is not noun-rooted"
+                )
+
+    for measure, holders in sorted(measure_holder_compatibility.items()):
+        for category, role in ((measure, "measure"), *(
+            (holder, "holder") for holder in holders
+        )):
+            if category not in category_parents:
+                raise CompileError(
+                    f"measure-holder compatibility names unknown {role} "
+                    f"category {category!r}"
+                )
+            root = category
+            while root in category_parents:
+                root = category_parents[root]
+            if root != "noun":
+                raise CompileError(
+                    f"measure-holder compatibility {role} category "
+                    f"{category!r} is not noun-rooted"
                 )
 
     # invariant: antonyms symmetric + memberships disjoint
@@ -710,6 +758,21 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                     cat = getattr(tok, "cat", None)
                     if cat and cat not in valid_gates:
                         raise CompileError(f"rule {rule.id!r} gates on unknown category {cat!r}")
+                    common_noun_cat = getattr(tok, "common_noun_cat", None)
+                    if common_noun_cat:
+                        if common_noun_cat not in valid_gates:
+                            raise CompileError(
+                                f"rule {rule.id!r} common-noun role gates on "
+                                f"unknown category {common_noun_cat!r}"
+                            )
+                        root = common_noun_cat
+                        while root in category_parents:
+                            root = category_parents[root]
+                        if root != "noun":
+                            raise CompileError(
+                                f"rule {rule.id!r} uses `common_noun_cat` "
+                                f"with non-noun category {common_noun_cat!r}"
+                            )
                     if cat and (
                         getattr(tok, "counted", False)
                         or getattr(tok, "possessed", False)
@@ -733,6 +796,33 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                             f"non-verb slot {tok.slot!r}"
                         )
         for predicate in rule.where:
+            membership = predicate.same_category_membership
+            if membership is not None:
+                # Like the long-standing slot_not_category predicate, this
+                # agreement may name a category supplied by an optional
+                # extension pack. Without that pack every slot is simply
+                # outside the category, so agreement remains a sound no-op.
+                if membership.cat in valid_gates:
+                    category_root = membership.cat
+                    while category_root in category_parents:
+                        category_root = category_parents[category_root]
+                    if category_root != "noun":
+                        raise CompileError(
+                            f"rule {rule.id!r} category agreement uses "
+                            f"non-noun category {membership.cat!r}"
+                        )
+                for slot_name in membership.slots:
+                    token = slots.get(slot_name)
+                    if token is None:
+                        raise CompileError(
+                            f"rule {rule.id!r} category agreement names "
+                            f"unknown slot {slot_name!r}"
+                        )
+                    if _slot_root(token) not in {"noun", "entity"}:
+                        raise CompileError(
+                            f"rule {rule.id!r} category agreement slot "
+                            f"{slot_name!r} is not noun/entity-rooted"
+                        )
             compatibility = predicate.attribute_compatible
             if compatibility is not None:
                 attribute = slots.get(compatibility.attribute)
@@ -923,6 +1013,32 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                             f"category {category!r} is not "
                             f"{expected_root}-rooted"
                         )
+            measure_compatibility = predicate.measure_holder_compatible
+            if measure_compatibility is not None:
+                for slot_name in (
+                    measure_compatibility.measure,
+                    *measure_compatibility.holders,
+                ):
+                    if slot_name not in slots:
+                        raise CompileError(
+                            f"rule {rule.id!r} measure-holder compatibility "
+                            f"names unknown slot {slot_name!r}"
+                        )
+                if _slot_root(slots[measure_compatibility.measure]) != "noun":
+                    raise CompileError(
+                        f"rule {rule.id!r} measure-holder compatibility measure "
+                        f"{measure_compatibility.measure!r} is not noun-rooted"
+                    )
+                for holder_name in measure_compatibility.holders:
+                    holder = slots[holder_name]
+                    if not (
+                        holder.type in {"entity", "name", "proper_name"}
+                        or _slot_root(holder) == "noun"
+                    ):
+                        raise CompileError(
+                            f"rule {rule.id!r} measure-holder compatibility "
+                            f"holder {holder_name!r} is not entity/noun-rooted"
+                        )
             category_nonoverlap = predicate.category_nonoverlap
             if category_nonoverlap is not None:
                 for slot_name in category_nonoverlap:
@@ -1034,11 +1150,20 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
         category_polarity=_freeze(category_polarity),
         interchangeable_categories=frozenset(interchangeable_categories),
         superordinate_categories=frozenset(superordinate_categories),
+        coordinated_superordinate_categories=frozenset(
+            coordinated_superordinate_categories
+        ),
         dimension_categories=frozenset(dimension_categories),
         attribute_compatibility=_freeze(
             {
                 key: tuple(sorted(set(values)))
                 for key, values in attribute_compatibility.items()
+            }
+        ),
+        measure_holder_compatibility=_freeze(
+            {
+                key: tuple(sorted(set(values)))
+                for key, values in measure_holder_compatibility.items()
             }
         ),
         context_synonyms=_freeze(context_synonyms),

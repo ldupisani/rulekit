@@ -6,10 +6,12 @@ import hashlib
 import random
 import re
 import secrets
+from collections import OrderedDict
 from dataclasses import dataclass
 from itertools import product
 from pathlib import Path
-from typing import Any, Literal
+from threading import RLock
+from typing import Any, Callable, Literal
 
 from ruamel.yaml import YAML
 
@@ -26,6 +28,8 @@ from ..kernel.engine import analyze
 from ..kernel.model import Unit, _jsonable
 from ..kernel.patterns import (
     RuleMatchResult,
+    SKIPPABLE_SENSES,
+    _role_is_proper_name,
     is_bare_verb_form,
     is_finite_verb_form,
     proportional_delta_is_compatible,
@@ -34,12 +38,14 @@ from ..kernel.patterns import (
 from .candidate import (
     ConsumedUnitSummary,
     GenerationCandidate,
+    GenerationMode,
+    LexicalRelaxation,
     MatchSummary,
     PremiseSummary,
     RuleAvailability,
 )
 
-GENERATOR_VERSION = "g6-reviewed-premise-boundaries"
+GENERATOR_VERSION = "g6-strict-boundary-modes"
 _SUPPORTED_SLOT_TYPES = frozenset(
     {
         "number",
@@ -82,6 +88,19 @@ _SUPPORTED_CATEGORY_ROOTS = frozenset(
 )
 _PUNCTUATION = frozenset({".", ",", "!", "?", ";", ":"})
 _yaml = YAML(typ="rt")
+_CACHE_LOCK = RLock()
+_DOMAIN_CACHE: OrderedDict[
+    tuple[str, tuple[str, ...], str], list["_Filler"]
+] = OrderedDict()
+_BOUNDARY_DOMAIN_CACHE: OrderedDict[
+    tuple[str, tuple[str, ...], str],
+    tuple[list["_Filler"], str, str] | None,
+] = OrderedDict()
+_AVAILABILITY_CACHE: OrderedDict[
+    tuple[str, tuple[str, ...]], tuple[RuleAvailability, ...]
+] = OrderedDict()
+_MAX_DOMAIN_CACHE_ENTRIES = 4096
+_MAX_AVAILABILITY_CACHE_ENTRIES = 32
 
 
 class GenerationError(ValueError):
@@ -224,6 +243,13 @@ def _token_blockers(token: MatchToken, reg: Registry) -> list[str]:
             blockers.append(
                 f"category {token.cat!r} roots at unsupported sense {root!r}"
             )
+    if token.common_noun_cat is not None:
+        root = reg.root_sense(token.common_noun_cat)
+        if root != "noun":
+            blockers.append(
+                f"common-noun category {token.common_noun_cat!r} roots at "
+                f"unsupported sense {root!r}"
+            )
     return blockers
 
 
@@ -237,6 +263,7 @@ def _where_blocker(rule: PatternRule) -> list[str]:
             or pred.distinct_from_owner is not None
             or pred.same_lemma is not None
             or pred.same_number is not None
+            or pred.same_category_membership is not None
             or pred.number_compatible is not None
             or pred.bound_requires_type is not None
             or pred.bound_requires_category is not None
@@ -245,6 +272,7 @@ def _where_blocker(rule: PatternRule) -> list[str]:
             or pred.proportional_delta_compatible is not None
             or pred.same_presence is not None
             or pred.verb_role_compatible is not None
+            or pred.measure_holder_compatible is not None
             or pred.attribute_compatible is not None
             or pred.slot_not_category is not None
             or pred.absent is not None
@@ -401,6 +429,21 @@ def _counted_fillers(reg: Registry) -> list[_Filler]:
             out.append(
                 _Filler(
                     surface=f"{count} {noun_surface}",
+                    identity=singular,
+                    number="singular" if count == 1 else "plural",
+                )
+            )
+        for symbol, singular in sorted(reg.currencies.items()):
+            if (
+                not symbol
+                or any(ch.isspace() for ch in symbol)
+                or (entry := reg.lexicon.get(singular)) is None
+                or "noun" not in entry.senses
+            ):
+                continue
+            out.append(
+                _Filler(
+                    surface=f"{symbol}{count}",
                     identity=singular,
                     number="singular" if count == 1 else "plural",
                 )
@@ -576,10 +619,28 @@ def _raw_domain(
     return []
 
 
-def _domain(
-    token: MatchToken, reg: Registry, fixtures: _Fixtures
+def _qualify_domain(
+    token: MatchToken,
+    fillers: list[_Filler],
+    reg: Registry,
+    *,
+    enforce_common_noun_cat: bool = True,
 ) -> list[_Filler]:
-    fillers = _raw_domain(token, reg, fixtures)
+    """Apply structural token qualifiers to an already selected word domain."""
+
+    if enforce_common_noun_cat and token.common_noun_cat is not None:
+        fillers = [
+            filler
+            for filler in fillers
+            if filler.kind != "noun"
+            or _filler_in_category(filler, token.common_noun_cat, reg)
+        ]
+    if token.single_word:
+        fillers = [
+            filler
+            for filler in fillers
+            if not any(ch.isspace() for ch in filler.surface)
+        ]
     if token.fraction_within_whole:
         fillers = [
             filler
@@ -642,6 +703,128 @@ def _domain(
     return [
         filler for filler in fillers if filler.number == token.number
     ]
+
+
+def _domain(
+    token: MatchToken, reg: Registry, fixtures: _Fixtures
+) -> list[_Filler]:
+    key = (
+        reg.fingerprint,
+        fixtures.names,
+        token.model_dump_json(exclude_none=True),
+    )
+    with _CACHE_LOCK:
+        cached = _DOMAIN_CACHE.get(key)
+        if cached is not None:
+            _DOMAIN_CACHE.move_to_end(key)
+            return cached
+    domain = _qualify_domain(token, _raw_domain(token, reg, fixtures), reg)
+    with _CACHE_LOCK:
+        _DOMAIN_CACHE[key] = domain
+        _DOMAIN_CACHE.move_to_end(key)
+        while len(_DOMAIN_CACHE) > _MAX_DOMAIN_CACHE_ENTRIES:
+            _DOMAIN_CACHE.popitem(last=False)
+    return domain
+
+
+def _broader_lexical_domain(
+    token: MatchToken,
+    reg: Registry,
+    fixtures: _Fixtures,
+) -> tuple[list[_Filler], str, str] | None:
+    """Return a structurally compatible domain beyond one lexical gate.
+
+    Boundary generation widens category-gated slots only to the category's
+    declared root sense. It never crosses part of speech, invents vocabulary,
+    or discards counted/possessed/number/referential morphology. Two narrow
+    typed subsets have equally explicit parents: ``nonstate_verb`` widens to
+    ``verb`` and ``future_modal`` widens to ``modal``.
+    """
+
+    key = (
+        reg.fingerprint,
+        fixtures.names,
+        token.model_dump_json(exclude_none=True),
+    )
+    with _CACHE_LOCK:
+        if key in _BOUNDARY_DOMAIN_CACHE:
+            cached = _BOUNDARY_DOMAIN_CACHE[key]
+            _BOUNDARY_DOMAIN_CACHE.move_to_end(key)
+            return cached
+
+    requirement: str
+    broader_domain: str
+    fillers: list[_Filler]
+    if token.common_noun_cat is not None:
+        requirement = f"common-noun category {token.common_noun_cat!r}"
+        broader_domain = "root sense 'noun'"
+        fillers = _lexical_fillers(reg, sense="noun")
+    elif token.cat is not None:
+        root = reg.root_sense(token.cat)
+        requirement = f"category {token.cat!r}"
+        broader_domain = f"root sense {root!r}"
+        if token.counted:
+            fillers = _counted_fillers(reg)
+        elif token.possessed:
+            fillers = _possessed_fillers(reg, fixtures)
+        elif root == "noun" and token.number == "plural":
+            fillers = [
+                _Filler(
+                    surface=surface,
+                    identity=singular,
+                    number="plural",
+                )
+                for surface, singular in sorted(
+                    reg.plural_to_singular.items()
+                )
+                if surface and not any(ch.isspace() for ch in surface)
+            ]
+        else:
+            fillers = _lexical_fillers(
+                reg,
+                sense=root,
+                bare_form=token.bare_form,
+                finite_form=token.finite_form,
+            )
+    elif token.type == "nonstate_verb":
+        requirement = "type 'nonstate_verb'"
+        broader_domain = "type 'verb'"
+        fillers = _lexical_fillers(reg, sense="verb")
+    elif token.type == "future_modal":
+        requirement = "type 'future_modal'"
+        broader_domain = "type 'modal'"
+        fillers = _lexical_fillers(reg, sense="modal")
+    else:
+        result = None
+        with _CACHE_LOCK:
+            _BOUNDARY_DOMAIN_CACHE[key] = result
+            _BOUNDARY_DOMAIN_CACHE.move_to_end(key)
+            while len(_BOUNDARY_DOMAIN_CACHE) > _MAX_DOMAIN_CACHE_ENTRIES:
+                _BOUNDARY_DOMAIN_CACHE.popitem(last=False)
+        return result
+
+    strict = set(_domain(token, reg, fixtures))
+    outside = [
+        filler
+        for filler in _qualify_domain(
+            token,
+            fillers,
+            reg,
+            enforce_common_noun_cat=False,
+        )
+        if filler not in strict
+    ]
+    result = (
+        (outside, requirement, broader_domain)
+        if outside
+        else None
+    )
+    with _CACHE_LOCK:
+        _BOUNDARY_DOMAIN_CACHE[key] = result
+        _BOUNDARY_DOMAIN_CACHE.move_to_end(key)
+        while len(_BOUNDARY_DOMAIN_CACHE) > _MAX_DOMAIN_CACHE_ENTRIES:
+            _BOUNDARY_DOMAIN_CACHE.popitem(last=False)
+    return result
 
 
 def _absent_categories(rule: PatternRule) -> tuple[str, ...]:
@@ -794,6 +977,42 @@ def _distinct_measure_groups(rule: PatternRule) -> tuple[tuple[str, ...], ...]:
     )
 
 
+def _category_membership_requirements(
+    rule: PatternRule,
+) -> tuple[tuple[tuple[str, ...], str], ...]:
+    """Return slot groups that must agree on one category membership."""
+
+    return tuple(
+        (tuple(pred.same_category_membership.slots),
+         pred.same_category_membership.cat)
+        for pred in rule.where
+        if pred.same_category_membership is not None
+    )
+
+
+def _category_membership_assignment_exists(
+    requirements: tuple[tuple[tuple[str, ...], str], ...],
+    domains: dict[str, list[_Filler]],
+    reg: Registry,
+) -> bool:
+    """Whether each agreement group has at least one shared truth value."""
+
+    return all(
+        bool(
+            set.intersection(
+                *(
+                    {
+                        _filler_in_category(filler, category, reg)
+                        for filler in domains.get(slot_name, ())
+                    }
+                    for slot_name in slots
+                )
+            )
+        )
+        for slots, category in requirements
+    )
+
+
 def _measure_assignment_exists(
     groups: tuple[tuple[str, ...], ...],
     domains: dict[str, list[_Filler]],
@@ -824,14 +1043,38 @@ def _measure_assignment_exists(
         not values for values in key_domains.values()
     ):
         return False
-    ordered = sorted(involved, key=lambda name: (len(key_domains[name]), name))
+    return _measure_key_assignment_exists(
+        groups,
+        key_domains,
+        {name: _measure_key(filler) for name, filler in fixed.items()},
+    )
+
+
+def _measure_key_assignment_exists(
+    groups: tuple[tuple[str, ...], ...],
+    key_domains: dict[
+        str, tuple[tuple[str, str | None, str | None], ...]
+    ],
+    fixed: dict[str, tuple[str, str | None, str | None]] | None = None,
+) -> bool:
+    """Check distinct-measure feasibility over already deduplicated keys."""
+
+    fixed = fixed or {}
+    effective_domains = {
+        name: (fixed[name],) if name in fixed else values
+        for name, values in key_domains.items()
+    }
+    ordered = sorted(
+        effective_domains,
+        key=lambda name: (len(effective_domains[name]), name),
+    )
     chosen: dict[str, tuple[str, str | None, str | None]] = {}
 
     def assign(index: int) -> bool:
         if index == len(ordered):
             return True
         name = ordered[index]
-        for key in key_domains[name]:
+        for key in effective_domains[name]:
             if any(
                 key in {
                     chosen[other]
@@ -894,19 +1137,23 @@ def _rule_blockers(
     else:
         absent_categories = _absent_categories(rule)
         slot_category_exclusions = _slot_category_exclusions(rule)
+        safe_domains: dict[str, list[_Filler]] = {}
 
         def safe_domain(token: MatchToken) -> list[_Filler]:
-            return [
-                filler
-                for filler in _domain(token, reg, fixtures)
-                if _outside_categories(filler, absent_categories, reg)
-                and _outside_slot_categories(
-                    filler,
-                    token.slot,
-                    slot_category_exclusions,
-                    reg,
-                )
-            ]
+            key = token.model_dump_json(exclude_none=True)
+            if key not in safe_domains:
+                safe_domains[key] = [
+                    filler
+                    for filler in _domain(token, reg, fixtures)
+                    if _outside_categories(filler, absent_categories, reg)
+                    and _outside_slot_categories(
+                        filler,
+                        token.slot,
+                        slot_category_exclusions,
+                        reg,
+                    )
+                ]
+            return safe_domains[key]
 
         for _, token, _ in _leaf_tokens(seq):
             token_blockers = _token_blockers(token, reg)
@@ -978,6 +1225,38 @@ def _rule_blockers(
                 blockers.append(
                     "no project-backed distinct measure assignment exists "
                     f"for {rendered}"
+                )
+        category_membership_requirements = (
+            _category_membership_requirements(rule)
+        )
+        if category_membership_requirements:
+            membership_slots = {
+                name
+                for group, _ in category_membership_requirements
+                for name in group
+            }
+            missing = sorted(membership_slots - set(tokens_by_slot))
+            if missing:
+                blockers.append(
+                    "category-membership agreement slots are not declared "
+                    "by the pattern: "
+                    + ", ".join(repr(name) for name in missing)
+                )
+            elif not _category_membership_assignment_exists(
+                category_membership_requirements,
+                {
+                    name: safe_domain(tokens_by_slot[name])
+                    for name in membership_slots
+                },
+                reg,
+            ):
+                rendered = "; ".join(
+                    f"{'/'.join(group)} in {category!r}"
+                    for group, category in category_membership_requirements
+                )
+                blockers.append(
+                    "no project-backed category-membership assignment "
+                    f"exists for {rendered}"
                 )
         for pred in rule.where:
             if pred.attribute_compatible is None:
@@ -1132,6 +1411,44 @@ def _rule_blockers(
                     f"{'/'.join(compatibility.roles)}"
                 )
         for pred in rule.where:
+            if pred.measure_holder_compatible is None:
+                continue
+            compatibility = pred.measure_holder_compatible
+            measure_token = tokens_by_slot.get(compatibility.measure)
+            holder_tokens = [
+                tokens_by_slot.get(holder)
+                for holder in compatibility.holders
+            ]
+
+            def holder_ok(measure: _Filler, holder: _Filler) -> bool:
+                return (
+                    compatibility.allow_proper_name
+                    and holder.kind == "name"
+                ) or reg.measure_applies_to_holder(
+                    measure.identity, holder.identity
+                )
+
+            if (
+                measure_token is None
+                or any(token is None for token in holder_tokens)
+                or not any(
+                    all(
+                        any(
+                            holder_ok(measure, holder)
+                            for holder in safe_domain(holder_token)
+                        )
+                        for holder_token in holder_tokens
+                        if holder_token is not None
+                    )
+                    for measure in safe_domain(measure_token)
+                )
+            ):
+                blockers.append(
+                    "no project-backed measure/holder compatibility exists "
+                    f"for {compatibility.measure}/"
+                    f"{'/'.join(compatibility.holders)}"
+                )
+        for pred in rule.where:
             if pred.distinct_from_owner is None:
                 continue
             entity_name = pred.distinct_from_owner.entity
@@ -1178,7 +1495,13 @@ def list_rule_availability(project: Project) -> list[RuleAvailability]:
     """List every premise rule, including every unsupported one."""
 
     fixtures = _load_fixtures(project.root)
-    return [
+    key = (project.registry.fingerprint, fixtures.names)
+    with _CACHE_LOCK:
+        cached = _AVAILABILITY_CACHE.get(key)
+        if cached is not None:
+            _AVAILABILITY_CACHE.move_to_end(key)
+            return list(cached)
+    availability = tuple(
         RuleAvailability(
             id=rule.id,
             description=rule.description,
@@ -1186,7 +1509,13 @@ def list_rule_availability(project: Project) -> list[RuleAvailability]:
             blockers=blockers,
         )
         for rule in project.registry.rules
-    ]
+    )
+    with _CACHE_LOCK:
+        _AVAILABILITY_CACHE[key] = availability
+        _AVAILABILITY_CACHE.move_to_end(key)
+        while len(_AVAILABILITY_CACHE) > _MAX_AVAILABILITY_CACHE_ENTRIES:
+            _AVAILABILITY_CACHE.popitem(last=False)
+    return list(availability)
 
 
 def _constraint_groups(
@@ -1199,7 +1528,7 @@ def _constraint_groups(
     list[set[str]],
     list[set[str]],
     list[tuple[str, str, str]],
-    list[tuple[str, str, str]],
+    list[tuple[str, str, str, bool]],
     list[tuple[str, str, str]],
     list[set[str]],
     tuple[tuple[str, ...], ...],
@@ -1214,6 +1543,7 @@ def _constraint_groups(
             bool,
         ]
     ],
+    list[tuple[str, tuple[str, ...], bool]],
     list[tuple[str, str]],
     tuple[str, ...],
 ]:
@@ -1225,7 +1555,7 @@ def _constraint_groups(
     category_nonoverlap: list[set[str]] = []
     distinct_owner: list[set[str]] = []
     bound_type_requirements: list[tuple[str, str, str]] = []
-    bound_category_requirements: list[tuple[str, str, str]] = []
+    bound_category_requirements: list[tuple[str, str, str, bool]] = []
     bound_form_requirements: list[tuple[str, str, str]] = []
     same_presence: list[set[str]] = []
     attribute_pairs: list[tuple[str, str]] = []
@@ -1239,6 +1569,7 @@ def _constraint_groups(
             bool,
         ]
     ] = []
+    measure_holder_requirements: list[tuple[str, tuple[str, ...], bool]] = []
     slot_category_exclusions = list(_slot_category_exclusions(rule))
     for pred in rule.where:
         if pred.same_lemma is not None:
@@ -1277,6 +1608,7 @@ def _constraint_groups(
                     pred.bound_requires_category.bound,
                     pred.bound_requires_category.slot,
                     pred.bound_requires_category.cat,
+                    pred.bound_requires_category.allow_proper_name,
                 )
             )
         if pred.bound_requires_form is not None:
@@ -1307,6 +1639,14 @@ def _constraint_groups(
                     pred.verb_role_compatible.allow_plural_class,
                 )
             )
+        if pred.measure_holder_compatible is not None:
+            measure_holder_requirements.append(
+                (
+                    pred.measure_holder_compatible.measure,
+                    tuple(pred.measure_holder_compatible.holders),
+                    pred.measure_holder_compatible.allow_proper_name,
+                )
+            )
     return (
         same,
         same_number,
@@ -1322,6 +1662,7 @@ def _constraint_groups(
         _distinct_measure_groups(rule),
         attribute_pairs,
         verb_role_requirements,
+        measure_holder_requirements,
         slot_category_exclusions,
         _absent_categories(rule),
     )
@@ -1356,7 +1697,8 @@ def _allowed_fillers(
         list[tuple[str, str, str]] | tuple[tuple[str, str, str], ...]
     ) = (),
     bound_category_requirements: (
-        list[tuple[str, str, str]] | tuple[tuple[str, str, str], ...]
+        list[tuple[str, str, str, bool]]
+        | tuple[tuple[str, str, str, bool], ...]
     ) = (),
     bound_form_requirements: (
         list[tuple[str, str, str]] | tuple[tuple[str, str, str], ...]
@@ -1369,6 +1711,7 @@ def _allowed_fillers(
                 str,
                 str | None,
                 str | None,
+                bool,
             ]
         ]
         | tuple[
@@ -1378,12 +1721,25 @@ def _allowed_fillers(
                 str,
                 str | None,
                 str | None,
+                bool,
             ],
             ...,
         ]
     ) = (),
+    measure_holder_requirements: (
+        list[tuple[str, tuple[str, ...], bool]]
+        | tuple[tuple[str, tuple[str, ...], bool], ...]
+    ) = (),
+    category_membership_requirements: (
+        tuple[tuple[tuple[str, ...], str], ...]
+        | list[tuple[tuple[str, ...], str]]
+    ) = (),
     entity_owner_distinctions: tuple[tuple[str, str], ...] = (),
+    domain_for: Callable[[MatchToken], list[_Filler]] | None = None,
 ) -> list[_Filler]:
+    candidate_domain = domain_for or (
+        lambda candidate: _domain(candidate, reg, fixtures)
+    )
     domain = [
         filler
         for filler in domain
@@ -1507,7 +1863,7 @@ def _allowed_fillers(
                 return set()
             return {
                 candidate.identity
-                for candidate in _domain(other, reg, fixtures)
+                for candidate in candidate_domain(other)
                 if _outside_categories(candidate, absent_categories, reg)
                 and _outside_slot_categories(
                     candidate,
@@ -1541,6 +1897,36 @@ def _allowed_fillers(
                 if (
                     other is not None
                     and _filler_categories_overlap(filler, other, reg)
+                ):
+                    return False
+
+        for group, category in category_membership_requirements:
+            if token.slot not in group:
+                continue
+            desired = _filler_in_category(filler, category, reg)
+            for other_name in group:
+                if other_name == token.slot:
+                    continue
+                other = known_filler(other_name)
+                if other is not None:
+                    if _filler_in_category(other, category, reg) != desired:
+                        return False
+                    continue
+                if other_name not in active_slots:
+                    return False
+                other_token = tokens_by_slot.get(other_name)
+                if other_token is None or not any(
+                    _filler_in_category(candidate, category, reg) == desired
+                    for candidate in candidate_domain(other_token)
+                    if _outside_categories(
+                        candidate, absent_categories, reg
+                    )
+                    and _outside_slot_categories(
+                        candidate,
+                        other_name,
+                        slot_category_exclusions,
+                        reg,
+                    )
                 ):
                     return False
 
@@ -1599,8 +1985,8 @@ def _allowed_fillers(
                     and direction_name in active_slots
                     and not any(
                         delta_ok(filler, candidate)
-                        for candidate in _domain(
-                            tokens_by_slot[direction_name], reg, fixtures
+                        for candidate in candidate_domain(
+                            tokens_by_slot[direction_name]
                         )
                         if _outside_categories(
                             candidate, absent_categories, reg
@@ -1655,8 +2041,8 @@ def _allowed_fillers(
                         and role_name in active_slots
                         and not any(
                             role_ok(filler, candidate)
-                            for candidate in _domain(
-                                tokens_by_slot[role_name], reg, fixtures
+                            for candidate in candidate_domain(
+                                tokens_by_slot[role_name]
                             )
                             if _outside_categories(
                                 candidate, absent_categories, reg
@@ -1674,27 +2060,101 @@ def _allowed_fillers(
                 verb = known_filler(verb_name)
                 if verb is not None and not role_ok(verb, filler):
                     return False
+        for (
+            measure_name,
+            holder_names,
+            allow_proper_name,
+        ) in measure_holder_requirements:
+            def holder_ok(measure: _Filler, holder: _Filler) -> bool:
+                return (
+                    allow_proper_name and holder.kind == "name"
+                ) or reg.measure_applies_to_holder(
+                    measure.identity, holder.identity
+                )
+
+            if token.slot == measure_name:
+                for holder_name in holder_names:
+                    holder = known_filler(holder_name)
+                    if holder is not None and not holder_ok(filler, holder):
+                        return False
+                    if (
+                        holder is None
+                        and holder_name in active_slots
+                        and not any(
+                            holder_ok(filler, candidate)
+                            for candidate in candidate_domain(
+                                tokens_by_slot[holder_name]
+                            )
+                            if _outside_categories(
+                                candidate, absent_categories, reg
+                            )
+                            and _outside_slot_categories(
+                                candidate,
+                                holder_name,
+                                slot_category_exclusions,
+                                reg,
+                            )
+                        )
+                    ):
+                        return False
+            if token.slot in holder_names:
+                measure = known_filler(measure_name)
+                if measure is not None and not holder_ok(measure, filler):
+                    return False
+                if (
+                    measure is None
+                    and measure_name in active_slots
+                    and not any(
+                        holder_ok(candidate, filler)
+                        for candidate in candidate_domain(
+                            tokens_by_slot[measure_name]
+                        )
+                        if _outside_categories(
+                            candidate, absent_categories, reg
+                        )
+                        and _outside_slot_categories(
+                            candidate,
+                            measure_name,
+                            slot_category_exclusions,
+                            reg,
+                        )
+                    )
+                ):
+                    return False
         return True
 
     def satisfies_conditional_categories(filler: _Filler) -> bool:
-        def in_category(candidate: _Filler, category: str) -> bool:
-            return (
+        def in_category(
+            candidate: _Filler,
+            category: str,
+            allow_proper_name: bool,
+        ) -> bool:
+            return (allow_proper_name and candidate.kind == "name") or (
                 reg.word_in_category(candidate.surface.casefold(), category)
                 or reg.word_in_category(candidate.identity, category)
             )
 
-        for bound_slot, target_slot, category in bound_category_requirements:
+        for (
+            bound_slot,
+            target_slot,
+            category,
+            allow_proper_name,
+        ) in bound_category_requirements:
             if (
                 token.slot == target_slot
                 and bound_slot in active_slots
-                and not in_category(filler, category)
+                and not in_category(
+                    filler, category, allow_proper_name
+                )
             ):
                 return False
             if token.slot == bound_slot:
                 target = chosen.get(target_slot) or locked_fillers.get(
                     target_slot
                 )
-                if target is not None and not in_category(target, category):
+                if target is not None and not in_category(
+                    target, category, allow_proper_name
+                ):
                     return False
         return True
 
@@ -1726,8 +2186,8 @@ def _allowed_fillers(
                     and target_slot in active_slots
                     and not any(
                         has_form(candidate, form)
-                        for candidate in _domain(
-                            tokens_by_slot[target_slot], reg, fixtures
+                        for candidate in candidate_domain(
+                            tokens_by_slot[target_slot]
                         )
                         if _outside_categories(
                             candidate, absent_categories, reg
@@ -1833,7 +2293,13 @@ def _realize(
     *,
     locked_bindings: dict[str, str] | None = None,
     excluded_bindings: dict[str, str] | None = None,
-) -> tuple[str, dict[str, str], dict[tuple[int, ...], bool]]:
+    generation_mode: GenerationMode = "strict",
+) -> tuple[
+    str,
+    dict[str, str],
+    dict[tuple[int, ...], bool],
+    tuple[LexicalRelaxation, ...],
+]:
     seq = _flat_sentence(rule)
     assert seq is not None
     locked_bindings = locked_bindings or {}
@@ -1853,11 +2319,15 @@ def _realize(
         distinct_measure_groups,
         attribute_pairs,
         verb_role_requirements,
+        measure_holder_requirements,
         slot_category_exclusions,
         absent_categories,
     ) = _constraint_groups(rule)
     unbound_optional_paths = _unbound_optional_paths(rule, seq)
     proportional_delta_requirements = _proportional_delta_requirements(rule)
+    category_membership_requirements = (
+        _category_membership_requirements(rule)
+    )
     locked_fillers = _resolve_locked_fillers(
         seq, reg, fixtures, locked_bindings
     )
@@ -1942,6 +2412,67 @@ def _realize(
         if token.slot is not None
         and all(optional_choices.get(path, False) for path in ancestors)
     }
+    active_leaf_tokens = [
+        token
+        for _, token, ancestors in _leaf_tokens(seq)
+        if all(optional_choices.get(path, False) for path in ancestors)
+    ]
+    name_required_before_count = {
+        current.slot
+        for current, following in zip(
+            active_leaf_tokens,
+            active_leaf_tokens[1:],
+            strict=False,
+        )
+        if current.slot is not None
+        and current.type == "entity"
+        and (following.type == "counted" or following.counted)
+    }
+
+    boundary_domains: dict[
+        str, tuple[list[_Filler], str, str]
+    ] = {}
+    if generation_mode == "lexical_boundary":
+        active_tokens_by_slot: dict[str, list[MatchToken]] = {}
+        for _, token, ancestors in _leaf_tokens(seq):
+            if (
+                token.slot is not None
+                and token.slot in active_slots
+                and all(optional_choices.get(path, False) for path in ancestors)
+            ):
+                active_tokens_by_slot.setdefault(token.slot, []).append(token)
+        for slot_name, slot_tokens in active_tokens_by_slot.items():
+            widened = [
+                _broader_lexical_domain(token, reg, fixtures)
+                for token in slot_tokens
+            ]
+            if any(domain is None for domain in widened):
+                continue
+            complete = [domain for domain in widened if domain is not None]
+            shared = set(complete[0][0])
+            for domain, _, _ in complete[1:]:
+                shared.intersection_update(domain)
+            if shared:
+                boundary_domains[slot_name] = (
+                    [filler for filler in complete[0][0] if filler in shared],
+                    complete[0][1],
+                    complete[0][2],
+                )
+    boundary_slot = (
+        sorted(boundary_domains)[rng.randrange(len(boundary_domains))]
+        if boundary_domains
+        else None
+    )
+    relaxations: dict[str, LexicalRelaxation] = {}
+
+    def domain_for(token: MatchToken) -> list[_Filler]:
+        if boundary_slot is not None and token.slot == boundary_slot:
+            domain = boundary_domains[boundary_slot][0]
+        else:
+            domain = _domain(token, reg, fixtures)
+        if token.slot in name_required_before_count:
+            return [filler for filler in domain if filler.kind == "name"]
+        return domain
 
     def realize_tokens(
         tokens: list[MatchToken],
@@ -1956,7 +2487,7 @@ def _realize(
 
             domain = _allowed_fillers(
                 token,
-                _domain(token, reg, fixtures),
+                domain_for(token),
                 chosen,
                 reg,
                 fixtures,
@@ -1980,7 +2511,12 @@ def _realize(
                 bound_category_requirements,
                 bound_form_requirements,
                 verb_role_requirements,
+                measure_holder_requirements,
+                category_membership_requirements=(
+                    category_membership_requirements
+                ),
                 entity_owner_distinctions=entity_owner_distinctions,
+                domain_for=domain_for,
             )
             if token.slot in locked_bindings:
                 locked = locked_bindings[token.slot].casefold()
@@ -2004,6 +2540,17 @@ def _realize(
             filler = domain[rng.randrange(len(domain))]
             if token.slot is not None:
                 chosen[token.slot] = filler
+                if boundary_slot is not None and token.slot == boundary_slot:
+                    _, requirement, broader_domain = boundary_domains[
+                        boundary_slot
+                    ]
+                    relaxations[token.slot] = LexicalRelaxation(
+                        slot=token.slot,
+                        surface=filler.surface,
+                        identity=filler.identity,
+                        requirement=requirement,
+                        broader_domain=broader_domain,
+                    )
             surfaces.append(filler.surface)
 
     realize_tokens(seq)
@@ -2018,6 +2565,7 @@ def _realize(
         sentence,
         {name: filler.surface for name, filler in chosen.items()},
         optional_choices,
+        tuple(relaxations[name] for name in sorted(relaxations)),
     )
 
 
@@ -2103,6 +2651,47 @@ def _bindings(result: RuleMatchResult) -> dict[str, str]:
         )
         for name, value in sorted(result.match.slots.items())
     }
+
+
+def _binding_key(surface: str, reg: Registry) -> tuple[str, ...]:
+    """Canonical content units for one requested or matched slot surface.
+
+    Generated fillers may include an article that the ordinary matcher skips,
+    sentence-initial capitalization, possessive spacing, or a hyphenated
+    fraction that normalization condenses. Re-analyzing the isolated surface
+    compares those ordinary structural forms without letting a partial head
+    match stand in for a longer requested filler.
+    """
+
+    reading = analyze(surface, reg, tracing=False)
+    return tuple(
+        _unit_lemma(unit, reg).casefold()
+        for unit in reading.units
+        if unit.sense() not in SKIPPABLE_SENSES
+    )
+
+
+def _strict_round_trip_result(
+    result: RuleMatchResult,
+    requested_bindings: dict[str, str],
+    reading: Any,
+    reg: Registry,
+) -> bool:
+    """Whether TARGET preserved every generated role and all content units."""
+
+    actual = _bindings(result)
+    if any(
+        slot not in actual
+        or _binding_key(surface, reg) != _binding_key(actual[slot], reg)
+        for slot, surface in requested_bindings.items()
+    ):
+        return False
+    meaningful = {
+        unit.uid
+        for unit in reading.units
+        if unit.sense() not in SKIPPABLE_SENSES
+    }
+    return meaningful.issubset(result.match.consumed)
 
 
 def _match_summaries(
@@ -2280,6 +2869,8 @@ def _category_evidence(
     """Explain the word/category ancestry accepted by the ordinary matcher."""
 
     category_gate = token.cat
+    if token.common_noun_cat is not None and unit.sense() == "noun":
+        category_gate = token.common_noun_cat
     if category_gate is None and token.type in {"modal", "future_modal"}:
         category_gate = token.type
     if category_gate is None:
@@ -2346,6 +2937,49 @@ def _attribute_compatibility_evidence(
     return refs
 
 
+def _measure_holder_compatibility_evidence(
+    project: Project,
+    measure_slot: str,
+    holder_slots: tuple[str, ...],
+    slots: dict[str, Unit | tuple[Unit, ...]],
+) -> list[SourceRef | None]:
+    """Locate every pack declaration that licensed measure/holder roles."""
+
+    measure_units = _slot_units(slots.get(measure_slot))
+    if not measure_units:
+        return []
+    reg = project.registry
+    index = project.source_index
+    measure = _unit_lemma(measure_units[0], reg)
+    refs: list[SourceRef | None] = []
+    for holder_slot in holder_slots:
+        holder_units = _slot_units(slots.get(holder_slot))
+        if not holder_units or _role_is_proper_name(holder_units[0], reg):
+            continue
+        holder = _unit_lemma(holder_units[0], reg)
+        for measure_category, holder_category in (
+            reg.measure_holder_compatibility_pairs(measure, holder)
+        ):
+            refs.extend(
+                (
+                    index.measure_holder_compatibility.get(
+                        (measure_category, holder_category)
+                    ),
+                    index.categories.get(measure_category),
+                    index.categories.get(holder_category),
+                )
+            )
+            for direct in reg.word_categories.get(measure, ()):
+                if measure_category in reg.cat_ancestors(direct):
+                    refs.append(
+                        index.category_members.get((direct, measure))
+                    )
+            for direct in reg.word_categories.get(holder, ()):
+                if holder_category in reg.cat_ancestors(direct):
+                    refs.append(index.category_members.get((direct, holder)))
+    return refs
+
+
 def _numeric_sources(
     project: Project, token: MatchToken, unit: Unit
 ) -> list[SourceRef | None]:
@@ -2393,6 +3027,10 @@ def _token_expression(token: MatchToken) -> str:
         gates.append(f"type {token.type!r}")
     if token.cat is not None:
         gates.append(f"category {token.cat!r}")
+    if token.common_noun_cat is not None:
+        gates.append(
+            f"common nouns in category {token.common_noun_cat!r}"
+        )
     if token.counted:
         gates.append("counted")
     if token.possessed:
@@ -2448,6 +3086,19 @@ def _token_reason(
                 f"lemma {unit.features.get('lemma')!r}"
             )
         return f"{surface!r} satisfied category {token.cat!r} via {chain}"
+    if token.common_noun_cat is not None and len(units) == 1:
+        unit = units[0]
+        if unit.sense() == "noun":
+            chain = " → ".join(category_path)
+            return (
+                f"{surface!r} satisfied entity type as a common noun in "
+                f"category {token.common_noun_cat!r} via {chain}"
+            )
+        return (
+            f"{surface!r} satisfied entity type independently as a "
+            f"{unit.sense() or 'referential'} expression; the common-noun "
+            "category gate did not apply"
+        )
     if token.type == "counted" and len(units) == 1:
         unit = units[0]
         value = unit.features.get("value")
@@ -2524,6 +3175,7 @@ def _token_reason(
 _WHERE_FIELDS = (
     "same_lemma",
     "same_number",
+    "same_category_membership",
     "number_compatible",
     "bound_requires_type",
     "bound_requires_category",
@@ -2532,6 +3184,7 @@ _WHERE_FIELDS = (
     "proportional_delta_compatible",
     "same_presence",
     "verb_role_compatible",
+    "measure_holder_compatible",
     "same_phrase",
     "distinct",
     "category_nonoverlap",
@@ -2555,6 +3208,9 @@ def _where_expression(rule: PatternRule, index: int) -> tuple[str, tuple[str, ..
     if isinstance(value, list):
         names = tuple(value)
         rendered = ", ".join(value)
+    elif kind == "same_category_membership":
+        names = tuple(value.slots)
+        rendered = f"slots={value.slots!r}, cat={value.cat!r}"
     elif kind == "attribute_compatible":
         names = (value.attribute, value.noun)
         rendered = (
@@ -2570,7 +3226,8 @@ def _where_expression(rule: PatternRule, index: int) -> tuple[str, tuple[str, ..
         names = (value.bound, value.slot)
         rendered = (
             f"bound={value.bound!r}, slot={value.slot!r}, "
-            f"cat={value.cat!r}"
+            f"cat={value.cat!r}, "
+            f"allow_proper_name={value.allow_proper_name!r}"
         )
     elif kind == "bound_requires_form":
         names = (value.bound, value.slot)
@@ -2605,6 +3262,12 @@ def _where_expression(rule: PatternRule, index: int) -> tuple[str, tuple[str, ..
             f"verb_cat={value.verb_cat!r}, {role_boundary}, "
             f"allow_plural_class={value.allow_plural_class!r}"
         )
+    elif kind == "measure_holder_compatible":
+        names = (value.measure, *value.holders)
+        rendered = (
+            f"measure={value.measure!r}, holders={value.holders!r}, "
+            f"allow_proper_name={value.allow_proper_name!r}"
+        )
     elif kind == "distinct_from_owner":
         names = (value.entity, value.possessed)
         rendered = (
@@ -2632,6 +3295,25 @@ def _where_reason(
         if present:
             return "all paired slots were present: " + ", ".join(present)
         return "all paired slots were absent"
+    if pred.same_category_membership is not None:
+        agreement = pred.same_category_membership
+        rendered = []
+        for slot_name in agreement.slots:
+            units = _slot_units(slots.get(slot_name))
+            if not units:
+                return f"the target match did not expose slot {slot_name!r}"
+            identity = _unit_lemma(units[0], reg)
+            membership = _filler_in_category(
+                _Filler(surface=units[0].surface, identity=identity),
+                agreement.cat,
+                reg,
+            )
+            rendered.append(
+                f"{slot_name}={identity!r} was "
+                + ("inside" if membership else "outside")
+                + f" {agreement.cat!r}"
+            )
+        return "; ".join(rendered) + "; memberships agreed"
     if pred.bound_requires_category is not None:
         requirement = pred.bound_requires_category
         if requirement.bound not in slots:
@@ -2650,6 +3332,11 @@ def _where_reason(
             f"{requirement.bound!r} was bound, so "
             f"{requirement.slot}={identity!r} satisfied category "
             f"{requirement.cat!r}"
+            + (
+                " or the proper-name alternative"
+                if requirement.allow_proper_name
+                else ""
+            )
         )
     if pred.bound_requires_form is not None:
         requirement = pred.bound_requires_form
@@ -2771,6 +3458,37 @@ def _where_reason(
             f"{compatibility.verb}={verb!r} {boundary}: "
             + ", ".join(rendered_roles)
         )
+    if pred.measure_holder_compatible is not None:
+        compatibility = pred.measure_holder_compatible
+        measure_units = _slot_units(slots.get(compatibility.measure))
+        if not measure_units:
+            return "the target match did not expose the governing measure"
+        measure = _unit_lemma(measure_units[0], reg)
+        rendered = []
+        for holder_name in compatibility.holders:
+            holder_units = _slot_units(slots.get(holder_name))
+            if not holder_units:
+                rendered.append(f"{holder_name}=unbound")
+                continue
+            holder = holder_units[0]
+            holder_lemma = _unit_lemma(holder, reg)
+            if (
+                compatibility.allow_proper_name
+                and _role_is_proper_name(holder, reg)
+            ):
+                rendered.append(f"{holder_name}={holder_lemma!r} (proper name)")
+                continue
+            pairs = reg.measure_holder_compatibility_pairs(
+                measure, holder_lemma
+            )
+            licences = ", ".join(
+                f"{measure_category} → {holder_category}"
+                for measure_category, holder_category in pairs
+            )
+            rendered.append(
+                f"{holder_name}={holder_lemma!r} via {licences}"
+            )
+        return f"{compatibility.measure}={measure!r}: " + "; ".join(rendered)
     if pred.attribute_compatible is not None:
         attribute_name = pred.attribute_compatible.attribute
         noun_name = pred.attribute_compatible.noun
@@ -2914,6 +3632,7 @@ def _explain_candidate(
     target: RuleMatchResult | None,
     requested: dict[str, str],
     optional_choices: dict[tuple[int, ...], bool] | None = None,
+    lexical_relaxations: tuple[LexicalRelaxation, ...] = (),
 ) -> tuple[tuple[PremiseSummary, ...], tuple[ConsumedUnitSummary, ...]]:
     seq = _flat_sentence(rule)
     unit_by_uid = {unit.uid: unit for unit in reading.units}
@@ -2930,6 +3649,21 @@ def _explain_candidate(
         if uid in unit_by_uid and uid not in claimed
     ]
     premises: list[PremiseSummary] = []
+    relaxations_by_slot = {
+        relaxation.slot: relaxation for relaxation in lexical_relaxations
+    }
+
+    def relaxation_reason(relaxation: LexicalRelaxation) -> str:
+        outcome = (
+            "the ordinary matcher nevertheless retained the target rule"
+            if target is not None
+            else "the ordinary matcher was allowed to reject the target rule"
+        )
+        return (
+            "lexical boundary mode deliberately sampled "
+            f"{relaxation.surface!r} from {relaxation.broader_domain}, "
+            f"outside the strict {relaxation.requirement}; {outcome}"
+        )
 
     if seq is None:
         premises.append(
@@ -3046,20 +3780,38 @@ def _explain_candidate(
             bound = requested.get(token.slot) if token.slot is not None else (
                 token.lit_options[0] if token.lit_options else None
             )
+            relaxation = (
+                relaxations_by_slot.get(token.slot)
+                if token.slot is not None
+                else None
+            )
+            absent_sources: list[SourceRef | None] = [source]
+            if token.cat is not None:
+                absent_sources.append(
+                    project.source_index.categories.get(token.cat)
+                )
+            if relaxation is not None:
+                absent_sources.append(
+                    project.source_index.lexicon.get(relaxation.identity)
+                )
             premises.append(
                 PremiseSummary(
                     index=token_no,
                     kind="token",
                     expression=_token_expression(token),
                     binding=bound,
-                    status="unverified",
+                    status="relaxed" if relaxation is not None else "unverified",
                     reason=(
-                        "target rule was absent; the matcher exposes no "
-                        "partial premise result"
+                        relaxation_reason(relaxation)
+                        if relaxation is not None
+                        else (
+                            "target rule was absent; the matcher exposes no "
+                            "partial premise result"
+                        )
                     ),
                     slot=token.slot,
                     slot_type=token.type or token.cat,
-                    sources=_dedupe_sources([source]),
+                    sources=_dedupe_sources(absent_sources),
                 )
             )
             continue
@@ -3102,15 +3854,28 @@ def _explain_candidate(
             sources.append(fixture)
         sources.extend(category_refs)
         binding = " ".join(unit.surface for unit in units) or None
+        relaxation = (
+            relaxations_by_slot.get(token.slot)
+            if token.slot is not None
+            else None
+        )
         premises.append(
             PremiseSummary(
                 index=token_no,
                 kind="token",
                 expression=_token_expression(token),
                 binding=binding,
-                status="passed" if units else "unverified",
+                status=(
+                    "relaxed"
+                    if relaxation is not None
+                    else "passed"
+                    if units
+                    else "unverified"
+                ),
                 reason=(
-                    _token_reason(token, units, category_path)
+                    relaxation_reason(relaxation)
+                    if relaxation is not None
+                    else _token_reason(token, units, category_path)
                     if units
                     else "the matcher reported no consumable unit for this token"
                 ),
@@ -3135,6 +3900,18 @@ def _explain_candidate(
                     project, predicate.attribute_compatible, slots
                 )
             )
+        if (
+            target is not None
+            and predicate.measure_holder_compatible is not None
+        ):
+            where_sources.extend(
+                _measure_holder_compatibility_evidence(
+                    project,
+                    predicate.measure_holder_compatible.measure,
+                    tuple(predicate.measure_holder_compatible.holders),
+                    slots,
+                )
+            )
         if predicate.absent is not None:
             where_sources.append(
                 project.source_index.categories.get(predicate.absent["cat"])
@@ -3143,6 +3920,12 @@ def _explain_candidate(
             where_sources.append(
                 project.source_index.categories.get(
                     predicate.bound_requires_category.cat
+                )
+            )
+        if predicate.same_category_membership is not None:
+            where_sources.append(
+                project.source_index.categories.get(
+                    predicate.same_category_membership.cat
                 )
             )
         if predicate.polarity_compatible is not None:
@@ -3244,13 +4027,23 @@ def _candidate_from_reading(
     document: Any,
     results: list[RuleMatchResult],
     origin: Literal["generated", "reading"] = "generated",
+    generation_mode: GenerationMode = "strict",
     optional_choices: dict[tuple[int, ...], bool] | None = None,
+    lexical_relaxations: tuple[LexicalRelaxation, ...] = (),
 ) -> GenerationCandidate:
     """Project one ordinary reader result into the authoring candidate record."""
 
     target_results = [
         result for result in results if result.match.rule.id == target_rule_id
     ]
+    if origin == "generated" and generation_mode == "strict":
+        target_results = [
+            result
+            for result in target_results
+            if _strict_round_trip_result(
+                result, requested_bindings, reading, project.registry
+            )
+        ]
     target_result = target_results[0] if target_results else None
     if target_result is None:
         status = "absent"
@@ -3293,11 +4086,13 @@ def _candidate_from_reading(
             target_result,
             effective_bindings,
             optional_choices,
+            lexical_relaxations,
         )
 
     digest = hashlib.sha256(
         (
-            f"{project.registry.fingerprint}\0{origin}\0{seed}\0{target_rule_id}\0"
+            f"{project.registry.fingerprint}\0{origin}\0{generation_mode}\0"
+            f"{seed}\0{target_rule_id}\0"
             f"{sentence}"
         ).encode()
     ).hexdigest()[:20]
@@ -3307,6 +4102,7 @@ def _candidate_from_reading(
         registry_fingerprint=project.registry.fingerprint,
         generator_version=GENERATOR_VERSION,
         origin=origin,
+        generation_mode=generation_mode,
         seed=seed,
         target_rule=target_rule_id,
         target_description=rule.description if rule is not None else None,
@@ -3339,6 +4135,7 @@ def _candidate_from_reading(
         ),
         deficiencies=tuple(reading.deficiencies()),
         attempts=attempts,
+        lexical_relaxations=lexical_relaxations,
     )
 
 
@@ -3351,6 +4148,8 @@ def retest_candidate(
     requested_bindings: dict[str, str] | None = None,
     attempts: int = 1,
     origin: Literal["generated", "reading"] = "generated",
+    generation_mode: GenerationMode = "strict",
+    lexical_relaxations: tuple[LexicalRelaxation, ...] = (),
 ) -> GenerationCandidate:
     """Re-evaluate an identical pinned sentence against the current project."""
 
@@ -3382,6 +4181,8 @@ def retest_candidate(
         document=document,
         results=results,
         origin=origin,
+        generation_mode=generation_mode,
+        lexical_relaxations=lexical_relaxations,
     )
 
 
@@ -3464,6 +4265,7 @@ def promote_sentence_review_candidate(
         registry_fingerprint=project.registry.fingerprint,
         generator_version=GENERATOR_VERSION,
         origin="reading",
+        generation_mode="strict",
         seed=seed,
         target_rule=None,
         target_description=(
@@ -3494,6 +4296,7 @@ def promote_sentence_review_candidate(
         ),
         deficiencies=tuple(reading.deficiencies()),
         attempts=1,
+        lexical_relaxations=(),
     )
 
 
@@ -3505,9 +4308,12 @@ def generate_candidate(
     max_attempts: int = 64,
     locked_bindings: dict[str, str] | None = None,
     excluded_bindings: dict[str, str] | None = None,
+    generation_mode: GenerationMode = "strict",
 ) -> GenerationCandidate:
     """Generate and round-trip one supported rule with a reproducible seed."""
 
+    if generation_mode not in {"strict", "lexical_boundary"}:
+        raise GenerationError(f"unknown generation mode {generation_mode!r}")
     seed = secrets.randbits(63) if seed is None else seed
     rng = random.Random(seed)
     fixtures = _load_fixtures(project.root)
@@ -3539,16 +4345,23 @@ def generate_candidate(
     last_doc = None
     last_reading = None
     last_optional_choices: dict[tuple[int, ...], bool] = {}
+    last_lexical_relaxations: tuple[LexicalRelaxation, ...] = ()
     last_realization_error: GenerationError | None = None
     for attempt in range(1, max_attempts + 1):
         try:
-            sentence, requested, optional_choices = _realize(
+            (
+                sentence,
+                requested,
+                optional_choices,
+                lexical_relaxations,
+            ) = _realize(
                 rule,
                 project.registry,
                 fixtures,
                 rng,
                 locked_bindings=locked_bindings,
                 excluded_bindings=excluded_bindings,
+                generation_mode=generation_mode,
             )
         except GenerationError as exc:
             last_realization_error = exc
@@ -3569,7 +4382,14 @@ def generate_candidate(
         last_doc = doc
         last_reading = reading
         last_optional_choices = optional_choices
-        if any(result.match.rule.id == rule.id for result in results):
+        last_lexical_relaxations = lexical_relaxations
+        if generation_mode == "lexical_boundary" or any(
+            result.match.rule.id == rule.id
+            and _strict_round_trip_result(
+                result, requested, reading, project.registry
+            )
+            for result in results
+        ):
             break
     if last_doc is None or last_reading is None:
         raise GenerationError(
@@ -3588,7 +4408,9 @@ def generate_candidate(
         reading=last_reading,
         document=last_doc,
         results=last_results,
+        generation_mode=generation_mode,
         optional_choices=last_optional_choices,
+        lexical_relaxations=last_lexical_relaxations,
     )
 
 

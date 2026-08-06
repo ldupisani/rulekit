@@ -107,7 +107,7 @@ def test_every_new_optional_rule_generates_a_reviewable_match(
         seed=0,
     )
 
-    assert candidate.generator_version == "g6-reviewed-premise-boundaries"
+    assert candidate.generator_version == "g6-strict-boundary-modes"
     assert candidate.target_status == "matched"
     optional_rows = [
         premise

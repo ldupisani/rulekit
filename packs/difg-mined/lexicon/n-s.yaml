@@ -398,6 +398,7 @@ entries:
   oyster:
     senses:
     - noun
+    plural: oysters
   oysters:
     senses:
     - noun
@@ -780,9 +781,10 @@ entries:
   plane:
     senses:
     - noun
-  planks:
+  plank:
     senses:
     - noun
+    plural: planks
   planned:
     senses:
     - verb
@@ -1447,9 +1449,28 @@ entries:
     - verb
     verb:
       lemma: rent
+  repaint:
+    senses:
+    - verb
+    number: plural
+    verb:
+      lemma: repaint
+  repainted:
+    senses:
+    - verb
+    verb:
+      lemma: repaint
   repainting:
     senses:
     - verb
+    verb:
+      lemma: repaint
+  repaints:
+    senses:
+    - verb
+    number: singular
+    verb:
+      lemma: repaint
   repair:
     senses:
     - verb
@@ -2114,6 +2135,25 @@ entries:
   shuck:
     senses:
     - verb
+    number: plural
+    verb:
+      lemma: shuck
+  shucked:
+    senses:
+    - verb
+    verb:
+      lemma: shuck
+  shucking:
+    senses:
+    - verb
+    verb:
+      lemma: shuck
+  shucks:
+    senses:
+    - verb
+    number: singular
+    verb:
+      lemma: shuck
   sibling:
     senses:
     - noun

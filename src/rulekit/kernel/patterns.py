@@ -164,6 +164,14 @@ def proportional_delta_is_compatible(
 
 
 def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
+    if (
+        token.common_noun_cat is not None
+        and unit.sense() == "noun"
+        and not _unit_in_category(unit, token.common_noun_cat, reg)
+    ):
+        # A proper name (or resolved pronoun) is independently referential;
+        # only a common noun needs the rule's positive semantic-role license.
+        return False
     if token.single_word and len(unit.words) != 1:
         # OPT-IN (schemas.MatchToken.single_word): condensation preserves the
         # original words on the merged Unit, so this structurally refuses
@@ -862,6 +870,18 @@ def _check_where(
                 numbers.append(number)
             if len(set(numbers)) > 1:
                 return False
+        if pred.same_category_membership is not None:
+            agreement = pred.same_category_membership
+            memberships = []
+            for name in agreement.slots:
+                unit = slots.get(name)
+                if unit is None or isinstance(unit, tuple):
+                    return False
+                memberships.append(
+                    _unit_in_category(unit, agreement.cat, reg)
+                )
+            if len(set(memberships)) > 1:
+                return False
         if pred.number_compatible is not None:
             numbers = []
             for name in pred.number_compatible:
@@ -955,6 +975,25 @@ def _check_where(
                         )
                     ):
                         return False
+        if pred.measure_holder_compatible is not None:
+            compatibility = pred.measure_holder_compatible
+            measure = slots.get(compatibility.measure)
+            if measure is None or isinstance(measure, tuple):
+                return False
+            measure_lemma = _lemma_of(measure)
+            for holder_name in compatibility.holders:
+                holder = slots.get(holder_name)
+                if holder is None or isinstance(holder, tuple):
+                    return False
+                if (
+                    compatibility.allow_proper_name
+                    and _role_is_proper_name(holder, reg)
+                ):
+                    continue
+                if not reg.measure_applies_to_holder(
+                    measure_lemma, _lemma_of(holder)
+                ):
+                    return False
         if pred.category_nonoverlap is not None:
             roles = []
             for role_name in pred.category_nonoverlap:
@@ -988,7 +1027,10 @@ def _check_where(
             unit = slots.get(requirement.slot)
             if unit is None or isinstance(unit, tuple):
                 return False
-            if not _slot_ok(
+            if not (
+                requirement.allow_proper_name
+                and _role_is_proper_name(unit, reg)
+            ) and not _slot_ok(
                 unit,
                 MatchToken(slot=requirement.slot, cat=requirement.cat),
                 reg,

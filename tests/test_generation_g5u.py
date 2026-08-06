@@ -155,7 +155,7 @@ def test_currently_generates_a_matcher_confirmed_anchor() -> None:
         row for row in candidate.premises if row.slot == "trailing_adv"
     )
 
-    assert candidate.generator_version == "g6-reviewed-premise-boundaries"
+    assert candidate.generator_version == "g6-strict-boundary-modes"
     assert candidate.target_status == "matched"
     assert premise.binding == MOVED_WORD
     assert premise.status == "passed"

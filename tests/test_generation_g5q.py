@@ -19,6 +19,7 @@ GSM8K = ROOT / "projects" / "gsm8k"
 MOVED_WORDS = {"older", "younger"}
 MOVED_MEMBERS = {
     "age_comparative": ["older", "younger"],
+    "measured_comparative": ["older", "younger"],
     "more_dir": ["older"],
     "less_dir": ["younger"],
 }
@@ -50,11 +51,13 @@ def test_age_comparatives_and_core_memberships_share_ownership() -> None:
     }
     assert project.registry.word_categories["older"] == (
         "age_comparative",
+        "measured_comparative",
         "more_dir",
     )
     assert project.registry.word_categories["younger"] == (
         "age_comparative",
         "less_dir",
+        "measured_comparative",
     )
 
 
@@ -115,12 +118,14 @@ def test_combined_pack_semantics_are_identical_to_legacy_ownership() -> None:
     assert project.registry.word_categories["older"] == (
         "age_comparative",
         "higher",
+        "measured_comparative",
         "more_dir",
     )
     assert project.registry.word_categories["younger"] == (
         "age_comparative",
         "less_dir",
         "lower",
+        "measured_comparative",
     )
 
 
@@ -157,7 +162,7 @@ def test_both_age_comparatives_generate_matcher_confirmed_specimens(
     )
     premise = next(row for row in candidate.premises if row.slot == "dir")
 
-    assert candidate.generator_version == "g6-reviewed-premise-boundaries"
+    assert candidate.generator_version == "g6-strict-boundary-modes"
     assert candidate.target_status == "matched"
     assert premise.binding == comparative
     assert premise.status == "passed"

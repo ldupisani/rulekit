@@ -172,7 +172,7 @@ def test_every_distinct_measure_rule_generates_exact_distinct_keys(
         )
     ]
 
-    assert candidate.generator_version == "g6-reviewed-premise-boundaries"
+    assert candidate.generator_version == "g6-strict-boundary-modes"
     assert candidate.target_status == "matched"
     assert len(rows) == len(EXPECTED_GROUPS[rule_id])
     assert all(row.status == "passed" for row in rows)

@@ -9,10 +9,42 @@ categories:
             Predicate nouns licensed beneath an explicit remainder-membership
             superclass. `animal` is the first declared member family; other
             ontologies can extend this category without widening `animal`.
-    animal: {parent: membership_member_noun}
+    animal:
+        parent: membership_member_noun
+        coordinated_superordinate: true
+        notes: >
+            A countable superclass for authored animal subtypes. This lets an
+            explicit total ask add two or more animal kinds stated together,
+            such as penguins plus bears. Unlike a closed subtype family, animal
+            kinds stated in separate premises are not assumed exhaustive. The
+            generic consumer also declines when only one subtype is known, when
+            any held measure is outside this family, or when a direct animal
+            total is already present. Member words remain pack-owned below.
     pet: {parent: animal}
-    motion_participant:
+    quantity_holder:
         parent: noun
+        notes: >
+            Common nouns licensed to hold or be compared by an arithmetic
+            quantity. Proper names remain independently valid in entity slots.
+            This is a positive role boundary: adding an ordinary noun to the
+            lexicon does not silently make it a quantity holder.
+    dimension_holder:
+        parent: quantity_holder
+        notes: >
+            Common nouns that can bear at least one physical or temporal
+            dimension. Narrower holder classes remain distinct so having a
+            length or weight does not imply having a duration.
+    linear_dimension_holder:
+        parent: dimension_holder
+        notes: "Entities ordinarily comparable by a declared length measure."
+    mass_dimension_holder:
+        parent: dimension_holder
+        notes: "Entities ordinarily comparable by a declared mass measure."
+    duration_holder:
+        parent: dimension_holder
+        notes: "Events or intervals ordinarily comparable by elapsed time."
+    motion_participant:
+        parent: quantity_holder
         notes: >
             Common nouns that can plausibly perform a motion event. Proper
             names remain independently valid in verb-role premises. Quantity-
@@ -79,20 +111,22 @@ categories:
             Corpus-owned temporal members extend this category from their own
             pack.
     bare_entity_reference:
-        parent: noun
+        parent: quantity_holder
         notes: >
             Common-noun-sensed forms also attested as bare entity labels in
             arithmetic prose. This is an exact pack-owned exception for lexical
-            name homographs, not a general capitalization heuristic.
+            name homographs, not a general capitalization heuristic. Their
+            independently licensed entity-label reading also makes them valid
+            quantity holders.
     quantity_location:
-        parent: noun
+        parent: quantity_holder
         notes: >
             Ordinary place/container nouns admitted as the object of an
             optional quantitative locative adjunct. Referentiality alone makes
             "in the dog" syntactically complete but does not make it a useful
             holder context.
     quantity_container:
-        parent: noun
+        parent: quantity_holder
         notes: >
             Enumerable container heads licensed before an "of NOUN" content
             tail in a bare existential ("30 boxes of apples"). This is narrower
@@ -250,6 +284,12 @@ categories:
             Quantity-changing event verbs whose common-noun subjects and
             comparison standards must be declared plausible event
             participants. Stative possession verbs remain outside this class.
+    shucking_verb:
+        parent: quantity_event_verb
+        notes: "Quantity events whose counted object must be shuckable."
+    shuckable_item:
+        parent: noun
+        notes: "Counted objects that can ordinarily be shucked."
     acquire: {parent: quantity_event_verb, antonym: lose, polarity: 1}
     lose: {parent: quantity_event_verb, antonym: acquire, polarity: -1}
     directional_change_verb:
@@ -347,6 +387,12 @@ categories:
     duration_dimension_comparative:
         parent: comparative
         notes: "Duration comparatives licensed with concrete elapsed-time units."
+    measured_comparative:
+        parent: comparative
+        notes: >
+            Comparatives that may follow an explicit counted measure without a
+            stated standard. The consume-only dangling rule uses this union to
+            expose every supported form without emitting a semantic fact.
     dimension_adjective:
         parent: adjective
         notes: >
@@ -475,10 +521,11 @@ categories:
     compute_verb:
         parent: imperative
         notes: >
-            mining candidate dimension-aggregate-asks: the closed set of
+            mining candidate dimension asks: the closed set of
             IMPERATIVE task-cue verbs ('compute'/'calculate'/'determine') that
-            head the new imperative aggregate asks ("Calculate their combined
-            height", "Determine the average weight of the three"). Rooted at
+            head the imperative single-holder and aggregate asks ("Calculate
+            the age of Arden", "Calculate their combined height", "Determine
+            the average weight of the three"). Rooted at
             'imperative' (added to registry.ROOT_SENSES the same way 'time'/
             'article'/'pronoun' were — purely additive, see that file's own
             comment), NOT 'verb': 'compute' carries ONLY the `imperative` sense
@@ -499,14 +546,14 @@ categories:
     dimension_noun:
         parent: noun
         notes: >
-            mining candidate dimension-aggregate-asks: nouns that name a
+            mining candidate dimension asks: nouns that name a
             MEASURE by the DIMENSION being measured rather than by the unit
             itself ('height'/'weight'/'age'/'distance'/'balance'/'earnings'/
             'cost' — "their combined HEIGHT", "the average WEIGHT of the
-            three"). Gates the `item` slot on the new imperative-headed
-            aggregate asks (packs/arithmetic/rules/core.yaml,
-            ask/imperative-combined-dimension and ask/imperative-average-
-            dimension) — a PURE PATTERN-MATCHING gate, structurally analogous
+            three", "the AGE of Arden"). Gates the `item` slot on the
+            imperative-headed single, combined, and average dimension asks
+            (packs/arithmetic/rules/core.yaml) — a PURE PATTERN-MATCHING gate,
+            structurally analogous
             to `age_noun`/`dimension_adjective` above, never itself consulted
             for measure RESOLUTION (that is `length_measure`/`mass_measure`/
             `time_measure`/`currency_measure` below, a deliberately SEPARATE
@@ -519,17 +566,18 @@ categories:
         parent: noun
         dimension: true
         notes: >
-            mining candidate dimension-aggregate-asks: the physical-LENGTH
+            mining candidate dimension asks: the physical-LENGTH
             unit family — concrete units ('foot'/'inch'/'yard'/'meter'/
             'centimeter'/'kilometer'/'mile') AND the dimension nouns that name
             the same family without naming a unit ('height'/'distance') are
             members of this ONE category (both kinds are noun-sensed, so both
             satisfy this category's root sense — see CategoryDef's `dimension`
             field docstring). `answer.py`'s `_resolve_dimension_measure`
-            (called ONLY by the 'combined'/'average' consumers when an ask
-            opts in via `dimension_measure: true`) resolves a dimension-noun
-            ask like "their combined height" to whichever concrete length
-            unit is UNIQUELY present in the facts — the same UNIQUE-OR-DECLINE
+            (called only when a single, combined, or average ask opts in via
+            `dimension_measure: true`) resolves a dimension-noun ask like
+            "the height of Arden" or "their combined height" to whichever
+            concrete length unit is UNIQUELY present in the relevant facts —
+            the same UNIQUE-OR-DECLINE
             discipline `currency`'s `interchangeable` resolution already uses,
             via a SEPARATE registry set (`dimension_categories`, never
             `interchangeable_categories`) so this never widens
@@ -562,10 +610,11 @@ categories:
             the dimension noun 'age' (an age total always folds to 'year'
             elsewhere in this grammar — arithmetic/stated-age, ask/how-old-is
             — so resolving 'age' against whichever time unit is uniquely
-            in-store lands on the same place; "calculate their combined age" /
-            "determine the average age of the three" reuse the SAME
-            ask/imperative-*-dimension asks `length_measure`/`mass_measure`
-            already gate). A dimension-ADJECTIVE totality sibling ("how long
+            in-store lands on the same place; "calculate the age of Arden",
+            "calculate their combined age", and "determine the average age of
+            the three" reuse the SAME dimension-resolution mechanism that
+            `length_measure`/`mass_measure` already gate). A dimension-
+            ADJECTIVE totality sibling ("how long
             is the total X?", binding this category's OWN NAME directly as
             `measure` — the same move `currency`'s `measure: currency`
             precedent makes) was PROTOTYPED and DROPPED, then RE-LANDED
@@ -623,8 +672,8 @@ categories:
             the difg-mined extension pack). Deliberately a SEPARATE category from
             the pre-existing `currency` (`interchangeable: true`): adding
             'balance'/'earnings'/'cost' to `currency` itself would widen
-            `_resolve_measure_against`, consulted by every OTHER consumer
-            (single-entity, difference, ...), not just 'combined'/'average' —
+            `_resolve_measure_against`, consulted by every non-opted-in ask,
+            not just the dimension-aware single/combined/average paths —
             exactly the shared-function blast radius `length_measure`'s note
             above avoids.
     count_intensifier:
@@ -953,9 +1002,10 @@ categories:
         # opted in here may feed answer.py's `_superordinate_total` — see
         # `superordinate`'s own schema docstring (data/schemas.py CategoryDef)
         # for why this must be a SEPARATE flag from merely "has members":
-        # 'animal'/'pet' below also declare members, for unrelated decline-
-        # safety regression coverage, with a deliberately PARTIAL list that
-        # must never be read as an exhaustive subtype set.
+        # `pet` below also declares members for unrelated decline-safety
+        # coverage, with a deliberately partial list that must never be read
+        # as an exhaustive subtype set. `animal` uses the separate coordinated
+        # superordinate boundary for its open-ended member family.
         superordinate: true
         notes: >
             a PACK-DECLARED SUPERORDINATE — 'daughter' and 'son' are SUBTYPES of
@@ -1298,6 +1348,12 @@ members:
     # necessarily disjoint.
     quantity_event_participant:
         [animal, alpaca, dog, cat, fish, bird, rabbit, hamster]
+    # A book can hold a page/count quantity even though it is neither animate
+    # nor a location. Other common nouns enter this positive role only beside
+    # evidence for their own ordinary holder reading.
+    quantity_holder: [book]
+    linear_dimension_holder: [book, tree]
+    mass_dimension_holder: [book]
     # 'him'/'her' are OBJECT-case and have no lexicon entry of their own;
     # the fallback binds a SUBJECT pronoun to a prior subject anyway.
     animate_pronoun: [he, she]
@@ -1323,6 +1379,9 @@ members:
     linear_dimension_comparative: [higher, larger, longer, taller, wider, shorter, smaller]
     mass_dimension_comparative: [heavier, lighter]
     duration_dimension_comparative: [longer, shorter]
+    measured_comparative:
+        [fewer, heavier, higher, larger, less, lighter, longer, more, older,
+         shorter, smaller, taller, wider, younger]
     future_modal: [will, would]
     capacity_modal: [can, could, may, might, must, should]
     temporal_marker: [now, today]
@@ -1383,10 +1442,15 @@ attribute_compatibility:
     linear_dimension_comparative: [length_measure]
     mass_dimension_comparative: [mass_measure]
     duration_dimension_comparative: [duration_measure]
+    age_comparative: [age_measure]
     quantity_location_preposition: [quantity_location]
     quantity_surface_preposition: [quantity_surface_location]
     quantity_site_preposition: [quantity_site_location]
     quantity_remainder_preposition: [remnant]
+measure_holder_compatibility:
+    length_measure: [linear_dimension_holder]
+    mass_measure: [mass_dimension_holder]
+    duration_measure: [duration_holder]
 context_synonyms:
     appendage:
         gate: animal

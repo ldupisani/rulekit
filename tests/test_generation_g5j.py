@@ -100,13 +100,14 @@ def test_g5j_profiles_the_complete_comparative_category_class() -> None:
     )
 
     assert occurrences == {
-        "delta": 10,
+        "delta": 9,
         "quantity_delta": 3,
         "count_quantity_delta": 7,
         "mass_quantity_delta": 6,
         "age_comparative": 2,
         "count_intensifier": 1,
         "dimension_comparative": 1,
+        "measured_comparative": 1,
     }
 
 
@@ -157,7 +158,7 @@ def test_every_new_comparative_rule_generates_a_reviewable_match(
         seed=0,
     )
 
-    assert candidate.generator_version == "g6-reviewed-premise-boundaries"
+    assert candidate.generator_version == "g6-strict-boundary-modes"
     assert candidate.target_status == "matched"
     premise = next(
         row
@@ -167,6 +168,7 @@ def test_every_new_comparative_rule_generates_a_reviewable_match(
             "quantity_delta",
             "count_quantity_delta",
             "mass_quantity_delta",
+            "measured_comparative",
         }
     )
     assert premise.binding in {"fewer", "less", "more", "older", "younger"}
@@ -191,8 +193,13 @@ def test_every_new_comparative_rule_generates_a_reviewable_match(
             "quantity_delta",
             "comparative",
         )
-    else:
+    elif premise.slot_type == "delta":
         assert premise.category_path[-2:] == ("delta", "comparative")
+    else:
+        assert premise.category_path[-2:] == (
+            "measured_comparative",
+            "comparative",
+        )
     assert {"lexicon", "category-member", "category"} <= {
         source["kind"] for source in premise.sources
     }

@@ -39,6 +39,7 @@ entries:
   gem:
     senses:
     - noun
+    plural: gems
   gems:
     senses:
     - noun
@@ -304,7 +305,7 @@ entries:
     - adjective
   hand-written:
     senses:
-    - noun
+    - adjective
   handlebar:
     senses:
     - noun
@@ -1325,6 +1326,7 @@ entries:
   macaron:
     senses:
     - noun
+    plural: macarons
   macarons:
     senses:
     - noun
@@ -1492,6 +1494,7 @@ entries:
   measure:
     senses:
     - verb
+    number: plural
   measured:
     senses:
     - verb
@@ -1500,6 +1503,7 @@ entries:
   measures:
     senses:
     - verb
+    number: singular
     verb:
       lemma: measure
   meat:
@@ -1521,6 +1525,13 @@ entries:
   meet:
     senses:
     - verb
+    number: plural
+  meets:
+    senses:
+    - verb
+    number: singular
+    verb:
+      lemma: meet
   meeting:
     senses:
     - noun
@@ -1550,6 +1561,8 @@ entries:
   met:
     senses:
     - verb
+    verb:
+      lemma: meet
   meter:
     senses:
     - noun
@@ -1591,9 +1604,7 @@ entries:
   million:
     senses:
     - noun
-  millions:
-    senses:
-    - noun
+    plural: millions
   mini:
     senses:
     - adjective

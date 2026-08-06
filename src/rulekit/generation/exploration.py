@@ -10,10 +10,11 @@ from __future__ import annotations
 import json
 import random
 import uuid
-from collections import Counter, defaultdict
+from collections import Counter, OrderedDict, defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
+from threading import RLock
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -24,18 +25,28 @@ from .reviews import SourceLocation, read_reviews
 from .sample import (
     GenerationError,
     _absent_categories,
+    _category_membership_requirements,
     _distinct_measure_groups,
     _domain,
     _flat_sentence,
+    _filler_in_category,
     _leaf_tokens,
     _load_fixtures,
-    _measure_assignment_exists,
+    _measure_key,
+    _measure_key_assignment_exists,
     _outside_categories,
     _outside_slot_categories,
     _slot_category_exclusions,
     _unbound_optional_paths,
     list_rule_availability,
 )
+
+
+_PROBE_CACHE_LOCK = RLock()
+_PROBE_CACHE: OrderedDict[
+    tuple[str, tuple[str, ...]], tuple["ProbePlacement", ...]
+] = OrderedDict()
+_MAX_PROBE_CACHE_ENTRIES = 16
 
 
 class ExplorationFiller(BaseModel):
@@ -124,6 +135,12 @@ def exploration_failure_path(project: Project) -> Path:
 
 def _probe_catalog(project: Project) -> tuple[ProbePlacement, ...]:
     fixtures = _load_fixtures(project.root)
+    cache_key = (project.registry.fingerprint, fixtures.names)
+    with _PROBE_CACHE_LOCK:
+        cached = _PROBE_CACHE.get(cache_key)
+        if cached is not None:
+            _PROBE_CACHE.move_to_end(cache_key)
+            return cached
     supported = {
         item.id for item in list_rule_availability(project) if item.supported
     }
@@ -163,6 +180,81 @@ def _probe_catalog(project: Project) -> tuple[ProbePlacement, ...]:
             for name in measure_slots
             if name in tokens_by_slot
         }
+        measure_key_domains = {
+            name: tuple(
+                dict.fromkeys(_measure_key(filler) for filler in domain)
+            )
+            for name, domain in measure_domains.items()
+        }
+        measure_extension_cache: dict[
+            tuple[str, tuple[str, str | None, str | None]], bool
+        ] = {}
+
+        def measure_assignment_extends(
+            slot_name: str,
+            filler: Any,
+        ) -> bool:
+            cache_key = (slot_name, _measure_key(filler))
+            if cache_key not in measure_extension_cache:
+                measure_extension_cache[cache_key] = (
+                    _measure_key_assignment_exists(
+                        distinct_measure_groups,
+                        measure_key_domains,
+                        {slot_name: cache_key[1]},
+                    )
+                )
+            return measure_extension_cache[cache_key]
+        category_membership_requirements = (
+            _category_membership_requirements(rule)
+        )
+        membership_slots = {
+            name
+            for group, _ in category_membership_requirements
+            for name in group
+        }
+        membership_domains = {
+            name: [
+                filler
+                for filler in _domain(
+                    tokens_by_slot[name], project.registry, fixtures
+                )
+                if _outside_categories(
+                    filler, absent_categories, project.registry
+                )
+                and _outside_slot_categories(
+                    filler,
+                    name,
+                    slot_category_exclusions,
+                    project.registry,
+                )
+            ]
+            for name in membership_slots
+            if name in tokens_by_slot
+        }
+
+        def category_membership_assignment_extends(
+            slot_name: str,
+            filler: Any,
+        ) -> bool:
+            return all(
+                all(
+                    other_name == slot_name
+                    or any(
+                        _filler_in_category(
+                            candidate, category, project.registry
+                        )
+                        == _filler_in_category(
+                            filler, category, project.registry
+                        )
+                        for candidate in membership_domains.get(
+                            other_name, ()
+                        )
+                    )
+                    for other_name in group
+                )
+                for group, category in category_membership_requirements
+                if slot_name in group
+            )
         for token_index, (_, token, optional_ancestors) in enumerate(
             _leaf_tokens(seq)
         ):
@@ -187,20 +279,21 @@ def _probe_catalog(project: Project) -> tuple[ProbePlacement, ...]:
                     )
                     and (
                         token.slot not in measure_slots
-                        or _measure_assignment_exists(
-                            distinct_measure_groups,
-                            measure_domains,
-                            {token.slot: filler},
+                        or measure_assignment_extends(token.slot, filler)
+                    )
+                    and (
+                        token.slot not in membership_slots
+                        or category_membership_assignment_extends(
+                            token.slot, filler
                         )
                     )
-                    and
-                    filler.identity in project.registry.lexicon
+                    and filler.identity in project.registry.lexicon
                     and filler.identity in project.source_index.lexicon
                 ):
                     surfaces[
                         (rule.id, token.slot, token_index, filler.identity)
                     ].add(filler.surface)
-    return tuple(
+    catalog = tuple(
         ProbePlacement(
             rule_id=rule_id,
             slot=slot,
@@ -212,6 +305,12 @@ def _probe_catalog(project: Project) -> tuple[ProbePlacement, ...]:
             surfaces.items()
         )
     )
+    with _PROBE_CACHE_LOCK:
+        _PROBE_CACHE[cache_key] = catalog
+        _PROBE_CACHE.move_to_end(cache_key)
+        while len(_PROBE_CACHE) > _MAX_PROBE_CACHE_ENTRIES:
+            _PROBE_CACHE.popitem(last=False)
+    return catalog
 
 
 def _candidate_fillers(
@@ -412,7 +511,11 @@ def _status(
     return "never_generated"
 
 
-def exploration_status(project: Project) -> dict[str, Any]:
+def exploration_status(
+    project: Project,
+    *,
+    include_placements: bool = True,
+) -> dict[str, Any]:
     """Fold current availability, observations, and live human reviews."""
 
     events = read_exploration_events(project)
@@ -540,44 +643,48 @@ def exploration_status(project: Project) -> dict[str, Any]:
         generated_count = filler_generated[identity]
         failed_count = filler_failed[identity]
         reviewed_count = filler_reviewed[identity]
-        fillers.append(
-            {
-                "identity": identity,
-                "status": _status(
-                    generated_count,
-                    reviewed_count,
-                    failed_count=failed_count,
-                ),
-                "generated_count": generated_count,
-                "failed_count": failed_count,
-                "attempt_count": generated_count + failed_count,
-                "reviewed_count": reviewed_count,
-                "last_generated_at": filler_last_generated.get(identity),
-                "last_failed_at": filler_last_failed.get(identity),
-                "last_reviewed_at": filler_last_reviewed.get(identity),
-                "source": source.to_json(),
-                "surfaces": sorted(
-                    {
-                        surface
+        item = {
+            "identity": identity,
+            "status": _status(
+                generated_count,
+                reviewed_count,
+                failed_count=failed_count,
+            ),
+            "generated_count": generated_count,
+            "failed_count": failed_count,
+            "attempt_count": generated_count + failed_count,
+            "reviewed_count": reviewed_count,
+            "last_generated_at": filler_last_generated.get(identity),
+            "last_failed_at": filler_last_failed.get(identity),
+            "last_reviewed_at": filler_last_reviewed.get(identity),
+            "source": source.to_json(),
+            "compatible_rules": sorted(
+                {placement.rule_id for placement in placements}
+            ),
+        }
+        if include_placements:
+            item.update(
+                {
+                    "surfaces": sorted(
+                        {
+                            surface
+                            for placement in placements
+                            for surface in placement.surfaces
+                        },
+                        key=lambda value: value.casefold(),
+                    ),
+                    "placements": [
+                        {
+                            "rule_id": placement.rule_id,
+                            "slot": placement.slot,
+                            "token_index": placement.token_index,
+                            "surfaces": list(placement.surfaces),
+                        }
                         for placement in placements
-                        for surface in placement.surfaces
-                    },
-                    key=lambda value: value.casefold(),
-                ),
-                "compatible_rules": sorted(
-                    {placement.rule_id for placement in placements}
-                ),
-                "placements": [
-                    {
-                        "rule_id": placement.rule_id,
-                        "slot": placement.slot,
-                        "token_index": placement.token_index,
-                        "surfaces": list(placement.surfaces),
-                    }
-                    for placement in placements
-                ],
-            }
-        )
+                    ],
+                }
+            )
+        fillers.append(item)
 
     return {
         "rules": rules,
@@ -601,7 +708,7 @@ def choose_exploration_target(
 ) -> ExplorationSelection:
     """Choose a rule and lexical probe from the least-explored frontier."""
 
-    status = exploration_status(project)
+    status = exploration_status(project, include_placements=False)
     rules = {item["id"]: item for item in status["rules"]}
     fillers = {item["identity"]: item for item in status["fillers"]}
     rng = random.Random(seed)

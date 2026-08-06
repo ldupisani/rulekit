@@ -75,11 +75,10 @@ class CategoryDef(StrictModel):
     # such categories let answer.py's `_superordinate_total` sum an
     # entity's own subtype holdings into an otherwise-factless ask for the
     # category's name. Deliberately a SEPARATE opt-in flag from
-    # `interchangeable`, never inferred from "has members" alone — 'animal'/
-    # 'pet' (this pack) also declare members, for a DIFFERENT purpose
-    # (decline-safety regression coverage in `_resolve_measure_against`'s
-    # own docstring) with a deliberately PARTIAL, non-exhaustive list (only
-    # 3 of the animal words dev-train ever mentions are 'pet' members) — if
+    # `interchangeable`, never inferred from "has members" alone — `pet`
+    # also declares members for a DIFFERENT purpose (decline-safety
+    # regression coverage in `_resolve_measure_against`'s own docstring)
+    # with a deliberately PARTIAL, non-exhaustive list — if
     # `_superordinate_total` read `members` directly it would silently sum
     # only the CAPTURED subset while the text's own uncaptured subtype
     # (e.g. an unresolved 'fish' relation) drops out unaccounted, a
@@ -87,6 +86,13 @@ class CategoryDef(StrictModel):
     # single mandatory guard against that: a category must be explicitly
     # author-vetted as exhaustive before this consumer will touch it.
     superordinate: bool = False
+    # Members are valid SUBTYPES of an open-ended superclass, but are not an
+    # exhaustive ontology. Such a category may be totalled only when every
+    # contributing quantity was emitted by one explicit coordinated premise
+    # (for example, "N penguins and twice as many bears" -> animals). This is
+    # intentionally separate from `superordinate`: closed subtype families
+    # can compose facts across sentences; open classes cannot safely do so.
+    coordinated_superordinate: bool = False
     # mining candidate dimension-aggregate-asks: a UNIT-FAMILY category —
     # members are EITHER a concrete unit lemma ('foot'/'pound'/'minute'/...)
     # OR a DIMENSION word that names the same family without naming a unit
@@ -107,6 +113,15 @@ class CategoryDef(StrictModel):
     dimension: bool = False
     notes: str | None = None
 
+    @model_validator(mode="after")
+    def _one_superordinate_contract(self) -> "CategoryDef":
+        if self.superordinate and self.coordinated_superordinate:
+            raise ValueError(
+                "a category cannot be both closed and coordinated-only "
+                "superordinate"
+            )
+        return self
+
 
 class ContextSynonym(StrictModel):
     gate: str  # governing category that must be present in the text
@@ -125,21 +140,33 @@ class CategoriesDoc(StrictModel):
     # categories on either side, and pack extensions may add another target
     # category without redefining either lexeme.
     attribute_compatibility: dict[str, list[str]] = Field(default_factory=dict)
+    # Measure category -> noun categories whose members can bear that
+    # dimension. This is deliberately separate from descriptor compatibility:
+    # `shorter` can describe both a physical object and a duration, so the
+    # selected unit—not the ambiguous comparative surface—must determine which
+    # holder role is licensed.
+    measure_holder_compatibility: dict[str, list[str]] = Field(
+        default_factory=dict
+    )
     context_synonyms: dict[str, ContextSynonym] = Field(default_factory=dict)
     attrs: dict[str, dict[str, float]] = Field(default_factory=dict)
     part_counts: dict[str, str] = Field(default_factory=dict)
 
     @model_validator(mode="after")
     def _compatibility_targets(self) -> "CategoriesDoc":
-        for attribute, nouns in self.attribute_compatibility.items():
-            if not nouns:
-                raise ValueError(
-                    f"attribute compatibility {attribute!r} needs a noun category"
-                )
-            if len(nouns) != len(set(nouns)):
-                raise ValueError(
-                    f"attribute compatibility {attribute!r} repeats a noun category"
-                )
+        for family, compatibility in (
+            ("attribute", self.attribute_compatibility),
+            ("measure-holder", self.measure_holder_compatibility),
+        ):
+            for source, targets in compatibility.items():
+                if not targets:
+                    raise ValueError(
+                        f"{family} compatibility {source!r} needs a noun category"
+                    )
+                if len(targets) != len(set(targets)):
+                    raise ValueError(
+                        f"{family} compatibility {source!r} repeats a noun category"
+                    )
         return self
 
 
@@ -274,6 +301,12 @@ class MatchToken(StrictModel):
     slot: str | None = None
     type: str | None = None  # builtin slot type
     cat: str | None = None  # category gate (slot form)
+    # OPT-IN semantic role boundary for an entity slot. Proper names and
+    # resolved pronouns retain the ordinary `entity` path; a COMMON NOUN must
+    # additionally belong to this pack-declared category. This lets a rule
+    # say which nouns may act as holders/participants without either reducing
+    # the slot to names or maintaining an open-ended negative blacklist.
+    common_noun_cat: str | None = None
     # OPT-IN: a category-gated noun must also be a condensed counted unit
     # ("4 years", not bare "year"/"years"). This is the category-aware
     # counterpart of `type: counted`: the number/noun agreement remains the
@@ -476,6 +509,7 @@ class MatchToken(StrictModel):
             if (
                 self.type is not None
                 or self.cat is not None
+                or self.common_noun_cat is not None
                 or self.bare
                 or self.counted
                 or self.possessed
@@ -492,7 +526,7 @@ class MatchToken(StrictModel):
                     "a span slot takes no "
                     "type/cat/bare/counted/possessed/number/standalone/"
                     "fraction_within_whole/fraction_positive/referential/"
-                    "bare_form/finite_form"
+                    "common_noun_cat/bare_form/finite_form"
                 )
         elif self.slot is not None and (self.type is None) == (self.cat is None):
             raise ValueError("a slot needs exactly one of type/cat")
@@ -500,6 +534,10 @@ class MatchToken(StrictModel):
             raise ValueError("`counted` only qualifies a category-gated slot")
         if self.possessed and self.cat is None:
             raise ValueError("`possessed` only qualifies a category-gated slot")
+        if self.common_noun_cat is not None and self.type != "entity":
+            raise ValueError(
+                "`common_noun_cat` only qualifies a `type: entity` slot"
+            )
         if self.counted and self.possessed:
             raise ValueError("a category slot cannot be both counted and possessed")
         if self.number is not None and self.slot is None:
@@ -584,6 +622,10 @@ class BoundRequiresCategoryPredicate(StrictModel):
     bound: str
     slot: str
     cat: str
+    # Semantic entity roles commonly license open proper names alongside a
+    # positive common-noun category. This stays opt-in so existing conditional
+    # category predicates retain their exact membership-only behavior.
+    allow_proper_name: bool = False
 
 
 class BoundRequiresFormPredicate(StrictModel):
@@ -670,6 +712,29 @@ class VerbRoleCompatibilityPredicate(StrictModel):
         return self
 
 
+class MeasureHolderCompatibilityPredicate(StrictModel):
+    """Require every holder to bear the dimension named by a measure.
+
+    The lexical relation lives in ``measure_holder_compatibility`` pack data.
+    Proper names stay an explicit opt-in because open project fixtures cannot
+    carry closed noun-category membership.
+    """
+
+    measure: str
+    holders: list[str] = Field(min_length=1)
+    allow_proper_name: bool = False
+
+    @model_validator(mode="after")
+    def _unique_holders(self) -> "MeasureHolderCompatibilityPredicate":
+        if len(self.holders) != len(set(self.holders)):
+            raise ValueError("measure-holder compatibility repeats a holder")
+        if self.measure in self.holders:
+            raise ValueError(
+                "measure-holder compatibility cannot reuse the measure as a holder"
+            )
+        return self
+
+
 class DistinctFromOwnerPredicate(StrictModel):
     """Keep an entity distinct from a possessed noun's declared owner."""
 
@@ -685,6 +750,25 @@ class DistinctFromOwnerPredicate(StrictModel):
         return self
 
 
+class SameCategoryMembershipPredicate(StrictModel):
+    """Require several slots to agree on membership in one category.
+
+    This expresses a semantic class boundary without requiring the two nouns
+    to share a lemma. For example, apples/oranges are both non-temporal and
+    mornings/afternoons are both temporal, while libraries/afternoons mix the
+    two classes and therefore fail.
+    """
+
+    slots: list[str] = Field(min_length=2)
+    cat: str
+
+    @model_validator(mode="after")
+    def _unique_slots(self) -> "SameCategoryMembershipPredicate":
+        if len(self.slots) != len(set(self.slots)):
+            raise ValueError("category membership agreement repeats a slot")
+        return self
+
+
 class WherePredicate(StrictModel):
     """Closed set of cross-slot constraints."""
 
@@ -695,6 +779,10 @@ class WherePredicate(StrictModel):
     # word list, and lets a rule declare agreement without teaching the kernel
     # which words are singular or plural.
     same_number: list[str] | None = None
+    # All named slots must either belong to `cat` or all remain outside it.
+    # Unlike `same_lemma`, this permits distinct members of the same semantic
+    # class and also distinct nouns that share the absence of that class.
+    same_category_membership: SameCategoryMembershipPredicate | None = None
     # Reject an EXPLICIT grammatical-number conflict while allowing a
     # number-neutral form (notably English past tense) to remain compatible.
     # This differs deliberately from `same_number`, which requires every slot
@@ -734,6 +822,11 @@ class WherePredicate(StrictModel):
     # name or a common noun in ``role_cat``. Verbs outside the triggering
     # category remain unchanged. This keeps agency knowledge in pack data.
     verb_role_compatible: VerbRoleCompatibilityPredicate | None = None
+    # A counted dimension only relates entities licensed to bear that measure.
+    # The mapping remains pack-owned; this predicate merely relates slots.
+    measure_holder_compatible: (
+        MeasureHolderCompatibilityPredicate | None
+    ) = None
     # Opt-in equality for whole rendered slot values, including span slots.
     # `same_lemma` deliberately skips spans; constructions with repeated
     # multi-unit phrases need exact phrase identity, not head-lemma identity.
@@ -811,12 +904,14 @@ class WherePredicate(StrictModel):
             raise ValueError("category nonoverlap repeats a slot")
         set_ = [
             v for v in (
-                self.same_lemma, self.same_number, self.number_compatible,
+                self.same_lemma, self.same_number,
+                self.same_category_membership, self.number_compatible,
                 self.bound_requires_type, self.bound_requires_category,
                 self.bound_requires_form, self.polarity_compatible,
                 self.proportional_delta_compatible,
                 self.same_presence,
-                self.verb_role_compatible, self.same_phrase,
+                self.verb_role_compatible, self.measure_holder_compatible,
+                self.same_phrase,
                 self.distinct, self.category_nonoverlap,
                 self.distinct_owner, self.distinct_from_owner,
                 self.attribute_compatible,

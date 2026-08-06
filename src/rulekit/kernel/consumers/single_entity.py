@@ -20,10 +20,21 @@ def single_entity(ctx: ConsumerContext):
     from ..evaluate import evaluate
     from ..facts import FactStore
     from ..model import GroupTotal, Quantity
-    from ..measures import _check_req_unit, _measure_substance_guard, _resolve_measure
+    from ..measures import (
+        _check_req_unit,
+        _measure_substance_guard,
+        _resolve_dimension_measure,
+        _resolve_measure,
+    )
     from ..totals import _entity_total, _purchase_total, _qualified_variant_total, _revenue_total, _superordinate_total, _verb_total
 
     entity, measure = ctx.query["entity"], ctx.query["measure"]
+    if ctx.query.get("other_entity"):
+        return Answer(
+            "decline",
+            None,
+            "a single-dimension ask must name exactly one entity",
+        )
     # a possessive-qualified subject ("Kennedy's house") resolves bare
     # ("house") the same as any other entity UNLESS a same-key VALUE
     # conflict forced facts.py to re-key it to "house[kennedy]". Two
@@ -52,7 +63,18 @@ def single_entity(ctx: ConsumerContext):
     # `measure_qualifier: "{item.qualifier}"` — a no-op empty string
     # everywhere else), never the entity-level `entity_qualifier`.
     measure_qualifier = ctx.query.get("measure_qualifier")
-    singular = _resolve_measure(measure, ctx.store, ctx.reg, journal=ctx.log.journal)
+    if ctx.query.get("dimension_measure"):
+        singular = _resolve_dimension_measure(
+            measure,
+            ctx.store,
+            ctx.reg,
+            journal=ctx.log.journal,
+            entities=[entity],
+        )
+    else:
+        singular = _resolve_measure(
+            measure, ctx.store, ctx.reg, journal=ctx.log.journal
+        )
     if singular is None:
         return Answer("decline", None,
                       f"measure {measure!r} is ambiguous across the facts")

@@ -1,14 +1,15 @@
 # rulekit handoff — generation workbench
 
-**Updated:** 2026-08-05
+**Updated:** 2026-08-06
 
 **Active campaign:** deterministic rule generation and human review
 
 **Status:** G1 through G4, G5a through G5g, G6, Reading-origin review,
 targetless sentence-interpretation review, fact-level review, the
 fraction-plural morphology correction, scoped
-`GroupTotal`, all twenty-eight review-led grammar-boundary reconciliations,
-and the additive elided-comparison increment are complete and gated. Plain
+`GroupTotal`, all thirty review-led grammar-boundary reconciliations,
+the additive elided-comparison increment, and coordinated open-superclass
+totals are complete and gated. Plain
 count equatives such as `Tom buys as many roses as Mary` now emit a factor-one
 Relation through their own generated premise rule. State comparisons such as
 `Tom has 3 apples. Mary has 5 more.` now recover the uniquely implied earlier
@@ -16,11 +17,28 @@ holder and measure; event changes such as `Mary buys 5 more` remain outside
 that rule family. Combined-total asks can also preserve an exact coordinated
 name list of any length, so adding Seattle to a London/Manchester/Brighton
 total extends the same question rather than requiring another ask rule.
+Imperative single-dimension asks are now supported through
+`ask/imperative-single-dimension`: “Calculate/Compute/Determine the age of
+X” resolves the dimension noun to the one compatible concrete measure held by
+X and reuses the ordinary single-entity fold. The same declarative form covers
+height, weight, and balance. Resolution is scoped to the named holder, and an
+explicit coordinated tail declines instead of answering from its first-name
+prefix. This increment solves one additional GSM8K DEV-train item with no
+breaks or new wrong commitments in any standing DEV slice.
 The review-led adjective/noun compatibility boundary is
 also complete and gated. The review-led leading-`GroupTotal` subject boundary
 is complete and gated: existential `there` no longer becomes a group scope or
 licenses an arbitrary verb. The Designer
-can generate and explain one seeded sentence or promote
+can now choose between a strict positive and a controlled one-slot lexical
+boundary probe. Strict candidates satisfy every declared slot gate and retain
+their target on the ordinary round trip. Boundary probes preserve grammar and
+cross-slot constraints while drawing one filler from its broader declared
+root sense; the relaxation remains visible in reviews and pinned retests but
+never counts toward strict coverage. Fingerprint-keyed authoring indexes keep
+repeat availability, compatible-filler, and generation requests responsive.
+The GSM8K project has explicit open-name fixtures, and all 108 loaded premise
+rules have a deterministic strict retained specimen. The Designer can also
+generate and explain one seeded sentence or promote
 an exact Reading sentence through an explicitly selected actual premise-rule
 match. It can also capture any non-question Reading sentence without a target
 rule, preserve the intended interpretation or an optional missing-rule
@@ -68,15 +86,26 @@ time-root realization is complete: both deictic markers are core-owned and
 reviewable, and the standard-pinned future rule unlocks. G5u direct-adverb
 visibility is complete: `currently` is core-owned, project-relative adverb
 breadth remains visible, and all 99 curated premise rules are selectable. G5v
-review-led premise auditing is active; twenty-eight review batches are implemented
+review-led premise auditing is active; thirty review batches are implemented
 and fully gated. The core exploration vocabulary now contributes 25 additional
 category-aware identities, bringing the live frontier to 108/108 premise rules
-and 184 reachable identities. The latest review batch separates noun-phrase
+and 184 reachable identities. The latest review reconciliation makes strict
+generation a complete round trip: every requested binding must return with the
+same canonical lexical identity and every meaningful generated unit must be
+consumed. It also adds declarative measure-to-holder compatibility, preserving
+valid duration/length/mass comparisons while refusing incompatible standards;
+the consume-only dangling comparative remains reviewable without emitting a
+fact. Quantity-event families now apply positive participant and holder roles,
+finite-form requirements, grammatical agreement, event-specific shucking
+objects, and normalized inflection lemmas across the reviewed siblings. All ten
+live invalid reviews replay absent, the two valid rows retain their intended
+outcome or corrected grammatical minimal pair, and ordinary neighbouring forms
+remain covered. The preceding review batch separates noun-phrase
 predeterminers from demonstrative quantity pro-forms and couples a comparative-
-need count to its noun's declared grammatical number. The preceding batch
+need count to its noun's declared grammatical number. The batch before that
 moves the generic age-frame literals `ago`, `be`, and `old` beside the core
 grammar that requires them, removing false unknown-word deficiencies from
-matched core-only specimens. The batch before that closes conjunct motion-role
+matched core-only specimens. An earlier batch closes conjunct motion-role
 and PP-compatibility
 guard coverage. Earlier batches close the
 anaphoric non-holder and adverbial age-multiplier boundaries and add
@@ -598,7 +627,7 @@ matrices, and fixture reuse removed their meaningful runtime cost. Broadly
 disabling traces was also rejected as a default because the isolated saving
 was only about 15.5% and several tests specify trace behavior directly.
 
-## Active step — continue the G5v review-led premise audit
+## Active step — strict positives and controlled boundary probes
 
 The adjective/noun compatibility and leading-`GroupTotal` subject reviews are
 reconciled as complete declarative classes, not `year`/`large` or
@@ -606,8 +635,32 @@ reconciled as complete declarative classes, not `year`/`large` or
 append-only review rows remain user-authored evidence and must continue to be
 preserved.
 
-The next action is to generate or inspect the next least-explored premise and
-review it in the Designer. The ten reviews handled by the third G5v batch,
+Use `Strict positive` to review sentences that should satisfy the target rule,
+or `Lexical boundary probe` to sample one declared lexical gate just outside
+its current membership. A boundary candidate may honestly show the target as
+absent; that is the point of the experiment, not an error. It records the
+precise widened slot and remains reviewable and retestable without changing
+strict exploration counts. Focused lexicon probes and single-slot minimal
+pairs remain strict-only.
+
+The 108 GSM8K premise rules are all selectable and strict-round-trip covered.
+Their project-owned proper names remain authoring fixtures rather than runtime
+lexicon. Structural domain, availability, and compatible-probe catalogs are
+bounded and keyed by registry fingerprint, so saving a semantic YAML change
+automatically selects fresh entries. The Designer exploration response omits
+unused placement expansions; complete placement metadata remains available to
+direct generation callers.
+
+The 2026-08-06 gate passes all 4,379 tests. Curated is 65/65; GSM8K
+DEV-train and DEV-holdout are 106/0 and 43/0; ASDiv, SVAMP, MAWPS, and
+SciBench are 45/0, 30/0, 11/0, and 6/0; FOLIO makes no commitments; and lint
+has zero errors with two known warnings. No protected TEST or generalization
+look was spent. Cold GSM8K availability builds in 1.587 seconds and repeats
+in 0.0008 seconds; all 108 strict retained round trips complete in 4.744
+seconds on the local development machine.
+
+Continue to generate or inspect the next least-explored premise and review it
+in the Designer. The ten reviews handled by the third G5v batch,
 the two handled by the fourth batch, the twelve handled by the fifth batch,
 the five handled by the sixth batch, the five handled by the seventh batch,
 and the two malformed surfaces handled by the eighth batch all retest
@@ -813,8 +866,8 @@ grammar that consumes them; mined packs retain only their domain extensions.
 All six current pinned reviews retest `absent`, and valid direct,
 prepositional, present/past, compatible-dimension, duration, and aggregate
 neighbors remain matcher-confirmed. Curated availability remains 95/95 and
-the reachable lexicon frontier is now 150. The current generator version is
-`g6-reviewed-premise-boundaries`. The live fold contains 48 never-generated,
+the reachable lexicon frontier is now 150. The generator version at that
+checkpoint was `g6-reviewed-premise-boundaries`. The live fold contains 48 never-generated,
 41 generated-but-unreviewed, and 6 reviewed rules; its 150 reachable
 identities contain 45 never-generated, 80 generated-but-unreviewed, and 25
 reviewed fillers. The append-only success ledger contains 218 observations
@@ -1867,6 +1920,41 @@ and DEV-holdout are 104/0 and 41/0; ASDiv, SVAMP, MAWPS, and SciBench are
 errors with the current two warnings. Every isolated before/after diff is
 neutral. No protected TEST or generalization look was spent.
 
+The twenty-ninth G5v reconciliation is the first bounded GSM8K-project
+review batch: two rows / 2,022 bytes, SHA-256
+`28a1b2ad883fe0a35aad414167e8ff8762a9bb24e62ccb114d2ca99608cba7b6`.
+Both invalid strict specimens reproduced before the change.
+
+The ratio and count-equative subjects now use the generic
+`common_noun_cat: quantity_holder` entity qualifier. Proper names and resolved
+pronouns remain independently valid; a common noun needs positive
+pack-declared holder evidence. The standard slot deliberately remains broader
+because existing rules also use it for measure classes such as `buttons` and
+`angelfish`. `quantity_holder` is extended through people, motion
+participants, locations, containers, name-homograph entity labels, and the
+already-proven `book`, `store`, `team`, and `vehicle` holder classes. Strict
+generation uses that domain, while lexical-boundary generation can still
+select an outside noun as its one visible relaxation.
+
+The conjunct siblings additionally declare
+`same_category_membership: {slots: [item1, item2], cat: timeperiod}`. Distinct
+ordinary count nouns and distinct temporal nouns remain valid pairs;
+`libraries`/`afternoons` does not. Finally, `million/millions`,
+`measure/measures`, and `afford/affords` now share ordinary declared lemma and
+number morphology, while the measure/afford verb families are declaratively
+excluded from the direct quantity-object reading. When an animate appositive
+such as `its sister Aven` binds, the existing conditional-category predicate
+now requires the subject to be a proper name or a declared quantity-event
+participant. This preserves people and animals while refusing place-like
+holders in kinship roles. Both exact reviews now
+retest absent, with matched holder and same-class minimal pairs.
+
+The complete gate is green at 4,391 tests. Curated is 65/65; GSM8K DEV-train
+and DEV-holdout are 106/0 and 43/0; ASDiv, SVAMP, MAWPS, and SciBench are
+45/0, 30/0, 11/0, and 6/0; FOLIO makes zero commitments; and lint has zero
+errors with the same two warnings. No protected TEST or generalization look
+was spent.
+
 The additive elided-comparison increment adds two possession-state premise rules.
 `Mary has 5 more apples` states the measure and omits the standard;
 `Mary has 5 more` omits both. Both emit the ordinary Relation shape with the
@@ -1913,6 +2001,53 @@ GSM8K DEV-train is 105/0 and DEV-holdout is 43/0; ASDiv, SVAMP, MAWPS, and
 SciBench remain 45/0, 30/0, 11/0, and 6/0; FOLIO makes zero commitments; and
 lint has zero errors with the same two warnings. No protected TEST or
 generalization look was spent.
+
+The located-holder ask increment adds the YAML-only
+`ask/how-many-there-in-possessed-place` surface. In a question such as
+`how many ITEM are there in OWNER's PLACE?`, the place must be a singular
+possessed member of the declared `quantity_location` category, the preposition
+must be the declared inside-location form, and the question verb must be
+stative. The ask passes the explicit owner to the existing `single-entity`
+consumer, preserves measure qualifiers, and retains the existing guarded sum
+over compatible variants. Missing owners, bare containers, non-location
+possessions, other prepositions, and non-state verbs do not gain a located
+holder interpretation.
+
+The initially profiled bare-name sibling was prototyped and removed. With both
+siblings active, DEV-train moved 105/0 to 107/0, but DEV-holdout moved 43/0 to
+44 correct / 1 wrong: one solve and one new confident wrong. Name length could
+not provide a principled boundary, so the whole bare-name class was reverted.
+The surviving possessed-location form moves DEV-train to 106/0 with one solve,
+zero breaks, and zero declined-to-wrong transitions; DEV-holdout is exactly
+neutral at 43/0. The complete gate is green at 4,373 tests. Curated is
+deterministic at 65/65; ASDiv, SVAMP, MAWPS, and SciBench remain 45/0, 30/0,
+11/0, and 6/0; FOLIO makes zero commitments; and lint has zero errors with the
+same two warnings. No protected TEST or generalization look was spent.
+
+The coordinated superclass-total increment solves the explicit
+penguins-plus-bears-to-animals class without reviving the previously rejected
+global animal roll-up. `animal` is marked
+`coordinated_superordinate: true`, not the closed-class `superordinate: true`.
+The generic total consumer therefore requires every contributing subtype
+Quantity to share one premise sentence and pattern source, plus a conjunct
+segment marker. Separately stated penguin and bear facts still decline, as do
+one-subtype totals and holders with an unrelated measure. Closed subtype
+families such as children, toys, fish, and litter retain their existing
+cross-premise behavior.
+
+The declarative `ask/how-many-combined-prenominal-marker` sibling recognizes
+the marked pronoun form `how many total ITEM do/did they VERB?` and routes it
+to the existing combined consumer. `penguin` is now an authored animal member
+and `zoo` an authored quantitative location/holder. The existing conjunct
+ratio premise consequently derives both subtype quantities for the target zoo
+case before the total fold returns 63; no item-specific Python path was added.
+
+The isolated GSM8K diff is one DEV-train solve, moving 106/0 to 107/0, with
+zero breaks and zero declined-to-wrong transitions. DEV-holdout remains 43/0.
+Curated remains 65/65; ASDiv, SVAMP, MAWPS, and SciBench remain 45/0, 30/0,
+11/0, and 6/0; FOLIO makes zero commitments; and lint has zero errors with the
+same two warnings. The full synthetic suite passes all 4,399 tests. No
+protected TEST or generalization look was spent.
 
 ## Active invariants
 

@@ -22,7 +22,9 @@ from ..data.registry import CompileError, Registry
 from ..data.sources import SourceIndex
 from ..generation import (
     GenerationError,
+    GenerationMode,
     HypothesisRecord,
+    LexicalRelaxation,
     ReviewRecord,
     ReviewDefect,
     append_exploration,
@@ -74,6 +76,7 @@ class GenerationCandidateBody(BaseModel):
     rule_id: str | None = Field(default=None, max_length=256)
     filler_identity: str | None = Field(default=None, max_length=256)
     seed: int | None = None
+    generation_mode: GenerationMode = "strict"
 
 
 class GenerationRetestBody(BaseModel):
@@ -87,6 +90,10 @@ class GenerationRetestBody(BaseModel):
     requested_bindings: dict[str, str] = Field(default_factory=dict)
     attempts: int = Field(default=1, ge=1, le=64)
     origin: Literal["generated", "reading"] = "generated"
+    generation_mode: GenerationMode = "strict"
+    lexical_relaxations: list[LexicalRelaxation] = Field(
+        default_factory=list, max_length=16
+    )
 
 
 class GenerationReadingBody(BaseModel):
@@ -892,7 +899,10 @@ def build_router(state: ServerState) -> APIRouter:
     def generation_exploration():
         with state.generation_lock:
             try:
-                return exploration_status(state.project)
+                return exploration_status(
+                    state.project,
+                    include_placements=False,
+                )
             except GenerationError as exc:
                 raise HTTPException(422, str(exc)) from exc
 
@@ -901,22 +911,37 @@ def build_router(state: ServerState) -> APIRouter:
         seed = secrets.randbits(53) if body.seed is None else body.seed
         with state.generation_lock:
             selection = None
+            event = None
             try:
-                selection = choose_exploration_target(
-                    state.project,
-                    rule_id=body.rule_id,
-                    filler_identity=body.filler_identity,
-                    seed=seed,
-                )
-                candidate = generate_candidate(
-                    state.project,
-                    rule_id=selection.rule_id,
-                    seed=seed,
-                    locked_bindings=selection.locked_bindings,
-                )
-                event = append_exploration(state.project, candidate)
+                if body.generation_mode == "strict":
+                    selection = choose_exploration_target(
+                        state.project,
+                        rule_id=body.rule_id,
+                        filler_identity=body.filler_identity,
+                        seed=seed,
+                    )
+                    candidate = generate_candidate(
+                        state.project,
+                        rule_id=selection.rule_id,
+                        seed=seed,
+                        locked_bindings=selection.locked_bindings,
+                        generation_mode="strict",
+                    )
+                    event = append_exploration(state.project, candidate)
+                else:
+                    if body.filler_identity is not None:
+                        raise GenerationError(
+                            "focused lexicon probes are strict-mode coverage; "
+                            "clear the probe before using lexical boundary mode"
+                        )
+                    candidate = generate_candidate(
+                        state.project,
+                        rule_id=body.rule_id,
+                        seed=seed,
+                        generation_mode="lexical_boundary",
+                    )
             except GenerationError as exc:
-                if selection is not None:
+                if selection is not None and body.generation_mode == "strict":
                     append_exploration_failure(
                         state.project,
                         selection,
@@ -926,8 +951,10 @@ def build_router(state: ServerState) -> APIRouter:
                 raise HTTPException(422, str(exc)) from exc
         return {
             **candidate.to_json(),
-            "exploration_event_id": event["id"],
-            "exploration_probe": selection.probe,
+            "exploration_event_id": event["id"] if event is not None else None,
+            "exploration_probe": (
+                selection.probe if selection is not None else None
+            ),
         }
 
     @router.post("/generation/from-reading")
@@ -960,6 +987,8 @@ def build_router(state: ServerState) -> APIRouter:
                 requested_bindings=body.requested_bindings,
                 attempts=body.attempts,
                 origin=body.origin,
+                generation_mode=body.generation_mode,
+                lexical_relaxations=tuple(body.lexical_relaxations),
             )
         except GenerationError as exc:
             raise HTTPException(422, str(exc)) from exc
@@ -1001,6 +1030,8 @@ def build_router(state: ServerState) -> APIRouter:
                 requested_bindings=body.requested_bindings,
                 attempts=body.attempts,
                 origin=body.origin,
+                generation_mode=body.generation_mode,
+                lexical_relaxations=tuple(body.lexical_relaxations),
             )
         except GenerationError as exc:
             raise HTTPException(422, str(exc)) from exc

@@ -20,7 +20,9 @@ temporal-marker core ownership and time-root realization is complete; G5u
 direct-adverb visibility is complete; G5v review-led premise auditing is
 active and all twenty-eight review-led boundary passes are complete through
 the current demonstrative-pro-form and comparative-need agreement
-reconciliation
+reconciliation; strict-positive and one-slot lexical-boundary generation
+modes, fingerprint-keyed authoring indexes, and complete GSM8K premise-rule
+generation are implemented
 
 ## Current checkpoint
 
@@ -106,6 +108,18 @@ added bounded hypothesis and minimal-pair exploration:
 - random Generate next chooses from the least-attempted compatible rule and
   filler frontier with seeded tie-breaking, while an explicit word probe links
   directly to its editable lexicon declaration;
+- the mode selector separates strict positives from lexical-boundary probes:
+  strict generation satisfies every slot requirement, while a boundary probe
+  widens exactly one active lexical gate to its declared root sense and keeps
+  every other structural constraint intact;
+- lexical-boundary candidates retain the exact relaxation in reviews and
+  pinned retests, but never count as strict rule or lexicon coverage;
+- registry-fingerprint caches avoid rebuilding token domains, rule
+  availability, and compatible-probe catalogs on every request, while the
+  Designer receives a compact exploration payload; and
+- the GSM8K project owns open proper-name generation fixtures, all 108 loaded
+  premise rules are selectable, and a deterministic strict round trip exists
+  for every one;
 - plural fraction forms are declared separately from their singular lemmas,
   require an explicit word count in both generation and premise matching, and
   retain complete numeric source evidence; and
@@ -116,9 +130,9 @@ added bounded hypothesis and minimal-pair exploration:
 - fraction-valued comparisons and changes require a strictly positive
   magnitude, while pool and partition facts retain zero as a meaningful value.
 
-The current gate is green: all 4,363 repository tests pass in four-worker
+The current gate is green: all 4,379 repository tests pass in four-worker
 mode, curated remains deterministic at 65/65 and 100% precision, GSM8K
-DEV-train is 105/0 and DEV-holdout is 43/0, every standing
+DEV-train is 106/0 and DEV-holdout is 43/0, every standing
 cross-corpus gate retains zero wrong answers, and lint has zero errors with
 two known warnings. No protected TEST look was spent.
 G6 live validation selected untouched `rabbit`, opened its declaration, and
@@ -2267,7 +2281,7 @@ The complete gate is green: 3,900 tests pass in four-worker mode; curated is
 MAWPS, and SciBench remain 44/0, 30/0, 9/0, and 6/0; FOLIO makes zero
 commitments; and lint has zero errors with two known warnings.
 
-#### G5v review-led premise audit — active; twenty-eighth batch complete
+#### G5v review-led premise audit — active; twenty-ninth batch complete
 
 Mechanical completeness does not establish linguistic or semantic validity.
 The twenty-fourth bounded run began with 406 exploration events, 189 review
@@ -3150,6 +3164,125 @@ DEV-train and DEV-holdout are 105/0 and 43/0; ASDiv, SVAMP, MAWPS, and
 SciBench are 45/0, 30/0, 11/0, and 6/0; FOLIO makes zero commitments; and
 lint has zero errors with the same two warnings. No protected TEST or
 generalization look was spent.
+
+#### Strict-positive and lexical-boundary generation modes — complete
+
+The Designer now exposes two explicit experiments. `Strict positive` draws
+every filler from the target rule's declared slot domain and only returns an
+ordinary round trip that retains the target. `Lexical boundary probe` widens
+exactly one active category-gated slot to that category's declared root sense,
+or one narrow typed verb/modal slot to its declared parent type. It preserves
+part of speech, counted and possessed structure, grammatical number,
+referential form, optional branches, and every cross-slot predicate.
+
+Each boundary candidate records the relaxed slot, selected surface and
+identity, strict requirement, and broader domain. Its premise inspector marks
+that row `relaxed`; an absent target is an expected observation rather than a
+failed generation. Reviews, hypotheses, and pinned retests retain the mode and
+relaxation. Minimal-pair and focused-lexicon controls remain strict-only, and
+boundary probes never write success or failure exploration events, so the
+coverage frontier continues to mean “generated under every declared premise.”
+
+Generation latency is reduced without changing that contract. Bounded
+in-memory catalogs cache structural filler domains, rule availability, and
+compatible lexical placements by registry fingerprint plus project fixtures.
+The compatible-placement search deduplicates exact measure keys before solving
+`distinct_measure`, and the Designer status endpoint omits placement detail it
+does not display. Any semantic YAML edit changes the fingerprint and therefore
+uses fresh indexes.
+
+The GSM8K project now declares its own open proper-name generation fixtures.
+All 108 loaded premise rules are mechanically selectable and each has a
+deterministic strict matcher-retained specimen. The flat-discount rule now
+generates the currency surface it actually accepts, and structurally ambiguous
+entity-before-counted surfaces are realized with project names so the reader
+cannot condense the intended holder into the following noun phrase. The
+cumulative generator version is `g6-strict-boundary-modes`.
+
+Validation on 2026-08-06 passes all 4,379 repository tests. Curated remains
+65/65; GSM8K DEV-train and DEV-holdout are 106/0 and 43/0; ASDiv, SVAMP,
+MAWPS, and SciBench remain 45/0, 30/0, 11/0, and 6/0; FOLIO makes zero
+commitments; and lint has zero errors with two known warnings. No protected
+TEST or generalization look was spent. On the local GSM8K project, cold rule
+availability builds in 1.587 seconds and repeats in 0.0008 seconds; a complete
+strict round trip over all 108 rules takes 4.744 seconds.
+
+#### Twenty-ninth review reconciliation — complete
+
+The first GSM8K-project review ledger snapshot contains two rows / 2,022
+bytes, SHA-256
+`28a1b2ad883fe0a35aad414167e8ff8762a9bb24e62ccb114d2ca99608cba7b6`.
+Both strict candidates were mechanically matched but semantically invalid:
+one treated `millions` as a singular holder and mixed `libraries` with
+`afternoons`; the other treated `joule` as an agent that could `afford`
+`parents` and possess a `sister`.
+
+This batch replaces the open-ended holder blacklist for the affected ratio
+family with a positive role premise. `common_noun_cat` qualifies a
+`type: entity` slot: names and resolved pronouns retain their ordinary path,
+while a common noun must belong to the named category. The arithmetic rules
+use the pack-declared `quantity_holder` category on their actual subject.
+Their standard is intentionally not narrowed because it is polymorphic in the
+existing model and may name a measure class (`buttons`, `crayons`, or
+`angelfish`) rather than a holder. Existing evidence admits people, motion
+participants, places, containers, name-homograph labels, books, stores,
+person-groups, and vehicles. A new noun remains outside until a pack declares
+its holder role.
+
+The generator applies the same qualifier in availability, strict, locked,
+minimal-pair, compatible-placement, and explanation paths. Boundary mode
+widens it to the noun root as exactly one recorded lexical relaxation, so a
+reviewer can still test the rejected `joule` class deliberately without
+polluting strict coverage.
+
+The new `same_category_membership` predicate requires several slots to agree
+on whether they belong to one category. The conjunct quantity siblings use it
+with `timeperiod`: `libraries/books` and `mornings/afternoons` pass, while
+`libraries/afternoons` fails. Matcher, generator feasibility and
+forward-checking, lexical probes, premise explanations, source evidence, and
+registry validation share that declarative contract.
+
+The remaining fixes are lexical data: `million/millions`, `measure/measures`,
+and `afford/affords` now carry one lemma and explicit grammatical number;
+`measure`, `measured`, `measures`, `afford`, and `affords` join the existing
+`non_quantity_object_verb` boundary because those transitive readings do not
+assert possession or acquisition of the object count.
+
+The possessive appositive receives its own conditional role premise rather
+than being inferred from the holder gate. When `appos_role` binds, `who` must
+belong to `quantity_event_participant` or use the predicate's explicit
+proper-name alternative. A store can still hold a quantity in the plain
+ratio sentence, but cannot acquire `its sister Aven`; people, animals, and
+proper names retain the appositive construction.
+
+Both exact reviews retest absent. Synthetic controls preserve proper-name,
+pronoun, declared common-holder, measure-class standard, ordinary-count
+conjunct, temporal-conjunct, and name-homograph behavior. The final gate is
+4,391 tests; curated 65/65; GSM8K DEV-train/holdout 106/0 and 43/0;
+ASDiv/SVAMP/MAWPS/SciBench 45/0, 30/0, 11/0, and 6/0; FOLIO zero
+commitments; lint zero errors and two known warnings. No protected TEST or
+generalization look was spent.
+
+#### Imperative single-dimension asks — complete
+
+`ask/imperative-single-dimension` recognizes “Calculate the age of X” and the
+same `compute`/`determine` cue family. A `dimension_noun` names what is being
+measured; the single-entity consumer opts into declared dimension resolution
+and then reuses its established holder fold. Resolution is scoped to the
+explicit holder, so another entity's unrelated time, mass, length, or currency
+unit cannot create ambiguity or supply an answer. Zero or multiple compatible
+measures for that holder still decline.
+
+The form is declaratively generic across age, height, weight, balance, and
+other pack-owned dimension nouns. It remains distinct from the combined and
+average imperative asks. A coordinated holder tail is captured and declined,
+preventing a prefix match from answering only the first name.
+
+Validation on 2026-08-06 passes all 4,431 tests and curated 65/65 twice.
+GSM8K DEV-train improves from 107/0 to 108/0, solving one previously declined
+item; DEV-holdout remains 43/0. ASDiv, SVAMP, MAWPS, SciBench, and FOLIO are
+neutral with zero broken or decline-to-wrong transitions. Lint has zero errors
+and the same two warnings. No protected TEST or generalization look was spent.
 
 There is no automatic transition to G7. Ask-rule and derived-rule generation
 requires a separate decision after the premise audit demonstrates that the

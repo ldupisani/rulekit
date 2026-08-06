@@ -212,7 +212,7 @@ def test_every_temporal_marker_generates_a_matcher_confirmed_specimen(
     )
     premise = next(row for row in candidate.premises if row.slot == "mark")
 
-    assert candidate.generator_version == "g6-reviewed-premise-boundaries"
+    assert candidate.generator_version == "g6-strict-boundary-modes"
     assert candidate.target_status == "matched"
     assert premise.binding == marker
     assert premise.status == "passed"

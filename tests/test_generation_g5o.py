@@ -139,7 +139,7 @@ def test_every_distributive_quantifier_is_exposed_for_human_review(
     )
     premise = next(row for row in candidate.premises if row.slot == "q")
 
-    assert candidate.generator_version == "g6-reviewed-premise-boundaries"
+    assert candidate.generator_version == "g6-strict-boundary-modes"
     assert candidate.target_status == "matched"
     assert premise.binding == quantifier
     assert premise.status == "passed"

@@ -185,7 +185,7 @@ rules:
     match:
       sentence:
         - {slot: who, type: entity}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, finite_form: true}
         - {slot: n, type: number}
         - {slot: dir, cat: delta}
         - {slot: item, type: plural}
@@ -196,14 +196,19 @@ rules:
             - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
         - {lit: than}
         - {slot: std_det, cat: possessive_determiner}
-        - {slot: std, type: noun}
+        - {slot: std, type: entity, common_noun_cat: quantity_holder}
     where:
       - number_compatible: [who, verb]
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
+      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: motion_comparison_verb, role_cat: motion_participant, allow_plural_class: true}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - distinct: [who, std]
+      - category_nonoverlap: [who, std]
       - distinct_measure: [item, std]
       # a TIME PERIOD is not a holder — see slot_not_category in schemas.py
       - slot_not_category: {slot: std, cat: timeperiod}
@@ -344,18 +349,22 @@ rules:
       anchored-relation.
     match:
       sentence:
-        - {slot: who, type: entity}
-        - {slot: verb, type: verb}
+        - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true, bare_reference_category: bare_entity_reference}
+        - {slot: verb, type: verb, finite_form: true}
         - {slot: n, type: number, standalone: true}
         - {slot: dir, cat: delta}
         - {lit: than}
         - opt:
             - {slot: appos_det, cat: possessive_determiner}
             - {slot: appos_role, cat: animate}
-        - {slot: std, type: entity}
+        - {slot: std, type: entity, common_noun_cat: quantity_holder, referential: true, bare_reference_category: bare_entity_reference}
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - number_compatible: [who, verb]
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
+      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: motion_comparison_verb, role_cat: motion_participant, allow_plural_class: true}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - distinct: [who, std]
@@ -483,8 +492,8 @@ rules:
       comment (mining candidate qualified-measure-keys).
     match:
       sentence:
-        - {slot: who, type: entity, referential: true, bare_reference_category: bare_entity_reference}
-        - {slot: verb, type: verb}
+        - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true, bare_reference_category: bare_entity_reference}
+        - {slot: verb, type: verb, finite_form: true}
         - {slot: item, type: counted}
         - {slot: dir, cat: quantity_delta}
         - {lit: than}
@@ -495,6 +504,11 @@ rules:
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - number_compatible: [who, verb]
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
+      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: motion_comparison_verb, role_cat: motion_participant}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: shucking_verb, role_cat: shuckable_item}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: std, cat: non_quantity_holder}
       - distinct: [who, std]
@@ -579,7 +593,7 @@ rules:
       generic fold/ask machinery finish the job with no further change.
     match:
       sentence:
-        - {slot: who, type: entity}
+        - {slot: who, type: entity, referential: true, bare_reference_category: bare_entity_reference}
         - {slot: verb, cat: copula}
         - {slot: item, type: counted}
         - {slot: dir, cat: dimension_comparative}
@@ -587,11 +601,12 @@ rules:
         - opt:
             - {slot: appos_det, cat: possessive_determiner}
             - {slot: appos_role, cat: animate}
-        - {slot: std, type: entity}
+        - {slot: std, type: entity, referential: true, bare_reference_category: bare_entity_reference}
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - number_compatible: [who, verb]
       - attribute_compatible: {attribute: dir, noun: item}
+      - measure_holder_compatible: {measure: item, holders: [who, std], allow_proper_name: true}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: std, cat: non_quantity_holder}
       - distinct: [who, std]
@@ -612,8 +627,9 @@ rules:
   - id: arithmetic/dangling-comparative-relation
     phase: read
     description: >
-      "Emma is 2 years older" — a POSTFIX comparative with NO "than Y"
-      anchor at all. Resolving an IMPLICIT anchor (the previous sentence's
+      "Emma is 2 years older" or "the gap is 18 days shorter" — a POSTFIX
+      measured comparative with NO "than Y" anchor at all. Resolving an
+      IMPLICIT anchor (the previous sentence's
       subject, say) is a different, unbuilt mechanism — declined on
       purpose (precision before coverage). This rule emits NOTHING; it
       exists only to CONSUME the clause so the general SVO fold does not
@@ -627,10 +643,10 @@ rules:
       harmless second (empty) consumption of the same tokens.
     match:
       sentence:
-        - {slot: who, type: name}
+        - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true, bare_reference_category: bare_entity_reference}
         - {slot: verb, cat: copula}
-        - {slot: n, cat: age_measure, counted: true}
-        - {slot: dir, cat: delta}
+        - {slot: n, type: counted}
+        - {slot: dir, cat: measured_comparative}
     where:
       - number_compatible: [who, verb]
     emits: []
@@ -992,7 +1008,7 @@ rules:
       fixed factor of 1.
     match:
       sentence:
-        - {slot: who, type: entity, referential: true, bare_reference_category: bare_entity_reference}
+        - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true, bare_reference_category: bare_entity_reference}
         - {slot: verb, type: verb}
         - {lit: as}
         - {lit: many}
@@ -1009,6 +1025,7 @@ rules:
         - {slot: std, type: entity, referential: true}
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - bound_requires_category: {bound: appos_role, slot: who, cat: quantity_event_participant, allow_proper_name: true}
       - number_compatible: [who, verb]
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
@@ -1046,7 +1063,7 @@ rules:
       predeterminers `double`/`triple` belong before noun phrases instead.
     match:
       sentence:
-        - {slot: who, type: entity, referential: true, bare_reference_category: bare_entity_reference}
+        - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true, bare_reference_category: bare_entity_reference}
         - {slot: verb, type: verb}
         - {slot: k, type: nonunit_multiplier}
         - {lit: as}
@@ -1064,6 +1081,7 @@ rules:
         - {slot: std, type: entity, referential: true}
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - bound_requires_category: {bound: appos_role, slot: who, cat: quantity_event_participant, allow_proper_name: true}
       - number_compatible: [who, verb]
       - slot_not_category: {slot: k, cat: predeterminer_multiplier}
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
@@ -1104,7 +1122,7 @@ rules:
       same self-reference guard as arithmetic/times-as-many.
     match:
       sentence:
-        - {slot: who, type: entity, referential: true}
+        - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true}
         - {slot: verb, type: verb}
         - {slot: k, type: nonunit_multiplier}
         - {lit: as}
@@ -1116,6 +1134,7 @@ rules:
         - {slot: std, type: entity, referential: true}
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - bound_requires_category: {bound: appos_role, slot: who, cat: quantity_event_participant, allow_proper_name: true}
       - number_compatible: [who, verb]
       - slot_not_category: {slot: k, cat: predeterminer_multiplier}
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
@@ -1176,8 +1195,8 @@ rules:
       `who, type: entity`: same widening as arithmetic/times-as-many.
     match:
       sentence:
-        - {slot: who, type: entity, referential: true}
-        - {slot: verb, type: verb}
+        - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true}
+        - {slot: verb, type: verb, finite_form: true}
         - {slot: k, type: nonunit_multiplier}
         - {lit: as}
         - {lit: many}
@@ -1243,8 +1262,8 @@ rules:
       and THIS rule's match is in turn dropped by the same mechanism.
     match:
       sentence:
-        - {slot: who, type: entity, referential: true}
-        - {slot: verb, type: verb}
+        - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true, bare_reference_category: bare_entity_reference}
+        - {slot: verb, type: verb, finite_form: true}
         - {slot: k, type: nonunit_multiplier}
         - {lit: as}
         - {lit: many}
@@ -1302,7 +1321,7 @@ rules:
       shared consumption/re-emission mechanism.
     match:
       sentence:
-        - {slot: who, type: entity, referential: true}
+        - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true}
         - {slot: verb, type: verb}
         - {slot: item1, type: counted}
         - opt:
@@ -1322,6 +1341,7 @@ rules:
         - {slot: std, type: entity, referential: true}
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - bound_requires_category: {bound: appos_role, slot: who, cat: quantity_event_participant, allow_proper_name: true}
       - number_compatible: [who, verb]
       - slot_not_category: {slot: k, cat: predeterminer_multiplier}
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
@@ -1333,6 +1353,7 @@ rules:
       - slot_not_category: {slot: std, cat: non_quantity_holder}
       - slot_not_category: {slot: item1, cat: many_incompatible_noun}
       - slot_not_category: {slot: item2, cat: many_incompatible_noun}
+      - same_category_membership: {slots: [item1, item2], cat: timeperiod}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - distinct: [who, std]
       - category_nonoverlap: [who, std]
@@ -1370,7 +1391,7 @@ rules:
       two rules never both fire on the same clause.
     match:
       sentence:
-        - {slot: who, type: entity, referential: true}
+        - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true}
         - {slot: verb, type: verb}
         - {slot: item1, type: counted}
         - opt:
@@ -1400,6 +1421,7 @@ rules:
       - slot_not_category: {slot: item1, cat: many_incompatible_noun}
       - slot_not_category: {slot: item2, cat: many_incompatible_noun}
       - slot_not_category: {slot: item2, cat: conjunct_comparison_incompatible_noun}
+      - same_category_membership: {slots: [item1, item2], cat: timeperiod}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - unbound: [std_seen]
     emits:
@@ -1441,8 +1463,8 @@ rules:
       family, keeping all three rules mutually exclusive on any one clause.
     match:
       sentence:
-        - {slot: who, type: entity, referential: true}
-        - {slot: verb, type: verb}
+        - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true, bare_reference_category: bare_entity_reference}
+        - {slot: verb, type: verb, finite_form: true}
         - {slot: item1, type: counted}
         - opt:
             - {slot: pp_prep, cat: preposition}
@@ -1525,8 +1547,8 @@ rules:
       noun-phrase predeterminers `double`/`triple`.
     match:
       sentence:
-        - {slot: who, type: entity, referential: true}
-        - {slot: verb, type: verb}
+        - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true}
+        - {slot: verb, type: verb, finite_form: true}
         - {slot: item1, type: counted}
         - opt:
             - {slot: pp_prep, cat: preposition}
@@ -2129,7 +2151,7 @@ rules:
     match:
       sentence:
         - {slot: who, type: entity}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, finite_form: true}
         - opt:
             - {slot: verb_prep, cat: frame_head_preposition}
         - {slot: k, type: multiplier}
@@ -2150,6 +2172,11 @@ rules:
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - bound_requires_category: {bound: verb_prep, slot: verb, cat: frame_prepositional_verb}
+      - number_compatible: [who, verb]
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
+      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: motion_comparison_verb, role_cat: motion_participant}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: std, cat: non_quantity_holder}
@@ -2212,11 +2239,11 @@ rules:
       prepositions must both be present with the same lemma.
     match:
       sentence:
-        - {slot: who, type: entity}
-        - {slot: verb, type: verb}
+        - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true, bare_reference_category: bare_entity_reference}
+        - {slot: verb, type: verb, finite_form: true}
         - opt:
             - {slot: verb_prep, cat: frame_head_preposition}
-        - {slot: k, type: multiplier}
+        - {slot: k, type: nonunit_multiplier}
         - {lit: the, consume_skipped: true}
         - {slot: frame, cat: count_aggregate_noun}
         - {lit: of}
@@ -2224,8 +2251,8 @@ rules:
         - opt:
             - {slot: appos_det, cat: animate_possessive_determiner}
             - {slot: appos_role, cat: animate}
-        - {slot: std, type: entity}
-        - {slot: echo_verb, type: verb}
+        - {slot: std, type: entity, common_noun_cat: quantity_holder, referential: true, bare_reference_category: bare_entity_reference}
+        - {slot: echo_verb, type: verb, finite_form: true}
         - opt:
             - {slot: echo_prep, cat: frame_head_preposition}
         - opt:
@@ -2239,6 +2266,10 @@ rules:
       - same_lemma: [verb, echo_verb]
       - number_compatible: [who, verb]
       - number_compatible: [std, echo_verb]
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
+      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: motion_comparison_verb, role_cat: motion_participant, allow_plural_class: true}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: std, cat: non_quantity_holder}
@@ -2311,7 +2342,10 @@ rules:
     where:
       - same_lemma: [item_echo, item]
       - number_compatible: [n, item_echo]
+      - number_compatible: [who, verb]
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
       - same_lemma: [verb, echo_verb]
       - number_compatible: [who, verb]
       - number_compatible: [std, echo_verb]
@@ -2362,14 +2396,14 @@ rules:
       rule is what closes the frame-specific gap.
     match:
       sentence:
-        - {slot: who, type: entity}
-        - {slot: verb, type: verb}
+        - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true, bare_reference_category: bare_entity_reference}
+        - {slot: verb, type: verb, finite_form: true}
         - {slot: n, type: number}
         - {slot: dir, cat: count_quantity_delta}
         - opt:
             - {slot: item_echo, type: noun}
         - {lit: than}
-        - {slot: k, type: multiplier}
+        - {slot: k, type: nonunit_multiplier}
         - {lit: the, consume_skipped: true}
         - {slot: frame, cat: count_aggregate_noun}
         - {lit: of}
@@ -2383,11 +2417,14 @@ rules:
         - opt:
             - {slot: appos_det, cat: animate_possessive_determiner}
             - {slot: appos_role, cat: animate}
-        - {slot: std, type: entity}
+        - {slot: std, type: entity, common_noun_cat: quantity_holder, referential: true, bare_reference_category: bare_entity_reference}
     where:
       - same_lemma: [item_echo, item]
       - number_compatible: [n, item_echo]
+      - number_compatible: [who, verb]
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: verb, cat: frame_prepositional_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
@@ -2438,14 +2475,14 @@ rules:
       aligned with the matrix verb, and independently number-agreeing.
     match:
       sentence:
-        - {slot: who, type: entity}
-        - {slot: verb, type: verb}
+        - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true, bare_reference_category: bare_entity_reference}
+        - {slot: verb, type: verb, finite_form: true}
         - {slot: n, type: number}
         - {slot: dir, cat: count_quantity_delta}
         - opt:
             - {slot: item_echo, type: noun}
         - {lit: than}
-        - {slot: k, type: multiplier}
+        - {slot: k, type: nonunit_multiplier}
         - {lit: the, consume_skipped: true}
         - {slot: frame, cat: count_aggregate_noun}
         - {lit: of}
@@ -2453,8 +2490,8 @@ rules:
         - opt:
             - {slot: appos_det, cat: animate_possessive_determiner}
             - {slot: appos_role, cat: animate}
-        - {slot: std, type: entity}
-        - {slot: echo_verb, type: verb}
+        - {slot: std, type: entity, common_noun_cat: quantity_holder, referential: true, bare_reference_category: bare_entity_reference}
+        - {slot: echo_verb, type: verb, finite_form: true}
         - opt:
             - {slot: echo_span_prep, cat: span_preposition}
             - {slot: echo_span, cat: duration_measure, counted: true}
@@ -2465,6 +2502,10 @@ rules:
       - same_lemma: [verb, echo_verb]
       - number_compatible: [who, verb]
       - number_compatible: [std, echo_verb]
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
+      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: motion_comparison_verb, role_cat: motion_participant, allow_plural_class: true}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: verb, cat: frame_prepositional_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
@@ -2566,8 +2607,8 @@ rules:
       relative clauses.
     match:
       sentence:
-        - {slot: who, type: entity, referential: true}
-        - {slot: verb, type: verb}
+        - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true, bare_reference_category: bare_entity_reference}
+        - {slot: verb, type: verb, finite_form: true}
         - opt:
             - {slot: verb_prep, cat: destination_preposition}
         - {slot: f, type: fraction, fraction_positive: true}
@@ -2580,8 +2621,8 @@ rules:
         - opt:
             - {slot: appos_det, cat: possessive_determiner}
             - {slot: appos_role, cat: animate}
-        - {slot: std, type: entity, referential: true}
-        - {slot: echo_verb, type: verb}
+        - {slot: std, type: entity, common_noun_cat: quantity_holder, referential: true, bare_reference_category: bare_entity_reference}
+        - {slot: echo_verb, type: verb, finite_form: true}
         - opt:
             - {slot: echo_prep, cat: destination_preposition}
         - opt:
@@ -2596,6 +2637,8 @@ rules:
       - same_lemma: [verb, echo_verb]
       - number_compatible: [who, verb]
       - number_compatible: [std, echo_verb]
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
       - verb_role_compatible: {verb: verb, roles: [std], verb_cat: motion_comparison_verb, role_cat: motion_participant}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
@@ -4873,14 +4916,15 @@ rules:
     description: >
       mining candidate discounted-purchase-totals: "a $100 discount" — the
       FLAT-dollar sibling of arithmetic/discount-percent-noun (amount
-      BEFORE the 'discount' noun). `type: number` (a bare stated count,
-      never a fraction) keeps this structurally disjoint from the percent
-      rules above — a percent token's value_kind is always 'fraction', a
-      dollar amount's is always 'count' (numbers.py), so the same numeral
-      can never satisfy both slot types. scope=total (the bare reading).
+      BEFORE the 'discount' noun). The amount is a single-token currency
+      count such as "$100": the declared currency category excludes bare
+      counts, and `single_word` keeps a spelled-out "100 dollars" from
+      merging with the following noun into a different phrase. This remains
+      structurally disjoint from percent discounts. scope=total (the bare
+      reading).
     match:
       sentence:
-        - {slot: amt, type: number}
+        - {slot: amt, cat: currency, counted: true, single_word: true}
         - {lit: discount}
     consumes: [amt]
     emits:
@@ -5002,6 +5046,30 @@ asks:
       measure_qualifier: "{qual}"
       verb: have
       place_fallback_entity: world
+
+  - id: ask/how-many-there-in-possessed-place
+    # The possessed-container sibling: "how many trees are there in Mira's
+    # garden?" explicitly names Mira as the holder through the possessive.
+    # Requiring a pack-declared `quantity_location` head prevents arbitrary
+    # possessions ("Mira's idea", "Mira's dog") from being reinterpreted as
+    # locations. The owner is the query entity; the container noun is the
+    # grammatical location that licenses this indirect holder reference.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {slot: verb, cat: state}
+        - {lit: there}
+        - {slot: prep, cat: quantity_location_preposition}
+        - {slot: place, cat: quantity_location, possessed: true, number: singular}
+    resolves:
+      consumer: single-entity
+      entity: "{place.owner}"
+      measure: "{item}"
+      verb: have
+      measure_qualifier: "{item.qualifier}"
+      sum_measure_variants: "true"
 
   - id: ask/how-many-combined
     match:
@@ -5645,6 +5713,27 @@ asks:
       measure: "{item}"
       verb: "{verb}"
       who_value: "{who.value}"
+
+  - id: ask/how-many-combined-prenominal-marker
+    # Pronoun-subject sibling of the plural common-noun rule above:
+    # "how many total animals do they have?" The required total marker
+    # authorizes the existing combined consumer to enumerate the facts; the
+    # pronoun itself does not guess a holder. This keeps the form separate
+    # from single-name asks and from unmarked "how many animals do they have?"
+    # questions, which remain unsupported without an explicit total signal.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: pre, cat: aggregate}
+        - {slot: item, type: noun}
+        - {slot: aux, type: future_modal}
+        - {slot: who, type: pronoun}
+        - {slot: verb, type: verb}
+    resolves:
+      consumer: combined
+      measure: "{item}"
+      verb: "{verb}"
 
   - id: ask/how-many-plural-combined-quantified-subject
     # Handles a quantifier before a plural noun, such as "all boys" or
@@ -6746,6 +6835,32 @@ asks:
       measure: "{item}"
       dimension_measure: "true"
       holder_count: "{n.value}"
+
+  - id: ask/imperative-single-dimension
+    # Imperative single-holder dimension: "calculate the age of Arden".
+    # `dimension_noun` names the dimension while `dimension_measure` asks the
+    # single-entity consumer to resolve the compatible concrete measure from
+    # Arden's facts (for age, normally `year`).  This is intentionally a
+    # separate rule from the combined/average asks: no aggregate word is
+    # present and exactly one explicit holder is selected.  The optional
+    # coordinated tail is captured only so the consumer can decline it rather
+    # than answering a prefix about the first holder.
+    match:
+      question:
+        - {slot: cue, cat: compute_verb}
+        - {lit: the, consume_skipped: true}
+        - {slot: item, cat: dimension_noun}
+        - {lit: of}
+        - {slot: who, type: entity, referential: true, bare_reference_category: bare_entity_reference}
+        - opt:
+            - {lit: and}
+            - {slot: other, type: entity, referential: true, bare_reference_category: bare_entity_reference}
+    resolves:
+      consumer: single-entity
+      entity: "{who}"
+      measure: "{item}"
+      dimension_measure: "true"
+      other_entity: "{other}"
 
   - id: ask/imperative-average-dimension
     # Average counterpart to the preceding imperative total rule. The literal

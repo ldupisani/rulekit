@@ -1,0 +1,13 @@
+format: rulekit/generation@1
+# Designer-only open proper names. These fixtures let name and possessive
+# premise slots be exercised without turning benchmark names into runtime
+# lexicon entries or changing ordinary parsing.
+names:
+  - Aven
+  - Bira
+  - Cato
+  - Dena
+  - Eron
+  - Fia
+  - John
+  - Mary
