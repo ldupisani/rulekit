@@ -29,9 +29,10 @@ copular memberships.**
 
 ## Context
 
-The benchmark-loaded FOLIO logic frontier lives in `projects/scratch/`: no benchmark project
-loads `projects/scratch/packs/logic`, and the real `projects/folio` remains the repo's sole
-expect-0-commits safety gate. Some supporting consumers and saturation plugins already live
+The FOLIO logic frontier was developed in `projects/scratch/` and now lives in
+the opt-in top-level `packs/logic`. The real `projects/folio` still does not
+load it and remains the repo's sole expect-0-commits safety gate. Some
+supporting consumers and saturation plugins already live
 in the shared kernel, dormant unless pack rules make them reachable; Phase A therefore
 inventories that shared machinery rather than treating Phase D as merely a pack move. Six
 TEST looks are spent. Looks #3–#6 returned identical conversion aggregates
@@ -65,12 +66,12 @@ campaign with a different cost curve. This file is that campaign's plan.
 - The one real TEST hazard: indefinite subjects — the `blocks_skipped: indefinite_article`
   gate is BUILT (Stage 5 precondition 1). Preconditions 2–3 (ladder re-measure with null
   controls; looks only at class-sized commit counts) still bind.
-- Measurement harness: no scratch datasets — folio-with-logic is measured by temporarily
-  wiring `./packs/logic` into the folio project (never committed), `rulekit --project
+- Measurement harness: no scratch datasets — folio-with-logic was measured by temporarily
+  wiring the logic pack into the folio project (never committed), `rulekit --project
   projects/folio bench --slice dev-train|dev-holdout --snapshot` + `diff`
   (`src/rulekit/cli.py:72,107-114,276-306`). Snapshots in `projects/folio/snapshots/`.
   Firewall: `build_corpus.py` buckets by PREMISE BLOCK, `SALT = "folio-test@1"` — never touch.
-- Existing machinery (`projects/scratch/packs/logic/`): ~70 rules in `rules/logic.yaml`
+- Existing machinery (`packs/logic/`): ~70 rules in `rules/logic.yaml`
   (copular/bare-plural/verbal universals, conditionals, disjunctions, enumeration, alias,
   appointive passive, ~14 ask shapes), 16 synths in `synth.yaml` (instantiation, chains,
   MT, DS, XOR, case analysis) + 3 saturate plugins (elimination, name-prefix-alias,
@@ -130,7 +131,7 @@ The measured lever is the veto-lift (four precedents: 8g, 9d ×2, 9f): a read se
 pricing its item, independent of whether that item converts.
 
 Rules of engagement (all inherited, non-negotiable):
-- One class = one increment = one revertible commit, landed in `projects/scratch/packs/logic`.
+- One class = one increment = one revertible commit, landed in `packs/logic`.
   Full gate per increment: pytest (synthetic only), all nine benchmark slices snapshot-diff
   NEUTRAL, folio-with-logic dev-train + dev-holdout diff (0 BROKE, 0 DECL→WRONG), null
   controls on every conversion. Whole-construction-or-nothing matching; unread stays
@@ -992,8 +993,10 @@ look was spent.
 Only after a look #6 that shows nonzero transfer at held precision:
 1. Re-run the Stage 5 preconditions: ladder re-measure with the real machinery, every
    commit null-controlled; the indefinite-article gate already covers the one known hazard.
-2. **Recommended end state: promote `packs/logic` to top-level `packs/` and add a parallel
-   `projects/folio-logic`** that loads it — making folio-logic an ATTEMPTED corpus with the
+2. **The reusable-pack half is complete:** logic now lives at top-level
+   `packs/logic`. This relocation does not unlock FOLIO integration or spend a
+   TEST look. The remaining recommendation is to add a parallel
+   `projects/folio-logic` only after this gate is met, making folio-logic an ATTEMPTED corpus with the
    standard bar (0 BROKE, 0 DECL→WRONG, hand-inspected commits), while `projects/folio`
    keeps loading
    `[core-english, arithmetic, difg-mined]` and remains the repo's only 0-commit safety
@@ -1012,7 +1015,7 @@ Only after a look #6 that shows nonzero transfer at held precision:
 
 ## Files touched (implementation phase, for scoping only)
 
-- `projects/scratch/packs/logic/rules/logic.yaml`, `synth.yaml`, `categories/logic.yaml` —
+- `packs/logic/rules/logic.yaml`, `synth.yaml`, `categories/logic.yaml` —
   the Phase B readers (bulk of the work; pattern per class, one commit each).
 - `projects/scratch/ROADMAP.md` — taxonomy refresh + per-stage records.
 - `src/rulekit/kernel/` — only for designed stages (scope marker) or the key-schema lint;

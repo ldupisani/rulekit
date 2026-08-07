@@ -2376,6 +2376,8 @@ entries:
   drinking:
     senses:
     - verb
+    verb:
+      lemma: drink
   drinks:
     senses:
     - verb
@@ -2975,7 +2977,9 @@ entries:
   foot:
     senses:
     - noun
-    plural: feet
+    # `ft` is the invariant written unit symbol. Keep it on the same lexical
+    # identity as foot/feet instead of allowing it to act as an unrelated noun.
+    plural: [feet, ft]
   footage:
     senses:
     - noun
@@ -3094,9 +3098,6 @@ entries:
   fry:
     senses:
     - verb
-  ft:
-    senses:
-    - noun
   fudge:
     senses:
     - noun

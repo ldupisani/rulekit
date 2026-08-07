@@ -25,17 +25,22 @@ from .model import (
     Alias,
     AnchorQuantity,
     Atom,
+    ClassRefinement,
     Conditional,
     Disjunction,
     EnumeratedDisjunction,
     Fact,
-    Quantified,
     GroupTotal,
+    Membership,
     Predication,
     Price,
     Provenance,
     Quantity,
+    Quantified,
+    QuantifiedAdjustment,
+    QuantifiedQuantity,
     Relation,
+    VerbalRelation,
 )
 
 # Direct top-level imports (session-4 refactor, step C): these five used to be
@@ -2055,10 +2060,328 @@ def _name_head_sortal_synth(
     return out
 
 
+def _subject_role_derivation_synth(
+    store: FactStore, reg: Registry, log: ArithmeticLog
+) -> list[Fact]:
+    """Derive an exact nominal role from one declared verbal/PP relation.
+
+    The registry table owns every lexical decision: verb lemma, role noun,
+    and which preposition may survive in the role phrase. The kernel only
+    joins that frozen mapping to a positive structured relation and preserves
+    its complete PP object. No mapping means no inference.
+    """
+
+    out: list[Fact] = []
+    for relation in store.by_kind(VerbalRelation):
+        if not relation.polarity or not relation.prep or not relation.obj:
+            continue
+        role = reg.subject_role_derivations.get(
+            (relation.verb, relation.prep)
+        )
+        if role is None:
+            continue
+        out.append(Atom(
+            provenance=Provenance(
+                source="synth/subject-role-derivation",
+                sentence=-1,
+                assumption=relation.provenance.assumption,
+            ),
+            entity=relation.entity,
+            pred=f"{role} {relation.prep} {relation.obj}",
+            polarity=True,
+        ))
+    return out
+
+
+def _declared_refinement(phrase: str, reg: Registry) -> str | None:
+    """Return the exact superclass licensed by one leading modifier.
+
+    The category owns the lexical decision.  This helper only removes one
+    canonical leading token and preserves the complete remainder, including
+    PP restrictions.  Undeclared, multiword, or empty shapes fail closed.
+    """
+
+    modifier, separator, superclass = phrase.partition(" ")
+    if (
+        not separator
+        or not superclass
+        or not reg.word_in_category(modifier, "refining_modifier")
+    ):
+        return None
+    return superclass
+
+
+def _class_refinement_synth(
+    store: FactStore, reg: Registry, log: ArithmeticLog
+) -> list[Fact]:
+    """Materialize declared class refinement without intersective leakage."""
+
+    out: list[Fact] = []
+    candidates: list[tuple[Fact, str]] = []
+    candidates.extend(
+        (fact, fact.collection)
+        for fact in store.by_kind(Membership)
+        if fact.polarity
+    )
+    candidates.extend(
+        (fact, fact.pred)
+        for fact in store.by_kind(Atom)
+        if fact.polarity
+    )
+    candidates.extend(
+        (fact, fact.cls)
+        for fact in store.by_kind(QuantifiedQuantity)
+    )
+    candidates.extend(
+        (fact, fact.cls)
+        for fact in store.by_kind(QuantifiedAdjustment)
+    )
+
+    for fact, subclass in candidates:
+        superclass = _declared_refinement(subclass, reg)
+        if superclass is None:
+            continue
+        provenance = Provenance(
+            source="synth/declared-class-refinement",
+            sentence=fact.provenance.sentence,
+            assumption=fact.provenance.assumption,
+        )
+        out.append(ClassRefinement(
+            provenance=provenance,
+            subclass=subclass,
+            superclass=superclass,
+        ))
+        if isinstance(fact, Membership):
+            out.append(Membership(
+                provenance=provenance,
+                member=fact.member,
+                collection=superclass,
+                polarity=True,
+            ))
+        elif isinstance(fact, Atom):
+            out.append(Atom(
+                provenance=provenance,
+                entity=fact.entity,
+                pred=superclass,
+                polarity=True,
+                indef_obj=fact.indef_obj,
+            ))
+        # A class-wide quantity over the subclass must never widen to the
+        # superclass.  Its only output here is the explicit ontology edge.
+    return out
+
+
+def _class_scope_compatible(
+    superclass: str, base_class: str, reg: Registry
+) -> bool:
+    """Whether one base class is a compatible scoped form of a superclass.
+
+    Exact class keys always compose.  A base may additionally preserve a
+    prepositional restriction (``teacher at university`` for superclass
+    ``teacher``), but only when the first extra token is declared as a
+    preposition.  This is phrase structure, not a word list, and it fails
+    closed for arbitrary shared-prefix classes.
+    """
+
+    if base_class == superclass:
+        return True
+    prefix = f"{superclass} "
+    if not base_class.startswith(prefix):
+        return False
+    first_extra = base_class[len(prefix):].partition(" ")[0]
+    return bool(first_extra) and reg.word_in_category(
+        first_extra, "preposition"
+    )
+
+
+def _quantified_quantity_materialization_synth(
+    store: FactStore, reg: Registry, log: ArithmeticLog
+) -> list[Fact]:
+    """Materialize exact class quantities and unique additive refinements.
+
+    The ordinary base and adjusted cases intentionally share this plugin. If
+    separate monotone rules first emitted the inherited baseline and later
+    emitted the adjusted value, the store would correctly quarantine them as
+    contradictory state quantities. Here an applicable adjustment suppresses
+    its compatible baseline and emits exactly one final value, while zero or
+    multiple compatible baselines emit none and are caught by the unresolved
+    derivation guard before any numeric answer can commit.
+    """
+
+    # One exact positive class-membership witness per (entity, class). Prefer
+    # Atom when both representations exist so the old PP-instantiation
+    # provenance remains stable; simple copular membership takes the sibling
+    # source below.
+    memberships: dict[tuple[str, str], Fact] = {}
+    for fact in store.by_kind(Atom):
+        if fact.polarity:
+            memberships.setdefault((fact.entity, fact.pred), fact)
+    for fact in store.by_kind(Membership):
+        if fact.polarity:
+            memberships.setdefault((fact.member, fact.collection), fact)
+
+    bases = list(store.by_kind(QuantifiedQuantity))
+    adjustments = list(store.by_kind(QuantifiedAdjustment))
+    refinements: dict[str, list[ClassRefinement]] = {}
+    for refinement in store.by_kind(ClassRefinement):
+        refinements.setdefault(refinement.subclass, []).append(refinement)
+
+    # Every exact (member, universal) pair is a potential ordinary base
+    # materialization. A compatible active adjustment marks the pair as
+    # suppressed even when the complete resolution later proves ambiguous.
+    base_applications: list[tuple[str, QuantifiedQuantity, Fact]] = []
+    entities = sorted({entity for entity, _class in memberships})
+    for entity in entities:
+        for base in bases:
+            evidence = memberships.get((entity, base.cls))
+            if evidence is not None:
+                base_applications.append((entity, base, evidence))
+
+    # Group active adjustments by the state quantity they would determine.
+    # Multiple distinct adjustment classes for one entity/measure are not
+    # ordered; the group stays unresolved.
+    grouped: dict[
+        tuple[str, str, str],
+        list[
+            tuple[
+                QuantifiedAdjustment,
+                Fact,
+                tuple[QuantifiedQuantity, ...],
+            ]
+        ],
+    ] = {}
+    suppressed: set[tuple[str, QuantifiedQuantity]] = set()
+    for entity in entities:
+        for adjustment in adjustments:
+            membership_evidence = memberships.get((entity, adjustment.cls))
+            if membership_evidence is None:
+                continue
+            compatible: list[QuantifiedQuantity] = []
+            for base in bases:
+                if (
+                    base.measure != adjustment.measure
+                    or base.verb != adjustment.verb
+                    or (entity, base.cls) not in memberships
+                ):
+                    continue
+                if any(
+                    _class_scope_compatible(
+                        refinement.superclass, base.cls, reg
+                    )
+                    for refinement in refinements.get(adjustment.cls, ())
+                ):
+                    compatible.append(base)
+                    suppressed.add((entity, base))
+            grouped.setdefault(
+                (entity, adjustment.measure, adjustment.verb), []
+            ).append((adjustment, membership_evidence, tuple(compatible)))
+
+    out: list[Fact] = []
+    for entity, base, evidence in base_applications:
+        if (entity, base) in suppressed:
+            continue
+        source = (
+            "synth/quantified-quantity-instantiation"
+            if isinstance(evidence, Atom)
+            else "synth/quantified-quantity-membership-instantiation"
+        )
+        quantity = Quantity(
+            provenance=Provenance(
+                source=source,
+                sentence=-1,
+                assumption=(
+                    base.provenance.assumption
+                    or evidence.provenance.assumption
+                ),
+            ),
+            entity=entity,
+            measure=base.measure,
+            value=base.value,
+            verb=base.verb,
+        )
+        if quantity.key() not in {collision.key for collision in store.collisions}:
+            out.append(quantity)
+
+    existing_adjusted = {
+        quantity.key()
+        for quantity in store.by_kind(Quantity)
+        if quantity.provenance.source.startswith(
+            "synth/quantified-adjustment-materialization"
+        )
+    }
+    existing_adjusted.update(
+        ambiguity.key
+        for ambiguity in store.agreement_ambiguities
+        if ambiguity.retained.source.startswith(
+            "synth/quantified-adjustment-materialization"
+        )
+        or ambiguity.deduped.source.startswith(
+            "synth/quantified-adjustment-materialization"
+        )
+    )
+    collision_keys = {collision.key for collision in store.collisions}
+    for (entity, measure, verb), resolutions in sorted(grouped.items()):
+        if len(resolutions) != 1:
+            continue
+        adjustment, membership_evidence, compatible = resolutions[0]
+        if len(compatible) != 1:
+            continue
+        base = compatible[0]
+        quantity_key = ("quantity", entity, measure, verb, None, None)
+        if quantity_key in existing_adjusted or quantity_key in collision_keys:
+            continue
+        proof_source = (
+            "synth/quantified-adjustment-materialization"
+            f"[base={base.provenance.source};"
+            f"adjustment={adjustment.provenance.source}"
+            + (
+                f";assumption={membership_evidence.provenance.source}"
+                f"@{membership_evidence.provenance.sentence}"
+                if membership_evidence.provenance.assumption
+                else ""
+            )
+            + "]"
+        )
+        try:
+            value = evaluate(
+                "base + adjustment",
+                {"base": base.value, "adjustment": adjustment.offset},
+                log,
+                source=proof_source,
+            )
+        except EvaluationError:
+            continue
+        if value < 0:
+            continue
+        out.append(Quantity(
+            provenance=Provenance(
+                source=proof_source,
+                sentence=adjustment.provenance.sentence,
+                assumption=(
+                    base.provenance.assumption
+                    or adjustment.provenance.assumption
+                    or membership_evidence.provenance.assumption
+                ),
+            ),
+            entity=entity,
+            measure=measure,
+            value=value,
+            verb=verb,
+        ))
+    return out
+
+
 PLUGINS: dict[str, Synthesizer] = {
+    "synth/declared-class-refinement": _class_refinement_synth,
     "synth/enumeration-elimination": _enumeration_elimination_synth,
     "synth/name-prefix-alias": _name_prefix_alias_synth,
     "synth/name-head-sortal": _name_head_sortal_synth,
+    "synth/subject-role-derivation": _subject_role_derivation_synth,
+    # Runs after every membership-producing plugin (notably the declared
+    # refinement and subject-role bridges). A monotone materializer cannot
+    # retract a prematurely emitted 25 when a second compatible baseline
+    # becomes visible later in the same fixpoint.
+    "synth/universal-quantity-materialization": _quantified_quantity_materialization_synth,
     "synth/relation-to-quantity": _relations_synth,
     "synth/bare-age-anchor": _bare_age_anchor_synth,
     "synth/anchor-quantity": _anchor_quantity_synth,

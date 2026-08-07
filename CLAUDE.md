@@ -42,7 +42,7 @@ commits are fast-forwarded to `main` by hand. `/mine --smoke` self-tests the pip
 uv run pytest -q tests/test_generation_workbench.py -k aggregate            # focused example
 uv run pytest -n 4 --dist=worksteal                      # full synthetic gate (parallel)
 uv run pytest                                            # equivalent serial/debug path
-uv run rulekit --project projects/curated bench --slice suite              # fast 65/65 regression gate (includes reference pack)
+uv run rulekit --project projects/curated bench --slice suite              # fast 71/71 regression gate (includes reference + logic-arithmetic)
 uv run rulekit --project projects/gsm8k bench --slice dev-train|dev-holdout
 uv run rulekit --project projects/gsm8k bench --slice dev-train --snapshot before.json
 uv run rulekit --project projects/gsm8k diff before.json after.json    # ship gate
@@ -64,7 +64,7 @@ uv run rulekit --project projects/gsm8k serve                          # visual 
 - `packs/difg-mined/` — vocabulary mined from difg; `quarantine.yaml` lists words difg
   deliberately withheld (holdout poison) — CHECK IT before admitting new vocabulary
 - `packs/arithmetic/` — pattern rules, ask shapes, synthesizers (the general solver families)
-- `projects/curated/` — the fast 65-item regression suite; loads the reference pack required by
+- `projects/curated/` — the fast 71-item regression suite; loads the reference pack required by
   its eight lookup/aggregate cases. Always run the suite through THIS project, not gsm8k.
 - `projects/gsm8k/` — the benchmark project (data + snapshots gitignored)
 - `projects/asdiv/` — the CROSS-CORPUS precision gate: same packs, DIFFERENT authors' problems, run

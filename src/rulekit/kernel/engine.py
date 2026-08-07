@@ -61,10 +61,19 @@ def _leading_temporal_marker(question: str, reg: Registry) -> str | None:
 
 
 def analyze(
-    sentence: str, reg: Registry, sentence_index: int = 0, tracing: bool = True
+    sentence: str,
+    reg: Registry,
+    sentence_index: int = 0,
+    tracing: bool = True,
+    assumption: bool = False,
 ) -> Reading:
-    reading = tokenize(sentence, sentence_index, tracing=tracing,
-                       contractions=reg.contractions)
+    reading = tokenize(
+        sentence,
+        sentence_index,
+        tracing=tracing,
+        assumption=assumption,
+        contractions=reg.contractions,
+    )
     annotate_numbers(reading, reg)
     annotate_senses(reading, reg)
     disambiguate(reading, reg)
@@ -85,11 +94,16 @@ class Result:
     document: Document | None = None
 
     @property
-    def value(self) -> float | str | None:
+    def value(self) -> float | str | list[dict[str, str | float]] | None:
         return self.answer.value
 
     def facts(self) -> list[Fact]:
         return list(self.store.facts)
+
+    @property
+    def assumptions(self) -> list[Reading]:
+        """Question-local premises, in source order."""
+        return [reading for reading in self.premises if reading.assumption]
 
     def deficiencies(self) -> list[str]:
         out: list[str] = []
@@ -102,6 +116,12 @@ class Result:
     def trace(self) -> list[dict]:
         events: list[dict] = []
         for reading in self.premises + ([self.question] if self.question else []):
+            if reading.assumption:
+                events.append({
+                    "kind": "question-assumption",
+                    "sentence": reading.sentence_index,
+                    "text": reading.text,
+                })
             for d in reading.decisions:
                 events.append({"sentence": reading.sentence_index, **d.to_json()})
         events.extend(event.to_trace_event() for event in self.store.agreement_ambiguities)
@@ -554,7 +574,17 @@ def _split_fused_premise_question(
     return None, fused
 
 
-def split_question(text: str, reg: Registry | None = None) -> tuple[list[str], str | None]:
+def _split_question_scoped(
+    text: str,
+    reg: Registry | None = None,
+) -> tuple[list[tuple[str, bool]], str | None]:
+    """Split a document while retaining question-local premise scope.
+
+    The boolean beside each premise is true only for a clause introduced by
+    the current question's literal conditional frame. Temporal and fused
+    premise recovery remain asserted: they describe source-text boundaries,
+    not a hypothetical context.
+    """
     sentences = split_sentences(text)
     if not sentences:
         return [], None
@@ -575,19 +605,29 @@ def split_question(text: str, reg: Registry | None = None) -> tuple[list[str], s
         clause, rest = _split_leading_temporal_clause(last, reg)
         is_question = clause is not None
     if not is_question:
-        return sentences, None
-    premises = sentences[:-1]
+        return [(sentence, False) for sentence in sentences], None
+    premises = [(sentence, False) for sentence in sentences[:-1]]
     if reg is not None:
         clause, last = _split_leading_clause(last, reg)
+        assumption = clause is not None
         if clause is None:
             clause, last = _split_leading_temporal_clause(last, reg)
+            assumption = False
         if clause is None:
             clause, last = _split_trailing_clause(last, reg)
+            assumption = clause is not None
         if clause is None:
             clause, last = _split_fused_premise_question(last, reg)
+            assumption = False
         if clause is not None:
-            premises = premises + [clause]
+            premises = premises + [(clause, assumption)]
     return premises, last
+
+
+def split_question(text: str, reg: Registry | None = None) -> tuple[list[str], str | None]:
+    """Public compatibility surface: premise text plus trailing question."""
+    premises, question = _split_question_scoped(text, reg)
+    return [premise for premise, _assumption in premises], question
 
 
 def solve(
@@ -609,13 +649,24 @@ def solve(
     # splitting/tokenization; non-LaTeX text passes through as the same object
     # (mathtext.py — whole-span conservatism, unrecognized spans stay verbatim)
     text = normalize_math(text)
-    premise_texts, question_text = split_question(text, reg)
-    expanded_premise_texts: list[str] = []
-    for premise_text in premise_texts:
-        expanded_premise_texts.extend(_split_conjoined_clauses(premise_text, reg))
+    scoped_premises, question_text = _split_question_scoped(text, reg)
+    premise_texts = [text for text, _assumption in scoped_premises]
+    expanded_premises: list[tuple[str, bool]] = []
+    for premise_text, assumption in scoped_premises:
+        expanded_premises.extend(
+            (clause, assumption)
+            for clause in _split_conjoined_clauses(premise_text, reg)
+        )
+    expanded_premise_texts = [text for text, _assumption in expanded_premises]
     premises = [
-        analyze(sentence, reg, sentence_index=i, tracing=tracing)
-        for i, sentence in enumerate(expanded_premise_texts)
+        analyze(
+            sentence,
+            reg,
+            sentence_index=i,
+            tracing=tracing,
+            assumption=assumption,
+        )
+        for i, (sentence, assumption) in enumerate(expanded_premises)
     ]
     journal = deixis.Journal() if tracing else None
     doc = run_document(premises, reg, journal=journal)
@@ -703,5 +754,9 @@ def diagnose(result: Result) -> dict:
         "kind": kind,
         "reason": result.answer.reason,
         "known": [repr(f) for f in result.store.facts],
+        "assumptions": [
+            {"sentence": reading.sentence_index, "text": reading.text}
+            for reading in result.assumptions
+        ],
         "deficiencies": result.deficiencies(),
     }

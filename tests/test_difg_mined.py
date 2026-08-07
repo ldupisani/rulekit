@@ -27,6 +27,7 @@ def full_registry():
             REPO / "packs/core-english",
             REPO / "packs/arithmetic",
             REPO / "packs/reference",
+            REPO / "packs/logic-arithmetic",
             MINED,
         ])
     )

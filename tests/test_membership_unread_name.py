@@ -48,10 +48,9 @@ def full_registry():
     return compile_registry(
         load_packs([
             REPO / "packs/core-english", REPO / "packs/arithmetic", mined,
-            # the logic pack lives in projects/scratch (post-campaign
-            # increment) — these contracts are pinned against the pack list
-            # that actually loads it (folio's)
-            REPO / "projects/scratch/packs/logic",
+            # The top-level logic pack remains opt-in. These contracts pin the
+            # explicit pack list that loads it.
+            REPO / "packs/logic",
         ])
     )
 

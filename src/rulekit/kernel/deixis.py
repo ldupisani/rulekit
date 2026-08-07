@@ -132,6 +132,19 @@ def token_distance(referent: Referent, origo: Origo) -> int:
     return abs(referent.span[0] - origo.span[0])
 
 
+def sentence_distance(referent: Referent, origo: Origo) -> int:
+    """Distance on the document's sentence axis.
+
+    This deliberately ignores token position. Two compatible people named in
+    the same nearest sentence therefore remain tied and unresolved; a person
+    mentioned in a genuinely later sentence wins only by strict dominance.
+    Missing coordinates are equidistant and retain the conservative decline.
+    """
+    if referent.sentence is None or origo.sentence is None:
+        return 0
+    return abs(referent.sentence - origo.sentence)
+
+
 # ---------------------------------------------------------------------------
 # The primitive
 # ---------------------------------------------------------------------------

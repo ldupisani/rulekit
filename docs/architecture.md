@@ -1,6 +1,6 @@
 # RuleKit architecture
 
-**Updated:** 2026-08-05
+**Updated:** 2026-08-06
 **Status:** current implementation, not a roadmap
 
 RuleKit is a deterministic reading and reasoning engine for controlled,
@@ -98,8 +98,8 @@ singular proper name admits `needs` or a number-neutral past form, not the
 plural/base `need`. The comparative form also applies `same_number` between
 its standalone count and noun, admitting `1 fewer shopper` and
 `2 fewer shoppers` while rejecting both mismatches. The current curated
-project has 108/108 selectable premise
-rules and 184 reachable lexicon identities. The
+project has 113/113 selectable premise
+rules and 190 reachable lexicon identities. The
 explicit `originally` ask routes through the existing start-state event
 inversion; a qualified start state with differently qualified same-measure
 events declines until modifier nesting is represented losslessly.
@@ -143,11 +143,32 @@ scalar templates when the question itself names an exact set. A variadic
 combined-total ask captures a coordinated span and resolves it structurally
 to `holders` only when every segment is one name, every coordinator is the
 pack-declared additive holder-list conjunction, and the final pair is overtly
-coordinated. The combined consumer validates uniqueness and sums only those
-named entities. The historical named-pair `a`/`b` query remains backward compatible;
+coordinated. Its trailing total marker may be one aggregate token or the
+separately declared `group_total_quantifier` plus
+`quantified_group_total_marker` sequence. The latter licenses conventional
+“all together” without treating misspelled `alltogether` or arbitrary “all
+total” pairings as aggregate markers. The combined consumer validates
+uniqueness and sums only those named entities. The historical named-pair
+`a`/`b` query remains backward compatible;
 pronoun totals deliberately retain their different enumerate-all-holders
 semantics. This keeps question scope in the ask evidence rather than trying to
 reconstruct it from whichever facts happen to exist.
+
+The same exact named-holder resolver also supports distributive answer asks:
+“How many books do Ana, Ben, and Cato each have?” and “...have each?” use a
+narrow quantifier category that admits `each` without admitting
+container-determiner `every` in either position. “...individually have?” and
+“...have individually?” use a separate adverb-rooted category, so an ordinary
+manner adverb cannot acquire distributive answer scope. All four positions
+route to the same `per-holder` consumer. It uses the combined consumer's
+measure resolution and definitive-or-decline folds but returns a labelled
+`series` rather than adding the values. Each JSON-native row retains `entity`,
+canonical `measure`, and numeric `value`; source order is preserved for
+display, while benchmark comparison uses the labels rather than fragile list
+position. If any requested holder is unresolved, the whole ask declines
+instead of returning a partial series. The Designer renders one labelled row
+per holder and uses the question's captured measure surface for human-readable
+units.
 
 A located-holder ask may use a possessed, pack-declared quantitative location:
 `how many ITEM are there in OWNER's PLACE?`. The place head must belong to
@@ -176,6 +197,71 @@ The corresponding pronoun question shape is also declarative:
 `how many AGGREGATE ITEM AUX PRONOUN VERB`. The aggregate marker is mandatory
 and routes to the existing combined consumer; the pronoun does not select or
 invent a holder. Unmarked pronoun questions remain unclaimed.
+
+### Opt-in logic and quantified quantities
+
+The reusable phrase-keyed FOLIO logic surface lives in top-level `packs/logic`.
+Projects opt into it explicitly, while the ordinary FOLIO safety project
+deliberately does not. Its boolean `Atom` and `Quantified` facts retain exact
+full-phrase keys. The curated project loads the narrower
+`packs/logic-arithmetic` bridge instead of the broad FOLIO reader surface, so
+unrelated logic readers cannot consume arithmetic premises.
+
+Numeric universals use a separate `QuantifiedQuantity` fact. A rule such as
+“All teachers at the university have 20 students” preserves the complete class
+phrase and the structured arithmetic measure/value/verb. The shared universal-
+quantity materializer can produce an ordinary `Quantity` only after an exact
+positive class-membership fact proves that the named entity belongs to the same
+complete class. Restricted phrases use `Atom`; the existing simple copular fold
+uses `Membership` with the same exact-key join. Arithmetic consumers remain
+unchanged and see no special logic-only value type.
+
+Coordinated named verbal clauses use one premise rule to emit a structured
+`VerbalRelation` for each conjunct. A frozen, source-indexed
+`subject_role_derivations` table then licenses exact `(verb, preposition)` to
+role mappings while preserving the complete PP object. The generic kernel
+synthesizer contains no lexical examples: with the current pack data,
+`teach at the university` derives the exact role key
+`teacher at university`. Unlicensed pairs derive no role. A rule-level
+`satisfies` contract marks the finite verb's subject obligation as structurally
+met by the complete coordination without binding either named conjunct as the
+sole grammatical subject.
+
+Declared subsective class relations use a separate `ClassRefinement` fact. A
+pack category names which leading modifiers may create that edge; the generic
+synthesizer removes exactly one declared modifier and preserves the complete
+remaining phrase. Thus `head teacher at university` refines
+`teacher at university` without asserting the predicate `head`. Undeclared or
+negative phrases produce no edge. This ontology is deliberately distinct from
+both intersective-modifier decomposition and the ordinary right-headed noun-
+compound fold. A class-wide numeric fact can expose its refinement edge but is
+never widened into a superclass-wide amount.
+
+Class-wide additive comparisons use a third numeric fact,
+`QuantifiedAdjustment`. “All head teachers have 5 more students” records the
+complete class, measure, signed offset, and state verb; it is neither an
+entity-to-entity `Relation` nor an acquisition event. The same materializer
+that handles ordinary quantified quantities suppresses an inherited base when
+an adjustment applies, then emits exactly one derived `Quantity` only when an
+exact refining-class member and exactly one compatible base universal survive.
+A base may preserve a prepositional class restriction, but arbitrary shared
+prefixes do not compose. Missing or multiple baselines remain unresolved and
+veto a numeric shortcut. The resulting arithmetic log names both source rules,
+and the fact store still exposes the original base and adjustment constraints.
+
+A leading conditional attached to the current question is represented as a
+question-local assumption, not as an asserted project premise. The reading,
+direct facts, derived adjusted quantity, diagnosis, and Designer trace expose
+that scope. Each solve owns a fresh document, so the assumption cannot escape
+into a later solve. Person deixis remains conservative in ordinary discourse:
+without typed gender/person compatibility, several prior names stay tied. In a
+question-local assumption context, sentence distance becomes available to the
+same strict-dominance resolver; a uniquely re-mentioned person may win, while
+two people in the same nearest sentence still decline.
+
+These are the first five semantic slices of the staged design in
+[`logic-arithmetic-integration-plan.md`](logic-arithmetic-integration-plan.md).
+Generation and review coverage for the new scoped behavior is the next slice.
 
 ## Architectural boundaries
 
@@ -388,8 +474,9 @@ return numeric answers, yes/no/undetermined verdicts, proofs, or declines.
 
 Guards run only against a proposed commitment:
 
-- numeric answers are checked for unread vocabulary, unused or multiply used
-  operative values, unresolved derivations, and related accounting failures;
+- numeric scalar and labelled-series answers are checked for unread
+  vocabulary, unused or multiply used operative values, unresolved
+  derivations, and related accounting failures;
 - verdict answers use a supported-fragment guard that rejects unread
   truth-scoping operators.
 
@@ -407,7 +494,7 @@ state and fact use; they do not special-case rule ids.
 | `Fact` | immutable typed commitment with `Provenance` |
 | `FactStore` | admission, agreement, collision quarantine, and fact lookup |
 | `Document` | premise readings, store, arithmetic/deictic log, consumed units, rounds, and gaps |
-| `Answer` | number, verdict, or decline, optionally with proof or clarification |
+| `Answer` | number, labelled numeric series, verdict, or decline, optionally with proof or clarification |
 | `Result` | complete runtime surface: answer, readings, store, log, veto, and document |
 
 The fact model covers arithmetic quantities and relations, membership and

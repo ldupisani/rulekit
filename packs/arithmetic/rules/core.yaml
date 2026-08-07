@@ -117,18 +117,24 @@ rules:
       leave the other conjunct unguarded.
     match:
       sentence:
-        - {slot: who, type: entity}
-        - {slot: verb, type: verb}
+        - {slot: who, type: entity, common_noun_cat: quantity_holder}
+        - {slot: verb, type: verb, finite_form: true}
         - {slot: n, type: number}
-        - {slot: dir, cat: delta}
+        - {slot: dir, cat: count_quantity_delta}
         - {slot: item, type: plural}
         - {lit: and}
         - {slot: n2, type: number}
-        - {slot: dir2, cat: delta}
+        - {slot: dir2, cat: count_quantity_delta}
         - {slot: item2, type: plural}
         - {lit: than}
-        - {slot: std, type: entity}
+        - {slot: std, type: entity, common_noun_cat: quantity_holder}
     where:
+      - number_compatible: [who, verb]
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: std, cat: non_quantity_holder}
       - distinct: [who, std]
       - category_nonoverlap: [who, std]
       - distinct_measure: [item, std]
@@ -1123,7 +1129,7 @@ rules:
     match:
       sentence:
         - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, finite_form: true}
         - {slot: k, type: nonunit_multiplier}
         - {lit: as}
         - {lit: many}
@@ -1131,7 +1137,7 @@ rules:
         - opt:
             - {slot: appos_det, cat: animate_possessive_determiner}
             - {slot: appos_role, cat: animate}
-        - {slot: std, type: entity, referential: true}
+        - {slot: std, type: entity, common_noun_cat: quantity_holder, referential: true, bare_reference_category: bare_entity_reference}
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - bound_requires_category: {bound: appos_role, slot: who, cat: quantity_event_participant, allow_proper_name: true}
@@ -1139,6 +1145,7 @@ rules:
       - slot_not_category: {slot: k, cat: predeterminer_multiplier}
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
+      - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: verb, cat: motion_comparison_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
@@ -1209,11 +1216,9 @@ rules:
         - opt:
             - {lit: as}
             - opt:
-                - {slot: appos_det, cat: possessive_determiner}
-                - {slot: appos_role, cat: animate}
+                - {slot: std_det_seen, cat: possessive_determiner}
             - {slot: std_seen, type: entity}
     where:
-      - bound_requires_type: {bound: appos_role, slot: std_seen, type: proper_name}
       - number_compatible: [who, verb]
       - slot_not_category: {slot: k, cat: predeterminer_multiplier}
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
@@ -1275,7 +1280,7 @@ rules:
             - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
         - {lit: as}
         - {slot: std_det, cat: possessive_determiner}
-        - {slot: std, type: noun}
+        - {slot: std, cat: animate}
     where:
       - number_compatible: [who, verb]
       - slot_not_category: {slot: k, cat: predeterminer_multiplier}
@@ -2052,8 +2057,8 @@ rules:
       this self-change reading whenever such a standard is present.
     match:
       sentence:
-        - {slot: who, type: entity}
-        - {slot: verb, type: verb}
+        - {slot: who, type: entity, common_noun_cat: quantity_holder}
+        - {slot: verb, type: verb, finite_form: true}
         - {slot: f, type: fraction, fraction_positive: true}
         - {slot: dir, cat: mass_quantity_delta}
         - {slot: item, cat: mass_currency_noun, number: singular}
@@ -2096,8 +2101,8 @@ rules:
       identical to the mass form.
     match:
       sentence:
-        - {slot: who, type: entity}
-        - {slot: verb, type: verb}
+        - {slot: who, type: entity, common_noun_cat: quantity_holder}
+        - {slot: verb, type: verb, finite_form: true}
         - {slot: f, type: fraction, fraction_positive: true}
         - {slot: dir, cat: count_quantity_delta}
         - {slot: item, cat: currency, number: plural}
@@ -3046,8 +3051,8 @@ rules:
       so they cannot share the explicit-item guard required by "as many".
     match:
       sentence:
-        - {slot: who, type: entity}
-        - {slot: verb, type: verb}
+        - {slot: who, type: entity, common_noun_cat: quantity_holder}
+        - {slot: verb, type: verb, finite_form: true}
         - {slot: k, type: multiplier}
         - {lit: [that, this], consume_skipped: true}
         - {lit: much}
@@ -3057,6 +3062,8 @@ rules:
     where:
       - number_compatible: [who, verb]
       - slot_not_category: {slot: k, cat: predeterminer_multiplier}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - absent: {cat: partitive}
       - unbound: [direct_std_seen]
@@ -3080,8 +3087,8 @@ rules:
       complete comparison to its owning rule.
     match:
       sentence:
-        - {slot: who, type: entity}
-        - {slot: verb, type: verb}
+        - {slot: who, type: entity, common_noun_cat: quantity_holder}
+        - {slot: verb, type: verb, finite_form: true}
         - {slot: k, type: nonunit_multiplier}
         - {lit: as, consume_skipped: true}
         - {lit: much}
@@ -3093,6 +3100,8 @@ rules:
     where:
       - number_compatible: [who, verb]
       - slot_not_category: {slot: k, cat: predeterminer_multiplier}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - absent: {cat: partitive}
       - unbound: [direct_std_seen, item_std_seen]
@@ -3120,8 +3129,8 @@ rules:
       measure, as in "three times that many pounds".
     match:
       sentence:
-        - {slot: who, type: entity}
-        - {slot: verb, type: verb}
+        - {slot: who, type: entity, common_noun_cat: quantity_holder}
+        - {slot: verb, type: verb, finite_form: true}
         - {slot: k, type: multiplier}
         - {lit: [that, this], consume_skipped: true}
         - {lit: many}
@@ -3131,6 +3140,8 @@ rules:
     where:
       - number_compatible: [who, verb]
       - slot_not_category: {slot: k, cat: predeterminer_multiplier}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - absent: {cat: partitive}
       - unbound: [direct_std_seen]
@@ -3153,8 +3164,8 @@ rules:
       accepting the prefix of a longer comparison that another rule rejects.
     match:
       sentence:
-        - {slot: who, type: entity}
-        - {slot: verb, type: verb}
+        - {slot: who, type: entity, common_noun_cat: quantity_holder}
+        - {slot: verb, type: verb, finite_form: true}
         - {slot: k, type: nonunit_multiplier}
         - {lit: as, consume_skipped: true}
         - {lit: many}
@@ -3166,6 +3177,8 @@ rules:
     where:
       - number_compatible: [who, verb]
       - slot_not_category: {slot: k, cat: predeterminer_multiplier}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - absent: {cat: partitive}
       - unbound: [direct_std_seen, item_std_seen]
@@ -4016,12 +4029,14 @@ rules:
     match:
       sentence:
         - {slot: who, type: name}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, finite_form: true}
         - {slot: f, type: fraction, fraction_within_whole: true}
         - {lit: of}
+        - {lit: the, consume_skipped: true}
         - {slot: item, type: noun}
     where:
       - number_compatible: [who, verb]
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: animate_object_verb, role_cat: quantity_event_participant}
     consumes: [f]
     emits:
       - fact: fraction_quantity
@@ -4821,15 +4836,17 @@ rules:
       the token is consumed when present.
     match:
       sentence:
-        - {slot: who, type: entity, referential: true, bare_reference_category: bare_entity_reference}
+        - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true, bare_reference_category: bare_entity_reference}
         - opt:
             - {slot: aux, type: modal}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, finite_form: true}
         - {slot: item, type: counted}
         - {slot: freq, cat: frequency_quantifier}
         - {slot: span, cat: duration_measure, counted: true}
     where:
       - bound_requires_form: {bound: aux, slot: verb, form: bare}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
     consumes: [item, span]
     emits:
       - fact: rate
@@ -5157,6 +5174,112 @@ asks:
         - opt:
             - {slot: p, cat: preposition}
         - {slot: agg, cat: aggregate}
+    resolves:
+      consumer: combined
+      holders: "{holders.name_list}"
+      measure: "{item}"
+      verb: "{verb}"
+
+  - id: ask/how-many-each-named-list
+    # One labelled answer per explicitly named holder: "How many books do
+    # Ana, Ben, and Cato each have?" `{holders.name_list}` provides the same
+    # exact conjunction, uniqueness, and no-authored-arity contract as the
+    # combined-total sibling. The narrow postpositive category admits `each`
+    # without accepting the container-determiner-only `every` in this slot.
+    # The per-holder consumer reuses combined's all-or-nothing holder folds but
+    # preserves each value rather than summing them.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {slot: aux, type: auxiliary}
+        - {slot: holders, span: true}
+        - {slot: q, cat: postpositive_distributive_quantifier}
+        - {slot: verb, type: verb}
+    resolves:
+      consumer: per-holder
+      holders: "{holders.name_list}"
+      measure: "{item}"
+      measure_surface: "{item.surface}"
+      verb: "{verb}"
+
+  - id: ask/how-many-each-named-list-postverbal
+    # Postverbal marker sibling: "How many books do Ana and Ben have each?"
+    # Exact holder-list validation and answer behavior are identical to the
+    # preverbal `each` form above; only the grammatical marker position moves.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {slot: aux, type: auxiliary}
+        - {slot: holders, span: true}
+        - {slot: verb, type: verb}
+        - {slot: q, cat: postpositive_distributive_quantifier}
+    resolves:
+      consumer: per-holder
+      holders: "{holders.name_list}"
+      measure: "{item}"
+      measure_surface: "{item.surface}"
+      verb: "{verb}"
+
+  - id: ask/how-many-individually-named-list
+    # Preverbal manner-marker form: "How many books do Ana and Ben
+    # individually have?" The adverb category is deliberately separate from
+    # quantifier-sensed `each`; both resolve to the same semantic ask.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {slot: aux, type: auxiliary}
+        - {slot: holders, span: true}
+        - {slot: marker, cat: individualizing_adverb}
+        - {slot: verb, type: verb}
+    resolves:
+      consumer: per-holder
+      holders: "{holders.name_list}"
+      measure: "{item}"
+      measure_surface: "{item.surface}"
+      verb: "{verb}"
+
+  - id: ask/how-many-individually-named-list-postverbal
+    # Postverbal manner-marker sibling: "How many books do Ana and Ben have
+    # individually?" No ordinary manner adverb can enter this slot.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {slot: aux, type: auxiliary}
+        - {slot: holders, span: true}
+        - {slot: verb, type: verb}
+        - {slot: marker, cat: individualizing_adverb}
+    resolves:
+      consumer: per-holder
+      holders: "{holders.name_list}"
+      measure: "{item}"
+      measure_surface: "{item.surface}"
+      verb: "{verb}"
+
+  - id: ask/how-many-combined-named-list-all-together
+    # Two-token aggregate-marker sibling of the exact named-list ask:
+    # "How many books do Ana, Ben, and Cato have all together?" The marker
+    # words are admitted through the same narrow categories that license the
+    # trailing GroupTotal premise, so this cannot widen to "all total" or a
+    # misspelled one-token form. `{holders.name_list}` retains the ordinary
+    # exact-scope, conjunction, uniqueness, and no-authored-arity contract.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: noun}
+        - {slot: aux, type: auxiliary}
+        - {slot: holders, span: true}
+        - {slot: verb, type: verb}
+        - {slot: q, cat: group_total_quantifier}
+        - {slot: agg, cat: quantified_group_total_marker}
     resolves:
       consumer: combined
       holders: "{holders.name_list}"

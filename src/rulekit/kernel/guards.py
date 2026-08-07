@@ -480,9 +480,12 @@ def _check_number(
         # around it is how "ate half the sandwiches" silently vanishes
         from .model import (
             AnchorQuantity,
+            Atom,
             FractionQuantity,
+            Membership,
             PartitionQuantity,
             Quantity,
+            QuantifiedAdjustment,
             RestQuantity,
         )
 
@@ -520,6 +523,56 @@ def _check_number(
                     f"the bare count {a.value!r} stated for {a.entity!r} "
                     f"({a.verb!r}) never resolved to a known measure",
                 )
+        # A class-wide additive adjustment is active only for an exact
+        # positive member of that class. Once active, it must have produced
+        # the one adjusted state Quantity; otherwise a missing/ambiguous
+        # baseline must not be hidden by an unrelated quantity that happened
+        # to answer the same ask.
+        exact_memberships = {
+            (fact.member, fact.collection)
+            for fact in store.by_kind(Membership)
+            if fact.polarity
+        } | {
+            (fact.entity, fact.pred)
+            for fact in store.by_kind(Atom)
+            if fact.polarity
+        }
+        adjusted = {
+            (fact.entity, fact.measure, fact.verb)
+            for fact in store.by_kind(Quantity)
+            if fact.provenance.source.startswith(
+                "synth/quantified-adjustment-materialization"
+            )
+        }
+        adjusted.update(
+            (ambiguity.key[1], ambiguity.key[2], ambiguity.key[3])
+            for ambiguity in store.agreement_ambiguities
+            if ambiguity.key[:1] == ("quantity",)
+            and (
+                ambiguity.retained.source.startswith(
+                    "synth/quantified-adjustment-materialization"
+                )
+                or ambiguity.deduped.source.startswith(
+                    "synth/quantified-adjustment-materialization"
+                )
+            )
+        )
+        for adjustment in store.by_kind(QuantifiedAdjustment):
+            for entity, cls in sorted(exact_memberships):
+                if cls != adjustment.cls:
+                    continue
+                if (
+                    entity,
+                    adjustment.measure,
+                    adjustment.verb,
+                ) not in adjusted:
+                    return GuardVeto(
+                        "unresolved-derivation",
+                        f"the {adjustment.offset:+g} adjustment to "
+                        f"{adjustment.measure!r} for class "
+                        f"{adjustment.cls!r} never resolved against one "
+                        "compatible class-wide baseline",
+                    )
         # a PartitionQuantity resolves into ANOTHER PartitionQuantity (its
         # collection replaced by the real measure), never a Quantity — the
         # 'derived' set above doesn't cover it, so check separately. A

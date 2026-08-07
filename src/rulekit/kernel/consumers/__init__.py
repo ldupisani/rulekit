@@ -43,7 +43,7 @@ class ConsumerContext:
     computes an Answer — it has no business mutating the dispatch state.
     """
 
-    query: dict[str, str]
+    query: dict[str, Any]
     question: "Reading"
     store: "FactStore"
     reg: "Registry"
@@ -115,6 +115,7 @@ from . import (  # noqa: E402,F401  (import registers each handler)
     single_entity_elided_measure as _single_entity_elided_measure,
     combined_elided_measure as _combined_elided_measure,
     combined as _combined,
+    per_holder as _per_holder,
     average as _average,
     unit_price_from_total as _unit_price_from_total,
     cost_of_quantity as _cost_of_quantity,

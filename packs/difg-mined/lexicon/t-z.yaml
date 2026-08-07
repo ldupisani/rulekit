@@ -57,11 +57,6 @@ entries:
     taste:
         senses:
             - verb
-    taught:
-        senses:
-            - verb
-        verb:
-            lemma: teach
     tax:
         senses:
             - noun
@@ -73,19 +68,6 @@ entries:
     tea:
         senses:
             - noun
-    teach:
-        senses:
-            - verb
-    teaches:
-        senses:
-            - verb
-        verb:
-            lemma: teach
-    teaching:
-        senses:
-            - verb
-        verb:
-            lemma: teach
     team:
         senses:
             - noun
@@ -560,9 +542,6 @@ entries:
     units:
         senses:
             - noun
-    university:
-        senses:
-            - noun
     unless:
         senses:
             - conjunction
@@ -895,9 +874,6 @@ entries:
     where:
         senses:
             - interrogative
-    which:
-        senses:
-            - wh_which
     while:
         senses:
             - conjunction

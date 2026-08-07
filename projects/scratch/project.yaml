@@ -11,4 +11,4 @@ name: scratch
 # benchmark project.
 #
 #   uv run rulekit --project projects/scratch solve --trace "<sentence>"
-packs: [core-english, arithmetic, difg-mined, ./packs/user, ./packs/logic]
+packs: [core-english, arithmetic, difg-mined, ./packs/user, logic]

@@ -5,7 +5,7 @@ name: pmb
 # gold release. Reuse the COGS campaign's reader pack; the adapter remains
 # benchmark-only and is never imported by runtime parsing.
 packs:
-  [core-english, difg-mined, ../scratch/packs/logic,
+  [core-english, difg-mined, logic,
    ../cogs/packs/semantic-projection, ./packs/role-boundary]
 
 projection:

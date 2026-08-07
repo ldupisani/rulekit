@@ -8,9 +8,9 @@ ends when a round changes nothing; a hard cap errors loudly.
 
 Correctness choices: fact derivation per round is a pure recompute (the
 store is rebuilt from scratch each round — no incremental patching to get
-subtly wrong), and discourse binding is definitive-or-decline: a pronoun
-binds only when exactly ONE antecedent candidate exists; ambiguity stays an
-unmet obligation the diagnosis can name.
+subtly wrong), and discourse binding is definitive-or-decline: ordinary
+multi-name discourse remains ambiguous, while a question-local assumption
+may establish one strictly nearer compatible antecedent; ties stay unmet.
 """
 
 from __future__ import annotations
@@ -22,7 +22,7 @@ from .evaluate import ArithmeticLog
 from .facts import FactStore
 from .learn import learn
 from . import deixis
-from .model import Fact, Obligation, Reading, Unit
+from .model import PATTERN, Fact, Obligation, Reading, Unit
 from .patterns import RuleMatchResult, run_rules
 from .saturate import saturate
 
@@ -52,6 +52,39 @@ class Document:
     rounds: int = 0
     gaps: list[Gap] = field(default_factory=list)
     rule_results: dict[int, list[RuleMatchResult]] = field(default_factory=dict)
+
+
+def _satisfy_pattern_obligations(
+    reading: Reading, result: RuleMatchResult
+) -> None:
+    """Apply only the slot/need pairs explicitly owned by a matched rule."""
+
+    for slot_name, needs in result.match.rule.satisfies.items():
+        unit = result.match.slots.get(slot_name)
+        if not isinstance(unit, Unit):
+            continue  # compile validation rejects spans; fail closed at runtime
+        obligations = unit.obligations()
+        updated = list(obligations)
+        changed = False
+        for index, obligation in enumerate(obligations):
+            if obligation.need not in needs or obligation.met:
+                continue
+            updated[index] = Obligation(
+                obligation.role,
+                obligation.need,
+                target=PATTERN,
+                optional=obligation.optional,
+            )
+            changed = True
+        if changed:
+            reading.record(
+                "pattern-satisfy",
+                unit,
+                {"obligations": updated},
+                f"{unit.surface!r} obligations satisfied structurally by "
+                f"rule {result.match.rule.id}",
+                rule_id=result.match.rule.id,
+            )
 
 
 def collect_gaps(readings: list[Reading]) -> list[Gap]:
@@ -117,9 +150,10 @@ def _bind_discourse(
     journal: deixis.Journal | None = None,
     reg: Registry | None = None,
 ) -> set[int]:
-    """Bind unmet pronoun `refers` obligations to a UNIQUE prior name, or —
-    when the text contains NO name at all — to a unique prior `animate`
-    common noun. Returns the sentence indexes that gained a binding.
+    """Bind unmet pronoun `refers` obligations to a unique prior name, or —
+    inside a question-local assumption context — to one strictly nearest name.
+    When the text contains no name, the same policy applies to prior `animate`
+    common nouns. Returns the sentence indexes that gained a binding.
 
     `reg` is optional so the name-only path stays callable without a
     registry; the zero-name fallback simply does not run without one."""
@@ -136,12 +170,13 @@ def _bind_discourse(
             for i, ob in enumerate(obligations):
                 if ob.need != "refers" or ob.met:
                     continue
-                # deixis.resolve with the CONSTANT metric is exactly the rule this
-                # site hand-wrote ("unique antecedent, or leave unmet"): under a
-                # constant distance no candidate can strictly dominate another, so
-                # two-or-more always declines. Migrating is provably 0-diff; the
-                # PERSON metric is switched on later as its own gated increment
-                # (docs/deixis.md phase 5).
+                # Ordinary person discourse has no gender/person compatibility
+                # model, so recency alone would make unsafe guesses ("Tom ... Mary
+                # ... He ..."). Its field therefore stays flat. A candidate
+                # re-mentioned by the current question's LOCAL ASSUMPTION supplies
+                # the missing scope boundary: only then does sentence recency become
+                # meaningful, and the shared strict-dominance rule still declines a
+                # same-sentence tie.
                 candidates = _discourse_candidates(readings, reading.sentence_index)
                 # THE ZERO-NAME FALLBACK. Common nouns are considered ONLY
                 # when no name candidate exists, which is provably
@@ -157,24 +192,33 @@ def _bind_discourse(
                     candidates = _animate_candidates(
                         readings, reading.sentence_index, reg
                     )
+                referents = [
+                    deixis.Referent(
+                        dimension=deixis.PERSON,
+                        key=lemma,
+                        payload=target,
+                        sentence=sentence,
+                        span=target.span,
+                    )
+                    for lemma, (sentence, target) in candidates.items()
+                ]
+                assumption_sentences = {
+                    candidate.sentence_index
+                    for candidate in readings
+                    if candidate.assumption
+                }
+                metric = (
+                    deixis.sentence_distance
+                    if any(
+                        referent.sentence in assumption_sentences
+                        for referent in referents
+                    )
+                    else deixis.constant
+                )
                 winner = deixis.resolve(
-                    [
-                        # sentence/span are INERT under the constant metric (nothing
-                        # ranks yet), so filling them in is 0-diff — but it is what
-                        # makes each candidate locatable in the text, both for the
-                        # designer's field view and for the day the PERSON metric is
-                        # switched on (docs/deixis.md phase 5).
-                        deixis.Referent(
-                            dimension=deixis.PERSON,
-                            key=lemma,
-                            payload=target,
-                            sentence=sentence,
-                            span=target.span,
-                        )
-                        for lemma, (sentence, target) in candidates.items()
-                    ],
+                    referents,
                     deixis.Origo(sentence=reading.sentence_index, span=unit.span),
-                    deixis.constant,
+                    metric,
                     dimension=deixis.PERSON,
                     journal=journal,
                     source="bind-discourse",
@@ -186,7 +230,8 @@ def _bind_discourse(
                     reading.record(
                         "bind-discourse", unit,
                         {"obligations": new},
-                        f"{unit.surface!r} -> {lemma!r} (unique antecedent in document)",
+                        f"{unit.surface!r} -> {lemma!r} "
+                        "(strictly resolved antecedent in document)",
                     )
                     changed.add(reading.sentence_index)
     return changed
@@ -286,6 +331,7 @@ def run_document(
         doc.rule_results[reading.sentence_index] = results
         consumed = doc.consumed_uids.setdefault(reading.sentence_index, set())
         for r in results:
+            _satisfy_pattern_obligations(reading, r)
             consumed.update(r.match.consumed)
             for uid in r.match.consumed:
                 reading.record(
@@ -314,6 +360,7 @@ def run_document(
             doc.rule_results[reading.sentence_index] = results
             consumed = doc.consumed_uids.setdefault(reading.sentence_index, set())
             for r in results:
+                _satisfy_pattern_obligations(reading, r)
                 for uid in r.match.consumed:
                     if uid in consumed:
                         continue

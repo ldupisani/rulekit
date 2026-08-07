@@ -89,7 +89,7 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
         word
         for word, entry in sorted(project.registry.lexicon.items())
         if "adverb" in entry.senses
-    ] == ["ago", MOVED_WORD, "far"]
+    ] == ["ago", MOVED_WORD, "far", "individually"]
 
 
 def test_combined_pack_semantics_are_identical_to_legacy_ownership() -> None:
@@ -137,11 +137,11 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
     project = load_project(CURATED)
     availability = list_rule_availability(project)
 
-    assert len(availability) == 108
-    assert sum(item.supported for item in availability) == 108
+    assert len(availability) == 113
+    assert sum(item.supported for item in availability) == 113
     assert sum(not item.supported for item in availability) == 0
     assert all(not item.blockers for item in availability)
-    assert len(exploration_status(project)["fillers"]) == 184
+    assert len(exploration_status(project)["fillers"]) == 190
 
 
 def test_currently_generates_a_matcher_confirmed_anchor() -> None:
@@ -210,7 +210,7 @@ def test_combined_project_exposes_every_loaded_adverb() -> None:
         for item in exploration_status(project)["fillers"]
     }
 
-    assert len(adverbs) == 45
+    assert len(adverbs) == 46
     assert all(
         (TARGET_RULE, "trailing_adv")
         in {

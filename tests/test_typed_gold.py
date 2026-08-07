@@ -54,6 +54,38 @@ def test_bare_float_gold_never_enters_the_typed_branch():
     assert _judge_of(7.0, "decline", None) == ("declined", None)
 
 
+def test_labelled_series_gold_compares_by_identity_not_position():
+    expected = [
+        {"entity": "aven", "measure": "apple", "value": 4},
+        {"entity": "bira", "measure": "apple", "value": 7},
+    ]
+    reversed_but_labelled = [
+        {"entity": "bira", "measure": "apple", "value": 7.0},
+        {"entity": "aven", "measure": "apple", "value": 4.0},
+    ]
+
+    assert _judge_of(expected, "series", reversed_but_labelled) == (
+        "correct",
+        reversed_but_labelled,
+    )
+
+
+def test_labelled_series_gold_rejects_missing_or_duplicate_rows():
+    expected = [
+        {"entity": "aven", "measure": "apple", "value": 4},
+        {"entity": "bira", "measure": "apple", "value": 7},
+    ]
+    missing = [{"entity": "aven", "measure": "apple", "value": 4}]
+    duplicate = [
+        {"entity": "aven", "measure": "apple", "value": 4},
+        {"entity": "aven", "measure": "apple", "value": 4},
+    ]
+
+    assert _judge_of(expected, "series", missing)[0] == "wrong"
+    assert _judge_of(expected, "series", duplicate)[0] == "wrong"
+    assert _judge_of(expected, "number", 11)[0] == "wrong"
+
+
 # --- 2. numeric types compare NUMERICALLY, never by substring --------------
 
 def test_number_gold_matches_within_tolerance():

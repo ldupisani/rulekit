@@ -34,7 +34,7 @@ def logic_reg():
             REPO / "packs/core-english",
             REPO / "packs/arithmetic",
             REPO / "packs/difg-mined",
-            REPO / "projects/scratch/packs/logic",
+            REPO / "packs/logic",
         ])
     )
 

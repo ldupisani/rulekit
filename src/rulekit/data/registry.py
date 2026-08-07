@@ -129,6 +129,7 @@ class Registry:
     dimension_categories: frozenset[str]
     attribute_compatibility: Mapping[str, tuple[str, ...]]
     measure_holder_compatibility: Mapping[str, tuple[str, ...]]
+    subject_role_derivations: Mapping[tuple[str, str], str]
     context_synonyms: Mapping[str, tuple[str, tuple[str, ...]]]  # concept -> (gate, forms)
     attrs: Mapping[str, Mapping[str, float]]
     part_counts: Mapping[str, str]
@@ -359,6 +360,8 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
     dimension_categories: set[str] = set()
     attribute_compatibility: dict[str, list[str]] = {}
     measure_holder_compatibility: dict[str, list[str]] = {}
+    subject_role_derivations: dict[tuple[str, str], str] = {}
+    subject_role_verbs: set[str] = set()
     category_members: dict[str, list[str]] = {}
     context_synonyms: dict[str, tuple[str, tuple[str, ...]]] = {}
     attrs: dict[str, dict[str, float]] = {}
@@ -389,6 +392,44 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                 measure_holder_compatibility.setdefault(measure, []).extend(
                     holders
                 )
+            for verb, derivation in doc.subject_role_derivations.items():
+                if verb in subject_role_verbs:
+                    raise CompileError(
+                        f"subject-role derivation for {verb!r} defined twice"
+                    )
+                subject_role_verbs.add(verb)
+                verb_entry = lexicon.get(verb)
+                if verb_entry is None or "verb" not in verb_entry.senses:
+                    raise CompileError(
+                        f"subject-role derivation verb {verb!r} is not a "
+                        "declared verb"
+                    )
+                if verb_lemmas.get(verb, verb) != verb:
+                    raise CompileError(
+                        f"subject-role derivation verb {verb!r} is not its "
+                        "canonical lemma"
+                    )
+                role_entry = lexicon.get(derivation.role)
+                if role_entry is None or "noun" not in role_entry.senses:
+                    raise CompileError(
+                        f"subject-role derivation role {derivation.role!r} "
+                        "is not a declared noun"
+                    )
+                if plural_to_singular.get(
+                    derivation.role, derivation.role
+                ) != derivation.role:
+                    raise CompileError(
+                        f"subject-role derivation role {derivation.role!r} "
+                        "must be singular"
+                    )
+                for prep in derivation.preserve_prepositions:
+                    prep_entry = lexicon.get(prep)
+                    if prep_entry is None or "preposition" not in prep_entry.senses:
+                        raise CompileError(
+                            f"subject-role derivation preposition {prep!r} "
+                            "is not declared"
+                        )
+                    subject_role_derivations[(verb, prep)] = derivation.role
             for concept, syn in doc.context_synonyms.items():
                 context_synonyms[concept] = (syn.gate, tuple(syn.forms))
             for word, table in doc.attrs.items():
@@ -1084,6 +1125,18 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                         f"rule {rule.id!r} slot exclusion names unknown slot "
                         f"{slot_name!r}"
                     )
+        for slot_name in rule.satisfies:
+            token = slots.get(slot_name)
+            if token is None:
+                raise CompileError(
+                    f"rule {rule.id!r} pattern satisfaction names unknown "
+                    f"slot {slot_name!r}"
+                )
+            if token.span:
+                raise CompileError(
+                    f"rule {rule.id!r} pattern satisfaction slot "
+                    f"{slot_name!r} is a span, not one obligation-bearing unit"
+                )
 
     # A LITERAL THAT CAN NEVER MATCH is an authoring mistake, and it fails at
     # LOAD for the same reason AskRule._anchor_is_first does: the auto-skip
@@ -1166,6 +1219,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                 for key, values in measure_holder_compatibility.items()
             }
         ),
+        subject_role_derivations=_freeze(subject_role_derivations),
         context_synonyms=_freeze(context_synonyms),
         attrs=_freeze({k: _freeze(v) for k, v in attrs.items()}),
         part_counts=_freeze(part_counts),

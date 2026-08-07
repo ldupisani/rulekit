@@ -48,12 +48,14 @@ class AgreementAmbiguity:
                 "sentence": self.retained.sentence,
                 "decision_seq": self.retained.decision_seq,
                 "distributive": self.retained.distributive,
+                **({"assumption": True} if self.retained.assumption else {}),
             },
             "deduped": {
                 "source": self.deduped.source,
                 "sentence": self.deduped.sentence,
                 "decision_seq": self.deduped.decision_seq,
                 "distributive": self.deduped.distributive,
+                **({"assumption": True} if self.deduped.assumption else {}),
             },
             "reason": "separate derivations agreed on one fact; retained the first",
         }

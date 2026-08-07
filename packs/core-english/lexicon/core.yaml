@@ -32,6 +32,7 @@ entries:
     currently: {senses: [adverb]}
     far: {senses: [adverb]}
     ago: {senses: [adverb]}
+    individually: {senses: [adverb]}
 
     # prepositions
     of: {senses: [preposition]}
@@ -84,6 +85,10 @@ entries:
 
     # negation
     not: {senses: [negator]}
+
+    # clause coordination and relative-question structure
+    or: {senses: [conjunction]}
+    which: {senses: [wh_which]}
 
     # the possessive clitic — tokenized as its own unit ("Tom's" -> Tom + 's)
     "'s":
@@ -264,6 +269,12 @@ entries:
     garden: {senses: [noun], plural: gardens}
     teacher: {senses: [noun], plural: teachers}
     student: {senses: [noun], plural: students}
+    head: {senses: [noun], plural: heads}
+    university: {senses: [noun], plural: universities}
+    teach: {senses: [verb]}
+    teaches: {senses: [verb], verb: {lemma: teach}}
+    taught: {senses: [verb], verb: {lemma: teach}}
+    teaching: {senses: [verb], verb: {lemma: teach}}
     child: {senses: [noun], plural: children}
     friend: {senses: [noun], plural: friends}
     dog: {senses: [noun], plural: dogs}

@@ -22,6 +22,7 @@ from .evaluate import ArithmeticLog, EvaluationError, evaluate
 from .model import (
     Alias,
     Before,
+    ClassRefinement,
     VerbalRelation,
     Conditional,
     Discount,
@@ -40,6 +41,8 @@ from .model import (
     PartitionQuantity,
     PositiveGroundConditional,
     Quantified,
+    QuantifiedAdjustment,
+    QuantifiedQuantity,
     QuantifiedDisjunction,
     PercentChange,
     Predication,
@@ -64,6 +67,9 @@ _FACT_CLASSES = {
     "membership": Membership,
     "atom": Atom,
     "quantified": Quantified,
+    "quantified_adjustment": QuantifiedAdjustment,
+    "quantified_quantity": QuantifiedQuantity,
+    "class_refinement": ClassRefinement,
     "conditional": Conditional,
     "disjunction": Disjunction,
     "equivalence": Equivalence,
@@ -330,6 +336,18 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
                 and unit.features.get("number") == "plural"
                 and unit.features.get("owner") is None
                 and unit.features.get("qualifier") is None
+                and kind != "count"
+            )
+        if t == "generic_plural":
+            # The modifier-preserving sibling of `bare_plural`: a generic
+            # class may be a compound ("head teachers"), but never a
+            # possessive phrase or a numerically bounded group ("three
+            # teachers"). The emitter uses `.qualified` to retain the full
+            # class key rather than this unit's bare head lemma.
+            return (
+                sense == "noun"
+                and unit.features.get("number") == "plural"
+                and unit.features.get("owner") is None
                 and kind != "count"
             )
         if t == "entity":
@@ -1523,6 +1541,7 @@ def atom_variants(fact: Fact, emit_fields: dict, slots: dict, reg: Registry) -> 
     prov = Provenance(
         source=f"{fact.provenance.source}/intersective",
         sentence=fact.provenance.sentence,
+        assumption=fact.provenance.assumption,
     )
     variants = []
     for p in preds:
@@ -1829,7 +1848,11 @@ def run_rules(
             m.specificity = specificity(m, reg)
             if not _check_where(rule, m.slots, reading, reg):
                 continue
-            provenance = Provenance(source=rule.id, sentence=reading.sentence_index)
+            provenance = Provenance(
+                source=rule.id,
+                sentence=reading.sentence_index,
+                assumption=reading.assumption,
+            )
             facts = []
             for e in rule.emits:
                 if e.options_from is not None:

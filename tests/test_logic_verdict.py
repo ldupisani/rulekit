@@ -2,9 +2,8 @@
 string): verdict commitment, the phrase-keyed logic pipeline, the fragment
 guard, and the null controls that tell a capability from a guess.
 
-Loads the folio pack list explicitly — packs/logic lives in projects/scratch only
-(pack scoping IS the cross-corpus containment), so the default test registry
-must not see it."""
+Loads the opt-in logic pack explicitly. The ordinary FOLIO safety project and
+the default test registry deliberately do not load it."""
 from pathlib import Path
 
 import pytest
@@ -24,7 +23,7 @@ def logic_reg():
             ROOT / "packs/core-english",
             ROOT / "packs/arithmetic",
             ROOT / "packs/difg-mined",
-            ROOT / "projects/scratch/packs/logic",
+            ROOT / "packs/logic",
         ])
     )
 
@@ -259,7 +258,7 @@ def intersective_logic_reg(tmp_path_factory):
             ROOT / "packs/arithmetic",
             ROOT / "packs/difg-mined",
             root,
-            ROOT / "projects/scratch/packs/logic",
+            ROOT / "packs/logic",
         ])
     )
 

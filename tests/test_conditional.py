@@ -29,7 +29,7 @@ def logic_reg():
             ROOT / "packs/core-english",
             ROOT / "packs/arithmetic",
             ROOT / "packs/difg-mined",
-            ROOT / "projects/scratch/packs/logic",
+            ROOT / "packs/logic",
         ])
     )
 
@@ -152,7 +152,7 @@ def intersective_logic_reg(tmp_path_factory):
             ROOT / "packs/arithmetic",
             ROOT / "packs/difg-mined",
             root,
-            ROOT / "projects/scratch/packs/logic",
+            ROOT / "packs/logic",
         ])
     )
 

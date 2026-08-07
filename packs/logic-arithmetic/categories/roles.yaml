@@ -1,0 +1,19 @@
+format: rulekit/categories@1
+
+categories:
+  # A declared subsective modifier licenses the complete compound as a
+  # subclass of the phrase after that modifier. It does not predicate the
+  # modifier itself: a head teacher is a teacher, not necessarily "a head".
+  refining_modifier:
+    parent: noun
+
+members:
+  refining_modifier: [head]
+
+# Lexical role knowledge for the generic subject-role synthesizer. A listed
+# preposition is not discarded: it survives with its complete object in the
+# derived class key. An unlisted verb/preposition pair derives nothing.
+subject_role_derivations:
+  teach:
+    role: teacher
+    preserve_prepositions: [at]

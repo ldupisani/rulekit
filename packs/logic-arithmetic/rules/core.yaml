@@ -1,0 +1,96 @@
+format: rulekit/rules@1
+rules:
+  # Exact one-PP named class membership for the quantitative bridge. Simple
+  # nominal membership already has the generic Membership fact; this narrower
+  # rule exists only where that fact would lose a class restriction. Requiring
+  # noun + preposition + noun keeps comparisons and scalar predicates out.
+  - id: logic-arithmetic/ground-copular-nominal-pp
+    phase: read
+    match:
+      sentence:
+        - {slot: subj, type: name, at_start: true, blocks_skipped: indefinite_article}
+        - {lit: is}
+        - {slot: cls, type: noun}
+        - {slot: prep, type: preposition}
+        - {slot: restriction, type: noun}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: atom, entity: "{subj}", pred: "{cls} {prep} {restriction}", polarity: true}
+
+  # Numeric possessive universals stay structured instead of becoming an
+  # opaque predicate phrase. The bare-plural slot supplies the grammatical
+  # evidence for singularizing the class key.
+  - id: logic-arithmetic/universal-all-have-quantity
+    phase: read
+    match:
+      sentence:
+        - {lit: all, at_start: true}
+        - {slot: cls, type: bare_plural}
+        - {lit: have}
+        - {slot: item, type: counted}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: quantified_quantity, cls: "{cls.singular}", measure: "{item}", value: "{item.value}", verb: have}
+
+  # The one-PP restricted sibling preserves its complete class phrase and is
+  # kept separate so every slot remains directly generatable and reviewable.
+  - id: logic-arithmetic/universal-all-have-quantity-pp
+    phase: read
+    match:
+      sentence:
+        - {lit: all, at_start: true}
+        - {slot: cls, type: bare_plural}
+        - {slot: prep, type: preposition}
+        - {slot: restriction, type: noun}
+        - {lit: have}
+        - {slot: item, type: counted}
+        - {lit: ".", consume_skipped: true}
+    emits:
+      - {fact: quantified_quantity, cls: "{cls.singular} {prep} {restriction}", measure: "{item}", value: "{item.value}", verb: have}
+
+  # An elided additive universal is not an entity-to-entity event. Keep the
+  # class, signed offset, measure, and state verb explicit until saturation
+  # can prove an exact refining member and find one compatible class-wide
+  # baseline. `generic_plural` permits a compound class while still refusing
+  # a counted or possessive subject; `.qualified` preserves that whole class.
+  - id: logic-arithmetic/universal-all-have-adjustment
+    phase: read
+    match:
+      sentence:
+        - {lit: all, at_start: true}
+        - {slot: cls, type: generic_plural}
+        - {lit: have}
+        - {slot: n, type: number, standalone: true}
+        - {slot: dir, cat: count_quantity_delta}
+        - {slot: item, cat: noun}
+        - {lit: ".", consume_skipped: true}
+    where:
+      - same_number: [n, item]
+    consumes: [n]
+    satisfies: {n: [quantifies]}
+    emits:
+      - {fact: quantified_adjustment, cls: "{cls.qualified}", measure: "{item}", offset: "n * sign(dir)", verb: have}
+
+  # A binary named coordination shares one finite bare-form verb and one
+  # definite PP. Emit the structured verbal relation once per subject; a
+  # separate pack-owned mapping decides whether that relation licenses a
+  # nominal role. Disjunction, coordinated objects, additional PP material,
+  # singular verb agreement, and missing sentence boundaries do not match.
+  - id: logic-arithmetic/coordinated-named-verbal-pp
+    phase: read
+    match:
+      sentence:
+        - {slot: left, type: name, at_start: true}
+        - {slot: conjunction, cat: holder_list_conjunction}
+        - {slot: right, type: name}
+        - {slot: verb, type: nonstate_verb, bare_form: true, single_word: true}
+        - {slot: prep, type: preposition}
+        - {lit: the, consume_skipped: true}
+        - {slot: restriction, type: noun}
+        - {lit: ".", consume_skipped: true}
+    where:
+      - distinct: [left, right]
+    satisfies: {verb: [subject]}
+    emits:
+      - {fact: verbal_relation, entity: "{left}", verb: "{verb}", prep: "{prep}", obj: "{restriction}", polarity: true}
+      - {fact: verbal_relation, entity: "{right}", verb: "{verb}", prep: "{prep}", obj: "{restriction}", polarity: true}

@@ -1,0 +1,15 @@
+format: rulekit/pack@1
+name: logic
+version: 0.1.0
+requires:
+- core-english
+- difg-mined
+description: >
+  Reusable phrase-keyed universal/ground extraction, Horn-clause synthesis
+  (instantiation + chaining), and embedded-declarative verdict asks. The pack
+  originated in the isolated FOLIO scratch campaign and is now a first-class,
+  opt-in project pack. The ordinary FOLIO project deliberately remains
+  logic-free as the standing 0-commit safety gate.
+  Facts here are keyed by FULL canonical phrases, never lemma heads — see
+  model.Atom's docstring for why anything looser is a confident-wrong
+  machine on logic prose.

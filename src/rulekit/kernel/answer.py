@@ -91,8 +91,11 @@ class ClarificationRequest:
 
 @dataclass
 class Answer:
-    kind: str  # "number" | "verdict" | "decline"
-    value: float | str | None
+    kind: str  # "number" | "series" | "verdict" | "decline"
+    # A series is an ordered, JSON-native list of labelled records. Keeping
+    # the entity and measure beside every value means a multi-answer result
+    # can never lose its identity through a positional list such as [25, 20].
+    value: float | str | list[dict[str, str | float]] | None
     reason: str
     proof: AnswerProof | None = None
     clarification: ClarificationRequest | None = None
@@ -107,7 +110,7 @@ class Answer:
         # committed verdict at a non-verdict gold now scores WRONG there, in
         # the same increment that widened this — the two halves drift apart
         # or land together.
-        return self.kind == "number" or (
+        return self.kind in ("number", "series") or (
             self.kind == "verdict" and self.value in ("yes", "no")
         )
 

@@ -179,6 +179,8 @@ members:
   - meet
   - meets
   - met
+  animate_subject_verb: [cough, coughed, coughs, know, knew, knowing, knows]
+  animate_object_verb: [meet, meets, met]
   shucking_verb: [shuck, shucked, shucking, shucks]
   shuckable_item: [corn, ear, oyster, peas]
   # extends core-english's `animate` (see its note there): these 43
@@ -212,10 +214,12 @@ members:
   - day
   - week
   - month
+  - quart
   # Proven bare/common holder classes that are not locations, people, or
   # motion participants. Keep this separate from quantity_location: treating
   # `store` as a PP location changes container-scoping semantics.
   quantity_holder:
+  - machine
   - plank
   - store
   duration_holder: [gap, journey, trip]

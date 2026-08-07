@@ -185,6 +185,33 @@ items:
     text: Lisa walks 10 meters each minute. How many meters will Lisa walk in two days?
     expect: decline
 
+  # ---- quantified quantities (packs/logic-arithmetic) ---------------------
+  - id: logic-quantified-quantity
+    text: All teachers at the university have 20 students. Bob is a teacher at the university. How many students does Bob have?
+    expect: 20
+
+  - id: logic-coordinated-role-quantity
+    text: All teachers at the university have 20 students. Bob and Mary teach at the university. How many students does Bob have?
+    expect: 20
+
+  - id: logic-quantified-additive-refinement
+    text: All teachers at the university have 20 students. All head teachers have 5 more students. Bob and Mary teach at the university. Bob is the head teacher. How many students does Bob have?
+    expect: 25
+
+  - id: logic-local-hypothesis-person-deixis
+    text: All teachers at the university have 20 students. All head teachers have 5 more students. Bob and Mary teach at the university. If Bob is the head teacher, how many students does he have?
+    expect: 25
+
+  - id: logic-local-hypothesis-combined-all-together
+    text: All teachers at the university have 20 students. All head teachers have 5 more students. Bob and Mary teach at the university. If Bob is the head teacher, how many students do Bob and Mary have all together?
+    expect: 45
+
+  - id: logic-local-hypothesis-each
+    text: All teachers at the university have 20 students. All head teachers have 5 more students. Bob and Mary teach at the university. If Bob is the head teacher, how many students do Bob and Mary each have?
+    expect:
+      - {entity: bob, measure: student, value: 25}
+      - {entity: mary, measure: student, value: 20}
+
   # ---- reference lookups (packs/reference, B1) -----------------------------
   # The BUYERS of the rulekit/reference@1 machinery: numeric facts from the
   # curated geography table, plus the honesty declines that keep it precise.

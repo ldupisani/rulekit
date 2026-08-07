@@ -1,13 +1,13 @@
 # rulekit handoff — generation workbench
 
-**Updated:** 2026-08-06
+**Updated:** 2026-08-07
 
 **Active campaign:** deterministic rule generation and human review
 
 **Status:** G1 through G4, G5a through G5g, G6, Reading-origin review,
 targetless sentence-interpretation review, fact-level review, the
 fraction-plural morphology correction, scoped
-`GroupTotal`, all thirty review-led grammar-boundary reconciliations,
+`GroupTotal`, all thirty-one review-led grammar-boundary reconciliations,
 the additive elided-comparison increment, and coordinated open-superclass
 totals are complete and gated. Plain
 count equatives such as `Tom buys as many roses as Mary` now emit a factor-one
@@ -86,10 +86,19 @@ time-root realization is complete: both deictic markers are core-owned and
 reviewable, and the standard-pinned future rule unlocks. G5u direct-adverb
 visibility is complete: `currently` is core-owned, project-relative adverb
 breadth remains visible, and all 99 curated premise rules are selectable. G5v
-review-led premise auditing is active; thirty review batches are implemented
+review-led premise auditing is active; thirty-one review batches are implemented
 and fully gated. The core exploration vocabulary now contributes 25 additional
-category-aware identities, bringing the live frontier to 108/108 premise rules
-and 184 reachable identities. The latest review reconciliation makes strict
+category-aware identities, bringing the earlier frontier to 108/108 premise rules
+and 184 reachable identities. The logic-arithmetic bridge now raises the live
+frontier to 113/113 rules and 190 reachable identities. The latest reconciliation closes eight invalid
+strict surfaces across older comparison, anaphoric, fraction, percentage, and
+periodic-rate families. Common-noun roles now use positive holder/participant
+evidence; count comparisons use count directions; kinship standards are
+person-denoting; rejected possessive standards cannot fall back to the shorter
+elided rule; and finite pools explicitly require their definite article.
+`ft` shares the `foot` identity, `drinking` shares the `drink` lemma, and
+`machine`/`quart` are explicitly separated as holder/unit roles. The reviewer
+tombstoned all eight rows after the live fixes. The preceding reconciliation makes strict
 generation a complete round trip: every requested binding must return with the
 same canonical lexical identity and every meaningful generated unit must be
 consumed. It also adds declarative measure-to-holder compatibility, preserving
@@ -153,6 +162,8 @@ semantic-projection work.
 3. [`architecture.md`](architecture.md) — current runtime architecture.
 4. [`methodology.md`](methodology.md) — standing regression and precision
    discipline.
+5. [`logic-arithmetic-integration-plan.md`](logic-arithmetic-integration-plan.md)
+   — the active staged bridge from exact logic facts to arithmetic answers.
 
 The generation plan is the detailed source of truth. This file records the
 active increment and preserves the parked semantic-projection handoff below.
@@ -179,6 +190,58 @@ rule but never fabricate one or mark rule/lexicon coverage reviewed.
 
 This is interactive grammar debugging, not corpus fabrication or model
 training. Reviews never alter runtime behavior automatically.
+
+The next reasoning direction is now active alongside the workbench. Logic has
+been promoted from the scratch project to top-level `packs/logic`, and the
+curated project opts into the narrow `packs/logic-arithmetic` bridge rather
+than the broad FOLIO reader surface. L1 is implemented: exact class-wide numeric
+holdings are represented as `QuantifiedQuantity` and instantiate ordinary
+`Quantity` facts only for an exactly proven class member. L2 is also complete:
+one coordinated clause emits a structured verbal relation per named subject,
+and a source-indexed YAML mapping derives exact PP-preserving nominal roles.
+The university-teacher example with `Bob and Mary teach at the university`
+now answers 20. L3 is complete as a separate, source-indexed
+`ClassRefinement`: the declared modifier in `head teacher` licenses `teacher`
+without asserting `head`, while undeclared and negative phrases create no
+class edge. L4 is now complete: `QuantifiedAdjustment` preserves “5 more
+students” as a class-wide signed constraint, and the shared materializer emits
+one adjusted quantity only for an exact refining member with one compatible
+base universal. It never emits both the inherited and adjusted state, and
+missing or multiple baselines decline. L5 is now complete: a conditional
+attached to the current question is explicitly scoped as a question
+assumption, cannot escape its solve, and carries assumption provenance through
+the adjusted quantity and Designer trace. Person resolution uses sentence
+distance only inside that local scope; ordinary multi-name discourse stays
+ambiguous because the kernel has no gender/person compatibility model. The
+full motivating question now answers 25. L6 generation and review coverage is
+next; the detailed plan is linked above. A post-gate ask-parity follow-up also
+accepts the valid two-token `all together` marker for an exact named-holder
+list, while continuing to reject `all total` and misspelled `alltogether`.
+
+The next post-L5 ask follow-up adds exact distributive multi-answer questions:
+“How many students do Bob and Mary each have?” now returns a labelled series
+with Bob at 25 students and Mary at 20. The exact name list is retained in the
+query, the `per-holder` consumer reuses the combined consumer's complete
+holder folds without summing them, and any unresolved or repeated holder
+declines the whole answer rather than producing a partial list. The narrow
+postpositive `each` category does not admit `every` in the same position. The
+API and Designer preserve entity, measure, and value in each JSON-native row;
+the Designer renders human-readable labelled rows.
+
+Three positional siblings now share that exact result contract: “have each”,
+“have individually”, and “individually have”. `Each` remains in its narrow
+quantifier category; core-English `individually` belongs to a separate
+adverb-rooted individualizing category. This keeps `every`, `separately`,
+`respectively`, and arbitrary adverbs outside the accepted surface.
+
+The current L0–L5 gate is green at 4,493 tests and curated 71/71 with 113/113 premise
+rules selectable and 190 reachable identities. All standing
+answer-level DEV diffs are neutral: GSM8K is 108/0 and 43/0, ASDiv/SVAMP/
+MAWPS/SciBench are 45/0, 30/0, 11/0, and 6/0, and FOLIO makes zero
+commitments; DIFG remains 75/0. COGS DEV-train/holdout and PMB
+train/development remain at 100%
+projected-edge precision with zero incorrect graphs. Lint has zero errors.
+No protected TEST or generalization look was spent.
 
 ## Completed increments — G1 vertical slice through G6 plus G5c–G5g
 
@@ -1976,7 +2039,7 @@ Riley has 3 fewer.` and add exactly one correct answer.
 The complete gate is green at 4,354 tests. Curated is deterministic at 65/65
 twice; GSM8K DEV-train is 105/0 and DEV-holdout is 41/0; ASDiv, SVAMP, MAWPS,
 and SciBench are 45/0, 30/0, 11/0, and 6/0; FOLIO makes zero commitments; and
-lint has zero errors with the same two warnings. The live frontier is now
+lint has zero errors with the same two warnings. The live frontier was then
 108/108 premise rules and 184 reachable identities. No protected TEST or
 generalization look was spent.
 

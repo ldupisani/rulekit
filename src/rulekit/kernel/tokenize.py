@@ -64,6 +64,7 @@ def tokenize(
     sentence_index: int = 0,
     tracing: bool = True,
     contractions: Sequence[tuple[str, str]] = (),
+    assumption: bool = False,
 ) -> Reading:
     """Text -> one Unit per token.
 
@@ -81,7 +82,12 @@ def tokenize(
     call: `engine` always supplies the table, and a caller that wants raw
     tokenization says so by omitting it.
     """
-    reading = Reading(sentence, sentence_index, tracing=tracing)
+    reading = Reading(
+        sentence,
+        sentence_index,
+        tracing=tracing,
+        assumption=assumption,
+    )
     index = 0
     for match in _TOKEN.finditer(sentence):
         surface = match.group()

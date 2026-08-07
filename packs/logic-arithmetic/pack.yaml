@@ -1,0 +1,10 @@
+format: rulekit/pack@1
+name: logic-arithmetic
+version: 0.1.0
+requires:
+- core-english
+- arithmetic
+description: >
+  The narrow, precision-gated bridge from exact logical class facts to the
+  established arithmetic fact and consumer layer. This pack intentionally
+  does not load the broad FOLIO reader surface in packs/logic.

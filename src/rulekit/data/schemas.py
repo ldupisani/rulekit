@@ -128,6 +128,35 @@ class ContextSynonym(StrictModel):
     forms: list[str]
 
 
+class SubjectRoleDerivation(StrictModel):
+    """A verb-licensed role for its grammatical subject.
+
+    Every listed preposition is both a licence and a preservation policy:
+    ``teach`` plus ``at`` may derive ``teacher at PLACE``. An unlisted PP is
+    not silently dropped and does not derive an unscoped role.
+    """
+
+    role: str
+    preserve_prepositions: list[str]
+
+    @model_validator(mode="after")
+    def _complete_unique_policy(self) -> "SubjectRoleDerivation":
+        if not self.role:
+            raise ValueError("a subject-role derivation needs a role")
+        if not self.preserve_prepositions:
+            raise ValueError(
+                "a subject-role derivation needs at least one preserved "
+                "preposition"
+            )
+        if len(self.preserve_prepositions) != len(
+            set(self.preserve_prepositions)
+        ):
+            raise ValueError(
+                "a subject-role derivation repeats a preserved preposition"
+            )
+        return self
+
+
 class CategoriesDoc(StrictModel):
     format: Literal["rulekit/categories@1"]
     categories: dict[str, CategoryDef] = Field(default_factory=dict)
@@ -146,6 +175,12 @@ class CategoriesDoc(StrictModel):
     # selected unit—not the ambiguous comparative surface—must determine which
     # holder role is licensed.
     measure_holder_compatibility: dict[str, list[str]] = Field(
+        default_factory=dict
+    )
+    # Verb lemma -> subject role plus the PP forms whose restriction survives
+    # in that role. This is lexical knowledge, so the mapping lives in pack
+    # data; the kernel only performs the generic exact-key composition.
+    subject_role_derivations: dict[str, SubjectRoleDerivation] = Field(
         default_factory=dict
     )
     context_synonyms: dict[str, ContextSynonym] = Field(default_factory=dict)
@@ -243,6 +278,12 @@ SLOT_TYPES = (
     # unit, and "Three dogs are pets" is about three particular dogs, not
     # dogkind (caught by an adversarial probe, not the first test round).
     "bare_plural",
+    # A bare-plural GENERIC that may carry a compound modifier. Like
+    # `bare_plural`, this refuses possessive and counted units; unlike it, the
+    # complete qualified class phrase remains available to the emitter. This
+    # is the structural shape of "all head teachers", not a license for any
+    # particular modifier.
+    "generic_plural",
     # a COORDINATE TUPLE ("(3,4)", "(1,2)") — numbers.py's _TUPLE gives it
     # value_kind "tuple" and a `components` feature; senses.py gives it the
     # `tuple` sense. Structurally disjoint from every other slot type: no
@@ -931,7 +972,9 @@ class FactEmit(StrictModel):
         "quantity", "relation", "membership", "subset", "predication",
         "before", "fraction_quantity", "rest_quantity", "partition_quantity",
         "ratio_quantity", "goal", "group_total", "rate", "discount",
-        "percent_change", "atom", "quantified", "conditional",
+        "percent_change", "atom", "quantified", "quantified_quantity",
+        "quantified_adjustment",
+        "class_refinement", "conditional",
         "disjunction", "equivalence", "quantified_disjunction", "existential",
         "verbal_relation", "semantic_graph_node", "semantic_graph_edge",
         "alias", "enumerated_disjunction",
@@ -977,8 +1020,29 @@ class PatternRule(StrictModel):
     match: dict[Literal["sentence", "sentences", "question"], list[MatchToken] | list[list[MatchToken]]]
     where: list[WherePredicate] = Field(default_factory=list)
     consumes: list[str] = Field(default_factory=list)  # value-accounting slots
+    # A pattern may structurally discharge an obligation that cannot bind to
+    # one ordinary Unit. Coordinated subjects are the first case: the verb's
+    # subject is the whole coordination, so binding either conjunct would be
+    # false. The target becomes the model.PATTERN sentinel; only explicitly
+    # named slot/need pairs are affected.
+    satisfies: dict[str, list[str]] = Field(default_factory=dict)
     emits: list[FactEmit] = Field(default_factory=list)
     overrides: dict[str, str] | None = None  # {"rule": id, "reason": ...}
+
+    @model_validator(mode="after")
+    def _satisfaction_contract_is_explicit(self) -> "PatternRule":
+        for slot, needs in self.satisfies.items():
+            if not slot or not needs:
+                raise ValueError(
+                    f"rule {self.id!r}: pattern satisfaction needs a slot "
+                    "and at least one obligation"
+                )
+            if len(needs) != len(set(needs)) or any(not need for need in needs):
+                raise ValueError(
+                    f"rule {self.id!r}: pattern satisfaction obligations "
+                    "must be non-empty and unique"
+                )
+        return self
 
 
 class AskInterpretation(StrictModel):

@@ -1378,7 +1378,7 @@ def test_reviewed_bare_fraction_plural_is_absent_but_counted_form_matches() -> N
     invalid = retest_candidate(
         project,
         rule_id=rule_id,
-        sentence="Dena had eighths of plum.",
+        sentence="Dena had eighths of the plum.",
         seed=2814696225159466,
         requested_bindings={
             "f": "eighths",
@@ -1390,7 +1390,7 @@ def test_reviewed_bare_fraction_plural_is_absent_but_counted_form_matches() -> N
     valid = retest_candidate(
         project,
         rule_id=rule_id,
-        sentence="Dena had two eighths of plum.",
+        sentence="Dena had two eighths of the plum.",
         seed=2814696225159466,
     )
 

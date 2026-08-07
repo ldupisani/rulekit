@@ -31,7 +31,7 @@ def logic_reg():
             ROOT / "packs/arithmetic",
             ROOT / "packs/difg-mined",
             ROOT / "projects/scratch/packs/user",
-            ROOT / "projects/scratch/packs/logic",
+            ROOT / "packs/logic",
         ])
     )
 

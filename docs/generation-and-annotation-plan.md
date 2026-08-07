@@ -102,7 +102,7 @@ added bounded hypothesis and minimal-pair exploration:
   sentence exposes a defective premise;
 - a `matched` or `shadowed` target status reports what the ordinary matcher
   accepted, never that the resulting English or emitted fact is correct;
-- the current curated frontier contains 108 supported rules and 184 reachable
+- the current curated frontier contains 113 supported rules and 190 reachable
   lexicon identities, while live reviews and continuing exploration remain
   separate from mechanical availability; and
 - random Generate next chooses from the least-attempted compatible rule and
@@ -3129,7 +3129,8 @@ form removes all of them.
 
 The final rule pair adds one clean GSM8K DEV-train solve: `Ellie has 8 pairs
 of shoes. Riley has 3 fewer.` now supports the later total. The live
-generation frontier is 108/108 rules with the same 184 reachable identities.
+generation frontier is 111/111 rules with 189 reachable identities after the
+logic-arithmetic bridge joined the curated project.
 All 4,354 tests pass; curated is 65/65 twice; GSM8K DEV-train and DEV-holdout
 are 105/0 and 41/0; ASDiv, SVAMP, MAWPS, and SciBench are 45/0, 30/0, 11/0,
 and 6/0; FOLIO makes zero commitments; and lint has zero errors with the same
@@ -3283,6 +3284,175 @@ GSM8K DEV-train improves from 107/0 to 108/0, solving one previously declined
 item; DEV-holdout remains 43/0. ASDiv, SVAMP, MAWPS, SciBench, and FOLIO are
 neutral with zero broken or decline-to-wrong transitions. Lint has zero errors
 and the same two warnings. No protected TEST or generalization look was spent.
+
+#### Thirty-first review reconciliation — complete
+
+The batch froze eight active invalid reviews from the 36-row, 29,787-byte
+GSM8K ledger, SHA-256
+`ef6a1629ddcaee8e0c8555af767cba7eb928a74646a82b6642316fccb75104f0`.
+Every exact target matched before the change. One possessive-standard sentence
+also matched the shorter elided-standard fallback, so rejecting only the long
+rule would have left the incorrect commitment alive.
+
+The affected older rules now use the same positive common-noun roles as their
+newer siblings. Conjoined count offsets require count directions and plausible
+holders; anaphoric, percentage-change, elided-comparison, and periodic-rate
+subjects require declared quantity holders; event-specific subject and object
+roles use the existing generic verb-role predicate. The possessive kinship
+standard is person-denoting, and the elided-standard continuation sentinel
+also recognizes a possessive determiner followed by a noun.
+
+`fraction-of-pool` now states its documented definite-pool grammar directly:
+the article is required and consumed, the matrix verb is finite, and declared
+encounter verbs require a plausible participant object. Pack data normalizes
+the invariant unit symbol `ft` to `foot`, maps `drinking` to the lemma `drink`,
+declares `machine` as a quantitative holder, and declares `quart` as a unit
+rather than a holder. The existing strict round-trip check already rejected
+the reviewed `merry-go-round` to `round` partial identity; the positive role
+domain now prevents that filler from being selected for this rule in strict
+generation.
+
+All eight exact reviews now retest absent, and 11 focused boundary/minimal-pair
+checks preserve valid neighbours. While validation ran, the live reviewer
+appended one tombstone per row; the resulting append-only ledger is 44 rows /
+30,891 bytes, SHA-256
+`ffe79bdd98cda2247fec5344058a5030b562c253899d5b222feb1199f9cdb5c0`.
+
+The complete synthetic gate passes all 4,450 tests. Curated is deterministic
+at 65/65; GSM8K DEV-train and DEV-holdout remain 108/0 and 43/0; ASDiv,
+SVAMP, MAWPS, and SciBench remain 45/0, 30/0, 11/0, and 6/0; FOLIO makes zero
+commitments. Every before/after diff is neutral with zero breaks and zero
+decline-to-wrong transitions. Lint has zero errors and one known warning. No
+protected TEST or generalization look was spent.
+
+#### Logic–arithmetic L2 coordinated roles — complete
+
+The curated project now exposes all four narrow `logic-arithmetic` premise
+rules in Generate mode. A binary coordinated named subject plus one finite
+verbal PP emits a `VerbalRelation` for each conjunct. A pack-owned,
+source-indexed table licenses exact verb/preposition-to-role derivations and
+preserves the PP object; the generic synthesizer contains no project words.
+The pattern explicitly satisfies the verb's group-subject obligation without
+claiming that either conjunct is the sole grammatical subject.
+
+The generated sentence `Aven and Mary teach at the university` round-trips to
+its target rule. Disjunction, repeated names, singular agreement, coordinated
+objects, and unlicensed role mappings remain negative controls. Combined with
+the L1 exact quantified-quantity bridge, the three-sentence university-teacher
+example answers 20 for Bob.
+
+The complete gate is 4,459 tests and curated 67/67 with 112/112 premise rules
+selectable. GSM8K DEV remains 108/0 and 43/0; ASDiv/SVAMP/MAWPS/SciBench are
+45/0, 30/0, 11/0, and 6/0; DIFG is 75/0; and FOLIO makes zero commitments.
+Every answer-level before/after diff is neutral. COGS and PMB inspectable
+slices retain 100% projected-edge precision, lint has zero errors, and no
+protected TEST or generalization look was spent.
+
+#### Logic–arithmetic L3 declared class refinement — complete
+
+`ClassRefinement` now gives the reasoning layer a first-class, inspectable
+class edge. The pack-declared `refining_modifier` category licenses one exact
+leading-modifier removal, preserving every remaining restriction:
+`head teacher at university → teacher at university`. The same derivation may
+materialize a positive superclass `Membership` or `Atom`, but never predicates
+the modifier itself and never widens a subclass-wide numeric universal.
+
+This edge is separate from both intersective predicate decomposition and the
+ordinary right-headed noun-compound fold. `former teacher`, `fake teacher`,
+undeclared compounds, and negative class facts expose no refinement edge. The
+modifier declaration remains linked to its YAML source for Designer
+inspection.
+
+The complete gate is 4,465 tests and curated 67/67 with 112/112 premise rules
+selectable. Every L2-to-L3 answer-level DEV diff is neutral; GSM8K remains
+108/0 and 43/0, ASDiv/SVAMP/MAWPS/SciBench remain 45/0, 30/0, 11/0, and 6/0,
+DIFG remains 75/0, and FOLIO makes zero commitments. COGS and PMB inspectable
+slices retain 100% projected-edge precision, lint has zero errors, and no
+protected TEST or generalization look was spent.
+
+#### Logic–arithmetic L4 quantified additive refinements — complete
+
+`QuantifiedAdjustment(cls, measure, offset, verb)` now represents an elided
+class-wide comparison such as “All head teachers have 5 more students”. The
+reader preserves the complete compound class and signed offset; it no longer
+lets the older entity-relation rule reinterpret that sentence as an event.
+
+Ordinary and adjusted universal inheritance share one monotone materializer.
+For an exact refining-class member, it suppresses the inherited baseline and
+emits one adjusted `Quantity` only when one compatible base universal survives
+the class, scope, measure, and verb checks. The proof log names both premise
+rules. No base, an undeclared refinement, multiple compatible bases, a negative
+result, or a contradictory explicit state declines rather than selecting an
+amount. Non-members retain their ordinary inherited base.
+
+The non-hypothetical composition now answers 25 for Bob while Mary retains 20.
+The new premise rule is available in Generate mode, bringing the curated
+frontier to 113/113 rules with the same 189 reachable identities.
+
+The complete gate is 4,476 tests and curated 68/68. Every L3-to-L4 answer-level
+DEV diff is neutral; GSM8K remains 108/0 and 43/0, ASDiv/SVAMP/MAWPS/SciBench
+remain 45/0, 30/0, 11/0, and 6/0, DIFG remains 75/0, and FOLIO makes zero
+commitments. COGS DEV-train/holdout and PMB train/development retain 100%
+projected-edge precision with zero incorrect graphs. Lint has zero errors. No
+protected TEST or generalization look was spent.
+
+#### Logic–arithmetic L5 local hypotheses and person deixis — complete
+
+Conditional clauses promoted from the current question now retain a distinct
+question-assumption scope. That scope is visible on the Reading, direct and
+derived fact provenance, diagnosis, engine trace, and Designer trace. It is
+owned by one fresh solve and cannot become a later solve's asserted knowledge.
+
+Person deixis uses the existing typed strict-dominance resolver. Ordinary
+multi-name discourse remains deliberately flat because RuleKit has no
+gender/person compatibility model. In a question-local assumption context,
+sentence distance is available: the re-mentioned Bob may strictly dominate an
+older Mary mention, while two names in the same nearest assumption sentence
+still tie and decline. This boundary avoids making unsafe recency guesses in
+ordinary prose while completing the intended hypothetical composition.
+
+The full motivating question now answers 25 and joins the curated suite. The
+complete gate is 4,481 tests and curated 69/69 with the unchanged 113/113
+premise-rule frontier and 189 reachable identities. Every L4-to-L5 answer-level
+DEV diff is neutral; GSM8K remains 108/0 and 43/0, ASDiv/SVAMP/MAWPS/SciBench
+remain 45/0, 30/0, 11/0, and 6/0, DIFG remains 75/0, and FOLIO makes zero
+commitments. COGS DEV-train/holdout and PMB train/development retain 100%
+projected-edge precision with zero incorrect graphs. Lint has zero errors. No
+protected TEST or generalization look was spent. L6 generation and review is
+the next logic–arithmetic increment.
+
+The post-L5 marker-parity follow-up adds the valid two-token “all together”
+tail to the variadic exact-name combined ask. It uses the existing declared
+total quantifier/marker categories, preserves the exact holder list, and does
+not admit `all total` or `alltogether`. The cumulative gate is 4,484 tests and
+curated 70/70; all standing answer DEV diffs are neutral, COGS/PMB retain 100%
+edge precision with zero incorrect graphs, lint has zero errors, and no
+protected look was spent.
+
+The next post-L5 ask follow-up adds exact distributive answers without
+inventing positional meaning. “How many students do Bob and Mary each have?”
+returns a `series` whose rows retain entity, canonical measure, and numeric
+value. The `per-holder` consumer reuses the existing exact-list validation and
+complete holder folds from `combined`, preserves source order, excludes
+unasked holders, and declines rather than returning a partial series. A narrow
+postpositive category accepts `each` but rejects the invalid `every` sibling.
+The Designer renders labelled rows using the captured measure surface, the API
+remains JSON-native, and the benchmark judge compares labels and values rather
+than list position. The cumulative gate is 4,491 tests and curated 71/71; all
+frozen answer DEV diffs are neutral, COGS/PMB inspectable slices retain 100%
+edge precision with zero incorrect graphs, lint has zero errors and the known
+single warning, and no protected look was spent.
+
+The marker-position sibling adds “have each”, “have individually”, and
+“individually have” without changing the result semantics. The two `each`
+positions share the narrow distributive quantifier category. Core-English now
+owns `individually` as an adverb, and only the new individualizing-adverb
+category can fill its two positions; undeclared alternatives remain safe
+declines. The reachable frontier is therefore 190 identities. The cumulative
+gate is 4,493 tests and curated 71/71; all frozen answer DEV diffs are neutral,
+COGS/PMB remain at 100% inspectable edge precision with zero incorrect graphs,
+lint has zero errors and its known single warning, and no protected look was
+spent.
 
 There is no automatic transition to G7. Ask-rule and derived-rule generation
 requires a separate decision after the premise audit demonstrates that the

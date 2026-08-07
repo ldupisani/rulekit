@@ -62,6 +62,9 @@ class SourceIndex:
     measure_holder_compatibility: dict[tuple[str, str], SourceRef] = field(
         default_factory=dict
     )
+    subject_role_derivations: dict[tuple[str, str], SourceRef] = field(
+        default_factory=dict
+    )
     numeric: dict[tuple[str, str], SourceRef] = field(default_factory=dict)
 
     def merge(self, other: "SourceIndex") -> None:
@@ -80,6 +83,7 @@ class SourceIndex:
             "category_members",
             "attribute_compatibility",
             "measure_holder_compatibility",
+            "subject_role_derivations",
             "numeric",
         ):
             target = getattr(self, name)
@@ -266,6 +270,21 @@ def _index_categories(
                 kind="measure-holder-compatibility",
                 label=f"{measure} → {holder}",
                 item=holder_no,
+            )
+
+    raw_role_derivations = raw.get("subject_role_derivations", {})
+    for verb, derivation in doc.subject_role_derivations.items():
+        raw_derivation = raw_role_derivations.get(verb, {})
+        raw_prepositions = raw_derivation.get("preserve_prepositions", [])
+        for prep_no, prep in enumerate(derivation.preserve_prepositions):
+            if prep_no >= len(raw_prepositions):
+                continue
+            index.subject_role_derivations[(verb, prep)] = _ref(
+                path,
+                raw_prepositions,
+                kind="subject-role-derivation",
+                label=f"{verb} + {prep} → {derivation.role}",
+                item=prep_no,
             )
 
 

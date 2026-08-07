@@ -205,6 +205,10 @@ body.resizing iframe, body.resizing textarea { pointer-events: none; }
 .banner.clarify .big { color: var(--amber); }
 .banner.undetermined .big { color: var(--amber); }
 .banner .reason { color: var(--dim); font-size: 0.75rem; }
+.answer-series {
+  display: inline-grid; gap: 2px; vertical-align: top;
+}
+.answer-series-row { white-space: nowrap; }
 
 #clarification {
   border: 1px solid #6a542b; border-radius: 8px;

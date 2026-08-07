@@ -157,6 +157,11 @@ class Provenance:
     # the conflation that produced garbage group totals (bucket seed=90,
     # warehouse box=800). Defaulted False: every non-fold provenance is unchanged.
     distributive: bool = False
+    # True only when this fact depends on a clause promoted from the current
+    # question's conditional frame ("If X, how many ...?"). Metadata only,
+    # never part of a Fact.key(); omitted from repr so ordinary fact snapshots
+    # remain stable.
+    assumption: bool = field(default=False, repr=False)
 
 
 @dataclass(frozen=True)
@@ -632,6 +637,73 @@ class Quantified(Fact):
 
     def value_part(self) -> Any:
         return self.polarity
+
+
+@dataclass(frozen=True)
+class QuantifiedQuantity(Fact):
+    """A class-wide numeric holding.
+
+    ``All teachers at the university have 20 students`` is represented as
+    one exact class phrase plus the ordinary arithmetic measure/value/verb
+    fields.  It is deliberately separate from :class:`Quantified`: a numeric
+    amount is not an opaque predicate phrase, and arithmetic consumers must
+    receive a real :class:`Quantity` only after class membership is proven.
+    """
+
+    cls: str
+    measure: str
+    value: float
+    verb: str = "have"
+
+    def key(self) -> tuple:
+        return ("quantified-quantity", self.cls, self.measure, self.verb)
+
+    def value_part(self) -> Any:
+        return self.value
+
+
+@dataclass(frozen=True)
+class QuantifiedAdjustment(Fact):
+    """A class-wide additive adjustment awaiting one inherited baseline.
+
+    ``All head teachers have 5 more students`` does not state an independent
+    holding and does not name an entity-to-entity comparison standard.  It
+    therefore remains first-class until an exact member, a declared class
+    refinement, and one compatible :class:`QuantifiedQuantity` jointly supply
+    the missing baseline.  Conflicting offsets for the same class and measure
+    collide in the ordinary fact store rather than being ordered.
+    """
+
+    cls: str
+    measure: str
+    offset: float
+    verb: str = "have"
+
+    def key(self) -> tuple:
+        return ("quantified-adjustment", self.cls, self.measure, self.verb)
+
+    def value_part(self) -> Any:
+        return self.offset
+
+
+@dataclass(frozen=True)
+class ClassRefinement(Fact):
+    """One declared class is a subsective refinement of another.
+
+    ``head teacher -> teacher`` is the motivating shape.  This is not an
+    intersective assertion: it says nothing about membership in ``head``, and
+    it is deliberately separate from ordinary right-headed compound folding.
+    Only a pack-declared refining modifier may create this fact.
+    """
+
+    subclass: str
+    superclass: str
+
+    def key(self) -> tuple:
+        return ("class-refinement", self.subclass)
+
+    def value_part(self) -> Any:
+        return self.superclass
 
 
 @dataclass(frozen=True)
@@ -1299,10 +1371,20 @@ def _snapshot(value: Any) -> Any:
 class Reading:
     """The per-sentence workspace. `record()` is the single mutation door."""
 
-    def __init__(self, text: str, sentence_index: int = 0, tracing: bool = True):
+    def __init__(
+        self,
+        text: str,
+        sentence_index: int = 0,
+        tracing: bool = True,
+        assumption: bool = False,
+    ):
         self.text = text
         self.sentence_index = sentence_index
         self.tracing = tracing
+        # A question assumption participates in this solve's blackboard but is
+        # not an asserted project premise. solve() creates a fresh document on
+        # every call, so the scope cannot escape the current question.
+        self.assumption = assumption
         self.units: list[Unit] = []
         self.decisions: list[Decision] = []
         self.facts: list[Fact] = []

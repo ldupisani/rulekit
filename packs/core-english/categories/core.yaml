@@ -284,6 +284,18 @@ categories:
             Quantity-changing event verbs whose common-noun subjects and
             comparison standards must be declared plausible event
             participants. Stative possession verbs remain outside this class.
+    animate_subject_verb:
+        parent: verb
+        notes: >
+            Verbs whose grammatical subject must denote an animate participant.
+            Rules opt into this role boundary explicitly; ordinary quantity
+            holders do not become sentient merely because they can hold facts.
+    animate_object_verb:
+        parent: verb
+        notes: >
+            Verbs whose direct object must denote an animate participant. This
+            keeps a quantitative object frame such as "met half of the group"
+            without admitting times, units, or arbitrary physical objects.
     shucking_verb:
         parent: quantity_event_verb
         notes: "Quantity events whose counted object must be shuckable."
@@ -661,6 +673,19 @@ categories:
             separate from the broad `quantifier` sense so amount and totality
             words such as "some" and "all" cannot become container
             determiners.
+    postpositive_distributive_quantifier:
+        parent: quantifier
+        notes: >
+            The narrow post-coordination marker in questions such as "how
+            many books do Ana and Ben each have?" This is separate from the
+            container determiner category above because "every" is valid in
+            "every box" but not in "Ana and Ben every have".
+    individualizing_adverb:
+        parent: adverb
+        notes: >
+            Manner markers that request one answer for every explicitly named
+            holder. They may occur immediately before or after the question's
+            lexical verb; ordinary adverbs do not acquire that answer scope.
     currency_measure:
         parent: noun
         dimension: true
@@ -1402,6 +1427,8 @@ members:
     duration_measure: [year]
     frequency_quantifier: [every]
     distributive_quantifier: [each, every]
+    postpositive_distributive_quantifier: [each]
+    individualizing_adverb: [individually]
     age_measure: [year]
     aggregate_noun: [amount, number]
     count_aggregate_noun: [amount, number]

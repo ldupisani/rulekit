@@ -232,6 +232,38 @@ def _as_bool(v) -> bool:
     return str(v).strip().lower() in ("yes", "true")
 
 
+def _series_mapping(value: object) -> dict[tuple[str, str], float] | None:
+    """Validate and normalize the public labelled-series answer shape.
+
+    The labels, rather than list position, carry identity for scoring. A
+    duplicate entity/measure pair is malformed and cannot be normalized: it
+    would make one question appear to have two answers for the same field.
+    """
+    if not isinstance(value, list) or not value:
+        return None
+    out: dict[tuple[str, str], float] = {}
+    for row in value:
+        if not isinstance(row, dict):
+            return None
+        entity = row.get("entity")
+        measure = row.get("measure")
+        number = row.get("value")
+        if (
+            not isinstance(entity, str)
+            or not entity
+            or not isinstance(measure, str)
+            or not measure
+            or isinstance(number, bool)
+            or not isinstance(number, (int, float))
+        ):
+            return None
+        key = (entity, measure)
+        if key in out:
+            return None
+        out[key] = float(number)
+    return out
+
+
 def _judge(expected: object, result) -> tuple[str, object]:
     # TYPED GOLD (docs/difg-corpus-plan.md Phase 0) — additive, and unreachable
     # for GSM8K: only a `gold: typed` project's loader constructs a TypedGold.
@@ -243,6 +275,21 @@ def _judge(expected: object, result) -> tuple[str, object]:
     if answer.kind == "number":
         got = answer.value
         if isinstance(expected, (int, float)) and abs(got - float(expected)) < TOL:
+            return "correct", got
+        return "wrong", got
+    if answer.kind == "series":
+        got = answer.value
+        want_rows = _series_mapping(expected)
+        got_rows = _series_mapping(got)
+        if (
+            want_rows is not None
+            and got_rows is not None
+            and want_rows.keys() == got_rows.keys()
+            and all(
+                abs(got_rows[key] - expected_value) < TOL
+                for key, expected_value in want_rows.items()
+            )
+        ):
             return "correct", got
         return "wrong", got
     if answer.kind == "verdict":

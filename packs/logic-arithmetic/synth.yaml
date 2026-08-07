@@ -1,0 +1,6 @@
+format: rulekit/synth@1
+# Exact class-wide quantities now share one algorithmic materializer with
+# quantified additive adjustments. Keeping the join in one place is what
+# prevents an adjusted member from receiving both the inherited baseline and
+# the adjusted value as conflicting state quantities.
+rules: []

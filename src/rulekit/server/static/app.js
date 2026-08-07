@@ -270,8 +270,11 @@ function renderAnswer(t) {
   }
   const isUndetermined =
     t.answer.kind === "verdict" && t.answer.value === "undetermined";
+  const isSeries =
+    t.answer.kind === "series" && Array.isArray(t.answer.value);
   const isAnswer =
     t.answer.kind === "number" ||
+    isSeries ||
     (t.answer.kind === "verdict" && !isUndetermined);
   b.classList.add(
     isUndetermined ? "undetermined" : isAnswer ? "number" : "decline",
@@ -292,14 +295,55 @@ function renderAnswer(t) {
       generationSourceControl(t.ask.source_ref, "Open ask YAML"),
     );
   }
-  b.replaceChildren(
-    el(
-      "span",
-      "big",
-      isUndetermined ? "undetermined" : isAnswer ? String(t.answer.value) : "declined",
-    ),
-    reason,
+  const valueNode = isSeries
+    ? renderAnswerSeries(t.answer.value, t.ask?.query?.measure_surface)
+    : el(
+        "span",
+        "big",
+        isUndetermined
+          ? "undetermined"
+          : isAnswer
+            ? String(t.answer.value)
+            : "declined",
+      );
+  b.replaceChildren(valueNode, reason);
+}
+
+function titleAnswerEntity(value) {
+  return String(value || "").replace(
+    /(^|\s)(\p{L})/gu,
+    (_match, space, letter) => space + letter.toUpperCase(),
   );
+}
+
+function formatAnswerNumber(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? String(number) : String(value);
+}
+
+function formatSeriesRow(row, measureSurface = "") {
+  const measure = measureSurface || row?.measure || "";
+  return (
+    `${titleAnswerEntity(row?.entity)}: ${formatAnswerNumber(row?.value)}` +
+    (measure ? ` ${measure}` : "")
+  );
+}
+
+function renderAnswerSeries(rows, measureSurface = "") {
+  const list = el("span", "big answer-series");
+  for (const row of rows) {
+    list.append(el("span", "answer-series-row", formatSeriesRow(row, measureSurface)));
+  }
+  return list;
+}
+
+function formatAnswerValue(answer, measureSurface = "") {
+  if (answer.kind === "series" && Array.isArray(answer.value)) {
+    return answer.value
+      .map((row) => formatSeriesRow(row, measureSurface))
+      .join("; ");
+  }
+  return String(answer.value);
 }
 
 function renderClarification(t) {
@@ -808,7 +852,11 @@ function renderProof(t) {
   const outcome = el("div", `proof-outcome ${proof.status}`);
   outcome.append(
     el("span", "proof-outcome-label", proof.status.toUpperCase()),
-    el("span", "mono", `${t.answer.kind}:${t.answer.value}`),
+    el(
+      "span",
+      "mono",
+      `${t.answer.kind}:${formatAnswerValue(t.answer, t.ask?.query?.measure_surface)}`,
+    ),
     el("span", "dim", t.answer.reason),
   );
   box.append(outcome);

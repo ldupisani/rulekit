@@ -2,9 +2,11 @@
 
 This is the "designed inference frontier" the FOLIO campaign closure named as
 the only legitimate way back to logic coverage (`docs/negative-results.md` →
-"The FOLIO buyer is UNWIDENABLE"). Everything here lives in `projects/scratch`
-at zero blast radius: no benchmark project loads `./packs/logic`, folio stays
-the 0/0 safety gate, and folio TEST remains governed by the closure rules.
+"The FOLIO buyer is UNWIDENABLE"). The historical experiments ran through
+`projects/scratch`; the resulting implementation now lives in the opt-in
+top-level `packs/logic`. The ordinary FOLIO project still does not load it,
+so FOLIO remains the 0-commit safety gate and its TEST closure rules still
+apply.
 
 ## Ground rules (inherited, non-negotiable)
 
@@ -30,7 +32,7 @@ the 0/0 safety gate, and folio TEST remains governed by the closure rules.
 
 | piece | commit |
 |---|---|
-| v2 kernel half resurrected; pack scoped to scratch | `ed45811` |
+| v2 kernel half resurrected; pack initially scoped to scratch | `ed45811` |
 | `_canonical_phrase` Fiedler fix (admitting a word must never loosen a key) | `ed45811` |
 | Qualified-compound membership (fold): loose-match + negated-compound fixes, intersective split | `ce90fa5` |
 | **A. Intersective decomposition of atoms** — shared `intersective_split` contract, top-level-nominal-only, composes with instantiation | `4d57816` |

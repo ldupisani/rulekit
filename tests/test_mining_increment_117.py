@@ -324,11 +324,10 @@ def test_a_changed_candidate_set_is_a_new_row_not_a_repeat():
 
 
 def test_the_document_loop_journals_the_real_decline(registry_full):
-    """End to end: a pronoun with two prior names in scope cannot bind.
+    """End to end: ordinary discourse with two prior names stays ambiguous.
 
-    The engine has always declined here. What is new is that you can now SEE why: two
-    candidates, both at distance 0, no strict dominance — so the field is flat and the
-    binding is unreachable.
+    With no typed gender/person compatibility and no question-local assumption,
+    recency is not enough evidence to select an antecedent. The field remains flat.
     """
     from rulekit.kernel.engine import solve
 
@@ -342,8 +341,8 @@ def test_the_document_loop_journals_the_real_decline(registry_full):
         for o in result.log.journal.observations
         if o.source == "bind-discourse" and o.reason == "tie"
     ]
-    assert ties, "a pronoun with two prior names must journal a tie"
+    assert ties
     obs = ties[0]
     assert obs.dimension == deixis.PERSON
     assert {c.key for c in obs.candidates} == {"sam", "mary"}
-    assert all(c.distance == 0 for c in obs.candidates)  # the field is flat
+    assert all(c.distance == 0 for c in obs.candidates)

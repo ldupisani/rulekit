@@ -40,8 +40,8 @@ def test_relation_chain_saturates(registry):
 
 def test_negation_is_an_obligation_not_a_flag(registry):
     # the difg #26 lesson: "not" must BIND its verb, never a global flag.
-    # the logic pack lives in projects/scratch (post-campaign resurrection); the verdict
-    # half of this contract is pinned against a logic-including registry;
+    # the logic pack is opt-in; the verdict half of this contract is pinned
+    # against a logic-including registry;
     # the FOLD half (the negative Membership fact) still uses the default.
     from pathlib import Path
 
@@ -53,7 +53,7 @@ def test_negation_is_an_obligation_not_a_flag(registry):
     logic_reg = compile_registry(load_packs([
         repo / "packs/core-english", repo / "packs/arithmetic",
         repo / "packs/difg-mined",
-        repo / "projects/scratch/packs/logic",
+        repo / "packs/logic",
     ]))
     r = solve("Bob is not a student. Is Bob a student?", logic_reg)
     assert r.answer.value == "no"

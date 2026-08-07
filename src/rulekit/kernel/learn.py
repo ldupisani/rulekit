@@ -889,7 +889,11 @@ def _sentence_time(reading: Reading, reg: Registry) -> str | None:
 
 def learn(reading: Reading, reg: Registry) -> list[Fact]:
     facts: list[Fact] = []
-    base_prov = Provenance(source="fold", sentence=reading.sentence_index)
+    base_prov = Provenance(
+        source="fold",
+        sentence=reading.sentence_index,
+        assumption=reading.assumption,
+    )
     time_label = _sentence_time(reading, reg)
 
     # value units that found what they quantify: value -> noun. Units a

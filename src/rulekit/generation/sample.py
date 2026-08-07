@@ -64,6 +64,8 @@ _SUPPORTED_SLOT_TYPES = frozenset(
         "preposition",
         "common_noun",
         "plural",
+        "bare_plural",
+        "generic_plural",
         "counted",
         "possessed",
         "pronoun",
@@ -82,6 +84,7 @@ _SUPPORTED_CATEGORY_ROOTS = frozenset(
         "comparative",
         "complementizer",
         "quantifier",
+        "conjunction",
         "time",
         "adverb",
     }
@@ -550,7 +553,7 @@ def _raw_domain(
         ]
     if slot_type in {"noun", "common_noun"}:
         return _lexical_fillers(reg, sense="noun")
-    if slot_type == "plural":
+    if slot_type in {"plural", "bare_plural", "generic_plural"}:
         return [
             _Filler(
                 surface=surface,

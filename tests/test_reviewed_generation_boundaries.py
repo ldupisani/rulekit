@@ -1872,37 +1872,37 @@ def test_complex_affine_fraction_refuses_unframed_motion_verbs(
     [
         (
             "arithmetic/percent-change-event",
-            "Sticker own nineteen eighths less dollar.",
+            "Teacher own nineteen eighths less dollar.",
             False,
         ),
         (
             "arithmetic/percent-change-event",
-            "Sticker owns one eighth less money.",
+            "Teacher owns one eighth less money.",
             True,
         ),
         (
             "arithmetic/percent-change-event-count",
-            "Sticker owns one eighth fewer dollars.",
+            "Teacher owns one eighth fewer dollars.",
             True,
         ),
         (
             "arithmetic/percent-change-event",
-            "Sticker owns one eighth fewer dollars.",
+            "Teacher owns one eighth fewer dollars.",
             False,
         ),
         (
             "arithmetic/percent-change-event-count",
-            "Sticker owns one eighth less money.",
+            "Teacher owns one eighth less money.",
             False,
         ),
         (
             "arithmetic/percent-change-event",
-            "Sticker owns nineteen eighths less money.",
+            "Teacher owns nineteen eighths less money.",
             False,
         ),
         (
             "arithmetic/percent-change-event-count",
-            "Sticker owns nineteen eighths fewer dollars.",
+            "Teacher owns nineteen eighths fewer dollars.",
             False,
         ),
         (
@@ -4148,10 +4148,10 @@ def test_periodic_rate_requires_a_referential_subject(registry) -> None:
     rule_id = "arithmetic/periodic-rate-every-span"
 
     assert rule_id not in _matched_rules(
-        "Sticker might need 17 hamsters every 18 years.", registry
+        "Teacher might need 17 hamsters every 18 years.", registry
     )
     assert rule_id in _matched_rules(
-        "The sticker might need 17 hamsters every 18 years.", registry
+        "The teacher might need 17 hamsters every 18 years.", registry
     )
     assert rule_id in _matched_rules(
         "Dena might need 17 hamsters every 18 years.", registry

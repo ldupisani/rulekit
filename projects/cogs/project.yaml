@@ -5,7 +5,7 @@ name: cogs
 # produced by the FOLIO campaign; loading it here does not change FOLIO's
 # arithmetic-only 0-commit safety project.
 packs:
-  [core-english, difg-mined, ../scratch/packs/logic,
+  [core-english, difg-mined, logic,
    ./packs/semantic-projection]
 
 projection:

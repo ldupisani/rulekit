@@ -224,6 +224,8 @@ def _fact_json(
         "source": fact.provenance.source,
         "sentence": fact.provenance.sentence,
     }
+    if fact.provenance.assumption:
+        payload["scope"] = "question-assumption"
     source_ref = _identifier_source_json(
         source_index, fact.provenance.source
     )
@@ -730,6 +732,11 @@ def build_router(state: ServerState) -> APIRouter:
                     "index": r.sentence_index,
                     "text": r.text,
                     "is_question": result.question is r,
+                    **(
+                        {"scope": "question-assumption"}
+                        if r.assumption
+                        else {}
+                    ),
                     "units": [_unit_json(u) for u in r.units],
                     "decisions": [
                         _decision_json(d, state.project.source_index)
