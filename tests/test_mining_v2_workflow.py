@@ -32,6 +32,7 @@ def test_mining_skill_pauses_for_human_review_and_exact_machine_gate() -> None:
     assert "--integrate-approved" in skill
     assert "STOP for Designer review + exact machine gate" in skill
     assert "constitution pass + exact human approval" in skill
+    assert "campaign-land" in skill
     assert "No historical suite/test count" in skill
     assert not (ROOT / ".claude" / "workflows" / "mine.js").exists()
 

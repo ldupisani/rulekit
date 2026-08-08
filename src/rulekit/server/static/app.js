@@ -1526,6 +1526,9 @@ function campaignEvidenceLine(label, value) {
 
 function campaignRuntimeState(row) {
   const candidateId = row.manifest.candidate_id;
+  if (row.landing) {
+    return { available: false, isolated: false, label: "landed on staging" };
+  }
   if (campaignRunnerOwns(candidateId)) {
     return { available: true, isolated: true, label: "isolated candidate active" };
   }
@@ -1770,7 +1773,10 @@ function campaignCandidateCard(row) {
     ),
   );
   card.append(metadata);
-  if (!row.runtime_available || campaignRunnerOwns(manifest.candidate_id)) {
+  if (
+    !row.landing
+    && (!row.runtime_available || campaignRunnerOwns(manifest.candidate_id))
+  ) {
     const runnerControls = el("div", "campaign-runner-controls");
     if (campaignRunnerOwns(manifest.candidate_id)) {
       const stop = el("button", "", "Stop isolated runner");
@@ -1854,6 +1860,16 @@ function campaignCandidateCard(row) {
       `${row.stale_review_count} earlier decision${row.stale_review_count === 1 ? " is" : "s are"} preserved but stale for this commit/fingerprint.`,
     ));
   }
+  if (row.landing) {
+    card.append(campaignEvidenceLine(
+      "Staging landing",
+      el(
+        "span",
+        "runtime-ready mono",
+        `${row.landing.staging_branch} · increment ${row.landing.increment} · ${row.landing.staging_commit.slice(0, 12)}`,
+      ),
+    ));
+  }
   card.append(campaignGatePanel(row));
 
   const previousBySpecimen = new Map(
@@ -1888,7 +1904,10 @@ function campaignCandidateCard(row) {
       label,
     );
     button.dataset.verdict = value;
-    if (value === "approved" && !row.machine_gate?.passed) {
+    if (row.landing) {
+      button.disabled = true;
+      button.title = "This exact candidate revision has already landed on staging.";
+    } else if (value === "approved" && !row.machine_gate?.passed) {
       button.disabled = true;
       button.title = "Approval requires a passing machine gate for this exact revision.";
     }
@@ -1907,6 +1926,7 @@ function campaignCandidateCard(row) {
   note.maxLength = 4000;
   note.placeholder = "Why should this candidate advance, change, or remain unclear?";
   note.value = previous?.note || "";
+  note.disabled = Boolean(row.landing);
   review.append(note);
 
   const actions = el("div", "campaign-decision-actions");
@@ -1948,11 +1968,15 @@ function campaignCandidateCard(row) {
 
   function updateCampaignDecisionState() {
     const unchanged = decisionMatchesPrevious();
-    save.disabled = !decisionIsComplete() || unchanged;
-    save.textContent = unchanged
+    save.disabled = Boolean(row.landing) || !decisionIsComplete() || unchanged;
+    save.textContent = row.landing
+      ? "Landed on staging"
+      : unchanged
       ? "Decision recorded"
       : "Record promotion decision";
-    save.title = unchanged
+    save.title = row.landing
+      ? "This exact candidate revision has already landed and its promotion evidence is frozen."
+      : unchanged
       ? "This exact decision is already recorded. Change a verdict or note to append a revision."
       : save.disabled
       ? "Review every specimen. Approval requires all valid; changes require an invalid specimen; unclear requires an unclear specimen."

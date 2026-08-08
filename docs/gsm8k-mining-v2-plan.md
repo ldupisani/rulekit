@@ -191,8 +191,9 @@ class justification, passing constitution verdict, explicit live-review ids,
 and each specimen's canonical trace. Standing results also preserve baseline
 and candidate fingerprints plus an opaque digest of item identities for both
 answer and projection corpora. `campaign-trace`, `campaign-publish`, and
-`campaign-queue` provide fixed CLI seams for candidate evidence capture,
-central publication, and exact resumable state.
+`campaign-queue`, and `campaign-land` provide fixed CLI seams for candidate
+evidence capture, central publication, exact resumable state, and durable
+staging completion.
 
 The workflow now pauses after parallel implementation and read-only
 constitution review. Humans inspect the published manifests and run the exact
@@ -206,9 +207,14 @@ The exact parallel synthetic gate is green at 4,720 tests; curated remains
 M4 because M5 changes only Designer/orchestration/schema surfaces. No protected
 TEST/generalization look was spent.
 
-### M6 — smoke and first batch — next
+### M6 — smoke and first batch — active
 
 - Run one no-op smoke candidate through every stage without touching TEST.
+  The no-op candidate passed human and exact machine review and landed as
+  increment 129 at staging commit `13a1f65`. The smoke exposed one missing
+  lifecycle edge: approval remained selectable after integration. Exact
+  append-only landing evidence now closes that edge and makes repeat
+  integration mechanically ineligible.
 - Run an initial batch of two complete candidates.
 - Spend protected GSM8K TEST looks manually from the main checkout, one per
   approved vertical increment, only after all preceding gates pass.

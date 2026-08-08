@@ -1544,12 +1544,15 @@ stops. Human review and the exact machine gate happen in the existing Designer.
 approved/machine-passed queue records and sends them through one sequential
 integrator. The workflow stops at its staging branch before protected TEST.
 
-Three non-HTTP CLI seams make that pause durable and independently testable:
+Four non-HTTP CLI seams make that pause durable and independently testable:
 `campaign-trace` captures one canonical specimen through the same function as
 `POST /api/trace`; `campaign-publish` validates and centrally publishes a
-constitution-passed immutable manifest; and `campaign-queue` returns exact
-human plus machine state for a resume. No orchestration path contains a fixed
-suite cardinality.
+constitution-passed immutable manifest; `campaign-queue` returns exact human,
+machine, and staging-landing state for a resume; and `campaign-land` appends an
+idempotent record only when the latest exact human decision is approved and the
+latest exact machine gate passes. That final ledger freezes the authorizing
+decision and prevents the same candidate revision from being integrated twice.
+No orchestration path contains a fixed suite cardinality.
 
 This is process/import, project-root, and HTTP-route isolation for locally
 authored candidate code; it is not an operating-system sandbox for hostile

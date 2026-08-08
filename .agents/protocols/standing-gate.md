@@ -62,8 +62,9 @@ completed implementation. Everything after that is sequential:
 3. exact machine gate in the central Designer;
 4. require an exact approved decision and exact passing gate;
 5. integrate one candidate;
-6. re-run the exact standing gate on the integrated state before considering
-   the next candidate.
+6. re-run the exact standing gate on the integrated state;
+7. append the exact central `campaign-land` record; and
+8. only then consider the next candidate.
 
-No approval, stale approval, stale gate, review request, or unclear decision
-is landable.
+No approval, stale approval, stale gate, review request, unclear decision, or
+already-landed exact revision is landable.

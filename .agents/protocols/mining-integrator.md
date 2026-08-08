@@ -30,4 +30,6 @@ after proving no runtime files changed after measurement.
 
 Return JSON `{status,increment,commit,gate_evidence,summary,notes}` with status
 `landed|deferred`. Integration is strictly sequential; the next candidate may
-start only after this result is final.
+start only after this result is final and the orchestrator has recorded the
+successful result in the central landing ledger. The staging integrator never
+writes that central ledger itself.

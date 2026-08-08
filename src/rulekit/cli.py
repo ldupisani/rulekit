@@ -440,6 +440,27 @@ def cmd_campaign_queue(args) -> int:
     return 0
 
 
+def cmd_campaign_land(args) -> int:
+    """Record one exact candidate revision after staging integration."""
+
+    from pydantic import ValidationError
+
+    from .generation import CampaignLanding, append_campaign_landing
+
+    project, _reg = _registry(args)
+    path = Path(args.landing).resolve()
+    try:
+        landing = CampaignLanding.model_validate_json(
+            path.read_text(encoding="utf-8")
+        )
+        durable = append_campaign_landing(project, landing)
+    except (OSError, ValueError, ValidationError) as exc:
+        print(f"campaign landing rejected: {exc}", file=sys.stderr)
+        return 1
+    print(json.dumps(durable, sort_keys=True))
+    return 0
+
+
 def cmd_campaign_trace(args) -> int:
     """Capture one canonical manifest trace using the ordinary Designer path."""
 
@@ -537,6 +558,13 @@ def main(argv: list[str] | None = None) -> int:
         help="print exact human and machine Mining v2 promotion state as JSON",
     )
     p.set_defaults(fn=cmd_campaign_queue)
+
+    p = sub.add_parser(
+        "campaign-land",
+        help="record one exact reviewed candidate after staging integration",
+    )
+    p.add_argument("landing", help="path to an uncommitted landing JSON")
+    p.set_defaults(fn=cmd_campaign_land)
 
     p = sub.add_parser(
         "campaign-trace",

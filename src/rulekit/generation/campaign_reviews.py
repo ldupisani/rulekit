@@ -588,6 +588,21 @@ def append_campaign_review(
             "candidate registry fingerprint changed; reload the campaign review queue"
         )
 
+    # A landing freezes the exact human promotion decision that authorized the
+    # staging commit. Later revisions must publish a new candidate commit
+    # rather than rewriting the evidence for code that has already landed.
+    from .campaign_landings import latest_campaign_landing
+
+    if latest_campaign_landing(
+        project,
+        decision.candidate_id,
+        decision.candidate_commit,
+        decision.registry_fingerprint,
+    ) is not None:
+        raise CampaignReviewError(
+            "this exact campaign candidate revision is already landed"
+        )
+
     expected_ids = {specimen["id"] for specimen in manifest["specimens"]}
     reviewed_ids = {specimen.specimen_id for specimen in decision.specimens}
     unknown = reviewed_ids - expected_ids
@@ -660,6 +675,9 @@ def campaign_review_queue(project: Project) -> list[dict[str, Any]]:
 
     manifests = _latest_manifests(project)
     reviews = read_campaign_review_records(project)
+    from .campaign_landings import read_campaign_landings
+
+    landings = read_campaign_landings(project)
     queue = []
     for candidate_id, manifest in manifests.items():
         exact = [
@@ -675,16 +693,35 @@ def campaign_review_queue(project: Project) -> list[dict[str, Any]]:
             if review["candidate_id"] == candidate_id and review not in exact
         ]
         latest_review = exact[-1] if exact else None
+        exact_landings = [
+            landing
+            for landing in landings
+            if landing["candidate_id"] == candidate_id
+            and landing["candidate_commit"] == manifest["commit"]
+            and landing["registry_fingerprint"]
+            == manifest["registry_fingerprint"]
+        ]
+        stale_landings = [
+            landing
+            for landing in landings
+            if landing["candidate_id"] == candidate_id
+            and landing not in exact_landings
+        ]
+        latest_landing = exact_landings[-1] if exact_landings else None
+        human_status = (
+            latest_review["verdict"]
+            if latest_review is not None
+            else "awaiting_review"
+        )
         queue.append(
             {
                 "manifest": manifest,
-                "status": (
-                    latest_review["verdict"]
-                    if latest_review is not None
-                    else "awaiting_review"
-                ),
+                "status": "landed" if latest_landing is not None else human_status,
+                "human_status": human_status,
                 "latest_review": latest_review,
                 "stale_review_count": len(stale),
+                "landing": latest_landing,
+                "stale_landing_count": len(stale_landings),
                 "runtime_available": (
                     manifest["registry_fingerprint"]
                     == project.registry.fingerprint

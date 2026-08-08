@@ -31,10 +31,19 @@ then the process pauses for Designer human review and exact machine gating;
 only an explicit resume can integrate exact approved revisions sequentially.
 Candidate evidence now includes class/yield, generation targets, expected
 scope, synthetic tests, constitution review, canonical traces, and opaque
-answer/projection gate identities. The current gate is 4,720 tests;
+answer/projection gate identities. M6's no-op candidate has now completed the
+whole unprotected path: exact human approval and the machine gate passed, and
+increment 129 landed on `mining/batch-2026-08-08` at `13a1f65`. The smoke
+exposed that the central queue retained `approved/passed` after integration,
+which could make a resumed orchestrator land the same revision twice. A new
+append-only `campaign-landing@1` ledger pins the exact manifest, latest human
+review, latest passing gate, staging branch/commit, and increment. The queue
+now reports that exact revision as `landed`, freezes its decision controls,
+and excludes it from future integration. The next M6 action is the initial
+two-candidate batch. The current gate is 4,725 tests;
 curated and all answer/projection DEV gates are neutral with zero wrong or
 incorrect commitments. No protected TEST/generalization look was spent. M6's
-no-op smoke candidate is next. The prior generation workbench is now campaign
+first real batch is next. The prior generation workbench is now campaign
 infrastructure rather than a parked or replaced direction.
 
 **Status:** G1 through G4, G5a through G5g, G6, Reading-origin review,

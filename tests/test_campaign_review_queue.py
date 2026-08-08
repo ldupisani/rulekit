@@ -13,17 +13,23 @@ from rulekit.generation import (
     CampaignConstitutionEvidence,
     CampaignGenerationContract,
     CampaignImplementationContract,
+    CampaignLanding,
+    CampaignPromotionGate,
     CampaignReviewDecision,
     CampaignReviewError,
     CampaignRetestRequest,
     CampaignSpecimen,
     CampaignSpecimenReview,
+    append_campaign_gate,
+    append_campaign_landing,
     append_campaign_review,
+    campaign_landing_path,
     campaign_manifest_root,
     campaign_review_path,
     campaign_review_queue,
     publish_campaign_manifest,
     read_campaign_manifests,
+    read_campaign_landings,
     read_campaign_review_records,
 )
 from rulekit.generation.reviews import SourceLocation
@@ -147,6 +153,39 @@ def _decision(
             )
         ],
         note="Reviewed in the Designer.",
+    )
+
+
+def _passing_gate(manifest: CampaignCandidateManifest) -> CampaignPromotionGate:
+    return CampaignPromotionGate(
+        candidate_id=manifest.candidate_id,
+        candidate_commit=manifest.commit,
+        registry_fingerprint=manifest.registry_fingerprint,
+        baseline_commit="1234567",
+        passed=True,
+        specimens=[],
+        reviews=[],
+        standing=[],
+    )
+
+
+def _landing(
+    manifest: CampaignCandidateManifest,
+    review_id: str,
+    gate_id: str,
+    *,
+    staging_commit: str = "7654321",
+) -> CampaignLanding:
+    return CampaignLanding(
+        candidate_id=manifest.candidate_id,
+        candidate_commit=manifest.commit,
+        registry_fingerprint=manifest.registry_fingerprint,
+        review_id=review_id,
+        gate_id=gate_id,
+        staging_branch="mining/batch-2099-01-01",
+        staging_commit=staging_commit,
+        increment=130,
+        summary="Integrated the exact approved candidate after a green staging gate.",
     )
 
 
@@ -296,6 +335,96 @@ def test_new_candidate_revision_makes_prior_approval_stale(tmp_path: Path) -> No
         append_campaign_review(project, _decision(first))
 
 
+def test_campaign_landing_closes_the_exact_candidate_lifecycle(
+    tmp_path: Path,
+) -> None:
+    project = _project(tmp_path)
+    manifest = _manifest()
+    publish_campaign_manifest(project, manifest)
+    approved = append_campaign_review(project, _decision(manifest))
+    gate = append_campaign_gate(project, _passing_gate(manifest))
+    landing = _landing(manifest, approved["id"], gate["id"])
+
+    first = append_campaign_landing(project, landing)
+    repeated = append_campaign_landing(project, landing)
+
+    assert repeated == first
+    assert campaign_landing_path(project) == (
+        tmp_path / "generation" / "campaign" / "landings.jsonl"
+    )
+    assert read_campaign_landings(project) == [first]
+    queue = campaign_review_queue(project)
+    assert queue[0]["status"] == "landed"
+    assert queue[0]["human_status"] == "approved"
+    assert queue[0]["landing"] == first
+    assert queue[0]["stale_landing_count"] == 0
+
+    with pytest.raises(CampaignReviewError, match="already landed"):
+        append_campaign_landing(
+            project,
+            landing.model_copy(update={"staging_commit": "7654322"}),
+        )
+    with pytest.raises(CampaignReviewError, match="already landed"):
+        append_campaign_review(
+            project,
+            _decision(manifest).model_copy(update={"note": "Too late to revise."}),
+        )
+
+
+def test_campaign_landing_requires_latest_exact_approval_and_gate(
+    tmp_path: Path,
+) -> None:
+    project = _project(tmp_path)
+    manifest = _manifest()
+    publish_campaign_manifest(project, manifest)
+    approved = append_campaign_review(project, _decision(manifest))
+    first_gate = append_campaign_gate(project, _passing_gate(manifest))
+    second_gate = append_campaign_gate(project, _passing_gate(manifest))
+
+    with pytest.raises(CampaignReviewError, match="latest exact machine gate id"):
+        append_campaign_landing(
+            project,
+            _landing(manifest, approved["id"], first_gate["id"]),
+        )
+
+    changed = append_campaign_review(
+        project,
+        _decision(
+            manifest,
+            verdict="changes_requested",
+            specimen_verdicts=("valid", "invalid"),
+        ),
+    )
+    with pytest.raises(CampaignReviewError, match="latest exact human decision"):
+        append_campaign_landing(
+            project,
+            _landing(manifest, changed["id"], second_gate["id"]),
+        )
+
+
+def test_new_candidate_revision_preserves_prior_landing_as_stale(
+    tmp_path: Path,
+) -> None:
+    project = _project(tmp_path)
+    first = _manifest()
+    publish_campaign_manifest(project, first)
+    approved = append_campaign_review(project, _decision(first))
+    gate = append_campaign_gate(project, _passing_gate(first))
+    append_campaign_landing(project, _landing(first, approved["id"], gate["id"]))
+
+    revised = _manifest(
+        commit="bcdefa2",
+        fingerprint="registry-bcdefa2345678901",
+    )
+    publish_campaign_manifest(project, revised)
+
+    queue = campaign_review_queue(project)
+    assert queue[0]["manifest"]["commit"] == revised.commit
+    assert queue[0]["status"] == "awaiting_review"
+    assert queue[0]["landing"] is None
+    assert queue[0]["stale_landing_count"] == 1
+
+
 def test_designer_exposes_the_campaign_promotion_queue() -> None:
     root = Path("src/rulekit/server/static")
     html = (root / "index.html").read_text()
@@ -307,11 +436,13 @@ def test_designer_exposes_the_campaign_promotion_queue() -> None:
     assert '"GET", "/api/campaign/reviews"' in js
     assert "Record promotion decision" in js
     assert "Decision recorded" in js
+    assert "Landed on staging" in js
     assert "decisionMatchesPrevious" in js
     assert "isolated runner required" in js
     assert "campaign-mode" in css
     assert "Run exact gate" in js
     assert "Machine promotion gate" in js
+    assert ".campaign-status.landed" in css
 
     router = build_router(ServerState(Path("projects/curated")))
     paths = {route.path for route in router.routes}

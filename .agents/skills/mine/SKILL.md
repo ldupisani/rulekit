@@ -75,13 +75,19 @@ Before either path:
 
 1. Read `rulekit --project projects/curated campaign-queue`. Select only latest
    revisions whose human status is `approved` and whose exact machine gate is
-   present and passing. Stale/missing/failed evidence remains deferred.
+   present and passing, and which have no exact `landing` record. Landed,
+   stale, missing, or failed evidence remains deferred.
 2. Spawn one `mining-integrator` in setup mode for the batch staging worktree.
 3. Send approved candidates to that same integrator one at a time in priority
    order. After each final result, send the next; never parallelize integration.
-4. Stop at `mining/batch-<date>`. Never merge/fast-forward main, push, or run a
+4. After each green integrator result, append an exact central landing with
+   `rulekit --project projects/curated campaign-land <landing-json>`. Pin the
+   manifest commit/fingerprint, latest approval id, latest passing gate id,
+   staging branch/commit, and assigned increment. Stop if that durable record
+   is rejected; never send the next candidate first.
+5. Stop at `mining/batch-<date>`. Never merge/fast-forward main, push, or run a
    protected slice.
-5. Report landed/deferred/failed candidates, staging branch and commits, plus
+6. Report landed/deferred/failed candidates, staging branch and commits, plus
    the manual main-checkout TEST walk from `docs/methodology.md`. The user owns
    every protected look and subsequent promotion to main.
 
@@ -103,3 +109,4 @@ path succeeds and its protected-file hashes remain unchanged.
 - No manifest without canonical traces for every required specimen.
 - No integration without constitution pass + exact human approval + exact
   passing machine gate.
+- No second integration of an exact revision that already has a landing.

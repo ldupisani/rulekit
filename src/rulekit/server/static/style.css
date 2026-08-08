@@ -120,6 +120,7 @@ body.campaign-mode #impact-bar { display: none; }
   font-size: 0.5938rem; font-weight: 700;
 }
 .campaign-status.approved { color: var(--green); border-color: #2c5c41; }
+.campaign-status.landed { color: #70d7c7; border-color: #3b8176; }
 .campaign-status.changes_requested { color: var(--red); border-color: #5c3a42; }
 .campaign-status.unclear { color: var(--amber); border-color: #6a542b; }
 .campaign-status.awaiting_review { color: var(--accent); border-color: #35608a; }
