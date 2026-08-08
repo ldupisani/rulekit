@@ -1,5 +1,6 @@
 """M4 promotion evidence is exact, bounded, and append-only."""
 
+import subprocess
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -8,7 +9,14 @@ from pydantic import ValidationError
 
 from rulekit.cli import main as cli_main
 from rulekit.generation import (
+    CampaignAnswerEvidence,
+    CampaignCandidateManifest,
+    CampaignClassEvidence,
+    CampaignConstitutionEvidence,
+    CampaignGenerationContract,
+    CampaignImplementationContract,
     CampaignPromotionGate,
+    CampaignSpecimen,
     CampaignSpecimenReplay,
     CampaignStandingGateResult,
     append_campaign_gate,
@@ -18,6 +26,8 @@ from rulekit.generation import (
     latest_campaign_gate,
     read_campaign_gates,
 )
+from rulekit.server.candidate_runner import PromotionRuntime
+from rulekit.server.promotion_gate import run_campaign_promotion_gate
 
 
 def _trace_payload() -> dict:
@@ -181,3 +191,94 @@ def test_campaign_trace_cli_reuses_the_designer_canonicalizer(capsys) -> None:
     captured = capsys.readouterr()
     assert '"answer"' in captured.out
     assert '"matches"' in captured.out
+
+
+def test_promotion_gate_accepts_the_published_durable_manifest(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    trace = campaign_trace_evidence(_trace_payload())
+    manifest = CampaignCandidateManifest(
+        candidate_id="holder-question",
+        class_name="Exact holder quantity questions",
+        branch="mining/cand-holder-question",
+        commit="abcdef1",
+        registry_fingerprint="registry-abcdef0123456789",
+        mechanism="One declared holding premise and exact-holder ask.",
+        class_evidence=CampaignClassEvidence(
+            pool_frequency=1,
+            expected_solved=1,
+            walked_item_ids=["dev-invented-1"],
+            premise_mechanism="A holding premise emits one quantity.",
+            ask_mechanism="An exact-holder ask selects that quantity.",
+            structural_summary=["One invented item exercises the gate boundary."],
+        ),
+        generation_contract=CampaignGenerationContract(
+            premise_rules=["invented/holding"],
+            ask_rules=["ask/invented-holder"],
+            required_specimen_kinds=["answerable"],
+        ),
+        implementation_contract=CampaignImplementationContract(
+            files_expected=["packs/invented/rules.yaml"],
+            synthetic_tests=["tests/test_invented_holder.py"],
+            class_justification="The fixture exercises published evidence.",
+        ),
+        constitution_review=CampaignConstitutionEvidence(
+            verdict="pass",
+            notes="Read-only review passed.",
+        ),
+        specimens=[
+            CampaignSpecimen(
+                id="answerable",
+                kind="answerable",
+                title="Complete question",
+                sentence="The keeper had 4 lanterns.",
+                expectation="The existing trace remains exact.",
+                actual_rule_ids=["invented/holding"],
+                answer=CampaignAnswerEvidence(
+                    kind="number",
+                    value=4,
+                    reason="one exact quantity",
+                ),
+                trace=trace,
+            )
+        ],
+    )
+    published = {
+        **manifest.model_dump(),
+        "project": "invented-campaign",
+        "published_at": "2026-08-08T15:41:32+00:00",
+    }
+    runtime = PromotionRuntime(
+        root=tmp_path,
+        commit="abcdef1",
+        python=tmp_path / "python",
+        rulekit=tmp_path / "rulekit",
+    )
+    monkeypatch.setattr(
+        "rulekit.server.promotion_gate.STANDING_SPECS",
+        (),
+    )
+    monkeypatch.setattr(
+        "rulekit.server.promotion_gate.relevant_campaign_reviews",
+        lambda project, candidate: ([], []),
+    )
+    monkeypatch.setattr(
+        "rulekit.server.promotion_gate._protected_digest",
+        lambda roots: {},
+    )
+    monkeypatch.setattr(
+        "rulekit.server.promotion_gate._run",
+        lambda *args, **kwargs: subprocess.CompletedProcess(args, 0, "ok", ""),
+    )
+
+    gate = run_campaign_promotion_gate(
+        _project(tmp_path),
+        published,
+        runtime,
+        runtime,
+        lambda text, interpretation, reference_year: _trace_payload(),
+    )
+
+    assert gate.passed is True
+    assert gate.candidate_id == manifest.candidate_id

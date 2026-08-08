@@ -24,7 +24,10 @@ from ..generation.campaign_gates import (
     campaign_trace_diff,
     campaign_trace_evidence,
 )
-from ..generation.campaign_reviews import CampaignCandidateManifest
+from ..generation.campaign_reviews import (
+    CampaignCandidateManifest,
+    DurableCampaignCandidateManifest,
+)
 from ..generation.reviews import read_reviews
 from ..harness.snapshot import Diff, ProjectionDiff, diff as snapshot_diff
 from .candidate_runner import PromotionRuntime
@@ -280,7 +283,10 @@ def run_campaign_promotion_gate(
 ) -> CampaignPromotionGate:
     """Run all replay and fixed standing checks for one exact candidate."""
 
-    manifest = CampaignCandidateManifest.model_validate(manifest_data)
+    # Promotion gates only run after central publication.  The queue therefore
+    # supplies the durable record, including the project and publication time,
+    # rather than the pre-publication candidate payload.
+    manifest = DurableCampaignCandidateManifest.model_validate(manifest_data)
     specimens: list[CampaignSpecimenReplay] = []
     for specimen in manifest.specimens:
         if specimen.trace is None:
