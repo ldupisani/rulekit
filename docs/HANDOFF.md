@@ -39,11 +39,17 @@ which could make a resumed orchestrator land the same revision twice. A new
 append-only `campaign-landing@1` ledger pins the exact manifest, latest human
 review, latest passing gate, staging branch/commit, and increment. The queue
 now reports that exact revision as `landed`, freezes its decision controls,
-and excludes it from future integration. The next M6 action is the initial
-two-candidate batch. The current gate is 4,725 tests;
+and excludes it from future integration. The initial M6 two-candidate scout
+then re-derived the current DEV-train worklist at `59087b4` (1,401 fully-read
+declines) but found no class meeting the automatic ≥3-final-blocker bar. A
+264-row question-scoped-conditional probe, a five-item temporal-aggregate
+walk, and 36 aggregate-marker rewrites produced zero verified complete wins.
+No implementer worktree was created. M6 now needs an explicitly product-led
+manual class or a later re-scout after a named blocker changes; do not lower
+the automatic threshold. The current gate is 4,725 tests;
 curated and all answer/projection DEV gates are neutral with zero wrong or
-incorrect commitments. No protected TEST/generalization look was spent. M6's
-first real batch is next. The prior generation workbench is now campaign
+incorrect commitments. No protected TEST/generalization look was spent. The
+prior generation workbench is now campaign
 infrastructure rather than a parked or replaced direction.
 
 **Status:** G1 through G4, G5a through G5g, G6, Reading-origin review,

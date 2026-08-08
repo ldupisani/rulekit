@@ -1630,3 +1630,39 @@ must belong to `quantity_location`, and the query entity comes from the
 structurally explicit owner. It buys one DEV-train item (105/0 to 106/0), is
 byte-neutral on DEV-holdout at 43/0, and preserves every standing cross-corpus
 gate.
+
+## Mining v2's first real batch had no buyable candidates (2026-08-08)
+
+The new workflow completed its no-op smoke, then re-derived GSM8K DEV-train at
+base `59087b4`: 3,772 items, 107 correct, zero wrong, 1,508 fully read, and
+1,401 fully-read declines. The scout was asked for two complete vertical
+classes and required at least three walked items where that complete increment
+was the final blocker. It returned none.
+
+The two strongest apparent classes both collapsed under the buy-test:
+
+- **Question-scoped leading arithmetic conditions:** splitting or promoting
+  the leading condition across 264 rows produced zero correct answers. Eight
+  walked item ids (`5a3ad00ed12b`, `326f0d0689b0`, `89ff80d40871`,
+  `ea6247278e60`, `9dfffcc8564c`, `20f8762a5e24`, `c2a10e759d14`, and
+  `2d23fc875ce3`) still lacked an ordinary premise relation, saturation step,
+  or residual ask contract. A broad retry would also repeat the documented
+  retry-on-decline TEST failure.
+- **Same-holder totals across explicit periods or occurrences:** five walked
+  items (`e7c1fbc0b1a6`, `7b40fb2df720`, `ed761679eb43`, `5abb5a8b6d3a`, and
+  `2f41d5169c11`) shared the aggregate intent, but none emitted the complete
+  set of time-scoped quantities. Comparative premises, later-period
+  relations, or pronoun resolution were still missing, so an aggregate
+  consumer was not the final blocker.
+
+A separate 36-case leading/postposed aggregate-marker rewrite probe also
+produced zero verified answers. These are ceilings and shared surfaces, not
+candidate yields.
+
+**Disposition:** no implementers were dispatched, no candidate manifests were
+published, and no protected slice was touched. The ≥3 threshold prevented the
+new pipeline from repeating the old zero-yield enabler trap. Do not lower it
+to fill a nominal two-candidate batch. The next honest move is either an
+explicitly product-led manual class, which is reviewed as such rather than
+presented as automatic corpus mining, or a re-scout after a named missing
+premise/ask blocker has genuinely changed.

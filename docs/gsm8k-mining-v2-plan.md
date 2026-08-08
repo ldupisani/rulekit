@@ -216,6 +216,15 @@ TEST/generalization look was spent.
   append-only landing evidence now closes that edge and makes repeat
   integration mechanically ineligible.
 - Run an initial batch of two complete candidates.
+  The first live scout attempted this at `59087b4` and dispatched no
+  implementers. It measured 1,401 fully-read DEV-train declines, then found
+  zero qualifying final-blocker wins in the two strongest semantic classes:
+  question-scoped leading arithmetic conditions (264-row probe) and
+  same-holder totals over explicit periods/occurrences (five-item fact walk).
+  Thirty-six leading/postposed aggregate-marker rewrites also produced zero
+  complete wins. This is a measured stop, not permission to weaken the ≥3
+  threshold. Resume with a user-chosen product-led manual class, or re-scout
+  only after a named missing premise/ask blocker has changed.
 - Spend protected GSM8K TEST looks manually from the main checkout, one per
   approved vertical increment, only after all preceding gates pass.
 
