@@ -29,12 +29,16 @@ packs, no LLM at runtime. Architecture: `docs/architecture.md`. Measurement disc
 
 ## Batch mining (`/mine`)
 
-`/mine [count]` runs the mining loop as a multi-agent batch (`.claude/skills/mine/SKILL.md`):
-scout → parallel Sonnet implementers in isolated worktrees (full dev gate each) → constitution
-review of every diff → sequential landing onto `mining/batch-<date>` with a full re-gate per
-increment. The batch STOPS at the staging branch: TEST looks stay manual (one per landed
-increment, walked in commit order; a precision drop reverts that commit), and only surviving
-commits are fast-forwarded to `main` by hand. `/mine --smoke` self-tests the pipeline.
+`/mine [count]` runs Mining v2 as a multi-agent batch
+(`.claude/skills/mine/SKILL.md`): GSM8K DEV scout → parallel isolated
+implementers with generated evidence → constitution review → immutable
+manifests in the Designer. It then STOPS for human review and the exact machine
+gate. `/mine --integrate-approved` resumes only exact approved/machine-passed
+revisions and lands them sequentially onto `mining/batch-<date>`, with a full
+re-gate per increment. It never merges `main` or touches TEST. Protected looks
+remain manual, one per landed increment in commit order; a precision drop
+reverts that commit, and only survivors are fast-forwarded by hand.
+`/mine --smoke` exercises the same paused pipeline with a no-op candidate.
 
 ## Commands
 

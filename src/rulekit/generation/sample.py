@@ -498,6 +498,47 @@ def _possessed_fillers(reg: Registry, fixtures: _Fixtures) -> list[_Filler]:
     ]
 
 
+def _qualified_fillers(reg: Registry) -> list[_Filler]:
+    """Compose declared compatible modifiers with noun heads.
+
+    ``type: qualified`` is structural: the ordinary analyzer must merge the
+    phrase and retain its qualifier. The compatibility table is the bounded
+    project declaration that licenses generated adjective/noun and noun/noun
+    combinations; this function never invents an open-ended compound.
+    """
+
+    modifiers = [
+        *_lexical_fillers(reg, sense="adjective"),
+        *_lexical_fillers(reg, sense="noun"),
+    ]
+    heads = [
+        *_lexical_fillers(reg, sense="noun"),
+        *[
+            _Filler(
+                surface=surface,
+                identity=singular,
+                number="plural",
+                kind="noun",
+            )
+            for surface, singular in sorted(reg.plural_to_singular.items())
+            if surface and not any(ch.isspace() for ch in surface)
+        ],
+    ]
+    return [
+        _Filler(
+            surface=f"{modifier.surface} {head.surface}",
+            identity=head.identity,
+            qualifier=modifier.identity,
+            number=head.number,
+            kind="noun",
+        )
+        for modifier in modifiers
+        for head in heads
+        if modifier.identity != head.identity
+        and reg.attribute_applies_to(modifier.identity, head.identity)
+    ]
+
+
 def _raw_domain(
     token: MatchToken, reg: Registry, fixtures: _Fixtures
 ) -> list[_Filler]:
@@ -575,16 +616,27 @@ def _raw_domain(
         return _counted_fillers(reg)
     if slot_type == "possessed":
         return _possessed_fillers(reg, fixtures)
+    if slot_type == "qualified":
+        return _qualified_fillers(reg)
+    if slot_type == "auxiliary":
+        return _lexical_fillers(reg, sense="auxiliary")
     if slot_type == "pronoun":
         return _lexical_fillers(reg, sense="pronoun")
     if slot_type == "modal":
         return _lexical_fillers(reg, sense="modal")
     if slot_type == "future_modal":
-        return _lexical_fillers(
-            reg,
-            sense="modal",
-            category="future_modal",
-        )
+        # The matcher contract is the union of ordinary factual auxiliaries
+        # and the pack-declared future/conditional modal subset. Keeping the
+        # realizer on the same union prevents generation from silently
+        # exercising only will/would questions.
+        return [
+            *_lexical_fillers(reg, sense="auxiliary"),
+            *_lexical_fillers(
+                reg,
+                sense="modal",
+                category="future_modal",
+            ),
+        ]
     if slot_type == "verb":
         return _lexical_fillers(
             reg,

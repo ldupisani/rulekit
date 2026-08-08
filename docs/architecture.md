@@ -13,8 +13,10 @@ in [`HANDOFF.md`](HANDOFF.md), evaluation policy in
 [`methodology.md`](methodology.md), and project-wide engineering constraints in
 [`../CLAUDE.md`](../CLAUDE.md).
 
-The active designer direction is the deterministic single-sentence generation
-and human review workbench specified in
+The active campaign uses the deterministic generation and human-review
+workbench as a promotion gate for isolated mining candidates. Its campaign
+contract is [`gsm8k-mining-v2-plan.md`](gsm8k-mining-v2-plan.md); the underlying
+Designer product remains specified in
 [`generation-and-annotation-plan.md`](generation-and-annotation-plan.md).
 Its G1–G4 exploration loop, G5a declared-plural and G5b declared-counted
 realizers, G5c bounded proper-name possessive realizer, G5d declared generic
@@ -727,11 +729,14 @@ The optional `server` dependencies provide a local FastAPI application and a
 vanilla-JavaScript designer. The designer exposes:
 
 - a Generate mode for seeded rule realization and human review;
+- separate exact ask, answerable-scenario, and missing-evidence generation;
 - structural exploration objectives, conjunctive grammar/category/fact
   filters, and a generation-health panel;
 - an explicit Reading-sentence handoff into that same review workbench;
 - targetless Reading reviews for intended interpretations and missing-rule
   suggestions;
+- a campaign promotion queue for immutable candidate manifests and
+  fingerprint-pinned, append-only human decisions;
 - a reading decision stepper;
 - fact, gap, collision, and deficiency views;
 - semantic, deictic, proof, and clarification views;
@@ -746,7 +751,7 @@ surface; the designer's impact panel targets suites and answer datasets.
 ### Generation and review workbench
 
 `rulekit.generation` is an authoring layer outside the runtime kernel. Its
-implemented G1–G6b data flow is:
+implemented G1–G7 data flow is:
 
 ```text
 loaded Project + project generation fixtures
@@ -797,6 +802,22 @@ allowlisted YAML edit → compile/reload or rollback
 retest identical pinned sentence (no realization pass)
         ↓
 before/after behavior diff
+
+loaded ask contracts + the same project-backed lexical domains
+        ↓
+independent supported/blocker status per ask
+        ↓
+seeded question realization → ordinary analyze() + match_ask()
+        ↓
+ask only or deliberate missing evidence
+        OR
+generic emit-field inversion → supported premise generation
+        ↓
+ordinary solve() as the sole answer oracle
+        ↓
+one-to-three-premise bounded search + removal minimality
+        ↓
+question + normalized query + generated evidence + answer shape
 ```
 
 Availability is intentionally structural. A rule is supported when the
@@ -807,6 +828,25 @@ condition asserts that the prose is grammatical, the premises are well
 scoped, or the emitted facts are useful; those are the human review questions.
 This separation lets missing definiteness, agreement, and other bad
 commitments become inspectable evidence instead of hidden prerequisites.
+
+Ask availability is a separate contract. A supported independent ask must
+have a project-backed realizer for every token and must win the ordinary
+ask-specificity comparison after round-trip analysis. Declared plural noun
+surfaces and the matcher's factual-auxiliary/future-modal union are both
+visible. Bounded name-list spans are composed from project fixtures and the
+pack-declared holder conjunction. Discourse-group captures and arbitrary
+spans remain blocked because an independent question cannot truthfully invent
+their antecedent.
+
+An answerable ask scenario never uses a consumer-specific sentence template.
+The authoring layer compares normalized query fields with whole-slot emitted
+fact templates to propose locks for ordinary premise generation, then calls
+the normal solver on each bounded combination. A commitment is accepted only
+from that solver. Candidate sets are searched in cardinality order and each
+returned premise is removed in turn to prove irreducibility. Ask-only,
+answerable, and deliberate missing-evidence records remain distinct from the
+premise exploration ledger. Their answer projection preserves number, series,
+witnesses, verdict, clarification, and decline shapes.
 
 Generated candidates carry an explicit authoring mode. `strict` draws every
 slot from its complete declared domain and retries until the ordinary matcher
@@ -1430,12 +1470,100 @@ further changes use Review History → Edit so every correction is durable
 rather than browser-local. Neither authoring ledger contributes to `Registry`,
 its fingerprint, or runtime results.
 
+Mining-campaign review is a third authoring ledger with a different ownership
+boundary. An orchestrator publishes one immutable JSON manifest per candidate
+id and commit under
+`generation/campaign/candidates/<candidate>/<commit>.json`. The manifest
+uses `rulekit/campaign-review@2`. It contains a bounded class/yield claim,
+premise/ask mechanisms, vocabulary quarantine and collision evidence,
+generation targets, expected files and synthetic tests, class justification,
+a passing read-only constitution verdict, risks, explicit relevant review ids,
+and strict-positive, boundary, answerable, or deliberate-decline specimens
+with canonical traces and the candidate registry fingerprint. Re-publishing identical content is
+idempotent; changing content at the same candidate/commit path is rejected.
+
+The central Designer alone appends promotion decisions to
+`generation/campaign/reviews.jsonl`. Approval requires every manifest
+specimen to be reviewed `valid`; changes requested requires an invalid
+specimen, and an unclear decision requires an unclear specimen. A decision is
+pinned to candidate id, commit, and registry fingerprint. Publishing a later
+candidate revision leaves older decisions recoverable but marks them stale;
+they cannot approve the new revision. The queue displays captured evidence
+without importing candidate code into the central process.
+
+For a foreign candidate, the Designer can own one isolated on-demand runner.
+The runner resolves an exact registered Git worktree by branch, expands and
+checks the manifest commit, refuses the main checkout and dirty worktrees,
+requires the candidate worktree's own `.venv/bin/rulekit`, and serves the same
+project-relative path on an ephemeral loopback port. Startup succeeds only if
+the candidate reports the manifest registry fingerprint and every editable
+document and indexed rule/ask source resolves inside that worktree. A source
+symlink or project configuration therefore cannot turn the proxy into access
+to the main checkout.
+
+The central API exposes no generic candidate proxy. Its allowlist is project
+metadata, Reading trace, exact editable YAML read/write, and deterministic
+pinned generation retest. Benchmark, impact, baseline, TEST, and campaign
+review-ledger endpoints are absent. The central Designer remains the only
+writer of durable promotion decisions; a candidate edit makes the worktree
+dirty and mechanically blocks approval until a new commit, gate, fingerprint,
+and manifest exist. Switching first validates the replacement, so an invalid
+candidate does not evict a healthy runner. Stopping or application shutdown
+terminates only the owned candidate child, never another Designer server.
+
+The machine promotion gate adds a fourth, central append-only record at
+`generation/campaign/gates.jsonl`. Each specimen manifest carries canonical
+trace evidence, including exact ordinary matches and bindings, facts,
+collisions, deficiencies, ask bindings, answer shape/value/commitment,
+clarification, and proof. The gate replays that evidence in the isolated
+candidate runtime and names every changed section. It also replays explicit
+review ids plus every live non-tombstoned review whose target rule intersects
+the manifest. Review replay is mechanical: it reports the current trace and
+whether the target is present but never guesses whether a human semantic
+defect has been resolved.
+
+One shared benchmark lock serializes the expensive gate. The central checkout
+at `HEAD` supplies fresh baseline snapshots and the exact clean candidate
+worktree supplies fresh candidate snapshots for every standing inspectable
+answer and projection DEV slice. The same run executes
+`pytest -q -n 4 --dist=worksteal`, curated lint, and FOLIO's zero-numeric-
+commitment assertion. Curated correctness is derived from the emitted item set;
+there is no historical suite-size constant. Protected ledgers and
+TEST/generalization files are never parsed: before/after byte digests only
+prove they were unchanged. Candidate proxy mutations are held during the run,
+both Git identities are revalidated afterward, and approval requires the
+latest passing gate for the exact candidate commit and registry fingerprint.
+
+Mining orchestration has one behavioral source of truth:
+`.agents/protocols/`. Codex TOML roles and Claude Markdown roles only launch an
+agent and direct it to the matching canonical protocol. The Codex `mine` skill
+scouts GSM8K DEV-train, runs independent implementations in parallel, performs
+read-only constitution review, publishes manifests, and then deliberately
+stops. Human review and the exact machine gate happen in the existing Designer.
+`/mine --integrate-approved` is a separate resume path; it selects only exact
+approved/machine-passed queue records and sends them through one sequential
+integrator. The workflow stops at its staging branch before protected TEST.
+
+Three non-HTTP CLI seams make that pause durable and independently testable:
+`campaign-trace` captures one canonical specimen through the same function as
+`POST /api/trace`; `campaign-publish` validates and centrally publishes a
+constitution-passed immutable manifest; and `campaign-queue` returns exact
+human plus machine state for a resume. No orchestration path contains a fixed
+suite cardinality.
+
+This is process/import, project-root, and HTTP-route isolation for locally
+authored candidate code; it is not an operating-system sandbox for hostile
+code. A future untrusted-code threat model would require a separate OS or
+container boundary.
+
 The implemented endpoints are:
 
 ```text
 GET  /api/generation/rules
+GET  /api/generation/asks
 GET  /api/generation/exploration
 POST /api/generation/candidate
+POST /api/generation/ask
 POST /api/generation/from-reading
 POST /api/generation/retest
 POST /api/generation/minimal-pair
@@ -1444,6 +1572,19 @@ POST /api/generation/review
 GET  /api/generation/history
 PATCH /api/generation/review/{review_id}
 DELETE /api/generation/review/{review_id}
+GET  /api/campaign/reviews
+POST /api/campaign/reviews/candidate
+POST /api/campaign/reviews/{candidate_id}
+GET  /api/campaign/gates/{candidate_id}
+POST /api/campaign/gates/{candidate_id}
+GET  /api/campaign/runner
+POST /api/campaign/runner/{candidate_id}/start
+POST /api/campaign/runner/stop
+GET  /api/campaign/runner/{candidate_id}/project
+POST /api/campaign/runner/{candidate_id}/trace
+GET  /api/campaign/runner/{candidate_id}/doc
+PUT  /api/campaign/runner/{candidate_id}/doc
+POST /api/campaign/runner/{candidate_id}/retest
 ```
 
 Supported generator category roots now include noun, verb, adjective,
@@ -1463,7 +1604,7 @@ also implemented.
 ```text
 src/rulekit/
   data/             strict schemas, pack loading, project loading, registry compilation
-  generation/       designer-only deterministic realization and review history
+  generation/       designer-only realization, review history, and campaign promotion evidence
   kernel/           reading, facts, saturation, document context, answering, guards
   kernel/consumers/ named answer consumers
   harness/          answer/projection benches, firewalls, snapshots, diffs

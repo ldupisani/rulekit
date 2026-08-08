@@ -1,113 +1,105 @@
 ---
 name: mine
-description: Run one GSM8K mining batch — scout candidates, implement them in parallel Sonnet worktrees under the full dev gate, constitution-review each diff, integrate sequentially onto a staging branch. Stops before TEST; never merges main.
-argument-hint: "[count] [--smoke]"
+description: Run or resume one GSM8K Mining v2 batch with generated evidence, Designer human review, exact machine gates, constitution review, and sequential integration. Stops before protected TEST and never merges main.
+argument-hint: "[count] [--smoke] [--integrate-approved]"
 ---
 
-# /mine — one automated mining batch
+# /mine — GSM8K Mining v2
 
-Runs the mining methodology as a multi-agent pipeline:
-**Scout** (session model) selects candidate increments from fresh
-`rulekit stats` + the HANDOFF worklist → **parallel junior implementers**
-(Sonnet) each build one candidate in an isolated git worktree through the full
-dev gate → **constitution reviewer** (session model) checks each gated branch
-diff for lexicon-in-Python / one-off-parsing / GSM8K-in-tests / quarantine
-violations → **integrator** (Sonnet) lands review-passed candidates one at a
-time onto `mining/batch-<date>`, re-running the FULL dev gate on the
-integrated state after each pick (parallel dev gates don't compose).
+This is the Codex-native orchestrator. Agent behavior lives only in
+`.agents/protocols/`; `.codex/agents/*.toml` are thin launch adapters. Read
+`AGENTS.md`, `.agents/protocols/standing-gate.md`, and the active Mining v2 plan
+before starting.
 
-The pipeline STOPS at the staging branch. It never merges or fast-forwards
-`main`, never runs `--slice test`, never spends a TEST look.
+Agent registrations are loaded when a Codex task starts. If a long-running
+task still advertises an old role description (especially a scout mentioning
+DIFG), do not launch that stale role. Launch a default subagent with an
+explicit first instruction to read the matching canonical protocol instead.
+The files, not session-cached role metadata, are authoritative.
+
+The workflow has a deliberate human pause:
+
+```text
+scout → parallel implementation → constitution review → publish manifests
+      → STOP for Designer review + exact machine gate
+      → /mine --integrate-approved → sequential integration → STOP before TEST
+```
 
 ## Arguments
 
-- `count` — number of candidates to scout (default **5**).
-- `--smoke` — pipeline self-test: skips the scout, runs one injected no-op
-  candidate (YAML comment + trivial synthetic test, diff-NEUTRAL) through
-  every stage, then all branches are deleted in cleanup. Use after changing
-  the pipeline itself.
+- `count`: candidate briefs to scout, default 2.
+- `--smoke`: one no-op candidate that exercises the same manifest, review,
+  machine-gate, and integration seams. It may claim `class_evidence.mode=smoke`
+  but receives no other gate exemption.
+- `--integrate-approved`: resume the current batch using only exact approved,
+  machine-passed queue records. Do not scout or implement.
 
-## Protocol for the main agent
+## Preflight
 
-### 1. Preflight (you have Bash; the workflow does not)
+Before either path:
 
-Abort with a clear message if any of these fail:
+1. Require the main checkout on `main` with no source/doc changes. Project-local
+   generation and campaign ledgers may be dirty because they are append-only
+   human evidence; report them, never stage or discard them.
+2. Prune worktree metadata and report leftover `mining/*` branches/worktrees.
+3. Run curated suite and require all emitted items correct, without comparing
+   to a historical count.
+4. Never stop or restart the user's Designer server.
 
-- `git -C <repo> status --porcelain` is empty (clean tree) and the current
-  branch is `main`.
-- `git -C <repo> worktree prune`, then warn (don't abort) if
-  `git branch --list 'mining/*'` shows leftovers from a previous batch —
-  ask nothing, just report them; stale `mining/cand-*` branches from a
-  crashed run should be surfaced to the user before piling on more.
-- Quick sanity: `uv run rulekit --project projects/curated bench --slice suite`
-  → `correct 65`, `wrong 0`.
+## New batch
 
-### 2. Run the workflow
+1. Spawn one `mining-scout` agent with the requested count, exact base commit,
+   main/worktree paths, and a JSON output request matching its canonical
+   protocol. For `--smoke`, inject the no-op brief instead.
+2. Validate briefs locally against `CampaignClassEvidence`,
+   `CampaignGenerationContract`, and `CampaignImplementationContract`. Drop a
+   malformed, overlapping, zero-yield, or known-negative brief before spending
+   an implementer.
+3. Spawn one `mining-implementer` per accepted brief in parallel. Assign each
+   exact worktree, branch, files/classes it owns, and uncommitted manifest path.
+   State that workers are not alone and must never revert one another.
+4. For every `gated` result, spawn a `constitution-reviewer`. Failed/deferred
+   branches remain for postmortem and are never published. Attach the passing
+   structured verdict as `constitution_review` in the uncommitted manifest;
+   never alter captured candidate evidence.
+5. Validate every review-passed manifest with the central checkout, then publish
+   it using:
 
-Invoke the Workflow tool with `scriptPath: .Codex/workflows/mine.js` and
-args (actual JSON values, not a string):
+   `rulekit --project projects/curated campaign-publish <manifest-path>`
 
-```
-{ "count": <count>, "smoke": <bool>, "date": "<today YYYY-MM-DD>",
-  "repo": "<absolute repo path>", "wtRoot": "<absolute repo path>-worktrees" }
-```
+6. Stop. Report published candidates and tell the user to open Campaign in the
+   existing Designer, inspect all specimens, record a decision, and run the
+   exact machine gate. Do not poll for human approval and do not integrate yet.
 
-Do NOT hand-implement the phases inline in the conversation, and do not
-"help" a struggling subagent by editing its worktree from the main session.
+## Resume approved
 
-### 3. Cleanup (after the workflow returns)
+1. Read `rulekit --project projects/curated campaign-queue`. Select only latest
+   revisions whose human status is `approved` and whose exact machine gate is
+   present and passing. Stale/missing/failed evidence remains deferred.
+2. Spawn one `mining-integrator` in setup mode for the batch staging worktree.
+3. Send approved candidates to that same integrator one at a time in priority
+   order. After each final result, send the next; never parallelize integration.
+4. Stop at `mining/batch-<date>`. Never merge/fast-forward main, push, or run a
+   protected slice.
+5. Report landed/deferred/failed candidates, staging branch and commits, plus
+   the manual main-checkout TEST walk from `docs/methodology.md`. The user owns
+   every protected look and subsequent promotion to main.
 
-- Remove candidate worktrees (branches survive):
-  `git worktree remove --force <wtRoot>/<slug>` for each candidate, then
-  `git worktree prune`. Keep the staging worktree if increments landed
-  (the user spends TEST looks from it); remove it too if nothing landed.
-- Smoke run: additionally delete `mining/batch-<date>` and
-  `mining/cand-smoke-noop`, remove the staging worktree, then verify
-  `git branch --list 'mining/*'` is empty, `git worktree list` is clean, and
-  the main checkout's `projects/gsm8k/snapshots/` (incl. `test-ledger.jsonl`)
-  is untouched. Report PASS/FAIL per stage.
+## Cleanup
 
-### 4. Report
+Do not remove a published candidate worktree while it may still be reviewed in
+the Designer. After integration or explicit deferral, stop only that owned
+candidate runner if necessary, remove its worktree, and prune. Never touch an
+unrelated running server. A smoke branch is removed only after its full resumed
+path succeeds and its protected-file hashes remain unchanged.
 
-Present: a landed table (increment N, class, commit), deferred table (slug,
-phase, reason), failed table (slug, `[FAILED-GATE]` branch for postmortem),
-and the staging branch name. Then the exact manual steps:
+## Hard rules
 
-```
-# per landed increment, in order (one TEST look each — methodology step 8):
-#
-# *** RUN THIS FROM THE MAIN CHECKOUT. NEVER FROM A STAGING WORKTREE. ***
-# Every worktree has its OWN gitignored projects/gsm8k/snapshots/, so a look spent
-# inside one writes its ledger row THERE — and that row dies with the worktree.
-# On 2026-07-14 five looks (#120-124) were spent from staging worktrees and their
-# rows were lost; see the `reconciliation` entry in test-ledger.jsonl. The results
-# survived in HANDOFF, but the LEDGER is the tamper-evident record of a rationed
-# budget, and a budget whose spend can silently vanish is not rationed at all.
-#
-cd <repo>                     # the MAIN checkout — check this before every look
-git checkout <commit-of-increment-N>
-uv run rulekit --project projects/gsm8k bench --slice test --spend-test-look
-# precision holds vs last look -> keep; drops -> revert that commit (methodology §8)
-git checkout main
-# after walking all increments: fast-forward main past the survivors and push
-```
-
-Sanity-check the ledger after every batch — `wc -l projects/gsm8k/snapshots/test-ledger.jsonl`
-must equal the number of looks spent to date. If it does not, a look leaked into a
-worktree. Disclose it; never reconstruct the missing rows.
-
-After the TEST-look walk and HANDOFF records are committed, `git push
-origin main` — every processed batch ends pushed (standing user
-instruction, 2026-07-11); don't wait to be asked.
-
-Suggest (don't do): durable lessons from failed candidates belong in
-`docs/negative-results.md`; deferred briefs go back to the HANDOFF worklist.
-
-## Hard rules (enforce even if a subagent drifts)
-
-- TEST looks are the user's budget, spent manually, ONE per landed increment,
-  walking the linear staging commits in order. A TEST precision drop reverts
-  that increment's commit — no matter how good DEV looked.
-- Never merge to `main` from this pipeline; never `--spend-test-look`.
-- Mining scripts are throwaway scratchpad files (methodology §4) — if any got
-  committed, that's a review failure to report.
+- No TEST/generalization or protected-item inspection.
+- No automatic approval, integration before human approval, main merge, or push.
+- No inline implementation from the root agent; candidate code belongs to its
+  assigned implementer worktree.
+- No historical suite/test count in workflow logic.
+- No manifest without canonical traces for every required specimen.
+- No integration without constitution pass + exact human approval + exact
+  passing machine gate.

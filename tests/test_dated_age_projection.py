@@ -191,6 +191,7 @@ def test_designer_trace_accepts_an_explicit_reference_year() -> None:
             {"entity": "child", "measure": "year", "value": 26},
         ],
         "reason": "dated year ages for ['teacher', 'child'] projected to 2026",
+        "committed": True,
         "clarification": None,
     }
 

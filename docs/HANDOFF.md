@@ -1,8 +1,41 @@
-# rulekit handoff — generation workbench
+# rulekit handoff — GSM8K Mining v2
 
 **Updated:** 2026-08-08
 
-**Active campaign:** deterministic rule generation and human review
+**Active campaign:** GSM8K Mining v2 with generated evidence and a human
+promotion gate in the Designer
+
+**Campaign checkpoint:** M0 is complete at commit `1dd2159`; M1's durable web
+promotion queue, M2's isolated on-demand candidate runner, M3's G7 ask and
+scenario generator, and M4's machine-readable promotion gate are implemented
+and gated. M5's GSM8K-specific workflow and single canonical agent protocol
+set are also implemented and gated. Candidate manifests are
+immutable per commit, decisions are
+append-only and fingerprint-pinned, approval requires every specimen to be
+valid, and later revisions expose old decisions as stale. The Designer can
+start one exact candidate worktree in its own process, route Reading,
+allowlisted YAML edits, and pinned retests to it, then stop that child without
+touching the ordinary server. Dirty or fingerprint-divergent live candidates
+cannot be approved. G7 independently realizes 93/104 loaded curated ask
+surfaces, searches generated premise rules for a removal-minimal answerable
+scenario through the ordinary solver, and produces deliberate missing-evidence
+cases without reading benchmark examples or golds. M4 replays every canonical
+specimen surface and relevant live review against the exact candidate, then
+derives fresh baseline/candidate snapshots for the full standing DEV matrix.
+Its durable result is revision-pinned and mechanically required for approval;
+the gate also runs the parallel full suite, lint, FOLIO zero-commit safety, and
+content-blind protected-artifact integrity checks. M5 replaces the stale DIFG
+scout and hard-count JavaScript workflow with a Codex-native two-stage flow:
+parallel implementation and constitution review publish complete v2 manifests,
+then the process pauses for Designer human review and exact machine gating;
+only an explicit resume can integrate exact approved revisions sequentially.
+Candidate evidence now includes class/yield, generation targets, expected
+scope, synthetic tests, constitution review, canonical traces, and opaque
+answer/projection gate identities. The current gate is 4,720 tests;
+curated and all answer/projection DEV gates are neutral with zero wrong or
+incorrect commitments. No protected TEST/generalization look was spent. M6's
+no-op smoke candidate is next. The prior generation workbench is now campaign
+infrastructure rather than a parked or replaced direction.
 
 **Status:** G1 through G4, G5a through G5g, G6, Reading-origin review,
 targetless sentence-interpretation review, fact-level review, the
@@ -268,10 +301,23 @@ least-covered objective deliberately forces the selected optional or literal
 outcome. Fresh success/failure rows preserve the objective, filters, and
 target without invalidating older ledger rows. The Designer also shows
 structural coverage, current success/failure health, and aggregated terminal
-blockers. Ask generation remains the next planned slice and will keep ask,
-answerable-scenario, and deliberate-decline coverage separate.
+blockers. G7 ask and scenario generation is also implemented. Generate now
+lists ask support independently from premise support, round-trips an exact
+question through the ordinary matcher, and can produce ask-only, smallest
+found answerable, or deliberately missing-evidence scenarios. Generic
+emit-template inversion proposes premise locks, but only ordinary generated
+premises and the normal solver decide whether a scenario answers; removal
+checks prove the returned set is irreducible. The current curated boundary is
+93/104 independent ask surfaces. Context-dependent discourse groups and
+arbitrary spans remain blocked rather than receiving fabricated antecedents.
+Number, series, witness, verdict, clarification, and decline serialization is
+covered, while premise, ask, answerable-scenario, and deliberate-decline
+evidence remain separate.
 
 **Active plan:**
+[`gsm8k-mining-v2-plan.md`](gsm8k-mining-v2-plan.md)
+
+**Supporting product plan:**
 [`generation-and-annotation-plan.md`](generation-and-annotation-plan.md)
 
 **Parked campaign:** COGS/PMB semantic projection and the Phase E entry gate.
@@ -288,16 +334,20 @@ semantic-projection work.
 ## Read before changing code
 
 1. [`../CLAUDE.md`](../CLAUDE.md) — project constitution and standing gates.
-2. [`generation-and-annotation-plan.md`](generation-and-annotation-plan.md) —
-   active product contract, UI loop, architecture, and delivery increments.
-3. [`architecture.md`](architecture.md) — current runtime architecture.
-4. [`methodology.md`](methodology.md) — standing regression and precision
+2. [`gsm8k-mining-v2-plan.md`](gsm8k-mining-v2-plan.md) — active campaign,
+   promotion contract, delivery phases, and exit gates.
+3. [`generation-and-annotation-plan.md`](generation-and-annotation-plan.md) —
+   supporting product contract and established Designer review loop.
+4. [`architecture.md`](architecture.md) — current runtime architecture.
+5. [`methodology.md`](methodology.md) — standing regression and precision
    discipline.
-5. [`logic-arithmetic-integration-plan.md`](logic-arithmetic-integration-plan.md)
+6. [`logic-arithmetic-integration-plan.md`](logic-arithmetic-integration-plan.md)
    — the active staged bridge from exact logic facts to arithmetic answers.
 
-The generation plan is the detailed source of truth. This file records the
-active increment and preserves the parked semantic-projection handoff below.
+The Mining v2 plan is the active source of truth. The generation plan remains
+the product contract for the Designer facilities it builds upon. This file
+records the active increment and preserves the parked semantic-projection
+handoff below.
 
 ## Active objective
 
@@ -426,7 +476,7 @@ holdout and PMB train/development retain 100% projected-edge precision with
 zero incorrect graphs. Lint has zero errors and the same one known warning.
 No protected TEST or generalization look was spent.
 
-## Completed increments — G1 vertical slice through G6 plus G5c–G5g
+## Completed increments — G1 vertical slice through G7 plus G5c–G5g
 
 G1 now provides:
 
@@ -526,6 +576,20 @@ G6 adds:
 - no exploration writes for Reading promotion or pinned retest; and
 - generator version `g6`, with the runtime, benchmark, retest, and hypothesis
   paths isolated from exploration metadata.
+
+G7 adds:
+
+- separate ask availability with exact independent-surface blockers;
+- deterministic ask realization from project-backed literals, lexical
+  domains, morphology, fixture names, and bounded declared name lists;
+- exact ordinary `match_ask()` validation, including specificity ties;
+- ask-only, smallest-answerable, and deliberate missing-evidence modes;
+- generic emitted-field inversion into premise generation locks, with the
+  ordinary solver as the sole answer oracle and removal-based minimality;
+- explicit number, series, witness, verdict, clarification, and decline
+  projections; and
+- Designer controls for question, query, premise evidence, answer, source
+  navigation, and complete-scenario Reading inspection.
 
 G5c adds:
 

@@ -395,6 +395,73 @@ def cmd_diff(args) -> int:
     return 0 if d.ship else 1
 
 
+def cmd_campaign_publish(args) -> int:
+    """Validate and centrally publish one uncommitted candidate manifest."""
+
+    from pydantic import ValidationError
+
+    from .generation import CampaignCandidateManifest, publish_campaign_manifest
+
+    project, _reg = _registry(args)
+    path = Path(args.manifest).resolve()
+    try:
+        manifest = CampaignCandidateManifest.model_validate_json(
+            path.read_text(encoding="utf-8")
+        )
+        durable = publish_campaign_manifest(project, manifest)
+    except (OSError, ValueError, ValidationError) as exc:
+        print(f"campaign manifest rejected: {exc}", file=sys.stderr)
+        return 1
+    print(json.dumps(durable, sort_keys=True))
+    return 0
+
+
+def cmd_campaign_queue(args) -> int:
+    """Print exact human and machine promotion state for orchestration."""
+
+    from .generation import campaign_review_queue, latest_campaign_gate
+
+    project, _reg = _registry(args)
+    rows = campaign_review_queue(project)
+    for row in rows:
+        manifest = row["manifest"]
+        row["machine_gate"] = latest_campaign_gate(
+            project,
+            manifest["candidate_id"],
+            manifest["commit"],
+            manifest["registry_fingerprint"],
+        )
+        row["machine_gate_status"] = (
+            "not_run"
+            if row["machine_gate"] is None
+            else ("passed" if row["machine_gate"]["passed"] else "failed")
+        )
+    print(json.dumps({"candidates": rows}, sort_keys=True))
+    return 0
+
+
+def cmd_campaign_trace(args) -> int:
+    """Capture one canonical manifest trace using the ordinary Designer path."""
+
+    from .generation import campaign_trace_evidence
+    from .server.api import TraceBody, trace_project
+
+    project, _reg = _registry(args)
+    payload = trace_project(
+        project,
+        TraceBody(
+            text=args.text,
+            interpretation=args.interpretation,
+            reference_year=args.reference_year,
+        ),
+    )
+    if payload.get("error"):
+        print(payload["error"], file=sys.stderr)
+        return 1
+    print(campaign_trace_evidence(payload).model_dump_json())
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="rulekit")
     parser.add_argument("--project", default=".", help="project directory")
@@ -457,6 +524,28 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("before")
     p.add_argument("after")
     p.set_defaults(fn=cmd_diff)
+
+    p = sub.add_parser(
+        "campaign-publish",
+        help="validate and publish one immutable Mining v2 manifest",
+    )
+    p.add_argument("manifest", help="path to an uncommitted manifest JSON")
+    p.set_defaults(fn=cmd_campaign_publish)
+
+    p = sub.add_parser(
+        "campaign-queue",
+        help="print exact human and machine Mining v2 promotion state as JSON",
+    )
+    p.set_defaults(fn=cmd_campaign_queue)
+
+    p = sub.add_parser(
+        "campaign-trace",
+        help="capture canonical Mining v2 trace evidence for one specimen",
+    )
+    p.add_argument("text")
+    p.add_argument("--interpretation")
+    p.add_argument("--reference-year", type=int)
+    p.set_defaults(fn=cmd_campaign_trace)
 
     p = sub.add_parser("serve", help="the visual designer (local web UI)")
     p.add_argument("--host", default="127.0.0.1")

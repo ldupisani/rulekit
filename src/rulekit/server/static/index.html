@@ -15,6 +15,7 @@
     <button id="view-reading" class="on">reading</button
     ><button id="view-generate">generate</button
     ><button id="view-reviews">reviews</button
+    ><button id="view-campaign">campaign</button
     ><button id="view-semantic">semantic field</button
     ><button id="view-field">deictic field</button
     ><button id="view-proof">proof</button>
@@ -113,6 +114,77 @@
         </details>
         <div id="generation-exploration-selection"></div>
       </div>
+
+      <section class="ask-generation-workbench">
+        <div class="generation-premise-heading">
+          <div>
+            <div class="pane-title">Ask &amp; scenario generation</div>
+            <div class="dim">
+              Round-trip one declared question independently, with either no
+              evidence or the smallest generated evidence set the ordinary
+              solver can answer.
+            </div>
+          </div>
+          <div id="generation-ask-coverage" class="dim mono"></div>
+        </div>
+        <div class="ask-generation-controls">
+          <div>
+            <div class="pane-title">Target ask rule</div>
+            <select id="generation-ask"></select>
+            <div id="generation-ask-blocker"
+                 class="generation-blocker hidden"></div>
+          </div>
+          <label>
+            <span class="pane-title">Scenario</span>
+            <select id="generation-ask-mode">
+              <option value="ask_only">Ask only</option>
+              <option value="answerable">Smallest answerable</option>
+              <option value="missing_evidence">Deliberately missing evidence</option>
+            </select>
+          </label>
+          <label>
+            <span class="pane-title">Seed</span>
+            <input id="generation-ask-seed" type="number" step="1">
+          </label>
+          <button id="generation-ask-next" class="primary">
+            Generate ask
+          </button>
+        </div>
+        <div class="generation-mode-note">
+          Answerable search only combines generated, supported premise rules
+          and asks the normal solver whether they suffice. It has no benchmark
+          examples, gold answers, or consumer-specific sentence templates.
+        </div>
+        <div id="generation-ask-candidate" class="hidden">
+          <div class="generation-heading">
+            <div>
+              <div id="generation-ask-target" class="mono"></div>
+              <div id="generation-ask-consumer" class="dim"></div>
+            </div>
+            <span id="generation-ask-status" class="generation-status"></span>
+          </div>
+          <div id="generation-ask-question" class="generation-sentence"></div>
+          <div class="generation-actions">
+            <button id="generation-ask-reading">Inspect scenario in Reading</button>
+            <span id="generation-ask-meta" class="dim mono"></span>
+          </div>
+          <div id="generation-ask-source"></div>
+          <div class="ask-generation-results">
+            <section>
+              <div class="pane-title">Generated premise evidence</div>
+              <div id="generation-ask-premises"></div>
+            </section>
+            <section>
+              <div class="pane-title">Resolved query</div>
+              <code id="generation-ask-query"></code>
+            </section>
+            <section>
+              <div class="pane-title">Ordinary solver result</div>
+              <div id="generation-ask-answer"></div>
+            </section>
+          </div>
+        </div>
+      </section>
 
       <div id="generation-empty" class="generation-empty">
         Choose a supported rule or leave the selector on random, then generate one specimen.
@@ -236,6 +308,10 @@
     <!-- The project's human review history. Edits and deletes append
          corrections to the append-only ledger; nothing is rewritten. -->
     <div id="reviews" class="hidden"></div>
+
+    <!-- Human promotion decisions for isolated mining candidates. Candidate
+         manifests are immutable; decisions append to a central ledger. -->
+    <div id="campaign" class="hidden"></div>
 
     <!-- Typed propositions grouped by epistemic role. This remains a view over
          the one FactStore; it does not run a second inference path. -->

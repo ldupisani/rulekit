@@ -28,13 +28,15 @@ rules and nothing detects it.
 
     .claude/skills/mine/SKILL.md
 
-The Codex port of that skill is at:
+The Codex-native skill is at:
 
     .agents/skills/mine/SKILL.md
 
-and the subagents it orchestrates are `.codex/agents/*.toml` (ports of
-`.claude/agents/*.md`): `mining-scout`, `mining-implementer`,
-`constitution-reviewer`, `mining-integrator`, `difg-corpus-planner`.
+and its thin launch adapters are `.codex/agents/*.toml`. Both Codex and Claude
+adapters read the one canonical protocol set in `.agents/protocols/`, removing
+the previous duplicated, divergent agent bodies. The roles are
+`mining-scout`, `mining-implementer`, `constitution-reviewer`,
+`mining-integrator`, and `difg-corpus-planner`.
 
 Nothing else differs. **If you find yourself about to add a second
 project-wide rule here, put it in `CLAUDE.md` instead** — this file is for

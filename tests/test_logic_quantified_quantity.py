@@ -770,6 +770,7 @@ def test_designer_trace_exposes_a_json_native_series_answer():
             {"entity": "mary", "measure": "student", "value": 20},
         ],
         "reason": "per-holder totals for ['bob', 'mary']",
+        "committed": True,
         "clarification": None,
     }
     assert trace["ask"]["id"] == "ask/how-many-each-named-list"

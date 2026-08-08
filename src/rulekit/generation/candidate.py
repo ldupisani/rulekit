@@ -15,6 +15,7 @@ GenerationObjective = Literal[
     "review_attention",
     "random",
 ]
+AskScenarioMode = Literal["ask_only", "answerable", "missing_evidence"]
 
 
 @dataclass(frozen=True)
@@ -41,6 +42,24 @@ class RuleAvailability:
         return {
             "id": self.id,
             "description": self.description,
+            "supported": self.supported,
+            "blockers": list(self.blockers),
+        }
+
+
+@dataclass(frozen=True)
+class AskAvailability:
+    """Whether one declared ask has an independently realizable surface."""
+
+    id: str
+    consumer: str | None
+    supported: bool
+    blockers: tuple[str, ...] = ()
+
+    def to_json(self) -> dict[str, Any]:
+        return {
+            "id": self.id,
+            "consumer": self.consumer,
             "supported": self.supported,
             "blockers": list(self.blockers),
         }
@@ -123,3 +142,32 @@ class GenerationCandidate:
             {match.rule_id for match in self.safety_interceptions}
         )
         return payload
+
+
+@dataclass(frozen=True)
+class AskScenarioCandidate:
+    """One declared ask, optionally paired with generated premise evidence."""
+
+    id: str
+    project: str
+    registry_fingerprint: str
+    generator_version: str
+    scenario_mode: AskScenarioMode
+    seed: int
+    target_ask: str
+    consumer: str | None
+    question: str
+    text: str
+    requested_bindings: dict[str, str]
+    target_bindings: dict[str, str]
+    query: dict[str, Any]
+    target_source: dict[str, Any] | None
+    premises: tuple[dict[str, Any], ...]
+    answer: dict[str, Any]
+    answer_shape: str
+    minimal: bool
+    attempts: int
+    search_attempts: int
+
+    def to_json(self) -> dict[str, Any]:
+        return asdict(self)

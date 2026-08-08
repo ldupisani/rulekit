@@ -21,6 +21,10 @@ from ..data.project import Project, load_project
 from ..data.registry import CompileError, Registry
 from ..data.sources import SourceIndex
 from ..generation import (
+    AskScenarioMode,
+    CampaignCandidateManifest,
+    CampaignReviewDecision,
+    CampaignReviewError,
     GenerationError,
     GenerationMode,
     GenerationObjective,
@@ -30,17 +34,25 @@ from ..generation import (
     ReviewDefect,
     append_exploration,
     append_exploration_failure,
+    append_campaign_review,
+    append_campaign_gate,
     append_review,
+    campaign_review_queue,
     choose_exploration_target,
     delete_review,
     derive_hypotheses,
     generate_candidate,
+    generate_ask_scenario,
     generate_minimal_pair,
     exploration_status,
+    list_ask_availability,
     list_rule_availability,
+    latest_campaign_gate,
     promote_reading_candidate,
     promote_sentence_review_candidate,
+    publish_campaign_manifest,
     read_reviews,
+    read_campaign_gates,
     retest_candidate,
     update_review,
 )
@@ -51,6 +63,8 @@ from ..kernel.model import PATTERN, Unit, _jsonable
 from ..kernel.patterns import match_ask, subsumes
 from ..lint.checks import lint_checks
 from ..lint.overlap import lint_overlaps
+from .candidate_runner import CandidateRunnerError, CandidateRunnerManager
+from .promotion_gate import run_campaign_promotion_gate
 
 
 # module-level (not nested in build_router): `from __future__ import
@@ -81,6 +95,20 @@ class GenerationCandidateBody(BaseModel):
     generation_mode: GenerationMode = "strict"
     objective: GenerationObjective = "least_attempted_rule"
     filters: list[str] = Field(default_factory=list, max_length=64)
+
+
+class AskGenerationBody(BaseModel):
+    """One exact ask surface and its optional generated evidence scenario."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    ask_id: str | None = Field(default=None, max_length=256)
+    seed: int | None = None
+    scenario_mode: AskScenarioMode = "ask_only"
+    locked_bindings: dict[str, str] = Field(
+        default_factory=dict,
+        max_length=64,
+    )
 
 
 class GenerationRetestBody(BaseModel):
@@ -155,6 +183,10 @@ class ServerState:
         # Generation/review I/O is independent from benchmark execution, but
         # two tabs must not interleave JSONL writes.
         self.generation_lock = threading.Lock()
+        # Candidate code is never imported into this process. The manager
+        # starts at most one exact Git worktree runtime on loopback and owns
+        # its complete lifecycle.
+        self.candidate_runner = CandidateRunnerManager(self.project_root)
 
     @property
     def registry(self) -> Registry:
@@ -167,6 +199,9 @@ class ServerState:
             return None
         except (PackError, CompileError, Exception) as exc:  # noqa: BLE001
             return f"{type(exc).__name__}: {exc}"
+
+    def close(self) -> None:
+        self.candidate_runner.close()
 
 
 def _unit_json(unit: Unit) -> dict[str, Any]:
@@ -284,6 +319,46 @@ def _reading_review_targets(
             target["source_ref"] = source_ref
         targets.append(target)
     return targets
+
+
+def _reading_machine_matches(
+    results: list[Any],
+    registry: Registry,
+) -> list[dict[str, Any]]:
+    """Exact ordinary premise matches for machine-readable campaign replay."""
+
+    ordinary = [
+        result
+        for result in results
+        if result.match.rule.generation != "safety"
+    ]
+    return [
+        {
+            "rule_id": result.match.rule.id,
+            "bindings": {
+                name: (
+                    " ".join(unit.surface for unit in value)
+                    if isinstance(value, tuple)
+                    else value.surface
+                )
+                for name, value in sorted(result.match.slots.items())
+            },
+            "consumed": list(result.match.consumed),
+            "shadowed": any(
+                other is not result
+                and subsumes(other.match, result.match, registry)
+                for other in ordinary
+            ),
+        }
+        for result in sorted(
+            ordinary,
+            key=lambda item: (
+                item.match.rule.id,
+                item.match.consumed,
+                tuple(sorted(item.match.slots)),
+            ),
+        )
+    ]
 
 
 def _reading_safety_interceptions(
@@ -715,16 +790,161 @@ def resolve_editable_doc(raw: str, project) -> Path | None:
     return path if path in allowed else None
 
 
+def trace_project(project: Project, body: TraceBody) -> dict[str, Any]:
+    """Run the ordinary Designer trace outside HTTP for campaign capture."""
+
+    registry = project.registry
+    source_index = project.source_index
+    try:
+        result = solve(
+            body.text,
+            registry,
+            interpretation=body.interpretation,
+            reference_year=body.reference_year,
+        )
+    except Exception as exc:  # noqa: BLE001 — surface, don't 500
+        return {
+            "error": f"{type(exc).__name__}: {exc}",
+            "traceback": traceback.format_exc()[-2000:],
+        }
+    readings = result.premises + ([result.question] if result.question else [])
+    ask = match_ask(result.question, registry) if result.question else None
+    return {
+        "error": None,
+        "answer": {
+            "kind": result.answer.kind,
+            "value": result.answer.value,
+            "reason": result.answer.reason,
+            "committed": result.answer.committed,
+            "clarification": _clarification_json(result.answer.clarification),
+        },
+        "rounds": result.document.rounds if result.document else 1,
+        "ask": (
+            {
+                "id": ask[0].id,
+                "query": (
+                    {
+                        key: value
+                        for key, value in ask[1].items()
+                        if not key.startswith("__")
+                    }
+                    or None
+                ),
+                "source_ref": _identifier_source_json(source_index, ask[0].id),
+            }
+            if ask is not None
+            else None
+        ),
+        "sentences": [
+            {
+                "index": reading.sentence_index,
+                "text": reading.text,
+                "is_question": result.question is reading,
+                **(
+                    {"scope": "question-assumption"}
+                    if reading.assumption
+                    else {}
+                ),
+                "units": [_unit_json(unit) for unit in reading.units],
+                "decisions": [
+                    _decision_json(decision, source_index)
+                    for decision in reading.decisions
+                ],
+                "review_targets": (
+                    []
+                    if result.question is reading or result.document is None
+                    else _reading_review_targets(
+                        result.document.rule_results.get(
+                            reading.sentence_index,
+                            [],
+                        ),
+                        registry,
+                        source_index,
+                    )
+                ),
+                "machine_matches": (
+                    []
+                    if result.question is reading or result.document is None
+                    else _reading_machine_matches(
+                        result.document.rule_results.get(
+                            reading.sentence_index,
+                            [],
+                        ),
+                        registry,
+                    )
+                ),
+                "safety_interceptions": (
+                    []
+                    if result.question is reading or result.document is None
+                    else _reading_safety_interceptions(
+                        result.document.rule_results.get(
+                            reading.sentence_index,
+                            [],
+                        ),
+                        registry,
+                        source_index,
+                    )
+                ),
+            }
+            for reading in readings
+        ],
+        "facts": [_fact_json(fact, source_index) for fact in result.store.facts],
+        "semantic": _semantic_json(result, ask, source_index),
+        "collisions": [
+            {
+                "key": _jsonable(list(collision.key)),
+                "a": collision.a_source,
+                "b": collision.b_source,
+                "a_value": _jsonable(collision.a_value),
+                "b_value": _jsonable(collision.b_value),
+            }
+            for collision in result.store.collisions
+        ],
+        "agreement_ambiguities": [
+            event.to_trace_event()
+            for event in result.store.agreement_ambiguities
+        ],
+        "gaps": (
+            [gap.describe() for gap in result.document.gaps]
+            if result.document
+            else []
+        ),
+        "deficiencies": result.deficiencies(),
+        "deixis": {
+            "observations": (
+                [
+                    _observation_json(observation)
+                    for observation in result.log.journal.observations
+                ]
+                if result.log.journal is not None
+                else []
+            ),
+            "field": _field_json(result),
+        },
+    }
+
+
 def build_router(state: ServerState) -> APIRouter:
     router = APIRouter(prefix="/api")
 
     @router.get("/project")
     def project_info():
         docs = pack_documents(state.project)
+        source_index = state.project.source_index
+        sources = {}
+        if source_index is not None:
+            sources = {
+                identifier: source.to_json()
+                for identifier, source in {
+                    **source_index.rules,
+                    **source_index.asks,
+                }.items()
+            }
         return {
             "name": state.project.doc.name,
             "packs": [p.name for p in state.project.packs],
             "fingerprint": state.registry.fingerprint[:16],
+            "registry_fingerprint": state.registry.fingerprint,
             "docs": docs,
             "has_suite": bool(state.project.doc.suite),
             "has_datasets": bool(state.project.doc.datasets),
@@ -735,6 +955,7 @@ def build_router(state: ServerState) -> APIRouter:
             ),
             "rules": [r.id for r in state.registry.rules],
             "asks": [a.id for a in state.registry.asks],
+            "sources": sources,
         }
 
     def _resolve_doc_path(raw: str) -> Path:
@@ -778,111 +999,7 @@ def build_router(state: ServerState) -> APIRouter:
 
     @router.post("/trace")
     def trace(body: TraceBody):
-        try:
-            result = solve(
-                body.text,
-                state.registry,
-                interpretation=body.interpretation,
-                reference_year=body.reference_year,
-            )
-        except Exception as exc:  # noqa: BLE001 — surface, don't 500
-            return {"error": f"{type(exc).__name__}: {exc}",
-                    "traceback": traceback.format_exc()[-2000:]}
-        readings = result.premises + ([result.question] if result.question else [])
-        ask = match_ask(result.question, state.registry) if result.question else None
-        return {
-            "error": None,
-            "answer": {
-                "kind": result.answer.kind,
-                "value": result.answer.value,
-                "reason": result.answer.reason,
-                "clarification": _clarification_json(result.answer.clarification),
-            },
-            "rounds": result.document.rounds if result.document else 1,
-            "ask": (
-                {
-                    "id": ask[0].id,
-                    "query": (
-                        {
-                            key: value
-                            for key, value in ask[1].items()
-                            if not key.startswith("__")
-                        } or None
-                    ),
-                    "source_ref": _identifier_source_json(
-                        state.project.source_index, ask[0].id
-                    ),
-                }
-                if ask is not None else None
-            ),
-            "sentences": [
-                {
-                    "index": r.sentence_index,
-                    "text": r.text,
-                    "is_question": result.question is r,
-                    **(
-                        {"scope": "question-assumption"}
-                        if r.assumption
-                        else {}
-                    ),
-                    "units": [_unit_json(u) for u in r.units],
-                    "decisions": [
-                        _decision_json(d, state.project.source_index)
-                        for d in r.decisions
-                    ],
-                    "review_targets": (
-                        []
-                        if result.question is r or result.document is None
-                        else _reading_review_targets(
-                            result.document.rule_results.get(
-                                r.sentence_index, []
-                            ),
-                            state.registry,
-                            state.project.source_index,
-                        )
-                    ),
-                    "safety_interceptions": (
-                        []
-                        if result.question is r or result.document is None
-                        else _reading_safety_interceptions(
-                            result.document.rule_results.get(
-                                r.sentence_index, []
-                            ),
-                            state.registry,
-                            state.project.source_index,
-                        )
-                    ),
-                }
-                for r in readings
-            ],
-            "facts": [
-                _fact_json(f, state.project.source_index)
-                for f in result.store.facts
-            ],
-            "semantic": _semantic_json(
-                result, ask, state.project.source_index
-            ),
-            "collisions": [
-                {"key": _jsonable(list(c.key)), "a": c.a_source, "b": c.b_source,
-                 "a_value": _jsonable(c.a_value), "b_value": _jsonable(c.b_value)}
-                for c in result.store.collisions
-            ],
-            "agreement_ambiguities": [
-                event.to_trace_event() for event in result.store.agreement_ambiguities
-            ],
-            "gaps": (
-                [g.describe() for g in result.document.gaps]
-                if result.document else []
-            ),
-            "deficiencies": result.deficiencies(),
-            "deixis": {
-                "observations": (
-                    [_observation_json(o) for o in result.log.journal.observations]
-                    if result.log.journal is not None else []
-                ),
-                "field": _field_json(result),
-            },
-        }
+        return trace_project(state.project, body)
 
     def _target_items(target: str) -> list[dict] | None:
         if target == "suite":
@@ -989,6 +1106,210 @@ def build_router(state: ServerState) -> APIRouter:
             for f in findings
         ]
 
+    @router.get("/campaign/reviews")
+    def campaign_reviews():
+        """The central, durable promotion queue for isolated candidates."""
+
+        with state.generation_lock:
+            try:
+                queue = campaign_review_queue(state.project)
+            except CampaignReviewError as exc:
+                raise HTTPException(422, str(exc)) from exc
+        for row in queue:
+            manifest = row["manifest"]
+            row["machine_gate"] = latest_campaign_gate(
+                state.project,
+                manifest["candidate_id"],
+                manifest["commit"],
+                manifest["registry_fingerprint"],
+            )
+            row["machine_gate_status"] = (
+                "not_run"
+                if row["machine_gate"] is None
+                else ("passed" if row["machine_gate"]["passed"] else "failed")
+            )
+            if not row["runtime_available"]:
+                continue
+            for specimen in row["manifest"]["specimens"]:
+                specimen["source_ref"] = _identifier_source_json(
+                    state.project.source_index,
+                    specimen.get("target_rule"),
+                )
+        return {
+            "candidates": queue,
+            "registry_fingerprint": state.registry.fingerprint,
+        }
+
+    @router.post("/campaign/reviews/candidate")
+    def campaign_review_candidate(body: CampaignCandidateManifest):
+        """Publish one immutable bundle; the future orchestrator uses this seam."""
+
+        with state.generation_lock:
+            try:
+                manifest = publish_campaign_manifest(state.project, body)
+            except CampaignReviewError as exc:
+                raise HTTPException(409, str(exc)) from exc
+        return {"ok": True, "manifest": manifest}
+
+    @router.post("/campaign/reviews/{candidate_id}")
+    def campaign_review_decision(
+        candidate_id: str,
+        body: CampaignReviewDecision,
+    ):
+        """Append one human promotion decision pinned to exact candidate code."""
+
+        if candidate_id != body.candidate_id:
+            raise HTTPException(422, "candidate id does not match the review path")
+        if body.verdict == "approved":
+            with state.generation_lock:
+                gate = latest_campaign_gate(
+                    state.project,
+                    candidate_id,
+                    body.candidate_commit,
+                    body.registry_fingerprint,
+                )
+            if gate is None or not gate["passed"]:
+                raise HTTPException(
+                    409,
+                    "approval requires a passing machine promotion gate for "
+                    "this exact commit and registry fingerprint",
+                )
+            try:
+                blocker = state.candidate_runner.approval_blocker(
+                    candidate_id,
+                    body.candidate_commit,
+                    body.registry_fingerprint,
+                )
+            except CandidateRunnerError as exc:
+                raise HTTPException(409, str(exc)) from exc
+            if blocker is not None:
+                raise HTTPException(409, blocker)
+        with state.generation_lock:
+            try:
+                review = append_campaign_review(state.project, body)
+            except CampaignReviewError as exc:
+                raise HTTPException(409, str(exc)) from exc
+        return {"ok": True, "review": review}
+
+    def _campaign_manifest(candidate_id: str) -> dict[str, Any]:
+        with state.generation_lock:
+            try:
+                queue = campaign_review_queue(state.project)
+            except CampaignReviewError as exc:
+                raise HTTPException(422, str(exc)) from exc
+        for row in queue:
+            manifest = row["manifest"]
+            if manifest["candidate_id"] == candidate_id:
+                return manifest
+        raise HTTPException(404, f"no campaign candidate {candidate_id!r}")
+
+    def _runner_call(call):
+        try:
+            return call()
+        except CandidateRunnerError as exc:
+            raise HTTPException(409, str(exc)) from exc
+
+    @router.get("/campaign/runner")
+    def campaign_runner_status():
+        return _runner_call(state.candidate_runner.status)
+
+    @router.get("/campaign/gates/{candidate_id}")
+    def campaign_gate_history(candidate_id: str):
+        _campaign_manifest(candidate_id)
+        with state.generation_lock:
+            gates = [
+                row
+                for row in read_campaign_gates(state.project)
+                if row["candidate_id"] == candidate_id
+            ]
+        return {"candidate_id": candidate_id, "gates": gates}
+
+    @router.post("/campaign/gates/{candidate_id}")
+    def campaign_gate_run(candidate_id: str):
+        """Run one exact full gate; the shared bench lock serializes it."""
+
+        manifest = _campaign_manifest(candidate_id)
+        if not state.run_lock.acquire(blocking=False):
+            raise HTTPException(409, "a benchmark or promotion gate is already running")
+        try:
+            try:
+                with state.candidate_runner.promotion_session(candidate_id) as (
+                    baseline,
+                    candidate,
+                ):
+                    gate = run_campaign_promotion_gate(
+                        state.project,
+                        manifest,
+                        baseline,
+                        candidate,
+                        lambda text, interpretation, reference_year: (
+                            state.candidate_runner.trace(
+                                candidate_id,
+                                {
+                                    "text": text,
+                                    "interpretation": interpretation,
+                                    "reference_year": reference_year,
+                                },
+                            )
+                        ),
+                    )
+            except CandidateRunnerError as exc:
+                raise HTTPException(409, str(exc)) from exc
+            except CampaignReviewError as exc:
+                raise HTTPException(422, str(exc)) from exc
+            with state.generation_lock:
+                durable = append_campaign_gate(state.project, gate)
+            return {"ok": True, "gate": durable}
+        finally:
+            state.run_lock.release()
+
+    @router.post("/campaign/runner/{candidate_id}/start")
+    def campaign_runner_start(candidate_id: str):
+        manifest = _campaign_manifest(candidate_id)
+        return _runner_call(lambda: state.candidate_runner.start(manifest))
+
+    @router.post("/campaign/runner/stop")
+    def campaign_runner_stop():
+        stopped = state.candidate_runner.stop()
+        return {"ok": True, "stopped": stopped, "active": False}
+
+    @router.get("/campaign/runner/{candidate_id}/project")
+    def campaign_runner_project(candidate_id: str):
+        return _runner_call(lambda: state.candidate_runner.project(candidate_id))
+
+    @router.post("/campaign/runner/{candidate_id}/trace")
+    def campaign_runner_trace(candidate_id: str, body: TraceBody):
+        return _runner_call(
+            lambda: state.candidate_runner.trace(candidate_id, body.model_dump())
+        )
+
+    @router.get("/campaign/runner/{candidate_id}/doc")
+    def campaign_runner_read_doc(candidate_id: str, path: str):
+        return _runner_call(
+            lambda: state.candidate_runner.read_doc(candidate_id, path)
+        )
+
+    @router.put("/campaign/runner/{candidate_id}/doc")
+    def campaign_runner_write_doc(candidate_id: str, body: DocBody):
+        return _runner_call(
+            lambda: state.candidate_runner.write_doc(
+                candidate_id,
+                body.model_dump(),
+            )
+        )
+
+    @router.post("/campaign/runner/{candidate_id}/retest")
+    def campaign_runner_retest(
+        candidate_id: str,
+        body: GenerationRetestBody,
+    ):
+        return _runner_call(
+            lambda: state.candidate_runner.retest(
+                candidate_id,
+                body.model_dump(),
+            )
+        )
+
     @router.get("/generation/rules")
     def generation_rules():
         try:
@@ -1000,6 +1321,34 @@ def build_router(state: ServerState) -> APIRouter:
             "supported": sum(rule.supported for rule in rules),
             "total": len(rules),
         }
+
+    @router.get("/generation/asks")
+    def generation_asks():
+        try:
+            asks = list_ask_availability(state.project)
+        except GenerationError as exc:
+            raise HTTPException(422, str(exc)) from exc
+        return {
+            "asks": [ask.to_json() for ask in asks],
+            "supported": sum(ask.supported for ask in asks),
+            "total": len(asks),
+        }
+
+    @router.post("/generation/ask")
+    def generation_ask(body: AskGenerationBody):
+        seed = secrets.randbits(53) if body.seed is None else body.seed
+        with state.generation_lock:
+            try:
+                candidate = generate_ask_scenario(
+                    state.project,
+                    ask_id=body.ask_id,
+                    seed=seed,
+                    scenario_mode=body.scenario_mode,
+                    locked_bindings=body.locked_bindings,
+                )
+            except GenerationError as exc:
+                raise HTTPException(422, str(exc)) from exc
+        return candidate.to_json()
 
     @router.get("/generation/exploration")
     def generation_exploration():
