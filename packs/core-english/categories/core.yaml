@@ -1667,7 +1667,10 @@ members:
     temporal_marker: [now, today]
     deictic_temporal_marker: [now, today, tomorrow, yesterday]
     day_deictic_marker: [today, tomorrow, yesterday]
-    timeperiod: [year]
+    timeperiod:
+        [year, monday, tuesday, wednesday, thursday, friday, saturday, sunday,
+         january, february, march, april, june, july, august, september,
+         october, november, december]
     count_intensifier: [more]
     # small/large inherit this gate through `size_attribute`; tall/long/etc.
     # extend the broader category from packs/difg-mined.

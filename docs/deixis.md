@@ -83,11 +83,16 @@ of referent objects.
 
 ### 1.3 Relative event time exists; quantity time is still opaque
 
-- `Quantity.time` is the **two-word surface string** of a sentence-initial `timeperiod`
-  adjunct (`"last year"`), set by `learn._sentence_time()`. Never ordered or normalised.
-- Its only use is to **refuse** to combine facts. Five sites say verbatim:
-  `# mixed times — time arithmetic is unbuilt` (`answer.py:187,314,415`;
-  `saturate.py:872,1436`).
+- `Quantity.time` is an opaque surface label set by `learn._sentence_time()`. It keeps
+  the historical sentence-initial `timeperiod` adjunct (`"last year"`) and also one
+  unambiguous postverbal PP whose declared role is exactly `temporal-point` (`"on
+  Monday"`). Temporal-before/after, deadline, duration, start/end, unlicensed, and
+  competing attachments are not collapsed into an exact event time. Labels support
+  equality only; they are never ordered.
+- A question's shared temporal origo may select an equal label. Explicitly timed,
+  same-verb non-state events may also be summed across labels when the question is
+  unscoped. Mixed timed/untimed evidence, state snapshots, cross-verb evidence, and
+  every operation that would need temporal ordering still decline.
 - Tense is **erased** by `condense.py` ("has found" → `find`), never recorded.
 - The relative markers `yesterday`, `now`, `today`, and `tomorrow` now carry signed
   offsets in pack data. One marker attached to one unambiguous predicate emits an
@@ -95,9 +100,9 @@ of referent objects.
   event occurrences without pretending that opaque calendar labels are comparable.
 - `Before` still has no standalone answer consumer. It is preserved semantic evidence,
   visible in the fact and deictic-field views.
-- One narrow ask can now say *which relative day* it means: the finite-domain location-
-  witness query carries a declared `when` marker. There is still no generic reference-
-  time field shared by quantity, state, and event asks. (§4 shows what this costs.)
+- A shared question temporal origo lets ordinary quantity and state asks select a
+  preposition-governed `timeperiod`; the finite-domain location-witness query also
+  carries its narrower declared relative-day marker.
 - Time units (`day`→`hour`) share the flat conversion graph with `gallon`→`pint`. A week
   is 7 days in exactly the sense that a gallon is 8 pints.
 

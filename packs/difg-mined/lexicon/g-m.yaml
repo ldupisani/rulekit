@@ -711,16 +711,6 @@ entries:
   jam:
     senses:
     - noun
-  january:
-    # mining candidate month-qualified-events: was sensed 'time' — an INERT sense
-    # (nothing in the kernel reads it for this word; only 'today'/'now' use 'time',
-    # via the `temporal_marker` category). Because it was not a `timeperiod`, senses.py's
-    # capitalisation override read a mid-sentence "March" as a proper NAME, which put it
-    # in the PERSON antecedent pool as a rival to the actual person and broke the next
-    # sentence's pronoun binding (docs/deixis.md §4 — the same bug increment 88 fixed for
-    # weekdays). Retagged 'noun' so it can join `timeperiod`, exactly as the weekdays did.
-    senses:
-    - noun
   jar:
     senses:
     - noun
@@ -792,16 +782,6 @@ entries:
     senses:
     - noun
     plural: juices
-  july:
-    # mining candidate month-qualified-events: was sensed 'time' — an INERT sense
-    # (nothing in the kernel reads it for this word; only 'today'/'now' use 'time',
-    # via the `temporal_marker` category). Because it was not a `timeperiod`, senses.py's
-    # capitalisation override read a mid-sentence "March" as a proper NAME, which put it
-    # in the PERSON antecedent pool as a rival to the actual person and broke the next
-    # sentence's pronoun binding (docs/deixis.md §4 — the same bug increment 88 fixed for
-    # weekdays). Retagged 'noun' so it can join `timeperiod`, exactly as the weekdays did.
-    senses:
-    - noun
   jump:
     senses:
     - verb
@@ -813,16 +793,6 @@ entries:
     - verb
     verb:
       lemma: jump
-  june:
-    # mining candidate month-qualified-events: was sensed 'time' — an INERT sense
-    # (nothing in the kernel reads it for this word; only 'today'/'now' use 'time',
-    # via the `temporal_marker` category). Because it was not a `timeperiod`, senses.py's
-    # capitalisation override read a mid-sentence "March" as a proper NAME, which put it
-    # in the PERSON antecedent pool as a rival to the actual person and broke the next
-    # sentence's pronoun binding (docs/deixis.md §4 — the same bug increment 88 fixed for
-    # weekdays). Retagged 'noun' so it can join `timeperiod`, exactly as the weekdays did.
-    senses:
-    - noun
   junk:
     senses:
     - noun
@@ -1405,16 +1375,6 @@ entries:
   marathon:
     senses:
     - noun
-  march:
-    # mining candidate month-qualified-events: was sensed 'time' — an INERT sense
-    # (nothing in the kernel reads it for this word; only 'today'/'now' use 'time',
-    # via the `temporal_marker` category). Because it was not a `timeperiod`, senses.py's
-    # capitalisation override read a mid-sentence "March" as a proper NAME, which put it
-    # in the PERSON antecedent pool as a rival to the actual person and broke the next
-    # sentence's pronoun binding (docs/deixis.md §4 — the same bug increment 88 fixed for
-    # weekdays). Retagged 'noun' so it can join `timeperiod`, exactly as the weekdays did.
-    senses:
-    - noun
   mark:
     senses:
     - noun
@@ -1696,23 +1656,6 @@ entries:
     senses:
     - noun
   moment:
-    senses:
-    - noun
-  monday:
-    # mining candidate time-period-qualified-events: was sensed 'time' (an
-    # inert sense — nothing in the kernel reads it for this word; only
-    # 'today' uses 'time' via the `temporal_marker` category). Retagged
-    # 'noun' so it can join the `timeperiod` category (packs/difg-mined/
-    # categories/semantic.yaml, root sense 'noun') alongside 'morning'/
-    # 'week'/'year' — the SAME category, not a new one, unifying weekday
-    # names with the period nouns already there. Needed structurally: a
-    # capitalized weekday word with no lexicon 'noun'/'name' competition
-    # was ALWAYS overridden to 'name' by senses.py's capitalization
-    # heuristic (harmless for genuinely name-ambiguous words like 'Rose',
-    # but wrong here — 'Monday' is never a person's name in this corpus),
-    # which polluted cross-sentence pronoun antecedent resolution whenever
-    # a premise carried a weekday adjunct (see senses.py's `timeperiod`
-    # exemption for the other half of this fix).
     senses:
     - noun
   monitor:

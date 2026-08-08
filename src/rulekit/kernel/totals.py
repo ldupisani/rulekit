@@ -28,6 +28,7 @@ from .model import (
     Price,
     Quantity,
     Rate,
+    Relation,
 )
 from .answer import Answer
 from .measures import (
@@ -66,6 +67,26 @@ def _verb_total(
     matching = [q for q in scoped if q.verb == verb]
     if not matching:
         return None
+    # A comparison about this same event is not an independently counted
+    # event until saturation materialises the subject quantity from that
+    # relation.  Reusing an older direct quantity while the relation only
+    # resolved its standard would silently drop the comparative premise.
+    if any(q.time is not None for q in matching):
+        for relation in store.by_kind(Relation):
+            if (
+                relation.subject == entity
+                and relation.measure == measure
+                and relation.verb == verb
+                and not any(
+                    q.entity == entity
+                    and q.measure == measure
+                    and q.verb == verb
+                    and q.provenance.source.startswith("synth/relation")
+                    and q.provenance.sentence == relation.provenance.sentence
+                    for q in matching
+                )
+            ):
+                return None
     # THE CROSS-VERB TIME HOLE (docs/deixis.md §4's confident-wrong).
     #
     # This check used to run over `matching` — i.e. AFTER the verb filter — so it could
@@ -86,8 +107,15 @@ def _verb_total(
     # ask can say (see `reference_time`), the honest answer is to decline.
     #
     # Strictly a precision move: it can only turn a commit into a decline.
-    if len({q.time for q in scoped}) > 1:
-        return None
+    times = {q.time for q in scoped}
+    if len(times) > 1:
+        # Independently asserted event quantities at explicit moments are
+        # additive for an unscoped activity total.  Every other mixed-time
+        # shape remains unsafe: an untimed fact may belong to the requested
+        # period, a state is a snapshot rather than another event, and a
+        # different verb may describe the same quantity from another view.
+        if None in times or any(q.is_state or q.verb != verb for q in scoped):
+            return None
     return evaluate(
         " + ".join(str(q.value) for q in matching), {}, log, source="verb-fold"
     )

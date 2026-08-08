@@ -843,9 +843,12 @@ def _flat_purchase_price(reading: Reading, item: Unit, reg: Registry) -> float |
 
 
 def _sentence_time(reading: Reading, reg: Registry) -> str | None:
-    """A sentence-initial time adjunct ('Last year he made…', 'This year…')
-    scopes every fact the sentence yields. The time words are the
-    `timeperiod` category — data. Returns a NORMALISED label, or None.
+    """One exact calendar-point adjunct scopes every fact the sentence yields.
+
+    Sentence-initial timeperiods retain their historical broad behavior. A
+    trailing adjunct is narrower: one postverbal PP must be licensed by the
+    adposition-role registry as exactly ``temporal-point``. Other temporal
+    roles and competing point labels remain unstamped.
 
     NORMALISATION — a leading PREPOSITION is stripped; anything else is kept.
 
@@ -870,7 +873,7 @@ def _sentence_time(reading: Reading, reg: Registry) -> str | None:
     for unit in reading.units:
         sense = unit.sense()
         if sense == "verb":
-            return None  # reached the predicate: no leading adjunct
+            break  # no leading adjunct; try the narrower postverbal shape
         if (
             sense == "noun"
             and "value" not in unit.features
@@ -886,7 +889,44 @@ def _sentence_time(reading: Reading, reg: Registry) -> str | None:
             if prev is None:
                 return fold
             return f"{prev.features.get('fold', '')} {fold}"
-    return None
+
+    point_objects: list[tuple[Unit, Unit]] = []
+    governed: list[tuple[Unit, str]] = []
+    for prep in reading.units:
+        if prep.sense() != "preposition":
+            continue
+        obj = _bound(prep, "object")
+        if (
+            obj is None
+            or obj.sense() != "noun"
+            or "value" in obj.features
+            or not reg.word_in_category(_lemma(obj), "timeperiod")
+        ):
+            continue
+        point_objects.append((prep, obj))
+        verb = _temporal_governing_verb(reading, prep)
+        if verb is None or prep.span[0] <= verb.span[1]:
+            continue
+        roles = _matching_adposition_roles(_lemma(prep), obj, verb, reg)
+        if roles != ["temporal-point"]:
+            continue
+        governed.append((verb, obj.features.get("fold", _lemma(obj))))
+
+    verbs = {verb.uid: verb for verb, _label in governed}
+    if len(verbs) != 1:
+        return None
+    verb = next(iter(verbs.values()))
+    labels: set[str] = set()
+    for prep, obj in point_objects:
+        if prep.span[0] <= verb.span[1] or _crosses_clause_boundary(
+            reading, prep, verb
+        ):
+            continue
+        if _matching_adposition_roles(_lemma(prep), obj, verb, reg) == [
+            "temporal-point"
+        ]:
+            labels.add(obj.features.get("fold", _lemma(obj)))
+    return next(iter(labels)) if len(labels) == 1 else None
 
 
 def _deictic_event_times(

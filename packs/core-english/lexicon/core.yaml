@@ -30,6 +30,29 @@ entries:
     tomorrow: {senses: [time]}
     yesterday: {senses: [time]}
 
+    # Calendar-point nouns are ordinary core English. Their membership in
+    # `timeperiod` does not by itself assign an event time; only a licensed
+    # temporal-point construction may do that. `may` stays modal-only because
+    # its month reading is genuinely ambiguous.
+    monday: {senses: [noun]}
+    tuesday: {senses: [noun]}
+    wednesday: {senses: [noun]}
+    thursday: {senses: [noun]}
+    friday: {senses: [noun]}
+    saturday: {senses: [noun]}
+    sunday: {senses: [noun]}
+    january: {senses: [noun]}
+    february: {senses: [noun]}
+    march: {senses: [noun]}
+    april: {senses: [noun]}
+    june: {senses: [noun]}
+    july: {senses: [noun]}
+    august: {senses: [noun]}
+    september: {senses: [noun]}
+    october: {senses: [noun]}
+    november: {senses: [noun]}
+    december: {senses: [noun]}
+
     # core temporal/adverbial grammar
     currently: {senses: [adverb]}
     far: {senses: [adverb]}

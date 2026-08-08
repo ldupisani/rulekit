@@ -369,12 +369,25 @@ def _check_number(
         # The ask is re-derived rather than threaded through `answer()`: match_ask is
         # deterministic, so it yields exactly the ask `answer()` used, and this runs
         # only for already-committed answers (~103 of 3,772 on dev-train).
+        from . import deixis
+        from .answer import _question_reference_time
         from .model import Quantity
         from .patterns import match_ask
 
         matched = match_ask(question, reg)
         if matched is not None:
             _ask, query, _m = matched
+            reference_time = None
+            time_candidates = _question_reference_time(question, reg, _m)
+            if time_candidates:
+                origo = deixis.resolve(
+                    time_candidates,
+                    deixis.Origo(sentence=question.sentence_index),
+                    deixis.constant,
+                    dimension=deixis.TIME,
+                )
+                if origo is not None:
+                    reference_time = origo.key
             asked = query.get("measure")
             holder = query.get("entity")
             qualifier = query.get("measure_qualifier")
@@ -408,6 +421,15 @@ def _check_number(
                 asked_verb = query.get("verb")
                 unused: list[str] = []
                 for fact in store.by_kind(Quantity):
+                    # The consumer already ran below the shared temporal
+                    # origo. Answer accounting must inspect that same evidence
+                    # scope rather than vetoing a correct period-specific
+                    # answer because another period was intentionally filtered.
+                    if (
+                        reference_time is not None
+                        and fact.time not in (None, reference_time)
+                    ):
+                        continue
                     if fact.entity != holder:
                         continue
                     if base(fact.measure) != target:

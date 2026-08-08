@@ -22,3 +22,32 @@ Every record names its commit, so `git show <sha>` is usually the faster route.
 ---
 
 <!-- new increment records are appended below, newest last -->
+
+## Increment 129 (2026-08-08) — Mining v2 no-op pipeline smoke
+
+The exact human-approved and machine-passed candidate `smoke-noop-v2`
+(`09b8edeb2d8b5b37184c28927adc82ede1299a6b`) lands one explanatory YAML
+comment with no compiled-rule change. Its synthetic pin records the existing
+scoped-total answerable neighbour and safe-decline boundary.
+
+The integration gate passes 4,723 tests. All thirteen standing DEV diffs are
+neutral, curated remains 71/71, lint reports zero errors and warnings, FOLIO
+makes zero numeric commitments, and the content-blind protected digest is
+unchanged. No protected TEST/generalization look was spent.
+
+## Increment 130 (2026-08-09) — Role-licensed temporal-point event totals
+
+The exact human-approved and machine-passed product candidate
+`postverbal-temporal-event-totals`
+(`014040841d7323a9a7ac4dd4b741f759908cad57`) preserves one uniquely
+role-licensed trailing calendar point on an event quantity. Exact-period asks
+select that point, same-verb non-state events may sum across explicit periods,
+and mixed, cross-verb, unresolved, or state-snapshot neighbours decline. The
+18 unambiguous calendar points move to core-English while modal `may` remains
+outside the class.
+
+The integration gate passes 4,749 tests. All thirteen standing DEV diffs are
+neutral, curated remains 71/71, lint reports zero errors and warnings, FOLIO
+makes zero numeric commitments, all four canonical specimens replay exactly,
+and the content-blind protected digest is unchanged. No protected
+TEST/generalization look was spent.
