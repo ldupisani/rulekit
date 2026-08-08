@@ -10,6 +10,7 @@ from rulekit.data.project import load_project
 from rulekit.generation import (
     ExplorationEvent,
     ExplorationFailure,
+    ExplorationSelection,
     FactEvidence,
     GenerationError,
     LexicalRelaxation,
@@ -489,15 +490,31 @@ def test_boundary_mode_survives_retest_and_review_without_counting_coverage(
 def test_gsm8k_generation_fixtures_make_every_premise_rule_available() -> None:
     availability = list_rule_availability(load_project(Path("projects/gsm8k")))
 
-    assert len(availability) == 108
-    assert all(rule.supported for rule in availability)
+    assert len(availability) == 111
+    blocked = {
+        rule.id: rule for rule in availability if not rule.supported
+    }
+    assert set(blocked) == {
+        "arithmetic/affine-frame-relation-as-standard",
+        "arithmetic/dangling-comparative-safety",
+    }
+    assert blocked[
+        "arithmetic/affine-frame-relation-as-standard"
+    ].blockers == (
+        "declared non-generative reader-only rule",
+    )
+    assert blocked["arithmetic/dangling-comparative-safety"].blockers == (
+        "declared non-generative safety consumer",
+    )
 
 
 def test_every_gsm8k_premise_rule_has_a_strict_round_trip() -> None:
     project = load_project(Path("projects/gsm8k"))
     availability = list_rule_availability(project)
 
-    for index, rule in enumerate(availability):
+    for index, rule in enumerate(
+        item for item in availability if item.supported
+    ):
         candidate = generate_candidate(
             project,
             rule_id=rule.id,
@@ -2233,6 +2250,133 @@ def test_least_explored_selection_is_seeded_and_probe_compatible(
             )
 
 
+def test_structural_coverage_targets_filters_and_health_are_explicit(
+    tmp_path: Path,
+) -> None:
+    _write_project(tmp_path)
+    rules_path = tmp_path / "pack" / "rules.yaml"
+    rules_path.write_text(
+        rules_path.read_text()
+        + """\
+
+  - id: invented/structural
+    phase: read
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {lit: [dax, vax]}
+        - {slot: item, type: noun}
+        - opt:
+            - {slot: extra, type: noun}
+    emits:
+      - fact: atom
+        entity: "{who}"
+        pred: "{item}"
+"""
+    )
+    project = load_project(tmp_path)
+
+    status = exploration_status(project)
+    profile = next(
+        item for item in status["rules"] if item["id"] == "invented/structural"
+    )
+    assert profile["profile"]["phenomena"] == [
+        "literal_alternatives",
+        "optional_branches",
+    ]
+    assert profile["profile"]["fact_types"] == ["atom"]
+    assert profile["structural_total"] == 5
+    assert profile["structural_covered"] == 0
+    assert "optional_branches" in status["filter_options"]["phenomena"]
+
+    selection = choose_exploration_target(
+        project,
+        seed=41,
+        objective="least_covered_structure",
+        filters=("phenomenon:optional_branches", "fact:atom"),
+    )
+    assert selection.rule_id == "invented/structural"
+    assert selection.target_signature in profile["uncovered_signatures"]
+    assert selection.filters == (
+        "fact:atom",
+        "phenomenon:optional_branches",
+    )
+
+    included = generate_candidate(
+        project,
+        rule_id="invented/structural",
+        seed=42,
+        structural_target="optional:3:included",
+    )
+    event = append_exploration(
+        project,
+        included,
+        ExplorationSelection(
+            rule_id="invented/structural",
+            locked_bindings={},
+            probe=None,
+            objective="least_covered_structure",
+            filters=("phenomenon:optional_branches",),
+            target_signature="optional:3:included",
+        ),
+    )
+    assert "optional:3:included" in event["structural_signatures"]
+    assert "fact:atom(entity,pred)" in event["structural_signatures"]
+    assert event["objective"] == "least_covered_structure"
+
+    omitted = generate_candidate(
+        project,
+        rule_id="invented/structural",
+        seed=43,
+        structural_target="optional:3:omitted",
+    )
+    omitted_event = append_exploration(project, omitted)
+    assert "optional:3:omitted" in omitted_event["structural_signatures"]
+
+    alternative = generate_candidate(
+        project,
+        rule_id="invented/structural",
+        seed=44,
+        structural_target="literal:1:vax",
+    )
+    alternative_event = append_exploration(project, alternative)
+    assert "literal:1:vax" in alternative_event["structural_signatures"]
+
+    revised = exploration_status(load_project(tmp_path))
+    revised_rule = next(
+        item for item in revised["rules"] if item["id"] == "invented/structural"
+    )
+    assert revised_rule["structural_covered"] == 5
+    assert revised["health"]["structural_covered"] >= 5
+    assert revised["health"]["current_structural_events"] == 3
+
+    with pytest.raises(GenerationError, match="unknown or currently unreachable"):
+        choose_exploration_target(
+            project,
+            seed=45,
+            filters=("phenomenon:not_declared",),
+        )
+
+
+def test_review_attention_objective_selects_a_live_problem_rule(
+    tmp_path: Path,
+) -> None:
+    _write_project(tmp_path)
+    project = load_project(tmp_path)
+    candidate = generate_candidate(
+        project, rule_id="invented/simple", seed=52
+    )
+    append_review(project, _review(candidate, "invalid"))
+
+    selection = choose_exploration_target(
+        project,
+        seed=53,
+        objective="review_attention",
+    )
+    assert selection.rule_id == "invented/simple"
+    assert selection.objective == "review_attention"
+
+
 def test_generation_api_records_only_fresh_realizations(tmp_path: Path) -> None:
     _write_project(tmp_path)
     rules_path = tmp_path / "pack" / "rules.yaml"
@@ -2304,6 +2448,11 @@ def test_generation_api_records_only_fresh_realizations(tmp_path: Path) -> None:
     assert attempted_filler["generated_count"] == 0
     assert attempted_filler["failed_count"] == 1
     assert attempted_filler["attempt_count"] == 1
+    assert attempted["health"]["failed_attempts"] == 1
+    assert attempted["health"]["top_failures"][0]["count"] == 1
+    assert "constraints left no filler" in (
+        attempted["health"]["top_failures"][0]["cause"]
+    )
 
     second_selection = choose_exploration_target(
         load_project(tmp_path),
@@ -2325,6 +2474,12 @@ def test_generation_api_records_only_fresh_realizations(tmp_path: Path) -> None:
     )
     assert generated["exploration_probe"]["identity"] == "miv"
     assert generated["exploration_event_id"].startswith("exp-")
+    assert generated["exploration_objective"] == "least_attempted_rule"
+    assert generated["exploration_filters"] == []
+    assert any(
+        signature.startswith("fact:predication(")
+        for signature in generated["structural_signatures"]
+    )
     assert len(read_exploration_events(load_project(tmp_path))) == 1
 
     endpoint("/api/generation/retest", "POST")(
@@ -2671,6 +2826,9 @@ def test_designer_exposes_the_generation_review_loop() -> None:
     assert 'data-verdict="invalid"' in html
     assert 'data-verdict="unclear"' in html
     assert 'id="generation-premise-list"' in html
+    assert 'id="generation-objective"' in html
+    assert 'id="generation-filter-groups"' in html
+    assert 'id="generation-health"' in html
     assert 'id="generation-minimal-pair"' in html
     assert 'id="generation-defects"' in html
     assert 'id="generation-attachment"' in html
@@ -2715,10 +2873,17 @@ def test_designer_exposes_the_generation_review_loop() -> None:
     assert "f.source_ref" in js
     assert "loadGenerationExploration" in js
     assert "selectedGenerationMode" in js
+    assert "selectedGenerationObjective" in js
+    assert "selectedGenerationFilters" in js
+    assert "generationRuleMatchesFilters" in js
+    assert "Structural target" in js
+    assert "Most frequent generation blockers" in js
     assert 'generation_mode: generationMode' in js
+    assert "objective: generationMode" in js
+    assert "filters: generationMode" in js
     assert "boundary probes do not count as strict rule or lexicon coverage" in js
     assert "attempted_failed" in js
-    assert "least attempted, with seeded tie-breaking" in js
+    assert "rule frontier: ${objective}, with seeded tie-breaking" in js
     assert "use Review history → Edit for corrections" in js
     assert "control.title = help" in js
     assert "Fact omits needed context" in js
@@ -2736,3 +2901,5 @@ def test_designer_exposes_the_generation_review_loop() -> None:
     assert '$("generation-seed").addEventListener("input"' in js
     assert "seed ${seed}: ${candidate.detail}" in generate_next
     assert "minmax(22ch, 260px)" in css
+    assert ".generation-structure-controls" in css
+    assert ".generation-filter-options" in css

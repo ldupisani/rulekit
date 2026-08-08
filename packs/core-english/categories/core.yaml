@@ -90,6 +90,21 @@ categories:
             cousin", "their garden"). This is narrower than `pronoun`: subject,
             object, reflexive, and standalone possessive forms do not license a
             noun merely by preceding it.
+    plural_possessive_determiner:
+        parent: possessive_determiner
+        notes: >
+            Possessive determiners that can denote more than one possessor.
+            Aggregate noun phrases such as "the sum of their ages" need this
+            narrower category: a singular "his ages" cannot establish the
+            multiple holders whose values are being summed.
+    clause_subject_possessive_determiner:
+        parent: possessive_determiner
+        notes: >
+            Third-person possessive determiners that may take the unique
+            preceding clause subject as their owner ("Maya ... her sister",
+            "the company ... its building"). First- and second-person forms
+            are excluded because "Maya ... my/your sister" cannot identify
+            Maya as the possessor.
     animate_possessive_determiner:
         parent: possessive_determiner
         notes: >
@@ -110,6 +125,12 @@ categories:
             or possessive determiner when a rule opts into `referential`.
             Corpus-owned temporal members extend this category from their own
             pack.
+    timeperiod:
+        parent: bare_pp_object
+        notes: >
+            Nouns that can identify a temporal reference or interval. Core owns
+            the category and its generic `year` member; domain packs may extend
+            it with weekdays, months, and other calendar vocabulary.
     bare_entity_reference:
         parent: quantity_holder
         notes: >
@@ -125,6 +146,13 @@ categories:
             optional quantitative locative adjunct. Referentiality alone makes
             "in the dog" syntactically complete but does not make it a useful
             holder context.
+    quantity_interior_location:
+        parent: quantity_location
+        notes: >
+            Locations that admit an interior reading with "in". Surface-only
+            objects such as a bench or tree remain quantity locations for
+            "on"/"at" but do not become containers merely because they can
+            host a quantitative event nearby.
     quantity_container:
         parent: quantity_holder
         notes: >
@@ -160,6 +188,186 @@ categories:
         notes: >
             The preposition class that can attach a declared remnant to a
             quantitative conjunct ("with the rest").
+    spatial_preposition:
+        parent: preposition
+        notes: >
+            Prepositions with at least one declared spatial reading. Membership
+            only makes a word eligible for a narrower location, source, goal,
+            or path role; it never chooses among those roles by itself.
+    spatial_location_preposition:
+        parent: spatial_preposition
+        notes: >
+            Static location markers licensed with a declared spatial reference.
+            Polysemous members such as "at" and "in" remain temporal elsewhere;
+            the complement and governing frame decide which reading applies.
+    spatial_source_preposition:
+        parent: spatial_preposition
+        notes: >
+            Markers that can identify the source of a declared motion event.
+    spatial_goal_preposition:
+        parent: spatial_preposition
+        notes: >
+            Markers that can identify the goal of a declared motion event.
+    arrival_goal_preposition:
+        parent: preposition
+        notes: >
+            Point marker licensed as a destination only by a declared arrival
+            predicate. It is deliberately separate from spatial_goal_preposition:
+            admitting it there would also license "walked at the garden".
+    spatial_path_preposition:
+        parent: spatial_preposition
+        notes: >
+            Markers that can identify the path traversed by a declared motion
+            event. A member may also have a static location reading.
+    spatial_reference_noun:
+        parent: noun
+        notes: >
+            Common nouns independently licensed as spatial reference objects.
+            Proper names remain structurally available without being guessed to
+            denote places; arbitrary common nouns do not become locations.
+    spatial_relation_verb:
+        parent: verb
+        notes: >
+            Predicates that can anchor a static or dynamic spatial relation.
+            Copular and motion predicates remain distinct subcategories.
+    spatial_copular_verb:
+        parent: spatial_relation_verb
+        notes: "Copular predicates that anchor a static spatial relation."
+    spatial_motion_verb:
+        parent: spatial_relation_verb
+        notes: >
+            Finite motion predicates that license source, goal, and path
+            relations. Static copular location uses the existing `copula`
+            category instead of widening every verb into a spatial event.
+    arrival_motion_verb:
+        parent: verb
+        notes: >
+            Arrival predicates that license their own governed goal frames.
+            Kept separate from spatial_motion_verb so the general static
+            location frame does not compete with "arrive at" for the same PP.
+    location_state_verb:
+        parent: verb
+        notes: >
+            Canonical predicates whose spatial-location frame directly observes
+            a location fluent at the stated event time.
+    location_initiating_verb:
+        parent: verb
+        notes: >
+            Predicates whose licensed spatial goal initiates a location fluent.
+            The kernel reasons over this semantic category, never a word list.
+    location_terminating_verb:
+        parent: verb
+        notes: >
+            Predicates whose licensed source or direct place object terminates
+            a location fluent. Modal uses do not become observed transitions.
+    location_terminating_past_verb:
+        parent: location_terminating_verb
+        notes: >
+            Past surfaces used by the factual no-departure construction. Kept
+            narrower than the full termination category so bare and present
+            forms cannot enter that rule.
+    location_impossibility_modal:
+        parent: modal
+        notes: >
+            Modal admitted by the explicit universal inability construction.
+            Kept separate from permission and obligation modals so a prohibition
+            cannot silently become physical impossibility.
+    negative_person_pronoun:
+        parent: pronoun
+        notes: >
+            Negative human quantifier-pronouns that can scope a universal
+            transition constraint. Narrower than ordinary pronoun reference.
+    discourse_referential_group_pronoun:
+        parent: pronoun
+        notes: >
+            Plural pronouns that may denote one conservatively constructed
+            group of prior referential subjects. Case-specific children keep
+            subject and object grammar separate at individual ask slots.
+    discourse_group_pronoun:
+        parent: discourse_referential_group_pronoun
+        notes: >
+            Object-case discourse group pronouns, used after forms such as
+            "which of". Subject-case forms remain in their sibling category.
+    discourse_subject_group_pronoun:
+        parent: discourse_referential_group_pronoun
+        notes: >
+            Subject-case discourse group pronouns, used after an inverted
+            copula in questions such as "how old are they".
+    temporal_preposition:
+        parent: preposition
+        notes: >
+            Prepositions with a declared temporal reading. Membership only
+            becomes temporal beside a `timeperiod` object; spatial and other
+            readings of the same surface remain independent.
+    temporal_point_preposition:
+        parent: temporal_preposition
+        notes: "Markers locating an event at one stated temporal reference."
+    temporal_before_preposition:
+        parent: temporal_preposition
+        notes: "Markers locating an event before a stated temporal reference."
+    temporal_after_preposition:
+        parent: temporal_preposition
+        notes: "Markers locating an event after a stated temporal reference."
+    temporal_duration_preposition:
+        parent: temporal_preposition
+        notes: "Markers locating an event within or across a stated interval."
+    temporal_start_preposition:
+        parent: temporal_preposition
+        notes: "Markers identifying the start boundary of an interval."
+    temporal_end_preposition:
+        parent: temporal_preposition
+        notes: "Markers identifying the end boundary of an interval."
+    temporal_deadline_preposition:
+        parent: temporal_preposition
+        notes: "Markers identifying a latest completion boundary."
+    temporal_approximate_preposition:
+        parent: temporal_preposition
+        notes: "Markers locating an event approximately around a reference."
+    circumstantial_preposition:
+        parent: preposition
+        notes: >
+            Prepositions with a declared event-circumstance reading. A marker
+            alone never chooses accompaniment, instrument, means, manner,
+            cause, or purpose; the governed verb and object categories do.
+    accompaniment_preposition: {parent: circumstantial_preposition}
+    instrument_preposition: {parent: circumstantial_preposition}
+    means_preposition: {parent: circumstantial_preposition}
+    manner_preposition: {parent: circumstantial_preposition}
+    cause_preposition: {parent: circumstantial_preposition}
+    purpose_preposition: {parent: circumstantial_preposition}
+    instrument_noun:
+        parent: noun
+        notes: "Objects conventionally usable as an instrument in a governed frame."
+    means_noun:
+        parent: bare_pp_object
+        notes: "Bare transport or channel nouns licensed after a means marker."
+    manner_noun:
+        parent: bare_pp_object
+        notes: "Abstract nouns independently licensed as a manner description."
+    cause_noun:
+        parent: noun
+        notes: "Nouns independently licensed as the cause of an event."
+    purpose_noun:
+        parent: noun
+        notes: "Nouns independently licensed as the purpose of an event."
+    accompaniment_compatible_verb:
+        parent: verb
+        notes: "Predicates that can be performed in another participant's company."
+    instrument_compatible_verb:
+        parent: verb
+        notes: "Predicates that conventionally admit an instrument argument."
+    means_compatible_verb:
+        parent: verb
+        notes: "Predicates that conventionally admit a means or conveyance."
+    manner_compatible_verb:
+        parent: verb
+        notes: "Predicates that conventionally admit a manner adjunct."
+    cause_compatible_verb:
+        parent: verb
+        notes: "Predicates that conventionally admit a causal adjunct."
+    purpose_compatible_verb:
+        parent: verb
+        notes: "Predicates that conventionally admit a purpose adjunct."
     membership_collection_noun:
         parent: noun
         notes: >
@@ -686,6 +894,12 @@ categories:
             Manner markers that request one answer for every explicitly named
             holder. They may occur immediately before or after the question's
             lexical verb; ordinary adverbs do not acquire that answer scope.
+    holding_anchor_adverb:
+        parent: adverb
+        notes: >
+            Temporal or aspectual adverbs that can naturally appear before a
+            stative holding verb in a conjoined quantity anchor ("and still
+            had 5 hats"). Directional adverbs such as "off" do not belong.
     currency_measure:
         parent: noun
         dimension: true
@@ -736,6 +950,12 @@ categories:
         notes: >
             Aggregate words that assert a sum rather than an average. This
             semantic subset is the marker domain for GroupTotal premises.
+    prenominal_group_total_marker:
+        parent: group_total_marker
+        notes: >
+            Sum markers that can directly modify a dimension noun, as in
+            "combined age" or "total weight". Postpositive markers such as
+            "together" and "altogether" remain outside this word order.
     group_total_quantifier:
         parent: quantifier
         notes: >
@@ -767,6 +987,13 @@ categories:
             Verbs licensed when a ratio-frame head includes the optional
             destination preposition and repeats it after the relative-clause
             standard.
+    ratio_particle_verb:
+        parent: verb
+        notes: >
+            Quantity-event verbs whose particle may appear between the verb
+            and a count-ratio frame such as "throws in twice the number".
+            Destination motion belongs to the repeated relative-clause frame,
+            not the shorter "as STANDARD" construction.
     frame_head_preposition:
         parent: preposition
         notes: >
@@ -780,6 +1007,12 @@ categories:
             comparisons. This category is separate from the prepositional-
             frame category: it controls participant plausibility and whether
             an elided `as many` measure is informative enough to accept.
+    motion_comparison_measure:
+        parent: noun
+        notes: >
+            Count nouns that can overtly measure a motion comparison, such as
+            repetitions or units of distance. Arbitrary transported objects
+            do not become motion measures merely because they are countable.
     destination_preposition:
         parent: preposition
         notes: >
@@ -964,11 +1197,25 @@ categories:
     temporal_marker:
         parent: time
         notes: >
-            The deictic words 'now' and 'today' mark a clause's value as
-            relative to the current moment. An equative age relation may use
-            this category as an `absent` gate, while the future standard-pinned
-            sibling consumes one marker to keep the standard's offset at zero.
-            The category is deliberately narrower than every time-sensed word.
+            The current-moment words 'now' and 'today'. An equative age
+            relation may use the category as an `absent` gate, while the
+            future standard-pinned sibling consumes one marker to keep the
+            standard's offset at zero. This stays narrower than the relative
+            event-time category below: 'yesterday' and 'tomorrow' are ordered
+            markers but do not mean the current moment.
+    deictic_temporal_marker:
+        parent: time
+        notes: >
+            Relative day words that can anchor one unambiguous predicate.
+            Their signed coordinates live in temporal_offsets below. This
+            category preserves event time without broadening rules whose
+            temporal_marker slot specifically requires the current moment.
+    day_deictic_marker:
+        parent: deictic_temporal_marker
+        notes: >
+            Day-grained relative markers. `now` deliberately remains outside:
+            sharing offset zero does not make an instant interchangeable with
+            the whole current day.
     age_measure:
         parent: noun
         notes: >
@@ -1180,6 +1427,8 @@ members:
     holder_list_conjunction: [and]
     definite_article: [the]
     possessive_determiner: [her, his, its, my, their, your]
+    plural_possessive_determiner: [their]
+    clause_subject_possessive_determiner: [her, his, its, their]
     animate_possessive_determiner: [her, his, my, their, your]
     many_incompatible_noun: [age, litter, rest]
     membership_predicate_incompatible_noun: [time]
@@ -1191,7 +1440,11 @@ members:
     mass_quantity_noun: [clay, litter, money, paper, rest, sand, wool]
     mass_currency_noun: [money]
     non_quantity_object_verb:
+        - be
         - are
+        - arrive
+        - arrived
+        - arrives
         - cost
         - is
         - jumped
@@ -1373,6 +1626,8 @@ members:
     # necessarily disjoint.
     quantity_event_participant:
         [animal, alpaca, dog, cat, fish, bird, rabbit, hamster]
+    animate_subject_verb: [take, takes, took, teach, teaches, taught]
+    animate_object_verb: [teach, teaches, taught]
     # A book can hold a page/count quantity even though it is neither animate
     # nor a location. Other common nouns enter this positive role only beside
     # evidence for their own ordinary holder reading.
@@ -1410,6 +1665,9 @@ members:
     future_modal: [will, would]
     capacity_modal: [can, could, may, might, must, should]
     temporal_marker: [now, today]
+    deictic_temporal_marker: [now, today, tomorrow, yesterday]
+    day_deictic_marker: [today, tomorrow, yesterday]
+    timeperiod: [year]
     count_intensifier: [more]
     # small/large inherit this gate through `size_attribute`; tall/long/etc.
     # extend the broader category from packs/difg-mined.
@@ -1429,10 +1687,12 @@ members:
     distributive_quantifier: [each, every]
     postpositive_distributive_quantifier: [each]
     individualizing_adverb: [individually]
+    holding_anchor_adverb: [currently]
     age_measure: [year]
     aggregate_noun: [amount, number]
     count_aggregate_noun: [amount, number]
     group_total_marker: [altogether, combined, together, total]
+    prenominal_group_total_marker: [combined, total]
     group_total_quantifier: [all]
     quantified_group_total_marker: [together]
     prepositional_group_total_marker: [total]
@@ -1448,16 +1708,63 @@ members:
     duration_verb: [takes, took]
     frame_prepositional_verb: [travel, traveled, travels]
     motion_comparison_verb: [travel, traveled, travels]
+    motion_comparison_measure: [inch, time]
     sell: [sell, sells, sold]
     frame_head_preposition: [in, to]
     destination_preposition: [to]
-    quantity_location: [area, bench, cupboard, garden, pantry, storeroom, tree]
+    quantity_location:
+        [area, bench, cupboard, garden, pantry, storeroom, tree, university]
+    quantity_interior_location:
+        [area, cupboard, garden, pantry, storeroom, university]
     quantity_location_preposition: [in]
     quantity_surface_location: [bench, tree]
     quantity_surface_preposition: [on]
-    quantity_site_location: [bench, garden, tree]
+    quantity_site_location: [bench, garden, tree, university]
     quantity_site_preposition: [at]
     quantity_remainder_preposition: [with]
+    spatial_location_preposition:
+        [aboard, above, alongside, amid, amidst, at, atop, behind, below,
+         beneath, beside, beyond, in, inside, near, "next to", on, opposite,
+         outside, over, under, underneath, upon, within]
+    spatial_source_preposition: [from, off, "out of"]
+    spatial_goal_preposition: [into, onto, to, toward, towards]
+    arrival_goal_preposition: [at]
+    spatial_path_preposition:
+        [across, along, around, down, over, past, through, under, via]
+    spatial_reference_noun:
+        [area, bench, cupboard, garden, pantry, storeroom, tree, university]
+    spatial_relation_verb: [teach, teaches, taught]
+    spatial_copular_verb: [is, are, was, were]
+    spatial_motion_verb: [jumped, ran, travel, traveled, travels, walked]
+    arrival_motion_verb: [arrive, arrived, arrives]
+    location_state_verb: [be]
+    location_initiating_verb: [arrive, arrived, arrives]
+    location_terminating_verb: [leave, leaves, leaving, left]
+    location_terminating_past_verb: [left]
+    location_impossibility_modal: [can]
+    negative_person_pronoun: [nobody]
+    discourse_group_pronoun: [them]
+    discourse_subject_group_pronoun: [they]
+    temporal_point_preposition: [at, in, on]
+    temporal_before_preposition: [before]
+    temporal_after_preposition: [after, following]
+    temporal_duration_preposition: [during, for, throughout]
+    temporal_start_preposition: [from, since]
+    temporal_end_preposition: [through, to, until]
+    temporal_deadline_preposition: [by]
+    temporal_approximate_preposition: [about, around, circa]
+    accompaniment_preposition: [with, without]
+    instrument_preposition: [with, without]
+    means_preposition: [aboard, by, via]
+    manner_preposition: [in, with, without]
+    cause_preposition: ["because of", "due to", from, through]
+    purpose_preposition: [for]
+    instrument_noun: [key, pencil]
+    accompaniment_compatible_verb:
+        [jumped, ran, teach, teaches, taught, travel, traveled, travels, walked]
+    means_compatible_verb: [jumped, ran, travel, traveled, travels, walked]
+    manner_compatible_verb: [jumped, ran, travel, traveled, travels, walked]
+    purpose_compatible_verb: [jumped, ran, travel, traveled, travels, walked]
     membership_collection_noun: [animal]
 attribute_compatibility:
     color_attribute: [colorable_noun]
@@ -1470,14 +1777,97 @@ attribute_compatibility:
     mass_dimension_comparative: [mass_measure]
     duration_dimension_comparative: [duration_measure]
     age_comparative: [age_measure]
-    quantity_location_preposition: [quantity_location]
+    quantity_location_preposition: [quantity_interior_location]
     quantity_surface_preposition: [quantity_surface_location]
     quantity_site_preposition: [quantity_site_location]
     quantity_remainder_preposition: [remnant]
+adposition_roles:
+    spatial-location:
+        preposition_category: spatial_location_preposition
+        object_category: spatial_reference_noun
+        verb_category: spatial_relation_verb
+        allow_name_object: true
+    spatial-source:
+        preposition_category: spatial_source_preposition
+        object_category: spatial_reference_noun
+        verb_category: spatial_motion_verb
+        allow_name_object: true
+    spatial-goal:
+        - preposition_category: spatial_goal_preposition
+          object_category: spatial_reference_noun
+          verb_category: spatial_motion_verb
+          allow_name_object: true
+        - preposition_category: arrival_goal_preposition
+          object_category: spatial_reference_noun
+          verb_category: arrival_motion_verb
+          allow_name_object: true
+    spatial-path:
+        preposition_category: spatial_path_preposition
+        object_category: spatial_reference_noun
+        verb_category: spatial_motion_verb
+        allow_name_object: true
+    temporal-point:
+        preposition_category: temporal_point_preposition
+        object_category: timeperiod
+        verb_category: verb
+    temporal-before:
+        preposition_category: temporal_before_preposition
+        object_category: timeperiod
+        verb_category: verb
+    temporal-after:
+        preposition_category: temporal_after_preposition
+        object_category: timeperiod
+        verb_category: verb
+    temporal-duration:
+        preposition_category: temporal_duration_preposition
+        object_category: timeperiod
+        verb_category: verb
+    temporal-start:
+        preposition_category: temporal_start_preposition
+        object_category: timeperiod
+        verb_category: verb
+    temporal-end:
+        preposition_category: temporal_end_preposition
+        object_category: timeperiod
+        verb_category: verb
+    temporal-deadline:
+        preposition_category: temporal_deadline_preposition
+        object_category: timeperiod
+        verb_category: verb
+    temporal-approximate:
+        preposition_category: temporal_approximate_preposition
+        object_category: timeperiod
+        verb_category: verb
+    accompaniment:
+        preposition_category: accompaniment_preposition
+        object_category: animate
+        verb_category: accompaniment_compatible_verb
+        allow_name_object: true
+    instrument:
+        preposition_category: instrument_preposition
+        object_category: instrument_noun
+        verb_category: instrument_compatible_verb
+    means:
+        preposition_category: means_preposition
+        object_category: means_noun
+        verb_category: means_compatible_verb
+    manner:
+        preposition_category: manner_preposition
+        object_category: manner_noun
+        verb_category: manner_compatible_verb
+    cause:
+        preposition_category: cause_preposition
+        object_category: cause_noun
+        verb_category: cause_compatible_verb
+    purpose:
+        preposition_category: purpose_preposition
+        object_category: purpose_noun
+        verb_category: purpose_compatible_verb
 measure_holder_compatibility:
     length_measure: [linear_dimension_holder]
     mass_measure: [mass_dimension_holder]
     duration_measure: [duration_holder]
+    age_measure: [quantity_event_participant, bare_entity_reference]
 context_synonyms:
     appendage:
         gate: animal
@@ -1486,3 +1876,8 @@ attrs:
     dog: {legs: 4}
     cat: {legs: 4}
     bird: {legs: 2}
+temporal_offsets:
+    yesterday: -1
+    now: 0
+    today: 0
+    tomorrow: 1

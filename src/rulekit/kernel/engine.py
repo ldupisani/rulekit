@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 from ..data.registry import Registry
 from . import deixis
 from .answer import Answer, answer as run_answer
-from .condense import condense
+from .condense import condense, condense_multiword_adpositions
 from .document import Document, _bind_discourse, run_document
 from .evaluate import ArithmeticLog
 from .facts import FactStore
@@ -30,7 +30,9 @@ from .tokenize import split_sentences, tokenize
 # senses that mark a sentence as a question/task when they LEAD it, and that
 # mark the wh-part inside an "If <clause>, <wh…>" sentence. Sense names are
 # structure; the WORDS carrying them live in the packs (the constitution).
-ASK_CUE_SENSES = frozenset({"interrogative", "auxiliary", "modal", "imperative"})
+ASK_CUE_SENSES = frozenset(
+    {"interrogative", "auxiliary", "modal", "imperative", "wh_which"}
+)
 
 
 def _has_ask_cue_sense(word: str, reg: Registry) -> bool:
@@ -76,6 +78,7 @@ def analyze(
     )
     annotate_numbers(reading, reg)
     annotate_senses(reading, reg)
+    condense_multiword_adpositions(reading, reg)
     disambiguate(reading, reg)
     attach_obligations(reading, reg)
     condense(reading, reg)
@@ -574,6 +577,32 @@ def _split_fused_premise_question(
     return None, fused
 
 
+def _is_declared_question_assumption(
+    sentence: str,
+    reg: Registry | None,
+) -> bool:
+    """Whether one complete read rule licenses detached question scope."""
+    if reg is None:
+        return False
+
+    from .patterns import SKIPPABLE_SENSES, run_rules
+
+    reading = analyze(sentence, reg, tracing=False)
+    meaningful = {
+        unit.uid
+        for unit in reading.units
+        if unit.sense() not in SKIPPABLE_SENSES
+    }
+    licensed = [
+        result
+        for result in run_rules(reading, reg, "read")
+        if result.match.rule.question_assumption
+        and result.facts
+        and meaningful.issubset(result.match.consumed)
+    ]
+    return len(licensed) == 1
+
+
 def _split_question_scoped(
     text: str,
     reg: Registry | None = None,
@@ -607,6 +636,16 @@ def _split_question_scoped(
     if not is_question:
         return [(sentence, False) for sentence in sentences], None
     premises = [(sentence, False) for sentence in sentences[:-1]]
+    # A deliberately detached antecedent immediately before one question:
+    # "If P. Which ...?" Adjacency supplies the only possible consequent, but
+    # it is not sufficient by itself: the stripped clause must be consumed
+    # end-to-end by exactly one rule that explicitly opts into question scope.
+    # This keeps ordinary logical conditionals in the asserted document.
+    if premises and premises[-1][0].lower().startswith("if "):
+        detached = premises[-1][0][2:].strip().lstrip()
+        detached = detached.rstrip(".").strip()
+        if detached and _is_declared_question_assumption(detached + ".", reg):
+            premises[-1] = (detached + ".", True)
     if reg is not None:
         clause, last = _split_leading_clause(last, reg)
         assumption = clause is not None
@@ -635,6 +674,7 @@ def solve(
     reg: Registry,
     tracing: bool = True,
     interpretation: str | None = None,
+    reference_year: int | None = None,
 ) -> Result:
     """Read `text` and answer it.
 
@@ -684,7 +724,12 @@ def solve(
     )
     # the question's own pronouns resolve against the document's discourse
     # exactly like premise pronouns: unique antecedent or stay unmet
-    _bind_discourse(premises + [question], journal=journal, reg=reg)
+    _bind_discourse(
+        premises + [question],
+        journal=journal,
+        reg=reg,
+        plural_group_sentence=question.sentence_index,
+    )
     # only slots whose VALUE the consumer uses ({slot.value} templates)
     # count as read — matching "four-minute songs" as an item does NOT read
     # the four, and value accounting must still decline it
@@ -719,6 +764,7 @@ def solve(
         doc.log,
         premises=premises,
         interpretation=interpretation,
+        reference_year=reference_year,
     )
     veto = run_guards(
         premises, doc.consumed_uids, doc.log, reg, proposed, doc.store, question,

@@ -23,6 +23,7 @@ from ..data.sources import SourceIndex
 from ..generation import (
     GenerationError,
     GenerationMode,
+    GenerationObjective,
     HypothesisRecord,
     LexicalRelaxation,
     ReviewRecord,
@@ -63,6 +64,7 @@ class DocBody(BaseModel):
 class TraceBody(BaseModel):
     text: str
     interpretation: str | None = None
+    reference_year: int | None = Field(default=None, ge=1, le=9999)
 
 
 class ImpactBody(BaseModel):
@@ -77,6 +79,8 @@ class GenerationCandidateBody(BaseModel):
     filler_identity: str | None = Field(default=None, max_length=256)
     seed: int | None = None
     generation_mode: GenerationMode = "strict"
+    objective: GenerationObjective = "least_attempted_rule"
+    filters: list[str] = Field(default_factory=list, max_length=64)
 
 
 class GenerationRetestBody(BaseModel):
@@ -167,6 +171,16 @@ class ServerState:
 
 def _unit_json(unit: Unit) -> dict[str, Any]:
     f = unit.features
+
+    def obligation_target(target: Any) -> Any:
+        if target is PATTERN:
+            return "<pattern>"
+        if isinstance(target, Unit):
+            return target.surface
+        if isinstance(target, (list, tuple)):
+            return [obligation_target(item) for item in target]
+        return None
+
     return {
         "uid": unit.uid,
         "surface": unit.surface,
@@ -185,11 +199,7 @@ def _unit_json(unit: Unit) -> dict[str, Any]:
                 "need": ob.need,
                 "met": ob.met,
                 "optional": ob.optional,
-                "target": (
-                    "<pattern>" if ob.target is PATTERN
-                    else ob.target.surface if isinstance(ob.target, Unit)
-                    else None
-                ),
+                "target": obligation_target(ob.target),
             }
             for ob in unit.obligations()
         ],
@@ -241,16 +251,25 @@ def _reading_review_targets(
 ) -> list[dict]:
     """Deduplicate the ordinary matcher results for explicit UI selection."""
 
+    premise_results = [
+        result
+        for result in results
+        if result.match.rule.generation != "safety"
+    ]
     targets = []
-    for rule_id in sorted({result.match.rule.id for result in results}):
+    for rule_id in sorted(
+        {result.match.rule.id for result in premise_results}
+    ):
         selected = [
-            result for result in results if result.match.rule.id == rule_id
+            result
+            for result in premise_results
+            if result.match.rule.id == rule_id
         ]
         shadowed = all(
             any(
                 other is not result
                 and subsumes(other.match, result.match, registry)
-                for other in results
+                for other in premise_results
             )
             for result in selected
         )
@@ -265,6 +284,48 @@ def _reading_review_targets(
             target["source_ref"] = source_ref
         targets.append(target)
     return targets
+
+
+def _reading_safety_interceptions(
+    results: list[Any],
+    registry: Registry,
+    source_index: SourceIndex | None = None,
+) -> list[dict]:
+    """Expose only fact-free guards not superseded by an ordinary premise."""
+
+    ordinary = [
+        result
+        for result in results
+        if result.match.rule.generation != "safety"
+    ]
+    surviving = [
+        result
+        for result in results
+        if result.match.rule.generation == "safety"
+        and not any(
+            subsumes(other.match, result.match, registry)
+            for other in ordinary
+        )
+    ]
+    interceptions = []
+    for rule_id in sorted(
+        {result.match.rule.id for result in surviving}
+    ):
+        rule = next(
+            result.match.rule
+            for result in surviving
+            if result.match.rule.id == rule_id
+        )
+        interception = {
+            "rule_id": rule_id,
+            "description": rule.description,
+            "status": "intercepted",
+        }
+        source_ref = _identifier_source_json(source_index, rule_id)
+        if source_ref is not None:
+            interception["source_ref"] = source_ref
+        interceptions.append(interception)
+    return interceptions
 
 
 def _decision_json(decision, source_index: SourceIndex) -> dict[str, Any]:
@@ -497,6 +558,10 @@ def _field_json(result) -> dict[str, Any]:
     quantities = [
         f for f in result.store.facts if type(f).__name__ == "Quantity"
     ]
+    event_times = [
+        f for f in result.store.facts if type(f).__name__ == "EventTime"
+    ]
+    before = [f for f in result.store.facts if type(f).__name__ == "Before"]
 
     # PERSON — the only axis with true positional coordinates. This is also where the
     # capitalisation heuristic dumps any capitalised mid-sentence word that is not
@@ -528,12 +593,26 @@ def _field_json(result) -> dict[str, Any]:
             {"key": k, "sentences": sorted(v)} for k, v in sorted(bands.items())
         ]
 
-    # TIME — labels exist; ORDER DOES NOT. Quantity.time is an opaque surface string
-    # that is never parsed or normalised, and whose only use anywhere is equality, and
-    # only ever to REFUSE to combine facts. `Before` is a registered fact class nothing
-    # constructs. So we hand the viewer the labels and an explicit "ordered: false",
-    # and it must not draw an axis through them.
+    # TIME has two deliberately separate representations. Quantity.time remains an
+    # opaque surface label used only for equality. EventTime carries a pack-declared
+    # signed relative coordinate; Before records every strict pair supported by those
+    # coordinates. Never infer an order for the opaque labels.
     time_labels = sorted({q.time for q in quantities if getattr(q, "time", None)})
+    ordered_events = [
+        {
+            "event": fact.event,
+            "entity": fact.entity,
+            "verb": fact.verb,
+            "object": fact.obj,
+            "marker": fact.marker,
+            "offset": fact.offset,
+            "sentence": fact.provenance.sentence,
+        }
+        for fact in sorted(
+            event_times,
+            key=lambda item: (item.offset, item.provenance.sentence, item.event),
+        )
+    ]
 
     return {
         "narrative": [
@@ -551,11 +630,19 @@ def _field_json(result) -> dict[str, Any]:
         },
         "time": {
             "labels": time_labels,
-            "ordered": False,
+            "events": ordered_events,
+            "before": [
+                {"earlier": fact.earlier, "later": fact.later}
+                for fact in before
+            ],
+            "ordered": bool(ordered_events),
             "note": (
-                "time is an opaque label: never parsed, never ordered. Its only use is "
-                "equality, and only to REFUSE to combine facts. No ask can name a "
-                "point in time (docs/deixis.md §1.3, §4)."
+                "relative event markers use pack-declared signed offsets and preserve "
+                "strict event order. Quantity time labels remain opaque and are never "
+                "placed on this axis; asks still cannot name a reference moment."
+                if ordered_events
+                else "no ordered relative event marker was preserved. Quantity time "
+                "labels remain opaque and are used only for equality."
             ),
         },
         "place": {
@@ -696,6 +783,7 @@ def build_router(state: ServerState) -> APIRouter:
                 body.text,
                 state.registry,
                 interpretation=body.interpretation,
+                reference_year=body.reference_year,
             )
         except Exception as exc:  # noqa: BLE001 — surface, don't 500
             return {"error": f"{type(exc).__name__}: {exc}",
@@ -746,6 +834,17 @@ def build_router(state: ServerState) -> APIRouter:
                         []
                         if result.question is r or result.document is None
                         else _reading_review_targets(
+                            result.document.rule_results.get(
+                                r.sentence_index, []
+                            ),
+                            state.registry,
+                            state.project.source_index,
+                        )
+                    ),
+                    "safety_interceptions": (
+                        []
+                        if result.question is r or result.document is None
+                        else _reading_safety_interceptions(
                             result.document.rule_results.get(
                                 r.sentence_index, []
                             ),
@@ -926,6 +1025,8 @@ def build_router(state: ServerState) -> APIRouter:
                         rule_id=body.rule_id,
                         filler_identity=body.filler_identity,
                         seed=seed,
+                        objective=body.objective,
+                        filters=tuple(body.filters),
                     )
                     candidate = generate_candidate(
                         state.project,
@@ -933,13 +1034,22 @@ def build_router(state: ServerState) -> APIRouter:
                         seed=seed,
                         locked_bindings=selection.locked_bindings,
                         generation_mode="strict",
+                        structural_target=selection.target_signature,
                     )
-                    event = append_exploration(state.project, candidate)
+                    event = append_exploration(
+                        state.project, candidate, selection
+                    )
                 else:
                     if body.filler_identity is not None:
                         raise GenerationError(
                             "focused lexicon probes are strict-mode coverage; "
                             "clear the probe before using lexical boundary mode"
+                        )
+                    if body.filters or body.objective != "least_attempted_rule":
+                        raise GenerationError(
+                            "structural objectives and filters apply to strict "
+                            "coverage; clear them before using lexical boundary "
+                            "mode"
                         )
                     candidate = generate_candidate(
                         state.project,
@@ -961,6 +1071,18 @@ def build_router(state: ServerState) -> APIRouter:
             "exploration_event_id": event["id"] if event is not None else None,
             "exploration_probe": (
                 selection.probe if selection is not None else None
+            ),
+            "exploration_objective": (
+                selection.objective if selection is not None else None
+            ),
+            "exploration_filters": (
+                list(selection.filters) if selection is not None else []
+            ),
+            "exploration_target_signature": (
+                selection.target_signature if selection is not None else None
+            ),
+            "structural_signatures": (
+                event["structural_signatures"] if event is not None else []
             ),
         }
 

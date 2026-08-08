@@ -7,6 +7,14 @@ from typing import Any, Literal
 
 
 GenerationMode = Literal["strict", "lexical_boundary"]
+GenerationObjective = Literal[
+    "least_attempted_rule",
+    "least_generated_rule",
+    "least_reviewed_rule",
+    "least_covered_structure",
+    "review_attention",
+    "random",
+]
 
 
 @dataclass(frozen=True)
@@ -99,6 +107,7 @@ class GenerationCandidate:
     premises: tuple[PremiseSummary, ...]
     consumed_units: tuple[ConsumedUnitSummary, ...]
     actual_matches: tuple[MatchSummary, ...]
+    safety_interceptions: tuple[MatchSummary, ...]
     facts: tuple[dict[str, Any], ...]
     collisions: tuple[dict[str, Any], ...]
     deficiencies: tuple[str, ...]
@@ -109,5 +118,8 @@ class GenerationCandidate:
         payload = asdict(self)
         payload["actual_rule_ids"] = sorted(
             {match.rule_id for match in self.actual_matches}
+        )
+        payload["safety_rule_ids"] = sorted(
+            {match.rule_id for match in self.safety_interceptions}
         )
         return payload

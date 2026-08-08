@@ -588,9 +588,6 @@ entries:
   in-game:
     senses:
     - adjective
-  including:
-    senses:
-    - preposition
   income:
     senses:
     - noun
@@ -647,9 +644,6 @@ entries:
   insects:
     senses:
     - noun
-  inside:
-    senses:
-    - preposition
   install:
     senses:
     - verb
@@ -677,9 +671,6 @@ entries:
   interest:
     senses:
     - noun
-  into:
-    senses:
-    - preposition
   invests:
     senses:
     - verb
@@ -1090,15 +1081,6 @@ entries:
   least:
     senses:
     - adjective
-  leave:
-    senses:
-    - verb
-  leaves:
-    senses:
-    - verb
-  leaving:
-    senses:
-    - verb
   leftover:
     senses:
     - adjective

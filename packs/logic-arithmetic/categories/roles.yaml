@@ -6,9 +6,27 @@ categories:
   # modifier itself: a head teacher is a teacher, not necessarily "a head".
   refining_modifier:
     parent: noun
+  # The current bridge has one overt indefinite predicative class frame.
+  # These core person roles all take the `a` allomorph. A future vowel-onset
+  # role must declare its own `an` sibling rather than letting generation
+  # guess pronunciation from spelling.
+  a_predicative_role:
+    parent: animate
+  class_restriction_preposition:
+    parent: spatial_location_preposition
+  class_restriction_place:
+    parent: spatial_reference_noun
+  subject_role_predicate:
+    parent: spatial_relation_verb
 
 members:
   refining_modifier: [head]
+  a_predicative_role:
+    [teacher, student, friend, child, gardener, guardian, librarian,
+     shopper, violinist]
+  class_restriction_preposition: [at]
+  class_restriction_place: [university]
+  subject_role_predicate: [teach, teaches, taught]
 
 # Lexical role knowledge for the generic subject-role synthesizer. A listed
 # preposition is not discarded: it survives with its complete object in the

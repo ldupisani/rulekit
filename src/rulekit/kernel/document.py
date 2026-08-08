@@ -22,8 +22,20 @@ from .evaluate import ArithmeticLog
 from .facts import FactStore
 from .learn import learn
 from . import deixis
-from .model import PATTERN, Fact, Obligation, Reading, Unit
-from .patterns import RuleMatchResult, run_rules
+from .model import (
+    Before,
+    EventTime,
+    Fact,
+    LocationConstraint,
+    LocationConstraintViolation,
+    LocationEvent,
+    Obligation,
+    PATTERN,
+    Provenance,
+    Reading,
+    Unit,
+)
+from .patterns import RuleMatchResult, is_referential_entity, run_rules
 from .saturate import saturate
 
 MAX_ROUNDS = 6
@@ -145,15 +157,206 @@ def _animate_candidates(
     return out
 
 
+def _local_possessive_subject_candidates(
+    reading: Reading, determiner: Unit, reg: Registry
+) -> dict[str, tuple[int, Unit]]:
+    """The unique preceding subject available to a possessive determiner.
+
+    A governed determiner has a strong clause-local reading in forms such as
+    ``Maya has ... her sister`` and ``the teacher is ... her child``.  This
+    path is deliberately narrower than general pronoun binding: the unit must
+    actually govern an owned noun, the subject must already be obligation-
+    bound, and exactly one distinct subject may precede the determiner.
+    Objects and unrelated nearby animate nouns never enter the candidate set.
+    """
+
+    determiner_lemma = determiner.features.get(
+        "lemma", determiner.features.get("fold", "")
+    )
+    if not reg.word_in_category(
+        determiner_lemma, "clause_subject_possessive_determiner"
+    ) or not any(
+        unit.features.get("owner_ref_uid") == determiner.uid
+        for unit in reading.units
+    ):
+        return {}
+    candidates: dict[str, tuple[int, Unit]] = {}
+    for predicate in reading.units:
+        if predicate.sense() != "verb":
+            continue
+        for obligation in predicate.obligations():
+            subject = obligation.target
+            if (
+                obligation.need != "subject"
+                or not obligation.met
+                or not isinstance(subject, Unit)
+                or subject.span[0] >= determiner.span[0]
+            ):
+                continue
+            target = subject
+            seen: set[int] = set()
+            while target.sense() == "pronoun" and id(target) not in seen:
+                seen.add(id(target))
+                referent = next(
+                    (
+                        item.target
+                        for item in target.obligations()
+                        if item.need == "refers"
+                        and item.met
+                        and isinstance(item.target, Unit)
+                    ),
+                    None,
+                )
+                if referent is None:
+                    break
+                target = referent
+            lemma = target.features.get(
+                "lemma", target.features.get("fold", "")
+            )
+            candidates[lemma] = (reading.sentence_index, target)
+    return candidates if len(candidates) == 1 else {}
+
+
+def _prior_possessive_owner_candidates(
+    readings: list[Reading], reading: Reading, determiner: Unit
+) -> dict[str, tuple[int, Unit]]:
+    """Continue the nearest already-resolved owner of the same noun head."""
+
+    owned_heads = {
+        unit.features.get("lemma", unit.features.get("fold", ""))
+        for unit in reading.units
+        if unit.features.get("owner_ref_uid") == determiner.uid
+    }
+    if len(owned_heads) != 1:
+        return {}
+    head = next(iter(owned_heads))
+    prior_owned: Unit | None = None
+    prior_reading: Reading | None = None
+    for candidate_reading in reversed(readings):
+        if candidate_reading.sentence_index >= reading.sentence_index:
+            continue
+        for candidate in candidate_reading.units:
+            if (
+                candidate.sense() == "noun"
+                and candidate.features.get(
+                    "lemma", candidate.features.get("fold", "")
+                )
+                == head
+            ):
+                prior_owned = candidate
+                prior_reading = candidate_reading
+                break
+        if prior_owned is not None:
+            break
+    if (
+        prior_owned is None
+        or prior_reading is None
+        or not prior_owned.features.get("owner_resolved")
+    ):
+        return {}
+    owner = prior_owned.features.get("owner")
+    if not owner:
+        return {}
+    targets = [
+        (candidate_reading.sentence_index, unit)
+        for candidate_reading in readings
+        if candidate_reading.sentence_index < reading.sentence_index
+        for unit in candidate_reading.units
+        if unit.features.get("lemma", unit.features.get("fold", ""))
+        == owner
+    ]
+    if not targets:
+        return {}
+    target_sentence, target = max(
+        targets, key=lambda item: (item[0], item[1].span)
+    )
+    return {owner: (target_sentence, target)}
+
+
+def _subject_group(
+    readings: list[Reading], upto: int, reg: Registry
+) -> tuple[tuple[str, ...], tuple[Unit, ...]] | None:
+    """One conservative plural referent made from prior entity subjects.
+
+    Proper names retain the established policy: if any occur, every one must
+    be a bound subject, so a named object makes the group ambiguous.  Only
+    when no proper name occurs do we admit definite or otherwise referential
+    common-noun subjects through the matcher's existing reference boundary.
+    This lets ``the teacher ... the child ... they`` form one group without
+    treating incidental object nouns as discourse members.
+    """
+
+    prior = [
+        reading
+        for reading in readings
+        if reading.sentence_index < upto and not reading.assumption
+    ]
+    named = [
+        (reading, candidate)
+        for reading in prior
+        for candidate in reading.units
+        if candidate.sense() == "name"
+    ]
+    candidates: list[tuple[Reading, Unit]] = named
+    if not candidates:
+        candidates = [
+            (reading, candidate)
+            for reading in prior
+            for candidate in reading.units
+            if candidate.sense() == "noun"
+            and any(
+                obligation.need == "subject"
+                and obligation.met
+                and obligation.target is candidate
+                for verb in reading.units
+                if verb.sense() == "verb"
+                for obligation in verb.obligations()
+            )
+            and is_referential_entity(
+                reading,
+                candidate,
+                reg,
+                bare_reference_category="bare_entity_reference",
+            )
+        ]
+
+    names: list[str] = []
+    units: list[Unit] = []
+    seen: set[str] = set()
+    for reading, candidate in candidates:
+        is_subject = any(
+            obligation.need == "subject"
+            and obligation.met
+            and obligation.target is candidate
+            for verb in reading.units
+            if verb.sense() == "verb"
+            for obligation in verb.obligations()
+        )
+        if not is_subject:
+            return None
+        lemma = candidate.features.get("lemma", candidate.features["fold"])
+        if lemma in seen:
+            continue
+        seen.add(lemma)
+        names.append(lemma)
+        units.append(candidate)
+    if len(names) < 2:
+        return None
+    return tuple(names), tuple(units)
+
+
 def _bind_discourse(
     readings: list[Reading],
     journal: deixis.Journal | None = None,
     reg: Registry | None = None,
+    plural_group_sentence: int | None = None,
 ) -> set[int]:
     """Bind unmet pronoun `refers` obligations to a unique prior name, or —
     inside a question-local assumption context — to one strictly nearest name.
-    When the text contains no name, the same policy applies to prior `animate`
-    common nouns. Returns the sentence indexes that gained a binding.
+    When the text contains no name, singular reference applies the established
+    `animate` fallback; question-local plural reference may instead construct
+    one exact group of prior referential common-noun subjects. Returns the
+    sentence indexes that gained a binding.
 
     `reg` is optional so the name-only path stays callable without a
     registry; the zero-name fallback simply does not run without one."""
@@ -162,8 +365,61 @@ def _bind_discourse(
         for unit in reading.units:
             if unit.sense() != "pronoun":
                 continue
-            # number agreement: a PLURAL pronoun ("they") never binds a lone
-            # name — group referents are unbuilt, so it honestly stays unmet
+            # Group reference is opt-in for the current question only. Subject
+            # and object pronouns expose plural agreement directly; a plural
+            # possessive determiner such as ``their`` agrees with its governed
+            # noun instead, so its pack category carries the group signal.
+            # Premise pronouns retain the established definitive-or-decline
+            # behavior.
+            lemma = unit.features.get("lemma", unit.features["fold"])
+            group_reference = reg is not None and (
+                (
+                    unit.features.get("number") == "plural"
+                    and reg.word_in_category(
+                        lemma,
+                        "discourse_referential_group_pronoun",
+                    )
+                )
+                or reg.word_in_category(lemma, "plural_possessive_determiner")
+            )
+            if (
+                group_reference
+                and plural_group_sentence == reading.sentence_index
+                and reg is not None
+            ):
+                group = _subject_group(readings, reading.sentence_index, reg)
+                if group is not None:
+                    members, targets = group
+                    obligations = unit.obligations()
+                    updated = list(obligations)
+                    group_changed = False
+                    for index, obligation in enumerate(obligations):
+                        if obligation.need != "refers" or obligation.met:
+                            continue
+                        updated[index] = Obligation(
+                            obligation.role,
+                            obligation.need,
+                            target=targets,
+                            optional=obligation.optional,
+                        )
+                        group_changed = True
+                    if group_changed:
+                        reading.record(
+                            "bind-discourse-group",
+                            unit,
+                            {
+                                "obligations": updated,
+                                "referent_group": members,
+                            },
+                            f"{unit.surface!r} -> {list(members)!r} "
+                            "(unique prior referential-subject group)",
+                        )
+                        changed.add(reading.sentence_index)
+                    continue
+            # A direct plural pronoun cannot fall back to one singular
+            # antecedent. A possessive `their` has singular agreement on its
+            # governed noun in the current representation, so when no group is
+            # available it retains the established ordinary-owner path below.
             if unit.features.get("number") == "plural":
                 continue
             obligations = unit.obligations()
@@ -177,7 +433,19 @@ def _bind_discourse(
                 # the missing scope boundary: only then does sentence recency become
                 # meaningful, and the shared strict-dominance rule still declines a
                 # same-sentence tie.
-                candidates = _discourse_candidates(readings, reading.sentence_index)
+                local_subjects = _local_possessive_subject_candidates(
+                    reading, unit, reg
+                )
+                prior_owner = _prior_possessive_owner_candidates(
+                    readings, reading, unit
+                )
+                candidates = (
+                    local_subjects
+                    or prior_owner
+                    or _discourse_candidates(
+                        readings, reading.sentence_index
+                    )
+                )
                 # THE ZERO-NAME FALLBACK. Common nouns are considered ONLY
                 # when no name candidate exists, which is provably
                 # byte-identical wherever any name is in play. That ordering
@@ -192,6 +460,25 @@ def _bind_discourse(
                     candidates = _animate_candidates(
                         readings, reading.sentence_index, reg
                     )
+                # A possessive determiner cannot resolve to the head it
+                # governs: in "her child", choosing an earlier `child` as
+                # the owner would assert self-ownership and, worse, change a
+                # repeated explicit owner from `her` to `child`.  The noun
+                # attachment recorded by condense gives us this structural
+                # exclusion without naming any determiner or kinship word.
+                owned_heads = {
+                    owned.features.get(
+                        "lemma", owned.features.get("fold", "")
+                    )
+                    for owned in reading.units
+                    if owned.features.get("owner_ref_uid") == unit.uid
+                }
+                if owned_heads:
+                    candidates = {
+                        lemma: candidate
+                        for lemma, candidate in candidates.items()
+                        if lemma not in owned_heads
+                    }
                 referents = [
                     deixis.Referent(
                         dimension=deixis.PERSON,
@@ -233,6 +520,18 @@ def _bind_discourse(
                         f"{unit.surface!r} -> {lemma!r} "
                         "(strictly resolved antecedent in document)",
                     )
+                    for owned in reading.units:
+                        if owned.features.get("owner_ref_uid") != unit.uid:
+                            continue
+                        if owned.features.get("owner") == lemma:
+                            continue
+                        reading.record(
+                            "bind-possessive-owner",
+                            owned,
+                            {"owner": lemma, "owner_resolved": True},
+                            f"owner of {owned.surface!r} resolves through "
+                            f"{unit.surface!r} to {lemma!r}",
+                        )
                     changed.add(reading.sentence_index)
     return changed
 
@@ -347,6 +646,46 @@ def run_document(
             store.admit_rule_results(doc.rule_results.get(reading.sentence_index, []), reg)
             for fact in learn(reading, reg):
                 store.admit(fact)
+        event_times = sorted(
+            store.by_kind(EventTime),
+            key=lambda fact: (fact.offset, fact.event),
+        )
+        for index, earlier in enumerate(event_times):
+            for later in event_times[index + 1 :]:
+                if earlier.offset >= later.offset:
+                    continue
+                store.admit(
+                    Before(
+                        provenance=Provenance(
+                            source="inference/temporal-order",
+                            sentence=later.provenance.sentence,
+                        ),
+                        earlier=earlier.event,
+                        later=later.event,
+                    )
+                )
+        for constraint in store.by_kind(LocationConstraint):
+            if (
+                constraint.modality != "impossible"
+                or constraint.transition != "terminates"
+            ):
+                continue
+            for event in store.by_kind(LocationEvent):
+                if event.effect != "terminates" or event.place != constraint.place:
+                    continue
+                store.admit(
+                    LocationConstraintViolation(
+                        provenance=Provenance(
+                            source="inference/location-constraint-conflict",
+                            sentence=event.provenance.sentence,
+                            assumption=constraint.provenance.assumption,
+                        ),
+                        event=event.event,
+                        entity=event.entity,
+                        place=event.place,
+                        transition=event.effect,
+                    )
+                )
         saturate(store, reg, log)
         return store
 

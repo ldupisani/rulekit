@@ -36,12 +36,6 @@ entries:
   able:
     senses:
     - adjective
-  about:
-    senses:
-    - preposition
-  above:
-    senses:
-    - preposition
   absent:
     senses:
     - adjective
@@ -66,9 +60,6 @@ entries:
     senses:
     - noun
     plural: accounts
-  across:
-    senses:
-    - preposition
   activity:
     senses:
     - noun
@@ -131,9 +122,6 @@ entries:
     number: singular
     verb:
       lemma: afford
-  after:
-    senses:
-    - preposition
   after-school:
     senses:
     - adjective
@@ -147,9 +135,6 @@ entries:
   again:
     senses:
     - adverb
-  against:
-    senses:
-    - preposition
   agree:
     senses:
     - verb
@@ -213,9 +198,6 @@ entries:
   allows:
     senses:
     - verb
-  along:
-    senses:
-    - preposition
   already:
     senses:
     - adverb
@@ -234,12 +216,6 @@ entries:
   amateur:
     senses:
     - adjective
-  among:
-    senses:
-    - preposition
-  amongst:
-    senses:
-    - preposition
   andrena:
     senses:
     - noun
@@ -315,19 +291,7 @@ entries:
     senses:
     - noun
     plural: arms
-  around:
-    senses:
-    - preposition
   arrange:
-    senses:
-    - verb
-  arrive:
-    senses:
-    - verb
-  arrived:
-    senses:
-    - verb
-  arrives:
     senses:
     - verb
   artist:
@@ -629,9 +593,6 @@ entries:
   beeswax:
     senses:
     - noun
-  before:
-    senses:
-    - preposition
   began:
     senses:
     - verb
@@ -648,9 +609,6 @@ entries:
   being:
     senses:
     - verb
-  below:
-    senses:
-    - preposition
   belt:
     senses:
     - noun
@@ -665,9 +623,6 @@ entries:
   better:
     senses:
     - adjective
-  between:
-    senses:
-    - preposition
   bicycle:
     senses:
     - noun
@@ -1026,9 +981,6 @@ entries:
     - verb
     verb:
       lemma: buy
-  by:
-    senses:
-    - preposition
   cabinet:
     senses:
     - noun
@@ -2309,9 +2261,6 @@ entries:
     senses:
     - noun
     plural: doughs
-  down:
-    senses:
-    - adverb
   downhill:
     senses:
     - adverb
@@ -2433,9 +2382,6 @@ entries:
   dump:
     senses:
     - noun
-  during:
-    senses:
-    - preposition
   ear:
     senses:
     - noun
@@ -2656,9 +2602,6 @@ entries:
     senses:
     - noun
     plural: exams
-  except:
-    senses:
-    - preposition
   exception:
     senses:
     - noun
@@ -2965,9 +2908,6 @@ entries:
     senses:
     - noun
     plural: folders
-  following:
-    senses:
-    - adjective
   fond:
     senses:
     - adjective
@@ -2990,9 +2930,6 @@ entries:
   footrace:
     senses:
     - noun
-  for:
-    senses:
-    - preposition
   foreign:
     senses:
     - adjective

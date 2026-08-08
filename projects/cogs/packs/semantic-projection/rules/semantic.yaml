@@ -1057,7 +1057,7 @@ rules:
     match:
       sentence:
         - {lit: my, at_start: true}
-        - {slot: role, cat: semantic_pmb_possessive_aged_role, bare: true}
+        - {slot: role, cat: semantic_pmb_possessive_aged_role, possessed: true}
         - {lit: are}
         - {slot: attribute, cat: semantic_pmb_possessive_aged_adjective,
            single_word: true}
@@ -1079,7 +1079,7 @@ rules:
     match:
       sentence:
         - {lit: my, at_start: true}
-        - {slot: role, cat: semantic_pmb_possessive_angry_role, bare: true}
+        - {slot: role, cat: semantic_pmb_possessive_angry_role, possessed: true}
         - {lit: is}
         - {slot: attribute, cat: semantic_pmb_possessive_angry_adjective,
            single_word: true}
@@ -1101,7 +1101,7 @@ rules:
     match:
       sentence:
         - {lit: my, at_start: true}
-        - {slot: role, cat: semantic_pmb_possessive_famous_role, bare: true}
+        - {slot: role, cat: semantic_pmb_possessive_famous_role, possessed: true}
         - {lit: is}
         - {slot: attribute, cat: semantic_pmb_possessive_famous_adjective,
            single_word: true}
@@ -1123,7 +1123,7 @@ rules:
     match:
       sentence:
         - {lit: my, at_start: true}
-        - {slot: role, cat: semantic_pmb_possessive_tall_role, bare: true}
+        - {slot: role, cat: semantic_pmb_possessive_tall_role, possessed: true}
         - {lit: is}
         - {slot: attribute, cat: semantic_pmb_possessive_tall_adjective,
            single_word: true}
@@ -1145,7 +1145,7 @@ rules:
     match:
       sentence:
         - {lit: my, at_start: true}
-        - {slot: role, cat: semantic_pmb_possessive_synthetic_role, bare: true}
+        - {slot: role, cat: semantic_pmb_possessive_synthetic_role, possessed: true}
         - {lit: is}
         - {slot: attribute, cat: semantic_pmb_possessive_synthetic_adjective,
            single_word: true}

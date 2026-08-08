@@ -123,6 +123,26 @@ def check(
         return None
     if proposed.kind == "verdict":
         return _check_verdict(premises, consumed_uids, reg, clause_split)
+    if proposed.kind == "witnesses":
+        for reading in premises + ([question] if question is not None else []):
+            if reading.unknown_words():
+                return GuardVeto(
+                    "witness-fragment",
+                    f"cannot select witnesses while {reading.unknown_words()} "
+                    f"are unknown (sentence {reading.sentence_index})",
+                )
+            unresolved = [
+                (unit.surface, obligation.need)
+                for unit in reading.units
+                for obligation in unit.unmet()
+            ]
+            if unresolved:
+                return GuardVeto(
+                    "witness-fragment",
+                    f"cannot select witnesses with unresolved structure "
+                    f"{unresolved!r} (sentence {reading.sentence_index})",
+                )
+        return _check_verdict(premises, consumed_uids, reg, clause_split)
     readings = premises + ([question] if question is not None else [])
     return _check_number(
         readings, consumed_uids, log, reg, store, question, premises, proposed

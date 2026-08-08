@@ -7,6 +7,7 @@ the ordinary analyzer and matcher as its validation oracle.
 from .candidate import (
     GenerationCandidate,
     GenerationMode,
+    GenerationObjective,
     LexicalRelaxation,
     RuleAvailability,
 )
@@ -50,6 +51,7 @@ __all__ = [
     "GenerationCandidate",
     "GenerationError",
     "GenerationMode",
+    "GenerationObjective",
     "ExplorationEvent",
     "ExplorationFailure",
     "ExplorationFiller",

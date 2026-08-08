@@ -1,7 +1,6 @@
 format: rulekit/lexicon@1
 entries:
   # Missing nominal-attachment preposition for Phase C increment 1.
-  beside: {senses: [preposition]}
 
   # Missing matrix forms for the first depth-1 ccomp construction.
   believed: {senses: [verb], verb: {lemma: believe}}

@@ -227,7 +227,11 @@ async function runTrace(interpretation = null) {
   const text = $("trace-input").value.trim();
   if (!text) return;
   setStatus("reading…");
-  const t = await api("POST", "/api/trace", { text, interpretation });
+  const t = await api("POST", "/api/trace", {
+    text,
+    interpretation,
+    reference_year: new Date().getFullYear(),
+  });
   if (t.error) {
     setStatus(t.error, "err");
     return;
@@ -272,9 +276,12 @@ function renderAnswer(t) {
     t.answer.kind === "verdict" && t.answer.value === "undetermined";
   const isSeries =
     t.answer.kind === "series" && Array.isArray(t.answer.value);
+  const isWitnesses =
+    t.answer.kind === "witnesses" && Array.isArray(t.answer.value);
   const isAnswer =
     t.answer.kind === "number" ||
     isSeries ||
+    isWitnesses ||
     (t.answer.kind === "verdict" && !isUndetermined);
   b.classList.add(
     isUndetermined ? "undetermined" : isAnswer ? "number" : "decline",
@@ -297,6 +304,8 @@ function renderAnswer(t) {
   }
   const valueNode = isSeries
     ? renderAnswerSeries(t.answer.value, t.ask?.query?.measure_surface)
+    : isWitnesses
+      ? renderAnswerWitnesses(t.answer.value)
     : el(
         "span",
         "big",
@@ -337,10 +346,29 @@ function renderAnswerSeries(rows, measureSurface = "") {
   return list;
 }
 
+function renderAnswerWitnesses(rows) {
+  const list = el("span", "big answer-witnesses");
+  for (const row of rows) {
+    list.append(
+      el(
+        "span",
+        `answer-witness-row ${row?.status || "unknown"}`,
+        `${titleAnswerEntity(row?.entity)}: ${row?.status || "unknown"}`,
+      ),
+    );
+  }
+  return list;
+}
+
 function formatAnswerValue(answer, measureSurface = "") {
   if (answer.kind === "series" && Array.isArray(answer.value)) {
     return answer.value
       .map((row) => formatSeriesRow(row, measureSurface))
+      .join("; ");
+  }
+  if (answer.kind === "witnesses" && Array.isArray(answer.value)) {
+    return answer.value
+      .map((row) => `${titleAnswerEntity(row?.entity)}: ${row?.status || "unknown"}`)
       .join("; ");
   }
   return String(answer.value);
@@ -477,6 +505,32 @@ function renderSentences(t) {
             "No matched premise rule is available for review.",
           ),
         );
+      }
+      const safetyInterceptions = s.safety_interceptions || [];
+      if (safetyInterceptions.length) {
+        const safety = el("div", "reading-safety-interceptions");
+        safety.append(
+          el(
+            "span",
+            "dim",
+            "Fact-free safety interception — not a premise match:",
+          ),
+        );
+        for (const interception of safetyInterceptions) {
+          const item = el("span", "reading-safety-interception");
+          item.title = interception.description || interception.rule_id;
+          item.append(el("span", "mono", interception.rule_id));
+          if (interception.source_ref) {
+            item.append(
+              generationSourceControl(
+                interception.source_ref,
+                "Open safety rule YAML",
+              ),
+            );
+          }
+          safety.append(item);
+        }
+        review.append(safety);
       }
       const sentenceButton = el(
         "button",
@@ -873,11 +927,10 @@ function renderProof(t) {
    nothing and is therefore invisible to it. The declines are where the information is.
 
    THE HONESTY RULE. Three of the four dimensions have no coordinates at all, and this
-   view renders that absence AS an absence: time labels get no axis (there is no
-   ordering to draw one through), place gets an empty strip, and candidates that are
-   bare strings get no position. Drawing a plausible timeline out of "in january" /
-   "in march" would put a fabricated ordering one copy-paste from the kernel — which is
-   precisely the experiment that already failed the gate (docs/deixis.md §4). */
+   view renders that absence AS an absence: opaque time labels get no axis, place gets
+   an empty strip, and candidates that are bare strings get no position. Relative event
+   markers are the exception because their signed coordinates are declared in pack
+   data; only those events may appear on an ordered time axis. */
 
 const DIM_CLASS = {
   person: "d-person", discourse: "d-discourse", time: "d-time", place: "d-place",
@@ -1026,18 +1079,28 @@ function renderField(t) {
   disc.append(drow);
   box.append(disc);
 
-  // --- TIME: labels, but NO ORDERING. No axis is drawn, deliberately. ---
-  const time = el("div", "axis degenerate");
+  // --- TIME: only declared relative offsets receive positions. ---
+  const time = el("div", `axis${f.time.ordered ? "" : " degenerate"}`);
   time.append(el("div", "axis-name d-time", "TIME"));
   const trow = el("div", "axis-row");
+  for (const event of f.time.events || []) {
+    const pill = el("span", "cand d-time");
+    const object = event.object ? ` → ${event.object}` : "";
+    pill.append(el("span", "cand-key", `${event.entity} · ${event.verb}${object}`));
+    pill.append(el("span", "cand-meta mono",
+      `${event.marker} · ${event.offset >= 0 ? "+" : ""}${event.offset} · s${event.sentence}`));
+    pill.title = event.event;
+    trow.append(pill);
+  }
   for (const label of f.time.labels) {
     const pill = el("span", "cand d-time unanchored floating");
     pill.append(el("span", "cand-key", label));
+    pill.title = "opaque quantity-time label — equality only";
     trow.append(pill);
   }
-  if (!f.time.labels.length) trow.append(el("span", "dim", "no time labels in this document"));
+  if (!trow.children.length) trow.append(el("span", "dim", "no time coordinates in this document"));
   time.append(trow);
-  time.append(el("div", "axis-note", "⚠ no ordering exists — " + f.time.note));
+  time.append(el("div", "axis-note", `${f.time.ordered ? "✓" : "⚠"} ${f.time.note}`));
   box.append(time);
 
   // --- PLACE: does not exist. An empty strip, and it says so. ---
@@ -1396,6 +1459,94 @@ function explorationLabel(item) {
   );
 }
 
+function selectedGenerationFilters() {
+  return [...document.querySelectorAll(
+    "#generation-filter-groups input[data-filter]:checked",
+  )].map((node) => node.dataset.filter).sort();
+}
+
+function selectedGenerationObjective() {
+  return $("generation-objective").value || "least_covered_structure";
+}
+
+function generationRuleFilterTags(rule) {
+  const profile = rule?.profile || {};
+  return new Set([
+    ...(profile.phenomena || []).map((value) => `phenomenon:${value}`),
+    ...(profile.categories || []).map((value) => `category:${value}`),
+    ...(profile.fact_types || []).map((value) => `fact:${value}`),
+    ...(profile.slot_types || []).map((value) => `slot_type:${value}`),
+  ]);
+}
+
+function generationRuleMatchesFilters(rule, filters = selectedGenerationFilters()) {
+  const tags = generationRuleFilterTags(rule);
+  return filters.every((filter) => tags.has(filter));
+}
+
+function renderGenerationFilterGroup(title, prefix, values, selected) {
+  if (!values.length) return null;
+  const group = el("details", "generation-filter-group");
+  const active = values.filter((value) => selected.has(`${prefix}:${value}`)).length;
+  group.open = active > 0;
+  group.append(el("summary", "", `${title}${active ? ` · ${active} selected` : ""}`));
+  const options = el("div", "generation-filter-options");
+  for (const value of values) {
+    const label = el("label", "generation-filter-option");
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.dataset.filter = `${prefix}:${value}`;
+    input.checked = selected.has(input.dataset.filter);
+    input.onchange = updateGenerationRuleState;
+    label.append(input, el("span", "mono", value.replaceAll("_", " ")));
+    options.append(label);
+  }
+  group.append(options);
+  return group;
+}
+
+function renderGenerationFilters(payload) {
+  const selected = new Set(selectedGenerationFilters());
+  const options = payload.filter_options || {};
+  const groups = $("generation-filter-groups");
+  groups.replaceChildren();
+  for (const group of [
+    renderGenerationFilterGroup("Phenomena", "phenomenon", options.phenomena || [], selected),
+    renderGenerationFilterGroup("Declared categories", "category", options.categories || [], selected),
+    renderGenerationFilterGroup("Emitted fact types", "fact", options.fact_types || [], selected),
+    renderGenerationFilterGroup("Slot types", "slot_type", options.slot_types || [], selected),
+  ]) {
+    if (group) groups.append(group);
+  }
+
+  const health = payload.health || {};
+  const panel = $("generation-health");
+  panel.replaceChildren(
+    el(
+      "div",
+      "generation-health-summary mono",
+      `Structural coverage ${health.structural_covered || 0}/${health.structural_total || 0} ` +
+      `(${((health.structural_coverage || 0) * 100).toFixed(1)}%) · ` +
+      `${health.failed_attempts || 0} failed fresh attempts · ` +
+      `${((health.failure_rate || 0) * 100).toFixed(1)}% failure rate`,
+    ),
+  );
+  if ((health.top_failures || []).length) {
+    const failures = el("details", "generation-health-failures");
+    failures.append(el("summary", "", "Most frequent generation blockers"));
+    for (const failure of health.top_failures) {
+      failures.append(
+        el(
+          "div",
+          "generation-health-failure",
+          `${failure.count}× · ${failure.cause} · ${failure.rules.length} rule(s)`,
+        ),
+      );
+    }
+    panel.append(failures);
+  }
+}
+
 async function loadGenerationExploration() {
   const payload = await api("GET", "/api/generation/exploration");
   if (payload.detail) {
@@ -1403,6 +1554,7 @@ async function loadGenerationExploration() {
     return;
   }
   state.generationExploration = payload;
+  renderGenerationFilters(payload);
   const select = $("generation-filler");
   const priorSelection = select.value;
   select.replaceChildren();
@@ -1445,7 +1597,8 @@ async function loadGenerationExploration() {
     `${ruleCounts.reviewed || 0} reviewed · ` +
     `${fillerCounts.never_generated || 0}/${(payload.fillers || []).length} ` +
     `reachable lexicon entries untouched · ` +
-    `${fillerCounts.attempted_failed || 0} attempted, not realized`;
+    `${fillerCounts.attempted_failed || 0} attempted, not realized · ` +
+    `${payload.health?.structural_covered || 0}/${payload.health?.structural_total || 0} structural outcomes covered`;
   updateGenerationRuleState();
 }
 
@@ -1470,6 +1623,8 @@ function renderGenerationExplorationSelection(rule, filler) {
   const ruleStatus = (state.generationExploration.rules || [])
     .find((item) => item.id === rule?.id);
   const mode = selectedGenerationMode();
+  const filters = selectedGenerationFilters();
+  const objective = selectedGenerationObjective().replaceAll("_", " ");
   box.append(
     el(
       "span",
@@ -1477,8 +1632,8 @@ function renderGenerationExplorationSelection(rule, filler) {
       mode === "lexical_boundary"
         ? "lexical boundary: one category-gated slot may draw from its broader declared root sense"
         : ruleStatus
-        ? `rule ${ruleStatus.status.replaceAll("_", " ")} · generated ${ruleStatus.generated_count} · failed ${ruleStatus.failed_count || 0} · reviewed ${ruleStatus.reviewed_count}`
-        : "rule frontier: least attempted, with seeded tie-breaking",
+        ? `rule ${ruleStatus.status.replaceAll("_", " ")} · generated ${ruleStatus.generated_count} · failed ${ruleStatus.failed_count || 0} · reviewed ${ruleStatus.reviewed_count} · structure ${ruleStatus.structural_covered}/${ruleStatus.structural_total}`
+        : `rule frontier: ${objective}, with seeded tie-breaking`,
     ),
   );
   if (mode === "lexical_boundary") {
@@ -1503,25 +1658,57 @@ function renderGenerationExplorationSelection(rule, filler) {
       el("span", "mono", "lexicon frontier: least generated compatible entry"),
     );
   }
+  if (mode === "strict" && filters.length) {
+    box.append(
+      el("span", "mono", `all filters required: ${filters.join(" · ")}`),
+    );
+  }
 }
 
 function updateGenerationRuleState() {
   const rule = selectedGenerationRule();
   const filler = selectedGenerationFiller();
   const strict = selectedGenerationMode() === "strict";
+  const filters = selectedGenerationFilters();
+  const ruleStatus = (state.generationExploration.rules || [])
+    .find((item) => item.id === rule?.id);
   const blocker = $("generation-blocker");
   const blocked = rule && !rule.supported;
   const incompatible = Boolean(
     strict && rule && filler && !filler.compatible_rules.includes(rule.id),
   );
-  blocker.classList.toggle("hidden", !blocked && !incompatible);
+  const filteredOut = Boolean(
+    strict && ruleStatus && !generationRuleMatchesFilters(ruleStatus, filters),
+  );
+  const eligibleRules = (state.generationExploration.rules || []).filter(
+    (item) => item.supported && generationRuleMatchesFilters(item, filters),
+  );
+  const fillerFilteredOut = Boolean(
+    strict && !rule && filler && !eligibleRules.some(
+      (item) => filler.compatible_rules.includes(item.id),
+    ),
+  );
+  blocker.classList.toggle(
+    "hidden", !blocked && !incompatible && !filteredOut && !fillerFilteredOut,
+  );
   blocker.textContent = blocked
     ? rule.blockers.join(" · ")
     : incompatible
       ? `${filler.identity} cannot fill a supported slot in ${rule.id}`
+      : filteredOut
+        ? `${rule.id} does not satisfy every selected structural filter`
+        : fillerFilteredOut
+          ? `${filler.identity} cannot fill any rule left by the selected filters`
       : "";
-  $("generation-next").disabled = Boolean(blocked || incompatible);
+  $("generation-next").disabled = Boolean(
+    blocked || incompatible || filteredOut || fillerFilteredOut ||
+    (strict && !rule && !eligibleRules.length),
+  );
   $("generation-filler").disabled = !strict;
+  $("generation-objective").disabled = !strict;
+  document.querySelectorAll(
+    "#generation-filter-groups input[data-filter]",
+  ).forEach((node) => { node.disabled = !strict; });
   renderGenerationExplorationSelection(rule, filler);
 }
 
@@ -2190,6 +2377,24 @@ function renderGenerationCandidate(
       ),
     );
     modeNote.classList.remove("hidden");
+  } else if (candidate.exploration_target_signature) {
+    const observed = candidate.structural_signatures || [];
+    const covered = observed.includes(candidate.exploration_target_signature);
+    modeNote.append(
+      el(
+        "div",
+        "mono",
+        `Structural target · ${candidate.exploration_target_signature}`,
+      ),
+      el(
+        "div",
+        covered ? "" : "generation-issue",
+        covered
+          ? "The generated round trip covered this least-covered outcome."
+          : `The sentence realized, but the target outcome was not observed. Observed: ${observed.join(", ") || "none"}.`,
+      ),
+    );
+    modeNote.classList.remove("hidden");
   } else {
     modeNote.classList.add("hidden");
   }
@@ -2239,6 +2444,22 @@ function renderGenerationCandidate(
   }
   if (!candidate.actual_matches.length) {
     matches.append(el("div", "dim", "no premise rule matched"));
+  }
+
+  const safetySection = $("generation-safety-section");
+  const safetyBox = $("generation-safety-interceptions");
+  const safetyInterceptions = candidate.safety_interceptions || [];
+  safetyBox.replaceChildren();
+  safetySection.classList.toggle("hidden", !safetyInterceptions.length);
+  for (const match of safetyInterceptions) {
+    const card = el("div", "generation-match safety");
+    card.append(
+      el("span", "mono", match.rule_id),
+      el("span", "dim", "intercepted · emitted no facts"),
+      el("code", "", JSON.stringify(match.bindings)),
+      el("span", "dim mono", `consumed: ${match.consumed_surfaces.join(" · ")}`),
+    );
+    safetyBox.append(card);
   }
 
   const facts = $("generation-facts");
@@ -2362,6 +2583,12 @@ async function generateNext() {
         : null,
       seed,
       generation_mode: generationMode,
+      objective: generationMode === "strict"
+        ? selectedGenerationObjective()
+        : "least_attempted_rule",
+      filters: generationMode === "strict"
+        ? selectedGenerationFilters()
+        : [],
     });
     if (candidate.detail) {
       await loadGenerationExploration();
@@ -2550,6 +2777,13 @@ $("view-semantic").onclick = () => setView("semantic");
 $("view-field").onclick = () => setView("field");
 $("view-proof").onclick = () => setView("proof");
 $("generation-next").onclick = generateNext;
+$("generation-objective").onchange = updateGenerationRuleState;
+$("generation-clear-filters").onclick = () => {
+  document.querySelectorAll(
+    "#generation-filter-groups input[data-filter]",
+  ).forEach((node) => { node.checked = false; });
+  updateGenerationRuleState();
+};
 $("generation-mode").onchange = () => {
   if (selectedGenerationMode() === "lexical_boundary") {
     $("generation-filler").value = "";

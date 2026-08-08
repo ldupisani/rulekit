@@ -66,7 +66,7 @@ def _optional_profile(project) -> tuple[int, int, int, int]:
 def test_g5i_profiles_the_complete_recursive_optional_class() -> None:
     project = load_project(CURATED)
 
-    assert _optional_profile(project) == (60, 142, 38, 3)
+    assert _optional_profile(project) == (59, 138, 37, 3)
 
 
 def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
@@ -75,9 +75,9 @@ def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
         for item in list_rule_availability(load_project(CURATED))
     }
 
-    assert len(availability) == 113
-    assert sum(item.supported for item in availability.values()) == 113
-    assert sum(not item.supported for item in availability.values()) == 0
+    assert len(availability) == 118
+    assert sum(item.supported for item in availability.values()) == 116
+    assert sum(not item.supported for item in availability.values()) == 2
     assert all(availability[rule_id].supported for rule_id in NEWLY_SUPPORTED)
     assert all(
         "optional groups have no current realizer" not in item.blockers

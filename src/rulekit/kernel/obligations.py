@@ -424,6 +424,40 @@ def _partitive_licenses_noun(reading: Reading, unit: Unit, reg: Registry) -> boo
     return False
 
 
+def _state_licenses_terminal_remnant_adjective(
+    reading: Reading, unit: Unit, reg: Registry
+) -> bool:
+    """Preserve an explicitly declared terminal remnant adjective.
+
+    Some past-tense verbs are adjective homographs. A pack member of
+    ``remnant_adj`` following a declared state predicate, with no following
+    nominal argument, retains the established adjective reading ("are left",
+    "have money left"). Outside that frame ordinary obligation coverage may
+    select the verb reading ("nobody left the garden").
+    """
+
+    fold = unit.features.get("fold", "")
+    if not reg.word_in_category(fold, "remnant_adj"):
+        return False
+    index = reading.units.index(unit)
+    if index == 0:
+        return False
+    if any(
+        later.sense() in ("article", "noun", "name", "pronoun")
+        for later in reading.units[index + 1 :]
+        if later.sense() != "punct"
+    ):
+        return False
+    return any(
+        reg.word_in_category(
+            previous.features.get("lemma", previous.features.get("fold", "")),
+            "state",
+        )
+        or reg.word_in_category(previous.features.get("fold", ""), "state")
+        for previous in reading.units[:index]
+    )
+
+
 def disambiguate(reading: Reading, reg: Registry) -> Reading:
     """Commit one sense per multi-sense unit: the assignment with the best
     obligation coverage wins, and only a unique winner commits."""
@@ -441,6 +475,11 @@ def disambiguate(reading: Reading, reg: Registry) -> Reading:
     options = []
     for u in ambiguous:
         senses = u.senses()
+        if "adjective" in senses and _state_licenses_terminal_remnant_adjective(
+            reading, u, reg
+        ):
+            options.append(["adjective"])
+            continue
         if "noun" in senses and _partitive_licenses_noun(reading, u, reg):
             # A partitive complement is a nominal position. Restrict an
             # EXISTING noun candidate; never invent one for a verb-only word.

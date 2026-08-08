@@ -81,7 +81,7 @@ disagree numerically.** "Jar A" and "Jar B" both holding 5 marbles silently dedu
 one fact. That is individuation done backwards — what you must do with strings instead
 of referent objects.
 
-### 1.3 Time is an opaque label; the timeline does not exist
+### 1.3 Relative event time exists; quantity time is still opaque
 
 - `Quantity.time` is the **two-word surface string** of a sentence-initial `timeperiod`
   adjunct (`"last year"`), set by `learn._sentence_time()`. Never ordered or normalised.
@@ -89,25 +89,37 @@ of referent objects.
   `# mixed times — time arithmetic is unbuilt` (`answer.py:187,314,415`;
   `saturate.py:872,1436`).
 - Tense is **erased** by `condense.py` ("has found" → `find`), never recorded.
-- `yesterday`, `tomorrow`, `later`, `then`, `before` sit in the lexicon with a sense and
-  **no reader anywhere** — inert.
-- **`Before(earlier, later)` (`model.py:714`) is a registered fact class that no rule
-  emits and no consumer reads** — the stub of a temporal ordering mechanism never built.
-- **No ask can say *when* it is asking about.** The query keys are `entity`, `measure`,
-  `verb`, `offset`, `span_unit`… There is no reference-time field. (§4 shows what this
-  costs.)
+- The relative markers `yesterday`, `now`, `today`, and `tomorrow` now carry signed
+  offsets in pack data. One marker attached to one unambiguous predicate emits an
+  `EventTime`; differing offsets derive `Before(earlier, later)`. This orders those
+  event occurrences without pretending that opaque calendar labels are comparable.
+- `Before` still has no standalone answer consumer. It is preserved semantic evidence,
+  visible in the fact and deictic-field views.
+- One narrow ask can now say *which relative day* it means: the finite-domain location-
+  witness query carries a declared `when` marker. There is still no generic reference-
+  time field shared by quantity, state, and event asks. (§4 shows what this costs.)
 - Time units (`day`→`hour`) share the flat conversion graph with `gallon`→`pint`. A week
   is 7 days in exactly the sense that a gallon is 8 pints.
 
-### 1.4 Space does not exist
+### 1.4 Space exists as event-linked roles, not yet as a general geometry
 
-- A place/container is just an **entity string**. "How many apples are **in the box**" and
-  "How many apples does **Sam** have" hit the *same consumer with the same fields*.
-- Prepositions are matched as `cat: preposition` and **discarded**. `in`, `into`, `from`,
-  `to`, `onto` are indistinguishable from `of` and `with`. No containment, no source/goal
-  polarity.
-- `transfer.yaml` hardcodes `{lit: to}` and accepts only `type: name` slots — transfers
-  work between *people* and nowhere else.
+- Exact pack-declared preposition/object/verb frames preserve spatial location, source,
+  goal, and path as `VerbalRelation` facts. `in`, `into`, `from`, `to`, and `at` are no
+  longer discarded or treated as interchangeable when such a frame survives.
+- Spatial relations share an event identity with `EventTime`. Declared initiating,
+  terminating, and holding predicates can therefore emit `LocationEvent` fluents without
+  joining unrelated occurrences of the same verb.
+- A narrow finite-domain ask can query which named members of a prior subject group are
+  at one place on one relative day. An impossible-termination assumption may preserve an
+  earlier initiation. A direct negative location observation is `contradicted`; silence
+  remains `unknown` and conflicting direct observations decline.
+- An explicit factual no-departure sentence can also preserve an earlier initiation, but
+  through `LocationTransitionAbsence`, not impossibility. Its first controlled scope is
+  the current narrative through the question's reference day; a departure within that
+  interval conflicts, while a declared future departure does not.
+- Places are still normalized entity strings, not typed spatial regions. There is no
+  containment lattice, distance metric, route reasoning, or generic transfer endpoint.
+  The arithmetic holder/location shortcuts also remain separate from these event fluents.
 
 ---
 
@@ -254,21 +266,32 @@ space):
   No pack-schema change. **Do not name anything `anchor`** — already taken three times
   (obligation role, `AnchorQuantity`, `anchored-relation`).
 
-- **Phase 2 — the temporal origo.** Promote `time` to an ordered **`Moment`**; narrative
-  origo advances with sentence order. **Resurrect the dead `Before` fact class.** Deictic
-  time words become signed offsets, as DATA (`now`/`today` = 0, `yesterday` = −1,
-  `ago` = −N…). **Add a reference-time field to the ask query** — this is what §4 proved is
-  missing. Flagship: a state narrated at the deictic present *restates* the running total
-  → anchor/replace instead of sum, fixing the open `answer.py:318-331` bug.
+- **Phase 2 — the temporal origo (in progress).** Relative event markers now have signed
+  offsets as DATA (`now`/`today` = 0, `yesterday` = −1, `tomorrow` = +1), emit
+  `EventTime`, and derive the formerly dead `Before` relation. One location ask carries
+  a day-grained reference marker, proving the query seam without claiming a universal
+  temporal model. Absolute-year ages use a separate conservative seam:
+  `AgeAtYear` preserves the entity, age, and integral source year. Its dedicated asks
+  project one entity to another explicit integral year, every member of one exact
+  prior subject group to a caller-supplied current year, or that exact group to an
+  explicit year and sum it when the surface explicitly asks for a combined or total
+  age. Group projection is all-or-nothing. The engine never reads the wall clock, and
+  a missing current-year context declines. It does not order or extrapolate
+  `Quantity.time` values. Remaining: promote quantity `time` to an ordered **`Moment`**, advance
+  the narrative origo, support counted expressions such as `ago` = −N, and add a shared
+  reference-time field to other ask families. Flagship: a state narrated at the deictic
+  present *restates* the running total → anchor/replace instead of sum, fixing the open
+  `answer.py:318-331` bug.
 
 - **Phase 3 — the month fix** (blocked on Phase 2; see §4).
 
-- **Phase 4 — the spatial origo.** A `spatial_role` category over prepositions, pure DATA:
-  `source: [from, off]` · `goal: [to, into, onto]` · `locative: [in, on, at, inside]`. One
-  generic transfer rule replaces `transfer.yaml`'s name-only, `{lit: to}`-hardcoded pair;
-  each side's sign comes from the spatial role composed with the verb's existing
-  `acquire`/`lose` polarity, making a container a legitimate transfer endpoint. Closes
-  §3.3 — and by the §4 lesson, **must land before any container-ask broadening.**
+- **Phase 4 — the spatial origo (partially implemented).** Source-indexed adposition
+  frames now preserve spatial location/source/goal/path roles, and a small declared verb
+  class maps some of those event-linked roles to initiating/terminating/holding location
+  fluents. A finite named group plus an explicit day and place supports conservative
+  witness selection. Remaining: typed place referents, containment and movement paths,
+  generic transfer endpoints, and a spatial origo/distance model. Those pieces must land
+  before broad container asks or inferred route membership.
 
 - **Phase 5 — person/group deixis.** Group referents for they/them/their (141 items),
   routed into `combined` and used to *bound* it — which also closes the sub-group hazard.

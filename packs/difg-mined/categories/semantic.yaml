@@ -124,8 +124,6 @@ categories:
       without picking up 'ate'/'sold'/'spent'/etc, which also live under
       'lose'. Gated additionally on the fact's measure resolving to
       `currency` — an ordinary "gives 3 apples" never qualifies.
-  timeperiod:
-    parent: bare_pp_object
   vehicle:
     parent: motion_participant
 attribute_compatibility:
@@ -181,6 +179,8 @@ members:
   - met
   animate_subject_verb: [cough, coughed, coughs, know, knew, knowing, knows]
   animate_object_verb: [meet, meets, met]
+  holding_anchor_adverb:
+    [already, also, always, initially, later, originally, recently, still, then]
   shucking_verb: [shuck, shucked, shucking, shucks]
   shuckable_item: [corn, ear, oyster, peas]
   # extends core-english's `animate` (see its note there): these 43
@@ -247,6 +247,27 @@ members:
   - wardrobe
   - wheel
   - zoo
+  # Interior-compatible subset for quantitative "in PLACE" adjuncts.
+  # Surface/site-only `farm`, `side`, and `wheel` stay available through
+  # their own "on"/"at" compatibility categories below.
+  quantity_interior_location:
+  - aquarium
+  - bag
+  - basket
+  - binder
+  - bowl
+  - box
+  - city
+  - class
+  - classroom
+  - country
+  - jar
+  - mall
+  - office
+  - party
+  - school
+  - wardrobe
+  - zoo
   # Narrower surface/site readings extend the core pairing without making
   # every locative preposition interchangeable with every place noun.
   quantity_surface_location:
@@ -271,6 +292,16 @@ members:
   frame_prepositional_verb:
   - threw
   - throws
+  ratio_particle_verb:
+  - threw
+  - throws
+  motion_comparison_measure:
+  - foot
+  - yard
+  - meter
+  - centimeter
+  - kilometer
+  - mile
   # mining candidate dimension-aggregate-asks: this pack's member extensions
   # to the core-english categories `compute_verb`/`dimension_noun`/
   # `length_measure`/`mass_measure`/`time_measure`/`currency_measure`
@@ -837,7 +868,6 @@ members:
   - wednesday
   - week
   - weekend
-  - year
   vehicle:
   - bicycle
   - bicycles
@@ -870,6 +900,16 @@ members:
   - vans
   - wagon
   - wagons
+  instrument_noun: [brush, knife, pen]
+  means_noun: [boat, bus, car, train, vehicle]
+  manner_noun: [speed]
+  cause_noun: [accident]
+  purpose_noun: [purpose]
+  accompaniment_compatible_verb: [help, helped, helps, work, worked, works]
+  instrument_compatible_verb: [cut, cuts, use, used, uses, write, writes, wrote]
+  manner_compatible_verb: [work, worked, works]
+  cause_compatible_verb: [died, dies]
+  purpose_compatible_verb: [work, worked, works]
   spend_verb:
   - paid
   - pay

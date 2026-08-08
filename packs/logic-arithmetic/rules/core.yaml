@@ -2,18 +2,23 @@ format: rulekit/rules@1
 rules:
   # Exact one-PP named class membership for the quantitative bridge. Simple
   # nominal membership already has the generic Membership fact; this narrower
-  # rule exists only where that fact would lose a class restriction. Requiring
-  # noun + preposition + noun keeps comparisons and scalar predicates out.
+  # rule exists only where that fact would lose a class restriction. The
+  # explicit article and declared preposition/place compatibility keep
+  # arbitrary bare roles and arbitrary noun pairs out.
   - id: logic-arithmetic/ground-copular-nominal-pp
     phase: read
     match:
       sentence:
         - {slot: subj, type: name, at_start: true, blocks_skipped: indefinite_article}
         - {lit: is}
-        - {slot: cls, type: noun}
-        - {slot: prep, type: preposition}
-        - {slot: restriction, type: noun}
+        - {lit: a, consume_skipped: true}
+        - {slot: cls, cat: a_predicative_role}
+        - {slot: prep, cat: class_restriction_preposition}
+        - {lit: the, consume_skipped: true}
+        - {slot: restriction, cat: class_restriction_place}
         - {lit: ".", consume_skipped: true}
+    where:
+      - attribute_compatible: {attribute: prep, noun: restriction}
     emits:
       - {fact: atom, entity: "{subj}", pred: "{cls} {prep} {restriction}", polarity: true}
 
@@ -34,17 +39,22 @@ rules:
 
   # The one-PP restricted sibling preserves its complete class phrase and is
   # kept separate so every slot remains directly generatable and reviewable.
+  # A spatial word alone is not enough: the exact preposition/place pair must
+  # also be licensed by the shared compatibility table.
   - id: logic-arithmetic/universal-all-have-quantity-pp
     phase: read
     match:
       sentence:
         - {lit: all, at_start: true}
         - {slot: cls, type: bare_plural}
-        - {slot: prep, type: preposition}
-        - {slot: restriction, type: noun}
+        - {slot: prep, cat: class_restriction_preposition}
+        - {lit: the, consume_skipped: true}
+        - {slot: restriction, cat: class_restriction_place}
         - {lit: have}
         - {slot: item, type: counted}
         - {lit: ".", consume_skipped: true}
+    where:
+      - attribute_compatible: {attribute: prep, noun: restriction}
     emits:
       - {fact: quantified_quantity, cls: "{cls.singular} {prep} {restriction}", measure: "{item}", value: "{item.value}", verb: have}
 
@@ -75,7 +85,8 @@ rules:
   # definite PP. Emit the structured verbal relation once per subject; a
   # separate pack-owned mapping decides whether that relation licenses a
   # nominal role. Disjunction, coordinated objects, additional PP material,
-  # singular verb agreement, and missing sentence boundaries do not match.
+  # singular verb agreement, missing sentence boundaries, and undeclared
+  # preposition/place pairs do not match.
   - id: logic-arithmetic/coordinated-named-verbal-pp
     phase: read
     match:
@@ -83,14 +94,87 @@ rules:
         - {slot: left, type: name, at_start: true}
         - {slot: conjunction, cat: holder_list_conjunction}
         - {slot: right, type: name}
-        - {slot: verb, type: nonstate_verb, bare_form: true, single_word: true}
-        - {slot: prep, type: preposition}
+        - {slot: verb, cat: subject_role_predicate, bare_form: true, single_word: true}
+        - {slot: prep, cat: class_restriction_preposition}
         - {lit: the, consume_skipped: true}
-        - {slot: restriction, type: noun}
+        - {slot: restriction, cat: class_restriction_place}
         - {lit: ".", consume_skipped: true}
     where:
       - distinct: [left, right]
+      - attribute_compatible: {attribute: prep, noun: restriction}
     satisfies: {verb: [subject]}
     emits:
       - {fact: verbal_relation, entity: "{left}", verb: "{verb}", prep: "{prep}", obj: "{restriction}", polarity: true}
       - {fact: verbal_relation, entity: "{right}", verb: "{verb}", prep: "{prep}", obj: "{restriction}", polarity: true}
+
+  # A question-scoped or asserted universal inability to terminate location.
+  # The negative subject, impossibility modal, departure predicate, definite
+  # place, and sentence boundary are all explicit. `may`/`must`/`should` do
+  # not enter the modal category, so prohibition or obligation never becomes
+  # physical impossibility. The pronoun's ordinary referential obligation is
+  # discharged by this quantified construction rather than by inventing an
+  # antecedent for `nobody`.
+  - id: logic-arithmetic/universal-location-exit-impossibility
+    phase: read
+    question_assumption: true
+    match:
+      sentence:
+        - {slot: subject, cat: negative_person_pronoun, at_start: true}
+        - {slot: modal, cat: location_impossibility_modal}
+        - {slot: verb, cat: location_terminating_verb, bare_form: true, single_word: true}
+        - {lit: the, consume_skipped: true}
+        - {slot: place, cat: spatial_reference_noun}
+        - {lit: ".", consume_skipped: true}
+    satisfies:
+      subject: [refers]
+    emits:
+      - fact: location_constraint
+        place: "{place}"
+        transition: terminates
+        modality: impossible
+        subject_class: person
+
+  # Factual absence of departures during the current narrative interval. This
+  # is not inability: it records that no qualifying transition occurred up to
+  # the question's reference day. The exact past category keeps bare/present
+  # departure forms out, and the quantified rule discharges `nobody` without
+  # inventing an antecedent.
+  - id: logic-arithmetic/universal-location-exit-absence
+    phase: read
+    match:
+      sentence:
+        - {slot: subject, cat: negative_person_pronoun, at_start: true}
+        - {slot: verb, cat: location_terminating_past_verb, single_word: true}
+        - {lit: the, consume_skipped: true}
+        - {slot: place, cat: spatial_reference_noun}
+        - {lit: ".", consume_skipped: true}
+    satisfies:
+      subject: [refers]
+    emits:
+      - fact: location_transition_absence
+        place: "{place}"
+        transition: terminates
+        scope: narrative-through-reference
+        subject_class: person
+
+asks:
+  # Finite-domain temporal location selection. `them` must already denote one
+  # conservative prior named-subject group; the ask never enumerates every
+  # name or fact holder on its own. Day-grained time deliberately excludes
+  # `now`, whose instant semantics requires tense/aspect work beyond this slice.
+  - id: ask/which-discourse-group-at-day
+    match:
+      question:
+        - {lit: which, at_start: true}
+        - {lit: of}
+        - {slot: group, cat: discourse_group_pronoun}
+        - {slot: copula, cat: plural_copula}
+        - {slot: prep, cat: spatial_location_preposition}
+        - {lit: the, consume_skipped: true}
+        - {slot: place, cat: spatial_reference_noun}
+        - {slot: when, cat: day_deictic_marker}
+    resolves:
+      consumer: location-witnesses
+      candidates: "{group.group_members}"
+      place: "{place}"
+      when: "{when}"

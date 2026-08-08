@@ -20,6 +20,7 @@ from ..data.registry import Registry
 from ..data.schemas import AskRule, MatchToken, PatternRule
 from .evaluate import ArithmeticLog, EvaluationError, evaluate
 from .model import (
+    AgeAtYear,
     Alias,
     Before,
     ClassRefinement,
@@ -30,6 +31,7 @@ from .model import (
     DisjunctiveConditional,
     EnumeratedDisjunction,
     Equivalence,
+    EventTime,
     Existential,
     Fact,
     Atom,
@@ -37,6 +39,9 @@ from .model import (
     Goal,
     GroundConditional,
     GroupTotal,
+    LocationConstraint,
+    LocationEvent,
+    LocationTransitionAbsence,
     Membership,
     PartitionQuantity,
     PositiveGroundConditional,
@@ -62,6 +67,7 @@ from .model import (
 SKIPPABLE_SENSES = {"article", "punct"}
 
 _FACT_CLASSES = {
+    "age_at_year": AgeAtYear,
     "quantity": Quantity,
     "relation": Relation,
     "membership": Membership,
@@ -82,6 +88,7 @@ _FACT_CLASSES = {
     "subset": Subset,
     "predication": Predication,
     "before": Before,
+    "event_time": EventTime,
     "fraction_quantity": FractionQuantity,
     "rest_quantity": RestQuantity,
     "partition_quantity": PartitionQuantity,
@@ -92,6 +99,9 @@ _FACT_CLASSES = {
     "discount": Discount,
     "percent_change": PercentChange,
     "verbal_relation": VerbalRelation,
+    "location_event": LocationEvent,
+    "location_constraint": LocationConstraint,
+    "location_transition_absence": LocationTransitionAbsence,
     "semantic_graph_node": SemanticGraphNode,
     "semantic_graph_edge": SemanticGraphEdge,
 }
@@ -245,7 +255,18 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
         # scalar constructions opt out of that reading without constraining
         # how many source words formed the standalone number itself.
         return False
+    if token.integer:
+        value = unit.features.get("value")
+        if not isinstance(value, (int, float)) or not float(value).is_integer():
+            return False
     if token.fraction_within_whole:
+        value = unit.features.get("value")
+        if not (
+            isinstance(value, (int, float))
+            and 0.0 <= float(value) <= 1.0
+        ):
+            return False
+    if token.word_fraction_within_whole and not unit.features.get("percent"):
         value = unit.features.get("value")
         if not (
             isinstance(value, (int, float))
@@ -485,6 +506,40 @@ def _referential_slot_ok(
     return (
         predecessor.sense() == "article"
         or reg.word_in_category(fold, "possessive_determiner")
+    )
+
+
+def is_referential_entity(
+    reading: Reading,
+    unit: Unit,
+    reg: Registry,
+    *,
+    bare_reference_category: str | None = None,
+) -> bool:
+    """Apply the matcher's entity-reference boundary outside a rule match.
+
+    Discourse grouping needs to decide whether a prior common-noun subject
+    denotes one recoverable entity.  Reusing this entry point keeps articles,
+    possessives, labels, counted references, plurals, and declared bare
+    exceptions aligned with ``MatchToken(referential=True)`` rather than
+    growing a second hand-copied definition in ``document.py``.
+    """
+
+    try:
+        index = reading.units.index(unit)
+    except ValueError:
+        return False
+    return _referential_slot_ok(
+        reading.units,
+        index,
+        unit,
+        MatchToken(
+            slot="entity",
+            type="entity",
+            referential=True,
+            bare_reference_category=bare_reference_category,
+        ),
+        reg,
     )
 
 
@@ -1006,6 +1061,15 @@ def _check_where(
                 if (
                     compatibility.allow_proper_name
                     and _role_is_proper_name(holder, reg)
+                    and (
+                        not compatibility.proper_name_measure_categories
+                        or any(
+                            reg.word_in_category(measure_lemma, category)
+                            for category in (
+                                compatibility.proper_name_measure_categories
+                            )
+                        )
+                    )
                 ):
                     continue
                 if not reg.measure_applies_to_holder(
@@ -1716,7 +1780,7 @@ def _resolve_field(
 
 
 _NUMERIC_FIELDS = {
-    "value", "factor", "offset", "fraction", "numerator", "denominator",
+    "value", "year", "factor", "offset", "fraction", "numerator", "denominator",
     # mining candidate temporal-offset-age-recut: Relation's two new
     # signed-year offset fields (model.py) — a pattern rule emits them as
     # arithmetic expressions over bound slot values ("n", "-n"), the SAME
@@ -1959,6 +2023,18 @@ def match_ask(
             if names is None:
                 raise AskResolutionMismatch
             return names
+        if whole is not None and whole.group(2) == "group_members":
+            unit = match.slots.get(whole.group(1))
+            if not isinstance(unit, Unit):
+                raise AskResolutionMismatch
+            members = unit.features.get("referent_group")
+            if (
+                not isinstance(members, tuple)
+                or len(members) < 2
+                or not all(isinstance(member, str) and member for member in members)
+            ):
+                raise AskResolutionMismatch
+            return list(members)
         return render(raw, match)
 
     def resolve(

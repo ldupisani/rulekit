@@ -54,6 +54,7 @@ from .totals import _entity_total, _sign
 MAX_ROUNDS = 50
 
 _FIELD_ALIASES = {"entity", "measure", "value", "verb", "subject", "standard",
+                  "subject_owner", "standard_owner",
                   "factor", "offset", "part", "whole", "fraction", "member",
                   "collection", "earlier", "later", "polarity", "dobj", "time",
                   "cls", "pred"}
@@ -190,6 +191,13 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
     quantities: dict[tuple[str, str], Quantity] = {}
     by_verb: set[tuple[str, str, str]] = set()
     measures_by_entity: dict[str, set[str]] = {}
+    # Owner-qualified mirrors of the bare indexes. Quantity keeps its bare
+    # entity lemma for compatibility, while `owner` records which possessed
+    # instance it denotes. A relation carrying an owner must use this exact
+    # index and may never borrow another owner's same-headed noun.
+    owned_quantities: dict[tuple[str, str, str], Quantity] = {}
+    by_verb_owned: set[tuple[str, str, str, str]] = set()
+    measures_by_owned_entity: dict[tuple[str, str], set[str]] = {}
     # mining candidate labeled-entity-relations: a SECOND, label-keyed index
     # beside the bare-entity ones above — read ONLY when a relation's own
     # `subject_label`/`standard_label` is set (Relation, model.py), never
@@ -236,6 +244,21 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
         measures_by_entity.setdefault(q.entity, set()).add(q.measure)
         if q.is_state:
             quantities[(q.entity, q.measure)] = q
+        if q.owner:
+            base_entity = q.entity.split("[", 1)[0]
+            owned_quantities.setdefault(
+                (base_entity, q.owner, q.measure), q
+            )
+            by_verb_owned.add(
+                (base_entity, q.owner, q.measure, verb_key(q.verb))
+            )
+            measures_by_owned_entity.setdefault(
+                (base_entity, q.owner), set()
+            ).add(q.measure)
+            if q.is_state:
+                owned_quantities[
+                    (base_entity, q.owner, q.measure)
+                ] = q
         if q.label:
             base = q.entity.split("[", 1)[0]
             labeled_quantities.setdefault((base, q.measure, q.label), q)
@@ -281,7 +304,10 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
         return bare
 
     def anchor_measure(
-        entity: str, measure: str, label: str | None = None
+        entity: str,
+        measure: str,
+        label: str | None = None,
+        owner: str | None = None,
     ) -> tuple[str, Quantity] | None:
         """The relation's stated measure resolved against ONE entity's own
         holdings — an EXACT match first, else (only for `interchangeable`
@@ -298,6 +324,31 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
         stated label is already maximally specific, so borrowing a
         sibling measure on top of it would compound two guesses into
         one)."""
+        if owner:
+            base_entity = entity.split("[", 1)[0]
+            known = owned_quantities.get(
+                (base_entity, owner, measure)
+            )
+            if known is not None:
+                return measure, known
+            candidate = _resolve_measure_against(
+                measure,
+                measures_by_owned_entity.get(
+                    (base_entity, owner), set()
+                ),
+                reg,
+                journal=log.journal,
+            )
+            if candidate is None or candidate == measure:
+                return None
+            candidate_known = owned_quantities.get(
+                (base_entity, owner, candidate)
+            )
+            return (
+                (candidate, candidate_known)
+                if candidate_known is not None
+                else None
+            )
         if label:
             known = labeled_quantities.get((entity, measure, label))
             return (measure, known) if known is not None else None
@@ -313,6 +364,30 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
         if candidate_known is None:
             return None
         return candidate, candidate_known
+
+    def already_known(
+        entity: str,
+        measure: str,
+        verb: str,
+        *,
+        label: str | None = None,
+        owner: str | None = None,
+    ) -> bool:
+        if owner:
+            return (
+                entity.split("[", 1)[0],
+                owner,
+                measure,
+                verb_key(verb),
+            ) in by_verb_owned
+        if label:
+            return (
+                entity,
+                measure,
+                verb_key(verb),
+                label,
+            ) in by_verb_labeled
+        return (entity, measure, verb_key(verb)) in by_verb
 
     # mining candidate cross-measure-relation-fixes: subjects that use each
     # STANDARD lemma across every relation in the store — the discriminator
@@ -342,6 +417,7 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
             reg.word_in_category(rel.standard, "noun")
             and not rel.subject_label
             and not rel.standard_label
+            and not rel.standard_owner
             and len(standard_subjects.get(rel.standard, ())) <= 1
         )
 
@@ -359,7 +435,15 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
         # (lemma, label) comparison here, so this is pure defense-in-depth
         # for the genuine bare-lemma-AND-label match — it changes no
         # existing (labeled or unlabeled) relation's resolution.
-        if rel.subject == rel.standard and rel.subject_label == rel.standard_label:
+        if (
+            rel.subject,
+            rel.subject_label,
+            rel.subject_owner,
+        ) == (
+            rel.standard,
+            rel.standard_label,
+            rel.standard_owner,
+        ):
             continue
         if rel.standard in (_ANAPHOR_QUANTITY_STANDARD, _ANAPHOR_PRICE_STANDARD):
             # mining candidate anaphoric-multiplier-standards: "twice that
@@ -409,7 +493,13 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
                 )
                 if anchor is not None:
                     anchor_q = anchor.payload
-                    if (rel.subject, anchor_q.measure, verb_key(rel.verb)) not in by_verb:
+                    if not already_known(
+                        rel.subject,
+                        anchor_q.measure,
+                        rel.verb,
+                        label=rel.subject_label,
+                        owner=rel.subject_owner,
+                    ):
                         value = evaluate(
                             f"{rel.factor} * {anchor_q.value} + {rel.offset}", {}, log,
                             source=f"relation-anaphor:{rel.provenance.source}",
@@ -421,6 +511,7 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
                                 ),
                                 entity=rel.subject, measure=anchor_q.measure, value=value,
                                 verb=rel.verb, label=rel.subject_label or None,
+                                owner=rel.subject_owner or None,
                             )
                         )
             else:
@@ -513,11 +604,13 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
             if anchor is not None:
                 anchor_q = anchor.payload
                 resolved_measure = rel.measure or anchor_q.measure
-                already = (
+                already = already_known(
                     rel.subject,
                     resolved_measure,
-                    verb_key(rel.verb),
-                ) in by_verb
+                    rel.verb,
+                    label=rel.subject_label,
+                    owner=rel.subject_owner,
+                )
                 if not already:
                     value = evaluate(
                         f"{rel.factor} * {anchor_q.value} + {rel.offset}", {}, log,
@@ -532,6 +625,7 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
                             ),
                             entity=rel.subject, measure=resolved_measure, value=value,
                             verb=rel.verb, label=rel.subject_label or None,
+                            owner=rel.subject_owner or None,
                         )
                     )
             continue
@@ -553,10 +647,21 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
             # (the standard entity), not positional, and the candidates carry no
             # coordinates at all. Sorted so the set's iteration order can never decide a
             # binding. Constant metric => byte-identical to the `len(...) != 1` it replaces.
+            candidate_measures = (
+                measures_by_owned_entity.get(
+                    (
+                        rel.standard.split("[", 1)[0],
+                        rel.standard_owner,
+                    ),
+                    set(),
+                )
+                if rel.standard_owner
+                else measures_by_entity.get(rel.standard, set())
+            )
             recovered = deixis.resolve(
                 [
                     deixis.Referent(dimension=deixis.DISCOURSE, key=measure)
-                    for measure in sorted(measures_by_entity.get(rel.standard, set()))
+                    for measure in sorted(candidate_measures)
                 ],
                 deixis.Origo(sentence=rel.provenance.sentence),
                 deixis.constant,
@@ -571,13 +676,20 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
         # THE RELATION'S OWN VERB — "Zig wrote 4× as many" plus "Zig wrote
         # 60" describe the SAME writing (re-deriving doubles it); a lose
         # event on top of a have-relation is a CHANGE and stays allowed
-        resolved = anchor_measure(rel.standard, rel.measure, rel.standard_label)
+        resolved = anchor_measure(
+            rel.standard,
+            rel.measure,
+            rel.standard_label,
+            rel.standard_owner,
+        )
         if resolved is not None:
             measure, known = resolved
-            already = (
-                (rel.subject, measure, verb_key(rel.verb), rel.subject_label) in by_verb_labeled
-                if rel.subject_label
-                else (rel.subject, measure, verb_key(rel.verb)) in by_verb
+            already = already_known(
+                rel.subject,
+                measure,
+                rel.verb,
+                label=rel.subject_label,
+                owner=rel.subject_owner,
             )
             if not already:
                 # mining candidate temporal-offset-age-recut: general form
@@ -605,6 +717,7 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
                         provenance=Provenance(source="synth/relation", sentence=rel.provenance.sentence),
                         entity=rel.subject, measure=measure, value=value, verb=rel.verb,
                         label=rel.subject_label or None,
+                        owner=rel.subject_owner or None,
                     )
                 )
                 continue
@@ -640,7 +753,15 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
         # already occupies the same bare key under the same verb — every
         # UNQUALIFIED relation (the overwhelming existing case) keeps the
         # exact original `by_verb` check, byte-identical.
-        subtype_known = qualified_lookup(rel.subject, rel.standard, rel.standard_qualifier)
+        subtype_known = (
+            None
+            if rel.subject_owner or rel.standard_owner
+            else qualified_lookup(
+                rel.subject,
+                rel.standard,
+                rel.standard_qualifier,
+            )
+        )
         already_derived = (
             (rel.subject, rel.measure, verb_key(rel.verb), rel.measure_qualifier) in by_verb_qualified
             if rel.measure_qualifier
@@ -697,6 +818,7 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
                     provenance=Provenance(source="synth/relation", sentence=rel.provenance.sentence),
                     entity=rel.subject, measure=derived_measure, value=value, verb=rel.verb,
                     measure_qualifier=rel.measure_qualifier or None,
+                    owner=rel.subject_owner or None,
                 )
             )
             continue
@@ -798,17 +920,24 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
         # (a measure noun standing in as an entity). Sharing the identical
         # `is_subtype_standard` predicate (rather than a separately-tuned
         # condition) is what keeps the two branches mutually exclusive.
-        resolved = anchor_measure(rel.subject, rel.measure, rel.subject_label)
+        resolved = anchor_measure(
+            rel.subject,
+            rel.measure,
+            rel.subject_label,
+            rel.subject_owner,
+        )
         if (
             resolved is not None
             and rel.factor != 0
             and not is_subtype_standard(rel)
         ):
             measure, known = resolved
-            already = (
-                (rel.standard, measure, verb_key(rel.verb), rel.standard_label) in by_verb_labeled
-                if rel.standard_label
-                else (rel.standard, measure, verb_key(rel.verb)) in by_verb
+            already = already_known(
+                rel.standard,
+                measure,
+                rel.verb,
+                label=rel.standard_label,
+                owner=rel.standard_owner,
             )
             if not already:
                 # mining candidate temporal-offset-age-recut: the same
@@ -827,6 +956,7 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
                         provenance=Provenance(source="synth/relation", sentence=rel.provenance.sentence),
                         entity=rel.standard, measure=measure, value=value, verb=rel.verb,
                         label=rel.standard_label or None,
+                        owner=rel.standard_owner or None,
                     )
                 )
     return out
@@ -1630,12 +1760,14 @@ def _sum_constraint_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -
             Quantity(
                 provenance=Provenance(source="synth/sum-constraint", sentence=rel.provenance.sentence),
                 entity=rel.standard, measure=measure, value=standard_value, verb=rel.verb,
+                owner=rel.standard_owner or None,
             )
         )
         out.append(
             Quantity(
                 provenance=Provenance(source="synth/sum-constraint", sentence=rel.provenance.sentence),
                 entity=rel.subject, measure=measure, value=subject_value, verb=rel.verb,
+                owner=rel.subject_owner or None,
             )
         )
     return out

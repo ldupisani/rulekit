@@ -6,7 +6,7 @@ import hashlib
 import random
 import re
 import secrets
-from collections import OrderedDict
+from collections import Counter, OrderedDict
 from dataclasses import dataclass
 from itertools import product
 from pathlib import Path
@@ -80,6 +80,7 @@ _SUPPORTED_CATEGORY_ROOTS = frozenset(
         "adjective",
         "preposition",
         "pronoun",
+        "modal",
         "aggregate",
         "comparative",
         "complementizer",
@@ -305,7 +306,14 @@ def _lexical_fillers(
 ) -> list[_Filler]:
     out: list[_Filler] = []
     for surface, entry in sorted(reg.lexicon.items()):
-        if any(ch.isspace() for ch in surface) or not surface:
+        if not surface:
+            continue
+        if any(ch.isspace() for ch in surface) and not (
+            sense == "preposition" and "preposition" in entry.senses
+        ):
+            # Multiword adpositions now round-trip through the analyzer's
+            # declared phrase merge. Other multiword lexicon keys still have
+            # no generic realization contract and remain excluded.
             continue
         if sense is not None and (
             surface in reg.numbers
@@ -651,6 +659,16 @@ def _qualify_domain(
             if isinstance(filler.value, (int, float))
             and 0.0 <= float(filler.value) <= 1.0
         ]
+    if token.word_fraction_within_whole:
+        # `_fraction_fillers` realizes word fractions, never percentages.
+        # Percentage input remains matcher-valid above one, but generated
+        # word-fraction comparisons use a natural magnitude.
+        fillers = [
+            filler
+            for filler in fillers
+            if isinstance(filler.value, (int, float))
+            and 0.0 <= float(filler.value) <= 1.0
+        ]
     if token.fraction_positive:
         fillers = [
             filler
@@ -935,6 +953,24 @@ def _measure_key(
     return filler.identity, filler.label, filler.qualifier
 
 
+def _proper_name_measure_allowed(
+    measure: _Filler,
+    *,
+    allow_proper_name: bool,
+    measure_categories: tuple[str, ...],
+    reg: Registry,
+) -> bool:
+    """Whether a declared measure permits the proper-name holder shortcut."""
+
+    return allow_proper_name and (
+        not measure_categories
+        or any(
+            _filler_in_category(measure, category, reg)
+            for category in measure_categories
+        )
+    )
+
+
 def _scoped_filler_polarity(
     filler: _Filler, scope: str, reg: Registry
 ) -> int | None:
@@ -1130,6 +1166,10 @@ def _rule_blockers(
     rule: PatternRule, reg: Registry, fixtures: _Fixtures
 ) -> tuple[str, ...]:
     blockers: list[str] = []
+    if rule.generation == "safety":
+        blockers.append("declared non-generative safety consumer")
+    elif rule.generation == "reader-only":
+        blockers.append("declared non-generative reader-only rule")
     if rule.phase != "read":
         blockers.append("only phase: read rules are currently supported")
     seq = _flat_sentence(rule)
@@ -1425,8 +1465,15 @@ def _rule_blockers(
 
             def holder_ok(measure: _Filler, holder: _Filler) -> bool:
                 return (
-                    compatibility.allow_proper_name
-                    and holder.kind == "name"
+                    holder.kind == "name"
+                    and _proper_name_measure_allowed(
+                        measure,
+                        allow_proper_name=compatibility.allow_proper_name,
+                        measure_categories=tuple(
+                            compatibility.proper_name_measure_categories
+                        ),
+                        reg=reg,
+                    )
                 ) or reg.measure_applies_to_holder(
                     measure.identity, holder.identity
                 )
@@ -1546,7 +1593,7 @@ def _constraint_groups(
             bool,
         ]
     ],
-    list[tuple[str, tuple[str, ...], bool]],
+    list[tuple[str, tuple[str, ...], bool, tuple[str, ...]]],
     list[tuple[str, str]],
     tuple[str, ...],
 ]:
@@ -1572,7 +1619,9 @@ def _constraint_groups(
             bool,
         ]
     ] = []
-    measure_holder_requirements: list[tuple[str, tuple[str, ...], bool]] = []
+    measure_holder_requirements: list[
+        tuple[str, tuple[str, ...], bool, tuple[str, ...]]
+    ] = []
     slot_category_exclusions = list(_slot_category_exclusions(rule))
     for pred in rule.where:
         if pred.same_lemma is not None:
@@ -1648,6 +1697,9 @@ def _constraint_groups(
                     pred.measure_holder_compatible.measure,
                     tuple(pred.measure_holder_compatible.holders),
                     pred.measure_holder_compatible.allow_proper_name,
+                    tuple(
+                        pred.measure_holder_compatible.proper_name_measure_categories
+                    ),
                 )
             )
     return (
@@ -1730,8 +1782,10 @@ def _allowed_fillers(
         ]
     ) = (),
     measure_holder_requirements: (
-        list[tuple[str, tuple[str, ...], bool]]
-        | tuple[tuple[str, tuple[str, ...], bool], ...]
+        list[tuple[str, tuple[str, ...], bool, tuple[str, ...]]]
+        | tuple[
+            tuple[str, tuple[str, ...], bool, tuple[str, ...]], ...
+        ]
     ) = (),
     category_membership_requirements: (
         tuple[tuple[tuple[str, ...], str], ...]
@@ -2067,10 +2121,17 @@ def _allowed_fillers(
             measure_name,
             holder_names,
             allow_proper_name,
+            proper_name_measure_categories,
         ) in measure_holder_requirements:
             def holder_ok(measure: _Filler, holder: _Filler) -> bool:
                 return (
-                    allow_proper_name and holder.kind == "name"
+                    holder.kind == "name"
+                    and _proper_name_measure_allowed(
+                        measure,
+                        allow_proper_name=allow_proper_name,
+                        measure_categories=proper_name_measure_categories,
+                        reg=reg,
+                    )
                 ) or reg.measure_applies_to_holder(
                     measure.identity, holder.identity
                 )
@@ -2297,6 +2358,7 @@ def _realize(
     locked_bindings: dict[str, str] | None = None,
     excluded_bindings: dict[str, str] | None = None,
     generation_mode: GenerationMode = "strict",
+    structural_target: str | None = None,
 ) -> tuple[
     str,
     dict[str, str],
@@ -2338,6 +2400,56 @@ def _realize(
     chosen: dict[str, _Filler] = {}
     surfaces: list[str] = []
     optional_choices: dict[tuple[int, ...], bool] = {}
+    token_nodes = list(_token_nodes(seq))
+    structural_optional_path: tuple[int, ...] | None = None
+    structural_optional_value: bool | None = None
+    structural_literal_path: tuple[int, ...] | None = None
+    structural_literal_surface: str | None = None
+    forced_structural_ancestors: set[tuple[int, ...]] = set()
+    if structural_target is not None:
+        parts = structural_target.split(":", 2)
+        if parts[0] in {"optional", "literal"}:
+            if len(parts) != 3 or not parts[1].isdigit():
+                raise GenerationError(
+                    f"invalid structural target {structural_target!r}"
+                )
+            token_no = int(parts[1])
+            if token_no >= len(token_nodes):
+                raise GenerationError(
+                    f"structural target {structural_target!r} names no token"
+                )
+            path, target_token, target_ancestors = token_nodes[token_no]
+            if parts[0] == "optional":
+                if target_token.opt is None or parts[2] not in {
+                    "included",
+                    "omitted",
+                }:
+                    raise GenerationError(
+                        f"structural target {structural_target!r} is not an "
+                        "optional-branch outcome"
+                    )
+                structural_optional_path = path
+                structural_optional_value = parts[2] == "included"
+                forced_structural_ancestors = set(target_ancestors)
+            else:
+                if (
+                    len(target_token.lit_options) < 2
+                    or parts[2].casefold()
+                    not in {
+                        option.casefold() for option in target_token.lit_options
+                    }
+                ):
+                    raise GenerationError(
+                        f"structural target {structural_target!r} is not a "
+                        "declared literal alternative"
+                    )
+                structural_literal_path = path
+                structural_literal_surface = parts[2].casefold()
+                forced_structural_ancestors = set(target_ancestors)
+        elif parts[0] not in {"fact", "surface"}:
+            raise GenerationError(
+                f"unknown structural target {structural_target!r}"
+            )
     tokens_by_slot = {
         token.slot: token
         for _, token, _ in _leaf_tokens(seq)
@@ -2362,8 +2474,13 @@ def _realize(
         for _, token, ancestors in _leaf_tokens(seq)
         if token.slot in forced_slots
         for ancestor in ancestors
-    }
+    } | forced_structural_ancestors
     forced_omitted_paths = set(unbound_optional_paths)
+    if structural_optional_path is not None:
+        if structural_optional_value:
+            forced_optional_paths.add(structural_optional_path)
+        else:
+            forced_omitted_paths.add(structural_optional_path)
     for paths in presence_path_groups:
         if paths & forced_optional_paths:
             forced_optional_paths.update(paths)
@@ -2521,6 +2638,12 @@ def _realize(
                 entity_owner_distinctions=entity_owner_distinctions,
                 domain_for=domain_for,
             )
+            if path == structural_literal_path:
+                domain = [
+                    filler
+                    for filler in domain
+                    if filler.surface.casefold() == structural_literal_surface
+                ]
             if token.slot in locked_bindings:
                 locked = locked_bindings[token.slot].casefold()
                 domain = [
@@ -2726,6 +2849,41 @@ def _match_summaries(
         )
         for result in results
     )
+
+
+def _premise_match_results(
+    results: list[RuleMatchResult],
+) -> list[RuleMatchResult]:
+    """Ordinary reviewable matches, excluding defensive safety consumers."""
+
+    return [
+        result
+        for result in results
+        if result.match.rule.generation != "safety"
+    ]
+
+
+def _safety_interception_results(
+    results: list[RuleMatchResult], reg: Registry
+) -> list[RuleMatchResult]:
+    """Safety consumers that remain necessary after ordinary subsumption.
+
+    A broad fact-free guard often co-fires with the valid premise that already
+    consumes the same units. That redundant guard is implementation detail,
+    not a safety event worth presenting to the reviewer. It becomes an
+    interception only when no ordinary, more-specific match subsumes it.
+    """
+
+    ordinary = _premise_match_results(results)
+    return [
+        result
+        for result in results
+        if result.match.rule.generation == "safety"
+        and not any(
+            subsumes(other.match, result.match, reg)
+            for other in ordinary
+        )
+    ]
 
 
 def _matched_fact_bindings(
@@ -3046,8 +3204,12 @@ def _token_expression(token: MatchToken) -> str:
         gates.append(f"number {token.number!r}")
     if token.standalone:
         gates.append("standalone")
+    if token.integer:
+        gates.append("integer")
     if token.fraction_within_whole:
         gates.append("within one whole")
+    if token.word_fraction_within_whole:
+        gates.append("word fraction within one whole")
     if token.fraction_positive:
         gates.append("positive")
     if token.referential:
@@ -3137,6 +3299,8 @@ def _token_reason(
             boundaries.append("strictly positive")
         if token.fraction_within_whole:
             boundaries.append("within the declared whole")
+        if token.word_fraction_within_whole:
+            boundaries.append("word fraction within one whole")
         boundary = f", {' and '.join(boundaries)}" if boundaries else ""
         return (
             f"{surface!r} satisfied type 'fraction' through explicit count "
@@ -3145,7 +3309,9 @@ def _token_reason(
             f"{boundary}"
         )
     if token.type == "fraction" and (
-        token.fraction_within_whole or token.fraction_positive
+        token.fraction_within_whole
+        or token.word_fraction_within_whole
+        or token.fraction_positive
     ):
         value = units[0].features.get("value") if len(units) == 1 else None
         boundaries = []
@@ -3153,6 +3319,8 @@ def _token_reason(
             boundaries.append("strictly positive")
         if token.fraction_within_whole:
             boundaries.append("within the declared whole")
+        if token.word_fraction_within_whole:
+            boundaries.append("word fraction within one whole")
         return (
             f"{surface!r} satisfied type 'fraction' with value {value!r} "
             f"that is {' and '.join(boundaries)}"
@@ -3269,7 +3437,9 @@ def _where_expression(rule: PatternRule, index: int) -> tuple[str, tuple[str, ..
         names = (value.measure, *value.holders)
         rendered = (
             f"measure={value.measure!r}, holders={value.holders!r}, "
-            f"allow_proper_name={value.allow_proper_name!r}"
+            f"allow_proper_name={value.allow_proper_name!r}, "
+            "proper_name_measure_categories="
+            f"{value.proper_name_measure_categories!r}"
         )
     elif kind == "distinct_from_owner":
         names = (value.entity, value.possessed)
@@ -3479,7 +3649,18 @@ def _where_reason(
                 compatibility.allow_proper_name
                 and _role_is_proper_name(holder, reg)
             ):
-                rendered.append(f"{holder_name}={holder_lemma!r} (proper name)")
+                categories = tuple(
+                    compatibility.proper_name_measure_categories
+                )
+                permitted = not categories or any(
+                    reg.word_in_category(measure, category)
+                    for category in categories
+                )
+                rendered.append(
+                    f"{holder_name}={holder_lemma!r} (proper name; "
+                    + ("permitted" if permitted else "not permitted")
+                    + ")"
+                )
                 continue
             pairs = reg.measure_holder_compatibility_pairs(
                 measure, holder_lemma
@@ -4036,8 +4217,14 @@ def _candidate_from_reading(
 ) -> GenerationCandidate:
     """Project one ordinary reader result into the authoring candidate record."""
 
+    premise_results = _premise_match_results(results)
+    safety_results = _safety_interception_results(
+        results, project.registry
+    )
     target_results = [
-        result for result in results if result.match.rule.id == target_rule_id
+        result
+        for result in premise_results
+        if result.match.rule.id == target_rule_id
     ]
     if origin == "generated" and generation_mode == "strict":
         target_results = [
@@ -4056,7 +4243,7 @@ def _candidate_from_reading(
             any(
                 other is not result
                 and subsumes(other.match, result.match, project.registry)
-                for other in results
+                for other in premise_results
             )
             for result in target_results
         )
@@ -4123,7 +4310,12 @@ def _candidate_from_reading(
         ),
         premises=premises,
         consumed_units=consumed_units,
-        actual_matches=_match_summaries(results, project, reading),
+        actual_matches=_match_summaries(
+            premise_results, project, reading
+        ),
+        safety_interceptions=_match_summaries(
+            safety_results, project, reading
+        ),
         facts=tuple(
             _fact_json(
                 fact,
@@ -4163,6 +4355,11 @@ def retest_candidate(
         (candidate for candidate in project.registry.rules if candidate.id == rule_id),
         None,
     )
+    if rule is not None and rule.generation == "safety":
+        raise GenerationError(
+            "a safety consumer is not a premise review target; "
+            "review the sentence meaning instead"
+        )
     try:
         reading = analyze(sentence, project.registry, tracing=True)
         document = run_document([reading], project.registry)
@@ -4256,6 +4453,10 @@ def promote_sentence_review_candidate(
             f"{type(exc).__name__}: {exc}"
         ) from exc
     results = document.rule_results.get(reading.sentence_index, [])
+    premise_results = _premise_match_results(results)
+    safety_results = _safety_interception_results(
+        results, project.registry
+    )
     digest = hashlib.sha256(
         (
             f"{project.registry.fingerprint}\0reading\0{seed}\0"
@@ -4273,18 +4474,25 @@ def promote_sentence_review_candidate(
         target_rule=None,
         target_description=(
             "No premise rule matched this sentence."
-            if not results
+            if not premise_results
             else "No premise rule was selected for this sentence-level review."
         ),
         sentence=sentence,
         requested_bindings={},
         target_bindings={},
-        target_status="unmatched" if not results else "unassigned",
+        target_status=(
+            "unmatched" if not premise_results else "unassigned"
+        ),
         target_specificity=None,
         target_source=None,
         premises=(),
         consumed_units=(),
-        actual_matches=_match_summaries(results, project, reading),
+        actual_matches=_match_summaries(
+            premise_results, project, reading
+        ),
+        safety_interceptions=_match_summaries(
+            safety_results, project, reading
+        ),
         facts=tuple(
             _fact_json(
                 fact,
@@ -4312,6 +4520,7 @@ def generate_candidate(
     locked_bindings: dict[str, str] | None = None,
     excluded_bindings: dict[str, str] | None = None,
     generation_mode: GenerationMode = "strict",
+    structural_target: str | None = None,
 ) -> GenerationCandidate:
     """Generate and round-trip one supported rule with a reproducible seed."""
 
@@ -4350,6 +4559,7 @@ def generate_candidate(
     last_optional_choices: dict[tuple[int, ...], bool] = {}
     last_lexical_relaxations: tuple[LexicalRelaxation, ...] = ()
     last_realization_error: GenerationError | None = None
+    failure_causes: Counter[str] = Counter()
     for attempt in range(1, max_attempts + 1):
         try:
             (
@@ -4365,9 +4575,11 @@ def generate_candidate(
                 locked_bindings=locked_bindings,
                 excluded_bindings=excluded_bindings,
                 generation_mode=generation_mode,
+                structural_target=structural_target,
             )
         except GenerationError as exc:
             last_realization_error = exc
+            failure_causes[str(exc)] += 1
             continue
         reading = analyze(sentence, project.registry, tracing=True)
         try:
@@ -4377,6 +4589,7 @@ def generate_candidate(
                 "ordinary round trip rejected generated numeric values: "
                 f"{type(exc).__name__}: {exc}"
             )
+            failure_causes[str(last_realization_error)] += 1
             continue
         results = doc.rule_results.get(reading.sentence_index, [])
         last_sentence = sentence
@@ -4386,18 +4599,43 @@ def generate_candidate(
         last_reading = reading
         last_optional_choices = optional_choices
         last_lexical_relaxations = lexical_relaxations
-        if generation_mode == "lexical_boundary" or any(
-            result.match.rule.id == rule.id
-            and _strict_round_trip_result(
-                result, requested, reading, project.registry
+        target_results = [
+            result for result in results if result.match.rule.id == rule.id
+        ]
+        target_structure_realized = True
+        if structural_target is not None:
+            kind, _, value = structural_target.partition(":")
+            if kind == "fact":
+                fact_kind = value.split("(", 1)[0]
+                target_structure_realized = any(
+                    type(fact).__name__ == _fact_kind_type_name(fact_kind)
+                    for result in target_results
+                    for fact in result.facts
+                )
+            elif kind == "surface":
+                target_structure_realized = bool(target_results)
+        if target_structure_realized and (
+            generation_mode == "lexical_boundary" or any(
+                result.match.rule.id == rule.id
+                and _strict_round_trip_result(
+                    result, requested, reading, project.registry
+                )
+                for result in results
             )
-            for result in results
         ):
             break
     if last_doc is None or last_reading is None:
+        profile = "; ".join(
+            f"{count}× {cause}"
+            for cause, count in sorted(
+                failure_causes.items(),
+                key=lambda item: (-item[1], item[0]),
+            )[:3]
+        )
         raise GenerationError(
             f"{rule.id} could not realize a sentence after {max_attempts} "
             f"deterministic attempts: {last_realization_error}"
+            + (f"; failure profile: {profile}" if profile else "")
         )
     return _candidate_from_reading(
         project,

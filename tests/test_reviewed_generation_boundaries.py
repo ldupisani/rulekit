@@ -56,6 +56,21 @@ def test_fraction_within_whole_is_an_explicit_slot_qualifier() -> None:
         )
 
 
+def test_word_fraction_within_whole_is_an_explicit_slot_qualifier() -> None:
+    token = MatchToken(
+        slot="f", type="fraction", word_fraction_within_whole=True
+    )
+    assert token.word_fraction_within_whole is True
+
+    with pytest.raises(
+        ValidationError,
+        match="only qualifies a `type: fraction` slot",
+    ):
+        MatchToken(
+            slot="n", type="number", word_fraction_within_whole=True
+        )
+
+
 def test_positive_fraction_is_an_explicit_slot_qualifier() -> None:
     token = MatchToken(slot="f", type="fraction", fraction_positive=True)
     assert token.fraction_positive is True
@@ -142,6 +157,8 @@ POSITIVE_FRACTION_RULES = {
     "arithmetic/percent-change-event-count",
 }
 
+WORD_FRACTION_COMPARISON_RULES = POSITIVE_FRACTION_RULES
+
 
 def test_every_fraction_comparison_or_change_requires_positive_magnitude(
     registry,
@@ -176,6 +193,17 @@ def test_every_fraction_comparison_or_change_requires_positive_magnitude(
         assert token.fraction_positive is False
 
 
+def test_word_fraction_comparisons_stay_within_one_whole(registry) -> None:
+    rules = {rule.id: rule for rule in registry.rules}
+
+    for rule_id in WORD_FRACTION_COMPARISON_RULES:
+        token = next(
+            token
+            for token in rules[rule_id].match["sentence"]
+            if token.slot == "f"
+        )
+        assert token.word_fraction_within_whole is True
+
 @pytest.mark.parametrize(
     ("rule_id", "zero", "positive"),
     [
@@ -206,6 +234,82 @@ def test_fraction_comparisons_reject_zero_but_keep_positive_neighbours(
 ) -> None:
     assert rule_id not in _matched_rules(zero, registry)
     assert rule_id in _matched_rules(positive, registry)
+
+
+@pytest.mark.parametrize(
+    ("rule_id", "reviewed"),
+    [
+        (
+            "arithmetic/as-many",
+            "The bird be as many amounts in the pantry as the puzzle.",
+        ),
+        (
+            "arithmetic/affine-times-as-much-elided",
+            "Bira be 7 more than twice as much as Aven.",
+        ),
+        (
+            "arithmetic/times-as-many-possessive-kinship-standard",
+            "Dena travels twice as many grapes as your guardian.",
+        ),
+        (
+            "arithmetic/times-the-number-of",
+            "Librarian traveled in once the amount of apples as dog.",
+        ),
+        (
+            "arithmetic/fraction-as-many",
+            "The key had nine eighths as many birds with the rest as the hamster.",
+        ),
+    ],
+)
+def test_latest_arithmetic_reviews_retest_absent(
+    rule_id: str, reviewed: str
+) -> None:
+    candidate = retest_candidate(
+        load_project(Path("projects/curated")),
+        rule_id=rule_id,
+        sentence=reviewed,
+        seed=0,
+        origin="generated",
+    )
+
+    assert candidate.target_status == "absent"
+
+
+def test_latest_arithmetic_review_boundaries_keep_ordinary_neighbours(
+    registry,
+) -> None:
+    assert "arithmetic/as-many" in _matched_rules(
+        "The bird has as many apples in the pantry as the rabbit.", registry
+    )
+    assert "arithmetic/affine-times-as-much-elided" in _matched_rules(
+        "Bira has 7 more than twice as much as Aven.", registry
+    )
+    assert "arithmetic/times-as-many-possessive-kinship-standard" in (
+        _matched_rules(
+            "Dena travels twice as many times as your guardian.", registry
+        )
+    )
+    assert "arithmetic/times-the-number-of" in _matched_rules(
+        "The teacher has twice the number of apples as the guardian.",
+        registry,
+    )
+    assert "arithmetic/fraction-as-many" in _matched_rules(
+        "The teacher had three eighths as many birds in the garden as the hamster.",
+        registry,
+    )
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "The teacher had nine eighths as many birds as the hamster.",
+        "The teacher had half as many birds with the rest as the hamster.",
+    ],
+)
+def test_fraction_as_many_requires_a_bounded_fraction_and_nonremnant_pp(
+    text: str, registry
+) -> None:
+    assert "arithmetic/fraction-as-many" not in _matched_rules(text, registry)
 
 
 def test_affine_fraction_generation_refuses_zero_magnitude() -> None:
@@ -530,10 +634,6 @@ def test_counted_category_is_an_explicit_schema_qualifier() -> None:
             "In 15 more friend Cato would be 3 friends old.",
         ),
         (
-            "arithmetic/affine-frame-relation-as-standard",
-            "Remainder travels 14 older than thrice number of coin as your student Eron.",
-        ),
-        (
             "arithmetic/goal-desire-quantity",
             "Cato wanting to needed 3 pounds.",
         ),
@@ -662,7 +762,7 @@ def test_new_live_review_failures_now_retest_absent(
         ),
         (
             "arithmetic/fraction-as-much-elided-standard",
-            "Aven wins twelve tenths as much rest.",
+            "Aven wins seven tenths as much rest.",
         ),
         (
             "arithmetic/anchored-relation-elided",
@@ -761,6 +861,17 @@ def test_standalone_only_qualifies_number_slots() -> None:
         MatchToken(slot="item", type="counted", standalone=True)
 
 
+def test_integer_only_qualifies_number_slots() -> None:
+    token = MatchToken(slot="year", type="number", integer=True)
+    assert token.integer is True
+
+    with pytest.raises(
+        ValidationError,
+        match="`integer` only qualifies a `type: number` slot",
+    ):
+        MatchToken(slot="item", type="counted", integer=True)
+
+
 def test_postfix_counted_relation_does_not_double_fire_as_elided(
     registry,
 ) -> None:
@@ -822,7 +933,6 @@ def test_conditional_standard_type_is_inspectable() -> None:
         "arithmetic/anchored-relation-conjoined-anchor",
         "arithmetic/temporal-offset-times-as-old-as-future",
         "arithmetic/temporal-offset-age-future-intensified",
-        "arithmetic/affine-frame-relation-as-standard",
         "arithmetic/goal-desire-quantity",
         "arithmetic/times-the-number-of",
         "arithmetic/temporal-offset-age-future",
@@ -1351,10 +1461,10 @@ def test_affine_count_frame_rejects_reviewed_incomplete_classes(
 
 
 @pytest.mark.parametrize("frame", ["amount", "number"])
-def test_affine_count_frame_keeps_its_complete_surface(
+def test_affine_count_frame_rejects_the_retired_as_standard_surface(
     frame: str, registry
 ) -> None:
-    assert "arithmetic/affine-frame-relation-as-standard" in _matched_rules(
+    assert "arithmetic/affine-frame-relation-as-standard" not in _matched_rules(
         f"Cato sold 14 more coins than thrice the {frame} of coins as Eron.",
         registry,
     )
@@ -1753,7 +1863,7 @@ def test_quantitative_verb_boundaries_keep_valid_neighboring_forms(
 ) -> None:
     valid = {
         "arithmetic/anchored-relation-possessive-kinship-standard":
-            "Apple has 20 more fish than your student.",
+            "The teacher has 20 more fish than your student.",
         "arithmetic/anaphoric-price-standard":
             "Animal is double that price.",
         "arithmetic/rest-of-pool": "Eron ate remainder.",
@@ -1810,7 +1920,7 @@ def test_existential_family_requires_agreeing_copulas(
         ),
         (
             "arithmetic/fraction-as-many-elided-standard",
-            "The student gave eight sixths as many trees in the garden.",
+            "The student gave five sixths as many trees in the garden.",
         ),
         (
             "arithmetic/times-as-many-possessive-kinship-standard",
@@ -1857,7 +1967,7 @@ def test_complex_affine_fraction_refuses_unframed_motion_verbs(
 ) -> None:
     rule_id = "arithmetic/affine-fraction-as-many"
     valid = (
-        "Fia has 9 less than seventeen fifths as many cookies "
+        "Fia has 9 less than three fifths as many cookies "
         "in her garden as her friend Aven."
     )
 
@@ -1913,11 +2023,21 @@ def test_complex_affine_fraction_refuses_unframed_motion_verbs(
         (
             "arithmetic/percent-change-event",
             "Animal rose forty sixths more money.",
-            True,
+            False,
         ),
         (
             "arithmetic/percent-change-event-count",
             "Animal had forty sixths more dollars.",
+            False,
+        ),
+        (
+            "arithmetic/percent-change-event",
+            "Animal rose 667 percent more money.",
+            True,
+        ),
+        (
+            "arithmetic/percent-change-event-count",
+            "Animal had 667 percent more dollars.",
             True,
         ),
     ],
@@ -2429,30 +2549,49 @@ def test_fraction_delta_keeps_compatible_mass_count_and_location_neighbours(
 
 
 @pytest.mark.parametrize(
-    ("rule_id", "rejected", "accepted"),
+    (
+        "rule_id",
+        "word_decrease",
+        "word_increase",
+        "percent_decrease",
+        "percent_increase",
+    ),
     [
         (
             "arithmetic/fraction-delta-relation-mass",
             "Cato gets eleven tenths less rest than Eron.",
             "Cato gets eleven tenths more rest than Eron.",
+            "Cato gets 110 percent less rest than Eron.",
+            "Cato gets 110 percent more rest than Eron.",
         ),
         (
             "arithmetic/fraction-delta-relation",
             "Mary owns eleven tenths fewer dogs than Eron.",
             "Mary owns eleven tenths more dogs than Eron.",
+            "Mary owns 110 percent fewer dogs than Eron.",
+            "Mary owns 110 percent more dogs than Eron.",
         ),
         (
             "arithmetic/fraction-delta-relation-elided",
             "Mary owns eleven tenths less than Eron.",
             "Mary owns eleven tenths more than Eron.",
+            "Mary owns 110 percent less than Eron.",
+            "Mary owns 110 percent more than Eron.",
         ),
     ],
 )
-def test_proportional_decrease_cannot_exceed_the_whole(
-    rule_id: str, rejected: str, accepted: str, registry
+def test_improper_word_fractions_decline_but_percent_increases_remain_unbounded(
+    rule_id: str,
+    word_decrease: str,
+    word_increase: str,
+    percent_decrease: str,
+    percent_increase: str,
+    registry,
 ) -> None:
-    assert rule_id not in _matched_rules(rejected, registry)
-    assert rule_id in _matched_rules(accepted, registry)
+    assert rule_id not in _matched_rules(word_decrease, registry)
+    assert rule_id not in _matched_rules(word_increase, registry)
+    assert rule_id not in _matched_rules(percent_decrease, registry)
+    assert rule_id in _matched_rules(percent_increase, registry)
 
 
 def test_fraction_delta_mass_generation_respects_composed_boundaries() -> None:
@@ -2467,7 +2606,7 @@ def test_fraction_delta_mass_generation_respects_composed_boundaries() -> None:
         )
 
         assert candidate.target_status == "matched"
-        assert relation["fields"]["factor"] >= 0.0
+        assert 0.0 <= relation["fields"]["factor"] <= 2.0
         if project.registry.word_in_category(
             bindings["verb"].casefold(), "spend_verb"
         ):
@@ -2908,13 +3047,13 @@ def test_located_existential_requires_a_referential_compatible_place(
     [
         (
             "arithmetic/fraction-as-many",
-            "Fia sells eleven thirds as many animals as the teacher.",
-            "Fia sells eleven thirds as many animals as teacher.",
+            "Fia sells three eighths as many animals as the teacher.",
+            "Fia sells three eighths as many animals as teacher.",
         ),
         (
             "arithmetic/fraction-as-many-elided",
-            "Fia sells eleven thirds as many as Eron.",
-            "Fia sells eleven thirds as many as the inch.",
+            "Fia sells two thirds as many as Eron.",
+            "Fia sells two thirds as many as the inch.",
         ),
         (
             "arithmetic/affine-fraction-as-many",
@@ -2943,14 +3082,14 @@ def test_fraction_much_optional_context_uses_declared_compatibility(
 
     assert rule_id in _matched_rules(
         (
-            "Dena ate sixty halves as much money in the garden "
+            "Dena ate three fifths as much money in the garden "
             "as her teacher Fia."
         ),
         registry,
     )
     assert rule_id not in _matched_rules(
         (
-            "Dena ate sixty halves as much money to the plum "
+            "Dena ate three fifths as much money to the plum "
             "as her teacher Fia."
         ),
         registry,
@@ -4177,10 +4316,6 @@ LATEST_PREMISE_REVIEW_REJECTIONS = {
         "Noon equals 7 fewer than once the number of aquariums her customer "
         "Fia equals."
     ),
-    "arithmetic/affine-frame-relation-as-standard": (
-        "Pumpkin repainting 19 fewer than once the number of strips as "
-        "his mother Bira."
-    ),
     "arithmetic/anaphoric-multiplier-conjunct-many": (
         "The gems traded 19 cups and twice this many."
     ),
@@ -4235,10 +4370,10 @@ def test_latest_valid_temporal_review_remains_matched() -> None:
 
 def test_reviewed_event_boundaries_keep_ordinary_neighbours() -> None:
     registry = load_project(Path("projects/gsm8k")).registry
-    assert "arithmetic/affine-frame-relation-as-standard" in _matched_rules(
+    assert "arithmetic/affine-frame-relation" in _matched_rules(
         (
             "The painter repainted 19 fewer than twice the number of strips "
-            "as her mother Bira."
+            "that her mother Bira repainted."
         ),
         registry,
     )

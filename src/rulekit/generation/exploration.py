@@ -20,7 +20,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, Field
 
 from ..data.project import Project
-from .candidate import GenerationCandidate
+from .candidate import GenerationCandidate, GenerationObjective
 from .reviews import SourceLocation, read_reviews
 from .sample import (
     GenerationError,
@@ -37,6 +37,7 @@ from .sample import (
     _outside_categories,
     _outside_slot_categories,
     _slot_category_exclusions,
+    _token_nodes,
     _unbound_optional_paths,
     list_rule_availability,
 )
@@ -71,6 +72,11 @@ class ExplorationEvent(BaseModel):
     seed: int
     registry_fingerprint: str = Field(min_length=8, max_length=128)
     fillers: list[ExplorationFiller] = Field(default_factory=list, max_length=64)
+    objective: GenerationObjective = "least_attempted_rule"
+    filters: list[str] = Field(default_factory=list, max_length=64)
+    target_signature: str | None = Field(default=None, max_length=512)
+    structural_signatures: list[str] = Field(default_factory=list, max_length=128)
+    phenomena: list[str] = Field(default_factory=list, max_length=64)
 
 
 class DurableExplorationEvent(ExplorationEvent):
@@ -91,6 +97,9 @@ class ExplorationFailure(BaseModel):
     registry_fingerprint: str = Field(min_length=8, max_length=128)
     probe: ExplorationFiller | None = None
     error: str = Field(min_length=1, max_length=4000)
+    objective: GenerationObjective = "least_attempted_rule"
+    filters: list[str] = Field(default_factory=list, max_length=64)
+    target_signature: str | None = Field(default=None, max_length=512)
 
 
 class DurableExplorationFailure(ExplorationFailure):
@@ -119,6 +128,186 @@ class ExplorationSelection:
     rule_id: str
     locked_bindings: dict[str, str]
     probe: dict[str, Any] | None
+    objective: GenerationObjective = "least_attempted_rule"
+    filters: tuple[str, ...] = ()
+    target_signature: str | None = None
+
+
+_NUMERIC_SLOT_TYPES = frozenset(
+    {
+        "counted",
+        "fraction",
+        "multiplier",
+        "nonunit_multiplier",
+        "number",
+        "percent",
+    }
+)
+_GENERATION_OBJECTIVES = frozenset(
+    {
+        "least_attempted_rule",
+        "least_generated_rule",
+        "least_reviewed_rule",
+        "least_covered_structure",
+        "review_attention",
+        "random",
+    }
+)
+
+
+def _rule_profile(project: Project, rule: Any) -> dict[str, list[str]]:
+    """Return vocabulary-free structural tags and atomic coverage targets."""
+
+    seq = _flat_sentence(rule) or []
+    tokens = list(_token_nodes(seq))
+    categories: set[str] = set()
+    slot_types: set[str] = set()
+    phenomena: set[str] = set()
+    signatures: set[str] = set()
+
+    for token_no, (_, token, _) in enumerate(tokens):
+        if token.opt is not None:
+            phenomena.add("optional_branches")
+            signatures.update(
+                {
+                    f"optional:{token_no}:included",
+                    f"optional:{token_no}:omitted",
+                }
+            )
+            continue
+        if len(token.lit_options) > 1:
+            phenomena.add("literal_alternatives")
+            signatures.update(
+                f"literal:{token_no}:{option.casefold()}"
+                for option in token.lit_options
+            )
+        if token.type is not None:
+            slot_types.add(token.type)
+        for category in (
+            token.cat,
+            token.common_noun_cat,
+            token.bare_reference_category,
+        ):
+            if category is not None:
+                categories.update(project.registry.cat_ancestors(category))
+
+    declared_categories = set(project.registry.category_parents) | set(
+        project.registry.category_members
+    )
+
+    def collect_declared_categories(value: Any) -> None:
+        if isinstance(value, str) and value in declared_categories:
+            categories.update(project.registry.cat_ancestors(value))
+        elif isinstance(value, dict):
+            for child in value.values():
+                collect_declared_categories(child)
+        elif isinstance(value, list):
+            for child in value:
+                collect_declared_categories(child)
+
+    for predicate in rule.where:
+        dumped = predicate.model_dump(exclude_none=True)
+        collect_declared_categories(dumped)
+        if set(dumped) & {"absent", "slot_not_category", "unbound"}:
+            phenomena.add("negative_constraints")
+
+    roots = {
+        project.registry.root_sense(category)
+        for category in categories
+    } | slot_types
+    if "pronoun" in roots:
+        phenomena.add("pronouns")
+    if roots & {"adjective", "adverb", "comparative"}:
+        phenomena.add("modifiers")
+    if roots & {"preposition", "adposition"}:
+        phenomena.add("prepositions")
+    if "modal" in roots or "modal" in categories:
+        phenomena.add("modals")
+    if roots & {"time", "temporal"} or "temporal" in categories:
+        phenomena.add("temporal")
+    if roots & {"conjunction", "coordination"} or "span" in slot_types:
+        phenomena.add("coordination_or_spans")
+    if slot_types & _NUMERIC_SLOT_TYPES:
+        phenomena.add("numeric")
+    if "sentences" in rule.match:
+        phenomena.add("multi_sentence")
+    if rule.question_assumption:
+        phenomena.add("question_assumption")
+
+    fact_types = {emit.fact for emit in rule.emits}
+    signatures.update(
+        f"fact:{emit.fact}({','.join(sorted(emit.fields))})"
+        for emit in rule.emits
+    )
+    if not signatures:
+        signatures.add("surface:base")
+    return {
+        "phenomena": sorted(phenomena),
+        "categories": sorted(categories),
+        "slot_types": sorted(slot_types),
+        "fact_types": sorted(fact_types),
+        "structural_signatures": sorted(signatures),
+    }
+
+
+def _candidate_structural_signatures(
+    candidate: GenerationCandidate,
+) -> tuple[str, ...]:
+    """Project one successful round trip onto atomic structural outcomes."""
+
+    signatures: set[str] = set()
+    for premise in candidate.premises:
+        if premise.slot_type == "optional" and premise.binding in {
+            "included",
+            "omitted",
+        }:
+            signatures.add(
+                f"optional:{premise.index}:{premise.binding}"
+            )
+        elif (
+            premise.kind == "token"
+            and premise.expression.startswith("literal ")
+            and " | " in premise.expression
+            and premise.binding
+        ):
+            signatures.add(
+                f"literal:{premise.index}:{premise.binding.casefold()}"
+            )
+    for match in candidate.actual_matches:
+        if match.rule_id != candidate.target_rule:
+            continue
+        for fact in match.emitted_facts:
+            fact_type = str(fact.get("type", ""))
+            snake = "".join(
+                ("_" + char.lower()) if char.isupper() else char
+                for char in fact_type
+            ).lstrip("_")
+            if snake:
+                derivation = fact.get("derivation", {})
+                templates = (
+                    derivation.get("templates", {})
+                    if isinstance(derivation, dict)
+                    else {}
+                )
+                fields = templates or fact.get("fields", {})
+                field_names = (
+                    sorted(fields) if isinstance(fields, dict) else []
+                )
+                signatures.add(
+                    f"fact:{snake}({','.join(field_names)})"
+                )
+    if not signatures and candidate.target_status in {"matched", "shadowed"}:
+        signatures.add("surface:base")
+    return tuple(sorted(signatures))
+
+
+def _filter_tags(profile: dict[str, list[str]]) -> set[str]:
+    return {
+        *(f"phenomenon:{value}" for value in profile["phenomena"]),
+        *(f"category:{value}" for value in profile["categories"]),
+        *(f"fact:{value}" for value in profile["fact_types"]),
+        *(f"slot_type:{value}" for value in profile["slot_types"]),
+    }
 
 
 def exploration_path(project: Project) -> Path:
@@ -367,16 +556,37 @@ def _candidate_fillers(
 
 
 def append_exploration(
-    project: Project, candidate: GenerationCandidate
+    project: Project,
+    candidate: GenerationCandidate,
+    selection: ExplorationSelection | None = None,
 ) -> dict[str, Any]:
     """Append one successful fresh realization and return the durable row."""
 
+    rule = next(
+        item
+        for item in project.registry.rules
+        if item.id == candidate.target_rule
+    )
+    profile = _rule_profile(project, rule)
     event = ExplorationEvent(
         candidate_id=candidate.id,
         rule_id=candidate.target_rule,
         seed=candidate.seed,
         registry_fingerprint=candidate.registry_fingerprint,
         fillers=_candidate_fillers(project, candidate),
+        objective=(
+            selection.objective
+            if selection is not None
+            else "least_attempted_rule"
+        ),
+        filters=list(selection.filters) if selection is not None else [],
+        target_signature=(
+            selection.target_signature if selection is not None else None
+        ),
+        structural_signatures=list(
+            _candidate_structural_signatures(candidate)
+        ),
+        phenomena=profile["phenomena"],
     )
     record = DurableExplorationEvent(
         **event.model_dump(),
@@ -423,6 +633,9 @@ def append_exploration_failure(
         registry_fingerprint=project.registry.fingerprint,
         probe=probe,
         error=error,
+        objective=selection.objective,
+        filters=list(selection.filters),
+        target_signature=selection.target_signature,
     )
     record = DurableExplorationFailure(
         **failure.model_dump(),
@@ -511,6 +724,15 @@ def _status(
     return "never_generated"
 
 
+def _failure_cause(error: str) -> str:
+    """Collapse a bounded-attempt wrapper to the actionable last cause."""
+
+    marker = "deterministic attempts: "
+    cause = error.rsplit(marker, 1)[-1] if marker in error else error
+    cause = cause.split("; failure profile:", 1)[0]
+    return cause[:512]
+
+
 def exploration_status(
     project: Project,
     *,
@@ -528,6 +750,23 @@ def exploration_status(
     availability = {
         item.id: item for item in list_rule_availability(project)
     }
+    profiles = {
+        rule.id: _rule_profile(project, rule)
+        for rule in project.registry.rules
+    }
+    current_events = [
+        event
+        for event in events
+        if event["registry_fingerprint"] == project.registry.fingerprint
+    ]
+    current_structural_events = [
+        event for event in current_events if event["structural_signatures"]
+    ]
+    signature_counts: dict[str, Counter[str]] = defaultdict(Counter)
+    for event in current_events:
+        signature_counts[event["rule_id"]].update(
+            event.get("structural_signatures", ())
+        )
 
     rule_generated = Counter(event["rule_id"] for event in events)
     rule_failed = Counter(failure["rule_id"] for failure in failures)
@@ -570,6 +809,13 @@ def exploration_status(
         generated_count = rule_generated[rule.id]
         failed_count = rule_failed[rule.id]
         reviewed_count = rule_reviewed[rule.id]
+        profile = profiles[rule.id]
+        declared_signatures = profile["structural_signatures"]
+        covered_signatures = sorted(
+            signature
+            for signature in declared_signatures
+            if signature_counts[rule.id][signature]
+        )
         rules.append(
             {
                 **current.to_json(),
@@ -591,6 +837,19 @@ def exploration_status(
                 "last_failed_at": rule_last_failed.get(rule.id),
                 "last_reviewed_at": rule_last_reviewed.get(rule.id),
                 "source": source.to_json() if source is not None else None,
+                "profile": profile,
+                "structural_covered": len(covered_signatures),
+                "structural_total": len(declared_signatures),
+                "covered_signatures": covered_signatures,
+                "signature_counts": {
+                    signature: signature_counts[rule.id][signature]
+                    for signature in declared_signatures
+                },
+                "uncovered_signatures": [
+                    signature
+                    for signature in declared_signatures
+                    if signature not in covered_signatures
+                ],
             }
         )
 
@@ -686,9 +945,89 @@ def exploration_status(
             )
         fillers.append(item)
 
+    supported_rules = [item for item in rules if item["supported"]]
+    structural_total = sum(
+        item["structural_total"] for item in supported_rules
+    )
+    structural_covered = sum(
+        item["structural_covered"] for item in supported_rules
+    )
+    filter_options = {
+        "phenomena": sorted(
+            {
+                value
+                for item in supported_rules
+                for value in item["profile"]["phenomena"]
+            }
+        ),
+        "categories": sorted(
+            {
+                value
+                for item in supported_rules
+                for value in item["profile"]["categories"]
+            }
+        ),
+        "fact_types": sorted(
+            {
+                value
+                for item in supported_rules
+                for value in item["profile"]["fact_types"]
+            }
+        ),
+        "slot_types": sorted(
+            {
+                value
+                for item in supported_rules
+                for value in item["profile"]["slot_types"]
+            }
+        ),
+    }
+    failure_groups: dict[str, dict[str, Any]] = {}
+    for failure in failures:
+        cause = _failure_cause(failure["error"])
+        group = failure_groups.setdefault(
+            cause,
+            {"cause": cause, "count": 0, "rules": set()},
+        )
+        group["count"] += 1
+        group["rules"].add(failure["rule_id"])
+    top_failures = [
+        {
+            "cause": item["cause"],
+            "count": item["count"],
+            "rules": sorted(item["rules"]),
+        }
+        for item in sorted(
+            failure_groups.values(),
+            key=lambda item: (-item["count"], item["cause"]),
+        )[:5]
+    ]
+
     return {
         "rules": rules,
         "fillers": fillers,
+        "filter_options": filter_options,
+        "health": {
+            "supported_rules": len(supported_rules),
+            "blocked_rules": len(rules) - len(supported_rules),
+            "structural_covered": structural_covered,
+            "structural_total": structural_total,
+            "structural_coverage": (
+                structural_covered / structural_total
+                if structural_total
+                else 1.0
+            ),
+            "current_structural_events": len(current_structural_events),
+            "successful_events": len(current_events),
+            "historical_successful_events": len(events),
+            "failed_attempts": len(failures),
+            "failure_rate": (
+                len(failures) / (len(current_events) + len(failures))
+                if current_events or failures
+                else 0.0
+            ),
+            "top_failures": top_failures,
+        },
         "summary": {
             "rules": dict(Counter(item["status"] for item in rules)),
             "fillers": dict(Counter(item["status"] for item in fillers)),
@@ -705,13 +1044,30 @@ def choose_exploration_target(
     seed: int,
     rule_id: str | None = None,
     filler_identity: str | None = None,
+    objective: GenerationObjective = "least_attempted_rule",
+    filters: tuple[str, ...] = (),
 ) -> ExplorationSelection:
-    """Choose a rule and lexical probe from the least-explored frontier."""
+    """Choose a filtered rule, optional structure, and lexical probe."""
 
     status = exploration_status(project, include_placements=False)
     rules = {item["id"]: item for item in status["rules"]}
     fillers = {item["identity"]: item for item in status["fillers"]}
     rng = random.Random(seed)
+    filters = tuple(sorted(set(filters)))
+    if objective not in _GENERATION_OBJECTIVES:
+        raise GenerationError(f"unknown generation objective {objective!r}")
+    known_filters = {
+        tag
+        for item in status["rules"]
+        if item["supported"]
+        for tag in _filter_tags(item["profile"])
+    }
+    unknown_filters = sorted(set(filters) - known_filters)
+    if unknown_filters:
+        raise GenerationError(
+            "unknown or currently unreachable structural filter(s): "
+            + ", ".join(unknown_filters)
+        )
 
     identity = filler_identity.casefold() if filler_identity else None
     if identity is not None and identity not in fillers:
@@ -728,6 +1084,14 @@ def choose_exploration_target(
             raise GenerationError(
                 f"{rule_id} is blocked: {'; '.join(rule['blockers'])}"
             )
+        missing_filters = sorted(
+            set(filters) - _filter_tags(rule["profile"])
+        )
+        if missing_filters:
+            raise GenerationError(
+                f"{rule_id} does not satisfy the selected structural "
+                f"filter(s): {', '.join(missing_filters)}"
+            )
         if (
             identity is not None
             and rule_id not in fillers[identity]["compatible_rules"]
@@ -742,20 +1106,113 @@ def choose_exploration_target(
             item
             for item in status["rules"]
             if item["supported"]
+            and set(filters).issubset(_filter_tags(item["profile"]))
             and (
                 identity is None
                 or item["id"] in fillers[identity]["compatible_rules"]
             )
         ]
         if not eligible:
-            raise GenerationError("this project has no supported premise rules")
-        least = min(item["attempt_count"] for item in eligible)
-        tied = sorted(
-            item["id"]
-            for item in eligible
-            if item["attempt_count"] == least
-        )
+            detail = (
+                " for filters " + ", ".join(filters)
+                if filters
+                else ""
+            )
+            raise GenerationError(
+                "this project has no supported premise rules" + detail
+            )
+        if objective == "random":
+            tied = sorted(item["id"] for item in eligible)
+        elif objective == "least_generated_rule":
+            least = min(item["generated_count"] for item in eligible)
+            tied = sorted(
+                item["id"]
+                for item in eligible
+                if item["generated_count"] == least
+            )
+        elif objective == "least_reviewed_rule":
+            least = min(item["reviewed_count"] for item in eligible)
+            tied = sorted(
+                item["id"]
+                for item in eligible
+                if item["reviewed_count"] == least
+            )
+        elif objective == "review_attention":
+            needing_attention = [
+                item
+                for item in eligible
+                if item["verdict_counts"]["invalid"]
+                or item["verdict_counts"]["unclear"]
+            ]
+            if not needing_attention:
+                raise GenerationError(
+                    "no filtered rule has a live invalid or unclear review"
+                )
+            most = max(
+                item["verdict_counts"]["invalid"]
+                + item["verdict_counts"]["unclear"]
+                for item in needing_attention
+            )
+            tied = sorted(
+                item["id"]
+                for item in needing_attention
+                if item["verdict_counts"]["invalid"]
+                + item["verdict_counts"]["unclear"]
+                == most
+            )
+        elif objective == "least_covered_structure":
+            least = min(
+                (
+                    item["structural_covered"] / item["structural_total"]
+                    if item["structural_total"]
+                    else 1.0
+                )
+                for item in eligible
+            )
+            tied = sorted(
+                item["id"]
+                for item in eligible
+                if (
+                    item["structural_covered"] / item["structural_total"]
+                    if item["structural_total"]
+                    else 1.0
+                )
+                == least
+            )
+        else:
+            least = min(item["attempt_count"] for item in eligible)
+            tied = sorted(
+                item["id"]
+                for item in eligible
+                if item["attempt_count"] == least
+            )
         chosen_rule = tied[rng.randrange(len(tied))]
+
+    chosen_status = rules[chosen_rule]
+    target_signature = None
+    if objective == "least_covered_structure":
+        counts = chosen_status["signature_counts"]
+        least = min(counts.values())
+        tied_signatures = sorted(
+            signature for signature, count in counts.items() if count == least
+        )
+        target_signature = tied_signatures[
+            rng.randrange(len(tied_signatures))
+        ]
+
+    # Structural targeting and automatic lexical targeting are independent
+    # objectives. Locking the least-attempted filler can make an otherwise
+    # reachable optional branch impossible, so only combine them when the
+    # reviewer explicitly selected a filler.
+    if objective == "least_covered_structure" and identity is None:
+        return ExplorationSelection(
+            rule_id=chosen_rule,
+            locked_bindings={},
+            probe=None,
+            objective=objective,
+            filters=filters,
+            target_signature=target_signature,
+        )
 
     placements = [
         placement
@@ -768,6 +1225,9 @@ def choose_exploration_target(
             rule_id=chosen_rule,
             locked_bindings={},
             probe=None,
+            objective=objective,
+            filters=filters,
+            target_signature=target_signature,
         )
 
     if identity is None:
@@ -804,4 +1264,7 @@ def choose_exploration_target(
             "token_index": placement.token_index,
             "source": source.to_json(),
         },
+        objective=objective,
+        filters=filters,
+        target_signature=target_signature,
     )

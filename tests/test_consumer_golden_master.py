@@ -21,9 +21,9 @@ identically before and after because the probe never reached the shape). The
 consumer comes from `match_ask`, the same function `answer()` dispatches on, so
 the assertion is on the real dispatch and not a reimplementation of it.
 
-COVERAGE IS COMPLETE AND MEASURED: 41 consumers, 121 probes — 24 answering
-paths and 97 GUARDS — reaching all 91 distinct guard messages across the
-consumer surface: 68 from text rows here, 23 via direct unit probes
+COVERAGE IS COMPLETE AND MEASURED: 46 consumers, 177 probes — 28 answering
+or verdict paths and 149 guard paths — reaching all 116 distinct guard
+messages across the consumer surface: 107 from text rows here, 42 via direct unit probes
 (`_COVERED_BY_UNIT_TEST` + tests/test_consumer_guard_probes.py, for guards
 text cannot phrase — the reason is stated per entry). The first 102 probes
 were mined from the existing suite; the session-4 rows were found by probing
@@ -70,6 +70,32 @@ GOLDEN = [
      'age-projected', 'decline', None, "no year quantity known for 'sara'"),
     ('gsm8k', 'how old will Mateo be after 4 years?',
      'age-projected', 'decline', None, "no year quantity known for 'mateo'"),
+    ('curated',
+     'The teacher was 20 years old in 1999. How old was the teacher in 2022?',
+     'age-at-year', 'number', 43.0,
+     "teacher's dated year age (20 in 1999) projected to 2"),
+    ('curated', 'How old was Cato in 2022?',
+     'age-at-year', 'decline', None, "no dated year age known for 'cato'"),
+    ('curated',
+     'Cato was 5 years old in 2000. How old was Cato in 1990?',
+     'age-at-year', 'decline', None,
+     "projecting 'cato' to 1990 gives a negative age"),
+    ('curated',
+     'Cato was 20 years old in 1999. Cato was 25 years old in 2001. '
+     'How old was Cato in 2022?',
+     'age-at-year', 'decline', None,
+     "dated age sources for 'cato' disagree at 2022"),
+    ('curated',
+     'The teacher was 20 years old in 1999. '
+     'The child was 10 years old in 2010. How old are they now?',
+     'age-at-year', 'decline', None,
+     'a deictic dated age ask needs an explicit reference '),
+    ('curated',
+     'The teacher was 20 years old in 1999. '
+     'The child was 10 years old in 2010. '
+     'What was their combined age in 2020?',
+     'age-at-year', 'number', 61.0,
+     "combined dated year age for ['teacher', 'child'] at "),
     ('gsm8k', 'What is 1,234 plus 1?',
      'arithmetic', 'number', 1235.0, 'arithmetic'),
     ('gsm8k', 'What is 7 divided by 0?',
@@ -389,7 +415,7 @@ def test_the_guards_are_the_bulk_of_the_coverage():
 
 # --- the coverage of this file, measured and enforced ----------------------
 
-_GUARD_FLOOR = 91   # guards WITH a probe: raise as probes are added, never lower
+_GUARD_FLOOR = 111  # guards WITH a probe: raise as probes are added, never lower
 _GAP_CEILING = 0    # guards WITHOUT one: lower as probes are added, never raise
 
 # The denominator is 91, and it was 92 until the boundary bug above was fixed:
@@ -440,6 +466,16 @@ _COVERED_BY_UNIT_TEST = {
     ("list-statistic", "unsupported statistic"),
     # both age-projected asks bind the offset as a REQUIRED counted slot:
     ("age-projected", "projected age ask has no stated year off"),
+    # the dated-age ask binds all three required query fields and its target
+    # through a number slot. Empty fields and an unreadable target cannot
+    # arrive from text; both defensive checks are probed directly.
+    ("age-at-year", "a dated age ask needs an entity, measure"),
+    ("age-at-year", "cannot read"),
+    ("age-at-year", "invalid dated age source for"),
+    ("age-at-year", "a dated age group ask needs at least two"),
+    ("age-at-year", "is not a current-year age marker"),
+    ("age-at-year", "dated"),
+    ("age-at-year", "unsupported dated age aggregate"),
     # the stat/vector asks require the numeric list to match at all:
     ("list-statistic", "no numbers to take the"),
     ("vector", "no components to take the"),
@@ -458,6 +494,14 @@ _COVERED_BY_UNIT_TEST = {
     ("passive-agent-verdict", "question states"),
     ("universal-verdict", "question states"),
     ("verbal-obj-class-verdict", "question states"),
+    # `which of them` only routes after resolution has supplied a non-empty
+    # group and a day-category marker; full consumption is matcher-enforced.
+    # The consumer still defends all three contracts directly.
+    ("location-witnesses", "a 'which of them' query needs one exact "),
+    ("location-witnesses", "the location witness query needs one dec"),
+    ("location-witnesses", "question states"),
+    ("location-witnesses", "conflicting direct location evidence for"),
+    ("location-witnesses", "observed departure conflicts with the st"),
 }
 
 

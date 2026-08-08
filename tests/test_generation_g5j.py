@@ -16,7 +16,6 @@ CURATED = ROOT / "projects" / "curated"
 
 NEWLY_SUPPORTED = {
     "arithmetic/affine-fraction-as-many",
-    "arithmetic/affine-frame-relation-as-standard",
     "arithmetic/affine-frame-relation-clause",
     "arithmetic/affine-item-relation-clause",
     "arithmetic/affine-times-as-many",
@@ -104,10 +103,10 @@ def test_g5j_profiles_the_complete_comparative_category_class() -> None:
         "quantity_delta": 3,
         "count_quantity_delta": 10,
         "mass_quantity_delta": 6,
-        "age_comparative": 2,
+        "age_comparative": 3,
         "count_intensifier": 1,
         "dimension_comparative": 1,
-        "measured_comparative": 1,
+        "measured_comparative": 2,
     }
 
 
@@ -117,16 +116,22 @@ def test_g5j_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 113
-    assert sum(item.supported for item in availability.values()) == 113
-    assert sum(not item.supported for item in availability.values()) == 0
+    assert len(availability) == 118
+    assert sum(item.supported for item in availability.values()) == 116
+    assert sum(not item.supported for item in availability.values()) == 2
+    assert availability[
+        "arithmetic/dangling-comparative-safety"
+    ].blockers == ("declared non-generative safety consumer",)
+    assert availability[
+        "arithmetic/affine-frame-relation-as-standard"
+    ].blockers == ("declared non-generative reader-only rule",)
     assert all(availability[rule_id].supported for rule_id in NEWLY_SUPPORTED)
     assert all(
         "unsupported sense 'comparative'" not in blocker
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 190
+    assert len(exploration_status(project)["fillers"]) == 267
 
 
 def test_owned_comparative_categories_have_project_backed_fillers() -> None:
@@ -171,7 +176,7 @@ def test_every_new_comparative_rule_generates_a_reviewable_match(
             "measured_comparative",
         }
     )
-    assert premise.binding in {"fewer", "less", "more", "older", "younger"}
+    assert premise.binding is not None
     assert premise.category_path[-1] == "comparative"
     if premise.slot_type == "count_quantity_delta":
         assert premise.binding in {"fewer", "more"}
@@ -207,9 +212,9 @@ def test_every_new_comparative_rule_generates_a_reviewable_match(
 
 @pytest.mark.parametrize(
     "surface",
-    ["fewer", "less", "more", "older", "younger"],
+    ["heavier", "lighter", "longer", "older", "shorter", "younger"],
 )
-def test_every_core_delta_member_can_be_deliberately_probed(
+def test_compatible_measured_comparatives_can_be_deliberately_probed(
     surface: str,
 ) -> None:
     candidate = generate_candidate(

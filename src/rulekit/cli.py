@@ -21,7 +21,7 @@ def _registry(args):
 
 def cmd_solve(args) -> int:
     _project, reg = _registry(args)
-    result = solve(args.text, reg)
+    result = solve(args.text, reg, reference_year=args.reference_year)
     if args.json:
         print(json.dumps(run_diagnose(result), indent=2))
     else:
@@ -48,7 +48,7 @@ def cmd_solve(args) -> int:
 
 def cmd_diagnose(args) -> int:
     _project, reg = _registry(args)
-    result = solve(args.text, reg)
+    result = solve(args.text, reg, reference_year=args.reference_year)
     print(json.dumps(run_diagnose(result), indent=2))
     return 0
 
@@ -404,10 +404,20 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("text")
     p.add_argument("--trace", action="store_true")
     p.add_argument("--json", action="store_true")
+    p.add_argument(
+        "--reference-year",
+        type=int,
+        help="absolute calendar year used to resolve deictic questions such as 'now'",
+    )
     p.set_defaults(fn=cmd_solve)
 
     p = sub.add_parser("diagnose", help="the epistemic report for a text")
     p.add_argument("text")
+    p.add_argument(
+        "--reference-year",
+        type=int,
+        help="absolute calendar year used to resolve deictic questions such as 'now'",
+    )
     p.set_defaults(fn=cmd_diagnose)
 
     p = sub.add_parser("bench", help="run the project suite or a dataset slice")

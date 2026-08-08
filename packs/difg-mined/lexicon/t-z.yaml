@@ -196,12 +196,6 @@ entries:
     thrice:
         senses:
             - multiplier
-    through:
-        senses:
-            - preposition
-    throughout:
-        senses:
-            - preposition
     throw:
         senses:
             - noun
@@ -268,9 +262,6 @@ entries:
     tomatoes:
         senses:
             - noun
-    tomorrow:
-        senses:
-            - time
     tonight:
         senses:
             - time
@@ -300,12 +291,6 @@ entries:
     tournament:
         senses:
             - noun
-    toward:
-        senses:
-            - noun
-    towards:
-        senses:
-            - preposition
     towel:
         senses:
             - noun
@@ -527,9 +512,6 @@ entries:
     uncovered:
         senses:
             - verb
-    under:
-        senses:
-            - preposition
     underground:
         senses:
             - noun
@@ -548,9 +530,6 @@ entries:
     unloaded:
         senses:
             - noun
-    until:
-        senses:
-            - preposition
     unusual:
         senses:
             - adjective
@@ -643,9 +622,6 @@ entries:
     version:
         senses:
             - noun
-    versus:
-        senses:
-            - preposition
     vertically:
         senses:
             - noun
@@ -653,9 +629,6 @@ entries:
         senses:
             - noun
         plural: vets
-    via:
-        senses:
-            - preposition
     video:
         senses:
             - noun
@@ -942,12 +915,6 @@ entries:
     withdrew:
         senses:
             - verb
-    within:
-        senses:
-            - preposition
-    without:
-        senses:
-            - preposition
     woman:
         senses:
             - noun
@@ -1062,9 +1029,6 @@ entries:
     yellow:
         senses:
             - adjective
-    yesterday:
-        senses:
-            - time
     yet:
         senses:
             - noun

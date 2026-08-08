@@ -13,7 +13,9 @@ from dataclasses import replace
 from ..data.registry import Registry
 from .model import (
     AnchorQuantity,
+    EventTime,
     Fact,
+    LocationEvent,
     Membership,
     Predication,
     Price,
@@ -22,6 +24,7 @@ from .model import (
     Rate,
     Reading,
     Unit,
+    VerbalRelation,
 )
 from .obligations import _crosses_clause_boundary
 
@@ -320,14 +323,12 @@ def _lemma(unit: Unit) -> str:
 
 
 def _owner(unit: Unit) -> str | None:
-    """The possessive owner of a noun merged from "OWNER 's NOUN" (condense
-    .py's merge-possessive), if any — carried on Quantity facts SEPARATELY
-    from `entity` (the bare lemma stays the identity everywhere it already
-    worked, e.g. "Tom's dog ... the dog ..." keeps folding into one entity
-    exactly as before). Only facts.py's collision handling reads this, and
-    only to split a genuine same-key VALUE conflict ("Kennedy's house" vs
-    "Benedict's house") into two entities — never to change identity when
-    there is no conflict."""
+    """The explicit owner of an apostrophe or determiner possessive noun.
+
+    Ownership stays separate from the bare entity lemma. Fact admission uses
+    it to preserve distinct owned entities, while owner-aware relations and
+    asks use it for exact lookup.
+    """
     if unit.sense() == "pronoun":
         antecedent = _bound(unit, "refers")
         if antecedent is not None:
@@ -860,10 +861,11 @@ def _sentence_time(reading: Reading, reg: Registry) -> str | None:
     firing and turn a decline into a WRONG. The distinction is structural — a
     sense, not a word list.
 
-    This is still an opaque LABEL, comparable only for equality. It is not ordered,
-    and nothing here makes it so: `Before` remains unproduced (docs/deixis.md §1.3).
-    Equality is all the temporal origo needs to REFUSE the wrong month, which is
-    the precision half of the month fix.
+    This is still an opaque LABEL, comparable only for equality. Relative
+    `EventTime` coordinates and their `Before` facts are a separate channel;
+    they never order this calendar surface (docs/deixis.md §1.3). Equality is
+    all the temporal origo needs to REFUSE the wrong month, which is the
+    precision half of the month fix.
     """
     for unit in reading.units:
         sense = unit.sense()
@@ -887,6 +889,462 @@ def _sentence_time(reading: Reading, reg: Registry) -> str | None:
     return None
 
 
+def _deictic_event_times(
+    reading: Reading, reg: Registry, provenance: Provenance
+) -> list[EventTime]:
+    """Anchor one unambiguous predicate to one declared relative moment.
+
+    Marker membership and signed coordinates are pack data.  This fold only
+    performs structural attachment: one marker, one same-clause verb, and a
+    bound subject.  Coordinated predicates or competing markers stay
+    uncommitted until the reader can prove their individual scopes.
+    """
+
+    markers = [
+        unit
+        for unit in reading.units
+        if unit.sense() == "time"
+        and reg.word_in_category(_lemma(unit), "deictic_temporal_marker")
+        and _lemma(unit) in reg.temporal_offsets
+    ]
+    if len(markers) != 1:
+        return []
+    marker = markers[0]
+    verbs = [
+        unit
+        for unit in reading.units
+        if unit.sense() == "verb"
+        and not _crosses_clause_boundary(reading, marker, unit)
+    ]
+    if len(verbs) != 1:
+        return []
+    verb = verbs[0]
+    if _nonfuture_modal_in_clause(reading, verb, reg):
+        return []
+    subject = _bound(verb, "subject")
+    if subject is None or subject.sense() not in ("name", "pronoun", "noun"):
+        return []
+    if subject.sense() == "pronoun" and _bound(subject, "refers") is None:
+        return []
+    dobj = _bound(verb, "dobj")
+    return [
+        EventTime(
+            provenance=provenance,
+            event=f"s{reading.sentence_index}:u{verb.uid}",
+            entity=_lemma(subject),
+            verb=_lemma(verb),
+            obj=_lemma(dobj) if dobj is not None else None,
+            marker=_lemma(marker),
+            offset=float(reg.temporal_offsets[_lemma(marker)]),
+        )
+    ]
+
+
+def _matching_adposition_roles(
+    marker: str, obj: Unit, verb: Unit, reg: Registry
+) -> list[str]:
+    """Return every declarative role licensed by this exact PP frame."""
+
+    roles = []
+    verb_fold = verb.features.get("fold", "")
+    for role, frames in reg.adposition_roles.items():
+        for (
+            preposition_category,
+            object_category,
+            verb_category,
+            allow_name_object,
+        ) in frames:
+            if not reg.word_in_category(marker, preposition_category):
+                continue
+            if not reg.word_in_category(verb_fold, verb_category):
+                continue
+            if obj.sense() == "name":
+                if not allow_name_object:
+                    continue
+            elif obj.sense() != "noun" or not reg.word_in_category(
+                _lemma(obj), object_category
+            ):
+                continue
+            roles.append(role)
+            break
+    return roles
+
+
+def _referential_adposition_object(
+    reading: Reading, prep: Unit, obj: Unit, reg: Registry
+) -> tuple[bool, bool]:
+    """Whether an object is referential, plus whether it is indefinite."""
+
+    if obj.sense() == "name":
+        return True, False
+    if obj.sense() != "noun":
+        return False, False
+    units = reading.units
+    between = units[units.index(prep) + 1 : units.index(obj)]
+    articles = [unit for unit in between if unit.sense() == "article"]
+    referential = bool(
+        articles
+        or _owner(obj) is not None
+        or reg.word_in_category(_lemma(obj), "bare_pp_object")
+    )
+    indefinite = any(
+        reg.word_in_category(_lemma(article), "indefinite_article")
+        for article in articles
+    )
+    return referential, indefinite
+
+
+def _spatial_verbal_relations(
+    reading: Reading, reg: Registry, provenance: Provenance
+) -> list[VerbalRelation]:
+    """Preserve a spatial PP whose role boundary is fully declared.
+
+    Preposition attachment already supplies the grammatical structure: the
+    marker binds left to its governing verb and right to its object.  This fold
+    adds semantic licences only where pack data also proves (a) a spatial
+    marker, (b) a spatial common-noun reference or an explicit name, and (c) a
+    compatible copular or motion frame.  It records the exact marker rather
+    than collapsing ``in``/``into``/``from``/``to`` into one location label.
+
+    The relation is supplementary evidence and consumes no units.  Existing
+    fragment guards therefore continue to decline an otherwise unread
+    sentence; this fact cannot turn a partial arithmetic reading into an
+    answer merely by making its PP inspectable.
+    """
+
+    relations: list[VerbalRelation] = []
+    units = reading.units
+    for prep in units:
+        if prep.sense() != "preposition":
+            continue
+        marker = _lemma(prep)
+        if not reg.word_in_category(marker, "spatial_preposition"):
+            continue
+        anchor = _bound(prep, "anchor")
+        obj = _bound(prep, "object")
+        if anchor is None or anchor.sense() != "verb" or obj is None:
+            continue
+        if _nonfuture_modal_in_clause(reading, anchor, reg):
+            continue
+
+        subject = _bound(anchor, "subject")
+        if subject is None or subject.sense() not in ("name", "pronoun"):
+            continue
+        if subject.sense() == "pronoun" and _bound(subject, "refers") is None:
+            continue
+
+        roles = [
+            role
+            for role in _matching_adposition_roles(marker, obj, anchor, reg)
+            if role.startswith("spatial-")
+        ]
+        if len(roles) != 1:
+            continue
+        referential, indefinite = _referential_adposition_object(
+            reading, prep, obj, reg
+        )
+        if not referential:
+            continue
+
+        relations.append(
+            VerbalRelation(
+                provenance=provenance,
+                entity=_lemma(subject),
+                verb=_lemma(anchor),
+                prep=marker,
+                obj=_lemma(obj),
+                role=roles[0],
+                polarity=not _negated(reading, anchor),
+                indef_obj=indefinite,
+                event=f"s{reading.sentence_index}:u{anchor.uid}",
+            )
+        )
+    return relations
+
+
+def _nonfuture_modal_in_clause(
+    reading: Reading, verb: Unit, reg: Registry
+) -> bool:
+    """Whether a capacity/hypothetical modal scopes this predicate.
+
+    A future modal still locates an asserted event on the narrative axis;
+    capacity, permission, and obligation modals do not assert that the event
+    occurs.  The split is entirely pack-declared through ``future_modal``.
+    """
+
+    for unit in reading.units:
+        if unit.sense() != "modal" or _crosses_clause_boundary(reading, unit, verb):
+            continue
+        marker = _lemma(unit)
+        if not reg.word_in_category(marker, "future_modal"):
+            return True
+    return False
+
+
+def _location_events_from_spatial(
+    relations: list[VerbalRelation], reg: Registry
+) -> list[LocationEvent]:
+    """Project declared spatial frames onto event-local location fluents."""
+
+    out: list[LocationEvent] = []
+    for relation in relations:
+        if relation.event is None:
+            continue
+        effect = None
+        if (
+            relation.polarity
+            and relation.role == "spatial-goal"
+            and reg.word_in_category(
+                relation.verb, "location_initiating_verb"
+            )
+        ):
+            effect = "initiates"
+        elif (
+            relation.polarity
+            and relation.role == "spatial-source"
+            and reg.word_in_category(
+                relation.verb, "location_terminating_verb"
+            )
+        ):
+            effect = "terminates"
+        elif relation.role == "spatial-location" and reg.word_in_category(
+            relation.verb, "location_state_verb"
+        ):
+            effect = "holds" if relation.polarity else "not-holds"
+        if effect is None:
+            continue
+        out.append(
+            LocationEvent(
+                provenance=replace(
+                    relation.provenance, source="inference/location-frame"
+                ),
+                event=relation.event,
+                entity=relation.entity,
+                place=relation.obj,
+                effect=effect,
+            )
+        )
+    return out
+
+
+def _direct_location_events(
+    reading: Reading, reg: Registry, provenance: Provenance
+) -> list[LocationEvent]:
+    """Preserve a definite direct-object departure as a termination event."""
+
+    out: list[LocationEvent] = []
+    for verb in reading.units:
+        if verb.sense() != "verb" or not reg.word_in_category(
+            _lemma(verb), "location_terminating_verb"
+        ):
+            continue
+        if _negated(reading, verb) or _nonfuture_modal_in_clause(reading, verb, reg):
+            continue
+        subject = _bound(verb, "subject")
+        obj = _bound(verb, "dobj")
+        if subject is None or obj is None:
+            continue
+        if subject.sense() not in ("name", "pronoun"):
+            continue
+        if subject.sense() == "pronoun" and _bound(subject, "refers") is None:
+            continue
+        if obj.sense() != "noun" or not reg.word_in_category(
+            _lemma(obj), "spatial_reference_noun"
+        ):
+            continue
+        verb_index = reading.units.index(verb)
+        obj_index = reading.units.index(obj)
+        if obj_index <= verb_index or not any(
+            unit.sense() == "article"
+            and reg.word_in_category(_lemma(unit), "definite_article")
+            for unit in reading.units[verb_index + 1 : obj_index]
+        ):
+            continue
+        out.append(
+            LocationEvent(
+                provenance=replace(provenance, source="inference/location-frame"),
+                event=f"s{reading.sentence_index}:u{verb.uid}",
+                entity=_lemma(subject),
+                place=_lemma(obj),
+                effect="terminates",
+            )
+        )
+    return out
+
+
+def _temporal_governing_verb(reading: Reading, prep: Unit) -> Unit | None:
+    """Find one structurally supported predicate for a temporal adjunct.
+
+    A trailing PP often binds its preposition to the predicate's direct object
+    because that noun is closer ("sold apples before Monday"). A leading PP
+    has no left anchor at all. In either case, a unique same-clause verb is the
+    only safe event anchor; when the preposition did bind a noun, that noun
+    must be the verb's already-bound direct object.
+    """
+
+    anchor = _bound(prep, "anchor")
+    if anchor is not None and anchor.sense() == "verb":
+        return anchor
+    candidates = []
+    for verb in reading.units:
+        if verb.sense() != "verb" or _crosses_clause_boundary(reading, prep, verb):
+            continue
+        if anchor is not None and _bound(verb, "dobj") is not anchor:
+            continue
+        candidates.append(verb)
+    return candidates[0] if len(candidates) == 1 else None
+
+
+def _temporal_relation_subject(
+    reading: Reading, prep: Unit, verb: Unit
+) -> Unit | None:
+    """The predicate's bound subject, or one explicit post-adjunct name.
+
+    A sentence-initial time noun is itself a nominal subject candidate, so the
+    general obligation binder may conservatively leave ``On Monday, Tom
+    worked`` unresolved. For this narrower temporal construction, the comma-
+    delimited adjunct supplies an additional boundary: exactly one name or
+    resolved pronoun between its object and the predicate is the subject. Two
+    candidates still decline.
+    """
+
+    subject = _bound(verb, "subject")
+    if subject is not None:
+        return subject
+    obj = _bound(prep, "object")
+    if obj is None or prep.span[0] >= verb.span[0]:
+        return None
+    between = reading.units[reading.units.index(obj) + 1 : reading.units.index(verb)]
+    if not any(unit.sense() == "punct" for unit in between):
+        return None
+    candidates = [
+        unit
+        for unit in between
+        if unit.sense() in ("name", "pronoun")
+        and not (
+            unit.sense() == "pronoun" and _bound(unit, "refers") is None
+        )
+    ]
+    return candidates[0] if len(candidates) == 1 else None
+
+
+def _temporal_verbal_relations(
+    reading: Reading, reg: Registry, provenance: Provenance
+) -> list[VerbalRelation]:
+    """Preserve an exact temporal marker without ordering or arithmetic.
+
+    The existing quantity time label intentionally strips a leading
+    preposition. This supplementary relation keeps that marker visible, so
+    ``on Monday``, ``before Monday``, and ``by Monday`` no longer become
+    indistinguishable evidence. It does not order moments or consume syntax.
+    Counted durations remain outside this exact object shape until a duration
+    fact can preserve their numeric value.
+    """
+
+    relations: list[VerbalRelation] = []
+    units = reading.units
+    for prep in units:
+        if prep.sense() != "preposition":
+            continue
+        marker = _lemma(prep)
+        if not reg.word_in_category(marker, "temporal_preposition"):
+            continue
+        obj = _bound(prep, "object")
+        if (
+            obj is None
+            or obj.sense() != "noun"
+            or "value" in obj.features
+            or not reg.word_in_category(_lemma(obj), "timeperiod")
+        ):
+            continue
+        verb = _temporal_governing_verb(reading, prep)
+        if verb is None:
+            continue
+        subject = _temporal_relation_subject(reading, prep, verb)
+        if subject is None or subject.sense() not in ("name", "pronoun"):
+            continue
+        if subject.sense() == "pronoun" and _bound(subject, "refers") is None:
+            continue
+
+        roles = [
+            role
+            for role in _matching_adposition_roles(marker, obj, verb, reg)
+            if role.startswith("temporal-")
+        ]
+        if len(roles) != 1:
+            continue
+        _, indefinite = _referential_adposition_object(reading, prep, obj, reg)
+        relations.append(
+            VerbalRelation(
+                provenance=provenance,
+                entity=_lemma(subject),
+                verb=_lemma(verb),
+                prep=marker,
+                obj=_lemma(obj),
+                role=roles[0],
+                polarity=not _negated(reading, verb),
+                indef_obj=indefinite,
+                event=f"s{reading.sentence_index}:u{verb.uid}",
+            )
+        )
+    return relations
+
+
+def _circumstantial_verbal_relations(
+    reading: Reading, reg: Registry, provenance: Provenance
+) -> list[VerbalRelation]:
+    """Preserve one uniquely licensed governed circumstance.
+
+    Accompaniment, instrument, means, manner, cause, and purpose use the same
+    exact fact shape. Their distinctions come entirely from the pack's
+    ``adposition_roles`` table. If two roles survive, this fold declines rather
+    than choosing from the preposition alone.
+    """
+
+    relations: list[VerbalRelation] = []
+    for prep in reading.units:
+        if prep.sense() != "preposition":
+            continue
+        obj = _bound(prep, "object")
+        if obj is None or "value" in obj.features:
+            continue
+        verb = _temporal_governing_verb(reading, prep)
+        if verb is None:
+            continue
+        marker = _lemma(prep)
+        roles = [
+            role
+            for role in _matching_adposition_roles(marker, obj, verb, reg)
+            if not role.startswith(("spatial-", "temporal-"))
+        ]
+        if len(roles) != 1:
+            continue
+        subject = _temporal_relation_subject(reading, prep, verb)
+        if subject is None or subject.sense() not in ("name", "pronoun"):
+            continue
+        if subject.sense() == "pronoun" and _bound(subject, "refers") is None:
+            continue
+        referential, indefinite = _referential_adposition_object(
+            reading, prep, obj, reg
+        )
+        if not referential:
+            continue
+        relations.append(
+            VerbalRelation(
+                provenance=provenance,
+                entity=_lemma(subject),
+                verb=_lemma(verb),
+                prep=marker,
+                obj=_lemma(obj),
+                role=roles[0],
+                polarity=not _negated(reading, verb),
+                indef_obj=indefinite,
+                event=f"s{reading.sentence_index}:u{verb.uid}",
+            )
+        )
+    return relations
+
+
 def learn(reading: Reading, reg: Registry) -> list[Fact]:
     facts: list[Fact] = []
     base_prov = Provenance(
@@ -895,6 +1353,14 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
         assumption=reading.assumption,
     )
     time_label = _sentence_time(reading, reg)
+    event_times = _deictic_event_times(reading, reg, base_prov)
+    spatial_relations = _spatial_verbal_relations(reading, reg, base_prov)
+    facts.extend(event_times)
+    facts.extend(spatial_relations)
+    facts.extend(_location_events_from_spatial(spatial_relations, reg))
+    facts.extend(_direct_location_events(reading, reg, base_prov))
+    facts.extend(_temporal_verbal_relations(reading, reg, base_prov))
+    facts.extend(_circumstantial_verbal_relations(reading, reg, base_prov))
 
     # value units that found what they quantify: value -> noun. Units a
     # pattern rule consumed are masked (their facts were already emitted with

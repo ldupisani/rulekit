@@ -27,6 +27,8 @@ entries:
     # deictic temporal markers
     now: {senses: [time]}
     today: {senses: [time]}
+    tomorrow: {senses: [time]}
+    yesterday: {senses: [time]}
 
     # core temporal/adverbial grammar
     currently: {senses: [adverb]}
@@ -34,7 +36,18 @@ entries:
     ago: {senses: [adverb]}
     individually: {senses: [adverb]}
 
-    # prepositions
+    # General English prepositions. Narrow semantic roles such as source,
+    # goal, location, duration, and instrument belong in categories and rules;
+    # recognition here does not infer any one of those readings.
+    about: {senses: [preposition]}
+    above: {senses: [preposition]}
+    across: {senses: [preposition]}
+    after: {senses: [preposition]}
+    against: {senses: [preposition]}
+    along: {senses: [preposition]}
+    among: {senses: [preposition]}
+    amongst: {senses: [preposition]}
+    around: {senses: [preposition]}
     of: {senses: [preposition]}
     in: {senses: [preposition]}
     on: {senses: [preposition]}
@@ -42,6 +55,78 @@ entries:
     from: {senses: [preposition]}
     to: {senses: [preposition]}
     at: {senses: [preposition]}
+    before: {senses: [preposition]}
+    below: {senses: [preposition]}
+    between: {senses: [preposition]}
+    by: {senses: [preposition]}
+    during: {senses: [preposition]}
+    except: {senses: [preposition]}
+    for: {senses: [preposition]}
+    including: {senses: [preposition]}
+    inside: {senses: [preposition]}
+    into: {senses: [preposition]}
+    near: {senses: [preposition]}
+    onto: {senses: [preposition]}
+    over: {senses: [preposition]}
+    past: {senses: [preposition]}
+    through: {senses: [preposition]}
+    throughout: {senses: [preposition]}
+    towards: {senses: [preposition]}
+    under: {senses: [preposition]}
+    until: {senses: [preposition]}
+    versus: {senses: [preposition]}
+    via: {senses: [preposition]}
+    within: {senses: [preposition]}
+    without: {senses: [preposition]}
+
+    # Less frequent and polysemous preposition uses. These are still only
+    # lexical recognition: semantic role categories below decide which uses
+    # can produce a relation, and unsupported readings remain visible.
+    aboard: {senses: [preposition]}
+    alongside: {senses: [preposition]}
+    amid: {senses: [preposition]}
+    amidst: {senses: [preposition]}
+    atop: {senses: [preposition]}
+    barring: {senses: [preposition]}
+    behind: {senses: [preposition]}
+    beneath: {senses: [preposition]}
+    beside: {senses: [preposition]}
+    besides: {senses: [preposition]}
+    beyond: {senses: [preposition]}
+    circa: {senses: [preposition]}
+    concerning: {senses: [preposition]}
+    despite: {senses: [preposition]}
+    down: {senses: [adverb, preposition]}
+    effective: {senses: [preposition]}
+    excepting: {senses: [preposition]}
+    failing: {senses: [preposition]}
+    following: {senses: [adjective, preposition]}
+    like: {senses: [preposition]}
+    notwithstanding: {senses: [preposition]}
+    off: {senses: [adverb, preposition]}
+    opposite: {senses: [preposition]}
+    outside: {senses: [adverb, preposition]}
+    pending: {senses: [preposition]}
+    regarding: {senses: [preposition]}
+    respecting: {senses: [preposition]}
+    since: {senses: [conjunction, preposition]}
+    toward: {senses: [noun, preposition]}
+    underneath: {senses: [preposition]}
+    unlike: {senses: [preposition]}
+    upon: {senses: [preposition]}
+    vs: {senses: [preposition]}
+
+    # Multiword prepositions are lexemes in their own right. The analyzer
+    # merges the longest declared phrase before disambiguation, so component
+    # words keep their independent ordinary senses.
+    "apart from": {senses: [preposition]}
+    "because of": {senses: [preposition]}
+    "but for": {senses: [preposition]}
+    "due to": {senses: [preposition]}
+    "instead of": {senses: [preposition]}
+    "next to": {senses: [preposition]}
+    "out of": {senses: [preposition]}
+    "short of": {senses: [preposition]}
 
     # pronouns
     he: {senses: [pronoun]}
@@ -116,7 +201,11 @@ entries:
     compute: {senses: [imperative]}
 
     # question/remainder skeleton (moved from difg-mined)
-    left: {senses: [adjective], notes: "'are left' / 'have left' — the remainder frame"}
+    left:
+        senses: [adjective, verb]
+        notes: >
+            Past departure verb or remainder adjective. Governed rules and
+            argument structure choose the reading; the surface alone does not.
     old: {senses: [adjective]}
     there: {senses: [existential]}
 
@@ -211,6 +300,12 @@ entries:
     jumped: {senses: [verb], verb: {lemma: jump}}
     walked: {senses: [verb], verb: {lemma: walk}}
     ran: {senses: [verb], verb: {lemma: run}}
+    arrive: {senses: [verb], number: plural}
+    arrived: {senses: [verb], verb: {lemma: arrive}}
+    arrives: {senses: [verb], number: singular, verb: {lemma: arrive}}
+    leave: {senses: [verb], number: plural}
+    leaves: {senses: [verb], number: singular, verb: {lemma: leave}}
+    leaving: {senses: [verb], verb: {lemma: leave}}
     travel: {senses: [verb], number: plural}
     traveled: {senses: [verb], verb: {lemma: travel}}
     travels: {senses: [verb], number: singular, verb: {lemma: travel}}

@@ -18,6 +18,61 @@ from .learn import _has_event_polarity
 from .model import Reading, Unit
 
 
+def condense_multiword_adpositions(reading: Reading, reg: Registry) -> Reading:
+    """Merge a declared multiword preposition before role disambiguation.
+
+    Phrase vocabulary lives in the lexicon, exactly like single-token
+    vocabulary.  This pass supplies only the generic structural operation:
+    longest matching lexicon phrase wins, and only entries carrying the
+    preposition sense are eligible.  Running before ordinary obligations are
+    attached means the merged phrase receives one preposition obligation set;
+    its component words never leave stale obligations behind.
+    """
+    phrases = sorted(
+        (
+            (tuple(phrase.split()), phrase, entry)
+            for phrase, entry in reg.lexicon.items()
+            if " " in phrase and "preposition" in entry.senses
+        ),
+        key=lambda item: (-len(item[0]), item[1]),
+    )
+    if not phrases:
+        return reading
+
+    i = 0
+    while i < len(reading.units):
+        matched = False
+        for words, phrase, entry in phrases:
+            end = i + len(words)
+            if end > len(reading.units):
+                continue
+            span = reading.units[i:end]
+            if tuple(unit.features.get("fold", "") for unit in span) != words:
+                continue
+            merged = reading.new_unit(
+                tuple(word for unit in span for word in unit.words),
+                {},
+            )
+            reading.units[i:end] = [merged]
+            changes: dict[str, object] = {
+                "fold": phrase,
+                "lemma": phrase,
+                "senses": list(entry.senses),
+                "number": entry.number or "singular",
+            }
+            reading.record(
+                "merge-multiword-preposition",
+                merged,
+                changes,
+                f"declared multiword preposition {phrase!r} is one relation marker",
+            )
+            matched = True
+            break
+        if not matched:
+            i += 1
+    return reading
+
+
 def _merge(reading: Reading, i: int, head_features_from: Unit, kind: str, reason: str,
            extra: dict | None = None) -> Unit:
     units = reading.units
@@ -356,6 +411,42 @@ def _nominal_pass(reading: Reading, reg: Registry) -> bool:
             reading.record(
                 "merge-name", merged, {},
                 f"titular name {a.surface!r} {b.surface!r} {c.surface!r} = one name",
+            )
+            return True
+    # possessive determiner + owned noun -> retain the ordinary two-unit
+    # surface while attaching an owner identity to the noun. Unlike the
+    # apostrophe-s merge above, these units must stay separate: declarative
+    # rules legitimately inspect the determiner itself (her/his/their is a
+    # grammatical premise), and collapsing it would silently break those
+    # rule shapes. Category membership owns the word list; the kernel only
+    # supplies the general governor-to-noun attachment.
+    for i in range(len(units) - 1):
+        determiner, owned = units[i], units[i + 1]
+        determiner_word = determiner.features.get(
+            "lemma", determiner.features.get("fold", "")
+        )
+        if (
+            determiner.sense() == "pronoun"
+            and reg.word_in_category(
+                determiner_word, "possessive_determiner"
+            )
+            and owned.sense() == "noun"
+            # "gives her 3 dollars" contains an object pronoun followed by
+            # a counted NP, not a determiner+noun phrase. Condensation has
+            # already merged the number and noun, so the count feature is a
+            # vocabulary-free structural boundary between the two shapes.
+            and owned.features.get("value_kind") != "count"
+            and owned.features.get("owner_ref_uid") is None
+        ):
+            reading.record(
+                "attach-possessive-determiner",
+                owned,
+                {
+                    "owner": determiner_word,
+                    "owner_ref_uid": determiner.uid,
+                },
+                f"{determiner.surface!r} owns {owned.surface!r} — "
+                "the noun retains an explicit possessor",
             )
             return True
     return False

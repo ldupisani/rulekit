@@ -18,7 +18,10 @@ CURATED = ROOT / "projects" / "curated"
 GSM8K = ROOT / "projects" / "gsm8k"
 
 MOVED_WORDS = {"now", "today"}
-MOVED_MEMBERS = {"temporal_marker": ["today", "now"]}
+MOVED_MEMBERS = {
+    "temporal_marker": ["today", "now"],
+    "deictic_temporal_marker": ["today", "now"],
+}
 TARGET_RULE = (
     "arithmetic/temporal-offset-times-as-old-as-future-std-now"
 )
@@ -33,7 +36,14 @@ def _without_moved_members(doc: CategoriesDoc) -> CategoriesDoc:
         ]
         for category, words in doc.members.items()
     }
-    return doc.model_copy(update={"members": members})
+    temporal_offsets = {
+        marker: offset
+        for marker, offset in doc.temporal_offsets.items()
+        if marker not in MOVED_WORDS
+    }
+    return doc.model_copy(
+        update={"members": members, "temporal_offsets": temporal_offsets}
+    )
 
 
 def _write_invented_project(root: Path) -> None:
@@ -112,9 +122,14 @@ def test_temporal_marker_occurrence_and_core_ownership_are_complete() -> None:
         set(project.registry.lexicon[word].senses) == {"time"}
         for word in MOVED_WORDS
     )
-    assert all(
-        project.registry.word_categories[word] == ("temporal_marker",)
-        for word in MOVED_WORDS
+    assert project.registry.word_categories["now"] == (
+        "deictic_temporal_marker",
+        "temporal_marker",
+    )
+    assert project.registry.word_categories["today"] == (
+        "day_deictic_marker",
+        "deictic_temporal_marker",
+        "temporal_marker",
     )
     assert project.registry.cat_ancestors("temporal_marker") == [
         "temporal_marker",
@@ -160,6 +175,10 @@ def test_combined_pack_semantics_are_identical_to_legacy_ownership() -> None:
                 {
                     "format": "rulekit/categories@1",
                     "members": MOVED_MEMBERS,
+                    "temporal_offsets": {
+                        marker: core.categories[-1].temporal_offsets[marker]
+                        for marker in MOVED_WORDS
+                    },
                 }
             ),
         ],
@@ -184,9 +203,9 @@ def test_g5t_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 113
-    assert sum(item.supported for item in availability.values()) == 113
-    assert sum(not item.supported for item in availability.values()) == 0
+    assert len(availability) == 118
+    assert sum(item.supported for item in availability.values()) == 116
+    assert sum(not item.supported for item in availability.values()) == 2
     assert availability[TARGET_RULE].supported
     # G5u subsequently supplied the loaded direct-adverb domain.
     assert availability[
@@ -197,7 +216,7 @@ def test_g5t_unlocks_exactly_the_preregistered_frontier() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 190
+    assert len(exploration_status(project)["fillers"]) == 267
 
 
 @pytest.mark.parametrize("marker", sorted(MOVED_WORDS))

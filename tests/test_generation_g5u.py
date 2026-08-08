@@ -1,4 +1,4 @@
-"""G5u: core adverb ownership and direct loaded-adverb realization."""
+"""G5u: core adverb ownership and scoped adverb realization."""
 
 from dataclasses import fields, replace
 from pathlib import Path
@@ -80,7 +80,9 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
     }
     assert MOVED_WORD in core.lexicon
     assert set(project.registry.lexicon[MOVED_WORD].senses) == {"adverb"}
-    assert project.registry.word_categories.get(MOVED_WORD, ()) == ()
+    assert project.registry.word_categories.get(MOVED_WORD, ()) == (
+        "holding_anchor_adverb",
+    )
     assert (
         project.source_index.lexicon[MOVED_WORD].path.resolve()
         == (ROOT / "packs/core-english/lexicon/core.yaml").resolve()
@@ -89,7 +91,7 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
         word
         for word, entry in sorted(project.registry.lexicon.items())
         if "adverb" in entry.senses
-    ] == ["ago", MOVED_WORD, "far", "individually"]
+    ] == ["ago", MOVED_WORD, "down", "far", "individually", "off", "outside"]
 
 
 def test_combined_pack_semantics_are_identical_to_legacy_ownership() -> None:
@@ -137,11 +139,19 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
     project = load_project(CURATED)
     availability = list_rule_availability(project)
 
-    assert len(availability) == 113
-    assert sum(item.supported for item in availability) == 113
-    assert sum(not item.supported for item in availability) == 0
-    assert all(not item.blockers for item in availability)
-    assert len(exploration_status(project)["fillers"]) == 190
+    assert len(availability) == 118
+    assert sum(item.supported for item in availability) == 116
+    assert sum(not item.supported for item in availability) == 2
+    assert all(
+        not item.blockers
+        or item.id
+        in {
+            "arithmetic/affine-frame-relation-as-standard",
+            "arithmetic/dangling-comparative-safety",
+        }
+        for item in availability
+    )
+    assert len(exploration_status(project)["fillers"]) == 267
 
 
 def test_currently_generates_a_matcher_confirmed_anchor() -> None:
@@ -159,7 +169,11 @@ def test_currently_generates_a_matcher_confirmed_anchor() -> None:
     assert candidate.target_status == "matched"
     assert premise.binding == MOVED_WORD
     assert premise.status == "passed"
-    assert premise.category_path == (MOVED_WORD, "adverb")
+    assert premise.category_path == (
+        MOVED_WORD,
+        "holding_anchor_adverb",
+        "adverb",
+    )
     assert {"rule-token", "lexicon"} <= {
         source["kind"] for source in premise.sources
     }
@@ -198,7 +212,7 @@ def test_optional_adverb_can_remain_omitted() -> None:
     assert (premise.binding, premise.status) == (None, "unverified")
 
 
-def test_combined_project_exposes_every_loaded_adverb() -> None:
+def test_combined_project_exposes_only_declared_holding_anchor_adverbs() -> None:
     project = load_project(GSM8K)
     adverbs = {
         word
@@ -211,14 +225,36 @@ def test_combined_project_exposes_every_loaded_adverb() -> None:
     }
 
     assert len(adverbs) == 46
+    holding_anchor_adverbs = {
+        word
+        for word in adverbs
+        if project.registry.word_in_category(word, "holding_anchor_adverb")
+    }
+
+    assert holding_anchor_adverbs == {
+        "already",
+        "also",
+        "always",
+        "currently",
+        "initially",
+        "later",
+        "originally",
+        "recently",
+        "still",
+        "then",
+    }
     assert all(
         (TARGET_RULE, "trailing_adv")
         in {
             (placement["rule_id"], placement["slot"])
             for placement in fillers[word]["placements"]
         }
-        for word in adverbs
+        for word in holding_anchor_adverbs
     )
+    assert (TARGET_RULE, "trailing_adv") not in {
+        (placement["rule_id"], placement["slot"])
+        for placement in fillers["off"]["placements"]
+    }
 
 
 def test_adverb_realization_uses_loaded_project_vocabulary(

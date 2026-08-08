@@ -91,7 +91,7 @@ class ClarificationRequest:
 
 @dataclass
 class Answer:
-    kind: str  # "number" | "series" | "verdict" | "decline"
+    kind: str  # "number" | "series" | "witnesses" | "verdict" | "decline"
     # A series is an ordered, JSON-native list of labelled records. Keeping
     # the entity and measure beside every value means a multi-answer result
     # can never lose its identity through a positional list such as [25, 20].
@@ -110,7 +110,7 @@ class Answer:
         # committed verdict at a non-verdict gold now scores WRONG there, in
         # the same increment that widened this — the two halves drift apart
         # or land together.
-        return self.kind in ("number", "series") or (
+        return self.kind in ("number", "series", "witnesses") or (
             self.kind == "verdict" and self.value in ("yes", "no")
         )
 
@@ -173,7 +173,20 @@ def answer(
     log: ArithmeticLog,
     premises: list[Reading] | None = None,
     interpretation: str | None = None,
+    reference_year: int | None = None,
 ) -> Answer:
+    from .model import LocationConstraintViolation
+
+    violations = store.by_kind(LocationConstraintViolation)
+    if violations:
+        violation = violations[0]
+        return Answer(
+            "decline",
+            None,
+            "location constraint conflict: "
+            f"{violation.entity!r} has a terminating event at "
+            f"{violation.place!r}, where termination is impossible",
+        )
     if not store.clean:
         c = store.collisions[0]
         return Answer(
@@ -262,6 +275,7 @@ def answer(
         return handler(ConsumerContext(
             query=query, question=question, store=scoped_store, reg=reg,
             log=log, match=_match, ask=ask, premises=tuple(premises or ()),
+            reference_year=reference_year,
         ))
 
     # Phase 1: consumers that lived ABOVE the temporal origo. They never saw the

@@ -18,11 +18,12 @@ ownership is complete; G5r dimension-comparative core ownership is complete
 and G5s modal core ownership and slot realization is complete; G5t
 temporal-marker core ownership and time-root realization is complete; G5u
 direct-adverb visibility is complete; G5v review-led premise auditing is
-active and all twenty-eight review-led boundary passes are complete through
-the current demonstrative-pro-form and comparative-need agreement
+active and all thirty-three review-led boundary passes are complete through
+the current holder, measure, location, anaphor, and defensive-consumer
 reconciliation; strict-positive and one-slot lexical-boundary generation
 modes, fingerprint-keyed authoring indexes, and complete GSM8K premise-rule
-generation are implemented
+generation are implemented; G6b structural coverage, combinable filters,
+objective-aware selection, and generation-health diagnostics are implemented
 
 ## Current checkpoint
 
@@ -30,7 +31,7 @@ G1 shipped the first complete generate/review/next loop, G2 made its
 mechanical result directly inspectable, G3 closed the edit/retest loop, and G4
 added bounded hypothesis and minimal-pair exploration:
 
-- all 99 curated premise rules are mechanically realizable, with no hidden
+- all 116 supported curated premise rules are mechanically realizable, with no hidden
   unsupported token or predicate blockers;
 - seeded candidates are identical across fresh project loads;
 - failed target round trips remain inspectable as `absent`;
@@ -102,12 +103,31 @@ added bounded hypothesis and minimal-pair exploration:
   sentence exposes a defective premise;
 - a `matched` or `shadowed` target status reports what the ordinary matcher
   accepted, never that the resulting English or emitted fact is correct;
-- the current curated frontier contains 113 supported rules and 190 reachable
-  lexicon identities, while live reviews and continuing exploration remain
-  separate from mechanical availability; and
+- the current curated frontier contains 118 loaded reading rules and 267
+  reachable lexicon identities: 116 are supported premise-generation targets,
+  one is a reader-only compatibility frame, and one is a fact-free safety
+  consumer; live reviews and continuing exploration remain separate from
+  mechanical availability; and
+- fact-free safety consumers remain active in the internal matcher but are not
+  premise-review targets or actual premise matches in the Designer; a
+  surviving guard is shown separately as a safety interception, while a
+  redundant guard subsumed by a valid ordinary premise stays hidden; and
 - random Generate next chooses from the least-attempted compatible rule and
   filler frontier with seeded tie-breaking, while an explicit word probe links
   directly to its editable lexicon declaration;
+- strict exploration can instead target the least-generated rule,
+  least-reviewed rule, least-covered structural outcome, a live invalid or
+  unclear review, or a seeded random rule within the selected filters;
+- structural filters compose conjunctively across grammar phenomena, declared
+  categories, slot types, and emitted fact types;
+- coverage is atomic rather than a single rule counter: optional branches,
+  literal alternatives, and emitted fact type/field shapes have stable
+  signatures, and least-covered generation forces the selected optional or
+  literal outcome instead of waiting for a random reroll to reach it;
+- the exploration health panel reports structural coverage,
+  current-fingerprint success/failure rates, and the five most frequent
+  terminal generation blockers; failed requests also retain an aggregate of
+  their most common deterministic-attempt causes;
 - the mode selector separates strict positives from lexical-boundary probes:
   strict generation satisfies every slot requirement, while a boundary probe
   widens exactly one active lexical gate to its declared root sense and keeps
@@ -117,9 +137,9 @@ added bounded hypothesis and minimal-pair exploration:
 - registry-fingerprint caches avoid rebuilding token domains, rule
   availability, and compatible-probe catalogs on every request, while the
   Designer receives a compact exploration payload; and
-- the GSM8K project owns open proper-name generation fixtures, all 108 loaded
-  premise rules are selectable, and a deterministic strict round trip exists
-  for every one;
+- the GSM8K project owns open proper-name generation fixtures, all 109
+  supported premise targets are selectable out of 111 loaded reading rules,
+  and a deterministic strict round trip exists for every supported one;
 - plural fraction forms are declared separately from their singular lemmas,
   require an explicit word count in both generation and premise matching, and
   retain complete numeric source evidence; and
@@ -130,11 +150,11 @@ added bounded hypothesis and minimal-pair exploration:
 - fraction-valued comparisons and changes require a strictly positive
   magnitude, while pool and partition facts retain zero as a meaningful value.
 
-The current gate is green: all 4,379 repository tests pass in four-worker
-mode, curated remains deterministic at 65/65 and 100% precision, GSM8K
-DEV-train is 106/0 and DEV-holdout is 43/0, every standing
-cross-corpus gate retains zero wrong answers, and lint has zero errors with
-two known warnings. No protected TEST look was spent.
+The current gate is green: all 4,589 repository tests pass in four-worker
+mode, curated remains deterministic at 71/71 and 100% precision, GSM8K
+DEV-train is 108/0 and DEV-holdout is 43/0, every standing cross-corpus gate
+retains zero wrong answers, and lint has zero errors with one known warning.
+No protected TEST or generalization look was spent.
 G6 live validation selected untouched `rabbit`, opened its declaration, and
 generated matched `Eron gives 18 rabbits to Aven.` for
 `arithmetic/transfer-prepositional`. The rule moved from untouched to
@@ -1730,13 +1750,19 @@ review evidence, not a reason to hide a mechanically supported rule.
 
 #### G5k sentence-wide absent-category realization — complete
 
-The complete profile contains 14 rules and 17 predicate occurrences:
+The preregistered G5k profile contained 14 rules and 17 predicate occurrences:
 
 - four `absent: {cat: aggregate}` predicates;
 - four `absent: {cat: partitive}` predicates;
 - three `absent: {cat: temporal_marker}` predicates;
 - three `absent: {cat: relational_marker}` predicates; and
 - three `absent: {cat: multiplier_marker}` predicates.
+
+Later review increments reuse the same general machinery. The current profile
+contains 19 rules and 24 occurrences: four aggregate, six partitive, three
+temporal-marker, six relational-marker, three multiplier-marker, and two
+conjunction exclusions. The newest relational exclusion enforces that an
+anchorless comparative cannot consume the prefix of a `than` clause.
 
 This predicate names no slot. The ordinary matcher scans every analyzed unit
 in the sentence and rejects the match when a unit's lemma belongs to the
@@ -2281,7 +2307,7 @@ The complete gate is green: 3,900 tests pass in four-worker mode; curated is
 MAWPS, and SciBench remain 44/0, 30/0, 9/0, and 6/0; FOLIO makes zero
 commitments; and lint has zero errors with two known warnings.
 
-#### G5v review-led premise audit — active; twenty-ninth batch complete
+#### G5v review-led premise audit — active; thirty-second batch complete
 
 Mechanical completeness does not establish linguistic or semantic validity.
 The twenty-fourth bounded run began with 406 exploration events, 189 review
@@ -3454,16 +3480,232 @@ COGS/PMB remain at 100% inspectable edge precision with zero incorrect graphs,
 lint has zero errors and its known single warning, and no protected look was
 spent.
 
-There is no automatic transition to G7. Ask-rule and derived-rule generation
-requires a separate decision after the premise audit demonstrates that the
-current single-sentence workbench is mature and useful.
+The core-English adposition increment broadens the review frontier without
+claiming that every recognized marker already has useful semantics. Broadly
+useful single-word senses move to core, eight multiword prepositions condense
+through one lexicon-driven analyzer pass, and the generator can realize those
+phrases in preposition slots. A declarative `adposition_roles` table licenses
+exact spatial, temporal, accompaniment, instrument, means, manner, cause, and
+purpose `VerbalRelation` facts from compatible preposition, object, and
+governing-verb categories. Unsupported or multiply licensed readings emit no
+typed relation. Arithmetic-heavy homographs such as `as`, `less`, `per`, and
+`up` retain their established sense until a governed construction can add the
+preposition reading without changing existing parses. The reachable frontier
+is 263 identities. The cumulative gate is 4,542 tests and curated 71/71; all
+frozen answer DEV diffs are neutral, lint has zero errors and its known single
+warning, and no protected look was spent.
+
+The thirty-second review reconciliation closes the eight live rows exposed by
+that broader frontier and the remaining older fraction row:
+
+- bare `be` joins the direct quantitative-object exclusion, closing the
+  agreement loophole without admitting an inflected copula into a possessive
+  comparison frame;
+- `motion_comparison_measure` limits explicit motion ratios to declared
+  repetitions and distance units, while the short `times-the-number-of` frame
+  accepts only a declared quantity particle and a non-unit multiplier;
+- the logic-arithmetic membership PP rules require an explicit article and the
+  declared `at the university` class restriction, while coordinated role
+  derivation requires the declared `teach` surface; and
+- `fraction-as-many` requires positive holder roles, a positive fraction no
+  greater than one, and excludes a remnant PP from the middle of its comparison.
+
+All eight pinned reviews retest `absent`; ordinary possession, quantity-event,
+frequency, particle-ratio, institutional-role, and proper-fraction neighbours
+remain matched. The cumulative gate is 4,552 tests and curated 71/71. GSM8K
+DEV-train/holdout remain 108/0 and 43/0; ASDiv, SVAMP, MAWPS, and SciBench
+remain 45/0, 30/0, 11/0, and 6/0; DIFG remains 75/0; FOLIO makes zero
+commitments; and COGS/PMB retain 100% projected-edge precision with zero
+incorrect graphs. Lint has zero errors and no protected look was spent.
+
+The relative event-time follow-up makes day deixis inspectable without
+pretending that every temporal surface shares one ordering. Core now owns
+`yesterday` and `tomorrow` alongside `now` and `today`; a dedicated
+`deictic_temporal_marker` category gives those four words signed offsets in
+pack data. Exactly one marker attached to exactly one predicate with a bound
+subject emits `EventTime`. The document derives `Before` for every pair whose
+coordinates differ, while equal coordinates, competing markers, and competing
+predicates add no direction. The narrower age-rule `temporal_marker` category
+remains exactly `now`/`today`, preventing past or future words from entering a
+slot whose semantics assumes a current-moment standard. The deictic field now
+shows ordered event cards; `Quantity.time` calendar labels remain opaque and
+asks still cannot select a reference moment.
+
+The motivating travel reading preserves three spatial-goal relations, three
+event times (`yesterday=-1`, `today=0`, `tomorrow=+1`), and all three supported
+strict `Before` pairs, with no unknown-word gaps. The reachable identity
+inventory is 265. The cumulative gate is 4,557 tests and curated 71/71.
+GSM8K DEV-train/holdout remain 108/0 and 43/0; ASDiv, SVAMP, MAWPS, and
+SciBench remain 45/0, 30/0, 11/0, and 6/0; FOLIO makes zero commitments.
+COGS DEV-train/holdout and PMB train/development retain 100% projected-edge
+precision with zero incorrect graphs. Lint has zero errors and its known
+single warning. No protected TEST or generalization look was spent.
+
+The arrival-frame follow-up moves `arrive`, `arrived`, and `arrives` into core
+and normalizes both inflected forms to `arrive`. The declarative
+`adposition_roles` schema now permits several category-gated frames to emit
+one canonical role. `spatial-goal` retains its general motion-plus-destination
+frame and adds an arrival-only `at` frame. Consequently “arrived at the
+garden” is a goal, while “walked at the garden” retains only its earlier
+location reading rather than becoming a goal.
+
+The arrival variant of the motivating document now has no gaps and emits three
+normalized `Predication` facts, three `spatial-goal` relations, three
+`EventTime` facts, and the same complete three-pair `Before` order. The
+reachable identity inventory is 266. The cumulative gate is 4,564 tests and
+curated 71/71. GSM8K DEV-train/holdout remain 108/0 and 43/0; ASDiv, SVAMP,
+MAWPS, and SciBench remain 45/0, 30/0, 11/0, and 6/0; FOLIO makes zero
+commitments. COGS DEV-train/holdout and PMB train/development retain 100%
+projected-edge precision with zero incorrect graphs. Lint has zero errors and
+its known single warning. No protected TEST or generalization look was spent.
+
+#### Finite-domain temporal location witnesses — complete
+
+The first spatial-temporal query slice now treats arrivals and explicit
+location observations as event-linked location evidence. A pack-declared
+impossibility premise—“nobody can leave the garden”—is a question-scoped
+`LocationConstraint`, not a global law. It may be written inside the question
+or as the immediately preceding detached `If` sentence. Earlier or unrelated
+conditionals do not acquire that scope. An observed departure that conflicts
+with the assumption produces a visible violation and declines the answer.
+
+“Which of them are at the garden today?” binds `them` only to a conservative
+finite group of prior named subjects. The answer preserves discourse order and
+returns a status per candidate. Direct same-day evidence and earlier arrival
+under impossible departure are supported; a future arrival or missing history
+is unknown rather than false. A direct same-day negative observation is
+contradicted, while conflicting direct observations decline. The day category
+deliberately excludes `now`, and prohibition modals such as `may` do not become
+physical impossibility.
+
+The new premise rule is strictly generatable. Modal-rooted categories are now
+supported by the category-generic realizer; at that increment the curated
+frontier reached 114/114 premise rules and 267 reachable identities. Designer traces serialize
+the plural referent's grouped obligation target as a JSON-native name list.
+
+The factual no-departure sibling is independently reviewable. “Nobody left
+the garden” emits a narrative-through-reference transition-absence fact rather
+than reusing physical impossibility. A past or same-day observed departure
+conflicts; a future departure does not. Contextual sense arbitration preserves
+the established adjective in terminal remainder frames while admitting the
+same surface as a departure verb before a definite place. The new rule adds no
+lexical identity, is a strict matcher-confirmed generation target, and advances
+the live frontier to 115/115.
+
+The complete gate is 4,587 tests and curated 71/71 twice. GSM8K DEV-train and
+DEV-holdout remain 108/0 and 43/0; ASDiv, SVAMP, MAWPS, and SciBench remain
+45/0, 30/0, 11/0, and 6/0; DIFG remains 75/0; and FOLIO makes zero
+commitments. COGS DEV-train/holdout and PMB train/development retain 100%
+projected-edge precision with zero incorrect graphs. Lint has zero errors and
+its known single warning. No protected TEST or generalization look was spent.
+
+G6b closes the generator-foundation prerequisite for G7. It does not generate
+questions itself: it makes coverage measurable and selectable before ask
+rules add a second kind of target.
+
+#### G6b structural exploration and health — complete
+
+Every supported premise rule now exposes a vocabulary-free profile assembled
+from its authored token types, category ancestry, optional groups, literal
+alternatives, `where` constraints, and emit declarations. The Designer turns
+that profile into checkbox filters. All selected filters are required, and an
+explicit rule or lexicon probe is rejected visibly if it is incompatible with
+the filtered frontier.
+
+Fresh strict observations retain the selected objective, filters, targeted
+structural signature, observed signatures, and high-level phenomena. Existing
+JSONL rows remain valid through schema defaults. Structural coverage is scoped
+to the current registry fingerprint because a YAML edit may change the shape
+named by an old signature; historical rule and lexicon exploration counts keep
+their existing append-only behavior.
+
+The initial signature inventory covers both outcomes of every optional group,
+every member of a literal alternation, and every emitted fact type plus its
+field-name shape. This is intentionally atomic rather than the cross-product
+of every branch, word, and fact: the cross-product would grow exponentially
+and make “complete” coverage meaningless. Later objectives can add another
+atomic signature family without changing the event ledger contract.
+
+The complete gate is 4,589 tests and curated 71/71 twice. GSM8K DEV-train and
+DEV-holdout remain 108/0 and 43/0; ASDiv, SVAMP, MAWPS, and SciBench remain
+45/0, 30/0, 11/0, and 6/0; DIFG remains 75/0; and FOLIO makes zero
+commitments. COGS DEV-train/holdout and PMB train/development retain 100%
+projected-edge precision with zero incorrect graphs. Lint has zero errors and
+its known single warning. No protected TEST or generalization look was spent.
+
+### Possessive ownership follow-up — complete
+
+Generation exposed a missing reader distinction between definite common nouns
+and possessive-determiner noun phrases in age comparisons. The correction is a
+runtime identity feature, not a generator-only exception:
+
+- condensation preserves the determiner as a unit and annotates only an
+  uncounted governed noun with its owner;
+- a pack-declared third-person determiner may use the unique preceding clause
+  subject, following an already resolved subject pronoun to its antecedent;
+- quantities and relations retain owner fields and saturation requires an
+  exact owner-qualified anchor;
+- different owners remain separate even when they state the same value;
+- a dedicated generatable age premise accepts the complete determiner+noun
+  standard, while the existing age rule retains definite, named, and
+  apostrophe-s forms; and
+- a possessed age ask uses the existing `single-entity` consumer with an
+  explicit `entity_owner` query.
+
+The object-pronoun/count boundary is explicit: `gives her 3 dollars` does not
+annotate the counted dollars as possessed. The curated availability boundary
+is 116 supported rules out of 118 loaded; the other two remain intentionally
+reader-only/safety targets.
+
+### Absolute-year age projection
+
+`arithmetic/stated-age-at-year` makes the sentence class
+“ENTITY was N years old in YEAR” directly reviewable. Its strict candidate
+retains both numbers, emits one `AgeAtYear`, and round-trips through the
+ordinary matcher. The matching ask “How old was ENTITY in YEAR?” routes to a
+dedicated consumer. It projects only age, requires integral calendar
+coordinates and one consistent non-negative result, and never exposes the
+source as a timeless quantity. Arbitrary dated quantities therefore remain
+non-projectable.
+
+The distributive current-year sibling resolves subject-case `they` to one
+conservative prior referential-subject group. Proper-name grouping retains its
+existing ambiguity boundary; when no names occur, definite common-noun
+subjects reuse the matcher's ordinary referential test. “How old are they
+now/today?” projects every member or declines the whole series. The kernel
+requires an explicit reference year rather than reading the wall clock; the
+Designer supplies its current year and the CLI exposes `--reference-year`.
+For reference year 2026, the reviewed teacher/child example returns labelled
+ages 47 and 26. Object-case `them`, partial evidence, repeated holders, and
+ambiguous owner/qualifier/label identities do not commit.
+
+The explicit-year aggregate sibling resolves plural possessive `their` to the
+same exact subject group. “What was their combined age in 2020?” projects each
+member to 2020 before summing, so a teacher aged 20 in 1999 and a child aged 10
+in 2010 answer 61. `total age` is the declared sibling surface. Prenominal
+`together age`/`altogether age`, singular possessives, missing member evidence,
+and unsupported aggregate operations decline rather than guessing.
+
+The full synthetic gate is now 4,672 tests; all standing DEV and cross-corpus
+gates retain zero wrong commitments or incorrect graphs, and no protected
+TEST/generalization look was spent.
 
 ### G7 — Questions and derived rules, if still useful
 
-Only after premise-rule exploration is mature, assess separate generation
-paths for ask rules, synthesizer premise sets, and answer consumers.
+The next planned slice adds ask generation without weakening the premise
+workbench. It should expose three explicit objectives:
 
-This is deferred. It is not required for the single-sentence workbench.
+1. **Ask surface** — realize and round-trip one ask rule by itself.
+2. **Answerable scenario** — generate the smallest premise set that satisfies
+   the ask's declared consumer requirements, then verify the ordinary engine
+   returns the expected answer shape.
+3. **Decline scenario** — deliberately omit or conflict one named requirement
+   and verify the engine declines or asks for clarification rather than
+   committing to an unsupported answer.
+
+Ask coverage must remain separate from premise coverage, and generated
+premises must continue to use the ordinary premise generator rather than a
+question-specific text template.
 
 ## G1 implementation brief
 

@@ -89,10 +89,12 @@ class FactStore:
         house", both fold to entity='house'): that is not a genuine
         disagreement, it is two distinct entities the bare lemma alone
         can't tell apart, so both re-key to entity[owner] and are admitted
-        as separate facts instead. Scoped to the collision itself — a
-        possessive noun that never collides keeps its bare identity
-        untouched (cross-mention folding like "Tom's dog ... the dog ..."
-        is unaffected). The same re-key applies, independently, when the
+        as separate facts instead. The owner split precedes agreement
+        deduplication, so equal values from different owners also remain two
+        facts. Later owned siblings enter the same qualified keyspace
+        directly; a lone possessive noun keeps its bare identity untouched
+        (cross-mention folding like "Tom's dog ... the dog ..." is
+        unaffected). The same re-key applies, independently, when the
         two sides instead carry two DIFFERENT attributive-modifier
         qualifiers of the same bare-lemma entity ("coconut tree" vs
         "mango tree", both fold to entity='tree') — increment 34's mirror
@@ -178,6 +180,23 @@ class FactStore:
         # keyspace. The `no bare sibling` condition is copied verbatim from
         # the split below — a stated unqualified holding IS the whole, and
         # splitting alongside it would misread the whole as another part.
+        # Ownership has the same odd-sibling problem but no part/whole
+        # exception: once two owners coexist, every later owned sibling must
+        # enter the owner-qualified entity keyspace directly.
+        if (
+            isinstance(fact, Quantity)
+            and fact.owner
+            and "[" not in str(fact.entity)
+            and any(
+                isinstance(other, Quantity)
+                and other.owner
+                and str(other.entity) == f"{fact.entity}[{other.owner}]"
+                for other in self.facts
+            )
+        ):
+            fact = replace(fact, entity=f"{fact.entity}[{fact.owner}]")
+        # Measure qualifiers use the order-independent cure described above,
+        # including their separate unqualified-total guard.
         if (
             isinstance(fact, Quantity)
             and fact.measure_qualifier
@@ -213,7 +232,18 @@ class FactStore:
                     and (existing.segment is not None or fact.segment is not None)
                     and (existing.segment or 0) != (fact.segment or 0)
                 )
-                if existing.value_part() == fact.value_part() and not conjunct_split:
+                owner_split = (
+                    isinstance(existing, Quantity)
+                    and isinstance(fact, Quantity)
+                    and bool(existing.owner)
+                    and bool(fact.owner)
+                    and existing.owner != fact.owner
+                )
+                if (
+                    existing.value_part() == fact.value_part()
+                    and not conjunct_split
+                    and not owner_split
+                ):
                     self._record_agreement(existing, fact)
                     return True  # agreement: dedupe
                 if (

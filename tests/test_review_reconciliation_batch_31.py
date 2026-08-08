@@ -91,7 +91,7 @@ def test_invalid_possessive_standard_cannot_fall_back_to_elision(registry) -> No
         ),
         (
             "arithmetic/times-as-many-possessive-kinship-standard",
-            "Arden has quadruple as many films in her bench as her sister.",
+            "Arden has quadruple as many films on her bench as her sister.",
         ),
         (
             "arithmetic/anaphoric-multiplier-standard-as-many",

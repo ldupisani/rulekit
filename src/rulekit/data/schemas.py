@@ -157,6 +157,21 @@ class SubjectRoleDerivation(StrictModel):
         return self
 
 
+class AdpositionRoleDef(StrictModel):
+    """One declarative verb–preposition–object semantic licence.
+
+    The three categories jointly license the role. A polysemous preposition
+    therefore contributes evidence without deciding the interpretation alone.
+    Proper-name objects are an explicit opt-in because their denotation is not
+    available from the lexicon.
+    """
+
+    preposition_category: str
+    object_category: str
+    verb_category: str
+    allow_name_object: bool = False
+
+
 class CategoriesDoc(StrictModel):
     format: Literal["rulekit/categories@1"]
     categories: dict[str, CategoryDef] = Field(default_factory=dict)
@@ -183,6 +198,19 @@ class CategoriesDoc(StrictModel):
     subject_role_derivations: dict[str, SubjectRoleDerivation] = Field(
         default_factory=dict
     )
+    # Semantic role -> one or more category-gated frames that license that
+    # same exact governed PP relation. A singleton mapping retains the compact
+    # form; a list expresses alternate constructions without inventing a new
+    # semantic role name. The kernel joins frames and still refuses zero or
+    # multiple surviving ROLES.
+    adposition_roles: dict[
+        str, AdpositionRoleDef | list[AdpositionRoleDef]
+    ] = Field(default_factory=dict)
+    # Time-sensed deictic marker -> signed distance from the document's
+    # present moment.  The words and their ordering are data: the kernel only
+    # compares declared numeric coordinates and never contains a temporal
+    # vocabulary list of its own.
+    temporal_offsets: dict[str, float] = Field(default_factory=dict)
     context_synonyms: dict[str, ContextSynonym] = Field(default_factory=dict)
     attrs: dict[str, dict[str, float]] = Field(default_factory=dict)
     part_counts: dict[str, str] = Field(default_factory=dict)
@@ -202,6 +230,27 @@ class CategoriesDoc(StrictModel):
                     raise ValueError(
                         f"{family} compatibility {source!r} repeats a noun category"
                     )
+        return self
+
+    @model_validator(mode="after")
+    def _complete_unique_adposition_frames(self) -> "CategoriesDoc":
+        for role, declared in self.adposition_roles.items():
+            frames = declared if isinstance(declared, list) else [declared]
+            if not frames:
+                raise ValueError(f"adposition role {role!r} needs a frame")
+            signatures = [
+                (
+                    frame.preposition_category,
+                    frame.object_category,
+                    frame.verb_category,
+                    frame.allow_name_object,
+                )
+                for frame in frames
+            ]
+            if len(signatures) != len(set(signatures)):
+                raise ValueError(
+                    f"adposition role {role!r} repeats an identical frame"
+                )
         return self
 
 
@@ -372,11 +421,22 @@ class MatchToken(StrictModel):
     # structural distinction. Multiword scalars such as "twenty three" remain
     # valid because this checks the unit's sense, not its original word count.
     standalone: bool = False
+    # OPT-IN: a scalar number must be integral. Calendar-year coordinates are
+    # the first consumer; this carries no range or era policy.
+    integer: bool = False
     # OPT-IN: a fraction used as a part of one finite whole must remain in
     # [0, 1]. Improper fractions remain valid in ratios, affine relations, and
     # other unbounded scalar positions; only an authored part-of-whole slot
     # declares this semantic magnitude boundary.
     fraction_within_whole: bool = False
+    # OPT-IN: a WORD or slash fraction used as a natural-language comparison
+    # must remain in [0, 1]. Percentage surfaces are deliberately exempt:
+    # "150 percent more" is ordinary English, while "three halves more" and
+    # "seventy ninths as many" should use a percentage or multiplier frame.
+    # This is a surface boundary, unlike `fraction_within_whole`, which also
+    # constrains percentages because the underlying quantity is part of one
+    # finite whole.
+    word_fraction_within_whole: bool = False
     # OPT-IN: a fraction that contributes a comparison or change magnitude
     # must be strictly positive.  Zero remains valid for independently useful
     # part-of-pool and partition statements; rules whose standard would become
@@ -556,7 +616,9 @@ class MatchToken(StrictModel):
                 or self.possessed
                 or self.number is not None
                 or self.standalone
+                or self.integer
                 or self.fraction_within_whole
+                or self.word_fraction_within_whole
                 or self.fraction_positive
                 or self.referential
                 or self.bare_reference_category is not None
@@ -565,8 +627,9 @@ class MatchToken(StrictModel):
             ):
                 raise ValueError(
                     "a span slot takes no "
-                    "type/cat/bare/counted/possessed/number/standalone/"
-                    "fraction_within_whole/fraction_positive/referential/"
+                    "type/cat/bare/counted/possessed/number/standalone/integer/"
+                    "fraction_within_whole/word_fraction_within_whole/"
+                    "fraction_positive/referential/"
                     "common_noun_cat/bare_form/finite_form"
                 )
         elif self.slot is not None and (self.type is None) == (self.cat is None):
@@ -587,9 +650,16 @@ class MatchToken(StrictModel):
             raise ValueError(
                 "`standalone` only qualifies a `type: number` slot"
             )
+        if self.integer and self.type != "number":
+            raise ValueError("`integer` only qualifies a `type: number` slot")
         if self.fraction_within_whole and self.type != "fraction":
             raise ValueError(
                 "`fraction_within_whole` only qualifies a `type: fraction` slot"
+            )
+        if self.word_fraction_within_whole and self.type != "fraction":
+            raise ValueError(
+                "`word_fraction_within_whole` only qualifies a "
+                "`type: fraction` slot"
             )
         if self.fraction_positive and self.type != "fraction":
             raise ValueError(
@@ -764,6 +834,7 @@ class MeasureHolderCompatibilityPredicate(StrictModel):
     measure: str
     holders: list[str] = Field(min_length=1)
     allow_proper_name: bool = False
+    proper_name_measure_categories: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def _unique_holders(self) -> "MeasureHolderCompatibilityPredicate":
@@ -772,6 +843,16 @@ class MeasureHolderCompatibilityPredicate(StrictModel):
         if self.measure in self.holders:
             raise ValueError(
                 "measure-holder compatibility cannot reuse the measure as a holder"
+            )
+        if self.proper_name_measure_categories and not self.allow_proper_name:
+            raise ValueError(
+                "proper-name measure categories require allow_proper_name"
+            )
+        if len(self.proper_name_measure_categories) != len(
+            set(self.proper_name_measure_categories)
+        ):
+            raise ValueError(
+                "measure-holder compatibility repeats a proper-name measure category"
             )
         return self
 
@@ -969,14 +1050,16 @@ class WherePredicate(StrictModel):
 
 class FactEmit(StrictModel):
     fact: Literal[
-        "quantity", "relation", "membership", "subset", "predication",
+        "age_at_year", "quantity", "relation", "membership", "subset", "predication",
         "before", "fraction_quantity", "rest_quantity", "partition_quantity",
         "ratio_quantity", "goal", "group_total", "rate", "discount",
         "percent_change", "atom", "quantified", "quantified_quantity",
         "quantified_adjustment",
         "class_refinement", "conditional",
         "disjunction", "equivalence", "quantified_disjunction", "existential",
-        "verbal_relation", "semantic_graph_node", "semantic_graph_edge",
+        "verbal_relation", "location_event", "location_constraint",
+        "location_transition_absence",
+        "semantic_graph_node", "semantic_graph_edge",
         "alias", "enumerated_disjunction",
         "disjunctive_conditional", "ground_conditional",
         "positive_ground_conditional",
@@ -1012,7 +1095,19 @@ class FactEmit(StrictModel):
 class PatternRule(StrictModel):
     id: str
     phase: Literal["read", "post-saturation"] = "read"
+    # Most read rules describe prose that the Designer may present as a
+    # candidate premise. A reader-only rule preserves a narrow corpus
+    # compatibility surface that human review should not reproduce; a safety
+    # consumer recognizes bad or incomplete prose only to stop fallback folds
+    # from asserting a fact. Keeping those distinctions in rule data prevents
+    # the generator from presenting either class as valid authored prose.
+    generation: Literal["premise", "reader-only", "safety"] = "premise"
     description: str | None = None
+    # Opt in to promotion from an immediately pre-question detached `If`
+    # sentence. Adjacency supplies scope, while this declaration proves that
+    # the stripped clause has assumption semantics. Ordinary conditional
+    # rules remain asserted premises and are never stolen by the splitter.
+    question_assumption: bool = False
     # Opt-in local-chain matching. Default rules advance past a whole match;
     # an overlapping rule advances one unit past its match start so adjacent
     # windows such as N-P-N-P-N can emit both N-P-N links.
@@ -1031,6 +1126,13 @@ class PatternRule(StrictModel):
 
     @model_validator(mode="after")
     def _satisfaction_contract_is_explicit(self) -> "PatternRule":
+        if self.question_assumption and (
+            self.phase != "read" or "sentence" not in self.match
+        ):
+            raise ValueError(
+                f"rule {self.id!r}: question_assumption requires a read-phase "
+                "sentence rule"
+            )
         for slot, needs in self.satisfies.items():
             if not slot or not needs:
                 raise ValueError(

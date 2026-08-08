@@ -193,8 +193,9 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
     assert adjectives == {
         "beige",
         "blue",
-        "green",
-        "large",
+            "green",
+            "following",
+            "large",
         "left",
         "old",
         "red",
@@ -240,12 +241,12 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
         RULE_ID,
         "arithmetic/as-many",
         "arithmetic/affine-fraction-as-many",
-        "arithmetic/affine-frame-relation-as-standard",
         "arithmetic/affine-times-as-many",
         "arithmetic/affine-times-as-much",
         "arithmetic/anchored-relation-elided-standard",
         "arithmetic/anchored-relation-possessive-kinship-standard",
         "arithmetic/anchored-relation-postfix-dimension",
+        "arithmetic/dangling-comparative-relation",
         "arithmetic/existential-premise",
         "arithmetic/fraction-as-many",
         "arithmetic/fraction-as-many-elided-standard",
@@ -254,22 +255,25 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
         "arithmetic/fraction-delta-relation",
         "arithmetic/fraction-delta-relation-mass",
         "arithmetic/partition-rest-attribute",
-            "arithmetic/times-as-many",
-            "arithmetic/times-as-many-conjunct",
-            "arithmetic/times-as-many-conjunct-elided-standard",
+        "arithmetic/times-as-many",
+        "arithmetic/times-as-many-conjunct",
+        "arithmetic/times-as-many-conjunct-elided-standard",
         "arithmetic/times-as-many-conjunct-elided-item",
         "arithmetic/times-as-many-elided-standard",
         "arithmetic/times-as-many-possessive-kinship-standard",
         "arithmetic/times-as-much",
         "arithmetic/times-as-much-elided-standard",
         "arithmetic/times-the-number-of",
+        "logic-arithmetic/coordinated-named-verbal-pp",
+        "logic-arithmetic/ground-copular-nominal-pp",
+        "logic-arithmetic/universal-all-have-quantity-pp",
     }
 
 
 def test_compatibility_rule_remains_supported_after_g5j_expansion() -> None:
     availability = list_rule_availability(load_project(CURATED))
 
-    assert sum(item.supported for item in availability) == 113
+    assert sum(item.supported for item in availability) == 116
     target = next(item for item in availability if item.id == RULE_ID)
     assert target.supported
     assert target.blockers == ()

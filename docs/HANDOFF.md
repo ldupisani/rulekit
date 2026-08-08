@@ -1,13 +1,13 @@
 # rulekit handoff — generation workbench
 
-**Updated:** 2026-08-07
+**Updated:** 2026-08-08
 
 **Active campaign:** deterministic rule generation and human review
 
 **Status:** G1 through G4, G5a through G5g, G6, Reading-origin review,
 targetless sentence-interpretation review, fact-level review, the
 fraction-plural morphology correction, scoped
-`GroupTotal`, all thirty-one review-led grammar-boundary reconciliations,
+`GroupTotal`, all thirty-three review-led grammar-boundary reconciliations,
 the additive elided-comparison increment, and coordinated open-superclass
 totals are complete and gated. Plain
 count equatives such as `Tom buys as many roses as Mary` now emit a factor-one
@@ -36,8 +36,9 @@ cross-slot constraints while drawing one filler from its broader declared
 root sense; the relaxation remains visible in reviews and pinned retests but
 never counts toward strict coverage. Fingerprint-keyed authoring indexes keep
 repeat availability, compatible-filler, and generation requests responsive.
-The GSM8K project has explicit open-name fixtures, and all 108 loaded premise
-rules have a deterministic strict retained specimen. The Designer can also
+The GSM8K project has explicit open-name fixtures, and all 109 supported
+premise targets out of 111 loaded reading rules have a deterministic strict
+retained specimen. The Designer can also
 generate and explain one seeded sentence or promote
 an exact Reading sentence through an explicitly selected actual premise-rule
 match. It can also capture any non-question Reading sentence without a target
@@ -86,11 +87,70 @@ time-root realization is complete: both deictic markers are core-owned and
 reviewable, and the standard-pinned future rule unlocks. G5u direct-adverb
 visibility is complete: `currently` is core-owned, project-relative adverb
 breadth remains visible, and all 99 curated premise rules are selectable. G5v
-review-led premise auditing is active; thirty-one review batches are implemented
+review-led premise auditing is active; thirty-three review batches are implemented
 and fully gated. The core exploration vocabulary now contributes 25 additional
 category-aware identities, bringing the earlier frontier to 108/108 premise rules
-and 184 reachable identities. The logic-arithmetic bridge now raises the live
-frontier to 113/113 rules and 190 reachable identities. The latest reconciliation closes eight invalid
+and 184 reachable identities. The logic-arithmetic bridge raised the live
+frontier to 113/113 rules and 190 reachable identities. The core-English
+adposition increment now raises it to 263 reachable identities without adding
+another premise rule. It moves broadly useful preposition ownership into core,
+merges eight declared multiword forms before binding, and emits exact typed
+spatial, temporal, accompaniment, instrument, means, manner, cause, and purpose
+relations only through a source-indexed preposition/object/verb category
+triple. Overloaded forms whose added preposition sense broke established
+arithmetic parses remain on their stable sense until a governed construction is
+implemented. Relative event time is now preserved as a separate, conservative
+slice. Core owns `yesterday` and `tomorrow`; all four day-deictic words carry
+pack-declared signed offsets through `deictic_temporal_marker`. Exactly one
+marker attached to exactly one bound predicate emits `EventTime`, and differing
+coordinates derive the complete strict `Before` order. The existing
+`temporal_marker` category remains only `now`/`today`, so zero-offset age rules
+do not gain past/future fillers. The deictic field renders the ordered events
+while legacy quantity-time labels remain visibly opaque. The thirty-second
+reconciliation closes all eight live reviews. The two newly core-owned day
+words bring the reachable identity inventory to 265 without broadening any
+premise rule's slot domain. The arrival follow-up then moves `arrive`,
+`arrived`, and `arrives` into core with one normalized lemma and raises the
+inventory to 266. `adposition_roles` now accepts alternate category-gated
+frames for one canonical role: `arrive at PLACE` emits `spatial-goal`, while
+ordinary motion plus `at` does not gain a goal reading.
+The finite-domain temporal-location slice is now implemented. Event-linked
+spatial relations emit initiating, terminating, or holding `LocationEvent`
+facts only through declared verb categories. The exact “which of them” ask
+binds `them` to a conservative prior named-subject group and returns an ordered
+supported/contradicted/unknown status list for one declared place and relative
+day. Direct negative evidence supports contradiction; silence remains unknown,
+and conflicting direct evidence declines. An
+impossible-departure premise is local to the current question, licenses
+persistence but never initial presence, and conflicts visibly with an observed
+departure. Detached `If` sentences receive this scope only when immediately
+before the question. The day query excludes instant-grained `now`, and `may`
+does not masquerade as physical impossibility. Core now also owns the generic
+departure forms `leave`, `leaves`, and `leaving`; the new premise rule restores
+the then-current 114/114 generation frontier with 267 reachable identities. Trace
+serialization projects grouped obligation targets recursively, so the Designer
+receives named target lists rather than live `Unit` objects.
+The factual sibling “Nobody left the garden” now emits a distinct
+`LocationTransitionAbsence` over the narrative through the question's
+reference day. It supports earlier-arrival persistence without claiming
+inability, conflicts with an observed departure on or before that day, and
+remains compatible with a future departure. Contextual sense arbitration reads
+`left` as the departure verb when it takes a following nominal argument;
+established remainder questions retain their adjective reading. This adds one strictly
+generatable premise rule without adding a lexical identity, bringing the live
+frontier to 115/115 rules and 267 identities.
+Bare `be` now shares the direct-quantity-object exclusion already applied to
+finite copulas. Motion comparison verbs require an overt declared frequency or
+distance measure instead of treating arbitrary count nouns as motion measures;
+the short count-ratio frame reserves its optional particle for quantity events,
+uses a non-unit multiplier, and leaves destination motion to the complete
+repeated-verb frame. The three logic-arithmetic PP bridges now require explicit
+articles, declared institutional class restrictions, and the exact coordinated
+subject-role surface, so arbitrary preposition/noun and verb/preposition pairs
+emit no fact. `fraction-as-many` now requires positive quantity holders, a
+positive fraction no greater than one, and refuses a remnant PP inside the
+comparison frame. Every pinned sentence replays absent while the intended
+ordinary neighbours remain matched. The preceding reconciliation closes eight invalid
 strict surfaces across older comparison, anaphoric, fraction, percentage, and
 periodic-rate families. Common-noun roles now use positive holder/participant
 evidence; count comparisons use count directions; kinship standards are
@@ -103,8 +163,8 @@ generation a complete round trip: every requested binding must return with the
 same canonical lexical identity and every meaningful generated unit must be
 consumed. It also adds declarative measure-to-holder compatibility, preserving
 valid duration/length/mass comparisons while refusing incompatible standards;
-the consume-only dangling comparative remains reviewable without emitting a
-fact. Quantity-event families now apply positive participant and holder roles,
+the genuinely anchorless consume-only dangling comparative remains reviewable
+without emitting a fact. Quantity-event families now apply positive participant and holder roles,
 finite-form requirements, grammatical agreement, event-specific shucking
 objects, and normalized inflection lemmas across the reviewed siblings. All ten
 live invalid reviews replay absent, the two valid rows retain their intended
@@ -133,12 +193,83 @@ remnant-only PPs. Percent changes now separate singular mass currency from
 plural denominations, enforce agreement, and reject impossible decreases.
 Motion comparisons require an explicit frequency or distance measure and a
 declared plausible common-noun participant. Fractions authored as a part of
-one finite pool, pool pronoun, or remainder now stay within that whole and
-share ordinary subject/verb agreement; improper fractions remain available
-to unbounded ratios and comparisons. Fraction-valued comparison and change
+one finite pool, pool pronoun, remainder, or the reviewed `as many` linguistic
+frame now stay within that whole and share ordinary subject/verb agreement;
+other authored ratio and proportional frames remain unbounded unless they opt
+into the same qualifier. Fraction-valued comparison and change
 magnitudes are now also strictly positive, so a zero fraction cannot erase
 the standard or turn a stated change into equality; zero remains available to
 part-of-pool and partition facts where it has independent meaning.
+
+Possessive-determiner ownership is now preserved without collapsing the
+surface noun phrase. `her/his/their child` remains two readable units, while
+the noun carries an owner identity that can resolve to the unique preceding
+clause subject or a prior exact owned-noun mention. Counted phrases keep the
+object-pronoun boundary (`gives her 3 dollars` is not possession). Quantities
+and relations carry compatible owner fields; same-headed entities split by
+owner even when their values agree; relation saturation uses the exact owned
+standard; and `ask/how-old-is-possessed` queries the same owner-qualified
+identity. The new generated age sibling accepts “The teacher is 6 years older
+than her/his/their child” and retains ordinary definite and apostrophe-s
+forms. Curated now exposes 116 supported premise targets out of 118 loaded;
+the remaining two are deliberately non-generative reader/safety rules. The
+full gate is 4,672 tests. Curated is 71/71; GSM8K DEV-train/holdout are 107/0
+and 43/0; ASDiv, SVAMP, MAWPS, SciBench, and DIFG DEV are 45/0, 30/0, 11/0,
+6/0, and 75/0; FOLIO makes zero commitments. COGS DEV-train/holdout and PMB
+train/development retain 100% edge precision with zero incorrect graphs.
+Lint has zero errors and its one known warning. No protected TEST or
+generalization look was spent.
+
+Absolute-year age projection is now explicit and gated. The premise
+“ENTITY was N years old in YEAR” emits `AgeAtYear`, preserving the integral
+calendar coordinate and the entity's owner/qualifier/label identity instead
+of leaking an undated `Quantity`. “How old was ENTITY in YEAR?” projects the
+age by elapsed years only when every source coordinate agrees on one
+non-negative result. Missing evidence, fractional years, impossible negative
+ages, and inconsistent timelines decline. The supplied teacher reading
+answers 43; unrelated dated quantities do not gain projection semantics. The
+new premise is strictly generatable, bringing curated to 116/118 supported
+rules and GSM8K to 109/111; the same two reader/safety rules remain blocked.
+
+The distributive current-year age follow-up is also complete and gated.
+Subject-case `they` can denote one conservative prior subject group. Existing
+proper-name grouping is unchanged; when there are no names, definite or
+otherwise referential common-noun subjects reuse the matcher's single
+reference boundary. “How old are they now/today?” projects every exact group
+member or declines the whole query and returns a labelled series rather than a
+sum. Absolute `now` is never taken from a hidden wall clock: `solve` accepts an
+explicit `reference_year`, the Designer sends its current year, and the CLI
+offers `--reference-year`. With 2026, the teacher/child reading answers
+teacher=47 and child=26. Missing context or evidence, object-case `them`,
+repeated holders, ambiguous identities, negative ages, and inconsistent source
+coordinates all decline. Answer-level snapshots are neutral, all standing DEV
+gates remain at zero wrong/incorrect commitments, and no protected look was
+spent.
+
+Explicit-year group age aggregation is now complete and gated. Question-local
+plural possessive `their` can resolve to the same exact prior subject group,
+without changing premise ownership such as “their child.” “What was their
+combined age in 2020?” projects every member to 2020 and sums only after the
+all-or-nothing projection succeeds. For a teacher aged 20 in 1999 and a child
+aged 10 in 2010, the answer is 61; `total age` is also declared. Prenominal
+`together age`/`altogether age`, singular possessives, partial evidence,
+ambiguous identities, impossible projections, and unknown aggregate modes
+decline. Curated and GSM8K answer-level diffs are neutral; all standing DEV
+gates remain at zero wrong/incorrect commitments, and no protected look was
+spent.
+
+G6b structural exploration is now implemented. Generate can target the
+least-attempted, least-generated, least-reviewed, least-structurally-covered,
+live-review-attention, or seeded-random rule within any conjunctive selection
+of authored phenomena, categories, slot types, and emitted fact types.
+Optional include/omit outcomes, literal alternatives, and emitted fact
+type/field shapes are tracked as atomic current-fingerprint signatures; the
+least-covered objective deliberately forces the selected optional or literal
+outcome. Fresh success/failure rows preserve the objective, filters, and
+target without invalidating older ledger rows. The Designer also shows
+structural coverage, current success/failure health, and aggregated terminal
+blockers. Ask generation remains the next planned slice and will keep ask,
+answerable-scenario, and deliberate-decline coverage separate.
 
 **Active plan:**
 [`generation-and-annotation-plan.md`](generation-and-annotation-plan.md)
@@ -234,13 +365,65 @@ quantifier category; core-English `individually` belongs to a separate
 adverb-rooted individualizing category. This keeps `every`, `separately`,
 `respectively`, and arbitrary adverbs outside the accepted surface.
 
-The current L0–L5 gate is green at 4,493 tests and curated 71/71 with 113/113 premise
-rules selectable and 190 reachable identities. All standing
+The current gate is green at 4,626 tests and curated 71/71 twice. Curated now
+loads 116 reading rules and 267 reachable identities: 114 are selectable
+premise-generation targets, one is an explicitly reader-only compatibility
+frame, and one is an explicitly fact-free safety consumer. All standing
 answer-level DEV diffs are neutral: GSM8K is 108/0 and 43/0, ASDiv/SVAMP/
 MAWPS/SciBench are 45/0, 30/0, 11/0, and 6/0, and FOLIO makes zero
 commitments; DIFG remains 75/0. COGS DEV-train/holdout and PMB
 train/development remain at 100%
-projected-edge precision with zero incorrect graphs. Lint has zero errors.
+projected-edge precision with zero incorrect graphs. Lint has zero errors and
+its known single warning.
+No protected TEST or generalization look was spent.
+
+The thirty-third review reconciliation closes eleven genuine defects from the
+latest twelve live rows. Age comparatives no longer leak into unmeasured
+elided deltas; arrival and price predicates no longer accept quantity
+anaphors; age and dimension frames require compatible holders and measures;
+fractional comparisons distinguish interior `in` locations from surface `on`
+locations; possessive kinship standards require animate common nouns; and
+sum-of-ages uses a plural possessor. The reviewable dangling-comparative rule
+now enforces its documented anchorless boundary by refusing any sentence with
+the relational marker `than`. Invalid anchored and incompatible dangling
+comparatives are recognized only by a fact-free safety consumer, so they
+cannot reach the absolute-quantity fold. Reading and Generate exclude that
+consumer from premise matches and expose it separately as a non-reviewable
+safety interception; redundant safety co-matches disappear when a valid,
+more-specific premise already consumes the same units. The broad generated affine `as` nominal frame is
+retired, while a narrow reader-only state/NAME compatibility frame preserves
+the one established GSM8K corpus form without manufacturing reviewed-invalid
+event variants. The remaining review, `the amount of marbles that his teacher
+John has`, is a grammatical relative clause and correctly remains matched.
+
+The 2026-08-07 review reconciliation closes the newest six live curated
+reviews without making conditional verb-role guards fail closed globally:
+
+- comparative fraction slots now opt into
+  `word_fraction_within_whole`. Word and slash fractions above one decline,
+  while an explicitly marked percentage such as `500 percent more` remains
+  valid. The generator uses the same boundary, so ratios above one are left
+  to percentage or multiplier wording;
+- `teach` and `take` now carry declared animate argument requirements where
+  the reviewed comparison rules expose their subject/object roles. This
+  rejects inanimate actors and non-animate teaching objects while retaining
+  valid teachers, students, distance events, and other established verbs;
+- demonstrative quantity pro-forms reject copulas (`Mary was twice that
+  many`) without excluding legitimate desire/event verbs;
+- fraction-comparative human appositives use the existing
+  `animate_possessive_determiner` boundary;
+- the conjoined anchor now requires a complete standard reference and scopes
+  its optional adverb through `holding_anchor_adverb`, retaining forms such
+  as `currently`/`still` while refusing directional `off`; and
+- the original anchored relation now requires complete subject/standard
+  references but still preserves its same-holder measure comparison path
+  (`apples than oranges`).
+
+The complete gate is green at 4,604 tests. Curated remains 71/71 twice;
+GSM8K is 108/0 and 43/0; ASDiv/SVAMP/MAWPS/SciBench are 45/0, 30/0, 11/0,
+and 6/0; DIFG remains 75/0; FOLIO makes zero commitments; COGS DEV train and
+holdout and PMB train/development retain 100% projected-edge precision with
+zero incorrect graphs. Lint has zero errors and the same one known warning.
 No protected TEST or generalization look was spent.
 
 ## Completed increments — G1 vertical slice through G6 plus G5c–G5g

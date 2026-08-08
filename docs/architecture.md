@@ -1,6 +1,6 @@
 # RuleKit architecture
 
-**Updated:** 2026-08-06
+**Updated:** 2026-08-08
 **Status:** current implementation, not a roadmap
 
 RuleKit is a deterministic reading and reasoning engine for controlled,
@@ -68,13 +68,16 @@ mass currency from plural denominations, enforce agreement, and reject
 decreases beyond the whole quantity. Motion comparisons reject an unstated
 `as many` measure, accept explicit frequency through `as many times`, and use
 a separate distance relation for `as far`; common-noun motion roles must be
-declared plausible people, animals, or vehicles. The conjunct quantity family
+declared plausible people, animals, or vehicles. Explicit count frames also
+require their item to belong to the declared motion-comparison measure class,
+so transported objects such as grapes do not become distance or frequency
+units. The conjunct quantity family
 uses the same role boundary for its common-noun subject and, where present,
 its explicit standard. Its full conjunct rule also validates an optional PP
 through the pack-declared preposition/noun compatibility table. This remains
-separate from verb/measure compatibility: no global membership says that
-`travel` rejects every quantitative object or that an ordinary object such as
-`book` can never hold a quantity. Comparative `as many/as much`
+conditional on the verb category: ordinary quantity verbs retain their open
+count-object domain, while a motion verb activates the narrower measure role.
+Comparative `as many/as much`
 rules accept adverbial multipliers such as `twice`, `thrice`, and explicit
 `N times`, while the pack-declared `double`/`triple` predeterminers remain
 available for noun-phrase frames such as `double the amount`. The established
@@ -98,13 +101,63 @@ singular proper name admits `needs` or a number-neutral past form, not the
 plural/base `need`. The comparative form also applies `same_number` between
 its standalone count and noun, admitting `1 fewer shopper` and
 `2 fewer shoppers` while rejecting both mismatches. The current curated
-project has 113/113 selectable premise
-rules and 190 reachable lexicon identities. The
+project has 118 loaded reading rules and 267 reachable lexicon identities.
+Of those rules, 116 are selectable generated premises; one narrow legacy
+frame is explicitly reader-only and one broad fallback is explicitly a
+fact-free safety consumer. Keeping those roles in the schema prevents
+generation coverage from treating defensive recognition as authored English.
+Reading and Generate likewise keep surviving safety consumers out of their
+premise-match lists. A safety rule remains active inside the document matcher
+so it can suppress an unsafe fallback fold, but the Designer renders it in a
+separate, fact-free safety-interception panel and does not offer it as a
+premise-review target. When a more-specific ordinary premise subsumes the same
+match, the redundant safety co-match is omitted from that panel.
+The
 explicit `originally` ask routes through the existing start-state event
 inversion; a qualified start state with differently qualified same-measure
 events declines until modifier nesting is represented losslessly.
 Generated defects remain visible by design: mechanical support reports that a
 rule can be realized and matched, not that its premises license valid English.
+
+### Exact adposition roles
+
+Broad English preposition recognition is owned by `core-english`, including
+eight declared multiword lexemes. The analyzer condenses the longest matching
+multiword preposition before sense disambiguation and obligation attachment,
+so `next to`, `out of`, `because of`, and `due to` each behave as one relation
+marker. The generator admits these phrases only to preposition slots; they do
+not widen unconstrained word domains.
+
+Semantic interpretation is narrower than recognition. A frozen,
+source-indexed `adposition_roles` table joins three pack-declared categories:
+the preposition, its object, and the governing verb. A semantic role may
+declare several alternate frames; matching any frame produces that one role,
+without minting construction-specific role names. Spatial location, source,
+goal, and path; temporal point, boundary, and duration; and governed
+accompaniment, instrument, means, manner, cause, and purpose relations all use
+that one generic join. Exactly one surviving role emits a `VerbalRelation`
+whose `role`, exact `prep`, object, indefiniteness, and originating event
+remain inspectable; zero or multiple roles emit nothing. The event identity
+joins a spatial relation to its `EventTime` without joining unrelated events
+that happen to share a verb lemma.
+
+The arrival boundary demonstrates why alternate frames matter. General motion
+goals require the ordinary `to`/`toward`/`into`/`onto` category. A second
+`spatial-goal` frame joins the arrival-only verb category with the separate
+`at` category, so `arrived at the garden` preserves a destination while
+`walked at the garden` retains only its pre-existing locative interpretation.
+Core owns `arrive`, `arrived`, and `arrives`, and the inflected forms normalize
+to one lemma. These supplementary relations do not consume syntax or imply an
+answer. Unsupported and overloaded forms therefore remain reviewable without
+being promoted to a semantic commitment.
+
+The logic-arithmetic PP bridge is narrower again. Its class-wide and named
+membership rules require an explicit article and the declared institutional
+class-restriction preposition/place categories. Its coordinated verbal rule
+requires the declared subject-role predicate and the same complete PP. Broad
+recognition can therefore expose `of`, `on`, and other markers without letting
+an arbitrary pair mint an `Atom`, `QuantifiedQuantity`, or coordinated
+`VerbalRelation`.
 
 Entity slots can now declare `common_noun_cat` when names and common nouns
 share a grammatical position but only a positive subset of common nouns is
@@ -258,6 +311,40 @@ without typed gender/person compatibility, several prior names stay tied. In a
 question-local assumption context, sentence distance becomes available to the
 same strict-dominance resolver; a uniquely re-mentioned person may win, while
 two people in the same nearest sentence still decline.
+
+The same scope boundary supports a narrow location-persistence slice. A
+leading `If` clause inside the question, or one detached premise immediately
+before the question, may emit a `LocationConstraint`; the detached form also
+requires its complete read rule to opt into `question_assumption`. A detached
+conditional anywhere else remains an ordinary unread premise. Pack-declared
+initiating, terminating, and holding verb categories turn event-linked spatial
+relations into `LocationEvent` facts. A constraint that makes termination
+impossible can preserve an earlier initiation to a later day, but it cannot create an
+initial location. An observed forbidden termination creates an explicit
+`LocationConstraintViolation` and vetoes the answer rather than letting the
+assumption erase evidence.
+
+An asserted “Nobody left the PLACE” has a separate meaning. Its exact
+past-tense rule emits `LocationTransitionAbsence` with
+`narrative-through-reference` scope: no terminating event occurred in the
+current narrative up to the day selected by the question. It is evidence
+about what happened, not evidence that departure was impossible. An earlier
+arrival may persist through that interval; an observed same-or-earlier
+departure conflicts and declines, while a future departure remains
+compatible. The factual location rule admits the `left` homograph only before
+a definite declared place; terminal state/remnant frames such as “are left”
+and “have money left” retain the adjective reading.
+
+“Which of them” is finite-domain deixis, not an invitation to enumerate every
+known entity. For this ask only, `them` resolves to the nearest conservative
+group of prior named subjects; named objects or an ambiguous group make the
+ask decline. The `location-witnesses` consumer returns one ordered status per
+candidate. Direct evidence or licensed persistence is `supported`; absence of
+evidence is `unknown`, never false; and a direct same-day negative location
+observation is `contradicted`. Conflicting direct positive and negative
+observations decline. The current day-grained ask accepts
+`yesterday`, `today`, or `tomorrow` and deliberately excludes instant-grained
+`now`.
 
 These are the first five semantic slices of the staged design in
 [`logic-arithmetic-integration-plan.md`](logic-arithmetic-integration-plan.md).
@@ -438,11 +525,13 @@ non-termination into an error.
 
 ### 4. Resolve document context
 
-The document loop currently resolves two cross-sentence phenomena:
+The document loop currently resolves three cross-sentence phenomena:
 
 - personal discourse reference against prior compatible referents; and
 - measure anaphora such as a later “ones” referring to one prior counted noun
-  lemma.
+  lemma; and
+- a question-only plural group referent for the exact “which of them” location
+  ask.
 
 Resolution uses the deictic arbitration primitive and fails closed when no
 candidate strictly dominates. Changed sentences have their read rules rerun;
@@ -468,7 +557,8 @@ interpretation, the result is a structured clarification request.
 Consumers are Python implementations registered by name under
 `kernel/consumers/`. They read only the normalized query, saturated store,
 registry, arithmetic log, match metadata, and premise readings. Consumers may
-return numeric answers, yes/no/undetermined verdicts, proofs, or declines.
+return numeric answers, labelled series, finite witness-status lists,
+yes/no/undetermined verdicts, proofs, or declines.
 
 ### 6. Guard the commitment
 
@@ -477,6 +567,8 @@ Guards run only against a proposed commitment:
 - numeric scalar and labelled-series answers are checked for unread
   vocabulary, unused or multiply used operative values, unresolved
   derivations, and related accounting failures;
+- witness-status answers are checked for unread vocabulary, unmet grammatical
+  obligations, and unsupported truth-scoping operators; and
 - verdict answers use a supported-fragment guard that rejects unread
   truth-scoping operators.
 
@@ -494,14 +586,34 @@ state and fact use; they do not special-case rule ids.
 | `Fact` | immutable typed commitment with `Provenance` |
 | `FactStore` | admission, agreement, collision quarantine, and fact lookup |
 | `Document` | premise readings, store, arithmetic/deictic log, consumed units, rounds, and gaps |
-| `Answer` | number, labelled numeric series, verdict, or decline, optionally with proof or clarification |
+| `Answer` | number, labelled numeric series, witness statuses, verdict, or decline, optionally with proof or clarification |
 | `Result` | complete runtime surface: answer, readings, store, log, veto, and document |
 
 The fact model covers arithmetic quantities and relations, membership and
-logical structures, rates, prices, partitions, aliases, and explicit
+logical structures, rates, prices, partitions, aliases, event-linked location
+changes and constraints, dated ages, and explicit
 `SemanticGraphNode`/`SemanticGraphEdge` facts. Specialized fact classes keep
 their own identity keys and value parts; the store does not flatten all
 meaning into generic triples.
+
+`AgeAtYear` records one entity's age at an integral absolute calendar-year
+coordinate. It is intentionally separate from `Quantity.time`: a dated age
+may be projected one-for-one with elapsed years, while an arbitrary dated
+population, balance, or holding may not. Its identity retains owner,
+qualifier, and label fields so same-headed people remain distinct. The
+`age-at-year` consumer accepts either one entity with an explicit target year
+or one exact discourse group. A group can be projected to a current-moment
+marker with an explicit caller-supplied reference year, or to an explicit
+target year. The group path projects every member or declines the whole query.
+It returns a labelled series by default; an ask that explicitly requests a
+combined or total age sums the successfully projected members only after the
+all-or-nothing projection succeeds. Both paths require every matching source
+coordinate to project to the same non-negative age and decline on fractional
+coordinates, impossible projections, ambiguous identities, or inconsistent
+timelines. The kernel never consults the wall clock: the Designer sends its
+current year, the CLI exposes `--reference-year`, and a replay without that
+context declines. A dated age never becomes a timeless `Quantity`, so an
+undated “how old” question cannot silently borrow it.
 
 `GroupTotal` has an optional exact `scope`. A leading total construction that
 binds a subject retains its normalized identity, so blue and red totals for
@@ -615,6 +727,8 @@ The optional `server` dependencies provide a local FastAPI application and a
 vanilla-JavaScript designer. The designer exposes:
 
 - a Generate mode for seeded rule realization and human review;
+- structural exploration objectives, conjunctive grammar/category/fact
+  filters, and a generation-health panel;
 - an explicit Reading-sentence handoff into that same review workbench;
 - targetless Reading reviews for intended interpretations and missing-rule
   suggestions;
@@ -632,7 +746,7 @@ surface; the designer's impact panel targets suites and answer datasets.
 ### Generation and review workbench
 
 `rulekit.generation` is an authoring layer outside the runtime kernel. Its
-implemented G1–G6 data flow is:
+implemented G1–G6b data flow is:
 
 ```text
 loaded Project + project generation fixtures
@@ -662,13 +776,15 @@ projects/<project>/generation/reviews.jsonl
 
 fresh strict-positive realization only
         ↓
-schema-bounded rule + normalized lexicon filler observation
+schema-bounded rule + normalized lexicon filler + structural observation
         ↓
 projects/<project>/generation/exploration.jsonl
         ↓
 fold with current availability + live reviews
         ↓
 blocked / untouched / generated-unreviewed / reviewed navigation
+        +
+current-fingerprint optional/literal/fact-shape coverage and failure health
 
 one selected slot → exclude its current filler
         ↓
@@ -711,7 +827,8 @@ catalog. These indexes affect only generation latency and never the runtime
 reader, matcher, or benchmark path.
 
 The current realization boundary covers literals, project-fixture names,
-simple nouns/verbs/adjectives/prepositions/words, shared finite-versus-bare
+simple nouns/verbs/adjectives/prepositions/words, declared multiword
+prepositions, shared finite-versus-bare
 verb morphology, scalar number forms,
 compatible category gates, declared single-token plural nouns, declared
 integer-count-plus-noun compositions, bounded proper-name possessive noun
@@ -765,6 +882,27 @@ Filler identity remains the singular head lemma; the owner fixture,
 contraction, possessive declaration, noun declaration, and conditional plural
 morphology remain separately inspectable evidence. No fixture owner is
 counted as lexicon exploration.
+
+Runtime reading also preserves ownership in the ordinary two-unit
+possessive-determiner form. A declared `possessive_determiner` immediately
+governing an uncounted noun stays visible as its own unit, while condensation
+attaches the owner identity and determiner reference to the noun. This does
+not mistake an object pronoun followed by a counted phrase (`gives her 3
+dollars`) for possession. A pack-declared third-person subset may resolve to
+the one preceding clause subject; that subject is followed through an already
+resolved pronoun (`He ... his sister` therefore records the named antecedent,
+not the surface `he`). The nearest resolved repetition of the same possessed
+noun can carry that owner into a later sentence. Otherwise the explicit
+determiner identity is retained rather than guessed.
+
+`Quantity.owner`, `Relation.subject_owner`, and `Relation.standard_owner`
+carry this identity separately from the noun head. The fact store splits
+different owners before agreement deduplication, so `Mary's child` and
+`John's child` remain distinct even when both ages are 10. Relation saturation
+uses an exact `(entity, owner, measure)` index and will not borrow another
+owner's same-headed quantity. Owner-aware asks route the same owner field to
+the ordinary single-entity consumer. Unowned and single-owner legacy facts
+retain their bare entity key, preserving established cross-mention folding.
 
 A category-gated noun slot may additionally declare `possessed: true`. This
 does not create a second possessive representation: it filters the same
@@ -873,10 +1011,30 @@ memberships to those identities—`difg-mined` adds `litter` to noun-sensed
 modal generation domain.
 
 Temporal markers follow the same ownership rule. The generally useful
-time-sensed words `now` and `today` and their `temporal_marker` memberships
-live in core. Extension packs may contribute other time vocabulary, but a
-category slot receives only members of its declared category rather than
-every word sharing the root sense.
+time-sensed words `yesterday`, `now`, `today`, and `tomorrow`, their broader
+`deictic_temporal_marker` memberships, and their signed `temporal_offsets`
+live in core. The narrower `temporal_marker` remains exactly `now` and
+`today`: rules that require a current-moment standard must not silently admit
+past or future markers merely because the event fold can order them. The
+generic fold uses the broader coordinates only when exactly one marker can
+attach to exactly one predicate with a bound subject. It emits an `EventTime`
+fact keyed to that predicate occurrence; the document derives a `Before` fact
+for every pair with strictly different offsets. Equal offsets produce no
+direction, and competing markers or predicates produce no event time rather
+than guessing scope. The deictic field draws this ordered relative axis while
+keeping legacy `Quantity.time` labels visibly opaque. Extension packs may
+contribute other time vocabulary, but a category slot receives only members
+of its declared category rather than every word sharing the root sense.
+The narrower `day_deictic_marker` contains `yesterday`, `today`, and
+`tomorrow` for asks that compare whole relative days; `now` is excluded
+because it names an instant rather than a day. One such ask can select
+location witnesses at a declared day. A second narrow ask projects an explicit
+`AgeAtYear` between two absolute integral years. Its group siblings can
+project an exact prior subject group to `now`/`today` only when the caller
+provides the absolute reference year, or project that group to an explicit
+year and sum it when the question explicitly asks for a combined or total age.
+They do not create a general temporal-query consumer or make arbitrary dated
+quantities trendable.
 
 The core adverb ownership move is intentionally smaller. Only generally useful
 `currently` moved with the grammar that needs at least one ordinary anchor;
@@ -965,7 +1123,9 @@ fraction values in the closed interval `[0, 1]`; matcher and generator use the
 same unit/filler value, so locked improper-fraction probes fail at the filler
 boundary and an analyzed improper fraction cannot match. The qualifier is not
 the default: ratio, affine, and proportional-increase positions remain
-unbounded unless their own authored semantics say otherwise.
+unbounded unless their own authored semantics say otherwise. The reviewed
+`fraction-as-many` frame opts in because a ratio greater than one belongs in
+the multiplier family rather than this part-of-whole surface.
 
 A fraction token may independently opt into `fraction_positive: true` when
 its numeric value supplies a comparison or change magnitude. The matcher and
@@ -976,8 +1136,8 @@ the standard, while a zero proportional delta would contradict its stated
 direction by reducing to equality. `FractionQuantity` and partition rules do
 not declare it, so zero remains available when the fact itself meaningfully
 states that none of a pool or collection participates. The qualifier does not
-impose an upper bound; positive improper fractions remain valid in unbounded
-ratio and affine positions.
+impose an upper bound; positive improper fractions remain valid in authored
+unbounded ratio and affine positions.
 
 A verb token may declare `bare_form: true`. The matcher and generator share
 one lemma-aware morphology check: the lemma itself and declared non-third-
@@ -1177,6 +1337,12 @@ fresh candidates and single-slot minimal pairs append candidate id, rule,
 seed, registry fingerprint, and the lexicon-backed filler identities,
 surfaces, slots, and declaration sources actually sampled to the one fixed
 `exploration.jsonl` path. Reading promotion and pinned retest append nothing.
+Fresh strict rows also retain the exploration objective, conjunctive filters,
+targeted structural signature, observed optional/literal/fact-shape
+signatures, and rule phenomena. Older rows remain schema-valid through empty
+defaults. Because an edit may redefine a branch or emit shape, structural
+coverage counts only rows carrying the current registry fingerprint; the
+older append-only rule and filler history remains available separately.
 The status endpoint folds those events with current rule availability and the
 live append-only review history. A pre-G6 or targeted Reading-origin review may
 therefore mark its rule reviewed without claiming any normalized filler
@@ -1186,9 +1352,14 @@ reviewed.
 
 The reachable filler universe is derived only from current supported-rule
 domains and lexicon source entries; fixture names, literals, and numeric
-surfaces are excluded. Generate next chooses among the least-generated
-compatible rules and fillers, with sorted seeded tie-breaking, or validates an
-explicit rule/lexicon pairing. The selected entry's existing `SourceIndex`
+surfaces are excluded. Generate next can choose the least-attempted,
+least-generated, least-reviewed, least-structurally-covered, review-attention,
+or seeded-random rule within all selected phenomenon/category/fact/slot
+filters. The structural objective forces an optional include/omit or literal
+alternative when that is the selected atomic gap; automatic lexical probing
+is kept independent so an unrelated filler lock cannot make the branch
+unreachable. An explicitly selected filler may still be combined deliberately.
+The selected entry's existing `SourceIndex`
 location opens through the same editable-document allowlist. Exploration
 counts never enter candidate retesting or hypothesis evidence.
 

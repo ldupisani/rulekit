@@ -32,6 +32,8 @@ from rulekit.data.project import load_project
 from rulekit.kernel.consumers import CONSUMERS, ConsumerContext
 from rulekit.kernel.engine import solve
 from rulekit.kernel.evaluate import ArithmeticLog
+from rulekit.kernel.facts import FactStore
+from rulekit.kernel.model import AgeAtYear, Provenance
 from rulekit.kernel.patterns import SKIPPABLE_SENSES, match_ask
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -47,13 +49,28 @@ def scratch():
     return load_project(ROOT / "projects" / "scratch").registry
 
 
-def call(name, reg, query, question=None, store=None, match=None, ask=None):
+@pytest.fixture(scope="module")
+def curated():
+    return load_project(ROOT / "projects" / "curated").registry
+
+
+def call(
+    name,
+    reg,
+    query,
+    question=None,
+    store=None,
+    match=None,
+    ask=None,
+    reference_year=None,
+):
     """Invoke a consumer directly. Fields default to None so a consumer that
     starts reading state its guard never needed fails loudly here rather than
     silently exercising a different path (the molar-mass file's discipline)."""
     return CONSUMERS[name](ConsumerContext(
         query=query, question=question, store=store, reg=reg,
         log=ArithmeticLog(), match=match, ask=ask,
+        reference_year=reference_year,
     ))
 
 
@@ -137,6 +154,121 @@ def test_age_projected_without_an_offset(gsm8k):
     got = call("age-projected", gsm8k, {"entity": "deja", "measure": "year"})
     assert got.kind == "decline"
     assert "projected age ask has no stated year offset" in got.reason
+
+
+def test_age_at_year_needs_all_required_query_fields(curated):
+    got = call("age-at-year", curated, {"entity": "", "measure": "year"})
+    assert got.kind == "decline"
+    assert "needs an entity, measure, and target year" in got.reason
+
+
+def test_age_at_year_needs_a_readable_target_year(curated):
+    got = call(
+        "age-at-year",
+        curated,
+        {"entity": "cato", "measure": "year", "target_year": "blorp"},
+    )
+    assert got.kind == "decline"
+    assert "as a calendar year" in got.reason
+
+
+def test_age_at_year_rejects_an_invalid_source_coordinate(curated):
+    store = FactStore(facts=[
+        AgeAtYear(
+            provenance=Provenance(source="synthetic", sentence=0),
+            entity="cato",
+            measure="year",
+            value=20,
+            year=1999.5,
+        )
+    ])
+    got = call(
+        "age-at-year",
+        curated,
+        {"entity": "cato", "measure": "year", "target_year": "2022"},
+        store=store,
+    )
+    assert got.kind == "decline"
+    assert "invalid dated age source" in got.reason
+
+
+def test_age_at_year_group_needs_distinct_entities(curated):
+    got = call(
+        "age-at-year",
+        curated,
+        {
+            "holders": ["cato", "cato"],
+            "measure": "year",
+            "target_marker": "now",
+        },
+        reference_year=2026,
+    )
+    assert got.kind == "decline"
+    assert "at least two distinct entities" in got.reason
+
+
+def test_age_at_year_rejects_a_noncurrent_deictic_marker(curated):
+    got = call(
+        "age-at-year",
+        curated,
+        {
+            "holders": ["cato", "dena"],
+            "measure": "year",
+            "target_marker": "tomorrow",
+        },
+        reference_year=2026,
+    )
+    assert got.kind == "decline"
+    assert "is not a current-year age marker" in got.reason
+
+
+def test_age_at_year_group_rejects_ambiguous_holder_identity(curated):
+    store = FactStore(facts=[
+        AgeAtYear(
+            provenance=Provenance(source="synthetic-a", sentence=0),
+            entity="child",
+            measure="year",
+            value=10,
+            year=2010,
+            owner="alex",
+        ),
+        AgeAtYear(
+            provenance=Provenance(source="synthetic-b", sentence=1),
+            entity="child",
+            measure="year",
+            value=12,
+            year=2010,
+            owner="blair",
+        ),
+    ])
+    got = call(
+        "age-at-year",
+        curated,
+        {
+            "holders": ["child", "teacher"],
+            "measure": "year",
+            "target_marker": "now",
+        },
+        store=store,
+        reference_year=2026,
+    )
+    assert got.kind == "decline"
+    assert "identity is ambiguous for 'child'" in got.reason
+
+
+def test_age_at_year_rejects_an_unknown_group_aggregate(curated):
+    got = call(
+        "age-at-year",
+        curated,
+        {
+            "holders": ["child", "teacher"],
+            "measure": "year",
+            "target_year": "2020",
+            "aggregate": "median",
+        },
+    )
+    assert got.kind == "decline"
+    assert "unsupported dated age aggregate 'median'" in got.reason
 
 
 # --- guards that read the QUESTION's number list ---------------------------
@@ -237,6 +369,77 @@ def test_a_partially_read_verdict_question_declines(scratch, consumer_name, text
     query, res, truncated, ask, dropped = _partially_read(scratch, text, consumer_name)
     got = call(consumer_name, scratch, query, question=res.question,
                store=res.store, match=truncated, ask=ask)
+    assert got.kind == "decline"
+    assert "question states" in got.reason
+    assert dropped.surface in got.reason
+
+
+# --- location-witnesses: group membership and day grain are resolution-time
+# contracts, while full question consumption is matcher-enforced. Direct calls
+# prove the defensive re-checks without inventing an ask surface that cannot
+# route there.
+
+LOCATION_TEXT = (
+    "Aven arrived at the garden yesterday. "
+    "Bira arrived at the garden today. "
+    "Which of them are at the garden today?"
+)
+
+
+def _location_context(curated):
+    result = solve(LOCATION_TEXT, curated, tracing=False)
+    matched = match_ask(result.question, curated)
+    assert matched is not None
+    ask, query, match = matched
+    assert query["consumer"] == "location-witnesses"
+    return result, ask, query, match
+
+
+def test_location_witnesses_needs_an_exact_group(curated):
+    result, ask, query, match = _location_context(curated)
+    got = call(
+        "location-witnesses",
+        curated,
+        {**query, "candidates": []},
+        question=result.question,
+        store=result.store,
+        match=match,
+        ask=ask,
+    )
+    assert got.kind == "decline"
+    assert "needs one exact group" in got.reason
+
+
+def test_location_witnesses_needs_a_declared_day(curated):
+    result, ask, query, match = _location_context(curated)
+    got = call(
+        "location-witnesses",
+        curated,
+        {**query, "when": "now"},
+        question=result.question,
+        store=result.store,
+        match=match,
+        ask=ask,
+    )
+    assert got.kind == "decline"
+    assert "needs one declared day and place" in got.reason
+
+
+def test_a_partially_read_location_question_declines(curated):
+    query, result, truncated, ask, dropped = _partially_read(
+        curated,
+        LOCATION_TEXT,
+        "location-witnesses",
+    )
+    got = call(
+        "location-witnesses",
+        curated,
+        query,
+        question=result.question,
+        store=result.store,
+        match=truncated,
+        ask=ask,
+    )
     assert got.kind == "decline"
     assert "question states" in got.reason
     assert dropped.surface in got.reason

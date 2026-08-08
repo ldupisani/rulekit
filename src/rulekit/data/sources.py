@@ -65,6 +65,8 @@ class SourceIndex:
     subject_role_derivations: dict[tuple[str, str], SourceRef] = field(
         default_factory=dict
     )
+    adposition_roles: dict[str, SourceRef] = field(default_factory=dict)
+    temporal_offsets: dict[str, SourceRef] = field(default_factory=dict)
     numeric: dict[tuple[str, str], SourceRef] = field(default_factory=dict)
 
     def merge(self, other: "SourceIndex") -> None:
@@ -84,6 +86,8 @@ class SourceIndex:
             "attribute_compatibility",
             "measure_holder_compatibility",
             "subject_role_derivations",
+            "adposition_roles",
+            "temporal_offsets",
             "numeric",
         ):
             target = getattr(self, name)
@@ -286,6 +290,30 @@ def _index_categories(
                 label=f"{verb} + {prep} → {derivation.role}",
                 item=prep_no,
             )
+
+    raw_adposition_roles = raw.get("adposition_roles", {})
+    for role in doc.adposition_roles:
+        if role not in raw_adposition_roles:
+            continue
+        index.adposition_roles[role] = _ref(
+            path,
+            raw_adposition_roles,
+            kind="adposition-role",
+            label=role,
+            key=role,
+        )
+
+    raw_temporal_offsets = raw.get("temporal_offsets", {})
+    for marker in doc.temporal_offsets:
+        if marker not in raw_temporal_offsets:
+            continue
+        index.temporal_offsets[marker] = _ref(
+            path,
+            raw_temporal_offsets,
+            kind="temporal-offset",
+            label=f"{marker} @ {doc.temporal_offsets[marker]:+g}",
+            key=marker,
+        )
 
 
 def _index_numbers(

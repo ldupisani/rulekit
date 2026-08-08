@@ -130,6 +130,10 @@ class Registry:
     attribute_compatibility: Mapping[str, tuple[str, ...]]
     measure_holder_compatibility: Mapping[str, tuple[str, ...]]
     subject_role_derivations: Mapping[tuple[str, str], str]
+    adposition_roles: Mapping[
+        str, tuple[tuple[str, str, str, bool], ...]
+    ]
+    temporal_offsets: Mapping[str, float]
     context_synonyms: Mapping[str, tuple[str, tuple[str, ...]]]  # concept -> (gate, forms)
     attrs: Mapping[str, Mapping[str, float]]
     part_counts: Mapping[str, str]
@@ -362,6 +366,10 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
     measure_holder_compatibility: dict[str, list[str]] = {}
     subject_role_derivations: dict[tuple[str, str], str] = {}
     subject_role_verbs: set[str] = set()
+    adposition_roles: dict[
+        str, tuple[tuple[str, str, str, bool], ...]
+    ] = {}
+    temporal_offsets: dict[str, float] = {}
     category_members: dict[str, list[str]] = {}
     context_synonyms: dict[str, tuple[str, tuple[str, ...]]] = {}
     attrs: dict[str, dict[str, float]] = {}
@@ -430,6 +438,31 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                             "is not declared"
                         )
                     subject_role_derivations[(verb, prep)] = derivation.role
+            for role, declared in doc.adposition_roles.items():
+                if role in adposition_roles:
+                    raise CompileError(f"adposition role {role!r} defined twice")
+                definitions = (
+                    declared if isinstance(declared, list) else [declared]
+                )
+                adposition_roles[role] = tuple(
+                    (
+                        definition.preposition_category,
+                        definition.object_category,
+                        definition.verb_category,
+                        definition.allow_name_object,
+                    )
+                    for definition in definitions
+                )
+            for marker, offset in doc.temporal_offsets.items():
+                if (
+                    marker in temporal_offsets
+                    and temporal_offsets[marker] != offset
+                ):
+                    raise CompileError(
+                        f"temporal offset {marker!r} declared twice with "
+                        "different values"
+                    )
+                temporal_offsets[marker] = offset
             for concept, syn in doc.context_synonyms.items():
                 context_synonyms[concept] = (syn.gate, tuple(syn.forms))
             for word, table in doc.attrs.items():
@@ -496,6 +529,32 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                     f"{category!r} is not noun-rooted"
                 )
 
+    def _category_root(category: str) -> str:
+        root = category
+        while root in category_parents:
+            root = category_parents[root]
+        return root
+
+    for role, frames in sorted(adposition_roles.items()):
+        for frame_no, (prep, obj, verb, _) in enumerate(frames, start=1):
+            for category, expected, field_name in (
+                (prep, "preposition", "preposition"),
+                (obj, "noun", "object"),
+                (verb, "verb", "verb"),
+            ):
+                if category not in category_parents and category not in ROOT_SENSES:
+                    raise CompileError(
+                        f"adposition role {role!r} frame {frame_no} names "
+                        f"unknown {field_name} category {category!r}"
+                    )
+                root = _category_root(category)
+                if root != expected:
+                    raise CompileError(
+                        f"adposition role {role!r} frame {frame_no} "
+                        f"{field_name} category {category!r} is {root!r}-rooted, "
+                        f"not {expected!r}-rooted"
+                    )
+
     # invariant: antonyms symmetric + memberships disjoint
     for a, b in sorted(category_antonyms.items()):
         if category_antonyms.get(b) not in (None, a):
@@ -517,8 +576,18 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
         while root in category_parents:
             root = category_parents[root]
         for word in category_members[cat]:
-            head = word.split()[0]  # multi-word members ("give away") check the head
-            entry = lexicon.get(head) or lexicon.get(plural_to_singular.get(head, head))
+            # A declared multiword lexeme ("next to") owns its sense as a
+            # whole.  Legacy compositional members such as "give away" still
+            # validate through their head when no whole-phrase entry exists.
+            # This keeps phrase recognition declarative without requiring the
+            # first token ("next") to acquire a misleading standalone
+            # preposition sense.
+            head = word.split()[0]
+            entry = (
+                lexicon.get(word)
+                or lexicon.get(head)
+                or lexicon.get(plural_to_singular.get(head, head))
+            )
             if entry is None:
                 raise CompileError(
                     f"category {cat!r} member {word!r} is not in the lexicon"
@@ -528,6 +597,18 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                     f"category {cat!r} member {word!r} lacks the root sense {root!r}"
                 )
             word_categories.setdefault(word, []).append(cat)
+
+    for marker in sorted(temporal_offsets):
+        entry = lexicon.get(marker)
+        if entry is None or "time" not in entry.senses:
+            raise CompileError(
+                f"temporal offset {marker!r} needs a time-sensed lexicon entry"
+            )
+        if "deictic_temporal_marker" not in word_categories.get(marker, ()):
+            raise CompileError(
+                f"temporal offset {marker!r} needs "
+                "deictic_temporal_marker membership"
+            )
 
     # invariant: context-synonym gates are real categories
     for concept, (gate, _forms) in sorted(context_synonyms.items()):
@@ -1220,6 +1301,8 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
             }
         ),
         subject_role_derivations=_freeze(subject_role_derivations),
+        adposition_roles=_freeze(adposition_roles),
+        temporal_offsets=_freeze(temporal_offsets),
         context_synonyms=_freeze(context_synonyms),
         attrs=_freeze({k: _freeze(v) for k, v in attrs.items()}),
         part_counts=_freeze(part_counts),

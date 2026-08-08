@@ -13,20 +13,22 @@ additive and structurally disjoint from its base rule (verified below):
    the file's pre-existing appositive prefix ("than his friend Sam"), which
    always expects a name to follow the pair. `std_det, type: pronoun` is
    MANDATORY (never optional): this rule exists only for the bare
-   determiner+noun shape. `standard: "{std}"` keys off the noun's own
-   lemma, exactly the entity key the general SVO fold already uses for a
-   sentence like "Her sister has 8 marbles."
+   determiner+noun shape. The relation keeps the noun head and its owner as
+   separate fields, matching the same owner-qualified noun in a sentence
+   like "Her sister has 8 marbles."
 
 2. `arithmetic/anchored-relation-possessive-kinship-standard`: the same
    mechanism one literal over ('than' in place of 'as'), sibling of
    arithmetic/anchored-relation.
 
-3. `arithmetic/affine-frame-relation-as-standard`: the 'as'-continuation
-   sibling of arithmetic/affine-frame-relation ("N more/fewer than K times
-   the number of ITEM AS STD", instead of the base rule's mandatory 'that'
-   complementizer) — the same 'that' vs. 'as' split arithmetic/times-the-
-   number-of / arithmetic/times-frame-relation-clause already carry for the
-   plain (non-affine) frame, applied here to the affine frame.
+3. `arithmetic/affine-frame-relation-as-standard` originally added a broad
+   'as'-continuation after "the number of ITEM". Later human review found
+   event and common-noun realizations of that nominal frame ungrammatical.
+   The broad generated form is therefore retired; a narrow reader-only
+   compatibility consumer preserves the one established state/NAME corpus
+   frame, and the historical event specimen remains below as a decline-
+   safety test. The grammatical `that`, bare-relative, and `as many ... as`
+   forms remain.
 
 4. `arithmetic/affine-item-relation-clause`: the BARE-ITEM sibling of
    arithmetic/times-frame-relation-clause, applied to the affine frame —
@@ -78,7 +80,7 @@ def full_registry():
 def test_times_as_many_possessive_kinship_standard(full_registry):
     # "K times as many ITEM as her sister" — no trailing name at all; the
     # sister's own count is stated in a separate sentence, keyed by the
-    # bare kinship lemma.
+    # same owner-qualified kinship noun.
     r = solve(
         "Maya has four times as many marbles as her sister. Her sister "
         "has 6 marbles. How many marbles do they have altogether?",
@@ -100,15 +102,17 @@ def test_anchored_relation_possessive_kinship_standard_chain(full_registry):
     assert r.answer.value == 3 + 8 + 32
 
 
-def test_affine_frame_relation_as_standard(full_registry):
-    # "N more ITEM than K times the number of ITEM AS STD" — the affine
-    # count-noun frame ending in 'as' rather than a 'that'-relative clause.
+def test_broad_affine_frame_as_standard_event_surface_declines(full_registry):
+    # Human review rejected this event realization of "the number of ITEM
+    # AS STD". A narrow reader-only state/NAME compatibility frame remains;
+    # the grammatical `that STD VERB`, bare-relative, and `as many ITEM as
+    # STD VERB` families remain ordinarily generatable.
     r = solve(
         "Talia sold 5 more stickers than 2 times the number of stickers as "
         "Rosa sold. If Rosa sold 12 stickers, how many stickers did Talia sell?",
         full_registry,
     )
-    assert r.answer.value == 29
+    assert r.answer.value is None
 
 
 def test_affine_item_relation_clause_money_frame(full_registry):

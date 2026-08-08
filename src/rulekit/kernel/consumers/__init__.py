@@ -55,6 +55,10 @@ class ConsumerContext:
     # whole-document numeric consumers may additionally audit the original
     # unit-bearing values without reconstructing them from facts.
     premises: tuple["Reading", ...] = ()
+    # An explicit absolute calendar coordinate supplied by the caller. The
+    # kernel never reads the wall clock: deictic asks such as ``now`` decline
+    # when this context is absent, keeping benchmarks and replay deterministic.
+    reference_year: int | None = None
 
 
 # name -> handler, dispatched BEFORE `answer()`'s if-chain so an extracted
@@ -123,6 +127,7 @@ from . import (  # noqa: E402,F401  (import registers each handler)
     label_difference as _label_difference,
     item_cost as _item_cost,
     deficit as _deficit,
+    age_at_year as _age_at_year,
     age_projected as _age_projected,
     membership_verdict as _membership_verdict,
     logic_disjunction_verdict as _logic_disjunction_verdict,
@@ -138,6 +143,7 @@ from . import (  # noqa: E402,F401  (import registers each handler)
     discounted_total as _discounted_total,
     geometry as _geometry,
     list_statistic as _list_statistic,
+    location_witnesses as _location_witnesses,
     measure_cost as _measure_cost,
     molar_mass as _molar_mass,
     number_theory as _number_theory,

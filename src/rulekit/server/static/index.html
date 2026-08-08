@@ -92,6 +92,25 @@
         </label>
         <button id="generation-next" class="primary">Generate next</button>
         <div id="generation-coverage" class="dim"></div>
+        <details id="generation-structure-controls" class="generation-structure-controls">
+          <summary>Structural coverage &amp; filters</summary>
+          <div class="generation-objective-row">
+            <label>
+              <span class="pane-title">Exploration objective</span>
+              <select id="generation-objective">
+                <option value="least_covered_structure">Least-covered structure</option>
+                <option value="least_attempted_rule">Least-attempted rule</option>
+                <option value="least_generated_rule">Least-generated rule</option>
+                <option value="least_reviewed_rule">Least-reviewed rule</option>
+                <option value="review_attention">Live invalid/unclear reviews</option>
+                <option value="random">Random within filters</option>
+              </select>
+            </label>
+            <button id="generation-clear-filters" type="button">Clear filters</button>
+          </div>
+          <div id="generation-filter-groups"></div>
+          <div id="generation-health"></div>
+        </details>
         <div id="generation-exploration-selection"></div>
       </div>
 
@@ -144,6 +163,10 @@
           <section>
             <div class="pane-title">Actual rule matches</div>
             <div id="generation-matches"></div>
+          </section>
+          <section id="generation-safety-section" class="hidden">
+            <div class="pane-title">Safety interceptions</div>
+            <div id="generation-safety-interceptions"></div>
           </section>
           <section>
             <div class="pane-title">Surviving facts</div>

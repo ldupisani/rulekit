@@ -126,10 +126,13 @@ def _jsonable(value: Any) -> Any:
         return [_jsonable(v) for v in value]
     if isinstance(value, Obligation):
         target = value.target
-        if isinstance(target, Unit):
-            target = f"unit:{target.uid}"
-        elif target is PATTERN:
+        if target is PATTERN:
             target = "<pattern>"
+        else:
+            # Group reference binds one obligation to a tuple of Units. Reuse
+            # the recursive projection so neither a single nor grouped target
+            # can leak a live Unit into an API trace.
+            target = _jsonable(target)
         return {"role": value.role, "need": value.need, "target": target, "optional": value.optional}
     if isinstance(value, Unit):
         return f"unit:{value.uid}"
@@ -266,14 +269,32 @@ class VerbalRelation(Fact):
     verb: str
     obj: str
     prep: str = ""
+    # Optional semantic role licensed by a declarative verb–preposition–object
+    # category triple. Empty on the older exact logic relations, whose packs
+    # preserve the surface but make no role commitment.
+    role: str = ""
     polarity: bool = True
     # same contract as Atom.indef_obj: the obj span swallowed an 'a'/'an',
     # so the object is SOME thing, never a particular referent — it must
     # not match a question's definite entity
     indef_obj: bool = False
+    # Runtime-local predicate occurrence shared with EventTime and any
+    # event-derived fluent evidence.  Pattern-emitted legacy relations leave
+    # this unset; fold-derived governed relations always carry it.  Without a
+    # shared identity, two same-verb events in one sentence cannot be joined
+    # to their own time safely.
+    event: str | None = None
 
     def key(self) -> tuple:
-        return ("verbal-rel", self.entity, self.verb, self.prep, self.obj)
+        return (
+            "verbal-rel",
+            self.entity,
+            self.verb,
+            self.prep,
+            self.obj,
+            self.role,
+            self.event,
+        )
 
     def value_part(self) -> Any:
         return self.polarity
@@ -720,6 +741,50 @@ class Subset(Fact):
 
 
 @dataclass(frozen=True)
+class AgeAtYear(Fact):
+    """One entity's stated age at an absolute calendar-year coordinate.
+
+    This is deliberately not a timestamped :class:`Quantity`.  A dated age
+    may be projected because age advances with elapsed years; an arbitrary
+    dated quantity may not.  Keeping the source coordinate first-class also
+    prevents a lone dated age from leaking into an undated ``how old`` ask.
+
+    The identity qualifiers mirror ``Quantity`` sufficiently to keep
+    same-headed people distinct.  Pattern templates render a missing optional
+    feature as ``""``; normalizing that representation here keeps fact keys
+    and Designer output honest.
+    """
+
+    entity: str
+    measure: str
+    value: float
+    year: float
+    verb: str = "be"
+    owner: str | None = None
+    qualifier: str | None = None
+    label: str | None = None
+
+    def __post_init__(self) -> None:
+        for field_name in ("owner", "qualifier", "label"):
+            if getattr(self, field_name) == "":
+                object.__setattr__(self, field_name, None)
+
+    def key(self) -> tuple:
+        return (
+            "age-at-year",
+            self.entity,
+            self.owner,
+            self.qualifier,
+            self.label,
+            self.measure,
+            self.year,
+        )
+
+    def value_part(self) -> Any:
+        return self.value
+
+
+@dataclass(frozen=True)
 class Quantity(Fact):
     entity: str
     measure: str  # what is counted/measured (noun lemma)
@@ -730,14 +795,12 @@ class Quantity(Fact):
     # conflict); the sentence index for an EVENT (each occurrence is its own
     # fact: "finds 3 … finds 5" accumulates, never collides)
     occurrence: int | None = None
-    # the possessive owner of `entity`, when the subject was merged from
-    # "OWNER 's NOUN" (condense.py merge-possessive) — NOT part of key() or
-    # value_part(): identity stays the bare entity lemma everywhere it
-    # already worked (cross-mention folding, e.g. "Tom's dog ... the dog
-    # ..."). Read ONLY by FactStore.admit's collision handling, to split a
-    # genuine same-key VALUE conflict ("Kennedy's house" vs "Benedict's
-    # house", both bare-folding to entity='house') into two entities —
-    # never to change identity absent a real conflict.
+    # the possessive owner of `entity`, from either merged "OWNER's NOUN"
+    # or a governed possessive determiner ("her child"). The bare entity
+    # lemma remains the compatibility identity until distinct owners coexist;
+    # FactStore then re-keys every sibling to entity[owner], even when their
+    # values agree. Owner-aware relations and asks query the exact owner index
+    # and never borrow another owner's same-headed noun.
     owner: str | None = None
     # the attributive modifier of `entity`, when the subject noun was
     # merged from ADJECTIVE+NOUN or NOUN+NOUN (condense.py merge-attribute
@@ -855,6 +918,14 @@ class Relation(Fact):
     # fields None) relation's key tuple.
     subject_label: str | None = None
     standard_label: str | None = None
+    # Possessive owners of the two entity roles. Quantity already carries
+    # the same owner field; these mirrors let relation saturation select the
+    # exact owned standard (and tag an owned derived subject) instead of
+    # collapsing `her child` and `his child` to the bare noun `child`.
+    # Included in the relation key because differently-owned relations are
+    # genuinely different assertions even when their bare heads coincide.
+    subject_owner: str | None = None
+    standard_owner: str | None = None
     # the attributive modifier of `measure`/`standard`, when the relation's
     # own ITEM or STANDARD noun was merged from ADJECTIVE+NOUN or NOUN+NOUN
     # (condense.py merge-attribute / merge-compound) — mining candidate
@@ -904,8 +975,8 @@ class Relation(Fact):
 
     def key(self) -> tuple:
         return (
-            "relation", self.subject, self.subject_label,
-            self.standard, self.standard_label, self.measure,
+            "relation", self.subject, self.subject_label, self.subject_owner,
+            self.standard, self.standard_label, self.standard_owner, self.measure,
             self.measure_qualifier, self.standard_qualifier, self.verb,
             self.subject_offset, self.standard_offset,
         )
@@ -1342,11 +1413,134 @@ class PercentChange(Fact):
 
 @dataclass(frozen=True)
 class Before(Fact):
+    """A strict ordering between two event identities.
+
+    Relative event-time markers are observed as :class:`EventTime` facts;
+    document inference emits this relation only when their pack-declared
+    offsets differ.  Equal offsets assert simultaneity only through their
+    shared coordinate and do not produce either direction.
+    """
+
     earlier: str
     later: str
 
     def key(self) -> tuple:
         return ("before", self.earlier, self.later)
+
+
+@dataclass(frozen=True)
+class EventTime(Fact):
+    """One predicate occurrence anchored by a relative temporal marker.
+
+    ``event`` is a runtime-local identity (sentence plus verb unit), while
+    the human-readable predicate fields keep the fact inspectable. ``offset``
+    is read exclusively from pack data; the kernel contains no marker list.
+    """
+
+    event: str
+    entity: str
+    verb: str
+    marker: str
+    offset: float
+    obj: str | None = None
+
+    def key(self) -> tuple:
+        return ("event-time", self.event)
+
+    def value_part(self) -> Any:
+        return (self.entity, self.verb, self.obj, self.marker, self.offset)
+
+
+@dataclass(frozen=True)
+class LocationEvent(Fact):
+    """One event's exact effect on an entity's location fluent.
+
+    ``effect`` is deliberately small and inspectable: ``initiates`` starts a
+    location state, ``terminates`` ends one, and ``holds`` / ``not-holds``
+    directly observe its positive or negative state at the event's stated
+    time. The vocabulary that licenses an effect lives in pack categories;
+    this fact only preserves the resulting event graph.
+    """
+
+    event: str
+    entity: str
+    place: str
+    effect: str
+
+    def key(self) -> tuple:
+        return ("location-event", self.event, self.entity, self.place)
+
+    def value_part(self) -> Any:
+        return self.effect
+
+
+@dataclass(frozen=True)
+class LocationConstraint(Fact):
+    """A scoped modal restriction on one location-state transition.
+
+    The first supported form is an impossible termination (``nobody can
+    leave PLACE``).  Keeping transition, modality, and subject class explicit
+    prevents a prohibition from silently becoming a physical impossibility
+    and leaves room for later entry/duration constraints without a new fact
+    shape.
+    """
+
+    place: str
+    transition: str
+    modality: str
+    subject_class: str
+
+    def key(self) -> tuple:
+        return (
+            "location-constraint",
+            self.place,
+            self.transition,
+            self.subject_class,
+        )
+
+    def value_part(self) -> Any:
+        return self.modality
+
+
+@dataclass(frozen=True)
+class LocationTransitionAbsence(Fact):
+    """An explicit statement that no transition occurred in an interval.
+
+    Unlike :class:`LocationConstraint`, this is evidence about what happened,
+    not a claim that the transition was impossible. The first controlled
+    surface uses ``narrative-through-reference``: the current narrative up to
+    the day selected by the question.
+    """
+
+    place: str
+    transition: str
+    scope: str
+    subject_class: str
+
+    def key(self) -> tuple:
+        return (
+            "location-transition-absence",
+            self.place,
+            self.transition,
+            self.scope,
+            self.subject_class,
+        )
+
+
+@dataclass(frozen=True)
+class LocationConstraintViolation(Fact):
+    """An observed transition conflicts with an active modal constraint."""
+
+    event: str
+    entity: str
+    place: str
+    transition: str
+
+    def key(self) -> tuple:
+        return ("location-constraint-violation", self.event)
+
+    def value_part(self) -> Any:
+        return (self.entity, self.place, self.transition)
 
 
 # ---------------------------------------------------------------------------

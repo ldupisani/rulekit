@@ -3,7 +3,11 @@
 from pathlib import Path
 
 from rulekit.data.project import load_project
-from rulekit.generation import generate_candidate, list_rule_availability
+from rulekit.generation import (
+    generate_candidate,
+    list_rule_availability,
+    retest_candidate,
+)
 from rulekit.kernel.evaluate import ArithmeticLog
 from rulekit.kernel.engine import diagnose, solve
 from rulekit.kernel.facts import FactStore
@@ -114,6 +118,55 @@ def test_quantified_quantity_rules_are_available_to_human_review():
         }
 
 
+def test_reviewed_logic_pp_surfaces_are_absent() -> None:
+    project = load_project(ROOT / "projects/curated")
+    reviewed = {
+        "logic-arithmetic/ground-copular-nominal-pp": (
+            "Fia is violinist on cookie."
+        ),
+        "logic-arithmetic/universal-all-have-quantity-pp": (
+            "All violinists of puzzle have 80 grapes."
+        ),
+        "logic-arithmetic/coordinated-named-verbal-pp": (
+            "Mary and Fia find of the guardian."
+        ),
+    }
+
+    for rule_id, sentence in reviewed.items():
+        candidate = retest_candidate(
+            project,
+            rule_id=rule_id,
+            sentence=sentence,
+            seed=0,
+            origin="generated",
+        )
+        assert candidate.target_status == "absent"
+
+
+def test_logic_pp_rules_keep_declared_spatial_role_surfaces() -> None:
+    registry = _registry()
+    expected = {
+        "logic-arithmetic/ground-copular-nominal-pp": (
+            "Fia is a violinist at the university."
+        ),
+        "logic-arithmetic/universal-all-have-quantity-pp": (
+            "All violinists at the university have 80 grapes."
+        ),
+        "logic-arithmetic/coordinated-named-verbal-pp": (
+            "Mary and Fia teach at the university."
+        ),
+    }
+
+    for rule_id, sentence in expected.items():
+        result = solve(sentence, registry, tracing=False)
+        matched = {
+            match.match.rule.id
+            for matches in result.document.rule_results.values()
+            for match in matches
+        }
+        assert rule_id in matched
+
+
 def test_coordinated_teaching_derives_exact_roles_and_quantities():
     result = solve(
         "All teachers at the university have 20 students. "
@@ -163,8 +216,8 @@ def test_coordinated_teaching_derives_exact_roles_and_quantities():
 def test_subject_role_derivation_is_exactly_pack_licensed():
     controls = {
         "Bob or Mary teach at the university.": False,
-        "Bob and Mary travel at the university.": True,
-        "Bob and Mary teach in the university.": True,
+        "Bob and Mary travel at the university.": False,
+        "Bob and Mary teach in the university.": False,
         "Bob and Mary teach at the university and garden.": False,
         "Bob and Mary teaches at the university.": False,
         "Bob and Bob teach at the university.": False,

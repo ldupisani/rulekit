@@ -26,9 +26,6 @@ entries:
   national:
     senses:
     - noun
-  near:
-    senses:
-    - preposition
   nearby:
     senses:
     - adjective
@@ -182,9 +179,6 @@ entries:
     # weekdays). Retagged 'noun' so it can join `timeperiod`, exactly as the weekdays did.
     senses:
     - noun
-  off:
-    senses:
-    - adverb
   offer:
     senses:
     - verb
@@ -266,9 +260,6 @@ entries:
   only:
     senses:
     - adverb
-  onto:
-    senses:
-    - preposition
   open:
     senses:
     - adjective
@@ -369,12 +360,6 @@ entries:
   outlining:
     senses:
     - verb
-  outside:
-    senses:
-    - adverb
-  over:
-    senses:
-    - preposition
   oversized:
     senses:
     - adjective
@@ -541,9 +526,6 @@ entries:
     senses:
     - noun
     plural: passengers
-  past:
-    senses:
-    - preposition
   pastry:
     senses:
     - noun
@@ -2180,9 +2162,6 @@ entries:
   simple:
     senses:
     - adjective
-  since:
-    senses:
-    - conjunction
   sing:
     senses:
     - verb
