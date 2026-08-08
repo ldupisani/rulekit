@@ -227,6 +227,26 @@ def test_approval_requires_every_specimen_to_be_valid(tmp_path: Path) -> None:
     assert queue[0]["runtime_available"] is True
 
 
+def test_repeated_identical_decision_is_idempotent(tmp_path: Path) -> None:
+    project = _project(tmp_path)
+    manifest = _manifest()
+    publish_campaign_manifest(project, manifest)
+    decision = _decision(manifest)
+
+    first = append_campaign_review(project, decision)
+    repeated = append_campaign_review(project, decision)
+
+    assert repeated == first
+    assert read_campaign_review_records(project) == [first]
+
+    revised = append_campaign_review(
+        project,
+        decision.model_copy(update={"note": "A materially revised rationale."}),
+    )
+    assert revised["id"] != first["id"]
+    assert read_campaign_review_records(project) == [first, revised]
+
+
 def test_decisions_encode_the_requested_boundary(tmp_path: Path) -> None:
     project = _project(tmp_path)
     manifest = _manifest()
@@ -286,6 +306,8 @@ def test_designer_exposes_the_campaign_promotion_queue() -> None:
     assert 'id="campaign"' in html
     assert '"GET", "/api/campaign/reviews"' in js
     assert "Record promotion decision" in js
+    assert "Decision recorded" in js
+    assert "decisionMatchesPrevious" in js
     assert "isolated runner required" in js
     assert "campaign-mode" in css
     assert "Run exact gate" in js

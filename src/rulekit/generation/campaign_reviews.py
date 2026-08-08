@@ -619,6 +619,29 @@ def append_campaign_review(
             "an unclear decision requires at least one unclear specimen"
         )
 
+    # Treat an immediate repeat as the same human action.  This keeps a quick
+    # double-click or a confusing UI refresh from adding indistinguishable
+    # evidence while still allowing a later, materially changed decision to
+    # append to the immutable history.
+    latest_exact = next(
+        (
+            record
+            for record in reversed(read_campaign_review_records(project))
+            if record["candidate_id"] == decision.candidate_id
+            and record["candidate_commit"] == decision.candidate_commit
+            and record["registry_fingerprint"] == decision.registry_fingerprint
+        ),
+        None,
+    )
+    if latest_exact is not None:
+        prior_payload = {
+            key: value
+            for key, value in latest_exact.items()
+            if key not in {"id", "project", "timestamp"}
+        }
+        if prior_payload == decision.model_dump():
+            return latest_exact
+
     durable = DurableCampaignReviewDecision(
         **decision.model_dump(),
         id="campaign-review-" + uuid.uuid4().hex[:16],

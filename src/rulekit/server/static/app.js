@@ -1912,6 +1912,11 @@ function campaignCandidateCard(row) {
   const actions = el("div", "campaign-decision-actions");
   const save = el("button", "primary", "Record promotion decision");
   const result = el("span", "dim");
+  if (previous) {
+    result.textContent =
+      `Recorded ${campaignStatusLabel(previous.verdict).toLowerCase()} · ` +
+      `${(previous.timestamp || "").replace("T", " ").slice(0, 19)}`;
+  }
   actions.append(save, result);
   review.append(actions);
   card.append(review);
@@ -1929,12 +1934,32 @@ function campaignCandidateCard(row) {
     return values.some((value) => value === "unclear");
   }
 
+  function decisionMatchesPrevious() {
+    if (!previous) return false;
+    if (candidateVerdict !== previous.verdict) return false;
+    if (note.value !== (previous.note || "")) return false;
+    return manifest.specimens.every((item) => {
+      const prior = previousBySpecimen.get(item.id);
+      return prior?.verdict === specimenVerdicts.get(item.id)
+        && !(prior.defects || []).length
+        && !(prior.note || "");
+    });
+  }
+
   function updateCampaignDecisionState() {
-    save.disabled = !decisionIsComplete();
-    save.title = save.disabled
+    const unchanged = decisionMatchesPrevious();
+    save.disabled = !decisionIsComplete() || unchanged;
+    save.textContent = unchanged
+      ? "Decision recorded"
+      : "Record promotion decision";
+    save.title = unchanged
+      ? "This exact decision is already recorded. Change a verdict or note to append a revision."
+      : save.disabled
       ? "Review every specimen. Approval requires all valid; changes require an invalid specimen; unclear requires an unclear specimen."
       : "Append this decision to the central campaign review ledger.";
   }
+
+  note.addEventListener("input", updateCampaignDecisionState);
 
   save.onclick = async () => {
     save.disabled = true;
