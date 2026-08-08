@@ -32,9 +32,12 @@ green. Never substitute a hand-written subset.
 
 ## Candidate manifest
 
-Every non-smoke candidate publishes `rulekit/campaign-review@2` evidence:
+Every non-smoke candidate publishes `rulekit/campaign-review@2` evidence. A
+coverage candidate carries an auditable DEV pool/yield claim; an explicitly
+user-chosen product candidate instead carries zero corpus yield plus its product
+rationale. Both require:
 
-- one named general class and its DEV pool/yield claim;
+- one named general class and its evidence mode;
 - walked DEV item ids and structural paraphrases, never corpus prose;
 - premise-side and ask-side mechanisms, including which side already exists;
 - exact bounded vocabulary admissions, quarantine result, and collision risk;

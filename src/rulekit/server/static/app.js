@@ -1811,13 +1811,16 @@ function campaignCandidateCard(row) {
   ));
   if (manifest.class_evidence) {
     const evidence = manifest.class_evidence;
+    const evidenceSummary = evidence.mode === "product"
+      ? `product-led manual class · no corpus yield claimed · ${evidence.product_rationale}`
+      : `${evidence.expected_solved}/${evidence.pool_frequency} expected yield · ` +
+        `${evidence.walked_item_ids.length} walked item id(s)`;
     card.append(campaignEvidenceLine(
-      "DEV class",
+      evidence.mode === "product" ? "Product class" : "DEV class",
       el(
         "span",
         "",
-        `${evidence.expected_solved}/${evidence.pool_frequency} expected yield · ` +
-          `${evidence.walked_item_ids.length} walked item id(s) · ` +
+        `${evidenceSummary} · ` +
           `${evidence.premise_mechanism} ${evidence.ask_mechanism}`,
       ),
     ));

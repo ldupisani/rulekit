@@ -1554,6 +1554,13 @@ latest exact machine gate passes. That final ledger freezes the authorizing
 decision and prevents the same candidate revision from being integrated twice.
 No orchestration path contains a fixed suite cardinality.
 
+Class evidence distinguishes automatic `coverage`, explicit `product`, and
+pipeline-only `smoke` modes. Product mode is available only for a human-chosen
+manual class: it requires a rationale and mechanically forbids corpus pool or
+solved-item claims. It changes candidate selection, not promotion strength;
+the full specimen, constitution, human, machine, and landing contracts remain
+identical.
+
 This is process/import, project-root, and HTTP-route isolation for locally
 authored candidate code; it is not an operating-system sandbox for hostile
 code. A future untrusted-code threat model would require a separate OS or

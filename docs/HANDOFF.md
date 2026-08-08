@@ -46,7 +46,17 @@ declines) but found no class meeting the automatic ≥3-final-blocker bar. A
 walk, and 36 aggregate-marker rewrites produced zero verified complete wins.
 No implementer worktree was created. M6 now needs an explicitly product-led
 manual class or a later re-scout after a named blocker changes; do not lower
-the automatic threshold. The current gate is 4,725 tests;
+the automatic threshold. The user selected the product-led path. Campaign
+class evidence now has an explicit `product` mode that requires a human-facing
+rationale and mechanically forbids corpus pool/yield claims while retaining
+every ordinary promotion gate. The selected class is conservative temporal
+event totals. Profiling showed that independently stated event quantities
+already sum, but trailing period adjuncts are discarded: Monday- and Tuesday-
+specific asks both return the cross-period total because both facts carry
+`time=None`. The candidate must preserve one role-licensed trailing period,
+answer the requested period through the shared temporal origo, retain the
+unscoped aggregate, and decline unresolved comparative/pronominal periods and
+non-additive state snapshots. The current gate is 4,726 tests;
 curated and all answer/projection DEV gates are neutral with zero wrong or
 incorrect commitments. No protected TEST/generalization look was spent. The
 prior generation workbench is now campaign

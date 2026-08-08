@@ -67,10 +67,11 @@ class CampaignClassEvidence(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    mode: Literal["coverage", "smoke"] = "coverage"
+    mode: Literal["coverage", "product", "smoke"] = "coverage"
     pool_frequency: int = Field(ge=0)
     expected_solved: int = Field(ge=0)
     walked_item_ids: list[str] = Field(default_factory=list, max_length=64)
+    product_rationale: str | None = Field(default=None, min_length=1, max_length=4000)
     premise_mechanism: str = Field(min_length=1, max_length=4000)
     ask_mechanism: str = Field(min_length=1, max_length=4000)
     structural_summary: list[str] = Field(min_length=1, max_length=32)
@@ -94,18 +95,38 @@ class CampaignClassEvidence(BaseModel):
         return values
 
     @model_validator(mode="after")
-    def _coverage_claim_has_auditable_yield(self) -> "CampaignClassEvidence":
+    def _mode_has_an_auditable_basis(self) -> "CampaignClassEvidence":
         if len(set(self.walked_item_ids)) != len(self.walked_item_ids):
             raise ValueError("walked DEV item ids must be unique")
         if self.mode == "coverage":
+            if self.product_rationale is not None:
+                raise ValueError(
+                    "coverage evidence cannot carry a product-led rationale"
+                )
             if not self.walked_item_ids:
                 raise ValueError("coverage evidence requires walked DEV item ids")
             if self.expected_solved < 1:
                 raise ValueError("coverage evidence must expect at least one solve")
             if self.expected_solved > self.pool_frequency:
                 raise ValueError("expected solved cannot exceed the measured pool")
-        elif self.expected_solved != 0:
-            raise ValueError("a smoke candidate cannot claim solved items")
+        elif self.mode == "product":
+            if (
+                self.pool_frequency != 0
+                or self.expected_solved != 0
+                or self.walked_item_ids
+            ):
+                raise ValueError(
+                    "product-led evidence cannot claim a corpus pool or solved items"
+                )
+            if self.product_rationale is None:
+                raise ValueError(
+                    "product-led evidence requires an explicit product rationale"
+                )
+        else:
+            if self.product_rationale is not None:
+                raise ValueError("smoke evidence cannot carry a product-led rationale")
+            if self.expected_solved != 0:
+                raise ValueError("a smoke candidate cannot claim solved items")
         return self
 
 

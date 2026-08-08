@@ -33,6 +33,11 @@ evidence, not training labels and not benchmark gold.
 7. The existing Designer server stays available. Candidate code will execute
    in an isolated on-demand runner rather than being imported into that
    process.
+8. A user may explicitly select a product-led manual class below the automatic
+   yield threshold. Its manifest must say `mode: product`, claim no corpus
+   pool or solved items, and state the product rationale. It receives every
+   ordinary evidence and promotion gate; product selection never disguises a
+   zero-yield automatic candidate.
 
 ## Candidate contract
 

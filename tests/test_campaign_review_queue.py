@@ -234,6 +234,36 @@ def test_manifest_generation_contract_requires_its_declared_specimen_kind() -> N
         CampaignCandidateManifest.model_validate(payload)
 
 
+def test_product_led_class_is_explicit_and_claims_no_corpus_yield() -> None:
+    evidence = CampaignClassEvidence(
+        mode="product",
+        pool_frequency=0,
+        expected_solved=0,
+        walked_item_ids=[],
+        product_rationale=(
+            "A human selected this bounded language class for the product, "
+            "independently of automatic benchmark yield."
+        ),
+        premise_mechanism="One typed temporal adjunct scopes one event fact.",
+        ask_mechanism="The shared temporal origo scopes the ordinary event total.",
+        structural_summary=[
+            "Explicitly timed events can be queried at one period or across periods."
+        ],
+    )
+
+    assert evidence.mode == "product"
+    assert evidence.walked_item_ids == []
+
+    with pytest.raises(ValidationError, match="product rationale"):
+        CampaignClassEvidence.model_validate(
+            {**evidence.model_dump(), "product_rationale": None}
+        )
+    with pytest.raises(ValidationError, match="cannot claim a corpus pool"):
+        CampaignClassEvidence.model_validate(
+            {**evidence.model_dump(), "pool_frequency": 1}
+        )
+
+
 def test_approval_requires_every_specimen_to_be_valid(tmp_path: Path) -> None:
     project = _project(tmp_path)
     manifest = _manifest()

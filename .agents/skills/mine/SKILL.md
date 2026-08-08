@@ -48,6 +48,14 @@ Before either path:
 
 ## New batch
 
+An explicitly user-chosen product-led manual class may enter at step 2 without
+an automatic scout only when its `class_evidence.mode` is `product`. It must
+claim zero corpus pool/yield, carry the user's product rationale, and receive
+the same complete implementation, generated evidence, constitution review,
+human review, machine gate, and sequential integration as a coverage
+candidate. Never infer product selection from a failed scout; the user must
+choose it.
+
 1. Spawn one `mining-scout` agent with the requested count, exact base commit,
    main/worktree paths, and a JSON output request matching its canonical
    protocol. For `--smoke`, inject the no-op brief instead.
@@ -110,3 +118,4 @@ path succeeds and its protected-file hashes remain unchanged.
 - No integration without constitution pass + exact human approval + exact
   passing machine gate.
 - No second integration of an exact revision that already has a landing.
+- No benchmark-yield claim on an explicitly product-led manual candidate.
