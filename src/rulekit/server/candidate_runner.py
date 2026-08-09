@@ -109,7 +109,13 @@ class CandidateRunnerManager:
             raise CandidateRunnerError(
                 f"git {' '.join(args)} failed: {detail}"
             ) from exc
-        return result.stdout.strip()
+        # Porcelain status uses a leading space as its first status column for
+        # an unstaged worktree change (`` M path``).  Stripping the left edge
+        # corrupts the first record and makes an allowlisted evidence path look
+        # like ``rojects/...``.  Git's other machine-readable outputs do not
+        # need leading whitespace removed, so preserve it and trim only the
+        # trailing record separator.
+        return result.stdout.rstrip()
 
     def _repo_layout(self) -> tuple[Path, Path]:
         repo = Path(

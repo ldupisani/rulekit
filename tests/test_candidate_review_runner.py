@@ -146,6 +146,23 @@ def test_candidate_resolution_requires_its_own_environment(
         manager._resolve_worktree(_manifest())
 
 
+def test_git_preserves_the_leading_porcelain_status_column(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class Result:
+        stdout = " M projects/curated/generation/exploration.jsonl\n"
+
+    monkeypatch.setattr(
+        "rulekit.server.candidate_runner.subprocess.run",
+        lambda *args, **kwargs: Result(),
+    )
+
+    assert CandidateRunnerManager._git(tmp_path, "status", "--porcelain") == (
+        " M projects/curated/generation/exploration.jsonl"
+    )
+
+
 def test_promotion_runtime_accepts_a_normal_venv_python_symlink(
     tmp_path: Path,
 ) -> None:
