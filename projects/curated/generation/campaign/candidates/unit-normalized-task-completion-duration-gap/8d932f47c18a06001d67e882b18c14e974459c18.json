@@ -1,0 +1,758 @@
+{
+  "branch": "mining/cand-unit-normalized-task-completion-duration-gap",
+  "candidate_id": "unit-normalized-task-completion-duration-gap",
+  "class_evidence": {
+    "ask_mechanism": "The question names a requested duration unit, a dedicated faster/slower direction, two participants, and the exact completed task; no generic Quantity consumer is widened.",
+    "expected_solved": 1,
+    "mode": "coverage",
+    "pool_frequency": 1,
+    "premise_mechanism": "One DEV item structurally contains two complete took-duration-to-finish clauses coordinated by a bounded temporal marker, with the second task object anaphoric to the first. Standalone variants already use the same typed fact.",
+    "product_rationale": null,
+    "structural_summary": [
+      "The walked DEV item has two distinct participants, positive elapsed durations in convertible units, and one shared task.",
+      "Its second completion clause repeats the finite duration verb and completion verb while referring back to the first task object.",
+      "The exact ask requests a speed-direction gap in a named duration unit; expected DEV yield is exactly one."
+    ],
+    "vocabulary": [
+      {
+        "bound_by": "Dedicated completion verb category; premise and ask require the category.",
+        "collision_risk": "One task-object argument only; not admitted to generic event or quantity categories.",
+        "quarantine": "clear",
+        "surface": "finish"
+      },
+      {
+        "bound_by": "Inflected member of the dedicated completion verb category.",
+        "collision_risk": "Past form remains confined to the same task-completion category.",
+        "quarantine": "clear",
+        "surface": "finished"
+      },
+      {
+        "bound_by": "Inflected member of the dedicated completion verb category.",
+        "collision_risk": "Finite form remains confined to the same task-completion category.",
+        "quarantine": "clear",
+        "surface": "finishes"
+      },
+      {
+        "bound_by": "Dedicated negative-polarity task-completion speed child category.",
+        "collision_risk": "Removed from generic higher; direction is consumed only by the dedicated ask.",
+        "quarantine": "clear",
+        "surface": "faster"
+      },
+      {
+        "bound_by": "Dedicated positive-polarity task-completion speed child category.",
+        "collision_risk": "Removed from generic lower; direction is consumed only by the dedicated ask.",
+        "quarantine": "clear",
+        "surface": "slower"
+      },
+      {
+        "bound_by": "Dedicated coordinator slot in the exact two-clause completion premise.",
+        "collision_risk": "Not a general clause-splitting admission and carries no standalone arithmetic meaning.",
+        "quarantine": "clear",
+        "surface": "while"
+      },
+      {
+        "bound_by": "Dedicated task-object anaphor slot tied to the first clause task.",
+        "collision_risk": "Also remains an existing pronoun sense, but the new rule requires the dedicated category and explicit refers satisfaction.",
+        "quarantine": "clear",
+        "surface": "it"
+      }
+    ],
+    "walked_item_ids": [
+      "0a32e3679821"
+    ]
+  },
+  "class_name": "Unit-normalized task-completion duration gaps",
+  "commit": "8d932f47c18a06001d67e882b18c14e974459c18",
+  "constitution_review": {
+    "notes": "Exact base/candidate ancestry, clean worktree, expected scope, registry fingerprint, all four canonical traces, focused tests, and lint were verified. No protected data, benchmark prose, Python lexicalization, undisclosed scope drift, or semantic weakening was found.",
+    "verdict": "pass",
+    "violations": []
+  },
+  "format": "rulekit/campaign-review@2",
+  "generation_contract": {
+    "ask_rules": [
+      "ask/how-many-unit-task-completion-comparative-than"
+    ],
+    "premise_rules": [
+      "arithmetic/task-completion-duration",
+      "arithmetic/coordinated-task-completion-durations"
+    ],
+    "required_specimen_kinds": [
+      "strict_positive",
+      "boundary_probe",
+      "answerable",
+      "decline"
+    ]
+  },
+  "implementation_contract": {
+    "class_justification": "Elapsed completion time is not a held Quantity or production rate. A dedicated fact and consumer preserve task identity, unit normalization, direction validation, exact cardinality, and safe decline behavior without broadening shared quantity folds. Authorized adjacent scope drift is limited to the FactEmit schema, golden-master guard rows, and frozen generation inventory/profile assertions affected by the two declared reader-only premise rules.",
+    "files_expected": [
+      "packs/arithmetic/rules/core.yaml",
+      "packs/core-english/categories/core.yaml",
+      "packs/difg-mined/categories/semantic.yaml",
+      "src/rulekit/data/schemas.py",
+      "src/rulekit/kernel/consumers/__init__.py",
+      "src/rulekit/kernel/consumers/completion_duration_difference.py",
+      "src/rulekit/kernel/model.py",
+      "src/rulekit/kernel/patterns.py",
+      "tests/test_consumer_golden_master.py",
+      "tests/test_generation_g5h.py",
+      "tests/test_generation_g5i.py",
+      "tests/test_generation_g5j.py",
+      "tests/test_generation_g5k.py",
+      "tests/test_generation_g5l.py",
+      "tests/test_generation_g5m.py",
+      "tests/test_generation_g5n.py",
+      "tests/test_generation_g5o.py",
+      "tests/test_generation_g5q.py",
+      "tests/test_generation_g5r.py",
+      "tests/test_generation_g5s.py",
+      "tests/test_generation_g5t.py",
+      "tests/test_generation_g5u.py",
+      "tests/test_generation_workbench.py",
+      "tests/test_group_total_subject_boundary.py",
+      "tests/test_mining_completion_duration_difference.py"
+    ],
+    "synthetic_tests": [
+      "tests/test_mining_completion_duration_difference.py"
+    ]
+  },
+  "mechanism": "Dedicated standalone and tightly coordinated premise rules emit TaskCompletionDuration facts. An exact comparative ask delegates to a dedicated consumer that selects one fact per distinct participant and exact task, converts both elapsed values through the declared unit graph, validates faster/slower ordering, and returns the absolute gap.",
+  "project": "curated",
+  "published_at": "2026-08-10T14:23:39.916243+00:00",
+  "registry_fingerprint": "2dc35859f6d2ba3ba4a44258b65611ea9339033d7ab7a0af54a25e2810fa93b2",
+  "review_ids": [],
+  "risks": [
+    "The coordinated premise is intentionally limited to two complete clauses joined by the dedicated while category and a singular it task anaphor.",
+    "Each side must contribute exactly one compatible fact for the same exact task and distinct participants; ambiguity, missing evidence, unconvertible units, zero/equal durations, and contradictory direction decline.",
+    "The two new premise rules are reader-only and therefore increase frozen unavailable-generation counts by two without adding generation templates."
+  ],
+  "specimens": [
+    {
+      "actual_rule_ids": [
+        "arithmetic/coordinated-task-completion-durations",
+        "arithmetic/task-completion-duration"
+      ],
+      "answer": {
+        "clarification": null,
+        "committed": true,
+        "kind": "number",
+        "reason": "absolute completion-duration gap for 'task' in 'minute'",
+        "shape": "number",
+        "value": 30
+      },
+      "deficiencies": [],
+      "expectation": "The bounded coordination emits two completion-duration facts for one exact task, normalizes hours to minutes, and returns 30.",
+      "facts": [
+        {
+          "derivation": null,
+          "fields": {
+            "elapsed": 42,
+            "participant": "ari",
+            "task": "task",
+            "unit": "minute",
+            "verb": "finish"
+          },
+          "sentence": 0,
+          "source": "arithmetic/coordinated-task-completion-durations",
+          "source_ref": null,
+          "type": "TaskCompletionDuration"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "elapsed": 1.2,
+            "participant": "bina",
+            "task": "task",
+            "unit": "hour",
+            "verb": "finish"
+          },
+          "sentence": 0,
+          "source": "arithmetic/coordinated-task-completion-durations",
+          "source_ref": null,
+          "type": "TaskCompletionDuration"
+        }
+      ],
+      "id": "strict-positive",
+      "interpretation": null,
+      "kind": "strict_positive",
+      "reference_year": null,
+      "retest": null,
+      "sentence": "Ari took 42 minutes to finish her task while Bina took 1.2 hours to finish it. How many minutes faster did Ari finish the task than Bina?",
+      "source_ref": null,
+      "target_rule": null,
+      "title": "Coordinated mixed-unit completion durations",
+      "trace": {
+        "answer": {
+          "clarification": null,
+          "committed": true,
+          "kind": "number",
+          "reason": "absolute completion-duration gap for 'task' in 'minute'",
+          "shape": "number",
+          "value": 30
+        },
+        "ask": {
+          "id": "ask/how-many-unit-task-completion-comparative-than",
+          "query": {
+            "a": "ari",
+            "b": "bina",
+            "consumer": "completion-duration-difference",
+            "direction": "faster",
+            "task": "task",
+            "unit": "minute",
+            "verb": "finish"
+          }
+        },
+        "collisions": [],
+        "deficiencies": [],
+        "facts": [
+          {
+            "derivation": null,
+            "fields": {
+              "elapsed": 42,
+              "participant": "ari",
+              "task": "task",
+              "unit": "minute",
+              "verb": "finish"
+            },
+            "sentence": 0,
+            "source": "arithmetic/coordinated-task-completion-durations",
+            "source_ref": null,
+            "type": "TaskCompletionDuration"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "elapsed": 1.2,
+              "participant": "bina",
+              "task": "task",
+              "unit": "hour",
+              "verb": "finish"
+            },
+            "sentence": 0,
+            "source": "arithmetic/coordinated-task-completion-durations",
+            "source_ref": null,
+            "type": "TaskCompletionDuration"
+          }
+        ],
+        "matches": [
+          {
+            "bindings": {
+              "a": "Ari",
+              "b": "Bina",
+              "coord": "while",
+              "span_a": "42 minutes",
+              "span_b": "1.2 hours",
+              "task_a": "task",
+              "task_poss": "her",
+              "task_ref": "it",
+              "took_a": "took",
+              "took_b": "took",
+              "verb_a": "finish",
+              "verb_b": "finish"
+            },
+            "consumed": [
+              0,
+              1,
+              17,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              18,
+              13,
+              14,
+              15
+            ],
+            "rule_id": "arithmetic/coordinated-task-completion-durations",
+            "sentence": 0,
+            "shadowed": false
+          },
+          {
+            "bindings": {
+              "span": "42 minutes",
+              "task": "task",
+              "task_poss": "her",
+              "took": "took",
+              "verb": "finish",
+              "who": "Ari"
+            },
+            "consumed": [
+              0,
+              1,
+              17,
+              4,
+              5,
+              6,
+              7
+            ],
+            "rule_id": "arithmetic/task-completion-duration",
+            "sentence": 0,
+            "shadowed": true
+          }
+        ],
+        "proof": null
+      }
+    },
+    {
+      "actual_rule_ids": [
+        "arithmetic/task-completion-duration"
+      ],
+      "answer": {
+        "clarification": null,
+        "committed": false,
+        "kind": "decline",
+        "reason": "a comparison needs exactly one compatible completion duration for each participant; found 1 and 0",
+        "shape": "decline",
+        "value": null
+      },
+      "deficiencies": [
+        "'took' (verb) needs a subject and none was found."
+      ],
+      "expectation": "The coordinated shared-task rule does not match and exact task filtering prevents a numeric commitment.",
+      "facts": [
+        {
+          "derivation": null,
+          "fields": {
+            "elapsed": 42,
+            "participant": "ari",
+            "task": "task",
+            "unit": "minute",
+            "verb": "finish"
+          },
+          "sentence": 0,
+          "source": "arithmetic/task-completion-duration",
+          "source_ref": null,
+          "type": "TaskCompletionDuration"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "elapsed": 1.2,
+            "participant": "bina",
+            "task": "project",
+            "unit": "hour",
+            "verb": "finish"
+          },
+          "sentence": 0,
+          "source": "arithmetic/task-completion-duration",
+          "source_ref": null,
+          "type": "TaskCompletionDuration"
+        }
+      ],
+      "id": "boundary-probe",
+      "interpretation": null,
+      "kind": "boundary_probe",
+      "reference_year": null,
+      "retest": null,
+      "sentence": "Ari took 42 minutes to finish the task while Bina took 1.2 hours to finish the project. How many minutes faster did Ari finish the task than Bina?",
+      "source_ref": null,
+      "target_rule": null,
+      "title": "Different task objects do not cross",
+      "trace": {
+        "answer": {
+          "clarification": null,
+          "committed": false,
+          "kind": "decline",
+          "reason": "a comparison needs exactly one compatible completion duration for each participant; found 1 and 0",
+          "shape": "decline",
+          "value": null
+        },
+        "ask": {
+          "id": "ask/how-many-unit-task-completion-comparative-than",
+          "query": {
+            "a": "ari",
+            "b": "bina",
+            "consumer": "completion-duration-difference",
+            "direction": "faster",
+            "task": "task",
+            "unit": "minute",
+            "verb": "finish"
+          }
+        },
+        "collisions": [],
+        "deficiencies": [
+          "'took' (verb) needs a subject and none was found."
+        ],
+        "facts": [
+          {
+            "derivation": null,
+            "fields": {
+              "elapsed": 42,
+              "participant": "ari",
+              "task": "task",
+              "unit": "minute",
+              "verb": "finish"
+            },
+            "sentence": 0,
+            "source": "arithmetic/task-completion-duration",
+            "source_ref": null,
+            "type": "TaskCompletionDuration"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "elapsed": 1.2,
+              "participant": "bina",
+              "task": "project",
+              "unit": "hour",
+              "verb": "finish"
+            },
+            "sentence": 0,
+            "source": "arithmetic/task-completion-duration",
+            "source_ref": null,
+            "type": "TaskCompletionDuration"
+          }
+        ],
+        "matches": [
+          {
+            "bindings": {
+              "span": "42 minutes",
+              "task": "task",
+              "took": "took",
+              "verb": "finish",
+              "who": "Ari"
+            },
+            "consumed": [
+              0,
+              1,
+              18,
+              4,
+              5,
+              7
+            ],
+            "rule_id": "arithmetic/task-completion-duration",
+            "sentence": 0,
+            "shadowed": false
+          },
+          {
+            "bindings": {
+              "span": "1.2 hours",
+              "task": "project",
+              "took": "took",
+              "verb": "finish",
+              "who": "Bina"
+            },
+            "consumed": [
+              9,
+              10,
+              19,
+              13,
+              14,
+              16
+            ],
+            "rule_id": "arithmetic/task-completion-duration",
+            "sentence": 0,
+            "shadowed": false
+          }
+        ],
+        "proof": null
+      }
+    },
+    {
+      "actual_rule_ids": [
+        "arithmetic/task-completion-duration"
+      ],
+      "answer": {
+        "clarification": null,
+        "committed": true,
+        "kind": "number",
+        "reason": "absolute completion-duration gap for 'task' in 'hour'",
+        "shape": "number",
+        "value": 1
+      },
+      "deficiencies": [],
+      "expectation": "Two standalone typed facts normalize to hours and return an absolute gap of 1.",
+      "facts": [
+        {
+          "derivation": null,
+          "fields": {
+            "elapsed": 30,
+            "participant": "dax",
+            "task": "task",
+            "unit": "minute",
+            "verb": "finish"
+          },
+          "sentence": 0,
+          "source": "arithmetic/task-completion-duration",
+          "source_ref": null,
+          "type": "TaskCompletionDuration"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "elapsed": 1.5,
+            "participant": "cora",
+            "task": "task",
+            "unit": "hour",
+            "verb": "finish"
+          },
+          "sentence": 1,
+          "source": "arithmetic/task-completion-duration",
+          "source_ref": null,
+          "type": "TaskCompletionDuration"
+        }
+      ],
+      "id": "answerable",
+      "interpretation": null,
+      "kind": "answerable",
+      "reference_year": null,
+      "retest": null,
+      "sentence": "Dax took 30 minutes to finish the task. Cora took 1.5 hours to finish the task. How many hours slower did Cora finish the task than Dax?",
+      "source_ref": null,
+      "target_rule": null,
+      "title": "Separate duration premises with reordered comparison",
+      "trace": {
+        "answer": {
+          "clarification": null,
+          "committed": true,
+          "kind": "number",
+          "reason": "absolute completion-duration gap for 'task' in 'hour'",
+          "shape": "number",
+          "value": 1
+        },
+        "ask": {
+          "id": "ask/how-many-unit-task-completion-comparative-than",
+          "query": {
+            "a": "cora",
+            "b": "dax",
+            "consumer": "completion-duration-difference",
+            "direction": "slower",
+            "task": "task",
+            "unit": "hour",
+            "verb": "finish"
+          }
+        },
+        "collisions": [],
+        "deficiencies": [],
+        "facts": [
+          {
+            "derivation": null,
+            "fields": {
+              "elapsed": 30,
+              "participant": "dax",
+              "task": "task",
+              "unit": "minute",
+              "verb": "finish"
+            },
+            "sentence": 0,
+            "source": "arithmetic/task-completion-duration",
+            "source_ref": null,
+            "type": "TaskCompletionDuration"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "elapsed": 1.5,
+              "participant": "cora",
+              "task": "task",
+              "unit": "hour",
+              "verb": "finish"
+            },
+            "sentence": 1,
+            "source": "arithmetic/task-completion-duration",
+            "source_ref": null,
+            "type": "TaskCompletionDuration"
+          }
+        ],
+        "matches": [
+          {
+            "bindings": {
+              "span": "30 minutes",
+              "task": "task",
+              "took": "took",
+              "verb": "finish",
+              "who": "Dax"
+            },
+            "consumed": [
+              0,
+              1,
+              9,
+              4,
+              5,
+              7
+            ],
+            "rule_id": "arithmetic/task-completion-duration",
+            "sentence": 0,
+            "shadowed": false
+          },
+          {
+            "bindings": {
+              "span": "1.5 hours",
+              "task": "task",
+              "took": "took",
+              "verb": "finish",
+              "who": "Cora"
+            },
+            "consumed": [
+              0,
+              1,
+              9,
+              4,
+              5,
+              7
+            ],
+            "rule_id": "arithmetic/task-completion-duration",
+            "sentence": 1,
+            "shadowed": false
+          }
+        ],
+        "proof": null
+      }
+    },
+    {
+      "actual_rule_ids": [
+        "arithmetic/task-completion-duration"
+      ],
+      "answer": {
+        "clarification": null,
+        "committed": false,
+        "kind": "decline",
+        "reason": "'slower' contradicts the stated completion durations",
+        "shape": "decline",
+        "value": null
+      },
+      "deficiencies": [],
+      "expectation": "The dedicated consumer declines because Cora has the shorter duration but the question calls Cora slower.",
+      "facts": [
+        {
+          "derivation": null,
+          "fields": {
+            "elapsed": 30,
+            "participant": "cora",
+            "task": "task",
+            "unit": "minute",
+            "verb": "finish"
+          },
+          "sentence": 0,
+          "source": "arithmetic/task-completion-duration",
+          "source_ref": null,
+          "type": "TaskCompletionDuration"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "elapsed": 1,
+            "participant": "dax",
+            "task": "task",
+            "unit": "hour",
+            "verb": "finish"
+          },
+          "sentence": 1,
+          "source": "arithmetic/task-completion-duration",
+          "source_ref": null,
+          "type": "TaskCompletionDuration"
+        }
+      ],
+      "id": "decline",
+      "interpretation": null,
+      "kind": "decline",
+      "reference_year": null,
+      "retest": null,
+      "sentence": "Cora took 30 minutes to finish the task. Dax took 1 hour to finish the task. How many minutes slower did Cora finish the task than Dax?",
+      "source_ref": null,
+      "target_rule": null,
+      "title": "Contradictory speed direction",
+      "trace": {
+        "answer": {
+          "clarification": null,
+          "committed": false,
+          "kind": "decline",
+          "reason": "'slower' contradicts the stated completion durations",
+          "shape": "decline",
+          "value": null
+        },
+        "ask": {
+          "id": "ask/how-many-unit-task-completion-comparative-than",
+          "query": {
+            "a": "cora",
+            "b": "dax",
+            "consumer": "completion-duration-difference",
+            "direction": "slower",
+            "task": "task",
+            "unit": "minute",
+            "verb": "finish"
+          }
+        },
+        "collisions": [],
+        "deficiencies": [],
+        "facts": [
+          {
+            "derivation": null,
+            "fields": {
+              "elapsed": 30,
+              "participant": "cora",
+              "task": "task",
+              "unit": "minute",
+              "verb": "finish"
+            },
+            "sentence": 0,
+            "source": "arithmetic/task-completion-duration",
+            "source_ref": null,
+            "type": "TaskCompletionDuration"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "elapsed": 1,
+              "participant": "dax",
+              "task": "task",
+              "unit": "hour",
+              "verb": "finish"
+            },
+            "sentence": 1,
+            "source": "arithmetic/task-completion-duration",
+            "source_ref": null,
+            "type": "TaskCompletionDuration"
+          }
+        ],
+        "matches": [
+          {
+            "bindings": {
+              "span": "30 minutes",
+              "task": "task",
+              "took": "took",
+              "verb": "finish",
+              "who": "Cora"
+            },
+            "consumed": [
+              0,
+              1,
+              9,
+              4,
+              5,
+              7
+            ],
+            "rule_id": "arithmetic/task-completion-duration",
+            "sentence": 0,
+            "shadowed": false
+          },
+          {
+            "bindings": {
+              "span": "1 hour",
+              "task": "task",
+              "took": "took",
+              "verb": "finish",
+              "who": "Dax"
+            },
+            "consumed": [
+              0,
+              1,
+              9,
+              4,
+              5,
+              7
+            ],
+            "rule_id": "arithmetic/task-completion-duration",
+            "sentence": 1,
+            "shadowed": false
+          }
+        ],
+        "proof": null
+      }
+    }
+  ]
+}

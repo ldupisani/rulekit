@@ -66,4 +66,7 @@ answer with zero breaks or new wrong commitments; the other twelve standing
 DEV diffs are neutral. Curated remains 71/71, lint reports zero errors and
 warnings, FOLIO makes zero numeric commitments, all four canonical specimens
 replay exactly, and the content-blind protected digest is unchanged. No
-protected TEST/generalization look was spent.
+protected generalization look was spent. Protected GSM8K TEST look 125 holds
+the previous aggregate exactly at 13 correct, 1 wrong, 1,305 declined, and
+92.9% precision; fully-read coverage moves from 385 to 386 without a new
+commitment.
