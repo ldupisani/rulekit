@@ -13,3 +13,6 @@ members:
   # word unavailable to core-only and benchmark projects.
   magnitude_noun: [population]
   remainder_collection_noun: [population]
+  # Bare plural populations need an explicit demographic/ecological frame;
+  # ordinary possession comparison does not infer one from `has` alone.
+  bare_possession_incompatible_noun: [population]

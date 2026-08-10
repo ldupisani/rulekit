@@ -220,7 +220,7 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
         registry.attribute_applies_to(attribute, noun)
         for attribute in adjectives
         for noun in plural_nouns
-    ) == 365
+    ) == 367
 
 
 def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> None:

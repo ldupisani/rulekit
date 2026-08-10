@@ -172,6 +172,19 @@ class AdpositionRoleDef(StrictModel):
     allow_name_object: bool = False
 
 
+class ModifierAttachmentDef(StrictModel):
+    """One noun–preposition–object attachment boundary.
+
+    All three roles are category-gated pack knowledge. This allows a location
+    to narrow the nouns that can plausibly carry that modifier without making
+    the preposition globally narrow.
+    """
+
+    preposition_category: str
+    object_category: str
+    host_category: str
+
+
 class CategoriesDoc(StrictModel):
     format: Literal["rulekit/categories@1"]
     categories: dict[str, CategoryDef] = Field(default_factory=dict)
@@ -184,6 +197,20 @@ class CategoriesDoc(StrictModel):
     # categories on either side, and pack extensions may add another target
     # category without redefining either lexeme.
     attribute_compatibility: dict[str, list[str]] = Field(default_factory=dict)
+    # Preposition category -> noun categories that the resulting modifier may
+    # attach to.  This is intentionally separate from
+    # ``attribute_compatibility``: one relation licenses the PP object
+    # (``about`` -> ``topic``), while this relation licenses the modified head
+    # (``about the topic`` -> ``book``, but not ``egg``).
+    modifier_host_compatibility: dict[str, list[str]] = Field(
+        default_factory=dict
+    )
+    # Object-sensitive nominal attachment frames. A frame becomes restrictive
+    # only when its preposition and object categories both match; otherwise
+    # the construction retains the ordinary open modifier behaviour.
+    modifier_attachment_compatibility: list[ModifierAttachmentDef] = Field(
+        default_factory=list
+    )
     # Measure category -> noun categories whose members can bear that
     # dimension. This is deliberately separate from descriptor compatibility:
     # `shorter` can describe both a physical object and a duration, so the
@@ -219,6 +246,7 @@ class CategoriesDoc(StrictModel):
     def _compatibility_targets(self) -> "CategoriesDoc":
         for family, compatibility in (
             ("attribute", self.attribute_compatibility),
+            ("modifier-host", self.modifier_host_compatibility),
             ("measure-holder", self.measure_holder_compatibility),
         ):
             for source, targets in compatibility.items():
@@ -230,6 +258,16 @@ class CategoriesDoc(StrictModel):
                     raise ValueError(
                         f"{family} compatibility {source!r} repeats a noun category"
                     )
+        attachment_keys = [
+            (
+                frame.preposition_category,
+                frame.object_category,
+                frame.host_category,
+            )
+            for frame in self.modifier_attachment_compatibility
+        ]
+        if len(attachment_keys) != len(set(attachment_keys)):
+            raise ValueError("modifier attachment compatibility repeats a frame")
         return self
 
     @model_validator(mode="after")
@@ -748,6 +786,25 @@ class AttributeCompatibilityPredicate(StrictModel):
     noun: str
 
 
+class ModifierHostCompatibilityPredicate(StrictModel):
+    """Relate an optional prepositional modifier to its modified noun."""
+
+    modifier: str
+    host: str
+    object: str | None = None
+
+    @model_validator(mode="after")
+    def _different_slots(self) -> "ModifierHostCompatibilityPredicate":
+        slots = [self.modifier, self.host]
+        if self.object is not None:
+            slots.append(self.object)
+        if len(slots) != len(set(slots)):
+            raise ValueError(
+                "modifier-host compatibility needs distinct role slots"
+            )
+        return self
+
+
 class BoundRequiresTypePredicate(StrictModel):
     """Require one slot type only when another optional slot was bound."""
 
@@ -1044,6 +1101,10 @@ class WherePredicate(StrictModel):
     # Both words may belong to multiple categories; this is existential over
     # the cross-product, never a single hardwired category.
     attribute_compatible: AttributeCompatibilityPredicate | None = None
+    # When the modifier is present and belongs to a preposition category with
+    # a declared host boundary, its head noun must belong to one of the
+    # corresponding host categories. Undeclared prepositions remain open.
+    modifier_host_compatible: ModifierHostCompatibilityPredicate | None = None
     # mining candidate qualified-measure-keys: the SAME self-reference
     # guard as `distinct` (lemma, label), plus each slot's own `qualifier`
     # feature (condense.py merge-attribute/merge-compound) — "12 more
@@ -1105,6 +1166,7 @@ class WherePredicate(StrictModel):
                 self.distinct, self.category_nonoverlap,
                 self.distinct_owner, self.distinct_from_owner,
                 self.attribute_compatible,
+                self.modifier_host_compatible,
                 self.distinct_measure,
                 self.name_count, self.absent, self.unbound,
                 self.slot_not_category,

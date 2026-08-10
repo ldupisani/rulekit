@@ -280,6 +280,7 @@ def _where_blocker(rule: PatternRule) -> list[str]:
             or pred.verb_role_compatible is not None
             or pred.measure_holder_compatible is not None
             or pred.attribute_compatible is not None
+            or pred.modifier_host_compatible is not None
             or pred.slot_not_category is not None
             or pred.absent is not None
             or pred.unbound is not None
@@ -1405,6 +1406,56 @@ def _rule_blockers(
                     f"for {attribute_name}/{noun_name}"
                 )
         for pred in rule.where:
+            if pred.modifier_host_compatible is None:
+                continue
+            modifier_name = pred.modifier_host_compatible.modifier
+            host_name = pred.modifier_host_compatible.host
+            object_name = pred.modifier_host_compatible.object
+            modifier_token = tokens_by_slot.get(modifier_name)
+            host_token = tokens_by_slot.get(host_name)
+            object_token = (
+                tokens_by_slot.get(object_name)
+                if object_name is not None
+                else None
+            )
+            if (
+                modifier_token is None
+                or host_token is None
+                or (object_name is not None and object_token is None)
+            ):
+                blockers.append(
+                    "modifier-host compatibility names undeclared pattern "
+                    f"slots {modifier_name}/{host_name}"
+                    + (f"/{object_name}" if object_name is not None else "")
+                )
+                continue
+            modifier_domain = safe_domain(modifier_token)
+            host_domain = safe_domain(host_token)
+            object_domain = (
+                safe_domain(object_token) if object_token is not None else [None]
+            )
+            if not any(
+                (
+                    not reg.modifier_has_host_boundary(modifier.identity)
+                    or reg.modifier_applies_to_host(
+                        modifier.identity, host.identity
+                    )
+                )
+                and (
+                    object_ is None
+                    or reg.modifier_attaches_to(
+                        modifier.identity, object_.identity, host.identity
+                    )
+                )
+                for modifier in modifier_domain
+                for host in host_domain
+                for object_ in object_domain
+            ):
+                blockers.append(
+                    "no project-backed modifier/host compatibility exists "
+                    f"for {modifier_name}/{host_name}"
+                )
+        for pred in rule.where:
             if pred.polarity_compatible is None:
                 continue
             pairs = tuple(
@@ -1683,6 +1734,7 @@ def _constraint_groups(
     list[tuple[str, str, str]],
     list[set[str]],
     tuple[tuple[str, ...], ...],
+    list[tuple[str, str, str | None]],
     list[tuple[str, str]],
     list[
         tuple[
@@ -1712,6 +1764,7 @@ def _constraint_groups(
     bound_form_requirements: list[tuple[str, str, str]] = []
     same_presence: list[set[str]] = []
     attribute_pairs: list[tuple[str, str]] = []
+    modifier_host_pairs: list[tuple[str, str, str | None]] = []
     verb_role_requirements: list[
         tuple[
             str,
@@ -1799,6 +1852,14 @@ def _constraint_groups(
                     pred.attribute_compatible.noun,
                 )
             )
+        if pred.modifier_host_compatible is not None:
+            modifier_host_pairs.append(
+                (
+                    pred.modifier_host_compatible.modifier,
+                    pred.modifier_host_compatible.host,
+                    pred.modifier_host_compatible.object,
+                )
+            )
         if pred.verb_role_compatible is not None:
             verb_role_requirements.append(
                 (
@@ -1837,6 +1898,7 @@ def _constraint_groups(
         same_presence,
         _distinct_measure_groups(rule),
         attribute_pairs,
+        modifier_host_pairs,
         verb_role_requirements,
         measure_holder_requirements,
         slot_category_exclusions,
@@ -1863,6 +1925,10 @@ def _allowed_fillers(
     active_slots: set[str],
     slot_category_exclusions: list[tuple[str, str]],
     absent_categories: tuple[str, ...],
+    modifier_host_pairs: (
+        list[tuple[str, str, str | None]]
+        | tuple[tuple[str, str, str | None], ...]
+    ) = (),
     proportional_delta_requirements: tuple[tuple[str, str, str], ...] = (),
     number_compatible_groups: list[set[str]] | tuple[set[str], ...] = (),
     polarity_compatible_groups: (
@@ -2155,6 +2221,73 @@ def _allowed_fillers(
                     reg.attribute_applies_to(candidate, filler.identity)
                     for candidate in possible_identities(attribute_name)
                 )
+            ):
+                return False
+        for modifier_name, host_name, object_name in modifier_host_pairs:
+            modifier = known_identity(modifier_name)
+            host = known_identity(host_name)
+            object_ = known_identity(object_name) if object_name is not None else None
+
+            def modifier_host_ok(
+                modifier_identity: str,
+                host_identity: str,
+                object_identity: str | None,
+            ) -> bool:
+                return (
+                    (
+                        not reg.modifier_has_host_boundary(modifier_identity)
+                        or reg.modifier_applies_to_host(
+                            modifier_identity, host_identity
+                        )
+                    )
+                    and (
+                        object_identity is None
+                        or reg.modifier_attaches_to(
+                            modifier_identity, object_identity, host_identity
+                        )
+                    )
+                )
+
+            if (
+                token.slot == modifier_name
+                and host is not None
+                and (object_name is None or object_ is not None)
+            ):
+                if not modifier_host_ok(filler.identity, host, object_):
+                    return False
+            if (
+                token.slot == modifier_name
+                and host is None
+                and host_name in active_slots
+                and not any(
+                    modifier_host_ok(filler.identity, candidate, object_)
+                    for candidate in possible_identities(host_name)
+                )
+            ):
+                return False
+            if (
+                token.slot == host_name
+                and modifier is not None
+                and (object_name is None or object_ is not None)
+            ):
+                if not modifier_host_ok(modifier, filler.identity, object_):
+                    return False
+            if (
+                token.slot == host_name
+                and modifier is None
+                and modifier_name in active_slots
+                and not any(
+                    modifier_host_ok(candidate, filler.identity, object_)
+                    for candidate in possible_identities(modifier_name)
+                )
+            ):
+                return False
+            if (
+                object_name is not None
+                and token.slot == object_name
+                and modifier is not None
+                and host is not None
+                and not modifier_host_ok(modifier, host, filler.identity)
             ):
                 return False
         for fraction_name, direction_name, direction_category in (
@@ -2539,6 +2672,7 @@ def _realize(
         same_presence_groups,
         distinct_measure_groups,
         attribute_pairs,
+        modifier_host_pairs,
         verb_role_requirements,
         measure_holder_requirements,
         slot_category_exclusions,
@@ -2780,6 +2914,7 @@ def _realize(
                 active_slots,
                 slot_category_exclusions,
                 absent_categories,
+                modifier_host_pairs,
                 proportional_delta_requirements,
                 number_compatible_groups,
                 polarity_compatible_groups,
@@ -3578,6 +3713,7 @@ _WHERE_FIELDS = (
     "distinct_owner",
     "distinct_from_owner",
     "attribute_compatible",
+    "modifier_host_compatible",
     "distinct_measure",
     "name_count",
     "absent",
@@ -3603,6 +3739,15 @@ def _where_expression(rule: PatternRule, index: int) -> tuple[str, tuple[str, ..
         rendered = (
             f"attribute={value.attribute!r}, noun={value.noun!r}"
         )
+    elif kind == "modifier_host_compatible":
+        names = tuple(
+            name
+            for name in (value.modifier, value.host, value.object)
+            if name is not None
+        )
+        rendered = f"modifier={value.modifier!r}, host={value.host!r}"
+        if value.object is not None:
+            rendered += f", object={value.object!r}"
     elif kind == "bound_requires_type":
         names = (value.bound, value.slot)
         rendered = (
@@ -3950,6 +4095,40 @@ def _where_reason(
             f"{attribute_name}={attribute!r}, {noun_name}={noun!r} matched "
             f"{rendered}"
         )
+    if pred.modifier_host_compatible is not None:
+        modifier_name = pred.modifier_host_compatible.modifier
+        host_name = pred.modifier_host_compatible.host
+        object_name = pred.modifier_host_compatible.object
+        modifier_units = _slot_units(slots.get(modifier_name))
+        host_units = _slot_units(slots.get(host_name))
+        object_units = _slot_units(slots.get(object_name)) if object_name else []
+        if not modifier_units:
+            return "the optional modifier was absent"
+        if not host_units:
+            return "the target match did not expose the modifier host"
+        modifier = _unit_lemma(modifier_units[0], reg)
+        host = _unit_lemma(host_units[0], reg)
+        pairs = reg.modifier_host_compatibility_pairs(modifier, host)
+        rendered = ", ".join(
+            f"{modifier_category} → {host_category}"
+            for modifier_category, host_category in pairs
+        )
+        reason = (
+            f"{modifier_name}={modifier!r}, {host_name}={host!r} "
+            + (f"matched {rendered}" if rendered else "used an open modifier")
+        )
+        if object_name is not None:
+            if not object_units:
+                return "the target match did not expose the modifier object"
+            object_ = _unit_lemma(object_units[0], reg)
+            frames = reg.modifier_attachment_frames(modifier, object_)
+            if frames:
+                rendered_frames = ", ".join(
+                    f"{prep} + {obj} → {host_cat}"
+                    for prep, obj, host_cat in frames
+                )
+                reason += f"; {object_name}={object_!r} activated {rendered_frames}"
+        return reason
     if pred.distinct_from_owner is not None:
         entity_name = pred.distinct_from_owner.entity
         possessed_name = pred.distinct_from_owner.possessed
@@ -4341,6 +4520,41 @@ def _explain_candidate(
                     project, predicate.attribute_compatible, slots
                 )
             )
+        if (
+            target is not None
+            and predicate.modifier_host_compatible is not None
+        ):
+            modifier_units = _slot_units(
+                slots.get(predicate.modifier_host_compatible.modifier)
+            )
+            host_units = _slot_units(
+                slots.get(predicate.modifier_host_compatible.host)
+            )
+            object_name = predicate.modifier_host_compatible.object
+            object_units = (
+                _slot_units(slots.get(object_name))
+                if object_name is not None
+                else ()
+            )
+            if modifier_units and host_units:
+                modifier = _unit_lemma(modifier_units[0], project.registry)
+                host = _unit_lemma(host_units[0], project.registry)
+                for pair in project.registry.modifier_host_compatibility_pairs(
+                    modifier, host
+                ):
+                    where_sources.append(
+                        project.source_index.modifier_host_compatibility.get(pair)
+                    )
+                if object_units:
+                    object_ = _unit_lemma(object_units[0], project.registry)
+                    for frame in project.registry.modifier_attachment_frames(
+                        modifier, object_
+                    ):
+                        where_sources.append(
+                            project.source_index.modifier_attachment_compatibility.get(
+                                frame
+                            )
+                        )
         if (
             target is not None
             and predicate.measure_holder_compatible is not None

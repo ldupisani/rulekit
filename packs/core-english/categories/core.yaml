@@ -171,6 +171,11 @@ categories:
         parent: quantity_location
         notes: >
             Quantity locations that license a surface attachment with "on".
+    tree_quantity_surface_location:
+        parent: quantity_surface_location
+        notes: >
+            Tree surfaces whose nominal "on" attachment is restricted to
+            things conventionally borne by trees.
     quantity_surface_preposition:
         parent: preposition
         notes: >
@@ -192,6 +197,18 @@ categories:
         parent: preposition
         notes: >
             Topical attachment markers compatible with `quantity_topic`.
+    topical_quantity_host:
+        parent: noun
+        notes: >
+            Counted things that can naturally carry a topic modifier, as in
+            "books about the topic". This is a host boundary, separate from
+            the noun allowed after the preposition.
+    tree_borne_quantity:
+        parent: noun
+        notes: >
+            Counted produce conventionally borne by trees. This is deliberately
+            narrower than edible or ripenable produce: tomatoes and grapes do
+            not acquire a tree attachment merely because they are produce.
     quantity_remainder_preposition:
         parent: preposition
         notes: >
@@ -392,6 +409,13 @@ categories:
             arithmetic "many" count frame. This is a narrow refusal boundary:
             ordinary plural nouns remain available without requiring an
             exhaustive count-noun vocabulary.
+    bare_possession_incompatible_noun:
+        parent: noun
+        notes: >
+            Ambiguous abstract noun heads that do not independently license a
+            bare quantitative possession reading. This is scoped to
+            possession-state verbs: event predicates may still count these
+            nouns when their own frame makes the interpretation explicit.
     findable_quantity_object:
         parent: noun
         notes: >
@@ -553,12 +577,67 @@ categories:
             Verbs whose grammatical subject must denote an animate participant.
             Rules opt into this role boundary explicitly; ordinary quantity
             holders do not become sentient merely because they can hold facts.
+    teaching_quantity_verb:
+        parent: animate_subject_verb
+        notes: >
+            Teaching predicates whose subject and comparison standard must be
+            person-denoting common nouns or proper names. This is narrower
+            than the general event boundary because animals may participate in
+            other quantity events without being teachers.
     animate_object_verb:
         parent: verb
         notes: >
             Verbs whose direct object must denote an animate participant. This
             keeps a quantitative object frame such as "met half of the group"
             without admitting times, units, or arbitrary physical objects.
+    currency_quantity_verb:
+        parent: verb
+        notes: >
+            Verbs that can govern a money-valued quantity in an affine
+            comparison. This is a positive boundary for the bare "the money
+            X VERB" frame: motion, arrival, desire, and unrelated event verbs
+            do not become monetary merely because the item slot says money.
+    enrollment_quantity_verb:
+        parent: verb
+        notes: >
+            Enrollment predicates whose compared object must be a declared
+            enrollable class rather than an arbitrary unit or count noun.
+    drop_quantity_verb:
+        parent: quantity_event_verb
+        notes: >
+            Dropping predicates whose compared object must be a portable
+            quantity object rather than an area, place, or abstract measure.
+    eating_quantity_verb:
+        parent: lose
+        notes: >
+            Eating predicates whose compared object must be declared edible.
+    past_departure_quantity_verb:
+        parent: verb
+        notes: >
+            The ambiguous past departure form when it heads an overt
+            quantitative event. It constrains the event actor without making
+            the comparison standard itself an actor in that event.
+    finishable_quantity_object:
+        parent: noun
+        notes: "Counted things that can ordinarily be completed or finished."
+    enrollment_quantity_object:
+        parent: noun
+        notes: "Counted classes that can ordinarily be enrolled or taken."
+    teaching_quantity_object:
+        parent: noun
+        notes: "Counted people or subjects that can ordinarily be taught."
+    transferable_quantity_object:
+        parent: noun
+        notes: >
+            Counted objects that can ordinarily be given or sold without an
+            omitted measure or special interpretation. Extension packs add
+            their own concrete transfer objects to this shared role.
+    droppable_quantity_object:
+        parent: transferable_quantity_object
+        notes: "Portable counted objects that can ordinarily be dropped."
+    edible_quantity_object:
+        parent: noun
+        notes: "Counted objects that can ordinarily be eaten."
     shucking_verb:
         parent: quantity_event_verb
         notes: "Quantity events whose counted object must be shuckable."
@@ -1526,6 +1605,7 @@ members:
     clause_subject_possessive_determiner: [her, his, its, their]
     animate_possessive_determiner: [her, his, my, their, your]
     many_incompatible_noun: [age, litter, percentage, rest]
+    bare_possession_incompatible_noun: [number]
     membership_predicate_incompatible_noun: [time]
     conjunct_comparison_incompatible_noun: [time]
     existential_incompatible_noun: [time]
@@ -1604,6 +1684,7 @@ members:
         - tomato
         - toy
     physical_size_noun:
+        - animal
         - apple
         - ball
         - drum
@@ -1724,7 +1805,28 @@ members:
     animate_subject_verb:
         [enroll, enrolled, enrolling, enrolls, own, owns, take, takes, took,
          teach, teaches, taught]
+    teaching_quantity_verb: [teach, teaches, taught]
     animate_object_verb: [teach, teaches, taught]
+    currency_quantity_verb:
+        [buy, buys, bought, find, finds, found, get, gets, got, had, has, have,
+         lose, loses, lost, own, owns, receive, receives, received, sell, sells,
+         sold, spend, spends, spent, win, wins, won]
+    enrollment_quantity_verb: [enroll, enrolled, enrolling, enrolls]
+    drop_quantity_verb: [dropped, drops]
+    eating_quantity_verb: [ate, eat, eats]
+    past_departure_quantity_verb: [left]
+    finishable_quantity_object: [course, puzzle]
+    enrollment_quantity_object: [course, student]
+    teaching_quantity_object: [course, puzzle, student]
+    transferable_quantity_object:
+        [animal, alpaca, bird, cat, course, dog, dollar, fish, flower,
+         hamster, number, rabbit]
+    droppable_quantity_object:
+        [apple, ball, book, card, coin, cookie, drum, egg, envelope, grape,
+         key, marble, apricot, paper, pencil, pear, plum, puzzle, rose, sticker,
+         tomato, toy]
+    edible_quantity_object:
+        [apple, cookie, grape, apricot, pear, plum, tomato]
     # A book can hold a page/count quantity even though it is neither animate
     # nor a location. Other common nouns enter this positive role only beside
     # evidence for their own ordinary holder reading.
@@ -1746,7 +1848,7 @@ members:
     lose: [lose, loses, lost, eat, eats, ate, give, gives, gave, sell, sells, sold, spend, spends, spent, dropped, drops]
     increase_verb: [rose]
     price_relation_verb: [are, cost, costs, is, was, were]
-    transfer_out: [gives, gave, sells, sold]
+    transfer_out: [give, gives, gave, sell, sells, sold]
     spend_verb: [spend, spends, spent]
     age_comparative: [older, younger]
     more_dir: [more, older]
@@ -1833,11 +1935,14 @@ members:
         [area, cupboard, garden, pantry, storeroom, university]
     quantity_location_preposition: [in]
     quantity_surface_location: [bench, tree]
+    tree_quantity_surface_location: [tree]
     quantity_surface_preposition: [on]
     quantity_site_location: [bench, garden, tree, university]
     quantity_site_preposition: [at]
     quantity_topic: [topic]
     quantity_topic_preposition: [about]
+    topical_quantity_host: [book, course]
+    tree_borne_quantity: [apple, apricot, pear, plum]
     quantity_remainder_preposition: [with]
     spatial_location_preposition:
         [aboard, above, alongside, amid, amidst, at, atop, behind, below,
@@ -1900,6 +2005,12 @@ attribute_compatibility:
     quantity_site_preposition: [quantity_site_location]
     quantity_topic_preposition: [quantity_topic]
     quantity_remainder_preposition: [remnant]
+modifier_host_compatibility:
+    quantity_topic_preposition: [topical_quantity_host]
+modifier_attachment_compatibility:
+    - preposition_category: quantity_surface_preposition
+      object_category: tree_quantity_surface_location
+      host_category: tree_borne_quantity
 adposition_roles:
     spatial-location:
         preposition_category: spatial_location_preposition

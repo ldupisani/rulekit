@@ -217,17 +217,20 @@ def _raw_reviews(project: Project) -> list[dict]:
 
 
 def _fold(rows: list[dict]) -> list[dict]:
-    """Collapse supersede/tombstone chains down to the live records."""
+    """Collapse supersede/delete/resolve chains down to open records."""
 
     superseded = {r["supersedes"] for r in rows if r.get("supersedes")}
     tombstoned = {r["tombstones"] for r in rows if r.get("tombstones")}
+    resolved = {r["resolves"] for r in rows if r.get("resolves")}
     return [
         r
         for r in rows
-        # a tombstone is a marker, never itself a review
+        # lifecycle markers are history, never open review work
         if not r.get("tombstones")
+        and not r.get("resolves")
         and r["id"] not in superseded
         and r["id"] not in tombstoned
+        and r["id"] not in resolved
     ]
 
 
@@ -289,7 +292,13 @@ def update_review(
 def delete_review(project: Project, review_id: str) -> dict:
     """Append a tombstone hiding `review_id` from the folded history."""
 
-    current = {r["id"]: r for r in _fold(_raw_reviews(project))}
+    current = {
+        r["id"]: r
+        for r in (
+            *_fold(_raw_reviews(project)),
+            *read_review_history(project, 100_000),
+        )
+    }
     if review_id not in current:
         raise KeyError(review_id)
     return _append(
@@ -303,6 +312,45 @@ def delete_review(project: Project, review_id: str) -> dict:
     )
 
 
+def resolve_review(
+    project: Project, review_id: str, note: str = ""
+) -> dict:
+    """Append a visible resolution without changing the human judgment.
+
+    Resolution is distinct from deletion: open-review gates stop replaying the
+    row, but the Designer history keeps the exact sentence, verdict, defects,
+    and note visible. A previously tombstoned row may be resolved so an agent
+    can repair an accidental delete without rewriting the ledger.
+    """
+
+    rows = _raw_reviews(project)
+    if any(row.get("resolves") == review_id for row in rows):
+        raise KeyError(review_id)
+    previous = next(
+        (
+            row
+            for row in reversed(rows)
+            if row.get("id") == review_id
+            and not row.get("tombstones")
+            and not row.get("resolves")
+        ),
+        None,
+    )
+    if previous is None:
+        raise KeyError(review_id)
+    resolved_at = datetime.now(timezone.utc).isoformat()
+    return _append(
+        project,
+        {
+            **{key: value for key, value in previous.items() if key != "id"},
+            "id": "rev-" + uuid.uuid4().hex[:16],
+            "resolves": review_id,
+            "resolved_at": resolved_at,
+            "resolution_note": note,
+        },
+    )
+
+
 def read_reviews(project: Project, limit: int = 100) -> list[dict]:
     """Return the newest bounded slice of LIVE reviews, newest first.
 
@@ -311,3 +359,40 @@ def read_reviews(project: Project, limit: int = 100) -> list[dict]:
     """
 
     return _fold(_raw_reviews(project))[-limit:][::-1]
+
+
+def read_review_history(project: Project, limit: int = 100) -> list[dict]:
+    """Return open and resolved reviews, while retaining true deletions.
+
+    Resolution markers copy the immutable reviewed artefact so old Designer
+    servers also render them. New callers receive an explicit status and never
+    confuse the copied marker with open work.
+    """
+
+    rows = _raw_reviews(project)
+    superseded = {row["supersedes"] for row in rows if row.get("supersedes")}
+    tombstoned = {row["tombstones"] for row in rows if row.get("tombstones")}
+    resolved_targets = {
+        row["resolves"] for row in rows if row.get("resolves")
+    }
+    resolution_by_target = {
+        row["resolves"]: row
+        for row in rows
+        if row.get("resolves") and row["id"] not in tombstoned
+    }
+    history: list[dict] = []
+    for row in rows:
+        if row.get("tombstones") or row.get("resolves"):
+            continue
+        if row["id"] in superseded:
+            continue
+        resolved = resolution_by_target.get(row["id"])
+        if resolved is not None:
+            history.append({**resolved, "review_status": "resolved"})
+        elif row["id"] in resolved_targets:
+            # The resolution marker itself was tombstoned after verification;
+            # do not resurrect the original review as open work.
+            continue
+        elif row["id"] not in tombstoned:
+            history.append({**row, "review_status": "open"})
+    return history[-limit:][::-1]

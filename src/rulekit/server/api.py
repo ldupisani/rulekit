@@ -51,6 +51,7 @@ from ..generation import (
     promote_reading_candidate,
     promote_sentence_review_candidate,
     publish_campaign_manifest,
+    read_review_history,
     read_reviews,
     read_campaign_gates,
     retest_candidate,
@@ -1565,7 +1566,7 @@ def build_router(state: ServerState) -> APIRouter:
     def generation_history(limit: int = 100):
         bounded = max(1, min(limit, 500))
         with state.generation_lock:
-            reviews = read_reviews(state.project, bounded)
+            reviews = read_review_history(state.project, bounded)
         return {"reviews": reviews}
 
     @router.patch("/generation/review/{review_id}")

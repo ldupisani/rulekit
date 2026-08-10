@@ -148,7 +148,7 @@ def test_review_boundaries_are_pack_declared() -> None:
         assert (
             "animate_object_verb",
             ("item",),
-            "quantity_event_participant",
+            "teaching_quantity_object",
         ) in verb_roles(rule_id)
 
     periodic = verb_roles("arithmetic/periodic-rate-every-span")

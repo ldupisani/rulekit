@@ -59,6 +59,12 @@ class SourceIndex:
     attribute_compatibility: dict[tuple[str, str], SourceRef] = field(
         default_factory=dict
     )
+    modifier_host_compatibility: dict[tuple[str, str], SourceRef] = field(
+        default_factory=dict
+    )
+    modifier_attachment_compatibility: dict[
+        tuple[str, str, str], SourceRef
+    ] = field(default_factory=dict)
     measure_holder_compatibility: dict[tuple[str, str], SourceRef] = field(
         default_factory=dict
     )
@@ -84,6 +90,8 @@ class SourceIndex:
             "categories",
             "category_members",
             "attribute_compatibility",
+            "modifier_host_compatibility",
+            "modifier_attachment_compatibility",
             "measure_holder_compatibility",
             "subject_role_derivations",
             "adposition_roles",
@@ -263,6 +271,38 @@ def _index_categories(
             )
 
     raw_measure_holders = raw.get("measure_holder_compatibility", {})
+
+    raw_modifier_hosts = raw.get("modifier_host_compatibility", {})
+    for modifier, hosts in doc.modifier_host_compatibility.items():
+        raw_values = raw_modifier_hosts.get(modifier, [])
+        for host_no, host in enumerate(hosts):
+            if host_no >= len(raw_values):
+                continue
+            index.modifier_host_compatibility[(modifier, host)] = _ref(
+                path,
+                raw_values,
+                kind="modifier-host-compatibility",
+                label=f"{modifier} → {host}",
+                item=host_no,
+            )
+
+    raw_attachments = raw.get("modifier_attachment_compatibility", [])
+    for frame_no, frame in enumerate(doc.modifier_attachment_compatibility):
+        if frame_no >= len(raw_attachments):
+            continue
+        key = (
+            frame.preposition_category,
+            frame.object_category,
+            frame.host_category,
+        )
+        index.modifier_attachment_compatibility[key] = _ref(
+            path,
+            raw_attachments,
+            kind="modifier-attachment-compatibility",
+            label=" → ".join(key),
+            item=frame_no,
+        )
+
     for measure, holders in doc.measure_holder_compatibility.items():
         raw_values = raw_measure_holders.get(measure, [])
         for holder_no, holder in enumerate(holders):

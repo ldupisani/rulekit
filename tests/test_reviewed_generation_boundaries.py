@@ -1614,7 +1614,10 @@ def test_count_frame_relative_clause_can_state_a_duration_span(
     registry,
 ) -> None:
     assert "arithmetic/affine-frame-relation-clause" in _matched_rules(
-        "Cato has 2 fewer than twice the number of apples Dena has in 1 year.",
+        (
+            "Cato finished 2 fewer than twice the number of puzzles "
+            "Dena finished in 1 year."
+        ),
         registry,
     )
 
@@ -2419,7 +2422,7 @@ def test_affine_currency_clause_rejects_reviewed_frame_defects(
 
 def test_affine_currency_clause_keeps_the_mass_money_frame(registry) -> None:
     assert "arithmetic/affine-item-relation-clause" in _matched_rules(
-        "Plum won 4 dollars more than thrice the money Dena won.",
+        "Cato won 4 dollars more than thrice the money Dena won.",
         registry,
     )
 

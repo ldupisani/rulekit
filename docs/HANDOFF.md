@@ -210,6 +210,104 @@ remains compatible with a future departure. Contextual sense arbitration reads
 established remainder questions retain their adjective reading. This adds one strictly
 generatable premise rule without adding a lexical identity, bringing the live
 frontier to 115/115 rules and 267 identities.
+The generation frontier now separates 125/125 realizable positive premise
+targets from five consume-only safety boundaries. Rules that need supporting
+premises declare bounded `generation_context` sentences and required fact
+counts in their packs, so the Designer can generate and review the complete
+reading rather than an impossible isolated fragment. A separate negative
+safety-boundary mode deliberately realizes the five rejected surfaces and
+requires a full-span match with no emitted facts. Context, target sentence
+index, review evidence, pinned retests, and Reading inspection all preserve the
+same multi-sentence candidate. This increment landed on `main` as `73638bb`.
+The thirty-seventh review reconciliation closes all 25 live affine reviews.
+The complemented, bare-clause, count-fraction, count-multiplier, and currency
+siblings now share finite-form and pack-declared actor/object boundaries for
+ownership, teaching, finding, task completion, enrollment, dropping, eating,
+motion frequency, and money-valued events. Duration adjuncts no longer attach
+to stative possession in these frames, while genuine event-duration and
+motion-frequency neighbours remain supported. Every reviewed surface retests
+absent, each affected target still generates a strict retained specimen, and
+all 25 review rows remain visible as resolved history while leaving the live
+machine-gate queue. The complete 4,916-test gate passes; curated
+remains 71/71; GSM8K train and holdout are exactly neutral at 108/0 and 43/0;
+ASDiv, SVAMP, MAWPS, SciBench, DIFG, and FOLIO retain zero wrong commitments.
+No protected look was spent.
+The thirty-eighth review reconciliation separates PP-object compatibility
+from PP-to-head attachment. A new declarative `modifier_host_compatibility`
+relation lets topical `about` phrases modify declared topical quantity hosts
+such as books and courses without licensing nonsensical `eggs about the
+topic`; prepositions without a declared host boundary remain open, so ordinary
+locatives such as `eggs in the pantry` are unchanged. Affine count comparisons
+also reject remainder-only `with the rest` attachments, which belong to
+partition/conjunct constructions rather than comparison relations. Reading
+and generation enforce the same premises, including locked generation probes.
+The complete 4,925-test gate passes; curated remains 71/71; GSM8K train and
+holdout remain neutral at 108/0 and 43/0; every standing cross-corpus gate
+retains zero wrong commitments. No protected look was spent.
+The thirty-ninth review reconciliation extends nominal modifier boundaries to
+an object-sensitive three-category frame: preposition + modifier object →
+permitted head nouns. The first pack-owned frame restricts `on + tree` to
+declared tree-borne quantities (apple, apricot, pear, and plum), rejecting the
+reviewed `tomatoes on his tree` without globally narrowing `on`. Consequently
+`apples on his tree` remains supported, `tomatoes on the bench` remains open,
+and the underlying affine `gave fewer tomatoes` comparison and unity fraction
+remain valid. Reading, generation, provenance, and source inspection share the
+same frame. The complete 4,927-test gate passes; curated remains 71/71; GSM8K
+train and holdout remain neutral at 108/0 and 43/0; every standing cross-corpus
+gate retains zero wrong commitments. No protected look was spent.
+The fortieth review reconciliation adds a possession-scoped object refusal:
+bare `number` does not independently license a quantitative object under
+`have` or `own`. This rejects the reviewed `the bench had ... as many numbers`
+without putting `number` in the global `many` refusal category; event frames
+such as `gave ... as many numbers` therefore remain available, as do concrete
+possession objects such as apples. The boundary is pack-declared through
+`bare_possession_incompatible_noun` and the existing generic verb-role
+predicate. The complete 4,929-test gate passes; curated remains 71/71; GSM8K
+train and holdout remain neutral at 108/0 and 43/0; every standing cross-corpus
+gate retains zero wrong commitments. No protected look was spent.
+The forty-first review reconciliation closes both layers of the reviewed
+`the bird teach ... puzzles` failure. Core English now declares `teach` as a
+plural finite form and `teaches` as singular, while past `taught` remains
+number-neutral. A pack-owned `teaching_quantity_verb` subclass adds the
+teaching-specific person-denoting subject and comparison-standard boundary;
+animals remain valid participants in other quantity events but cannot teach.
+Valid singular, plural, past-tense, and proper-name teaching comparisons remain
+supported. The complete 4,934-test gate passes; curated remains 71/71; GSM8K
+train and holdout remain neutral at 108/0 and 43/0; every standing cross-corpus
+gate retains zero wrong commitments. No protected look was spent.
+The forty-second review reconciliation extends the possession-scoped refusal
+from core-owned `number` to reference-owned `population`. The reference pack
+now contributes `population` to `bare_possession_incompatible_noun`, so bare
+plural `has/owns ... populations` comparisons decline unless a future explicit
+demographic or ecological construction supplies their interpretation. Singular
+reference lookup remains untouched (`population of France` and the complete
+reference suite still pass). The complete 4,935-test gate passes; curated
+remains 71/71; GSM8K train and holdout remain neutral at 108/0 and 43/0; every
+standing cross-corpus gate retains zero wrong commitments. No protected look
+was spent.
+The forty-third review reconciliation adds a positive transfer-object boundary
+to affine multiplier comparisons. `give` and `sell` may now take only declared
+transferable counted objects, so the reviewed `gave ... as many times` surface
+declines instead of treating the frequency measure `time` as a transferable
+theme. Concrete transfers such as giving apples and selling flowers remain
+supported, as does ordinary motion-frequency comparison. Droppable objects
+inherit transferability, while direct pack memberships cover the established
+non-droppable transfer objects without broadening possession or modal senses.
+The complete 4,937-test gate passes; curated remains 71/71; GSM8K train and
+holdout remain exactly neutral at 108/0 and 43/0; ASDiv, SVAMP, MAWPS,
+SciBench, DIFG, and FOLIO retain zero wrong commitments. No protected look was
+spent.
+The forty-fourth review reconciliation adds a holder/location identity
+boundary to both affine count variants. An optional locative modifier may no
+longer repeat the quantity holder's noun identity, so `the pantry ... in my
+pantry` declines instead of suggesting an unexplained second pantry while
+discarding that distinction from the emitted relation. A genuinely different
+location such as `the pantry ... in my garden` remains supported. The existing
+declarative `distinct` predicate enforces the boundary identically in Reading
+and strict generation. The complete 4,941-test gate passes; curated remains
+71/71; GSM8K train and holdout remain exactly neutral at 108/0 and 43/0; every
+standing cross-corpus gate retains zero wrong commitments. No protected look
+was spent.
 The thirty-fifth reconciliation closes all five live invalid reviews. Affine
 count relations now require positive common-noun quantity holders, so calendar
 periods such as `July` cannot become event participants. Named membership

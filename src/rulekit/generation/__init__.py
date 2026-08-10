@@ -83,7 +83,9 @@ from .reviews import (
     ReviewDefect,
     append_review,
     delete_review,
+    read_review_history,
     read_reviews,
+    resolve_review,
     update_review,
 )
 from .sample import (
@@ -170,9 +172,11 @@ __all__ = [
     "read_campaign_gates",
     "read_campaign_landings",
     "read_campaign_review_records",
+    "read_review_history",
     "read_reviews",
     "read_exploration_events",
     "read_exploration_failures",
     "retest_candidate",
+    "resolve_review",
     "update_review",
 ]

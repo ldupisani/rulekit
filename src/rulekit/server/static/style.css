@@ -78,6 +78,12 @@ body.campaign-mode #impact-bar { display: none; }
   margin-left: 6px; font-size: 0.5938rem; color: var(--purple);
   text-transform: uppercase; letter-spacing: .06em;
 }
+.rv-resolved {
+  display: inline-block; margin: 4px 0 0 6px; padding: 1px 6px;
+  border: 1px solid #2c5c41; border-radius: 8px; color: var(--green);
+  font-size: 0.5938rem; text-transform: uppercase; letter-spacing: .06em;
+}
+.rv-row.resolved { opacity: .78; }
 .rv-when { color: var(--dim); white-space: nowrap; font-size: 0.6875rem; }
 .rv-rule { color: var(--accent); font-size: 0.6875rem; }
 .rv-origin {

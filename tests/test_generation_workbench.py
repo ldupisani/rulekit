@@ -29,10 +29,12 @@ from rulekit.generation import (
     list_rule_availability,
     promote_reading_candidate,
     promote_sentence_review_candidate,
+    read_review_history,
     read_reviews,
     read_exploration_events,
     read_exploration_failures,
     retest_candidate,
+    resolve_review,
     update_review,
 )
 from rulekit.generation.exploration import exploration_path
@@ -2743,6 +2745,52 @@ def test_deleting_a_review_appends_a_tombstone(tmp_path: Path) -> None:
     assert len(raw) == 2
     assert raw[0]["verdict"] == "valid"  # original untouched on disk
     assert raw[1]["tombstones"] == first["id"]
+
+
+def test_resolved_review_stays_in_history_but_leaves_open_gate(
+    tmp_path: Path,
+) -> None:
+    project, candidate = _seeded(tmp_path)
+    first = append_review(project, _review(candidate, "invalid"))
+
+    marker = resolve_review(project, first["id"], "fixed by a role boundary")
+
+    assert read_reviews(project) == []
+    history = read_review_history(project)
+    assert len(history) == 1
+    assert history[0]["sentence"] == first["sentence"]
+    assert history[0]["verdict"] == "invalid"
+    assert history[0]["review_status"] == "resolved"
+    assert history[0]["resolves"] == first["id"]
+    assert history[0]["resolution_note"] == "fixed by a role boundary"
+    assert marker["timestamp"] == first["timestamp"]
+
+
+def test_accidental_tombstone_can_be_recovered_as_visible_resolution(
+    tmp_path: Path,
+) -> None:
+    project, candidate = _seeded(tmp_path)
+    first = append_review(project, _review(candidate, "invalid"))
+    delete_review(project, first["id"])
+
+    resolve_review(project, first["id"], "reconciled")
+
+    assert read_reviews(project) == []
+    assert read_review_history(project)[0]["review_status"] == "resolved"
+
+
+def test_human_can_tombstone_a_resolved_review_after_verification(
+    tmp_path: Path,
+) -> None:
+    project, candidate = _seeded(tmp_path)
+    first = append_review(project, _review(candidate, "invalid"))
+    resolved = resolve_review(project, first["id"], "fixed")
+
+    tombstone = delete_review(project, resolved["id"])
+
+    assert tombstone["tombstones"] == resolved["id"]
+    assert read_reviews(project) == []
+    assert read_review_history(project) == []
 
 
 def test_an_edited_review_can_still_be_deleted(tmp_path: Path) -> None:

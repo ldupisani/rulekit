@@ -1250,6 +1250,38 @@ def _check_where(
                 )
             ):
                 return False
+        if pred.modifier_host_compatible is not None:
+            modifier_name = pred.modifier_host_compatible.modifier
+            host_name = pred.modifier_host_compatible.host
+            object_name = pred.modifier_host_compatible.object
+            modifier = slots.get(modifier_name)
+            host = slots.get(host_name)
+            object_ = slots.get(object_name) if object_name is not None else None
+            if modifier is None:
+                # The modifier may live in an omitted optional branch.
+                continue
+            if (
+                host is None
+                or isinstance(modifier, tuple)
+                or isinstance(host, tuple)
+            ):
+                return False
+            modifier_lemma = _lemma_of(modifier)
+            host_lemma = _lemma_of(host)
+            if (
+                reg.modifier_has_host_boundary(modifier_lemma)
+                and not reg.modifier_applies_to_host(
+                    modifier_lemma, host_lemma
+                )
+            ):
+                return False
+            if object_name is not None:
+                if object_ is None or isinstance(object_, tuple):
+                    return False
+                if not reg.modifier_attaches_to(
+                    modifier_lemma, _lemma_of(object_), host_lemma
+                ):
+                    return False
         if pred.distinct_measure is not None:
             # mining candidate qualified-measure-keys: the (lemma, label)
             # pair from `distinct` above, PLUS each slot's own `qualifier`

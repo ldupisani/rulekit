@@ -1238,11 +1238,14 @@ function sortHeader(label, key) {
 function renderReviews() {
   const box = $("reviews");
   box.replaceChildren();
+  const resolvedCount = state.reviews.filter((review) =>
+    review.review_status === "resolved" || review.resolves).length;
+  const openCount = state.reviews.length - resolvedCount;
 
   const head = el("div", "rv-head");
   head.append(el("div", "pane-title", "Human review history"));
   head.append(el("span", "dim",
-    `${state.reviews.length} review${state.reviews.length === 1 ? "" : "s"} · ` +
+    `${openCount} open · ${resolvedCount} resolved · ` +
     `edits and deletes append corrections; nothing is overwritten`));
   box.append(head);
 
@@ -1275,13 +1278,19 @@ function renderReviews() {
 }
 
 function reviewRow(r) {
-  const row = el("tr", "rv-row");
+  const isResolved = r.review_status === "resolved" || Boolean(r.resolves);
+  const row = el("tr", `rv-row${isResolved ? " resolved" : ""}`);
 
   const verdict = el("td");
   verdict.append(el("span", `rv-verdict ${r.verdict}`, r.verdict));
   if (r.supersedes) {
     const tag = el("span", "rv-edited", "edited");
     tag.title = "this verdict supersedes an earlier one, still on disk";
+    verdict.append(tag);
+  }
+  if (isResolved) {
+    const tag = el("span", "rv-resolved", "resolved");
+    tag.title = r.resolution_note || "the reported issue has been reconciled";
     verdict.append(tag);
   }
   row.append(verdict);
@@ -1332,6 +1341,23 @@ function reviewRow(r) {
   const actions = el("td", "rv-actions");
   const open = el("button", "", "Open in reader");
   open.onclick = () => openReviewInReader(r);
+  actions.append(open);
+  if (isResolved) {
+    const tombstone = el("button", "rv-danger", "Tombstone");
+    tombstone.onclick = () => {
+      if (tombstone.dataset.armed) return deleteReview(r);
+      tombstone.dataset.armed = "1";
+      tombstone.textContent = "Confirm?";
+      setTimeout(() => {
+        if (!tombstone.isConnected) return;
+        delete tombstone.dataset.armed;
+        tombstone.textContent = "Tombstone";
+      }, 4000);
+    };
+    actions.append(tombstone);
+    row.append(actions);
+    return row;
+  }
   const edit = el("button", "", "Edit");
   edit.onclick = () => { state.editingReview = r.id; renderReviews(); };
   const del = el("button", "rv-danger", "Delete");
@@ -1346,7 +1372,7 @@ function reviewRow(r) {
       del.textContent = "Delete";
     }, 4000);
   };
-  actions.append(open, edit, del);
+  actions.append(edit, del);
   row.append(actions);
   return row;
 }
@@ -1462,7 +1488,7 @@ async function deleteReview(r) {
     return;
   }
   await loadReviews();
-  setStatus("review deleted — a tombstone was appended, the record is recoverable", "ok");
+  setStatus("review tombstoned — the append-only record remains recoverable", "ok");
 }
 
 function openReviewInReader(r) {

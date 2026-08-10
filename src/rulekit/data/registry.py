@@ -128,6 +128,8 @@ class Registry:
     coordinated_superordinate_categories: frozenset[str]
     dimension_categories: frozenset[str]
     attribute_compatibility: Mapping[str, tuple[str, ...]]
+    modifier_host_compatibility: Mapping[str, tuple[str, ...]]
+    modifier_attachment_compatibility: tuple[tuple[str, str, str], ...]
     measure_holder_compatibility: Mapping[str, tuple[str, ...]]
     subject_role_derivations: Mapping[tuple[str, str], str]
     adposition_roles: Mapping[
@@ -251,6 +253,52 @@ class Registry:
     def attribute_applies_to(self, attribute: str, noun: str) -> bool:
         return bool(self.attribute_compatibility_pairs(attribute, noun))
 
+    def modifier_host_compatibility_pairs(
+        self, modifier: str, host: str
+    ) -> tuple[tuple[str, str], ...]:
+        """Every declared preposition-category/host-category licence."""
+
+        pairs: set[tuple[str, str]] = set()
+        for direct in self.word_categories.get(modifier, ()):
+            for modifier_category in self.cat_ancestors(direct):
+                for host_category in self.modifier_host_compatibility.get(
+                    modifier_category, ()
+                ):
+                    if self.word_in_category(host, host_category):
+                        pairs.add((modifier_category, host_category))
+        return tuple(sorted(pairs))
+
+    def modifier_has_host_boundary(self, modifier: str) -> bool:
+        return any(
+            category in self.modifier_host_compatibility
+            for direct in self.word_categories.get(modifier, ())
+            for category in self.cat_ancestors(direct)
+        )
+
+    def modifier_applies_to_host(self, modifier: str, host: str) -> bool:
+        return bool(self.modifier_host_compatibility_pairs(modifier, host))
+
+    def modifier_attachment_frames(
+        self, modifier: str, object_: str
+    ) -> tuple[tuple[str, str, str], ...]:
+        """Frames activated by this exact modifier/object pair."""
+
+        return tuple(
+            frame
+            for frame in self.modifier_attachment_compatibility
+            if self.word_in_category(modifier, frame[0])
+            and self.word_in_category(object_, frame[1])
+        )
+
+    def modifier_attaches_to(
+        self, modifier: str, object_: str, host: str
+    ) -> bool:
+        frames = self.modifier_attachment_frames(modifier, object_)
+        return not frames or any(
+            self.word_in_category(host, host_category)
+            for _, _, host_category in frames
+        )
+
     def measure_holder_compatibility_pairs(
         self, measure: str, holder: str
     ) -> tuple[tuple[str, str], ...]:
@@ -363,6 +411,8 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
     coordinated_superordinate_categories: set[str] = set()
     dimension_categories: set[str] = set()
     attribute_compatibility: dict[str, list[str]] = {}
+    modifier_host_compatibility: dict[str, list[str]] = {}
+    modifier_attachment_compatibility: list[tuple[str, str, str]] = []
     measure_holder_compatibility: dict[str, list[str]] = {}
     subject_role_derivations: dict[tuple[str, str], str] = {}
     subject_role_verbs: set[str] = set()
@@ -396,6 +446,16 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                 category_members.setdefault(cat, []).extend(words)
             for attribute, nouns in doc.attribute_compatibility.items():
                 attribute_compatibility.setdefault(attribute, []).extend(nouns)
+            for modifier, hosts in doc.modifier_host_compatibility.items():
+                modifier_host_compatibility.setdefault(modifier, []).extend(hosts)
+            modifier_attachment_compatibility.extend(
+                (
+                    frame.preposition_category,
+                    frame.object_category,
+                    frame.host_category,
+                )
+                for frame in doc.modifier_attachment_compatibility
+            )
             for measure, holders in doc.measure_holder_compatibility.items():
                 measure_holder_compatibility.setdefault(measure, []).extend(
                     holders
@@ -527,6 +587,54 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                 raise CompileError(
                     f"measure-holder compatibility {role} category "
                     f"{category!r} is not noun-rooted"
+                )
+
+    for modifier, hosts in sorted(modifier_host_compatibility.items()):
+        if modifier not in category_parents:
+            raise CompileError(
+                f"modifier-host compatibility names unknown category {modifier!r}"
+            )
+        root = modifier
+        while root in category_parents:
+            root = category_parents[root]
+        if root != "preposition":
+            raise CompileError(
+                f"modifier-host compatibility key {modifier!r} is not "
+                "preposition-rooted"
+            )
+        for host in hosts:
+            if host not in category_parents:
+                raise CompileError(
+                    f"modifier-host compatibility {modifier!r} names unknown "
+                    f"host category {host!r}"
+                )
+            root = host
+            while root in category_parents:
+                root = category_parents[root]
+            if root != "noun":
+                raise CompileError(
+                    f"modifier-host compatibility target {host!r} is not "
+                    "noun-rooted"
+                )
+
+    for preposition, object_, host in modifier_attachment_compatibility:
+        for category, role, expected_root in (
+            (preposition, "preposition", "preposition"),
+            (object_, "object", "noun"),
+            (host, "host", "noun"),
+        ):
+            if category not in category_parents:
+                raise CompileError(
+                    "modifier attachment compatibility names unknown "
+                    f"{role} category {category!r}"
+                )
+            root = category
+            while root in category_parents:
+                root = category_parents[root]
+            if root != expected_root:
+                raise CompileError(
+                    f"modifier attachment {role} category {category!r} is "
+                    f"not {expected_root}-rooted"
                 )
 
     def _category_root(category: str) -> str:
@@ -973,6 +1081,44 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                         f"rule {rule.id!r} compatibility noun slot "
                         f"{compatibility.noun!r} is not noun-rooted"
                     )
+            modifier_compatibility = predicate.modifier_host_compatible
+            if modifier_compatibility is not None:
+                modifier = slots.get(modifier_compatibility.modifier)
+                host = slots.get(modifier_compatibility.host)
+                if modifier is None or host is None:
+                    missing = (
+                        modifier_compatibility.modifier
+                        if modifier is None
+                        else modifier_compatibility.host
+                    )
+                    raise CompileError(
+                        f"rule {rule.id!r} modifier-host compatibility names "
+                        f"unknown slot {missing!r}"
+                    )
+                if _slot_root(modifier) != "preposition":
+                    raise CompileError(
+                        f"rule {rule.id!r} modifier-host modifier slot "
+                        f"{modifier_compatibility.modifier!r} is not "
+                        "preposition-rooted"
+                    )
+                if _slot_root(host) != "noun":
+                    raise CompileError(
+                        f"rule {rule.id!r} modifier-host host slot "
+                        f"{modifier_compatibility.host!r} is not noun-rooted"
+                    )
+                if modifier_compatibility.object is not None:
+                    object_ = slots.get(modifier_compatibility.object)
+                    if object_ is None:
+                        raise CompileError(
+                            f"rule {rule.id!r} modifier-host compatibility "
+                            "names unknown object slot "
+                            f"{modifier_compatibility.object!r}"
+                        )
+                    if _slot_root(object_) != "noun":
+                        raise CompileError(
+                            f"rule {rule.id!r} modifier-host object slot "
+                            f"{modifier_compatibility.object!r} is not noun-rooted"
+                        )
             conditional = predicate.bound_requires_category
             if conditional is not None:
                 for slot_name in (conditional.bound, conditional.slot):
@@ -1293,6 +1439,15 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                 key: tuple(sorted(set(values)))
                 for key, values in attribute_compatibility.items()
             }
+        ),
+        modifier_host_compatibility=_freeze(
+            {
+                key: tuple(sorted(set(values)))
+                for key, values in modifier_host_compatibility.items()
+            }
+        ),
+        modifier_attachment_compatibility=tuple(
+            sorted(set(modifier_attachment_compatibility))
         ),
         measure_holder_compatibility=_freeze(
             {

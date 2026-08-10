@@ -408,8 +408,8 @@ entries:
     enrolls: {senses: [verb], number: singular, verb: {lemma: enroll}}
     enrolled: {senses: [verb], verb: {lemma: enroll}}
     enrolling: {senses: [verb], verb: {lemma: enroll}}
-    teach: {senses: [verb]}
-    teaches: {senses: [verb], verb: {lemma: teach}}
+    teach: {senses: [verb], number: plural}
+    teaches: {senses: [verb], number: singular, verb: {lemma: teach}}
     taught: {senses: [verb], verb: {lemma: teach}}
     teaching: {senses: [verb], verb: {lemma: teach}}
     child: {senses: [noun], plural: children}
