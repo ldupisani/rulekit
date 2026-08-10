@@ -441,6 +441,7 @@ rules:
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - slot_not_category: {slot: dir, cat: age_comparative}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - absent: {cat: relational_marker}
       - absent: {cat: conjunction}
@@ -487,6 +488,7 @@ rules:
       - number_compatible: [who, verb]
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: dir, cat: age_comparative}
       - absent: {cat: relational_marker}
       - absent: {cat: conjunction}
       - unbound: [item_seen]
@@ -1808,6 +1810,7 @@ rules:
       - slot_not_category: {slot: verb, cat: frame_prepositional_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: pp_prep, cat: quantity_remainder_preposition}
+      - slot_not_category: {slot: pp_prep, cat: quantity_surface_preposition}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - unbound: [std_seen]
     emits:
@@ -3370,6 +3373,8 @@ rules:
       - number_compatible: [who, verb]
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
+      - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: animate_object_verb, role_cat: quantity_event_participant}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: std, cat: non_quantity_holder}
@@ -3426,6 +3431,8 @@ rules:
       - number_compatible: [who, verb]
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
+      - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: animate_object_verb, role_cat: quantity_event_participant}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: verb, cat: frame_prepositional_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
@@ -3641,6 +3648,7 @@ rules:
       - absent: {cat: aggregate}
       - number_compatible: [item, verb]
       - slot_not_category: {slot: item, cat: existential_incompatible_noun}
+      - attribute_compatible: {attribute: prep, noun: place}
     consumes: [item]
     emits:
       - fact: quantity
@@ -3909,6 +3917,7 @@ rules:
         - {slot: item, type: counted}
     where:
       - slot_not_category: {slot: who, cat: existential}
+      - slot_not_category: {slot: who, cat: preposition}
     consumes: [item]
     emits:
       - fact: group_total
@@ -3945,6 +3954,7 @@ rules:
         - {slot: item, type: counted}
     where:
       - slot_not_category: {slot: who, cat: existential}
+      - slot_not_category: {slot: who, cat: preposition}
     consumes: [item]
     emits:
       - fact: group_total
@@ -4950,6 +4960,8 @@ rules:
     where:
       - bound_requires_form: {bound: aux, slot: verb, form: bare}
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: motion_comparison_verb, role_cat: motion_comparison_measure}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
     consumes: [item, span]
     emits:

@@ -56,7 +56,7 @@ specific asks both return the cross-period total because both facts carry
 `time=None`. The candidate must preserve one role-licensed trailing period,
 answer the requested period through the shared temporal origo, retain the
 unscoped aggregate, and decline unresolved comparative/pronominal periods and
-non-additive state snapshots. The current gate is 4,726 tests;
+non-additive state snapshots. The current gate is 4,772 tests;
 curated and all answer/projection DEV gates are neutral with zero wrong or
 incorrect commitments. No protected TEST/generalization look was spent. The
 prior generation workbench is now campaign
@@ -65,7 +65,7 @@ infrastructure rather than a parked or replaced direction.
 **Status:** G1 through G4, G5a through G5g, G6, Reading-origin review,
 targetless sentence-interpretation review, fact-level review, the
 fraction-plural morphology correction, scoped
-`GroupTotal`, all thirty-three review-led grammar-boundary reconciliations,
+`GroupTotal`, all thirty-four review-led grammar-boundary reconciliations,
 the additive elided-comparison increment, and coordinated open-superclass
 totals are complete and gated. Plain
 count equatives such as `Tom buys as many roses as Mary` now emit a factor-one
@@ -145,7 +145,7 @@ time-root realization is complete: both deictic markers are core-owned and
 reviewable, and the standard-pinned future rule unlocks. G5u direct-adverb
 visibility is complete: `currently` is core-owned, project-relative adverb
 breadth remains visible, and all 99 curated premise rules are selectable. G5v
-review-led premise auditing is active; thirty-three review batches are implemented
+review-led premise auditing is active; thirty-four review batches are implemented
 and fully gated. The core exploration vocabulary now contributes 25 additional
 category-aware identities, bringing the earlier frontier to 108/108 premise rules
 and 184 reachable identities. The logic-arithmetic bridge raised the live
@@ -197,6 +197,15 @@ remains compatible with a future departure. Contextual sense arbitration reads
 established remainder questions retain their adjective reading. This adds one strictly
 generatable premise rule without adding a lexical identity, bringing the live
 frontier to 115/115 rules and 267 identities.
+The thirty-fourth reconciliation closes all six live invalid reviews. Elided
+age comparatives no longer masquerade as possession, affine teaching frames
+require plausible participants and objects, and periodic motion rates require
+both a motion participant and a distance/frequency measure. A preposition
+cannot become the subject of a leading group total, and the reviewed mass
+comparison no longer treats a surface `on` phrase as its admissible adjunct.
+Distributive existentials now require a declared preposition/holder pairing:
+the rejected `years about each rest` surface is absent, while `books about each
+topic` and the established `boxes on each shelf` chain remain supported.
 Bare `be` now shares the direct-quantity-object exclusion already applied to
 finite copulas. Motion comparison verbs require an overt declared frequency or
 distance measure instead of treating arbitrary count nouns as motion measures;
@@ -271,7 +280,7 @@ identity. The new generated age sibling accepts “The teacher is 6 years older
 than her/his/their child” and retains ordinary definite and apostrophe-s
 forms. Curated now exposes 116 supported premise targets out of 118 loaded;
 the remaining two are deliberately non-generative reader/safety rules. The
-full gate is 4,672 tests. Curated is 71/71; GSM8K DEV-train/holdout are 107/0
+full gate is 4,772 tests. Curated is 71/71; GSM8K DEV-train/holdout are 107/0
 and 43/0; ASDiv, SVAMP, MAWPS, SciBench, and DIFG DEV are 45/0, 30/0, 11/0,
 6/0, and 75/0; FOLIO makes zero commitments. COGS DEV-train/holdout and PMB
 train/development retain 100% edge precision with zero incorrect graphs.

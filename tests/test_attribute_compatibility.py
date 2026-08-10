@@ -207,10 +207,11 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
     # explicitly colour-compatible adjectives. Core-owned literal adjective
     # `old` also remains outside every descriptor category. Compatibility
     # still comes from category membership, never broader lexical senses.
-    # `head` and `university` are now core-owned for the logic bridge but do
-    # not silently gain descriptor compatibility.
-    assert len(plural_nouns) == 62
-    assert {"head", "university"} <= plural_nouns
+    # `head` and `university` are core-owned for the logic bridge, while
+    # `topic` supports reviewed topical quantities. None silently gains
+    # descriptor compatibility.
+    assert len(plural_nouns) == 63
+    assert {"head", "topic", "university"} <= plural_nouns
     assert sum(
         registry.attribute_applies_to(attribute, noun)
         for attribute in adjectives
@@ -248,6 +249,7 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
         "arithmetic/anchored-relation-postfix-dimension",
         "arithmetic/dangling-comparative-relation",
         "arithmetic/existential-premise",
+        "arithmetic/existential-premise-distributive",
         "arithmetic/fraction-as-many",
         "arithmetic/fraction-as-many-elided-standard",
         "arithmetic/fraction-as-much",

@@ -272,6 +272,7 @@ members:
   # every locative preposition interchangeable with every place noun.
   quantity_surface_location:
   - farm
+  - shelf
   - side
   - wheel
   quantity_site_location:

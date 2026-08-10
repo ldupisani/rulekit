@@ -364,6 +364,7 @@ entries:
     cost: {senses: [noun, verb], plural: costs}
     remainder: {senses: [noun]}
     rest: {senses: [noun]}
+    topic: {senses: [noun], plural: topics}
     year: {senses: [noun], plural: years}
     time: {senses: [noun], plural: times}
     inch: {senses: [noun], plural: inches}

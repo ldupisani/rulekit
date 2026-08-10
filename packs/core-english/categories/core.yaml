@@ -183,6 +183,15 @@ categories:
         parent: preposition
         notes: >
             Point locatives compatible with `quantity_site_location`.
+    quantity_topic:
+        parent: quantity_holder
+        notes: >
+            Subjects that can organize a distributive quantity by topic, as
+            in "14 books about each topic".
+    quantity_topic_preposition:
+        parent: preposition
+        notes: >
+            Topical attachment markers compatible with `quantity_topic`.
     quantity_remainder_preposition:
         parent: preposition
         notes: >
@@ -1724,6 +1733,8 @@ members:
     quantity_surface_preposition: [on]
     quantity_site_location: [bench, garden, tree, university]
     quantity_site_preposition: [at]
+    quantity_topic: [topic]
+    quantity_topic_preposition: [about]
     quantity_remainder_preposition: [with]
     spatial_location_preposition:
         [aboard, above, alongside, amid, amidst, at, atop, behind, below,
@@ -1783,6 +1794,7 @@ attribute_compatibility:
     quantity_location_preposition: [quantity_interior_location]
     quantity_surface_preposition: [quantity_surface_location]
     quantity_site_preposition: [quantity_site_location]
+    quantity_topic_preposition: [quantity_topic]
     quantity_remainder_preposition: [remnant]
 adposition_roles:
     spatial-location:
