@@ -23,6 +23,13 @@ and record the parallel full-test result. Never inspect holdout items.
   adjacent file is necessary and explicitly reported as scope drift.
 - Add the declared synthetic-only tests, including a valid neighbor and a
   decline-safety boundary. Invent every name, number, and object from scratch.
+- Run those synthetic tests before consulting the selected item as an
+  acceptance check. After they pass, reload the original DEV-train item from
+  the local corpus by its supplied id and require an exact correct result.
+  Never paste its prose into source, tests, the manifest, or command output.
+- Treat missing ordinary vocabulary as part of the vertical increment: add
+  bounded senses, morphology, and semantic categories in YAML, with quarantine
+  and collision checks, rather than leaving the item artificially unread.
 - After at most two root-cause repair cycles, return a clean failure rather
   than weakening a gate.
 

@@ -1,6 +1,6 @@
 ---
 name: mine
-description: Run or resume one GSM8K Mining v2 batch with generated evidence, Designer human review, exact machine gates, constitution review, and sequential integration. Stops before protected TEST and never merges main.
+description: Run or resume one example-led GSM8K Mining v2 batch with generated evidence, Designer human review, exact machine gates, constitution review, and sequential integration. Stops before protected TEST and never merges main.
 argument-hint: "[count] [--smoke] [--integrate-approved]"
 ---
 
@@ -27,7 +27,7 @@ scout → parallel implementation → constitution review → publish manifests
 
 ## Arguments
 
-- `count`: candidate briefs to scout, default 2.
+- `count`: individual DEV-train candidates to scout, default 1.
 - `--smoke`: one no-op candidate that exercises the same manifest, review,
   machine-gate, and integration seams. It may claim `class_evidence.mode=smoke`
   but receives no other gate exemption.
@@ -56,9 +56,11 @@ human review, machine gate, and sequential integration as a coverage
 candidate. Never infer product selection from a failed scout; the user must
 choose it.
 
-1. Spawn one `mining-scout` agent with the requested count, exact base commit,
-   main/worktree paths, and a JSON output request matching its canonical
-   protocol. For `--smoke`, inject the no-op brief instead.
+1. Spawn one `mining-scout` agent with the requested count (default one), exact
+   base commit, main/worktree paths, and a JSON output request matching its
+   canonical example-led protocol. Each brief starts from one declining
+   DEV-train item and must prescribe invented analogues before original-item
+   acceptance. For `--smoke`, inject the no-op brief instead.
 2. Validate briefs locally against `CampaignClassEvidence`,
    `CampaignGenerationContract`, and `CampaignImplementationContract`. Drop a
    malformed, overlapping, zero-yield, or known-negative brief before spending

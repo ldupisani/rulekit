@@ -8,13 +8,20 @@ plan, current HANDOFF, methodology §§4–6/9, and negative results. Re-derive 
 worklist from current `stats --slice dev-train`; historical counts are context,
 not evidence.
 
-## Selection
+## Example-led selection
 
-- Start with fully read declines and generated ask/premise coverage. Candidate
-  text must be a nameable semantic class, not a shared phrase.
-- Walk enough DEV-train item ids to identify the last blockers on both sides:
-  facts the premises must emit and the ask/consumer that must use them.
-- Prefer a narrow class with an honest small yield to a wide surface count.
+- Select one currently declining DEV-train item per requested candidate. Start
+  with fully read declines where possible, but do not require three examples
+  or a frequency threshold before proposing useful general language support.
+- Walk that item end to end: missing vocabulary, premise facts, inference,
+  ask bindings, answer contract, and every current final blocker. Candidate
+  text must still be a nameable semantic class, not a one-question branch.
+- Set coverage evidence honestly. A one-item pool with one expected solve is a
+  valid starting point when invented specimens demonstrate the wider class.
+- Specify invented strict-positive, paraphrase, boundary, complete-answerable,
+  and deliberate-decline shapes. Never use corpus prose for those specimens.
+- Require the implementer to pass synthetic evidence first, then reload the
+  selected original item locally by id as a post-synthetic acceptance check.
 - Do not propose a stand-alone zero-yield enabler. Fold it into the class that
   buys it, so benefit and risk share one gate.
 - Check `packs/difg-mined/quarantine.yaml` for every vocabulary admission.
@@ -30,6 +37,8 @@ specimens, and captured traces: `slug`, `class_name`, `mechanism`,
 `class_evidence`, `generation_contract`, `implementation_contract`, `risks`,
 `review_ids`, `priority`, and `overlaps_with`.
 
-For ordinary coverage, require all four specimen kinds: `strict_positive`,
-`boundary_probe`, `answerable`, `decline`. Structural summaries paraphrase the
-class and may cite DEV item ids, but must not quote corpus sentences.
+For ordinary coverage, require all four manifest specimen kinds:
+`strict_positive`, `boundary_probe`, `answerable`, `decline`; the strict and
+answerable evidence must collectively include an invented surface paraphrase.
+Structural summaries may cite DEV item ids, but must not quote corpus
+sentences.

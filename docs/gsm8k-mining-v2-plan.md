@@ -21,9 +21,11 @@ evidence, not training labels and not benchmark gold.
    remain unchanged. No phase in this plan authorizes a protected look.
 2. A mining increment buys its own enabling machinery: no isolated premise,
    fact, consumer, or ask enabler lands on a promise of later coverage.
-3. Automatic batches require at least three verified DEV-train items for
-   which the complete increment is the final blocker. Smaller product-led
-   classes remain manual work, not autonomous mining candidates.
+3. Coverage mining is example-led and advances one inspectable DEV-train item
+   at a time. One item is enough to begin, but never enough to justify a
+   one-off mechanism: the candidate must name a general construction and
+   prove it with invented positive, paraphrase, boundary, and decline
+   specimens before the original item is used as an acceptance check.
 4. Strict generation, lexical-boundary probes, reader-only compatibility, and
    fact-free safety interception remain distinct evidence classes.
 5. Candidate approval is pinned to an immutable commit and registry
@@ -212,7 +214,7 @@ The exact parallel synthetic gate is green at 4,720 tests; curated remains
 M4 because M5 changes only Designer/orchestration/schema surfaces. No protected
 TEST/generalization look was spent.
 
-### M6 — smoke and first batch — active
+### M6 — smoke and first batch — complete
 
 - Run one no-op smoke candidate through every stage without touching TEST.
   The no-op candidate passed human and exact machine review and landed as
@@ -240,6 +242,34 @@ TEST/generalization look was spent.
   three-final-blocker bar, so no implementer was dispatched.
 - Spend protected GSM8K TEST looks manually from the main checkout, one per
   approved vertical increment, only after all preceding gates pass.
+
+### M7 — example-led vertical mining — active
+
+The class-first scout repeatedly stopped because no three inspected declines
+shared one final blocker, while individual end-to-end examples continued to
+produce useful general grammar, inference, ask, and vocabulary improvements.
+The user therefore selected an item-led loop for the next campaign stage.
+
+For each increment:
+
+1. select one currently declining item from inspectable `dev-train` only;
+2. record its stable item id and a structural paraphrase, never its prose;
+3. create invented analogues covering the complete premise-to-answer path;
+4. extend general grammar and bounded lexicon entries YAML-first;
+5. pass the synthetic analogues and negative neighbours;
+6. only then load the original item locally by id and require it to answer
+   correctly;
+7. run the exact standing gate, including opaque `dev-holdout` and every
+   cross-corpus/projection safety slice;
+8. publish the ordinary immutable manifest for Designer review; and
+9. periodically consolidate overlapping rules and categories after a small
+   run of landed items.
+
+The original corpus sentence is never copied into tests, manifests, briefs,
+logs, or documentation. Its post-synthetic acceptance result is carried by
+the ordinary DEV snapshot/diff and opaque item identity evidence. Frequency
+remains useful for prioritisation, but it is no longer a threshold that blocks
+an otherwise useful general vertical increment.
 
 ## Standing gate
 

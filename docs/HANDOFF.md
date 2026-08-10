@@ -5,6 +5,14 @@
 **Active campaign:** GSM8K Mining v2 with generated evidence and a human
 promotion gate in the Designer
 
+**Active mining method:** M7 example-led vertical mining. Select one declining
+GSM8K `dev-train` item, build invented end-to-end analogues, extend general
+grammar and bounded YAML vocabulary, pass synthetic tests, and only then
+reload the original item locally by id as an acceptance check. The corpus
+sentence is never committed or copied into campaign evidence. The former
+automatic three-final-blocker threshold is retired; generality is established
+by paraphrase and negative-neighbour evidence plus the complete standing gate.
+
 **Campaign checkpoint:** M0 is complete at commit `1dd2159`; M1's durable web
 promotion queue, M2's isolated on-demand candidate runner, M3's G7 ask and
 scenario generator, and M4's machine-readable promotion gate are implemented

@@ -29,8 +29,9 @@ packs, no LLM at runtime. Architecture: `docs/architecture.md`. Measurement disc
 
 ## Batch mining (`/mine`)
 
-`/mine [count]` runs Mining v2 as a multi-agent batch
-(`.claude/skills/mine/SKILL.md`): GSM8K DEV scout → parallel isolated
+`/mine [count]` runs example-led Mining v2 as a multi-agent batch
+(`.claude/skills/mine/SKILL.md`): a GSM8K DEV scout selects one declining
+`dev-train` item per requested candidate → parallel isolated
 implementers with generated evidence → constitution review → immutable
 manifests in the Designer. It then STOPS for human review and the exact machine
 gate. `/mine --integrate-approved` resumes only exact approved/machine-passed

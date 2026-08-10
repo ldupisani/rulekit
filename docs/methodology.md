@@ -228,6 +228,9 @@ inspectable slice, before they can bite on TEST.
    2026-07 — its commits are sought but each new one is hand-verified while they are few).
 7. **Unit test**: synthetic only — *never* a GSM8K string in `test_reading.py` (the firewall: the parser
    is never tuned to the benchmark's individual items).
+7a. **Target-item acceptance**: after synthetic tests pass, reload the selected `dev-train` item from
+   the local corpus by stable id and require it to move to correct. Record only its id/digest and
+   structural paraphrase; never copy its sentence into committed evidence.
 8. **TEST look** (single, aggregate): precision must hold. A drop → **revert**.
 9. **Ship**: commit + push (auto-commit on a green objective). Update this doc / the playbook if the work
    taught a new collision class, gate, or parsing gotcha.
