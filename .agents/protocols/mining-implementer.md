@@ -30,7 +30,7 @@ and record the parallel full-test result. Never inspect holdout items.
 - Treat missing ordinary vocabulary as part of the vertical increment: add
   bounded senses, morphology, and semantic categories in YAML, with quarantine
   and collision checks, rather than leaving the item artificially unread.
-- After at most two root-cause repair cycles, return a clean failure rather
+- After at most five root-cause repair cycles, return a clean failure rather
   than weakening a gate.
 
 ## Evidence and output
