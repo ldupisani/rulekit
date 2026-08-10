@@ -1,0 +1,396 @@
+{
+  "branch": "mining/cand-smoke-noop-v2",
+  "candidate_id": "smoke-noop-v2",
+  "class_evidence": {
+    "ask_mechanism": "Existing ask generation is replayed unchanged; the comment adds no ask.",
+    "expected_solved": 0,
+    "mode": "smoke",
+    "pool_frequency": 0,
+    "premise_mechanism": "Existing premise generation is replayed unchanged; the comment emits nothing.",
+    "structural_summary": [
+      "No-op pipeline evidence only; no benchmark coverage is claimed."
+    ],
+    "vocabulary": [],
+    "walked_item_ids": []
+  },
+  "class_name": "Mining v2 no-op pipeline smoke",
+  "commit": "09b8edeb2d8b5b37184c28927adc82ede1299a6b",
+  "constitution_review": {
+    "notes": "Independent read-only review: the exact diff is limited to the preregistered explanatory YAML comment and synthetic test; no runtime semantics or Python lexicon changed. The clean branch and exact base/commit match the manifest. All four required specimen traces replay byte-for-byte through the ordinary campaign-trace path, the implementation contract matches the two changed files, the focused test passes, curated lint is clean, and no protected TEST/generalization content was inspected.",
+    "verdict": "pass",
+    "violations": []
+  },
+  "format": "rulekit/campaign-review@2",
+  "generation_contract": {
+    "ask_rules": [
+      "ask/how-many-entity"
+    ],
+    "premise_rules": [
+      "arithmetic/group-total-leading-marker"
+    ],
+    "required_specimen_kinds": [
+      "strict_positive",
+      "boundary_probe",
+      "answerable",
+      "decline"
+    ]
+  },
+  "implementation_contract": {
+    "class_justification": "This smoke candidate proves implementation, generated evidence, review, exact machine gating, and integration without changing runtime semantics.",
+    "files_expected": [
+      "packs/arithmetic/rules/core.yaml",
+      "tests/test_mining_smoke_noop_v2.py"
+    ],
+    "synthetic_tests": [
+      "tests/test_mining_smoke_noop_v2.py"
+    ]
+  },
+  "mechanism": "Add one explanatory YAML comment that compiles to no runtime change, plus a synthetic test pinning an existing valid neighbor and decline boundary. No engine or pack semantics change.",
+  "project": "curated",
+  "published_at": "2026-08-08T15:41:32.956747+00:00",
+  "registry_fingerprint": "8adfdea47b782991a10a1c13880424cc03de4aebbb4b35247cbc6bd0636ec04d",
+  "review_ids": [],
+  "risks": [
+    "No semantic change is permitted; any trace or standing-snapshot delta fails the smoke."
+  ],
+  "specimens": [
+    {
+      "actual_rule_ids": [
+        "arithmetic/group-total-leading-marker"
+      ],
+      "answer": {
+        "clarification": null,
+        "committed": false,
+        "kind": "decline",
+        "reason": "no question found",
+        "shape": "decline",
+        "value": null
+      },
+      "deficiencies": [],
+      "expectation": "The unchanged premise rule matches and emits a scoped drum total without answering because no question is present.",
+      "facts": [
+        {
+          "derivation": null,
+          "fields": {
+            "measure": "drum",
+            "scope": "nyra",
+            "value": 12.0,
+            "verb": "have"
+          },
+          "sentence": 0,
+          "source": "arithmetic/group-total-leading-marker",
+          "source_ref": null,
+          "type": "GroupTotal"
+        }
+      ],
+      "id": "strict-positive",
+      "interpretation": "The leading total marker retains Nyra as the scope of one existing GroupTotal.",
+      "kind": "strict_positive",
+      "reference_year": null,
+      "retest": null,
+      "sentence": "Together Nyra has 12 drums.",
+      "source_ref": null,
+      "target_rule": "arithmetic/group-total-leading-marker",
+      "title": "Existing scoped group total",
+      "trace": {
+        "answer": {
+          "clarification": null,
+          "committed": false,
+          "kind": "decline",
+          "reason": "no question found",
+          "shape": "decline",
+          "value": null
+        },
+        "ask": null,
+        "collisions": [],
+        "deficiencies": [],
+        "facts": [
+          {
+            "derivation": null,
+            "fields": {
+              "measure": "drum",
+              "scope": "nyra",
+              "value": 12.0,
+              "verb": "have"
+            },
+            "sentence": 0,
+            "source": "arithmetic/group-total-leading-marker",
+            "source_ref": null,
+            "type": "GroupTotal"
+          }
+        ],
+        "matches": [
+          {
+            "bindings": {
+              "agg": "Together",
+              "item": "12 drums",
+              "verb": "has",
+              "who": "Nyra"
+            },
+            "consumed": [
+              0,
+              1,
+              2,
+              6
+            ],
+            "rule_id": "arithmetic/group-total-leading-marker",
+            "sentence": 0,
+            "shadowed": false
+          }
+        ],
+        "proof": null
+      }
+    },
+    {
+      "actual_rule_ids": [],
+      "answer": {
+        "clarification": null,
+        "committed": false,
+        "kind": "decline",
+        "reason": "no quantity known for 'nyra' of 'coin' (ask ask/how-many-entity)",
+        "shape": "decline",
+        "value": null
+      },
+      "deficiencies": [],
+      "expectation": "The scoped GroupTotal premise remains absent and the unrelated coin ask safely declines.",
+      "facts": [
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "nyra",
+            "measure": "drum",
+            "value": 12.0,
+            "verb": "have"
+          },
+          "sentence": 0,
+          "source": "fold",
+          "source_ref": null,
+          "type": "Quantity"
+        }
+      ],
+      "id": "boundary-probe",
+      "interpretation": "Average remains a broader aggregate expression rather than a group-total marker, and unrelated missing coin evidence stays non-committal.",
+      "kind": "boundary_probe",
+      "reference_year": null,
+      "retest": null,
+      "sentence": "Average Nyra has 12 drums. How many coins does Nyra have?",
+      "source_ref": null,
+      "target_rule": "arithmetic/group-total-leading-marker",
+      "title": "Broader aggregate marker remains outside the total premise",
+      "trace": {
+        "answer": {
+          "clarification": null,
+          "committed": false,
+          "kind": "decline",
+          "reason": "no quantity known for 'nyra' of 'coin' (ask ask/how-many-entity)",
+          "shape": "decline",
+          "value": null
+        },
+        "ask": {
+          "id": "ask/how-many-entity",
+          "query": {
+            "consumer": "single-entity",
+            "entity": "nyra",
+            "measure": "coin",
+            "measure_qualifier": "",
+            "sum_measure_variants": "true",
+            "verb": "have"
+          }
+        },
+        "collisions": [],
+        "deficiencies": [],
+        "facts": [
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "nyra",
+              "measure": "drum",
+              "value": 12.0,
+              "verb": "have"
+            },
+            "sentence": 0,
+            "source": "fold",
+            "source_ref": null,
+            "type": "Quantity"
+          }
+        ],
+        "matches": [],
+        "proof": null
+      }
+    },
+    {
+      "actual_rule_ids": [],
+      "answer": {
+        "clarification": null,
+        "committed": true,
+        "kind": "number",
+        "reason": "fold over 'nyra'/'drum'",
+        "shape": "number",
+        "value": 12.0
+      },
+      "deficiencies": [],
+      "expectation": "The unchanged ask binds Nyra and drums and returns 12 from the existing holding fold.",
+      "facts": [
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "nyra",
+            "measure": "drum",
+            "value": 12.0,
+            "verb": "have"
+          },
+          "sentence": 0,
+          "source": "fold",
+          "source_ref": null,
+          "type": "Quantity"
+        }
+      ],
+      "id": "answerable",
+      "interpretation": "One ordinary holding fact supplies the exact holder, measure, and verb requested by the existing ask.",
+      "kind": "answerable",
+      "reference_year": null,
+      "retest": null,
+      "sentence": "Nyra has 12 drums. How many drums does Nyra have?",
+      "source_ref": null,
+      "target_rule": "ask/how-many-entity",
+      "title": "Existing exact-holder question",
+      "trace": {
+        "answer": {
+          "clarification": null,
+          "committed": true,
+          "kind": "number",
+          "reason": "fold over 'nyra'/'drum'",
+          "shape": "number",
+          "value": 12.0
+        },
+        "ask": {
+          "id": "ask/how-many-entity",
+          "query": {
+            "consumer": "single-entity",
+            "entity": "nyra",
+            "measure": "drum",
+            "measure_qualifier": "",
+            "sum_measure_variants": "true",
+            "verb": "have"
+          }
+        },
+        "collisions": [],
+        "deficiencies": [],
+        "facts": [
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "nyra",
+              "measure": "drum",
+              "value": 12.0,
+              "verb": "have"
+            },
+            "sentence": 0,
+            "source": "fold",
+            "source_ref": null,
+            "type": "Quantity"
+          }
+        ],
+        "matches": [],
+        "proof": null
+      }
+    },
+    {
+      "actual_rule_ids": [
+        "arithmetic/group-total-leading-marker"
+      ],
+      "answer": {
+        "clarification": null,
+        "committed": false,
+        "kind": "decline",
+        "reason": "no quantity known for 'nyra' of 'drum' (ask ask/how-many-entity)",
+        "shape": "decline",
+        "value": null
+      },
+      "deficiencies": [],
+      "expectation": "Both existing rule surfaces are recognized, but the incompatible fact contract safely declines instead of treating a group total as an individual holding.",
+      "facts": [
+        {
+          "derivation": null,
+          "fields": {
+            "measure": "drum",
+            "scope": "nyra",
+            "value": 12.0,
+            "verb": "have"
+          },
+          "sentence": 0,
+          "source": "arithmetic/group-total-leading-marker",
+          "source_ref": null,
+          "type": "GroupTotal"
+        }
+      ],
+      "id": "decline",
+      "interpretation": "The premise remains a scoped group total, not an individual Quantity for Nyra.",
+      "kind": "decline",
+      "reference_year": null,
+      "retest": null,
+      "sentence": "Together Nyra has 12 drums. How many drums does Nyra have?",
+      "source_ref": null,
+      "target_rule": "ask/how-many-entity",
+      "title": "Scoped total does not answer a single-holder ask",
+      "trace": {
+        "answer": {
+          "clarification": null,
+          "committed": false,
+          "kind": "decline",
+          "reason": "no quantity known for 'nyra' of 'drum' (ask ask/how-many-entity)",
+          "shape": "decline",
+          "value": null
+        },
+        "ask": {
+          "id": "ask/how-many-entity",
+          "query": {
+            "consumer": "single-entity",
+            "entity": "nyra",
+            "measure": "drum",
+            "measure_qualifier": "",
+            "sum_measure_variants": "true",
+            "verb": "have"
+          }
+        },
+        "collisions": [],
+        "deficiencies": [],
+        "facts": [
+          {
+            "derivation": null,
+            "fields": {
+              "measure": "drum",
+              "scope": "nyra",
+              "value": 12.0,
+              "verb": "have"
+            },
+            "sentence": 0,
+            "source": "arithmetic/group-total-leading-marker",
+            "source_ref": null,
+            "type": "GroupTotal"
+          }
+        ],
+        "matches": [
+          {
+            "bindings": {
+              "agg": "Together",
+              "item": "12 drums",
+              "verb": "has",
+              "who": "Nyra"
+            },
+            "consumed": [
+              0,
+              1,
+              2,
+              6
+            ],
+            "rule_id": "arithmetic/group-total-leading-marker",
+            "sentence": 0,
+            "shadowed": false
+          }
+        ],
+        "proof": null
+      }
+    }
+  ]
+}

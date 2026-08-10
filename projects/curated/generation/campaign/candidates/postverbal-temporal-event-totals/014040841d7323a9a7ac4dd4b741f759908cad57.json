@@ -1,0 +1,869 @@
+{
+  "branch": "mining/cand-postverbal-temporal-event-totals",
+  "candidate_id": "postverbal-temporal-event-totals",
+  "class_evidence": {
+    "ask_mechanism": "The existing ask/how-many-entity rule and shared temporal question origo recognize a role-licensed timeperiod. A period-specific ask selects the matching timed event and rejects mixed timed/untimed evidence. An unscoped total sums across periods only when all scoped facts are explicitly timed non-state events with the same requested verb; state snapshots, cross-verb evidence, unresolved comparisons, and incomplete references decline.",
+    "expected_solved": 0,
+    "mode": "product",
+    "pool_frequency": 0,
+    "premise_mechanism": "The generic Quantity fold already emits event quantities. Its sentence-time extraction now accepts only a unique postverbal preposition/object pair that the existing adposition-role registry licenses as temporal-point for the governing verb and whose object is a timeperiod. It preserves the object's normalized fold as Quantity.time. Temporal-before, temporal-after, deadline, duration, start, end, ambiguous, multiple, and unlicensed attachments remain unstamped.",
+    "product_rationale": "The user explicitly selected product-led manual mining after the curated Designer exposed a precision defect: 'Dara sold 4 books on Monday. Dara sold 6 books on Tuesday. How many books did Dara sell on Monday?' previously answered 10 because trailing calendar periods were discarded. The product requires useful, human-reviewable temporal event facts and conservative answers, independent of any GSM8K DEV yield.",
+    "structural_summary": [
+      "The former curated behavior answered 10 for a Monday-only ask over Monday=4 and Tuesday=6 because both Quantity.time fields were null.",
+      "The boundary reuses temporal-point role licensing and the existing question reference-time seam; it adds no ask pattern and infers no temporal meaning from arbitrary prepositions.",
+      "The positive total class is same-holder, same-measure, same-verb, explicitly timed, non-state event quantities across distinct periods.",
+      "State snapshots remain non-additive across periods; a period-specific state ask selects its exact snapshot, while an unscoped total declines.",
+      "Calendar weekdays and eleven unambiguous month names moved from difg-mined to core-english without changing combined-registry semantics; modal/month 'may' remains excluded."
+    ],
+    "vocabulary": [
+      {
+        "bound_by": "noun sense and timeperiod category; temporal meaning only through a licensed temporal-point PP",
+        "collision_risk": "Low after the existing proper-name ambiguity fix; combined registry ownership remains singular.",
+        "quarantine": "clear",
+        "surface": "monday"
+      },
+      {
+        "bound_by": "noun sense and timeperiod category; temporal meaning only through a licensed temporal-point PP",
+        "collision_risk": "Low; existing noun/timeperiod semantics are preserved under core ownership.",
+        "quarantine": "clear",
+        "surface": "tuesday"
+      },
+      {
+        "bound_by": "noun sense and timeperiod category; temporal meaning only through a licensed temporal-point PP",
+        "collision_risk": "Low; existing noun/timeperiod semantics are preserved under core ownership.",
+        "quarantine": "clear",
+        "surface": "wednesday"
+      },
+      {
+        "bound_by": "noun sense and timeperiod category; temporal meaning only through a licensed temporal-point PP",
+        "collision_risk": "Low; existing noun/timeperiod semantics are preserved under core ownership.",
+        "quarantine": "clear",
+        "surface": "thursday"
+      },
+      {
+        "bound_by": "noun sense and timeperiod category; temporal meaning only through a licensed temporal-point PP",
+        "collision_risk": "Low; existing noun/timeperiod semantics are preserved under core ownership.",
+        "quarantine": "clear",
+        "surface": "friday"
+      },
+      {
+        "bound_by": "noun sense and timeperiod category; temporal meaning only through a licensed temporal-point PP",
+        "collision_risk": "Low; existing noun/timeperiod semantics are preserved under core ownership.",
+        "quarantine": "clear",
+        "surface": "saturday"
+      },
+      {
+        "bound_by": "noun sense and timeperiod category; temporal meaning only through a licensed temporal-point PP",
+        "collision_risk": "Low; existing noun/timeperiod semantics are preserved under core ownership.",
+        "quarantine": "clear",
+        "surface": "sunday"
+      },
+      {
+        "bound_by": "noun sense and timeperiod category; temporal meaning only through a licensed temporal-point PP",
+        "collision_risk": "Low; capitalization cannot reintroduce a person/name competitor.",
+        "quarantine": "clear",
+        "surface": "january"
+      },
+      {
+        "bound_by": "noun sense and timeperiod category; temporal meaning only through a licensed temporal-point PP",
+        "collision_risk": "Low; capitalization cannot reintroduce a person/name competitor.",
+        "quarantine": "clear",
+        "surface": "february"
+      },
+      {
+        "bound_by": "noun sense and timeperiod category; temporal meaning only through a licensed temporal-point PP",
+        "collision_risk": "Moderate because 'march' can be a verb or common noun; this move retains only the already-admitted timeperiod noun sense.",
+        "quarantine": "clear",
+        "surface": "march"
+      },
+      {
+        "bound_by": "noun sense and timeperiod category; temporal meaning only through a licensed temporal-point PP",
+        "collision_risk": "Low; capitalization cannot reintroduce a person/name competitor.",
+        "quarantine": "clear",
+        "surface": "april"
+      },
+      {
+        "bound_by": "noun sense and timeperiod category; temporal meaning only through a licensed temporal-point PP",
+        "collision_risk": "Low; capitalization cannot reintroduce a person/name competitor.",
+        "quarantine": "clear",
+        "surface": "june"
+      },
+      {
+        "bound_by": "noun sense and timeperiod category; temporal meaning only through a licensed temporal-point PP",
+        "collision_risk": "Low; capitalization cannot reintroduce a person/name competitor.",
+        "quarantine": "clear",
+        "surface": "july"
+      },
+      {
+        "bound_by": "noun sense and timeperiod category; temporal meaning only through a licensed temporal-point PP",
+        "collision_risk": "Moderate because 'august' can be an adjective; this move retains only the already-admitted timeperiod noun sense.",
+        "quarantine": "clear",
+        "surface": "august"
+      },
+      {
+        "bound_by": "noun sense and timeperiod category; temporal meaning only through a licensed temporal-point PP",
+        "collision_risk": "Low; capitalization cannot reintroduce a person/name competitor.",
+        "quarantine": "clear",
+        "surface": "september"
+      },
+      {
+        "bound_by": "noun sense and timeperiod category; temporal meaning only through a licensed temporal-point PP",
+        "collision_risk": "Low; capitalization cannot reintroduce a person/name competitor.",
+        "quarantine": "clear",
+        "surface": "october"
+      },
+      {
+        "bound_by": "noun sense and timeperiod category; temporal meaning only through a licensed temporal-point PP",
+        "collision_risk": "Low; capitalization cannot reintroduce a person/name competitor.",
+        "quarantine": "clear",
+        "surface": "november"
+      },
+      {
+        "bound_by": "noun sense and timeperiod category; temporal meaning only through a licensed temporal-point PP",
+        "collision_risk": "Low; capitalization cannot reintroduce a person/name competitor.",
+        "quarantine": "clear",
+        "surface": "december"
+      }
+    ],
+    "walked_item_ids": []
+  },
+  "class_name": "Role-licensed postverbal temporal-point event totals",
+  "commit": "014040841d7323a9a7ac4dd4b741f759908cad57",
+  "constitution_review": {
+    "notes": "Exact base-to-candidate diff reviewed; all changed paths are within the implementation contract or the two disclosed necessary adjacent scopes. The twelve existing generator tests change only the frontier count from 267 to 285. Manifest commit and loaded registry fingerprint match; all four required specimen kinds are present; all canonical traces replay exactly and contain the declared ask target. The 18 calendar identities move to core-English with combined-registry semantics preserved, singular ownership, clear quarantine, and may excluded. Reviewer rerun: 198 relevant synthetic tests passed; lint reported 0 errors and one unrelated existing ask/trig-sine warning. No protected data was accessed.",
+    "verdict": "pass",
+    "violations": []
+  },
+  "format": "rulekit/campaign-review@2",
+  "generation_contract": {
+    "ask_rules": [
+      "ask/how-many-entity"
+    ],
+    "premise_rules": [],
+    "required_specimen_kinds": [
+      "strict_positive",
+      "boundary_probe",
+      "answerable",
+      "decline"
+    ]
+  },
+  "implementation_contract": {
+    "class_justification": "This is one complete semantic boundary: exact-period preservation and selection for postverbal calendar-point event quantities, plus the narrowly related unscoped total over those same independently asserted events. Moving the already-supported calendar family to core-english is required for the curated Designer to read and generate the class and is coupled to the fact/ask support so vocabulary is never admitted without a usable semantic path.",
+    "files_expected": [
+      "src/rulekit/kernel/learn.py",
+      "src/rulekit/kernel/totals.py",
+      "packs/core-english/lexicon/core.yaml",
+      "packs/core-english/categories/core.yaml",
+      "packs/difg-mined/categories/semantic.yaml",
+      "packs/difg-mined/lexicon/a-f.yaml",
+      "packs/difg-mined/lexicon/g-m.yaml",
+      "packs/difg-mined/lexicon/n-s.yaml",
+      "packs/difg-mined/lexicon/t-z.yaml",
+      "docs/deixis.md",
+      "tests/test_product_temporal_event_totals.py"
+    ],
+    "synthetic_tests": [
+      "tests/test_product_temporal_event_totals.py"
+    ]
+  },
+  "mechanism": "Preserve one unambiguous postverbal temporal-point PP on Quantity facts, use the existing shared temporal question origo for period-specific asks, and permit an unscoped cross-period sum only when every scoped quantity is an explicitly timed non-state event with the requested verb.",
+  "project": "curated",
+  "published_at": "2026-08-08T17:25:25.827889+00:00",
+  "registry_fingerprint": "3404a30ec5d75ba8c5711f72f79d6b0af5a7d4ff71feb087c0c9855543612f7d",
+  "review_ids": [],
+  "risks": [
+    "A broad postverbal time heuristic could stamp location, deadline, duration, before/after, or ambiguous attachments as exact event time; only the existing temporal-point role licenses it.",
+    "A broad total relaxation could add state snapshots, different verbs, untimed evidence, or partial comparative facts; all continue to decline.",
+    "Moving calendar vocabulary could change the combined core-english plus difg-mined registry or reintroduce capitalization/name ambiguity; the synthetic gate proves semantic equivalence and singular ownership.",
+    "The ambiguous surface 'may' remains a modal in core and absent from timeperiod.",
+    "More than one distinct temporal-point attachment is not collapsed into an arbitrary period.",
+    "Necessary adjacent scope drift: src/rulekit/kernel/guards.py makes answer accounting inspect the same temporal-origo scope as the consumer; without it a correct Tuesday answer is vetoed by intentionally filtered Monday evidence.",
+    "Necessary mechanical test drift: twelve historical generator/frontier assertions move only from 267 to 285 reachable fillers, exactly accounting for the eighteen core calendar identities; rule coverage, ordering, and generated behavior are otherwise unchanged."
+  ],
+  "specimens": [
+    {
+      "actual_rule_ids": [],
+      "answer": {
+        "clarification": null,
+        "committed": true,
+        "kind": "number",
+        "reason": "\u03a3 'sell' events of 'dara'/'book'",
+        "shape": "number",
+        "value": 6.0
+      },
+      "deficiencies": [],
+      "expectation": "The ask returns exactly 6, with Monday and Tuesday preserved on their own event quantities and no accounting veto from the filtered Monday fact.",
+      "facts": [
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "dara",
+            "event": "s0:u1",
+            "indef_obj": false,
+            "obj": "monday",
+            "polarity": true,
+            "prep": "on",
+            "role": "temporal-point",
+            "verb": "sell"
+          },
+          "sentence": 0,
+          "source": "fold",
+          "source_ref": null,
+          "type": "VerbalRelation"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "dara",
+            "measure": "book",
+            "occurrence": 0,
+            "time": "monday",
+            "value": 4.0,
+            "verb": "sell"
+          },
+          "sentence": 0,
+          "source": "fold",
+          "source_ref": null,
+          "type": "Quantity"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "dara",
+            "event": "s1:u1",
+            "indef_obj": false,
+            "obj": "tuesday",
+            "polarity": true,
+            "prep": "on",
+            "role": "temporal-point",
+            "verb": "sell"
+          },
+          "sentence": 1,
+          "source": "fold",
+          "source_ref": null,
+          "type": "VerbalRelation"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "dara",
+            "measure": "book",
+            "occurrence": 1,
+            "time": "tuesday",
+            "value": 6.0,
+            "verb": "sell"
+          },
+          "sentence": 1,
+          "source": "fold",
+          "source_ref": null,
+          "type": "Quantity"
+        }
+      ],
+      "id": "strict-positive",
+      "interpretation": "Each event retains its role-licensed calendar point, and the shared question temporal origo selects Tuesday only.",
+      "kind": "strict_positive",
+      "reference_year": null,
+      "retest": null,
+      "sentence": "Dara sold 4 books on Monday. Dara sold 6 books on Tuesday. How many books did Dara sell on Tuesday?",
+      "source_ref": null,
+      "target_rule": "ask/how-many-entity",
+      "title": "Exact Tuesday event quantity",
+      "trace": {
+        "answer": {
+          "clarification": null,
+          "committed": true,
+          "kind": "number",
+          "reason": "\u03a3 'sell' events of 'dara'/'book'",
+          "shape": "number",
+          "value": 6.0
+        },
+        "ask": {
+          "id": "ask/how-many-entity",
+          "query": {
+            "consumer": "single-entity",
+            "entity": "dara",
+            "measure": "book",
+            "measure_qualifier": "",
+            "sum_measure_variants": "true",
+            "verb": "sell"
+          }
+        },
+        "collisions": [],
+        "deficiencies": [],
+        "facts": [
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "dara",
+              "event": "s0:u1",
+              "indef_obj": false,
+              "obj": "monday",
+              "polarity": true,
+              "prep": "on",
+              "role": "temporal-point",
+              "verb": "sell"
+            },
+            "sentence": 0,
+            "source": "fold",
+            "source_ref": null,
+            "type": "VerbalRelation"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "dara",
+              "measure": "book",
+              "occurrence": 0,
+              "time": "monday",
+              "value": 4.0,
+              "verb": "sell"
+            },
+            "sentence": 0,
+            "source": "fold",
+            "source_ref": null,
+            "type": "Quantity"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "dara",
+              "event": "s1:u1",
+              "indef_obj": false,
+              "obj": "tuesday",
+              "polarity": true,
+              "prep": "on",
+              "role": "temporal-point",
+              "verb": "sell"
+            },
+            "sentence": 1,
+            "source": "fold",
+            "source_ref": null,
+            "type": "VerbalRelation"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "dara",
+              "measure": "book",
+              "occurrence": 1,
+              "time": "tuesday",
+              "value": 6.0,
+              "verb": "sell"
+            },
+            "sentence": 1,
+            "source": "fold",
+            "source_ref": null,
+            "type": "Quantity"
+          }
+        ],
+        "matches": [],
+        "proof": null
+      }
+    },
+    {
+      "actual_rule_ids": [],
+      "answer": {
+        "clarification": null,
+        "committed": false,
+        "kind": "decline",
+        "reason": "no 'sell' events known for 'dara'/'book'",
+        "shape": "decline",
+        "value": null
+      },
+      "deficiencies": [],
+      "expectation": "The ask declines rather than returning 6 or 10 because the event evidence mixes an unknown time with Tuesday.",
+      "facts": [
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "dara",
+            "measure": "book",
+            "occurrence": 0,
+            "value": 4.0,
+            "verb": "sell"
+          },
+          "sentence": 0,
+          "source": "fold",
+          "source_ref": null,
+          "type": "Quantity"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "dara",
+            "event": "s1:u1",
+            "indef_obj": false,
+            "obj": "tuesday",
+            "polarity": true,
+            "prep": "on",
+            "role": "temporal-point",
+            "verb": "sell"
+          },
+          "sentence": 1,
+          "source": "fold",
+          "source_ref": null,
+          "type": "VerbalRelation"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "dara",
+            "measure": "book",
+            "occurrence": 1,
+            "time": "tuesday",
+            "value": 6.0,
+            "verb": "sell"
+          },
+          "sentence": 1,
+          "source": "fold",
+          "source_ref": null,
+          "type": "Quantity"
+        }
+      ],
+      "id": "boundary-probe",
+      "interpretation": "The unstamped event may or may not belong to Tuesday, so the requested period cannot silently exclude or include it.",
+      "kind": "boundary_probe",
+      "reference_year": null,
+      "retest": null,
+      "sentence": "Dara sold 4 books. Dara sold 6 books on Tuesday. How many books did Dara sell on Tuesday?",
+      "source_ref": null,
+      "target_rule": "ask/how-many-entity",
+      "title": "Timed and untimed event evidence stays unsafe",
+      "trace": {
+        "answer": {
+          "clarification": null,
+          "committed": false,
+          "kind": "decline",
+          "reason": "no 'sell' events known for 'dara'/'book'",
+          "shape": "decline",
+          "value": null
+        },
+        "ask": {
+          "id": "ask/how-many-entity",
+          "query": {
+            "consumer": "single-entity",
+            "entity": "dara",
+            "measure": "book",
+            "measure_qualifier": "",
+            "sum_measure_variants": "true",
+            "verb": "sell"
+          }
+        },
+        "collisions": [],
+        "deficiencies": [],
+        "facts": [
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "dara",
+              "measure": "book",
+              "occurrence": 0,
+              "value": 4.0,
+              "verb": "sell"
+            },
+            "sentence": 0,
+            "source": "fold",
+            "source_ref": null,
+            "type": "Quantity"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "dara",
+              "event": "s1:u1",
+              "indef_obj": false,
+              "obj": "tuesday",
+              "polarity": true,
+              "prep": "on",
+              "role": "temporal-point",
+              "verb": "sell"
+            },
+            "sentence": 1,
+            "source": "fold",
+            "source_ref": null,
+            "type": "VerbalRelation"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "dara",
+              "measure": "book",
+              "occurrence": 1,
+              "time": "tuesday",
+              "value": 6.0,
+              "verb": "sell"
+            },
+            "sentence": 1,
+            "source": "fold",
+            "source_ref": null,
+            "type": "Quantity"
+          }
+        ],
+        "matches": [],
+        "proof": null
+      }
+    },
+    {
+      "actual_rule_ids": [],
+      "answer": {
+        "clarification": null,
+        "committed": true,
+        "kind": "number",
+        "reason": "\u03a3 'sell' events of 'dara'/'book'",
+        "shape": "number",
+        "value": 10.0
+      },
+      "deficiencies": [
+        "'in' (preposition) needs a object and none was found."
+      ],
+      "expectation": "The ordinary ask returns 10 by summing the two independently asserted sell events across their explicit periods.",
+      "facts": [
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "dara",
+            "event": "s0:u1",
+            "indef_obj": false,
+            "obj": "monday",
+            "polarity": true,
+            "prep": "on",
+            "role": "temporal-point",
+            "verb": "sell"
+          },
+          "sentence": 0,
+          "source": "fold",
+          "source_ref": null,
+          "type": "VerbalRelation"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "dara",
+            "measure": "book",
+            "occurrence": 0,
+            "time": "monday",
+            "value": 4.0,
+            "verb": "sell"
+          },
+          "sentence": 0,
+          "source": "fold",
+          "source_ref": null,
+          "type": "Quantity"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "dara",
+            "event": "s1:u1",
+            "indef_obj": false,
+            "obj": "tuesday",
+            "polarity": true,
+            "prep": "on",
+            "role": "temporal-point",
+            "verb": "sell"
+          },
+          "sentence": 1,
+          "source": "fold",
+          "source_ref": null,
+          "type": "VerbalRelation"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "dara",
+            "measure": "book",
+            "occurrence": 1,
+            "time": "tuesday",
+            "value": 6.0,
+            "verb": "sell"
+          },
+          "sentence": 1,
+          "source": "fold",
+          "source_ref": null,
+          "type": "Quantity"
+        }
+      ],
+      "id": "answerable",
+      "interpretation": "Both facts are independent, explicitly timed, non-state events with the same holder, measure, and verb, so the unscoped activity total includes both.",
+      "kind": "answerable",
+      "reference_year": null,
+      "retest": null,
+      "sentence": "Dara sold 4 books on Monday. Dara sold 6 books on Tuesday. How many books did Dara sell in total?",
+      "source_ref": null,
+      "target_rule": "ask/how-many-entity",
+      "title": "Unscoped total of explicit event periods",
+      "trace": {
+        "answer": {
+          "clarification": null,
+          "committed": true,
+          "kind": "number",
+          "reason": "\u03a3 'sell' events of 'dara'/'book'",
+          "shape": "number",
+          "value": 10.0
+        },
+        "ask": {
+          "id": "ask/how-many-entity",
+          "query": {
+            "consumer": "single-entity",
+            "entity": "dara",
+            "measure": "book",
+            "measure_qualifier": "",
+            "sum_measure_variants": "true",
+            "verb": "sell"
+          }
+        },
+        "collisions": [],
+        "deficiencies": [
+          "'in' (preposition) needs a object and none was found."
+        ],
+        "facts": [
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "dara",
+              "event": "s0:u1",
+              "indef_obj": false,
+              "obj": "monday",
+              "polarity": true,
+              "prep": "on",
+              "role": "temporal-point",
+              "verb": "sell"
+            },
+            "sentence": 0,
+            "source": "fold",
+            "source_ref": null,
+            "type": "VerbalRelation"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "dara",
+              "measure": "book",
+              "occurrence": 0,
+              "time": "monday",
+              "value": 4.0,
+              "verb": "sell"
+            },
+            "sentence": 0,
+            "source": "fold",
+            "source_ref": null,
+            "type": "Quantity"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "dara",
+              "event": "s1:u1",
+              "indef_obj": false,
+              "obj": "tuesday",
+              "polarity": true,
+              "prep": "on",
+              "role": "temporal-point",
+              "verb": "sell"
+            },
+            "sentence": 1,
+            "source": "fold",
+            "source_ref": null,
+            "type": "VerbalRelation"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "dara",
+              "measure": "book",
+              "occurrence": 1,
+              "time": "tuesday",
+              "value": 6.0,
+              "verb": "sell"
+            },
+            "sentence": 1,
+            "source": "fold",
+            "source_ref": null,
+            "type": "Quantity"
+          }
+        ],
+        "matches": [],
+        "proof": null
+      }
+    },
+    {
+      "actual_rule_ids": [],
+      "answer": {
+        "clarification": null,
+        "committed": false,
+        "kind": "decline",
+        "reason": "no quantity known for 'dara' of 'book' (ask ask/how-many-entity)",
+        "shape": "decline",
+        "value": null
+      },
+      "deficiencies": [
+        "'in' (preposition) needs a object and none was found."
+      ],
+      "expectation": "The unscoped state total declines; a separately tested Tuesday-scoped ask may select the exact 6-book snapshot.",
+      "facts": [
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "dara",
+            "event": "s0:u1",
+            "indef_obj": false,
+            "obj": "monday",
+            "polarity": true,
+            "prep": "on",
+            "role": "temporal-point",
+            "verb": "have"
+          },
+          "sentence": 0,
+          "source": "fold",
+          "source_ref": null,
+          "type": "VerbalRelation"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "dara",
+            "measure": "book",
+            "time": "monday",
+            "value": 4.0,
+            "verb": "have"
+          },
+          "sentence": 0,
+          "source": "fold",
+          "source_ref": null,
+          "type": "Quantity"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "dara",
+            "event": "s1:u1",
+            "indef_obj": false,
+            "obj": "tuesday",
+            "polarity": true,
+            "prep": "on",
+            "role": "temporal-point",
+            "verb": "have"
+          },
+          "sentence": 1,
+          "source": "fold",
+          "source_ref": null,
+          "type": "VerbalRelation"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "dara",
+            "measure": "book",
+            "time": "tuesday",
+            "value": 6.0,
+            "verb": "have"
+          },
+          "sentence": 1,
+          "source": "fold",
+          "source_ref": null,
+          "type": "Quantity"
+        }
+      ],
+      "id": "decline-state-snapshots",
+      "interpretation": "The two quantities are holdings at different moments, not two acquisitions, so summing them would double-count one evolving state.",
+      "kind": "decline",
+      "reference_year": null,
+      "retest": null,
+      "sentence": "Dara had 4 books on Monday. Dara had 6 books on Tuesday. How many books did Dara have in total?",
+      "source_ref": null,
+      "target_rule": "ask/how-many-entity",
+      "title": "State snapshots are not additive events",
+      "trace": {
+        "answer": {
+          "clarification": null,
+          "committed": false,
+          "kind": "decline",
+          "reason": "no quantity known for 'dara' of 'book' (ask ask/how-many-entity)",
+          "shape": "decline",
+          "value": null
+        },
+        "ask": {
+          "id": "ask/how-many-entity",
+          "query": {
+            "consumer": "single-entity",
+            "entity": "dara",
+            "measure": "book",
+            "measure_qualifier": "",
+            "sum_measure_variants": "true",
+            "verb": "have"
+          }
+        },
+        "collisions": [],
+        "deficiencies": [
+          "'in' (preposition) needs a object and none was found."
+        ],
+        "facts": [
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "dara",
+              "event": "s0:u1",
+              "indef_obj": false,
+              "obj": "monday",
+              "polarity": true,
+              "prep": "on",
+              "role": "temporal-point",
+              "verb": "have"
+            },
+            "sentence": 0,
+            "source": "fold",
+            "source_ref": null,
+            "type": "VerbalRelation"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "dara",
+              "measure": "book",
+              "time": "monday",
+              "value": 4.0,
+              "verb": "have"
+            },
+            "sentence": 0,
+            "source": "fold",
+            "source_ref": null,
+            "type": "Quantity"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "dara",
+              "event": "s1:u1",
+              "indef_obj": false,
+              "obj": "tuesday",
+              "polarity": true,
+              "prep": "on",
+              "role": "temporal-point",
+              "verb": "have"
+            },
+            "sentence": 1,
+            "source": "fold",
+            "source_ref": null,
+            "type": "VerbalRelation"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "dara",
+              "measure": "book",
+              "time": "tuesday",
+              "value": 6.0,
+              "verb": "have"
+            },
+            "sentence": 1,
+            "source": "fold",
+            "source_ref": null,
+            "type": "Quantity"
+          }
+        ],
+        "matches": [],
+        "proof": null
+      }
+    }
+  ]
+}
