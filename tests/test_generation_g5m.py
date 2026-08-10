@@ -160,9 +160,9 @@ def test_g5m_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 124
+    assert len(availability) == 128
     assert sum(item.supported for item in availability.values()) == 117
-    assert sum(not item.supported for item in availability.values()) == 7
+    assert sum(not item.supported for item in availability.values()) == 11
     assert all(
         availability[rule_id].supported for rule_id in GENERATIVE_GROUPS
     )
@@ -175,6 +175,15 @@ def test_g5m_unlocks_exactly_the_preregistered_frontier() -> None:
     assert availability[
         "arithmetic/sequential-percent-remainder-partition-completion"
     ].blockers == ("declared non-generative reader-only rule",)
+    for rule_id in {
+        "arithmetic/partition-membership-of-mass-measure-safety",
+        "arithmetic/ratio-split-of-to-possession-safety",
+        "logic-arithmetic/universal-all-have-incompatible-item-safety",
+        "logic-arithmetic/universal-all-have-quantity-pp-incompatible-item-safety",
+    }:
+        assert availability[rule_id].blockers == (
+            "declared non-generative safety consumer",
+        )
     assert all(
         "where predicate 'distinct_measure'" not in blocker
         for item in availability.values()

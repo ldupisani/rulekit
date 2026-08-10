@@ -71,6 +71,7 @@ rules:
       - number_compatible: [who, verb]
       - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: animate_object_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: find_quantity_verb, role_cat: findable_quantity_object}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: std, cat: non_quantity_holder}
@@ -136,9 +137,12 @@ rules:
       - number_compatible: [who, verb]
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
+      - verb_role_compatible: {verb: verb, roles: [item, item2], verb_cat: find_quantity_verb, role_cat: findable_quantity_object}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: std, cat: non_quantity_holder}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - slot_not_category: {slot: item2, cat: many_incompatible_noun}
       - distinct: [who, std]
       - category_nonoverlap: [who, std]
       - distinct_measure: [item, std]
@@ -3349,7 +3353,7 @@ rules:
       conjunct forms use the narrower adverbial-multiplier boundary.
     match:
       sentence:
-        - {slot: who, type: entity, referential: true}
+        - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true}
         - {slot: verb, type: verb}
         - {slot: n, type: number}
         - {slot: dir, cat: quantity_delta}
@@ -3367,7 +3371,7 @@ rules:
         - opt:
             - {slot: appos_det, cat: possessive_determiner}
             - {slot: appos_role, cat: animate}
-        - {slot: std, type: entity, referential: true}
+        - {slot: std, type: entity, common_noun_cat: quantity_holder, referential: true}
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - number_compatible: [who, verb]
@@ -3407,7 +3411,7 @@ rules:
       referential guard as arithmetic/anchored-relation — see its comment.
     match:
       sentence:
-        - {slot: who, type: entity, referential: true}
+        - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true}
         - {slot: verb, type: verb}
         - {slot: n, type: number}
         - {slot: dir, cat: quantity_delta}
@@ -3425,7 +3429,7 @@ rules:
         - opt:
             - {slot: appos_det, cat: animate_possessive_determiner}
             - {slot: appos_role, cat: animate}
-        - {slot: std, type: entity, referential: true}
+        - {slot: std, type: entity, common_noun_cat: quantity_holder, referential: true}
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - number_compatible: [who, verb]
@@ -4605,6 +4609,7 @@ rules:
         - {slot: attr, type: plural}
     where:
       - same_number: [n, verb, attr]
+      - slot_not_category: {slot: coll, cat: mass_measure}
     consumes: [n]
     emits:
       - fact: partition_quantity
@@ -4613,6 +4618,25 @@ rules:
         value: "n"
         verb: "{verb}"
         kind: membership
+
+  # A measurement unit cannot become a member-bearing collection merely
+  # because its surface is plural. Consume the exact rejected shape so the
+  # generic fold cannot reinterpret it as an unquantified membership fact.
+  - id: arithmetic/partition-membership-of-mass-measure-safety
+    phase: read
+    generation: safety
+    match:
+      sentence:
+        - {slot: n, type: number}
+        - {lit: of}
+        - {lit: the, consume_skipped: true}
+        - {slot: coll, cat: mass_measure, number: plural}
+        - {slot: verb, cat: copula}
+        - {slot: attr, type: plural}
+    where:
+      - same_number: [n, verb, attr]
+    consumes: [n]
+    emits: []
 
   - id: arithmetic/partition-rest-attribute
     phase: read
@@ -4724,7 +4748,7 @@ rules:
       docs/HANDOFF.md's `_is_rate`/`_price_each_value` lesson warns
       against, so this candidate gives RatioQuantity its own fact kind
       and its own synth instead, leaving every existing pool caller
-      byte-for-byte untouched. `verb, cat: state` — a ratio is always a
+      byte-for-byte untouched. `verb, cat: copula` — a ratio is always a
       stated copular fact ("is"/"was" 3:2), never any other verb.
 
       No leading 'the'/'a' token: SKIPPABLE_SENSES already auto-skips any
@@ -4745,7 +4769,7 @@ rules:
         - {slot: a, type: plural}
         - {lit: to}
         - {slot: b, type: plural}
-        - {slot: verb, cat: state}
+        - {slot: verb, cat: copula}
         - {slot: m, type: number}
         - {slot: n, type: number}
     emits:
@@ -4757,6 +4781,24 @@ rules:
         attribute: "{b}"
         fraction: "n / (m + n)"
         verb: "{verb}"
+
+  # The former broad state-verb gate admitted possession forms such as
+  # "the ratio ... owns 10:90". Preserve a full-span consume-only refusal
+  # for that removed sibling so the generic fold cannot invent an anchor.
+  - id: arithmetic/ratio-split-of-to-possession-safety
+    phase: read
+    generation: safety
+    match:
+      sentence:
+        - {lit: ratio}
+        - {lit: of}
+        - {slot: a, type: plural}
+        - {lit: to}
+        - {slot: b, type: plural}
+        - {slot: verb, cat: possession_state}
+        - {slot: m, type: number}
+        - {slot: n, type: number}
+    emits: []
 
   - id: arithmetic/stated-age-at-year
     phase: read

@@ -139,21 +139,25 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
     project = load_project(CURATED)
     availability = list_rule_availability(project)
 
-    assert len(availability) == 124
+    assert len(availability) == 128
     assert sum(item.supported for item in availability) == 117
-    assert sum(not item.supported for item in availability) == 7
+    assert sum(not item.supported for item in availability) == 11
     assert all(
         not item.blockers
         or item.id
         in {
-            "arithmetic/affine-frame-relation-as-standard",
-            "arithmetic/dangling-comparative-safety",
-            "arithmetic/sequential-percent-remainder-partition-anaphoric",
-            "arithmetic/sequential-percent-remainder-partition-prefix",
-            "arithmetic/sequential-percent-remainder-partition-completion",
-            "arithmetic/sequential-percent-remainder-partition-initial-share",
-            "arithmetic/sequential-percent-remainder-partition-remaining-share",
-        }
+                "arithmetic/affine-frame-relation-as-standard",
+                "arithmetic/dangling-comparative-safety",
+                "arithmetic/partition-membership-of-mass-measure-safety",
+                "arithmetic/ratio-split-of-to-possession-safety",
+                "arithmetic/sequential-percent-remainder-partition-anaphoric",
+                "arithmetic/sequential-percent-remainder-partition-prefix",
+                "arithmetic/sequential-percent-remainder-partition-completion",
+                "arithmetic/sequential-percent-remainder-partition-initial-share",
+                "arithmetic/sequential-percent-remainder-partition-remaining-share",
+                "logic-arithmetic/universal-all-have-incompatible-item-safety",
+                "logic-arithmetic/universal-all-have-quantity-pp-incompatible-item-safety",
+            }
         for item in availability
     )
     assert len(exploration_status(project)["fillers"]) == 293

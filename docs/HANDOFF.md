@@ -78,7 +78,7 @@ infrastructure rather than a parked or replaced direction.
 **Status:** G1 through G4, G5a through G5g, G6, Reading-origin review,
 targetless sentence-interpretation review, fact-level review, the
 fraction-plural morphology correction, scoped
-`GroupTotal`, all thirty-four review-led grammar-boundary reconciliations,
+`GroupTotal`, all thirty-five review-led grammar-boundary reconciliations,
 the additive elided-comparison increment, and coordinated open-superclass
 totals are complete and gated. Plain
 count equatives such as `Tom buys as many roses as Mary` now emit a factor-one
@@ -158,7 +158,7 @@ time-root realization is complete: both deictic markers are core-owned and
 reviewable, and the standard-pinned future rule unlocks. G5u direct-adverb
 visibility is complete: `currently` is core-owned, project-relative adverb
 breadth remains visible, and all 99 curated premise rules are selectable. G5v
-review-led premise auditing is active; thirty-four review batches are implemented
+review-led premise auditing is active; thirty-five review batches are implemented
 and fully gated. The core exploration vocabulary now contributes 25 additional
 category-aware identities, bringing the earlier frontier to 108/108 premise rules
 and 184 reachable identities. The logic-arithmetic bridge raised the live
@@ -210,6 +210,20 @@ remains compatible with a future departure. Contextual sense arbitration reads
 established remainder questions retain their adjective reading. This adds one strictly
 generatable premise rule without adding a lexical identity, bringing the live
 frontier to 115/115 rules and 267 identities.
+The thirty-fifth reconciliation closes all five live invalid reviews. Affine
+count relations now require positive common-noun quantity holders, so calendar
+periods such as `July` cannot become event participants. Named membership
+partitions refuse mass-measure collections, ratio splits require a copula, and
+raw quantified possessions refuse noun heads such as plural `percentages` that
+do not express a countable holding. Quantitative uses of `find` now require a
+declared findable object in both conjoined measures; abstract `ages` and
+`businesses` therefore cannot share that event frame, while ordinary concrete
+objects remain generatable. Consume-only safety siblings prevent rejected
+ratio, partition, and universal-quantity shapes from leaking misleading fold
+facts. The complete 4,818-test gate passes, lint reports zero errors or
+warnings, and all thirteen unprotected answer/projection DEV diffs are exactly
+neutral with zero new wrong or incorrect commitments. No protected look was
+spent.
 The thirty-fourth reconciliation closes all six live invalid reviews. Elided
 age comparatives no longer masquerade as possession, affine teaching frames
 require plausible participants and objects, and periodic motion rates require

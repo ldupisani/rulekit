@@ -273,6 +273,7 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
         "logic-arithmetic/coordinated-named-verbal-pp",
         "logic-arithmetic/ground-copular-nominal-pp",
         "logic-arithmetic/universal-all-have-quantity-pp",
+        "logic-arithmetic/universal-all-have-quantity-pp-incompatible-item-safety",
     }
 
 

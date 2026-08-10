@@ -34,8 +34,23 @@ rules:
         - {lit: have}
         - {slot: item, type: counted}
         - {lit: ".", consume_skipped: true}
+    where:
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
     emits:
       - {fact: quantified_quantity, cls: "{cls.singular}", measure: "{item}", value: "{item.value}", verb: have}
+
+  # Keep a rejected raw count head from falling through to the generic fold.
+  - id: logic-arithmetic/universal-all-have-incompatible-item-safety
+    phase: read
+    generation: safety
+    match:
+      sentence:
+        - {lit: all, at_start: true}
+        - {slot: cls, type: bare_plural}
+        - {lit: have}
+        - {slot: item, cat: many_incompatible_noun, counted: true}
+        - {lit: ".", consume_skipped: true}
+    emits: []
 
   # The one-PP restricted sibling preserves its complete class phrase and is
   # kept separate so every slot remains directly generatable and reviewable.
@@ -55,8 +70,28 @@ rules:
         - {lit: ".", consume_skipped: true}
     where:
       - attribute_compatible: {attribute: prep, noun: restriction}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
     emits:
       - {fact: quantified_quantity, cls: "{cls.singular} {prep} {restriction}", measure: "{item}", value: "{item.value}", verb: have}
+
+  # PP-restricted counterpart of the raw-item refusal above. It consumes the
+  # complete clause and therefore cannot leak a holding for the PP object.
+  - id: logic-arithmetic/universal-all-have-quantity-pp-incompatible-item-safety
+    phase: read
+    generation: safety
+    match:
+      sentence:
+        - {lit: all, at_start: true}
+        - {slot: cls, type: bare_plural}
+        - {slot: prep, cat: class_restriction_preposition}
+        - {lit: the, consume_skipped: true}
+        - {slot: restriction, cat: class_restriction_place}
+        - {lit: have}
+        - {slot: item, cat: many_incompatible_noun, counted: true}
+        - {lit: ".", consume_skipped: true}
+    where:
+      - attribute_compatible: {attribute: prep, noun: restriction}
+    emits: []
 
   # An elided additive universal is not an entity-to-entity event. Keep the
   # class, signed offset, measure, and state verb explicit until saturation

@@ -392,6 +392,14 @@ categories:
             arithmetic "many" count frame. This is a narrow refusal boundary:
             ordinary plural nouns remain available without requiring an
             exhaustive count-noun vocabulary.
+    findable_quantity_object:
+        parent: noun
+        notes: >
+            Counted objects that can ordinarily be found as discrete things.
+            This is a positive object-role boundary for quantitative uses of
+            find: an abstract noun does not become findable merely because it
+            has plural morphology. Concrete size-bearing nouns inherit this
+            role below, keeping the vocabulary in one declared hierarchy.
     membership_predicate_incompatible_noun:
         parent: noun
         notes: >
@@ -553,6 +561,12 @@ categories:
         parent: noun
         notes: "Counted objects that can ordinarily be shucked."
     acquire: {parent: quantity_event_verb, antonym: lose, polarity: 1}
+    find_quantity_verb:
+        parent: acquire
+        notes: >
+            Forms of find whose counted direct object must be a declared
+            findable quantity object. Other acquiring predicates retain their
+            own independently reviewable object boundaries.
     lose: {parent: quantity_event_verb, antonym: acquire, polarity: -1}
     directional_change_verb:
         parent: verb
@@ -689,7 +703,7 @@ categories:
         parent: noun
         notes: "Nouns for which a color partition is an ordinary reading."
     physical_size_noun:
-        parent: noun
+        parent: findable_quantity_object
         notes: "Concrete nouns for which small/large is an ordinary size predicate."
     magnitude_noun:
         parent: noun
@@ -1472,7 +1486,7 @@ members:
     plural_possessive_determiner: [their]
     clause_subject_possessive_determiner: [her, his, its, their]
     animate_possessive_determiner: [her, his, my, their, your]
-    many_incompatible_noun: [age, litter, rest]
+    many_incompatible_noun: [age, litter, percentage, rest]
     membership_predicate_incompatible_noun: [time]
     conjunct_comparison_incompatible_noun: [time]
     existential_incompatible_noun: [time]
@@ -1687,6 +1701,7 @@ members:
     plural_copula: [are, were]
     past_copula: [was, were]
     acquire: [get, gets, got, find, finds, found, buy, buys, bought, receive, receives, received, win, wins, won]
+    find_quantity_verb: [find, finds, found]
     lose: [lose, loses, lost, eat, eats, ate, give, gives, gave, sell, sells, sold, spend, spends, spent, dropped, drops]
     increase_verb: [rose]
     price_relation_verb: [are, cost, costs, is, was, were]

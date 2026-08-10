@@ -490,13 +490,15 @@ def test_boundary_mode_survives_retest_and_review_without_counting_coverage(
 def test_gsm8k_generation_fixtures_make_every_premise_rule_available() -> None:
     availability = list_rule_availability(load_project(Path("projects/gsm8k")))
 
-    assert len(availability) == 117
+    assert len(availability) == 119
     blocked = {
         rule.id: rule for rule in availability if not rule.supported
     }
     assert set(blocked) == {
         "arithmetic/affine-frame-relation-as-standard",
         "arithmetic/dangling-comparative-safety",
+        "arithmetic/partition-membership-of-mass-measure-safety",
+        "arithmetic/ratio-split-of-to-possession-safety",
         "arithmetic/sequential-percent-remainder-partition-anaphoric",
         "arithmetic/sequential-percent-remainder-partition-prefix",
         "arithmetic/sequential-percent-remainder-partition-completion",
@@ -511,6 +513,13 @@ def test_gsm8k_generation_fixtures_make_every_premise_rule_available() -> None:
     assert blocked["arithmetic/dangling-comparative-safety"].blockers == (
         "declared non-generative safety consumer",
     )
+    for rule_id in {
+        "arithmetic/partition-membership-of-mass-measure-safety",
+        "arithmetic/ratio-split-of-to-possession-safety",
+    }:
+        assert blocked[rule_id].blockers == (
+            "declared non-generative safety consumer",
+        )
     assert blocked[
         "arithmetic/sequential-percent-remainder-partition-anaphoric"
     ].blockers == (
