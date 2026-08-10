@@ -467,6 +467,10 @@ def test_designer_exposes_the_campaign_promotion_queue() -> None:
     assert "Record promotion decision" in js
     assert "Decision recorded" in js
     assert "Landed on staging" in js
+    assert "campaignShowLanded" in js
+    assert "Show landed" in js
+    assert "Hide landed" in js
+    assert ".campaign-landed-toggle" in css
     assert "decisionMatchesPrevious" in js
     assert "isolated runner required" in js
     assert "campaign-mode" in css

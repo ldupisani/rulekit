@@ -31,6 +31,7 @@ const state = {
   reviewSort: { key: "timestamp", dir: "desc" },
   editingReview: null,   // id of the row being corrected
   campaignReviews: [],
+  campaignShowLanded: false,
   campaignRunner: { active: false },
   displayedProjectCandidate: null,
   editorSaveBusy: false,
@@ -1716,14 +1717,35 @@ function renderCampaignReviews() {
   const box = $("campaign");
   box.replaceChildren();
 
+  const landedCount = state.campaignReviews.filter(
+    (row) => Boolean(row.landing) || row.status === "landed",
+  ).length;
+  const visibleReviews = state.campaignShowLanded
+    ? state.campaignReviews
+    : state.campaignReviews.filter(
+      (row) => !row.landing && row.status !== "landed",
+    );
   const head = el("div", "campaign-head");
+  const landedToggle = el(
+    "button",
+    "campaign-landed-toggle",
+    state.campaignShowLanded
+      ? `Hide landed (${landedCount})`
+      : `Show landed (${landedCount})`,
+  );
+  landedToggle.disabled = landedCount === 0;
+  landedToggle.onclick = () => {
+    state.campaignShowLanded = !state.campaignShowLanded;
+    renderCampaignReviews();
+  };
   head.append(
     el("div", "pane-title", "Mining candidate promotion queue"),
     el(
       "span",
       "dim",
-      `${state.campaignReviews.length} candidate${state.campaignReviews.length === 1 ? "" : "s"} · decisions are append-only and pinned to commit + fingerprint`,
+      `${visibleReviews.length} active · ${landedCount} landed · decisions are append-only and pinned to commit + fingerprint`,
     ),
+    landedToggle,
   );
   box.append(head);
 
@@ -1736,7 +1758,16 @@ function renderCampaignReviews() {
     return;
   }
 
-  for (const row of state.campaignReviews) {
+  if (!visibleReviews.length) {
+    box.append(el(
+      "div",
+      "campaign-empty",
+      "All published candidates have landed. Use Show landed to inspect their frozen promotion evidence.",
+    ));
+    return;
+  }
+
+  for (const row of visibleReviews) {
     box.append(campaignCandidateCard(row));
   }
 }

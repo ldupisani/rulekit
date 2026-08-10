@@ -102,7 +102,11 @@ body.campaign-mode #impact-bar { display: none; }
 
 /* ---------- campaign promotion queue ---------- */
 #campaign { overflow: auto; flex: 1; min-height: 0; }
-.campaign-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; }
+.campaign-head {
+  display: flex; align-items: baseline; flex-wrap: wrap;
+  gap: 10px; margin-bottom: 10px;
+}
+.campaign-landed-toggle { margin-left: auto; white-space: nowrap; }
 .campaign-empty {
   color: var(--dim); padding: 18px; border: 1px dashed var(--border);
   border-radius: 8px; background: var(--panel);
