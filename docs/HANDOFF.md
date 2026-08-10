@@ -1,6 +1,6 @@
 # rulekit handoff — GSM8K Mining v2
 
-**Updated:** 2026-08-08
+**Updated:** 2026-08-10
 
 **Active campaign:** GSM8K Mining v2 with generated evidence and a human
 promotion gate in the Designer
@@ -46,7 +46,12 @@ declines) but found no class meeting the automatic ≥3-final-blocker bar. A
 walk, and 36 aggregate-marker rewrites produced zero verified complete wins.
 No implementer worktree was created. M6 now needs an explicitly product-led
 manual class or a later re-scout after a named blocker changes; do not lower
-the automatic threshold. The user selected the product-led path. Campaign
+the automatic threshold. A second re-scout at `c65fd53`, after increment 130
+and review batch 34, reached the same measured stop: 56 fully-read declines
+carry a timed quantity, but the only three with an anaphoric relation require
+three different additional mechanisms; every unrelated complete class walked
+yielded at most one win. No automatic candidate or implementer was created.
+The user previously selected the product-led path for increment 130. Campaign
 class evidence now has an explicit `product` mode that requires a human-facing
 rationale and mechanically forbids corpus pool/yield claims while retaining
 every ordinary promotion gate. The selected class is conservative temporal

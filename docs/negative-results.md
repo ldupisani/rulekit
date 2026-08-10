@@ -1666,3 +1666,35 @@ to fill a nominal two-candidate batch. The next honest move is either an
 explicitly product-led manual class, which is reviewed as such rather than
 presented as automatic corpus mining, or a re-scout after a named missing
 premise/ask blocker has genuinely changed.
+
+## The post-temporal re-scout still found no buyable class (2026-08-10)
+
+The named blocker did change: increment 130 began preserving role-licensed
+postverbal event times, and review batch 34 added a topical distributive
+boundary. Mining v2 therefore re-derived GSM8K DEV-train at `c65fd53` instead
+of assuming the first scout's stop still held.
+
+The baseline was unchanged: 3,772 items, 107 correct, zero wrong, 1,508 fully
+read, and 1,401 fully-read declines. The complete timed-fact scan found:
+
+- 56 addressable declines with at least one non-null quantity time;
+- five with any relation fact; and
+- three with both an anaphoric relation and a timed quantity.
+
+Those three are not one mechanism. One additionally needs container-to-content
+projection, one needs partition materialization and consumption, and one needs
+both the missing earlier quantity and a period-difference ask. Increment 130
+makes their temporal coordinates inspectable; it is not their final blocker.
+The new `topic` identity creates no addressable pool: its single DEV-train row
+is still vocabulary-blocked.
+
+The strongest unrelated walks also stayed below the automatic bar: one
+complete win among four bare coordinated-name total asks, one direct-fact win
+inside a broad adjectival-dimension pool, and one passive aggregate case.
+These are separate one-item mechanisms, not a three-item class.
+
+**Disposition:** zero candidates, zero implementers, zero published manifests,
+and no protected look. Do not re-propose the timed 56 as a yield estimate: it
+is another ceiling. Resume only after a named premise/ask blocker changes or
+after the user explicitly chooses a product-led class with zero corpus-yield
+claim.
