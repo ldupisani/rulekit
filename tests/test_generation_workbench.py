@@ -495,21 +495,10 @@ def test_gsm8k_generation_fixtures_make_every_premise_rule_available() -> None:
         rule.id: rule for rule in availability if not rule.supported
     }
     assert set(blocked) == {
-        "arithmetic/affine-frame-relation-as-standard",
         "arithmetic/dangling-comparative-safety",
         "arithmetic/partition-membership-of-mass-measure-safety",
         "arithmetic/ratio-split-of-to-possession-safety",
-        "arithmetic/sequential-percent-remainder-partition-anaphoric",
-        "arithmetic/sequential-percent-remainder-partition-prefix",
-        "arithmetic/sequential-percent-remainder-partition-completion",
-        "arithmetic/sequential-percent-remainder-partition-initial-share",
-        "arithmetic/sequential-percent-remainder-partition-remaining-share",
     }
-    assert blocked[
-        "arithmetic/affine-frame-relation-as-standard"
-    ].blockers == (
-        "declared non-generative reader-only rule",
-    )
     assert blocked["arithmetic/dangling-comparative-safety"].blockers == (
         "declared non-generative safety consumer",
     )
@@ -520,31 +509,6 @@ def test_gsm8k_generation_fixtures_make_every_premise_rule_available() -> None:
         assert blocked[rule_id].blockers == (
             "declared non-generative safety consumer",
         )
-    assert blocked[
-        "arithmetic/sequential-percent-remainder-partition-anaphoric"
-    ].blockers == (
-        "declared non-generative reader-only rule",
-    )
-    assert blocked[
-        "arithmetic/sequential-percent-remainder-partition-prefix"
-    ].blockers == (
-        "declared non-generative reader-only rule",
-    )
-    assert blocked[
-        "arithmetic/sequential-percent-remainder-partition-completion"
-    ].blockers == (
-        "declared non-generative reader-only rule",
-    )
-    assert blocked[
-        "arithmetic/sequential-percent-remainder-partition-initial-share"
-    ].blockers == (
-        "declared non-generative reader-only rule",
-    )
-    assert blocked[
-        "arithmetic/sequential-percent-remainder-partition-remaining-share"
-    ].blockers == (
-        "declared non-generative reader-only rule",
-    )
 
 
 def test_every_gsm8k_premise_rule_has_a_strict_round_trip() -> None:

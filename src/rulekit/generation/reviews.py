@@ -150,6 +150,8 @@ class ReviewRecord(BaseModel):
     )
     review_kind: Literal["premise", "sentence"] = "premise"
     sentence: str = Field(min_length=1, max_length=2000)
+    context_before: list[str] = Field(default_factory=list, max_length=8)
+    context_after: list[str] = Field(default_factory=list, max_length=8)
     target_rule: str | None = Field(default=None, min_length=1, max_length=256)
     seed: int
     registry_fingerprint: str = Field(min_length=8, max_length=128)

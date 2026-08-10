@@ -71,7 +71,7 @@
     <div id="generate" class="hidden">
       <div class="generation-controls">
         <div>
-          <div class="pane-title">Target premise rule</div>
+          <div id="generation-rule-title" class="pane-title">Target premise rule</div>
           <select id="generation-rule"></select>
           <div id="generation-blocker" class="generation-blocker hidden"></div>
         </div>
@@ -81,6 +81,7 @@
                   title="Strict expects every slot gate to pass. Lexical boundary widens one category-gated slot and permits the target rule to reject it.">
             <option value="strict">Strict positive</option>
             <option value="lexical_boundary">Lexical boundary probe</option>
+            <option value="safety_boundary">Negative safety boundary</option>
           </select>
         </label>
         <div>

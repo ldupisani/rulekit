@@ -6,7 +6,7 @@ from dataclasses import asdict, dataclass
 from typing import Any, Literal
 
 
-GenerationMode = Literal["strict", "lexical_boundary"]
+GenerationMode = Literal["strict", "lexical_boundary", "safety_boundary"]
 GenerationObjective = Literal[
     "least_attempted_rule",
     "least_generated_rule",
@@ -37,6 +37,9 @@ class RuleAvailability:
     description: str | None
     supported: bool
     blockers: tuple[str, ...] = ()
+    generation: Literal[
+        "premise", "contextual", "reader-only", "safety"
+    ] = "premise"
 
     def to_json(self) -> dict[str, Any]:
         return {
@@ -44,6 +47,7 @@ class RuleAvailability:
             "description": self.description,
             "supported": self.supported,
             "blockers": list(self.blockers),
+            "generation": self.generation,
         }
 
 
@@ -132,9 +136,15 @@ class GenerationCandidate:
     deficiencies: tuple[str, ...]
     attempts: int
     lexical_relaxations: tuple[LexicalRelaxation, ...] = ()
+    context_before: tuple[str, ...] = ()
+    context_after: tuple[str, ...] = ()
+    target_sentence_index: int = 0
 
     def to_json(self) -> dict[str, Any]:
         payload = asdict(self)
+        payload["text"] = " ".join(
+            (*self.context_before, self.sentence, *self.context_after)
+        )
         payload["actual_rule_ids"] = sorted(
             {match.rule_id for match in self.actual_matches}
         )

@@ -517,6 +517,11 @@ categories:
             holding relation. Copulas remain in sibling `copula`: they state
             quantities in other grammatical frames but cannot connect a
             subject directly to a possessive quantity standard.
+    population_total_verb:
+        parent: possession_state
+        notes: >
+            Possession forms that state how many members a population setting
+            has. Ownership predicates remain outside this construction.
     copula:
         parent: state
         notes: >
@@ -1731,6 +1736,7 @@ members:
     animate_pronoun: [he, she]
     state: [has, have, had, is, are, was, were, own, owns]
     possession_state: [has, have, had, own, owns]
+    population_total_verb: [has, have, had]
     copula: [is, are, was, were]
     plural_copula: [are, were]
     past_copula: [was, were]

@@ -2167,15 +2167,36 @@ function campaignSpecimenCard(
 
 async function loadGenerationRules() {
   const payload = await api("GET", "/api/generation/rules");
-  state.generationRules = payload.rules || [];
+  state.generationPremiseRules = payload.rules || [];
+  state.generationSafetyRules = payload.safety_rules || [];
+  populateGenerationRuleSelect();
+  $("generation-coverage").textContent =
+    `${payload.supported}/${payload.total} premise rules currently realizable · ` +
+    `${payload.safety_total || 0} safety consumers available as negative boundaries`;
+}
+
+function populateGenerationRuleSelect() {
   const select = $("generation-rule");
   const priorSelection = select.value;
+  const safetyMode = selectedGenerationMode() === "safety_boundary";
+  state.generationRules = safetyMode
+    ? state.generationSafetyRules || []
+    : state.generationPremiseRules || [];
   select.replaceChildren();
-  const random = el("option", "", "Random supported rule");
+  const random = el(
+    "option",
+    "",
+    safetyMode ? "Random safety boundary" : "Random supported rule",
+  );
   random.value = "";
   select.append(random);
   for (const rule of state.generationRules) {
-    const suffix = rule.supported ? "" : ` — blocked: ${rule.blockers.join("; ")}`;
+    const kind = rule.generation === "contextual" ? " · contextual" : "";
+    const suffix = safetyMode
+      ? " · negative boundary"
+      : rule.supported
+      ? kind
+      : ` — blocked: ${rule.blockers.join("; ")}`;
     const option = el("option", "", rule.id + suffix);
     option.value = rule.id;
     option.dataset.supported = String(rule.supported);
@@ -2184,8 +2205,9 @@ async function loadGenerationRules() {
   if (state.generationRules.some((rule) => rule.id === priorSelection)) {
     select.value = priorSelection;
   }
-  $("generation-coverage").textContent =
-    `${payload.supported}/${payload.total} premise rules currently realizable`;
+  $("generation-rule-title").textContent = safetyMode
+    ? "Target safety rule"
+    : "Target premise rule";
   select.onchange = updateGenerationRuleState;
   updateGenerationRuleState();
 }
@@ -2523,9 +2545,11 @@ async function loadGenerationExploration() {
 
   const ruleCounts = payload.summary?.rules || {};
   const fillerCounts = payload.summary?.fillers || {};
-  const supported = state.generationRules.filter((rule) => rule.supported).length;
+  const premiseRules = state.generationPremiseRules || state.generationRules;
+  const supported = premiseRules.filter((rule) => rule.supported).length;
   $("generation-coverage").textContent =
-    `${supported}/${state.generationRules.length} premise rules realizable · ` +
+    `${supported}/${premiseRules.length} premise rules realizable · ` +
+    `${(state.generationSafetyRules || []).length} safety boundaries · ` +
     `${ruleCounts.never_generated || 0} untouched rules · ` +
     `${ruleCounts.attempted_failed || 0} attempted, not realized · ` +
     `${ruleCounts.generated_unreviewed || 0} generated, unreviewed · ` +
@@ -2566,6 +2590,8 @@ function renderGenerationExplorationSelection(rule, filler) {
       "mono",
       mode === "lexical_boundary"
         ? "lexical boundary: one category-gated slot may draw from its broader declared root sense"
+        : mode === "safety_boundary"
+        ? "negative boundary: generate an invalid surface that a consume-only safety rule must intercept"
         : ruleStatus
         ? `rule ${ruleStatus.status.replaceAll("_", " ")} · generated ${ruleStatus.generated_count} · failed ${ruleStatus.failed_count || 0} · reviewed ${ruleStatus.reviewed_count} · structure ${ruleStatus.structural_covered}/${ruleStatus.structural_total}`
         : `rule frontier: ${objective}, with seeded tie-breaking`,
@@ -2604,11 +2630,14 @@ function updateGenerationRuleState() {
   const rule = selectedGenerationRule();
   const filler = selectedGenerationFiller();
   const strict = selectedGenerationMode() === "strict";
+  const safetyMode = selectedGenerationMode() === "safety_boundary";
   const filters = selectedGenerationFilters();
   const ruleStatus = (state.generationExploration.rules || [])
     .find((item) => item.id === rule?.id);
   const blocker = $("generation-blocker");
-  const blocked = rule && !rule.supported;
+  const blocked = rule && !rule.supported && !(
+    safetyMode && rule.generation === "safety"
+  );
   const incompatible = Boolean(
     strict && rule && filler && !filler.compatible_rules.includes(rule.id),
   );
@@ -2637,7 +2666,8 @@ function updateGenerationRuleState() {
       : "";
   $("generation-next").disabled = Boolean(
     blocked || incompatible || filteredOut || fillerFilteredOut ||
-    (strict && !rule && !eligibleRules.length),
+    (strict && !rule && !eligibleRules.length) ||
+    (safetyMode && !rule && !state.generationRules.length),
   );
   $("generation-filler").disabled = !strict;
   $("generation-objective").disabled = !strict;
@@ -3225,6 +3255,8 @@ async function formGenerationHypotheses() {
       origin: candidate.origin || "generated",
       generation_mode: candidate.generation_mode || "strict",
       lexical_relaxations: candidate.lexical_relaxations || [],
+      context_before: candidate.context_before || [],
+      context_after: candidate.context_after || [],
       verdict: state.reviewVerdict,
       defects,
     });
@@ -3278,7 +3310,23 @@ function renderGenerationCandidate(
   $("generation-note").placeholder = sentenceReview
     ? "What is ambiguous, unsupported, or otherwise worth preserving?"
     : "What premise or emitted fact appears correct or defective?";
-  $("generation-sentence").textContent = candidate.sentence;
+  const sentenceBox = $("generation-sentence");
+  sentenceBox.replaceChildren();
+  for (const context of candidate.context_before || []) {
+    sentenceBox.append(el("div", "generation-context-sentence", context));
+  }
+  sentenceBox.append(
+    el(
+      "div",
+      candidate.context_before?.length || candidate.context_after?.length
+        ? "generation-target-sentence contextual"
+        : "generation-target-sentence",
+      candidate.sentence,
+    ),
+  );
+  for (const context of candidate.context_after || []) {
+    sentenceBox.append(el("div", "generation-context-sentence", context));
+  }
   const status = $("generation-status");
   status.textContent = candidate.target_status;
   status.className = `generation-status ${candidate.target_status}`;
@@ -3309,6 +3357,16 @@ function renderGenerationCandidate(
         "div",
         "",
         "A missing target match is an expected boundary observation, not proof that the sentence itself is invalid.",
+      ),
+    );
+    modeNote.classList.remove("hidden");
+  } else if (generationMode === "safety_boundary") {
+    modeNote.append(
+      el("div", "mono", "Negative safety boundary"),
+      el(
+        "div",
+        "",
+        "This intentionally invalid surface should be intercepted without emitting a premise fact.",
       ),
     );
     modeNote.classList.remove("hidden");
@@ -3459,6 +3517,8 @@ async function saveAndRetest() {
       origin: before.origin || "generated",
       generation_mode: before.generation_mode || "strict",
       lexical_relaxations: before.lexical_relaxations || [],
+      context_before: before.context_before || [],
+      context_after: before.context_after || [],
     });
     if (after.detail) {
       $("generation-retest").classList.remove("hidden");
@@ -3498,7 +3558,10 @@ async function saveAndRetest() {
 async function generateNext() {
   const selected = selectedGenerationRule();
   const generationMode = selectedGenerationMode();
-  if (selected && !selected.supported) return;
+  if (
+    selected && !selected.supported &&
+    !(generationMode === "safety_boundary" && selected.generation === "safety")
+  ) return;
   const seedInput = $("generation-seed");
   const prior = Number(seedInput.value);
   const seed = Number.isSafeInteger(prior) && seedInput.value !== ""
@@ -3568,6 +3631,8 @@ async function saveGenerationReview() {
     lexical_relaxations: candidate.lexical_relaxations || [],
     review_kind: candidate.target_rule ? "premise" : "sentence",
     sentence: candidate.sentence,
+    context_before: candidate.context_before || [],
+    context_after: candidate.context_after || [],
     target_rule: candidate.target_rule,
     seed: candidate.seed,
     registry_fingerprint: candidate.registry_fingerprint,
@@ -3599,7 +3664,7 @@ async function saveGenerationReview() {
 
 function inspectGeneratedReading() {
   if (!state.candidate) return;
-  $("trace-input").value = state.candidate.sentence;
+  $("trace-input").value = state.candidate.text || state.candidate.sentence;
   setView("reading");
   runTrace();
 }
@@ -3728,10 +3793,10 @@ $("generation-clear-filters").onclick = () => {
   updateGenerationRuleState();
 };
 $("generation-mode").onchange = () => {
-  if (selectedGenerationMode() === "lexical_boundary") {
+  if (selectedGenerationMode() !== "strict") {
     $("generation-filler").value = "";
   }
-  updateGenerationRuleState();
+  populateGenerationRuleSelect();
 };
 $("generation-seed").addEventListener("input", () => {
   // A user-entered seed is an explicit request to try that exact seed once.

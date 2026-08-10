@@ -381,6 +381,7 @@ def _fraction_fillers(reg: Registry) -> list[_Filler]:
         _Filler(
             surface,
             reg.fraction_plurals.get(surface, surface),
+            number="singular",
             value=float(reg.fractions[surface]),
         )
         for surface in sorted(reg.fractions)
@@ -393,6 +394,7 @@ def _fraction_fillers(reg: Registry) -> list[_Filler]:
         _Filler(
             f"{count_surface} {plural}",
             singular,
+            number="plural",
             value=float(value) * float(reg.fractions[plural]),
         )
         for count_surface, value in sorted(reg.numbers.items())
@@ -735,6 +737,25 @@ def _qualify_domain(
             for filler in fillers
             if isinstance(filler.value, (int, float))
             and float(filler.value) > 0.0
+        ]
+    if token.generation_explicit_unit_fraction:
+        unit_surface = min(
+            surface
+            for surface, value in reg.numbers.items()
+            if float(value) == 1.0 and not any(ch.isspace() for ch in surface)
+        )
+        fillers = [
+            (
+                _Filler(
+                    surface=f"{unit_surface} {filler.surface}",
+                    identity=filler.identity,
+                    number=filler.number,
+                    value=filler.value,
+                )
+                if filler.number == "singular"
+                else filler
+            )
+            for filler in fillers
         ]
     if token.referential:
         articles = [
@@ -1600,6 +1621,23 @@ def _rule_blockers(
                     f"{slot_name!r} outside category {category!r}"
                 )
     blockers.extend(_where_blocker(rule))
+    if rule.generation_context is not None:
+        for position, contexts in (
+            ("before", rule.generation_context.before),
+            ("after", rule.generation_context.after),
+        ):
+            for index, context in enumerate(contexts):
+                contextual_rule = PatternRule(
+                    id=f"{rule.id}#context-{position}-{index}",
+                    match={"sentence": context.sentence},
+                    where=context.where,
+                )
+                blockers.extend(
+                    f"context {position} {index}: {blocker}"
+                    for blocker in _rule_blockers(
+                        contextual_rule, reg, fixtures
+                    )
+                )
     return tuple(dict.fromkeys(blockers))
 
 
@@ -1619,6 +1657,7 @@ def list_rule_availability(project: Project) -> list[RuleAvailability]:
             description=rule.description,
             supported=not (blockers := _rule_blockers(rule, project.registry, fixtures)),
             blockers=blockers,
+            generation=rule.generation,
         )
         for rule in project.registry.rules
     )
@@ -2428,7 +2467,8 @@ def _allowed_fillers(
             or (
                 filler.reference_form == "bare"
                 and (
-                    preceding_is_possessive
+                    token.generation_bare_reference
+                    or preceding_is_possessive
                     or (
                         token.bare_reference_category is not None
                         and reg.word_in_category(
@@ -2440,6 +2480,7 @@ def _allowed_fillers(
             )
             or (
                 filler.reference_form == "definite"
+                and not token.generation_bare_reference
                 and not preceding_is_possessive
             )
         )
@@ -2816,6 +2857,62 @@ def _fact_kind_type_name(kind: str) -> str:
     """Return the runtime dataclass spelling for a declarative fact kind."""
 
     return "".join(part.capitalize() for part in kind.split("_"))
+
+
+def _realize_context(
+    rule: PatternRule,
+    reg: Registry,
+    fixtures: _Fixtures,
+    rng: random.Random,
+) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    """Realize pack-declared adjacent discourse without linguistic literals."""
+
+    context = rule.generation_context
+    if context is None:
+        return (), ()
+
+    def realize_all(position: str, sentences: list[Any]) -> tuple[str, ...]:
+        realized: list[str] = []
+        for index, sentence in enumerate(sentences):
+            contextual_rule = PatternRule(
+                id=f"{rule.id}#context-{position}-{index}",
+                match={"sentence": sentence.sentence},
+                where=sentence.where,
+            )
+            surface, _, _, _ = _realize(
+                contextual_rule,
+                reg,
+                fixtures,
+                rng,
+            )
+            realized.append(surface)
+        return tuple(realized)
+
+    return (
+        realize_all("before", context.before),
+        realize_all("after", context.after),
+    )
+
+
+def _format_contextual_target(
+    rule: PatternRule,
+    sentence: str,
+    requested: dict[str, str],
+) -> str:
+    """Render readable clause boundaries omitted from matcher skeletons."""
+
+    if rule.generation_context is None:
+        return sentence
+    for slot in rule.generation_context.target_commas_after:
+        surface = requested.get(slot)
+        if not surface:
+            continue
+        sentence = sentence.replace(
+            surface,
+            f"{surface},",
+            1,
+        )
+    return sentence
 
 
 def _fact_derivation(
@@ -4386,6 +4483,8 @@ def _candidate_from_reading(
     generation_mode: GenerationMode = "strict",
     optional_choices: dict[tuple[int, ...], bool] | None = None,
     lexical_relaxations: tuple[LexicalRelaxation, ...] = (),
+    context_before: tuple[str, ...] = (),
+    context_after: tuple[str, ...] = (),
 ) -> GenerationCandidate:
     """Project one ordinary reader result into the authoring candidate record."""
 
@@ -4393,12 +4492,20 @@ def _candidate_from_reading(
     safety_results = _safety_interception_results(
         results, project.registry
     )
+    target_pool = (
+        safety_results
+        if generation_mode == "safety_boundary"
+        else premise_results
+    )
     target_results = [
         result
-        for result in premise_results
+        for result in target_pool
         if result.match.rule.id == target_rule_id
     ]
-    if origin == "generated" and generation_mode == "strict":
+    if origin == "generated" and generation_mode in {
+        "strict",
+        "safety_boundary",
+    }:
         target_results = [
             result
             for result in target_results
@@ -4411,7 +4518,7 @@ def _candidate_from_reading(
         status = "absent"
         target_bindings: dict[str, str] = {}
     else:
-        target_shadowed = all(
+        target_shadowed = generation_mode != "safety_boundary" and all(
             any(
                 other is not result
                 and subsumes(other.match, result.match, project.registry)
@@ -4455,7 +4562,7 @@ def _candidate_from_reading(
         (
             f"{project.registry.fingerprint}\0{origin}\0{generation_mode}\0"
             f"{seed}\0{target_rule_id}\0"
-            f"{sentence}"
+            f"{' '.join((*context_before, sentence, *context_after))}"
         ).encode()
     ).hexdigest()[:20]
     return GenerationCandidate(
@@ -4503,6 +4610,9 @@ def _candidate_from_reading(
         deficiencies=tuple(reading.deficiencies()),
         attempts=attempts,
         lexical_relaxations=lexical_relaxations,
+        context_before=context_before,
+        context_after=context_after,
+        target_sentence_index=len(context_before),
     )
 
 
@@ -4517,6 +4627,8 @@ def retest_candidate(
     origin: Literal["generated", "reading"] = "generated",
     generation_mode: GenerationMode = "strict",
     lexical_relaxations: tuple[LexicalRelaxation, ...] = (),
+    context_before: tuple[str, ...] = (),
+    context_after: tuple[str, ...] = (),
 ) -> GenerationCandidate:
     """Re-evaluate an identical pinned sentence against the current project."""
 
@@ -4527,14 +4639,29 @@ def retest_candidate(
         (candidate for candidate in project.registry.rules if candidate.id == rule_id),
         None,
     )
-    if rule is not None and rule.generation == "safety":
+    if (
+        rule is not None
+        and rule.generation == "safety"
+        and generation_mode != "safety_boundary"
+    ):
         raise GenerationError(
             "a safety consumer is not a premise review target; "
             "review the sentence meaning instead"
         )
     try:
-        reading = analyze(sentence, project.registry, tracing=True)
-        document = run_document([reading], project.registry)
+        readings = [
+            analyze(
+                surface,
+                project.registry,
+                sentence_index=index,
+                tracing=True,
+            )
+            for index, surface in enumerate(
+                (*context_before, sentence, *context_after)
+            )
+        ]
+        reading = readings[len(context_before)]
+        document = run_document(readings, project.registry)
     except Exception as exc:  # noqa: BLE001 - authoring API surfaces the defect
         raise GenerationError(
             f"could not retest the pinned sentence: {type(exc).__name__}: {exc}"
@@ -4555,6 +4682,8 @@ def retest_candidate(
         origin=origin,
         generation_mode=generation_mode,
         lexical_relaxations=lexical_relaxations,
+        context_before=context_before,
+        context_after=context_after,
     )
 
 
@@ -4696,7 +4825,11 @@ def generate_candidate(
 ) -> GenerationCandidate:
     """Generate and round-trip one supported rule with a reproducible seed."""
 
-    if generation_mode not in {"strict", "lexical_boundary"}:
+    if generation_mode not in {
+        "strict",
+        "lexical_boundary",
+        "safety_boundary",
+    }:
         raise GenerationError(f"unknown generation mode {generation_mode!r}")
     seed = secrets.randbits(63) if seed is None else seed
     rng = random.Random(seed)
@@ -4708,7 +4841,13 @@ def generate_candidate(
 
     if rule_id is None:
         supported = [
-            rules[item.id] for item in availability.values() if item.supported
+            rules[item.id]
+            for item in availability.values()
+            if (
+                item.generation == "safety"
+                if generation_mode == "safety_boundary"
+                else item.supported
+            )
         ]
         if not supported:
             raise GenerationError("this project has no supported premise rules")
@@ -4718,7 +4857,10 @@ def generate_candidate(
         if rule is None:
             raise GenerationError(f"unknown premise rule {rule_id!r}")
         item = availability[rule.id]
-        if not item.supported:
+        if not item.supported and not (
+            generation_mode == "safety_boundary"
+            and rule.generation == "safety"
+        ):
             raise GenerationError(
                 f"{rule.id} is blocked: {'; '.join(item.blockers)}"
             )
@@ -4730,6 +4872,8 @@ def generate_candidate(
     last_reading = None
     last_optional_choices: dict[tuple[int, ...], bool] = {}
     last_lexical_relaxations: tuple[LexicalRelaxation, ...] = ()
+    last_context_before: tuple[str, ...] = ()
+    last_context_after: tuple[str, ...] = ()
     last_realization_error: GenerationError | None = None
     failure_causes: Counter[str] = Counter()
     for attempt in range(1, max_attempts + 1):
@@ -4753,9 +4897,32 @@ def generate_candidate(
             last_realization_error = exc
             failure_causes[str(exc)] += 1
             continue
-        reading = analyze(sentence, project.registry, tracing=True)
+        sentence = _format_contextual_target(rule, sentence, requested)
         try:
-            doc = run_document([reading], project.registry)
+            context_before, context_after = _realize_context(
+                rule,
+                project.registry,
+                fixtures,
+                rng,
+            )
+        except GenerationError as exc:
+            last_realization_error = exc
+            failure_causes[str(exc)] += 1
+            continue
+        readings = [
+            analyze(
+                surface,
+                project.registry,
+                sentence_index=index,
+                tracing=True,
+            )
+            for index, surface in enumerate(
+                (*context_before, sentence, *context_after)
+            )
+        ]
+        reading = readings[len(context_before)]
+        try:
+            doc = run_document(readings, project.registry)
         except ArithmeticError as exc:
             last_realization_error = GenerationError(
                 "ordinary round trip rejected generated numeric values: "
@@ -4763,6 +4930,31 @@ def generate_candidate(
             )
             failure_causes[str(last_realization_error)] += 1
             continue
+        if rule.generation_context is not None:
+            actual_fact_counts = Counter(
+                "".join(
+                    ("_" + char.lower()) if char.isupper() else char
+                    for char in type(fact).__name__
+                ).lstrip("_")
+                for fact in doc.store.facts
+            )
+            missing_context = {
+                kind: required - actual_fact_counts[kind]
+                for kind, required in (
+                    rule.generation_context.required_fact_counts.items()
+                )
+                if actual_fact_counts[kind] < required
+            }
+            if missing_context:
+                last_realization_error = GenerationError(
+                    "context did not realize required facts: "
+                    + ", ".join(
+                        f"{kind} missing {count}"
+                        for kind, count in sorted(missing_context.items())
+                    )
+                )
+                failure_causes[str(last_realization_error)] += 1
+                continue
         results = doc.rule_results.get(reading.sentence_index, [])
         last_sentence = sentence
         last_bindings = requested
@@ -4771,6 +4963,8 @@ def generate_candidate(
         last_reading = reading
         last_optional_choices = optional_choices
         last_lexical_relaxations = lexical_relaxations
+        last_context_before = context_before
+        last_context_after = context_after
         target_results = [
             result for result in results if result.match.rule.id == rule.id
         ]
@@ -4824,6 +5018,8 @@ def generate_candidate(
         generation_mode=generation_mode,
         optional_choices=last_optional_choices,
         lexical_relaxations=last_lexical_relaxations,
+        context_before=last_context_before,
+        context_after=last_context_after,
     )
 
 

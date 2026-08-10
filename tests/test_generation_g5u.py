@@ -140,21 +140,15 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
     availability = list_rule_availability(project)
 
     assert len(availability) == 130
-    assert sum(item.supported for item in availability) == 119
-    assert sum(not item.supported for item in availability) == 11
+    assert sum(item.supported for item in availability) == 125
+    assert sum(not item.supported for item in availability) == 5
     assert all(
         not item.blockers
         or item.id
         in {
-                "arithmetic/affine-frame-relation-as-standard",
                 "arithmetic/dangling-comparative-safety",
                 "arithmetic/partition-membership-of-mass-measure-safety",
                 "arithmetic/ratio-split-of-to-possession-safety",
-                "arithmetic/sequential-percent-remainder-partition-anaphoric",
-                "arithmetic/sequential-percent-remainder-partition-prefix",
-                "arithmetic/sequential-percent-remainder-partition-completion",
-                "arithmetic/sequential-percent-remainder-partition-initial-share",
-                "arithmetic/sequential-percent-remainder-partition-remaining-share",
                 "logic-arithmetic/universal-all-have-incompatible-item-safety",
                 "logic-arithmetic/universal-all-have-quantity-pp-incompatible-item-safety",
             }

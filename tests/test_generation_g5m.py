@@ -161,20 +161,18 @@ def test_g5m_unlocks_exactly_the_preregistered_frontier() -> None:
     }
 
     assert len(availability) == 130
-    assert sum(item.supported for item in availability.values()) == 119
-    assert sum(not item.supported for item in availability.values()) == 11
+    assert sum(item.supported for item in availability.values()) == 125
+    assert sum(not item.supported for item in availability.values()) == 5
     assert all(
         availability[rule_id].supported for rule_id in GENERATIVE_GROUPS
     )
-    assert availability[
-        "arithmetic/sequential-percent-remainder-partition-anaphoric"
-    ].blockers == ("declared non-generative reader-only rule",)
-    assert availability[
-        "arithmetic/sequential-percent-remainder-partition-prefix"
-    ].blockers == ("declared non-generative reader-only rule",)
-    assert availability[
-        "arithmetic/sequential-percent-remainder-partition-completion"
-    ].blockers == ("declared non-generative reader-only rule",)
+    for rule_id in {
+        "arithmetic/sequential-percent-remainder-partition-anaphoric",
+        "arithmetic/sequential-percent-remainder-partition-prefix",
+        "arithmetic/sequential-percent-remainder-partition-completion",
+    }:
+        assert availability[rule_id].supported
+        assert availability[rule_id].generation == "contextual"
     for rule_id in {
         "arithmetic/partition-membership-of-mass-measure-safety",
         "arithmetic/ratio-split-of-to-possession-safety",

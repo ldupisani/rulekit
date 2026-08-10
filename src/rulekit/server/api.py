@@ -126,6 +126,8 @@ class GenerationRetestBody(BaseModel):
     lexical_relaxations: list[LexicalRelaxation] = Field(
         default_factory=list, max_length=16
     )
+    context_before: list[str] = Field(default_factory=list, max_length=8)
+    context_after: list[str] = Field(default_factory=list, max_length=8)
 
 
 class GenerationReadingBody(BaseModel):
@@ -1316,10 +1318,14 @@ def build_router(state: ServerState) -> APIRouter:
             rules = list_rule_availability(state.project)
         except GenerationError as exc:
             raise HTTPException(422, str(exc)) from exc
+        premise_rules = [rule for rule in rules if rule.generation != "safety"]
+        safety_rules = [rule for rule in rules if rule.generation == "safety"]
         return {
-            "rules": [rule.to_json() for rule in rules],
-            "supported": sum(rule.supported for rule in rules),
-            "total": len(rules),
+            "rules": [rule.to_json() for rule in premise_rules],
+            "safety_rules": [rule.to_json() for rule in safety_rules],
+            "supported": sum(rule.supported for rule in premise_rules),
+            "total": len(premise_rules),
+            "safety_total": len(safety_rules),
         }
 
     @router.get("/generation/asks")
@@ -1388,7 +1394,7 @@ def build_router(state: ServerState) -> APIRouter:
                     event = append_exploration(
                         state.project, candidate, selection
                     )
-                else:
+                elif body.generation_mode == "lexical_boundary":
                     if body.filler_identity is not None:
                         raise GenerationError(
                             "focused lexicon probes are strict-mode coverage; "
@@ -1405,6 +1411,18 @@ def build_router(state: ServerState) -> APIRouter:
                         rule_id=body.rule_id,
                         seed=seed,
                         generation_mode="lexical_boundary",
+                    )
+                else:
+                    if body.filler_identity is not None or body.filters:
+                        raise GenerationError(
+                            "safety-boundary generation does not use premise "
+                            "lexicon probes or structural filters"
+                        )
+                    candidate = generate_candidate(
+                        state.project,
+                        rule_id=body.rule_id,
+                        seed=seed,
+                        generation_mode="safety_boundary",
                     )
             except GenerationError as exc:
                 if selection is not None and body.generation_mode == "strict":
@@ -1467,6 +1485,8 @@ def build_router(state: ServerState) -> APIRouter:
                 origin=body.origin,
                 generation_mode=body.generation_mode,
                 lexical_relaxations=tuple(body.lexical_relaxations),
+                context_before=tuple(body.context_before),
+                context_after=tuple(body.context_after),
             )
         except GenerationError as exc:
             raise HTTPException(422, str(exc)) from exc
@@ -1510,6 +1530,8 @@ def build_router(state: ServerState) -> APIRouter:
                 origin=body.origin,
                 generation_mode=body.generation_mode,
                 lexical_relaxations=tuple(body.lexical_relaxations),
+                context_before=tuple(body.context_before),
+                context_after=tuple(body.context_after),
             )
         except GenerationError as exc:
             raise HTTPException(422, str(exc)) from exc

@@ -448,12 +448,21 @@ class MatchToken(StrictModel):
     # part-of-pool and partition statements; rules whose standard would become
     # mathematically irrelevant declare this narrower boundary explicitly.
     fraction_positive: bool = False
+    # GENERATION-ONLY rendering choice for standalone unit fractions in
+    # contexts where an explicit numerator is clearer ("one third" rather
+    # than bare "third"). Matcher acceptance remains unchanged.
+    generation_explicit_unit_fraction: bool = False
     # OPT-IN: a common-noun slot must be a complete argument, not a floating
     # bare singular. Names, resolved pronouns, counted nouns, possessed nouns,
     # and bare plurals are already complete; another common noun needs a
     # pack-declared definite article / possessive determiner immediately to
     # its left. Defaults False so existing slots are unchanged.
     referential: bool = False
+    # GENERATION-ONLY rendering choice for a referential noun whose required
+    # determiner is already an explicit preceding literal in the rule. The
+    # matcher still enforces `referential`; realization selects the bare head
+    # so the explicit literal and filler do not produce "the the rest".
+    generation_bare_reference: bool = False
     # OPT-IN exception to `referential`: nouns in this category may occur bare.
     # This is for independently licensed adverbial nouns ("by day", "at
     # night"), not a general weakening of noun-phrase definiteness.
@@ -626,7 +635,9 @@ class MatchToken(StrictModel):
                 or self.fraction_within_whole
                 or self.word_fraction_within_whole
                 or self.fraction_positive
+                or self.generation_explicit_unit_fraction
                 or self.referential
+                or self.generation_bare_reference
                 or self.bare_reference_category is not None
                 or self.bare_form
                 or self.finite_form
@@ -635,7 +646,8 @@ class MatchToken(StrictModel):
                     "a span slot takes no "
                     "type/cat/bare/counted/possessed/qualified/number/standalone/integer/"
                     "fraction_within_whole/word_fraction_within_whole/"
-                    "fraction_positive/referential/"
+                    "fraction_positive/generation_explicit_unit_fraction/"
+                    "referential/generation_bare_reference/"
                     "common_noun_cat/bare_form/finite_form"
                 )
         elif self.slot is not None and (self.type is None) == (self.cat is None):
@@ -677,8 +689,17 @@ class MatchToken(StrictModel):
             raise ValueError(
                 "`fraction_positive` only qualifies a `type: fraction` slot"
             )
+        if self.generation_explicit_unit_fraction and self.type != "fraction":
+            raise ValueError(
+                "`generation_explicit_unit_fraction` only qualifies a "
+                "`type: fraction` slot"
+            )
         if self.referential and self.slot is None:
             raise ValueError("`referential` only qualifies a slot")
+        if self.generation_bare_reference and not self.referential:
+            raise ValueError(
+                "`generation_bare_reference` requires `referential: true`"
+            )
         if self.bare_reference_category is not None and not self.referential:
             raise ValueError(
                 "`bare_reference_category` requires `referential: true`"
@@ -1143,16 +1164,44 @@ class FactEmit(StrictModel):
         return self
 
 
+class GenerationContextSentence(StrictModel):
+    """One declarative support sentence surrounding a generated target."""
+
+    sentence: list[MatchToken] = Field(min_length=1)
+    where: list[WherePredicate] = Field(default_factory=list)
+
+
+class GenerationContextDef(StrictModel):
+    """Minimum adjacent discourse required to review a contextual rule."""
+
+    before: list[GenerationContextSentence] = Field(default_factory=list)
+    after: list[GenerationContextSentence] = Field(default_factory=list)
+    required_fact_counts: dict[str, int] = Field(default_factory=dict)
+    target_commas_after: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _has_context(self) -> "GenerationContextDef":
+        if not self.before and not self.after:
+            raise ValueError("generation context needs a before or after sentence")
+        if any(count < 1 for count in self.required_fact_counts.values()):
+            raise ValueError("required contextual fact counts must be positive")
+        return self
+
+
 class PatternRule(StrictModel):
     id: str
     phase: Literal["read", "post-saturation"] = "read"
     # Most read rules describe prose that the Designer may present as a
-    # candidate premise. A reader-only rule preserves a narrow corpus
-    # compatibility surface that human review should not reproduce; a safety
-    # consumer recognizes bad or incomplete prose only to stop fallback folds
-    # from asserting a fact. Keeping those distinctions in rule data prevents
-    # the generator from presenting either class as valid authored prose.
-    generation: Literal["premise", "reader-only", "safety"] = "premise"
+    # candidate premise. A contextual rule is also reviewable, but only with
+    # generator-supplied adjacent discourse; a reader-only rule preserves a
+    # narrow corpus compatibility surface that human review should not
+    # reproduce; a safety consumer recognizes bad or incomplete prose only to
+    # stop fallback folds from asserting a fact. Keeping those distinctions in
+    # rule data prevents the generator from presenting invalid isolated prose.
+    generation: Literal[
+        "premise", "contextual", "reader-only", "safety"
+    ] = "premise"
+    generation_context: GenerationContextDef | None = None
     description: str | None = None
     # Opt in to promotion from an immediately pre-question detached `If`
     # sentence. Adjacency supplies scope, while this declaration proves that
@@ -1177,6 +1226,12 @@ class PatternRule(StrictModel):
 
     @model_validator(mode="after")
     def _satisfaction_contract_is_explicit(self) -> "PatternRule":
+        if self.generation == "contextual" and self.generation_context is None:
+            raise ValueError("a contextual rule needs `generation_context`")
+        if self.generation != "contextual" and self.generation_context is not None:
+            raise ValueError(
+                "`generation_context` requires `generation: contextual`"
+            )
         if self.question_assumption and (
             self.phase != "read" or "sentence" not in self.match
         ):

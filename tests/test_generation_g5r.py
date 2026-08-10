@@ -143,8 +143,8 @@ def test_g5r_unlocks_exactly_the_preregistered_rule() -> None:
     }
 
     assert len(availability) == 130
-    assert sum(item.supported for item in availability.values()) == 119
-    assert sum(not item.supported for item in availability.values()) == 11
+    assert sum(item.supported for item in availability.values()) == 125
+    assert sum(not item.supported for item in availability.values()) == 5
     assert availability[
         "arithmetic/anchored-relation-postfix-dimension"
     ].supported

@@ -186,8 +186,8 @@ def test_g5s_unlocks_exactly_the_preregistered_frontier() -> None:
     }
 
     assert len(availability) == 130
-    assert sum(item.supported for item in availability.values()) == 119
-    assert sum(not item.supported for item in availability.values()) == 11
+    assert sum(item.supported for item in availability.values()) == 125
+    assert sum(not item.supported for item in availability.values()) == 5
     assert availability["arithmetic/periodic-rate-every-span"].supported
     assert all(availability[rule_id].supported for rule_id in FUTURE_RULES)
     # G5t subsequently supplied the temporal-marker domain for the fourth

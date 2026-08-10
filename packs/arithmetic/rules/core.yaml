@@ -2478,17 +2478,16 @@ rules:
 
   - id: arithmetic/affine-frame-relation-as-standard
     phase: read
-    generation: reader-only
+    generation: premise
     description: >
       Narrow compatibility reader for the corpus-attested but non-standard
       possession wording "Anika has 4 more than twice the number of pencils
-      as Reeta". Human review rejected the broader generated nominal frame,
-      so this survivor is deliberately not a Designer premise target. It
-      requires two proper names, a finite possession-state verb, no location
-      adjunct, no appositive, and the complete count frame. Ordinary event or
-      common-noun variants remain declined; grammatical generated alternatives
-      use the `that` relative clause, the bare relative clause, or the
-      `as many ... as` family.
+      as Reeta". Human review rejected the broader nominal frame; this narrow
+      survivor remains reviewable in the Designer because its proper-name,
+      finite possession-state, no-adjunct, no-appositive, complete-count-frame
+      boundary is now explicit. Ordinary event or common-noun variants remain
+      declined; alternatives use the `that` relative clause, the bare relative
+      clause, or the `as many ... as` family.
     match:
       sentence:
         - {slot: who, type: name}
@@ -4162,25 +4161,27 @@ rules:
         - {slot: context, cat: sequential_partition_context}
         - {lit: with}
         - {slot: total, cat: sequential_partition_population, counted: true}
-        - {slot: first_share, type: fraction, fraction_within_whole: true}
-        - {slot: first_verb, cat: sequential_partition_verb}
+        - {slot: first_share, type: fraction, fraction_within_whole: true, fraction_positive: true, generation_explicit_unit_fraction: true}
+        - {slot: first_verb, cat: sequential_partition_verb, finite_form: true}
         - {slot: first_prep, cat: sequential_partition_preposition}
         - {slot: first_destination, cat: sequential_partition_destination, qualified: true}
-        - {slot: second_share, type: fraction, fraction_within_whole: true}
+        - {slot: second_share, type: fraction, fraction_within_whole: true, fraction_positive: true, generation_explicit_unit_fraction: true}
         - {lit: of}
         - {lit: the, consume_skipped: true}
         - {slot: remaining, cat: sequential_partition_remainder}
-        - {slot: second_verb, cat: sequential_partition_verb}
+        - {slot: second_verb, cat: sequential_partition_verb, finite_form: true}
         - {slot: second_prep, cat: sequential_partition_preposition}
         - {slot: second_destination, cat: sequential_partition_destination, qualified: true}
         - {lit: and}
         - {lit: the, consume_skipped: true}
-        - {slot: rest, cat: partition_remnant, referential: true}
-        - {slot: rest_verb, cat: sequential_partition_verb}
+        - {slot: rest, cat: partition_remnant, referential: true, generation_bare_reference: true}
+        - {slot: rest_verb, cat: sequential_partition_verb, finite_form: true}
         - {slot: rest_prep, cat: sequential_partition_preposition}
         - {slot: rest_destination, cat: sequential_partition_destination, qualified: true}
     where:
       - same_lemma: [first_verb, second_verb, rest_verb]
+      - number_compatible: [first_share, first_verb]
+      - number_compatible: [second_share, second_verb]
       - same_lemma: [first_prep, second_prep, rest_prep]
       - distinct_measure: [first_destination, second_destination, rest_destination]
     consumes: [total, first_share, second_share]
@@ -4208,11 +4209,21 @@ rules:
 
   - id: arithmetic/sequential-percent-remainder-partition-anaphoric
     phase: read
-    # This clause is valid only with a preceding collection anchor. The
-    # current single-sentence generator cannot yet fabricate that linked
-    # context, so presenting the clause alone as a valid specimen would be
-    # misleading. Reading support remains complete and inspectable.
-    generation: reader-only
+    # This clause is valid only with a preceding collection anchor. Contextual
+    # generation supplies that anchor and highlights this sentence as the
+    # review target rather than presenting the clause in isolation.
+    generation: contextual
+    generation_context:
+      before:
+        - sentence:
+            - {lit: a, at_start: true, consume_skipped: true}
+            - {slot: context_anchor, cat: sequential_partition_context}
+            - {slot: anchor_verb, cat: population_total_verb, finite_form: true}
+            - {slot: anchor_total, cat: sequential_partition_population, counted: true}
+          where:
+            - number_compatible: [context_anchor, anchor_verb]
+      required_fact_counts: {partition_quantity: 3}
+      target_commas_after: [first_destination, second_destination]
     description: >
       A complete staged allocation whose population total was stated in a
       preceding sentence: "A school has 800 pupils. 25% enrolled in science
@@ -4223,25 +4234,27 @@ rules:
       measure and holder are available.
     match:
       sentence:
-        - {slot: first_share, type: fraction, fraction_within_whole: true, at_start: true}
-        - {slot: first_verb, cat: sequential_partition_verb}
+        - {slot: first_share, type: fraction, fraction_within_whole: true, fraction_positive: true, generation_explicit_unit_fraction: true, at_start: true}
+        - {slot: first_verb, cat: sequential_partition_verb, finite_form: true}
         - {slot: first_prep, cat: sequential_partition_preposition}
         - {slot: first_destination, cat: sequential_partition_destination, qualified: true}
-        - {slot: second_share, type: fraction, fraction_within_whole: true}
+        - {slot: second_share, type: fraction, fraction_within_whole: true, fraction_positive: true, generation_explicit_unit_fraction: true}
         - {lit: of}
         - {lit: the, consume_skipped: true}
         - {slot: remaining, cat: sequential_partition_remainder}
-        - {slot: second_verb, cat: sequential_partition_verb}
+        - {slot: second_verb, cat: sequential_partition_verb, finite_form: true}
         - {slot: second_prep, cat: sequential_partition_preposition}
         - {slot: second_destination, cat: sequential_partition_destination, qualified: true}
         - {lit: and}
         - {lit: the, consume_skipped: true}
-        - {slot: rest, cat: partition_remnant, referential: true}
-        - {slot: rest_verb, cat: sequential_partition_verb}
+        - {slot: rest, cat: partition_remnant, referential: true, generation_bare_reference: true}
+        - {slot: rest_verb, cat: sequential_partition_verb, finite_form: true}
         - {slot: rest_prep, cat: sequential_partition_preposition}
         - {slot: rest_destination, cat: sequential_partition_destination, qualified: true}
     where:
       - same_lemma: [first_verb, second_verb, rest_verb]
+      - number_compatible: [first_share, first_verb]
+      - number_compatible: [second_share, second_verb]
       - same_lemma: [first_prep, second_prep, rest_prep]
       - distinct_measure: [first_destination, second_destination, rest_destination]
     satisfies: {first_verb: [subject]}
@@ -4257,7 +4270,34 @@ rules:
 
   - id: arithmetic/sequential-percent-remainder-partition-initial-share
     phase: read
-    generation: reader-only
+    generation: contextual
+    generation_context:
+      before:
+        - sentence:
+            - {lit: a, at_start: true, consume_skipped: true}
+            - {slot: context_anchor, cat: sequential_partition_context}
+            - {slot: anchor_verb, cat: population_total_verb, finite_form: true}
+            - {slot: anchor_total, cat: sequential_partition_population, counted: true}
+          where:
+            - number_compatible: [context_anchor, anchor_verb]
+      after:
+        - sentence:
+            - {slot: support_second_share, type: fraction, fraction_within_whole: true, fraction_positive: true, generation_explicit_unit_fraction: true, at_start: true}
+            - {lit: of}
+            - {lit: the, consume_skipped: true}
+            - {slot: support_remaining, cat: sequential_partition_remainder}
+            - {slot: support_second_verb, cat: sequential_partition_verb, finite_form: true}
+            - {slot: support_second_prep, cat: sequential_partition_preposition}
+            - {slot: support_second_destination, cat: sequential_partition_destination, qualified: true}
+          where:
+            - number_compatible: [support_second_share, support_second_verb]
+        - sentence:
+            - {lit: the, at_start: true, consume_skipped: true}
+            - {slot: support_rest, cat: partition_remnant, referential: true, generation_bare_reference: true}
+            - {slot: support_rest_verb, cat: sequential_partition_verb, finite_form: true}
+            - {slot: support_rest_prep, cat: sequential_partition_preposition}
+            - {slot: support_rest_destination, cat: sequential_partition_destination, qualified: true}
+      required_fact_counts: {partition_quantity: 3}
     description: >
       A sentence containing only the first whole-population percentage of a
       staged allocation: "25% enrolled in science courses." It remains an
@@ -4265,14 +4305,15 @@ rules:
       states a compatible percentage of the remaining population.
     match:
       sentence:
-        - {slot: first_share, type: fraction, fraction_within_whole: true, at_start: true}
-        - {slot: first_verb, cat: sequential_partition_verb}
+        - {slot: first_share, type: fraction, fraction_within_whole: true, fraction_positive: true, generation_explicit_unit_fraction: true, at_start: true}
+        - {slot: first_verb, cat: sequential_partition_verb, finite_form: true}
         - {slot: first_prep, cat: sequential_partition_preposition}
         - {slot: first_destination, cat: sequential_partition_destination, qualified: true}
     where:
       # The combined two-stage and complete forms contain "remaining" and
       # belong to their existing rules instead of this sentence-only shape.
       - absent: {cat: sequential_partition_remainder}
+      - number_compatible: [first_share, first_verb]
     satisfies: {first_verb: [subject]}
     consumes: [first_share]
     emits:
@@ -4283,7 +4324,31 @@ rules:
 
   - id: arithmetic/sequential-percent-remainder-partition-remaining-share
     phase: read
-    generation: reader-only
+    generation: contextual
+    generation_context:
+      before:
+        - sentence:
+            - {lit: a, at_start: true, consume_skipped: true}
+            - {slot: context_anchor, cat: sequential_partition_context}
+            - {slot: anchor_verb, cat: population_total_verb, finite_form: true}
+            - {slot: anchor_total, cat: sequential_partition_population, counted: true}
+          where:
+            - number_compatible: [context_anchor, anchor_verb]
+        - sentence:
+            - {slot: support_first_share, type: fraction, fraction_within_whole: true, fraction_positive: true, generation_explicit_unit_fraction: true, at_start: true}
+            - {slot: support_first_verb, cat: sequential_partition_verb, finite_form: true}
+            - {slot: support_first_prep, cat: sequential_partition_preposition}
+            - {slot: support_first_destination, cat: sequential_partition_destination, qualified: true}
+          where:
+            - number_compatible: [support_first_share, support_first_verb]
+      after:
+        - sentence:
+            - {lit: the, at_start: true, consume_skipped: true}
+            - {slot: support_rest, cat: partition_remnant, referential: true, generation_bare_reference: true}
+            - {slot: support_rest_verb, cat: sequential_partition_verb, finite_form: true}
+            - {slot: support_rest_prep, cat: sequential_partition_preposition}
+            - {slot: support_rest_destination, cat: sequential_partition_destination, qualified: true}
+      required_fact_counts: {partition_quantity: 3}
     description: >
       A sentence containing the second percentage, explicitly sized from the
       remainder left by the immediately preceding initial-share sentence:
@@ -4291,14 +4356,16 @@ rules:
       an older or non-adjacent percentage as its antecedent.
     match:
       sentence:
-        - {slot: second_share, type: fraction, fraction_within_whole: true, at_start: true}
+        - {slot: second_share, type: fraction, fraction_within_whole: true, fraction_positive: true, generation_explicit_unit_fraction: true, at_start: true}
         - {lit: of}
         - {lit: the, consume_skipped: true}
         - {slot: remaining, cat: sequential_partition_remainder}
-        - {slot: second_verb, cat: sequential_partition_verb}
+        - {slot: second_verb, cat: sequential_partition_verb, finite_form: true}
         - {slot: second_prep, cat: sequential_partition_preposition}
         - {slot: second_destination, cat: sequential_partition_destination, qualified: true}
     satisfies: {second_verb: [subject]}
+    where:
+      - number_compatible: [second_share, second_verb]
     consumes: [second_share]
     emits:
       - fact: sequential_partition_remaining_share
@@ -4308,9 +4375,27 @@ rules:
 
   - id: arithmetic/sequential-percent-remainder-partition-prefix
     phase: read
-    # Like the complete anaphoric rule, this needs linked discourse and must
-    # not be generated as a misleading isolated sentence.
-    generation: reader-only
+    # Like the complete anaphoric rule, this is generated only with its linked
+    # population anchor and immediately following completion sentence.
+    generation: contextual
+    generation_context:
+      before:
+        - sentence:
+            - {lit: a, at_start: true, consume_skipped: true}
+            - {slot: context_anchor, cat: sequential_partition_context}
+            - {slot: anchor_verb, cat: population_total_verb, finite_form: true}
+            - {slot: anchor_total, cat: sequential_partition_population, counted: true}
+          where:
+            - number_compatible: [context_anchor, anchor_verb]
+      after:
+        - sentence:
+            - {lit: the, at_start: true, consume_skipped: true}
+            - {slot: support_rest, cat: partition_remnant, referential: true, generation_bare_reference: true}
+            - {slot: support_rest_verb, cat: sequential_partition_verb, finite_form: true}
+            - {slot: support_rest_prep, cat: sequential_partition_preposition}
+            - {slot: support_rest_destination, cat: sequential_partition_destination, qualified: true}
+      required_fact_counts: {partition_quantity: 3}
+      target_commas_after: [first_destination]
     description: >
       The first two stages of an allocation whose final "the rest" clause is
       deferred to the next sentence: "25% enrolled in science courses, 20%
@@ -4320,19 +4405,21 @@ rules:
       compatible rest clause and prior discourse supplies one population.
     match:
       sentence:
-        - {slot: first_share, type: fraction, fraction_within_whole: true, at_start: true}
-        - {slot: first_verb, cat: sequential_partition_verb}
+        - {slot: first_share, type: fraction, fraction_within_whole: true, fraction_positive: true, generation_explicit_unit_fraction: true, at_start: true}
+        - {slot: first_verb, cat: sequential_partition_verb, finite_form: true}
         - {slot: first_prep, cat: sequential_partition_preposition}
         - {slot: first_destination, cat: sequential_partition_destination, qualified: true}
-        - {slot: second_share, type: fraction, fraction_within_whole: true}
+        - {slot: second_share, type: fraction, fraction_within_whole: true, fraction_positive: true, generation_explicit_unit_fraction: true}
         - {lit: of}
         - {lit: the, consume_skipped: true}
         - {slot: remaining, cat: sequential_partition_remainder}
-        - {slot: second_verb, cat: sequential_partition_verb}
+        - {slot: second_verb, cat: sequential_partition_verb, finite_form: true}
         - {slot: second_prep, cat: sequential_partition_preposition}
         - {slot: second_destination, cat: sequential_partition_destination, qualified: true}
     where:
       - same_lemma: [first_verb, second_verb]
+      - number_compatible: [first_share, first_verb]
+      - number_compatible: [second_share, second_verb]
       - same_lemma: [first_prep, second_prep]
       - distinct_measure: [first_destination, second_destination]
       # Prevent this prefix rule from also firing on the existing complete
@@ -4350,7 +4437,36 @@ rules:
 
   - id: arithmetic/sequential-percent-remainder-partition-completion
     phase: read
-    generation: reader-only
+    generation: contextual
+    generation_context:
+      before:
+        - sentence:
+            - {lit: a, at_start: true, consume_skipped: true}
+            - {slot: context_anchor, cat: sequential_partition_context}
+            - {slot: anchor_verb, cat: population_total_verb, finite_form: true}
+            - {slot: anchor_total, cat: sequential_partition_population, counted: true}
+          where:
+            - number_compatible: [context_anchor, anchor_verb]
+        - sentence:
+            - {slot: support_first_share, type: fraction, fraction_within_whole: true, fraction_positive: true, generation_explicit_unit_fraction: true, at_start: true}
+            - {slot: support_first_verb, cat: sequential_partition_verb, finite_form: true}
+            - {slot: support_first_prep, cat: sequential_partition_preposition}
+            - {slot: support_first_destination, cat: sequential_partition_destination, qualified: true}
+            - {lit: ",", consume_skipped: true}
+            - {slot: support_second_share, type: fraction, fraction_within_whole: true, fraction_positive: true, generation_explicit_unit_fraction: true}
+            - {lit: of}
+            - {lit: the, consume_skipped: true}
+            - {slot: support_remaining, cat: sequential_partition_remainder}
+            - {slot: support_second_verb, cat: sequential_partition_verb, finite_form: true}
+            - {slot: support_second_prep, cat: sequential_partition_preposition}
+            - {slot: support_second_destination, cat: sequential_partition_destination, qualified: true}
+          where:
+            - same_lemma: [support_first_verb, support_second_verb]
+            - number_compatible: [support_first_share, support_first_verb]
+            - number_compatible: [support_second_share, support_second_verb]
+            - same_lemma: [support_first_prep, support_second_prep]
+            - distinct_measure: [support_first_destination, support_second_destination]
+      required_fact_counts: {partition_quantity: 3}
     description: >
       A sentence-initial "the rest" clause that names the final destination
       of a staged allocation. It remains unresolved unless the immediately
@@ -4358,8 +4474,8 @@ rules:
     match:
       sentence:
         - {lit: the, at_start: true, consume_skipped: true}
-        - {slot: rest, cat: partition_remnant, referential: true}
-        - {slot: rest_verb, cat: sequential_partition_verb}
+        - {slot: rest, cat: partition_remnant, referential: true, generation_bare_reference: true}
+        - {slot: rest_verb, cat: sequential_partition_verb, finite_form: true}
         - {slot: rest_prep, cat: sequential_partition_preposition}
         - {slot: rest_destination, cat: sequential_partition_destination, qualified: true}
     emits:

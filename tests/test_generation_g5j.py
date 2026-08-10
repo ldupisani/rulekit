@@ -117,14 +117,14 @@ def test_g5j_unlocks_exactly_the_preregistered_frontier() -> None:
     }
 
     assert len(availability) == 130
-    assert sum(item.supported for item in availability.values()) == 119
-    assert sum(not item.supported for item in availability.values()) == 11
+    assert sum(item.supported for item in availability.values()) == 125
+    assert sum(not item.supported for item in availability.values()) == 5
     assert availability[
         "arithmetic/dangling-comparative-safety"
     ].blockers == ("declared non-generative safety consumer",)
     assert availability[
         "arithmetic/affine-frame-relation-as-standard"
-    ].blockers == ("declared non-generative reader-only rule",)
+    ].supported
     assert all(availability[rule_id].supported for rule_id in NEWLY_SUPPORTED)
     assert all(
         "unsupported sense 'comparative'" not in blocker
