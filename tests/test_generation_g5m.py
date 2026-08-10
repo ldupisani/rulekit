@@ -34,6 +34,26 @@ EXPECTED_GROUPS = {
         ("item", "std"),
     ),
     "arithmetic/anchored-relation-postfix": (("item", "std"),),
+    "arithmetic/sequential-percent-remainder-partition": (
+        ("first_destination", "second_destination", "rest_destination"),
+    ),
+    "arithmetic/sequential-percent-remainder-partition-anaphoric": (
+        ("first_destination", "second_destination", "rest_destination"),
+    ),
+    "arithmetic/sequential-percent-remainder-partition-prefix": (
+        ("first_destination", "second_destination"),
+    ),
+}
+
+READER_ONLY_GROUPS = {
+    "arithmetic/sequential-percent-remainder-partition-anaphoric",
+    "arithmetic/sequential-percent-remainder-partition-prefix",
+}
+
+GENERATIVE_GROUPS = {
+    rule_id: groups
+    for rule_id, groups in EXPECTED_GROUPS.items()
+    if rule_id not in READER_ONLY_GROUPS
 }
 
 
@@ -127,7 +147,7 @@ def test_g5m_profiles_the_complete_distinct_measure_class() -> None:
     }
 
     assert set(rules) == set(EXPECTED_GROUPS)
-    assert sum(len(groups) for groups in EXPECTED_GROUPS.values()) == 5
+    assert sum(len(groups) for groups in EXPECTED_GROUPS.values()) == 8
     assert {
         rule_id: _distinct_measure_groups(rule)
         for rule_id, rule in rules.items()
@@ -140,21 +160,30 @@ def test_g5m_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 118
-    assert sum(item.supported for item in availability.values()) == 116
-    assert sum(not item.supported for item in availability.values()) == 2
+    assert len(availability) == 124
+    assert sum(item.supported for item in availability.values()) == 117
+    assert sum(not item.supported for item in availability.values()) == 7
     assert all(
-        availability[rule_id].supported for rule_id in EXPECTED_GROUPS
+        availability[rule_id].supported for rule_id in GENERATIVE_GROUPS
     )
+    assert availability[
+        "arithmetic/sequential-percent-remainder-partition-anaphoric"
+    ].blockers == ("declared non-generative reader-only rule",)
+    assert availability[
+        "arithmetic/sequential-percent-remainder-partition-prefix"
+    ].blockers == ("declared non-generative reader-only rule",)
+    assert availability[
+        "arithmetic/sequential-percent-remainder-partition-completion"
+    ].blockers == ("declared non-generative reader-only rule",)
     assert all(
         "where predicate 'distinct_measure'" not in blocker
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 286
+    assert len(exploration_status(project)["fillers"]) == 293
 
 
-@pytest.mark.parametrize("rule_id", sorted(EXPECTED_GROUPS))
+@pytest.mark.parametrize("rule_id", sorted(GENERATIVE_GROUPS))
 def test_every_distinct_measure_rule_generates_exact_distinct_keys(
     rule_id: str,
 ) -> None:
@@ -174,7 +203,7 @@ def test_every_distinct_measure_rule_generates_exact_distinct_keys(
 
     assert candidate.generator_version == "g6-strict-boundary-modes"
     assert candidate.target_status == "matched"
-    assert len(rows) == len(EXPECTED_GROUPS[rule_id])
+    assert len(rows) == len(GENERATIVE_GROUPS[rule_id])
     assert all(row.status == "passed" for row in rows)
     assert all("were distinct measure keys" in row.reason for row in rows)
     assert all(

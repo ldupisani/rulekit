@@ -490,13 +490,18 @@ def test_boundary_mode_survives_retest_and_review_without_counting_coverage(
 def test_gsm8k_generation_fixtures_make_every_premise_rule_available() -> None:
     availability = list_rule_availability(load_project(Path("projects/gsm8k")))
 
-    assert len(availability) == 111
+    assert len(availability) == 117
     blocked = {
         rule.id: rule for rule in availability if not rule.supported
     }
     assert set(blocked) == {
         "arithmetic/affine-frame-relation-as-standard",
         "arithmetic/dangling-comparative-safety",
+        "arithmetic/sequential-percent-remainder-partition-anaphoric",
+        "arithmetic/sequential-percent-remainder-partition-prefix",
+        "arithmetic/sequential-percent-remainder-partition-completion",
+        "arithmetic/sequential-percent-remainder-partition-initial-share",
+        "arithmetic/sequential-percent-remainder-partition-remaining-share",
     }
     assert blocked[
         "arithmetic/affine-frame-relation-as-standard"
@@ -505,6 +510,31 @@ def test_gsm8k_generation_fixtures_make_every_premise_rule_available() -> None:
     )
     assert blocked["arithmetic/dangling-comparative-safety"].blockers == (
         "declared non-generative safety consumer",
+    )
+    assert blocked[
+        "arithmetic/sequential-percent-remainder-partition-anaphoric"
+    ].blockers == (
+        "declared non-generative reader-only rule",
+    )
+    assert blocked[
+        "arithmetic/sequential-percent-remainder-partition-prefix"
+    ].blockers == (
+        "declared non-generative reader-only rule",
+    )
+    assert blocked[
+        "arithmetic/sequential-percent-remainder-partition-completion"
+    ].blockers == (
+        "declared non-generative reader-only rule",
+    )
+    assert blocked[
+        "arithmetic/sequential-percent-remainder-partition-initial-share"
+    ].blockers == (
+        "declared non-generative reader-only rule",
+    )
+    assert blocked[
+        "arithmetic/sequential-percent-remainder-partition-remaining-share"
+    ].blockers == (
+        "declared non-generative reader-only rule",
     )
 
 

@@ -426,6 +426,39 @@ categories:
             Remnant nouns that support the plural subset construction "the
             rest are ...". Singular `remainder` remains available to other
             remnant rules but is not interchangeable with this construction.
+    sequential_partition_context:
+        parent: noun
+        notes: >
+            Settings that can explicitly contain one finite population in a
+            staged allocation statement.
+    sequential_partition_population:
+        parent: noun
+        notes: >
+            Countable populations that can be divided by successive shares.
+    sequential_partition_destination:
+        parent: noun
+        notes: >
+            Destination heads used to distinguish the subsets in a staged
+            allocation. The full qualified phrase remains the subset key.
+    academic_course_modifier:
+        parent: adjective
+        notes: >
+            Academic fields that can qualify a course destination in a staged
+            enrollment allocation.
+    sequential_partition_remainder:
+        parent: adjective
+        notes: >
+            A marker saying that the next share is taken from the pool left
+            after earlier shares, rather than from the original total.
+    sequential_partition_verb:
+        parent: quantity_event_verb
+        notes: >
+            Predicates that assign population members to a destination.
+    sequential_partition_preposition:
+        parent: preposition
+        notes: >
+            Prepositions that connect a staged-allocation predicate to its
+            destination.
     predeterminer_multiplier:
         parent: quantifier
         notes: >
@@ -1635,7 +1668,9 @@ members:
     # necessarily disjoint.
     quantity_event_participant:
         [animal, alpaca, dog, cat, fish, bird, rabbit, hamster]
-    animate_subject_verb: [take, takes, took, teach, teaches, taught]
+    animate_subject_verb:
+        [enroll, enrolled, enrolling, enrolls, take, takes, took, teach,
+         teaches, taught]
     animate_object_verb: [teach, teaches, taught]
     # A book can hold a page/count quantity even though it is neither animate
     # nor a location. Other common nouns enter this positive role only beside
@@ -1713,6 +1748,13 @@ members:
     price_anaphor: [price, cost]
     remnant: [remainder, rest]
     partition_remnant: [rest]
+    sequential_partition_context: [university]
+    sequential_partition_population: [student]
+    sequential_partition_destination: [course]
+    academic_course_modifier: [business, humanities, science]
+    sequential_partition_remainder: [remaining]
+    sequential_partition_verb: [enroll, enrolls, enrolled, enrolling]
+    sequential_partition_preposition: [in]
     predeterminer_multiplier: [double, triple]
     desire: [want, wanted, wanting, wants]
     finite_desire: [want, wanted, wants]
@@ -1781,6 +1823,7 @@ members:
     purpose_compatible_verb: [jumped, ran, travel, traveled, travels, walked]
     membership_collection_noun: [animal]
 attribute_compatibility:
+    academic_course_modifier: [sequential_partition_destination]
     color_attribute: [colorable_noun]
     # Multiple compatible noun categories are intentional. Either category
     # licenses a pair; noun membership is not forced into one artificial class.

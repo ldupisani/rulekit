@@ -1022,6 +1022,124 @@ class RestQuantity(Fact):
 
 
 @dataclass(frozen=True)
+class SequentialPartition(Fact):
+    """A complete three-way allocation anchored by prior discourse.
+
+    The first fraction is taken from the whole prior collection, the second
+    from its remainder, and the final attribute receives what is left. The
+    premise does not repeat the collection noun, so this remains a distinct
+    unresolved fact until its synthesizer finds exactly one prior collection
+    measure and holder. It then emits three ordinary ``PartitionQuantity``
+    facts; every ask continues to consume the established partition contract.
+    """
+
+    first_attribute: str
+    first_fraction: float
+    second_attribute: str
+    second_fraction: float
+    rest_attribute: str
+    verb: str
+
+    def key(self) -> tuple:
+        return (
+            "sequential_partition",
+            self.provenance.sentence,
+            self.first_attribute,
+            self.second_attribute,
+            self.rest_attribute,
+            self.verb,
+        )
+
+    def value_part(self) -> Any:
+        return (self.first_fraction, self.second_fraction)
+
+
+@dataclass(frozen=True)
+class SequentialPartitionPrefix(Fact):
+    """The first two stages of a partition completed by later discourse.
+
+    This fact deliberately carries no population or final destination.  A
+    synthesizer may combine it only with an immediately following
+    ``SequentialPartitionRemainder``; the resulting complete partition then
+    uses the ordinary unique-prior-collection resolution path.
+    """
+
+    first_attribute: str
+    first_fraction: float
+    second_attribute: str
+    second_fraction: float
+    verb: str
+
+    def key(self) -> tuple:
+        return (
+            "sequential_partition_prefix",
+            self.provenance.sentence,
+            self.first_attribute,
+            self.second_attribute,
+            self.verb,
+        )
+
+    def value_part(self) -> Any:
+        return (self.first_fraction, self.second_fraction)
+
+
+@dataclass(frozen=True)
+class SequentialPartitionRemainder(Fact):
+    """A later ``the rest ...`` clause completing a staged partition."""
+
+    rest_attribute: str
+    verb: str
+
+    def key(self) -> tuple:
+        return (
+            "sequential_partition_remainder",
+            self.provenance.sentence,
+            self.rest_attribute,
+            self.verb,
+        )
+
+
+@dataclass(frozen=True)
+class SequentialPartitionInitialShare(Fact):
+    """The first whole-pool percentage in a sentence-split allocation."""
+
+    first_attribute: str
+    first_fraction: float
+    verb: str
+
+    def key(self) -> tuple:
+        return (
+            "sequential_partition_initial_share",
+            self.provenance.sentence,
+            self.first_attribute,
+            self.verb,
+        )
+
+    def value_part(self) -> Any:
+        return self.first_fraction
+
+
+@dataclass(frozen=True)
+class SequentialPartitionRemainingShare(Fact):
+    """A percentage of the remainder after a preceding initial share."""
+
+    second_attribute: str
+    second_fraction: float
+    verb: str
+
+    def key(self) -> tuple:
+        return (
+            "sequential_partition_remaining_share",
+            self.provenance.sentence,
+            self.second_attribute,
+            self.verb,
+        )
+
+    def value_part(self) -> Any:
+        return self.second_fraction
+
+
+@dataclass(frozen=True)
 class PartitionQuantity(Fact):
     """'Ten of THEM are yellow' — N members of a prior collection share an
     attribute. `collection` starts as the plural pronoun's raw word ('them'/

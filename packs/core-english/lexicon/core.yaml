@@ -356,6 +356,7 @@ entries:
     age: {senses: [noun], plural: ages}
     amount: {senses: [noun], plural: amounts}
     number: {senses: [noun], plural: numbers}
+    percentage: {senses: [noun], plural: percentages}
     price: {senses: [noun], plural: prices}
     # Generic mass currency language is needed by the core arithmetic
     # relation grammar; corpus-mined packs may extend the category with
@@ -390,6 +391,14 @@ entries:
     student: {senses: [noun], plural: students}
     head: {senses: [noun], plural: heads}
     university: {senses: [noun], plural: universities}
+    course: {senses: [noun], plural: courses}
+    science: {senses: [noun, adjective], plural: sciences}
+    business: {senses: [noun, adjective], plural: businesses}
+    humanities: {senses: [noun, adjective]}
+    enroll: {senses: [verb], number: plural}
+    enrolls: {senses: [verb], number: singular, verb: {lemma: enroll}}
+    enrolled: {senses: [verb], verb: {lemma: enroll}}
+    enrolling: {senses: [verb], verb: {lemma: enroll}}
     teach: {senses: [verb]}
     teaches: {senses: [verb], verb: {lemma: teach}}
     taught: {senses: [verb], verb: {lemma: teach}}
@@ -446,5 +455,6 @@ entries:
     beige: {senses: [adjective]}
     turquoise: {senses: [adjective]}
     violet: {senses: [adjective]}
+    remaining: {senses: [adjective]}
     small: {senses: [adjective]}
     large: {senses: [adjective]}

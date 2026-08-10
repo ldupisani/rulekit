@@ -559,6 +559,12 @@ def _raw_domain(
                 for filler in _possessed_fillers(reg, fixtures)
                 if reg.word_in_category(filler.identity, token.cat)
             ]
+        if token.qualified:
+            return [
+                filler
+                for filler in _qualified_fillers(reg)
+                if reg.word_in_category(filler.identity, token.cat)
+            ]
         root = reg.root_sense(token.cat)
         if root == "noun" and token.number == "plural":
             return [
@@ -840,6 +846,8 @@ def _broader_lexical_domain(
             fillers = _counted_fillers(reg)
         elif token.possessed:
             fillers = _possessed_fillers(reg, fixtures)
+        elif token.qualified:
+            fillers = _qualified_fillers(reg)
         elif root == "noun" and token.number == "plural":
             fillers = [
                 _Filler(

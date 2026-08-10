@@ -410,6 +410,12 @@ class MatchToken(StrictModel):
     # weakening the schema invariant that a slot names exactly one type OR
     # category gate. Defaults False so existing category slots are unchanged.
     possessed: bool = False
+    # OPT-IN: a category-gated noun must also be an attribute/compound merged
+    # unit ("science courses", not bare "courses"). This composes the
+    # existing `type: qualified` structure with a semantic noun category, so
+    # rules can constrain the head without losing the full qualified phrase.
+    # Defaults False so existing category slots are unchanged.
+    qualified: bool = False
     # OPT-IN grammatical-number constraint on any scalar slot. The matched
     # unit must carry the declared singular/plural feature; it never infers a
     # word's number. This is separate from `same_number`, which relates slots.
@@ -627,7 +633,7 @@ class MatchToken(StrictModel):
             ):
                 raise ValueError(
                     "a span slot takes no "
-                    "type/cat/bare/counted/possessed/number/standalone/integer/"
+                    "type/cat/bare/counted/possessed/qualified/number/standalone/integer/"
                     "fraction_within_whole/word_fraction_within_whole/"
                     "fraction_positive/referential/"
                     "common_noun_cat/bare_form/finite_form"
@@ -638,12 +644,18 @@ class MatchToken(StrictModel):
             raise ValueError("`counted` only qualifies a category-gated slot")
         if self.possessed and self.cat is None:
             raise ValueError("`possessed` only qualifies a category-gated slot")
+        if self.qualified and self.cat is None:
+            raise ValueError("`qualified` only qualifies a category-gated slot")
         if self.common_noun_cat is not None and self.type != "entity":
             raise ValueError(
                 "`common_noun_cat` only qualifies a `type: entity` slot"
             )
         if self.counted and self.possessed:
             raise ValueError("a category slot cannot be both counted and possessed")
+        if self.counted and self.qualified:
+            raise ValueError("a category slot cannot be both counted and qualified")
+        if self.possessed and self.qualified:
+            raise ValueError("a category slot cannot be both possessed and qualified")
         if self.number is not None and self.slot is None:
             raise ValueError("`number` only qualifies a slot")
         if self.standalone and self.type != "number":
@@ -686,6 +698,8 @@ class MatchToken(StrictModel):
             raise ValueError(f"`bare` contradicts type {self.type!r} (always false)")
         if self.bare and self.possessed:
             raise ValueError("`bare` contradicts `possessed` (always false)")
+        if self.bare and self.qualified:
+            raise ValueError("`bare` contradicts `qualified` (always false)")
         if self.consume_skipped and self.lit is None:
             raise ValueError("`consume_skipped` only qualifies a lit")
         if self.at_start and self.opt is not None:
@@ -1052,7 +1066,10 @@ class FactEmit(StrictModel):
     fact: Literal[
         "age_at_year", "quantity", "relation", "membership", "subset", "predication",
         "before", "fraction_quantity", "rest_quantity", "partition_quantity",
-        "ratio_quantity", "goal", "group_total", "rate", "discount",
+        "sequential_partition", "sequential_partition_prefix",
+        "sequential_partition_remainder", "sequential_partition_initial_share",
+        "sequential_partition_remaining_share", "ratio_quantity", "goal",
+        "group_total", "rate", "discount",
         "percent_change", "atom", "quantified", "quantified_quantity",
         "quantified_adjustment",
         "class_refinement", "conditional",

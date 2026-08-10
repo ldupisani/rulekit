@@ -124,6 +124,7 @@ from . import (  # noqa: E402,F401  (import registers each handler)
     unit_price_from_total as _unit_price_from_total,
     cost_of_quantity as _cost_of_quantity,
     partition_complement as _partition_complement,
+    partition_percentage as _partition_percentage,
     label_difference as _label_difference,
     item_cost as _item_cost,
     deficit as _deficit,

@@ -424,6 +424,31 @@ def _partitive_licenses_noun(reading: Reading, unit: Unit, reg: Registry) -> boo
     return False
 
 
+def _compatible_head_licenses_adjective(
+    reading: Reading, unit: Unit, reg: Registry
+) -> bool:
+    """A declared compatible noun head selects an adjective reading.
+
+    Some ordinary attributive words also have independent noun readings
+    ("science courses", "business courses"). Obligation coverage alone
+    cannot distinguish the two senses because neither carries an obligation.
+    The project compatibility table is already the lexical authority for the
+    modifier/head pair, so an immediately following noun head makes that
+    declared adjective reading deterministic without a general part-of-speech
+    preference.
+    """
+
+    index = reading.units.index(unit)
+    if index + 1 >= len(reading.units):
+        return False
+    head = reading.units[index + 1]
+    if "noun" not in head.senses():
+        return False
+    modifier = unit.features.get("lemma", unit.features.get("fold", ""))
+    head_word = head.features.get("lemma", head.features.get("fold", ""))
+    return reg.attribute_applies_to(modifier, head_word)
+
+
 def _state_licenses_terminal_remnant_adjective(
     reading: Reading, unit: Unit, reg: Registry
 ) -> bool:
@@ -475,6 +500,11 @@ def disambiguate(reading: Reading, reg: Registry) -> Reading:
     options = []
     for u in ambiguous:
         senses = u.senses()
+        if "adjective" in senses and _compatible_head_licenses_adjective(
+            reading, u, reg
+        ):
+            options.append(["adjective"])
+            continue
         if "adjective" in senses and _state_licenses_terminal_remnant_adjective(
             reading, u, reg
         ):

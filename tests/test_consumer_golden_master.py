@@ -222,6 +222,16 @@ GOLDEN = [
      'partition-complement', 'decline', None, "0 partition facts known for 'bird'/'yellow'"),
     ('gsm8k', 'How many green marbles are there?',
      'partition-complement', 'decline', None, "0 partition facts known for 'marble'/'green'"),
+    ('curated', 'What percentage of the students enrolled in science courses?',
+     'partition-percentage', 'decline', None,
+     "resolved partition count is 0 for 'student'/'science"),
+    ('curated',
+     'In a university with 0 students, 25% enrolled in science courses, '
+     '20% of the remaining enrolled in business courses, and the rest enrolled '
+     'in humanities courses. What percentage of the students enrolled in '
+     'humanities courses?',
+     'partition-percentage', 'decline', None,
+     "partition total is not positive for 'university'/'st"),
     ('scratch', 'Is it true that Oxford Circus is designed by a British musician?',
      'passive-agent-verdict', 'verdict', 'undetermined', 'no agent relation decides it'),
     ('gsm8k', 'What is the speed of an object that took 4 seconds to travel 60 meters?',
@@ -415,7 +425,7 @@ def test_the_guards_are_the_bulk_of_the_coverage():
 
 # --- the coverage of this file, measured and enforced ----------------------
 
-_GUARD_FLOOR = 111  # guards WITH a probe: raise as probes are added, never lower
+_GUARD_FLOOR = 115  # guards WITH a probe: raise as probes are added, never lower
 _GAP_CEILING = 0    # guards WITHOUT one: lower as probes are added, never raise
 
 # The denominator is 91, and it was 92 until the boundary bug above was fixed:
@@ -502,6 +512,11 @@ _COVERED_BY_UNIT_TEST = {
     ("location-witnesses", "question states"),
     ("location-witnesses", "conflicting direct location evidence for"),
     ("location-witnesses", "observed departure conflicts with the st"),
+    # The ask is category-gated to the single explicitly stated population
+    # holder, and its premise rule computes every partition within the total.
+    # Direct stores probe the consumer's defensive restatement of both facts.
+    ("partition-percentage", "partition total needs exactly one holder"),
+    ("partition-percentage", "partition value"),
 }
 
 

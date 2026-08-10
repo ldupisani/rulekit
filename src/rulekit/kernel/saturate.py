@@ -1434,6 +1434,287 @@ def _partition_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
     return out
 
 
+def _resolve_sequential_population(
+    store: FactStore,
+    reg: Registry,
+    sentence: int,
+    log: ArithmeticLog,
+    source: str,
+) -> tuple[str, float] | None:
+    """Resolve one earlier collection measure, holder, and finite total."""
+    prior = [
+        quantity
+        for quantity in store.by_kind(Quantity)
+        if quantity.provenance.sentence < sentence
+        and quantity.provenance.source != "synth/partition-membership"
+    ]
+    winner = deixis.resolve(
+        [
+            deixis.Referent(dimension=deixis.DISCOURSE, key=measure)
+            for measure in sorted({quantity.measure for quantity in prior})
+        ],
+        deixis.Origo(sentence=sentence),
+        deixis.constant,
+        dimension=deixis.DISCOURSE,
+        journal=log.journal,
+        source=source,
+    )
+    if winner is None:
+        return None
+    measure = winner.key
+    holders = {
+        quantity.entity for quantity in prior if quantity.measure == measure
+    }
+    if len(holders) != 1:
+        return None
+    total = _pool_before(store, reg, sentence, measure, log, source)
+    if total is None or total <= 0:
+        return None
+    return measure, total
+
+
+def _sequential_partition_complement_synth(
+    store: FactStore, reg: Registry, log: ArithmeticLog
+) -> list[Fact]:
+    """Resolve adjacent first-share/rest sentences as a two-way split."""
+    from .model import (
+        PartitionQuantity,
+        SequentialPartitionInitialShare,
+        SequentialPartitionRemainder,
+    )
+
+    out: list[Fact] = []
+    initial_shares = store.by_kind(SequentialPartitionInitialShare)
+    for remainder in store.by_kind(SequentialPartitionRemainder):
+        candidates = [
+            initial
+            for initial in initial_shares
+            if initial.provenance.sentence == remainder.provenance.sentence - 1
+            and initial.verb == remainder.verb
+            and initial.first_attribute != remainder.rest_attribute
+        ]
+        if len(candidates) != 1:
+            continue
+        initial = candidates[0]
+        if not 0.0 <= initial.first_fraction <= 1.0:
+            continue
+        resolved = _resolve_sequential_population(
+            store,
+            reg,
+            remainder.provenance.sentence,
+            log,
+            "synth/sequential-partition-complement",
+        )
+        if resolved is None:
+            continue
+        measure, total = resolved
+        first = evaluate(
+            "first_fraction * total",
+            {"first_fraction": initial.first_fraction, "total": total},
+            log,
+            source="synth/sequential-partition-complement",
+        )
+        rest = evaluate(
+            "total - first",
+            {"total": total, "first": first},
+            log,
+            source="synth/sequential-partition-complement",
+        )
+        for attribute, value in (
+            (initial.first_attribute, first),
+            (remainder.rest_attribute, rest),
+        ):
+            out.append(
+                PartitionQuantity(
+                    provenance=Provenance(
+                        source="synth/sequential-partition-complement",
+                        sentence=remainder.provenance.sentence,
+                        assumption=(
+                            initial.provenance.assumption
+                            or remainder.provenance.assumption
+                        ),
+                    ),
+                    collection=measure,
+                    attribute=attribute,
+                    value=value,
+                    verb=initial.verb,
+                )
+            )
+    return out
+
+
+def _sequential_partition_prefix_join_synth(
+    store: FactStore, reg: Registry, log: ArithmeticLog
+) -> list[Fact]:
+    """Join adjacent first-share and remaining-share sentences."""
+    from .model import (
+        SequentialPartitionInitialShare,
+        SequentialPartitionPrefix,
+        SequentialPartitionRemainingShare,
+    )
+
+    out: list[Fact] = []
+    initial_shares = store.by_kind(SequentialPartitionInitialShare)
+    for remaining_share in store.by_kind(SequentialPartitionRemainingShare):
+        candidates = [
+            initial
+            for initial in initial_shares
+            if initial.provenance.sentence
+            == remaining_share.provenance.sentence - 1
+            and initial.verb == remaining_share.verb
+            and initial.first_attribute != remaining_share.second_attribute
+        ]
+        if len(candidates) != 1:
+            continue
+        initial = candidates[0]
+        out.append(
+            SequentialPartitionPrefix(
+                provenance=Provenance(
+                    source="synth/sequential-partition-prefix-join",
+                    sentence=remaining_share.provenance.sentence,
+                    assumption=(
+                        initial.provenance.assumption
+                        or remaining_share.provenance.assumption
+                    ),
+                ),
+                first_attribute=initial.first_attribute,
+                first_fraction=initial.first_fraction,
+                second_attribute=remaining_share.second_attribute,
+                second_fraction=remaining_share.second_fraction,
+                verb=initial.verb,
+            )
+        )
+    return out
+
+
+def _sequential_partition_join_synth(
+    store: FactStore, reg: Registry, log: ArithmeticLog
+) -> list[Fact]:
+    """Join an allocation prefix to its immediately following rest clause.
+
+    ``The rest`` is discourse-dependent, but this construction has a precise
+    local antecedent: the two staged percentages in the previous sentence.
+    Requiring exactly one compatible prefix in that sentence prevents an old
+    or competing allocation from being selected by recency guesswork.
+    """
+    from .model import (
+        SequentialPartition,
+        SequentialPartitionPrefix,
+        SequentialPartitionRemainder,
+    )
+
+    out: list[Fact] = []
+    prefixes = store.by_kind(SequentialPartitionPrefix)
+    for remainder in store.by_kind(SequentialPartitionRemainder):
+        candidates = [
+            prefix
+            for prefix in prefixes
+            if prefix.provenance.sentence == remainder.provenance.sentence - 1
+            and prefix.verb == remainder.verb
+            and remainder.rest_attribute
+            not in {prefix.first_attribute, prefix.second_attribute}
+        ]
+        if len(candidates) != 1:
+            continue
+        prefix = candidates[0]
+        out.append(
+            SequentialPartition(
+                provenance=Provenance(
+                    source="synth/sequential-partition-join",
+                    sentence=remainder.provenance.sentence,
+                    assumption=(
+                        prefix.provenance.assumption
+                        or remainder.provenance.assumption
+                    ),
+                ),
+                first_attribute=prefix.first_attribute,
+                first_fraction=prefix.first_fraction,
+                second_attribute=prefix.second_attribute,
+                second_fraction=prefix.second_fraction,
+                rest_attribute=remainder.rest_attribute,
+                verb=prefix.verb,
+            )
+        )
+    return out
+
+
+def _sequential_partition_synth(
+    store: FactStore, reg: Registry, log: ArithmeticLog
+) -> list[Fact]:
+    """Resolve a complete staged allocation against one prior collection.
+
+    The allocation sentence omits its collection because the preceding
+    discourse already stated it. Exactly one prior measure and one holder are
+    required; any competing quantity leaves the allocation unresolved. The
+    second fraction is sized against the remainder after the first, and the
+    third partition receives the exact residual.
+    """
+    from .model import PartitionQuantity, SequentialPartition
+
+    out: list[Fact] = []
+    for allocation in store.by_kind(SequentialPartition):
+        if not (
+            0.0 <= allocation.first_fraction <= 1.0
+            and 0.0 <= allocation.second_fraction <= 1.0
+        ):
+            continue
+        resolved = _resolve_sequential_population(
+            store,
+            reg,
+            allocation.provenance.sentence,
+            log,
+            "synth/sequential-partition",
+        )
+        if resolved is None:
+            continue
+        measure, total = resolved
+        first = evaluate(
+            "first_fraction * total",
+            {
+                "first_fraction": allocation.first_fraction,
+                "total": total,
+            },
+            log,
+            source="synth/sequential-partition",
+        )
+        second = evaluate(
+            "second_fraction * (total - first)",
+            {
+                "second_fraction": allocation.second_fraction,
+                "total": total,
+                "first": first,
+            },
+            log,
+            source="synth/sequential-partition",
+        )
+        rest = evaluate(
+            "total - first - second",
+            {"total": total, "first": first, "second": second},
+            log,
+            source="synth/sequential-partition",
+        )
+        if rest < 0:
+            continue
+        for attribute, value in (
+            (allocation.first_attribute, first),
+            (allocation.second_attribute, second),
+            (allocation.rest_attribute, rest),
+        ):
+            out.append(
+                PartitionQuantity(
+                    provenance=Provenance(
+                        source="synth/sequential-partition",
+                        sentence=allocation.provenance.sentence,
+                    ),
+                    collection=measure,
+                    attribute=attribute,
+                    value=value,
+                    verb=allocation.verb,
+                )
+            )
+    return out
+
+
 def _partition_membership_synth(
     store: FactStore, reg: Registry, log: ArithmeticLog
 ) -> list[Fact]:
@@ -2520,6 +2801,10 @@ PLUGINS: dict[str, Synthesizer] = {
     "synth/fraction-of-pool": _fraction_synth,
     "synth/rest-of-pool": _rest_synth,
     "synth/partition-of-collection": _partition_synth,
+    "synth/sequential-partition-complement": _sequential_partition_complement_synth,
+    "synth/sequential-partition-join": _sequential_partition_join_synth,
+    "synth/sequential-partition-prefix-join": _sequential_partition_prefix_join_synth,
+    "synth/sequential-partition": _sequential_partition_synth,
     "synth/partition-membership-quantity": _partition_membership_synth,
     "synth/partition-complement-quantity": _partition_complement_synth,
     "synth/ratio-split-quantity": _ratio_split_synth,

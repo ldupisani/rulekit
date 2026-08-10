@@ -529,6 +529,11 @@ def _check_number(
             Quantity,
             QuantifiedAdjustment,
             RestQuantity,
+            SequentialPartition,
+            SequentialPartitionInitialShare,
+            SequentialPartitionPrefix,
+            SequentialPartitionRemainingShare,
+            SequentialPartitionRemainder,
         )
 
         derived = {
@@ -661,6 +666,113 @@ def _check_number(
                     "unresolved-derivation",
                     f"'{what} are {p.attribute}' never resolved "
                     "against a unique prior collection",
+                )
+        sequential_resolutions = {
+            (p.provenance.sentence, p.attribute, p.verb)
+            for p in store.by_kind(PartitionQuantity)
+            if p.provenance.source == "synth/sequential-partition"
+        }
+        for allocation in store.by_kind(SequentialPartition):
+            expected = {
+                (
+                    allocation.provenance.sentence,
+                    attribute,
+                    allocation.verb,
+                )
+                for attribute in (
+                    allocation.first_attribute,
+                    allocation.second_attribute,
+                    allocation.rest_attribute,
+                )
+            }
+            if not expected <= sequential_resolutions:
+                return GuardVeto(
+                    "unresolved-derivation",
+                    "the staged partition never resolved against exactly "
+                    "one prior collection",
+                )
+        joined_allocations = [
+            allocation
+            for allocation in store.by_kind(SequentialPartition)
+            if allocation.provenance.source
+            == "synth/sequential-partition-join"
+        ]
+        complement_resolutions = {
+            (partition.provenance.sentence, partition.attribute, partition.verb)
+            for partition in store.by_kind(PartitionQuantity)
+            if partition.provenance.source
+            == "synth/sequential-partition-complement"
+        }
+        for prefix in store.by_kind(SequentialPartitionPrefix):
+            if not any(
+                allocation.provenance.sentence
+                == prefix.provenance.sentence + 1
+                and allocation.first_attribute == prefix.first_attribute
+                and allocation.second_attribute == prefix.second_attribute
+                and allocation.verb == prefix.verb
+                for allocation in joined_allocations
+            ):
+                return GuardVeto(
+                    "unresolved-derivation",
+                    "the staged partition prefix was not completed by one "
+                    "compatible immediately following rest clause",
+                )
+        for remainder in store.by_kind(SequentialPartitionRemainder):
+            completed_staged_partition = any(
+                allocation.provenance.sentence
+                == remainder.provenance.sentence
+                and allocation.rest_attribute == remainder.rest_attribute
+                and allocation.verb == remainder.verb
+                for allocation in joined_allocations
+            )
+            completed_complement = (
+                remainder.provenance.sentence,
+                remainder.rest_attribute,
+                remainder.verb,
+            ) in complement_resolutions
+            if not (completed_staged_partition or completed_complement):
+                return GuardVeto(
+                    "unresolved-derivation",
+                    "the rest clause did not complete one compatible staged "
+                    "partition in the immediately preceding sentence",
+                )
+        joined_prefixes = [
+            prefix
+            for prefix in store.by_kind(SequentialPartitionPrefix)
+            if prefix.provenance.source
+            == "synth/sequential-partition-prefix-join"
+        ]
+        for initial in store.by_kind(SequentialPartitionInitialShare):
+            continued_by_remaining_share = any(
+                prefix.provenance.sentence
+                == initial.provenance.sentence + 1
+                and prefix.first_attribute == initial.first_attribute
+                and prefix.verb == initial.verb
+                for prefix in joined_prefixes
+            )
+            completed_complement = (
+                initial.provenance.sentence + 1,
+                initial.first_attribute,
+                initial.verb,
+            ) in complement_resolutions
+            if not (continued_by_remaining_share or completed_complement):
+                return GuardVeto(
+                    "unresolved-derivation",
+                    "the initial partition share was not completed by one "
+                    "compatible adjacent remainder-share or rest clause",
+                )
+        for remaining in store.by_kind(SequentialPartitionRemainingShare):
+            if not any(
+                prefix.provenance.sentence
+                == remaining.provenance.sentence
+                and prefix.second_attribute == remaining.second_attribute
+                and prefix.verb == remaining.verb
+                for prefix in joined_prefixes
+            ):
+                return GuardVeto(
+                    "unresolved-derivation",
+                    "the remaining-pool share did not follow one compatible "
+                    "initial partition share",
                 )
 
     if _enabled(reg, "ambiguity"):

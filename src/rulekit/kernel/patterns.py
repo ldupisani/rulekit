@@ -60,6 +60,11 @@ from .model import (
     RestQuantity,
     SemanticGraphEdge,
     SemanticGraphNode,
+    SequentialPartition,
+    SequentialPartitionInitialShare,
+    SequentialPartitionPrefix,
+    SequentialPartitionRemainingShare,
+    SequentialPartitionRemainder,
     Subset,
     Unit,
 )
@@ -92,6 +97,11 @@ _FACT_CLASSES = {
     "fraction_quantity": FractionQuantity,
     "rest_quantity": RestQuantity,
     "partition_quantity": PartitionQuantity,
+    "sequential_partition": SequentialPartition,
+    "sequential_partition_initial_share": SequentialPartitionInitialShare,
+    "sequential_partition_prefix": SequentialPartitionPrefix,
+    "sequential_partition_remaining_share": SequentialPartitionRemainingShare,
+    "sequential_partition_remainder": SequentialPartitionRemainder,
     "ratio_quantity": RatioQuantity,
     "goal": Goal,
     "group_total": GroupTotal,
@@ -243,6 +253,13 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
         # OPT-IN (schemas.MatchToken.possessed): category membership follows
         # the merged noun's lemma, so it otherwise also admits the bare head.
         # Require the independently represented possessive owner.
+        return False
+    if token.qualified and not (
+        unit.sense() == "noun" and unit.features.get("qualifier") is not None
+    ):
+        # OPT-IN (schemas.MatchToken.qualified): category membership follows
+        # a merged noun's head lemma, so it otherwise also admits the bare
+        # head. Require the independently represented qualifier.
         return False
     if (
         token.number is not None
@@ -1781,6 +1798,7 @@ def _resolve_field(
 
 _NUMERIC_FIELDS = {
     "value", "year", "factor", "offset", "fraction", "numerator", "denominator",
+    "first_fraction", "second_fraction",
     # mining candidate temporal-offset-age-recut: Relation's two new
     # signed-year offset fields (model.py) — a pattern rule emits them as
     # arithmetic expressions over bound slot values ("n", "-n"), the SAME

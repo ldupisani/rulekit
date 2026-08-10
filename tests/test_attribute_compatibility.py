@@ -193,12 +193,16 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
     assert adjectives == {
         "beige",
         "blue",
-            "green",
-            "following",
-            "large",
+        "business",
+        "following",
+        "green",
+        "humanities",
+        "large",
         "left",
         "old",
         "red",
+        "remaining",
+        "science",
         "small",
         "turquoise",
         "violet",
@@ -210,13 +214,13 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
     # `head` and `university` are core-owned for the logic bridge, while
     # `topic` supports reviewed topical quantities. None silently gains
     # descriptor compatibility.
-    assert len(plural_nouns) == 63
+    assert len(plural_nouns) == 67
     assert {"head", "topic", "university"} <= plural_nouns
     assert sum(
         registry.attribute_applies_to(attribute, noun)
         for attribute in adjectives
         for noun in plural_nouns
-    ) == 362
+    ) == 365
 
 
 def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> None:
@@ -275,7 +279,7 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
 def test_compatibility_rule_remains_supported_after_g5j_expansion() -> None:
     availability = list_rule_availability(load_project(CURATED))
 
-    assert sum(item.supported for item in availability) == 116
+    assert sum(item.supported for item in availability) == 117
     target = next(item for item in availability if item.id == RULE_ID)
     assert target.supported
     assert target.blockers == ()

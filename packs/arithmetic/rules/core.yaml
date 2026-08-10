@@ -4124,6 +4124,230 @@ rules:
         fraction: "f"
         verb: "{verb}"
 
+  - id: arithmetic/sequential-percent-remainder-partition
+    phase: read
+    description: >
+      A finite population is divided in three stages: the first percentage
+      comes from the whole population, the second percentage comes from what
+      remains, and the final destination receives the rest. For example,
+      "In a university with 800 students, 25% enrolled in science courses,
+      20% of the remaining enrolled in business courses, and the rest
+      enrolled in humanities courses." The emitted PartitionQuantity facts
+      contain resolved counts, so ordinary partition consumers can reuse
+      them. Context, population, destination, verb, and preposition roles are
+      pack-declared; the rule contains only the grammatical skeleton.
+    match:
+      sentence:
+        - {lit: in, at_start: true}
+        - {lit: a, consume_skipped: true}
+        - {slot: context, cat: sequential_partition_context}
+        - {lit: with}
+        - {slot: total, cat: sequential_partition_population, counted: true}
+        - {slot: first_share, type: fraction, fraction_within_whole: true}
+        - {slot: first_verb, cat: sequential_partition_verb}
+        - {slot: first_prep, cat: sequential_partition_preposition}
+        - {slot: first_destination, cat: sequential_partition_destination, qualified: true}
+        - {slot: second_share, type: fraction, fraction_within_whole: true}
+        - {lit: of}
+        - {lit: the, consume_skipped: true}
+        - {slot: remaining, cat: sequential_partition_remainder}
+        - {slot: second_verb, cat: sequential_partition_verb}
+        - {slot: second_prep, cat: sequential_partition_preposition}
+        - {slot: second_destination, cat: sequential_partition_destination, qualified: true}
+        - {lit: and}
+        - {lit: the, consume_skipped: true}
+        - {slot: rest, cat: partition_remnant, referential: true}
+        - {slot: rest_verb, cat: sequential_partition_verb}
+        - {slot: rest_prep, cat: sequential_partition_preposition}
+        - {slot: rest_destination, cat: sequential_partition_destination, qualified: true}
+    where:
+      - same_lemma: [first_verb, second_verb, rest_verb]
+      - same_lemma: [first_prep, second_prep, rest_prep]
+      - distinct_measure: [first_destination, second_destination, rest_destination]
+    consumes: [total, first_share, second_share]
+    emits:
+      - fact: quantity
+        entity: "{context}"
+        measure: "{total}"
+        value: "total"
+        verb: have
+      - fact: partition_quantity
+        collection: "{total}"
+        attribute: "{first_destination.qualified}"
+        value: "first_share * total"
+        verb: "{first_verb}"
+      - fact: partition_quantity
+        collection: "{total}"
+        attribute: "{second_destination.qualified}"
+        value: "second_share * (1 - first_share) * total"
+        verb: "{second_verb}"
+      - fact: partition_quantity
+        collection: "{total}"
+        attribute: "{rest_destination.qualified}"
+        value: "(1 - second_share) * (1 - first_share) * total"
+        verb: "{rest_verb}"
+
+  - id: arithmetic/sequential-percent-remainder-partition-anaphoric
+    phase: read
+    # This clause is valid only with a preceding collection anchor. The
+    # current single-sentence generator cannot yet fabricate that linked
+    # context, so presenting the clause alone as a valid specimen would be
+    # misleading. Reading support remains complete and inspectable.
+    generation: reader-only
+    description: >
+      A complete staged allocation whose population total was stated in a
+      preceding sentence: "A school has 800 pupils. 25% enrolled in science
+      courses, 20% of the remaining enrolled in business courses, and the
+      rest enrolled in humanities courses." The rule records the allocation
+      without guessing its omitted collection. A generic synthesizer commits
+      the three resolved partitions only when exactly one prior collection
+      measure and holder are available.
+    match:
+      sentence:
+        - {slot: first_share, type: fraction, fraction_within_whole: true, at_start: true}
+        - {slot: first_verb, cat: sequential_partition_verb}
+        - {slot: first_prep, cat: sequential_partition_preposition}
+        - {slot: first_destination, cat: sequential_partition_destination, qualified: true}
+        - {slot: second_share, type: fraction, fraction_within_whole: true}
+        - {lit: of}
+        - {lit: the, consume_skipped: true}
+        - {slot: remaining, cat: sequential_partition_remainder}
+        - {slot: second_verb, cat: sequential_partition_verb}
+        - {slot: second_prep, cat: sequential_partition_preposition}
+        - {slot: second_destination, cat: sequential_partition_destination, qualified: true}
+        - {lit: and}
+        - {lit: the, consume_skipped: true}
+        - {slot: rest, cat: partition_remnant, referential: true}
+        - {slot: rest_verb, cat: sequential_partition_verb}
+        - {slot: rest_prep, cat: sequential_partition_preposition}
+        - {slot: rest_destination, cat: sequential_partition_destination, qualified: true}
+    where:
+      - same_lemma: [first_verb, second_verb, rest_verb]
+      - same_lemma: [first_prep, second_prep, rest_prep]
+      - distinct_measure: [first_destination, second_destination, rest_destination]
+    satisfies: {first_verb: [subject]}
+    consumes: [first_share, second_share]
+    emits:
+      - fact: sequential_partition
+        first_attribute: "{first_destination.qualified}"
+        first_fraction: first_share
+        second_attribute: "{second_destination.qualified}"
+        second_fraction: second_share
+        rest_attribute: "{rest_destination.qualified}"
+        verb: "{first_verb}"
+
+  - id: arithmetic/sequential-percent-remainder-partition-initial-share
+    phase: read
+    generation: reader-only
+    description: >
+      A sentence containing only the first whole-population percentage of a
+      staged allocation: "25% enrolled in science courses." It remains an
+      incomplete discourse fact until the immediately following sentence
+      states a compatible percentage of the remaining population.
+    match:
+      sentence:
+        - {slot: first_share, type: fraction, fraction_within_whole: true, at_start: true}
+        - {slot: first_verb, cat: sequential_partition_verb}
+        - {slot: first_prep, cat: sequential_partition_preposition}
+        - {slot: first_destination, cat: sequential_partition_destination, qualified: true}
+    where:
+      # The combined two-stage and complete forms contain "remaining" and
+      # belong to their existing rules instead of this sentence-only shape.
+      - absent: {cat: sequential_partition_remainder}
+    satisfies: {first_verb: [subject]}
+    consumes: [first_share]
+    emits:
+      - fact: sequential_partition_initial_share
+        first_attribute: "{first_destination.qualified}"
+        first_fraction: first_share
+        verb: "{first_verb}"
+
+  - id: arithmetic/sequential-percent-remainder-partition-remaining-share
+    phase: read
+    generation: reader-only
+    description: >
+      A sentence containing the second percentage, explicitly sized from the
+      remainder left by the immediately preceding initial-share sentence:
+      "20% of the remaining enrolled in business courses." It does not select
+      an older or non-adjacent percentage as its antecedent.
+    match:
+      sentence:
+        - {slot: second_share, type: fraction, fraction_within_whole: true, at_start: true}
+        - {lit: of}
+        - {lit: the, consume_skipped: true}
+        - {slot: remaining, cat: sequential_partition_remainder}
+        - {slot: second_verb, cat: sequential_partition_verb}
+        - {slot: second_prep, cat: sequential_partition_preposition}
+        - {slot: second_destination, cat: sequential_partition_destination, qualified: true}
+    satisfies: {second_verb: [subject]}
+    consumes: [second_share]
+    emits:
+      - fact: sequential_partition_remaining_share
+        second_attribute: "{second_destination.qualified}"
+        second_fraction: second_share
+        verb: "{second_verb}"
+
+  - id: arithmetic/sequential-percent-remainder-partition-prefix
+    phase: read
+    # Like the complete anaphoric rule, this needs linked discourse and must
+    # not be generated as a misleading isolated sentence.
+    generation: reader-only
+    description: >
+      The first two stages of an allocation whose final "the rest" clause is
+      deferred to the next sentence: "25% enrolled in science courses, 20%
+      of the remaining enrolled in business courses." This records an
+      incomplete prefix rather than guessing a destination. It can contribute
+      to an answer only when the immediately following sentence supplies one
+      compatible rest clause and prior discourse supplies one population.
+    match:
+      sentence:
+        - {slot: first_share, type: fraction, fraction_within_whole: true, at_start: true}
+        - {slot: first_verb, cat: sequential_partition_verb}
+        - {slot: first_prep, cat: sequential_partition_preposition}
+        - {slot: first_destination, cat: sequential_partition_destination, qualified: true}
+        - {slot: second_share, type: fraction, fraction_within_whole: true}
+        - {lit: of}
+        - {lit: the, consume_skipped: true}
+        - {slot: remaining, cat: sequential_partition_remainder}
+        - {slot: second_verb, cat: sequential_partition_verb}
+        - {slot: second_prep, cat: sequential_partition_preposition}
+        - {slot: second_destination, cat: sequential_partition_destination, qualified: true}
+    where:
+      - same_lemma: [first_verb, second_verb]
+      - same_lemma: [first_prep, second_prep]
+      - distinct_measure: [first_destination, second_destination]
+      # Prevent this prefix rule from also firing on the existing complete
+      # one-sentence construction.
+      - absent: {cat: partition_remnant}
+    satisfies: {first_verb: [subject]}
+    consumes: [first_share, second_share]
+    emits:
+      - fact: sequential_partition_prefix
+        first_attribute: "{first_destination.qualified}"
+        first_fraction: first_share
+        second_attribute: "{second_destination.qualified}"
+        second_fraction: second_share
+        verb: "{first_verb}"
+
+  - id: arithmetic/sequential-percent-remainder-partition-completion
+    phase: read
+    generation: reader-only
+    description: >
+      A sentence-initial "the rest" clause that names the final destination
+      of a staged allocation. It remains unresolved unless the immediately
+      preceding sentence supplied exactly one compatible two-stage prefix.
+    match:
+      sentence:
+        - {lit: the, at_start: true, consume_skipped: true}
+        - {slot: rest, cat: partition_remnant, referential: true}
+        - {slot: rest_verb, cat: sequential_partition_verb}
+        - {slot: rest_prep, cat: sequential_partition_preposition}
+        - {slot: rest_destination, cat: sequential_partition_destination, qualified: true}
+    emits:
+      - fact: sequential_partition_remainder
+        rest_attribute: "{rest_destination.qualified}"
+        verb: "{rest_verb}"
+
   - id: arithmetic/fraction-of-pronoun
     phase: read
     description: >
@@ -6824,6 +7048,44 @@ asks:
       consumer: partition-complement
       item: "{item}"
       attribute: "{attr}"
+      negated: "false"
+
+  - id: ask/what-percentage-sequential-partition
+    match:
+      question:
+        - {lit: what, at_start: true}
+        - {lit: percentage}
+        - {lit: of}
+        - {lit: the, consume_skipped: true}
+        - {slot: collection, cat: sequential_partition_population, number: plural}
+        - {slot: verb, cat: sequential_partition_verb}
+        - {slot: prep, cat: sequential_partition_preposition}
+        - {slot: destination, cat: sequential_partition_destination}
+    resolves:
+      consumer: partition-percentage
+      collection: "{collection}"
+      attribute: "{destination.qualified}"
+
+  - id: ask/how-many-sequential-partition
+    # Direct count question for one named destination in a staged population
+    # partition: "How many of the students enrolled in science courses?"
+    # The destination must remain a qualified phrase, so the bare and
+    # underspecified "enrolled in courses" shape does not select a subset.
+    match:
+      question:
+        - {lit: how, at_start: true}
+        - {lit: many}
+        - opt:
+            - {lit: of}
+            - {lit: the, consume_skipped: true}
+        - {slot: collection, cat: sequential_partition_population, number: plural}
+        - {slot: verb, cat: sequential_partition_verb}
+        - {slot: prep, cat: sequential_partition_preposition}
+        - {slot: destination, cat: sequential_partition_destination, qualified: true}
+    resolves:
+      consumer: partition-complement
+      item: "{collection}"
+      attribute: "{destination.qualified}"
       negated: "false"
 
   - id: ask/how-many-partition-negated

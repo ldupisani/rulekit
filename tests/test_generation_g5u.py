@@ -139,19 +139,24 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
     project = load_project(CURATED)
     availability = list_rule_availability(project)
 
-    assert len(availability) == 118
-    assert sum(item.supported for item in availability) == 116
-    assert sum(not item.supported for item in availability) == 2
+    assert len(availability) == 124
+    assert sum(item.supported for item in availability) == 117
+    assert sum(not item.supported for item in availability) == 7
     assert all(
         not item.blockers
         or item.id
         in {
             "arithmetic/affine-frame-relation-as-standard",
             "arithmetic/dangling-comparative-safety",
+            "arithmetic/sequential-percent-remainder-partition-anaphoric",
+            "arithmetic/sequential-percent-remainder-partition-prefix",
+            "arithmetic/sequential-percent-remainder-partition-completion",
+            "arithmetic/sequential-percent-remainder-partition-initial-share",
+            "arithmetic/sequential-percent-remainder-partition-remaining-share",
         }
         for item in availability
     )
-    assert len(exploration_status(project)["fillers"]) == 286
+    assert len(exploration_status(project)["fillers"]) == 293
 
 
 def test_currently_generates_a_matcher_confirmed_anchor() -> None:

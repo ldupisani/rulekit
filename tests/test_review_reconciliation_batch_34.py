@@ -1,12 +1,13 @@
 """Review-led declarative boundaries for the 2026-08-08 strict batch."""
 
+import json
 from pathlib import Path
 
 import pytest
 
 from rulekit.data.project import load_project
 from rulekit.generation import generate_candidate, retest_candidate
-from rulekit.generation.reviews import read_reviews
+from rulekit.generation.reviews import review_path
 from rulekit.kernel.engine import solve
 
 
@@ -50,10 +51,20 @@ def _matched_rules(text: str, registry) -> set[str]:
 
 
 @pytest.mark.parametrize("review_id", REVIEW_CASES)
-def test_latest_reviewed_strict_surfaces_retest_absent(review_id: str) -> None:
+def test_historical_reviewed_strict_surfaces_retest_absent(review_id: str) -> None:
     project = load_project(CURATED)
-    live = {review["id"]: review for review in read_reviews(project, 100_000)}
-    review = live[review_id]
+    # These review rows are durable regression evidence even after the user
+    # tombstones them from the live Designer queue. Read the append-only
+    # history rather than its live fold so queue cleanup cannot erase tests.
+    history = {
+        review["id"]: review
+        for review in (
+            json.loads(line)
+            for line in review_path(project).read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        )
+    }
+    review = history[review_id]
     rule_id, sentence = REVIEW_CASES[review_id]
 
     assert review["verdict"] == "invalid"

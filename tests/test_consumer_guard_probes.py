@@ -33,7 +33,7 @@ from rulekit.kernel.consumers import CONSUMERS, ConsumerContext
 from rulekit.kernel.engine import solve
 from rulekit.kernel.evaluate import ArithmeticLog
 from rulekit.kernel.facts import FactStore
-from rulekit.kernel.model import AgeAtYear, Provenance
+from rulekit.kernel.model import AgeAtYear, PartitionQuantity, Provenance, Quantity
 from rulekit.kernel.patterns import SKIPPABLE_SENSES, match_ask
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -478,3 +478,71 @@ def test_reference_aggregate_unreadable_year_declines(gsm8k):
                {"op": "total", "attribute": "population", "group": "europe", "year": "blorp"})
     assert got.kind == "decline"
     assert "as a year" in got.reason
+
+
+# --- partition-percentage: ordinary text supplies one exact holder and the
+# staged premise constrains every computed part to the finite whole. These two
+# branches defend the consumer against malformed or future fact producers.
+
+
+def test_partition_percentage_needs_one_total_holder(curated):
+    provenance = Provenance(source="synthetic", sentence=0)
+    store = FactStore(facts=[
+        Quantity(
+            provenance=provenance,
+            entity="academy",
+            measure="student",
+            value=100,
+            verb="have",
+        ),
+        Quantity(
+            provenance=provenance,
+            entity="college",
+            measure="student",
+            value=100,
+            verb="have",
+        ),
+        PartitionQuantity(
+            provenance=provenance,
+            collection="student",
+            attribute="science course",
+            value=25,
+            verb="enroll",
+        ),
+    ])
+    got = call(
+        "partition-percentage",
+        curated,
+        {"collection": "student", "attribute": "science course"},
+        store=store,
+    )
+    assert got.kind == "decline"
+    assert "partition total needs exactly one holder" in got.reason
+
+
+def test_partition_percentage_refuses_a_part_larger_than_the_total(curated):
+    provenance = Provenance(source="synthetic", sentence=0)
+    store = FactStore(facts=[
+        Quantity(
+            provenance=provenance,
+            entity="academy",
+            measure="student",
+            value=100,
+            verb="have",
+        ),
+        PartitionQuantity(
+            provenance=provenance,
+            collection="student",
+            attribute="science course",
+            value=120,
+            verb="enroll",
+        ),
+    ])
+    got = call(
+        "partition-percentage",
+        curated,
+        {"collection": "student", "attribute": "science course"},
+        store=store,
+    )
+    assert got.kind == "decline"
+    assert "partition value 120" in got.reason
