@@ -10,9 +10,11 @@ not evidence.
 
 ## Example-led selection
 
-- Select one currently declining DEV-train item per requested candidate. Start
-  with fully read declines where possible, but do not require three examples
-  or a frequency threshold before proposing useful general language support.
+- Select one currently declining DEV-train item per requested candidate. Do
+  not prefilter to fully read items: unknown words, missing senses, morphology,
+  and absent semantic categories are first-class vertical blockers and a main
+  source of useful lexicon growth. Do not require three examples or a
+  frequency threshold before proposing useful general language support.
 - Walk that item end to end: missing vocabulary, premise facts, inference,
   ask bindings, answer contract, and every current final blocker. Candidate
   text must still be a nameable semantic class, not a one-question branch.
