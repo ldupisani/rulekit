@@ -753,6 +753,30 @@ class BoundRequiresCategoryPredicate(StrictModel):
     allow_proper_name: bool = False
 
 
+class BoundRejectsCategoryPredicate(StrictModel):
+    """Reject a slot category only when an optional slot was bound."""
+
+    bound: str
+    slot: str
+    cat: str
+
+
+class CategoryRequiresBoundPredicate(StrictModel):
+    """Require an optional slot when another slot belongs to a category."""
+
+    slot: str
+    cat: str
+    bound: str
+
+    @model_validator(mode="after")
+    def _different_slots(self) -> "CategoryRequiresBoundPredicate":
+        if self.slot == self.bound:
+            raise ValueError(
+                "category-requires-bound needs two different slots"
+            )
+        return self
+
+
 class BoundRequiresFormPredicate(StrictModel):
     """Require verb morphology only when another optional slot was bound."""
 
@@ -934,6 +958,13 @@ class WherePredicate(StrictModel):
     # an earlier slot, e.g. an optional destination preposition requires a
     # motion verb while the direct-object form remains open.
     bound_requires_category: BoundRequiresCategoryPredicate | None = None
+    # Negative conditional sibling: when the optional continuation matched,
+    # the named slot must remain outside the declared category.
+    bound_rejects_category: BoundRejectsCategoryPredicate | None = None
+    # Inverse conditional: a slot in the named category requires an optional
+    # grammatical continuation to have matched. This keeps governed verbs out
+    # of a direct-object surface without making that surface a second rule.
+    category_requires_bound: CategoryRequiresBoundPredicate | None = None
     # Morphology-qualified sibling. A modal auxiliary, for example, requires
     # the following verb to be bare while the auxiliary-free clause retains
     # its ordinary finite surface.
@@ -1043,6 +1074,8 @@ class WherePredicate(StrictModel):
                 self.same_lemma, self.same_number,
                 self.same_category_membership, self.number_compatible,
                 self.bound_requires_type, self.bound_requires_category,
+                self.bound_rejects_category,
+                self.category_requires_bound,
                 self.bound_requires_form, self.polarity_compatible,
                 self.proportional_delta_compatible,
                 self.same_presence,

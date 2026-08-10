@@ -894,7 +894,7 @@ rules:
         - {lit: in}
         - {slot: n, cat: age_measure, counted: true}
         - {slot: who, type: name}
-        - {slot: aux, type: future_modal}
+        - {slot: aux, cat: future_modal}
         - {lit: be}
         - {slot: k, type: multiplier}
         - {lit: as}
@@ -950,7 +950,7 @@ rules:
         - {lit: in}
         - {slot: n, cat: age_measure, counted: true}
         - {slot: who, type: name}
-        - {slot: aux, type: future_modal}
+        - {slot: aux, cat: future_modal}
         - {lit: be}
         - {slot: k, type: multiplier}
         - {lit: as}
@@ -2171,6 +2171,8 @@ rules:
       - bound_requires_type: {bound: appos_role, slot: std_seen, type: proper_name}
       - number_compatible: [who, verb]
       - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: motion_comparison_verb, role_cat: motion_comparison_measure}
       - unbound: [std_seen]
       - polarity_compatible:
           slots: [verb, dir]
@@ -2215,6 +2217,8 @@ rules:
       - bound_requires_type: {bound: appos_role, slot: std_seen, type: proper_name}
       - number_compatible: [who, verb]
       - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: motion_comparison_verb, role_cat: motion_comparison_measure}
       - unbound: [std_seen]
       - polarity_compatible:
           slots: [verb, dir]
@@ -2416,8 +2420,8 @@ rules:
       not a complete relative clause.
     match:
       sentence:
-        - {slot: who, type: entity}
-        - {slot: verb, type: verb}
+        - {slot: who, type: entity, common_noun_cat: quantity_holder}
+        - {slot: verb, type: verb, finite_form: true}
         - {slot: n, type: number}
         - {slot: dir, cat: count_quantity_delta}
         - opt:
@@ -2432,8 +2436,8 @@ rules:
         - opt:
             - {slot: appos_det, cat: animate_possessive_determiner}
             - {slot: appos_role, cat: animate}
-        - {slot: std, type: entity}
-        - {slot: echo_verb, type: verb}
+        - {slot: std, type: entity, common_noun_cat: quantity_holder}
+        - {slot: echo_verb, type: verb, finite_form: true}
         - opt:
             - {slot: echo_span_prep, cat: span_preposition}
             - {slot: echo_span, cat: duration_measure, counted: true}
@@ -2444,9 +2448,14 @@ rules:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
+      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: motion_comparison_verb, role_cat: motion_participant, allow_plural_class: true}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: motion_comparison_verb, role_cat: motion_comparison_measure}
+      - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
       - same_lemma: [verb, echo_verb]
       - number_compatible: [who, verb]
       - number_compatible: [std, echo_verb]
+      - bound_rejects_category: {bound: echo_span, slot: echo_verb, cat: state}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: verb, cat: frame_prepositional_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
@@ -3354,7 +3363,7 @@ rules:
     match:
       sentence:
         - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, finite_form: true}
         - {slot: n, type: number}
         - {slot: dir, cat: quantity_delta}
         - {lit: than}
@@ -3377,6 +3386,9 @@ rules:
       - number_compatible: [who, verb]
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
+      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: motion_comparison_verb, role_cat: motion_participant, allow_plural_class: true}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: motion_comparison_verb, role_cat: motion_comparison_measure}
       - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: animate_object_verb, role_cat: quantity_event_participant}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
@@ -3412,7 +3424,7 @@ rules:
     match:
       sentence:
         - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, finite_form: true}
         - {slot: n, type: number}
         - {slot: dir, cat: quantity_delta}
         - {lit: than}
@@ -3435,6 +3447,9 @@ rules:
       - number_compatible: [who, verb]
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
+      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: motion_comparison_verb, role_cat: motion_participant, allow_plural_class: true}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: motion_comparison_verb, role_cat: motion_comparison_measure}
       - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: animate_object_verb, role_cat: quantity_event_participant}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
@@ -4896,7 +4911,7 @@ rules:
         - {lit: in}
         - {slot: n, cat: age_measure, counted: true}
         - {slot: who, type: name}
-        - {slot: aux, type: future_modal}
+        - {slot: aux, cat: future_modal}
         - {lit: be}
         - {slot: m, cat: age_measure, counted: true}
         - {lit: old}
@@ -4980,7 +4995,7 @@ rules:
         - {slot: mod, cat: count_intensifier}
         - {slot: yr, cat: age_measure}
         - {slot: who, type: name}
-        - {slot: aux, type: future_modal}
+        - {slot: aux, cat: future_modal}
         - {lit: be}
         - {slot: m, cat: age_measure, counted: true}
         - {lit: old}
@@ -4999,21 +5014,30 @@ rules:
   - id: arithmetic/goal-desire-quantity
     phase: read
     description: >
-      "Lena wants to collect 30 stamps" — a DESIRE verb ('want', a category
-      this pack gates on so 'wish'/etc admit the same way as mined vocabulary
-      grows) plus an infinitive VERB introduces a stated GOAL quantity, never
-      an event: a wanted purchase is not a purchase (the increment-14 kirsty
-      lesson generalized). Emits a Goal fact; the deficit consumer resolves
-      it against the entity's single current holding of the same measure.
+      "Lena wants to collect 30 stamps" / "John wanted to arrive at 19
+      gardens" — a DESIRE verb plus an infinitive introduces a stated GOAL
+      quantity, never an event. Ordinary transitive goal verbs take the count
+      directly. A declared arrival verb instead requires its declared goal
+      preposition and a counted spatial reference; the paired inverse
+      condition prevents "arrive 19 gardens" while the existing conditional
+      category checks prevent "collect at 19 stamps". A wanted purchase or
+      arrival is not evidence that either event happened. The deficit consumer
+      resolves the Goal against the entity's single current holding of the
+      same measure.
     match:
       sentence:
         - {slot: who, type: name}
         - {slot: want, cat: finite_desire, finite_form: true}
         - {lit: to}
         - {slot: verb, type: verb, bare_form: true}
+        - opt:
+            - {slot: goal_prep, cat: arrival_goal_preposition}
         - {slot: item, type: counted}
     where:
       - number_compatible: [who, want]
+      - bound_requires_category: {bound: goal_prep, slot: verb, cat: arrival_motion_verb}
+      - bound_requires_category: {bound: goal_prep, slot: item, cat: spatial_reference_noun}
+      - category_requires_bound: {slot: verb, cat: arrival_motion_verb, bound: goal_prep}
     consumes: [item]
     emits:
       - fact: goal

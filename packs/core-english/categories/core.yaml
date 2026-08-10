@@ -1717,13 +1717,13 @@ members:
     quantity_event_participant:
         [animal, alpaca, dog, cat, fish, bird, rabbit, hamster]
     animate_subject_verb:
-        [enroll, enrolled, enrolling, enrolls, take, takes, took, teach,
-         teaches, taught]
+        [enroll, enrolled, enrolling, enrolls, own, owns, take, takes, took,
+         teach, teaches, taught]
     animate_object_verb: [teach, teaches, taught]
     # A book can hold a page/count quantity even though it is neither animate
     # nor a location. Other common nouns enter this positive role only beside
     # evidence for their own ordinary holder reading.
-    quantity_holder: [book]
+    quantity_holder: [book, head]
     linear_dimension_holder: [book, tree]
     mass_dimension_holder: [book]
     # 'him'/'her' are OBJECT-case and have no lexicon entry of their own;
@@ -1734,6 +1734,7 @@ members:
     copula: [is, are, was, were]
     plural_copula: [are, were]
     past_copula: [was, were]
+    quantity_event_verb: [leave, leaves, leaving]
     acquire: [get, gets, got, find, finds, found, buy, buys, bought, receive, receives, received, win, wins, won]
     find_quantity_verb: [find, finds, found]
     lose: [lose, loses, lost, eat, eats, ate, give, gives, gave, sell, sells, sold, spend, spends, spent, dropped, drops]

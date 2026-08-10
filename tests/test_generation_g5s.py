@@ -79,13 +79,18 @@ def test_modal_occurrence_and_core_ownership_maps_are_complete() -> None:
     project = load_project(CURATED)
     core = next(pack for pack in project.packs if pack.name == "core-english")
     occurrences = {
-        rule.id: (path, token.type, optional_ancestors)
+        rule.id: (
+            path,
+            token.type
+            or ("future_modal" if token.cat == "future_modal" else None),
+            optional_ancestors,
+        )
         for rule in project.registry.rules
         for path, token, optional_ancestors in _leaf_tokens(
             _flat_sentence(rule) or []
         )
         if token.type in {"modal", "future_modal"}
-        or token.cat == "location_impossibility_modal"
+        or token.cat in {"future_modal", "location_impossibility_modal"}
     }
     expected_source = (
         ROOT / "packs/core-english/lexicon/core.yaml"

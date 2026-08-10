@@ -271,6 +271,8 @@ def _where_blocker(rule: PatternRule) -> list[str]:
             or pred.number_compatible is not None
             or pred.bound_requires_type is not None
             or pred.bound_requires_category is not None
+            or pred.bound_rejects_category is not None
+            or pred.category_requires_bound is not None
             or pred.bound_requires_form is not None
             or pred.polarity_compatible is not None
             or pred.proportional_delta_compatible is not None
@@ -1666,6 +1668,8 @@ def _constraint_groups(
     distinct_owner: list[set[str]] = []
     bound_type_requirements: list[tuple[str, str, str]] = []
     bound_category_requirements: list[tuple[str, str, str, bool]] = []
+    bound_category_exclusions: list[tuple[str, str, str]] = []
+    category_bound_requirements: list[tuple[str, str, str]] = []
     bound_form_requirements: list[tuple[str, str, str]] = []
     same_presence: list[set[str]] = []
     attribute_pairs: list[tuple[str, str]] = []
@@ -1723,6 +1727,22 @@ def _constraint_groups(
                     pred.bound_requires_category.allow_proper_name,
                 )
             )
+        if pred.category_requires_bound is not None:
+            category_bound_requirements.append(
+                (
+                    pred.category_requires_bound.slot,
+                    pred.category_requires_bound.cat,
+                    pred.category_requires_bound.bound,
+                )
+            )
+        if pred.bound_rejects_category is not None:
+            bound_category_exclusions.append(
+                (
+                    pred.bound_rejects_category.bound,
+                    pred.bound_rejects_category.slot,
+                    pred.bound_rejects_category.cat,
+                )
+            )
         if pred.bound_requires_form is not None:
             bound_form_requirements.append(
                 (
@@ -1772,6 +1792,8 @@ def _constraint_groups(
         distinct_owner,
         bound_type_requirements,
         bound_category_requirements,
+        bound_category_exclusions,
+        category_bound_requirements,
         bound_form_requirements,
         same_presence,
         _distinct_measure_groups(rule),
@@ -1814,6 +1836,12 @@ def _allowed_fillers(
     bound_category_requirements: (
         list[tuple[str, str, str, bool]]
         | tuple[tuple[str, str, str, bool], ...]
+    ) = (),
+    bound_category_exclusions: (
+        list[tuple[str, str, str]] | tuple[tuple[str, str, str], ...]
+    ) = (),
+    category_bound_requirements: (
+        list[tuple[str, str, str]] | tuple[tuple[str, str, str], ...]
     ) = (),
     bound_form_requirements: (
         list[tuple[str, str, str]] | tuple[tuple[str, str, str], ...]
@@ -2005,6 +2033,16 @@ def _allowed_fillers(
                     and filler.owner == entity.identity
                 ):
                     return False
+
+        for source_slot, category, required_slot in (
+            category_bound_requirements
+        ):
+            if (
+                token.slot == source_slot
+                and required_slot not in active_slots
+                and _filler_in_category(filler, category, reg)
+            ):
+                return False
 
         for group in category_nonoverlap_groups:
             if token.slot not in group:
@@ -2280,6 +2318,21 @@ def _allowed_fillers(
                     target, category, allow_proper_name
                 ):
                     return False
+        for bound_slot, target_slot, category in bound_category_exclusions:
+            if (
+                token.slot == target_slot
+                and bound_slot in active_slots
+                and in_category(filler, category, False)
+            ):
+                return False
+            if token.slot == bound_slot:
+                target = chosen.get(target_slot) or locked_fillers.get(
+                    target_slot
+                )
+                if target is not None and in_category(
+                    target, category, False
+                ):
+                    return False
         return True
 
     def satisfies_conditional_forms(filler: _Filler) -> bool:
@@ -2439,6 +2492,8 @@ def _realize(
         distinct_owner_groups,
         bound_type_requirements,
         bound_category_requirements,
+        bound_category_exclusions,
+        category_bound_requirements,
         bound_form_requirements,
         same_presence_groups,
         distinct_measure_groups,
@@ -2689,6 +2744,8 @@ def _realize(
                 polarity_compatible_groups,
                 bound_type_requirements,
                 bound_category_requirements,
+                bound_category_exclusions,
+                category_bound_requirements,
                 bound_form_requirements,
                 verb_role_requirements,
                 measure_holder_requirements,
@@ -3410,6 +3467,8 @@ _WHERE_FIELDS = (
     "number_compatible",
     "bound_requires_type",
     "bound_requires_category",
+    "bound_rejects_category",
+    "category_requires_bound",
     "bound_requires_form",
     "polarity_compatible",
     "proportional_delta_compatible",
@@ -3459,6 +3518,18 @@ def _where_expression(rule: PatternRule, index: int) -> tuple[str, tuple[str, ..
             f"bound={value.bound!r}, slot={value.slot!r}, "
             f"cat={value.cat!r}, "
             f"allow_proper_name={value.allow_proper_name!r}"
+        )
+    elif kind == "bound_rejects_category":
+        names = (value.bound, value.slot)
+        rendered = (
+            f"bound={value.bound!r}, slot={value.slot!r}, "
+            f"cat={value.cat!r}"
+        )
+    elif kind == "category_requires_bound":
+        names = (value.slot, value.bound)
+        rendered = (
+            f"slot={value.slot!r}, cat={value.cat!r}, "
+            f"bound={value.bound!r}"
         )
     elif kind == "bound_requires_form":
         names = (value.bound, value.slot)
@@ -3570,6 +3641,35 @@ def _where_reason(
                 if requirement.allow_proper_name
                 else ""
             )
+        )
+    if pred.category_requires_bound is not None:
+        requirement = pred.category_requires_bound
+        units = _slot_units(slots.get(requirement.slot))
+        if not units:
+            return f"the target match did not expose slot {requirement.slot!r}"
+        identity = _unit_lemma(units[0], reg)
+        return (
+            f"{requirement.slot}={identity!r} satisfied category "
+            f"{requirement.cat!r}, so {requirement.bound!r} was bound"
+        )
+    if pred.bound_rejects_category is not None:
+        requirement = pred.bound_rejects_category
+        if requirement.bound not in slots:
+            return (
+                f"{requirement.bound!r} was unbound, so no category "
+                f"exclusion applied to {requirement.slot!r}"
+            )
+        units = _slot_units(slots.get(requirement.slot))
+        if not units:
+            return (
+                f"{requirement.bound!r} was bound but "
+                f"{requirement.slot!r} was not exposed"
+            )
+        identity = _unit_lemma(units[0], reg)
+        return (
+            f"{requirement.bound!r} was bound, so "
+            f"{requirement.slot}={identity!r} remained outside "
+            f"category {requirement.cat!r}"
         )
     if pred.bound_requires_form is not None:
         requirement = pred.bound_requires_form
@@ -4164,6 +4264,18 @@ def _explain_candidate(
             where_sources.append(
                 project.source_index.categories.get(
                     predicate.bound_requires_category.cat
+                )
+            )
+        if predicate.bound_rejects_category is not None:
+            where_sources.append(
+                project.source_index.categories.get(
+                    predicate.bound_rejects_category.cat
+                )
+            )
+        if predicate.category_requires_bound is not None:
+            where_sources.append(
+                project.source_index.categories.get(
+                    predicate.category_requires_bound.cat
                 )
             )
         if predicate.same_category_membership is not None:

@@ -1137,6 +1137,33 @@ def _check_where(
                 reg,
             ):
                 return False
+        if pred.bound_rejects_category is not None:
+            requirement = pred.bound_rejects_category
+            if requirement.bound not in slots:
+                continue
+            unit = slots.get(requirement.slot)
+            if unit is None or isinstance(unit, tuple):
+                return False
+            if _slot_ok(
+                unit,
+                MatchToken(slot=requirement.slot, cat=requirement.cat),
+                reg,
+            ):
+                return False
+        if pred.category_requires_bound is not None:
+            requirement = pred.category_requires_bound
+            unit = slots.get(requirement.slot)
+            if unit is None or isinstance(unit, tuple):
+                return False
+            if (
+                _slot_ok(
+                    unit,
+                    MatchToken(slot=requirement.slot, cat=requirement.cat),
+                    reg,
+                )
+                and requirement.bound not in slots
+            ):
+                return False
         if pred.bound_requires_form is not None:
             requirement = pred.bound_requires_form
             if requirement.bound not in slots:
