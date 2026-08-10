@@ -502,10 +502,6 @@ entries:
     senses:
     - noun
     plural: hotels
-  hour:
-    senses:
-    - noun
-    plural: hours
   hourly:
     senses:
     - adjective
@@ -1564,10 +1560,6 @@ entries:
   minus:
     senses:
     - operator
-  minute:
-    senses:
-    - noun
-    plural: minutes
   mismatching:
     senses:
     - adjective

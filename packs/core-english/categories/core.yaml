@@ -1214,6 +1214,40 @@ categories:
             is too broad; human review, not category availability, judges the
             resulting sentence. Bare `take` is deliberately excluded: the
             construction's finite subject is expletive singular `it`.
+    task_completion_verb:
+        parent: verb
+        notes: >
+            Verbs that assert completion of one exact task object. This is
+            deliberately separate from broad quantity-event and motion verb
+            classes: completing a task states elapsed time only in the
+            dedicated completion-duration constructions.
+    task_completion_speed_comparative:
+        parent: comparative
+        notes: >
+            Directional comparatives for elapsed task-completion time. Their
+            polarity describes duration ordering: negative is faster (less
+            elapsed time), positive is slower (more elapsed time).
+    task_completion_object_anaphor:
+        parent: pronoun
+        notes: >
+            Singular object anaphor licensed by the tightly bounded
+            two-clause task-completion construction. The rule preserves the
+            first clause's exact task object; this category does not enable a
+            general pronoun fallback.
+    task_completion_duration_coordinator:
+        parent: conjunction
+        notes: >
+            Temporal two-clause coordinator licensed only by the bounded
+            task-completion-duration premise. General conjunctions do not
+            imply that two clauses compare completion of one shared task.
+    task_completion_faster:
+        parent: task_completion_speed_comparative
+        antonym: task_completion_slower
+        polarity: -1
+    task_completion_slower:
+        parent: task_completion_speed_comparative
+        antonym: task_completion_faster
+        polarity: 1
     relational_marker:
         parent: particle
         notes: >
@@ -1744,7 +1778,7 @@ members:
     mass_measure: [pound] # other concrete units extend this from packs/difg-mined
     currency_measure: [dollar] # 'cent'/'balance'/'earnings'/'cost' extend this from packs/difg-mined
     time_measure: [year, age] # generic age forms; other units extend this from difg-mined
-    duration_measure: [year]
+    duration_measure: [year, minute, hour]
     frequency_quantifier: [every]
     distributive_quantifier: [each, every]
     postpositive_distributive_quantifier: [each]
@@ -1775,6 +1809,11 @@ members:
     finite_desire: [want, wanted, wants]
     need_premise: [need, needed, needs]
     duration_verb: [takes, took]
+    task_completion_verb: [finish, finished, finishes]
+    task_completion_faster: [faster]
+    task_completion_slower: [slower]
+    task_completion_object_anaphor: [it]
+    task_completion_duration_coordinator: [while]
     frame_prepositional_verb: [travel, traveled, travels]
     motion_comparison_verb: [travel, traveled, travels]
     motion_comparison_measure: [inch, time]

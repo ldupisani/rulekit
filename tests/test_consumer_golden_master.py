@@ -364,6 +364,34 @@ GOLDEN = [
      'reference-aggregate', 'decline', None, "no reference group named 'narnia'"),
     ('curated', 'What is the total population of Europe?',
      'reference-aggregate', 'decline', None, "cannot aggregate the 'population' of 'europe'"),
+    ('gsm8k',
+     'Cora took 1 hour to finish the task. '
+     'How many minutes slower did Cora finish the task than Dax?',
+     'completion-duration-difference', 'decline', None,
+     'a comparison needs exactly one compatible completion'),
+    ('gsm8k',
+     'Cora took 1 hour to finish the task. '
+     'How many minutes faster did Cora finish the task than Cora?',
+     'completion-duration-difference', 'decline', None,
+     'a completion-duration comparison needs two distinct '),
+    ('gsm8k',
+     'Cora took 0 minutes to finish the task. '
+     'Dax took 1 hour to finish the task. '
+     'How many minutes faster did Cora finish the task than Dax?',
+     'completion-duration-difference', 'decline', None,
+     'completion durations must be strictly positive'),
+    ('gsm8k',
+     'Cora took 30 minutes to finish the task. '
+     'Dax took 0.5 hours to finish the task. '
+     'How many minutes faster did Cora finish the task than Dax?',
+     'completion-duration-difference', 'decline', None,
+     'equal completion durations do not license faster or '),
+    ('gsm8k',
+     'Cora took 30 minutes to finish the task. '
+     'Dax took 1 hour to finish the task. '
+     'How many minutes slower did Cora finish the task than Dax?',
+     'completion-duration-difference', 'decline', None,
+     "'slower' contradicts the stated completion durations"),
 ]
 
 
@@ -441,6 +469,7 @@ _GAP_CEILING = 0    # guards WITHOUT one: lower as probes are added, never raise
 # coverage figure honest in both directions: they are not gaps, and they are
 # not silently absent either.
 _COVERED_BY_UNIT_TEST = {
+    ("completion-duration-difference", "completion-speed direction"),
     ("molar-mass", "no atomic mass known for"),
     ("molar-mass", "a cost needs a numeric rate"),
     ("molar-mass", "weight needs the gram->kilogram conversi"),

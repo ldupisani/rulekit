@@ -1064,7 +1064,8 @@ class WherePredicate(StrictModel):
 
 class FactEmit(StrictModel):
     fact: Literal[
-        "age_at_year", "quantity", "relation", "membership", "subset", "predication",
+        "age_at_year", "task_completion_duration", "quantity", "relation",
+        "membership", "subset", "predication",
         "before", "fraction_quantity", "rest_quantity", "partition_quantity",
         "sequential_partition", "sequential_partition_prefix",
         "sequential_partition_remainder", "sequential_partition_initial_share",

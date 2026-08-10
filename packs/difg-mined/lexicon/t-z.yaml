@@ -48,9 +48,6 @@ entries:
     target:
         senses:
             - noun
-    task:
-        senses:
-            - noun
     tasks:
         senses:
             - noun
@@ -829,9 +826,6 @@ entries:
     where:
         senses:
             - interrogative
-    while:
-        senses:
-            - conjunction
     whiskers:
         senses:
             - noun

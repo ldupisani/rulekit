@@ -66,6 +66,7 @@ from .model import (
     SequentialPartitionRemainingShare,
     SequentialPartitionRemainder,
     Subset,
+    TaskCompletionDuration,
     Unit,
 )
 
@@ -73,6 +74,7 @@ SKIPPABLE_SENSES = {"article", "punct"}
 
 _FACT_CLASSES = {
     "age_at_year": AgeAtYear,
+    "task_completion_duration": TaskCompletionDuration,
     "quantity": Quantity,
     "relation": Relation,
     "membership": Membership,
@@ -1798,6 +1800,7 @@ def _resolve_field(
 
 _NUMERIC_FIELDS = {
     "value", "year", "factor", "offset", "fraction", "numerator", "denominator",
+    "elapsed",
     "first_fraction", "second_fraction",
     # mining candidate temporal-offset-age-recut: Relation's two new
     # signed-year offset fields (model.py) — a pattern rule emits them as

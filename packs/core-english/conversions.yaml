@@ -1,0 +1,5 @@
+format: rulekit/conversions@1
+conversions:
+- from: hour
+  to: minute
+  factor: 60

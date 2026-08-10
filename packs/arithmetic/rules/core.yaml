@@ -5159,6 +5159,81 @@ rules:
         numerator: "{item.value}"
         denominator: "{span.value}"
 
+  - id: arithmetic/task-completion-duration
+    phase: read
+    description: >
+      A referential participant taking one declared elapsed duration to
+      finish one exact task object. The duration remains a dedicated typed
+      fact rather than a Quantity holding or a compound production rate.
+    match:
+      sentence:
+        - {slot: who, type: entity, referential: true, bare_reference_category: bare_entity_reference}
+        - {slot: took, cat: duration_verb, finite_form: true}
+        - {slot: span, cat: duration_measure, counted: true}
+        - {lit: to}
+        - {slot: verb, cat: task_completion_verb, bare_form: true}
+        - opt:
+            - {slot: task_poss, cat: possessive_determiner}
+        - {slot: task, type: noun, referential: true}
+    where:
+      - number_compatible: [who, took]
+    consumes: [span]
+    emits:
+      - fact: task_completion_duration
+        participant: "{who}"
+        task: "{task.qualified}"
+        elapsed: "span"
+        unit: "{span}"
+        verb: "{verb}"
+
+  - id: arithmetic/coordinated-task-completion-durations
+    phase: read
+    description: >
+      Two complete coordinated duration clauses state elapsed times for two
+      distinct referential participants completing the same task. The first
+      clause names the exact task object and the second uses the dedicated
+      singular task anaphor, keeping the coordination bounded without a broad
+      clause split or retry.
+    match:
+      sentence:
+        - {slot: a, type: entity, referential: true, bare_reference_category: bare_entity_reference}
+        - {slot: took_a, cat: duration_verb, finite_form: true}
+        - {slot: span_a, cat: duration_measure, counted: true}
+        - {lit: to}
+        - {slot: verb_a, cat: task_completion_verb, bare_form: true}
+        - opt:
+            - {slot: task_poss, cat: possessive_determiner}
+        - {slot: task_a, type: noun, referential: true}
+        - {slot: coord, cat: task_completion_duration_coordinator}
+        - {slot: b, type: entity, referential: true, bare_reference_category: bare_entity_reference}
+        - {slot: took_b, cat: duration_verb, finite_form: true}
+        - {slot: span_b, cat: duration_measure, counted: true}
+        - {lit: to}
+        - {slot: verb_b, cat: task_completion_verb, bare_form: true}
+        - {slot: task_ref, cat: task_completion_object_anaphor}
+    where:
+      - number_compatible: [a, took_a]
+      - number_compatible: [b, took_b]
+      - same_lemma: [verb_a, verb_b]
+      - distinct: [a, b]
+    satisfies:
+      took_b: [subject]
+      task_ref: [refers]
+    consumes: [span_a, span_b]
+    emits:
+      - fact: task_completion_duration
+        participant: "{a}"
+        task: "{task_a.qualified}"
+        elapsed: "span_a"
+        unit: "{span_a}"
+        verb: "{verb_a}"
+      - fact: task_completion_duration
+        participant: "{b}"
+        task: "{task_a.qualified}"
+        elapsed: "span_b"
+        unit: "{span_b}"
+        verb: "{verb_b}"
+
   - id: arithmetic/periodic-rate-every-span
     phase: read
     description: >
@@ -6566,6 +6641,34 @@ asks:
     resolves:
       consumer: difference
       measure: "{item}"
+      verb: "{verb}"
+
+  - id: ask/how-many-unit-task-completion-comparative-than
+    # Exact task-completion duration comparison: the requested duration unit,
+    # signed speed direction, two participants, completion verb, and task
+    # object are all explicit. The dedicated consumer validates that the
+    # direction agrees with elapsed-time ordering before returning a gap.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: unit, cat: duration_measure}
+        - {slot: dir, cat: task_completion_speed_comparative}
+        - {slot: aux, type: auxiliary}
+        - {slot: a, type: entity}
+        - {slot: verb, cat: task_completion_verb, bare_form: true}
+        - opt:
+            - {slot: task_poss, cat: possessive_determiner}
+        - {slot: task, type: noun, referential: true}
+        - {lit: than}
+        - {slot: b, type: entity}
+    resolves:
+      consumer: completion-duration-difference
+      a: "{a}"
+      b: "{b}"
+      task: "{task.qualified}"
+      unit: "{unit}"
+      direction: "{dir}"
       verb: "{verb}"
 
   - id: ask/how-many-unit-dimension-comparative-than

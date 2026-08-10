@@ -2671,9 +2671,6 @@ entries:
   fast:
     senses:
     - adjective
-  faster:
-    senses:
-    - comparative
   fastest:
     senses:
     - adjective
@@ -2783,20 +2780,6 @@ entries:
   finance:
     senses:
     - noun
-  finish:
-    senses:
-    - noun
-    - verb
-  finished:
-    senses:
-    - verb
-    verb:
-      lemma: finish
-  finishes:
-    senses:
-    - verb
-    verb:
-      lemma: finish
   fire:
     senses:
     - noun

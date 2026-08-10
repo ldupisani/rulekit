@@ -142,8 +142,8 @@ def test_g5r_unlocks_exactly_the_preregistered_rule() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 128
-    assert sum(item.supported for item in availability.values()) == 117
+    assert len(availability) == 130
+    assert sum(item.supported for item in availability.values()) == 119
     assert sum(not item.supported for item in availability.values()) == 11
     assert availability[
         "arithmetic/anchored-relation-postfix-dimension"
@@ -151,7 +151,7 @@ def test_g5r_unlocks_exactly_the_preregistered_rule() -> None:
     assert availability[
         "arithmetic/anchored-relation-conjoined-anchor"
     ].supported
-    assert len(exploration_status(project)["fillers"]) == 293
+    assert len(exploration_status(project)["fillers"]) == 300
 
 
 @pytest.mark.parametrize("comparative", sorted(MOVED_WORDS))

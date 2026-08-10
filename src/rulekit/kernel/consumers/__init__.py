@@ -113,6 +113,7 @@ from . import (  # noqa: E402,F401  (import registers each handler)
     rate_span_inverse as _rate_span_inverse,
     capacity as _capacity,
     difference as _difference,
+    completion_duration_difference as _completion_duration_difference,
     change as _change,
     unique_entity as _unique_entity,
     money_left as _money_left,

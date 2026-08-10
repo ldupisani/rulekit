@@ -239,6 +239,8 @@ entries:
     more: {senses: [comparative]}
     fewer: {senses: [comparative]}
     less: {senses: [comparative]}
+    faster: {senses: [comparative]}
+    slower: {senses: [comparative]}
     # Generic age comparatives belong with the core relation grammar. The
     # benchmark-mined pack still extends them with its higher/lower categories.
     older: {senses: [comparative]}
@@ -269,6 +271,7 @@ entries:
     # stay in difg-mined.
     average: {senses: [aggregate]}
     and: {senses: [conjunction]}
+    while: {senses: [conjunction]}
 
     # copula / possession verbs (state)
     be: {senses: [verb]}
@@ -335,6 +338,9 @@ entries:
     take: {senses: [verb], number: plural}
     takes: {senses: [verb], verb: {lemma: take}}
     took: {senses: [verb], verb: {lemma: take}}
+    finish: {senses: [noun, verb]}
+    finished: {senses: [verb], verb: {lemma: finish}}
+    finishes: {senses: [verb], verb: {lemma: finish}}
     want: {senses: [verb], number: plural}
     wanted: {senses: [verb], verb: {lemma: want}}
     wanting: {senses: [verb], verb: {lemma: want}}
@@ -366,7 +372,10 @@ entries:
     remainder: {senses: [noun]}
     rest: {senses: [noun]}
     topic: {senses: [noun], plural: topics}
+    task: {senses: [noun]}
     year: {senses: [noun], plural: years}
+    hour: {senses: [noun], plural: hours}
+    minute: {senses: [noun], plural: minutes}
     time: {senses: [noun], plural: times}
     inch: {senses: [noun], plural: inches}
     pound: {senses: [noun], plural: pounds}

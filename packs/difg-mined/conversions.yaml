@@ -33,9 +33,6 @@ conversions:
 - from: kilogram
   to: gram
   factor: 1000.0
-- from: hour
-  to: minute
-  factor: 60
 - from: kilometer
   to: meter
   factor: 1000

@@ -1815,7 +1815,9 @@ def test_modal_periodic_generation_uses_bare_form_and_declared_frequency() -> No
         verb, project.registry.verb_lemmas.get(verb, verb)
     )
     assert bindings["freq"] == "every"
-    assert bindings["span"].endswith((" year", " years"))
+    assert bindings["span"].endswith(
+        (" minute", " minutes", " hour", " hours", " year", " years")
+    )
 
 
 @pytest.mark.parametrize(

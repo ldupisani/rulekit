@@ -785,6 +785,29 @@ class AgeAtYear(Fact):
 
 
 @dataclass(frozen=True)
+class TaskCompletionDuration(Fact):
+    """One participant's exact elapsed duration for completing one task.
+
+    This is intentionally separate from :class:`Quantity`: an elapsed time
+    is neither a holding nor an additive event amount.  The declared unit is
+    preserved so the dedicated comparative consumer can use the registry's
+    conversion graph without widening ordinary quantity folds to durations.
+    """
+
+    participant: str
+    task: str
+    elapsed: float
+    unit: str
+    verb: str
+
+    def key(self) -> tuple:
+        return ("task-completion-duration", self.participant, self.task)
+
+    def value_part(self) -> Any:
+        return (self.elapsed, self.unit, self.verb)
+
+
+@dataclass(frozen=True)
 class Quantity(Fact):
     entity: str
     measure: str  # what is counted/measured (noun lemma)

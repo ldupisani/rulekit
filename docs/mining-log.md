@@ -51,3 +51,19 @@ neutral, curated remains 71/71, lint reports zero errors and warnings, FOLIO
 makes zero numeric commitments, all four canonical specimens replay exactly,
 and the content-blind protected digest is unchanged. No protected
 TEST/generalization look was spent.
+
+## Increment 131 (2026-08-10) — Unit-normalized task-completion duration gaps
+
+The exact human-approved and machine-passed candidate
+`unit-normalized-task-completion-duration-gap`
+(`7c07d762acb617dad143520624a29c0c34046d29`) records typed completion
+durations, normalizes compatible units, and answers an exact faster/slower
+gap only when task identity, participants, direction, and evidence agree.
+Ambiguous, incompatible, equal-duration, and contradictory neighbours decline.
+
+The integration gate passes 4,836 tests. GSM8K DEV-train gains one correct
+answer with zero breaks or new wrong commitments; the other twelve standing
+DEV diffs are neutral. Curated remains 71/71, lint reports zero errors and
+warnings, FOLIO makes zero numeric commitments, all four canonical specimens
+replay exactly, and the content-blind protected digest is unchanged. No
+protected TEST/generalization look was spent.
