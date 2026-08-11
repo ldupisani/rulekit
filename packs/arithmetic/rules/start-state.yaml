@@ -71,7 +71,7 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         - {slot: aux, type: future_modal}
         - {slot: who, type: name}
         # `cat: state`, NOT the base ask's `type: verb`. The base ask binds
@@ -84,9 +84,13 @@ asks:
         # a question never reaches this ask at all and falls through to the base
         # ask, which reads it correctly. All state verbs are one equivalence
         # class, so resolving them to `have` below is exact, not a flattening.
-        - {slot: verb, cat: state}
+        - {slot: verb, cat: possession_state, bare_form: true}
         - {lit: in}
+        - {lit: the, consume_skipped: true}
         - {lit: beginning}
+    where:
+      - number_compatible: [who, aux]
+      - slot_not_category: {slot: item, cat: mass_quantity_noun}
     resolves:
       consumer: single-entity
       entity: "{who}"
@@ -120,11 +124,14 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         - {slot: aux, type: future_modal}
         - {slot: who, type: name}
-        - {slot: verb, cat: state}
+        - {slot: verb, cat: possession_state, bare_form: true}
         - {lit: originally}
+    where:
+      - slot_not_category: {slot: item, cat: mass_quantity_noun}
+      - number_compatible: [who, aux]
     resolves:
       consumer: single-entity
       entity: "{who}"
@@ -142,7 +149,7 @@ asks:
     #   who, type: common_noun  — KEPT verbatim. The base ask's own comment
     #     explains why this is its own slot type rather than a widening of
     #     `type: name`, and none of that reasoning changes here.
-    #   verb, cat: state        — CHANGED from the base ask's `type: verb`, for
+    #   verb, cat: possession_state — CHANGED from the base ask's `type: verb`, for
     #     the same reason the sibling above changed it: a start state IS a state,
     #     and this consumer is only handed the `have` fold, so accepting any verb
     #     would answer a have-question for an eat-question. A non-state verb now
@@ -158,13 +165,19 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         - {slot: aux, type: future_modal}
         - {slot: who, type: common_noun}
-        - {slot: verb, cat: state}
+        - {slot: verb, cat: possession_state, bare_form: true}
         - {lit: to}
-        - {slot: marker, cat: start_marker_verb}
+        - {slot: marker, cat: start_marker_verb, bare_form: true}
         - {lit: with}
+    where:
+      - slot_not_category: {slot: item, cat: mass_quantity_noun}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: who, cat: timeperiod}
+      - number_compatible: [who, aux]
     resolves:
       consumer: single-entity
       entity: "{who}"
@@ -195,13 +208,17 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
-        - {slot: verb, cat: state}
-        - {slot: prep, cat: preposition}
-        - {slot: place, type: noun}
+        - {slot: item, type: plural}
+        - {slot: verb, cat: plural_copula}
+        - {slot: prep, cat: quantity_location_preposition}
+        - {slot: place, cat: quantity_interior_location, referential: true}
         - {lit: to}
-        - {slot: marker, cat: start_marker_verb}
+        - {slot: marker, cat: start_marker_verb, bare_form: true}
         - {lit: with}
+    where:
+      - number_compatible: [item, verb]
+      - slot_not_category: {slot: item, cat: mass_quantity_noun}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
     resolves:
       consumer: single-entity
       entity: "{place}"

@@ -1,6 +1,6 @@
 # RuleKit architecture
 
-**Updated:** 2026-08-08
+**Updated:** 2026-08-11
 **Status:** current implementation, not a roadmap
 
 RuleKit is a deterministic reading and reasoning engine for controlled,
@@ -63,8 +63,15 @@ descriptor/noun compatibility, category overlap, and conditional
 verb/semantic-role constraints. They also distinguish location PPs from
 remnant-only PPs, require outbound transfers to take compatible quantity
 objects, separate sum markers from broader aggregate operations, and retain
-`GroupTotal.scope` only for surfaces that identify a real group. Standalone
-scalar numbers remain distinct from condensed counted nouns so an elided rule
+`GroupTotal.scope` only for surfaces that identify a real group.
+
+Named calendar adjuncts additionally use separate governed preposition/object
+categories and a category-scoped determinerless slot qualifier: ordinary
+referential common nouns may still take determiners, while weekdays and month
+names in the same slot stay bare. Quantitative initiation, earning, and
+production verbs use positive actor/object roles rather than an arbitrary
+direct-object reading. Standalone scalar numbers remain distinct from
+condensed counted nouns so an elided rule
 cannot double-fire on an explicit measure. Percent-change premises now split
 mass currency from plural denominations, enforce agreement, and reject
 decreases beyond the whole quantity. Motion comparisons reject an unstated
@@ -473,6 +480,14 @@ an `attribute_compatible` rule predicate must name an adjective-rooted slot and
 a noun-rooted slot. The resulting mappings and rule sequences are sorted and
 frozen.
 
+Ask rules use the same closed, schema-validated `where` predicate model as
+premise rules. In particular, `partitive_compatible` checks an overt measure
+and substance against the pack-declared `partitive_measure_compatibility`
+category pairs, while `bound_requires_category` governs optional ask markers
+such as the conventional `in total` form. Both predicates run in the ordinary
+matcher and are compile-checked against the ask's actual slots; the generator
+does not carry a separate approximation of the grammar.
+
 `quarantine.yaml` is negative knowledge: its entries are intentionally absent
 from the lexicon, and compilation rejects a word that appears in both.
 
@@ -838,12 +853,29 @@ pack-declared holder conjunction. Discourse-group captures and arbitrary
 spans remain blocked because an independent question cannot truthfully invent
 their antecedent.
 
+Realization prunes a candidate filler when the Ask's already-bound slots make
+a shared `where` predicate decidable. This covers exclusions, agreement,
+distinctness, conditional categories, attribute/noun compatibility,
+measure/holder roles, verb/object roles, and partitive pairs. Undecidable
+predicates remain untouched until their other slot is chosen. A possessive
+determiner similarly selects the bare rendering of its following referential
+common noun, preventing surfaces such as `his the book`. This is only bounded
+search pruning: every completed surface still passes the ordinary analyzer,
+`match_ask`, predicate checks, and specificity comparison, so generation does
+not acquire a parallel grammar.
+
 An answerable ask scenario never uses a consumer-specific sentence template.
 The authoring layer compares normalized query fields with whole-slot emitted
-fact templates to propose locks for ordinary premise generation, then calls
-the normal solver on each bounded combination. A commitment is accepted only
-from that solver. Candidate sets are searched in cardinality order and each
-returned premise is removed in turn to prove irreducibility. Ask-only,
+fact templates to propose semantic-identity locks for ordinary premise
+generation, then calls the normal solver on each bounded combination. An
+identity lock constrains the meaning while leaving the realizer to select a
+compatible surface, number, morphology, and numeric value. A commitment is
+accepted only from the normal solver. Candidate sets are searched in
+cardinality order and each returned premise is removed in turn to prove
+irreducibility. Random answerable generation advances deterministically past
+an ask whose bounded search finds no scenario; an explicitly selected ask
+reports that limitation. Pathological generated combinations are failed
+search branches rather than request-level crashes. Ask-only,
 answerable, and deliberate missing-evidence records remain distinct from the
 premise exploration ledger. Their answer projection preserves number, series,
 witnesses, verdict, clarification, and decline shapes.
@@ -879,7 +911,8 @@ constraints plus `number_compatible`, conditional `bound_requires_type` and
 `bound_requires_category` and `bound_requires_form`, optional-slot
 `same_presence`, pack-declared descriptor/noun compatibility, conditional
 positive or negative `verb_role_compatible`, referential noun-phrase
-qualification, and negative slot-category constraints. A number slot may
+qualification, category-scoped `determinerless_category`, and negative
+slot-category constraints. A number slot may
 declare `standalone: true` when a condensed counted noun is not grammatical in
 that position. Arbitrarily nested optional groups compose those same token
 realizers. Each active group makes a seeded include/omit choice; all descendants
@@ -1223,10 +1256,15 @@ modal while preserving an ordinary finite verb when the modal branch is
 absent. Registry compilation requires the target to be verb-rooted, and the
 matcher and generator share the same morphology helpers.
 
-`verb_role_compatible: {verb: VERB_SLOT, roles: [...], verb_cat: VERB_CAT,
+`verb_role_compatible: {verb: TRIGGER_SLOT, roles: [...], verb_cat: TRIGGER_CAT,
 role_cat: ROLE_CAT}` is another conditional category boundary. Its positive
 mode requires every named role to be a proper name or belong to `ROLE_CAT`
-when the selected verb belongs to `VERB_CAT`. Its mutually exclusive
+when the selected trigger belongs to `TRIGGER_CAT`. The historical field
+names reflect its usual verb trigger, but registry compilation permits any
+trigger slot whose root sense matches the declared trigger category. This
+supports optional possessive-determiner ownership boundaries without a
+word-specific kernel branch. `allow_unbound_trigger: true` makes such an
+optional trigger neutral when its grammar branch is omitted. Its mutually exclusive
 `excluded_role_cat: ROLE_CAT` mode instead rejects roles in that category;
 proper names receive no special bypass in the negative mode. Verbs outside
 the triggering class are unchanged. The matcher, availability solver, locked
@@ -1234,6 +1272,12 @@ probes, and generator share the same predicate. This represents agentivity
 and object-role exclusions in pack data—for example, spending requires
 animate actors and selling refuses declared remnants—without embedding a verb
 or noun inventory in Python.
+
+`determinerless_category: CATEGORY` is an opt-in qualifier on a referential
+noun slot. A filler in `CATEGORY` must have no article or possessive
+determiner, in both matching and generation; fillers outside it retain the
+ordinary referential behavior. Named calendar periods use this to distinguish
+`in April` from `in the April` without making every PP object bare.
 
 Object slots use the same role predicate. Fractional delta comparisons require
 an `item` governed by `spend_verb` to belong to `currency`; this keeps

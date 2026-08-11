@@ -774,15 +774,15 @@ def test_new_live_review_failures_now_retest_absent(
         ),
         (
             "arithmetic/anaphoric-multiplier-conjunct-many",
-            "The bird found 15 coins in the garden and once that many.",
+            "The bird found 15 coins in the garden and twice that many.",
         ),
         (
             "arithmetic/anaphoric-multiplier-conjunct-many",
-            "The bird found 15 coins in the garden and once this many.",
+            "The bird found 15 coins in the garden and twice this many.",
         ),
         (
             "arithmetic/anaphoric-multiplier-conjunct-many",
-            "Eron received 15 coins with the rest and once that many.",
+            "Eron received 15 coins with the rest and twice that many.",
         ),
         (
             "arithmetic/times-as-many-conjunct",

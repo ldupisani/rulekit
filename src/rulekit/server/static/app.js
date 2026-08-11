@@ -21,6 +21,8 @@ const state = {
   generationExploration: { rules: [], fillers: [], summary: {} },
   candidate: null,
   askCandidate: null,
+  askReviewVerdict: null,
+  askReviewRecorded: false,
   lastGenerationSeed: null,
   lastAskGenerationSeed: null,
   reviewVerdict: null,
@@ -112,6 +114,48 @@ const GENERATION_DEFECTS = [
     "missing_fact_context",
     "Fact omits needed context",
     "The fact drops an identity, qualifier, role, time, or other discriminator needed later.",
+  ],
+  [
+    "other",
+    "Other",
+    "Use the review note to describe a defect that does not fit another choice.",
+  ],
+];
+const ASK_GENERATION_DEFECTS = [
+  [
+    "sentence_ungrammatical",
+    "Question ungrammatical",
+    "The generated question is not generally accepted ordinary English.",
+  ],
+  [
+    "intended_ask_did_not_fire",
+    "Wrong ask match",
+    "The intended ask did not win the ordinary matcher round trip.",
+  ],
+  [
+    "incorrect_query_binding",
+    "Incorrect query binding",
+    "The ask matched, but one or more resolved query fields have the wrong identity or value.",
+  ],
+  [
+    "irrelevant_premise_evidence",
+    "Premise evidence defective",
+    "Generated evidence is irrelevant, unnatural, insufficient, or should not be part of this scenario.",
+  ],
+  [
+    "incorrect_answer",
+    "Incorrect answer",
+    "The ordinary solver committed, but its answer shape or value is not warranted by the scenario.",
+  ],
+  [
+    "incorrect_decline",
+    "Incorrect decline",
+    "The solver declined or requested clarification even though the scenario supplies a unique answer.",
+  ],
+  [
+    "scenario_not_minimal",
+    "Scenario not minimal",
+    "A generated premise can be removed without changing the intended answer.",
   ],
   [
     "other",
@@ -1214,7 +1258,7 @@ function sortedReviews() {
   const sign = dir === "asc" ? 1 : -1;
   const of = (r) =>
     key === "verdict" ? VERDICT_RANK[r.verdict] ?? 9
-    : key === "target_rule" ? r.target_rule || ""
+    : key === "target_rule" ? r.target_rule || r.ask_scenario?.target_ask || ""
     : r.timestamp;
   return [...state.reviews].sort((a, b) => {
     const x = of(a), y = of(b);
@@ -1260,7 +1304,7 @@ function renderReviews() {
   const hrow = el("tr");
   hrow.append(sortHeader("Verdict", "verdict"));
   hrow.append(sortHeader("Recorded", "timestamp"));
-  hrow.append(sortHeader("Target rule", "target_rule"));
+  hrow.append(sortHeader("Target", "target_rule"));
   hrow.append(el("th", "", "Sentence"));
   hrow.append(el("th", "", "Note"));
   hrow.append(el("th", "", ""));
@@ -1298,16 +1342,22 @@ function reviewRow(r) {
   row.append(el("td", "rv-when mono", (r.timestamp || "").replace("T", " ").slice(0, 19)));
   const rule = el("td", "rv-rule mono");
   rule.append(
-    document.createTextNode(r.target_rule || "No target rule"),
+    document.createTextNode(
+      r.target_rule || r.ask_scenario?.target_ask || "No target rule",
+    ),
     el("span", "rv-origin", r.origin || "generated"),
     el(
       "span",
       "rv-origin",
-      (r.generation_mode || "strict").replaceAll("_", " "),
+      (
+        r.review_kind === "ask"
+          ? r.ask_scenario?.scenario_mode || "ask"
+          : r.generation_mode || "strict"
+      ).replaceAll("_", " "),
     ),
   );
   row.append(rule);
-  row.append(el("td", "rv-sentence", r.sentence));
+  row.append(el("td", "rv-sentence", r.ask_scenario?.question || r.sentence));
   const note = el("td", "rv-note");
   note.append(document.createTextNode(r.note || "—"));
   if (r.interpretation) {
@@ -1315,6 +1365,22 @@ function reviewRow(r) {
   }
   if (r.suggested_rule) {
     note.append(el("div", "rv-structured", `missing rule: ${r.suggested_rule}`));
+  }
+  if (r.ask_scenario) {
+    note.append(
+      el(
+        "div",
+        "rv-structured",
+        `ask scenario: ${r.ask_scenario.answer_shape} · ` +
+        `${r.ask_scenario.premises.length} premise(s) · ` +
+        `${r.ask_scenario.minimal ? "removal-minimal" : "not proven minimal"}`,
+      ),
+      el(
+        "div",
+        "rv-structured mono",
+        `query: ${JSON.stringify(r.ask_scenario.query)}`,
+      ),
+    );
   }
   if (r.defects?.length) {
     note.append(el("div", "rv-structured",
@@ -1492,7 +1558,7 @@ async function deleteReview(r) {
 }
 
 function openReviewInReader(r) {
-  $("trace-input").value = r.sentence;
+  $("trace-input").value = r.ask_scenario?.text || r.sentence;
   setView("reading");
   $("view-reading").classList.add("on");
   runTrace();
@@ -2238,6 +2304,111 @@ function populateGenerationRuleSelect() {
   updateGenerationRuleState();
 }
 
+function initializeAskGenerationDefects() {
+  const box = $("generation-ask-defects");
+  for (const [kind, label, help] of ASK_GENERATION_DEFECTS) {
+    const control = el("label", "generation-defect");
+    control.title = help;
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.value = kind;
+    input.title = help;
+    input.setAttribute("aria-label", `${label}. ${help}`);
+    input.onchange = updateAskGenerationReviewState;
+    const hint = el("span", "generation-defect-help", "?");
+    hint.title = help;
+    hint.setAttribute("aria-label", help);
+    control.append(input, document.createTextNode(label), hint);
+    box.append(control);
+  }
+}
+
+function selectedAskGenerationDefects() {
+  return Array.from(
+    document.querySelectorAll("#generation-ask-defects input:checked"),
+  ).map((input) => ({
+    kind: input.value,
+    attachment: { kind: "sentence", index: null },
+  }));
+}
+
+function updateAskGenerationReviewState() {
+  const unavailable = !state.askCandidate || state.askReviewRecorded;
+  document.querySelectorAll("#generation-ask-verdicts button").forEach(
+    (button) => { button.disabled = unavailable; },
+  );
+  document.querySelectorAll("#generation-ask-defects input").forEach(
+    (input) => { input.disabled = unavailable; },
+  );
+  $("generation-ask-note").disabled = unavailable;
+  $("generation-ask-save-review").disabled =
+    unavailable || !state.askReviewVerdict;
+}
+
+function selectAskReviewVerdict(verdict, button) {
+  if (state.askReviewRecorded) return;
+  state.askReviewVerdict = verdict;
+  document.querySelectorAll("#generation-ask-verdicts button").forEach(
+    (node) => node.classList.toggle("selected", node === button),
+  );
+  updateAskGenerationReviewState();
+}
+
+async function saveAskGenerationReview() {
+  const candidate = state.askCandidate;
+  if (!candidate || !state.askReviewVerdict) return;
+  $("generation-ask-save-review").disabled = true;
+  const premiseSentences = (candidate.premises || []).map(
+    (premise) => premise.sentence,
+  );
+  const payload = await api("POST", "/api/generation/review", {
+    candidate_id: candidate.id,
+    origin: "generated",
+    generation_mode: "strict",
+    lexical_relaxations: [],
+    review_kind: "ask",
+    sentence: candidate.question,
+    context_before: premiseSentences,
+    context_after: [],
+    target_rule: null,
+    ask_scenario: {
+      target_ask: candidate.target_ask,
+      scenario_mode: candidate.scenario_mode,
+      question: candidate.question,
+      text: candidate.text,
+      consumer: candidate.consumer,
+      query: candidate.query,
+      premises: premiseSentences,
+      premise_rules: (candidate.premises || []).map(
+        (premise) => premise.target_rule,
+      ),
+      answer: candidate.answer,
+      answer_shape: candidate.answer_shape,
+      minimal: candidate.minimal,
+    },
+    seed: candidate.seed,
+    registry_fingerprint: candidate.registry_fingerprint,
+    verdict: state.askReviewVerdict,
+    requested_bindings: candidate.requested_bindings,
+    defects: selectedAskGenerationDefects(),
+    hypotheses: [],
+    interpretation: "",
+    suggested_rule: "",
+    note: $("generation-ask-note").value,
+  });
+  if (!payload.ok) {
+    $("generation-ask-review-result").textContent =
+      payload.detail || "ask review rejected";
+    updateAskGenerationReviewState();
+    return;
+  }
+  state.askReviewRecorded = true;
+  $("generation-ask-review-result").textContent =
+    `recorded ${state.askReviewVerdict} · ${payload.review.timestamp}`;
+  updateAskGenerationReviewState();
+  setStatus("ask scenario review recorded in project generation history", "ok");
+}
+
 async function loadGenerationAsks() {
   const payload = await api("GET", "/api/generation/asks");
   state.generationAsks = payload.asks || [];
@@ -2283,6 +2454,16 @@ function updateAskGenerationState() {
 
 function renderAskGenerationCandidate(candidate) {
   state.askCandidate = candidate;
+  state.askReviewVerdict = null;
+  state.askReviewRecorded = false;
+  document.querySelectorAll("#generation-ask-verdicts button").forEach(
+    (button) => button.classList.remove("selected"),
+  );
+  document.querySelectorAll("#generation-ask-defects input").forEach(
+    (input) => { input.checked = false; },
+  );
+  $("generation-ask-note").value = "";
+  $("generation-ask-review-result").textContent = "";
   $("generation-empty").classList.add("hidden");
   $("generation-candidate").classList.add("hidden");
   const box = $("generation-ask-candidate");
@@ -2378,6 +2559,7 @@ function renderAskGenerationCandidate(candidate) {
   answer.append(
     el("div", "ask-generation-answer-reason", candidate.answer.reason),
   );
+  updateAskGenerationReviewState();
 }
 
 async function generateAskScenario() {
@@ -3808,6 +3990,7 @@ $("view-proof").onclick = () => setView("proof");
 $("generation-next").onclick = generateNext;
 $("generation-ask-next").onclick = generateAskScenario;
 $("generation-ask-reading").onclick = inspectAskGenerationReading;
+$("generation-ask-save-review").onclick = saveAskGenerationReview;
 $("generation-ask-seed").addEventListener("input", () => {
   state.lastAskGenerationSeed = null;
 });
@@ -3832,12 +4015,20 @@ $("generation-reading").onclick = inspectGeneratedReading;
 $("generation-form-hypotheses").onclick = formGenerationHypotheses;
 $("generation-save-review").onclick = saveGenerationReview;
 initializeGenerationDefects();
+initializeAskGenerationDefects();
 document.querySelectorAll(
   ".generation-review .review-verdicts button",
 ).forEach((button) => {
   button.onclick = () => selectReviewVerdict(button.dataset.verdict, button);
 });
+document.querySelectorAll("#generation-ask-verdicts button").forEach((button) => {
+  button.onclick = () => selectAskReviewVerdict(
+    button.dataset.verdict,
+    button,
+  );
+});
 updateGenerationReviewState();
+updateAskGenerationReviewState();
 document.addEventListener("keydown", (e) => {
   if (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT") return;
   if (e.key === "ArrowDown" || e.key === "j") { e.preventDefault(); selectDecision(state.cursor + 1); }

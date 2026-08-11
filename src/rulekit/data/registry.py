@@ -79,7 +79,11 @@ from .schemas import (
 # keeps 'ones' single-sensed and behavior-identical everywhere except the
 # one condense.py merge (adjective + measure_anaphor pronoun) that opts in
 # by category membership, narrowly, exactly as the invariant demands.
-# 'imperative' was added the same way again (mining candidate dimension-
+# 'auxiliary' follows the same rule for agreement-sensitive do-support
+# subsets used by generated questions. It was already a known lexicon sense;
+# this only permits a category to name the plural-compatible forms and adds
+# no new ambiguity to any word. 'imperative' was added the same way again
+# (mining candidate dimension-
 # aggregate-asks) so a `compute_verb` category can name the closed set of
 # imperative task-cue verbs ('compute'/'calculate'/'determine') that gate
 # the new imperative-headed aggregate asks -- purely additive: 'imperative'
@@ -95,7 +99,7 @@ from .schemas import (
 ROOT_SENSES = (
     "noun", "verb", "adjective", "quantifier", "preposition", "comparative",
     "negator", "conjunction", "modal", "particle", "adverb", "time",
-    "article", "pronoun", "imperative", "aggregate",
+    "article", "pronoun", "auxiliary", "imperative", "aggregate",
 )
 
 
@@ -131,6 +135,7 @@ class Registry:
     modifier_host_compatibility: Mapping[str, tuple[str, ...]]
     modifier_attachment_compatibility: tuple[tuple[str, str, str], ...]
     measure_holder_compatibility: Mapping[str, tuple[str, ...]]
+    partitive_measure_compatibility: Mapping[str, tuple[str, ...]]
     subject_role_derivations: Mapping[tuple[str, str], str]
     adposition_roles: Mapping[
         str, tuple[tuple[str, str, str, bool], ...]
@@ -319,6 +324,26 @@ class Registry:
     def measure_applies_to_holder(self, measure: str, holder: str) -> bool:
         return bool(self.measure_holder_compatibility_pairs(measure, holder))
 
+    def partitive_compatibility_pairs(
+        self, measure: str, substance: str
+    ) -> tuple[tuple[str, str], ...]:
+        """Every declared measure-category/substance-category licence."""
+
+        pairs: set[tuple[str, str]] = set()
+        measure = self.plural_to_singular.get(measure, measure)
+        substance = self.plural_to_singular.get(substance, substance)
+        for direct in self.word_categories.get(measure, ()):
+            for measure_category in self.cat_ancestors(direct):
+                for substance_category in self.partitive_measure_compatibility.get(
+                    measure_category, ()
+                ):
+                    if self.word_in_category(substance, substance_category):
+                        pairs.add((measure_category, substance_category))
+        return tuple(sorted(pairs))
+
+    def partitive_applies_to(self, measure: str, substance: str) -> bool:
+        return bool(self.partitive_compatibility_pairs(measure, substance))
+
 
 def _freeze(d: dict) -> Mapping:
     return MappingProxyType(dict(sorted(d.items())))
@@ -414,6 +439,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
     modifier_host_compatibility: dict[str, list[str]] = {}
     modifier_attachment_compatibility: list[tuple[str, str, str]] = []
     measure_holder_compatibility: dict[str, list[str]] = {}
+    partitive_measure_compatibility: dict[str, list[str]] = {}
     subject_role_derivations: dict[tuple[str, str], str] = {}
     subject_role_verbs: set[str] = set()
     adposition_roles: dict[
@@ -459,6 +485,10 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
             for measure, holders in doc.measure_holder_compatibility.items():
                 measure_holder_compatibility.setdefault(measure, []).extend(
                     holders
+                )
+            for measure, substances in doc.partitive_measure_compatibility.items():
+                partitive_measure_compatibility.setdefault(measure, []).extend(
+                    substances
                 )
             for verb, derivation in doc.subject_role_derivations.items():
                 if verb in subject_role_verbs:
@@ -586,6 +616,24 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
             if root != "noun":
                 raise CompileError(
                     f"measure-holder compatibility {role} category "
+                    f"{category!r} is not noun-rooted"
+                )
+
+    for measure, substances in sorted(partitive_measure_compatibility.items()):
+        for category, role in ((measure, "measure"), *(
+            (substance, "substance") for substance in substances
+        )):
+            if category not in category_parents:
+                raise CompileError(
+                    f"partitive compatibility names unknown {role} category "
+                    f"{category!r}"
+                )
+            root = category
+            while root in category_parents:
+                root = category_parents[root]
+            if root != "noun":
+                raise CompileError(
+                    f"partitive compatibility {role} category "
                     f"{category!r} is not noun-rooted"
                 )
 
@@ -987,7 +1035,9 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                         slots.setdefault(tok.slot, tok)
                     cat = getattr(tok, "cat", None)
                     if cat and cat not in valid_gates:
-                        raise CompileError(f"rule {rule.id!r} gates on unknown category {cat!r}")
+                        raise CompileError(
+                            f"rule {rule.id!r} gates on unknown category {cat!r}"
+                        )
                     common_noun_cat = getattr(tok, "common_noun_cat", None)
                     if common_noun_cat:
                         if common_noun_cat not in valid_gates:
@@ -1002,6 +1052,23 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                             raise CompileError(
                                 f"rule {rule.id!r} uses `common_noun_cat` "
                                 f"with non-noun category {common_noun_cat!r}"
+                            )
+                    determinerless_category = getattr(
+                        tok, "determinerless_category", None
+                    )
+                    if determinerless_category is not None:
+                        if determinerless_category not in valid_gates:
+                            raise CompileError(
+                                f"rule {rule.id!r} determinerless slot names "
+                                f"unknown category {determinerless_category!r}"
+                            )
+                        root = determinerless_category
+                        while root in category_parents:
+                            root = category_parents[root]
+                        if root != "noun":
+                            raise CompileError(
+                                f"rule {rule.id!r} determinerless category "
+                                f"{determinerless_category!r} is not noun-rooted"
                             )
                     if cat and (
                         getattr(tok, "counted", False)
@@ -1282,18 +1349,14 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                             f"rule {rule.id!r} verb-role compatibility names "
                             f"unknown slot {slot_name!r}"
                         )
-                if _slot_root(slots[role_compatibility.verb]) != "verb":
-                    raise CompileError(
-                        f"rule {rule.id!r} verb-role compatibility governor "
-                        f"{role_compatibility.verb!r} is not verb-rooted"
-                    )
+                trigger_root = _slot_root(slots[role_compatibility.verb])
                 role_category = (
                     role_compatibility.role_cat
                     or role_compatibility.excluded_role_cat
                 )
                 assert role_category is not None
                 for category, expected_root in (
-                    (role_compatibility.verb_cat, "verb"),
+                    (role_compatibility.verb_cat, trigger_root),
                     (role_category, "noun"),
                 ):
                     if category not in valid_gates:
@@ -1306,7 +1369,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                         root = category_parents[root]
                     if root != expected_root:
                         raise CompileError(
-                            f"rule {rule.id!r} verb-role compatibility "
+                            f"rule {rule.id!r} trigger-role compatibility "
                             f"category {category!r} is not "
                             f"{expected_root}-rooted"
                         )
@@ -1335,6 +1398,23 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                         raise CompileError(
                             f"rule {rule.id!r} measure-holder compatibility "
                             f"holder {holder_name!r} is not entity/noun-rooted"
+                        )
+            partitive_compatibility = predicate.partitive_compatible
+            if partitive_compatibility is not None:
+                for slot_name in (
+                    partitive_compatibility.measure,
+                    partitive_compatibility.substance,
+                ):
+                    token = slots.get(slot_name)
+                    if token is None:
+                        raise CompileError(
+                            f"rule {rule.id!r} partitive compatibility names "
+                            f"unknown slot {slot_name!r}"
+                        )
+                    if _slot_root(token) != "noun":
+                        raise CompileError(
+                            f"rule {rule.id!r} partitive compatibility slot "
+                            f"{slot_name!r} is not noun-rooted"
                         )
             category_nonoverlap = predicate.category_nonoverlap
             if category_nonoverlap is not None:
@@ -1393,6 +1473,167 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                     f"rule {rule.id!r} pattern satisfaction slot "
                     f"{slot_name!r} is a span, not one obligation-bearing unit"
                 )
+
+    # Ask rules use the same closed where-predicate model as premise rules.
+    # Validate the cross-slot predicate introduced for partitive questions at
+    # compile time so an authoring typo cannot become a silently dead ask.
+    for ask in asks:
+        ask_slots = {
+            token.slot: token
+            for token in _walk_match_tokens(ask.match["question"])
+            if token.slot is not None
+        }
+        for predicate in ask.where:
+            if predicate.number_compatible is not None:
+                for slot_name in predicate.number_compatible:
+                    if slot_name not in ask_slots:
+                        raise CompileError(
+                            f"ask {ask.id!r} number compatibility names "
+                            f"unknown slot {slot_name!r}"
+                        )
+            conditional = predicate.bound_requires_category
+            if conditional is not None:
+                for slot_name in (conditional.bound, conditional.slot):
+                    if slot_name not in ask_slots:
+                        raise CompileError(
+                            f"ask {ask.id!r} conditional category names "
+                            f"unknown slot {slot_name!r}"
+                        )
+                if conditional.cat not in valid_gates:
+                    raise CompileError(
+                        f"ask {ask.id!r} conditional category names "
+                        f"unknown category {conditional.cat!r}"
+                    )
+            conditional_type = predicate.bound_requires_type
+            if conditional_type is not None:
+                for slot_name in (
+                    conditional_type.bound,
+                    conditional_type.slot,
+                ):
+                    if slot_name not in ask_slots:
+                        raise CompileError(
+                            f"ask {ask.id!r} conditional type names "
+                            f"unknown slot {slot_name!r}"
+                        )
+            exclusion = predicate.slot_not_category
+            if exclusion is not None:
+                slot_name = exclusion.get("slot")
+                if slot_name not in ask_slots:
+                    raise CompileError(
+                        f"ask {ask.id!r} slot exclusion names unknown slot "
+                        f"{slot_name!r}"
+                    )
+            ask_attribute_compatibility = predicate.attribute_compatible
+            if ask_attribute_compatibility is not None:
+                attribute = ask_slots.get(ask_attribute_compatibility.attribute)
+                noun = ask_slots.get(ask_attribute_compatibility.noun)
+                if attribute is None or noun is None:
+                    missing = (
+                        ask_attribute_compatibility.attribute
+                        if attribute is None
+                        else ask_attribute_compatibility.noun
+                    )
+                    raise CompileError(
+                        f"ask {ask.id!r} compatibility names unknown slot "
+                        f"{missing!r}"
+                    )
+                if _slot_root(attribute) not in {
+                    "adjective",
+                    "comparative",
+                    "preposition",
+                }:
+                    raise CompileError(
+                        f"ask {ask.id!r} compatibility attribute slot "
+                        f"{ask_attribute_compatibility.attribute!r} is not "
+                        "descriptor-rooted"
+                    )
+                if _slot_root(noun) != "noun":
+                    raise CompileError(
+                        f"ask {ask.id!r} compatibility noun slot "
+                        f"{ask_attribute_compatibility.noun!r} is not noun-rooted"
+                    )
+            role_compatibility = predicate.verb_role_compatible
+            if role_compatibility is not None:
+                for slot_name in (
+                    role_compatibility.verb,
+                    *role_compatibility.roles,
+                ):
+                    if slot_name not in ask_slots:
+                        raise CompileError(
+                            f"ask {ask.id!r} verb-role compatibility names "
+                            f"unknown slot {slot_name!r}"
+                        )
+                trigger_root = _slot_root(
+                    ask_slots[role_compatibility.verb]
+                )
+                role_category = (
+                    role_compatibility.role_cat
+                    or role_compatibility.excluded_role_cat
+                )
+                assert role_category is not None
+                for category, expected_root in (
+                    (role_compatibility.verb_cat, trigger_root),
+                    (role_category, "noun"),
+                ):
+                    if category not in valid_gates:
+                        raise CompileError(
+                            f"ask {ask.id!r} verb-role compatibility names "
+                            f"unknown category {category!r}"
+                        )
+                    root = category
+                    while root in category_parents:
+                        root = category_parents[root]
+                    if root != expected_root:
+                        raise CompileError(
+                            f"ask {ask.id!r} verb-role compatibility category "
+                            f"{category!r} is not {expected_root}-rooted"
+                        )
+            measure_compatibility = predicate.measure_holder_compatible
+            if measure_compatibility is not None:
+                for slot_name in (
+                    measure_compatibility.measure,
+                    *measure_compatibility.holders,
+                ):
+                    if slot_name not in ask_slots:
+                        raise CompileError(
+                            f"ask {ask.id!r} measure-holder compatibility "
+                            f"names unknown slot {slot_name!r}"
+                        )
+                if _slot_root(
+                    ask_slots[measure_compatibility.measure]
+                ) != "noun":
+                    raise CompileError(
+                        f"ask {ask.id!r} measure-holder compatibility measure "
+                        f"{measure_compatibility.measure!r} is not noun-rooted"
+                    )
+                for holder_name in measure_compatibility.holders:
+                    holder = ask_slots[holder_name]
+                    if not (
+                        holder.type in {"entity", "name", "proper_name"}
+                        or _slot_root(holder) == "noun"
+                    ):
+                        raise CompileError(
+                            f"ask {ask.id!r} measure-holder compatibility "
+                            f"holder {holder_name!r} is not entity/noun-rooted"
+                        )
+            compatibility = predicate.partitive_compatible
+            if compatibility is None:
+                continue
+            for slot_name in (
+                compatibility.measure,
+                compatibility.substance,
+            ):
+                token = ask_slots.get(slot_name)
+                if token is None:
+                    raise CompileError(
+                        f"ask {ask.id!r} partitive compatibility names "
+                        f"unknown slot {slot_name!r}"
+                    )
+                if _slot_root(token) != "noun":
+                    raise CompileError(
+                        f"ask {ask.id!r} partitive compatibility slot "
+                        f"{slot_name!r} is not noun-rooted"
+                    )
 
     # A LITERAL THAT CAN NEVER MATCH is an authoring mistake, and it fails at
     # LOAD for the same reason AskRule._anchor_is_first does: the auto-skip
@@ -1482,6 +1723,12 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
             {
                 key: tuple(sorted(set(values)))
                 for key, values in measure_holder_compatibility.items()
+            }
+        ),
+        partitive_measure_compatibility=_freeze(
+            {
+                key: tuple(sorted(set(values)))
+                for key, values in partitive_measure_compatibility.items()
             }
         ),
         subject_role_derivations=_freeze(subject_role_derivations),

@@ -76,6 +76,7 @@ from .exploration import (
 )
 from .hypotheses import derive_hypotheses
 from .reviews import (
+    AskScenarioReviewEvidence,
     FactEvidence,
     HypothesisRecord,
     PremiseAttachment,
@@ -102,6 +103,7 @@ __all__ = [
     "AskAvailability",
     "AskScenarioCandidate",
     "AskScenarioMode",
+    "AskScenarioReviewEvidence",
     "GenerationCandidate",
     "GenerationError",
     "GenerationMode",

@@ -198,7 +198,7 @@ def test_g5s_unlocks_exactly_the_preregistered_frontier() -> None:
     assert availability[
         "arithmetic/anchored-relation-conjoined-anchor"
     ].supported
-    assert len(exploration_status(project)["fillers"]) == 300
+    assert len(exploration_status(project)["fillers"]) == 305
 
 
 @pytest.mark.parametrize("modal", sorted(MOVED_WORDS))
@@ -261,7 +261,7 @@ def test_numeric_round_trip_errors_resample_instead_of_crashing() -> None:
     recovered = generate_candidate(
         project,
         rule_id="arithmetic/periodic-rate-every-span",
-        seed=36,
+        seed=94,
     )
 
     assert recovered.target_status == "matched"

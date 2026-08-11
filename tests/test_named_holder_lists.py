@@ -17,7 +17,7 @@ TEXT = (
 def test_three_named_holders_sum_a_resolved_relation_chain(registry) -> None:
     result = solve(
         TEXT
-        + "How many apples does Aven, Bira, and Cato have together "
+        + "How many apples do Aven, Bira, and Cato have together "
         "if Bira has 12 apples?",
         registry,
     )

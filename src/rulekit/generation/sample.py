@@ -370,6 +370,7 @@ def _number_fillers(reg: Registry) -> list[_Filler]:
             str(value),
             str(value),
             number="singular" if value == 1 else "plural",
+            value=float(value),
         )
         for value in values
     ]
@@ -669,7 +670,30 @@ def _raw_domain(
     if slot_type == "word":
         return _lexical_fillers(reg)
     if slot_type == "number":
-        return _number_fillers(reg)
+        fillers = _number_fillers(reg)
+        # A bounded numeric slot may sit wholly outside the small lexical
+        # number inventory (calendar years are the first example). Include
+        # its authored endpoints as deterministic generation witnesses; the
+        # ordinary qualifier below still enforces the complete interval.
+        endpoints = {
+            value
+            for value in (token.value_min, token.value_max)
+            if value is not None
+            and (not token.integer or float(value).is_integer())
+        }
+        for value in sorted(endpoints):
+            rendered = (
+                str(int(value)) if float(value).is_integer() else str(value)
+            )
+            fillers.append(
+                _Filler(
+                    rendered,
+                    rendered,
+                    number="singular" if float(value) == 1.0 else "plural",
+                    value=float(value),
+                )
+            )
+        return fillers
     if slot_type == "fraction":
         return _fraction_fillers(reg)
     if slot_type == "multiplier":
@@ -739,6 +763,20 @@ def _qualify_domain(
             if isinstance(filler.value, (int, float))
             and float(filler.value) > 0.0
         ]
+    if token.value_min is not None:
+        fillers = [
+            filler
+            for filler in fillers
+            if isinstance(filler.value, (int, float))
+            and float(filler.value) >= token.value_min
+        ]
+    if token.value_max is not None:
+        fillers = [
+            filler
+            for filler in fillers
+            if isinstance(filler.value, (int, float))
+            and float(filler.value) <= token.value_max
+        ]
     if token.generation_explicit_unit_fraction:
         unit_surface = min(
             surface
@@ -801,6 +839,15 @@ def _qualify_domain(
                 for article in articles
             )
         fillers = referential
+    if token.determinerless_category is not None:
+        fillers = [
+            filler
+            for filler in fillers
+            if not _filler_in_category(
+                filler, token.determinerless_category, reg
+            )
+            or filler.reference_form in {None, "bare"}
+        ]
     if token.number is None:
         return fillers
     return [
@@ -1222,17 +1269,27 @@ def _resolve_locked_fillers(
     reg: Registry,
     fixtures: _Fixtures,
     locked_bindings: dict[str, str],
+    identity_bindings: dict[str, str],
 ) -> dict[str, _Filler]:
-    """Resolve locked surfaces to the same filler metadata realization uses."""
+    """Resolve surface/identity locks to realization filler metadata."""
 
     resolved: dict[str, _Filler] = {}
-    for slot_name, surface in locked_bindings.items():
+    for slot_name in locked_bindings.keys() | identity_bindings.keys():
+        surface = locked_bindings.get(slot_name)
+        identity = identity_bindings.get(slot_name)
         matches = [
             filler
             for _, token, _ in _leaf_tokens(tokens)
             if token.slot == slot_name
             for filler in _domain(token, reg, fixtures)
-            if filler.surface.casefold() == surface.casefold()
+            if (
+                surface is None
+                or filler.surface.casefold() == surface.casefold()
+            )
+            if (
+                identity is None
+                or filler.identity.casefold() == identity.casefold()
+            )
         ]
         if not matches:
             continue
@@ -1744,6 +1801,7 @@ def _constraint_groups(
             str | None,
             str | None,
             bool,
+            bool,
         ]
     ],
     list[tuple[str, tuple[str, ...], bool, tuple[str, ...]]],
@@ -1772,6 +1830,7 @@ def _constraint_groups(
             str,
             str | None,
             str | None,
+            bool,
             bool,
         ]
     ] = []
@@ -1869,6 +1928,7 @@ def _constraint_groups(
                     pred.verb_role_compatible.role_cat,
                     pred.verb_role_compatible.excluded_role_cat,
                     pred.verb_role_compatible.allow_plural_class,
+                    pred.verb_role_compatible.allow_unbound_trigger,
                 )
             )
         if pred.measure_holder_compatible is not None:
@@ -1913,6 +1973,7 @@ def _allowed_fillers(
     reg: Registry,
     fixtures: _Fixtures,
     locked_bindings: dict[str, str],
+    identity_bindings: dict[str, str],
     locked_fillers: dict[str, _Filler],
     same_groups: list[set[str]],
     same_number_groups: list[set[str]],
@@ -1960,6 +2021,7 @@ def _allowed_fillers(
                 str | None,
                 str | None,
                 bool,
+                bool,
             ]
         ]
         | tuple[
@@ -1969,6 +2031,7 @@ def _allowed_fillers(
                 str,
                 str | None,
                 str | None,
+                bool,
                 bool,
             ],
             ...,
@@ -2096,6 +2159,9 @@ def _allowed_fillers(
             known = known_filler(name)
             if known is not None:
                 return known.identity
+            identity = identity_bindings.get(name)
+            if identity is not None:
+                return identity.casefold()
             surface = locked_bindings.get(name)
             if surface is None:
                 return None
@@ -2338,6 +2404,7 @@ def _allowed_fillers(
             role_category,
             excluded_role_category,
             allow_plural_class,
+            _allow_unbound_trigger,
         ) in verb_role_requirements:
             def role_ok(verb: _Filler, role: _Filler) -> bool:
                 if not _filler_in_category(verb, verb_category, reg):
@@ -2617,6 +2684,13 @@ def _allowed_fillers(
                 and not preceding_is_possessive
             )
         )
+        and not (
+            preceding_is_possessive
+            and token.determinerless_category is not None
+            and _filler_in_category(
+                filler, token.determinerless_category, reg
+            )
+        )
         and filler.owner not in forbidden_owners
         and _measure_key(filler) not in forbidden_measure_keys
         and all(
@@ -2643,6 +2717,7 @@ def _realize(
     rng: random.Random,
     *,
     locked_bindings: dict[str, str] | None = None,
+    identity_bindings: dict[str, str] | None = None,
     excluded_bindings: dict[str, str] | None = None,
     generation_mode: GenerationMode = "strict",
     structural_target: str | None = None,
@@ -2655,6 +2730,7 @@ def _realize(
     seq = _flat_sentence(rule)
     assert seq is not None
     locked_bindings = locked_bindings or {}
+    identity_bindings = identity_bindings or {}
     excluded_bindings = excluded_bindings or {}
     (
         same_groups,
@@ -2684,7 +2760,7 @@ def _realize(
         _category_membership_requirements(rule)
     )
     locked_fillers = _resolve_locked_fillers(
-        seq, reg, fixtures, locked_bindings
+        seq, reg, fixtures, locked_bindings, identity_bindings
     )
     entity_owner_distinctions = _entity_owner_distinctions(rule)
     chosen: dict[str, _Filler] = {}
@@ -2758,7 +2834,9 @@ def _realize(
         }
         for group in same_presence_groups
     ]
-    forced_slots = set(locked_bindings) | set(excluded_bindings)
+    forced_slots = (
+        set(locked_bindings) | set(identity_bindings) | set(excluded_bindings)
+    )
     forced_optional_paths = {
         ancestor
         for _, token, ancestors in _leaf_tokens(seq)
@@ -2902,6 +2980,7 @@ def _realize(
                 reg,
                 fixtures,
                 locked_bindings,
+                identity_bindings,
                 locked_fillers,
                 same_groups,
                 same_number_groups,
@@ -2943,6 +3022,13 @@ def _realize(
                     filler
                     for filler in domain
                     if filler.surface.casefold() == locked
+                ]
+            if token.slot in identity_bindings:
+                identity = identity_bindings[token.slot].casefold()
+                domain = [
+                    filler
+                    for filler in domain
+                    if filler.identity.casefold() == identity
                 ]
             if token.slot in excluded_bindings:
                 excluded = excluded_bindings[token.slot].casefold()
@@ -3555,6 +3641,10 @@ def _token_expression(token: MatchToken) -> str:
         gates.append("standalone")
     if token.integer:
         gates.append("integer")
+    if token.value_min is not None:
+        gates.append(f"value >= {token.value_min:g}")
+    if token.value_max is not None:
+        gates.append(f"value <= {token.value_max:g}")
     if token.fraction_within_whole:
         gates.append("within one whole")
     if token.word_fraction_within_whole:
@@ -3566,6 +3656,10 @@ def _token_expression(token: MatchToken) -> str:
     if token.bare_reference_category is not None:
         gates.append(
             f"bare category {token.bare_reference_category!r}"
+        )
+    if token.determinerless_category is not None:
+        gates.append(
+            f"determinerless category {token.determinerless_category!r}"
         )
     return f"{token.slot}: " + ", ".join(gates or ["word"])
 
@@ -5033,6 +5127,7 @@ def generate_candidate(
     seed: int | None = None,
     max_attempts: int = 64,
     locked_bindings: dict[str, str] | None = None,
+    identity_bindings: dict[str, str] | None = None,
     excluded_bindings: dict[str, str] | None = None,
     generation_mode: GenerationMode = "strict",
     structural_target: str | None = None,
@@ -5103,6 +5198,7 @@ def generate_candidate(
                 fixtures,
                 rng,
                 locked_bindings=locked_bindings,
+                identity_bindings=identity_bindings,
                 excluded_bindings=excluded_bindings,
                 generation_mode=generation_mode,
                 structural_target=structural_target,

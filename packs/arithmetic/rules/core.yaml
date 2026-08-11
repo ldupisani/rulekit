@@ -60,18 +60,31 @@ rules:
             - {slot: pp_prep, cat: preposition}
             - opt:
                 - {slot: pp_det, cat: possessive_determiner}
-            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
         - {lit: than}
         - opt:
             - {slot: appos_det, cat: animate_possessive_determiner}
             - {slot: appos_role, cat: animate}
         - {slot: std, type: entity, referential: true, bare_reference_category: bare_entity_reference}
+        - opt:
+            # Negative lookahead for the fuller same-clause anchor shape.
+            # A bare coordinated next clause ("..., and Karen has ...") is
+            # independent and must not suppress this relation.
+            - {lit: and}
+            - opt:
+                - {slot: conjunction_adv, cat: holding_anchor_adverb}
+            - {slot: conjunction_verb, cat: state}
+            - {slot: conjunction_seen, type: counted}
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - number_compatible: [who, verb]
       - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: animate_object_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: find_quantity_verb, role_cat: findable_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: transfer_out, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: task_completion_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: task_completion_verb, role_cat: finishable_quantity_object}
+      - verb_role_compatible: {verb: item, roles: [who], verb_cat: student_quantity_measure, role_cat: student_quantity_holder}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: std, cat: non_quantity_holder}
@@ -80,6 +93,7 @@ rules:
       - distinct_measure: [item, std]
       # a TIME PERIOD is not a holder — see slot_not_category in schemas.py
       - slot_not_category: {slot: std, cat: timeperiod}
+      - unbound: [conjunction_seen]
     consumes: [n]
     emits:
       - fact: relation
@@ -211,7 +225,7 @@ rules:
             - {slot: pp_prep, cat: preposition}
             - opt:
                 - {slot: pp_det, cat: possessive_determiner}
-            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
         - {lit: than}
         - {slot: std_det, cat: possessive_determiner}
         - {slot: std, cat: animate}
@@ -309,12 +323,12 @@ rules:
             - {slot: pp_prep, cat: preposition}
             - opt:
                 - {slot: pp_det, cat: possessive_determiner}
-            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
         - {lit: than}
         - opt:
             - {slot: appos_det, cat: animate_possessive_determiner}
             - {slot: appos_role, cat: animate}
-        - {slot: std, type: entity, referential: true, bare_reference_category: bare_entity_reference}
+        - {slot: std, type: plural}
         - {lit: and}
         - opt:
             - {slot: trailing_adv, cat: holding_anchor_adverb}
@@ -326,6 +340,9 @@ rules:
       - number_compatible: [who, trailing_verb]
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: animate_object_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: task_completion_verb, role_cat: finishable_quantity_object}
+      - verb_role_compatible: {verb: item, roles: [who], verb_cat: student_quantity_measure, role_cat: student_quantity_holder}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: transfer_out, role_cat: quantity_event_participant}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: std, cat: non_quantity_holder}
@@ -429,7 +446,7 @@ rules:
       change to Mary's own quantity, not an omitted comparison with Tom.
     match:
       sentence:
-        - {slot: who, type: entity, referential: true}
+        - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true}
         - {slot: verb, cat: possession_state}
         - {slot: n, type: number, standalone: true}
         - {slot: dir, cat: delta}
@@ -438,13 +455,15 @@ rules:
             - {slot: pp_prep, cat: preposition}
             - opt:
                 - {slot: pp_det, cat: possessive_determiner}
-            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
     where:
       - number_compatible: [who, verb]
       - same_number: [n, item]
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: who, cat: named_calendar_period}
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - verb_role_compatible: {verb: item, roles: [who], verb_cat: student_quantity_measure, role_cat: student_quantity_holder}
       - slot_not_category: {slot: dir, cat: age_comparative}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - absent: {cat: relational_marker}
@@ -542,6 +561,11 @@ rules:
       - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: animate_object_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: shucking_verb, role_cat: shuckable_item}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: transfer_out, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: task_completion_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: task_completion_verb, role_cat: finishable_quantity_object}
+      - verb_role_compatible: {verb: item, roles: [who], verb_cat: student_quantity_measure, role_cat: student_quantity_holder}
+      - slot_not_category: {slot: verb, cat: arrival_motion_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: std, cat: non_quantity_holder}
       - distinct: [who, std]
@@ -1122,7 +1146,7 @@ rules:
             - {slot: pp_prep, cat: preposition}
             - opt:
                 - {slot: pp_det, cat: possessive_determiner}
-            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
         - {lit: as}
         - opt:
             - {slot: appos_det, cat: possessive_determiner}
@@ -1179,7 +1203,7 @@ rules:
             - {slot: pp_prep, cat: preposition}
             - opt:
                 - {slot: pp_det, cat: possessive_determiner}
-            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
         - {lit: as}
         - opt:
             - {slot: appos_det, cat: possessive_determiner}
@@ -1313,7 +1337,7 @@ rules:
             - {slot: pp_prep, cat: preposition}
             - opt:
                 - {slot: pp_det, cat: possessive_determiner}
-            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
         - opt:
             - {lit: as}
             - opt:
@@ -1359,7 +1383,7 @@ rules:
             - {slot: pp_prep, cat: preposition}
             - opt:
                 - {slot: pp_det, cat: possessive_determiner}
-            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
         - {lit: as}
         - {slot: std_det, cat: possessive_determiner}
         - {slot: std, cat: animate}
@@ -1420,7 +1444,7 @@ rules:
             - {slot: pp_prep, cat: preposition}
             - opt:
                 - {slot: pp_det, cat: possessive_determiner}
-            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
         - {lit: and}
         - {slot: k, type: nonunit_multiplier}
         - {lit: as}
@@ -1490,7 +1514,7 @@ rules:
             - {slot: pp_prep, cat: preposition}
             - opt:
                 - {slot: pp_det, cat: possessive_determiner}
-            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
         - {lit: and}
         - {slot: k, type: nonunit_multiplier}
         - {lit: as}
@@ -1562,7 +1586,7 @@ rules:
             - {slot: pp_prep, cat: preposition}
             - opt:
                 - {slot: pp_det, cat: possessive_determiner}
-            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
         - {lit: and}
         - {slot: k, type: nonunit_multiplier}
         - {lit: as}
@@ -1579,7 +1603,7 @@ rules:
             - {slot: pp2_prep, cat: preposition}
             - opt:
                 - {slot: pp2_det, cat: possessive_determiner}
-            - {slot: pp2_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
+            - {slot: pp2_obj, type: noun, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
     where:
       - bound_requires_type: {bound: appos_role, slot: std_seen, type: proper_name}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
@@ -1646,9 +1670,9 @@ rules:
             - {slot: pp_prep, cat: preposition}
             - opt:
                 - {slot: pp_det, cat: possessive_determiner}
-            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
         - {lit: and}
-        - {slot: k, type: multiplier}
+        - {slot: k, type: nonunit_multiplier}
         - {lit: [that, this], consume_skipped: true}
         - {lit: many}
         - opt:
@@ -1668,6 +1692,8 @@ rules:
       - slot_not_category: {slot: item1, cat: many_incompatible_noun}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - modifier_host_compatible: {modifier: pp_prep, host: item1, object: pp_obj}
+      - bound_rejects_category: {bound: pp_det, slot: pp_obj, cat: named_calendar_period}
+      - verb_role_compatible: {verb: pp_det, roles: [who], verb_cat: third_person_animate_possessive_determiner, role_cat: animate, allow_unbound_trigger: true}
       - distinct: [who, pp_obj]
       - unbound: [item2_seen]
     emits:
@@ -1714,7 +1740,7 @@ rules:
             - {slot: pp_prep, cat: preposition}
             - opt:
                 - {slot: pp_det, cat: possessive_determiner}
-            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
         - {lit: as}
         - opt:
             - {slot: appos_det, cat: possessive_determiner}
@@ -1806,7 +1832,7 @@ rules:
             - {slot: pp_prep, cat: preposition}
             - opt:
                 - {slot: pp_det, cat: possessive_determiner}
-            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
         - opt:
             - {lit: as}
             - opt:
@@ -2026,7 +2052,7 @@ rules:
             - {slot: pp_prep, cat: preposition}
             - opt:
                 - {slot: pp_det, cat: possessive_determiner}
-            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
         - {lit: than}
         - opt:
             - {slot: appos_det, cat: animate_possessive_determiner}
@@ -2079,7 +2105,7 @@ rules:
             - {slot: pp_prep, cat: preposition}
             - opt:
                 - {slot: pp_det, cat: possessive_determiner}
-            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
         - {lit: than}
         - opt:
             - {slot: appos_det, cat: animate_possessive_determiner}
@@ -2169,7 +2195,7 @@ rules:
                 - {slot: pp_prep, cat: preposition}
                 - opt:
                     - {slot: pp_det, cat: possessive_determiner}
-                - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
+                - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
             - {lit: than}
             - opt:
                 - {slot: appos_det, cat: possessive_determiner}
@@ -2215,7 +2241,7 @@ rules:
                 - {slot: pp_prep, cat: preposition}
                 - opt:
                     - {slot: pp_det, cat: possessive_determiner}
-                - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
+                - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
             - {lit: than}
             - opt:
                 - {slot: appos_det, cat: possessive_determiner}
@@ -2272,7 +2298,7 @@ rules:
             - {slot: pp_prep, cat: preposition}
             - opt:
                 - {slot: pp_det, cat: possessive_determiner}
-            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
         - {lit: as}
         - opt:
             - {slot: appos_det, cat: animate_possessive_determiner}
@@ -2461,7 +2487,7 @@ rules:
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: motion_comparison_verb, role_cat: motion_comparison_measure}
       - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: teaching_quantity_verb, role_cat: animate}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: animate_object_verb, role_cat: teaching_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: teaching_quantity_verb, role_cat: teaching_quantity_object}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: find_quantity_verb, role_cat: findable_quantity_object}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: win_quantity_verb, role_cat: winnable_quantity_object}
       - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: task_completion_verb, role_cat: quantity_event_participant}
@@ -2795,7 +2821,7 @@ rules:
             - {slot: pp_prep, cat: preposition}
             - opt:
                 - {slot: pp_det, cat: possessive_determiner}
-            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
         - {lit: as}
         - opt:
             - {slot: appos_det, cat: animate_possessive_determiner}
@@ -2946,7 +2972,7 @@ rules:
             - {slot: pp_prep, cat: preposition}
             - opt:
                 - {slot: pp_det, cat: possessive_determiner}
-            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
         - opt:
             - {lit: as}
             - opt:
@@ -2996,7 +3022,7 @@ rules:
             - {slot: pp_prep, cat: preposition}
             - opt:
                 - {slot: pp_det, cat: possessive_determiner}
-            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
         - {lit: as}
         - opt:
             - {slot: appos_det, cat: possessive_determiner}
@@ -3083,7 +3109,7 @@ rules:
             - {slot: pp_prep, cat: preposition}
             - opt:
                 - {slot: pp_det, cat: possessive_determiner}
-            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
         - opt:
             - {lit: as}
             - opt:
@@ -3413,7 +3439,7 @@ rules:
             - {slot: pp_prep, cat: preposition}
             - opt:
                 - {slot: pp_det, cat: possessive_determiner}
-            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
         - {lit: as}
         - opt:
             - {slot: appos_det, cat: possessive_determiner}
@@ -3437,6 +3463,12 @@ rules:
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: drop_quantity_verb, role_cat: droppable_quantity_object}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: eating_quantity_verb, role_cat: edible_quantity_object}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: transfer_out, role_cat: transferable_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: initiation_quantity_verb, role_cat: initiation_quantity_participant}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: initiation_quantity_verb, role_cat: initiable_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: earning_quantity_verb, role_cat: earning_quantity_participant}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: earning_quantity_verb, role_cat: earnable_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: production_quantity_verb, role_cat: production_quantity_participant}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: production_quantity_verb, role_cat: producible_quantity_object}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: state, excluded_role_cat: motion_comparison_measure}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: possession_state, excluded_role_cat: bare_possession_incompatible_noun}
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: past_departure_quantity_verb, role_cat: quantity_event_participant}
@@ -3447,6 +3479,7 @@ rules:
       - slot_not_category: {slot: pp_prep, cat: quantity_remainder_preposition}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - modifier_host_compatible: {modifier: pp_prep, host: item, object: pp_obj}
+      - bound_rejects_category: {bound: pp_det, slot: pp_obj, cat: named_calendar_period}
       - distinct: [who, std]
       - distinct: [who, pp_obj]
       - category_nonoverlap: [who, std]
@@ -3488,7 +3521,7 @@ rules:
             - {slot: pp_prep, cat: preposition}
             - opt:
                 - {slot: pp_det, cat: possessive_determiner}
-            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
         - {lit: as}
         - opt:
             - {slot: appos_det, cat: animate_possessive_determiner}
@@ -3574,7 +3607,7 @@ rules:
             - {slot: pp_prep, cat: preposition}
             - opt:
                 - {slot: pp_det, cat: animate_possessive_determiner}
-            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object}
+            - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
         - {lit: as}
         - opt:
             - {slot: appos_det, cat: animate_possessive_determiner}
@@ -3689,7 +3722,7 @@ rules:
         - {slot: prep, cat: preposition}
         - opt:
             - {slot: place_det, cat: possessive_determiner}
-        - {slot: place, type: noun, referential: true, bare_reference_category: bare_pp_object}
+        - {slot: place, type: noun, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
     where:
       - absent: {cat: aggregate}
       - number_compatible: [item, verb]
@@ -4010,6 +4043,7 @@ rules:
     where:
       - slot_not_category: {slot: who, cat: existential}
       - slot_not_category: {slot: who, cat: preposition}
+      - slot_not_category: {slot: verb, cat: arrival_motion_verb}
     consumes: [item]
     emits:
       - fact: group_total
@@ -4047,6 +4081,7 @@ rules:
     where:
       - slot_not_category: {slot: who, cat: existential}
       - slot_not_category: {slot: who, cat: preposition}
+      - slot_not_category: {slot: verb, cat: arrival_motion_verb}
     consumes: [item]
     emits:
       - fact: group_total
@@ -5694,10 +5729,18 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
-        - {slot: verb, type: verb}
+        - {slot: item, type: plural}
+        - {slot: verb, cat: plural_copula}
         - {slot: prep, cat: preposition}
-        - {slot: place, type: noun}
+        - {slot: place, cat: quantity_location, referential: true}
+        - opt:
+            - {lit: to}
+            - {slot: start_marker, cat: start_marker_verb, bare_form: true}
+            - {lit: with}
+    where:
+      - attribute_compatible: {attribute: prep, noun: place}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - unbound: [start_marker]
     resolves:
       consumer: single-entity
       entity: "{place}"
@@ -5721,12 +5764,15 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         - {lit: of}
-        - {slot: qual, type: noun}
-        - {slot: verb, type: verb}
-        - {slot: prep, cat: preposition}
-        - {slot: place, type: noun}
+        - {slot: qual, type: noun, number: singular}
+        - {slot: verb, cat: plural_copula}
+        - {slot: prep, cat: quantity_location_preposition}
+        - {slot: place, cat: quantity_location, referential: true}
+    where:
+      - partitive_compatible: {measure: item, substance: qual}
+      - attribute_compatible: {attribute: prep, noun: place}
     resolves:
       consumer: single-entity
       entity: "{place}"
@@ -5746,8 +5792,8 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
-        - {slot: verb, cat: state}
+        - {slot: item, type: plural}
+        - {slot: verb, cat: plural_copula}
         - {lit: there}
         - {slot: prep, cat: quantity_location_preposition}
         - {slot: place, cat: quantity_location, possessed: true, number: singular}
@@ -5764,15 +5810,17 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         - opt:
             # Accept ordinary and will/would forms, but not capacity modals.
             - {slot: aux, type: future_modal}
             - {slot: who, type: pronoun}
-            - {slot: verb, type: verb}
+            - {slot: verb, type: verb, bare_form: true}
         - opt:
-            - {slot: p, cat: preposition}
-        - {slot: agg, cat: aggregate}
+            - {slot: p, cat: group_total_preposition}
+        - {slot: agg, cat: group_total_marker}
+    where:
+      - bound_requires_category: {bound: p, slot: agg, cat: prepositional_group_total_marker}
     resolves:
       consumer: combined
       measure: "{item}"
@@ -5788,11 +5836,11 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         - opt:
             - {slot: aux, type: future_modal}
             - {slot: who, type: pronoun}
-            - {slot: verb, type: verb}
+            - {slot: verb, type: verb, bare_form: true}
         - {lit: in}
         - {lit: all}
     resolves:
@@ -5808,21 +5856,30 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         - {slot: aux, type: auxiliary}
         - {slot: a, type: name}
         - {lit: and}
         - {slot: b, type: name}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, bare_form: true}
         - opt:
-            - {slot: p, cat: preposition}
-        - {slot: agg, cat: aggregate}
+            - {slot: p, cat: group_total_preposition}
+        - {slot: agg, cat: group_total_marker}
+    where:
+      - bound_requires_category: {bound: p, slot: agg, cat: prepositional_group_total_marker}
+      - distinct: [a, b]
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: initiation_quantity_verb, role_cat: initiable_quantity_object}
     resolves:
       consumer: combined
       a: "{a}"
       b: "{b}"
       measure: "{item}"
       verb: "{verb}"
+    generation:
+      slot_categories:
+        aux: [plural_auxiliary]
 
   - id: ask/how-many-combined-named-list
     # Two or more explicitly named holders, including serial-comma surfaces:
@@ -5838,18 +5895,26 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         - {slot: aux, type: auxiliary}
         - {slot: holders, span: true}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, bare_form: true}
         - opt:
-            - {slot: p, cat: preposition}
-        - {slot: agg, cat: aggregate}
+            - {slot: p, cat: group_total_preposition}
+        - {slot: agg, cat: group_total_marker}
+    where:
+      - bound_requires_category: {bound: p, slot: agg, cat: prepositional_group_total_marker}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: initiation_quantity_verb, role_cat: initiable_quantity_object}
     resolves:
       consumer: combined
       holders: "{holders.name_list}"
       measure: "{item}"
       verb: "{verb}"
+    generation:
+      slot_categories:
+        aux: [plural_auxiliary]
 
   - id: ask/how-many-each-named-list
     # One labelled answer per explicitly named holder: "How many books do
@@ -5863,17 +5928,24 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         - {slot: aux, type: auxiliary}
         - {slot: holders, span: true}
         - {slot: q, cat: postpositive_distributive_quantifier}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, bare_form: true}
+    where:
+      - slot_not_category: {slot: item, cat: mass_quantity_noun}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
     resolves:
       consumer: per-holder
       holders: "{holders.name_list}"
       measure: "{item}"
       measure_surface: "{item.surface}"
       verb: "{verb}"
+    generation:
+      slot_categories:
+        aux: [plural_auxiliary]
 
   - id: ask/how-many-each-named-list-postverbal
     # Postverbal marker sibling: "How many books do Ana and Ben have each?"
@@ -5883,17 +5955,24 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         - {slot: aux, type: auxiliary}
         - {slot: holders, span: true}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, bare_form: true}
         - {slot: q, cat: postpositive_distributive_quantifier}
+    where:
+      - slot_not_category: {slot: item, cat: mass_quantity_noun}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
     resolves:
       consumer: per-holder
       holders: "{holders.name_list}"
       measure: "{item}"
       measure_surface: "{item.surface}"
       verb: "{verb}"
+    generation:
+      slot_categories:
+        aux: [plural_auxiliary]
 
   - id: ask/how-many-individually-named-list
     # Preverbal manner-marker form: "How many books do Ana and Ben
@@ -5903,11 +5982,13 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         - {slot: aux, type: auxiliary}
         - {slot: holders, span: true}
         - {slot: marker, cat: individualizing_adverb}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, bare_form: true}
+    where:
+      - slot_not_category: {slot: item, cat: mass_quantity_noun}
     resolves:
       consumer: per-holder
       holders: "{holders.name_list}"
@@ -5922,11 +6003,13 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         - {slot: aux, type: auxiliary}
         - {slot: holders, span: true}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, bare_form: true}
         - {slot: marker, cat: individualizing_adverb}
+    where:
+      - slot_not_category: {slot: item, cat: mass_quantity_noun}
     resolves:
       consumer: per-holder
       holders: "{holders.name_list}"
@@ -5945,12 +6028,16 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
-        - {slot: aux, type: auxiliary}
+        - {slot: item, type: plural}
+        - {slot: aux, cat: plural_auxiliary}
         - {slot: holders, span: true}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, bare_form: true}
         - {slot: q, cat: group_total_quantifier}
         - {slot: agg, cat: quantified_group_total_marker}
+    where:
+      - slot_not_category: {slot: item, cat: mass_quantity_noun}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: motion_comparison_verb, role_cat: motion_comparison_measure}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: animate_object_verb, role_cat: teaching_quantity_object}
     resolves:
       consumer: combined
       holders: "{holders.name_list}"
@@ -5964,20 +6051,28 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         - {slot: aux, type: auxiliary}
         - {slot: a, type: name}
         - {lit: and}
         - {slot: b, type: name}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, bare_form: true}
         - {lit: in}
         - {lit: all}
+    where:
+      - distinct: [a, b]
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: initiation_quantity_verb, role_cat: initiable_quantity_object}
     resolves:
       consumer: combined
       a: "{a}"
       b: "{b}"
       measure: "{item}"
       verb: "{verb}"
+    generation:
+      slot_categories:
+        aux: [plural_auxiliary]
 
   - id: ask/how-many-combined-partitive
     # Handles combined partitive measures, such as "how many cups of flour
@@ -5990,16 +6085,19 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         - {lit: of}
         - {slot: qual, type: noun}
         - opt:
             - {slot: aux, type: future_modal}
             - {slot: who, type: pronoun}
-            - {slot: verb, type: verb}
+            - {slot: verb, type: verb, bare_form: true}
         - opt:
-            - {slot: p, cat: preposition}
-        - {slot: agg, cat: aggregate}
+            - {slot: p, cat: group_total_preposition}
+        - {slot: agg, cat: group_total_marker}
+    where:
+      - partitive_compatible: {measure: item, substance: qual}
+      - bound_requires_category: {bound: p, slot: agg, cat: prepositional_group_total_marker}
     resolves:
       consumer: combined
       measure: "{item}"
@@ -6014,15 +6112,17 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         - {lit: of}
         - {slot: qual, type: noun}
-        - opt:
-            - {slot: aux, type: future_modal}
-            - {slot: who, type: pronoun}
-            - {slot: verb, type: verb}
+        - {slot: aux, type: future_modal}
+        - {slot: who, cat: discourse_subject_group_pronoun}
+        - {slot: verb, cat: possession_state, bare_form: true}
         - {lit: in}
         - {lit: all}
+    where:
+      - partitive_compatible: {measure: item, substance: qual}
+      - number_compatible: [who, aux]
     resolves:
       consumer: combined
       measure: "{item}"
@@ -6038,17 +6138,23 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         - {lit: of}
         - {slot: qual, type: noun}
         - {slot: aux, type: auxiliary}
         - {slot: a, type: name}
         - {lit: and}
         - {slot: b, type: name}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, bare_form: true}
         - opt:
-            - {slot: p, cat: preposition}
-        - {slot: agg, cat: aggregate}
+            - {slot: p, cat: group_total_preposition}
+        - {slot: agg, cat: group_total_marker}
+    where:
+      - partitive_compatible: {measure: item, substance: qual}
+      - bound_requires_category: {bound: p, slot: agg, cat: prepositional_group_total_marker}
+      - distinct: [a, b]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: motion_comparison_verb, role_cat: motion_comparison_measure}
     resolves:
       consumer: combined
       a: "{a}"
@@ -6057,6 +6163,9 @@ asks:
       measure_qualifier: "{qual}"
       measure_substance: "{qual}"
       verb: "{verb}"
+    generation:
+      slot_categories:
+        aux: [plural_auxiliary]
 
   - id: ask/how-many-combined-cardinal-pronoun
     # Handles a numbered holder group, such as "how many books do the three
@@ -6069,16 +6178,29 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
-        - {slot: aux, type: auxiliary}
+        - {slot: item, type: plural}
+        - {slot: aux, cat: plural_auxiliary}
+        - {lit: the, consume_skipped: true}
         - {slot: n, type: number}
         - opt:
             - {lit: of}
             - {lit: them}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, bare_form: true}
         - opt:
-            - {slot: p, cat: preposition}
-        - {slot: agg, cat: aggregate}
+            - {slot: p, cat: group_total_preposition}
+        - {slot: agg, cat: group_total_marker}
+    where:
+      - bound_requires_category: {bound: p, slot: agg, cat: prepositional_group_total_marker}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: teaching_quantity_verb, role_cat: teaching_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: find_quantity_verb, role_cat: findable_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: task_completion_verb, role_cat: finishable_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: enrollment_quantity_verb, role_cat: enrollment_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: drop_quantity_verb, role_cat: droppable_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: eating_quantity_verb, role_cat: edible_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: transfer_out, role_cat: transferable_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: spend_verb, role_cat: currency}
     resolves:
       consumer: combined
       measure: "{item}"
@@ -6091,10 +6213,10 @@ asks:
         - {lit: how}
         - {lit: many}
         - {slot: dir, cat: delta}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         - {slot: aux, type: auxiliary}
         - {slot: a, type: name}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, bare_form: true}
         - {lit: than}
         - {slot: b, type: name}
     resolves:
@@ -6115,14 +6237,16 @@ asks:
         - {lit: how}
         - {lit: many}
         - {slot: dir, cat: delta}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         - {lit: of}
         - {slot: qual, type: noun}
         - {slot: aux, type: auxiliary}
         - {slot: a, type: name}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, bare_form: true}
         - {lit: than}
         - {slot: b, type: name}
+    where:
+      - partitive_compatible: {measure: item, substance: qual}
     resolves:
       consumer: difference
       a: "{a}"
@@ -6141,11 +6265,11 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: dir, cat: delta}
+        - {slot: dir, cat: count_quantity_delta}
         - {slot: a, type: plural}
         - {lit: than}
         - {slot: b, type: plural}
-        - {slot: verb, cat: state}
+        - {slot: verb, cat: plural_copula}
         - {lit: there}
     resolves:
       consumer: label-difference
@@ -6163,13 +6287,15 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: dir, cat: delta}
+        - {slot: dir, cat: count_quantity_delta}
         - {slot: a, type: plural}
         - {lit: than}
         - {slot: b, type: plural}
         - {slot: aux, type: auxiliary}
-        - {slot: who, type: entity}
-        - {slot: verb, type: verb}
+        - {slot: who, type: entity, referential: true, bare_reference_category: quantity_event_participant}
+        - {slot: verb, type: verb, bare_form: true}
+    where:
+      - number_compatible: [who, aux]
     resolves:
       consumer: label-difference
       a: "{a}"
@@ -6196,12 +6322,12 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         # `future_modal` accepts do/does/did and will/would forms, but excludes
         # capacity modals such as can or must.
         - {slot: aux, type: future_modal}
         - {slot: who, type: name}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, bare_form: true}
     resolves:
       consumer: single-entity
       entity: "{who}"
@@ -6227,11 +6353,11 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: pre, cat: aggregate}
-        - {slot: item, type: noun}
+        - {slot: pre, cat: prenominal_group_total_marker}
+        - {slot: item, type: plural}
         - {slot: aux, type: future_modal}
         - {slot: who, type: name}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, bare_form: true}
     resolves:
       consumer: single-entity
       entity: "{who}"
@@ -6249,7 +6375,9 @@ asks:
         - {lit: many}
         - {slot: aux, type: future_modal}
         - {slot: who, type: name}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, bare_form: true}
+    where:
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
     resolves:
       consumer: single-entity-elided-measure
       entity: "{who}"
@@ -6260,12 +6388,15 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
-        - {slot: aux, type: auxiliary}
+        - {slot: item, type: plural}
+        - {slot: aux, type: future_modal}
         # `possessed` requires an owner, as in "Kennedy's house". Keeping it
         # separate preserves that owner and excludes a bare common noun.
-        - {slot: who, type: possessed}
-        - {slot: verb, type: verb}
+        - {slot: who, cat: quantity_holder, possessed: true}
+        - {slot: verb, cat: possession_state, bare_form: true}
+    where:
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - number_compatible: [who, aux]
     resolves:
       consumer: single-entity
       entity: "{who}"
@@ -6283,9 +6414,10 @@ asks:
       question:
         - {lit: what}
         - {lit: is}
-        - {slot: frame, cat: aggregate_noun}
+        - {lit: the, consume_skipped: true}
+        - {lit: number}
         - {lit: of}
-        - {slot: who, type: possessed}
+        - {slot: who, type: possessed, number: plural}
     resolves:
       consumer: single-entity
       entity: "{who.owner}"
@@ -6296,12 +6428,16 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         - {slot: aux, type: auxiliary}
         # `qualified` requires a merged modifier, as in "coconut trees" or
         # "red apples". Keeping it separate preserves the qualifier.
         - {slot: who, type: qualified}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, bare_form: true}
+    where:
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - number_compatible: [who, aux]
     resolves:
       consumer: single-entity
       entity: "{who}"
@@ -6319,10 +6455,15 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         - {slot: aux, type: future_modal}
         - {slot: who, type: common_noun}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, bare_form: true}
+    where:
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: who, cat: timeperiod}
+      - number_compatible: [who, aux]
     resolves:
       consumer: single-entity
       entity: "{who}"
@@ -6343,14 +6484,31 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
-        # Optional "of SUBSTANCE" tail. The substance is used only to prevent
-        # a measure with the same name but different contents from answering.
-        - opt:
-            - {lit: of}
-            - {slot: substance, type: noun}
-        - {slot: verb, type: verb}
+        - {slot: item, type: plural}
+        - {slot: verb, cat: plural_copula}
         - {lit: left}
+    where:
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+    resolves:
+      consumer: unique-entity
+      measure: "{item}"
+
+  - id: ask/how-many-left-entityless-partitive
+    # Qualified sibling of the bare remainder ask. Keeping the `of` tail in
+    # its own rule makes pair compatibility mandatory when a substance is
+    # present without making it mandatory for an ordinary bare count noun.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: plural}
+        - {lit: of}
+        - {slot: substance, type: noun}
+        - {slot: verb, cat: plural_copula}
+        - {lit: left}
+    where:
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - partitive_compatible: {measure: item, substance: substance}
     resolves:
       consumer: unique-entity
       measure: "{item}"
@@ -6361,13 +6519,16 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         # Optional "of SUBSTANCE" tail, used as a decline-safety guard.
         - opt:
             - {lit: of}
             - {slot: substance, type: noun}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, finite_form: true}
         - {lit: there}
+    where:
+      - partitive_compatible: {measure: item, substance: substance}
+      - slot_not_category: {slot: verb, cat: possession_state}
     resolves:
       consumer: unique-entity
       measure: "{item}"
@@ -6387,18 +6548,23 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         - opt:
             - {lit: of}
             - {slot: substance, type: noun}
         - {slot: verb, type: verb}
         - {lit: there}
         - opt:
-            - {slot: p, cat: preposition}
-        - {slot: agg, cat: aggregate}
+            - {slot: p, cat: group_total_preposition}
+        - {slot: agg, cat: group_total_marker}
         - opt:
-            - {slot: p2, cat: preposition}
-            - {slot: grp, type: plural}
+            - {slot: p2, cat: group_total_scope_preposition}
+            - {slot: grp, cat: group_total_scope, number: plural}
+    where:
+      - bound_requires_category: {bound: p, slot: agg, cat: prepositional_group_total_marker}
+      - partitive_compatible: {measure: item, substance: substance}
+      - slot_not_category: {slot: item, cat: mass_quantity_noun}
+      - slot_not_category: {slot: verb, cat: possession_state}
     resolves:
       consumer: combined
       measure: "{item}"
@@ -6422,18 +6588,25 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
+        - {slot: item, cat: passive_quantity_object, number: plural}
         - opt:
             - {lit: of}
             - {slot: substance, type: noun}
-        - {slot: be, cat: state}
-        - {slot: verb, type: verb}
+        - {slot: be, cat: copula}
+        - {slot: verb, cat: passive_quantity_participle}
         - opt:
-            - {slot: p, cat: preposition}
-        - {slot: agg, cat: aggregate}
+            - {slot: p, cat: group_total_preposition}
+        - {slot: agg, cat: group_total_marker}
         - opt:
-            - {slot: p2, cat: preposition}
-            - {slot: grp, type: plural}
+            - {slot: p2, cat: group_total_scope_preposition}
+            - {slot: grp, cat: group_total_scope, number: plural}
+    where:
+      - bound_requires_category: {bound: p, slot: agg, cat: prepositional_group_total_marker}
+      - number_compatible: [item, be]
+      - verb_role_compatible:
+          {verb: verb, verb_cat: passive_quantity_participle, roles: [item], role_cat: passive_quantity_object}
+      - partitive_compatible: {measure: item, substance: substance}
+      - slot_not_category: {slot: item, cat: mass_quantity_noun}
     resolves:
       consumer: combined
       measure: "{item}"
@@ -6452,13 +6625,15 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         - {slot: aux, type: auxiliary}
         - {slot: who, type: plural}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, bare_form: true}
         - opt:
-            - {slot: p, cat: preposition}
-        - {slot: agg, cat: aggregate}
+            - {slot: p, cat: group_total_preposition}
+        - {slot: agg, cat: group_total_marker}
+    where:
+      - bound_requires_category: {bound: p, slot: agg, cat: prepositional_group_total_marker}
     resolves:
       consumer: combined
       measure: "{item}"
@@ -6474,15 +6649,17 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         - {slot: aux, type: auxiliary}
         - {lit: all}
         - {lit: of}
         - {slot: who, type: pronoun}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, bare_form: true}
         - opt:
-            - {slot: p, cat: preposition}
-        - {slot: agg, cat: aggregate}
+            - {slot: p, cat: group_total_preposition}
+        - {slot: agg, cat: group_total_marker}
+    where:
+      - bound_requires_category: {bound: p, slot: agg, cat: prepositional_group_total_marker}
     resolves:
       consumer: combined
       measure: "{item}"
@@ -6497,11 +6674,11 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: pre, cat: aggregate}
-        - {slot: item, type: noun}
+        - {slot: pre, cat: prenominal_group_total_marker}
+        - {slot: item, type: plural}
         - {slot: aux, type: auxiliary}
         - {slot: who, type: plural}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, bare_form: true}
     resolves:
       consumer: combined
       measure: "{item}"
@@ -6519,11 +6696,13 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: pre, cat: aggregate}
-        - {slot: item, type: noun}
+        - {slot: pre, cat: prenominal_group_total_marker}
+        - {slot: item, type: plural}
         - {slot: aux, type: future_modal}
-        - {slot: who, type: pronoun}
-        - {slot: verb, type: verb}
+        - {slot: who, cat: discourse_subject_group_pronoun}
+        - {slot: verb, cat: quantity_ask_verb, bare_form: true}
+    where:
+      - number_compatible: [who, aux]
     resolves:
       consumer: combined
       measure: "{item}"
@@ -6538,14 +6717,25 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
-        - {slot: aux, type: auxiliary}
-        - {slot: q, cat: quantifier}
+        - {slot: item, type: plural}
+        - {slot: aux, cat: plural_auxiliary}
+        - {slot: q, cat: plural_subject_quantifier}
         - {slot: who, type: plural}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, bare_form: true}
         - opt:
-            - {slot: p, cat: preposition}
-        - {slot: agg, cat: aggregate}
+            - {slot: p, cat: group_total_preposition}
+        - {slot: agg, cat: group_total_marker}
+    where:
+      - bound_requires_category: {bound: p, slot: agg, cat: prepositional_group_total_marker}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: teaching_quantity_verb, role_cat: teaching_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: find_quantity_verb, role_cat: findable_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: task_completion_verb, role_cat: finishable_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: enrollment_quantity_verb, role_cat: enrollment_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: drop_quantity_verb, role_cat: droppable_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: eating_quantity_verb, role_cat: edible_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: transfer_out, role_cat: transferable_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: spend_verb, role_cat: currency}
     resolves:
       consumer: combined
       measure: "{item}"
@@ -6562,12 +6752,12 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         - {slot: aux, type: auxiliary}
         - opt:
             - {slot: q, cat: quantifier}
         - {slot: who, type: counted}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, bare_form: true}
     resolves:
       consumer: combined
       measure: "{item}"
@@ -6583,14 +6773,17 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: aux, type: auxiliary}
+        - {slot: aux, type: future_modal}
         - {slot: a, type: name}
         - {lit: and}
         - {slot: b, type: name}
-        - {slot: verb, type: verb}
+        - {slot: verb, cat: possession_state, bare_form: true}
         - opt:
-            - {slot: p, cat: preposition}
-        - {slot: agg, cat: aggregate}
+            - {slot: p, cat: group_total_preposition}
+        - {slot: agg, cat: group_total_marker}
+    where:
+      - bound_requires_category: {bound: p, slot: agg, cat: prepositional_group_total_marker}
+      - slot_not_category: {slot: aux, cat: singular_auxiliary}
     resolves:
       consumer: combined-elided-measure
       a: "{a}"
@@ -6608,7 +6801,9 @@ asks:
         # Accept ordinary and will/would forms, but not capacity modals.
         - {slot: aux, type: future_modal}
         - {slot: who, type: name}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, bare_form: true}
+    where:
+      - number_compatible: [who, aux]
     resolves:
       consumer: single-entity
       entity: "{who}"
@@ -6627,14 +6822,16 @@ asks:
       question:
         - {lit: how}
         - {lit: much}
-        - {slot: item, type: noun}
+        - {slot: item, cat: mass_quantity_noun}
         - opt:
             - {lit: in}
             - {slot: req_unit, type: noun}
         # Accept ordinary and will/would forms, but not capacity modals.
         - {slot: aux, type: future_modal}
-        - {slot: who, type: entity}
-        - {slot: verb, type: verb}
+        - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true, bare_reference_category: bare_entity_reference}
+        - {slot: verb, cat: quantity_ask_verb, bare_form: true}
+    where:
+      - number_compatible: [who, aux]
     resolves:
       consumer: single-entity
       entity: "{who}"
@@ -6650,15 +6847,19 @@ asks:
       question:
         - {lit: how}
         - {lit: much}
-        - {slot: item, type: noun}
-        - {slot: who, type: entity}
+        - {slot: item, cat: mass_quantity_noun}
+        - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true, bare_reference_category: bare_entity_reference}
         - {slot: aux, type: future_modal}
-        - {slot: verb, type: verb}
+        - {slot: verb, cat: quantity_ask_verb, bare_form: true}
+    where:
+      - number_compatible: [who, aux]
     resolves:
       consumer: single-entity
       entity: "{who}"
       measure: "{item}"
       verb: "{verb}"
+    generation:
+      context_required: true
 
   - id: ask/how-much-combined
     # Combined "how much" form, such as "how much money do they have in
@@ -6669,14 +6870,19 @@ asks:
       question:
         - {lit: how}
         - {lit: much}
-        - {slot: item, type: noun}
+        - {slot: item, cat: mass_quantity_noun}
         - opt:
             - {slot: aux, type: auxiliary}
             - {slot: who, type: pronoun}
-            - {slot: verb, type: verb}
+            - {slot: verb, cat: quantity_ask_verb, bare_form: true}
         - opt:
-            - {slot: p, cat: preposition}
-        - {slot: agg, cat: aggregate}
+            - {slot: p, cat: group_total_preposition}
+        - {slot: agg, cat: group_total_marker}
+    where:
+      - bound_requires_category: {bound: p, slot: agg, cat: prepositional_group_total_marker}
+      - number_compatible: [who, aux]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: enrollment_quantity_verb, role_cat: enrollment_quantity_object}
     resolves:
       consumer: combined
       measure: "{item}"
@@ -6694,13 +6900,16 @@ asks:
       question:
         - {lit: how}
         - {lit: much}
-        - {slot: item, type: noun}
-        - opt:
-            - {slot: aux, type: auxiliary}
-            - {slot: who, type: pronoun}
-            - {slot: verb, type: verb}
+        - {slot: item, cat: mass_quantity_noun}
+        - {slot: aux, type: future_modal}
+        - {slot: who, cat: discourse_subject_group_pronoun}
+        - {slot: verb, cat: quantity_ask_verb, bare_form: true}
         - {lit: in}
         - {lit: all}
+    where:
+      - number_compatible: [who, aux]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: win_quantity_verb, role_cat: winnable_quantity_object}
     resolves:
       consumer: combined
       measure: "{item}"
@@ -6714,21 +6923,28 @@ asks:
       question:
         - {lit: how}
         - {lit: much}
-        - {slot: item, type: noun}
+        - {slot: item, cat: mass_quantity_noun}
         - {slot: aux, type: auxiliary}
         - {slot: a, type: name}
         - {lit: and}
         - {slot: b, type: name}
-        - {slot: verb, type: verb}
+        - {slot: verb, cat: quantity_ask_verb, bare_form: true}
         - opt:
-            - {slot: p, cat: preposition}
-        - {slot: agg, cat: aggregate}
+            - {slot: p, cat: group_total_preposition}
+        - {slot: agg, cat: group_total_marker}
+    where:
+      - bound_requires_category: {bound: p, slot: agg, cat: prepositional_group_total_marker}
+      - distinct: [a, b]
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
     resolves:
       consumer: combined
       a: "{a}"
       b: "{b}"
       measure: "{item}"
       verb: "{verb}"
+    generation:
+      slot_categories:
+        aux: [plural_auxiliary]
 
   - id: ask/how-much-combined-named-in-all
     # Named-pair "how much" form with the two-word marker "in all". The
@@ -6737,14 +6953,18 @@ asks:
       question:
         - {lit: how}
         - {lit: much}
-        - {slot: item, type: noun}
-        - {slot: aux, type: auxiliary}
+        - {slot: item, cat: mass_quantity_noun}
+        - {slot: aux, type: future_modal}
         - {slot: a, type: name}
         - {lit: and}
         - {slot: b, type: name}
-        - {slot: verb, type: verb}
+        - {slot: verb, cat: possession_state, bare_form: true}
         - {lit: in}
         - {lit: all}
+    where:
+      - slot_not_category: {slot: aux, cat: singular_auxiliary}
+      - distinct: [a, b]
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: teaching_quantity_verb, role_cat: teaching_quantity_object}
     resolves:
       consumer: combined
       a: "{a}"
@@ -6765,16 +6985,18 @@ asks:
       question:
         - {lit: how}
         - {lit: much}
-        - {slot: item, type: noun}
+        - {slot: item, cat: mass_quantity_noun}
         - {slot: aux, type: auxiliary}
         - {slot: n, type: number}
         - opt:
             - {lit: of}
             - {lit: them}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, bare_form: true}
         - opt:
-            - {slot: p, cat: preposition}
-        - {slot: agg, cat: aggregate}
+            - {slot: p, cat: group_total_preposition}
+        - {slot: agg, cat: group_total_marker}
+    where:
+      - bound_requires_category: {bound: p, slot: agg, cat: prepositional_group_total_marker}
     resolves:
       consumer: combined
       measure: "{item}"
@@ -6811,21 +7033,24 @@ asks:
         # own/owns equivalence class (core-english categories) for the
         # copula, exactly as ask/how-old-is does.
         - {lit: what}
-        - {slot: be, cat: state}
+        - {slot: be, cat: singular_copula}
+        - {lit: the, consume_skipped: true}
         - {lit: difference}
-        - opt:
-            - {slot: prep, cat: preposition}
+        - {slot: prep, cat: difference_preposition}
         - opt:
             # "the number of"/"the amount of" framing (same aggregate_noun
             # + 'of' pairing as arithmetic/times-the-number-of) — optional
             # because "the difference in ITEM ..." also occurs bare.
+            - {lit: the, consume_skipped: true}
             - {slot: frame, cat: aggregate_noun}
             - {lit: of}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         - {slot: a, type: name}
         - {lit: and}
         - {slot: b, type: name}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, finite_form: true}
+    where:
+      - distinct: [a, b]
     resolves:
       consumer: difference
       a: "{a}"
@@ -6842,16 +7067,21 @@ asks:
         # measure, or decline; mirrors the 'combined' consumer's holder
         # enumeration, but difference is inherently BINARY, never a Σ).
         - {lit: what}
-        - {slot: be, cat: state}
+        - {slot: be, cat: singular_copula}
+        - {lit: the, consume_skipped: true}
         - {lit: difference}
+        - {slot: prep, cat: difference_preposition}
         - opt:
-            - {slot: prep, cat: preposition}
-        - opt:
+            - {lit: the, consume_skipped: true}
             - {slot: frame, cat: aggregate_noun}
             - {lit: of}
-        - {slot: item, type: noun}
-        - {slot: who, type: pronoun}
-        - {slot: verb, type: verb}
+        - {slot: item, type: plural}
+        - {slot: who, cat: discourse_subject_group_pronoun}
+        - {slot: verb, type: verb, finite_form: true}
+    where:
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - number_compatible: [who, verb]
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: animate_object_verb, role_cat: teaching_quantity_object}
     resolves:
       consumer: difference
       measure: "{item}"
@@ -6866,16 +7096,18 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: unit, cat: duration_measure}
+        - {slot: unit, cat: duration_measure, number: plural}
         - {slot: dir, cat: task_completion_speed_comparative}
         - {slot: aux, type: auxiliary}
-        - {slot: a, type: entity}
+        - {slot: a, type: entity, common_noun_cat: quantity_event_participant, referential: true, bare_reference_category: bare_entity_reference}
         - {slot: verb, cat: task_completion_verb, bare_form: true}
         - opt:
             - {slot: task_poss, cat: possessive_determiner}
-        - {slot: task, type: noun, referential: true}
+        - {slot: task, cat: finishable_quantity_object, referential: true}
         - {lit: than}
-        - {slot: b, type: entity}
+        - {slot: b, type: entity, common_noun_cat: quantity_event_participant, referential: true, bare_reference_category: bare_entity_reference}
+    where:
+      - number_compatible: [a, aux]
     resolves:
       consumer: completion-duration-difference
       a: "{a}"
@@ -6891,7 +7123,7 @@ asks:
     # because the answer is an absolute difference.
     #
     # The copula is a verb here, not an auxiliary. The optional possessive
-    # pronoun must be consumed before `b`; otherwise "his" could be mistaken
+    # determiner must be consumed before `b`; otherwise "his" could be mistaken
     # for the standard instead of "sister". `fold_units` combines compatible
     # units—for example, 6 feet 3 inches must become 75 inches before the
     # comparison.
@@ -6899,14 +7131,24 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
+        - {slot: item, cat: dimension_difference_measure, number: plural}
         - {slot: dir, cat: dimension_comparative}
-        - {slot: aux, type: verb}
-        - {slot: a, type: entity}
+        - {slot: aux, cat: copula}
+        - {slot: a, type: entity, referential: true, bare_reference_category: bare_entity_reference}
         - {lit: than}
         - opt:
-            - {slot: poss, type: pronoun}
-        - {slot: b, type: entity}
+            - {slot: poss, cat: possessive_determiner}
+        - {slot: b, type: entity, referential: true, bare_reference_category: bare_entity_reference}
+    where:
+      - attribute_compatible: {attribute: dir, noun: item}
+      - number_compatible: [a, aux]
+      - distinct: [a, b]
+      - bound_requires_category: {bound: poss, slot: b, cat: animate}
+      - measure_holder_compatible:
+          measure: item
+          holders: [a, b]
+          allow_proper_name: true
+          proper_name_measure_categories: [length_measure, mass_measure]
     resolves:
       consumer: difference
       a: "{a}"
@@ -6924,14 +7166,24 @@ asks:
         - {lit: how}
         - {lit: much}
         - {slot: dir, cat: dimension_comparative}
-        - {slot: aux, type: verb}
-        - {slot: a, type: entity}
+        - {slot: aux, cat: copula}
+        - {slot: a, type: entity, referential: true, bare_reference_category: bare_entity_reference}
         - {lit: than}
         - opt:
-            - {slot: poss, type: pronoun}
-        - {slot: b, type: entity}
+            - {slot: poss, cat: possessive_determiner}
+        - {slot: b, type: entity, referential: true, bare_reference_category: bare_entity_reference}
         - {lit: in}
-        - {slot: item, type: noun}
+        - {slot: item, cat: dimension_difference_measure, number: plural}
+    where:
+      - attribute_compatible: {attribute: dir, noun: item}
+      - number_compatible: [a, aux]
+      - distinct: [a, b]
+      - bound_requires_category: {bound: poss, slot: b, cat: animate}
+      - measure_holder_compatible:
+          measure: item
+          holders: [a, b]
+          allow_proper_name: true
+          proper_name_measure_categories: [length_measure, mass_measure]
     resolves:
       consumer: difference
       a: "{a}"
@@ -6967,10 +7219,10 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         - {slot: aux, type: auxiliary}
         - {slot: who, type: entity}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, bare_form: true}
         - {lit: in}
         - {slot: span, type: counted}
     resolves:
@@ -6986,10 +7238,12 @@ asks:
         - {lit: how}
         - {lit: much}
         - {slot: aux, type: auxiliary}
-        - {slot: who, type: entity}
-        - {slot: verb, type: verb}
+        - {slot: who, type: entity, common_noun_cat: earning_quantity_participant, referential: true, bare_reference_category: bare_entity_reference}
+        - {slot: verb, cat: spend_verb, bare_form: true}
         - {lit: in}
-        - {slot: span, type: counted}
+        - {slot: span, cat: duration_measure, counted: true}
+    where:
+      - number_compatible: [who, aux]
     resolves:
       consumer: rate-span
       entity: "{who}"
@@ -7007,12 +7261,15 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         - {slot: aux, cat: capacity_modal}
-        - {slot: who, type: entity}
-        - {slot: verb, type: verb}
+        - {slot: who, type: entity, common_noun_cat: quantity_event_participant, referential: true, bare_reference_category: bare_entity_reference}
+        - {slot: verb, type: verb, bare_form: true}
         - {lit: in}
-        - {slot: span, type: counted}
+        - {slot: span, cat: duration_measure, counted: true}
+    where:
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
     resolves:
       consumer: rate-span
       entity: "{who}"
@@ -7028,10 +7285,10 @@ asks:
         - {lit: how}
         - {lit: much}
         - {slot: aux, cat: capacity_modal}
-        - {slot: who, type: entity}
-        - {slot: verb, type: verb}
+        - {slot: who, type: entity, common_noun_cat: earning_quantity_participant, referential: true, bare_reference_category: bare_entity_reference}
+        - {slot: verb, cat: wage_verb, bare_form: true}
         - {lit: in}
-        - {slot: span, type: counted}
+        - {slot: span, cat: duration_measure, counted: true}
     resolves:
       consumer: rate-span
       entity: "{who}"
@@ -7051,7 +7308,7 @@ asks:
         - {lit: much}
         - {slot: aux, type: auxiliary}
         - {slot: who, type: entity}
-        - {slot: verb, cat: wage_verb}
+        - {slot: verb, cat: wage_verb, bare_form: true}
         - opt:
             - {lit: in}
             - {slot: span, type: counted}
@@ -7076,15 +7333,44 @@ asks:
         - {lit: take}
         - opt:
             - {lit: for}
-        - {slot: who, type: entity}
+        - {slot: who, type: entity, common_noun_cat: quantity_event_participant, referential: true, bare_reference_category: bare_entity_reference}
         - {lit: to}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, bare_form: true}
         - {slot: item, type: counted}
+    where:
+      - slot_not_category: {slot: aux, cat: plural_present_auxiliary}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: purchase, role_cat: animate}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: teaching_quantity_verb, role_cat: animate}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: production_quantity_verb, role_cat: production_quantity_participant}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: earning_quantity_verb, role_cat: earning_quantity_participant}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: initiation_quantity_verb, role_cat: initiation_quantity_participant}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: enrollment_quantity_verb, role_cat: initiation_quantity_participant}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: transfer_out, role_cat: animate}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: purchase, role_cat: transferable_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: teaching_quantity_verb, role_cat: teaching_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: find_quantity_verb, role_cat: findable_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: task_completion_verb, role_cat: finishable_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: enrollment_quantity_verb, role_cat: enrollment_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: drop_quantity_verb, role_cat: droppable_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: eating_quantity_verb, role_cat: edible_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: transfer_out, role_cat: transferable_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: production_quantity_verb, role_cat: producible_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: earning_quantity_verb, role_cat: earnable_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: initiation_quantity_verb, role_cat: initiable_quantity_object}
     resolves:
       consumer: rate-span-inverse
       entity: "{who}"
       item: "{item}"
       item_value: "{item.value}"
+    generation:
+      slot_categories:
+        verb:
+          [purchase, eating_quantity_verb, earning_quantity_verb,
+           enrollment_quantity_verb, find_quantity_verb,
+           task_completion_verb, production_quantity_verb,
+           teaching_quantity_verb, initiation_quantity_verb, transfer_out]
 
   - id: ask/how-long-take-span-totality-item
     # Totality form of the inverse rate question: "how long will it take Ana
@@ -7100,17 +7386,48 @@ asks:
         - {lit: take}
         - opt:
             - {lit: for}
-        - {slot: who, type: entity}
+        - {slot: who, type: entity, common_noun_cat: quantity_event_participant, referential: true, bare_reference_category: bare_entity_reference}
         - {lit: to}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, bare_form: true}
         - {lit: all}
         - opt:
-            - {lit: of}
-        - {slot: item, type: noun}
+            - opt:
+                - {lit: of}
+            - {lit: the, consume_skipped: true}
+        - {slot: item, type: plural, referential: true, generation_bare_reference: true}
+    where:
+      - slot_not_category: {slot: aux, cat: plural_present_auxiliary}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: purchase, role_cat: animate}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: teaching_quantity_verb, role_cat: animate}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: production_quantity_verb, role_cat: production_quantity_participant}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: earning_quantity_verb, role_cat: earning_quantity_participant}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: initiation_quantity_verb, role_cat: initiation_quantity_participant}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: enrollment_quantity_verb, role_cat: initiation_quantity_participant}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: transfer_out, role_cat: animate}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: purchase, role_cat: transferable_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: teaching_quantity_verb, role_cat: teaching_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: find_quantity_verb, role_cat: findable_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: task_completion_verb, role_cat: finishable_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: enrollment_quantity_verb, role_cat: enrollment_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: drop_quantity_verb, role_cat: droppable_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: eating_quantity_verb, role_cat: edible_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: transfer_out, role_cat: transferable_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: production_quantity_verb, role_cat: producible_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: earning_quantity_verb, role_cat: earnable_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: initiation_quantity_verb, role_cat: initiable_quantity_object}
     resolves:
       consumer: rate-span-inverse
       entity: "{who}"
       item: "{item}"
+    generation:
+      slot_categories:
+        verb:
+          [purchase, eating_quantity_verb, earning_quantity_verb,
+           enrollment_quantity_verb, find_quantity_verb,
+           task_completion_verb, production_quantity_verb,
+           teaching_quantity_verb, initiation_quantity_verb, transfer_out]
 
   - id: ask/how-many-timeunit-take-span
     # Inverse rate question with an explicit time unit: "how many hours will
@@ -7121,7 +7438,7 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: span_unit, type: noun}
+        - {slot: span_unit, cat: duration_measure}
         - {slot: aux, type: future_modal}
         - {lit: it}
         - {lit: take}
@@ -7129,8 +7446,10 @@ asks:
             - {lit: for}
         - {slot: who, type: entity}
         - {lit: to}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, bare_form: true}
         - {slot: item, type: counted}
+    where:
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
     resolves:
       consumer: rate-span-inverse
       entity: "{who}"
@@ -7145,19 +7464,35 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: span_unit, type: noun}
+        - {slot: span_unit, cat: duration_measure, number: plural}
         - {slot: aux, type: future_modal}
         - {lit: it}
         - {lit: take}
         - opt:
             - {lit: for}
-        - {slot: who, type: entity}
+        - {slot: who, type: entity, common_noun_cat: quantity_event_participant, referential: true, bare_reference_category: bare_entity_reference}
         - {lit: to}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, bare_form: true}
         - {lit: all}
         - opt:
-            - {lit: of}
-        - {slot: item, type: noun}
+            - opt:
+                - {lit: of}
+            - {lit: the, consume_skipped: true}
+        - {slot: item, type: plural, referential: true, generation_bare_reference: true}
+    where:
+      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: teaching_quantity_verb, role_cat: teaching_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: find_quantity_verb, role_cat: findable_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: task_completion_verb, role_cat: finishable_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: enrollment_quantity_verb, role_cat: enrollment_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: drop_quantity_verb, role_cat: droppable_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: eating_quantity_verb, role_cat: edible_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: transfer_out, role_cat: transferable_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: initiation_quantity_verb, role_cat: initiable_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: earning_quantity_verb, role_cat: earnable_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: production_quantity_verb, role_cat: producible_quantity_object}
     resolves:
       consumer: rate-span-inverse
       entity: "{who}"
@@ -7187,10 +7522,12 @@ asks:
       question:
         - {lit: how}
         - {lit: old}
-        - {slot: verb, cat: state}
-        - {slot: who, type: entity, referential: true, bare_reference_category: bare_entity_reference}
+        - {slot: verb, cat: past_copula}
+        - {slot: who, type: entity, common_noun_cat: quantity_event_participant, referential: true, bare_reference_category: bare_entity_reference}
         - {lit: in}
-        - {slot: target_year, type: number, standalone: true, integer: true}
+        - {slot: target_year, type: number, standalone: true, integer: true, value_min: 1000, value_max: 9999}
+    where:
+      - number_compatible: [who, verb]
     resolves:
       consumer: age-at-year
       entity: "{who}"
@@ -7253,9 +7590,28 @@ asks:
       question:
         - {lit: how}
         - {lit: old}
-        - {slot: verb, cat: state}
-        - opt:
-            - {slot: poss_det, cat: possessive_determiner}
+        - {slot: verb, cat: singular_copula}
+        - {slot: poss_det, cat: possessive_determiner}
+        - {slot: who, cat: animate, possessed: true}
+    where:
+      - owner_matches: {owner: poss_det, possessed: who}
+    resolves:
+      consumer: single-entity
+      entity: "{who}"
+      entity_owner: "{who.owner}"
+      measure: year
+      verb: "{verb}"
+
+  - id: ask/how-old-is-explicitly-possessed
+    # Apostrophe-s possession is already one owner-qualified noun unit, so it
+    # must not take the separate determiner licensed by the preceding sibling.
+    # Keeping the two phrase shapes separate prevents doubled owners such as
+    # "their Mary's teacher" while preserving "Mary's teacher".
+    match:
+      question:
+        - {lit: how}
+        - {lit: old}
+        - {slot: verb, cat: singular_copula}
         - {slot: who, cat: animate, possessed: true}
     resolves:
       consumer: single-entity
@@ -7274,8 +7630,10 @@ asks:
         - {lit: many}
         - {lit: years}
         - {lit: old}
-        - {slot: verb, cat: state}
+        - {slot: verb, cat: copula}
         - {slot: who, type: name}
+    where:
+      - number_compatible: [who, verb]
     resolves:
       consumer: single-entity
       entity: "{who}"
@@ -7290,11 +7648,11 @@ asks:
       question:
         - {lit: how}
         - {lit: old}
-        - {slot: aux, type: future_modal}
+        - {slot: aux, cat: future_modal}
         - {slot: who, type: name}
         - {lit: be}
-        - {slot: prep, cat: preposition}
-        - {slot: n, type: counted}
+        - {slot: prep, cat: age_projection_preposition}
+        - {slot: n, cat: age_measure, counted: true}
     resolves:
       consumer: age-projected
       entity: "{who}"
@@ -7311,10 +7669,10 @@ asks:
       question:
         - {lit: how}
         - {lit: old}
-        - {slot: aux, type: future_modal}
+        - {slot: aux, cat: future_modal}
         - {slot: who, type: name}
         - {lit: be}
-        - {slot: n, type: counted}
+        - {slot: n, cat: age_measure, counted: true}
         - {lit: from}
         - {lit: now}
     resolves:
@@ -7333,10 +7691,12 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
-        - {slot: adj, cat: dimension_adjective}
-        - {slot: verb, cat: state}
+        - {slot: item, cat: dimension_difference_measure, number: plural}
+        - {slot: adj, cat: unit_dimension_adjective}
+        - {slot: verb, cat: singular_copula}
         - {slot: who, type: name}
+    where:
+      - attribute_compatible: {attribute: adj, noun: item}
     resolves:
       consumer: single-entity
       entity: "{who}"
@@ -7362,7 +7722,10 @@ asks:
         # `indefinite_article` category lives in the scratch logic pack
         # ONLY, so every benchmark registry is a no-op by construction.
         - {slot: member, type: name, blocks_skipped: indefinite_article}
-        - {slot: coll, type: noun}
+        - {slot: coll, type: noun, number: singular}
+    where:
+      - slot_not_category: {slot: coll, cat: non_quantity_holder}
+      - slot_not_category: {slot: coll, cat: timeperiod}
     resolves:
       consumer: membership-verdict
       member: "{member}"
@@ -7382,10 +7745,10 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         - {slot: modal, type: modal}
         - {slot: who, type: entity}
-        - {slot: verb, cat: purchase}
+        - {slot: verb, cat: purchase, bare_form: true}
         - opt:
             - {lit: with}
             - {slot: budget, type: counted}
@@ -7400,9 +7763,12 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
-        - {slot: verb, type: verb}
+        - {slot: item, type: plural}
+        - {slot: verb, cat: plural_copula}
         - {slot: attr, type: adjective}
+    where:
+      - attribute_compatible: {attribute: attr, noun: item}
+      - slot_not_category: {slot: attr, cat: remnant_adj}
     resolves:
       consumer: partition-complement
       item: "{item}"
@@ -7452,10 +7818,12 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: noun}
-        - {slot: verb, type: verb}
+        - {slot: item, type: plural}
+        - {slot: verb, cat: plural_copula}
         - {lit: not}
         - {slot: attr, type: adjective}
+    where:
+      - attribute_compatible: {attribute: attr, noun: item}
     resolves:
       consumer: partition-complement
       item: "{item}"
@@ -7473,9 +7841,11 @@ asks:
         - {lit: how}
         - {lit: many}
         - {slot: item, type: qualified}
-        - {slot: verb, type: verb}
+        - {slot: verb, cat: plural_copula}
         - {slot: prep, cat: preposition}
-        - {slot: place, type: noun}
+        - {slot: place, cat: quantity_location, referential: true}
+    where:
+      - attribute_compatible: {attribute: prep, noun: place}
     resolves:
       consumer: partition-complement
       item: "{item}"
@@ -7491,7 +7861,7 @@ asks:
         - {lit: how}
         - {lit: many}
         - {slot: item, type: qualified}
-        - {slot: verb, type: verb}
+        - {slot: verb, cat: plural_copula}
         - {lit: there}
     resolves:
       consumer: partition-complement
@@ -7523,10 +7893,10 @@ asks:
         - {lit: how}
         - {lit: many}
         - {slot: dir, cat: delta}
-        - {slot: item, type: noun}
+        - {slot: item, type: plural}
         - {slot: aux, type: auxiliary}
         - {slot: who, type: name}
-        - {slot: verb, cat: need_ask_verb}
+        - {slot: verb, cat: need_ask_verb, bare_form: true}
     resolves:
       consumer: deficit
       entity: "{who}"
@@ -7570,10 +7940,12 @@ asks:
         - {lit: much}
         - {lit: change}
         - {slot: aux, type: future_modal}
-        - {slot: who, type: entity}
-        - {slot: verb, type: verb}
+        - {slot: who, type: entity, common_noun_cat: quantity_event_participant, referential: true, bare_reference_category: bare_entity_reference}
+        - {slot: verb, cat: change_receipt_verb, bare_form: true}
         - opt:
             - {lit: back}
+    where:
+      - number_compatible: [who, aux]
     resolves:
       consumer: change
       entity: "{who}"
@@ -7594,7 +7966,7 @@ asks:
         - {lit: much}
         - {slot: aux, type: auxiliary}
         - {slot: item, type: noun}
-        - {slot: verb, cat: price_verb}
+        - {slot: verb, cat: price_verb, bare_form: true}
     resolves:
       consumer: item-cost
       item: "{item}"
@@ -7616,7 +7988,7 @@ asks:
         # Accept ordinary and will/would forms, but not capacity modals.
         - {slot: aux, type: future_modal}
         - {slot: who, type: name}
-        - {slot: verb, cat: spend_verb}
+        - {slot: verb, cat: spend_verb, bare_form: true}
         - {slot: prep, cat: spend_target_prep}
         - {slot: qty, type: counted}
     resolves:
@@ -7636,7 +8008,7 @@ asks:
         - {slot: aux, type: auxiliary}
         - {lit: each}
         - {slot: item, type: noun}
-        - {slot: verb, cat: price_verb}
+        - {slot: verb, cat: price_verb, bare_form: true}
     resolves:
       consumer: unit-price-from-total
       item: "{item}"
@@ -7648,7 +8020,7 @@ asks:
     match:
       question:
         - {lit: what}
-        - {slot: be, cat: state}
+        - {slot: be, cat: singular_copula}
         - {lit: cost}
         - {lit: of}
         - {slot: qty, type: counted}
@@ -7664,23 +8036,21 @@ asks:
     # the verb is omitted, the combined consumer defaults to "have".
     match:
       question:
-        # no literal 'the': article is a globally-skippable sense
-        # (patterns.SKIPPABLE_SENSES), so a required 'the' token could
-        # never match anyway — skip advances past it before any literal
-        # comparison runs, same as every other ask in this file (none of
-        # them spell 'the' out either).
         - {lit: what}
-        - {slot: be, cat: state}
+        - {slot: be, cat: singular_copula}
+        - {lit: the, consume_skipped: true}
         - {lit: total}
-        - opt:
-            - {slot: agg_noun, cat: aggregate_noun}
-            - {lit: of}
-        - {slot: item, type: noun}
+        - {slot: agg_noun, cat: count_aggregate_noun}
+        - {lit: of}
+        - {slot: item, type: plural}
         - opt:
             - opt:
                 - {lit: that}
-            - {slot: who, type: pronoun}
-            - {slot: verb, type: verb}
+            - {slot: who, cat: discourse_subject_group_pronoun}
+            - {slot: verb, cat: possession_state}
+    where:
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - number_compatible: [who, verb]
     resolves:
       consumer: combined
       measure: "{item}"
@@ -7694,16 +8064,19 @@ asks:
       question:
         - {lit: what}
         - {lit: "'s"}
+        - {lit: the, consume_skipped: true}
         - {lit: total}
-        - opt:
-            - {slot: agg_noun, cat: aggregate_noun}
-            - {lit: of}
-        - {slot: item, type: noun}
+        - {lit: number}
+        - {lit: of}
+        - {slot: item, type: plural}
         - opt:
             - opt:
                 - {lit: that}
-            - {slot: who, type: pronoun}
-            - {slot: verb, type: verb}
+            - {slot: who, cat: discourse_subject_group_pronoun}
+            - {slot: verb, cat: possession_state}
+    where:
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - number_compatible: [who, verb]
     resolves:
       consumer: combined
       measure: "{item}"
@@ -7718,17 +8091,19 @@ asks:
     match:
       question:
         - {lit: what}
-        - {slot: be, cat: state}
+        - {slot: be, cat: copula}
+        - {lit: the, consume_skipped: true}
         - {lit: average}
-        - opt:
-            - {slot: agg_noun, cat: aggregate_noun}
-            - {lit: of}
+        - {slot: agg_noun, cat: aggregate_noun}
+        - {lit: of}
         - {slot: item, type: noun}
         - opt:
             - opt:
                 - {lit: that}
-            - {slot: who, type: pronoun}
+            - {slot: who, cat: clause_subject_personal_pronoun}
             - {slot: verb, type: verb}
+    where:
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: teaching_quantity_verb, role_cat: teaching_quantity_object, allow_unbound_trigger: true}
     resolves:
       consumer: average
       measure: "{item}"
@@ -7743,16 +8118,18 @@ asks:
       question:
         - {lit: what}
         - {lit: "'s"}
+        - {lit: the, consume_skipped: true}
         - {lit: average}
-        - opt:
-            - {slot: agg_noun, cat: aggregate_noun}
-            - {lit: of}
+        - {slot: agg_noun, cat: aggregate_noun}
+        - {lit: of}
         - {slot: item, type: noun}
         - opt:
             - opt:
                 - {lit: that}
-            - {slot: who, type: pronoun}
+            - {slot: who, cat: clause_subject_personal_pronoun}
             - {slot: verb, type: verb}
+    where:
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: teaching_quantity_verb, role_cat: teaching_quantity_object, allow_unbound_trigger: true}
     resolves:
       consumer: average
       measure: "{item}"
@@ -7774,7 +8151,16 @@ asks:
         - {slot: item, cat: dimension_noun}
         - opt:
             - {lit: of}
+            - {lit: the, consume_skipped: true}
             - {slot: n, type: number}
+        - opt:
+            # Capture the article-less cardinal tail only to reject it below;
+            # otherwise the general floating matcher could accept the valid
+            # prefix and silently ignore "of 5".
+            - {lit: of}
+            - {slot: bare_n, type: number}
+    where:
+      - unbound: [bare_n]
     resolves:
       consumer: combined
       measure: "{item}"
@@ -7838,9 +8224,10 @@ asks:
       question:
         - {lit: how}
         - {lit: long}
-        - {slot: verb, cat: state}
+        - {slot: verb, cat: singular_copula}
+        - {lit: the, consume_skipped: true}
         - {lit: total}
-        - {slot: item, type: noun}
+        - {slot: item, cat: duration_total_subject}
     resolves:
       consumer: combined
       measure: time_measure

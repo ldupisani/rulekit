@@ -47,9 +47,11 @@ def test_named_pair_how_many_together(full_registry):
     assert r.answer.value == 25
 
 
-def test_named_pair_how_many_singular_does_in_total(full_registry):
-    # singular 'does' with a conjoined subject — the aux slot must accept
-    # do/does/did, not just 'do'
+def test_named_pair_how_many_singular_does_remains_consume_compatible(full_registry):
+    # The generator is stricter and never emits singular `does` for a
+    # coordinated subject. Reading remains tolerant because established
+    # corpus questions use this non-standard agreement while preserving an
+    # otherwise unambiguous quantitative interpretation.
     r = solve(
         "Ravi has 18 buttons. Tomas has 7 buttons. "
         "How many buttons does Ravi and Tomas have in total?",

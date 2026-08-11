@@ -634,6 +634,7 @@ entries:
   pick:
     senses:
     - verb
+    number: plural
   picked:
     senses:
     - verb
@@ -645,6 +646,7 @@ entries:
   picks:
     senses:
     - verb
+    number: singular
     verb:
       lemma: pick
   picnic:
@@ -1636,6 +1638,7 @@ entries:
   run:
     senses:
     - verb
+    number: plural
   runner:
     senses:
     - noun
@@ -1648,6 +1651,7 @@ entries:
   runs:
     senses:
     - verb
+    number: singular
     verb:
       lemma: run
   runt:
@@ -2439,24 +2443,6 @@ entries:
     senses:
     - noun
     plural: stars
-  start:
-    senses:
-    - verb
-  started:
-    senses:
-    - verb
-    verb:
-      lemma: start
-  starting:
-    senses:
-    - verb
-    verb:
-      lemma: start
-  starts:
-    senses:
-    - verb
-    verb:
-      lemma: start
   state:
     senses:
     - noun

@@ -43,6 +43,13 @@ categories:
     duration_holder:
         parent: dimension_holder
         notes: "Events or intervals ordinarily comparable by elapsed time."
+    duration_total_subject:
+        parent: noun
+        notes: >
+            Head nouns that can name the whole whose elapsed time is requested
+            by a total-duration question. This is separate from a holder's own
+            duration: a video can collect section durations without itself
+            appearing as a Quantity holder.
     motion_participant:
         parent: quantity_holder
         notes: >
@@ -111,6 +118,13 @@ categories:
             Possessive determiners licensed before an animate appositive role.
             Excludes inanimate `its`; person-neutral `my`, `your`, and `their`
             remain valid without inventing a gender feature in the kernel.
+    third_person_animate_possessive_determiner:
+        parent: possessive_determiner
+        notes: >
+            Singular third-person possessives that require an animate local
+            subject when a rule treats the optional PP as subject-owned.
+            `my`/`your` remain externally deictic, `their` remains number-
+            neutral, and inanimate `its` is deliberately separate.
     holder_list_conjunction:
         parent: conjunction
         notes: >
@@ -131,6 +145,25 @@ categories:
             Nouns that can identify a temporal reference or interval. Core owns
             the category and its generic `year` member; domain packs may extend
             it with weekdays, months, and other calendar vocabulary.
+    named_calendar_period:
+        parent: timeperiod
+        notes: >
+            Proper calendar-name nouns that occur bare in the supported
+            adjunct grammar. A simple generated PP does not license articles
+            or possessive determiners before these names.
+    named_weekday:
+        parent: named_calendar_period
+    named_month:
+        parent: named_calendar_period
+    temporal_on_point_object:
+        parent: timeperiod
+        notes: "Temporal point nouns conventionally governed by `on`."
+    temporal_in_point_object:
+        parent: timeperiod
+        notes: "Temporal point/interval nouns conventionally governed by `in`."
+    temporal_at_point_object:
+        parent: timeperiod
+        notes: "Temporal point nouns conventionally governed by `at`."
     bare_entity_reference:
         parent: quantity_holder
         notes: >
@@ -319,6 +352,11 @@ categories:
         notes: >
             Subject-case discourse group pronouns, used after an inverted
             copula in questions such as "how old are they".
+    clause_subject_personal_pronoun:
+        parent: pronoun
+        notes: >
+            Personal pronouns licensed as finite-clause subjects. Object,
+            possessive, and reflexive forms remain outside this category.
     temporal_preposition:
         parent: preposition
         notes: >
@@ -327,6 +365,12 @@ categories:
             readings of the same surface remain independent.
     temporal_point_preposition:
         parent: temporal_preposition
+    temporal_on_point_preposition:
+        parent: temporal_point_preposition
+    temporal_in_point_preposition:
+        parent: temporal_point_preposition
+    temporal_at_point_preposition:
+        parent: temporal_point_preposition
         notes: "Markers locating an event at one stated temporal reference."
     temporal_before_preposition:
         parent: temporal_preposition
@@ -334,6 +378,11 @@ categories:
     temporal_after_preposition:
         parent: temporal_preposition
         notes: "Markers locating an event after a stated temporal reference."
+    age_projection_preposition:
+        parent: preposition
+        notes: >
+            Prepositions that introduce a future age offset, as in "in five
+            years" or "after five years".
     temporal_duration_preposition:
         parent: temporal_preposition
         notes: "Markers locating an event within or across a stated interval."
@@ -504,6 +553,30 @@ categories:
             Non-count quantity heads licensed by "much". Kept separate from
             `mass_measure`, which denotes physical weight units rather than
             mass-noun countability.
+    partitive_weight_measure:
+        parent: noun
+        notes: "Weight units licensed before an 'of SUBSTANCE' complement."
+    partitive_volume_measure:
+        parent: noun
+        notes: "Volume units licensed before an 'of SUBSTANCE' complement."
+    partitive_pair_measure:
+        parent: noun
+        notes: "Pair-counting units whose complements must be pairable."
+    partitive_piece_measure:
+        parent: noun
+        notes: "Piece-counting units whose complements can be divided into pieces."
+    weighable_partitive_substance:
+        parent: noun
+        notes: "Bulk substances conventionally quantified by weight."
+    volume_partitive_substance:
+        parent: noun
+        notes: "Bulk substances conventionally quantified by volume."
+    pairable_partitive_substance:
+        parent: noun
+        notes: "Countable objects conventionally quantified in pairs."
+    piecewise_partitive_substance:
+        parent: noun
+        notes: "Materials or collections conventionally quantified in pieces."
     non_quantity_object_verb:
         parent: verb
         notes: >
@@ -559,6 +632,13 @@ categories:
             The plural-agreeing copula forms. Fractional partitions always denote
             a plural collection on their surface ("half of them ARE red"), so
             they use this closed subcategory instead of the general copula.
+    singular_copula:
+        parent: copula
+        notes: >
+            Copula forms compatible with a singular grammatical subject or
+            predicate head. This keeps fixed singular question frames such as
+            "what is the cost" and "what was the difference" from drawing a
+            plural form merely because every copula shares the same state sense.
     past_copula:
         parent: copula
         notes: >
@@ -566,13 +646,13 @@ categories:
             Keeping this separate from general `copula` prevents "three years
             ago Fia is..." while retaining ordinary present/past age premises.
     quantity_event_verb:
-        parent: verb
+        parent: quantity_ask_verb
         notes: >
             Quantity-changing event verbs whose common-noun subjects and
             comparison standards must be declared plausible event
             participants. Stative possession verbs remain outside this class.
     animate_subject_verb:
-        parent: verb
+        parent: quantity_ask_verb
         notes: >
             Verbs whose grammatical subject must denote an animate participant.
             Rules opt into this role boundary explicitly; ordinary quantity
@@ -591,7 +671,7 @@ categories:
             keeps a quantitative object frame such as "met half of the group"
             without admitting times, units, or arbitrary physical objects.
     currency_quantity_verb:
-        parent: verb
+        parent: quantity_ask_verb
         notes: >
             Verbs that can govern a money-valued quantity in an affine
             comparison. This is a positive boundary for the bare "the money
@@ -620,6 +700,15 @@ categories:
     finishable_quantity_object:
         parent: noun
         notes: "Counted things that can ordinarily be completed or finished."
+    student_quantity_measure:
+        parent: noun
+        notes: >
+            Student populations whose holder must be a plausible person or
+            educational institution rather than an arbitrary quantity holder.
+    student_quantity_holder:
+        parent: noun
+        notes: >
+            People and institutions that may conventionally have students.
     enrollment_quantity_object:
         parent: noun
         notes: "Counted classes that can ordinarily be enrolled or taken."
@@ -645,6 +734,67 @@ categories:
         parent: noun
         notes: "Counted objects that can ordinarily be shucked."
     acquire: {parent: quantity_event_verb, antonym: lose, polarity: 1}
+    purchase:
+        parent: acquire
+        notes: "Verbs that license an ordinary purchase-capacity question."
+    wage_verb:
+        parent: quantity_ask_verb
+        notes: >
+            Narrow earnings verbs used by wage-rate questions. Membership is
+            separate from broader acquisition and production event meanings.
+    initiation_quantity_verb:
+        parent: quantity_ask_verb
+        notes: >
+            Direct-object senses of begin/start in quantitative comparisons.
+            The object must denote an activity or institution that can
+            ordinarily be initiated; start-state marker use remains separate.
+    initiation_quantity_participant:
+        parent: noun
+    initiable_quantity_object:
+        parent: noun
+    earning_quantity_verb:
+        parent: quantity_ask_verb
+        notes: >
+            Direct quantitative earning predicates. Their subjects/standards
+            must be plausible earners and their objects must be money or a
+            declared reward, not prices or arbitrary physical populations.
+    earning_quantity_participant:
+        parent: noun
+    earnable_quantity_object:
+        parent: noun
+    production_quantity_verb:
+        parent: quantity_ask_verb
+        notes: >
+            Direct quantitative production predicates, kept separate from
+            wage-question `make` so both actor and produced-object roles are
+            explicit in premise rules.
+    production_quantity_participant:
+        parent: noun
+    producible_quantity_object:
+        parent: noun
+    price_verb:
+        parent: quantity_ask_verb
+        notes: >
+            Verbs that state or ask for an item's unit price with the item as
+            grammatical subject.
+    passive_quantity_participle:
+        parent: verb
+        notes: >
+            Declared passive participles whose event quantities may be summed
+            by an entity-less total ask. Membership supplies the voice evidence
+            for irregular forms that cannot be recognized from a suffix.
+    passive_quantity_object:
+        parent: noun
+        notes: >
+            Countable objects that may head an entity-less passive quantity
+            question. Units, dimensions, times, and abstract totals do not
+            become things that were bought, sold, eaten, or given merely
+            because they are nouns.
+    spend_target_prep:
+        parent: preposition
+        notes: >
+            The narrow `for`/`on` target markers used by priced-purchase and
+            cost-of-quantity questions; temporal `in` remains outside it.
     find_quantity_verb:
         parent: acquire
         notes: >
@@ -778,6 +928,16 @@ categories:
             forms), not a member of it: an ask needs the base form only, never
             'taller'/'shorter' etc. Most members are difg-mined words; 'small'/
             'large' are core-english, tagged in this file's own `members:`.
+    unit_dimension_adjective:
+        parent: dimension_adjective
+        notes: >
+            Base dimension adjectives that can follow an explicit counted
+            unit in an absolute question, such as "inches tall" or "pounds
+            heavy". Relative-only and generic size adjectives remain outside.
+    linear_unit_dimension_adjective:
+        parent: unit_dimension_adjective
+    mass_unit_dimension_adjective:
+        parent: unit_dimension_adjective
     size_attribute:
         parent: dimension_adjective
         notes: >
@@ -1018,6 +1178,12 @@ categories:
             Concrete elapsed-time units accepted by duration-rate premises.
             This is narrower than `time_measure`, which also contains the
             abstract dimension noun `age`; "70 ages" is not a duration span.
+    dimension_difference_measure:
+        parent: noun
+        notes: >
+            Concrete units licensed by "how many UNIT taller/lighter/..."
+            questions. Dimension nouns such as cost, height, and weight stay
+            outside because this surface asks for a count of units.
     frequency_quantifier:
         parent: quantifier
         notes: >
@@ -1116,6 +1282,12 @@ categories:
             marker itself has a separate compatibility category so declaring
             "all" here does not create "all total" or other arbitrary
             quantifier/aggregate combinations.
+    plural_subject_quantifier:
+        parent: quantifier
+        notes: >
+            Quantifiers that may directly determine a plural subject in a
+            combined-total question ("all children", "both teams").
+            Distributive singular forms such as "each" remain outside.
     quantified_group_total_marker:
         parent: group_total_marker
         notes: >
@@ -1134,6 +1306,16 @@ categories:
         notes: >
             Prepositions licensed immediately before a prepositional
             GroupTotal marker.
+    group_total_scope:
+        parent: noun
+        notes: >
+            Locations or containers that may delimit an entity-less combined
+            total, as in "in the two lakes". This is not an exclusion class.
+    group_total_scope_preposition:
+        parent: preposition
+        notes: >
+            Locative prepositions licensed before a trailing combined-total
+            scope, such as "in the two lakes" or "on the two farms".
     frame_prepositional_verb:
         parent: verb
         notes: >
@@ -1269,6 +1451,42 @@ categories:
             lexical declarations and this future-tense membership live in core;
             extension packs may add other categories without duplicating the
             words.
+    plural_auxiliary:
+        parent: auxiliary
+        notes: >
+            Do-support forms compatible with a coordinated or otherwise
+            plural question subject. Past `did` is number-neutral; present
+            singular `does` is deliberately outside this category.
+    singular_auxiliary:
+        parent: auxiliary
+        notes: >
+            Present do-support restricted to a singular subject. Coordinated
+            question subjects exclude this category while retaining the
+            number-neutral past auxiliary and future modals.
+    plural_present_auxiliary:
+        parent: auxiliary
+        notes: >
+            Present do-support that conflicts with a fixed singular subject.
+            Past `did` and the future modals remain number-neutral.
+    change_receipt_verb:
+        parent: verb
+        notes: >
+            Verbs that can ask for money returned after a tendered payment.
+            This is narrower than general acquisition: buying, finding, or
+            winning money does not describe receiving change.
+    quantity_ask_verb:
+        parent: verb
+        notes: >
+            Bare transitive or possessive verbs that can head a general
+            quantity question. This is an explicit union for ask grammar, not
+            a claim that the verbs share event semantics. Motion and unrelated
+            intransitive verbs stay outside, so generation cannot ask how many
+            prices somebody "travels" merely because both words are known.
+    difference_preposition:
+        parent: preposition
+        notes: >
+            Prepositions licensed by the supported nominal difference frame,
+            as in "the difference in" and "the difference between".
     capacity_modal:
         parent: modal
         notes: >
@@ -1312,7 +1530,7 @@ categories:
             resulting sentence. Bare `take` is deliberately excluded: the
             construction's finite subject is expletive singular `it`.
     task_completion_verb:
-        parent: verb
+        parent: quantity_ask_verb
         notes: >
             Verbs that assert completion of one exact task object. This is
             deliberately separate from broad quantity-event and motion verb
@@ -1614,10 +1832,11 @@ members:
     holder_list_conjunction: [and]
     definite_article: [the]
     possessive_determiner: [her, his, its, my, their, your]
+    third_person_animate_possessive_determiner: [her, his]
     plural_possessive_determiner: [their]
     clause_subject_possessive_determiner: [her, his, its, their]
     animate_possessive_determiner: [her, his, my, their, your]
-    many_incompatible_noun: [age, litter, percentage, rest]
+    many_incompatible_noun: [age, litter, percentage, price, rest, science]
     bare_possession_incompatible_noun: [number]
     membership_predicate_incompatible_noun: [time]
     conjunct_comparison_incompatible_noun: [time]
@@ -1626,6 +1845,10 @@ members:
         [amount, clay, cost, dollar, inch, money, number, paper, pound, price,
          remainder, rest, sand, time, wool, year]
     mass_quantity_noun: [clay, litter, money, paper, rest, sand, wool]
+    partitive_weight_measure: [pound]
+    weighable_partitive_substance: [clay, paper, sand, wool]
+    volume_partitive_substance: [sand]
+    piecewise_partitive_substance: [litter, paper]
     mass_currency_noun: [money]
     non_quantity_object_verb:
         - be
@@ -1659,6 +1882,7 @@ members:
     remnant_adj: [left]
     color_attribute: [beige, blue, green, red, turquoise, violet]
     size_attribute: [small, large]
+    linear_unit_dimension_adjective: [tall]
     colorable_noun:
         - apple
         - ball
@@ -1818,6 +2042,22 @@ members:
     animate_subject_verb:
         [enroll, enrolled, enrolling, enrolls, own, owns, take, takes, took,
          teach, teaches, taught]
+    initiation_quantity_verb:
+        [begin, begins, began, beginning, start, starts, started, starting]
+    initiation_quantity_participant:
+        [gardener, guardian, librarian, shopper, student, teacher, university,
+         violinist]
+    initiable_quantity_object: [business, course]
+    earning_quantity_verb: [earn, earns, earned]
+    earning_quantity_participant:
+        [gardener, guardian, librarian, shopper, student, teacher, university,
+         violinist]
+    earnable_quantity_object: [dollar]
+    production_quantity_verb: [make, makes, made]
+    production_quantity_participant:
+        [gardener, guardian, librarian, shopper, student, teacher, university,
+         violinist]
+    producible_quantity_object: [book, business, cookie, pencil, toy]
     teaching_quantity_verb: [teach, teaches, taught]
     animate_object_verb: [teach, teaches, taught]
     currency_quantity_verb:
@@ -1828,7 +2068,11 @@ members:
     drop_quantity_verb: [dropped, drops]
     eating_quantity_verb: [ate, eat, eats]
     past_departure_quantity_verb: [left]
-    finishable_quantity_object: [course, puzzle]
+    finishable_quantity_object: [course, puzzle, task]
+    student_quantity_measure: [student]
+    student_quantity_holder:
+        [child, friend, gardener, guardian, librarian, shopper, student,
+         teacher, university, violinist]
     enrollment_quantity_object: [course, student]
     teaching_quantity_object: [course, puzzle, student]
     transferable_quantity_object:
@@ -1846,6 +2090,7 @@ members:
     quantity_holder: [book, head]
     linear_dimension_holder: [book, tree]
     mass_dimension_holder: [book]
+    duration_total_subject: [time]
     # 'him'/'her' are OBJECT-case and have no lexicon entry of their own;
     # the fallback binds a SUBJECT pronoun to a prior subject anyway.
     animate_pronoun: [he, she]
@@ -1854,9 +2099,22 @@ members:
     population_total_verb: [has, have, had]
     copula: [is, are, was, were]
     plural_copula: [are, were]
+    singular_copula: [is, was]
     past_copula: [was, were]
     quantity_event_verb: [leave, leaves, leaving]
     acquire: [get, gets, got, find, finds, found, buy, buys, bought, receive, receives, received, win, wins, won]
+    purchase: [buy, buys, bought, buying]
+    wage_verb: [earn, earns, earned, make, makes, made]
+    price_verb: [cost, costs]
+    passive_quantity_participle: [bought, sold]
+    passive_quantity_object:
+        [animal, alpaca, apple, apricot, ball, bird, book, card, cat, coin,
+         cookie, course, dog, dollar, drum, egg, envelope, fish, flower, grape,
+         hamster, key, marble, number, paper, pear, pencil, plum, pound,
+         puzzle, rabbit, rose, sticker, student, tomato, toy]
+    spend_target_prep: [for, "on"]
+    start_marker_verb: [begin, start]
+    need_ask_verb: [need, needed, needs]
     find_quantity_verb: [find, finds, found]
     win_quantity_verb: [win, wins, won]
     winnable_quantity_object: [money]
@@ -1880,6 +2138,12 @@ members:
         [fewer, heavier, higher, larger, less, lighter, longer, more, older,
          shorter, smaller, taller, wider, younger]
     future_modal: [will, would]
+    plural_auxiliary: [do, did]
+    singular_auxiliary: [does]
+    plural_present_auxiliary: [do]
+    change_receipt_verb: [get, receive, take]
+    quantity_ask_verb: [had, has, have]
+    difference_preposition: [between, in]
     capacity_modal: [can, could, may, might, must, should]
     temporal_marker: [now, today]
     deictic_temporal_marker: [now, today, tomorrow, yesterday]
@@ -1887,6 +2151,20 @@ members:
     timeperiod:
         [year, monday, tuesday, wednesday, thursday, friday, saturday, sunday,
          january, february, march, april, june, july, august, september,
+         october, november, december]
+    named_calendar_period:
+        [monday, tuesday, wednesday, thursday, friday, saturday, sunday,
+         january, february, march, april, june, july, august, september,
+         october, november, december]
+    named_weekday:
+        [monday, tuesday, wednesday, thursday, friday, saturday, sunday]
+    named_month:
+        [january, february, march, april, june, july, august, september,
+         october, november, december]
+    temporal_on_point_object:
+        [monday, tuesday, wednesday, thursday, friday, saturday, sunday]
+    temporal_in_point_object:
+        [year, january, february, march, april, june, july, august, september,
          october, november, december]
     count_intensifier: [more]
     # small/large inherit this gate through `size_attribute`; tall/long/etc.
@@ -1903,6 +2181,7 @@ members:
     currency_measure: [dollar] # 'cent'/'balance'/'earnings'/'cost' extend this from packs/difg-mined
     time_measure: [year, age] # generic age forms; other units extend this from difg-mined
     duration_measure: [year, minute, hour]
+    dimension_difference_measure: [inch, pound]
     frequency_quantifier: [every]
     distributive_quantifier: [each, every]
     postpositive_distributive_quantifier: [each]
@@ -1914,9 +2193,12 @@ members:
     group_total_marker: [altogether, combined, together, total]
     prenominal_group_total_marker: [combined, total]
     group_total_quantifier: [all]
+    plural_subject_quantifier: [all]
     quantified_group_total_marker: [together]
     prepositional_group_total_marker: [total]
     group_total_preposition: [in]
+    group_total_scope_preposition: [in, "on"]
+    group_total_scope: [area, cupboard, garden, pantry, storeroom, university]
     quantity_anaphor: [amount, number]
     price_anaphor: [price, cost]
     remnant: [remainder, rest]
@@ -1982,9 +2264,13 @@ members:
     negative_person_pronoun: [nobody]
     discourse_group_pronoun: [them]
     discourse_subject_group_pronoun: [they]
-    temporal_point_preposition: [at, in, on]
+    clause_subject_personal_pronoun: [he, it, she, they]
+    temporal_on_point_preposition: [on]
+    temporal_in_point_preposition: [in]
+    temporal_at_point_preposition: [at]
     temporal_before_preposition: [before]
     temporal_after_preposition: [after, following]
+    age_projection_preposition: [after, in]
     temporal_duration_preposition: [during, for, throughout]
     temporal_start_preposition: [from, since]
     temporal_end_preposition: [through, to, until]
@@ -2009,6 +2295,8 @@ attribute_compatibility:
     # Multiple compatible noun categories are intentional. Either category
     # licenses a pair; noun membership is not forced into one artificial class.
     size_attribute: [physical_size_noun, magnitude_noun]
+    linear_unit_dimension_adjective: [length_measure]
+    mass_unit_dimension_adjective: [mass_measure]
     remnant_adj: [remainder_collection_noun]
     ripeness_attribute: [ripenable_noun]
     linear_dimension_comparative: [length_measure]
@@ -2020,7 +2308,9 @@ attribute_compatibility:
     quantity_site_preposition: [quantity_site_location]
     quantity_topic_preposition: [quantity_topic]
     quantity_remainder_preposition: [remnant]
-    temporal_point_preposition: [timeperiod]
+    temporal_on_point_preposition: [temporal_on_point_object]
+    temporal_in_point_preposition: [temporal_in_point_object]
+    temporal_at_point_preposition: [temporal_at_point_object]
     temporal_duration_preposition: [timeperiod]
     temporal_deadline_preposition: [timeperiod]
 modifier_host_compatibility:
@@ -2055,9 +2345,15 @@ adposition_roles:
         verb_category: spatial_motion_verb
         allow_name_object: true
     temporal-point:
-        preposition_category: temporal_point_preposition
-        object_category: timeperiod
-        verb_category: verb
+        - preposition_category: temporal_on_point_preposition
+          object_category: temporal_on_point_object
+          verb_category: verb
+        - preposition_category: temporal_in_point_preposition
+          object_category: temporal_in_point_object
+          verb_category: verb
+        - preposition_category: temporal_at_point_preposition
+          object_category: temporal_at_point_object
+          verb_category: verb
     temporal-before:
         preposition_category: temporal_before_preposition
         object_category: timeperiod
@@ -2112,10 +2408,15 @@ adposition_roles:
         object_category: purpose_noun
         verb_category: purpose_compatible_verb
 measure_holder_compatibility:
-    length_measure: [linear_dimension_holder]
-    mass_measure: [mass_dimension_holder]
+    length_measure: [linear_dimension_holder, animate]
+    mass_measure: [mass_dimension_holder, animate]
     duration_measure: [duration_holder]
     age_measure: [quantity_event_participant, bare_entity_reference]
+partitive_measure_compatibility:
+    partitive_weight_measure: [weighable_partitive_substance]
+    partitive_volume_measure: [volume_partitive_substance]
+    partitive_pair_measure: [pairable_partitive_substance]
+    partitive_piece_measure: [piecewise_partitive_substance]
 context_synonyms:
     appendage:
         gate: animal

@@ -339,7 +339,7 @@ GOLDEN = [
      'rate-span', 'decline', None, 'the rate is per-bird'),
     ('gsm8k', 'A bird eats 2 berries per day. Tom has 3 birds. How long does it take the bird to eat 10 berries?',
      'rate-span-inverse', 'decline', None, 'the rate is per-bird — the inverse span ask does not'),
-    ('gsm8k', 'The machine makes 5 toys per day. How many gallons did it take the machine to make 20 toys?',
+    ('gsm8k', 'The machine makes 5 toys per day. How many years did it take the machine to make 20 toys?',
      'rate-span-inverse', 'decline', None, "no conversion from the rate's 'day' to asked time un"),
     ('gsm8k', 'Tom has 5 dollars. How much money in apples will Tom have left?',
      'money-left', 'decline', None, "asked unit 'apple' does not match resolved measure '"),

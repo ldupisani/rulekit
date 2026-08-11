@@ -68,6 +68,9 @@ class SourceIndex:
     measure_holder_compatibility: dict[tuple[str, str], SourceRef] = field(
         default_factory=dict
     )
+    partitive_measure_compatibility: dict[tuple[str, str], SourceRef] = field(
+        default_factory=dict
+    )
     subject_role_derivations: dict[tuple[str, str], SourceRef] = field(
         default_factory=dict
     )
@@ -93,6 +96,7 @@ class SourceIndex:
             "modifier_host_compatibility",
             "modifier_attachment_compatibility",
             "measure_holder_compatibility",
+            "partitive_measure_compatibility",
             "subject_role_derivations",
             "adposition_roles",
             "temporal_offsets",
@@ -271,6 +275,7 @@ def _index_categories(
             )
 
     raw_measure_holders = raw.get("measure_holder_compatibility", {})
+    raw_partitive_measures = raw.get("partitive_measure_compatibility", {})
 
     raw_modifier_hosts = raw.get("modifier_host_compatibility", {})
     for modifier, hosts in doc.modifier_host_compatibility.items():
@@ -314,6 +319,19 @@ def _index_categories(
                 kind="measure-holder-compatibility",
                 label=f"{measure} → {holder}",
                 item=holder_no,
+            )
+
+    for measure, substances in doc.partitive_measure_compatibility.items():
+        raw_values = raw_partitive_measures.get(measure, [])
+        for substance_no, substance in enumerate(substances):
+            if substance_no >= len(raw_values):
+                continue
+            index.partitive_measure_compatibility[(measure, substance)] = _ref(
+                path,
+                raw_values,
+                kind="partitive-measure-compatibility",
+                label=f"{measure} → {substance}",
+                item=substance_no,
             )
 
     raw_role_derivations = raw.get("subject_role_derivations", {})

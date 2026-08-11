@@ -1,0 +1,754 @@
+{
+  "branch": "mining/cand-anaphoric-distance-chain-combined-total",
+  "candidate_id": "anaphoric-distance-chain-combined-total",
+  "class_evidence": {
+    "ask_mechanism": "No ask rule changes. Once the gated anaphor uniquely resolves, ordinary relation saturation derives the multiplied distance and then the measured offset distance in successive rounds. The existing ask/how-many-combined-named consumer sums exactly the requested holders and declines if either remains unresolved.",
+    "expected_solved": 1,
+    "mode": "coverage",
+    "pool_frequency": 1,
+    "premise_mechanism": "The specialized DIFG rule emits the reserved quantity-anaphor standard plus literal registry gates: antecedent measure must be length_measure and antecedent Quantity.verb must be motion_comparison_verb. Registry compilation rejects unknown, templated, or wrong-rooted gate categories. Saturation filters all earlier Quantities by those gates and asks deixis.constant for a unique winner among the compatible candidates only. Thus apples, hours, dollars, years, and state-held miles cannot anchor distance; an incompatible quantity does not compete with one compatible distance; two compatible distances still decline. The generic amount/number anaphor rule and its non-quantity-object-verb guard remain unchanged.",
+    "product_rationale": null,
+    "structural_summary": [
+      "A reserved anaphoric Relation may declaratively name admissible antecedent measure and verb categories.",
+      "Category filtering occurs before constant-metric uniqueness, so incompatible facts neither win nor create false ambiguity.",
+      "No compatible antecedent or multiple compatible antecedents both decline; resolution never uses recency.",
+      "The distance rule requires a length-denominated Quantity governed by a motion-comparison verb, closing count, duration, currency, calendar, and state-length collisions.",
+      "A following measured linear comparison adds a signed length offset, after which the existing exact named-pair total can answer.",
+      "The two premise rules remain DIFG-owned because their complete generatable domains require the DIFG-owned distance and farther identities."
+    ],
+    "vocabulary": [
+      {
+        "bound_by": "comparative sense plus explicit dimension_more, linear_dimension_comparative, and measured_comparative memberships; the premise additionally requires attribute compatibility with a counted length and motion-comparison measure",
+        "collision_risk": "Low after gating: no prior lexicon entry or quarantine record, and it is not admitted to generic quantity-delta categories.",
+        "quarantine": "clear",
+        "surface": "farther"
+      },
+      {
+        "bound_by": "existing noun identity intersected through quantity_anaphor and motion_comparison_measure; its Relation additionally declares antecedent length_measure and motion_comparison_verb gates",
+        "collision_risk": "Material without the new contract: the shared reserved quantity sentinel is historically measure-agnostic and could bind a unique apple, hour, dollar, year, or state-held mile. The specialized rule now filters both measure and governing-verb semantics before uniqueness; synthetic tests cover every listed collision plus mixed compatible/incompatible and multiple-compatible pools.",
+        "quarantine": "clear",
+        "surface": "distance"
+      }
+    ],
+    "walked_item_ids": [
+      "044bdbd7eff9"
+    ]
+  },
+  "class_name": "Category-gated anaphoric motion-distance chains with measured offsets",
+  "commit": "2348612c1346b49d71c212e82db3ac01de2f304b",
+  "constitution_review": {
+    "notes": "Exact base, candidate commit, clean worktree, expected file set, registry fingerprint, and all four canonical traces verified. The repaired general antecedent gate rejects incompatible count, duration, currency, year, and state-length quantities; permits one compatible antecedent among incompatible facts; and declines multiple compatible antecedents without recency selection. Full synthetic and lint gates passed. No protected data was inspected.",
+    "verdict": "pass",
+    "violations": []
+  },
+  "format": "rulekit/campaign-review@2",
+  "generation_contract": {
+    "ask_rules": [],
+    "premise_rules": [
+      "arithmetic/anaphoric-multiplier-standard-motion-distance",
+      "arithmetic/motion-distance-comparative"
+    ],
+    "required_specimen_kinds": [
+      "strict_positive",
+      "boundary_probe",
+      "answerable",
+      "decline"
+    ]
+  },
+  "implementation_contract": {
+    "class_justification": "This remains one vertical semantic class: a distance-specific motion multiplier feeds a measured motion offset and the existing combined total. The repair is general rather than word-specific Python: Relation exposes optional category names, the registry validates their roots, and saturation applies them uniformly to any quantity-anaphor rule that opts in. Existing rules default to no gates and retain their behavior. The rules are DIFG-owned because distance and farther are DIFG-owned. The only historical test drift mechanically changes the GSM full-registry premise count from 121 to 123.",
+    "files_expected": [
+      "packs/difg-mined/categories/semantic.yaml",
+      "packs/difg-mined/lexicon/a-f.yaml",
+      "packs/difg-mined/rules/distance.yaml",
+      "src/rulekit/data/registry.py",
+      "src/rulekit/kernel/model.py",
+      "src/rulekit/kernel/saturate.py",
+      "tests/test_anaphoric_distance_chain.py",
+      "tests/test_generation_workbench.py"
+    ],
+    "synthetic_tests": [
+      "tests/test_anaphoric_distance_chain.py"
+    ]
+  },
+  "mechanism": "Relation now carries optional declarative anaphor antecedent measure and verb categories. The general quantity-anaphor resolver filters earlier Quantities through every declared gate before applying its existing constant-metric unique resolution; it never chooses by recency. The DIFG distance sibling declares length_measure and motion_comparison_verb, so only a unique earlier motion distance can anchor it. The measured farther rule then emits the ordinary offset Relation, and existing fixpoint saturation plus the existing combined-named ask finish the chain.",
+  "project": "curated",
+  "published_at": "2026-08-11T11:32:16.108098+00:00",
+  "registry_fingerprint": "ea37270a4c0fd3fdec0196728b48023d18c14610ad9638e8513ba862461dbcad",
+  "review_ids": [],
+  "risks": [
+    "The shared quantity-anaphor sentinel is measure-agnostic by default; every semantically specialized anaphor must explicitly emit the relevant category gates. Existing generic amount/number/much/many rules intentionally retain their historical ungated contract.",
+    "A measure-only gate would still let a state-held length anchor a motion event; the distance rule also requires the antecedent Quantity verb to be motion_comparison_verb.",
+    "Filtering must precede uniqueness: incompatible facts are excluded, while two compatible motion distances remain ambiguous and decline under deixis.constant without recency selection.",
+    "A broad comparative admission could treat age, time, mass, or arbitrary objects as distance; farther remains limited to linear measured categories and counted length compatibility.",
+    "An unresolved gated Relation must not be ignored by an answer; negative synthetic neighbours assert no derived Bira quantity and an ordinary decline.",
+    "Necessary pack-scope drift from the original brief remains: both premise rules live in a DIFG rule file because curated must not load unreachable rules whose required identities are DIFG-owned.",
+    "Necessary general-kernel scope: model.py carries the declarative gate fields, registry.py validates their category contracts, and saturate.py filters candidates before unchanged uniqueness resolution.",
+    "Necessary mechanical test drift: GSM full-registry inventory increases only from 121 to 123; blocker assertions remain unchanged."
+  ],
+  "specimens": [
+    {
+      "actual_rule_ids": [
+        "arithmetic/motion-distance-comparative"
+      ],
+      "answer": {
+        "clarification": null,
+        "committed": false,
+        "kind": "decline",
+        "reason": "no question found",
+        "shape": "decline",
+        "value": null
+      },
+      "deficiencies": [],
+      "expectation": "The measured motion-distance rule alone emits a Relation with factor 1, mile measure, and positive offset 4.",
+      "facts": [
+        {
+          "derivation": null,
+          "fields": {
+            "factor": 1.0,
+            "measure": "mile",
+            "offset": 4.0,
+            "standard": "bira",
+            "standard_label": "",
+            "standard_offset": 0.0,
+            "standard_owner": "",
+            "subject": "aven",
+            "subject_label": "",
+            "subject_offset": 0.0,
+            "subject_owner": "",
+            "verb": "travel"
+          },
+          "sentence": 0,
+          "source": "arithmetic/motion-distance-comparative",
+          "source_ref": null,
+          "type": "Relation"
+        }
+      ],
+      "id": "strict-positive-v2",
+      "interpretation": "Aven has a distance four miles greater than Bira under the same motion predicate.",
+      "kind": "strict_positive",
+      "reference_year": null,
+      "retest": null,
+      "sentence": "Aven traveled 4 miles farther than Bira.",
+      "source_ref": null,
+      "target_rule": "arithmetic/motion-distance-comparative",
+      "title": "Measured farther motion relation",
+      "trace": {
+        "answer": {
+          "clarification": null,
+          "committed": false,
+          "kind": "decline",
+          "reason": "no question found",
+          "shape": "decline",
+          "value": null
+        },
+        "ask": null,
+        "collisions": [],
+        "deficiencies": [],
+        "facts": [
+          {
+            "derivation": null,
+            "fields": {
+              "factor": 1.0,
+              "measure": "mile",
+              "offset": 4.0,
+              "standard": "bira",
+              "standard_label": "",
+              "standard_offset": 0.0,
+              "standard_owner": "",
+              "subject": "aven",
+              "subject_label": "",
+              "subject_offset": 0.0,
+              "subject_owner": "",
+              "verb": "travel"
+            },
+            "sentence": 0,
+            "source": "arithmetic/motion-distance-comparative",
+            "source_ref": null,
+            "type": "Relation"
+          }
+        ],
+        "matches": [
+          {
+            "bindings": {
+              "dir": "farther",
+              "item": "4 miles",
+              "std": "Bira",
+              "verb": "traveled",
+              "who": "Aven"
+            },
+            "consumed": [
+              0,
+              1,
+              8,
+              4,
+              5,
+              6
+            ],
+            "rule_id": "arithmetic/motion-distance-comparative",
+            "sentence": 0,
+            "shadowed": false
+          }
+        ],
+        "proof": null
+      }
+    },
+    {
+      "actual_rule_ids": [],
+      "answer": {
+        "clarification": null,
+        "committed": false,
+        "kind": "decline",
+        "reason": "no question found",
+        "shape": "decline",
+        "value": null
+      },
+      "deficiencies": [],
+      "expectation": "The target rule does not match and emits no fact.",
+      "facts": [],
+      "id": "boundary-probe-v2",
+      "interpretation": "All structural slots except the comparative are held fixed; older is not a compatible linear measured comparative for miles.",
+      "kind": "boundary_probe",
+      "reference_year": null,
+      "retest": null,
+      "sentence": "Aven traveled 4 miles older than Bira.",
+      "source_ref": null,
+      "target_rule": "arithmetic/motion-distance-comparative",
+      "title": "Age comparative outside the locked distance frame",
+      "trace": {
+        "answer": {
+          "clarification": null,
+          "committed": false,
+          "kind": "decline",
+          "reason": "no question found",
+          "shape": "decline",
+          "value": null
+        },
+        "ask": null,
+        "collisions": [],
+        "deficiencies": [],
+        "facts": [],
+        "matches": [],
+        "proof": null
+      }
+    },
+    {
+      "actual_rule_ids": [
+        "arithmetic/anaphoric-multiplier-standard-motion-distance",
+        "arithmetic/motion-distance-comparative"
+      ],
+      "answer": {
+        "clarification": null,
+        "committed": true,
+        "kind": "number",
+        "reason": "\u03a3 over ['bira', 'cato']",
+        "shape": "number",
+        "value": 27.0
+      },
+      "deficiencies": [
+        "'in' (preposition) needs a object and none was found.",
+        "'run' (verb) needs a subject and none was found."
+      ],
+      "expectation": "The trace exposes both declarative gate fields, ignores the incompatible apple, derives Bira=12 and Cato=15 in successive rounds, and returns exactly 27.",
+      "facts": [
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "aven",
+            "measure": "mile",
+            "occurrence": 0,
+            "value": 6.0,
+            "verb": "run"
+          },
+          "sentence": 0,
+          "source": "fold",
+          "source_ref": null,
+          "type": "Quantity"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "dena",
+            "measure": "apple",
+            "value": 5.0,
+            "verb": "have"
+          },
+          "sentence": 1,
+          "source": "fold",
+          "source_ref": null,
+          "type": "Quantity"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "anaphor_measure_category": "length_measure",
+            "anaphor_verb_category": "motion_comparison_verb",
+            "factor": 2.0,
+            "offset": 0.0,
+            "standard": "$anaphor:quantity$",
+            "standard_offset": 0.0,
+            "subject": "bira",
+            "subject_label": "",
+            "subject_offset": 0.0,
+            "verb": "run"
+          },
+          "sentence": 2,
+          "source": "arithmetic/anaphoric-multiplier-standard-motion-distance",
+          "source_ref": null,
+          "type": "Relation"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "factor": 1.0,
+            "measure": "mile",
+            "offset": 3.0,
+            "standard": "bira",
+            "standard_label": "",
+            "standard_offset": 0.0,
+            "standard_owner": "",
+            "subject": "cato",
+            "subject_label": "",
+            "subject_offset": 0.0,
+            "subject_owner": "",
+            "verb": "run"
+          },
+          "sentence": 3,
+          "source": "arithmetic/motion-distance-comparative",
+          "source_ref": null,
+          "type": "Relation"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "bira",
+            "measure": "mile",
+            "value": 12.0,
+            "verb": "run"
+          },
+          "sentence": 2,
+          "source": "synth/relation",
+          "source_ref": null,
+          "type": "Quantity"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "cato",
+            "measure": "mile",
+            "value": 15.0,
+            "verb": "run"
+          },
+          "sentence": 3,
+          "source": "synth/relation",
+          "source_ref": null,
+          "type": "Quantity"
+        }
+      ],
+      "id": "complete-answerable-v2",
+      "interpretation": "The apple quantity is incompatible and excluded before uniqueness; the sole motion-distance antecedent anchors Bira at twelve miles, then Cato at fifteen.",
+      "kind": "answerable",
+      "reference_year": null,
+      "retest": null,
+      "sentence": "Aven ran 6 miles. Dena has 5 apples. Bira ran twice that distance. Cato ran 3 miles farther than Bira. How many miles did Bira and Cato run in total?",
+      "source_ref": null,
+      "target_rule": "arithmetic/anaphoric-multiplier-standard-motion-distance",
+      "title": "Category-filtered two-round distance chain",
+      "trace": {
+        "answer": {
+          "clarification": null,
+          "committed": true,
+          "kind": "number",
+          "reason": "\u03a3 over ['bira', 'cato']",
+          "shape": "number",
+          "value": 27.0
+        },
+        "ask": {
+          "id": "ask/how-many-combined-named",
+          "query": {
+            "a": "bira",
+            "b": "cato",
+            "consumer": "combined",
+            "measure": "mile",
+            "verb": "run"
+          }
+        },
+        "collisions": [],
+        "deficiencies": [
+          "'in' (preposition) needs a object and none was found.",
+          "'run' (verb) needs a subject and none was found."
+        ],
+        "facts": [
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "aven",
+              "measure": "mile",
+              "occurrence": 0,
+              "value": 6.0,
+              "verb": "run"
+            },
+            "sentence": 0,
+            "source": "fold",
+            "source_ref": null,
+            "type": "Quantity"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "dena",
+              "measure": "apple",
+              "value": 5.0,
+              "verb": "have"
+            },
+            "sentence": 1,
+            "source": "fold",
+            "source_ref": null,
+            "type": "Quantity"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "anaphor_measure_category": "length_measure",
+              "anaphor_verb_category": "motion_comparison_verb",
+              "factor": 2.0,
+              "offset": 0.0,
+              "standard": "$anaphor:quantity$",
+              "standard_offset": 0.0,
+              "subject": "bira",
+              "subject_label": "",
+              "subject_offset": 0.0,
+              "verb": "run"
+            },
+            "sentence": 2,
+            "source": "arithmetic/anaphoric-multiplier-standard-motion-distance",
+            "source_ref": null,
+            "type": "Relation"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "factor": 1.0,
+              "measure": "mile",
+              "offset": 3.0,
+              "standard": "bira",
+              "standard_label": "",
+              "standard_offset": 0.0,
+              "standard_owner": "",
+              "subject": "cato",
+              "subject_label": "",
+              "subject_offset": 0.0,
+              "subject_owner": "",
+              "verb": "run"
+            },
+            "sentence": 3,
+            "source": "arithmetic/motion-distance-comparative",
+            "source_ref": null,
+            "type": "Relation"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "bira",
+              "measure": "mile",
+              "value": 12.0,
+              "verb": "run"
+            },
+            "sentence": 2,
+            "source": "synth/relation",
+            "source_ref": null,
+            "type": "Quantity"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "cato",
+              "measure": "mile",
+              "value": 15.0,
+              "verb": "run"
+            },
+            "sentence": 3,
+            "source": "synth/relation",
+            "source_ref": null,
+            "type": "Quantity"
+          }
+        ],
+        "matches": [
+          {
+            "bindings": {
+              "head": "distance",
+              "k": "twice",
+              "verb": "ran",
+              "who": "Bira"
+            },
+            "consumed": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "rule_id": "arithmetic/anaphoric-multiplier-standard-motion-distance",
+            "sentence": 2,
+            "shadowed": false
+          },
+          {
+            "bindings": {
+              "dir": "farther",
+              "item": "3 miles",
+              "std": "Bira",
+              "verb": "ran",
+              "who": "Cato"
+            },
+            "consumed": [
+              0,
+              1,
+              8,
+              4,
+              5,
+              6
+            ],
+            "rule_id": "arithmetic/motion-distance-comparative",
+            "sentence": 3,
+            "shadowed": false
+          }
+        ],
+        "proof": null
+      }
+    },
+    {
+      "actual_rule_ids": [
+        "arithmetic/anaphoric-multiplier-standard-motion-distance",
+        "arithmetic/motion-distance-comparative"
+      ],
+      "answer": {
+        "clarification": null,
+        "committed": false,
+        "kind": "decline",
+        "reason": "'bira' has no resolvable total",
+        "shape": "decline",
+        "value": null
+      },
+      "deficiencies": [
+        "'in' (preposition) needs a object and none was found.",
+        "'run' (verb) needs a subject and none was found."
+      ],
+      "expectation": "Both premise shapes are recognized, but multiple compatible antecedents prevent derived quantities for Bira and Cato and the existing ask declines.",
+      "facts": [
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "aven",
+            "measure": "mile",
+            "occurrence": 0,
+            "value": 6.0,
+            "verb": "run"
+          },
+          "sentence": 0,
+          "source": "fold",
+          "source_ref": null,
+          "type": "Quantity"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "dena",
+            "measure": "mile",
+            "occurrence": 1,
+            "value": 5.0,
+            "verb": "run"
+          },
+          "sentence": 1,
+          "source": "fold",
+          "source_ref": null,
+          "type": "Quantity"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "anaphor_measure_category": "length_measure",
+            "anaphor_verb_category": "motion_comparison_verb",
+            "factor": 2.0,
+            "offset": 0.0,
+            "standard": "$anaphor:quantity$",
+            "standard_offset": 0.0,
+            "subject": "bira",
+            "subject_label": "",
+            "subject_offset": 0.0,
+            "verb": "run"
+          },
+          "sentence": 2,
+          "source": "arithmetic/anaphoric-multiplier-standard-motion-distance",
+          "source_ref": null,
+          "type": "Relation"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "factor": 1.0,
+            "measure": "mile",
+            "offset": 3.0,
+            "standard": "bira",
+            "standard_label": "",
+            "standard_offset": 0.0,
+            "standard_owner": "",
+            "subject": "cato",
+            "subject_label": "",
+            "subject_offset": 0.0,
+            "subject_owner": "",
+            "verb": "run"
+          },
+          "sentence": 3,
+          "source": "arithmetic/motion-distance-comparative",
+          "source_ref": null,
+          "type": "Relation"
+        }
+      ],
+      "id": "ambiguous-decline-v2",
+      "interpretation": "Both earlier quantities satisfy the declared measure and verb categories, so constant-metric uniqueness finds no winner and never selects the newer fact.",
+      "kind": "decline",
+      "reference_year": null,
+      "retest": null,
+      "sentence": "Aven ran 6 miles. Dena ran 5 miles. Bira ran twice that distance. Cato ran 3 miles farther than Bira. How many miles did Bira and Cato run in total?",
+      "source_ref": null,
+      "target_rule": "arithmetic/anaphoric-multiplier-standard-motion-distance",
+      "title": "Multiple compatible distances remain unresolved",
+      "trace": {
+        "answer": {
+          "clarification": null,
+          "committed": false,
+          "kind": "decline",
+          "reason": "'bira' has no resolvable total",
+          "shape": "decline",
+          "value": null
+        },
+        "ask": {
+          "id": "ask/how-many-combined-named",
+          "query": {
+            "a": "bira",
+            "b": "cato",
+            "consumer": "combined",
+            "measure": "mile",
+            "verb": "run"
+          }
+        },
+        "collisions": [],
+        "deficiencies": [
+          "'in' (preposition) needs a object and none was found.",
+          "'run' (verb) needs a subject and none was found."
+        ],
+        "facts": [
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "aven",
+              "measure": "mile",
+              "occurrence": 0,
+              "value": 6.0,
+              "verb": "run"
+            },
+            "sentence": 0,
+            "source": "fold",
+            "source_ref": null,
+            "type": "Quantity"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "dena",
+              "measure": "mile",
+              "occurrence": 1,
+              "value": 5.0,
+              "verb": "run"
+            },
+            "sentence": 1,
+            "source": "fold",
+            "source_ref": null,
+            "type": "Quantity"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "anaphor_measure_category": "length_measure",
+              "anaphor_verb_category": "motion_comparison_verb",
+              "factor": 2.0,
+              "offset": 0.0,
+              "standard": "$anaphor:quantity$",
+              "standard_offset": 0.0,
+              "subject": "bira",
+              "subject_label": "",
+              "subject_offset": 0.0,
+              "verb": "run"
+            },
+            "sentence": 2,
+            "source": "arithmetic/anaphoric-multiplier-standard-motion-distance",
+            "source_ref": null,
+            "type": "Relation"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "factor": 1.0,
+              "measure": "mile",
+              "offset": 3.0,
+              "standard": "bira",
+              "standard_label": "",
+              "standard_offset": 0.0,
+              "standard_owner": "",
+              "subject": "cato",
+              "subject_label": "",
+              "subject_offset": 0.0,
+              "subject_owner": "",
+              "verb": "run"
+            },
+            "sentence": 3,
+            "source": "arithmetic/motion-distance-comparative",
+            "source_ref": null,
+            "type": "Relation"
+          }
+        ],
+        "matches": [
+          {
+            "bindings": {
+              "head": "distance",
+              "k": "twice",
+              "verb": "ran",
+              "who": "Bira"
+            },
+            "consumed": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "rule_id": "arithmetic/anaphoric-multiplier-standard-motion-distance",
+            "sentence": 2,
+            "shadowed": false
+          },
+          {
+            "bindings": {
+              "dir": "farther",
+              "item": "3 miles",
+              "std": "Bira",
+              "verb": "ran",
+              "who": "Cato"
+            },
+            "consumed": [
+              0,
+              1,
+              8,
+              4,
+              5,
+              6
+            ],
+            "rule_id": "arithmetic/motion-distance-comparative",
+            "sentence": 3,
+            "shadowed": false
+          }
+        ],
+        "proof": null
+      }
+    }
+  ]
+}

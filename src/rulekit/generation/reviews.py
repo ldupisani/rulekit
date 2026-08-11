@@ -19,7 +19,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from ..data.project import Project
-from .candidate import GenerationMode, LexicalRelaxation
+from .candidate import AskScenarioMode, GenerationMode, LexicalRelaxation
 
 
 DefectKind = Literal[
@@ -35,6 +35,12 @@ DefectKind = Literal[
     "intended_rule_did_not_fire",
     "another_rule_interfered",
     "generator_realization_defect",
+    "intended_ask_did_not_fire",
+    "incorrect_query_binding",
+    "irrelevant_premise_evidence",
+    "incorrect_answer",
+    "incorrect_decline",
+    "scenario_not_minimal",
     "unexpected_fact",
     "incorrect_fact_field",
     "missing_fact_context",
@@ -137,6 +143,39 @@ class HypothesisRecord(BaseModel):
     status: Literal["open", "confirmed", "rejected", "inconclusive"] = "open"
 
 
+class AskScenarioReviewEvidence(BaseModel):
+    """The exact generated question, evidence, and solver result reviewed.
+
+    Ask reviews pin the whole scenario rather than only its final question.
+    The ordinary review lifecycle can therefore edit, resolve, or tombstone a
+    verdict without ever reconstructing evidence from a later registry.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    target_ask: str = Field(min_length=1, max_length=256)
+    scenario_mode: AskScenarioMode
+    question: str = Field(min_length=1, max_length=2000)
+    text: str = Field(min_length=1, max_length=8000)
+    consumer: str | None = Field(default=None, min_length=1, max_length=128)
+    query: dict[str, Any] = Field(default_factory=dict, max_length=64)
+    premises: list[str] = Field(default_factory=list, max_length=8)
+    premise_rules: list[str] = Field(default_factory=list, max_length=8)
+    answer: dict[str, Any] = Field(default_factory=dict, max_length=64)
+    answer_shape: str = Field(min_length=1, max_length=128)
+    minimal: bool
+
+    @model_validator(mode="after")
+    def _scenario_is_self_consistent(self) -> "AskScenarioReviewEvidence":
+        if self.question not in self.text:
+            raise ValueError("ask scenario text must contain its exact question")
+        if len(self.premises) != len(self.premise_rules):
+            raise ValueError(
+                "ask scenario premise sentences and rule ids must align"
+            )
+        return self
+
+
 class ReviewRecord(BaseModel):
     """The bounded request accepted from the designer."""
 
@@ -148,11 +187,12 @@ class ReviewRecord(BaseModel):
     lexical_relaxations: list[LexicalRelaxation] = Field(
         default_factory=list, max_length=16
     )
-    review_kind: Literal["premise", "sentence"] = "premise"
+    review_kind: Literal["premise", "sentence", "ask"] = "premise"
     sentence: str = Field(min_length=1, max_length=2000)
     context_before: list[str] = Field(default_factory=list, max_length=8)
     context_after: list[str] = Field(default_factory=list, max_length=8)
     target_rule: str | None = Field(default=None, min_length=1, max_length=256)
+    ask_scenario: AskScenarioReviewEvidence | None = None
     seed: int
     registry_fingerprint: str = Field(min_length=8, max_length=128)
     verdict: Literal["valid", "invalid", "unclear"]
@@ -167,10 +207,19 @@ class ReviewRecord(BaseModel):
     def _subject_matches_review_kind(self) -> "ReviewRecord":
         if self.review_kind == "premise" and self.target_rule is None:
             raise ValueError("a premise review requires a target rule")
-        if self.review_kind == "sentence" and self.target_rule is not None:
-            raise ValueError("a sentence review cannot claim a target rule")
+        if self.review_kind != "premise" and self.target_rule is not None:
+            raise ValueError("only a premise review can claim a target rule")
         if self.review_kind == "sentence" and self.origin != "reading":
             raise ValueError("a sentence review must originate in Reading")
+        if self.review_kind == "ask":
+            if self.origin != "generated":
+                raise ValueError("an ask review must originate in Generate")
+            if self.ask_scenario is None:
+                raise ValueError("an ask review requires pinned scenario evidence")
+            if self.sentence != self.ask_scenario.question:
+                raise ValueError("an ask review sentence must be its exact question")
+        elif self.ask_scenario is not None:
+            raise ValueError("only an ask review may carry ask scenario evidence")
         return self
 
 

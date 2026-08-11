@@ -219,6 +219,13 @@ class CategoriesDoc(StrictModel):
     measure_holder_compatibility: dict[str, list[str]] = Field(
         default_factory=dict
     )
+    # Measure category -> noun categories that may fill an ``of NOUN``
+    # partitive complement.  This is pairwise on purpose: independently
+    # declaring ``cup`` and ``shoe`` as partitive-capable must not license
+    # the cross-product "cups of shoes".
+    partitive_measure_compatibility: dict[str, list[str]] = Field(
+        default_factory=dict
+    )
     # Verb lemma -> subject role plus the PP forms whose restriction survives
     # in that role. This is lexical knowledge, so the mapping lives in pack
     # data; the kernel only performs the generic exact-key composition.
@@ -248,6 +255,7 @@ class CategoriesDoc(StrictModel):
             ("attribute", self.attribute_compatibility),
             ("modifier-host", self.modifier_host_compatibility),
             ("measure-holder", self.measure_holder_compatibility),
+            ("partitive-measure", self.partitive_measure_compatibility),
         ):
             for source, targets in compatibility.items():
                 if not targets:
@@ -466,8 +474,13 @@ class MatchToken(StrictModel):
     # valid because this checks the unit's sense, not its original word count.
     standalone: bool = False
     # OPT-IN: a scalar number must be integral. Calendar-year coordinates are
-    # the first consumer; this carries no range or era policy.
+    # the first consumer; range or era policy remains independently authored.
     integer: bool = False
+    # OPT-IN inclusive scalar bounds. These are generic numeric structure;
+    # the meaning of a bound (for example, a four-digit calendar year) stays
+    # in the rule pack that declares it.
+    value_min: float | None = None
+    value_max: float | None = None
     # OPT-IN: a fraction used as a part of one finite whole must remain in
     # [0, 1]. Improper fractions remain valid in ratios, affine relations, and
     # other unbounded scalar positions; only an authored part-of-whole slot
@@ -505,6 +518,12 @@ class MatchToken(StrictModel):
     # This is for independently licensed adverbial nouns ("by day", "at
     # night"), not a general weakening of noun-phrase definiteness.
     bare_reference_category: str | None = None
+    # OPT-IN: nouns in this category must occur without an article or
+    # possessive determiner at this slot. This is narrower than `bare: true`,
+    # which governs compound/possessive noun structure for every filler: a
+    # normal common noun can still be definite while a named calendar member
+    # in the same slot stays bare ("in April", never "in the April").
+    determinerless_category: str | None = None
     # OPT-IN: require the slot's noun to be BARE — no compound modifier
     # (condense merge-compound) and no possessive owner. A category gate matches
     # on the unit's LEMMA, and a compound noun keeps its HEAD's lemma, so "the
@@ -670,6 +689,8 @@ class MatchToken(StrictModel):
                 or self.number is not None
                 or self.standalone
                 or self.integer
+                or self.value_min is not None
+                or self.value_max is not None
                 or self.fraction_within_whole
                 or self.word_fraction_within_whole
                 or self.fraction_positive
@@ -677,15 +698,17 @@ class MatchToken(StrictModel):
                 or self.referential
                 or self.generation_bare_reference
                 or self.bare_reference_category is not None
+                or self.determinerless_category is not None
                 or self.bare_form
                 or self.finite_form
             ):
                 raise ValueError(
                     "a span slot takes no "
-                    "type/cat/bare/counted/possessed/qualified/number/standalone/integer/"
+                    "type/cat/bare/counted/possessed/qualified/number/standalone/integer/value bounds/"
                     "fraction_within_whole/word_fraction_within_whole/"
                     "fraction_positive/generation_explicit_unit_fraction/"
                     "referential/generation_bare_reference/"
+                    "determinerless_category/"
                     "common_noun_cat/bare_form/finite_form"
                 )
         elif self.slot is not None and (self.type is None) == (self.cat is None):
@@ -714,6 +737,18 @@ class MatchToken(StrictModel):
             )
         if self.integer and self.type != "number":
             raise ValueError("`integer` only qualifies a `type: number` slot")
+        if (
+            self.value_min is not None or self.value_max is not None
+        ) and self.type != "number":
+            raise ValueError(
+                "`value_min`/`value_max` only qualify a `type: number` slot"
+            )
+        if (
+            self.value_min is not None
+            and self.value_max is not None
+            and self.value_min > self.value_max
+        ):
+            raise ValueError("`value_min` cannot exceed `value_max`")
         if self.fraction_within_whole and self.type != "fraction":
             raise ValueError(
                 "`fraction_within_whole` only qualifies a `type: fraction` slot"
@@ -741,6 +776,10 @@ class MatchToken(StrictModel):
         if self.bare_reference_category is not None and not self.referential:
             raise ValueError(
                 "`bare_reference_category` requires `referential: true`"
+            )
+        if self.determinerless_category is not None and not self.referential:
+            raise ValueError(
+                "`determinerless_category` requires `referential: true`"
             )
         if self.span_blocks is not None and not self.span:
             raise ValueError("`span_blocks` only qualifies a span slot")
@@ -863,6 +902,19 @@ class BoundRequiresFormPredicate(StrictModel):
     form: Literal["bare", "finite"]
 
 
+class OwnerMatchesPredicate(StrictModel):
+    """Require a determiner slot to be the possessed noun's exact owner."""
+
+    owner: str
+    possessed: str
+
+    @model_validator(mode="after")
+    def _different_slots(self) -> "OwnerMatchesPredicate":
+        if self.owner == self.possessed:
+            raise ValueError("owner matching needs two different slots")
+        return self
+
+
 class PolarityCompatibilityPredicate(StrictModel):
     """Reject contradictory declared polarity within category scopes.
 
@@ -907,9 +959,14 @@ class ProportionalDeltaCompatibilityPredicate(StrictModel):
 
 
 class VerbRoleCompatibilityPredicate(StrictModel):
-    """Constrain lexical roles only for a declared verb class.
+    """Constrain lexical roles only for a declared trigger class.
 
-    Positive constraints admit proper names or common nouns in ``role_cat``.
+    The historical field names are ``verb``/``verb_cat`` because quantitative
+    event verbs are the usual trigger. The same structural relation also
+    supports another category-compatible trigger, such as an optional
+    possessive determiner, provided its slot and declared category share a
+    root sense. Positive constraints admit proper names or common nouns in
+    ``role_cat``.
     A separately declared ``allow_plural_class`` lets a plural noun occupy a
     comparison-standard role as a measured class rather than an event actor.
     Negative constraints reject roles in ``excluded_role_cat``. Exactly one
@@ -922,6 +979,11 @@ class VerbRoleCompatibilityPredicate(StrictModel):
     role_cat: str | None = None
     excluded_role_cat: str | None = None
     allow_plural_class: bool = False
+    # Some triggers live in optional grammar, such as a third-person
+    # possessive determiner inside an optional PP. When absent, that trigger
+    # contributes no contrary evidence; when present, the ordinary category
+    # and role checks apply unchanged.
+    allow_unbound_trigger: bool = False
 
     @model_validator(mode="after")
     def _valid_boundary(self) -> "VerbRoleCompatibilityPredicate":
@@ -969,6 +1031,21 @@ class MeasureHolderCompatibilityPredicate(StrictModel):
         ):
             raise ValueError(
                 "measure-holder compatibility repeats a proper-name measure category"
+            )
+        return self
+
+
+class PartitiveCompatibilityPredicate(StrictModel):
+    """Require a measure and its ``of`` complement to form a licensed pair."""
+
+    measure: str
+    substance: str
+
+    @model_validator(mode="after")
+    def _distinct_slots(self) -> "PartitiveCompatibilityPredicate":
+        if self.measure == self.substance:
+            raise ValueError(
+                "partitive compatibility needs distinct measure/substance slots"
             )
         return self
 
@@ -1047,6 +1124,7 @@ class WherePredicate(StrictModel):
     # the following verb to be bare while the auxiliary-free clause retains
     # its ordinary finite surface.
     bound_requires_form: BoundRequiresFormPredicate | None = None
+    owner_matches: OwnerMatchesPredicate | None = None
     # Compare only polarity declarations inside each slot's paired category
     # subtree. Unscoped meanings remain neutral: an explicitly directional
     # change verb must agree with its direction word, while a general event
@@ -1072,6 +1150,9 @@ class WherePredicate(StrictModel):
     measure_holder_compatible: (
         MeasureHolderCompatibilityPredicate | None
     ) = None
+    # A MEASURE-of-SUBSTANCE noun phrase must be licensed by one pair in the
+    # pack-owned partitive compatibility table.
+    partitive_compatible: PartitiveCompatibilityPredicate | None = None
     # Opt-in equality for whole rendered slot values, including span slots.
     # `same_lemma` deliberately skips spans; constructions with repeated
     # multi-unit phrases need exact phrase identity, not head-lemma identity.
@@ -1159,9 +1240,11 @@ class WherePredicate(StrictModel):
                 self.bound_rejects_category,
                 self.category_requires_bound,
                 self.bound_requires_form, self.polarity_compatible,
+                self.owner_matches,
                 self.proportional_delta_compatible,
                 self.same_presence,
                 self.verb_role_compatible, self.measure_holder_compatible,
+                self.partitive_compatible,
                 self.same_phrase,
                 self.distinct, self.category_nonoverlap,
                 self.distinct_owner, self.distinct_from_owner,
@@ -1328,12 +1411,31 @@ class AskInterpretation(StrictModel):
     resolves: dict[str, str | list[str]]
 
 
+class AskGenerationDef(StrictModel):
+    """Declarative constraints that apply only to ask realization.
+
+    Some ask grammars are valid only inside a larger clause, while others
+    draw slot values from compiled project data rather than open lexical
+    fixtures. These fields keep both facts in the owning pack instead of
+    teaching the generator individual ask ids or vocabulary.
+    """
+
+    context_required: bool = False
+    slot_sources: dict[
+        str, Literal["reference_group", "reference_year"]
+    ] = Field(default_factory=dict)
+    slot_categories: dict[str, str | list[str]] = Field(default_factory=dict)
+    requires_committed_answer: bool = False
+
+
 class AskRule(StrictModel):
     id: str
     match: dict[Literal["question"], list[MatchToken]]
+    where: list[WherePredicate] = Field(default_factory=list)
     resolves: dict[str, str | list[str]] = Field(default_factory=dict)
     clarification: str | None = None
     interpretations: list[AskInterpretation] = Field(default_factory=list)
+    generation: AskGenerationDef = Field(default_factory=AskGenerationDef)
 
     @model_validator(mode="after")
     def _anchor_is_first(self) -> "AskRule":
@@ -1367,6 +1469,36 @@ class AskRule(StrictModel):
             if len(ids) != len(set(ids)):
                 raise ValueError(
                     f"ask {self.id!r}: interpretation ids must be unique"
+                )
+        declared_slots: set[str] = set()
+
+        def collect(tokens: list[MatchToken]) -> None:
+            for token in tokens:
+                if token.slot is not None:
+                    declared_slots.add(token.slot)
+                if token.opt is not None:
+                    collect(token.opt)
+
+        collect(self.match["question"])
+        unknown_generation_slots = (
+            set(self.generation.slot_sources)
+            | set(self.generation.slot_categories)
+        ) - declared_slots
+        if unknown_generation_slots:
+            raise ValueError(
+                f"ask {self.id!r}: generation constraints name unknown slots: "
+                + ", ".join(sorted(unknown_generation_slots))
+            )
+        for slot, categories in self.generation.slot_categories.items():
+            declared = categories if isinstance(categories, list) else [categories]
+            if not declared or any(not category for category in declared):
+                raise ValueError(
+                    f"ask {self.id!r}: generation slot {slot!r} needs at "
+                    "least one non-empty category"
+                )
+            if len(declared) != len(set(declared)):
+                raise ValueError(
+                    f"ask {self.id!r}: generation slot {slot!r} repeats a category"
                 )
         return self
 

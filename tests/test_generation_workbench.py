@@ -8,6 +8,7 @@ from pydantic import ValidationError
 
 from rulekit.data.project import load_project
 from rulekit.generation import (
+    AskScenarioReviewEvidence,
     ExplorationEvent,
     ExplorationFailure,
     ExplorationSelection,
@@ -2681,6 +2682,65 @@ def test_editing_a_review_supersedes_without_destroying_the_original(
     assert raw[0]["verdict"] == "unclear"
 
 
+def test_ask_review_pins_the_complete_generated_scenario(tmp_path: Path) -> None:
+    _write_project(tmp_path)
+    project = load_project(tmp_path)
+    evidence = AskScenarioReviewEvidence(
+        target_ask="ask/invented-total",
+        scenario_mode="answerable",
+        question="How many mivs does Luma have?",
+        text="Luma dax 3 mivs. How many mivs does Luma have?",
+        consumer="single-entity",
+        query={"consumer": "single-entity", "entity": "luma", "measure": "miv"},
+        premises=["Luma dax 3 mivs."],
+        premise_rules=["invented/simple"],
+        answer={"kind": "number", "value": 3, "committed": True},
+        answer_shape="number",
+        minimal=True,
+    )
+
+    durable = append_review(
+        project,
+        ReviewRecord(
+            candidate_id="askgen-invented",
+            review_kind="ask",
+            sentence=evidence.question,
+            context_before=evidence.premises,
+            target_rule=None,
+            ask_scenario=evidence,
+            seed=44,
+            registry_fingerprint=project.registry.fingerprint,
+            verdict="invalid",
+            defects=[
+                ReviewDefect(
+                    kind="incorrect_query_binding",
+                    attachment=PremiseAttachment(kind="sentence"),
+                )
+            ],
+            note="the measure binding needs inspection",
+        ),
+    )
+
+    assert read_reviews(project) == [durable]
+    assert durable["review_kind"] == "ask"
+    assert durable["ask_scenario"]["text"] == evidence.text
+    assert durable["ask_scenario"]["query"] == evidence.query
+    assert durable["ask_scenario"]["answer"]["value"] == 3
+
+
+def test_ask_review_requires_exact_generated_scenario_evidence() -> None:
+    with pytest.raises(ValidationError):
+        ReviewRecord(
+            candidate_id="askgen-missing",
+            review_kind="ask",
+            sentence="How many mivs?",
+            target_rule=None,
+            seed=1,
+            registry_fingerprint="abcdef0123456789",
+            verdict="unclear",
+        )
+
+
 def test_editing_preserves_what_was_actually_reviewed(tmp_path: Path) -> None:
     project, candidate = _seeded(tmp_path)
     first = append_review(project, _review(candidate, "valid"))
@@ -2915,7 +2975,7 @@ def test_designer_exposes_the_generation_review_loop() -> None:
     assert 'review_kind: candidate.target_rule ? "premise" : "sentence"' in js
     assert 'candidate.target_rule || "Sentence-level interpretation review"' in js
     assert '"Sentence meaning review"' in js
-    assert 'r.target_rule || "No target rule"' in js
+    assert 'r.target_rule || r.ask_scenario?.target_ask || "No target rule"' in js
     assert "suggested_rule" in js
     assert "Open rule YAML" in js
     assert "Open ask YAML" in js

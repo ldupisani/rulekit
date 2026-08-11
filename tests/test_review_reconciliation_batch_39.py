@@ -99,7 +99,7 @@ def test_latest_reviewed_surfaces_retest_absent(
         ),
         (
             "arithmetic/anaphoric-multiplier-conjunct-many",
-            "Aven finished 8 puzzles in the university and once this many.",
+            "Aven finished 8 puzzles in the university and twice this many.",
         ),
         (
             "arithmetic/anaphoric-multiplier-conjunct-many",
@@ -161,14 +161,14 @@ def test_win_and_departure_roles_are_pack_declared(project, gsm8k_project) -> No
 
 
 @pytest.mark.parametrize(
-    "preposition",
-    ["at", "during", "by"],
+    ("preposition", "period"),
+    [("in", "year"), ("during", "year"), ("by", "year")],
 )
 def test_temporal_prepositions_accept_declared_timeperiods(
-    project, preposition: str
+    project, preposition: str, period: str
 ) -> None:
     registry = project.registry
-    assert registry.attribute_applies_to(preposition, "year")
+    assert registry.attribute_applies_to(preposition, period)
 
 
 def test_temporal_anaphoric_conjuncts_retain_duration_and_point_adjuncts(

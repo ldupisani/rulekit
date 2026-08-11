@@ -184,6 +184,29 @@
               <div id="generation-ask-answer"></div>
             </section>
           </div>
+          <div class="ask-generation-review">
+            <div>
+              <div class="pane-title">Human ask review</div>
+              <div class="review-verdicts" id="generation-ask-verdicts">
+                <button data-verdict="valid">Valid</button>
+                <button data-verdict="invalid">Invalid</button>
+                <button data-verdict="unclear">Unclear</button>
+              </div>
+            </div>
+            <fieldset class="generation-defect-fieldset">
+              <legend class="pane-title">Question and scenario defects</legend>
+              <div id="generation-ask-defects" class="generation-defects"></div>
+            </fieldset>
+            <label>
+              <span class="pane-title">Note</span>
+              <textarea id="generation-ask-note" maxlength="4000"
+                        placeholder="What is correct or defective about the question, query, evidence, answer, or decline?"></textarea>
+            </label>
+            <div class="generation-review-actions">
+              <button id="generation-ask-save-review" disabled>Record ask review</button>
+              <span id="generation-ask-review-result" class="dim"></span>
+            </div>
+          </div>
         </div>
       </section>
 

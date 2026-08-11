@@ -152,10 +152,10 @@ entries:
     "short of": {senses: [preposition]}
 
     # pronouns
-    he: {senses: [pronoun]}
-    she: {senses: [pronoun]}
+    he: {senses: [pronoun], number: singular}
+    she: {senses: [pronoun], number: singular}
     they: {senses: [pronoun], number: plural}
-    it: {senses: [pronoun]}
+    it: {senses: [pronoun], number: singular}
     someone: {senses: [pronoun]}
     somebody: {senses: [pronoun]}
     everybody: {senses: [pronoun]}
@@ -207,8 +207,8 @@ entries:
             sentence declines — never a wrong fact.
 
     # auxiliaries / question words (structure)
-    does: {senses: [auxiliary]}
-    do: {senses: [auxiliary]}
+    does: {senses: [auxiliary], number: singular}
+    do: {senses: [auxiliary], number: plural}
     did: {senses: [auxiliary]}
     how: {senses: [interrogative]}
     much: {senses: [interrogative, quantifier], notes: "moved from difg-mined; also the how-MUCH ask cue"}
@@ -295,6 +295,14 @@ entries:
     buys: {senses: [verb], number: singular, verb: {lemma: buy}}
     buy: {senses: [verb], number: plural, verb: {lemma: buy}}
     bought: {senses: [verb], verb: {lemma: buy}}
+    buying: {senses: [verb], verb: {lemma: buy}}
+    earns: {senses: [verb], number: singular, verb: {lemma: earn}}
+    earn: {senses: [verb], number: plural, verb: {lemma: earn}}
+    earned: {senses: [verb], verb: {lemma: earn}}
+    earning: {senses: [verb], verb: {lemma: earn}}
+    makes: {senses: [verb], number: singular, verb: {lemma: make}}
+    make: {senses: [verb], number: plural, verb: {lemma: make}}
+    made: {senses: [verb], verb: {lemma: make}}
     receives: {senses: [verb], number: singular, verb: {lemma: receive}}
     receive: {senses: [verb], number: plural, verb: {lemma: receive}}
     received: {senses: [verb], verb: {lemma: receive}}
@@ -348,6 +356,14 @@ entries:
     need: {senses: [verb], number: plural}
     needed: {senses: [verb], verb: {lemma: need}}
     needs: {senses: [verb], verb: {lemma: need}}
+    begin: {senses: [verb], number: plural}
+    begins: {senses: [verb], number: singular, verb: {lemma: begin}}
+    began: {senses: [verb], verb: {lemma: begin}}
+    beginning: {senses: [noun, verb], verb: {lemma: begin}}
+    start: {senses: [verb], number: plural}
+    starts: {senses: [verb], number: singular, verb: {lemma: start}}
+    started: {senses: [verb], verb: {lemma: start}}
+    starting: {senses: [verb], verb: {lemma: start}}
 
     # the classic multi-sense demonstrator
     rose:
@@ -467,3 +483,4 @@ entries:
     remaining: {senses: [adjective]}
     small: {senses: [adjective]}
     large: {senses: [adjective]}
+    tall: {senses: [adjective]}

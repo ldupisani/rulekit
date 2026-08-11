@@ -1554,6 +1554,26 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                 )
             )
             continue
+        # Arrival predicates may still bind a counted direct object
+        # syntactically ("arrived 60 pantries").  Their specialized readers
+        # can preserve spatial or temporal semantics, but the generic fold
+        # must not turn that object into an arithmetic holding/event quantity.
+        # Keep this boundary deliberately narrower than
+        # `non_quantity_object_verb`: copular and dimension surfaces also live
+        # there and legitimately fold counted complements elsewhere.
+        if (
+            dobj is not None
+            and dobj.features.get("value_kind") == "count"
+            and dobj.sense() == "noun"
+            and reg.word_in_category(verb_lemma, "arrival_motion_verb")
+            and not (
+                reg.word_in_category(verb_lemma, "motion_comparison_verb")
+                and reg.word_in_category(
+                    _lemma(dobj), "motion_comparison_measure"
+                )
+            )
+        ):
+            continue
         dobj_is_rate = dobj is not None and _is_rate(
             reading, dobj, stop_at_list_boundary=is_purchase_verb
         )

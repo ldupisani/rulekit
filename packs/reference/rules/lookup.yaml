@@ -48,6 +48,7 @@ asks:
       question:
         - {lit: what}
         - {lit: is}
+        - {lit: the, consume_skipped: true}
         - {lit: total}
         - {slot: a, cat: reference_attribute}
         - {lit: of}
@@ -57,28 +58,36 @@ asks:
       op: total
       attribute: "{a}"
       group: "{g}"
+    generation:
+      slot_sources: {g: reference_group}
+      requires_committed_answer: true
   - id: ask/reference-aggregate-total-year
     match:
       question:
         - {lit: what}
         - {lit: is}
+        - {lit: the, consume_skipped: true}
         - {lit: total}
         - {slot: a, cat: reference_attribute}
         - {lit: of}
         - {slot: g, type: name}
         - {lit: in}
-        - {slot: y, type: number}
+        - {slot: y, type: number, integer: true, value_min: 1000, value_max: 9999}
     resolves:
       consumer: reference-aggregate
       op: total
       attribute: "{a}"
       group: "{g}"
       year: "{y.value}"
+    generation:
+      slot_sources: {g: reference_group, y: reference_year}
+      requires_committed_answer: true
   - id: ask/reference-aggregate-average
     match:
       question:
         - {lit: what}
         - {lit: is}
+        - {lit: the, consume_skipped: true}
         - {lit: average}
         - {slot: a, cat: reference_attribute}
         - {lit: of}
@@ -88,20 +97,27 @@ asks:
       op: average
       attribute: "{a}"
       group: "{g}"
+    generation:
+      slot_sources: {g: reference_group}
+      requires_committed_answer: true
   - id: ask/reference-aggregate-average-year
     match:
       question:
         - {lit: what}
         - {lit: is}
+        - {lit: the, consume_skipped: true}
         - {lit: average}
         - {slot: a, cat: reference_attribute}
         - {lit: of}
         - {slot: g, type: name}
         - {lit: in}
-        - {slot: y, type: number}
+        - {slot: y, type: number, integer: true, value_min: 1000, value_max: 9999}
     resolves:
       consumer: reference-aggregate
       op: average
       attribute: "{a}"
       group: "{g}"
       year: "{y.value}"
+    generation:
+      slot_sources: {g: reference_group, y: reference_year}
+      requires_committed_answer: true

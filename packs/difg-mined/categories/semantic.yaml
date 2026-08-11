@@ -68,14 +68,6 @@ categories:
   produce:
     parent: verb
     polarity: 1
-  price_verb:
-    parent: verb
-    notes: >
-      'ITEM cost(s) $X each' states a PER-UNIT price with the item as
-      grammatical SUBJECT (not the object of buy) — gates the learn.py
-      Price-fact emission site keyed on the subject noun, mirroring
-      spend_verb's role as a pure consumer/emission gate (no polarity:
-      a price is never a holding or an event quantity).
   quality_attribute:
     parent: adjective
     notes: >
@@ -85,29 +77,11 @@ categories:
   quality_bearer_noun:
     parent: noun
     notes: "Inanimate nouns with a measured ordinary quality predicate."
-  purchase:
-    parent: acquire
   receive:
     parent: verb
     polarity: 1
   retain:
     parent: verb
-  spend_target_prep:
-    parent: preposition
-    notes: >
-      'for'/'on' — the trailing marker in "paid $5 FOR the shirt"/"spent
-      $5 ON the shirt" (mining candidate priced-quantity-cost-asks): the
-      priced-quantity-cost ask's own trailing prep slot is gated to this
-      narrow pair rather than the general 'preposition' sense so it can
-      never also match 'in' — a LITERAL already reserved by ask/how-
-      much-rate-span and ask/earn-span for their own SPAN clause. A
-      general preposition gate here would tie those asks on consumed-
-      unit count for "how much did WHO pay IN N months" and let
-      alphabetical id order silently mis-route a span question to the
-      wrong consumer (mirrors clause_marker_prep's rationale in
-      packs/difg-mined/categories/clauses.yaml for the same root sense).
-      Lives here (not core-english) because 'for' is only lexically
-      defined in this pack.
   tender_verb:
     parent: verb
     notes: >
@@ -131,7 +105,10 @@ attribute_compatibility:
   quality_attribute: [quality_bearer_noun, animate]
   marital_status_attribute: [animate]
 members:
+  plural_subject_quantifier: [both]
   transferable_quantity_object: [bar, ticket]
+  edible_quantity_object: [berry]
+  finishable_quantity_object: [homework]
   # `Bill` is a common first name as well as the monetary noun owned by this
   # pack. Sentence-initial sense selection retains the noun reading, so the
   # entity-role exception must stay lexical and explicit.
@@ -139,9 +116,18 @@ members:
   increase_verb: [increase, increased, increases, rise]
   decrease_verb: [decrease, decreased, decreases, fall, fell]
   mass_quantity_noun: [chicken, coffee, flour, food, milk, money, rice, sugar]
+  partitive_volume_measure: [bottle, cup, liter, quart, sack]
+  partitive_pair_measure: [pair]
+  partitive_piece_measure: [piece]
+  weighable_partitive_substance: [chicken, coffee, flour, food, rice, sugar]
+  volume_partitive_substance: [coffee, flour, milk, oil, rice, sugar]
+  pairable_partitive_substance: [shoe]
+  passive_quantity_participle: [eaten, given, picked]
+  passive_quantity_object: [bar, candle, cup, pair, pie, piece, quart, ticket]
+  group_total_scope: [beach, farm, lake]
   # Cross-pack extensions of the explicit adjective/noun compatibility
   # boundary used by partition-attribute-of-noun.
-  color_attribute: [black, black-and-white, grey, pink, purple, white, yellow]
+  color_attribute: [black, black-and-white, gold, grey, pink, purple, white, yellow]
   colorable_noun: [ticket]
   ripeness_attribute: [ripe]
   ripenable_noun: [peach]
@@ -220,10 +206,12 @@ members:
   # motion participants. Keep this separate from quantity_location: treating
   # `store` as a PP location changes container-scoping semantics.
   quantity_holder:
+  - house
   - machine
   - plank
   - store
   duration_holder: [gap, journey, trip]
+  duration_total_subject: [gap, journey, tape, trip, video]
   linear_dimension_holder: [box, gift, pyramid, rope, snake]
   mass_dimension_holder: [box, gift, macaron, pyramid]
   # Container/place heads proven in quantitative PP adjuncts.
@@ -240,6 +228,7 @@ members:
   - country
   - farm
   - jar
+  - kitchen
   - mall
   - office
   - party
@@ -263,6 +252,7 @@ members:
   - classroom
   - country
   - jar
+  - kitchen
   - mall
   - office
   - party
@@ -275,6 +265,7 @@ members:
   - farm
   - shelf
   - side
+  - table
   - wheel
   quantity_site_location:
   - class
@@ -359,6 +350,16 @@ members:
   - day
   - week
   - month
+  dimension_difference_measure:
+  - centimeter
+  - foot
+  - gram
+  - kilometer
+  - kilogram
+  - meter
+  - mile
+  - ounce
+  - yard
   currency_measure:
   - cent
   - balance
@@ -370,9 +371,6 @@ members:
   # the full mechanism). Each list is exhaustive over ONLY the subtype
   # words actually seen in dev-train evidence for this class — adding a
   # sibling subtype later is a separate, author-vetted data increment.
-  start_marker_verb:
-  - begin
-  - start
   litter:
   - bottle
   - can
@@ -459,11 +457,9 @@ members:
   # both asks. 'longer' in dimension_more is unaffected: the SENTENCE
   # relation rule requires a stated counted unit + "than", which the
   # bare ask has neither of, so that comparative form carries no such risk.
-  - tall
-  - heavy
-  - wide
-  - high
   - short
+  linear_unit_dimension_adjective: [high, wide]
+  mass_unit_dimension_adjective: [heavy]
   animal:
   - bear
   - bears
@@ -694,10 +690,6 @@ members:
   # just 'not'.
   negation:
   - never
-  need_ask_verb:
-  - need
-  - needed
-  - needs
   person:
   - adult
   - adults
@@ -793,14 +785,13 @@ members:
   - paints
   - sew
   - sews
-  price_verb:
-  - cost
-  - costs
+  # Cross-pack extension of core English's explicit direct-production object
+  # role. A decorated button is an ordinary made object; keeping the member
+  # beside its corpus-owned lexicon entry preserves the established
+  # make/buttons arithmetic chain without admitting arbitrary nouns.
+  producible_quantity_object:
+  - button
   purchase:
-  - bought
-  - buy
-  - buying
-  - buys
   - order
   - ordered
   - orders
@@ -832,9 +823,6 @@ members:
   - ones
   remnant_adj:
   - remaining
-  spend_target_prep:
-  - for
-  - on
   tender_verb:
   - gave
   - give
@@ -854,6 +842,23 @@ members:
   - semester
   - week
   - weekend
+  temporal_on_point_object:
+  - day
+  - weekend
+  temporal_in_point_object:
+  - afternoon
+  - day
+  - decade
+  - evening
+  - month
+  - morning
+  - night
+  - season
+  - semester
+  - week
+  - weekend
+  temporal_at_point_object:
+  - night
   vehicle:
   - bicycle
   - bicycles

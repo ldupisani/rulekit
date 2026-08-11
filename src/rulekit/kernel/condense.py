@@ -437,6 +437,11 @@ def _nominal_pass(reading: Reading, reg: Registry) -> bool:
             # vocabulary-free structural boundary between the two shapes.
             and owned.features.get("value_kind") != "count"
             and owned.features.get("owner_ref_uid") is None
+            # A noun phrase with an apostrophe-s owner is already complete.
+            # A preceding possessive determiner cannot replace that owner
+            # ("their Mary's teacher"). Leave both structures visible so a
+            # declarative phrase rule can reject the doubled ownership.
+            and owned.features.get("owner") is None
         ):
             reading.record(
                 "attach-possessive-determiner",

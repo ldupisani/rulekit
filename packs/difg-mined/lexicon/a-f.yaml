@@ -573,15 +573,6 @@ entries:
   beeswax:
     senses:
     - noun
-  began:
-    senses:
-    - verb
-  begin:
-    senses:
-    - verb
-  beginning:
-    senses:
-    - noun
   beignet:
     senses:
     - noun
@@ -952,11 +943,6 @@ entries:
   buyers:
     senses:
     - noun
-  buying:
-    senses:
-    - verb
-    verb:
-      lemma: buy
   cabinet:
     senses:
     - noun
@@ -2074,6 +2060,7 @@ entries:
   dice:
     senses:
     - noun
+    number: plural
   died:
     senses:
     - verb
@@ -2354,27 +2341,9 @@ entries:
   early:
     senses:
     - adjective
-  earn:
-    senses:
-    - verb
-  earned:
-    senses:
-    - verb
-    verb:
-      lemma: earn
-  earning:
-    senses:
-    - verb
-    verb:
-      lemma: earn
   earnings:
     senses:
     - noun
-  earns:
-    senses:
-    - verb
-    verb:
-      lemma: earn
   earring:
     senses:
     - noun

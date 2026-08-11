@@ -965,9 +965,10 @@ entries:
     senses:
     - noun
     plural: lanes
-  laps:
+  lap:
     senses:
     - noun
+    plural: laps
   laptop:
     senses:
     - noun
@@ -1291,11 +1292,6 @@ entries:
   madam:
     senses:
     - title
-  made:
-    senses:
-    - verb
-    verb:
-      lemma: make
   magazine:
     senses:
     - noun
@@ -1306,14 +1302,6 @@ entries:
   main:
     senses:
     - adjective
-  make:
-    senses:
-    - verb
-  makes:
-    senses:
-    - verb
-    verb:
-      lemma: make
   makeup:
     senses:
     - noun

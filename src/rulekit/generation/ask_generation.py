@@ -12,6 +12,7 @@ import hashlib
 import random
 import re
 import secrets
+from dataclasses import replace
 from itertools import combinations, product
 from typing import Any, Iterable
 
@@ -30,6 +31,7 @@ from .sample import (
     GenerationError,
     _Filler,
     _domain,
+    _filler_in_category,
     _leaf_tokens,
     _load_fixtures,
     _token_nodes,
@@ -37,7 +39,9 @@ from .sample import (
     list_rule_availability,
 )
 
-ASK_GENERATOR_VERSION = f"{GENERATOR_VERSION}+g7-asks"
+ASK_GENERATOR_VERSION = f"{GENERATOR_VERSION}+g7-asks-data-domains"
+_MAX_RANDOM_ANSWERABLE_ASKS = 8
+_SCENARIO_PREMISE_ATTEMPTS = 4
 _PUNCTUATION = frozenset({".", ",", "!", "?", ";", ":"})
 _WHOLE_TEMPLATE = re.compile(r"^\{([A-Za-z_][A-Za-z0-9_]*)(?:\.([^}]+))?\}$")
 _NON_IDENTITY_QUERY_FIELDS = frozenset(
@@ -115,6 +119,53 @@ def _ask_token_domain(
     ask: AskRule,
     token: MatchToken,
 ) -> list[_Filler]:
+    source = ask.generation.slot_sources.get(token.slot or "")
+    if source == "reference_group":
+        return [
+            _Filler(
+                surface=value.title(),
+                identity=value,
+                number="singular",
+                kind="name",
+            )
+            for value in sorted(set(project.registry.reference_groups.values()))
+        ]
+    if source == "reference_year":
+        return [
+            _Filler(
+                surface=str(year),
+                identity=str(year),
+                number="plural" if year != 1 else "singular",
+                kind="number",
+                value=float(year),
+            )
+            for year in sorted(
+                {
+                    year
+                    for _, _, year in project.registry.reference
+                    if year is not None
+                }
+            )
+        ]
+    category = ask.generation.slot_categories.get(token.slot or "")
+    if category is not None:
+        categories = category if isinstance(category, list) else [category]
+        fixtures = _load_fixtures(project.root)
+        domain = [
+            filler
+            for declared in categories
+            for filler in _domain(
+                token.model_copy(update={"type": None, "cat": declared}),
+                project.registry,
+                fixtures,
+            )
+        ]
+        return list(
+            {
+                (filler.surface, filler.identity, filler.number): filler
+                for filler in domain
+            }.values()
+        )
     if token.span:
         contract = _span_contracts(ask).get(token.slot or "")
         return _name_list_fillers(project) if contract == "name_list" else []
@@ -137,6 +188,10 @@ def _ask_token_domain(
 
 def _ask_blockers(project: Project, ask: AskRule) -> tuple[str, ...]:
     blockers: list[str] = []
+    if ask.generation.context_required:
+        blockers.append(
+            "ask requires embedding context; standalone realization is disabled"
+        )
     contracts = _span_contracts(ask)
     if "group_members" in contracts.values():
         blockers.append(
@@ -158,6 +213,177 @@ def _ask_blockers(project: Project, ask: AskRule) -> tuple[str, ...]:
         if not _ask_token_domain(project, ask, token):
             blockers.append(f"no project-backed ask filler exists for {label}")
     return tuple(dict.fromkeys(blockers))
+
+
+def _ask_filler_satisfies_known_where(
+    project: Project,
+    ask: AskRule,
+    slot: str | None,
+    filler: _Filler,
+    chosen: dict[str, _Filler],
+) -> bool:
+    """Prune a filler when an Ask ``where`` predicate is already decidable.
+
+    Ask realization remains ordinary declarative matching: this only avoids
+    spending the bounded retry budget on combinations the matcher must reject
+    later. Predicates whose other slots are not yet chosen stay undecided.
+    """
+
+    if slot is None:
+        return True
+    reg = project.registry
+
+    def value(name: str) -> _Filler | None:
+        return filler if name == slot else chosen.get(name)
+
+    for predicate in ask.where:
+        exclusion = predicate.slot_not_category
+        if (
+            exclusion is not None
+            and exclusion.get("slot") == slot
+            and _filler_in_category(filler, exclusion["cat"], reg)
+        ):
+            return False
+
+        if (
+            predicate.number_compatible is not None
+            and slot in predicate.number_compatible
+        ):
+            numbers = {
+                known.number
+                for name in predicate.number_compatible
+                if (known := value(name)) is not None
+                and known.number in {"singular", "plural"}
+            }
+            if len(numbers) > 1:
+                return False
+
+        owner_match = predicate.owner_matches
+        if owner_match is not None:
+            owner = value(owner_match.owner)
+            possessed = value(owner_match.possessed)
+            if (
+                owner is not None
+                and possessed is not None
+                and possessed.owner != owner.identity
+            ):
+                return False
+
+        if predicate.distinct is not None and slot in predicate.distinct:
+            if any(
+                other != slot
+                and (known := value(other)) is not None
+                and known.identity == filler.identity
+                for other in predicate.distinct
+            ):
+                return False
+
+        conditional = predicate.bound_requires_category
+        if conditional is not None:
+            bound = value(conditional.bound)
+            target = value(conditional.slot)
+            if (
+                bound is not None
+                and target is not None
+                and not (
+                    conditional.allow_proper_name and target.kind == "name"
+                )
+                and not _filler_in_category(target, conditional.cat, reg)
+            ):
+                return False
+
+        compatibility = predicate.attribute_compatible
+        if compatibility is not None:
+            attribute = value(compatibility.attribute)
+            noun = value(compatibility.noun)
+            if (
+                attribute is not None
+                and noun is not None
+                and not reg.attribute_applies_to(
+                    attribute.identity, noun.identity
+                )
+            ):
+                return False
+
+        measure_compatibility = predicate.measure_holder_compatible
+        if measure_compatibility is not None:
+            measure = value(measure_compatibility.measure)
+            if measure is not None:
+                for holder_name in measure_compatibility.holders:
+                    holder = value(holder_name)
+                    if holder is None:
+                        continue
+                    proper_categories = (
+                        measure_compatibility.proper_name_measure_categories
+                    )
+                    proper_allowed = (
+                        holder.kind == "name"
+                        and measure_compatibility.allow_proper_name
+                        and (
+                            not proper_categories
+                            or any(
+                                _filler_in_category(measure, category, reg)
+                                for category in proper_categories
+                            )
+                        )
+                    )
+                    if not proper_allowed and not reg.measure_applies_to_holder(
+                        measure.identity, holder.identity
+                    ):
+                        return False
+
+        role_compatibility = predicate.verb_role_compatible
+        if role_compatibility is not None:
+            verb = value(role_compatibility.verb)
+            if verb is not None and _filler_in_category(
+                verb, role_compatibility.verb_cat, reg
+            ):
+                role_category = (
+                    role_compatibility.role_cat
+                    or role_compatibility.excluded_role_cat
+                )
+                assert role_category is not None
+                for role_name in role_compatibility.roles:
+                    role = value(role_name)
+                    if role is None:
+                        continue
+                    in_category = _filler_in_category(role, role_category, reg)
+                    if role_compatibility.role_cat is not None and not in_category:
+                        return False
+                    if (
+                        role_compatibility.excluded_role_cat is not None
+                        and in_category
+                    ):
+                        return False
+
+        partitive = predicate.partitive_compatible
+        if partitive is not None:
+            measure = value(partitive.measure)
+            substance = value(partitive.substance)
+            if measure is not None and substance is None:
+                if not any(
+                    reg.partitive_applies_to(measure.identity, word)
+                    for word in reg.lexicon
+                ):
+                    return False
+                continue
+            if substance is not None and measure is None:
+                if not any(
+                    reg.partitive_applies_to(word, substance.identity)
+                    for word in reg.lexicon
+                ):
+                    return False
+                continue
+            if (
+                measure is not None
+                and substance is not None
+                and not reg.partitive_applies_to(
+                    measure.identity, substance.identity
+                )
+            ):
+                return False
+
+    return True
 
 
 def list_ask_availability(project: Project) -> list[AskAvailability]:
@@ -227,11 +453,13 @@ def _realize_ask(
     optionals = _optional_choices(sequence, rng, set(locked_bindings))
     chosen: dict[str, _Filler] = {}
     surfaces: list[str] = []
+    previous_filler: _Filler | None = None
 
     def realize(
         tokens: list[MatchToken],
         parent: tuple[int, ...] = (),
     ) -> None:
+        nonlocal previous_filler
         for token_no, token in enumerate(tokens):
             path = (*parent, token_no)
             if token.opt is not None:
@@ -242,6 +470,57 @@ def _realize_ask(
                 domain = [chosen[token.slot]]
             else:
                 domain = _ask_token_domain(project, ask, token)
+            if (
+                token.possessed
+                and previous_filler is not None
+                and project.registry.word_in_category(
+                    previous_filler.identity, "possessive_determiner"
+                )
+            ):
+                bare_token = token.model_copy(update={"possessed": False})
+                domain = [
+                    replace(
+                        candidate,
+                        owner=previous_filler.identity,
+                        reference_form="bare",
+                    )
+                    for candidate in _ask_token_domain(project, ask, bare_token)
+                    if candidate.kind == "noun"
+                ]
+            if token.generation_bare_reference:
+                domain = [
+                    candidate
+                    for candidate in domain
+                    if candidate.reference_form in {None, "bare"}
+                ]
+            # A generated possessive determiner supplies the following noun's
+            # definiteness itself. Keep only the bare common-noun rendering;
+            # otherwise an optional branch can realize "his the book". Names
+            # are also excluded here because a possessive + proper-name shape
+            # needs an appositive contract rather than this ordinary NP slot.
+            if (
+                token.referential
+                and previous_filler is not None
+                and project.registry.word_in_category(
+                    previous_filler.identity, "possessive_determiner"
+                )
+            ):
+                domain = [
+                    filler
+                    for filler in domain
+                    if filler.reference_form == "bare"
+                ]
+            domain = [
+                candidate
+                for candidate in domain
+                if _ask_filler_satisfies_known_where(
+                    project,
+                    ask,
+                    token.slot,
+                    candidate,
+                    chosen,
+                )
+            ]
             locked = locked_bindings.get(token.slot or "")
             if locked is not None:
                 folded = locked.casefold()
@@ -263,9 +542,14 @@ def _realize_ask(
             if token.slot is not None:
                 chosen[token.slot] = filler
             surfaces.append(filler.surface)
+            previous_filler = filler
 
     realize(sequence)
     question = " ".join(surfaces)
+    # English clitics attach to the preceding word. The analyzer keeps them
+    # as independent units for matching, but generated surface text should
+    # still render the contraction rather than exposing tokenizer spacing.
+    question = re.sub(r"\s+('s)\b", r"\1", question)
     question = re.sub(r"\s+([,.;:!?])", r"\1", question)
     if question and question[-1] not in _PUNCTUATION:
         question += "?"
@@ -357,6 +641,12 @@ def _generate_ask_surface(
         if actual_ask.id != ask.id:
             last_error = f"{actual_ask.id} won the ask specificity tie"
             continue
+        if (
+            ask.generation.requires_committed_answer
+            and not solve(question, project.registry).answer.committed
+        ):
+            last_error = "generated data-backed ask has no supported answer"
+            continue
         return (
             question,
             requested,
@@ -397,11 +687,13 @@ def _emit_lock_variants(
     rule: PatternRule,
     query: dict[str, Any],
 ) -> list[tuple[int, dict[str, str]]]:
-    """Invert exact emit templates into premise slot locks.
+    """Invert exact emit templates into premise slot identity locks.
 
     Only whole-slot templates can be inverted. Expressions and attributes
-    stay unconstrained and the ordinary solver decides whether the resulting
-    facts are sufficient.
+    stay unconstrained. Identity locks let a normalized query measure such as
+    ``pencil`` select any compatible counted surface such as ``3 pencils``;
+    the premise realizer still owns number, morphology, and value selection.
+    The ordinary solver decides whether the resulting facts are sufficient.
     """
 
     query_values = _query_identity_values(query)
@@ -461,6 +753,23 @@ def _solve_text(project: Project, premises: list[dict[str, Any]], question: str)
     return text, solve(text, project.registry)
 
 
+def _try_solve_text(
+    project: Project,
+    premises: list[dict[str, Any]],
+    question: str,
+):
+    """Treat a pathological generated combination as a failed search branch."""
+
+    try:
+        return _solve_text(project, premises, question)
+    except ArithmeticError:
+        return None
+    except RuntimeError as exc:
+        if not str(exc).startswith("saturation did not reach a fixpoint"):
+            raise
+        return None
+
+
 def _minimal_committed_premises(
     project: Project,
     premises: list[dict[str, Any]],
@@ -472,7 +781,10 @@ def _minimal_committed_premises(
         changed = False
         for index in range(len(selected)):
             trial = selected[:index] + selected[index + 1 :]
-            text, result = _solve_text(project, trial, question)
+            solved = _try_solve_text(project, trial, question)
+            if solved is None:
+                continue
+            text, result = solved
             if result.answer.committed:
                 selected = trial
                 changed = True
@@ -489,11 +801,10 @@ def _premise_set_is_minimal(
     """Prove no generated premise can be removed while retaining an answer."""
 
     return all(
-        not _solve_text(
-            project,
-            premises[:index] + premises[index + 1 :],
-            question,
-        )[1].answer.committed
+        (solved := _try_solve_text(
+            project, premises[:index] + premises[index + 1 :], question
+        )) is None
+        or not solved[1].answer.committed
         for index in range(len(premises))
     )
 
@@ -524,7 +835,7 @@ def _search_answerable_scenario(
     generated: list[dict[str, Any]] = []
     seen_sentences: set[str] = set()
     search_attempts = 0
-    for _, rule_id, locks in plans:
+    for _, rule_id, identity_locks in plans:
         if search_attempts >= max_search_attempts:
             break
         search_attempts += 1
@@ -533,8 +844,8 @@ def _search_answerable_scenario(
                 project,
                 rule_id=rule_id,
                 seed=rng.getrandbits(63),
-                max_attempts=12,
-                locked_bindings=locks,
+                max_attempts=_SCENARIO_PREMISE_ATTEMPTS,
+                identity_bindings=identity_locks,
             ).to_json()
         except GenerationError:
             continue
@@ -542,7 +853,10 @@ def _search_answerable_scenario(
             continue
         seen_sentences.add(candidate["sentence"])
         generated.append(candidate)
-        text, result = _solve_text(project, [candidate], question)
+        solved = _try_solve_text(project, [candidate], question)
+        if solved is None:
+            continue
+        text, result = solved
         if result.answer.committed:
             return [candidate], result, text, search_attempts
 
@@ -553,7 +867,10 @@ def _search_answerable_scenario(
     for size in (2, 3):
         for group in combinations(pool, size):
             search_attempts += 1
-            text, result = _solve_text(project, list(group), question)
+            solved = _try_solve_text(project, list(group), question)
+            if solved is None:
+                continue
+            text, result = solved
             if not result.answer.committed:
                 continue
             minimal, result, text = _minimal_committed_premises(
@@ -594,7 +911,13 @@ def generate_ask_scenario(
         ]
         if not supported:
             raise GenerationError("this project has no supported ask surfaces")
-        ask = supported[rng.randrange(len(supported))]
+        start = rng.randrange(len(supported))
+        ordered = supported[start:] + supported[:start]
+        ask_candidates = (
+            ordered[:_MAX_RANDOM_ANSWERABLE_ASKS]
+            if scenario_mode == "answerable"
+            else ordered[:1]
+        )
     else:
         ask = asks.get(ask_id)
         if ask is None:
@@ -604,66 +927,87 @@ def generate_ask_scenario(
             raise GenerationError(
                 f"{ask.id} is blocked: {'; '.join(item.blockers)}"
             )
+        ask_candidates = [ask]
 
-    question, requested, actual, query, attempts = _generate_ask_surface(
-        project,
-        ask,
-        seed=seed,
-        locked_bindings=dict(locked_bindings or {}),
-        max_attempts=max_attempts,
-    )
-    ask_only = solve(question, project.registry)
-    premises: list[dict[str, Any]] = []
-    result = ask_only
-    text = question
-    search_attempts = 0
-    if scenario_mode == "answerable":
-        premises, result, text, search_attempts = _search_answerable_scenario(
-            project,
-            question,
-            query,
-            rng=rng,
-            max_search_attempts=max_search_attempts,
-        )
-        if not result.answer.committed:  # pragma: no cover - search enforces
-            raise GenerationError("answerable scenario search returned no commitment")
-    elif scenario_mode == "missing_evidence" and result.answer.committed:
-        raise GenerationError(
-            "the generated ask committed without premises, so it is not a "
-            "missing-evidence scenario"
+    last_error: Exception | None = None
+    for ask in ask_candidates:
+        try:
+            question, requested, actual, query, attempts = _generate_ask_surface(
+                project,
+                ask,
+                seed=seed,
+                locked_bindings=dict(locked_bindings or {}),
+                max_attempts=max_attempts,
+            )
+            ask_only = solve(question, project.registry)
+            premises: list[dict[str, Any]] = []
+            result = ask_only
+            text = question
+            search_attempts = 0
+            if scenario_mode == "answerable":
+                premises, result, text, search_attempts = (
+                    _search_answerable_scenario(
+                        project,
+                        question,
+                        query,
+                        rng=rng,
+                        max_search_attempts=max_search_attempts,
+                    )
+                )
+                if not result.answer.committed:  # pragma: no cover
+                    raise GenerationError(
+                        "answerable scenario search returned no commitment"
+                    )
+            elif scenario_mode == "missing_evidence" and result.answer.committed:
+                raise GenerationError(
+                    "the generated ask committed without premises, so it is not a "
+                    "missing-evidence scenario"
+                )
+        except (GenerationError, ArithmeticError) as exc:
+            last_error = exc
+            if ask_id is not None or scenario_mode != "answerable":
+                if isinstance(exc, GenerationError):
+                    raise
+                raise GenerationError(str(exc)) from exc
+            continue
+
+        answer, answer_shape = _answer_json(result.answer)
+        digest = hashlib.sha256(
+            (
+                f"{project.registry.fingerprint}\0{scenario_mode}\0{seed}\0"
+                f"{ask.id}\0{text}"
+            ).encode()
+        ).hexdigest()[:20]
+        source = project.source_index.asks.get(ask.id)
+        return AskScenarioCandidate(
+            id=f"askgen-{digest}",
+            project=project.doc.name,
+            registry_fingerprint=project.registry.fingerprint,
+            generator_version=ASK_GENERATOR_VERSION,
+            scenario_mode=scenario_mode,
+            seed=seed,
+            target_ask=ask.id,
+            consumer=(
+                str(query.get("consumer"))
+                if query.get("consumer") is not None
+                else None
+            ),
+            question=question,
+            text=text,
+            requested_bindings=requested,
+            target_bindings=actual,
+            query=query,
+            target_source=source.to_json() if source is not None else None,
+            premises=tuple(premises),
+            answer=answer,
+            answer_shape=answer_shape,
+            minimal=_premise_set_is_minimal(project, premises, question),
+            attempts=attempts,
+            search_attempts=search_attempts,
         )
 
-    answer, answer_shape = _answer_json(result.answer)
-    digest = hashlib.sha256(
-        (
-            f"{project.registry.fingerprint}\0{scenario_mode}\0{seed}\0"
-            f"{ask.id}\0{text}"
-        ).encode()
-    ).hexdigest()[:20]
-    source = project.source_index.asks.get(ask.id)
-    return AskScenarioCandidate(
-        id=f"askgen-{digest}",
-        project=project.doc.name,
-        registry_fingerprint=project.registry.fingerprint,
-        generator_version=ASK_GENERATOR_VERSION,
-        scenario_mode=scenario_mode,
-        seed=seed,
-        target_ask=ask.id,
-        consumer=(
-            str(query.get("consumer"))
-            if query.get("consumer") is not None
-            else None
-        ),
-        question=question,
-        text=text,
-        requested_bindings=requested,
-        target_bindings=actual,
-        query=query,
-        target_source=source.to_json() if source is not None else None,
-        premises=tuple(premises),
-        answer=answer,
-        answer_shape=answer_shape,
-        minimal=_premise_set_is_minimal(project, premises, question),
-        attempts=attempts,
-        search_attempts=search_attempts,
+    raise GenerationError(
+        "no answerable scenario was found for the first "
+        f"{len(ask_candidates)} deterministic supported asks: "
+        f"{last_error or 'no viable scenario'}"
     )

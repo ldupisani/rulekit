@@ -30,10 +30,13 @@ loads the candidate's packs. Publication rejects a foreign registry
 fingerprint without that runtime declaration, and the isolated runner resolves
 the declared project before checking the exact fingerprint. This prevents a
 DIFG/GSM8K candidate from being launched through curated merely because
-curated owns the review queue. G7 independently realizes 93/104 loaded curated ask
+curated owns the review queue. G7 independently realizes 105/109 loaded curated ask
 surfaces, searches generated premise rules for a removal-minimal answerable
 scenario through the ordinary solver, and produces deliberate missing-evidence
-cases without reading benchmark examples or golds. M4 replays every canonical
+cases without reading benchmark examples or golds. Ask candidates now use the
+same append-only human-review lifecycle as generated premises while pinning the
+exact question, complete scenario, consumer/query, premise evidence, answer
+shape, and minimality result. M4 replays every canonical
 specimen surface and relevant live review against the exact candidate, then
 derives fresh baseline/candidate snapshots for the full standing DEV matrix.
 Its durable result is revision-pinned and mechanically required for approval;
@@ -75,7 +78,7 @@ specific asks both return the cross-period total because both facts carry
 `time=None`. The candidate must preserve one role-licensed trailing period,
 answer the requested period through the shared temporal origo, retain the
 unscoped aggregate, and decline unresolved comparative/pronominal periods and
-non-additive state snapshots. The current review-reconciled gate is 4,999
+non-additive state snapshots. The current review-reconciled gate is 5,312
 tests; curated remains 71/71 and all thirteen answer/projection DEV diffs are
 neutral with zero wrong or incorrect commitments. Protected GSM8K TEST look
 126 held at 13 correct, one persistent wrong, and 1,305 declined while
@@ -86,7 +89,7 @@ infrastructure rather than a parked or replaced direction.
 **Status:** G1 through G4, G5a through G5g, G6, Reading-origin review,
 targetless sentence-interpretation review, fact-level review, the
 fraction-plural morphology correction, scoped
-`GroupTotal`, all forty-five review-led grammar-boundary reconciliations,
+`GroupTotal`, all fifty-three review-led grammar-boundary reconciliations,
 the additive elided-comparison increment, and coordinated open-superclass
 totals are complete and gated. Plain
 count equatives such as `Tom buys as many roses as Mary` now emit a factor-one
@@ -166,7 +169,7 @@ time-root realization is complete: both deictic markers are core-owned and
 reviewable, and the standard-pinned future rule unlocks. G5u direct-adverb
 visibility is complete: `currently` is core-owned, project-relative adverb
 breadth remains visible, and all 99 curated premise rules are selectable. G5v
-review-led premise auditing is active; forty-five review batches are implemented
+review-led premise auditing is active; fifty review batches are implemented
 and fully gated. The core exploration vocabulary now contributes 25 additional
 category-aware identities, bringing the earlier frontier to 108/108 premise rules
 and 184 reachable identities. The logic-arithmetic bridge raised the live
@@ -333,6 +336,154 @@ passes; curated remains 71/71; GSM8K DEV-train and holdout remain exactly
 neutral at 109/0 and 43/0; all thirteen standing answer/projection DEV diffs
 are neutral with zero wrong or incorrect commitments. No protected look was
 spent for this review reconciliation.
+The forty-sixth review reconciliation closes all fourteen newly live premise
+reviews through four shared boundaries. Named weekdays and months now use
+pack-declared point-preposition governance (`on` weekdays, `in` months), while
+duration and deadline adjuncts such as `throughout Friday`, `during July`, and
+`by June` remain valid. Every quantitative PP slot declares named calendar
+objects determinerless, so articles and possessives cannot produce `the
+August` or `my Tuesday`. Direct quantitative `begin`/`start`, `earn`, and
+`make` readings now require explicit plausible actor and object roles;
+`button`, owned by DIFG vocabulary, extends the production-object role and
+preserves the established decorated-button solution. An optional singular
+third-person animate possessive may govern a locally subject-owned PP only
+when its common-noun subject is animate, and the conjunct quantity anaphor
+requires a non-unit multiplier, rejecting `once that many` while retaining
+`twice that many`. All reviewed surfaces replay absent and generated positive
+neighbors cover every boundary. The complete 5,049-test gate passes; curated
+remains 71/71; GSM8K DEV-train and holdout are exactly neutral at 109/0 and
+43/0; all thirteen standing answer/projection DEV diffs are neutral with zero
+wrong or incorrect commitments. Lint has zero errors and one pre-existing
+warning. No protected look was spent.
+The forty-seventh reconciliation closes six invalid generated-ask reviews
+without weakening runtime matching. `how many` asks require plural morphology,
+auxiliary-led verbs require the bare form, sum asks use only sum markers, and
+`how much` is limited to declared mass-quantity nouns. Projected-age asks use
+a future modal, a declared temporal frame, and a counted age unit. Partitive
+asks now apply a generic pack-declared measure/substance compatibility table,
+so valid pairs such as `pairs of shoes` and `pieces of litter` remain supported
+while `minutes of books` declines. The premise side also refuses arithmetic
+facts from counted arrival objects and prevents a failed full conjoined anchor
+from leaking through its shorter relation prefix. That negative lookahead is
+limited to the complete same-clause anchor continuation, so independent
+coordinated comparisons remain valid. Particle verbs test agreement on their
+verb head, and the mined `lap`, `pick`, `run`, and irregular plural `dice`
+entries now expose their actual morphology. All six reviewed scenarios replay
+as declines and valid projected-age, named-list total, mass-total, partitive,
+particle-verb, coordinated-relation, and irregular-plural neighbours pass.
+The complete 5,073-test gate passes; curated remains 71/71; GSM8K DEV-train
+and holdout remain exactly neutral at 109/0 and 43/0 with 0 BROKE and 0
+DECL→WRONG. Every standing unprotected corpus retains zero wrong or incorrect
+commitments. Lint has zero errors and one pre-existing warning. No protected
+look was spent.
+The forty-eighth reconciliation closes four invalid generated-ask reviews.
+Entity-less passive totals now require a plural countable object, an agreeing
+copula, a declared passive quantity participle, and a compatible optional
+partitive. Their trailing scope admits only declared locative prepositions and
+scope nouns. Per-holder `how many` asks reject declared mass nouns. In-place
+start-state asks require a plural measure, plural copula, `in`, and a declared
+interior location. Leading-unit dimension differences now require a concrete
+length or mass unit, a compatible comparative, an agreeing copula, distinct
+plausible holders, and an animate common-noun standard after a possessive.
+Ask realization prunes any filler as soon as the already-bound slots make a
+shared `where` predicate decidable, so these tighter contracts remain fast and
+generatable instead of exhausting their retry budget. The complete 5,091-test
+gate passes; curated remains 71/71; GSM8K DEV-train/holdout are exactly neutral
+at 109/0 and 43/0; ASDiv, SVAMP, MAWPS, SciBench, FOLIO, and both COGS DEV
+slices retain zero wrong or incorrect commitments. Lint has zero errors and
+one pre-existing warning. No protected look was spent.
+The forty-ninth reconciliation closes all seventeen newly live invalid ask
+reviews. Ask rules now enforce ordinary auxiliary agreement, bare verb forms,
+plural count morphology, referential holder roles, compatible adjective and
+location categories, explicit comparative/difference frames, and the required
+determiners in start-state, average, and possessed-number questions. Calendar
+age asks additionally require a past copula and an absolute four-digit year;
+the generic matcher and generator now support reusable inclusive numeric slot
+bounds. Change asks use a declared receipt-verb category, and generated
+contractions render as `what's` rather than `what 's`. The review fixtures lock
+all seventeen rejected surfaces plus positive neighbours for every affected
+rule. The complete 5,137-test gate passes; the focused reconciliation and
+neighbour matrix passes 102/102; curated remains 71/71; GSM8K train/holdout
+remain 108/0 and 43/0; and every standing unprotected cross-corpus gate retains
+zero wrong or incorrect commitments. Lint has zero errors and one pre-existing
+warning. No protected look was spent.
+The fiftieth reconciliation closes all twelve newly live invalid ask reviews.
+Generated asks now preserve subject-case group pronouns, explicit mass/count
+morphology, number agreement, singular copular frames, plausible possessed
+quantity holders, supported quantity-question verbs, and declared finishable
+tasks. Possessed-location existentials require a plural copula, while the
+generic entity-less sibling continues to accept meaningful predicates such as
+`grow there` but refuses possession verbs in the ungrammatical `has there`
+order. Agreement now treats past do-support and future/conditional modals as
+number-neutral when their lexicon entry declares no number; the annotation
+fallback no longer turns `did` into false singular evidence. `homework` extends
+the pack-owned finishable-task class, preserving the existing GSM8K completion
+duration buyer while `age` remains outside it. All twelve reviewed surfaces
+replay absent, eleven accepted neighbouring ask forms remain recognized, and
+every affected rule remains strictly generatable. The complete 5,173-test gate
+passes; the batch-specific matrix passes 36/36 and the affected historical
+matrix passes 271/271. Curated remains 71/71; GSM8K train/holdout remain 108/0
+and 43/0; all standing unprotected answer and projection gates retain zero
+wrong or incorrect commitments. Lint has zero errors and one pre-existing
+warning. No protected look was spent.
+The fifty-first reconciliation closes all seventeen newly live invalid ask
+reviews: sixteen malformed standalone questions now fail their owning ask
+contracts, while the uninverted mass-quantity form is explicitly marked as an
+embedded-clause rule and is no longer generated as a standalone question.
+The affected asks now preserve count/mass morphology, auxiliary and copular
+agreement, plural subject quantification, required determiners, possessive
+ownership, plausible holder/object roles, partitive measure/substance
+compatibility, total-duration heads, and complete reference query fields.
+Ask generation can draw a slot from a declared union of categories or from
+project-backed reference groups and years, and can require an actually
+committed answer instead of accepting a syntactically complete but unanswered
+reference question. The curated frontier is now 105/109 independently
+realizable asks. The four visible blockers are the three antecedent-dependent
+discourse-group asks plus the deliberately embedded uninverted form. All
+seventeen review records remain pinned, all affected positive neighbours are
+recognized and strictly generated, and the established held label-comparison
+path remains intact. The complete 5,227-test gate passes. Curated remains
+71/71; GSM8K DEV-train/holdout are 108/0 and 43/0; ASDiv, SVAMP, MAWPS,
+SciBench, DIFG, and FOLIO retain zero wrong commitments; COGS and PMB retain
+zero incorrect projections. All available item-level diffs have zero breaks
+and zero declined-to-wrong or safe-to-incorrect transitions. Lint has zero
+errors and one pre-existing warning. No protected look was spent.
+The fifty-second reconciliation closes the next twelve invalid generated-ask
+reviews. Quantity asks now distinguish duration spans from arbitrary counted
+objects, mass from count heads, concrete dimension units from generic nouns,
+calendar periods from membership classes, valid quantitative predicates from
+non-quantity verbs, and plausible participants, locations, partitives, and
+start-state possession frames from merely type-compatible fillers. `tall` is
+now core English vocabulary and an explicit length-compatible dimension
+adjective, while `kitchen` is declared as a quantitative interior location.
+Coordinated ask generation draws only plural-compatible `do`/`did`; reading
+remains deliberately tolerant of the established non-standard `does A and B`
+corpus form when its quantitative interpretation is otherwise unambiguous.
+All twelve reviewed surfaces replay absent, grammatical neighbours remain
+recognized and strictly generatable, and the independent ask frontier remains
+105/109. The complete 5,266-test gate passes. Curated remains 71/71; GSM8K
+DEV-train/holdout remain 108/0 and 43/0; ASDiv, SVAMP, MAWPS, SciBench, DIFG,
+and FOLIO retain zero wrong commitments; COGS and PMB retain zero incorrect
+projections. All thirteen unprotected snapshot diffs are neutral. Lint has
+zero errors and one pre-existing warning. No protected look was spent.
+The fifty-third reconciliation closes fourteen further invalid generated-ask
+reviews. Coordinated totals now require distinct holders and generate
+plural-compatible do-support across their remaining named variants. Direct
+quantity asks exclude non-quantity predicates while preserving valid motion
+totals, and verb-specific object roles reject combinations such as enrolling
+money, beginning grapes, winning rest, or travelling pounds of sand. Count
+frames reject abstract `price`, `science`, and `percentage` heads; membership
+predicates require a singular class noun; entity-less partitives require a
+declared measure/substance pair and a finite predicate; duration-totality asks
+require plural duration units, plausible participants, and grammatical
+`all`/`all the`/`all of the` syntax. Imperative cardinal dimensions require
+the article in “of the N” and explicitly reject an article-less tail instead
+of accepting the valid prefix. All fourteen reviewed surfaces replay absent,
+their grammatical neighbours remain recognized, and all affected targets
+remain strictly generatable. The frontier remains 105/109. The complete
+5,312-test gate passes; all thirteen unprotected snapshot diffs are neutral;
+lint has zero errors and one pre-existing warning. No protected look was
+spent.
 The thirty-fifth reconciliation closes all five live invalid reviews. Affine
 count relations now require positive common-noun quantity holders, so calendar
 periods such as `July` cannot become event participants. Named membership
@@ -492,11 +643,19 @@ found answerable, or deliberately missing-evidence scenarios. Generic
 emit-template inversion proposes premise locks, but only ordinary generated
 premises and the normal solver decide whether a scenario answers; removal
 checks prove the returned set is irreducible. The current curated boundary is
-93/104 independent ask surfaces. Context-dependent discourse groups and
-arbitrary spans remain blocked rather than receiving fabricated antecedents.
-Number, series, witness, verdict, clarification, and decline serialization is
-covered, while premise, ask, answerable-scenario, and deliberate-decline
-evidence remain separate.
+105/109 independent ask surfaces. Broad ask vocabulary and categories now live
+in `core-english`, and auxiliary/modal ask slots generate bare verb forms. The
+four remaining blockers are contextual or embedded-clause asks rather than
+missing ordinary vocabulary:
+`ask/how-old-discourse-group-now`, `ask/what-combined-age-at-year`, and
+`ask/which-discourse-group-at-day` require generated antecedents, while
+`ask/how-much-noun-entity-uninverted` requires a larger clause. They remain
+blocked in standalone generation. Number, series, witness, verdict, clarification, and
+decline serialization is covered, while premise, ask, answerable-scenario, and
+deliberate-decline evidence remain separate. The Designer can record
+Valid/Invalid/Unclear ask reviews, attach ask-specific defects, and carry them
+through the existing edit, resolve, tombstone, history, Reading, and
+source-navigation workflow.
 
 **Active plan:**
 [`gsm8k-mining-v2-plan.md`](gsm8k-mining-v2-plan.md)
@@ -774,6 +933,35 @@ G7 adds:
   projections; and
 - Designer controls for question, query, premise evidence, answer, source
   navigation, and complete-scenario Reading inspection.
+
+The first post-G7 ask-review increment adds:
+
+- general purchase, wage, price, spend-target, start-marker, and need-ask
+  vocabulary/category ownership in `core-english`, raising independent ask
+  realization from 93/104 to 104/107 loaded surfaces;
+- bare-form enforcement for generated auxiliary, modal, and infinitival ask
+  verb slots;
+- a schema-bounded `review_kind: ask` evidence snapshot containing the exact
+  question, complete scenario, consumer/query, premise sentences and rule ids,
+  answer and answer shape, and removal-minimality result;
+- ask-specific defects for missing consumers, incorrect query binding,
+  irrelevant premise evidence, incorrect answers/declines, and non-minimal
+  scenarios; and
+- a dedicated Designer review panel plus ordinary history, correction,
+  resolution, tombstone, Reading, and source-navigation behavior.
+
+The only independent ask blockers are the three discourse-group surfaces that
+need generated antecedent context. The current premise-generation frontier is
+304 reachable category-aware identities. Answerable-scenario inversion now
+passes normalized query identities to premise realization as semantic locks,
+so a query measure such as `apple` can select a counted surface such as
+`11 apples` without fixing its numeric value. Random answerable generation
+deterministically advances past independently realizable asks whose bounded
+premise search finds no scenario; an explicitly selected ask still reports
+that limitation. Pathological saturation branches are discarded as failed
+generated combinations rather than aborting the Designer request. The full
+gate is 5,012 tests; every standing answer and projection snapshot diff is
+neutral, and no protected TEST/generalization look was spent.
 
 G5c adds:
 

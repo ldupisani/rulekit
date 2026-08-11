@@ -163,7 +163,14 @@ def is_bare_verb_form(fold: str, lemma: str) -> bool:
     packs; the suffix check only fails closed when that declaration is absent.
     """
 
-    return fold == lemma and not looks_third_person_singular(fold)
+    # Condensation keeps a particle on the unit surface (``pick up``) while
+    # the lexical lemma remains the head verb (``pick``). Agreement belongs
+    # to that first word, so test it rather than rejecting every valid bare
+    # particle verb merely because the complete folded surface differs.
+    head = fold.split(" ", 1)[0]
+    return (fold == lemma or head == lemma) and not looks_third_person_singular(
+        head
+    )
 
 
 def is_finite_verb_form(fold: str, lemma: str) -> bool:
@@ -277,6 +284,14 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
     if token.integer:
         value = unit.features.get("value")
         if not isinstance(value, (int, float)) or not float(value).is_integer():
+            return False
+    if token.value_min is not None:
+        value = unit.features.get("value")
+        if not isinstance(value, (int, float)) or float(value) < token.value_min:
+            return False
+    if token.value_max is not None:
+        value = unit.features.get("value")
+        if not isinstance(value, (int, float)) or float(value) > token.value_max:
             return False
     if token.fraction_within_whole:
         value = unit.features.get("value")
@@ -496,6 +511,24 @@ def _referential_slot_ok(
         return True
     if unit.sense() != "noun":
         return False
+    if (
+        token.determinerless_category is not None
+        and reg.word_in_category(
+            _lemma_of(unit), token.determinerless_category
+        )
+    ):
+        if unit.features.get("owner"):
+            return False
+        if index > 0:
+            predecessor = units[index - 1]
+            predecessor_fold = predecessor.features.get("fold", "")
+            if (
+                predecessor.sense() == "article"
+                or reg.word_in_category(
+                    predecessor_fold, "possessive_determiner"
+                )
+            ):
+                return False
     if unit.features.get("owner"):
         return True
     # A productive index label makes a common-noun entity specific without
@@ -932,7 +965,10 @@ def match_all(
 
 
 def _check_where(
-    rule: PatternRule, slots: dict[str, Unit], reading: Reading, reg: Registry
+    rule: PatternRule | AskRule,
+    slots: dict[str, Unit],
+    reading: Reading,
+    reg: Registry,
 ) -> bool:
     for pred in rule.where:
         if pred.same_lemma is not None:
@@ -985,6 +1021,15 @@ def _check_where(
                 if isinstance(unit, tuple):
                     return False
                 number = unit.features.get("number")
+                if unit.sense() in {"auxiliary", "modal"}:
+                    lemma = _lemma_of(unit)
+                    entry = reg.lexicon.get(lemma)
+                    if entry is not None and entry.number is None:
+                        # English past do-support and future/conditional
+                        # modals are number-neutral. Annotation gives every
+                        # standalone lexical unit a fallback number, but that
+                        # fallback is not morphological agreement evidence.
+                        number = None
                 if unit.features.get("value_kind") == "count":
                     value = unit.features.get("value")
                     if not isinstance(value, (int, float)):
@@ -1039,6 +1084,8 @@ def _check_where(
         if pred.verb_role_compatible is not None:
             compatibility = pred.verb_role_compatible
             verb = slots.get(compatibility.verb)
+            if verb is None and compatibility.allow_unbound_trigger:
+                continue
             if verb is None or isinstance(verb, tuple):
                 return False
             if _unit_in_category(verb, compatibility.verb_cat, reg):
@@ -1095,6 +1142,26 @@ def _check_where(
                     measure_lemma, _lemma_of(holder)
                 ):
                     return False
+        if pred.partitive_compatible is not None:
+            compatibility = pred.partitive_compatible
+            measure = slots.get(compatibility.measure)
+            substance = slots.get(compatibility.substance)
+            # The predicate may qualify an optional ``of SUBSTANCE`` branch.
+            # With no complement there is no partitive claim to validate; once
+            # the complement is present, the declared measure/substance pair
+            # is mandatory. A missing measure is never optional because it is
+            # the head the predicate is anchored to.
+            if substance is None:
+                continue
+            if (
+                measure is None
+                or isinstance(measure, tuple)
+                or isinstance(substance, tuple)
+                or not reg.partitive_applies_to(
+                    _lemma_of(measure), _lemma_of(substance)
+                )
+            ):
+                return False
         if pred.category_nonoverlap is not None:
             roles = []
             for role_name in pred.category_nonoverlap:
@@ -1177,6 +1244,18 @@ def _check_where(
                 if not is_bare_verb_form(fold, lemma):
                     return False
             elif not is_finite_verb_form(fold, lemma):
+                return False
+        if pred.owner_matches is not None:
+            relation = pred.owner_matches
+            owner = slots.get(relation.owner)
+            possessed = slots.get(relation.possessed)
+            if (
+                owner is None
+                or possessed is None
+                or isinstance(owner, tuple)
+                or isinstance(possessed, tuple)
+                or possessed.features.get("owner") != _lemma_of(owner)
+            ):
                 return False
         if pred.same_phrase is not None:
             # Unlike same_lemma, this predicate is designed for span slots:
@@ -2144,6 +2223,8 @@ def match_ask(
         seq = ask.match["question"]
         m = match_sequence(reading, seq, reg)
         if m is None:
+            continue
+        if not _check_where(ask, m.slots, reading, reg):
             continue
         try:
             if ask.interpretations:

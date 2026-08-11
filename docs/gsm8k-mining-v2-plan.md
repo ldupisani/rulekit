@@ -126,16 +126,27 @@ without evidence or search supported generated premise rules for the smallest
 solver-committed set found by the bounded search. Emit-template inversion only proposes bindings; the
 ordinary solver is the sole answer oracle, removal proves minimality, and no
 benchmark text, gold answer, or consumer-specific sentence template enters
-the search. The current curated project has 93/104 independently realizable
-ask surfaces; discourse-group and arbitrary-span asks remain honestly blocked
-until contextual generation exists. Number, series, witness, verdict,
-clarification, and decline projections are covered by synthetic tests.
+the search. The current curated project has 105/109 independently realizable
+ask surfaces. General purchase, wage, price, spend-target, start-marker, and
+need-ask vocabulary is core-owned, and generated auxiliary/modal slots retain
+bare verb forms. Three discourse-group asks stay honestly blocked until
+contextual generation exists, and the uninverted mass-quantity ask remains
+blocked until generation can embed it in its required larger clause. Number, series, witness, verdict,
+clarification, and decline projections are covered by synthetic tests. Ask
+candidates can also enter the ordinary append-only Designer review lifecycle,
+with the exact scenario, query, premise evidence, answer shape, and minimality
+result pinned in the review record.
 
-Implemented in the third campaign increment. The exact parallel synthetic
-gate is green at 4,702 tests. Curated remains 71/71; GSM8K remains 107/0 on
-DEV-train and 43/0 on DEV-holdout; ASDiv, SVAMP, MAWPS, SciBench, and FOLIO
-retain zero wrong commitments; COGS and PMB retain zero incorrect graph
-projections. No protected TEST/generalization look was spent.
+Implemented in the third campaign increment and extended by the first
+ask-review increment. The exact parallel synthetic gate is green at 5,012
+tests. Curated remains 71/71; GSM8K is 109/0 on DEV-train and 43/0 on
+DEV-holdout; ASDiv, SVAMP, MAWPS, SciBench, and FOLIO retain zero wrong
+commitments; COGS and PMB retain zero incorrect graph projections. No
+protected TEST/generalization look was spent for the ask-review increment.
+The subsequent forty-sixth premise-review reconciliation raises the exact
+parallel gate to 5,049 tests while leaving the same 109/0 and 43/0 GSM8K DEV
+baselines and all standing answer/projection diffs neutral. It spends no
+protected look.
 
 ### M4 — machine-readable promotion gate — complete
 

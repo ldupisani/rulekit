@@ -850,6 +850,19 @@ button.generation-source:hover { border-color: var(--accent); }
   align-items: start; gap: 10px; padding: 9px 10px;
   border: 1px solid var(--border); border-radius: 8px; background: var(--panel);
 }
+.ask-generation-review {
+  display: grid;
+  grid-template-columns: minmax(220px, .65fr) minmax(360px, 1.35fr);
+  align-items: start; gap: 10px; margin-top: 10px; padding: 9px 10px;
+  border: 1px solid var(--border); border-radius: 8px; background: var(--panel);
+}
+.ask-generation-review label { display: flex; flex-direction: column; }
+#generation-ask-note {
+  min-height: 55px; resize: vertical; background: var(--bg); color: var(--text);
+  border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px;
+  font: 0.75rem/1.4 -apple-system, "Segoe UI", sans-serif;
+}
+#generation-ask-review-result { font-size: 0.6562rem; max-width: 260px; }
 .review-verdicts { display: flex; gap: 5px; }
 .review-verdicts button[data-verdict="valid"].selected {
   border-color: var(--green); color: var(--green); background: #1b2b22;
@@ -945,7 +958,8 @@ button.generation-source:hover { border-color: var(--accent); }
   #generation-minimal-pair-grid,
   #generation-hypothesis-list { grid-template-columns: 1fr; }
   .generation-results { grid-template-columns: 1fr; }
-  .generation-review { grid-template-columns: 1fr; align-items: stretch; }
+  .generation-review,
+  .ask-generation-review { grid-template-columns: 1fr; align-items: stretch; }
   .generation-sentence-review-fields { grid-template-columns: 1fr; }
   .generation-review-actions { grid-column: auto; }
 }

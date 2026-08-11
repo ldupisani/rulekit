@@ -187,7 +187,7 @@ def test_g5m_unlocks_exactly_the_preregistered_frontier() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 300
+    assert len(exploration_status(project)["fillers"]) == 305
 
 
 @pytest.mark.parametrize("rule_id", sorted(GENERATIVE_GROUPS))
@@ -250,6 +250,7 @@ def test_qualifier_and_label_are_parts_of_the_measure_key(
         reg=project.registry,
         fixtures=_Fixtures((), {}),
         locked_bindings={},
+        identity_bindings={},
         locked_fillers={},
         same_groups=[],
         same_number_groups=[],

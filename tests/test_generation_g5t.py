@@ -216,7 +216,7 @@ def test_g5t_unlocks_exactly_the_preregistered_frontier() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 300
+    assert len(exploration_status(project)["fillers"]) == 305
 
 
 @pytest.mark.parametrize("marker", sorted(MOVED_WORDS))
