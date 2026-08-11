@@ -18,13 +18,16 @@ COMMIT = "a" * 40
 FINGERPRINT = "registry-abcdef0123456789"
 
 
-def _manifest() -> dict:
-    return {
+def _manifest(*, runtime_project: str | None = None) -> dict:
+    manifest = {
         "candidate_id": "holder-question",
         "branch": "mining/cand-holder-question",
         "commit": COMMIT[:12],
         "registry_fingerprint": FINGERPRINT,
     }
+    if runtime_project is not None:
+        manifest["runtime_project"] = runtime_project
+    return manifest
 
 
 def _layout(tmp_path: Path) -> tuple[Path, Path, Path, CandidateRunnerManager]:
@@ -98,6 +101,34 @@ def test_candidate_resolution_requires_clean_exact_registered_worktree(
     assert resolved_worktree == worktree.resolve()
     assert resolved_project == candidate_project.resolve()
     assert executable == str((worktree / ".venv" / "bin" / "rulekit").resolve())
+
+
+def test_candidate_resolution_uses_declared_runtime_project(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repo, worktree, _, manager = _layout(tmp_path)
+    runtime_project = worktree / "projects" / "gsm8k-runtime"
+    runtime_project.mkdir(parents=True)
+    (runtime_project / "project.yaml").write_text("name: runtime\n")
+    monkeypatch.setattr(manager, "_git", _fake_git(repo, worktree))
+
+    _, resolved_project, _ = manager._resolve_worktree(
+        _manifest(runtime_project="gsm8k-runtime")
+    )
+
+    assert resolved_project == runtime_project.resolve()
+
+
+def test_candidate_resolution_rejects_missing_declared_runtime_project(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repo, worktree, _, manager = _layout(tmp_path)
+    monkeypatch.setattr(manager, "_git", _fake_git(repo, worktree))
+
+    with pytest.raises(CandidateRunnerError, match="missing projects/missing"):
+        manager._resolve_worktree(_manifest(runtime_project="missing"))
 
 
 def test_candidate_resolution_rejects_dirty_worktree(

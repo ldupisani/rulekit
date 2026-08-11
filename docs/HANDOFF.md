@@ -24,7 +24,13 @@ valid, and later revisions expose old decisions as stale. The Designer can
 start one exact candidate worktree in its own process, route Reading,
 allowlisted YAML edits, and pinned retests to it, then stop that child without
 touching the ordinary server. Dirty or fingerprint-divergent live candidates
-cannot be approved. G7 independently realizes 93/104 loaded curated ask
+cannot be approved. Candidate manifests now distinguish the central project
+that stores campaign evidence from the explicit worktree runtime project that
+loads the candidate's packs. Publication rejects a foreign registry
+fingerprint without that runtime declaration, and the isolated runner resolves
+the declared project before checking the exact fingerprint. This prevents a
+DIFG/GSM8K candidate from being launched through curated merely because
+curated owns the review queue. G7 independently realizes 93/104 loaded curated ask
 surfaces, searches generated premise rules for a removal-minimal answerable
 scenario through the ordinary solver, and produces deliberate missing-evidence
 cases without reading benchmark examples or golds. M4 replays every canonical

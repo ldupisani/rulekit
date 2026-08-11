@@ -42,9 +42,12 @@ manifest evidence, or campaign ledgers.
 
 Create an uncommitted manifest JSON at the exact path supplied by the launch
 prompt. It must validate as `CampaignCandidateManifest`, use the committed
-HEAD and loaded registry fingerprint, and carry canonical trace evidence for
-every required specimen. Capture traces by loading this worktree's project and
-calling `rulekit --project <candidate-project> campaign-trace <text>` (plus an
+HEAD, name the exact `runtime_project` whose registry loads every candidate
+pack, use that same loaded registry fingerprint, and carry canonical trace
+evidence for every required specimen. The central campaign project stores the
+evidence; it does not implicitly define the candidate runtime. Capture traces
+by loading the declared worktree project and calling `rulekit --project
+<candidate-project> campaign-trace <text>` (plus an
 explicit interpretation/reference year when required). This command reuses the
 ordinary Designer trace path; do not synthesize expected facts by hand. Leave
 `constitution_review` null for the read-only reviewer/orchestrator to attach. A

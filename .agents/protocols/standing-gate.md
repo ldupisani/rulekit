@@ -38,6 +38,9 @@ user-chosen product candidate instead carries zero corpus yield plus its product
 rationale. Both require:
 
 - one named general class and its evidence mode;
+- an explicit `runtime_project` when the candidate registry differs from the
+  central campaign project; its fingerprint and canonical traces must come
+  from that exact worktree project;
 - walked DEV item ids and structural paraphrases, never corpus prose;
 - premise-side and ask-side mechanisms, including which side already exists;
 - exact bounded vocabulary admissions, quarantine result, and collision risk;

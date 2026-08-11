@@ -381,6 +381,14 @@ class CampaignCandidateManifest(BaseModel):
     class_name: str = Field(min_length=1, max_length=512)
     branch: str = Field(min_length=1, max_length=256)
     commit: str = Field(pattern=r"^[0-9a-f]{7,64}$")
+    # The central Designer project owns durable campaign evidence, but a
+    # candidate may require a different project registry. Keep those two
+    # responsibilities explicit so the isolated runner loads the registry
+    # that produced the manifest fingerprint and canonical traces.
+    runtime_project: str | None = Field(
+        default=None,
+        pattern=r"^[a-z0-9][a-z0-9-]{0,127}$",
+    )
     registry_fingerprint: str = Field(min_length=8, max_length=128)
     mechanism: str = Field(min_length=1, max_length=4000)
     class_evidence: CampaignClassEvidence
@@ -510,6 +518,23 @@ def publish_campaign_manifest(
     ):
         raise CampaignReviewError(
             "campaign publication requires a passing constitution review"
+        )
+    if (
+        manifest.registry_fingerprint != project.registry.fingerprint
+        and manifest.runtime_project is None
+    ):
+        raise CampaignReviewError(
+            "candidate fingerprint differs from the campaign project; "
+            "declare runtime_project so the isolated runner loads the "
+            "registry that produced the manifest"
+        )
+    if (
+        manifest.runtime_project == project.doc.name
+        and manifest.registry_fingerprint != project.registry.fingerprint
+    ):
+        raise CampaignReviewError(
+            "candidate runtime_project names the campaign project but its "
+            "registry fingerprint differs"
         )
 
     path = _manifest_path(project, manifest)
@@ -744,7 +769,9 @@ def campaign_review_queue(project: Project) -> list[dict[str, Any]]:
                 "landing": latest_landing,
                 "stale_landing_count": len(stale_landings),
                 "runtime_available": (
-                    manifest["registry_fingerprint"]
+                    manifest.get("runtime_project")
+                    in {None, project.doc.name}
+                    and manifest["registry_fingerprint"]
                     == project.registry.fingerprint
                 ),
             }

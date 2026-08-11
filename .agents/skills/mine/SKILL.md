@@ -73,7 +73,9 @@ choose it.
    structured verdict as `constitution_review` in the uncommitted manifest;
    never alter captured candidate evidence.
 5. Validate every review-passed manifest with the central checkout, then publish
-   it using:
+   it using. If its fingerprint differs from the central campaign project, it
+   must declare the exact worktree `runtime_project`; never substitute the
+   central fingerprint merely to make publication pass:
 
    `rulekit --project projects/curated campaign-publish <manifest-path>`
 

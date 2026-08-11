@@ -163,12 +163,21 @@ class CandidateRunnerManager:
                 "candidate worktree has uncommitted changes; publish a fresh "
                 "commit and manifest before review"
             )
-        candidate_project = (worktree.path / relative_project).resolve()
+        runtime_project = manifest.get("runtime_project")
+        candidate_relative_project = (
+            Path("projects") / runtime_project
+            if runtime_project is not None
+            else relative_project
+        )
+        candidate_project = (
+            worktree.path / candidate_relative_project
+        ).resolve()
         if not candidate_project.is_relative_to(worktree.path):
             raise CandidateRunnerError("candidate project escaped its worktree")
         if not (candidate_project / "project.yaml").is_file():
             raise CandidateRunnerError(
-                f"candidate project is missing {relative_project}/project.yaml"
+                "candidate project is missing "
+                f"{candidate_relative_project}/project.yaml"
             )
         executable = (worktree.path / ".venv" / "bin" / "rulekit").resolve()
         if not executable.is_relative_to(worktree.path) or not executable.is_file():

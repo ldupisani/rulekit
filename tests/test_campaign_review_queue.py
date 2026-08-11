@@ -90,12 +90,14 @@ def _manifest(
     commit: str = "abcdef1",
     fingerprint: str = "registry-abcdef0123456789",
     mechanism: str = "One declared holding premise and exact-holder ask.",
+    runtime_project: str | None = None,
 ) -> CampaignCandidateManifest:
     return CampaignCandidateManifest(
         candidate_id="holder-question",
         class_name="Exact holder quantity questions",
         branch="mining/cand-holder-question",
         commit=commit,
+        runtime_project=runtime_project,
         registry_fingerprint=fingerprint,
         mechanism=mechanism,
         class_evidence=CampaignClassEvidence(
@@ -316,6 +318,41 @@ def test_repeated_identical_decision_is_idempotent(tmp_path: Path) -> None:
     assert read_campaign_review_records(project) == [first, revised]
 
 
+def test_foreign_registry_requires_an_explicit_runtime_project(
+    tmp_path: Path,
+) -> None:
+    project = _project(tmp_path)
+    foreign = _manifest(fingerprint="registry-foreign0123456789")
+
+    with pytest.raises(CampaignReviewError, match="declare runtime_project"):
+        publish_campaign_manifest(project, foreign)
+
+    published = publish_campaign_manifest(
+        project,
+        _manifest(
+            fingerprint="registry-foreign0123456789",
+            runtime_project="gsm8k",
+        ),
+    )
+    assert published["runtime_project"] == "gsm8k"
+    assert campaign_review_queue(project)[0]["runtime_available"] is False
+
+
+def test_campaign_project_runtime_cannot_claim_a_foreign_fingerprint(
+    tmp_path: Path,
+) -> None:
+    project = _project(tmp_path)
+
+    with pytest.raises(CampaignReviewError, match="names the campaign project"):
+        publish_campaign_manifest(
+            project,
+            _manifest(
+                fingerprint="registry-foreign0123456789",
+                runtime_project="invented-campaign",
+            ),
+        )
+
+
 def test_decisions_encode_the_requested_boundary(tmp_path: Path) -> None:
     project = _project(tmp_path)
     manifest = _manifest()
@@ -352,6 +389,7 @@ def test_new_candidate_revision_makes_prior_approval_stale(tmp_path: Path) -> No
     revised = _manifest(
         commit="bcdefa2",
         fingerprint="registry-bcdefa2345678901",
+        runtime_project="revised-runtime",
     )
     publish_campaign_manifest(project, revised)
 
@@ -445,6 +483,7 @@ def test_new_candidate_revision_preserves_prior_landing_as_stale(
     revised = _manifest(
         commit="bcdefa2",
         fingerprint="registry-bcdefa2345678901",
+        runtime_project="revised-runtime",
     )
     publish_campaign_manifest(project, revised)
 
