@@ -131,7 +131,7 @@ attribute_compatibility:
   quality_attribute: [quality_bearer_noun, animate]
   marital_status_attribute: [animate]
 members:
-  transferable_quantity_object: [ticket]
+  transferable_quantity_object: [bar, ticket]
   # `Bill` is a common first name as well as the monetary noun owned by this
   # pack. Sentence-initial sense selection retains the noun reading, so the
   # entity-role exception must stay lexical and explicit.

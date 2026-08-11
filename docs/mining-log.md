@@ -86,4 +86,7 @@ The integration gate passes 4,975 tests. GSM8K DEV-train gains one correct
 answer with zero breaks or new wrong commitments; the other twelve standing
 DEV diffs are neutral. Curated remains 71/71, lint reports zero errors and
 warnings, FOLIO makes zero numeric commitments, and all four canonical
-specimens replay exactly. No protected TEST/generalization look was spent.
+specimens replay exactly. No other protected generalization look was spent.
+Protected GSM8K TEST look 126 holds the previous aggregate exactly at 13
+correct, 1 wrong, 1,305 declined, and 92.9% precision; fully-read coverage
+moves from 386 to 389 without a new commitment.

@@ -651,6 +651,19 @@ categories:
             Forms of find whose counted direct object must be a declared
             findable quantity object. Other acquiring predicates retain their
             own independently reviewable object boundaries.
+    win_quantity_verb:
+        parent: acquire
+        notes: >
+            Forms of win whose compared object must be a declared prize-like
+            quantity. This is narrower than generic acquisition: finding or
+            receiving a material does not make that material something that
+            can ordinarily be won.
+    winnable_quantity_object:
+        parent: noun
+        notes: >
+            Quantity nouns that can ordinarily denote what is won. Extension
+            packs may add awards or prizes without widening every acquired
+            object into this role.
     lose: {parent: quantity_event_verb, antonym: acquire, polarity: -1}
     directional_change_verb:
         parent: verb
@@ -1845,6 +1858,8 @@ members:
     quantity_event_verb: [leave, leaves, leaving]
     acquire: [get, gets, got, find, finds, found, buy, buys, bought, receive, receives, received, win, wins, won]
     find_quantity_verb: [find, finds, found]
+    win_quantity_verb: [win, wins, won]
+    winnable_quantity_object: [money]
     lose: [lose, loses, lost, eat, eats, ate, give, gives, gave, sell, sells, sold, spend, spends, spent, dropped, drops]
     increase_verb: [rose]
     price_relation_verb: [are, cost, costs, is, was, were]
@@ -2005,6 +2020,9 @@ attribute_compatibility:
     quantity_site_preposition: [quantity_site_location]
     quantity_topic_preposition: [quantity_topic]
     quantity_remainder_preposition: [remnant]
+    temporal_point_preposition: [timeperiod]
+    temporal_duration_preposition: [timeperiod]
+    temporal_deadline_preposition: [timeperiod]
 modifier_host_compatibility:
     quantity_topic_preposition: [topical_quantity_host]
 modifier_attachment_compatibility:

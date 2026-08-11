@@ -244,6 +244,7 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
     }
     assert compatible_rules == {
         RULE_ID,
+        "arithmetic/anaphoric-multiplier-conjunct-many",
         "arithmetic/as-many",
         "arithmetic/affine-fraction-as-many",
         "arithmetic/affine-times-as-many",

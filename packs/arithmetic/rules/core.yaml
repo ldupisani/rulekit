@@ -1658,9 +1658,17 @@ rules:
       - slot_not_category: {slot: k, cat: predeterminer_multiplier}
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: teaching_quantity_verb, role_cat: animate}
+      - verb_role_compatible: {verb: verb, roles: [item1], verb_cat: animate_object_verb, role_cat: teaching_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item1], verb_cat: find_quantity_verb, role_cat: findable_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item1], verb_cat: task_completion_verb, role_cat: finishable_quantity_object}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: item1, cat: many_incompatible_noun}
+      - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
+      - modifier_host_compatible: {modifier: pp_prep, host: item1, object: pp_obj}
+      - distinct: [who, pp_obj]
       - unbound: [item2_seen]
     emits:
       - fact: quantity
@@ -2452,13 +2460,19 @@ rules:
       - verb_role_compatible: {verb: verb, roles: [std], verb_cat: motion_comparison_verb, role_cat: motion_participant, allow_plural_class: true}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: motion_comparison_verb, role_cat: motion_comparison_measure}
       - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: teaching_quantity_verb, role_cat: animate}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: animate_object_verb, role_cat: teaching_quantity_object}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: find_quantity_verb, role_cat: findable_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: win_quantity_verb, role_cat: winnable_quantity_object}
       - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: task_completion_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: task_completion_verb, role_cat: finishable_quantity_object}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: enrollment_quantity_verb, role_cat: enrollment_quantity_object}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: drop_quantity_verb, role_cat: droppable_quantity_object}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: eating_quantity_verb, role_cat: edible_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: transfer_out, role_cat: transferable_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: possession_state, excluded_role_cat: bare_possession_incompatible_noun}
+      - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: past_departure_quantity_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: past_departure_quantity_verb, role_cat: transferable_quantity_object}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: state, excluded_role_cat: motion_comparison_measure}
       - same_lemma: [verb, echo_verb]
       - number_compatible: [who, verb]
@@ -3548,7 +3562,7 @@ rules:
     match:
       sentence:
         - {slot: who, type: name}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, finite_form: true}
         - {slot: n, type: number}
         - {slot: dir, cat: mass_quantity_delta}
         - {lit: than}
@@ -3570,11 +3584,18 @@ rules:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - number_compatible: [who, verb]
       - slot_not_category: {slot: k, cat: predeterminer_multiplier}
+      - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
+      - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: teaching_quantity_verb, role_cat: animate}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: animate_object_verb, role_cat: teaching_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: task_completion_verb, role_cat: finishable_quantity_object}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: win_quantity_verb, role_cat: winnable_quantity_object}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: transfer_out, excluded_role_cat: remnant}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: pp_prep, cat: quantity_remainder_preposition}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
+      - modifier_host_compatible: {modifier: pp_prep, host: item, object: pp_obj}
+      - distinct: [who, pp_obj]
       - distinct: [who, std]
     consumes: [n]
     emits:

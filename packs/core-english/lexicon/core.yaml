@@ -338,9 +338,9 @@ entries:
     take: {senses: [verb], number: plural}
     takes: {senses: [verb], verb: {lemma: take}}
     took: {senses: [verb], verb: {lemma: take}}
-    finish: {senses: [noun, verb]}
+    finish: {senses: [noun, verb], number: plural}
     finished: {senses: [verb], verb: {lemma: finish}}
-    finishes: {senses: [verb], verb: {lemma: finish}}
+    finishes: {senses: [verb], number: singular, verb: {lemma: finish}}
     want: {senses: [verb], number: plural}
     wanted: {senses: [verb], verb: {lemma: want}}
     wanting: {senses: [verb], verb: {lemma: want}}

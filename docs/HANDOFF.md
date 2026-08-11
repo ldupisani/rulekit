@@ -1,6 +1,6 @@
 # rulekit handoff — GSM8K Mining v2
 
-**Updated:** 2026-08-10
+**Updated:** 2026-08-11
 
 **Active campaign:** GSM8K Mining v2 with generated evidence and a human
 promotion gate in the Designer
@@ -75,16 +75,18 @@ specific asks both return the cross-period total because both facts carry
 `time=None`. The candidate must preserve one role-licensed trailing period,
 answer the requested period through the shared temporal origo, retain the
 unscoped aggregate, and decline unresolved comparative/pronominal periods and
-non-additive state snapshots. The current gate is 4,772 tests;
-curated and all answer/projection DEV gates are neutral with zero wrong or
-incorrect commitments. No protected TEST/generalization look was spent. The
-prior generation workbench is now campaign
+non-additive state snapshots. The current review-reconciled gate is 4,999
+tests; curated remains 71/71 and all thirteen answer/projection DEV diffs are
+neutral with zero wrong or incorrect commitments. Protected GSM8K TEST look
+126 held at 13 correct, one persistent wrong, and 1,305 declined while
+fully-read exposure rose from 386 to 389 without a new commitment. No other
+protected generalization look was spent. The prior generation workbench is now campaign
 infrastructure rather than a parked or replaced direction.
 
 **Status:** G1 through G4, G5a through G5g, G6, Reading-origin review,
 targetless sentence-interpretation review, fact-level review, the
 fraction-plural morphology correction, scoped
-`GroupTotal`, all thirty-five review-led grammar-boundary reconciliations,
+`GroupTotal`, all forty-five review-led grammar-boundary reconciliations,
 the additive elided-comparison increment, and coordinated open-superclass
 totals are complete and gated. Plain
 count equatives such as `Tom buys as many roses as Mary` now emit a factor-one
@@ -164,7 +166,7 @@ time-root realization is complete: both deictic markers are core-owned and
 reviewable, and the standard-pinned future rule unlocks. G5u direct-adverb
 visibility is complete: `currently` is core-owned, project-relative adverb
 breadth remains visible, and all 99 curated premise rules are selectable. G5v
-review-led premise auditing is active; thirty-five review batches are implemented
+review-led premise auditing is active; forty-five review batches are implemented
 and fully gated. The core exploration vocabulary now contributes 25 additional
 category-aware identities, bringing the earlier frontier to 108/108 premise rules
 and 184 reachable identities. The logic-arithmetic bridge raised the live
@@ -314,6 +316,23 @@ and strict generation. The complete 4,941-test gate passes; curated remains
 71/71; GSM8K train and holdout remain exactly neutral at 108/0 and 43/0; every
 standing cross-corpus gate retains zero wrong commitments. No protected look
 was spent.
+The forty-fifth review reconciliation closes seven invalid or inconclusive
+generated surfaces across the anaphoric conjunct, mass-affine, and affine
+count-frame families. `finish`/`finishes` now carry ordinary subject-number
+features; teaching, finding, finishing, winning, and past-departure frames use
+their declared actor and object roles; and optional quantity adjuncts require
+both a compatible preposition/object pair and a compatible host attachment.
+Temporal `at`, `during`, and `by` adjuncts remain available for declared time
+periods, while unrelated attachments such as `beneath the friend` and
+`instead of my October` decline. The pack that owns `bar` declares it as a
+transferable quantity object, preserving qualified candy-bar sales without
+admitting `science` as the object of a departure event. Every reviewed surface
+replays absent, affected rules retain strict generated specimens, and invented
+valid neighbours cover the retained boundaries. The complete 4,999-test gate
+passes; curated remains 71/71; GSM8K DEV-train and holdout remain exactly
+neutral at 109/0 and 43/0; all thirteen standing answer/projection DEV diffs
+are neutral with zero wrong or incorrect commitments. No protected look was
+spent for this review reconciliation.
 The thirty-fifth reconciliation closes all five live invalid reviews. Affine
 count relations now require positive common-noun quantity holders, so calendar
 periods such as `July` cannot become event participants. Named membership
