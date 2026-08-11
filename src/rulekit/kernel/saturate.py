@@ -474,6 +474,24 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
             # says so: a two-candidate case is genuinely unresolved) is switched on
             # later as its own gated increment, never here.
             if rel.standard == _ANAPHOR_QUANTITY_STANDARD:
+                def eligible_quantity_anaphor(q: Quantity) -> bool:
+                    return (
+                        (
+                            rel.anaphor_measure_category is None
+                            or reg.word_in_category(
+                                q.measure,
+                                rel.anaphor_measure_category,
+                            )
+                        )
+                        and (
+                            rel.anaphor_verb_category is None
+                            or reg.word_in_category(
+                                q.verb,
+                                rel.anaphor_verb_category,
+                            )
+                        )
+                    )
+
                 anchor = deixis.resolve(
                     [
                         deixis.Referent(
@@ -484,6 +502,7 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
                         )
                         for q in store.by_kind(Quantity)
                         if q.provenance.sentence < rel.provenance.sentence
+                        and eligible_quantity_anaphor(q)
                     ],
                     deixis.Origo(sentence=rel.provenance.sentence),
                     deixis.constant,

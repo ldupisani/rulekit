@@ -1,0 +1,88 @@
+format: rulekit/rules@1
+rules:
+  - id: arithmetic/motion-distance-comparative
+    phase: read
+    description: >
+      "Lina traveled 4 miles farther than Oren" — an eventive measured
+      distance comparison. Unlike the copular physical-dimension sibling,
+      this construction requires a declared motion-comparison verb, plausible
+      motion participants on both sides, and an overt counted length measure
+      that is also licensed as a motion-comparison measure. The signed
+      dimension comparative must be compatible with that measure. The rule
+      emits the ordinary Relation shape, so an earlier or newly saturated
+      standard distance anchors the subject in a later fixpoint round.
+    match:
+      sentence:
+        - {slot: who, type: entity, referential: true, bare_reference_category: bare_entity_reference}
+        - {slot: verb, cat: motion_comparison_verb}
+        - {slot: item, cat: length_measure, counted: true}
+        - {slot: dir, cat: dimension_comparative}
+        - {lit: than}
+        - {slot: std, type: entity, referential: true, bare_reference_category: bare_entity_reference}
+    where:
+      - number_compatible: [who, verb]
+      - attribute_compatible: {attribute: dir, noun: item}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
+      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: motion_comparison_verb, role_cat: motion_participant}
+      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: motion_comparison_verb, role_cat: motion_comparison_measure}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - slot_not_category: {slot: std, cat: non_quantity_holder}
+      - distinct: [who, std]
+      - category_nonoverlap: [who, std]
+      - distinct: [item, std]
+    consumes: [item]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "{std}"
+        measure: "{item}"
+        factor: 1.0
+        offset: "item * sign(dir)"
+        verb: "{verb}"
+        subject_label: "{who.label}"
+        standard_label: "{std.label}"
+        subject_owner: "{who.owner}"
+        standard_owner: "{std.owner}"
+
+  - id: arithmetic/anaphoric-multiplier-standard-motion-distance
+    phase: read
+    description: >
+      The conservative motion-distance sibling for verbs that the general
+      direct-quantity rule deliberately refuses through
+      `non_quantity_object_verb`: "Aven ran twice that distance". The verb
+      must independently belong to `motion_comparison_verb`, the noun-rooted
+      anaphor head must independently be a licensed motion-comparison measure,
+      and the subject must be a plausible motion participant. This leaves the
+      original rule and its negative verb boundary unchanged while emitting
+      the same reserved-standard Relation for the ordinary saturation path.
+      The demonstrative or definite introducer remains mandatory; partitives
+      and overt comparison standards remain outside the construction.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true, bare_reference_category: bare_entity_reference}
+        - {slot: verb, cat: non_quantity_object_verb}
+        - {slot: k, type: multiplier}
+        - {lit: [that, this, the], consume_skipped: true}
+        - {slot: head, cat: quantity_anaphor}
+        - opt:
+            - {lit: than}
+            - {slot: direct_std_seen, type: entity}
+    where:
+      - number_compatible: [who, verb]
+      - bound_requires_category: {bound: head, slot: verb, cat: motion_comparison_verb}
+      - bound_requires_category: {bound: verb, slot: head, cat: motion_comparison_measure}
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
+      - slot_not_category: {slot: who, cat: non_quantity_holder}
+      - absent: {cat: partitive}
+      - unbound: [direct_std_seen]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "$anaphor:quantity$"
+        measure: null
+        factor: "k"
+        offset: 0.0
+        verb: "{verb}"
+        subject_label: "{who.label}"
+        anaphor_measure_category: length_measure
+        anaphor_verb_category: motion_comparison_verb

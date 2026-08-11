@@ -995,6 +995,17 @@ class Relation(Fact):
     # conflict, depending on which offset happened to be typed first.
     subject_offset: float = 0.0
     standard_offset: float = 0.0
+    # Optional declarative antecedent gates for a reserved anaphoric
+    # standard. A pattern rule may require the earlier Quantity's measure
+    # and governing verb to belong to these registry categories before it
+    # participates in anaphor resolution. None preserves the historical
+    # measure-agnostic contract for the existing amount/number/much/many
+    # families; a specialized rule can opt into one or both gates without a
+    # word-specific resolver branch. Included in key(): otherwise two
+    # otherwise-identical anaphoric relations with different admissible
+    # antecedent domains could silently deduplicate.
+    anaphor_measure_category: str | None = None
+    anaphor_verb_category: str | None = None
 
     def key(self) -> tuple:
         return (
@@ -1002,6 +1013,7 @@ class Relation(Fact):
             self.standard, self.standard_label, self.standard_owner, self.measure,
             self.measure_qualifier, self.standard_qualifier, self.verb,
             self.subject_offset, self.standard_offset,
+            self.anaphor_measure_category, self.anaphor_verb_category,
         )
 
     def value_part(self) -> Any:

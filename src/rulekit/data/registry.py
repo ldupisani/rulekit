@@ -1025,6 +1025,35 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                             f"rule {rule.id!r} uses `finite_form: true` on "
                             f"non-verb slot {tok.slot!r}"
                         )
+        for emit in rule.emits:
+            if emit.fact != "relation":
+                continue
+            for field_name, expected_root in (
+                ("anaphor_measure_category", "noun"),
+                ("anaphor_verb_category", "verb"),
+            ):
+                category = emit.fields.get(field_name)
+                if category is None:
+                    continue
+                if not isinstance(category, str) or "{" in category:
+                    raise CompileError(
+                        f"rule {rule.id!r} relation {field_name} must be a "
+                        "literal category"
+                    )
+                if category not in valid_gates:
+                    raise CompileError(
+                        f"rule {rule.id!r} relation {field_name} names "
+                        f"unknown category {category!r}"
+                    )
+                root = category
+                while root in category_parents:
+                    root = category_parents[root]
+                if root != expected_root:
+                    raise CompileError(
+                        f"rule {rule.id!r} relation {field_name} category "
+                        f"{category!r} is {root!r}-rooted, not "
+                        f"{expected_root!r}-rooted"
+                    )
         for predicate in rule.where:
             membership = predicate.same_category_membership
             if membership is not None:

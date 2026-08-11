@@ -304,6 +304,21 @@ members:
   - centimeter
   - kilometer
   - mile
+  - distance
+  # `farther` is admitted only for measured linear comparisons. Keeping all
+  # three memberships explicit gives it a sign, a length compatibility
+  # boundary, and visibility to the measured-comparative safety family
+  # without widening the generic quantity-delta vocabulary.
+  dimension_more:
+  - farther
+  linear_dimension_comparative:
+  - farther
+  measured_comparative:
+  - farther
+  # A demonstrative or definite distance noun names the unique earlier
+  # distance Quantity through arithmetic/anaphoric-multiplier-standard.
+  quantity_anaphor:
+  - distance
   # mining candidate dimension-aggregate-asks: this pack's member extensions
   # to the core-english categories `compute_verb`/`dimension_noun`/
   # `length_measure`/`mass_measure`/`time_measure`/`currency_measure`

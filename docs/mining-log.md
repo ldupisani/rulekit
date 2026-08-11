@@ -70,3 +70,20 @@ protected generalization look was spent. Protected GSM8K TEST look 125 holds
 the previous aggregate exactly at 13 correct, 1 wrong, 1,305 declined, and
 92.9% precision; fully-read coverage moves from 385 to 386 without a new
 commitment.
+
+## Increment 132 (2026-08-11) — Anaphoric distance chains and combined totals
+
+The exact human-approved and machine-passed candidate
+`anaphoric-distance-chain-combined-total`
+(`d297627542d9bda6aa3ede0d5b9f7e9c128863df`) adds a distance-specific
+motion multiplier whose antecedent is selected only from one compatible
+motion-distance quantity. A following measured distance offset can then feed
+the existing exact named-holder combined total. Incompatible count, duration,
+currency, year, and state-length quantities are ignored; multiple compatible
+antecedents decline rather than using recency.
+
+The integration gate passes 4,975 tests. GSM8K DEV-train gains one correct
+answer with zero breaks or new wrong commitments; the other twelve standing
+DEV diffs are neutral. Curated remains 71/71, lint reports zero errors and
+warnings, FOLIO makes zero numeric commitments, and all four canonical
+specimens replay exactly. No protected TEST/generalization look was spent.
