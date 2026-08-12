@@ -1,6 +1,6 @@
 # RuleKit architecture
 
-**Updated:** 2026-08-11
+**Updated:** 2026-08-12
 **Status:** current implementation, not a roadmap
 
 RuleKit is a deterministic reading and reasoning engine for controlled,
@@ -18,6 +18,8 @@ workbench as a promotion gate for isolated mining candidates. Its campaign
 contract is [`gsm8k-mining-v2-plan.md`](gsm8k-mining-v2-plan.md); the underlying
 Designer product remains specified in
 [`generation-and-annotation-plan.md`](generation-and-annotation-plan.md).
+G1–G7 and G6b are implemented; the milestone names below describe how the
+current authoring surface was assembled, not unfinished delivery phases.
 Its G1–G4 exploration loop, G5a declared-plural and G5b declared-counted
 realizers, G5c bounded proper-name possessive realizer, G5d declared generic
 pronoun realizer, G5e declared pronoun-category realizer, G5f aggregate-root
@@ -110,10 +112,10 @@ singular proper name admits `needs` or a number-neutral past form, not the
 plural/base `need`. The comparative form also applies `same_number` between
 its standalone count and noun, admitting `1 fewer shopper` and
 `2 fewer shoppers` while rejecting both mismatches. The current curated
-project has 118 loaded reading rules and 267 reachable lexicon identities.
-Of those rules, 116 are selectable generated premises; one narrow legacy
-frame is explicitly reader-only and one broad fallback is explicitly a
-fact-free safety consumer. Keeping those roles in the schema prevents
+project has 130 loaded reading rules and 305 reachable generated-filler
+identities. Of those rules, 125 are ordinary selectable generated premises
+and five are explicitly fact-free safety interceptors. Keeping those roles in
+the schema prevents
 generation coverage from treating defensive recognition as authored English.
 Reading and Generate likewise keep surviving safety consumers out of their
 premise-match lists. A safety rule remains active inside the document matcher
@@ -551,8 +553,9 @@ The document loop currently resolves three cross-sentence phenomena:
 - personal discourse reference against prior compatible referents; and
 - measure anaphora such as a later “ones” referring to one prior counted noun
   lemma; and
-- a question-only plural group referent for the exact “which of them” location
-  ask.
+- an exact plural subject group for aggregate, per-holder, age, and
+  “which of them” questions. Only prior entity-bearing subject mentions enter
+  that group; incidental objects do not.
 
 Resolution uses the deictic arbitration primitive and fails closed when no
 candidate strictly dominates. Changed sentences have their read rules rerun;
@@ -751,12 +754,16 @@ registry fingerprint.
 The implemented CLI is:
 
 ```text
-rulekit --project P solve TEXT [--trace] [--json]
+rulekit --project P solve TEXT [--trace] [--json] [--reference-year YEAR]
 rulekit --project P diagnose TEXT
 rulekit --project P bench [--slice SLICE] [--snapshot FILE] [--twice] [--jobs N]
 rulekit --project P stats [--slice SLICE]
 rulekit --project P lint [--category CATEGORY] [--verbose]
 rulekit --project P diff BEFORE AFTER
+rulekit --project P campaign-trace ...
+rulekit --project P campaign-publish MANIFEST
+rulekit --project P campaign-queue
+rulekit --project P campaign-land LANDING
 rulekit --project P serve [--host HOST] [--port PORT]
 ```
 
@@ -1360,6 +1367,17 @@ structural predicate can express that category-dependent slot mapping, those
 clauses are construction knowledge rather than duplicated vocabulary. The
 negative `excluded_role_cat` form likewise remains rule-local.
 
+The migration audit covers premise and ask collections. Every positive clause
+that exactly restated a coherent category-owned role target now uses
+`verb_roles_compatible`; a regression test scans both collections to prevent
+that duplication from returning. Duration-totality asks consequently map
+`who` and `item` to actor and theme once instead of naming separate dropping,
+eating, completion, enrollment, transfer, initiation, earning, and production
+category pairs. Teaching, spending, generic overlapping facets, negative
+exclusions, and category-dependent comparison-standard mappings remain
+explicit because they are construction semantics rather than a single lexical
+frame.
+
 Noun measures use a separate additive relationship because one measure family
 may apply to several independent holder families. Category documents declare:
 
@@ -1781,6 +1799,8 @@ src/rulekit/
 packs/
   core-english/     base language data
   arithmetic/       general word-problem rules, asks, and synth rules
+  logic/            opt-in phrase-keyed first-order logic reading
+  logic-arithmetic/ narrow quantified-quantity and class-refinement bridge
   difg-mined/       migrated vocabulary and domain knowledge, including quarantine
   reference/        curated reference lookup data and rules
 

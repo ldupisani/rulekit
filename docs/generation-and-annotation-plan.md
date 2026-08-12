@@ -1,29 +1,20 @@
 # Rule generation and human review workbench
 
-**Status:** active project plan  
-**Accepted:** 2026-07-25  
-**Implementation:** G1–G6, G5c–G5g, Reading-origin, targetless sentence-
-interpretation, and fact-level review, the
-fraction-plural morphology correction, scoped `GroupTotal`, and the completed
-review-led grammar-boundary reconciliations; the adjective/noun
-compatibility and leading-`GroupTotal` subject boundaries are now complete,
-G5h core ownership of the seven project-empty exploratory category domains,
-G5i recursive optional-branch realization, and G5j comparative-category
-realization, G5k sentence-wide `absent` filtering, G5l matcher-confirmed
-`unbound` branch omission, and G5m exact `distinct_measure` realization are
-complete; G5n direct complementizer-category realization is complete and G5o
-direct quantifier-category realization is complete; G5p remaining-blocker
-vocabulary ownership profiling is complete and G5q age-comparative core
-ownership is complete; G5r dimension-comparative core ownership is complete
-and G5s modal core ownership and slot realization is complete; G5t
-temporal-marker core ownership and time-root realization is complete; G5u
-direct-adverb visibility is complete; G5v review-led premise auditing is
-active and all thirty-three review-led boundary passes are complete through
-the current holder, measure, location, anaphor, and defensive-consumer
-reconciliation; strict-positive and one-slot lexical-boundary generation
-modes, fingerprint-keyed authoring indexes, and complete GSM8K premise-rule
-generation are implemented; G6b structural coverage, combinable filters,
-objective-aware selection, and generation-health diagnostics are implemented
+**Status:** implemented product contract; ongoing review-led refinement
+**Accepted:** 2026-07-25
+**Updated:** 2026-08-12
+**Implementation:** G1–G7 and G6b are complete. Premise, Reading-origin,
+targetless, fact-level, ask-only, answerable-scenario, and deliberate-decline
+reviews share the append-only edit/resolve/tombstone lifecycle. Strict and
+one-slot lexical-boundary generation, recursive realization, structural
+coverage, category/fact/slot filters, source navigation, pinned edit/retest,
+and generation-health diagnostics are implemented. G5v remains the name of
+the ongoing human review loop; reconciliations are complete through batch 54.
+Mining v2 now uses this workbench as its human promotion surface.
+
+Point-in-time counts in the milestone sections below are historical results.
+Only “Current checkpoint” and [`HANDOFF.md`](HANDOFF.md) describe the live
+frontier.
 
 ## Current checkpoint
 
@@ -31,8 +22,9 @@ G1 shipped the first complete generate/review/next loop, G2 made its
 mechanical result directly inspectable, G3 closed the edit/retest loop, and G4
 added bounded hypothesis and minimal-pair exploration:
 
-- all 116 supported curated premise rules are mechanically realizable, with no hidden
-  unsupported token or predicate blockers;
+- all 125 ordinary curated premise targets are mechanically realizable; five
+  fact-free safety interceptors remain active in reading but are deliberately
+  excluded from premise generation and review;
 - seeded candidates are identical across fresh project loads;
 - failed target round trips remain inspectable as `absent`;
 - the ordinary analyzer and document matcher supply actual matches, surviving
@@ -103,11 +95,10 @@ added bounded hypothesis and minimal-pair exploration:
   sentence exposes a defective premise;
 - a `matched` or `shadowed` target status reports what the ordinary matcher
   accepted, never that the resulting English or emitted fact is correct;
-- the current curated frontier contains 118 loaded reading rules and 267
-  reachable lexicon identities: 116 are supported premise-generation targets,
-  one is a reader-only compatibility frame, and one is a fact-free safety
-  consumer; live reviews and continuing exploration remain separate from
-  mechanical availability; and
+- the current curated frontier contains 130 loaded reading rules, 125 ordinary
+  premise-generation targets, five fact-free safety interceptors, and 305
+  reachable generated-filler identities; live reviews and continuing
+  exploration remain separate from mechanical availability; and
 - fact-free safety consumers remain active in the internal matcher but are not
   premise-review targets or actual premise matches in the Designer; a
   surviving guard is shown separately as a safety interception, while a
@@ -137,9 +128,9 @@ added bounded hypothesis and minimal-pair exploration:
 - registry-fingerprint caches avoid rebuilding token domains, rule
   availability, and compatible-probe catalogs on every request, while the
   Designer receives a compact exploration payload; and
-- the GSM8K project owns open proper-name generation fixtures, all 109
-  supported premise targets are selectable out of 111 loaded reading rules,
-  and a deterministic strict round trip exists for every supported one;
+- the GSM8K project owns open proper-name generation fixtures, all 120
+  ordinary premise targets are selectable, and its three fact-free safety
+  interceptors remain outside premise generation and review;
 - plural fraction forms are declared separately from their singular lemmas,
   require an explicit word count in both generation and premise matching, and
   retain complete numeric source evidence; and
@@ -150,11 +141,13 @@ added bounded hypothesis and minimal-pair exploration:
 - fraction-valued comparisons and changes require a strictly positive
   magnitude, while pool and partition facts retain zero as a meaningful value.
 
-The current gate is green: all 4,589 repository tests pass in four-worker
+The current gate is green: all 5,358 repository tests pass in four-worker
 mode, curated remains deterministic at 71/71 and 100% precision, GSM8K
-DEV-train is 108/0 and DEV-holdout is 43/0, every standing cross-corpus gate
-retains zero wrong answers, and lint has zero errors with one known warning.
-No protected TEST or generalization look was spent.
+DEV-train is 108/0 and DEV-holdout is 42/0, every standing answer and
+projection gate retains zero wrong or incorrect commitments, and lint has
+zero errors with one known warning. The protected aggregate remains recorded
+in the handoff and campaign ledgers; this documentation reconciliation spends
+no protected look.
 G6 live validation selected untouched `rabbit`, opened its declaration, and
 generated matched `Eron gives 18 rabbits to Aven.` for
 `arithmetic/transfer-prepositional`. The rule moved from untouched to
@@ -2307,7 +2300,7 @@ The complete gate is green: 3,900 tests pass in four-worker mode; curated is
 MAWPS, and SciBench remain 44/0, 30/0, 9/0, and 6/0; FOLIO makes zero
 commitments; and lint has zero errors with two known warnings.
 
-#### G5v review-led premise audit — active; thirty-second batch complete
+#### G5v review-led audit — active; reconciliations complete through batch 54
 
 Mechanical completeness does not establish linguistic or semantic validity.
 The twenty-fourth bounded run began with 406 exploration events, 189 review
@@ -3982,12 +3975,13 @@ framework with no usable designer surface.
 9. The normal parser never reads reviews or generation configuration.
 10. UI clarity and iteration speed take precedence over exhaustive validation
    machinery.
-11. Questions, multi-sentence documents, synth rules, and consumers are
-    deferred until the premise-rule workbench proves useful.
+11. Question and bounded scenario generation are implemented as G7, but their
+    availability and review evidence remain separate from premise coverage.
 
 ## Completion criterion
 
-The active plan succeeds when a non-expert rule author can:
+The product criterion has been met and remains the standard for further
+refinement. A non-expert rule author can:
 
 1. open the designer;
 2. generate a concrete mechanically matched example for a selected or random

@@ -1,7 +1,7 @@
 # Logic–arithmetic integration plan
 
-**Updated:** 2026-08-07
-**Status:** L0 through L5 complete and gated; L6 is next
+**Updated:** 2026-08-12
+**Status:** L0 through L6 complete and gated; further work is review-led
 
 ## Goal
 
@@ -280,9 +280,9 @@ COGS/PMB inspectable slices retain 100% edge precision and zero incorrect
 graphs, lint has zero errors and the known single warning, and no protected
 look was spent.
 
-## Remaining increments
+## Final increment
 
-### L6 — generation and review
+### L6 — generation and review — complete
 
 Expose every new reader and declarative mapping in Generate mode. Reviews must
 be able to flag:
@@ -296,6 +296,13 @@ be able to flag:
 
 Each derived fact and final arithmetic step should link back to the exact YAML
 rule or mapping that licensed it.
+
+The ordinary premise generator now covers every non-safety curated rule,
+including all logic-arithmetic bridge rules. Source-indexed premise and fact
+evidence enters the same append-only review, edit, resolve, tombstone, and
+pinned-retest workflow as arithmetic rules. Fact snapshots retain the
+emitting rule and, when unambiguous, its declarative template and bindings.
+No logic-specific review store or runtime feedback path was introduced.
 
 ## Delivery gate
 

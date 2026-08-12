@@ -11,12 +11,12 @@ parked.
 **Decision:** use **COGS** as the first development corpus. Use **FraCaS** later
 as an external semantic-inference gate, not as the projection worklist.
 
-**Current position:** the repaired baseline plus two explicitly post-D
-DEV-only common-subject campaigns, plus a safe lexical normalization found by
-PMB, reaches 1,772 exact / 646 safe partial / 0 incorrect on DEV-train and
-1,696 / 656 / 0 on DEV-holdout, at 100%
-projected-edge precision and 11.6%/11.1% edge recall. These extensions are not
-Phase E and do not substitute DEV evidence for the failed OOD checkpoint.
+**Current position:** after later shared-runtime consolidation, the parked
+project measures 1,771 exact / 646 safe partial / 0 incorrect on DEV-train and
+1,693 / 656 / 0 on DEV-holdout, at 100% projected-edge precision and
+11.6%/11.1% edge recall. These figures remain a safety gate, not an active
+coverage campaign. They do not unblock Phase E or substitute DEV evidence for
+the failed OOD checkpoint.
 
 ---
 

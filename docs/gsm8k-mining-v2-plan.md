@@ -3,6 +3,8 @@
 **Status:** active
 **Started:** 2026-08-08
 **Baseline commit:** `1dd2159`
+**Current checkpoint:** increments 129–132 are landed; the campaign queue has
+no open revision; runtime checkpoint `de6d74e`
 
 ## Objective
 
@@ -284,6 +286,16 @@ logs, or documentation. Its post-synthetic acceptance result is carried by
 the ordinary DEV snapshot/diff and opaque item identity evidence. Frequency
 remains useful for prioritisation, but it is no longer a threshold that blocks
 an otherwise useful general vertical increment.
+
+The first three live M7 increments are complete: temporal event totals (130),
+task-completion duration gaps (131), and anaphoric motion-distance chains with
+exact combined totals (132). Subsequent review-led consolidation introduced
+category-owned verb selectional frames and measure/holder relationships, then
+migrated exact positive restatements out of both premise and ask rules. This is
+the periodic consolidation required by step 9, not a separate mining class.
+The latest gate is 5,358 tests; curated is 71/71, GSM8K DEV-train/holdout are
+108/0 and 42/0, all standing answer and projection gates retain zero wrong or
+incorrect commitments, and lint has zero errors with one known warning.
 
 ## Standing gate
 
