@@ -154,13 +154,17 @@ def test_review_boundaries_are_pack_declared(registry) -> None:
     )
 
     conjoined = rules["arithmetic/anchored-relation-conjoined-measures"]
-    assert any(
-        predicate.verb_role_compatible is not None
-        and predicate.verb_role_compatible.verb_cat == "find_quantity_verb"
-        and predicate.verb_role_compatible.roles == ["item", "item2"]
-        and predicate.verb_role_compatible.role_cat
-        == "findable_quantity_object"
+    structural = next(
+        predicate.verb_roles_compatible
         for predicate in conjoined.where
+        if predicate.verb_roles_compatible is not None
+    )
+    assert structural.roles == {
+        "actor": ["who", "std"],
+        "theme": ["item", "item2"],
+    }
+    assert registry.selectional_frames("find")[0][1]["theme"] == (
+        "findable_quantity_object"
     )
 
 

@@ -3895,6 +3895,36 @@ projections; and PMB train/development remain 117/4 exact with zero incorrect
 projections. All thirteen unprotected before/after diffs are neutral. Lint
 has zero errors and one pre-existing warning. No protected look was spent.
 
+#### Fifty-fourth answerable-scenario reconciliation — complete
+
+Four invalid answerable scenarios exposed defects at three different layers.
+The premise planner now ranks equally relevant plans by fewer emissions and a
+shorter declared rule shape, making the smallest found scenario easier to
+inspect without bypassing ordinary generation or solving. Relation saturation
+does not restate an existing same-holder anchor under a second verb and refuses
+negative cardinal results. The reviewed conjoined comparison rules enforce
+their declared verb/participant/object, count-head, age-word, and modifier
+boundaries.
+
+Ask grammar now requires an object-case plural discourse pronoun after “all
+of”, while generation selects plural `do`/`did`; the reader keeps its existing
+non-standard `does all of them` compatibility. Partitive membership asks carry
+their collection into the query and require a project-declared exhaustive
+complement label plus plural copular syntax. Curated has no such label
+vocabulary, so this target becomes an explicit blocker rather than generating
+unrelated nouns. Exact pronoun-group aggregate and per-holder asks are also
+contextual rather than independently realizable: their question surfaces can
+round-trip, but answering requires a prior subject group. The independent
+curated frontier is therefore 104/114.
+
+All four review records are pinned. The complete gate is 5,332 tests. Curated
+is 71/71; GSM8K DEV-train/holdout are 108/0 and 42/0; ASDiv, SVAMP, MAWPS,
+SciBench, DIFG, and FOLIO retain zero wrong commitments, with the explicit
+group and qualified-measure path adding one SVAMP correct answer (31/0); COGS
+DEV-train/holdout remain 1,771/1,693 exact with zero incorrect projections;
+and PMB train/development remain 117/4 exact with zero incorrect projections.
+Lint has zero errors and one pre-existing warning. No protected look was spent.
+
 ## G1 implementation brief
 
 The first implementation must be a vertical product slice, not a backend

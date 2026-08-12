@@ -106,8 +106,8 @@ attribute_compatibility:
   marital_status_attribute: [animate]
 members:
   plural_subject_quantifier: [both]
-  transferable_quantity_object: [bar, ticket]
-  edible_quantity_object: [berry]
+  transferable_quantity_object: [bar, orange, ticket]
+  edible_quantity_object: [berry, pie]
   finishable_quantity_object: [homework]
   # `Bill` is a common first name as well as the monetary noun owned by this
   # pack. Sentence-initial sense selection retains the noun reading, so the
@@ -791,6 +791,9 @@ members:
   # make/buttons arithmetic chain without admitting arbitrary nouns.
   producible_quantity_object:
   - button
+  - page
+  production_quantity_participant:
+  - machine
   purchase:
   - order
   - ordered

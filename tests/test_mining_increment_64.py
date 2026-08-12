@@ -106,13 +106,13 @@ def test_bare_existential_world_holder_not_summed_with_named_entity(full_registr
 
 
 def test_pre_existing_combined_ask_still_sums_world_holder(full_registry):
-    # `exclude_entity` defaults to None everywhere else: a PRE-EXISTING
-    # combined ask (pronoun form, no `exclude_entity` binding) must still
-    # be free to sum a bare `world` holder alongside a named one -- this
-    # increment must not narrow any other ask's behaviour.
+    # A bare existential `world` holder is not a linguistic antecedent of
+    # `they`. The pronoun therefore cannot combine it with Wendell merely by
+    # enumerating same-measure facts; an explicit group is now required.
     r = solve(
         "Wendell has 9 marbles. There are 14 marbles. "
         "How many marbles do they have combined?",
         full_registry,
     )
-    assert r.answer.value == 23
+    assert r.answer.kind == "decline"
+    assert "no definitive antecedent group" in r.answer.reason

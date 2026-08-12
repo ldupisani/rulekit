@@ -109,6 +109,7 @@ def test_modal_occurrence_and_core_ownership_maps_are_complete() -> None:
     assert project.registry.word_categories["can"] == (
         "capacity_modal",
         "location_impossibility_modal",
+        "transferable_quantity_object",
     )
     assert all(
         project.registry.word_categories[word] == ("future_modal",)
@@ -176,6 +177,7 @@ def test_combined_pack_semantics_are_identical_to_legacy_ownership() -> None:
         "capacity_modal",
         "litter",
         "location_impossibility_modal",
+        "transferable_quantity_object",
     )
 
 

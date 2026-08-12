@@ -137,7 +137,7 @@ def test_combined_ask_requires_plurality(registry):
         "Tom has 7 coins. How many coins do they have altogether?", registry
     )
     assert r.answer.kind == "decline"
-    assert "at least two holders" in r.answer.reason
+    assert "no definitive antecedent group" in r.answer.reason
 
 
 def test_fraction_of_rest_chain(full_registry):

@@ -21,7 +21,7 @@ from .facts import FactStore
 from .guards import GuardVeto, check as run_guards
 from .learn import _has_event_polarity
 from .mathtext import normalize_math
-from .model import Fact, Reading
+from .model import Fact, Reading, Relation
 from .numbers import annotate_numbers
 from .obligations import attach_obligations, bind, disambiguate
 from .senses import annotate_senses
@@ -729,6 +729,23 @@ def solve(
         journal=journal,
         reg=reg,
         plural_group_sentence=question.sentence_index,
+        group_entities=frozenset(
+            entity
+            for fact in doc.store.facts
+            for entity in (
+                (
+                    fact.subject,
+                    fact.standard,
+                )
+                if isinstance(fact, Relation)
+                else (getattr(fact, "entity", None),)
+            )
+            if isinstance(entity, str) and entity
+        ),
+        relation_sentences=frozenset(
+            relation.provenance.sentence
+            for relation in doc.store.by_kind(Relation)
+        ),
     )
     # only slots whose VALUE the consumer uses ({slot.value} templates)
     # count as read — matching "four-minute songs" as an item does NOT read

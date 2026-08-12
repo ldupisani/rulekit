@@ -127,6 +127,9 @@ class Registry:
     word_categories: Mapping[str, tuple[str, ...]]
     category_antonyms: Mapping[str, str]
     category_polarity: Mapping[str, int]
+    # Effective inherited role contracts by verb category. Each inner mapping
+    # is semantic role -> noun category.
+    selectional_roles: Mapping[str, Mapping[str, str]]
     interchangeable_categories: frozenset[str]
     superordinate_categories: frozenset[str]
     coordinated_superordinate_categories: frozenset[str]
@@ -213,6 +216,39 @@ class Registry:
         if category == "plural":
             return word in self.plural_to_singular
         return False
+
+    def selectional_frames(
+        self, word: str
+    ) -> tuple[tuple[str, Mapping[str, str]], ...]:
+        """Most-specific complete role frames applicable to one verb.
+
+        A word may carry sibling verb categories for distinct senses. Those
+        remain alternatives. An ancestor frame is suppressed when a more
+        specific applicable category exists, preventing a broad parent from
+        bypassing a child's narrowed role target.
+        """
+
+        word = word.casefold()
+        lemma = self.verb_lemmas.get(word, word)
+        applicable = {
+            category
+            for category in self.selectional_roles
+            if self.word_in_category(word, category)
+            or self.word_in_category(lemma, category)
+        }
+        most_specific = sorted(
+            category
+            for category in applicable
+            if not any(
+                category != other
+                and category in self.cat_ancestors(other)[1:]
+                for other in applicable
+            )
+        )
+        return tuple(
+            (category, self.selectional_roles[category])
+            for category in most_specific
+        )
 
     def category_terms_overlap(self, left: str, right: str) -> bool:
         """Whether two noun terms are identical or one subsumes the other.
@@ -320,6 +356,16 @@ class Registry:
                     if self.word_in_category(holder, holder_category):
                         pairs.add((measure_category, holder_category))
         return tuple(sorted(pairs))
+
+    def measure_has_holder_boundary(self, measure: str) -> bool:
+        """Whether MEASURE activates any declared holder relationship."""
+
+        measure = self.plural_to_singular.get(measure, measure)
+        return any(
+            measure_category in self.measure_holder_compatibility
+            for direct in self.word_categories.get(measure, ())
+            for measure_category in self.cat_ancestors(direct)
+        )
 
     def measure_applies_to_holder(self, measure: str, holder: str) -> bool:
         return bool(self.measure_holder_compatibility_pairs(measure, holder))
@@ -431,6 +477,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
     category_parents: dict[str, str] = {}
     category_antonyms: dict[str, str] = {}
     category_polarity: dict[str, int] = {}
+    declared_selectional_roles: dict[str, dict[str, str]] = {}
     interchangeable_categories: set[str] = set()
     superordinate_categories: set[str] = set()
     coordinated_superordinate_categories: set[str] = set()
@@ -460,6 +507,10 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                     category_antonyms[name] = cdef.antonym
                 if cdef.polarity is not None:
                     category_polarity[name] = cdef.polarity
+                if cdef.selectional_roles:
+                    declared_selectional_roles[name] = dict(
+                        cdef.selectional_roles
+                    )
                 if cdef.interchangeable:
                     interchangeable_categories.add(name)
                 if cdef.superordinate:
@@ -574,6 +625,70 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                 f"(chain ends at {chain[-1]!r}; roots are {ROOT_SENSES})"
             )
 
+    # Selectional roles belong only to verb categories and always target noun
+    # categories. Resolve inheritance once at compile time. A child contract
+    # may narrow an inherited role but may never replace it with an unrelated
+    # or broader target: doing so would make the category hierarchy lie about
+    # the lexical boundary it is meant to carry.
+    selectional_roles: dict[str, dict[str, str]] = {}
+
+    def _category_root(category: str) -> str:
+        root = category
+        while root in category_parents:
+            root = category_parents[root]
+        return root
+
+    def _effective_selectional_roles(category: str) -> dict[str, str]:
+        cached = selectional_roles.get(category)
+        if cached is not None:
+            return cached
+        parent = category_parents[category]
+        effective = (
+            dict(_effective_selectional_roles(parent))
+            if parent in category_parents
+            else {}
+        )
+        for role, target in declared_selectional_roles.get(category, {}).items():
+            inherited = effective.get(role)
+            target_chain = [target]
+            while target_chain[-1] in category_parents:
+                target_chain.append(category_parents[target_chain[-1]])
+            if inherited is not None and inherited not in target_chain:
+                raise CompileError(
+                    f"category {category!r} selectional role {role!r} "
+                    f"target {target!r} does not narrow inherited "
+                    f"category {inherited!r}"
+                )
+            effective[role] = target
+        if effective:
+            selectional_roles[category] = effective
+        return effective
+
+    for category, roles in sorted(declared_selectional_roles.items()):
+        if _category_root(category) != "verb":
+            raise CompileError(
+                f"category {category!r} declares selectional roles but is "
+                "not verb-rooted"
+            )
+        for role, target in sorted(roles.items()):
+            if target not in category_parents and target != "noun":
+                raise CompileError(
+                    f"category {category!r} selectional role {role!r} names "
+                    f"unknown noun category {target!r}"
+                )
+            if _category_root(target) != "noun":
+                raise CompileError(
+                    f"category {category!r} selectional role {role!r} "
+                    f"target {target!r} is not noun-rooted"
+                )
+
+    for category in sorted(category_parents):
+        if _category_root(category) == "verb":
+            _effective_selectional_roles(category)
+    selectional_role_names = frozenset(
+        role for frame in selectional_roles.values() for role in frame
+    )
+
     for attribute, nouns in sorted(attribute_compatibility.items()):
         if attribute not in category_parents:
             raise CompileError(
@@ -684,12 +799,6 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                     f"modifier attachment {role} category {category!r} is "
                     f"not {expected_root}-rooted"
                 )
-
-    def _category_root(category: str) -> str:
-        root = category
-        while root in category_parents:
-            root = category_parents[root]
-        return root
 
     for role, frames in sorted(adposition_roles.items()):
         for frame_no, (prep, obj, verb, _) in enumerate(frames, start=1):
@@ -1373,6 +1482,44 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                             f"category {category!r} is not "
                             f"{expected_root}-rooted"
                         )
+            roles_compatibility = predicate.verb_roles_compatible
+            if roles_compatibility is not None:
+                trigger = slots.get(roles_compatibility.verb)
+                if trigger is None:
+                    raise CompileError(
+                        f"rule {rule.id!r} verb roles compatibility names "
+                        f"unknown slot {roles_compatibility.verb!r}"
+                    )
+                if _slot_root(trigger) != "verb":
+                    raise CompileError(
+                        f"rule {rule.id!r} verb roles trigger "
+                        f"{roles_compatibility.verb!r} is not verb-rooted"
+                    )
+                for semantic_role, slot_names in (
+                    roles_compatibility.roles.items()
+                ):
+                    if semantic_role not in selectional_role_names:
+                        raise CompileError(
+                            f"rule {rule.id!r} verb roles compatibility names "
+                            f"undeclared semantic role {semantic_role!r}"
+                        )
+                    for slot_name in slot_names:
+                        token = slots.get(slot_name)
+                        if token is None:
+                            raise CompileError(
+                                f"rule {rule.id!r} verb roles compatibility "
+                                f"names unknown slot {slot_name!r}"
+                            )
+                        if _slot_root(token) not in {
+                            "noun",
+                            "entity",
+                            "name",
+                            "proper_name",
+                        }:
+                            raise CompileError(
+                                f"rule {rule.id!r} verb role slot "
+                                f"{slot_name!r} is not noun/entity-rooted"
+                            )
             measure_compatibility = predicate.measure_holder_compatible
             if measure_compatibility is not None:
                 for slot_name in (
@@ -1588,6 +1735,44 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                             f"ask {ask.id!r} verb-role compatibility category "
                             f"{category!r} is not {expected_root}-rooted"
                         )
+            roles_compatibility = predicate.verb_roles_compatible
+            if roles_compatibility is not None:
+                trigger = ask_slots.get(roles_compatibility.verb)
+                if trigger is None:
+                    raise CompileError(
+                        f"ask {ask.id!r} verb roles compatibility names "
+                        f"unknown slot {roles_compatibility.verb!r}"
+                    )
+                if _slot_root(trigger) != "verb":
+                    raise CompileError(
+                        f"ask {ask.id!r} verb roles trigger "
+                        f"{roles_compatibility.verb!r} is not verb-rooted"
+                    )
+                for semantic_role, slot_names in (
+                    roles_compatibility.roles.items()
+                ):
+                    if semantic_role not in selectional_role_names:
+                        raise CompileError(
+                            f"ask {ask.id!r} verb roles compatibility names "
+                            f"undeclared semantic role {semantic_role!r}"
+                        )
+                    for slot_name in slot_names:
+                        token = ask_slots.get(slot_name)
+                        if token is None:
+                            raise CompileError(
+                                f"ask {ask.id!r} verb roles compatibility "
+                                f"names unknown slot {slot_name!r}"
+                            )
+                        if _slot_root(token) not in {
+                            "noun",
+                            "entity",
+                            "name",
+                            "proper_name",
+                        }:
+                            raise CompileError(
+                                f"ask {ask.id!r} verb role slot "
+                                f"{slot_name!r} is not noun/entity-rooted"
+                            )
             measure_compatibility = predicate.measure_holder_compatible
             if measure_compatibility is not None:
                 for slot_name in (
@@ -1698,6 +1883,12 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
         word_categories=_freeze({k: tuple(sorted(set(v))) for k, v in word_categories.items()}),
         category_antonyms=_freeze(category_antonyms),
         category_polarity=_freeze(category_polarity),
+        selectional_roles=_freeze(
+            {
+                category: _freeze(roles)
+                for category, roles in selectional_roles.items()
+            }
+        ),
         interchangeable_categories=frozenset(interchangeable_categories),
         superordinate_categories=frozenset(superordinate_categories),
         coordinated_superordinate_categories=frozenset(

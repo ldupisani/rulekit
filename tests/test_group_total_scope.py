@@ -133,3 +133,37 @@ def test_unrelated_scoped_total_does_not_block_named_variant_rollup(
     assert _qualified_variant_total(
         store, registry, "mira", "token", ArithmeticLog()
     ) == 18
+
+
+def test_named_scoped_total_cannot_solve_an_unrelated_relation(registry) -> None:
+    result = solve(
+        "Combined John receives 70 apples. "
+        "Eron receives 20 apples more than Aven. "
+        "How many apples do all of them receive combined?",
+        registry,
+    )
+
+    totals = result.store.by_kind(GroupTotal)
+    assert len(totals) == 1
+    assert totals[0].scope == "john"
+    assert totals[0].value == 70
+    assert result.answer.kind == "decline"
+    assert not any(
+        quantity.provenance.source == "synth/sum-constraint"
+        for quantity in result.store.by_kind(Quantity)
+    )
+
+
+def test_plural_pronoun_scoped_total_still_solves_its_relation(registry) -> None:
+    result = solve(
+        "Eron receives 20 apples more than Aven. "
+        "Combined they receive 70 apples. "
+        "How many apples does Eron receive?",
+        registry,
+    )
+
+    totals = result.store.by_kind(GroupTotal)
+    assert len(totals) == 1
+    assert totals[0].scope == "they"
+    assert result.answer.kind == "number"
+    assert result.answer.value == 45

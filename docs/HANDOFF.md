@@ -1,6 +1,6 @@
 # rulekit handoff — GSM8K Mining v2
 
-**Updated:** 2026-08-11
+**Updated:** 2026-08-12
 
 **Active campaign:** GSM8K Mining v2 with generated evidence and a human
 promotion gate in the Designer
@@ -30,7 +30,7 @@ loads the candidate's packs. Publication rejects a foreign registry
 fingerprint without that runtime declaration, and the isolated runner resolves
 the declared project before checking the exact fingerprint. This prevents a
 DIFG/GSM8K candidate from being launched through curated merely because
-curated owns the review queue. G7 independently realizes 105/109 loaded curated ask
+curated owns the review queue. G7 independently realizes 104/114 loaded curated ask
 surfaces, searches generated premise rules for a removal-minimal answerable
 scenario through the ordinary solver, and produces deliberate missing-evidence
 cases without reading benchmark examples or golds. Ask candidates now use the
@@ -85,6 +85,60 @@ neutral with zero wrong or incorrect commitments. Protected GSM8K TEST look
 fully-read exposure rose from 386 to 389 without a new commitment. No other
 protected generalization look was spent. The prior generation workbench is now campaign
 infrastructure rather than a parked or replaced direction.
+
+The first category-owned selectional-role increment is also implemented and
+gated. `CategoryDef.selectional_roles` maps semantic verb roles to noun
+categories, inherits through verb-category ancestry, and permits only
+narrowing overrides. The registry exposes only the most-specific applicable
+frames, treating sibling verb categories as atomic alternatives. The new
+`verb_roles_compatible` rule predicate maps grammar slots to those semantic
+roles and is shared by matching, premise/ask generation, availability, locked
+probes, and Designer explanations. `consumption_quantity_verb` now owns the
+general actor/consumable-theme contract; `eating_quantity_verb` inherits it and
+narrows the theme to `edible_quantity_object`. `win_quantity_verb` owns its
+animate/winnable contract. The conjoined anchored-relation rule is the first
+migration: it no longer lists the eating/edible and winning/winnable category
+pairs itself. An invented two-pack test proves that adding `devour` and `cake`
+as category members extends both reading and strict generation without a rule
+edit, while an unrelated object and a non-narrowing child contract fail
+closed. The student quantity boundary is now the first noun-relationship
+migration: `student_quantity_measure → student_quantity_holder` lives once in
+`measure_holder_compatibility`, and four arithmetic rules use the structural
+`measure_holder_compatible` predicate instead of pretending `item` is a verb.
+Its explicit `when_declared: true` mode preserves those broad grammars:
+student quantities enforce the holder boundary, while unrelated measures stay
+open. The relation is additive across packs and inherited by measure and
+holder subcategories; an invented extension test proves new descendant
+vocabulary requires no relationship or grammar edit. The gate is green at
+5,343 tests; curated is 71/71, GSM8K is 108/0 and
+42/0, ASDiv 45/0, SVAMP 31/0, MAWPS 11/0, SciBench 6/0, FOLIO makes zero
+commitments, DIFG is 75/0, COGS DEV is 1,771/1,693 exact with zero incorrect,
+and PMB is 117/4 exact with zero incorrect. Lint has zero errors and one known
+warning. No protected look was spent.
+
+The follow-up arithmetic audit has now migrated every positive bounded frame
+that has one coherent actor/theme interpretation. Motion comparison, task
+completion, outbound transfer, finding, enrollment, dropping, consumption,
+shucking, initiation, earning, production, and winning own complete category
+contracts. Twenty-four arithmetic premise rules now map their slots through
+`verb_roles_compatible`; legacy compatibility clauses in the main rule list
+fell from 215 to 119, while all 13 negative exclusions remain explicit. The
+remaining positive residue is intentional: generic event/animate facets
+overlap, teaching admits two independently valid object families, spending
+and past departure are construction senses, and anchored/postfix comparisons
+map standards differently across verb families. A regression test allowlists
+only those two category-dependent construction exceptions and prevents a
+category-owned frame from being copied back into ordinary rules. The audit
+also fixed surface-form frame lookup for categories that declare inflected
+forms without the bare lemma, and admitted the reviewed ordinary vocabulary
+relationships `can → transferable_quantity_object`, `machine →
+production_quantity_participant`, `page → producible_quantity_object`,
+`orange → transferable_quantity_object`, and `pie →
+edible_quantity_object`. The complete 5,356-test suite passes. Curated remains
+71/71; GSM8K is 108/0 and 42/0; ASDiv, SVAMP, MAWPS, SciBench, DIFG, and
+FOLIO retain zero wrong commitments; COGS DEV remains 1,771/1,693 exact with
+zero incorrect; and PMB remains 117/4 exact with zero incorrect. Lint has zero
+errors and the one known warning. No protected look was spent.
 
 **Status:** G1 through G4, G5a through G5g, G6, Reading-origin review,
 targetless sentence-interpretation review, fact-level review, the
@@ -484,6 +538,23 @@ remain strictly generatable. The frontier remains 105/109. The complete
 5,312-test gate passes; all thirteen unprotected snapshot diffs are neutral;
 lint has zero errors and one pre-existing warning. No protected look was
 spent.
+The fifty-fourth reconciliation closes four invalid answerable-scenario
+reviews. Answerable premise plans keep emit/query relevance as their first
+ordering criterion, then prefer fewer emitted facts and a shorter rule shape,
+so a direct transfer premise wins over a needlessly compound relation when
+both answer the same ask. Relation saturation no longer re-emits an already
+stated same-holder anchor under the comparative verb and never materializes a
+negative cardinal quantity. The reviewed comparison rules enforce their
+existing eating, winning, initiation, count-head, age-word, and modifier-role
+boundaries. Partitive membership asks require plural copular grammar, a
+declared complement-label ontology, and evidence for the named collection;
+curated therefore exposes that ask as an honest fifth blocker. “All of”
+aggregate generation uses plural `do`/`did` and object-case group pronoun
+`them`; reading retains the established `does all of them` corpus tolerance
+but rejects singular `him`. All four review records remain pinned. The
+complete 5,320-test gate passes; all thirteen unprotected snapshot diffs are
+neutral; lint has zero errors and one pre-existing warning. No protected look
+was spent.
 The thirty-fifth reconciliation closes all five live invalid reviews. Affine
 count relations now require positive common-noun quantity holders, so calendar
 periods such as `July` cannot become event participants. Named membership
@@ -643,14 +714,16 @@ found answerable, or deliberately missing-evidence scenarios. Generic
 emit-template inversion proposes premise locks, but only ordinary generated
 premises and the normal solver decide whether a scenario answers; removal
 checks prove the returned set is irreducible. The current curated boundary is
-105/109 independent ask surfaces. Broad ask vocabulary and categories now live
+104/114 independent ask surfaces. Broad ask vocabulary and categories now live
 in `core-english`, and auxiliary/modal ask slots generate bare verb forms. The
-four remaining blockers are contextual or embedded-clause asks rather than
-missing ordinary vocabulary:
-`ask/how-old-discourse-group-now`, `ask/what-combined-age-at-year`, and
-`ask/which-discourse-group-at-day` require generated antecedents, while
-`ask/how-much-noun-entity-uninverted` requires a larger clause. They remain
-blocked in standalone generation. Number, series, witness, verdict, clarification, and
+ten remaining blockers are contextual, embedded-clause, or explicitly
+ontology-dependent asks rather than permissive generic-noun surfaces:
+eight exact discourse-group asks require generated antecedents, while
+`ask/how-much-noun-entity-uninverted` requires a larger clause. The partitive
+membership ask requires a project to supply a declared exhaustive complement
+label (for example `boy`/`girl` in the mined vocabulary); curated deliberately
+does not invent one. They remain blocked in standalone generation. Number,
+series, witness, verdict, clarification, and
 decline serialization is covered, while premise, ask, answerable-scenario, and
 deliberate-decline evidence remain separate. The Designer can record
 Valid/Invalid/Unclear ask reviews, attach ask-specific defects, and carry them

@@ -308,7 +308,13 @@ def _ask_filler_satisfies_known_where(
         measure_compatibility = predicate.measure_holder_compatible
         if measure_compatibility is not None:
             measure = value(measure_compatibility.measure)
-            if measure is not None:
+            if (
+                measure is not None
+                and not (
+                    measure_compatibility.when_declared
+                    and not reg.measure_has_holder_boundary(measure.identity)
+                )
+            ):
                 for holder_name in measure_compatibility.holders:
                     holder = value(holder_name)
                     if holder is None:
@@ -354,6 +360,50 @@ def _ask_filler_satisfies_known_where(
                         role_compatibility.excluded_role_cat is not None
                         and in_category
                     ):
+                        return False
+
+        roles_compatibility = predicate.verb_roles_compatible
+        if roles_compatibility is not None:
+            verb = value(roles_compatibility.verb)
+            if verb is not None:
+                frames = reg.selectional_frames(verb.identity)
+                if frames:
+                    accepted = False
+                    for _category, frame in frames:
+                        if not set(roles_compatibility.roles) <= set(frame):
+                            continue
+                        frame_ok = True
+                        for semantic_role, role_names in (
+                            roles_compatibility.roles.items()
+                        ):
+                            role_category = frame[semantic_role]
+                            for role_name in role_names:
+                                role = value(role_name)
+                                if role is None:
+                                    continue
+                                if (
+                                    role_name
+                                    in roles_compatibility.allow_proper_name
+                                    and role.kind == "name"
+                                ):
+                                    continue
+                                if (
+                                    role_name
+                                    in roles_compatibility.allow_plural_class
+                                    and role.number == "plural"
+                                ):
+                                    continue
+                                if not _filler_in_category(
+                                    role, role_category, reg
+                                ):
+                                    frame_ok = False
+                                    break
+                            if not frame_ok:
+                                break
+                        if frame_ok:
+                            accepted = True
+                            break
+                    if not accepted:
                         return False
 
         partitive = predicate.partitive_compatible
@@ -826,16 +876,30 @@ def _search_answerable_scenario(
         if item.supported
     }
     plans = [
-        (score, rule.id, locks)
+        (
+            score,
+            len(rule.emits),
+            sum(1 for _ in _leaf_tokens(rule.match["sentence"])),
+            rule.id,
+            locks,
+        )
         for rule in project.registry.rules
         if rule.id in supported
         for score, locks in _emit_lock_variants(rule, query)
     ]
-    plans.sort(key=lambda item: (-item[0], item[1], tuple(sorted(item[2].items()))))
+    plans.sort(
+        key=lambda item: (
+            -item[0],
+            item[1],
+            item[2],
+            item[3],
+            tuple(sorted(item[4].items())),
+        )
+    )
     generated: list[dict[str, Any]] = []
     seen_sentences: set[str] = set()
     search_attempts = 0
-    for _, rule_id, identity_locks in plans:
+    for _, _, _, rule_id, identity_locks in plans:
         if search_attempts >= max_search_attempts:
             break
         search_attempts += 1

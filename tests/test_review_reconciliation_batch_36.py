@@ -201,20 +201,15 @@ def test_currency_change_rules_declare_motion_role_boundaries(
     rule_id: str, project
 ) -> None:
     rule = next(rule for rule in project.registry.rules if rule.id == rule_id)
-    licences = {
-        (
-            predicate.verb_role_compatible.roles[0],
-            predicate.verb_role_compatible.role_cat,
-        )
+    structural = next(
+        predicate.verb_roles_compatible
         for predicate in rule.where
-        if predicate.verb_role_compatible is not None
-        and predicate.verb_role_compatible.verb_cat
-        == "motion_comparison_verb"
-    }
-
-    assert licences == {
-        ("who", "motion_participant"),
-        ("item", "motion_comparison_measure"),
+        if predicate.verb_roles_compatible is not None
+    )
+    assert structural.roles == {"actor": ["who"], "theme": ["item"]}
+    assert project.registry.selectional_frames("travel")[0][1] == {
+        "actor": "motion_participant",
+        "theme": "motion_comparison_measure",
     }
 
 
@@ -269,20 +264,18 @@ def test_affine_review_boundaries_are_pack_declared(project) -> None:
             token for token in rule.match["sentence"] if token.slot == "verb"
         )
         assert verb.finite_form is True
-        licences = {
-            (
-                tuple(predicate.verb_role_compatible.roles),
-                predicate.verb_role_compatible.role_cat,
-            )
+        structural = next(
+            predicate.verb_roles_compatible
             for predicate in rule.where
-            if predicate.verb_role_compatible is not None
-            and predicate.verb_role_compatible.verb_cat
-            == "motion_comparison_verb"
+            if predicate.verb_roles_compatible is not None
+        )
+        assert structural.roles == {
+            "actor": ["who", "std"],
+            "theme": ["item"],
         }
-        assert licences == {
-            (("who",), "motion_participant"),
-            (("std",), "motion_participant"),
-            (("item",), "motion_comparison_measure"),
+        assert project.registry.selectional_frames("travel")[0][1] == {
+            "actor": "motion_participant",
+            "theme": "motion_comparison_measure",
         }
 
     frame = rules["arithmetic/affine-frame-relation"]

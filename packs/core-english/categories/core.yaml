@@ -679,16 +679,34 @@ categories:
             do not become monetary merely because the item slot says money.
     enrollment_quantity_verb:
         parent: verb
+        selectional_roles:
+            actor: quantity_event_participant
+            theme: enrollment_quantity_object
         notes: >
             Enrollment predicates whose compared object must be a declared
             enrollable class rather than an arbitrary unit or count noun.
     drop_quantity_verb:
         parent: quantity_event_verb
+        selectional_roles:
+            actor: quantity_event_participant
+            theme: droppable_quantity_object
         notes: >
             Dropping predicates whose compared object must be a portable
             quantity object rather than an area, place, or abstract measure.
-    eating_quantity_verb:
+    consumption_quantity_verb:
         parent: lose
+        selectional_roles:
+            actor: quantity_event_participant
+            theme: consumable_quantity_object
+        notes: >
+            Consumption events select an ordinary quantity participant and a
+            counted object that can be consumed. More specific verb families
+            may narrow the object role without repeating that relationship in
+            every grammar rule.
+    eating_quantity_verb:
+        parent: consumption_quantity_verb
+        selectional_roles:
+            theme: edible_quantity_object
         notes: >
             Eating predicates whose compared object must be declared edible.
     past_departure_quantity_verb:
@@ -724,11 +742,17 @@ categories:
     droppable_quantity_object:
         parent: transferable_quantity_object
         notes: "Portable counted objects that can ordinarily be dropped."
-    edible_quantity_object:
+    consumable_quantity_object:
         parent: noun
+        notes: "Counted objects that can ordinarily be consumed."
+    edible_quantity_object:
+        parent: consumable_quantity_object
         notes: "Counted objects that can ordinarily be eaten."
     shucking_verb:
         parent: quantity_event_verb
+        selectional_roles:
+            actor: quantity_event_participant
+            theme: shuckable_item
         notes: "Quantity events whose counted object must be shuckable."
     shuckable_item:
         parent: noun
@@ -744,6 +768,9 @@ categories:
             separate from broader acquisition and production event meanings.
     initiation_quantity_verb:
         parent: quantity_ask_verb
+        selectional_roles:
+            actor: initiation_quantity_participant
+            theme: initiable_quantity_object
         notes: >
             Direct-object senses of begin/start in quantitative comparisons.
             The object must denote an activity or institution that can
@@ -754,6 +781,9 @@ categories:
         parent: noun
     earning_quantity_verb:
         parent: quantity_ask_verb
+        selectional_roles:
+            actor: earning_quantity_participant
+            theme: earnable_quantity_object
         notes: >
             Direct quantitative earning predicates. Their subjects/standards
             must be plausible earners and their objects must be money or a
@@ -764,6 +794,9 @@ categories:
         parent: noun
     production_quantity_verb:
         parent: quantity_ask_verb
+        selectional_roles:
+            actor: production_quantity_participant
+            theme: producible_quantity_object
         notes: >
             Direct quantitative production predicates, kept separate from
             wage-question `make` so both actor and produced-object roles are
@@ -797,12 +830,18 @@ categories:
             cost-of-quantity questions; temporal `in` remains outside it.
     find_quantity_verb:
         parent: acquire
+        selectional_roles:
+            actor: quantity_event_participant
+            theme: findable_quantity_object
         notes: >
             Forms of find whose counted direct object must be a declared
             findable quantity object. Other acquiring predicates retain their
             own independently reviewable object boundaries.
     win_quantity_verb:
         parent: acquire
+        selectional_roles:
+            actor: animate
+            theme: winnable_quantity_object
         notes: >
             Forms of win whose compared object must be a declared prize-like
             quantity. This is narrower than generic acquisition: finding or
@@ -839,6 +878,9 @@ categories:
             state a price merely by preceding the frame.
     transfer_out:
         parent: lose
+        selectional_roles:
+            actor: quantity_event_participant
+            theme: transferable_quantity_object
         notes: >
             Outbound transfer verbs that license a recipient argument in either
             ditransitive ("gave Kim 3 apples") or prepositional ("gave 3 apples
@@ -1337,6 +1379,9 @@ categories:
             prepositional verb; direct heads remain unaffected.
     motion_comparison_verb:
         parent: verb
+        selectional_roles:
+            actor: motion_participant
+            theme: motion_comparison_measure
         notes: >
             Motion verbs licensed in explicit frequency and distance ratio
             comparisons. This category is separate from the prepositional-
@@ -1531,6 +1576,9 @@ categories:
             construction's finite subject is expletive singular `it`.
     task_completion_verb:
         parent: quantity_ask_verb
+        selectional_roles:
+            actor: quantity_event_participant
+            theme: finishable_quantity_object
         notes: >
             Verbs that assert completion of one exact task object. This is
             deliberately separate from broad quantity-event and motion verb
@@ -1650,8 +1698,15 @@ categories:
             subject, so it can key the emitted Price fact on the MEASURE noun
             the phrase anchors to (the SAME noun the purchase-verb premise's own
             Quantity.measure already uses) rather than on the item noun itself.
-    complement_boy:
+    complement_membership_label:
         parent: noun
+        notes: >
+            Predicate nouns that belong to a declared exhaustive complement
+            pair and can therefore complete a partitive membership question
+            such as "how many of the students are girls?".  Ordinary nouns
+            do not acquire this role merely by being countable.
+    complement_boy:
+        parent: complement_membership_label
         antonym: complement_girl
         notes: >
             mining candidate complement-labeled-subsets: a PACK-DECLARED
@@ -1670,7 +1725,7 @@ categories:
             core-english-only registry (no difg-mined) compiles with both
             categories simply empty (the synth then never fires, decline-safe).
     complement_girl:
-        parent: noun
+        parent: complement_membership_label
         antonym: complement_boy
         notes: "the symmetric half of complement_boy — see its notes."
     child:
@@ -2076,7 +2131,7 @@ members:
     enrollment_quantity_object: [course, student]
     teaching_quantity_object: [course, puzzle, student]
     transferable_quantity_object:
-        [animal, alpaca, bird, cat, course, dog, dollar, fish, flower,
+        [animal, alpaca, bird, can, cat, course, dog, dollar, fish, flower,
          hamster, number, rabbit]
     droppable_quantity_object:
         [apple, ball, book, card, coin, cookie, drum, egg, envelope, grape,
@@ -2408,6 +2463,7 @@ adposition_roles:
         object_category: purpose_noun
         verb_category: purpose_compatible_verb
 measure_holder_compatibility:
+    student_quantity_measure: [student_quantity_holder]
     length_measure: [linear_dimension_holder, animate]
     mass_measure: [mass_dimension_holder, animate]
     duration_measure: [duration_holder]

@@ -274,16 +274,23 @@ def _prior_possessive_owner_candidates(
 
 
 def _subject_group(
-    readings: list[Reading], upto: int, reg: Registry
+    readings: list[Reading],
+    upto: int,
+    reg: Registry,
+    group_entities: frozenset[str] = frozenset(),
+    relation_sentences: frozenset[int] = frozenset(),
 ) -> tuple[tuple[str, ...], tuple[Unit, ...]] | None:
     """One conservative plural referent made from prior entity subjects.
 
-    Proper names retain the established policy: if any occur, every one must
-    be a bound subject, so a named object makes the group ambiguous.  Only
-    when no proper name occurs do we admit definite or otherwise referential
-    common-noun subjects through the matcher's existing reference boundary.
-    This lets ``the teacher ... the child ... they`` form one group without
-    treating incidental object nouns as discourse members.
+    A member needs semantic participation in a committed entity-bearing fact.
+    Thus ``Mary has twice as many as Tom ... they`` includes Tom, while the
+    incidental object in ``Mary sees Zoe`` does not. A name left outside the
+    fact set makes the group ambiguous, except inside a sentence whose
+    committed quantitative Relation may itself have collapsed a coordinated
+    standard (``Dilan and Ashley combined``) to one semantic group endpoint.
+    Repeated appearances of one identity are deduplicated in first-mention order.
+    A single declared person-group noun (``the crew ... they``) is also one
+    valid collective referent even though its member list has one group entity.
     """
 
     prior = [
@@ -291,40 +298,8 @@ def _subject_group(
         for reading in readings
         if reading.sentence_index < upto and not reading.assumption
     ]
-    named = [
-        (reading, candidate)
-        for reading in prior
-        for candidate in reading.units
-        if candidate.sense() == "name"
-    ]
-    candidates: list[tuple[Reading, Unit]] = named
-    if not candidates:
-        candidates = [
-            (reading, candidate)
-            for reading in prior
-            for candidate in reading.units
-            if candidate.sense() == "noun"
-            and any(
-                obligation.need == "subject"
-                and obligation.met
-                and obligation.target is candidate
-                for verb in reading.units
-                if verb.sense() == "verb"
-                for obligation in verb.obligations()
-            )
-            and is_referential_entity(
-                reading,
-                candidate,
-                reg,
-                bare_reference_category="bare_entity_reference",
-            )
-        ]
-
-    names: list[str] = []
-    units: list[Unit] = []
-    seen: set[str] = set()
-    for reading, candidate in candidates:
-        is_subject = any(
+    def is_subject(reading: Reading, candidate: Unit) -> bool:
+        return any(
             obligation.need == "subject"
             and obligation.met
             and obligation.target is candidate
@@ -332,17 +307,55 @@ def _subject_group(
             if verb.sense() == "verb"
             for obligation in verb.obligations()
         )
-        if not is_subject:
-            return None
-        lemma = candidate.features.get("lemma", candidate.features["fold"])
-        if lemma in seen:
-            continue
-        seen.add(lemma)
-        names.append(lemma)
-        units.append(candidate)
-    if len(names) < 2:
+
+    members: list[str] = []
+    targets: dict[str, Unit] = {}
+    for reading in prior:
+        for candidate in reading.units:
+            lemma = candidate.features.get(
+                "lemma", candidate.features.get("fold", "")
+            )
+            eligible = False
+            if candidate.sense() == "name":
+                eligible = lemma in group_entities
+            elif candidate.sense() == "noun" and is_subject(reading, candidate):
+                eligible = (
+                    lemma in group_entities
+                    and is_referential_entity(
+                        reading,
+                        candidate,
+                        reg,
+                        bare_reference_category="bare_entity_reference",
+                    )
+                )
+            if not eligible:
+                continue
+            if lemma not in targets:
+                members.append(lemma)
+                targets[lemma] = candidate
+
+    # Any named mention which is neither a subject nor a quantitative relation
+    # participant is an unresolved rival discourse entity. Do not silently
+    # omit it from "they".
+    unresolved_names = {
+        candidate.features.get(
+            "lemma", candidate.features.get("fold", "")
+        )
+        for reading in prior
+        for candidate in reading.units
+        if candidate.sense() == "name"
+        and candidate.features.get(
+            "lemma", candidate.features.get("fold", "")
+        ) not in targets
+        and reading.sentence_index not in relation_sentences
+    }
+    if unresolved_names:
         return None
-    return tuple(names), tuple(units)
+    if len(members) >= 2:
+        return tuple(members), tuple(targets[name] for name in members)
+    if len(members) == 1 and reg.word_in_category(members[0], "persongroup"):
+        return tuple(members), (targets[members[0]],)
+    return None
 
 
 def _bind_discourse(
@@ -350,13 +363,15 @@ def _bind_discourse(
     journal: deixis.Journal | None = None,
     reg: Registry | None = None,
     plural_group_sentence: int | None = None,
+    group_entities: frozenset[str] = frozenset(),
+    relation_sentences: frozenset[int] = frozenset(),
 ) -> set[int]:
     """Bind unmet pronoun `refers` obligations to a unique prior name, or —
     inside a question-local assumption context — to one strictly nearest name.
     When the text contains no name, singular reference applies the established
     `animate` fallback; question-local plural reference may instead construct
-    one exact group of prior referential common-noun subjects. Returns the
-    sentence indexes that gained a binding.
+    one exact group from prior entity-bearing facts and their referential
+    mentions. Returns the sentence indexes that gained a binding.
 
     `reg` is optional so the name-only path stays callable without a
     registry; the zero-name fallback simply does not run without one."""
@@ -387,7 +402,13 @@ def _bind_discourse(
                 and plural_group_sentence == reading.sentence_index
                 and reg is not None
             ):
-                group = _subject_group(readings, reading.sentence_index, reg)
+                group = _subject_group(
+                    readings,
+                    reading.sentence_index,
+                    reg,
+                    group_entities,
+                    relation_sentences,
+                )
                 if group is not None:
                     members, targets = group
                     obligations = unit.obligations()
@@ -412,7 +433,7 @@ def _bind_discourse(
                                 "referent_group": members,
                             },
                             f"{unit.surface!r} -> {list(members)!r} "
-                            "(unique prior referential-subject group)",
+                            "(unique prior fact-backed discourse group)",
                         )
                         changed.add(reading.sentence_index)
                     continue

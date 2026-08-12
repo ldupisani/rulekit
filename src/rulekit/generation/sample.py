@@ -21,6 +21,7 @@ from ..data.schemas import (
     AttributeCompatibilityPredicate,
     MatchToken,
     PatternRule,
+    VerbRolesCompatibilityPredicate,
 )
 from ..data.sources import SourceRef
 from ..kernel.document import run_document
@@ -132,6 +133,47 @@ def _filler_in_category(
     return reg.word_in_category(
         filler.identity, category
     ) or reg.word_in_category(filler.surface.casefold(), category)
+
+
+def _filler_satisfies_selectional_role(
+    filler: _Filler,
+    category: str,
+    slot: str,
+    compatibility: VerbRolesCompatibilityPredicate,
+    reg: Registry,
+) -> bool:
+    return (
+        slot in compatibility.allow_proper_name and filler.kind == "name"
+    ) or (
+        slot in compatibility.allow_plural_class
+        and filler.number == "plural"
+    ) or _filler_in_category(filler, category, reg)
+
+
+def _selectional_assignment_compatible(
+    verb: _Filler,
+    assignments: dict[str, _Filler],
+    compatibility: VerbRolesCompatibilityPredicate,
+    reg: Registry,
+) -> bool:
+    """Whether one complete lexical frame accepts all currently known roles."""
+
+    frames = reg.selectional_frames(verb.identity)
+    if not frames:
+        return True
+    for _category, frame in frames:
+        if not set(compatibility.roles) <= set(frame):
+            continue
+        if all(
+            _filler_satisfies_selectional_role(
+                assignments[slot], frame[semantic_role], slot, compatibility, reg
+            )
+            for semantic_role, slots in compatibility.roles.items()
+            for slot in slots
+            if slot in assignments
+        ):
+            return True
+    return False
 
 
 def _filler_categories_overlap(
@@ -278,6 +320,7 @@ def _where_blocker(rule: PatternRule) -> list[str]:
             or pred.proportional_delta_compatible is not None
             or pred.same_presence is not None
             or pred.verb_role_compatible is not None
+            or pred.verb_roles_compatible is not None
             or pred.measure_holder_compatible is not None
             or pred.attribute_compatible is not None
             or pred.modifier_host_compatible is not None
@@ -1645,6 +1688,56 @@ def _rule_blockers(
                     f"{'/'.join(compatibility.roles)}"
                 )
         for pred in rule.where:
+            if pred.verb_roles_compatible is None:
+                continue
+            compatibility = pred.verb_roles_compatible
+            verb_token = tokens_by_slot.get(compatibility.verb)
+            role_tokens = {
+                slot: tokens_by_slot.get(slot)
+                for slots in compatibility.roles.values()
+                for slot in slots
+            }
+
+            def verb_has_possible_frame(verb: _Filler) -> bool:
+                frames = reg.selectional_frames(verb.identity)
+                if not frames:
+                    return True
+                for _category, frame in frames:
+                    if not set(compatibility.roles) <= set(frame):
+                        continue
+                    if all(
+                        token is not None
+                        and any(
+                            _filler_satisfies_selectional_role(
+                                role,
+                                frame[semantic_role],
+                                slot,
+                                compatibility,
+                                reg,
+                            )
+                            for role in safe_domain(token)
+                        )
+                        for semantic_role, slots in compatibility.roles.items()
+                        for slot in slots
+                        for token in (role_tokens[slot],)
+                    ):
+                        return True
+                return False
+
+            if (
+                verb_token is None
+                or any(token is None for token in role_tokens.values())
+                or not any(
+                    verb_has_possible_frame(verb)
+                    for verb in safe_domain(verb_token)
+                )
+            ):
+                blockers.append(
+                    "no project-backed category-owned verb role frame exists "
+                    f"for {compatibility.verb}/"
+                    f"{'/'.join(role_tokens)}"
+                )
+        for pred in rule.where:
             if pred.measure_holder_compatible is None:
                 continue
             compatibility = pred.measure_holder_compatible
@@ -1655,6 +1748,11 @@ def _rule_blockers(
             ]
 
             def holder_ok(measure: _Filler, holder: _Filler) -> bool:
+                if (
+                    compatibility.when_declared
+                    and not reg.measure_has_holder_boundary(measure.identity)
+                ):
+                    return True
                 return (
                     holder.kind == "name"
                     and _proper_name_measure_allowed(
@@ -1804,7 +1902,8 @@ def _constraint_groups(
             bool,
         ]
     ],
-    list[tuple[str, tuple[str, ...], bool, tuple[str, ...]]],
+    list[VerbRolesCompatibilityPredicate],
+    list[tuple[str, tuple[str, ...], bool, tuple[str, ...], bool]],
     list[tuple[str, str]],
     tuple[str, ...],
 ]:
@@ -1834,8 +1933,11 @@ def _constraint_groups(
             bool,
         ]
     ] = []
+    verb_selectional_requirements: list[
+        VerbRolesCompatibilityPredicate
+    ] = []
     measure_holder_requirements: list[
-        tuple[str, tuple[str, ...], bool, tuple[str, ...]]
+        tuple[str, tuple[str, ...], bool, tuple[str, ...], bool]
     ] = []
     slot_category_exclusions = list(_slot_category_exclusions(rule))
     for pred in rule.where:
@@ -1931,6 +2033,10 @@ def _constraint_groups(
                     pred.verb_role_compatible.allow_unbound_trigger,
                 )
             )
+        if pred.verb_roles_compatible is not None:
+            verb_selectional_requirements.append(
+                pred.verb_roles_compatible
+            )
         if pred.measure_holder_compatible is not None:
             measure_holder_requirements.append(
                 (
@@ -1940,6 +2046,7 @@ def _constraint_groups(
                     tuple(
                         pred.measure_holder_compatible.proper_name_measure_categories
                     ),
+                    pred.measure_holder_compatible.when_declared,
                 )
             )
     return (
@@ -1960,6 +2067,7 @@ def _constraint_groups(
         attribute_pairs,
         modifier_host_pairs,
         verb_role_requirements,
+        verb_selectional_requirements,
         measure_holder_requirements,
         slot_category_exclusions,
         _absent_categories(rule),
@@ -2037,10 +2145,14 @@ def _allowed_fillers(
             ...,
         ]
     ) = (),
+    verb_selectional_requirements: (
+        list[VerbRolesCompatibilityPredicate]
+        | tuple[VerbRolesCompatibilityPredicate, ...]
+    ) = (),
     measure_holder_requirements: (
-        list[tuple[str, tuple[str, ...], bool, tuple[str, ...]]]
+        list[tuple[str, tuple[str, ...], bool, tuple[str, ...], bool]]
         | tuple[
-            tuple[str, tuple[str, ...], bool, tuple[str, ...]], ...
+            tuple[str, tuple[str, ...], bool, tuple[str, ...], bool], ...
         ]
     ) = (),
     category_membership_requirements: (
@@ -2454,13 +2566,67 @@ def _allowed_fillers(
                 verb = known_filler(verb_name)
                 if verb is not None and not role_ok(verb, filler):
                     return False
+        for compatibility in verb_selectional_requirements:
+            mapped_slots = {
+                slot
+                for slots in compatibility.roles.values()
+                for slot in slots
+            }
+            if token.slot != compatibility.verb and token.slot not in mapped_slots:
+                continue
+            assignments = {
+                role_slot: known
+                for role_slot in mapped_slots
+                if (
+                    known := (
+                        filler
+                        if token.slot == role_slot
+                        else known_filler(role_slot)
+                    )
+                )
+                is not None
+            }
+            if token.slot == compatibility.verb:
+                if not _selectional_assignment_compatible(
+                    filler, assignments, compatibility, reg
+                ):
+                    return False
+                continue
+            verb = known_filler(compatibility.verb)
+            if verb is not None:
+                if not _selectional_assignment_compatible(
+                    verb, assignments, compatibility, reg
+                ):
+                    return False
+                continue
+            verb_token = tokens_by_slot.get(compatibility.verb)
+            if verb_token is None or not any(
+                _selectional_assignment_compatible(
+                    candidate, assignments, compatibility, reg
+                )
+                for candidate in candidate_domain(verb_token)
+                if _outside_categories(candidate, absent_categories, reg)
+                and _outside_slot_categories(
+                    candidate,
+                    compatibility.verb,
+                    slot_category_exclusions,
+                    reg,
+                )
+            ):
+                return False
         for (
             measure_name,
             holder_names,
             allow_proper_name,
             proper_name_measure_categories,
+            when_declared,
         ) in measure_holder_requirements:
             def holder_ok(measure: _Filler, holder: _Filler) -> bool:
+                if (
+                    when_declared
+                    and not reg.measure_has_holder_boundary(measure.identity)
+                ):
+                    return True
                 return (
                     holder.kind == "name"
                     and _proper_name_measure_allowed(
@@ -2750,6 +2916,7 @@ def _realize(
         attribute_pairs,
         modifier_host_pairs,
         verb_role_requirements,
+        verb_selectional_requirements,
         measure_holder_requirements,
         slot_category_exclusions,
         absent_categories,
@@ -3003,6 +3170,7 @@ def _realize(
                 category_bound_requirements,
                 bound_form_requirements,
                 verb_role_requirements,
+                verb_selectional_requirements,
                 measure_holder_requirements,
                 category_membership_requirements=(
                     category_membership_requirements
@@ -3800,6 +3968,7 @@ _WHERE_FIELDS = (
     "proportional_delta_compatible",
     "same_presence",
     "verb_role_compatible",
+    "verb_roles_compatible",
     "measure_holder_compatible",
     "same_phrase",
     "distinct",
@@ -3900,13 +4069,28 @@ def _where_expression(rule: PatternRule, index: int) -> tuple[str, tuple[str, ..
             f"verb_cat={value.verb_cat!r}, {role_boundary}, "
             f"allow_plural_class={value.allow_plural_class!r}"
         )
+    elif kind == "verb_roles_compatible":
+        names = (
+            value.verb,
+            *(
+                slot
+                for slots in value.roles.values()
+                for slot in slots
+            ),
+        )
+        rendered = (
+            f"verb={value.verb!r}, roles={value.roles!r}, "
+            f"allow_proper_name={value.allow_proper_name!r}, "
+            f"allow_plural_class={value.allow_plural_class!r}"
+        )
     elif kind == "measure_holder_compatible":
         names = (value.measure, *value.holders)
         rendered = (
             f"measure={value.measure!r}, holders={value.holders!r}, "
             f"allow_proper_name={value.allow_proper_name!r}, "
             "proper_name_measure_categories="
-            f"{value.proper_name_measure_categories!r}"
+            f"{value.proper_name_measure_categories!r}, "
+            f"when_declared={value.when_declared!r}"
         )
     elif kind == "distinct_from_owner":
         names = (value.entity, value.possessed)
@@ -4127,12 +4311,46 @@ def _where_reason(
             f"{compatibility.verb}={verb!r} {boundary}: "
             + ", ".join(rendered_roles)
         )
+    if pred.verb_roles_compatible is not None:
+        compatibility = pred.verb_roles_compatible
+        verb_units = _slot_units(slots.get(compatibility.verb))
+        if not verb_units:
+            return "the target match did not expose the governing verb"
+        verb = _unit_lemma(verb_units[0], reg)
+        frames = reg.selectional_frames(verb)
+        if not frames:
+            return f"{compatibility.verb}={verb!r} had no declared role frame"
+        rendered_roles = []
+        for semantic_role, role_names in compatibility.roles.items():
+            values = []
+            for role_name in role_names:
+                units = _slot_units(slots.get(role_name))
+                if units:
+                    values.append(
+                        f"{role_name}={_unit_lemma(units[0], reg)!r}"
+                    )
+            rendered_roles.append(
+                f"{semantic_role}({', '.join(values)})"
+            )
+        frame_names = ", ".join(category for category, _ in frames)
+        return (
+            f"{compatibility.verb}={verb!r} satisfied category-owned frame "
+            f"{frame_names}: " + "; ".join(rendered_roles)
+        )
     if pred.measure_holder_compatible is not None:
         compatibility = pred.measure_holder_compatible
         measure_units = _slot_units(slots.get(compatibility.measure))
         if not measure_units:
             return "the target match did not expose the governing measure"
         measure = _unit_lemma(measure_units[0], reg)
+        if (
+            compatibility.when_declared
+            and not reg.measure_has_holder_boundary(measure)
+        ):
+            return (
+                f"{compatibility.measure}={measure!r} had no declared "
+                "holder boundary, so the conditional relation was neutral"
+            )
         rendered = []
         for holder_name in compatibility.holders:
             holder_units = _slot_units(slots.get(holder_name))
@@ -4724,6 +4942,21 @@ def _explain_candidate(
                     ),
                 )
             )
+        if predicate.verb_roles_compatible is not None and target is not None:
+            verb_units = _slot_units(
+                slots.get(predicate.verb_roles_compatible.verb)
+            )
+            if verb_units:
+                for category, frame in project.registry.selectional_frames(
+                    _unit_lemma(verb_units[0], project.registry)
+                ):
+                    where_sources.append(
+                        project.source_index.categories.get(category)
+                    )
+                    where_sources.extend(
+                        project.source_index.categories.get(target_category)
+                        for target_category in frame.values()
+                    )
         premises.append(
             PremiseSummary(
                 index=where_no,

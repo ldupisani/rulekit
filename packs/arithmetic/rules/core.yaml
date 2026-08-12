@@ -84,7 +84,7 @@ rules:
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: transfer_out, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: task_completion_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: task_completion_verb, role_cat: finishable_quantity_object}
-      - verb_role_compatible: {verb: item, roles: [who], verb_cat: student_quantity_measure, role_cat: student_quantity_holder}
+      - measure_holder_compatible: {measure: item, holders: [who], allow_proper_name: true, when_declared: true}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: std, cat: non_quantity_holder}
@@ -149,14 +149,22 @@ rules:
         - {slot: std, type: entity, common_noun_cat: quantity_holder}
     where:
       - number_compatible: [who, verb]
+      - verb_roles_compatible:
+          verb: verb
+          roles:
+            actor: [who, std]
+            theme: [item, item2]
+          allow_proper_name: [who, std]
+          allow_plural_class: [who, std]
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
-      - verb_role_compatible: {verb: verb, roles: [item, item2], verb_cat: find_quantity_verb, role_cat: findable_quantity_object}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: std, cat: non_quantity_holder}
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - slot_not_category: {slot: item2, cat: many_incompatible_noun}
+      - slot_not_category: {slot: dir, cat: age_comparative}
+      - slot_not_category: {slot: dir2, cat: age_comparative}
       - distinct: [who, std]
       - category_nonoverlap: [who, std]
       - distinct_measure: [item, std]
@@ -233,8 +241,12 @@ rules:
       - number_compatible: [who, verb]
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
-      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: motion_comparison_verb, role_cat: motion_participant, allow_plural_class: true}
+      - verb_roles_compatible:
+          verb: verb
+          roles:
+            actor: [who, std]
+          allow_proper_name: [who, std]
+          allow_plural_class: [std]
       - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: animate_object_verb, role_cat: quantity_event_participant}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
@@ -338,15 +350,27 @@ rules:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - number_compatible: [who, verb]
       - number_compatible: [who, trailing_verb]
+      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: animate_object_verb, role_cat: quantity_event_participant}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: task_completion_verb, role_cat: finishable_quantity_object}
-      - verb_role_compatible: {verb: item, roles: [who], verb_cat: student_quantity_measure, role_cat: student_quantity_holder}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: transfer_out, role_cat: quantity_event_participant}
+      - verb_roles_compatible:
+          verb: verb
+          roles:
+            actor: [who]
+            theme: [item]
+          allow_proper_name: [who]
+      - measure_holder_compatible: {measure: item, holders: [who], allow_proper_name: true, when_declared: true}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: std, cat: non_quantity_holder}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - slot_not_category: {slot: dir, cat: age_comparative}
+      - slot_not_category: {slot: pp_prep, cat: quantity_remainder_preposition}
+      - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
+      - modifier_host_compatible: {modifier: pp_prep, host: item, object: pp_obj}
+      - bound_rejects_category: {bound: pp_det, slot: pp_obj, cat: named_calendar_period}
       - distinct: [who, std]
+      - distinct: [who, pp_obj]
       - category_nonoverlap: [who, std]
       - distinct: [item, std]
       - same_lemma: [std, std_echo]
@@ -408,8 +432,12 @@ rules:
       - number_compatible: [who, verb]
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
-      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: motion_comparison_verb, role_cat: motion_participant, allow_plural_class: true}
+      - verb_roles_compatible:
+          verb: verb
+          roles:
+            actor: [who, std]
+          allow_proper_name: [who, std]
+          allow_plural_class: [std]
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: dir, cat: age_comparative}
@@ -463,7 +491,7 @@ rules:
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: who, cat: named_calendar_period}
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
-      - verb_role_compatible: {verb: item, roles: [who], verb_cat: student_quantity_measure, role_cat: student_quantity_holder}
+      - measure_holder_compatible: {measure: item, holders: [who], allow_proper_name: true, when_declared: true}
       - slot_not_category: {slot: dir, cat: age_comparative}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - absent: {cat: relational_marker}
@@ -564,7 +592,7 @@ rules:
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: transfer_out, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: task_completion_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: task_completion_verb, role_cat: finishable_quantity_object}
-      - verb_role_compatible: {verb: item, roles: [who], verb_cat: student_quantity_measure, role_cat: student_quantity_holder}
+      - measure_holder_compatible: {measure: item, holders: [who], allow_proper_name: true, when_declared: true}
       - slot_not_category: {slot: verb, cat: arrival_motion_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: std, cat: non_quantity_holder}
@@ -1158,9 +1186,12 @@ rules:
       - number_compatible: [who, verb]
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
-      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: motion_comparison_verb, role_cat: motion_participant}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: motion_comparison_verb, role_cat: motion_comparison_measure}
+      - verb_roles_compatible:
+          verb: verb
+          roles:
+            actor: [who, std]
+            theme: [item]
+          allow_proper_name: [who, std]
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: std, cat: non_quantity_holder}
@@ -1216,9 +1247,12 @@ rules:
       - slot_not_category: {slot: k, cat: predeterminer_multiplier}
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
-      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: motion_comparison_verb, role_cat: motion_participant}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: motion_comparison_verb, role_cat: motion_comparison_measure}
+      - verb_roles_compatible:
+          verb: verb
+          roles:
+            actor: [who, std]
+            theme: [item]
+          allow_proper_name: [who, std]
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: std, cat: non_quantity_holder}
@@ -1392,9 +1426,12 @@ rules:
       - slot_not_category: {slot: k, cat: predeterminer_multiplier}
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
-      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: motion_comparison_verb, role_cat: motion_participant}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: motion_comparison_verb, role_cat: motion_comparison_measure}
+      - verb_roles_compatible:
+          verb: verb
+          roles:
+            actor: [who, std]
+            theme: [item]
+          allow_proper_name: [who, std]
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: std, cat: non_quantity_holder}
@@ -1462,8 +1499,11 @@ rules:
       - slot_not_category: {slot: k, cat: predeterminer_multiplier}
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
-      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: motion_comparison_verb, role_cat: motion_participant}
+      - verb_roles_compatible:
+          verb: verb
+          roles:
+            actor: [who, std]
+          allow_proper_name: [who, std]
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: std, cat: non_quantity_holder}
@@ -1531,7 +1571,11 @@ rules:
       - number_compatible: [who, verb]
       - slot_not_category: {slot: k, cat: predeterminer_multiplier}
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
+      - verb_roles_compatible:
+          verb: verb
+          roles:
+            actor: [who]
+          allow_proper_name: [who]
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: item1, cat: many_incompatible_noun}
@@ -1612,7 +1656,11 @@ rules:
       - number_compatible: [who, verb]
       - slot_not_category: {slot: k, cat: predeterminer_multiplier}
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
+      - verb_roles_compatible:
+          verb: verb
+          roles:
+            actor: [who]
+          allow_proper_name: [who]
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: verb, cat: frame_prepositional_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
@@ -1681,12 +1729,15 @@ rules:
       - number_compatible: [who, verb]
       - slot_not_category: {slot: k, cat: predeterminer_multiplier}
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: teaching_quantity_verb, role_cat: animate}
       - verb_role_compatible: {verb: verb, roles: [item1], verb_cat: animate_object_verb, role_cat: teaching_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item1], verb_cat: find_quantity_verb, role_cat: findable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item1], verb_cat: task_completion_verb, role_cat: finishable_quantity_object}
+      - verb_roles_compatible:
+          verb: verb
+          roles:
+            actor: [who]
+            theme: [item1]
+          allow_proper_name: [who]
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: item1, cat: many_incompatible_noun}
@@ -2205,8 +2256,12 @@ rules:
       - bound_requires_type: {bound: appos_role, slot: std_seen, type: proper_name}
       - number_compatible: [who, verb]
       - slot_not_category: {slot: who, cat: non_quantity_holder}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: motion_comparison_verb, role_cat: motion_comparison_measure}
+      - verb_roles_compatible:
+          verb: verb
+          roles:
+            actor: [who]
+            theme: [item]
+          allow_proper_name: [who]
       - unbound: [std_seen]
       - polarity_compatible:
           slots: [verb, dir]
@@ -2251,8 +2306,12 @@ rules:
       - bound_requires_type: {bound: appos_role, slot: std_seen, type: proper_name}
       - number_compatible: [who, verb]
       - slot_not_category: {slot: who, cat: non_quantity_holder}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: motion_comparison_verb, role_cat: motion_comparison_measure}
+      - verb_roles_compatible:
+          verb: verb
+          roles:
+            actor: [who]
+            theme: [item]
+          allow_proper_name: [who]
       - unbound: [std_seen]
       - polarity_compatible:
           slots: [verb, dir]
@@ -2310,9 +2369,12 @@ rules:
       - number_compatible: [who, verb]
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
-      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: motion_comparison_verb, role_cat: motion_participant}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: motion_comparison_verb, role_cat: motion_comparison_measure}
+      - verb_roles_compatible:
+          verb: verb
+          roles:
+            actor: [who, std]
+            theme: [item]
+          allow_proper_name: [who, std]
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: std, cat: non_quantity_holder}
@@ -2404,8 +2466,12 @@ rules:
       - number_compatible: [std, echo_verb]
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
-      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: motion_comparison_verb, role_cat: motion_participant, allow_plural_class: true}
+      - verb_roles_compatible:
+          verb: verb
+          roles:
+            actor: [who, std]
+          allow_proper_name: [who, std]
+          allow_plural_class: [std]
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: std, cat: non_quantity_holder}
@@ -2482,20 +2548,16 @@ rules:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
-      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: motion_comparison_verb, role_cat: motion_participant, allow_plural_class: true}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: motion_comparison_verb, role_cat: motion_comparison_measure}
       - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: teaching_quantity_verb, role_cat: animate}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: teaching_quantity_verb, role_cat: teaching_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: find_quantity_verb, role_cat: findable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: win_quantity_verb, role_cat: winnable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: task_completion_verb, role_cat: quantity_event_participant}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: task_completion_verb, role_cat: finishable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: enrollment_quantity_verb, role_cat: enrollment_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: drop_quantity_verb, role_cat: droppable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: eating_quantity_verb, role_cat: edible_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: transfer_out, role_cat: transferable_quantity_object}
+      - verb_roles_compatible:
+          verb: verb
+          roles:
+            actor: [who, std]
+            theme: [item]
+          allow_proper_name: [who, std]
+          allow_plural_class: [std]
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: possession_state, excluded_role_cat: bare_possession_incompatible_noun}
       - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: past_departure_quantity_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: past_departure_quantity_verb, role_cat: transferable_quantity_object}
@@ -2627,16 +2689,15 @@ rules:
       - number_compatible: [std, echo_verb]
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
-      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: motion_comparison_verb, role_cat: motion_participant, allow_plural_class: true}
       - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: animate_object_verb, role_cat: teaching_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: find_quantity_verb, role_cat: findable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: task_completion_verb, role_cat: quantity_event_participant}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: task_completion_verb, role_cat: finishable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: enrollment_quantity_verb, role_cat: enrollment_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: drop_quantity_verb, role_cat: droppable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: eating_quantity_verb, role_cat: edible_quantity_object}
+      - verb_roles_compatible:
+          verb: verb
+          roles:
+            actor: [who, std]
+            theme: [item]
+          allow_proper_name: [who, std]
+          allow_plural_class: [std]
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: state, excluded_role_cat: motion_comparison_measure}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: verb, cat: frame_prepositional_verb}
@@ -2779,8 +2840,11 @@ rules:
       - number_compatible: [std, echo_verb]
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
-      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: motion_comparison_verb, role_cat: motion_participant}
+      - verb_roles_compatible:
+          verb: verb
+          roles:
+            actor: [who, std]
+          allow_proper_name: [who, std]
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: std, cat: non_quantity_holder}
@@ -2832,9 +2896,12 @@ rules:
       - number_compatible: [who, verb]
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
-      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: motion_comparison_verb, role_cat: motion_participant}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: motion_comparison_verb, role_cat: motion_comparison_measure}
+      - verb_roles_compatible:
+          verb: verb
+          roles:
+            actor: [who, std]
+            theme: [item]
+          allow_proper_name: [who, std]
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: spend_verb, role_cat: animate}
       - verb_role_compatible: {verb: verb, roles: [std], verb_cat: spend_verb, role_cat: animate, allow_plural_class: true}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
@@ -2877,8 +2944,11 @@ rules:
         - {slot: std, type: entity, referential: true}
     where:
       - number_compatible: [who, verb]
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
-      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: motion_comparison_verb, role_cat: motion_participant}
+      - verb_roles_compatible:
+          verb: verb
+          roles:
+            actor: [who, std]
+          allow_proper_name: [who, std]
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: std, cat: non_quantity_holder}
       - distinct: [who, std]
@@ -3450,25 +3520,16 @@ rules:
       - number_compatible: [who, verb]
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
-      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: motion_comparison_verb, role_cat: motion_participant, allow_plural_class: true}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: motion_comparison_verb, role_cat: motion_comparison_measure}
       - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: teaching_quantity_verb, role_cat: animate}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: animate_object_verb, role_cat: teaching_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: find_quantity_verb, role_cat: findable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: task_completion_verb, role_cat: quantity_event_participant}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: task_completion_verb, role_cat: finishable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: enrollment_quantity_verb, role_cat: enrollment_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: drop_quantity_verb, role_cat: droppable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: eating_quantity_verb, role_cat: edible_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: transfer_out, role_cat: transferable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: initiation_quantity_verb, role_cat: initiation_quantity_participant}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: initiation_quantity_verb, role_cat: initiable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: earning_quantity_verb, role_cat: earning_quantity_participant}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: earning_quantity_verb, role_cat: earnable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: production_quantity_verb, role_cat: production_quantity_participant}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: production_quantity_verb, role_cat: producible_quantity_object}
+      - verb_roles_compatible:
+          verb: verb
+          roles:
+            actor: [who, std]
+            theme: [item]
+          allow_proper_name: [who, std]
+          allow_plural_class: [std]
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: state, excluded_role_cat: motion_comparison_measure}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: possession_state, excluded_role_cat: bare_possession_incompatible_noun}
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: past_departure_quantity_verb, role_cat: quantity_event_participant}
@@ -3532,19 +3593,16 @@ rules:
       - number_compatible: [who, verb]
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
-      - verb_role_compatible: {verb: verb, roles: [std], verb_cat: motion_comparison_verb, role_cat: motion_participant, allow_plural_class: true}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: motion_comparison_verb, role_cat: motion_comparison_measure}
       - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: teaching_quantity_verb, role_cat: animate}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: animate_object_verb, role_cat: teaching_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: find_quantity_verb, role_cat: findable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: task_completion_verb, role_cat: quantity_event_participant}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: task_completion_verb, role_cat: finishable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: enrollment_quantity_verb, role_cat: enrollment_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: drop_quantity_verb, role_cat: droppable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: eating_quantity_verb, role_cat: edible_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: transfer_out, role_cat: transferable_quantity_object}
+      - verb_roles_compatible:
+          verb: verb
+          roles:
+            actor: [who, std]
+            theme: [item]
+          allow_proper_name: [who, std]
+          allow_plural_class: [std]
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: state, excluded_role_cat: motion_comparison_measure}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: possession_state, excluded_role_cat: bare_possession_incompatible_noun}
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: past_departure_quantity_verb, role_cat: quantity_event_participant}
@@ -3620,8 +3678,12 @@ rules:
       - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: teaching_quantity_verb, role_cat: animate}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: animate_object_verb, role_cat: teaching_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: task_completion_verb, role_cat: finishable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: win_quantity_verb, role_cat: winnable_quantity_object}
+      - verb_roles_compatible:
+          verb: verb
+          roles:
+            actor: [who, std]
+            theme: [item]
+          allow_proper_name: [who, std]
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: transfer_out, excluded_role_cat: remnant}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
@@ -5550,8 +5612,12 @@ rules:
     where:
       - bound_requires_form: {bound: aux, slot: verb, form: bare}
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: motion_comparison_verb, role_cat: motion_participant}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: motion_comparison_verb, role_cat: motion_comparison_measure}
+      - verb_roles_compatible:
+          verb: verb
+          roles:
+            actor: [who]
+            theme: [item]
+          allow_proper_name: [who]
       - slot_not_category: {slot: who, cat: non_quantity_holder}
     consumes: [item, span]
     emits:
@@ -5823,8 +5889,42 @@ asks:
       - bound_requires_category: {bound: p, slot: agg, cat: prepositional_group_total_marker}
     resolves:
       consumer: combined
+      require_discourse_group: "{who}"
       measure: "{item}"
       verb: "{verb}"
+
+  - id: ask/how-many-combined-discourse-group
+    # Exact-discourse sibling of ask/how-many-combined: "How many apples do
+    # they receive combined?" The question pronoun's `referent_group` is
+    # synthesized from prior referential subjects by document.py. Preserve
+    # those exact members in `holders`; the combined consumer must not discard
+    # the pronoun and enumerate every same-measure holder in the fact store.
+    # The category-gated `who` makes this rule more specific than the generic
+    # pronoun surface above while retaining that rule for contexts where no
+    # exact discourse group can be established.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: plural}
+        - {slot: aux, type: future_modal}
+        - {slot: who, cat: discourse_subject_group_pronoun}
+        - {slot: verb, type: verb, bare_form: true}
+        - opt:
+            - {slot: p, cat: group_total_preposition}
+        - {slot: agg, cat: group_total_marker}
+    where:
+      - bound_requires_category: {bound: p, slot: agg, cat: prepositional_group_total_marker}
+      - number_compatible: [who, aux]
+    resolves:
+      consumer: combined
+      holders: "{who.group_members}"
+      measure: "{item}"
+      measure_qualifier: "{item.qualifier}"
+      verb: "{verb}"
+    generation:
+      slot_categories:
+        aux: [plural_auxiliary]
 
   - id: ask/how-many-combined-in-all
     # Handles the two-word total marker "in all". It needs its own rule
@@ -5845,7 +5945,29 @@ asks:
         - {lit: all}
     resolves:
       consumer: combined
+      require_discourse_group: "{who}"
       measure: "{item}"
+      verb: "{verb}"
+
+  - id: ask/how-many-combined-in-all-discourse-group
+    # Context-bearing sibling of the two-word "in all" surface. The exact
+    # prior-subject/relation group is mandatory; unresolved `they` falls back
+    # to the grammar-only rule above and is declined by the consumer.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: plural}
+        - {slot: aux, cat: auxiliary}
+        - {slot: who, cat: discourse_subject_group_pronoun}
+        - {slot: verb, type: verb, bare_form: true}
+        - {lit: in}
+        - {lit: all}
+    resolves:
+      consumer: combined
+      holders: "{who.group_members}"
+      measure: "{item}"
+      measure_qualifier: "{item.qualifier}"
       verb: "{verb}"
 
   - id: ask/how-many-combined-named
@@ -6014,6 +6136,55 @@ asks:
       consumer: per-holder
       holders: "{holders.name_list}"
       measure: "{item}"
+      measure_surface: "{item.surface}"
+      verb: "{verb}"
+
+  - id: ask/how-many-individually-discourse-group
+    # Pronoun counterpart of the exact named-list form: "How many apples do
+    # they individually receive?" The resolved discourse group becomes the
+    # per-holder consumer's explicit holder list, so it returns labelled
+    # values in discourse order and declines rather than guessing when the
+    # group cannot be established.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: plural}
+        - {slot: aux, type: auxiliary}
+        - {slot: who, cat: discourse_subject_group_pronoun}
+        - {slot: marker, cat: individualizing_adverb}
+        - {slot: verb, type: verb, bare_form: true}
+    where:
+      - slot_not_category: {slot: item, cat: mass_quantity_noun}
+      - number_compatible: [who, aux]
+    resolves:
+      consumer: per-holder
+      holders: "{who.group_members}"
+      measure: "{item}"
+      measure_qualifier: "{item.qualifier}"
+      measure_surface: "{item.surface}"
+      verb: "{verb}"
+
+  - id: ask/how-many-individually-discourse-group-postverbal
+    # Postverbal sibling: "How many apples do they receive individually?"
+    # It carries the identical exact group and differs only in marker order.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: plural}
+        - {slot: aux, type: auxiliary}
+        - {slot: who, cat: discourse_subject_group_pronoun}
+        - {slot: verb, type: verb, bare_form: true}
+        - {slot: marker, cat: individualizing_adverb}
+    where:
+      - slot_not_category: {slot: item, cat: mass_quantity_noun}
+      - number_compatible: [who, aux]
+    resolves:
+      consumer: per-holder
+      holders: "{who.group_members}"
+      measure: "{item}"
+      measure_qualifier: "{item.qualifier}"
       measure_surface: "{item.surface}"
       verb: "{verb}"
 
@@ -6641,10 +6812,12 @@ asks:
       who_value: "{who.value}"
 
   - id: ask/how-many-all-combined
-    # Handles "all of them" as a collective subject. The pronoun is only
-    # part of the sentence shape; the consumer finds every holder from the
-    # facts. The inserted words "all of" keep this form separate from the
-    # bare "they" or "we" rule.
+    # Handles "all of them" as a collective subject. This grammar-only rule
+    # keeps the surface independently realisable, but its query explicitly
+    # requires discourse context and the consumer declines without it. When a
+    # fact-backed antecedent exists, the more-specific sibling below supplies
+    # its exact holders. The inserted words "all of" keep this form separate
+    # from the bare "they" or "we" rule.
     match:
       question:
         - {lit: how}
@@ -6653,7 +6826,7 @@ asks:
         - {slot: aux, type: auxiliary}
         - {lit: all}
         - {lit: of}
-        - {slot: who, type: pronoun}
+        - {slot: who, cat: discourse_group_pronoun}
         - {slot: verb, type: verb, bare_form: true}
         - opt:
             - {slot: p, cat: group_total_preposition}
@@ -6662,8 +6835,46 @@ asks:
       - bound_requires_category: {bound: p, slot: agg, cat: prepositional_group_total_marker}
     resolves:
       consumer: combined
+      # The grammar can round-trip independently, but the consumer must not
+      # enumerate holders when no antecedent group exists. In a real discourse
+      # the more-specific sibling below wins and supplies exact `holders`.
+      require_discourse_group: "true"
       measure: "{item}"
       verb: "{verb}"
+    generation:
+      slot_categories:
+        aux: [plural_auxiliary]
+
+  - id: ask/how-many-all-combined-discourse-group
+    # Context-bearing interpretation of "all of them". A category-gated
+    # plural auxiliary gives this sibling greater ask specificity than the
+    # independently round-trippable grammar rule above. The resolved object
+    # pronoun contributes the exact prior-subject group; no fact-store-wide
+    # holder enumeration is permitted.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: plural}
+        - {slot: aux, cat: auxiliary}
+        - {lit: all}
+        - {lit: of}
+        - {slot: who, cat: discourse_group_pronoun}
+        - {slot: verb, type: verb, bare_form: true}
+        - opt:
+            - {slot: p, cat: group_total_preposition}
+        - {slot: agg, cat: group_total_marker}
+    where:
+      - bound_requires_category: {bound: p, slot: agg, cat: prepositional_group_total_marker}
+    resolves:
+      consumer: combined
+      holders: "{who.group_members}"
+      measure: "{item}"
+      measure_qualifier: "{item.qualifier}"
+      verb: "{verb}"
+    generation:
+      slot_categories:
+        aux: [plural_auxiliary]
 
   - id: ask/how-many-plural-combined-prenominal-marker
     # Handles the aggregate marker before the measure: "how many total toys
@@ -7880,12 +8091,13 @@ asks:
         - {lit: how}
         - {lit: many}
         - {lit: of}
-        - {slot: collection, type: noun}
-        - {slot: verb, cat: state}
-        - {slot: label, type: noun}
+        - {slot: collection, type: noun, number: plural}
+        - {slot: verb, cat: plural_copula}
+        - {slot: label, cat: complement_membership_label, number: plural}
     resolves:
       consumer: unique-entity
       measure: "{label}"
+      collection: "{collection}"
 
   - id: ask/how-many-more-goal-need
     match:

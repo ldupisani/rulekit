@@ -111,6 +111,14 @@ def annotate_senses(reading: Reading, reg: Registry) -> Reading:
             and surface[:1].isupper()
             and surface[1:].islower()
             and unit.words[0].index > 0
+            # Capitalization cannot introduce a competing proper-name read
+            # when the lexicon gives the surface exactly one, verbal sense.
+            # This is the ordinary case-insensitive predicate path for text
+            # such as "Aven Receives 10 apples".  Noun/verb polysemes remain
+            # name-eligible, as do noun-only words such as "Rose"; only an
+            # otherwise unambiguous verb is protected from being merged into
+            # its preceding subject as a multiword name.
+            and set(entry.senses) != {"verb"}
             and not reg.word_in_category(fold, "timeperiod")
             # a QUANTIFIER's capital is never a naming signal: an embedded
             # clause keeps its sentence-initial capital ("Is it true that No

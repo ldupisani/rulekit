@@ -250,6 +250,7 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
         "arithmetic/affine-fraction-as-many",
         "arithmetic/affine-times-as-many",
         "arithmetic/affine-times-as-much",
+        "arithmetic/anchored-relation-conjoined-anchor",
         "arithmetic/anchored-relation-elided-standard",
         "arithmetic/anchored-relation-possessive-kinship-standard",
         "arithmetic/anchored-relation-postfix-dimension",

@@ -55,6 +55,27 @@ def unique_entity(ctx: ConsumerContext):
             f"{len(entities)} entities hold {singular!r} — an entity-less "
             "ask needs exactly one",
         )
+    collection = ctx.query.get("collection")
+    if collection:
+        collection_measure = _resolve_measure(
+            collection,
+            ctx.store,
+            ctx.reg,
+            journal=ctx.log.journal,
+        )
+        if collection_measure is None or _entity_total(
+            ctx.store,
+            ctx.reg,
+            entities[0],
+            collection_measure,
+            ctx.log,
+        ) is None:
+            return Answer(
+                "decline",
+                None,
+                f"the sole holder of {singular!r} has no matching "
+                f"{collection!r} collection",
+            )
     # An entity-less ask has no group identity with which to select a scoped
     # total. Only the legacy unscoped whole is compatible; choosing a named
     # group's total here would silently widen that group to the whole scene.

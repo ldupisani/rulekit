@@ -3702,8 +3702,8 @@ def test_demonstrative_quantity_proforms_exclude_predeterminers() -> None:
         ),
         (
             "arithmetic/anaphoric-multiplier-conjunct-many",
-            "The dog ate 18 cats and double that many.",
-            "The dog ate 18 cats and twice that many.",
+            "The dog ate 18 apples and double that many.",
+            "The dog ate 18 apples and twice that many.",
         ),
     ],
 )
@@ -4121,10 +4121,8 @@ def test_conjunct_comparisons_share_motion_participant_boundaries() -> None:
         actual_roles = {
             role
             for predicate in rules[rule_id].where
-            if predicate.verb_role_compatible is not None
-            and predicate.verb_role_compatible.verb_cat
-            == "motion_comparison_verb"
-            for role in predicate.verb_role_compatible.roles
+            if predicate.verb_roles_compatible is not None
+            for role in predicate.verb_roles_compatible.roles.get("actor", [])
         }
         assert actual_roles == expected_roles
 

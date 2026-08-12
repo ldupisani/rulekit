@@ -39,11 +39,21 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
         "ask requires an antecedent discourse group; generate it as a "
         "contextual scenario",
     )
-    assert sum(item.supported for item in availability.values()) == 105
-    assert len(availability) == 109
+    assert sum(item.supported for item in availability.values()) == 104
+    assert not availability["ask/how-many-of-collection-are-label"].supported
+    assert availability["ask/how-many-of-collection-are-label"].blockers == (
+        "no project-backed ask filler exists for label",
+    )
+    assert len(availability) == 114
     assert {
         item.id for item in availability.values() if not item.supported
     } == {
+        "ask/how-many-all-combined-discourse-group",
+        "ask/how-many-combined-discourse-group",
+        "ask/how-many-combined-in-all-discourse-group",
+        "ask/how-many-individually-discourse-group",
+        "ask/how-many-individually-discourse-group-postverbal",
+        "ask/how-many-of-collection-are-label",
         "ask/how-old-discourse-group-now",
         "ask/how-much-noun-entity-uninverted",
         "ask/what-combined-age-at-year",

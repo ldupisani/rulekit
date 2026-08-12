@@ -802,6 +802,14 @@ def _combined_holder_totals(
     if singular is None:
         return Answer("decline", None,
                       f"measure {measure!r} is ambiguous across the facts")
+    measure_qualifier = query.get("measure_qualifier")
+    if measure_qualifier:
+        qualified = f"{singular}[{measure_qualifier}]"
+        if any(
+            quantity.measure == qualified
+            for quantity in store.by_kind(Quantity)
+        ):
+            singular = qualified
     measure_substance = query.get("measure_substance")
     if measure_substance:
         guard = _measure_substance_guard(store, singular, measure_substance)
@@ -812,16 +820,22 @@ def _combined_holder_totals(
     if explicit_holders is not None:
         if (
             not isinstance(explicit_holders, list)
-            or len(explicit_holders) < 2
+            or not explicit_holders
             or not all(
                 isinstance(holder, str) and holder
                 for holder in explicit_holders
             )
+            or (
+                len(explicit_holders) == 1
+                and not reg.word_in_category(
+                    explicit_holders[0], "persongroup"
+                )
+            )
         ):
             return Answer(
                 "decline", None,
-                "an explicit combined-holder list must contain at least "
-                "two named entities",
+                "an explicit combined-holder list must contain at least two "
+                "entities or one declared collective group",
             )
         entities = list(explicit_holders)
         if len(set(entities)) != len(entities):
@@ -916,6 +930,50 @@ def _combined_holder_totals(
                 f"a combined ask needs at least two holders of {singular!r}; "
                 f"found {entities}",
             )
+
+    # An exact discourse group can ask through a declared superordinate even
+    # when none of its members directly holds that head measure ("the crew
+    # picked up bottles and cans; how much litter did they pick up?"). The
+    # old superordinate fallback lived only inside fact-store enumeration,
+    # because explicit holder lists did not yet exist for pronoun groups.
+    # Apply the same definitive per-entity fold to those exact members, but
+    # only when no selected member has a direct holding that should retain
+    # ordinary precedence.
+    if explicit_holders is not None and not any(
+        q.entity in entities and q.measure == singular
+        for q in store.by_kind(Quantity)
+    ):
+        super_measure = next(
+            (
+                candidate
+                for candidate in (singular, measure_substance)
+                if candidate
+                and (
+                    candidate in reg.superordinate_categories
+                    or candidate in reg.coordinated_superordinate_categories
+                )
+            ),
+            None,
+        )
+        if super_measure is not None:
+            verb = query.get("verb", "have")
+            verb_arg = None if (
+                verb in ("have", "be")
+                or reg.word_in_category(verb, "state")
+            ) else verb
+            super_totals = [
+                _superordinate_total(
+                    store,
+                    reg,
+                    entity,
+                    super_measure,
+                    log,
+                    verb=verb_arg,
+                )
+                for entity in entities
+            ]
+            if all(total is not None for total in super_totals):
+                return entities, super_totals
     ask_verb = query.get("verb", "have")
     state_ask = ask_verb in ("have", "be") or reg.word_in_category(ask_verb, "state")
     totals = []

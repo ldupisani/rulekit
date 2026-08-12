@@ -151,17 +151,17 @@ def test_review_boundaries_are_pack_declared() -> None:
             "teaching_quantity_object",
         ) in verb_roles(rule_id)
 
-    periodic = verb_roles("arithmetic/periodic-rate-every-span")
-    assert (
-        "motion_comparison_verb",
-        ("who",),
-        "motion_participant",
-    ) in periodic
-    assert (
-        "motion_comparison_verb",
-        ("item",),
-        "motion_comparison_measure",
-    ) in periodic
+    periodic = rules["arithmetic/periodic-rate-every-span"]
+    structural = next(
+        predicate.verb_roles_compatible
+        for predicate in periodic.where
+        if predicate.verb_roles_compatible is not None
+    )
+    assert structural.roles == {"actor": ["who"], "theme": ["item"]}
+    assert project.registry.selectional_frames("travel")[0][1] == {
+        "actor": "motion_participant",
+        "theme": "motion_comparison_measure",
+    }
 
     exclusions = {
         rule_id: {

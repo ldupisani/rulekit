@@ -724,12 +724,10 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
                     f"+ {rel.offset} - {rel.subject_offset}", {}, log,
                     source=f"relation:{rel.provenance.source}",
                 )
-                # decline (never guess) a negative resolved age — scoped
-                # to OFFSET-BEARING relations only, so a zero-offset
-                # relation's behavior (today's) is untouched even for a
-                # malformed premise that already produces a negative value
-                # today.
-                if (rel.subject_offset or rel.standard_offset) and value < 0:
+                # A resolved relation is still a cardinal Quantity.  A
+                # negative result means the premises are inconsistent; it is
+                # not a holding the rest of the engine may safely fold.
+                if value < 0:
                     continue
                 out.append(
                     Quantity(
@@ -818,6 +816,8 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
                 f"{rel.factor} * {anchor_value} + {rel.offset}", {}, log,
                 source=f"relation-subtype:{rel.provenance.source}",
             )
+            if value < 0:
+                continue
             # a 3+-way qualified chain (mining candidate qualified-measure-
             # keys): once (subject, measure) already has a collision-split
             # sibling in the store, a bare-keyed emission here would never
@@ -840,6 +840,12 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
                     owner=rel.subject_owner or None,
                 )
             )
+            continue
+        if subtype_known is not None:
+            # The standard-side quantity already exists.  Once the forward
+            # relation has also been materialized, falling through to the
+            # inverse branch would restate that same anchor under the
+            # relation's verb and make state folds count it twice.
             continue
         # SAME-HOLDER SUBTYPE INVERSE (mining candidate cross-measure-
         # relation-fixes): the mirror of the forward branch just above —
@@ -968,7 +974,7 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
                     f"/ {rel.factor} - {rel.standard_offset}", {}, log,
                     source=f"relation-inverse:{rel.provenance.source}",
                 )
-                if (rel.subject_offset or rel.standard_offset) and value < 0:
+                if value < 0:
                     continue
                 out.append(
                     Quantity(
@@ -1965,9 +1971,13 @@ def _sum_constraint_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -
         standard = (T - offset) / (1 + factor)
         subject  = T - standard
 
-    Fires ONLY when exactly one Relation and exactly one GroupTotal share a
-    measure, and NEITHER the relation's subject nor its standard already
-    holds a Quantity of that measure (from anywhere — the ordinary
+    Fires ONLY when exactly one Relation and exactly one compatible GroupTotal
+    share a measure.  An unscoped total is compatible, as is a total scoped by
+    a plural discourse pronoun (``they``): both can denote the relation's two
+    holders.  A named scope is local to that named holder/group and cannot be
+    borrowed as the sum of two unrelated relation holders.  NEITHER the
+    relation's subject nor its standard may already hold a Quantity of that
+    measure (from anywhere — the ordinary
     relation-resolution path, an earlier round of this very plugin, or a
     stated holding): an existing holder means either the ordinary
     arithmetic/relation-to-quantity path already solved it, or a THIRD
@@ -2018,6 +2028,17 @@ def _sum_constraint_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -
         if len(rels) != 1:
             continue  # more than one relation over this measure — ambiguous
         (rel,) = rels
+        # A leading total marker retains its grammatical subject as an exact
+        # scope ("Combined John receives 70 apples" -> scope='john').  That
+        # 70 is local to John; it is not evidence that Eron + Aven = 70 just
+        # because their Relation happens to use the same measure.  Only a
+        # genuinely unscoped total or a plural group anaphor can supply the
+        # two-holder sum constraint.  Use the pack's existing discourse-group
+        # category rather than hard-coding a pronoun list here.
+        if total.scope is not None and not reg.word_in_category(
+            total.scope, "discourse_referential_group_pronoun"
+        ):
+            continue
         if rel.subject == rel.standard or rel.factor == -1:
             continue  # self-referential or degenerate (terms cancel, not sum)
         holders = {q.entity for q in store.by_kind(Quantity) if q.measure == measure}

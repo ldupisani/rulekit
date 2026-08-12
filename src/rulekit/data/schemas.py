@@ -111,6 +111,12 @@ class CategoryDef(StrictModel):
     # family can never silently widen what an UNRELATED existing ask
     # resolves (the shared-function blast-radius HANDOFF invariant).
     dimension: bool = False
+    # Semantic role -> noun category selected by members of this verb
+    # category.  These contracts are inherited through the category tree;
+    # a child may only replace a target with one of its subcategories.  The
+    # grammar maps its structural slots onto the semantic role names, while
+    # the vocabulary-owning category declares which nouns can fill them.
+    selectional_roles: dict[str, str] = Field(default_factory=dict)
     notes: str | None = None
 
     @model_validator(mode="after")
@@ -120,6 +126,19 @@ class CategoryDef(StrictModel):
                 "a category cannot be both closed and coordinated-only "
                 "superordinate"
             )
+        return self
+
+    @model_validator(mode="after")
+    def _selectional_role_names(self) -> "CategoryDef":
+        for role, category in self.selectional_roles.items():
+            if not role or role.strip() != role:
+                raise ValueError(
+                    "selectional role names must be non-empty and trimmed"
+                )
+            if not category or category.strip() != category:
+                raise ValueError(
+                    "selectional role categories must be non-empty and trimmed"
+                )
         return self
 
 
@@ -1001,6 +1020,62 @@ class VerbRoleCompatibilityPredicate(StrictModel):
         return self
 
 
+class VerbRolesCompatibilityPredicate(StrictModel):
+    """Map construction slots onto category-owned semantic verb roles.
+
+    The governing verb's most-specific applicable category supplies the role
+    targets through ``CategoryDef.selectional_roles``.  Sibling categories
+    remain alternative complete frames; constraints from two senses are never
+    mixed. Proper names and plural comparison classes are construction-level
+    permissions because they are properties of the surface frame, not lexical
+    properties of the governing verb.
+    """
+
+    verb: str
+    roles: dict[str, list[str]]
+    allow_proper_name: list[str] = Field(default_factory=list)
+    allow_plural_class: list[str] = Field(default_factory=list)
+    allow_unbound_trigger: bool = False
+
+    @model_validator(mode="after")
+    def _complete_unique_mapping(self) -> "VerbRolesCompatibilityPredicate":
+        if not self.roles:
+            raise ValueError("verb roles compatibility needs at least one role")
+        slots: list[str] = []
+        for role, mapped in self.roles.items():
+            if not role or role.strip() != role:
+                raise ValueError(
+                    "verb roles compatibility role names must be non-empty and trimmed"
+                )
+            if not mapped:
+                raise ValueError(
+                    f"verb roles compatibility role {role!r} needs a slot"
+                )
+            if len(mapped) != len(set(mapped)):
+                raise ValueError(
+                    f"verb roles compatibility role {role!r} repeats a slot"
+                )
+            slots.extend(mapped)
+        if len(slots) != len(set(slots)):
+            raise ValueError("verb roles compatibility maps a slot twice")
+        known = set(slots)
+        for permission, declared in (
+            ("proper-name", self.allow_proper_name),
+            ("plural-class", self.allow_plural_class),
+        ):
+            if len(declared) != len(set(declared)):
+                raise ValueError(
+                    f"verb roles compatibility repeats a {permission} slot"
+                )
+            unknown = set(declared) - known
+            if unknown:
+                raise ValueError(
+                    f"verb roles compatibility {permission} permission names "
+                    f"unmapped slots {sorted(unknown)!r}"
+                )
+        return self
+
+
 class MeasureHolderCompatibilityPredicate(StrictModel):
     """Require every holder to bear the dimension named by a measure.
 
@@ -1013,6 +1088,12 @@ class MeasureHolderCompatibilityPredicate(StrictModel):
     holders: list[str] = Field(min_length=1)
     allow_proper_name: bool = False
     proper_name_measure_categories: list[str] = Field(default_factory=list)
+    # A broad grammar may contain both relational measures and ordinary count
+    # nouns. In that case a declared source-category relationship activates
+    # the boundary, while measures with no relationship remain unchanged.
+    # The default stays strict for dimension rules whose entire measure domain
+    # must have a holder contract.
+    when_declared: bool = False
 
     @model_validator(mode="after")
     def _unique_holders(self) -> "MeasureHolderCompatibilityPredicate":
@@ -1145,6 +1226,10 @@ class WherePredicate(StrictModel):
     # name or a common noun in ``role_cat``. Verbs outside the triggering
     # category remain unchanged. This keeps agency knowledge in pack data.
     verb_role_compatible: VerbRoleCompatibilityPredicate | None = None
+    # Structural sibling backed by category-owned selectional-role contracts.
+    # Unlike ``verb_role_compatible``, the rule contains no lexical category
+    # pair: it only maps surface slots to semantic roles.
+    verb_roles_compatible: VerbRolesCompatibilityPredicate | None = None
     # A counted dimension only relates entities licensed to bear that measure.
     # The mapping remains pack-owned; this predicate merely relates slots.
     measure_holder_compatible: (
@@ -1243,7 +1328,9 @@ class WherePredicate(StrictModel):
                 self.owner_matches,
                 self.proportional_delta_compatible,
                 self.same_presence,
-                self.verb_role_compatible, self.measure_holder_compatible,
+                self.verb_role_compatible,
+                self.verb_roles_compatible,
+                self.measure_holder_compatible,
                 self.partitive_compatible,
                 self.same_phrase,
                 self.distinct, self.category_nonoverlap,

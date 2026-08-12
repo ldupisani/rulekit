@@ -126,12 +126,15 @@ without evidence or search supported generated premise rules for the smallest
 solver-committed set found by the bounded search. Emit-template inversion only proposes bindings; the
 ordinary solver is the sole answer oracle, removal proves minimality, and no
 benchmark text, gold answer, or consumer-specific sentence template enters
-the search. The current curated project has 105/109 independently realizable
+the search. The current curated project has 104/114 independently realizable
 ask surfaces. General purchase, wage, price, spend-target, start-marker, and
 need-ask vocabulary is core-owned, and generated auxiliary/modal slots retain
-bare verb forms. Three discourse-group asks stay honestly blocked until
-contextual generation exists, and the uninverted mass-quantity ask remains
-blocked until generation can embed it in its required larger clause. Number, series, witness, verdict,
+bare verb forms. Eight discourse-group asks stay honestly blocked until
+contextual generation exists, the uninverted mass-quantity ask remains
+blocked until generation can embed it in its required larger clause, and the
+partitive complement-label ask remains blocked in curated until its project
+loads a declared exhaustive membership ontology. Number, series, witness,
+verdict,
 clarification, and decline projections are covered by synthetic tests. Ask
 candidates can also enter the ordinary append-only Designer review lifecycle,
 with the exact scenario, query, premise evidence, answer shape, and minimality

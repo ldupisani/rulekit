@@ -108,19 +108,16 @@ def test_leading_in_total_pronoun_subject(full_registry):
 
 
 def test_leading_in_total_named_subject(full_registry):
-    # arithmetic/group-total-leading: a NAMED subject works identically —
-    # the `who` slot's identity is never read in the emitted fact, only
-    # consumed structurally, so it does not matter that 'Marco' also
-    # happens to be one of the relation's own holders.
-    # standard(Aisha) = (54 - 6) / (1 + 1) = 24.
+    # A named subject is retained as the GroupTotal's exact scope.  Marco's
+    # scoped 54 therefore cannot be borrowed as the combined total of Marco
+    # and Aisha; the relation alone does not determine Aisha's value.
     r = solve(
         "Marco sold 6 more kites than Aisha. "
         "In total, Marco sold 54 kites. "
         "How many kites did Aisha sell?",
         full_registry,
     )
-    assert r.answer.kind == "number"
-    assert r.answer.value == 24
+    assert r.answer.kind == "decline"
 
 
 def test_trailing_total_without_relation_declines_entity_ask(full_registry):

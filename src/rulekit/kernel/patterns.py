@@ -1114,12 +1114,70 @@ def _check_where(
                         )
                     ):
                         return False
+        if pred.verb_roles_compatible is not None:
+            compatibility = pred.verb_roles_compatible
+            verb = slots.get(compatibility.verb)
+            if verb is None and compatibility.allow_unbound_trigger:
+                continue
+            if verb is None or isinstance(verb, tuple):
+                return False
+            # The registry already resolves both the surface form and its
+            # lemma. Passing only the lemma loses category membership for
+            # inflected forms when the bare lemma is intentionally absent
+            # (for example ``drops``/``dropped`` in ``drop_quantity_verb``).
+            frames = reg.selectional_frames(verb.surface.casefold())
+            # Like the historical conditional predicate, verbs with no
+            # declared lexical frame remain open. Once a verb category owns a
+            # contract, one complete most-specific frame must accept every
+            # mapped role; sibling senses are alternatives, never a mix.
+            if frames:
+                accepted = False
+                for _category, frame in frames:
+                    if not set(compatibility.roles) <= set(frame):
+                        continue
+                    frame_ok = True
+                    for semantic_role, role_names in (
+                        compatibility.roles.items()
+                    ):
+                        role_category = frame[semantic_role]
+                        for role_name in role_names:
+                            role = slots.get(role_name)
+                            if role is None or isinstance(role, tuple):
+                                frame_ok = False
+                                break
+                            if (
+                                role_name in compatibility.allow_proper_name
+                                and _role_is_proper_name(role, reg)
+                            ):
+                                continue
+                            if (
+                                role_name in compatibility.allow_plural_class
+                                and role.features.get("number") == "plural"
+                            ):
+                                continue
+                            if not _unit_in_category(
+                                role, role_category, reg
+                            ):
+                                frame_ok = False
+                                break
+                        if not frame_ok:
+                            break
+                    if frame_ok:
+                        accepted = True
+                        break
+                if not accepted:
+                    return False
         if pred.measure_holder_compatible is not None:
             compatibility = pred.measure_holder_compatible
             measure = slots.get(compatibility.measure)
             if measure is None or isinstance(measure, tuple):
                 return False
             measure_lemma = _lemma_of(measure)
+            if (
+                compatibility.when_declared
+                and not reg.measure_has_holder_boundary(measure_lemma)
+            ):
+                continue
             for holder_name in compatibility.holders:
                 holder = slots.get(holder_name)
                 if holder is None or isinstance(holder, tuple):
@@ -2189,8 +2247,12 @@ def match_ask(
             members = unit.features.get("referent_group")
             if (
                 not isinstance(members, tuple)
-                or len(members) < 2
+                or not members
                 or not all(isinstance(member, str) and member for member in members)
+                or (
+                    len(members) == 1
+                    and not reg.word_in_category(members[0], "persongroup")
+                )
             ):
                 raise AskResolutionMismatch
             return list(members)

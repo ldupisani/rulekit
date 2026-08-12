@@ -477,8 +477,12 @@ category members, conflicting conversions or reference values, and rule gates
 that name unknown categories. Attribute-compatibility declarations must map an
 adjective-rooted category to one or more distinct noun-rooted categories, and
 an `attribute_compatible` rule predicate must name an adjective-rooted slot and
-a noun-rooted slot. The resulting mappings and rule sequences are sorted and
-frozen.
+a noun-rooted slot. A category-owned `selectional_roles` contract is valid only
+on a verb-rooted category and every role must target a noun-rooted category.
+Contracts inherit through the category hierarchy; a child may add a role or
+narrow an inherited target to one of its descendants, but compilation rejects
+an unrelated or broader replacement. The resulting mappings and rule
+sequences are sorted and frozen.
 
 Ask rules use the same closed, schema-validated `where` predicate model as
 premise rules. In particular, `partitive_compatible` checks an overt measure
@@ -606,6 +610,18 @@ state and fact use; they do not special-case rule ids.
 | `Answer` | number, labelled numeric series, witness statuses, verdict, or decline, optionally with proof or clarification |
 | `Result` | complete runtime surface: answer, readings, store, log, veto, and document |
 
+A question-local plural pronoun may carry an exact `referent_group` synthesized
+from prior linguistic mentions backed by entity-bearing facts. Quantity
+holders, quantitative relation subjects and standards, dated entities, and
+referential common-noun holders can therefore participate; an incidental
+object with no such fact does not become a numeric group member. Repeated
+mentions are deduplicated in discourse order, and one noun declared as a
+person-group can represent a collective such as a crew. Aggregate and
+per-holder ask rules project this tuple into an explicit `holders` query field,
+including any measure qualifier. Consumers therefore sum or list the denoted
+group and decline when no definitive group exists; they do not discard `they`
+and enumerate every fact with a matching measure.
+
 The fact model covers arithmetic quantities and relations, membership and
 logical structures, rates, prices, partitions, aliases, event-linked location
 changes and constraints, dated ages, and explicit
@@ -643,6 +659,10 @@ do not emit a total.
 Same-scope disagreement still quarantines both facts. Entity-aware consumers
 accept only unscoped or exact-scope-compatible totals; entity-less consumers
 cannot silently widen a named group into a scene-wide total.
+The two-holder sum-constraint synthesizer likewise accepts only an unscoped
+total or one scoped by a plural discourse-group pronoun. A named scoped total
+cannot be borrowed to solve an unrelated relation merely because its measure
+matches.
 
 ## Rule execution and conflict handling
 
@@ -872,13 +892,24 @@ identity lock constrains the meaning while leaving the realizer to select a
 compatible surface, number, morphology, and numeric value. A commitment is
 accepted only from the normal solver. Candidate sets are searched in
 cardinality order and each returned premise is removed in turn to prove
-irreducibility. Random answerable generation advances deterministically past
+irreducibility. Within one cardinality, premise plans preserve query-field
+coverage first and then prefer fewer emitted facts and shorter declared rule
+shapes. This is a readability ordering, not another answer oracle: every plan
+still has to generate normally and commit through the ordinary solver.
+Random answerable generation advances deterministically past
 an ask whose bounded search finds no scenario; an explicitly selected ask
 reports that limitation. Pathological generated combinations are failed
 search branches rather than request-level crashes. Ask-only,
 answerable, and deliberate missing-evidence records remain distinct from the
 premise exploration ledger. Their answer projection preserves number, series,
 witnesses, verdict, clarification, and decline shapes.
+
+Question structure that carries semantic scope stays in the query. A
+partitive membership ask therefore carries both its complement label and its
+named collection; the unique-holder consumer commits only when that holder
+also has evidence for the collection. The grammar separately requires a
+declared exhaustive complement-label category. A noun that merely fits the
+surface cannot turn an unrelated quantity into an answer.
 
 Generated candidates carry an explicit authoring mode. `strict` draws every
 slot from its complete declared domain and retries until the ordinary matcher
@@ -910,7 +941,8 @@ future-modal, direct-adverb, and time-rooted category domains, and the
 constraints plus `number_compatible`, conditional `bound_requires_type` and
 `bound_requires_category` and `bound_requires_form`, optional-slot
 `same_presence`, pack-declared descriptor/noun compatibility, conditional
-positive or negative `verb_role_compatible`, referential noun-phrase
+positive or negative `verb_role_compatible`, category-owned
+`verb_roles_compatible` frames, referential noun-phrase
 qualification, category-scoped `determinerless_category`, and negative
 slot-category constraints. A number slot may
 declare `standalone: true` when a condensed counted noun is not grammatical in
@@ -1272,6 +1304,85 @@ probes, and generator share the same predicate. This represents agentivity
 and object-role exclusions in pack data—for example, spending requires
 animate actors and selling refuses declared remnants—without embedding a verb
 or noun inventory in Python.
+
+For extensible positive event frames, a verb category may instead own its
+semantic role contract directly:
+
+```yaml
+consumption_quantity_verb:
+  parent: lose
+  selectional_roles:
+    actor: quantity_event_participant
+    theme: consumable_quantity_object
+
+eating_quantity_verb:
+  parent: consumption_quantity_verb
+  selectional_roles:
+    theme: edible_quantity_object
+```
+
+The child inherits `actor` and narrows `theme`; `edible_quantity_object` must
+therefore descend from `consumable_quantity_object`. A rule then declares only
+how its grammatical slots fill those semantic roles:
+
+```yaml
+verb_roles_compatible:
+  verb: verb
+  roles:
+    actor: [who, std]
+    theme: [item, item2]
+  allow_proper_name: [who, std]
+  allow_plural_class: [std]
+```
+
+The registry selects the most-specific applicable verb category. Sibling
+categories are alternative complete frames for polysemous verbs: one frame
+must accept every mapped role, so the actor constraint from one sense cannot
+be combined with the theme constraint from another. An ancestor frame cannot
+bypass a child's narrower target. A verb with no declared selectional frame
+remains open, preserving the historical conditional behavior while categories
+are migrated incrementally. Proper-name and plural-class exceptions stay on
+the construction because they describe its surface reference policy, not the
+verb's lexical meaning. Matching, ask and premise realization, availability,
+locked probes, and Designer explanations all consume the same compiled frame.
+Frame lookup starts from the bound surface form and lets the registry follow
+its declared lemma. This matters when a category deliberately owns only
+finite forms such as `drops`/`dropped`; reducing the bound unit to the bare
+lemma before lookup would silently make that category contract disappear.
+
+The arithmetic migration deliberately leaves two kinds of positive
+`verb_role_compatible` clauses behind. Generic facets such as
+`quantity_event_verb`, `animate_subject_verb`, and `animate_object_verb` may
+overlap rather than form one sense hierarchy, so their conjunction must not
+be recast as alternative frames. A few constructions also map the comparison
+standard to an actor for motion or completion but not for transfer. Until a
+structural predicate can express that category-dependent slot mapping, those
+clauses are construction knowledge rather than duplicated vocabulary. The
+negative `excluded_role_cat` form likewise remains rule-local.
+
+Noun measures use a separate additive relationship because one measure family
+may apply to several independent holder families. Category documents declare:
+
+```yaml
+measure_holder_compatibility:
+  student_quantity_measure: [student_quantity_holder]
+```
+
+`measure_holder_compatible: {measure: item, holders: [who]}` then maps only
+the construction slots; it does not repeat either lexical category. The
+registry searches the measure category's ancestors and tests the holder
+against the declared target including its descendants. Consequently a child
+measure and child holder inherit the relationship, while another pack can add
+members to either category without editing the rule. Multiple packs may also
+add independent target categories to the same source relationship.
+
+The predicate is strict by default: a measure without a declared relationship
+fails. A broad grammar containing both relationship-sensitive measures and
+ordinary count nouns may opt into `when_declared: true`. In that mode a
+declared measure category activates and enforces the boundary, while an
+unrelated measure remains neutral. This replaces historical uses of
+`verb_role_compatible` that treated a measure noun as though it were a verb.
+Proper-name permission remains an explicit construction-level option.
 
 `determinerless_category: CATEGORY` is an opt-in qualifier on a referential
 noun slot. A filler in `CATEGORY` must have no article or possessive
