@@ -5992,7 +5992,9 @@ asks:
       - distinct: [a, b]
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: initiation_quantity_verb, role_cat: initiable_quantity_object}
+      - verb_roles_compatible:
+          verb: verb
+          roles: {theme: [item]}
     resolves:
       consumer: combined
       a: "{a}"
@@ -6028,7 +6030,9 @@ asks:
       - bound_requires_category: {bound: p, slot: agg, cat: prepositional_group_total_marker}
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: initiation_quantity_verb, role_cat: initiable_quantity_object}
+      - verb_roles_compatible:
+          verb: verb
+          roles: {theme: [item]}
     resolves:
       consumer: combined
       holders: "{holders.name_list}"
@@ -6207,7 +6211,9 @@ asks:
         - {slot: agg, cat: quantified_group_total_marker}
     where:
       - slot_not_category: {slot: item, cat: mass_quantity_noun}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: motion_comparison_verb, role_cat: motion_comparison_measure}
+      - verb_roles_compatible:
+          verb: verb
+          roles: {theme: [item]}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: animate_object_verb, role_cat: teaching_quantity_object}
     resolves:
       consumer: combined
@@ -6234,7 +6240,9 @@ asks:
       - distinct: [a, b]
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: initiation_quantity_verb, role_cat: initiable_quantity_object}
+      - verb_roles_compatible:
+          verb: verb
+          roles: {theme: [item]}
     resolves:
       consumer: combined
       a: "{a}"
@@ -6325,7 +6333,9 @@ asks:
       - bound_requires_category: {bound: p, slot: agg, cat: prepositional_group_total_marker}
       - distinct: [a, b]
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: motion_comparison_verb, role_cat: motion_comparison_measure}
+      - verb_roles_compatible:
+          verb: verb
+          roles: {theme: [item]}
     resolves:
       consumer: combined
       a: "{a}"
@@ -6365,12 +6375,9 @@ asks:
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: teaching_quantity_verb, role_cat: teaching_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: find_quantity_verb, role_cat: findable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: task_completion_verb, role_cat: finishable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: enrollment_quantity_verb, role_cat: enrollment_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: drop_quantity_verb, role_cat: droppable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: eating_quantity_verb, role_cat: edible_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: transfer_out, role_cat: transferable_quantity_object}
+      - verb_roles_compatible:
+          verb: verb
+          roles: {theme: [item]}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: spend_verb, role_cat: currency}
     resolves:
       consumer: combined
@@ -6940,12 +6947,9 @@ asks:
       - bound_requires_category: {bound: p, slot: agg, cat: prepositional_group_total_marker}
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: teaching_quantity_verb, role_cat: teaching_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: find_quantity_verb, role_cat: findable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: task_completion_verb, role_cat: finishable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: enrollment_quantity_verb, role_cat: enrollment_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: drop_quantity_verb, role_cat: droppable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: eating_quantity_verb, role_cat: edible_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: transfer_out, role_cat: transferable_quantity_object}
+      - verb_roles_compatible:
+          verb: verb
+          roles: {theme: [item]}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: spend_verb, role_cat: currency}
     resolves:
       consumer: combined
@@ -7093,7 +7097,9 @@ asks:
       - bound_requires_category: {bound: p, slot: agg, cat: prepositional_group_total_marker}
       - number_compatible: [who, aux]
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: enrollment_quantity_verb, role_cat: enrollment_quantity_object}
+      - verb_roles_compatible:
+          verb: verb
+          roles: {theme: [item]}
     resolves:
       consumer: combined
       measure: "{item}"
@@ -7120,7 +7126,9 @@ asks:
     where:
       - number_compatible: [who, aux]
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: win_quantity_verb, role_cat: winnable_quantity_object}
+      - verb_roles_compatible:
+          verb: verb
+          roles: {theme: [item]}
     resolves:
       consumer: combined
       measure: "{item}"
@@ -7554,22 +7562,14 @@ asks:
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: purchase, role_cat: animate}
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: teaching_quantity_verb, role_cat: animate}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: production_quantity_verb, role_cat: production_quantity_participant}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: earning_quantity_verb, role_cat: earning_quantity_participant}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: initiation_quantity_verb, role_cat: initiation_quantity_participant}
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: enrollment_quantity_verb, role_cat: initiation_quantity_participant}
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: transfer_out, role_cat: animate}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: purchase, role_cat: transferable_quantity_object}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: teaching_quantity_verb, role_cat: teaching_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: find_quantity_verb, role_cat: findable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: task_completion_verb, role_cat: finishable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: enrollment_quantity_verb, role_cat: enrollment_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: drop_quantity_verb, role_cat: droppable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: eating_quantity_verb, role_cat: edible_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: transfer_out, role_cat: transferable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: production_quantity_verb, role_cat: producible_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: earning_quantity_verb, role_cat: earnable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: initiation_quantity_verb, role_cat: initiable_quantity_object}
+      - verb_roles_compatible:
+          verb: verb
+          roles: {actor: [who], theme: [item]}
+          allow_proper_name: [who]
     resolves:
       consumer: rate-span-inverse
       entity: "{who}"
@@ -7612,22 +7612,14 @@ asks:
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: purchase, role_cat: animate}
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: teaching_quantity_verb, role_cat: animate}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: production_quantity_verb, role_cat: production_quantity_participant}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: earning_quantity_verb, role_cat: earning_quantity_participant}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: initiation_quantity_verb, role_cat: initiation_quantity_participant}
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: enrollment_quantity_verb, role_cat: initiation_quantity_participant}
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: transfer_out, role_cat: animate}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: purchase, role_cat: transferable_quantity_object}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: teaching_quantity_verb, role_cat: teaching_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: find_quantity_verb, role_cat: findable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: task_completion_verb, role_cat: finishable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: enrollment_quantity_verb, role_cat: enrollment_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: drop_quantity_verb, role_cat: droppable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: eating_quantity_verb, role_cat: edible_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: transfer_out, role_cat: transferable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: production_quantity_verb, role_cat: producible_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: earning_quantity_verb, role_cat: earnable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: initiation_quantity_verb, role_cat: initiable_quantity_object}
+      - verb_roles_compatible:
+          verb: verb
+          roles: {actor: [who], theme: [item]}
+          allow_proper_name: [who]
     resolves:
       consumer: rate-span-inverse
       entity: "{who}"
@@ -7695,15 +7687,10 @@ asks:
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [who], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: teaching_quantity_verb, role_cat: teaching_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: find_quantity_verb, role_cat: findable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: task_completion_verb, role_cat: finishable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: enrollment_quantity_verb, role_cat: enrollment_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: drop_quantity_verb, role_cat: droppable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: eating_quantity_verb, role_cat: edible_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: transfer_out, role_cat: transferable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: initiation_quantity_verb, role_cat: initiable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: earning_quantity_verb, role_cat: earnable_quantity_object}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: production_quantity_verb, role_cat: producible_quantity_object}
+      - verb_roles_compatible:
+          verb: verb
+          roles: {actor: [who], theme: [item]}
+          allow_proper_name: [who]
     resolves:
       consumer: rate-span-inverse
       entity: "{who}"

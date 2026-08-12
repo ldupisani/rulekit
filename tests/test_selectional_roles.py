@@ -171,6 +171,12 @@ def test_bounded_quantity_verb_families_own_complete_frames(
     }
 
 
+def test_generic_money_is_an_earnable_theme() -> None:
+    registry = load_project(CURATED).registry
+
+    assert registry.word_in_category("money", "earnable_quantity_object")
+
+
 def test_extension_owned_shucking_family_uses_the_same_frame_contract() -> None:
     registry = load_project(GSM8K).registry
 
@@ -191,7 +197,7 @@ def test_overlapping_teaching_facets_remain_rule_local() -> None:
     assert registry.selectional_frames("teach") == ()
 
 
-def test_arithmetic_rules_do_not_restate_category_owned_positive_frames() -> None:
+def test_arithmetic_grammar_does_not_restate_category_owned_positive_frames() -> None:
     registry = load_project(CURATED).registry
     framed_categories = set(registry.selectional_roles)
     # These two constructions intentionally map the comparison standard to
@@ -209,8 +215,11 @@ def test_arithmetic_rules_do_not_restate_category_owned_positive_frames() -> Non
     }
     offenders: list[tuple[str, str]] = []
 
-    for rule in registry.rules:
-        if not rule.id.startswith("arithmetic/"):
+    for rule in (*registry.rules, *registry.asks):
+        if not (
+            rule.id.startswith("arithmetic/")
+            or rule.id.startswith("ask/")
+        ):
             continue
         for predicate in rule.where:
             compatibility = predicate.verb_role_compatible
@@ -218,12 +227,37 @@ def test_arithmetic_rules_do_not_restate_category_owned_positive_frames() -> Non
                 compatibility is not None
                 and compatibility.role_cat is not None
                 and compatibility.verb_cat in framed_categories
+                and compatibility.role_cat
+                in registry.selectional_roles[
+                    compatibility.verb_cat
+                ].values()
                 and (rule.id, compatibility.verb_cat)
                 not in construction_specific
             ):
                 offenders.append((rule.id, compatibility.verb_cat))
 
     assert offenders == []
+
+
+def test_duration_totality_ask_uses_the_category_owned_complete_frame() -> None:
+    registry = load_project(CURATED).registry
+    ask = next(
+        ask
+        for ask in registry.asks
+        if ask.id == "ask/how-long-take-span-totality-item"
+    )
+
+    structural = [
+        predicate.verb_roles_compatible
+        for predicate in ask.where
+        if predicate.verb_roles_compatible is not None
+    ]
+    assert len(structural) == 1
+    assert structural[0].roles == {
+        "actor": ["who"],
+        "theme": ["item"],
+    }
+    assert structural[0].allow_proper_name == ["who"]
 
 
 def test_affine_frame_uses_category_contract_without_relisting_eating() -> None:

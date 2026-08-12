@@ -2107,7 +2107,7 @@ members:
     earning_quantity_participant:
         [gardener, guardian, librarian, shopper, student, teacher, university,
          violinist]
-    earnable_quantity_object: [dollar]
+    earnable_quantity_object: [dollar, money]
     production_quantity_verb: [make, makes, made]
     production_quantity_participant:
         [gardener, guardian, librarian, shopper, student, teacher, university,
