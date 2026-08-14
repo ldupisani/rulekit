@@ -148,6 +148,7 @@ class Registry:
     attrs: Mapping[str, Mapping[str, float]]
     part_counts: Mapping[str, str]
     conversions: Mapping[tuple[str, str], float]
+    cadence_conversions: Mapping[tuple[str, str], float]
     geometry_formulas: Mapping[tuple[str, str], str]  # (shape, quantity) -> expr
     quantity_formulas: Mapping[str, str]  # quantity -> expr over dimension names
     quantity_formula_scopes: Mapping[str, str]  # quantity -> question|document
@@ -880,20 +881,27 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
         if gate not in category_parents:
             raise CompileError(f"context synonym {concept!r} gates on unknown category {gate!r}")
 
-    # conversions: store both directions; conflicting factors error
+    # conversions: store both directions; conflicting factors error. Cadence-
+    # scoped pairs are separate so conventional word-problem annualization
+    # cannot leak into exact elapsed-time comparisons.
     conversions: dict[tuple[str, str], float] = {}
+    cadence_conversions: dict[tuple[str, str], float] = {}
     for pack in packs:
         for doc in pack.conversions:
             for c in doc.conversions:
+                target = (
+                    cadence_conversions if c.scope == "cadence" else conversions
+                )
                 for pair, factor in (
                     ((c.from_, c.to), c.factor),
                     ((c.to, c.from_), 1.0 / c.factor),
                 ):
-                    if pair in conversions and abs(conversions[pair] - factor) > 1e-9:
+                    if pair in target and abs(target[pair] - factor) > 1e-9:
                         raise CompileError(
-                            f"conversion {pair} declared twice with different factors"
+                            f"{c.scope} conversion {pair} declared twice with "
+                            "different factors"
                         )
-                    conversions[pair] = factor
+                    target[pair] = factor
 
     # geometry formulas: (shape, quantity) -> expression over named dimensions
     geometry_formulas: dict[tuple[str, str], str] = {}
@@ -1116,6 +1124,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
             "common_noun",
             "counted",
             "possessed",
+            "qualified",
         }:
             return "noun"
         if token.type == "nonunit_multiplier":
@@ -1162,6 +1171,12 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                                 f"rule {rule.id!r} uses `common_noun_cat` "
                                 f"with non-noun category {common_noun_cat!r}"
                             )
+                    qualifier_cat = getattr(tok, "qualifier_cat", None)
+                    if qualifier_cat and qualifier_cat not in valid_gates:
+                        raise CompileError(
+                            f"rule {rule.id!r} qualifier gates on unknown "
+                            f"category {qualifier_cat!r}"
+                        )
                     determinerless_category = getattr(
                         tok, "determinerless_category", None
                     )
@@ -1447,6 +1462,18 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                             f"rule {rule.id!r} same_presence names unknown "
                             f"slot {slot_name!r}"
                         )
+            if predicate.mutually_exclusive is not None:
+                if len(predicate.mutually_exclusive) < 2:
+                    raise CompileError(
+                        f"rule {rule.id!r} mutually_exclusive needs at least "
+                        "two slots"
+                    )
+                for slot_name in predicate.mutually_exclusive:
+                    if slot_name not in slots:
+                        raise CompileError(
+                            f"rule {rule.id!r} mutually_exclusive names "
+                            f"unknown slot {slot_name!r}"
+                        )
             role_compatibility = predicate.verb_role_compatible
             if role_compatibility is not None:
                 for slot_name in (
@@ -1495,6 +1522,20 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                         f"rule {rule.id!r} verb roles trigger "
                         f"{roles_compatibility.verb!r} is not verb-rooted"
                     )
+                for category in roles_compatibility.frame_categories:
+                    if category not in valid_gates:
+                        raise CompileError(
+                            f"rule {rule.id!r} verb roles compatibility names "
+                            f"unknown frame category {category!r}"
+                        )
+                    root = category
+                    while root in category_parents:
+                        root = category_parents[root]
+                    if root != "verb":
+                        raise CompileError(
+                            f"rule {rule.id!r} verb roles frame category "
+                            f"{category!r} is not verb-rooted"
+                        )
                 for semantic_role, slot_names in (
                     roles_compatibility.roles.items()
                 ):
@@ -1748,6 +1789,20 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                         f"ask {ask.id!r} verb roles trigger "
                         f"{roles_compatibility.verb!r} is not verb-rooted"
                     )
+                for category in roles_compatibility.frame_categories:
+                    if category not in valid_gates:
+                        raise CompileError(
+                            f"ask {ask.id!r} verb roles compatibility names "
+                            f"unknown frame category {category!r}"
+                        )
+                    root = category
+                    while root in category_parents:
+                        root = category_parents[root]
+                    if root != "verb":
+                        raise CompileError(
+                            f"ask {ask.id!r} verb roles frame category "
+                            f"{category!r} is not verb-rooted"
+                        )
                 for semantic_role, slot_names in (
                     roles_compatibility.roles.items()
                 ):
@@ -1848,6 +1903,12 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
 
     for rule in list(rules) + list(asks):
         for tok in _every_token(rule):
+            qualifier_cat = getattr(tok, "qualifier_cat", None)
+            if qualifier_cat and qualifier_cat not in valid_gates:
+                raise CompileError(
+                    f"{rule.id!r} qualifier gates on unknown category "
+                    f"{qualifier_cat!r}"
+                )
             opts = tok.lit_options
             if not opts or tok.consume_skipped:
                 continue
@@ -1929,6 +1990,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
         attrs=_freeze({k: _freeze(v) for k, v in attrs.items()}),
         part_counts=_freeze(part_counts),
         conversions=_freeze(conversions),
+        cadence_conversions=_freeze(cadence_conversions),
         calendar_span_days=_freeze(calendar_span_days),
         month_numbers=_freeze(month_numbers),
         atomic_masses=_freeze(atomic_masses),

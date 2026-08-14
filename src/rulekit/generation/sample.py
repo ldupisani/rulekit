@@ -68,6 +68,7 @@ _SUPPORTED_SLOT_TYPES = frozenset(
         "bare_plural",
         "generic_plural",
         "counted",
+        "qualified",
         "possessed",
         "pronoun",
         "modal",
@@ -89,6 +90,7 @@ _SUPPORTED_CATEGORY_ROOTS = frozenset(
         "conjunction",
         "time",
         "adverb",
+        "auxiliary",
     }
 )
 _PUNCTUATION = frozenset({".", ",", "!", "?", ";", ":"})
@@ -278,8 +280,6 @@ def _token_blockers(token: MatchToken, reg: Registry) -> list[str]:
         return blockers
     if token.span:
         blockers.append("span capture has no current realizer")
-    if token.present_participle or token.past_participle:
-        blockers.append("explicit verb morphology has no current realizer")
     if token.slot is not None and token.type is not None:
         if token.type not in _SUPPORTED_SLOT_TYPES:
             blockers.append(f"slot type {token.type!r} has no current realizer")
@@ -319,6 +319,7 @@ def _where_blocker(rule: PatternRule) -> list[str]:
             or pred.polarity_compatible is not None
             or pred.proportional_delta_compatible is not None
             or pred.same_presence is not None
+            or pred.mutually_exclusive is not None
             or pred.verb_role_compatible is not None
             or pred.verb_roles_compatible is not None
             or pred.measure_holder_compatible is not None
@@ -349,6 +350,8 @@ def _lexical_fillers(
     category: str | None = None,
     bare_form: bool = False,
     finite_form: bool = False,
+    present_participle: bool = False,
+    past_participle: bool = False,
 ) -> list[_Filler]:
     out: list[_Filler] = []
     for surface, entry in sorted(reg.lexicon.items()):
@@ -385,6 +388,18 @@ def _lexical_fillers(
         if bare_form and not is_bare_verb_form(surface, identity):
             continue
         if finite_form and not is_finite_verb_form(surface, identity):
+            continue
+        # Mirror patterns._slot_ok's opt-in morphology exactly. These are
+        # structural surface checks over pack-declared lemmas, not an English
+        # word list, so newly added participles become generatable without a
+        # second authoring mechanism.
+        if present_participle and not (
+            surface.endswith("ing") and surface != identity
+        ):
+            continue
+        if past_participle and not (
+            surface.endswith(("ed", "en")) and surface != identity
+        ):
             continue
         number = entry.number
         if sense == "noun" and surface not in reg.plural_to_singular:
@@ -491,6 +506,7 @@ def _counted_fillers(reg: Registry) -> list[_Filler]:
                     surface=f"{count} {noun_surface}",
                     identity=singular,
                     number="singular" if count == 1 else "plural",
+                    value=float(count),
                 )
             )
         for symbol, singular in sorted(reg.currencies.items()):
@@ -506,6 +522,7 @@ def _counted_fillers(reg: Registry) -> list[_Filler]:
                     surface=f"{symbol}{count}",
                     identity=singular,
                     number="singular" if count == 1 else "plural",
+                    value=float(count),
                 )
             )
     return out
@@ -588,6 +605,32 @@ def _qualified_fillers(reg: Registry) -> list[_Filler]:
     ]
 
 
+def _attributive_counted_fillers(reg: Registry) -> list[_Filler]:
+    """Compose numeric hyphen modifiers from declared measure/holder pairs."""
+
+    counts = [
+        int(filler.value)
+        for filler in _number_fillers(reg)
+        if isinstance(filler.value, (int, float)) and filler.value > 0
+    ]
+    nouns = _lexical_fillers(reg, sense="noun")
+    return [
+        _Filler(
+            surface=f"{count}-{measure.surface} {holder.surface}",
+            identity=holder.identity,
+            qualifier=measure.identity,
+            number=holder.number,
+            kind="noun",
+            value=float(count),
+        )
+        for count in counts
+        for measure in nouns
+        for holder in nouns
+        if measure.identity != holder.identity
+        and reg.measure_applies_to_holder(measure.identity, holder.identity)
+    ]
+
+
 def _raw_domain(
     token: MatchToken, reg: Registry, fixtures: _Fixtures
 ) -> list[_Filler]:
@@ -596,6 +639,12 @@ def _raw_domain(
     if token.opt is not None or token.slot is None:
         return []
     if token.cat is not None:
+        if token.attributive_counted:
+            return [
+                filler
+                for filler in _attributive_counted_fillers(reg)
+                if reg.word_in_category(filler.identity, token.cat)
+            ]
         if token.counted:
             return [
                 filler
@@ -635,6 +684,8 @@ def _raw_domain(
             category=token.cat,
             bare_form=token.bare_form,
             finite_form=token.finite_form,
+            present_participle=token.present_participle,
+            past_participle=token.past_participle,
         )
 
     slot_type = token.type
@@ -672,7 +723,11 @@ def _raw_domain(
     if slot_type == "possessed":
         return _possessed_fillers(reg, fixtures)
     if slot_type == "qualified":
-        return _qualified_fillers(reg)
+        return (
+            _attributive_counted_fillers(reg)
+            if token.attributive_counted
+            else _qualified_fillers(reg)
+        )
     if slot_type == "auxiliary":
         return _lexical_fillers(reg, sense="auxiliary")
     if slot_type == "pronoun":
@@ -698,6 +753,8 @@ def _raw_domain(
             sense="verb",
             bare_form=token.bare_form,
             finite_form=token.finite_form,
+            present_participle=token.present_participle,
+            past_participle=token.past_participle,
         )
     if slot_type == "nonstate_verb":
         return [
@@ -775,6 +832,13 @@ def _qualify_domain(
             for filler in fillers
             if filler.kind != "noun"
             or _filler_in_category(filler, token.common_noun_cat, reg)
+        ]
+    if token.qualifier_cat is not None:
+        fillers = [
+            filler
+            for filler in fillers
+            if filler.qualifier is not None
+            and reg.word_in_category(filler.qualifier, token.qualifier_cat)
         ]
     if token.single_word:
         fillers = [
@@ -956,7 +1020,9 @@ def _broader_lexical_domain(
         root = reg.root_sense(token.cat)
         requirement = f"category {token.cat!r}"
         broader_domain = f"root sense {root!r}"
-        if token.counted:
+        if token.attributive_counted:
+            fillers = _attributive_counted_fillers(reg)
+        elif token.counted:
             fillers = _counted_fillers(reg)
         elif token.possessed:
             fillers = _possessed_fillers(reg, fixtures)
@@ -980,6 +1046,8 @@ def _broader_lexical_domain(
                 sense=root,
                 bare_form=token.bare_form,
                 finite_form=token.finite_form,
+                present_participle=token.present_participle,
+                past_participle=token.past_participle,
             )
     elif token.type == "nonstate_verb":
         requirement = "type 'nonstate_verb'"
@@ -3763,7 +3831,7 @@ def _numeric_sources(
         return [index.numeric.get(("fractions", fold))]
     if slot_type in {"multiplier", "nonunit_multiplier"}:
         return [index.numeric.get(("multipliers", fold))]
-    if slot_type == "counted" or token.counted:
+    if slot_type == "counted" or token.counted or token.attributive_counted:
         value = unit.features.get("value")
         if not isinstance(value, (int, float)):
             return []
@@ -3797,12 +3865,20 @@ def _token_expression(token: MatchToken) -> str:
         )
     if token.counted:
         gates.append("counted")
+    if token.attributive_counted:
+        gates.append("numeric hyphen modifier")
+    if token.qualifier_cat is not None:
+        gates.append(f"qualifier category {token.qualifier_cat!r}")
     if token.possessed:
         gates.append("possessed")
     if token.bare_form:
         gates.append("bare form")
     if token.finite_form:
         gates.append("finite form")
+    if token.present_participle:
+        gates.append("present participle")
+    if token.past_participle:
+        gates.append("past participle")
     if token.number is not None:
         gates.append(f"number {token.number!r}")
     if token.standalone:
@@ -3967,6 +4043,7 @@ _WHERE_FIELDS = (
     "polarity_compatible",
     "proportional_delta_compatible",
     "same_presence",
+    "mutually_exclusive",
     "verb_role_compatible",
     "verb_roles_compatible",
     "measure_holder_compatible",

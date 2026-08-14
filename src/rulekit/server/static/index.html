@@ -104,6 +104,7 @@
                 <option value="least_attempted_rule">Least-attempted rule</option>
                 <option value="least_generated_rule">Least-generated rule</option>
                 <option value="least_reviewed_rule">Least-reviewed rule</option>
+                <option value="least_validated_rule">Least human-validated rule</option>
                 <option value="review_attention">Live invalid/unclear reviews</option>
                 <option value="random">Random within filters</option>
               </select>
@@ -140,6 +141,7 @@
             <select id="generation-ask-mode">
               <option value="ask_only">Ask only</option>
               <option value="answerable">Smallest answerable</option>
+              <option value="validated_premises">Answerable from validated premises</option>
               <option value="missing_evidence">Deliberately missing evidence</option>
             </select>
           </label>
@@ -197,6 +199,37 @@
               <legend class="pane-title">Question and scenario defects</legend>
               <div id="generation-ask-defects" class="generation-defects"></div>
             </fieldset>
+            <div class="ask-review-dimensions">
+              <label>
+                <span class="pane-title">Interpretation</span>
+                <select id="generation-ask-interpretation-judgment">
+                  <option value="not_reviewed">Not reviewed</option>
+                  <option value="correct">Correct</option>
+                  <option value="incorrect">Incorrect</option>
+                  <option value="unclear">Unclear</option>
+                </select>
+              </label>
+              <label>
+                <span class="pane-title">Answer or decline</span>
+                <select id="generation-ask-result-judgment">
+                  <option value="not_reviewed">Not reviewed</option>
+                  <option value="correct_answer">Correct answer</option>
+                  <option value="correct_decline">Correct decline</option>
+                  <option value="incorrect">Incorrect</option>
+                  <option value="unclear">Unclear</option>
+                  <option value="not_applicable">Not applicable</option>
+                </select>
+              </label>
+              <label>
+                <span class="pane-title">Naturalness</span>
+                <select id="generation-ask-naturalness">
+                  <option value="">Not rated</option>
+                  <option value="preferred">Preferred</option>
+                  <option value="acceptable">Acceptable</option>
+                  <option value="marginal">Marginal</option>
+                </select>
+              </label>
+            </div>
             <label>
               <span class="pane-title">Note</span>
               <textarea id="generation-ask-note" maxlength="4000"
@@ -296,6 +329,37 @@
             <textarea id="generation-note" maxlength="4000"
                       placeholder="What premise or emitted fact appears correct or defective?"></textarea>
           </label>
+          <div id="generation-premise-review-dimensions"
+               class="ask-review-dimensions">
+            <label>
+              <span class="pane-title">Interpretation</span>
+              <select id="generation-premise-interpretation-judgment">
+                <option value="not_reviewed">Not reviewed</option>
+                <option value="correct">Correct</option>
+                <option value="incorrect">Incorrect</option>
+                <option value="unclear">Unclear</option>
+              </select>
+            </label>
+            <label>
+              <span class="pane-title">Fact result</span>
+              <select id="generation-premise-result-judgment">
+                <option value="not_reviewed">Not reviewed</option>
+                <option value="correct_facts">Correct facts</option>
+                <option value="incorrect">Incorrect facts</option>
+                <option value="unclear">Unclear</option>
+                <option value="not_applicable">Not applicable</option>
+              </select>
+            </label>
+            <label>
+              <span class="pane-title">Naturalness</span>
+              <select id="generation-premise-naturalness">
+                <option value="">Not rated</option>
+                <option value="preferred">Preferred</option>
+                <option value="acceptable">Acceptable</option>
+                <option value="marginal">Marginal</option>
+              </select>
+            </label>
+          </div>
           <div id="generation-sentence-review-fields"
                class="generation-sentence-review-fields hidden">
             <label>

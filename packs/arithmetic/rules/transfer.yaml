@@ -12,11 +12,18 @@ rules:
     match:
       sentence:
         - {slot: giver, type: name}
-        - {slot: verb, cat: transfer_out}
+        - {slot: verb, cat: transfer_out, finite_form: true}
         - {slot: recipient, type: name}
         - {slot: item, type: counted}
     where:
       - distinct: [giver, recipient]
+      - number_compatible: [giver, verb]
+      - verb_roles_compatible:
+          verb: verb
+          roles:
+            actor: [giver]
+            theme: [item]
+          allow_proper_name: [giver]
     consumes: [item]
     emits:
       - fact: quantity
@@ -36,12 +43,19 @@ rules:
     match:
       sentence:
         - {slot: giver, type: name}
-        - {slot: verb, cat: transfer_out}
+        - {slot: verb, cat: transfer_out, finite_form: true}
         - {slot: item, type: counted}
         - {lit: to}
         - {slot: recipient, type: name}
     where:
       - distinct: [giver, recipient]
+      - number_compatible: [giver, verb]
+      - verb_roles_compatible:
+          verb: verb
+          roles:
+            actor: [giver]
+            theme: [item]
+          allow_proper_name: [giver]
     consumes: [item]
     emits:
       - fact: quantity

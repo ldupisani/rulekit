@@ -21,7 +21,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from ..data.project import Project
 from .candidate import GenerationCandidate, GenerationObjective
-from .reviews import SourceLocation, read_reviews
+from .reviews import SourceLocation, premise_review_target_counts, read_reviews
 from .sample import (
     GenerationError,
     _absent_categories,
@@ -148,6 +148,7 @@ _GENERATION_OBJECTIVES = frozenset(
         "least_attempted_rule",
         "least_generated_rule",
         "least_reviewed_rule",
+        "least_validated_rule",
         "least_covered_structure",
         "review_attention",
         "random",
@@ -770,6 +771,7 @@ def exploration_status(
 
     rule_generated = Counter(event["rule_id"] for event in events)
     rule_failed = Counter(failure["rule_id"] for failure in failures)
+    rule_validated = Counter(premise_review_target_counts(project))
     rule_reviews = [
         review for review in reviews if review.get("target_rule") is not None
     ]
@@ -829,6 +831,7 @@ def exploration_status(
                 "failed_count": failed_count,
                 "attempt_count": generated_count + failed_count,
                 "reviewed_count": reviewed_count,
+                "validated_count": rule_validated[rule.id],
                 "verdict_counts": {
                     verdict: rule_verdicts[rule.id][verdict]
                     for verdict in ("valid", "invalid", "unclear")
@@ -1136,6 +1139,13 @@ def choose_exploration_target(
                 item["id"]
                 for item in eligible
                 if item["reviewed_count"] == least
+            )
+        elif objective == "least_validated_rule":
+            least = min(item["validated_count"] for item in eligible)
+            tied = sorted(
+                item["id"]
+                for item in eligible
+                if item["validated_count"] == least
             )
         elif objective == "review_attention":
             needing_attention = [

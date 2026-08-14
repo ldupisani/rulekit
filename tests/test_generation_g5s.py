@@ -104,7 +104,11 @@ def test_modal_occurrence_and_core_ownership_maps_are_complete() -> None:
     } == {expected_source}
     assert all(
         project.registry.word_categories[word] == ("capacity_modal",)
-        for word in CAPACITY - {"can"}
+        for word in CAPACITY - {"can", "should"}
+    )
+    assert project.registry.word_categories["should"] == (
+        "capacity_modal",
+        "planned_progress_modal",
     )
     assert project.registry.word_categories["can"] == (
         "capacity_modal",
@@ -187,9 +191,9 @@ def test_g5s_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 130
-    assert sum(item.supported for item in availability.values()) == 125
-    assert sum(not item.supported for item in availability.values()) == 5
+    assert len(availability) == 140
+    assert sum(item.supported for item in availability.values()) == 132
+    assert sum(not item.supported for item in availability.values()) == 8
     assert availability["arithmetic/periodic-rate-every-span"].supported
     assert all(availability[rule_id].supported for rule_id in FUTURE_RULES)
     # G5t subsequently supplied the temporal-marker domain for the fourth
@@ -200,7 +204,7 @@ def test_g5s_unlocks_exactly_the_preregistered_frontier() -> None:
     assert availability[
         "arithmetic/anchored-relation-conjoined-anchor"
     ].supported
-    assert len(exploration_status(project)["fillers"]) == 305
+    assert len(exploration_status(project)["fillers"]) == 316
 
 
 @pytest.mark.parametrize("modal", sorted(MOVED_WORDS))
@@ -263,7 +267,7 @@ def test_numeric_round_trip_errors_resample_instead_of_crashing() -> None:
     recovered = generate_candidate(
         project,
         rule_id="arithmetic/periodic-rate-every-span",
-        seed=94,
+        seed=31,
     )
 
     assert recovered.target_status == "matched"

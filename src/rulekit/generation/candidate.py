@@ -11,11 +11,17 @@ GenerationObjective = Literal[
     "least_attempted_rule",
     "least_generated_rule",
     "least_reviewed_rule",
+    "least_validated_rule",
     "least_covered_structure",
     "review_attention",
     "random",
 ]
-AskScenarioMode = Literal["ask_only", "answerable", "missing_evidence"]
+AskScenarioMode = Literal[
+    "ask_only",
+    "answerable",
+    "validated_premises",
+    "missing_evidence",
+]
 
 
 @dataclass(frozen=True)

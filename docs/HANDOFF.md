@@ -1,6 +1,6 @@
 # rulekit handoff
 
-**Updated:** 2026-08-12
+**Updated:** 2026-08-14
 **Runtime checkpoint:** `de6d74e` (`main`)
 **Active campaign:** GSM8K Mining v2, M7 example-led vertical mining
 **Immediate state:** all four published Mining v2 candidates are landed; no
@@ -61,15 +61,15 @@ rules and into extensible category relationships:
   The registry selects one complete most-specific frame; sibling senses are
   alternatives and cannot be mixed.
 - Bounded motion, completion, transfer, finding, enrollment, dropping,
-  consumption, shucking, initiation, earning, production, and winning
-  families now own their complete frames.
+  consumption, shucking, initiation, earning, production, teaching, and
+  winning families now own their complete frames.
 - `measure_holder_compatibility` and `measure_holder_compatible` provide the
   analogous extensible relationship for noun measures and plausible holders.
 - Ordinary premise and ask clauses no longer restate an exact category-owned
   positive frame. A regression test scans both collections and allowlists only
   explicit construction-dependent slot mappings. Remaining
   `verb_role_compatible` clauses are construction-local facets, negative
-  exclusions, or deliberately unresolved overlapping senses such as teaching.
+  exclusions, or category-dependent slot mappings.
 - The ask-side migration exposed and corrected one vocabulary omission:
   generic `money`, like `dollar`, is an earnable quantity object.
 
@@ -77,18 +77,82 @@ This means adding a compatible verb or noun normally extends every applicable
 premise and ask through category membership; it should not require copying a
 new pair of category checks into each rule.
 
+The Designer now treats clean valid premise and ask reviews as durable
+conformance evidence rather than inbox work. A valid verdict that still has a
+selected defect or an incorrect/unclear interpretation or result remains
+actionable and cannot become canonical evidence. Its default Reviews view
+contains unresolved problems and regressed positive exemplars;
+validated premise and ask coverage are grouped by vocabulary-independent
+structural signature, and the complete append-only history remains paginated
+in the evidence archive. One canonical clean-valid exemplar per group is replayed
+against the current premise/fact or ask/query/answer contract. Resolution
+preserves evidence; tombstoning explicitly excludes it. Premise generation
+can target the least human-validated rule. Random ask generation advances the
+least human-validated target and then an unseen surface branch, while the new
+validated-premises scenario starts from exact replay-valid reviewed premises
+and generates a declared ask that the normal solver can answer from them.
+Optional interpretation, result, and naturalness judgments keep grammatical
+acceptance distinct from semantic and stylistic preference. This index remains
+strictly authoring-only and does not enter the Registry or runtime inference.
+
+Temporal age asks now require evidence from their declared perspective.
+Direct present/past age premises and relations retain their finite surface in
+fact provenance; future/past offset premises that algebraically derive a
+current age declare that result present. Relation and two-holder age-total
+synthesis preserve the perspective and refuse cross-perspective anchors.
+Absolute-year `AgeAtYear` projection and relative-day location witnesses keep
+their stronger pre-existing coordinate contracts.
+
+Measured content progress now separates a product's capacity from completed
+work. A numeric hyphen compound such as a 100-page book records the book's
+extent, while explicitly realized progress at two relative periods records
+event quantities for the participant. The earlier period may be a qualified
+duration such as `last week` or a bare declared past-day marker such as
+`yesterday`; both retain their coordinates. A repeated explicit temporal
+standard (`twice as many pages as yesterday`) must resolve to that same earlier
+coordinate. A present-perfect ask totals only those
+matching progress events, so the supported Mark example answers 30 rather
+than treating all 100 pages as read. Bare qualified relative periods also
+form an adjunct boundary: `cars last month` remains a quantity of cars timed
+`last month`, never a compound quantity whose head is `month`.
+
+A future planning ask can now request a bounded fraction of the unfinished
+product: capacity minus completed matching progress, multiplied by the stated
+fraction. The conditional desire clause is query structure and never asserts a
+future event. Idiomatic `half the remaining pages` and productive `one fourth
+of the remaining pages` are separate ask grammars. A conditional-first
+paraphrase ("If ... tomorrow, how many ...?") remains one complete ask only
+when its declared grammar consumes the whole sentence; otherwise the ordinary
+leading-conditional premise split remains in force. All three require the same
+participant, activity, measure, one linked product capacity, and a declared
+future day marker. These asks are contextual and therefore remain outside
+standalone ask generation until a scenario supplies their evidence.
+
+Activity-scoped wages now preserve why an elapsed duration is relevant.
+`Natalia earns $12 an hour for gardening` records both the ordinary hourly
+rate and an explicit gardening scope; `Yesterday she did 50 minutes of
+gardening` records a dated activity duration. The rate-span consumer requires
+participant and activity agreement before converting minutes to hours, so the
+example answers 10 while tutoring time or a bare unrelated hour quantity
+declines. Both premise rules have strict generation round trips. Auxiliary-
+rooted categories are now a supported generic premise-generation domain;
+`did` retains its single auxiliary sense, avoiding ambiguity in existing
+questions. Declared restrictive focus markers support `only` and `just` both
+before the activity verb and before its measured duration; unrelated adverbs
+and duplicated focus positions remain outside the rule.
+
 ## Current measured baseline
 
 These are the gates run at the current runtime checkpoint:
 
 | Gate | Current result |
 | --- | --- |
-| full synthetic suite | 5,358 passed |
+| full synthetic suite | 5,591 passed |
 | curated suite | 71 correct, 0 wrong |
-| GSM8K DEV-train | 108 correct, 0 wrong |
-| GSM8K DEV-holdout | 42 correct, 0 wrong |
+| GSM8K DEV-train | 106 correct, 0 wrong |
+| GSM8K DEV-holdout | 43 correct, 0 wrong |
 | ASDiv DEV | 45 correct, 0 wrong |
-| SVAMP DEV | 31 correct, 0 wrong |
+| SVAMP DEV | 24 correct, 0 wrong |
 | MAWPS DEV | 11 correct, 0 wrong |
 | SciBench DEV | 6 correct, 0 wrong |
 | DIFG DEV | 75 correct, 0 wrong |
@@ -109,14 +173,15 @@ judged the resulting English or emitted fact valid.
 
 | Project | Premise rules | Independent asks |
 | --- | ---: | ---: |
-| curated | 125/125 targets (+5 safety interceptors) | 104/114 |
-| GSM8K | 120/120 targets (+3 safety interceptors) | 135/152 |
+| curated | 132/132 targets (+8 safety interceptors) | 106/119 |
+| GSM8K | 127/127 targets (+6 safety interceptors) | 137/157 |
 
 The safety interceptors are intentionally separate from premise generation
-and review. The ten curated ask blockers are contextual
-discourse-group asks, one ontology-dependent membership ask, and one embedded
+and review. The thirteen curated ask blockers are contextual discourse-group or
+measured-progress asks, one ontology-dependent membership ask, and one embedded
 uninverted form. Contextual ask generation must synthesize the required
-antecedent rather than pretending the question is independently realizable.
+antecedent and evidence rather than pretending the question is independently
+realizable.
 
 ## Designer and promotion workflow
 
@@ -132,7 +197,9 @@ The Designer currently provides:
 - premise-, sentence-, and fact-attached defects with source navigation;
 - allowlisted YAML editing with compile-and-rollback, followed by exact pinned
   retest and before/after comparison;
-- append-only corrections, resolutions, and tombstones; and
+- append-only corrections, resolutions, and tombstones;
+- action-only review triage, grouped premise/ask coverage, canonical positive
+  replay, and a paginated evidence archive; and
 - a Mining v2 queue with immutable manifests, isolated candidate runners,
   fingerprint-pinned human decisions, exact machine gates, and durable landing
   records.

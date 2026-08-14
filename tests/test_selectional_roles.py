@@ -8,6 +8,7 @@ from rulekit.data.project import load_project
 from rulekit.data.registry import CompileError
 from rulekit.generation import GenerationError, generate_candidate
 from rulekit.kernel.engine import solve
+from rulekit.kernel.patterns import match_ask
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -186,15 +187,51 @@ def test_extension_owned_shucking_family_uses_the_same_frame_contract() -> None:
     }
 
 
-def test_overlapping_teaching_facets_remain_rule_local() -> None:
+def test_teaching_family_owns_complete_frame() -> None:
     registry = load_project(CURATED).registry
 
-    # Teaching currently combines an animate-subject facet with two valid
-    # object families (people and declared teaching objects). A single-target
-    # category frame would turn that established conjunction into the wrong
-    # alternative, so it remains explicit until disjunctive role targets or a
-    # clean sense hierarchy exists.
-    assert registry.selectional_frames("teach") == ()
+    assert registry.selectional_frames("teach")[0][1] == {
+        "actor": "animate",
+        "theme": "teaching_quantity_object",
+    }
+
+
+def test_arithmetic_grammar_does_not_restate_teaching_frame() -> None:
+    registry = load_project(CURATED).registry
+
+    offenders = [
+        rule.id
+        for rule in (*registry.rules, *registry.asks)
+        if any(
+            predicate.verb_role_compatible is not None
+            and predicate.verb_role_compatible.verb_cat
+            == "teaching_quantity_verb"
+            for predicate in rule.where
+        )
+    ]
+
+    assert offenders == []
+
+
+def test_cardinal_subject_ask_reads_teaching_roles_from_category() -> None:
+    registry = load_project(CURATED).registry
+
+    def ask_id(question: str) -> str | None:
+        matched = match_ask(solve(question, registry).question, registry)
+        return None if matched is None else matched[0].id
+
+    target = "ask/how-many-plural-combined-cardinal-subject"
+    assert ask_id("How many students do all 2 teachers teach?") == target
+    assert ask_id("How many apples do all 2 teachers teach?") != target
+    assert ask_id("How many students do all 2 birds teach?") != target
+
+    ask = next(ask for ask in registry.asks if ask.id == target)
+    structural = next(
+        predicate.verb_roles_compatible
+        for predicate in ask.where
+        if predicate.verb_roles_compatible is not None
+    )
+    assert structural.roles == {"actor": ["who"], "theme": ["item"]}
 
 
 def test_arithmetic_grammar_does_not_restate_category_owned_positive_frames() -> None:

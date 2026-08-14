@@ -49,6 +49,7 @@ from .model import (
 # live in `totals` (which imports `answer` one-way, never back), so the
 # workaround is gone with the cycle.
 from .measures import _resolve_measure, _resolve_measure_against
+from .temporal import normalize_perspective, perspectives_match
 from .totals import _entity_total, _sign
 
 MAX_ROUNDS = 50
@@ -178,6 +179,23 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
     subject = factor*standard + offset, hop by hop (raw factors visible)."""
 
     out: list[Fact] = []
+
+    def relation_provenance(rel: Relation) -> Provenance:
+        return Provenance(
+            source="synth/relation",
+            sentence=rel.provenance.sentence,
+            temporal_perspective=rel.provenance.temporal_perspective,
+        )
+
+    def compatible_anchor(rel: Relation, known: Quantity) -> bool:
+        required = normalize_perspective(
+            rel.provenance.temporal_perspective, reg
+        )
+        if required is None:
+            return True
+        return perspectives_match(
+            required, known.provenance.temporal_perspective, reg
+        )
     # a relation anchors on ANY known quantity of the standard, but only an
     # existing STATE for the subject blocks resolution — the subject's own
     # EVENTS ("John lost 3") accumulate on top of the derived state
@@ -701,6 +719,8 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
             rel.standard_label,
             rel.standard_owner,
         )
+        if resolved is not None and not compatible_anchor(rel, resolved[1]):
+            resolved = None
         if resolved is not None:
             measure, known = resolved
             already = already_known(
@@ -731,7 +751,7 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
                     continue
                 out.append(
                     Quantity(
-                        provenance=Provenance(source="synth/relation", sentence=rel.provenance.sentence),
+                        provenance=relation_provenance(rel),
                         entity=rel.subject, measure=measure, value=value, verb=rel.verb,
                         label=rel.subject_label or None,
                         owner=rel.subject_owner or None,
@@ -784,7 +804,11 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
             if rel.measure_qualifier
             else (rel.subject, rel.measure, verb_key(rel.verb)) in by_verb
         )
-        if subtype_known is not None and not already_derived:
+        if (
+            subtype_known is not None
+            and compatible_anchor(rel, subtype_known)
+            and not already_derived
+        ):
             # THE ANCHOR IS THE STANDARD'S FULL TOTAL, NOT ITS STATE FACT.
             # `qualified_lookup` returns a single raw Quantity, so reading its
             # `.value` silently uses only the STATE and ignores any later EVENT on
@@ -834,7 +858,7 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
             )
             out.append(
                 Quantity(
-                    provenance=Provenance(source="synth/relation", sentence=rel.provenance.sentence),
+                    provenance=relation_provenance(rel),
                     entity=rel.subject, measure=derived_measure, value=value, verb=rel.verb,
                     measure_qualifier=rel.measure_qualifier or None,
                     owner=rel.subject_owner or None,
@@ -906,6 +930,7 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
         )
         if (
             subject_known is not None
+            and compatible_anchor(rel, subject_known)
             and rel.factor != 0
             and is_subtype_standard(rel)
             and not already_inverse_derived
@@ -921,7 +946,7 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
             )
             out.append(
                 Quantity(
-                    provenance=Provenance(source="synth/relation", sentence=rel.provenance.sentence),
+                    provenance=relation_provenance(rel),
                     entity=rel.subject, measure=derived_standard_measure, value=value, verb=rel.verb,
                     measure_qualifier=rel.standard_qualifier or None,
                 )
@@ -953,6 +978,7 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
         )
         if (
             resolved is not None
+            and compatible_anchor(rel, resolved[1])
             and rel.factor != 0
             and not is_subtype_standard(rel)
         ):
@@ -978,7 +1004,7 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
                     continue
                 out.append(
                     Quantity(
-                        provenance=Provenance(source="synth/relation", sentence=rel.provenance.sentence),
+                        provenance=relation_provenance(rel),
                         entity=rel.standard, measure=measure, value=value, verb=rel.verb,
                         label=rel.standard_label or None,
                         owner=rel.standard_owner or None,
@@ -1040,7 +1066,9 @@ def _bare_age_anchor_synth(store: FactStore, reg: Registry, log: ArithmeticLog) 
         out.append(
             Quantity(
                 provenance=Provenance(
-                    source="synth/bare-age-anchor", sentence=p.provenance.sentence
+                    source="synth/bare-age-anchor",
+                    sentence=p.provenance.sentence,
+                    temporal_perspective=p.provenance.temporal_perspective,
                 ),
                 entity=p.subject, measure=measure, value=value, verb=p.verb,
             )
@@ -1113,7 +1141,9 @@ def _anchor_quantity_synth(store: FactStore, reg: Registry, log: ArithmeticLog) 
         out.append(
             Quantity(
                 provenance=Provenance(
-                    source="synth/anchor-quantity", sentence=anchor.provenance.sentence
+                    source="synth/anchor-quantity",
+                    sentence=anchor.provenance.sentence,
+                    temporal_perspective=anchor.provenance.temporal_perspective,
                 ),
                 entity=anchor.entity, measure=measure, value=anchor.value,
                 verb=anchor.verb, occurrence=anchor.occurrence, time=anchor.time,
@@ -2079,14 +2109,22 @@ def _sum_constraint_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -
             continue  # a physically impossible split — decline rather than commit
         out.append(
             Quantity(
-                provenance=Provenance(source="synth/sum-constraint", sentence=rel.provenance.sentence),
+                provenance=Provenance(
+                    source="synth/sum-constraint",
+                    sentence=rel.provenance.sentence,
+                    temporal_perspective=rel.provenance.temporal_perspective,
+                ),
                 entity=rel.standard, measure=measure, value=standard_value, verb=rel.verb,
                 owner=rel.standard_owner or None,
             )
         )
         out.append(
             Quantity(
-                provenance=Provenance(source="synth/sum-constraint", sentence=rel.provenance.sentence),
+                provenance=Provenance(
+                    source="synth/sum-constraint",
+                    sentence=rel.provenance.sentence,
+                    temporal_perspective=rel.provenance.temporal_perspective,
+                ),
                 entity=rel.subject, measure=measure, value=subject_value, verb=rel.verb,
                 owner=rel.subject_owner or None,
             )

@@ -19,6 +19,9 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from ..data.project import Project
+from ..kernel.engine import analyze, solve
+from ..kernel.model import _jsonable
+from ..kernel.patterns import match_ask
 from .candidate import AskScenarioMode, GenerationMode, LexicalRelaxation
 
 
@@ -46,6 +49,29 @@ DefectKind = Literal[
     "missing_fact_context",
     "other",
 ]
+
+InterpretationJudgment = Literal[
+    "correct", "incorrect", "unclear", "not_reviewed"
+]
+ResultJudgment = Literal[
+    "correct_answer",
+    "correct_decline",
+    "correct_facts",
+    "incorrect",
+    "unclear",
+    "not_applicable",
+    "not_reviewed",
+]
+NaturalnessJudgment = Literal["preferred", "acceptable", "marginal"]
+
+_REVIEW_EVIDENCE_ROWS_CACHE: dict[
+    tuple[str, int, int], tuple[tuple[dict, ...], tuple[dict, ...]]
+] = {}
+_ASK_EVIDENCE_CACHE: dict[tuple[str, int, int, str], dict[str, Any]] = {}
+_PREMISE_EVIDENCE_CACHE: dict[tuple[str, int, int, str], dict[str, Any]] = {}
+_VALIDATED_PREMISE_CACHE: dict[
+    tuple[str, int, int, str], tuple[dict[str, Any], ...]
+] = {}
 
 
 class SourceLocation(BaseModel):
@@ -176,6 +202,19 @@ class AskScenarioReviewEvidence(BaseModel):
         return self
 
 
+class PremiseReviewEvidence(BaseModel):
+    """The exact matcher and fact contract visible during premise review."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    target_status: str = Field(min_length=1, max_length=64)
+    target_bindings: dict[str, str] = Field(default_factory=dict, max_length=64)
+    actual_rule_ids: list[str] = Field(default_factory=list, max_length=64)
+    facts: list[dict[str, Any]] = Field(default_factory=list, max_length=64)
+    collisions: list[dict[str, Any]] = Field(default_factory=list, max_length=32)
+    deficiencies: list[str] = Field(default_factory=list, max_length=64)
+
+
 class ReviewRecord(BaseModel):
     """The bounded request accepted from the designer."""
 
@@ -192,10 +231,14 @@ class ReviewRecord(BaseModel):
     context_before: list[str] = Field(default_factory=list, max_length=8)
     context_after: list[str] = Field(default_factory=list, max_length=8)
     target_rule: str | None = Field(default=None, min_length=1, max_length=256)
+    premise_evidence: PremiseReviewEvidence | None = None
     ask_scenario: AskScenarioReviewEvidence | None = None
     seed: int
     registry_fingerprint: str = Field(min_length=8, max_length=128)
     verdict: Literal["valid", "invalid", "unclear"]
+    interpretation_judgment: InterpretationJudgment = "not_reviewed"
+    result_judgment: ResultJudgment = "not_reviewed"
+    naturalness: NaturalnessJudgment | None = None
     requested_bindings: dict[str, str] = Field(default_factory=dict, max_length=64)
     defects: list[ReviewDefect] = Field(default_factory=list, max_length=16)
     hypotheses: list[HypothesisRecord] = Field(default_factory=list, max_length=32)
@@ -207,6 +250,8 @@ class ReviewRecord(BaseModel):
     def _subject_matches_review_kind(self) -> "ReviewRecord":
         if self.review_kind == "premise" and self.target_rule is None:
             raise ValueError("a premise review requires a target rule")
+        if self.review_kind != "premise" and self.premise_evidence is not None:
+            raise ValueError("only a premise review may carry premise evidence")
         if self.review_kind != "premise" and self.target_rule is not None:
             raise ValueError("only a premise review can claim a target rule")
         if self.review_kind == "sentence" and self.origin != "reading":
@@ -305,6 +350,10 @@ def update_review(
     hypotheses: list[HypothesisRecord] | None = None,
     interpretation: str | None = None,
     suggested_rule: str | None = None,
+    interpretation_judgment: InterpretationJudgment | None = None,
+    result_judgment: ResultJudgment | None = None,
+    naturalness: NaturalnessJudgment | None = None,
+    update_naturalness: bool = False,
 ) -> dict:
     """Append a correction that supersedes `review_id`.
 
@@ -332,6 +381,12 @@ def update_review(
         corrected["interpretation"] = interpretation
     if suggested_rule is not None:
         corrected["suggested_rule"] = suggested_rule
+    if interpretation_judgment is not None:
+        corrected["interpretation_judgment"] = interpretation_judgment
+    if result_judgment is not None:
+        corrected["result_judgment"] = result_judgment
+    if naturalness is not None or update_naturalness:
+        corrected["naturalness"] = naturalness
     return _append(
         project,
         corrected,
@@ -445,3 +500,627 @@ def read_review_history(project: Project, limit: int = 100) -> list[dict]:
         elif row["id"] not in tombstoned:
             history.append({**row, "review_status": "open"})
     return history[-limit:][::-1]
+
+
+def ask_review_signature(review: dict) -> str | None:
+    """Return a vocabulary-independent structural key for one ask review.
+
+    Exact words deliberately do not participate. Repeated judgments of the
+    same declared ask branch therefore increase confidence in one coverage
+    group instead of manufacturing thousands of apparent grammar shapes.
+    """
+
+    scenario = review.get("ask_scenario")
+    if not isinstance(scenario, dict):
+        return None
+    payload = {
+        "target_ask": scenario.get("target_ask"),
+        "scenario_mode": scenario.get("scenario_mode"),
+        "consumer": scenario.get("consumer"),
+        "answer_shape": scenario.get("answer_shape"),
+        "query_fields": sorted((scenario.get("query") or {}).keys()),
+        "binding_fields": sorted((review.get("requested_bindings") or {}).keys()),
+        "premise_rules": scenario.get("premise_rules") or [],
+    }
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+    return "askcov-" + hashlib.sha256(encoded.encode("utf-8")).hexdigest()[:16]
+
+
+def _review_evidence_rows(
+    project: Project,
+) -> tuple[tuple[dict, ...], tuple[dict, ...]]:
+    """Reuse non-deleted evidence until its append-only file changes.
+
+    Resolution closes an inbox item but deliberately retains its reviewed
+    artefact. Tombstones are the only lifecycle operation that removes a row
+    from this evidence fold.
+    """
+
+    path = review_path(project)
+    if not path.exists():
+        return (), ()
+    stat = path.stat()
+    key = (str(path.resolve()), stat.st_mtime_ns, stat.st_size)
+    cached = _REVIEW_EVIDENCE_ROWS_CACHE.get(key)
+    if cached is not None:
+        return cached
+    history = read_review_history(project, limit=100_000)
+    ask_rows = tuple(
+        review
+        for review in history
+        if isinstance(review.get("ask_scenario"), dict)
+    )
+    premise_rows = tuple(
+        review
+        for review in history
+        if review.get("target_rule") is not None
+        and (review.get("review_kind") or "premise") == "premise"
+    )
+    if len(_REVIEW_EVIDENCE_ROWS_CACHE) >= 8:
+        _REVIEW_EVIDENCE_ROWS_CACHE.clear()
+    result = ask_rows, premise_rows
+    _REVIEW_EVIDENCE_ROWS_CACHE[key] = result
+    return result
+
+
+def _evidence_cache_key(project: Project) -> tuple[str, int, int, str]:
+    path = review_path(project)
+    if not path.exists():
+        return str(path.resolve()), 0, 0, project.registry.fingerprint
+    stat = path.stat()
+    return (
+        str(path.resolve()),
+        stat.st_mtime_ns,
+        stat.st_size,
+        project.registry.fingerprint,
+    )
+
+
+def _bounded_cache_store(cache: dict, key: tuple, value: Any) -> Any:
+    if len(cache) >= 8:
+        cache.clear()
+    cache[key] = value
+    return value
+
+
+def _live_ask_reviews(project: Project) -> tuple[dict, ...]:
+    # Compatibility name: these are live *evidence*, including resolved rows.
+    return _review_evidence_rows(project)[0]
+
+
+def _live_premise_reviews(project: Project) -> tuple[dict, ...]:
+    return _review_evidence_rows(project)[1]
+
+
+def review_needs_attention(review: dict) -> bool:
+    """Return whether a live judgment still records an unresolved problem.
+
+    Verdict, interpretation, result, and attached defects are independent
+    review axes.  A grammatically valid surface can therefore still report a
+    bad fact or malformed sentence; treating that row as clean positive
+    evidence would erase the very problem the reviewer recorded.
+    """
+
+    return bool(review.get("defects")) or review.get("verdict") in {
+        "invalid",
+        "unclear",
+    } or review.get("interpretation_judgment") in {
+        "incorrect",
+        "unclear",
+    } or review.get("result_judgment") in {"incorrect", "unclear"}
+
+
+def _is_clean_valid_review(review: dict) -> bool:
+    return review.get("verdict") == "valid" and not review_needs_attention(review)
+
+
+def premise_review_signature(review: dict) -> str | None:
+    target = review.get("target_rule")
+    if not isinstance(target, str):
+        return None
+    evidence = review.get("premise_evidence") or {}
+    payload = {
+        "target_rule": target,
+        "generation_mode": review.get("generation_mode") or "strict",
+        "binding_fields": sorted((review.get("requested_bindings") or {}).keys()),
+        "context_before": len(review.get("context_before") or []),
+        "context_after": len(review.get("context_after") or []),
+        "fact_types": sorted(
+            str(fact.get("type")) for fact in evidence.get("facts", [])
+        ),
+    }
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+    return "premcov-" + hashlib.sha256(encoded.encode("utf-8")).hexdigest()[:16]
+
+
+def premise_review_target_counts(project: Project) -> dict[str, int]:
+    """Count durable positive premise evidence per declared target."""
+
+    counts: dict[str, int] = {}
+    for review in _live_premise_reviews(project):
+        target = review.get("target_rule")
+        if _is_clean_valid_review(review) and isinstance(target, str):
+            counts[target] = counts.get(target, 0) + 1
+    return counts
+
+
+def _fact_contract(facts: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    contracted = [
+        {
+            "type": fact.get("type"),
+            "fields": fact.get("fields") or {},
+            "source": fact.get("source"),
+            "sentence": fact.get("sentence"),
+        }
+        for fact in facts
+    ]
+    return sorted(
+        contracted,
+        key=lambda fact: json.dumps(fact, sort_keys=True, separators=(",", ":")),
+    )
+
+
+def replay_premise_review(
+    project: Project,
+    review: dict,
+    *,
+    include_candidate: bool = False,
+) -> dict[str, Any]:
+    """Replay a pinned positive premise through the ordinary document path."""
+
+    target = review.get("target_rule")
+    if not isinstance(target, str):
+        return {"status": "not_applicable", "detail": "not a premise review"}
+    try:
+        # Local import avoids making review schemas a dependency of the
+        # premise generator while still using its one canonical retest path.
+        from .sample import retest_candidate
+
+        candidate = retest_candidate(
+            project,
+            rule_id=target,
+            sentence=str(review.get("sentence") or ""),
+            seed=int(review.get("seed") or 0),
+            requested_bindings=dict(review.get("requested_bindings") or {}),
+            origin=str(review.get("origin") or "generated"),
+            generation_mode=str(review.get("generation_mode") or "strict"),
+            lexical_relaxations=tuple(
+                LexicalRelaxation(**item)
+                for item in review.get("lexical_relaxations") or []
+            ),
+            context_before=tuple(review.get("context_before") or []),
+            context_after=tuple(review.get("context_after") or []),
+        )
+    except Exception as exc:
+        return {
+            "status": "regressed",
+            "detail": f"replay failed: {type(exc).__name__}: {exc}",
+        }
+    if candidate.target_status not in {"matched", "shadowed"}:
+        return {
+            "status": "regressed",
+            "detail": f"the reviewed target is now {candidate.target_status}",
+        }
+    if candidate.collisions:
+        return {
+            "status": "regressed",
+            "detail": "the reviewed premise now produces a collision",
+        }
+
+    evidence = review.get("premise_evidence")
+    if isinstance(evidence, dict):
+        actual = candidate.to_json()
+        comparisons = [
+            ("target status", actual["target_status"], evidence.get("target_status")),
+            ("target bindings", actual["target_bindings"], evidence.get("target_bindings")),
+            ("co-firing rules", actual["actual_rule_ids"], evidence.get("actual_rule_ids")),
+            ("facts", _fact_contract(actual["facts"]), _fact_contract(evidence.get("facts") or [])),
+            ("collisions", list(actual["collisions"]), evidence.get("collisions") or []),
+            ("deficiencies", list(actual["deficiencies"]), evidence.get("deficiencies") or []),
+        ]
+        for label, current, expected in comparisons:
+            if current != expected:
+                return {
+                    "status": "regressed",
+                    "detail": f"the premise {label} changed",
+                }
+    status = (
+        "current"
+        if review.get("registry_fingerprint") == project.registry.fingerprint
+        else "machine_reconfirmed"
+    )
+    result: dict[str, Any] = {
+        "status": status,
+        "detail": "target premise and emitted facts replayed",
+    }
+    if include_candidate:
+        result["candidate"] = candidate.to_json()
+    return result
+
+
+def premise_review_evidence(project: Project) -> dict[str, Any]:
+    cache_key = _evidence_cache_key(project)
+    cached = _PREMISE_EVIDENCE_CACHE.get(cache_key)
+    if cached is not None:
+        return cached
+    reviews = list(_live_premise_reviews(project))
+    grouped: dict[str, list[dict]] = {}
+    for review in reviews:
+        signature = premise_review_signature(review)
+        if signature is not None:
+            grouped.setdefault(signature, []).append(review)
+
+    groups: list[dict[str, Any]] = []
+    for signature, rows in grouped.items():
+        valid = [row for row in rows if _is_clean_valid_review(row)]
+        canonical = None
+        if valid:
+            preference = {"preferred": 0, "acceptable": 1, None: 2, "marginal": 3}
+            best_preference = min(
+                preference.get(row.get("naturalness"), 2) for row in valid
+            )
+            canonical = max(
+                (
+                    row
+                    for row in valid
+                    if preference.get(row.get("naturalness"), 2)
+                    == best_preference
+                ),
+                key=lambda row: str(row.get("timestamp") or ""),
+            )
+        replay = (
+            replay_premise_review(project, canonical)
+            if canonical is not None
+            else {"status": "unvalidated", "detail": "no valid judgment"}
+        )
+        groups.append(
+            {
+                "signature": signature,
+                "target_rule": rows[-1].get("target_rule"),
+                "generation_mode": rows[-1].get("generation_mode") or "strict",
+                "binding_fields": sorted(
+                    (rows[-1].get("requested_bindings") or {}).keys()
+                ),
+                "review_count": len(rows),
+                "verdict_counts": {
+                    verdict: sum(row.get("verdict") == verdict for row in rows)
+                    for verdict in ("valid", "invalid", "unclear")
+                },
+                "naturalness_counts": {
+                    value: sum(row.get("naturalness") == value for row in valid)
+                    for value in ("preferred", "acceptable", "marginal")
+                },
+                "canonical_review_id": canonical.get("id") if canonical else None,
+                "last_reviewed_at": max(
+                    str(row.get("timestamp") or "") for row in rows
+                ),
+                "replay_status": replay["status"],
+                "replay_detail": replay["detail"],
+            }
+        )
+    groups.sort(key=lambda group: (str(group["target_rule"]), group["signature"]))
+    targets: dict[str, dict[str, int]] = {}
+    for group in groups:
+        target = str(group["target_rule"])
+        counts = targets.setdefault(
+            target,
+            {"groups": 0, "validated_groups": 0, "valid_reviews": 0},
+        )
+        counts["groups"] += 1
+        counts["valid_reviews"] += group["verdict_counts"]["valid"]
+        if group["replay_status"] in {"current", "machine_reconfirmed"}:
+            counts["validated_groups"] += 1
+    result = {
+        "summary": {
+            "review_count": len(reviews),
+            "valid_count": sum(row.get("verdict") == "valid" for row in reviews),
+            "clean_valid_count": sum(_is_clean_valid_review(row) for row in reviews),
+            "action_count": sum(
+                row.get("review_status") != "resolved"
+                and review_needs_attention(row)
+                for row in reviews
+            )
+            + sum(group["replay_status"] == "regressed" for group in groups),
+            "group_count": len(groups),
+            "validated_group_count": sum(
+                group["replay_status"] in {"current", "machine_reconfirmed"}
+                for group in groups
+            ),
+            "regressed_group_count": sum(
+                group["replay_status"] == "regressed" for group in groups
+            ),
+            "target_count": len(targets),
+        },
+        "targets": targets,
+        "groups": groups,
+    }
+    return _bounded_cache_store(_PREMISE_EVIDENCE_CACHE, cache_key, result)
+
+
+def validated_premise_candidates(project: Project) -> list[dict[str, Any]]:
+    """Return one replay-valid strict premise per structural review group."""
+
+    cache_key = _evidence_cache_key(project)
+    cached = _VALIDATED_PREMISE_CACHE.get(cache_key)
+    if cached is not None:
+        return list(cached)
+    by_id = {review.get("id"): review for review in _live_premise_reviews(project)}
+    candidates: list[dict[str, Any]] = []
+    for group in premise_review_evidence(project)["groups"]:
+        if group["generation_mode"] != "strict":
+            continue
+        review = by_id.get(group["canonical_review_id"])
+        if review is None:
+            continue
+        replay = replay_premise_review(project, review, include_candidate=True)
+        if replay["status"] not in {"current", "machine_reconfirmed"}:
+            continue
+        candidate = replay["candidate"]
+        candidates.append(
+            {
+                **candidate,
+                "sentence": candidate["text"],
+                "validated_review_id": review.get("id"),
+            }
+        )
+    _bounded_cache_store(
+        _VALIDATED_PREMISE_CACHE, cache_key, tuple(candidates)
+    )
+    return candidates
+
+
+def ask_review_surface_signature(
+    *,
+    target_ask: str,
+    scenario_mode: str,
+    consumer: str | None,
+    query_fields: list[str] | tuple[str, ...],
+    binding_fields: list[str] | tuple[str, ...],
+) -> str:
+    """Key the independently selectable surface branch of an ask."""
+
+    encoded = json.dumps(
+        {
+            "target_ask": target_ask,
+            "scenario_mode": scenario_mode,
+            "consumer": consumer,
+            "query_fields": sorted(query_fields),
+            "binding_fields": sorted(binding_fields),
+        },
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    return "asksurf-" + hashlib.sha256(encoded.encode("utf-8")).hexdigest()[:16]
+
+
+def ask_review_target_counts(project: Project) -> dict[str, int]:
+    """Count live positive ask evidence without performing replay work."""
+
+    counts: dict[str, int] = {}
+    for review in _live_ask_reviews(project):
+        scenario = review.get("ask_scenario")
+        if not _is_clean_valid_review(review):
+            continue
+        target = scenario.get("target_ask")
+        if isinstance(target, str):
+            counts[target] = counts.get(target, 0) + 1
+    return counts
+
+
+def ask_review_surface_counts(project: Project) -> dict[str, int]:
+    """Count positive judgments per vocabulary-independent ask branch."""
+
+    counts: dict[str, int] = {}
+    for review in _live_ask_reviews(project):
+        scenario = review.get("ask_scenario")
+        if not _is_clean_valid_review(review):
+            continue
+        signature = ask_review_surface_signature(
+            target_ask=str(scenario.get("target_ask")),
+            scenario_mode=str(scenario.get("scenario_mode")),
+            consumer=(
+                str(scenario["consumer"])
+                if scenario.get("consumer") is not None
+                else None
+            ),
+            query_fields=list((scenario.get("query") or {}).keys()),
+            binding_fields=list((review.get("requested_bindings") or {}).keys()),
+        )
+        counts[signature] = counts.get(signature, 0) + 1
+    return counts
+
+
+def _answer_contract(answer: Any) -> dict[str, Any]:
+    return {
+        "kind": answer.kind,
+        "value": _jsonable(answer.value),
+        "committed": answer.committed,
+        "clarification": answer.clarification is not None,
+    }
+
+
+def _expected_answer_contract(scenario: dict) -> dict[str, Any]:
+    answer = scenario.get("answer") or {}
+    return {
+        "kind": answer.get("kind"),
+        "value": answer.get("value"),
+        "committed": bool(answer.get("committed")),
+        "clarification": scenario.get("answer_shape") == "clarification",
+    }
+
+
+def _reviewed_query_matches(actual: Any, expected: Any) -> bool:
+    """Allow a reviewed query to gain evidence-policy metadata only.
+
+    A clean valid review confirms the surface interpretation and result. A
+    later safety increment may make that same interpretation stricter by
+    adding an ``evidence_*`` constraint. Requiring human re-review merely
+    because the machine now records that constraint would flood the action
+    inbox, while removing or changing any previously reviewed field must
+    still regress exactly as before.
+    """
+
+    if actual == expected:
+        return True
+    if not isinstance(actual, dict) or not isinstance(expected, dict):
+        return False
+    if any(actual.get(key) != value for key, value in expected.items()):
+        return False
+    return all(
+        key in expected or key.startswith("evidence_")
+        for key in actual
+    )
+
+
+def replay_ask_review(project: Project, review: dict) -> dict[str, str]:
+    """Replay one pinned positive ask without making reviews runtime inputs."""
+
+    scenario = review.get("ask_scenario")
+    if not isinstance(scenario, dict):
+        return {"status": "not_applicable", "detail": "not an ask review"}
+    question = str(scenario.get("question") or review.get("sentence") or "")
+    try:
+        matched = match_ask(analyze(question, project.registry), project.registry)
+        if matched is None:
+            return {
+                "status": "regressed",
+                "detail": "the reviewed question no longer matches an ask",
+            }
+        ask, query, _match = matched
+        expected_ask = scenario.get("target_ask")
+        if ask.id != expected_ask:
+            return {
+                "status": "regressed",
+                "detail": f"{ask.id} now wins instead of {expected_ask}",
+            }
+        actual_query = _jsonable(query)
+        if not _reviewed_query_matches(actual_query, scenario.get("query")):
+            return {
+                "status": "regressed",
+                "detail": "the normalized query changed",
+            }
+        result = solve(str(scenario.get("text") or question), project.registry, tracing=False)
+        if _answer_contract(result.answer) != _expected_answer_contract(scenario):
+            return {
+                "status": "regressed",
+                "detail": "the answer or decline contract changed",
+            }
+    except Exception as exc:  # evidence reporting must not break the Designer
+        return {
+            "status": "regressed",
+            "detail": f"replay failed: {type(exc).__name__}: {exc}",
+        }
+    status = (
+        "current"
+        if review.get("registry_fingerprint") == project.registry.fingerprint
+        else "machine_reconfirmed"
+    )
+    return {"status": status, "detail": "exact ask, query, and result replayed"}
+
+
+def ask_review_evidence(project: Project) -> dict[str, Any]:
+    """Fold live ask judgments into compact coverage and replay evidence."""
+
+    cache_key = _evidence_cache_key(project)
+    cached = _ASK_EVIDENCE_CACHE.get(cache_key)
+    if cached is not None:
+        return cached
+    reviews = list(_live_ask_reviews(project))
+    grouped: dict[str, list[dict]] = {}
+    for review in reviews:
+        signature = ask_review_signature(review)
+        if signature is not None:
+            grouped.setdefault(signature, []).append(review)
+
+    groups: list[dict[str, Any]] = []
+    for signature, rows in grouped.items():
+        scenario = rows[-1]["ask_scenario"]
+        valid = [row for row in rows if _is_clean_valid_review(row)]
+        canonical = None
+        if valid:
+            preference = {"preferred": 0, "acceptable": 1, None: 2, "marginal": 3}
+            best_preference = min(
+                preference.get(row.get("naturalness"), 2) for row in valid
+            )
+            canonical = max(
+                (
+                    row
+                    for row in valid
+                    if preference.get(row.get("naturalness"), 2)
+                    == best_preference
+                ),
+                key=lambda row: str(row.get("timestamp") or ""),
+            )
+        replay = (
+            replay_ask_review(project, canonical)
+            if canonical is not None
+            else {"status": "unvalidated", "detail": "no valid judgment"}
+        )
+        groups.append(
+            {
+                "signature": signature,
+                "target_ask": scenario.get("target_ask"),
+                "scenario_mode": scenario.get("scenario_mode"),
+                "consumer": scenario.get("consumer"),
+                "answer_shape": scenario.get("answer_shape"),
+                "query_fields": sorted((scenario.get("query") or {}).keys()),
+                "binding_fields": sorted(
+                    (rows[-1].get("requested_bindings") or {}).keys()
+                ),
+                "premise_rules": scenario.get("premise_rules") or [],
+                "review_count": len(rows),
+                "verdict_counts": {
+                    verdict: sum(row.get("verdict") == verdict for row in rows)
+                    for verdict in ("valid", "invalid", "unclear")
+                },
+                "naturalness_counts": {
+                    value: sum(row.get("naturalness") == value for row in valid)
+                    for value in ("preferred", "acceptable", "marginal")
+                },
+                "canonical_review_id": canonical.get("id") if canonical else None,
+                "last_reviewed_at": max(
+                    str(row.get("timestamp") or "") for row in rows
+                ),
+                "replay_status": replay["status"],
+                "replay_detail": replay["detail"],
+            }
+        )
+    groups.sort(key=lambda group: (str(group["target_ask"]), group["signature"]))
+
+    target_counts: dict[str, dict[str, int]] = {}
+    for group in groups:
+        target = str(group["target_ask"])
+        counts = target_counts.setdefault(
+            target,
+            {"groups": 0, "validated_groups": 0, "valid_reviews": 0},
+        )
+        counts["groups"] += 1
+        counts["valid_reviews"] += group["verdict_counts"]["valid"]
+        if group["replay_status"] in {"current", "machine_reconfirmed"}:
+            counts["validated_groups"] += 1
+
+    result = {
+        "summary": {
+            "review_count": len(reviews),
+            "valid_count": sum(row.get("verdict") == "valid" for row in reviews),
+            "clean_valid_count": sum(_is_clean_valid_review(row) for row in reviews),
+            "action_count": sum(
+                row.get("review_status") != "resolved"
+                and review_needs_attention(row)
+                for row in reviews
+            )
+            + sum(group["replay_status"] == "regressed" for group in groups),
+            "group_count": len(groups),
+            "validated_group_count": sum(
+                group["replay_status"] in {"current", "machine_reconfirmed"}
+                for group in groups
+            ),
+            "regressed_group_count": sum(
+                group["replay_status"] == "regressed" for group in groups
+            ),
+            "target_count": len(target_counts),
+        },
+        "targets": target_counts,
+        "groups": groups,
+    }
+    return _bounded_cache_store(_ASK_EVIDENCE_CACHE, cache_key, result)

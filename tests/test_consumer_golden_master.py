@@ -344,6 +344,11 @@ GOLDEN = [
      'rate-span', 'decline', None, "no conversion from 'meter' to the rate's 'day' — can"),
     ('gsm8k', 'Rob earns 10 dollars per hour. How much does Rob earn?',
      'rate-span', 'decline', None, "no unique 'hour' span known for 'rob' to pair with t"),
+    ('curated',
+     'Nora earns 12 dollars an hour for gardening. '
+     'Yesterday she did 50 minutes of tutoring. How much did she earn?',
+     'rate-span', 'decline', None,
+     "no unique duration for 'nora' doing 'gardening' to p"),
     ('gsm8k', 'A bird eats 2 berries per day. Tom found 3 birds. Now Tom has 5 birds. How many berries does the bird eat in 4 days?',
      'rate-span', 'decline', None, 'the rate is per-bird'),
     ('gsm8k', 'A bird eats 2 berries per day. Tom has 3 birds. How long does it take the bird to eat 10 berries?',
@@ -462,7 +467,7 @@ def test_the_guards_are_the_bulk_of_the_coverage():
 
 # --- the coverage of this file, measured and enforced ----------------------
 
-_GUARD_FLOOR = 115  # guards WITH a probe: raise as probes are added, never lower
+_GUARD_FLOOR = 122  # guards WITH a probe: raise as probes are added, never lower
 _GAP_CEILING = 0    # guards WITHOUT one: lower as probes are added, never raise
 
 # The denominator is 91, and it was 92 until the boundary bug above was fixed:
@@ -478,6 +483,19 @@ _GAP_CEILING = 0    # guards WITHOUT one: lower as probes are added, never raise
 # coverage figure honest in both directions: they are not gaps, and they are
 # not silently absent either.
 _COVERED_BY_UNIT_TEST = {
+    ("content-progress-remainder-fraction", ""),
+    ("content-progress-remainder-fraction", "completed"),
+    ("content-progress-remainder-fraction", "completed progress"),
+    ("content-progress-remainder-fraction", "measure"),
+    ("content-progress-remainder-fraction", "requested remainder fraction"),
+    (
+        "content-progress-remainder-fraction",
+        "the planned progress target needs one de",
+    ),
+    (
+        "content-progress-remainder-fraction",
+        "the requested remainder fraction is unre",
+    ),
     ("completion-duration-difference", "completion-speed direction"),
     ("molar-mass", "no atomic mass known for"),
     ("molar-mass", "a cost needs a numeric rate"),

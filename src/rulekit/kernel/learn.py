@@ -26,6 +26,7 @@ from .model import (
     Unit,
     VerbalRelation,
 )
+from .temporal import normalize_perspective
 from .obligations import _crosses_clause_boundary
 
 
@@ -610,7 +611,11 @@ def _conjoined_purchase_items(
 
 
 def _conjoined_bare_number_events(
-    reading: Reading, reg: Registry, first_item: Unit
+    reading: Reading,
+    reg: Registry,
+    first_item: Unit,
+    *,
+    allow_additive_comparative: bool = False,
 ) -> list[float]:
     """'Vera ... sold 5 last week and 7 this week' — a further sibling of
     `_conjoined_purchase_items` for an EVENT verb whose sibling conjunct
@@ -634,7 +639,14 @@ def _conjoined_bare_number_events(
     conjunct; ANY other noun means a real item WAS stated and this walker
     declines that segment entirely, leaving it to the noun-bearing path).
     Zero or multiple bare values in a segment is an ambiguous shape and
-    silently declines, same discipline as `_conjoined_purchase_items`."""
+    silently declines, same discipline as `_conjoined_purchase_items`.
+
+    A caller that has already proved the governing verb carries event polarity
+    may additionally admit exactly one positive `more_dir` comparative. In a
+    coordinated event tail, ``N more`` states another N occurrences; an
+    untagged verb cannot sign that contribution and leaves it to ordinary
+    value-accounting instead.
+    """
     units = reading.units
     try:
         i = units.index(first_item)
@@ -651,6 +663,27 @@ def _conjoined_bare_number_events(
             if u.sense() == "value" and u.features.get("value_kind") == "count"
         ]
         if len(bare_values) != 1:
+            return
+        comparatives = [u for u in seg if u.sense() == "comparative"]
+        additive_comparative = (
+            allow_additive_comparative
+            and len(comparatives) == 1
+            and reg.word_in_category(_lemma(comparatives[0]), "more_dir")
+            and not any(
+                reg.word_in_category(_lemma(u), "relational_marker")
+                for u in seg
+            )
+        )
+        # Only temporal adjunct furniture may accompany the bare count. A
+        # comparative/multiplier/adjective otherwise changes its semantics
+        # and remains available to value-accounting. Relative attributes such
+        # as ``last`` have already condensed with their period noun;
+        # demonstrative period phrases may retain an article, and
+        # prepositional period phrases retain the prep.
+        allowed_senses = {"value", "noun", "article", "preposition"}
+        if additive_comparative:
+            allowed_senses.add("comparative")
+        if any(u.sense() not in allowed_senses for u in seg):
             return
         other_nouns = [
             u
@@ -889,6 +922,34 @@ def _sentence_time(reading: Reading, reg: Registry) -> str | None:
             if prev is None:
                 return fold
             return f"{prev.features.get('fold', '')} {fold}"
+
+    # A bare qualified relative period may trail its predicate without a
+    # preposition (``bought cars last month``).  Condensation preserves this
+    # as its own noun unit rather than letting it become the head of the
+    # preceding object.  Exactly one same-clause period supplies the sentence
+    # label; competing periods remain unstamped rather than guessed.
+    first_verb = next(
+        (unit for unit in reading.units if unit.sense() == "verb"), None
+    )
+    if first_verb is not None:
+        relative_periods = []
+        for unit in reading.units:
+            if unit.span[0] <= first_verb.span[1] or unit.sense() != "noun":
+                continue
+            qualifier = unit.features.get("qualifier")
+            head = unit.features.get("lemma", unit.features.get("fold", ""))
+            if (
+                isinstance(qualifier, str)
+                and reg.word_in_category(qualifier, "relative_period_attribute")
+                and (
+                    reg.word_in_category(head, "duration_measure")
+                    or reg.word_in_category(head, "timeperiod")
+                )
+                and not _crosses_clause_boundary(reading, unit, first_verb)
+            ):
+                relative_periods.append(unit.features.get("fold", head))
+        if len(relative_periods) == 1:
+            return relative_periods[0]
 
     point_objects: list[tuple[Unit, Unit]] = []
     governed: list[tuple[Unit, str]] = []
@@ -1433,7 +1494,11 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
         # one bucket's count). saturate's distributive-container-total synth
         # reads this to stop conflating the two into a garbage group total
         # (metadata only; Provenance is not part of any Fact.key()).
-        prov = replace(base_prov, distributive=_has_distributive_determiner(reading, subject))
+        prov = replace(
+            base_prov,
+            distributive=_has_distributive_determiner(reading, subject),
+            temporal_perspective=normalize_perspective(verb.surface, reg),
+        )
         polarity = not _negated(reading, verb)
         negated_clause = _clause_negated(reading, verb, reg)
         verb_lemma = _lemma(verb)
@@ -1444,6 +1509,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
         if consumed:
             continue
         is_state = reg.word_in_category(verb.features.get("fold", ""), "state")
+        has_event_polarity = _has_event_polarity(verb_lemma, reg)
         occurrence = None if is_state else reading.sentence_index
         is_purchase_verb = reg.word_in_category(verb_lemma, "purchase")
         is_price_verb = reg.word_in_category(verb_lemma, "price_verb")
@@ -1715,6 +1781,20 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
             and dobj.features.get("value_kind") == "count"
             and dobj.sense() == "noun"
         )
+        # A coordinated quantitative event is one semantic clause.  When its
+        # later bare-count conjunct is structurally visible but the verb has
+        # no declared event polarity, the conjunct recovery contract cannot
+        # account for the whole clause.  Withhold the first count as well:
+        # retaining only that easy prefix would turn an explicit partial read
+        # into an apparently usable event fact.  Polarity-tagged events use
+        # the established sibling recovery below; states remain governed by
+        # their own holding semantics.
+        has_unrecoverable_bare_conjunct = (
+            dobj_is_count
+            and not is_state
+            and not has_event_polarity
+            and bool(_conjoined_bare_number_events(reading, reg, dobj))
+        )
         flat_price_value = None
         if (
             is_purchase_verb
@@ -1734,7 +1814,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
             # absolute holding. Emit nothing here; the comparative rules own the
             # Relation, and where they don't fire this stays a safe decline.
             pass
-        elif dobj_is_count:
+        elif dobj_is_count and not has_unrecoverable_bare_conjunct:
             # condensed counted noun ("3 apples") — a negated clause ("Tom
             # does NOT have 5 apples") declines this contribution entirely
             # rather than fold the stated count as a real holding.
@@ -1768,7 +1848,7 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                 if (
                     is_purchase_verb
                     or is_state
-                    or (not is_state and _has_event_polarity(verb_lemma, reg))
+                    or (not is_state and has_event_polarity)
                 ):
                     # "buys A at $X each, B, and C at $Z each" (purchase
                     # verbs), "has A and B" / "owns X, Y, and Z" (state
@@ -1857,7 +1937,12 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
                         # purchase-item loop above so every conjunct in the
                         # sentence — named item or bare value — carries a
                         # unique segment.
-                        for bare_value in _conjoined_bare_number_events(reading, reg, dobj):
+                        for bare_value in _conjoined_bare_number_events(
+                            reading,
+                            reg,
+                            dobj,
+                            allow_additive_comparative=True,
+                        ):
                             conjunct_segment += 1
                             facts.append(
                                 Quantity(

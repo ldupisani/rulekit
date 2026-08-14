@@ -19,6 +19,7 @@ from .evaluate import ArithmeticLog
 from .facts import FactStore
 from .model import Reading
 from .patterns import match_ask
+from .temporal import perspectives_match
 
 if TYPE_CHECKING:  # pragma: no cover - types only
     from .model import Fact
@@ -166,6 +167,43 @@ def _question_reference_time(question: Reading, reg: Registry, match) -> list:
     return out
 
 
+def _temporal_evidence_store(
+    query: dict, store: FactStore, reg: Registry
+) -> FactStore:
+    """Scope an opted-in temporal ask to evidence from its perspective.
+
+    The ask names the semantic measure category to scope. That keeps this
+    mechanism reusable: age asks currently declare ``age_measure``; another
+    pack can opt a different family into the same contract without a new
+    consumer branch. Untimed evidence in the scoped category is excluded—an
+    unknown perspective cannot prove a present, past, or future state.
+    """
+
+    required = query.get("evidence_temporal_perspective")
+    measure_category = query.get("evidence_measure_category")
+    if required is None or not measure_category:
+        return store
+    scoped = []
+    for fact in store.facts:
+        measure = getattr(fact, "measure", None)
+        base_measure = (
+            measure.split("[", 1)[0]
+            if isinstance(measure, str)
+            else measure
+        )
+        if (
+            base_measure is None
+            or not reg.word_in_category(base_measure, measure_category)
+        ):
+            scoped.append(fact)
+            continue
+        if perspectives_match(
+            required, fact.provenance.temporal_perspective, reg
+        ):
+            scoped.append(fact)
+    return FactStore(facts=scoped)
+
+
 def answer(
     question: Reading,
     store: FactStore,
@@ -255,6 +293,8 @@ def answer(
         query = dict(selected["query"])
 
     consumer = query.get("consumer")
+
+    store = _temporal_evidence_store(query, store, reg)
 
     def finish(result: Answer) -> Answer:
         if clarification is not None:

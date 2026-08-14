@@ -89,6 +89,7 @@ def tokenize(
         assumption=assumption,
     )
     index = 0
+    previous_end: int | None = None
     for match in _TOKEN.finditer(sentence):
         surface = match.group()
         # split contractions ("isn't" -> "is" + "not"); matching runs on the
@@ -102,9 +103,24 @@ def tokenize(
                 stem = surface[: -len(suffix)]
                 pieces = [stem, expansion]
                 break
-        for piece in pieces:
+        for piece_no, piece in enumerate(pieces):
             unit = reading.new_unit((Word(piece, index),))
             unit.features["fold"] = piece.lower().translate(_FOLD_APOSTROPHE)
+            # Keep the one piece of punctuation that changes the internal
+            # structure of a numeric compound.  The tokenizer still does not
+            # create a punctuation unit for a hyphen, but condensation can now
+            # distinguish "a 100-page book" (100 describes pages) from
+            # "100 page books" (100 describes books).  Only an immediately
+            # adjacent source hyphen counts; spaced dashes remain ordinary
+            # clause punctuation, and contraction expansions after the first
+            # piece cannot inherit the source boundary.
+            if (
+                piece_no == 0
+                and previous_end is not None
+                and sentence[previous_end : match.start()] == "-"
+            ):
+                unit.features["joined_left_by_hyphen"] = True
             reading.units.append(unit)
             index += 1
+        previous_end = match.end()
     return reading

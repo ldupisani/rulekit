@@ -323,6 +323,15 @@ question-local assumption context, sentence distance becomes available to the
 same strict-dominance resolver; a uniquely re-mentioned person may win, while
 two people in the same nearest sentence still decline.
 
+A declared ask may instead own the complete conditional-first sentence. Before
+splitting `If <clause>, <ask>`, the router performs an end-to-end ask-grammar
+probe; only a match that consumes every meaningful unit preserves the whole
+sentence as query structure. Unresolved surface pronouns receive disposable
+probe antecedents solely for this pre-document routing check. The actual solve
+re-analyzes the question and still requires normal definitive discourse
+binding. If the complete grammar proof fails, the established question-local
+premise split remains unchanged.
+
 The same scope boundary supports a narrow location-persistence slice. A
 leading `If` clause inside the question, or one detached premise immediately
 before the question, may emit a `LocationConstraint`; the detached form also
@@ -651,6 +660,20 @@ current year, the CLI exposes `--reference-year`, and a replay without that
 context declines. A dated age never becomes a timeless `Quantity`, so an
 undated “how old” question cannot silently borrow it.
 
+Finite age statements use a separate temporal-evidence contract when no
+absolute year is present. A rule emission may attach a literal or slot-derived
+`temporal_perspective` to `Provenance`; category-backed normalization maps the
+surface to present, past, or future without putting vocabulary in Python. An
+ask opts in by declaring both `evidence_temporal_perspective` and the measure
+category to scope. Evidence in that category with an unknown or different
+perspective is removed before its generic consumer runs. Age relation and
+sum-constraint synthesis preserve this provenance, and a temporally declared
+relation refuses an anchor from another perspective. Thus “was” can use past
+age evidence, projected “will … after N years” requires a present base, and a
+future-offset premise that derives a present age cannot answer an unanchored
+past ask. This mechanism compares perspectives only; elapsed time still
+requires an explicit offset rule or `AgeAtYear` coordinate.
+
 `GroupTotal` has an optional exact `scope`. A leading total construction that
 binds a subject retains its normalized identity, so blue and red totals for
 the same measure have distinct keys and may coexist. Tail-only and synthesized
@@ -772,6 +795,8 @@ vanilla-JavaScript designer. The designer exposes:
 
 - a Generate mode for seeded rule realization and human review;
 - separate exact ask, answerable-scenario, and missing-evidence generation;
+- least-human-validated ask and ask-branch selection backed by folded review
+  evidence;
 - structural exploration objectives, conjunctive grammar/category/fact
   filters, and a generation-health panel;
 - an explicit Reading-sentence handoff into that same review workbench;
@@ -860,6 +885,14 @@ ordinary solve() as the sole answer oracle
 one-to-three-premise bounded search + removal minimality
         ↓
 question + normalized query + generated evidence + answer shape
+        ↓
+append-only premise or ask judgment + optional interpretation/result/naturalness grades
+        ↓
+clean-evidence gate: valid verdict + no defect or incorrect/unclear secondary judgment
+        ↓
+vocabulary-independent structural coverage groups
+        ↓
+canonical positive replay against current premise/fact or ask/query/result contracts
 ```
 
 Availability is intentionally structural. A rule is supported when the
@@ -879,6 +912,26 @@ visible. Bounded name-list spans are composed from project fixtures and the
 pack-declared holder conjunction. Discourse-group captures and arbitrary
 spans remain blocked because an independent question cannot truthfully invent
 their antecedent.
+
+Reader acceptance and generated vocabulary deliberately have different
+widths. Some established ask rules are recognition interceptors: they retain
+a broad surface long enough to route an unresolved or malformed question to
+the correct consumer, which then produces a specific safe decline. Narrowing
+those reader slots would lose that diagnostic boundary. Their `generation`
+contract may instead declare narrower `slot_categories`, so strict generation
+uses plausible vocabulary without rewriting what the reader recognizes.
+Category overrides preserve structural morphology from the reader slot—such
+as plural, counted, possessed, or qualified form—rather than replacing it
+with an uninflected category member.
+
+Optional branches may exist solely to prevent prefix acceptance. For example,
+an imperative single-holder ask captures a coordinated second holder so the
+consumer can decline the unsupported multi-holder interpretation. Such a slot
+is listed in `generation.omit_slots`: it remains part of reading, cannot be
+locked by an authoring request, and is never selected by independent ask
+generation. Alternate optional realizations can also declare
+`mutually_exclusive` slots. The matcher and generator then share the same
+at-most-one constraint instead of relying on seeded luck.
 
 Realization prunes a candidate filler when the Ask's already-bound slots make
 a shared `where` predicate decidable. This covers exclusions, agreement,
@@ -907,9 +960,50 @@ Random answerable generation advances deterministically past
 an ask whose bounded search finds no scenario; an explicitly selected ask
 reports that limitation. Pathological generated combinations are failed
 search branches rather than request-level crashes. Ask-only,
-answerable, and deliberate missing-evidence records remain distinct from the
+generated-answerable, validated-premise-answerable, and deliberate
+missing-evidence records remain distinct from the
 premise exploration ledger. Their answer projection preserves number, series,
 witnesses, verdict, clarification, and decline shapes.
+
+Non-deleted premise and ask reviews form an authoring-only conformance index.
+Resolved rows remain evidence; tombstoning explicitly excludes them. Premise
+rows are grouped by target rule, generation mode, binding-field shape,
+context shape, and emitted fact types. Ask rows are grouped by target ask,
+scenario mode, consumer, answer shape, query/binding field shape, and generated
+premise rules; exact filler words do not create new structural coverage. New
+premise reviews pin target status and bindings, co-firing rules, facts,
+collisions, and deficiencies. Legacy premise reviews replay the target and its
+collision-free fact production without inventing a historical snapshot that
+was never recorded. Every row remains in the append-only ledger. A valid
+verdict with an attached defect or an incorrect/unclear interpretation or
+result stays in the action queue and is excluded from confidence counts and
+canonical selection. From the remaining clean evidence, one preferred,
+acceptable, unrated, or finally marginal representative is selected per group
+for replay. Premise replay requires the same pinned
+mechanical contract; ask replay requires the same winning ask, normalized
+query, answer/decline kind and value, and commitment status. An
+older registry fingerprint that still passes is machine-reconfirmed; a
+mismatch becomes a visible regression requiring attention. Replay is
+Designer evidence only and does not authorize a runtime commitment.
+
+The Reviews view separates unresolved invalid/unclear judgments,
+defect-bearing valid judgments, and regressed positive premise or ask evidence
+from a grouped Validated Coverage view and a paginated Evidence Archive.
+Resolution closes inbox work without removing
+evidence; the destructive control is labelled “Exclude evidence”. Repeated
+clean-valid surfaces increase confidence counts but do not multiply canonical replay
+work. Premise generation exposes a least-human-validated rule objective.
+Random ask generation first advances the least human-validated supported ask,
+then prefers an unseen vocabulary-independent surface branch within that ask.
+
+The `validated_premises` ask scenario reverses that direction: it starts from
+one-to-three canonical, strict, replay-valid premise reviews, derives only
+identity locks shared by their surviving fact fields and the declared ask
+query, then realizes the ask through its normal data-backed generator. The
+normal solver must commit on those exact reviewed premise sentences, and
+premise removal proves the returned evidence set minimal. It neither treats a
+valid rule id as permission to generate arbitrary fresh evidence nor bypasses
+the ordinary answer consumer.
 
 Question structure that carries semantic scope stays in the query. A
 partitive membership ask therefore carries both its complement label and its
@@ -938,8 +1032,8 @@ reader, matcher, or benchmark path.
 
 The current realization boundary covers literals, project-fixture names,
 simple nouns/verbs/adjectives/prepositions/words, declared multiword
-prepositions, shared finite-versus-bare
-verb morphology, scalar number forms,
+prepositions, shared finite-versus-bare verb morphology, opt-in present- and
+past-participle surface morphology over pack-declared lemmas, scalar number forms,
 compatible category gates, declared single-token plural nouns, declared
 integer-count-plus-noun compositions, bounded proper-name possessive noun
 phrases, declared single-token generic pronouns, loaded direct-modal,
@@ -947,8 +1041,8 @@ future-modal, direct-adverb, and time-rooted category domains, and the
 `distinct`/`same_lemma`/`same_number`/`distinct_owner`/`distinct_measure`
 constraints plus `number_compatible`, conditional `bound_requires_type` and
 `bound_requires_category` and `bound_requires_form`, optional-slot
-`same_presence`, pack-declared descriptor/noun compatibility, conditional
-positive or negative `verb_role_compatible`, category-owned
+`same_presence` and `mutually_exclusive`, pack-declared descriptor/noun
+compatibility, conditional positive or negative `verb_role_compatible`, category-owned
 `verb_roles_compatible` frames, referential noun-phrase
 qualification, category-scoped `determinerless_category`, and negative
 slot-category constraints. A number slot may
@@ -966,6 +1060,17 @@ also the declared multiplication operator marker: the ordinary number pass
 folds that complete surface into one multiplier unit, so it cannot satisfy a
 `counted` slot. The number pass derives that marker from the registry's
 operator declaration rather than naming its English surface in Python.
+
+Numeric hyphen compounds retain a separate structural boundary. Tokenization
+annotates the source join without creating a punctuation unit, so condensation
+can distinguish `a 100-page book` from `100 page books`. The first becomes a
+qualified `book` whose `page` modifier carries `value_kind:
+attributive_count`; an outer count in `16 three-minute songs` still quantifies
+the completed head and preserves the inner value separately. A rule must opt
+in with `attributive_counted: true`, may constrain the modifier with
+`qualifier_cat`, and is accepted only when `measure_holder_compatibility`
+licenses that modifier measure for the head. Generation uses the same compiled
+relationship to construct `COUNT-MEASURE HEAD` fillers.
 
 Sense-specific lexical domains also respect the analyzer's structural numeric
 precedence. If a surface is declared as a number, fraction, or multiplier, the
@@ -1373,10 +1478,12 @@ that exactly restated a coherent category-owned role target now uses
 that duplication from returning. Duration-totality asks consequently map
 `who` and `item` to actor and theme once instead of naming separate dropping,
 eating, completion, enrollment, transfer, initiation, earning, and production
-category pairs. Teaching, spending, generic overlapping facets, negative
-exclusions, and category-dependent comparison-standard mappings remain
-explicit because they are construction semantics rather than a single lexical
-frame.
+category pairs. Teaching now follows the same category-owned contract: its
+actor is animate and its theme is a declared teaching quantity object, so ask
+and premise rules no longer name that vocabulary pair. Spending, generic
+overlapping facets, negative exclusions, and category-dependent
+comparison-standard mappings remain explicit because they are construction
+semantics rather than a single lexical frame.
 
 Noun measures use a separate additive relationship because one measure family
 may apply to several independent holder families. Category documents declare:
@@ -1393,6 +1500,75 @@ against the declared target including its descendants. Consequently a child
 measure and child holder inherit the relationship, while another pack can add
 members to either category without editing the rule. Multiple packs may also
 add independent target categories to the same source relationship.
+
+The same relationship licenses measured products such as `page -> book`.
+`arithmetic/periodic-output-per-unit` converts a singular product made every
+bare duration unit into an ordinary `Rate`; the matching ask then reuses the
+generic `rate-span` consumer. Conventional annualization is authored as a
+`scope: cadence` conversion. Cadence-scoped pairs are visible only to that
+rate projection path, so the elementary convention `year -> 52 weeks` cannot
+silently become an exact elapsed-time conversion in duration comparisons.
+
+Activity-scoped wages preserve one more boundary than an ordinary rate.
+`arithmetic/activity-scoped-wage-rate` emits the numeric `Rate` and a separate
+`RateScope` for the participant, wage verb, and activity named by the `for`
+phrase. `arithmetic/performed-activity-duration` records a dated
+`ActivityDuration` with its participant, activity, amount, and unit; it is not
+an ordinary quantity holding. When an earnings ask names no span, `rate-span`
+uses this duration only when exactly one rate scope and exactly one matching
+participant/activity duration exist. A scoped rate never falls back to an
+unqualified time quantity, so tutoring time cannot satisfy a gardening wage.
+The pack-declared restrictive focus adverbs may appear immediately before the
+activity verb or its measured duration (`only/just did 50 minutes` / `did
+only/just 50 minutes`); they preserve the stated duration and do not widen the
+slot to ordinary manner or temporal adverbs. Both focus positions at once are
+rejected.
+The existing unscoped `Rate` plus standalone duration-quantity path remains
+unchanged. Unit normalization still comes from the pack conversion graph.
+
+Measured content progress keeps a product's extent separate from completed
+events. `arithmetic/content-progress-measured-product` reads a numeric hyphen
+compound such as a 60-page book as a state of the book and records the
+participant's activity independently; it does not assert that the participant
+has completed all 60 pages. A bounded coordinated construction may then emit
+two same-verb progress events at distinct relative periods when the second is
+an explicitly local multiplier of the first. The earlier coordinate may be a
+qualified duration (`last week`) or a pack-declared bare past-day marker
+(`yesterday`); separate grammars keep those nominal shapes explicit. The bare
+day construction also has an explicit-standard sibling whose repeated marker
+must be the same earlier coordinate. The
+ordinary event-total consumer
+sums those events for a present-perfect ask. Consume-only safety siblings own
+nearby capacity, actor-mismatch, and named-standard surfaces so an unresolved
+second clause cannot leak the first event as a partial answer. Irregular
+perfect morphology remains pack data, while fixed `has` and subject number are
+question grammar; past perfect stays unsupported without a reference time.
+
+Qualified relative periods are also nominal boundaries. Once an attribute
+from `relative_period_attribute` has restricted a declared duration or
+timeperiod noun, the resulting unit cannot become the right-hand head of a
+preceding noun compound. Thus `cars last month` remains an object plus a bare
+temporal adjunct instead of collapsing into a counted `month`. The learner
+may stamp exactly one such postverbal, same-clause adjunct on its event facts;
+zero, competing, or cross-clause labels remain unstamped. If a coordinated
+quantitative event exposes a later bare count but its verb has no declared
+event polarity, the fold withholds the easy first count as well rather than
+publishing a partial clause. Comparative tails such as `four more` are not
+bare counts and remain for value-accounting to reject.
+
+The contextual planning consumer extends that product/progress split without
+minting a future fact. Its ask binds one participant, progress verb, measure,
+positive future marker, and bounded fraction. The consumer follows the one
+positive participant–verb–product predication, reads the product's one state
+capacity, totals only completed matching events, and evaluates
+`(capacity - completed) × fraction`. Missing or competing products and
+capacities, indeterminate progress, nonfuture markers, and negative remainders
+all decline. The common no-partitive idiom is deliberately limited to `half
+the remaining measure`; other fractions require `of`, keeping generated
+surfaces grammatical. A conditional-first sibling uses the productive
+partitive form and is retained intact by the complete-ask routing proof. All
+three asks declare embedding context, so standalone ask generation reports
+them as contextual blockers rather than fabricating an answerless question.
 
 The predicate is strict by default: a measure without a declared relationship
 fails. A broad grammar containing both relationship-sensitive measures and
@@ -1619,7 +1795,11 @@ request is reproducible across fresh project loads.
 The review and exploration APIs accept no output path; each appends only to
 its project-owned JSONL location above. Reviews retain candidate origin, slot
 bindings, structured defects, source-linked hypotheses, notes, and hypothesis
-statuses. Targetless Reading reviews additionally retain their intended
+statuses. Premise and ask reviews may separately record whether the normalized
+interpretation is correct, whether the answer or decline is correct, and
+whether the wording is preferred, acceptable, or marginal; the original
+valid/invalid/unclear verdict remains the wording and overall triage signal.
+Targetless Reading reviews additionally retain their intended
 interpretation and optional missing-rule suggestion, with append-only
 corrections for both. Defects may attach to the whole sentence, an exact
 rule/token/`where` premise, or a numbered surviving fact. A fact attachment
@@ -1753,6 +1933,7 @@ POST /api/generation/minimal-pair
 POST /api/generation/hypotheses
 POST /api/generation/review
 GET  /api/generation/history
+GET  /api/generation/review-evidence
 PATCH /api/generation/review/{review_id}
 DELETE /api/generation/review/{review_id}
 GET  /api/campaign/reviews

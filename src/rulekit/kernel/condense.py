@@ -84,6 +84,29 @@ def _merge(reading: Reading, i: int, head_features_from: Unit, kind: str, reason
     return merged
 
 
+def _is_relative_period(unit: Unit, reg: Registry) -> bool:
+    """Whether UNIT is a declared discourse-relative period.
+
+    ``last month`` first reaches this pass as the ordinary qualified noun
+    produced by ``merge-attribute``.  Its qualifier and head categories are
+    the semantic evidence that it is an adjunct boundary; the kernel does not
+    need to know either surface word.
+    """
+
+    if unit.sense() != "noun" or "value" in unit.features:
+        return False
+    qualifier = unit.features.get("qualifier")
+    head = unit.features.get("lemma", unit.features.get("fold", ""))
+    return (
+        isinstance(qualifier, str)
+        and reg.word_in_category(qualifier, "relative_period_attribute")
+        and (
+            reg.word_in_category(head, "duration_measure")
+            or reg.word_in_category(head, "timeperiod")
+        )
+    )
+
+
 def _nominal_pass(reading: Reading, reg: Registry) -> bool:
     units = reading.units
     # perfect tense: have-lemma verb + verb -> ONE verb ("has read 32 books"
@@ -330,6 +353,12 @@ def _nominal_pass(reading: Reading, reg: Registry) -> bool:
         if (
             a.sense() == "noun" and b.sense() == "noun"
             and "value" not in a.features
+            # A qualified relative period is a temporal adjunct, not the
+            # lexical head of the preceding object: ``toy cars last month``
+            # must remain [toy cars] [last month], never one quantity of
+            # months.  The two category declarations are pack-owned, so new
+            # relative attributes and period nouns inherit the boundary.
+            and not _is_relative_period(b, reg)
         ):
             attrs = list(b.features.get("attributes", []))
             attrs.append(a.features.get("lemma", a.features["fold"]))
@@ -338,7 +367,18 @@ def _nominal_pass(reading: Reading, reg: Registry) -> bool:
             )
             _merge(reading, i, b, "merge-compound",
                    f"compound noun: {a.surface!r} modifies head {b.surface!r}",
-                   {"attributes": attrs, "qualifier": qualifier})
+                   {
+                       "attributes": attrs,
+                       "qualifier": qualifier,
+                       # A source hyphen immediately before the nominal
+                       # modifier is retained through this merge.  If a count
+                       # sits to the left, the count pass can then represent
+                       # "100-page book" as a book with a 100-page extent,
+                       # rather than the false quantity "100 books".
+                       "qualifier_joined_left_by_hyphen": bool(
+                           a.features.get("joined_left_by_hyphen")
+                       ),
+                   })
             return True
         # CAPITALIZED known word + name -> one name ("Tall Tuna", "Cat Cafe
         # Meow"): the capitalization, not the part of speech, is the naming
@@ -469,9 +509,32 @@ def _count_pass(reading: Reading, reg: Registry) -> bool:
             and b.sense() == "noun"
             and not a.features.get("pattern_consumed")
         ):
-            _merge(reading, i, b, "merge-count",
-                   f"count {a.surface!r} quantifies {b.surface!r} — one concept",
-                   {"value": a.features["value"], "value_kind": "count"})
+            if (
+                b.features.get("qualifier") is not None
+                and b.features.get("qualifier_joined_left_by_hyphen")
+            ):
+                _merge(
+                    reading,
+                    i,
+                    b,
+                    "merge-attributive-count",
+                    f"count {a.surface!r} measures hyphenated modifier "
+                    f"{b.features['qualifier']!r} on {b.surface!r}",
+                    {
+                        "value": a.features["value"],
+                        "value_kind": "attributive_count",
+                        "attributive_value": a.features["value"],
+                        # The one hyphen boundary has now been consumed.  A
+                        # further count to the left ("16 three-minute songs")
+                        # quantifies the completed head instead of replacing
+                        # its inner three-minute extent.
+                        "qualifier_joined_left_by_hyphen": False,
+                    },
+                )
+            else:
+                _merge(reading, i, b, "merge-count",
+                       f"count {a.surface!r} quantifies {b.surface!r} — one concept",
+                       {"value": a.features["value"], "value_kind": "count"})
             return True
     return False
 

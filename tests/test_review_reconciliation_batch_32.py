@@ -110,21 +110,21 @@ def test_teach_requires_animate_subjects_and_objects(registry) -> None:
 
     assert anchored in _matched_rules(
         (
-            "The teacher taught 40 older violinists following the drum than "
+            "The teacher taught 40 more violinists in the storeroom than "
             "your guardian Bira."
         ),
         registry,
     )
     assert anchored not in _matched_rules(
         (
-            "The tree taught 40 older violinists following the drum than "
+            "The tree taught 40 more violinists in the storeroom than "
             "your guardian Bira."
         ),
         registry,
     )
     assert anchored not in _matched_rules(
         (
-            "The teacher taught 40 older balls following the drum than "
+            "The teacher taught 40 more balls in the storeroom than "
             "your guardian Bira."
         ),
         registry,

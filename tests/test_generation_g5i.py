@@ -69,7 +69,7 @@ def test_g5i_profiles_the_complete_recursive_optional_class() -> None:
     # The governed arrival-goal surface and the anchored-relation conjunction
     # sentinel add top-level groups; the latter has one nested optional anchor
     # adverb. The established maximum depth stays unchanged.
-    assert _optional_profile(project) == (62, 143, 38, 3)
+    assert _optional_profile(project) == (68, 150, 38, 3)
 
 
 def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
@@ -78,9 +78,9 @@ def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
         for item in list_rule_availability(load_project(CURATED))
     }
 
-    assert len(availability) == 130
-    assert sum(item.supported for item in availability.values()) == 125
-    assert sum(not item.supported for item in availability.values()) == 5
+    assert len(availability) == 140
+    assert sum(item.supported for item in availability.values()) == 132
+    assert sum(not item.supported for item in availability.values()) == 8
     assert all(availability[rule_id].supported for rule_id in NEWLY_SUPPORTED)
     assert all(
         "optional groups have no current realizer" not in item.blockers
@@ -138,7 +138,7 @@ def test_included_and_omitted_branches_are_both_inspectable() -> None:
     omitted = generate_candidate(
         project,
         rule_id="arithmetic/partition-rest-attribute",
-        seed=1,
+        seed=2,
     )
 
     included_optional = next(

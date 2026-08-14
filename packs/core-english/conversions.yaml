@@ -3,3 +3,10 @@ conversions:
 - from: hour
   to: minute
   factor: 60
+# Conventional whole-period arithmetic used by elementary word problems.
+# Calendar dates remain a separate domain; this pair says how a stated yearly
+# cadence is projected when no dates or partial weeks are supplied.
+- from: year
+  to: week
+  factor: 52
+  scope: cadence

@@ -81,7 +81,12 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
             "conjunction_adv",
             ((9,), (9, 1)),
         ),
-        TARGET_RULE: ((10, 0), "trailing_adv", ((10,),))
+        "arithmetic/performed-activity-duration": (
+            (4, 0),
+            "focus_after",
+            ((4,),),
+        ),
+        TARGET_RULE: ((10, 0), "trailing_adv", ((10,),)),
     }
     assert MOVED_WORD in core.lexicon
     assert set(project.registry.lexicon[MOVED_WORD].senses) == {"adverb"}
@@ -96,7 +101,10 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
         word
         for word, entry in sorted(project.registry.lexicon.items())
         if "adverb" in entry.senses
-    ] == ["ago", MOVED_WORD, "down", "far", "individually", "off", "outside"]
+    ] == [
+        "ago", MOVED_WORD, "down", "far", "individually", "just", "off",
+        "only", "outside",
+    ]
 
 
 def test_combined_pack_semantics_are_identical_to_legacy_ownership() -> None:
@@ -144,22 +152,25 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
     project = load_project(CURATED)
     availability = list_rule_availability(project)
 
-    assert len(availability) == 130
-    assert sum(item.supported for item in availability) == 125
-    assert sum(not item.supported for item in availability) == 5
+    assert len(availability) == 140
+    assert sum(item.supported for item in availability) == 132
+    assert sum(not item.supported for item in availability) == 8
     assert all(
         not item.blockers
         or item.id
         in {
                 "arithmetic/dangling-comparative-safety",
+                "arithmetic/capacity-progress-anaphoric-multiplier-safety",
                 "arithmetic/partition-membership-of-mass-measure-safety",
+                "arithmetic/realized-progress-anaphoric-multiplier-safety",
+                "arithmetic/realized-progress-deictic-anaphoric-multiplier-safety",
                 "arithmetic/ratio-split-of-to-possession-safety",
                 "logic-arithmetic/universal-all-have-incompatible-item-safety",
                 "logic-arithmetic/universal-all-have-quantity-pp-incompatible-item-safety",
             }
         for item in availability
     )
-    assert len(exploration_status(project)["fillers"]) == 305
+    assert len(exploration_status(project)["fillers"]) == 316
 
 
 def test_currently_generates_a_matcher_confirmed_anchor() -> None:

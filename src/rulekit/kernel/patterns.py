@@ -12,7 +12,7 @@ matter:
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from collections.abc import Iterable, Mapping
 from typing import Any
 
@@ -20,6 +20,7 @@ from ..data.registry import Registry
 from ..data.schemas import AskRule, MatchToken, PatternRule
 from .evaluate import ArithmeticLog, EvaluationError, evaluate
 from .model import (
+    ActivityDuration,
     AgeAtYear,
     Alias,
     Before,
@@ -54,6 +55,7 @@ from .model import (
     Provenance,
     Quantity,
     Rate,
+    RateScope,
     Reading,
     Relation,
     RatioQuantity,
@@ -73,6 +75,7 @@ from .model import (
 SKIPPABLE_SENSES = {"article", "punct"}
 
 _FACT_CLASSES = {
+    "activity_duration": ActivityDuration,
     "age_at_year": AgeAtYear,
     "task_completion_duration": TaskCompletionDuration,
     "quantity": Quantity,
@@ -108,6 +111,7 @@ _FACT_CLASSES = {
     "goal": Goal,
     "group_total": GroupTotal,
     "rate": Rate,
+    "rate_scope": RateScope,
     "discount": Discount,
     "percent_change": PercentChange,
     "verbal_relation": VerbalRelation,
@@ -264,11 +268,34 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
         # Require the independently represented possessive owner.
         return False
     if token.qualified and not (
-        unit.sense() == "noun" and unit.features.get("qualifier") is not None
+        unit.sense() == "noun"
+        and unit.features.get("qualifier") is not None
+        and (
+            unit.features.get("value_kind") != "attributive_count"
+            or token.attributive_counted
+        )
     ):
         # OPT-IN (schemas.MatchToken.qualified): category membership follows
         # a merged noun's head lemma, so it otherwise also admits the bare
         # head. Require the independently represented qualifier.
+        return False
+    if token.attributive_counted and not (
+        unit.sense() == "noun"
+        and unit.features.get("value_kind") == "attributive_count"
+        and isinstance(unit.features.get("value"), (int, float))
+        and unit.features.get("qualifier") is not None
+        and reg.measure_applies_to_holder(
+            unit.features["qualifier"], _lemma_of(unit)
+        )
+    ):
+        # Numeric noun modifiers are structural, but their meaning is still
+        # pack-owned: "100-page book" is licensed only when the qualifier is
+        # a declared measure of the head noun.  An equally shaped
+        # "100-rabbit book" remains unread.
+        return False
+    if token.qualifier_cat is not None and not reg.word_in_category(
+        unit.features.get("qualifier", ""), token.qualifier_cat
+    ):
         return False
     if (
         token.number is not None
@@ -422,9 +449,24 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
             # feature) — "coconut trees", "red apples"; a bare noun with no
             # attributive modifier never matches (increment 34 mirror of
             # `possessed`)
-            return sense == "noun" and unit.features.get("qualifier") is not None
+            return (
+                sense == "noun"
+                and unit.features.get("qualifier") is not None
+                and (
+                    kind != "attributive_count"
+                    or token.attributive_counted
+                )
+            )
         if t == "plural":
-            return sense == "noun" and unit.features.get("number") == "plural"
+            return (
+                sense == "noun"
+                and unit.features.get("number") == "plural"
+                # A numeric hyphen modifier is a semantic restriction, not a
+                # transparent plural surface. It needs a rule that explicitly
+                # opts into `attributive_counted`; otherwise "four-minute
+                # songs" could query all songs while silently dropping four.
+                and kind != "attributive_count"
+            )
         if t == "common_noun":
             # mining candidate conjunct-comparative-quantities: a BARE
             # common-noun holder — sense noun, no `owner` (never a
@@ -1030,6 +1072,15 @@ def _check_where(
                         # standalone lexical unit a fallback number, but that
                         # fallback is not morphological agreement evidence.
                         number = None
+                if unit.sense() == "verb":
+                    entry = reg.lexicon.get(unit.surface.casefold())
+                    if entry is not None and entry.number is None:
+                        # Simple-past forms do not inflect for subject number
+                        # ("she sold" / "they sold").  The analyzer gives an
+                        # otherwise unannotated token a singular fallback, so
+                        # only an explicit lexical number feature is genuine
+                        # agreement evidence for a verb.
+                        number = None
                 if unit.features.get("value_kind") == "count":
                     value = unit.features.get("value")
                     if not isinstance(value, (int, float)):
@@ -1081,6 +1132,9 @@ def _check_where(
             presence = [name in slots for name in pred.same_presence]
             if len(set(presence)) > 1:
                 return False
+        if pred.mutually_exclusive is not None:
+            if sum(name in slots for name in pred.mutually_exclusive) > 1:
+                return False
         if pred.verb_role_compatible is not None:
             compatibility = pred.verb_role_compatible
             verb = slots.get(compatibility.verb)
@@ -1126,6 +1180,15 @@ def _check_where(
             # inflected forms when the bare lemma is intentionally absent
             # (for example ``drops``/``dropped`` in ``drop_quantity_verb``).
             frames = reg.selectional_frames(verb.surface.casefold())
+            if compatibility.frame_categories:
+                frames = tuple(
+                    (category, frame)
+                    for category, frame in frames
+                    if any(
+                        trigger in reg.cat_ancestors(category)
+                        for trigger in compatibility.frame_categories
+                    )
+                )
             # Like the historical conditional predicate, verbs with no
             # declared lexical frame remain open. Once a verb category owns a
             # contract, one complete most-specific frame must accept every
@@ -2016,9 +2079,16 @@ _NUMERIC_FIELDS = {
 def _build_fact(
     emit_fields: dict, fact_kind: str, slots: dict[str, Unit], reg: Registry,
     provenance: Provenance, log: ArithmeticLog | None, rule_id: str,
-    reading=None,
+    reading=None, temporal_perspective: str | None = None,
 ) -> Fact:
     cls = _FACT_CLASSES[fact_kind]
+    if temporal_perspective is not None:
+        perspective = _resolve_field(
+            temporal_perspective, slots, reg, False, log, rule_id
+        )
+        provenance = replace(
+            provenance, temporal_perspective=str(perspective)
+        )
     kwargs = {}
     for key, raw in emit_fields.items():
         kwargs[key] = _resolve_field(raw, slots, reg, key in _NUMERIC_FIELDS, log, rule_id)
@@ -2188,6 +2258,7 @@ def run_rules(
                         fact = _build_fact(
                             e.fields, e.fact, sub_slots, reg, provenance,
                             log, rule.id, reading=reading,
+                            temporal_perspective=e.temporal_perspective,
                         )
                         facts.append(fact)
                         facts.extend(atom_variants(fact, e.fields, sub_slots, reg))
@@ -2195,6 +2266,7 @@ def run_rules(
                 fact = _build_fact(
                     e.fields, e.fact, m.slots, reg, provenance, log, rule.id,
                     reading=reading,
+                    temporal_perspective=e.temporal_perspective,
                 )
                 facts.append(fact)
                 # intersective decomposition (atom_variants): a no-op unless

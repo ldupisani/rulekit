@@ -30,6 +30,11 @@ const state = {
   hypotheses: [],
   minimalPair: null,
   reviews: [],
+  reviewEvidence: { summary: {}, targets: {}, groups: [] },
+  reviewView: "attention",
+  reviewOffset: 0,
+  reviewLimit: 100,
+  reviewTotal: 0,
   reviewSort: { key: "timestamp", dir: "desc" },
   editingReview: null,   // id of the row being corrected
   campaignReviews: [],
@@ -1248,9 +1253,26 @@ const VERDICTS = ["valid", "invalid", "unclear"];
 const VERDICT_RANK = { invalid: 0, unclear: 1, valid: 2 };
 
 async function loadReviews() {
-  const payload = await api("GET", "/api/generation/history?limit=500");
+  const query = new URLSearchParams({
+    limit: String(state.reviewLimit),
+    offset: String(state.reviewOffset),
+    view: state.reviewView === "archive" ? "archive" : "attention",
+  });
+  const [payload, evidence] = await Promise.all([
+    api("GET", `/api/generation/history?${query}`),
+    api("GET", "/api/generation/review-evidence"),
+  ]);
   state.reviews = payload.reviews || [];
+  state.reviewTotal = payload.total || 0;
+  state.reviewEvidence = evidence.groups ? evidence : { summary: {}, targets: {}, groups: [] };
   renderReviews();
+}
+
+function setReviewView(view) {
+  state.reviewView = view;
+  state.reviewOffset = 0;
+  state.editingReview = null;
+  loadReviews();
 }
 
 function sortedReviews() {
@@ -1282,20 +1304,39 @@ function sortHeader(label, key) {
 function renderReviews() {
   const box = $("reviews");
   box.replaceChildren();
-  const resolvedCount = state.reviews.filter((review) =>
-    review.review_status === "resolved" || review.resolves).length;
-  const openCount = state.reviews.length - resolvedCount;
+  const summary = state.reviewEvidence.summary || {};
+  const premiseSummary = state.reviewEvidence.premise_summary || {};
 
   const head = el("div", "rv-head");
-  head.append(el("div", "pane-title", "Human review history"));
+  head.append(el("div", "pane-title", "Human review evidence"));
   head.append(el("span", "dim",
-    `${openCount} open · ${resolvedCount} resolved · ` +
-    `edits and deletes append corrections; nothing is overwritten`));
+    `${premiseSummary.validated_group_count || 0}/${premiseSummary.group_count || 0} premise shapes · ` +
+    `${summary.validated_group_count || 0}/${summary.group_count || 0} ask shapes validated · ` +
+    `${(summary.regressed_group_count || 0) + (premiseSummary.regressed_group_count || 0)} regressed · append-only`));
   box.append(head);
+
+  const views = el("div", "rv-views");
+  for (const [value, label] of [
+    ["attention", "Needs attention"],
+    ["validated", "Validated coverage"],
+    ["archive", "Evidence archive"],
+  ]) {
+    const button = el("button", state.reviewView === value ? "on" : "", label);
+    button.onclick = () => setReviewView(value);
+    views.append(button);
+  }
+  box.append(views);
+
+  if (state.reviewView === "validated") {
+    renderValidatedCoverage(box);
+    return;
+  }
 
   if (!state.reviews.length) {
     box.append(el("div", "rv-empty",
-      "No reviews recorded for this project yet. Record one from Generate or Reading."));
+      state.reviewView === "attention"
+        ? "No unresolved invalid, unclear, or regressed reviews need attention."
+        : "No reviews recorded for this project yet."));
     return;
   }
 
@@ -1319,6 +1360,98 @@ function renderReviews() {
   }
   table.append(body);
   box.append(table);
+  if (state.reviewTotal > state.reviewLimit || state.reviewOffset) {
+    renderReviewPager(box);
+  }
+}
+
+function renderValidatedCoverage(box) {
+  const summary = state.reviewEvidence.ask_summary || state.reviewEvidence.summary || {};
+  const premiseSummary = state.reviewEvidence.premise_summary || {};
+  const metrics = el("div", "rv-coverage-summary");
+  for (const [label, value] of [
+    ["valid ask judgments", summary.valid_count || 0],
+    ["validated ask groups", summary.validated_group_count || 0],
+    ["valid premise judgments", premiseSummary.valid_count || 0],
+    ["validated premise groups", premiseSummary.validated_group_count || 0],
+  ]) {
+    const card = el("div", "rv-metric");
+    card.append(el("strong", "", String(value)), el("span", "dim", label));
+    metrics.append(card);
+  }
+  box.append(metrics);
+
+  const askGroups = state.reviewEvidence.groups || [];
+  const premiseGroups = state.reviewEvidence.premise_groups || [];
+  if (!askGroups.length && !premiseGroups.length) {
+    box.append(el("div", "rv-empty", "No validated evidence has been recorded yet."));
+    return;
+  }
+  if (premiseGroups.length) {
+    box.append(el("div", "pane-title rv-coverage-title", "Validated premise coverage"));
+    renderCoverageGroups(box, premiseGroups, "premise");
+  }
+  if (askGroups.length) {
+    box.append(el("div", "pane-title rv-coverage-title", "Validated ask coverage"));
+    renderCoverageGroups(box, askGroups, "ask");
+  }
+}
+
+function renderCoverageGroups(box, groups, kind) {
+  const list = el("div", "rv-coverage-groups");
+  for (const group of groups) {
+    const card = el("details", `rv-coverage-group ${group.replay_status}`);
+    const title = el("summary");
+    title.append(
+      el("span", "mono", kind === "ask" ? group.target_ask : group.target_rule),
+      el("span", `rv-evidence-status ${group.replay_status}`,
+        group.replay_status.replaceAll("_", " ")),
+      el("span", "dim", `${group.verdict_counts.valid} valid · ${group.review_count} total`),
+    );
+    card.append(title);
+    const detail = el("div", "rv-coverage-detail");
+    if (kind === "ask") {
+      detail.append(
+        el("div", "", `${group.scenario_mode.replaceAll("_", " ")} · ${group.answer_shape}`),
+        el("div", "mono dim", `query fields: ${group.query_fields.join(", ") || "none"}`),
+      );
+    } else {
+      detail.append(el("div", "", group.generation_mode.replaceAll("_", " ")));
+    }
+    detail.append(
+      el("div", "mono dim", `binding fields: ${group.binding_fields.join(", ") || "none"}`),
+      el("div", "dim", group.replay_detail),
+    );
+    if (Object.values(group.naturalness_counts || {}).some(Boolean)) {
+      detail.append(el("div", "dim",
+        `naturalness: ${Object.entries(group.naturalness_counts)
+          .filter(([, count]) => count)
+          .map(([name, count]) => `${name} ${count}`).join(" · ")}`));
+    }
+    card.append(detail);
+    list.append(card);
+  }
+  box.append(list);
+}
+
+function renderReviewPager(box) {
+  const pager = el("div", "rv-pager");
+  const previous = el("button", "", "Previous");
+  previous.disabled = state.reviewOffset === 0;
+  previous.onclick = () => {
+    state.reviewOffset = Math.max(0, state.reviewOffset - state.reviewLimit);
+    loadReviews();
+  };
+  const next = el("button", "", "Next");
+  next.disabled = state.reviewOffset + state.reviews.length >= state.reviewTotal;
+  next.onclick = () => {
+    state.reviewOffset += state.reviewLimit;
+    loadReviews();
+  };
+  const start = state.reviewTotal ? state.reviewOffset + 1 : 0;
+  const end = state.reviewOffset + state.reviews.length;
+  pager.append(previous, el("span", "dim", `${start}–${end} of ${state.reviewTotal}`), next);
+  box.append(pager);
 }
 
 function reviewRow(r) {
@@ -1335,6 +1468,17 @@ function reviewRow(r) {
   if (isResolved) {
     const tag = el("span", "rv-resolved", "resolved");
     tag.title = r.resolution_note || "the reported issue has been reconciled";
+    verdict.append(tag);
+  }
+  const evidenceGroup = [
+    ...(state.reviewEvidence.groups || []),
+    ...(state.reviewEvidence.premise_groups || []),
+  ].find(
+    (group) => group.canonical_review_id === r.id,
+  );
+  if (evidenceGroup?.replay_status === "regressed") {
+    const tag = el("span", "rv-regressed", "regressed");
+    tag.title = evidenceGroup.replay_detail;
     verdict.append(tag);
   }
   row.append(verdict);
@@ -1382,6 +1526,14 @@ function reviewRow(r) {
       ),
     );
   }
+  const judgments = [
+    r.interpretation_judgment && r.interpretation_judgment !== "not_reviewed"
+      ? `interpretation ${r.interpretation_judgment.replaceAll("_", " ")}` : null,
+    r.result_judgment && r.result_judgment !== "not_reviewed"
+      ? `result ${r.result_judgment.replaceAll("_", " ")}` : null,
+    r.naturalness ? `naturalness ${r.naturalness}` : null,
+  ].filter(Boolean);
+  if (judgments.length) note.append(el("div", "rv-structured", judgments.join(" · ")));
   if (r.defects?.length) {
     note.append(el("div", "rv-structured",
       `defects: ${r.defects.map((defect) =>
@@ -1409,7 +1561,8 @@ function reviewRow(r) {
   open.onclick = () => openReviewInReader(r);
   actions.append(open);
   if (isResolved) {
-    const tombstone = el("button", "rv-danger", "Tombstone");
+    const tombstone = el("button", "rv-danger", "Exclude evidence");
+    tombstone.title = "Hide this judgment and remove it from validated coverage.";
     tombstone.onclick = () => {
       if (tombstone.dataset.armed) return deleteReview(r);
       tombstone.dataset.armed = "1";
@@ -1417,7 +1570,7 @@ function reviewRow(r) {
       setTimeout(() => {
         if (!tombstone.isConnected) return;
         delete tombstone.dataset.armed;
-        tombstone.textContent = "Tombstone";
+        tombstone.textContent = "Exclude evidence";
       }, 4000);
     };
     actions.append(tombstone);
@@ -1426,7 +1579,8 @@ function reviewRow(r) {
   }
   const edit = el("button", "", "Edit");
   edit.onclick = () => { state.editingReview = r.id; renderReviews(); };
-  const del = el("button", "rv-danger", "Delete");
+  const del = el("button", "rv-danger", "Exclude evidence");
+  del.title = "Hide this judgment and remove it from validated coverage.";
   // two-step in place: a modal confirm() would block the page
   del.onclick = () => {
     if (del.dataset.armed) return deleteReview(r);
@@ -1435,7 +1589,7 @@ function reviewRow(r) {
     setTimeout(() => {
       if (!del.isConnected) return;
       delete del.dataset.armed;
-      del.textContent = "Delete";
+      del.textContent = "Exclude evidence";
     }, 4000);
   };
   actions.append(edit, del);
@@ -1464,6 +1618,37 @@ function reviewEditRow(r) {
     picker.append(b);
   }
   form.append(picker);
+
+  const judgmentRow = el("div", "rv-edit-judgments");
+  const judgmentSelect = (label, values, selected) => {
+    const control = el("label");
+    control.append(el("span", "pane-title", label));
+    const select = el("select");
+    for (const [value, text] of values) {
+      const option = el("option", "", text);
+      option.value = value;
+      option.selected = value === selected;
+      select.append(option);
+    }
+    control.append(select);
+    judgmentRow.append(control);
+    return select;
+  };
+  const interpretationJudgment = judgmentSelect("Interpretation", [
+    ["not_reviewed", "Not reviewed"], ["correct", "Correct"],
+    ["incorrect", "Incorrect"], ["unclear", "Unclear"],
+  ], r.interpretation_judgment || "not_reviewed");
+  const resultJudgment = judgmentSelect("Answer or decline", [
+    ["not_reviewed", "Not reviewed"], ["correct_answer", "Correct answer"],
+    ["correct_decline", "Correct decline"], ["correct_facts", "Correct facts"],
+    ["incorrect", "Incorrect"],
+    ["unclear", "Unclear"], ["not_applicable", "Not applicable"],
+  ], r.result_judgment || "not_reviewed");
+  const naturalness = judgmentSelect("Naturalness", [
+    ["", "Not rated"], ["preferred", "Preferred"],
+    ["acceptable", "Acceptable"], ["marginal", "Marginal"],
+  ], r.naturalness || "");
+  form.append(judgmentRow);
 
   let interpretation = null;
   let suggestedRule = null;
@@ -1521,6 +1706,9 @@ function reviewEditRow(r) {
                             verdict,
                             note: note.value,
                             hypotheses,
+                            interpretation_judgment: interpretationJudgment.value,
+                            result_judgment: resultJudgment.value,
+                            naturalness: naturalness.value || null,
                             ...(interpretation
                               ? { interpretation: interpretation.value }
                               : {}),
@@ -1554,7 +1742,7 @@ async function deleteReview(r) {
     return;
   }
   await loadReviews();
-  setStatus("review tombstoned — the append-only record remains recoverable", "ok");
+  setStatus("review excluded from active evidence — its append-only record remains recoverable", "ok");
 }
 
 function openReviewInReader(r) {
@@ -2340,6 +2528,11 @@ function updateAskGenerationReviewState() {
   document.querySelectorAll("#generation-ask-defects input").forEach(
     (input) => { input.disabled = unavailable; },
   );
+  for (const id of [
+    "generation-ask-interpretation-judgment",
+    "generation-ask-result-judgment",
+    "generation-ask-naturalness",
+  ]) $(id).disabled = unavailable;
   $("generation-ask-note").disabled = unavailable;
   $("generation-ask-save-review").disabled =
     unavailable || !state.askReviewVerdict;
@@ -2389,6 +2582,9 @@ async function saveAskGenerationReview() {
     seed: candidate.seed,
     registry_fingerprint: candidate.registry_fingerprint,
     verdict: state.askReviewVerdict,
+    interpretation_judgment: $("generation-ask-interpretation-judgment").value,
+    result_judgment: $("generation-ask-result-judgment").value,
+    naturalness: $("generation-ask-naturalness").value || null,
     requested_bindings: candidate.requested_bindings,
     defects: selectedAskGenerationDefects(),
     hypotheses: [],
@@ -2416,6 +2612,7 @@ async function loadGenerationAsks() {
   const priorSelection = select.value;
   select.replaceChildren();
   const random = el("option", "", "Random supported ask");
+  random.textContent = "Least human-validated supported ask";
   random.value = "";
   select.append(random);
   for (const ask of state.generationAsks) {
@@ -2432,7 +2629,8 @@ async function loadGenerationAsks() {
     select.value = priorSelection;
   }
   $("generation-ask-coverage").textContent =
-    `${payload.supported}/${payload.total} independent ask surfaces`;
+    `${payload.supported}/${payload.total} independent ask surfaces · ` +
+    `${payload.evidence?.validated_group_count || 0} validated structural groups`;
   select.onchange = updateAskGenerationState;
   updateAskGenerationState();
 }
@@ -2462,6 +2660,9 @@ function renderAskGenerationCandidate(candidate) {
   document.querySelectorAll("#generation-ask-defects input").forEach(
     (input) => { input.checked = false; },
   );
+  $("generation-ask-interpretation-judgment").value = "not_reviewed";
+  $("generation-ask-result-judgment").value = "not_reviewed";
+  $("generation-ask-naturalness").value = "";
   $("generation-ask-note").value = "";
   $("generation-ask-review-result").textContent = "";
   $("generation-empty").classList.add("hidden");
@@ -2513,6 +2714,8 @@ function renderAskGenerationCandidate(candidate) {
         "dim",
         candidate.scenario_mode === "missing_evidence"
           ? "No premises by design; the question must remain uncommitted."
+          : candidate.scenario_mode === "validated_premises"
+            ? "No replay-valid reviewed premise could be selected."
           : "No premise evidence requested.",
       ),
     );
@@ -2619,6 +2822,7 @@ function explorationLabel(item) {
   }
   return (
     `reviewed ${item.reviewed_count}×` +
+    `${item.validated_count ? ` · validated ${item.validated_count}×` : ""}` +
     `${item.failed_count ? ` · failed ${item.failed_count}×` : ""}` +
     ` — ${item.identity}`
   );
@@ -2801,7 +3005,7 @@ function renderGenerationExplorationSelection(rule, filler) {
         : mode === "safety_boundary"
         ? "negative boundary: generate an invalid surface that a consume-only safety rule must intercept"
         : ruleStatus
-        ? `rule ${ruleStatus.status.replaceAll("_", " ")} · generated ${ruleStatus.generated_count} · failed ${ruleStatus.failed_count || 0} · reviewed ${ruleStatus.reviewed_count} · structure ${ruleStatus.structural_covered}/${ruleStatus.structural_total}`
+        ? `rule ${ruleStatus.status.replaceAll("_", " ")} · generated ${ruleStatus.generated_count} · failed ${ruleStatus.failed_count || 0} · reviewed ${ruleStatus.reviewed_count} · validated ${ruleStatus.validated_count || 0} · structure ${ruleStatus.structural_covered}/${ruleStatus.structural_total}`
         : `rule frontier: ${objective}, with seeded tie-breaking`,
     ),
   );
@@ -3078,6 +3282,11 @@ function updateGenerationReviewState() {
   });
   $("generation-attachment").disabled = unavailable;
   $("generation-note").disabled = unavailable;
+  for (const id of [
+    "generation-premise-interpretation-judgment",
+    "generation-premise-result-judgment",
+    "generation-premise-naturalness",
+  ]) $(id).disabled = unavailable;
   $("generation-interpretation").disabled = unavailable;
   $("generation-rule-suggestion").disabled = unavailable;
   $("generation-form-hypotheses").disabled =
@@ -3621,6 +3830,10 @@ function renderGenerationCandidate(
     "hidden",
     !sentenceReview,
   );
+  $("generation-premise-review-dimensions").classList.toggle(
+    "hidden",
+    sentenceReview,
+  );
   renderGenerationPremises(candidate);
   populateGenerationAttachments(candidate);
   if (
@@ -3697,6 +3910,9 @@ function renderGenerationCandidate(
       input.checked = false;
     });
     $("generation-note").value = "";
+    $("generation-premise-interpretation-judgment").value = "not_reviewed";
+    $("generation-premise-result-judgment").value = "not_reviewed";
+    $("generation-premise-naturalness").value = "";
     $("generation-interpretation").value = "";
     $("generation-rule-suggestion").value = "";
     $("generation-review-result").textContent = "";
@@ -3842,9 +4058,21 @@ async function saveGenerationReview() {
     context_before: candidate.context_before || [],
     context_after: candidate.context_after || [],
     target_rule: candidate.target_rule,
+    premise_evidence: candidate.target_rule ? {
+      target_status: candidate.target_status,
+      target_bindings: candidate.target_bindings,
+      actual_rule_ids: candidate.actual_rule_ids,
+      facts: candidate.facts,
+      collisions: candidate.collisions,
+      deficiencies: candidate.deficiencies,
+    } : null,
     seed: candidate.seed,
     registry_fingerprint: candidate.registry_fingerprint,
     verdict: state.reviewVerdict,
+    interpretation_judgment:
+      $("generation-premise-interpretation-judgment").value,
+    result_judgment: $("generation-premise-result-judgment").value,
+    naturalness: $("generation-premise-naturalness").value || null,
     requested_bindings: candidate.requested_bindings,
     defects: selectedGenerationDefects(),
     hypotheses: state.hypotheses,

@@ -26,16 +26,19 @@ asks:
       question:
         - {lit: what}
         - {lit: is}
+        - {lit: the, consume_skipped: true}
         - {slot: a, cat: reference_attribute}
         - {lit: of}
         - {slot: e, type: name}
         - {lit: in}
-        - {slot: y, type: number}
+        - {slot: y, type: number, integer: true, value_min: 1000, value_max: 9999}
     resolves:
       consumer: reference-lookup
       attribute: "{a}"
       entity: "{e}"
       year: "{y.value}"
+    generation:
+      slot_sources: {y: reference_year}
   # Aggregates over a GROUP (B2): "What is the total population of Europe in
   # 2020?" — computed over the set of entities whose group column names the
   # slot value, in DuckDB (rulekit.reference.db), derived from the same frozen

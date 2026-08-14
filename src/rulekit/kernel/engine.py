@@ -21,7 +21,7 @@ from .facts import FactStore
 from .guards import GuardVeto, check as run_guards
 from .learn import _has_event_polarity
 from .mathtext import normalize_math
-from .model import Fact, Reading, Relation
+from .model import Fact, Obligation, Reading, Relation, Unit
 from .numbers import annotate_numbers
 from .obligations import attach_obligations, bind, disambiguate
 from .senses import annotate_senses
@@ -107,7 +107,6 @@ class Result:
     def assumptions(self) -> list[Reading]:
         """Question-local premises, in source order."""
         return [reading for reading in self.premises if reading.assumption]
-
     def deficiencies(self) -> list[str]:
         out: list[str] = []
         for reading in self.premises + ([self.question] if self.question else []):
@@ -131,12 +130,77 @@ class Result:
         return events
 
 
+def _is_complete_declared_ask(question: str, reg: Registry) -> bool:
+    """Whether one ask grammar consumes all meaningful question units.
+
+    This is a structural routing proof, not an English phrase heuristic.  It
+    lets a pack declare that a leading dependent clause belongs inside an ask
+    while preserving the older ``If <premise>, <ask>`` split whenever no
+    complete ask owns the whole sentence.
+    """
+    from .patterns import SKIPPABLE_SENSES, match_ask
+
+    reading = analyze(question, reg, tracing=False)
+    matched = match_ask(reading, reg)
+    if matched is None:
+        # Routing happens before the document loop has access to preceding
+        # discourse. Give each unresolved pronoun a disposable name-shaped
+        # target so the ask matcher can test its *surface grammar* (including
+        # repeated slots and selectional roles). This probe never enters solve
+        # state; the real question is re-analyzed and must still bind
+        # definitively to an actual antecedent before it can answer.
+        for unit in reading.units:
+            if unit.sense() != "pronoun":
+                continue
+            probe_antecedent = Unit(
+                -1,
+                unit.words,
+                {
+                    "fold": unit.features.get("fold", unit.surface.casefold()),
+                    "lemma": unit.features.get("lemma", unit.surface.casefold()),
+                    "senses": ["name"],
+                    "number": unit.features.get("number", "singular"),
+                },
+            )
+            obligations = unit.obligations()
+            updated = list(obligations)
+            changed = False
+            for index, obligation in enumerate(obligations):
+                if obligation.need != "refers" or obligation.met:
+                    continue
+                updated[index] = Obligation(
+                    obligation.role,
+                    obligation.need,
+                    target=probe_antecedent,
+                    optional=obligation.optional,
+                )
+                changed = True
+            if changed:
+                reading.record(
+                    "ask-routing-probe",
+                    unit,
+                    {"obligations": updated},
+                    "temporarily admit unresolved pronoun for complete-ask routing",
+                )
+        matched = match_ask(reading, reg)
+    if matched is None:
+        return False
+    meaningful = {
+        unit.uid
+        for unit in reading.units
+        if unit.sense() not in SKIPPABLE_SENSES
+    }
+    return meaningful.issubset(matched[2].consumed)
+
+
 def _split_leading_clause(question: str, reg: Registry) -> tuple[str | None, str]:
     """'If <clause>, <wh…>?' → the clause is a PREMISE, the wh-part the
     question. Split at the first comma whose next word carries an ask-cue
     sense. 'If'/',' are grammatical skeleton; the cues are lexicon data."""
     lowered = question.lower()
     if not lowered.startswith("if "):
+        return None, question
+    if _is_complete_declared_ask(question, reg):
         return None, question
     parts = question.split(",")
     for i in range(len(parts) - 1):

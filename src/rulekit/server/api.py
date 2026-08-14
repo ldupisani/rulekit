@@ -37,6 +37,7 @@ from ..generation import (
     append_campaign_review,
     append_campaign_gate,
     append_review,
+    ask_review_evidence,
     campaign_review_queue,
     choose_exploration_target,
     delete_review,
@@ -50,9 +51,11 @@ from ..generation import (
     latest_campaign_gate,
     promote_reading_candidate,
     promote_sentence_review_candidate,
+    premise_review_evidence,
     publish_campaign_manifest,
     read_review_history,
     read_reviews,
+    review_needs_attention,
     read_campaign_gates,
     retest_candidate,
     update_review,
@@ -171,6 +174,19 @@ class ReviewEditBody(BaseModel):
     )
     interpretation: str | None = Field(default=None, max_length=4000)
     suggested_rule: str | None = Field(default=None, max_length=4000)
+    interpretation_judgment: Literal[
+        "correct", "incorrect", "unclear", "not_reviewed"
+    ] | None = None
+    result_judgment: Literal[
+        "correct_answer",
+        "correct_decline",
+        "correct_facts",
+        "incorrect",
+        "unclear",
+        "not_applicable",
+        "not_reviewed",
+    ] | None = None
+    naturalness: Literal["preferred", "acceptable", "marginal"] | None = None
 
 
 class ServerState:
@@ -1333,12 +1349,24 @@ def build_router(state: ServerState) -> APIRouter:
     def generation_asks():
         try:
             asks = list_ask_availability(state.project)
+            evidence = ask_review_evidence(state.project)
         except GenerationError as exc:
             raise HTTPException(422, str(exc)) from exc
+        target_counts = evidence["targets"]
         return {
-            "asks": [ask.to_json() for ask in asks],
+            "asks": [
+                {
+                    **ask.to_json(),
+                    **target_counts.get(
+                        ask.id,
+                        {"groups": 0, "validated_groups": 0, "valid_reviews": 0},
+                    ),
+                }
+                for ask in asks
+            ],
             "supported": sum(ask.supported for ask in asks),
             "total": len(asks),
+            "evidence": evidence["summary"],
         }
 
     @router.post("/generation/ask")
@@ -1563,11 +1591,56 @@ def build_router(state: ServerState) -> APIRouter:
         return {"ok": True, "review": record}
 
     @router.get("/generation/history")
-    def generation_history(limit: int = 100):
+    def generation_history(
+        limit: int = 100,
+        offset: int = 0,
+        view: Literal["attention", "archive"] = "archive",
+    ):
         bounded = max(1, min(limit, 500))
+        start = max(0, offset)
         with state.generation_lock:
-            reviews = read_review_history(state.project, bounded)
-        return {"reviews": reviews}
+            history = read_review_history(state.project, 100_000)
+            evidence = ask_review_evidence(state.project)
+            premise_evidence = premise_review_evidence(state.project)
+        if view == "attention":
+            regressed = {
+                group["canonical_review_id"]
+                for group in evidence["groups"]
+                if group["replay_status"] == "regressed"
+            }
+            regressed.update(
+                group["canonical_review_id"]
+                for group in premise_evidence["groups"]
+                if group["replay_status"] == "regressed"
+            )
+            history = [
+                review
+                for review in history
+                if review.get("review_status") != "resolved"
+                and (
+                    review_needs_attention(review)
+                    or review.get("id") in regressed
+                )
+            ]
+        return {
+            "reviews": history[start : start + bounded],
+            "total": len(history),
+            "offset": start,
+            "limit": bounded,
+        }
+
+    @router.get("/generation/review-evidence")
+    def generation_review_evidence():
+        with state.generation_lock:
+            ask_evidence = ask_review_evidence(state.project)
+            premise_evidence = premise_review_evidence(state.project)
+        return {
+            **ask_evidence,
+            "ask_summary": ask_evidence["summary"],
+            "premise_summary": premise_evidence["summary"],
+            "premise_targets": premise_evidence["targets"],
+            "premise_groups": premise_evidence["groups"],
+        }
 
     @router.patch("/generation/review/{review_id}")
     def generation_review_edit(review_id: str, body: ReviewEditBody):
@@ -1582,6 +1655,10 @@ def build_router(state: ServerState) -> APIRouter:
                     body.hypotheses,
                     body.interpretation,
                     body.suggested_rule,
+                    body.interpretation_judgment,
+                    body.result_judgment,
+                    body.naturalness,
+                    "naturalness" in body.model_fields_set,
                 )
             except KeyError as exc:
                 raise HTTPException(404, f"no live review {review_id}") from exc

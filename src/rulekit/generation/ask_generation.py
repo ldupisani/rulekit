@@ -26,6 +26,12 @@ from .candidate import (
     AskScenarioCandidate,
     AskScenarioMode,
 )
+from .reviews import (
+    ask_review_surface_counts,
+    ask_review_surface_signature,
+    ask_review_target_counts,
+    validated_premise_candidates,
+)
 from .sample import (
     GENERATOR_VERSION,
     GenerationError,
@@ -41,6 +47,7 @@ from .sample import (
 
 ASK_GENERATOR_VERSION = f"{GENERATOR_VERSION}+g7-asks-data-domains"
 _MAX_RANDOM_ANSWERABLE_ASKS = 8
+_MAX_RANDOM_VALIDATED_ASKS = 48
 _SCENARIO_PREMISE_ATTEMPTS = 4
 _PUNCTUATION = frozenset({".", ",", "!", "?", ";", ":"})
 _WHOLE_TEMPLATE = re.compile(r"^\{([A-Za-z_][A-Za-z0-9_]*)(?:\.([^}]+))?\}$")
@@ -151,11 +158,25 @@ def _ask_token_domain(
     if category is not None:
         categories = category if isinstance(category, list) else [category]
         fixtures = _load_fixtures(project.root)
+        structural_updates: dict[str, Any] = {"type": None}
+        # A generation-only lexical category narrows vocabulary; it must not
+        # erase morphology encoded by the reader's broad slot type. Category
+        # domains express those same structures as explicit qualifiers.
+        if token.type in {"plural", "bare_plural", "generic_plural"}:
+            structural_updates["number"] = "plural"
+        elif token.type == "counted":
+            structural_updates["counted"] = True
+        elif token.type == "possessed":
+            structural_updates["possessed"] = True
+        elif token.type == "qualified":
+            structural_updates["qualified"] = True
         domain = [
             filler
             for declared in categories
             for filler in _domain(
-                token.model_copy(update={"type": None, "cat": declared}),
+                token.model_copy(
+                    update={**structural_updates, "cat": declared}
+                ),
                 project.registry,
                 fixtures,
             )
@@ -200,11 +221,6 @@ def _ask_blockers(project: Project, ask: AskRule) -> tuple[str, ...]:
         )
     for _, token, _ in _leaf_tokens(ask.match["question"]):
         label = token.slot or repr(token.lit)
-        if token.present_participle or token.past_participle:
-            blockers.append(
-                f"{label} requires explicit verb morphology with no ask realizer"
-            )
-            continue
         if token.span and contracts.get(token.slot or "") != "name_list":
             blockers.append(
                 f"span {label} has no bounded declared ask realizer"
@@ -277,6 +293,16 @@ def _ask_filler_satisfies_known_where(
                 for other in predicate.distinct
             ):
                 return False
+
+        if (
+            predicate.mutually_exclusive is not None
+            and slot in predicate.mutually_exclusive
+            and any(
+                other != slot and value(other) is not None
+                for other in predicate.mutually_exclusive
+            )
+        ):
+            return False
 
         conditional = predicate.bound_requires_category
         if conditional is not None:
@@ -367,6 +393,15 @@ def _ask_filler_satisfies_known_where(
             verb = value(roles_compatibility.verb)
             if verb is not None:
                 frames = reg.selectional_frames(verb.identity)
+                if roles_compatibility.frame_categories:
+                    frames = tuple(
+                        (category, frame)
+                        for category, frame in frames
+                        if any(
+                            trigger in reg.cat_ancestors(category)
+                            for trigger in roles_compatibility.frame_categories
+                        )
+                    )
                 if frames:
                     accepted = False
                     for _category, frame in frames:
@@ -458,6 +493,7 @@ def _optional_choices(
     tokens: list[MatchToken],
     rng: random.Random,
     forced_slots: set[str],
+    omitted_slots: set[str],
 ) -> dict[tuple[int, ...], bool]:
     choices: dict[tuple[int, ...], bool] = {}
 
@@ -474,7 +510,12 @@ def _optional_choices(
                 for _, child, _ in _leaf_tokens(token.opt)
                 if child.slot is not None
             }
-            include = bool(nested_slots & forced_slots) or bool(rng.randrange(2))
+            if nested_slots & omitted_slots:
+                include = False
+            else:
+                include = bool(nested_slots & forced_slots) or bool(
+                    rng.randrange(2)
+                )
             choices[path] = include
             if include:
                 choose(token.opt, path)
@@ -500,7 +541,19 @@ def _realize_ask(
         raise GenerationError(
             "ask bindings name unknown slots: " + ", ".join(sorted(unknown))
         )
-    optionals = _optional_choices(sequence, rng, set(locked_bindings))
+    omitted_slots = set(ask.generation.omit_slots)
+    locked_omitted = set(locked_bindings) & omitted_slots
+    if locked_omitted:
+        raise GenerationError(
+            "ask bindings lock generation-omitted slots: "
+            + ", ".join(sorted(locked_omitted))
+        )
+    optionals = _optional_choices(
+        sequence,
+        rng,
+        set(locked_bindings),
+        omitted_slots,
+    )
     chosen: dict[str, _Filler] = {}
     surfaces: list[str] = []
     previous_filler: _Filler | None = None
@@ -665,12 +718,20 @@ def _generate_ask_surface(
     seed: int,
     locked_bindings: dict[str, str],
     max_attempts: int,
+    scenario_mode: AskScenarioMode,
+    reviewed_surfaces: dict[str, int],
 ) -> tuple[str, dict[str, str], dict[str, str], dict[str, Any], int]:
     blockers = _ask_blockers(project, ask)
     if blockers:
         raise GenerationError(f"{ask.id} is blocked: {'; '.join(blockers)}")
     rng = random.Random(seed)
     last_error: str | None = None
+    best: (
+        tuple[str, dict[str, str], dict[str, str], dict[str, Any], int]
+        | None
+    ) = None
+    best_count: int | None = None
+    has_reviewed_surfaces = bool(reviewed_surfaces)
     for attempt in range(1, max_attempts + 1):
         try:
             question, requested = _realize_ask(
@@ -697,13 +758,35 @@ def _generate_ask_surface(
         ):
             last_error = "generated data-backed ask has no supported answer"
             continue
-        return (
+        candidate = (
             question,
             requested,
             _match_bindings(match),
             _json_value(query),
             attempt,
         )
+        if not has_reviewed_surfaces:
+            return candidate
+        signature = ask_review_surface_signature(
+            target_ask=ask.id,
+            scenario_mode=scenario_mode,
+            consumer=(
+                str(query["consumer"])
+                if query.get("consumer") is not None
+                else None
+            ),
+            query_fields=list(query.keys()),
+            binding_fields=list(requested.keys()),
+        )
+        count = reviewed_surfaces.get(signature, 0)
+        if best_count is None or count < best_count:
+            best, best_count = candidate, count
+        if count == 0:
+            return candidate
+        if attempt >= 4 and best is not None:
+            return best
+    if best is not None:
+        return best
     raise GenerationError(
         f"{ask.id} could not realize an exact ask after {max_attempts} "
         f"deterministic attempts: {last_error or 'no viable surface'}"
@@ -949,6 +1032,209 @@ def _search_answerable_scenario(
     )
 
 
+def _validated_ask_lock_variants(
+    ask: AskRule,
+    premises: tuple[dict[str, Any], ...],
+) -> list[tuple[int, dict[str, str]]]:
+    """Invert shared fact/query fields into ranked ask identity locks.
+
+    A literal resolve value is evidence-bearing too.  For example,
+    ``ask/how-old-is`` fixes ``measure: year`` rather than exposing a measure
+    slot.  Counting that exact literal match, with a small specificity bonus,
+    keeps a dimension-specific ask ahead of a generic ask that merely happens
+    to expose more vocabulary slots.
+    """
+
+    facts = [fact for premise in premises for fact in premise.get("facts", [])]
+    mappings = [ask.resolves, *(choice.resolves for choice in ask.interpretations)]
+    variants: list[tuple[int, dict[str, str]]] = []
+    for mapping in mappings:
+        locks: dict[str, str] = {}
+        literal_matches = 0
+        for field, raw in mapping.items():
+            if not isinstance(raw, str):
+                continue
+            values = {
+                str(fact["fields"][field])
+                for fact in facts
+                if isinstance(fact.get("fields"), dict)
+                and isinstance(fact["fields"].get(field), str)
+                and fact["fields"][field]
+            }
+            match = _WHOLE_TEMPLATE.fullmatch(raw)
+            if match is None:
+                if raw.casefold() in {value.casefold() for value in values}:
+                    literal_matches += 1
+                continue
+            if field.startswith("evidence_") and match.group(2) == "surface":
+                # Provenance policy may depend on the exact inflected surface
+                # even when the semantic fact field stores its lemma (``was``
+                # -> verb ``be``). Generated premise evidence already records
+                # the matcher bindings in its derivation, so preserve that
+                # surface when fabricating an ask from validated evidence.
+                # This is generic over every evidence field and slot; no tense
+                # word or vocabulary item is named in Python.
+                bound_values = {
+                    str(fact["derivation"]["bindings"][match.group(1)])
+                    for fact in facts
+                    if isinstance(fact.get("derivation"), dict)
+                    and isinstance(fact["derivation"].get("bindings"), dict)
+                    and fact["derivation"]["bindings"].get(match.group(1))
+                }
+                if len(bound_values) == 1:
+                    locks[match.group(1)] = next(iter(bound_values))
+                continue
+            if len(values) == 1:
+                locks[match.group(1)] = next(iter(values))
+        matched_fields = len(locks) + literal_matches
+        variants.append((2 * matched_fields + literal_matches, locks))
+    unique: dict[tuple[tuple[str, str], ...], int] = {}
+    for score, locks in variants:
+        key = tuple(sorted(locks.items()))
+        unique[key] = max(score, unique.get(key, -1))
+    return sorted(
+        ((score, dict(key)) for key, score in unique.items()),
+        key=lambda item: (-item[0], tuple(sorted(item[1].items()))),
+    )
+
+
+def _validated_query_aligns_with_premises(
+    ask: AskRule,
+    query: dict[str, Any],
+    premises: list[dict[str, Any]],
+) -> bool:
+    """Require generated query identities to cohere in retained evidence.
+
+    Only direct ``{slot}`` resolve fields are checked: those are the lexical
+    identities actually asserted by the generated question.  Constant and
+    derived query controls remain the ask/consumer contract.  At least one
+    retained fact must jointly support every comparable direct field, so an
+    entity from one premise and an unrelated verb from another cannot be
+    spliced into a superficially answerable ask.
+    """
+
+    facts = [fact for premise in premises for fact in premise.get("facts", [])]
+    mappings = [ask.resolves, *(choice.resolves for choice in ask.interpretations)]
+    for mapping in mappings:
+        comparable: dict[str, str] = {}
+        for field, raw in mapping.items():
+            if not isinstance(raw, str) or _WHOLE_TEMPLATE.fullmatch(raw) is None:
+                continue
+            query_value = query.get(field)
+            if not isinstance(query_value, str) or not query_value:
+                continue
+            if any(
+                isinstance(fact.get("fields"), dict)
+                and isinstance(fact["fields"].get(field), str)
+                and fact["fields"][field]
+                for fact in facts
+            ):
+                comparable[field] = query_value.casefold()
+        if not comparable:
+            return True
+        if any(
+            isinstance(fact.get("fields"), dict)
+            and all(
+                isinstance(fact["fields"].get(field), str)
+                and fact["fields"][field].casefold() == expected
+                for field, expected in comparable.items()
+            )
+            for fact in facts
+        ):
+            return True
+    return False
+
+
+def _search_validated_premise_scenario(
+    project: Project,
+    ask: AskRule,
+    *,
+    seed: int,
+    locked_bindings: dict[str, str],
+    max_attempts: int,
+    max_search_attempts: int,
+    reviewed_surfaces: dict[str, int],
+    premise_pool: list[dict[str, Any]],
+) -> tuple[
+    str,
+    dict[str, str],
+    dict[str, str],
+    dict[str, Any],
+    int,
+    list[dict[str, Any]],
+    Any,
+    str,
+    int,
+]:
+    """Generate an ask whose only evidence is replay-valid human review."""
+
+    pool = premise_pool
+    if not pool:
+        raise GenerationError("this project has no replay-valid premise reviews")
+    plans: list[tuple[int, int, tuple[str, ...], tuple[dict[str, Any], ...], dict[str, str]]] = []
+    bounded_pool = pool[:24]
+    for size in (1, 2, 3):
+        for group in combinations(bounded_pool, size):
+            ids = tuple(str(item.get("validated_review_id") or "") for item in group)
+            for score, locks in _validated_ask_lock_variants(ask, group):
+                plans.append((score, size, ids, group, locks))
+    plans.sort(key=lambda item: (-item[0], item[1], item[2]))
+    rng = random.Random(seed)
+    search_attempts = 0
+    last_error: Exception | None = None
+    for _score, _size, _ids, group, derived_locks in plans:
+        if search_attempts >= max_search_attempts:
+            break
+        search_attempts += 1
+        locks = {**derived_locks, **locked_bindings}
+        try:
+            question, requested, actual, query, attempts = _generate_ask_surface(
+                project,
+                ask,
+                seed=rng.getrandbits(63),
+                locked_bindings=locks,
+                max_attempts=max_attempts,
+                scenario_mode="validated_premises",
+                reviewed_surfaces=reviewed_surfaces,
+            )
+        except GenerationError as exc:
+            last_error = exc
+            continue
+        if solve(question, project.registry, tracing=False).answer.committed:
+            continue
+        solved = _try_solve_text(project, list(group), question)
+        if solved is None or not solved[1].answer.committed:
+            continue
+        minimal, result, text = _minimal_committed_premises(
+            project, list(group), question
+        )
+        # Minimization can remove the premise that licensed a generated slot.
+        # Recheck against the evidence that will actually be shown and saved;
+        # a committed number is insufficient when the retained facts say
+        # ``verb: be`` but the question asks with an unrelated ``verb: own``.
+        if not _validated_query_aligns_with_premises(ask, query, minimal):
+            last_error = GenerationError(
+                "generated ask identities are unsupported by retained evidence"
+            )
+            continue
+        return (
+            question,
+            requested,
+            actual,
+            query,
+            attempts,
+            minimal,
+            result,
+            text,
+            search_attempts,
+        )
+    raise GenerationError(
+        "no answerable scenario was found from replay-valid reviewed premises "
+        f"after {search_attempts} deterministic checks"
+        + (f": {last_error}" if last_error else "")
+    )
+
+
 def generate_ask_scenario(
     project: Project,
     *,
@@ -961,7 +1247,9 @@ def generate_ask_scenario(
 ) -> AskScenarioCandidate:
     """Generate one exact ask and optionally its smallest found evidence set."""
 
-    if scenario_mode not in {"ask_only", "answerable", "missing_evidence"}:
+    if scenario_mode not in {
+        "ask_only", "answerable", "validated_premises", "missing_evidence"
+    }:
         raise GenerationError(f"unknown ask scenario mode {scenario_mode!r}")
     seed = secrets.randbits(63) if seed is None else seed
     rng = random.Random(seed)
@@ -969,17 +1257,52 @@ def generate_ask_scenario(
     availability = {
         item.id: item for item in list_ask_availability(project)
     }
+    reviewed_surfaces = ask_review_surface_counts(project)
+    validated_pool = (
+        validated_premise_candidates(project)
+        if scenario_mode == "validated_premises"
+        else []
+    )
+    if scenario_mode == "validated_premises" and not validated_pool:
+        raise GenerationError("this project has no replay-valid premise reviews")
     if ask_id is None:
         supported = [
             asks[item.id] for item in availability.values() if item.supported
         ]
         if not supported:
             raise GenerationError("this project has no supported ask surfaces")
+        review_counts = ask_review_target_counts(project)
+        # Human-confirmed asks stay available, but random generation advances
+        # the least validated target frontier first. Seeded rotation only
+        # breaks ties, retaining exact reproducibility without allowing the
+        # ledger to become a runtime input.
         start = rng.randrange(len(supported))
-        ordered = supported[start:] + supported[:start]
+        rotated = supported[start:] + supported[:start]
+        ordered = sorted(rotated, key=lambda ask: review_counts.get(ask.id, 0))
+        if scenario_mode == "validated_premises" and validated_pool:
+            compatibility = {
+                ask.id: max(
+                    (
+                        score
+                        for premise in validated_pool
+                        for score, _locks in _validated_ask_lock_variants(
+                            ask, (premise,)
+                        )
+                    ),
+                    default=0,
+                )
+                for ask in ordered
+            }
+            ordered.sort(key=lambda ask: -compatibility[ask.id])
         ask_candidates = (
-            ordered[:_MAX_RANDOM_ANSWERABLE_ASKS]
-            if scenario_mode == "answerable"
+            ordered[
+                :(
+                    _MAX_RANDOM_VALIDATED_ASKS
+                    if scenario_mode == "validated_premises"
+                    else _MAX_RANDOM_ANSWERABLE_ASKS
+                )
+            ]
+            if scenario_mode in {"answerable", "validated_premises"}
             else ordered[:1]
         )
     else:
@@ -996,18 +1319,43 @@ def generate_ask_scenario(
     last_error: Exception | None = None
     for ask in ask_candidates:
         try:
-            question, requested, actual, query, attempts = _generate_ask_surface(
-                project,
-                ask,
-                seed=seed,
-                locked_bindings=dict(locked_bindings or {}),
-                max_attempts=max_attempts,
-            )
-            ask_only = solve(question, project.registry)
-            premises: list[dict[str, Any]] = []
-            result = ask_only
-            text = question
-            search_attempts = 0
+            if scenario_mode == "validated_premises":
+                (
+                    question,
+                    requested,
+                    actual,
+                    query,
+                    attempts,
+                    premises,
+                    result,
+                    text,
+                    search_attempts,
+                ) = _search_validated_premise_scenario(
+                    project,
+                    ask,
+                    seed=seed,
+                    locked_bindings=dict(locked_bindings or {}),
+                    max_attempts=max_attempts,
+                    max_search_attempts=max_search_attempts,
+                    reviewed_surfaces=reviewed_surfaces,
+                    premise_pool=validated_pool,
+                )
+                ask_only = solve(question, project.registry)
+            else:
+                question, requested, actual, query, attempts = _generate_ask_surface(
+                    project,
+                    ask,
+                    seed=seed,
+                    locked_bindings=dict(locked_bindings or {}),
+                    max_attempts=max_attempts,
+                    scenario_mode=scenario_mode,
+                    reviewed_surfaces=reviewed_surfaces,
+                )
+                ask_only = solve(question, project.registry)
+                premises = []
+                result = ask_only
+                text = question
+                search_attempts = 0
             if scenario_mode == "answerable":
                 premises, result, text, search_attempts = (
                     _search_answerable_scenario(
@@ -1029,7 +1377,9 @@ def generate_ask_scenario(
                 )
         except (GenerationError, ArithmeticError) as exc:
             last_error = exc
-            if ask_id is not None or scenario_mode != "answerable":
+            if ask_id is not None or scenario_mode not in {
+                "answerable", "validated_premises"
+            }:
                 if isinstance(exc, GenerationError):
                     raise
                 raise GenerationError(str(exc)) from exc

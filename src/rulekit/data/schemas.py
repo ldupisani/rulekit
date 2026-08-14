@@ -481,6 +481,17 @@ class MatchToken(StrictModel):
     # rules can constrain the head without losing the full qualified phrase.
     # Defaults False so existing category slots are unchanged.
     qualified: bool = False
+    # OPT-IN: a qualified noun carries an explicit numeric value on its
+    # hyphenated nominal modifier ("a 100-page book").  The analyzer keeps
+    # this distinct from an ordinary counted head ("100 page books"), and
+    # matching additionally requires the pack-declared modifier-measure ->
+    # head-holder relationship.  This lets vocabulary extend the construction
+    # without teaching the kernel that pages belong to books.
+    attributive_counted: bool = False
+    # OPT-IN category boundary for the retained modifier of a qualified noun.
+    # The head still uses the slot's ordinary `cat`; this independently gates
+    # the internal noun/adjective modifier after condensation.
+    qualifier_cat: str | None = None
     # OPT-IN grammatical-number constraint on any scalar slot. The matched
     # unit must carry the declared singular/plural feature; it never infers a
     # word's number. This is separate from `same_number`, which relates slots.
@@ -705,6 +716,9 @@ class MatchToken(StrictModel):
                 or self.bare
                 or self.counted
                 or self.possessed
+                or self.qualified
+                or self.attributive_counted
+                or self.qualifier_cat is not None
                 or self.number is not None
                 or self.standalone
                 or self.integer
@@ -723,7 +737,8 @@ class MatchToken(StrictModel):
             ):
                 raise ValueError(
                     "a span slot takes no "
-                    "type/cat/bare/counted/possessed/qualified/number/standalone/integer/value bounds/"
+                    "type/cat/bare/counted/possessed/qualified/attributive_counted/"
+                    "qualifier_cat/number/standalone/integer/value bounds/"
                     "fraction_within_whole/word_fraction_within_whole/"
                     "fraction_positive/generation_explicit_unit_fraction/"
                     "referential/generation_bare_reference/"
@@ -746,6 +761,20 @@ class MatchToken(StrictModel):
             raise ValueError("a category slot cannot be both counted and possessed")
         if self.counted and self.qualified:
             raise ValueError("a category slot cannot be both counted and qualified")
+        if self.attributive_counted and not (
+            self.qualified or self.type == "qualified"
+        ):
+            raise ValueError(
+                "`attributive_counted` requires a qualified noun slot"
+            )
+        if self.attributive_counted and (self.counted or self.possessed):
+            raise ValueError(
+                "`attributive_counted` cannot be counted or possessed"
+            )
+        if self.qualifier_cat is not None and not (
+            self.qualified or self.type == "qualified"
+        ):
+            raise ValueError("`qualifier_cat` requires a qualified noun slot")
         if self.possessed and self.qualified:
             raise ValueError("a category slot cannot be both possessed and qualified")
         if self.number is not None and self.slot is None:
@@ -758,9 +787,10 @@ class MatchToken(StrictModel):
             raise ValueError("`integer` only qualifies a `type: number` slot")
         if (
             self.value_min is not None or self.value_max is not None
-        ) and self.type != "number":
+        ) and self.type != "number" and not self.counted:
             raise ValueError(
-                "`value_min`/`value_max` only qualify a `type: number` slot"
+                "`value_min`/`value_max` only qualify a `type: number` "
+                "or category-gated counted slot"
             )
         if (
             self.value_min is not None
@@ -1033,6 +1063,7 @@ class VerbRolesCompatibilityPredicate(StrictModel):
 
     verb: str
     roles: dict[str, list[str]]
+    frame_categories: list[str] = Field(default_factory=list)
     allow_proper_name: list[str] = Field(default_factory=list)
     allow_plural_class: list[str] = Field(default_factory=list)
     allow_unbound_trigger: bool = False
@@ -1058,6 +1089,10 @@ class VerbRolesCompatibilityPredicate(StrictModel):
             slots.extend(mapped)
         if len(slots) != len(set(slots)):
             raise ValueError("verb roles compatibility maps a slot twice")
+        if len(self.frame_categories) != len(set(self.frame_categories)):
+            raise ValueError(
+                "verb roles compatibility repeats a frame category"
+            )
         known = set(slots)
         for permission, declared in (
             ("proper-name", self.allow_proper_name),
@@ -1222,6 +1257,10 @@ class WherePredicate(StrictModel):
     # preposition can surround an intervening relative clause without either
     # half being independently optional.
     same_presence: list[str] | None = None
+    # At most one named optional slot may bind. This distinguishes alternate
+    # realizations such as "their average age" and "average age of the 5"
+    # without splitting an otherwise identical ask into sibling rules.
+    mutually_exclusive: list[str] | None = None
     # A verb in ``verb_cat`` requires each named semantic role to be a proper
     # name or a common noun in ``role_cat``. Verbs outside the triggering
     # category remain unchanged. This keeps agency knowledge in pack data.
@@ -1328,6 +1367,7 @@ class WherePredicate(StrictModel):
                 self.owner_matches,
                 self.proportional_delta_compatible,
                 self.same_presence,
+                self.mutually_exclusive,
                 self.verb_role_compatible,
                 self.verb_roles_compatible,
                 self.measure_holder_compatible,
@@ -1350,7 +1390,8 @@ class WherePredicate(StrictModel):
 
 class FactEmit(StrictModel):
     fact: Literal[
-        "age_at_year", "task_completion_duration", "quantity", "relation",
+        "activity_duration", "age_at_year", "task_completion_duration",
+        "rate_scope", "quantity", "relation",
         "membership", "subset", "predication",
         "before", "fraction_quantity", "rest_quantity", "partition_quantity",
         "sequential_partition", "sequential_partition_prefix",
@@ -1386,6 +1427,11 @@ class FactEmit(StrictModel):
     # number of segments (exhaustiveness is what the count licenses;
     # mismatch emits nothing, fail closed).
     options_from: str | None = None
+    # Optional evidence-time metadata. The value may be a literal
+    # (``present``/``past``/``future``) or a normal slot template such as
+    # ``{verb.surface}``; it belongs to Provenance rather than the emitted
+    # Fact's semantic fields and therefore never changes fact identity.
+    temporal_perspective: str | None = None
 
     model_config = ConfigDict(extra="allow")
 
@@ -1512,6 +1558,10 @@ class AskGenerationDef(StrictModel):
         str, Literal["reference_group", "reference_year"]
     ] = Field(default_factory=dict)
     slot_categories: dict[str, str | list[str]] = Field(default_factory=dict)
+    # Slots in rejection-only optional branches remain part of the reader
+    # grammar so a malformed continuation cannot be ignored as an accepted
+    # prefix. Ask generation must never realize those capture-only branches.
+    omit_slots: list[str] = Field(default_factory=list)
     requires_committed_answer: bool = False
 
 
@@ -1570,11 +1620,28 @@ class AskRule(StrictModel):
         unknown_generation_slots = (
             set(self.generation.slot_sources)
             | set(self.generation.slot_categories)
+            | set(self.generation.omit_slots)
         ) - declared_slots
         if unknown_generation_slots:
             raise ValueError(
                 f"ask {self.id!r}: generation constraints name unknown slots: "
                 + ", ".join(sorted(unknown_generation_slots))
+            )
+        if len(self.generation.omit_slots) != len(
+            set(self.generation.omit_slots)
+        ):
+            raise ValueError(
+                f"ask {self.id!r}: generation omit_slots repeats a slot"
+            )
+        locked_generation_slots = (
+            set(self.generation.slot_sources)
+            | set(self.generation.slot_categories)
+        ) & set(self.generation.omit_slots)
+        if locked_generation_slots:
+            raise ValueError(
+                f"ask {self.id!r}: omitted generation slots also have "
+                "generation sources/categories: "
+                + ", ".join(sorted(locked_generation_slots))
             )
         for slot, categories in self.generation.slot_categories.items():
             declared = categories if isinstance(categories, list) else [categories]
@@ -1647,6 +1714,11 @@ class ConversionDef(StrictModel):
     from_: str = Field(alias="from")
     to: str
     factor: float
+    # Some conventional period factors are valid for projecting a cadence but
+    # not for exact elapsed-time comparison (a year is treated as 52 weeks in
+    # elementary word problems, while calendar duration is not exactly 364
+    # days). Scoped pairs keep that assumption out of general unit folding.
+    scope: Literal["general", "cadence"] = "general"
 
     model_config = ConfigDict(extra="forbid", populate_by_name=True)
 

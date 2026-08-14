@@ -114,6 +114,7 @@ from . import (  # noqa: E402,F401  (import registers each handler)
     capacity as _capacity,
     difference as _difference,
     completion_duration_difference as _completion_duration_difference,
+    content_progress_remainder_fraction as _content_progress_remainder_fraction,
     change as _change,
     unique_entity as _unique_entity,
     money_left as _money_left,

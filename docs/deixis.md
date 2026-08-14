@@ -93,7 +93,11 @@ of referent objects.
   same-verb non-state events may also be summed across labels when the question is
   unscoped. Mixed timed/untimed evidence, state snapshots, cross-verb evidence, and
   every operation that would need temporal ordering still decline.
-- Tense is **erased** by `condense.py` ("has found" → `find`), never recorded.
+- Verb lemmas are still normalized by `condense.py` ("has found" → `find`).
+  Rules whose answers depend on tense may separately retain the matched finite
+  surface as `Provenance.temporal_perspective`. The shared normalizer maps
+  pack-declared present-copula, past-copula, and future-modal categories to a
+  perspective; it does not reconstruct arbitrary tense from a lemma.
 - The relative markers `yesterday`, `now`, `today`, and `tomorrow` now carry signed
   offsets in pack data. One marker attached to one unambiguous predicate emits an
   `EventTime`; differing offsets derive `Before(earlier, later)`. This orders those
@@ -282,7 +286,12 @@ space):
   explicit year and sum it when the surface explicitly asks for a combined or total
   age. Group projection is all-or-nothing. The engine never reads the wall clock, and
   a missing current-year context declines. It does not order or extrapolate
-  `Quantity.time` values. Remaining: promote quantity `time` to an ordered **`Moment`**, advance
+  `Quantity.time` values. Direct and projected age asks now use a second conservative
+  seam: the ask declares an evidence perspective and measure category, age premises
+  retain that perspective in provenance, and relation-derived ages may compose only
+  with an anchor from the same perspective. Unknown or mismatched evidence declines.
+  This is perspective equality, not elapsed-time arithmetic. Remaining: promote
+  quantity `time` to an ordered **`Moment`**, advance
   the narrative origo, support counted expressions such as `ago` = −N, and add a shared
   reference-time field to other ask families. Flagship: a state narrated at the deictic
   present *restates* the running total → anchor/replace instead of sum, fixing the open

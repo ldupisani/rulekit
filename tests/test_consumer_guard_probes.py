@@ -33,7 +33,13 @@ from rulekit.kernel.consumers import CONSUMERS, ConsumerContext
 from rulekit.kernel.engine import solve
 from rulekit.kernel.evaluate import ArithmeticLog
 from rulekit.kernel.facts import FactStore
-from rulekit.kernel.model import AgeAtYear, PartitionQuantity, Provenance, Quantity
+from rulekit.kernel.model import (
+    AgeAtYear,
+    PartitionQuantity,
+    Predication,
+    Provenance,
+    Quantity,
+)
 from rulekit.kernel.patterns import SKIPPABLE_SENSES, match_ask
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -97,6 +103,143 @@ def test_rate_cost_needs_a_quantity_and_a_rate(gsm8k):
                {"value": "lots", "rate": "2", "from": "mile", "to": "mile"})
     assert got.kind == "decline"
     assert "a rate cost needs a quantity and a rate" in got.reason
+
+
+def _progress_query(**updates):
+    query = {
+        "entity": "cato",
+        "measure": "page",
+        "verb": "read",
+        "fraction": "0.5",
+        "target_time": "tomorrow",
+        "product_category": "content_progress_product",
+        "capacity_verb": "have",
+    }
+    query.update(updates)
+    return query
+
+
+def _progress_store(*, capacity=None, completed=None):
+    provenance = Provenance(source="synthetic", sentence=0)
+    facts = [
+        Predication(
+            provenance=provenance,
+            subject="cato",
+            verb="read",
+            dobj="book",
+        )
+    ]
+    if capacity is not None:
+        facts.append(Quantity(
+            provenance=provenance,
+            entity="book",
+            measure="page",
+            value=capacity,
+            verb="have",
+        ))
+    if completed is not None:
+        facts.append(Quantity(
+            provenance=provenance,
+            entity="cato",
+            measure="page",
+            value=completed,
+            verb="read",
+            occurrence=0,
+        ))
+    return FactStore(facts=facts)
+
+
+def test_progress_remainder_needs_a_readable_fraction(curated):
+    got = call(
+        "content-progress-remainder-fraction",
+        curated,
+        _progress_query(fraction="several"),
+        store=FactStore(),
+    )
+    assert got.kind == "decline"
+    assert "fraction is unreadable" in got.reason
+
+
+def test_progress_remainder_rejects_fraction_beyond_whole(curated):
+    got = call(
+        "content-progress-remainder-fraction",
+        curated,
+        _progress_query(fraction="1.5"),
+        store=FactStore(),
+    )
+    assert got.kind == "decline"
+    assert "outside one whole" in got.reason
+
+
+def test_progress_remainder_needs_a_future_target(curated):
+    got = call(
+        "content-progress-remainder-fraction",
+        curated,
+        _progress_query(target_time="today"),
+        store=FactStore(),
+    )
+    assert got.kind == "decline"
+    assert "needs one declared future marker" in got.reason
+
+
+def test_progress_remainder_rejects_an_ambiguous_measure(gsm8k):
+    provenance = Provenance(source="synthetic", sentence=0)
+    store = FactStore(facts=[
+        Quantity(provenance, "box", "dollar", 3),
+        Quantity(provenance, "box", "pound", 4),
+    ])
+    got = call(
+        "content-progress-remainder-fraction",
+        gsm8k,
+        _progress_query(measure="money"),
+        store=store,
+    )
+    assert got.kind == "decline"
+    assert "measure 'money' is ambiguous" in got.reason
+
+
+def test_progress_remainder_needs_one_linked_product(curated):
+    got = call(
+        "content-progress-remainder-fraction",
+        curated,
+        _progress_query(),
+        store=FactStore(),
+    )
+    assert got.kind == "decline"
+    assert "0 measured products" in got.reason
+
+
+def test_progress_remainder_needs_one_capacity(curated):
+    got = call(
+        "content-progress-remainder-fraction",
+        curated,
+        _progress_query(),
+        store=_progress_store(),
+    )
+    assert got.kind == "decline"
+    assert "0 capacities known" in got.reason
+
+
+def test_progress_remainder_needs_completed_progress(curated):
+    got = call(
+        "content-progress-remainder-fraction",
+        curated,
+        _progress_query(),
+        store=_progress_store(capacity=30),
+    )
+    assert got.kind == "decline"
+    assert "completed 'read' progress is not uniquely determined" in got.reason
+
+
+def test_progress_remainder_rejects_progress_beyond_capacity(curated):
+    got = call(
+        "content-progress-remainder-fraction",
+        curated,
+        _progress_query(),
+        store=_progress_store(capacity=10, completed=12),
+    )
+    assert got.kind == "decline"
+    assert "completed progress 12" in got.reason
 
 
 def test_arithmetic_unsupported_operation(gsm8k):

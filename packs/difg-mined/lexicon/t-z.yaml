@@ -758,10 +758,6 @@ entries:
     wedding:
         senses:
             - noun
-    week:
-        senses:
-            - noun
-        plural: weeks
     weekday:
         senses:
             - noun
@@ -973,25 +969,12 @@ entries:
     wrapping:
         senses:
             - verb
-    write:
-        senses:
-            - verb
     writer:
         senses:
             - noun
-    writes:
-        senses:
-            - verb
-        verb:
-            lemma: write
     writing:
         senses:
             - noun
-    wrote:
-        senses:
-            - verb
-        verb:
-            lemma: write
     yard:
         senses:
             - noun

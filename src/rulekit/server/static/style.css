@@ -55,7 +55,38 @@ body.campaign-mode #impact-bar { display: none; }
 /* ---------- review history ---------- */
 #reviews { overflow: auto; flex: 1; min-height: 0; }
 .rv-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+.rv-views { display: flex; gap: 5px; margin-bottom: 10px; }
+.rv-views button.on { border-color: var(--accent); color: var(--accent); background: var(--panel2); }
 .rv-empty { color: var(--dim); padding: 18px 2px; }
+.rv-coverage-summary {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 8px; margin-bottom: 10px;
+}
+.rv-metric {
+  display: flex; flex-direction: column; border: 1px solid var(--border);
+  border-radius: 7px; background: var(--panel); padding: 10px;
+}
+.rv-metric strong { color: var(--accent); font-size: 1.125rem; }
+.rv-coverage-groups { display: flex; flex-direction: column; gap: 6px; }
+.rv-coverage-group {
+  border: 1px solid var(--border); border-left: 3px solid var(--green);
+  border-radius: 6px; background: var(--panel);
+}
+.rv-coverage-group.regressed { border-left-color: var(--red); }
+.rv-coverage-group.unvalidated { border-left-color: var(--amber); }
+.rv-coverage-group > summary {
+  display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 8px 10px;
+}
+.rv-coverage-detail { padding: 0 10px 9px 25px; }
+.rv-evidence-status, .rv-regressed {
+  padding: 1px 6px; border: 1px solid var(--border); border-radius: 8px;
+  font-size: 0.5938rem; text-transform: uppercase;
+}
+.rv-evidence-status.current, .rv-evidence-status.machine_reconfirmed { color: var(--green); }
+.rv-evidence-status.regressed, .rv-regressed { color: var(--red); border-color: #5c3a42; }
+.rv-evidence-status.unvalidated { color: var(--amber); }
+.rv-regressed { display: inline-block; margin: 4px 0 0 6px; }
+.rv-pager { display: flex; justify-content: center; align-items: center; gap: 10px; padding: 12px; }
 .rv-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
 .rv-table th {
   text-align: left; padding: 5px 8px; color: var(--dim); font-weight: 600;
@@ -105,6 +136,14 @@ body.campaign-mode #impact-bar { display: none; }
   font: 0.75rem/1.45 -apple-system, "Segoe UI", sans-serif;
 }
 .rv-edit-note:focus { outline: none; border-color: var(--accent); }
+.rv-edit-judgments, .ask-review-dimensions {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px;
+}
+.rv-edit-judgments label, .ask-review-dimensions label { display: flex; flex-direction: column; }
+.rv-edit-judgments select, .ask-review-dimensions select {
+  width: 100%; background: var(--bg); color: var(--text);
+  border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px;
+}
 
 /* ---------- campaign promotion queue ---------- */
 #campaign { overflow: auto; flex: 1; min-height: 0; }
@@ -857,6 +896,7 @@ button.generation-source:hover { border-color: var(--accent); }
   border: 1px solid var(--border); border-radius: 8px; background: var(--panel);
 }
 .ask-generation-review label { display: flex; flex-direction: column; }
+.ask-review-dimensions { grid-column: 1 / -1; }
 #generation-ask-note {
   min-height: 55px; resize: vertical; background: var(--bg); color: var(--text);
   border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px;

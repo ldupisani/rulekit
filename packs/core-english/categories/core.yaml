@@ -614,6 +614,16 @@ categories:
             holding relation. Copulas remain in sibling `copula`: they state
             quantities in other grammatical frames but cannot connect a
             subject directly to a possessive quantity standard.
+    ownership_state:
+        parent: possession_state
+        selectional_roles:
+            actor: quantity_event_participant
+            theme: ownable_quantity_object
+        notes: >
+            Literal ownership predicates. Unlike broad have-possession, these
+            require an ordinarily ownable counted theme; temporal dimensions
+            such as years cannot become property merely because they occur in
+            a general quantity-question slot.
     population_total_verb:
         parent: possession_state
         notes: >
@@ -639,6 +649,12 @@ categories:
             predicate head. This keeps fixed singular question frames such as
             "what is the cost" and "what was the difference" from drawing a
             plural form merely because every copula shares the same state sense.
+    present_copula:
+        parent: copula
+        notes: >
+            Present-tense copulas used when an ask requires evidence asserted
+            at the current discourse perspective. Kept distinct from number:
+            both singular `is` and plural `are` belong here.
     past_copula:
         parent: copula
         notes: >
@@ -659,11 +675,15 @@ categories:
             holders do not become sentient merely because they can hold facts.
     teaching_quantity_verb:
         parent: animate_subject_verb
+        selectional_roles:
+            actor: animate
+            theme: teaching_quantity_object
         notes: >
-            Teaching predicates whose subject and comparison standard must be
-            person-denoting common nouns or proper names. This is narrower
-            than the general event boundary because animals may participate in
-            other quantity events without being teachers.
+            Teaching predicates whose actor must be person-denoting and whose
+            counted theme must be a declared teachable person or subject. The
+            category owns this complete frame so premise and ask rules only
+            map their surface slots to actor/theme roles; they do not repeat
+            teaching-specific category pairs.
     animate_object_verb:
         parent: verb
         notes: >
@@ -714,7 +734,9 @@ categories:
         notes: >
             The ambiguous past departure form when it heads an overt
             quantitative event. It constrains the event actor without making
-            the comparison standard itself an actor in that event.
+            the comparison standard itself an actor in that event. The
+            construction maps its actor and theme slots because different
+            comparison shapes give the standard a different semantic role.
     finishable_quantity_object:
         parent: noun
         notes: "Counted things that can ordinarily be completed or finished."
@@ -727,14 +749,32 @@ categories:
         parent: noun
         notes: >
             People and institutions that may conventionally have students.
+    institution_quantity_measure:
+        parent: noun
+        notes: >
+            Counted institutions whose holder must be a plausible geographic
+            or organizational scope. Proper names remain independently
+            available where a grammar rule permits them.
+    institution_quantity_holder:
+        parent: quantity_holder
+        notes: >
+            Geographic or organizational scopes that may conventionally have
+            counted institutions. Extension packs can add cities, regions,
+            states, companies, or other suitable holder classes here.
     enrollment_quantity_object:
         parent: noun
         notes: "Counted classes that can ordinarily be enrolled or taken."
     teaching_quantity_object:
         parent: noun
         notes: "Counted people or subjects that can ordinarily be taught."
-    transferable_quantity_object:
+    ownable_quantity_object:
         parent: noun
+        notes: >
+            Counted objects that can ordinarily be owned. Transferable and
+            portable object categories inherit this role, so extension packs
+            normally extend ownership through the existing object hierarchy.
+    transferable_quantity_object:
+        parent: ownable_quantity_object
         notes: >
             Counted objects that can ordinarily be given or sold without an
             omitted measure or special interpretation. Extension packs add
@@ -766,6 +806,18 @@ categories:
         notes: >
             Narrow earnings verbs used by wage-rate questions. Membership is
             separate from broader acquisition and production event meanings.
+    compensated_activity:
+        parent: noun
+        notes: >
+            Activities that may explicitly scope a wage rate and an elapsed
+            duration. Membership says only that the noun denotes an activity;
+            the sentence must still state both the rate and the matching time.
+    activity_duration_verb:
+        parent: auxiliary
+        notes: >
+            Forms that can head the bounded "did DURATION of ACTIVITY"
+            elapsed-time construction. This remains separate from question
+            auxiliaries even when a surface form belongs to both categories.
     initiation_quantity_verb:
         parent: quantity_ask_verb
         selectional_roles:
@@ -805,6 +857,52 @@ categories:
         parent: noun
     producible_quantity_object:
         parent: noun
+    output_quantity_verb:
+        parent: quantity_ask_verb
+        selectional_roles:
+            actor: production_quantity_participant
+            theme: output_quantity_measure
+        notes: >
+            Productive actions that can be asked about in the units making up
+            their output, such as pages written. This frame is separate from
+            the product-object frame: writing a book selects the book, while
+            asking how many pages were written selects the output measure.
+    output_quantity_measure:
+        parent: noun
+    output_quantity_product:
+        parent: producible_quantity_object
+    content_progress_quantity_verb:
+        parent: quantity_event_verb
+        selectional_roles:
+            actor: quantity_event_participant
+            theme: content_progress_object
+        notes: >
+            Events that advance through measured content. The object contract
+            covers both a content product (a book) and its progress measure
+            (pages), while grammar rules decide which surface is present.
+    content_progress_perfect_participle:
+        parent: content_progress_quantity_verb
+        notes: >
+            Irregular or otherwise non-obvious participial surfaces licensed
+            after a perfect auxiliary. Membership is morphology data: the
+            surrounding ask supplies the perfect construction.
+    content_progress_object:
+        parent: noun
+    content_progress_measure:
+        parent: content_progress_object
+    content_progress_product:
+        parent: content_progress_object
+    realized_ability_adjective:
+        parent: adjective
+        notes: >
+            Predicative adjectives whose "was ADJECTIVE to VERB" use states a
+            successfully realized event amount, rather than bare capacity.
+    relative_period_attribute:
+        parent: adjective
+        notes: >
+            Attributes that turn a duration noun into a discourse-relative
+            period, such as "last week". The duration head remains the period
+            identity; this category licenses the qualifier.
     price_verb:
         parent: quantity_ask_verb
         notes: >
@@ -1261,6 +1359,13 @@ categories:
             Temporal or aspectual adverbs that can naturally appear before a
             stative holding verb in a conjoined quantity anchor ("and still
             had 5 hats"). Directional adverbs such as "off" do not belong.
+    restrictive_focus_adverb:
+        parent: adverb
+        notes: >
+            Restrictive focus markers that may immediately precede an event
+            verb or its measured amount while preserving that amount as the
+            asserted upper bound. Ordinary manner and temporal adverbs remain
+            outside this category.
     currency_measure:
         parent: noun
         dimension: true
@@ -1404,6 +1509,11 @@ categories:
     remnant_adj:
         parent: adjective
         notes: "'the REMAINING pages' / 'pages LEFT' — remainder-anchored fractions defer to the rest machinery"
+    prenominal_remnant_adj:
+        parent: remnant_adj
+        notes: >
+            Remainder attributes grammatical before their noun. Postpositive
+            forms such as "pages left" remain in the parent only.
     more_dir: {parent: delta, antonym: less_dir, polarity: 1}
     less_dir: {parent: delta, antonym: more_dir, polarity: -1}
     count_quantity_delta:
@@ -1527,6 +1637,19 @@ categories:
             a claim that the verbs share event semantics. Motion and unrelated
             intransitive verbs stay outside, so generation cannot ask how many
             prices somebody "travels" merely because both words are known.
+    remaining_balance_state:
+        parent: possession_state
+        notes: >
+            Bare possession forms licensed before postpositive "left" in a
+            remaining-balance question ("does Ana have left"). Other holding
+            verbs may describe ownership but do not share this idiom.
+    a_article_membership_predicate:
+        parent: noun
+        notes: >
+            Singular class nouns whose generated surface is licensed after
+            the indefinite article "a". The reader remains broader; this is
+            an authoring vocabulary boundary that prevents the generator from
+            producing the wrong indefinite-article allomorph.
     difference_preposition:
         parent: preposition
         notes: >
@@ -1556,6 +1679,11 @@ categories:
             rate-span consumer's aux slot instead of a factual ask's. The six
             generic lexical declarations and their capacity membership live
             in core.
+    planned_progress_modal:
+        parent: modal
+        notes: >
+            A modal that asks for a recommended future activity quantity. It
+            specifies a plan; it never asserts that the activity occurred.
     duration_verb:
         parent: verb
         notes: >
@@ -1669,6 +1797,22 @@ categories:
             Day-grained relative markers. `now` deliberately remains outside:
             sharing offset zero does not make an instant interchangeable with
             the whole current day.
+    current_day_marker:
+        parent: day_deictic_marker
+        notes: >
+            The day-grained current point used when a construction explicitly
+            contrasts an earlier relative period with today's event.
+    past_day_marker:
+        parent: day_deictic_marker
+        notes: >
+            A day-grained deictic marker whose declared temporal offset is
+            past-facing. Rules use this when an earlier event must be stated
+            by a bare day marker rather than a qualified duration phrase.
+    future_day_marker:
+        parent: day_deictic_marker
+        notes: >
+            A day-grained deictic marker whose declared temporal offset is
+            future-facing. Consumers still verify the signed offset.
     age_measure:
         parent: noun
         notes: >
@@ -1935,6 +2079,7 @@ members:
     pool_pronoun: [it, them]
     plural_object_pronoun: [them]
     remnant_adj: [left]
+    prenominal_remnant_adj: [remaining]
     color_attribute: [beige, blue, green, red, turquoise, violet]
     size_attribute: [small, large]
     linear_unit_dimension_adjective: [tall]
@@ -2108,11 +2253,20 @@ members:
         [gardener, guardian, librarian, shopper, student, teacher, university,
          violinist]
     earnable_quantity_object: [dollar, money]
-    production_quantity_verb: [make, makes, made]
+    production_quantity_verb: [make, makes, made, write, writes, wrote]
     production_quantity_participant:
         [gardener, guardian, librarian, shopper, student, teacher, university,
          violinist]
     producible_quantity_object: [book, business, cookie, pencil, toy]
+    output_quantity_verb: [write, writes, wrote]
+    output_quantity_measure: [page]
+    output_quantity_product: [book]
+    content_progress_quantity_verb: [reading, reads]
+    content_progress_perfect_participle: [read]
+    content_progress_measure: [page]
+    content_progress_product: [book]
+    realized_ability_adjective: [able]
+    relative_period_attribute: [last]
     teaching_quantity_verb: [teach, teaches, taught]
     animate_object_verb: [teach, teaches, taught]
     currency_quantity_verb:
@@ -2128,11 +2282,14 @@ members:
     student_quantity_holder:
         [child, friend, gardener, guardian, librarian, shopper, student,
          teacher, university, violinist]
+    institution_quantity_measure: [university]
+    institution_quantity_holder: [area]
     enrollment_quantity_object: [course, student]
     teaching_quantity_object: [course, puzzle, student]
     transferable_quantity_object:
         [animal, alpaca, bird, can, cat, course, dog, dollar, fish, flower,
-         hamster, number, rabbit]
+         hamster, number, rabbit, tree]
+    ownable_quantity_object: [business, money]
     droppable_quantity_object:
         [apple, ball, book, card, coin, cookie, drum, egg, envelope, grape,
          key, marble, apricot, paper, pencil, pear, plum, puzzle, rose, sticker,
@@ -2150,16 +2307,20 @@ members:
     # the fallback binds a SUBJECT pronoun to a prior subject anyway.
     animate_pronoun: [he, she]
     state: [has, have, had, is, are, was, were, own, owns]
-    possession_state: [has, have, had, own, owns]
+    possession_state: [has, have, had]
+    ownership_state: [own, owns]
     population_total_verb: [has, have, had]
     copula: [is, are, was, were]
     plural_copula: [are, were]
     singular_copula: [is, was]
+    present_copula: [is, are]
     past_copula: [was, were]
     quantity_event_verb: [leave, leaves, leaving]
     acquire: [get, gets, got, find, finds, found, buy, buys, bought, receive, receives, received, win, wins, won]
     purchase: [buy, buys, bought, buying]
     wage_verb: [earn, earns, earned, make, makes, made]
+    activity_duration_verb: [did]
+    compensated_activity: [gardening, tutoring]
     price_verb: [cost, costs]
     passive_quantity_participle: [bought, sold]
     passive_quantity_object:
@@ -2172,7 +2333,7 @@ members:
     need_ask_verb: [need, needed, needs]
     find_quantity_verb: [find, finds, found]
     win_quantity_verb: [win, wins, won]
-    winnable_quantity_object: [money]
+    winnable_quantity_object: [dollar, money]
     lose: [lose, loses, lost, eat, eats, ate, give, gives, gave, sell, sells, sold, spend, spends, spent, dropped, drops]
     increase_verb: [rose]
     price_relation_verb: [are, cost, costs, is, was, were]
@@ -2198,11 +2359,19 @@ members:
     plural_present_auxiliary: [do]
     change_receipt_verb: [get, receive, take]
     quantity_ask_verb: [had, has, have]
+    remaining_balance_state: [had, has, have]
+    a_article_membership_predicate:
+        [bird, book, cat, child, coin, dog, fish, friend, hamster, student,
+         teacher]
     difference_preposition: [between, in]
     capacity_modal: [can, could, may, might, must, should]
+    planned_progress_modal: [should]
     temporal_marker: [now, today]
     deictic_temporal_marker: [now, today, tomorrow, yesterday]
     day_deictic_marker: [today, tomorrow, yesterday]
+    current_day_marker: [today]
+    past_day_marker: [yesterday]
+    future_day_marker: [tomorrow]
     timeperiod:
         [year, monday, tuesday, wednesday, thursday, friday, saturday, sunday,
          january, february, march, april, june, july, august, september,
@@ -2235,13 +2404,14 @@ members:
     mass_measure: [pound] # other concrete units extend this from packs/difg-mined
     currency_measure: [dollar] # 'cent'/'balance'/'earnings'/'cost' extend this from packs/difg-mined
     time_measure: [year, age] # generic age forms; other units extend this from difg-mined
-    duration_measure: [year, minute, hour]
+    duration_measure: [year, week, minute, hour]
     dimension_difference_measure: [inch, pound]
     frequency_quantifier: [every]
     distributive_quantifier: [each, every]
     postpositive_distributive_quantifier: [each]
     individualizing_adverb: [individually]
     holding_anchor_adverb: [currently]
+    restrictive_focus_adverb: [just, only]
     age_measure: [year]
     aggregate_noun: [amount, number]
     count_aggregate_noun: [amount, number]
@@ -2352,8 +2522,9 @@ attribute_compatibility:
     size_attribute: [physical_size_noun, magnitude_noun]
     linear_unit_dimension_adjective: [length_measure]
     mass_unit_dimension_adjective: [mass_measure]
-    remnant_adj: [remainder_collection_noun]
+    remnant_adj: [remainder_collection_noun, content_progress_measure]
     ripeness_attribute: [ripenable_noun]
+    relative_period_attribute: [duration_measure]
     linear_dimension_comparative: [length_measure]
     mass_dimension_comparative: [mass_measure]
     duration_dimension_comparative: [duration_measure]
@@ -2464,6 +2635,8 @@ adposition_roles:
         verb_category: purpose_compatible_verb
 measure_holder_compatibility:
     student_quantity_measure: [student_quantity_holder]
+    institution_quantity_measure: [institution_quantity_holder]
+    output_quantity_measure: [output_quantity_product]
     length_measure: [linear_dimension_holder, animate]
     mass_measure: [mass_dimension_holder, animate]
     duration_measure: [duration_holder]

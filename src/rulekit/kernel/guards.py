@@ -17,9 +17,9 @@ from .facts import FactStore
 from .model import Reading
 
 _NUMERIC_FACT_FIELDS = ("value", "factor", "offset", "fraction")
-# Consumers that read the WHOLE question number list by construction and log
-# every count as an operand — so value-accounting must not demand that each
-# count bind its own ask slot (only the first does). A CONSUMER name is
+# Consumers that read every accounted value in the question by construction
+# and log each as an operand — so value-accounting must not demand a separate
+# fact for values the query itself consumes. A CONSUMER name is
 # structure, never an English word (constitution rule 1). See the use site for
 # the contract a member must satisfy.
 #
@@ -29,7 +29,9 @@ _NUMERIC_FACT_FIELDS = ("value", "factor", "offset", "fraction")
 # `vector` earn it by folding every count into their result. `physics` earns it
 # differently — it binds counts by unit, so a value it cannot read is not an
 # operand at all; it discharges the duty by DECLINING on any unread accounted
-# value rather than committing a number that ignored one.
+# value rather than committing a number that ignored one. The content-progress
+# remainder consumer binds the question's one fraction and uses it in the
+# logged final multiplication.
 #
 # The two cases that proved this, both invisible to every corpus gate: "travels
 # 60 meters in 4 seconds and 3 MINUTES" committed 15 (an unread COUNT), and then
@@ -37,7 +39,12 @@ _NUMERIC_FACT_FIELDS = ("value", "factor", "offset", "fraction")
 # FRACTION) after the first fix re-implemented only the count third. That is why
 # the kind tuple is imported rather than re-listed: a contract with two copies
 # has already drifted.
-_WHOLE_LIST_CONSUMERS = ("list-statistic", "vector", "physics")
+_WHOLE_LIST_CONSUMERS = (
+    "content-progress-remainder-fraction",
+    "list-statistic",
+    "vector",
+    "physics",
+)
 # A stricter subset that audits accounted values across PREMISES as well as the
 # question. Membership is safe only while the consumer scans every reading and
 # declines on any value its expression cannot use; `physics` owns that contract.
@@ -255,15 +262,17 @@ def _check_number(
         )
         # A consumer that reads the WHOLE question number list by construction
         # (list-statistic: "the average of 4, 8, 15, 16, and 42"; vector: "the dot
-        # product of (1, 2, 3) and (4, 5, 6)") accounts for every count in the
+        # product of (1, 2, 3) and (4, 5, 6)") accounts for every value in the
         # question — but only the FIRST binds an ask slot, so the per-count fact
-        # check below would wrongly veto the rest. Exempt the question reading for
-        # those consumers (the ask is re-derived, as answer-accounting does).
+        # check below would wrongly veto the rest. The progress-remainder
+        # consumer likewise reads the question's sole fraction directly and
+        # logs it in its expression. Exempt the question reading for those
+        # consumers (the ask is re-derived, as answer-accounting does).
         # Every arithmetic ask still checks its question.
         #
         # Membership is the CONSUMER's contract, not a convenience: a consumer
         # belongs here only if it reads every count in the question and logs them
-        # all as operands. Both do (each calls `evaluate` over its whole list).
+        # all as operands. Every listed consumer calls `evaluate` over them.
         # Adding one that does NOT would silently disable the guard for its asks.
         exempt_question = None
         exempt_document = False

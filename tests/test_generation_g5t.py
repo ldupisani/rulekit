@@ -127,6 +127,7 @@ def test_temporal_marker_occurrence_and_core_ownership_are_complete() -> None:
         "temporal_marker",
     )
     assert project.registry.word_categories["today"] == (
+        "current_day_marker",
         "day_deictic_marker",
         "deictic_temporal_marker",
         "temporal_marker",
@@ -203,9 +204,9 @@ def test_g5t_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 130
-    assert sum(item.supported for item in availability.values()) == 125
-    assert sum(not item.supported for item in availability.values()) == 5
+    assert len(availability) == 140
+    assert sum(item.supported for item in availability.values()) == 132
+    assert sum(not item.supported for item in availability.values()) == 8
     assert availability[TARGET_RULE].supported
     # G5u subsequently supplied the loaded direct-adverb domain.
     assert availability[
@@ -216,7 +217,7 @@ def test_g5t_unlocks_exactly_the_preregistered_frontier() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 305
+    assert len(exploration_status(project)["fillers"]) == 316
 
 
 @pytest.mark.parametrize("marker", sorted(MOVED_WORDS))

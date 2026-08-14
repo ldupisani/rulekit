@@ -165,6 +165,13 @@ class Provenance:
     # never part of a Fact.key(); omitted from repr so ordinary fact snapshots
     # remain stable.
     assumption: bool = field(default=False, repr=False)
+    # The temporal perspective under which this fact is asserted. This is
+    # evidence metadata, not part of Fact.key(): ``Bira was 20`` and ``Bira
+    # is 20`` still describe the same quantity key and therefore conflict if
+    # both are asserted without a rule explaining the change. Ask dispatch
+    # may, however, require evidence from the matching perspective rather
+    # than silently treating past, present, and future statements alike.
+    temporal_perspective: str | None = field(default=None, repr=False)
 
 
 @dataclass(frozen=True)
@@ -805,6 +812,57 @@ class TaskCompletionDuration(Fact):
 
     def value_part(self) -> Any:
         return (self.elapsed, self.unit, self.verb)
+
+
+@dataclass(frozen=True)
+class RateScope(Fact):
+    """The activity to which one participant's stated rate applies.
+
+    ``Natalia earns $12 an hour for gardening`` does not license applying
+    that rate to every elapsed duration associated with Natalia.  This fact
+    preserves the explicit ``for ACTIVITY`` restriction independently of the
+    numeric :class:`Rate`, so consumers can require an exact activity match.
+    """
+
+    participant: str
+    activity: str
+    verb: str
+
+    def key(self) -> tuple:
+        return ("rate-scope", self.participant, self.verb)
+
+    def value_part(self) -> Any:
+        return self.activity
+
+
+@dataclass(frozen=True)
+class ActivityDuration(Fact):
+    """One participant's elapsed time spent on a named activity.
+
+    This is not a Quantity holding: ``50 minutes of gardening`` records a
+    duration qualified by an activity.  Keeping the unit and temporal label
+    explicit permits ordinary conversion while preventing the duration from
+    being borrowed by an unrelated rate.
+    """
+
+    participant: str
+    activity: str
+    elapsed: float
+    unit: str
+    verb: str
+    time: str | None = None
+
+    def key(self) -> tuple:
+        return (
+            "activity-duration",
+            self.participant,
+            self.activity,
+            self.verb,
+            self.time,
+        )
+
+    def value_part(self) -> Any:
+        return (self.elapsed, self.unit)
 
 
 @dataclass(frozen=True)

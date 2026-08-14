@@ -131,9 +131,9 @@ def test_reviewed_answerable_seed_now_uses_direct_relevant_evidence(project) -> 
     )
 
     assert candidate.target_ask == "ask/what-is-the-number-of-possessed"
-    assert candidate.question == "What is the number of Mary's trees?"
+    assert candidate.question == "What is the number of Cato's envelopes?"
     assert candidate.answer["committed"] is True
-    assert candidate.answer["value"] == 30
+    assert candidate.answer["value"] == 14
     assert [premise["sentence"] for premise in candidate.premises] == [
-        "Bira gave Mary 30 trees."
+        "Fia sells Cato 14 envelopes."
     ]

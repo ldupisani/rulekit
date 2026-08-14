@@ -39,18 +39,21 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
         "ask requires an antecedent discourse group; generate it as a "
         "contextual scenario",
     )
-    assert sum(item.supported for item in availability.values()) == 104
+    assert sum(item.supported for item in availability.values()) == 106
     assert not availability["ask/how-many-of-collection-are-label"].supported
     assert availability["ask/how-many-of-collection-are-label"].blockers == (
         "no project-backed ask filler exists for label",
     )
-    assert len(availability) == 114
+    assert len(availability) == 119
     assert {
         item.id for item in availability.values() if not item.supported
     } == {
         "ask/how-many-all-combined-discourse-group",
         "ask/how-many-combined-discourse-group",
         "ask/how-many-combined-in-all-discourse-group",
+        "ask/how-many-content-progress-fraction-of-remainder",
+        "ask/how-many-content-progress-fraction-of-remainder-with-of",
+        "ask/if-content-progress-fraction-of-remainder-how-many",
         "ask/how-many-individually-discourse-group",
         "ask/how-many-individually-discourse-group-postverbal",
         "ask/how-many-of-collection-are-label",
@@ -133,6 +136,8 @@ def test_ask_surface_is_exact_and_deterministic(curated) -> None:
     assert first.query == {
         "consumer": "single-entity",
         "entity": "cato",
+        "evidence_measure_category": "age_measure",
+        "evidence_temporal_perspective": "is",
         "measure": "year",
         "verb": "be",
     }

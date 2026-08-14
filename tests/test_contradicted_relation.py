@@ -43,16 +43,15 @@ def full_registry():
     )
 
 
-def test_a_same_time_contradiction_declines(full_registry):
-    """The regression: two stated ages and a relation that cannot hold at the
-    same time as both of them. 16 != 2 * 11."""
+def test_a_past_age_question_cannot_use_present_age_evidence(full_registry):
+    """A past relation cannot turn two present ages into past evidence."""
     r = solve(
         "Ivo is 11 years old and Rune is 16 years old. "
         "Several years ago, Rune was twice as old as Ivo. How old was Ivo then?",
         full_registry,
     )
     assert r.answer.kind == "decline"
-    assert "contradicted-relation" in r.answer.reason
+    assert "no quantity known" in r.answer.reason
 
 
 def test_a_consistent_restatement_still_answers(full_registry):

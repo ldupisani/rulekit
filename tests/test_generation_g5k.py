@@ -142,9 +142,9 @@ def test_g5k_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 130
-    assert sum(item.supported for item in availability.values()) == 125
-    assert sum(not item.supported for item in availability.values()) == 5
+    assert len(availability) == 140
+    assert sum(item.supported for item in availability.values()) == 132
+    assert sum(not item.supported for item in availability.values()) == 8
     assert all(availability[rule_id].supported for rule_id in NEWLY_SUPPORTED)
     # G5s subsequently supplied the future-modal domain for this historical
     # G5k frontier, so these rules must remain unlocked.
@@ -154,7 +154,7 @@ def test_g5k_unlocks_exactly_the_preregistered_frontier() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 305
+    assert len(exploration_status(project)["fillers"]) == 316
 
 
 @pytest.mark.parametrize("rule_id", sorted(NEWLY_SUPPORTED))

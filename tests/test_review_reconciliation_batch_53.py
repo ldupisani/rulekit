@@ -1,4 +1,4 @@
-"""Generated-ask review reconciliation: coordinated and role-safe asks."""
+"""Generated-ask review reconciliation: modern grammatical slot boundaries."""
 
 import json
 from pathlib import Path
@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from rulekit.data.project import load_project
-from rulekit.generation import generate_ask_scenario
+from rulekit.generation import GenerationError, generate_ask_scenario
 from rulekit.generation.reviews import review_path
 from rulekit.kernel.engine import analyze, solve
 from rulekit.kernel.patterns import match_ask
@@ -15,84 +15,69 @@ from rulekit.kernel.patterns import match_ask
 ROOT = Path(__file__).resolve().parents[1]
 CURATED = ROOT / "projects" / "curated"
 REVIEW_IDS = {
-    "rev-f592516dcdc14773",
-    "rev-166b3088a97842d2",
-    "rev-50fe1acb6a324aac",
-    "rev-dda53333d7ea43f8",
-    "rev-caf90a313e9740d1",
-    "rev-8c3a8a0145024b54",
-    "rev-781b2f04bafc4a9f",
-    "rev-7fba1ee2fb2a4169",
-    "rev-8a752cb90aad4f66",
-    "rev-65849d8d0d0a4615",
-    "rev-48784641423a4102",
-    "rev-aad83616f099447b",
-    "rev-13ed8340e44a44fb",
-    "rev-dee18e039ba54e0e",
+    "rev-25e815713dc345bd",
+    "rev-bdffcb6488d9459d",
+    "rev-e081fc057c1c4593",
+    "rev-ebe3379c98914bb8",
+    "rev-362f4bd847cb463b",
+    "rev-a0df5082e0e046bf",
+    "rev-d80c3c2748cf4e7d",
+    "rev-29a4459b5c734cf2",
+    "rev-44e19f445b614e40",
+    "rev-25b933aa32764e0d",
 }
 REVIEWED_QUESTIONS = (
-    "What was the difference in the number of prices they spend?",
-    "How much money does she enroll in total?",
-    "How many students do Cato and Cato receive in all?",
-    "How many cupboards did the 40 be altogether?",
-    "How much rest will they win in all?",
-    "How many grapes do Eron and Fia begin combined?",
-    "How much sand do Aven and Bira be combined?",
-    "How many sciences does february own to start with?",
-    "How many percentages do Cato's guardians own?",
-    "Is Dena benches?",
-    "How many minutes of cards earning there?",
-    "How many pounds of sand did Aven and Cato travel combined?",
-    "Compute combined age of 5?",
-    "How many envelope would it take for december to have all of animals?",
+    "How many pounds of wool enroll there in total?",
+    "How much younger earned number than themselves topic?",
+    "Compute average age of 11?",
+    "How many storerooms does pencils left in total?",
+    "How much money does january are left?",
+    "How many pounds of papers were bought total on storerooms?",
+    "What are the average amount of ball they earning?",
+    "How many combined populations do hours left?",
+    "How many more topics than numbers did the sticker be?",
+    "How many pounds did bird cost in 3 businesses?",
 )
 POSITIVE_ASKS = (
     (
-        "ask/what-is-the-difference-pronoun",
-        "What was the difference in the number of books they have?",
-    ),
-    ("ask/how-much-combined", "How much money does she have in total?"),
-    (
-        "ask/how-many-combined-named-in-all",
-        "How many students do Cato and Dena receive in all?",
+        "ask/how-many-there-combined",
+        "How many pounds of wool are there in total?",
     ),
     (
-        "ask/how-many-combined-cardinal-pronoun",
-        "How many cupboards did the 40 have altogether?",
+        "ask/how-much-age-comparative-than",
+        "How much younger is Dena than Cato?",
     ),
     (
-        "ask/how-much-combined-in-all",
-        "How much money will they win in all?",
+        "ask/imperative-average-dimension",
+        "Compute average age of the 11?",
     ),
     (
-        "ask/how-many-combined-named",
-        "How many courses do Eron and Fia begin combined?",
+        "ask/how-many-plural-combined",
+        "How many books do the teachers have in total?",
     ),
     (
-        "ask/how-much-combined-named",
-        "How much sand do Aven and Bira have combined?",
+        "ask/how-much-money-entity-left",
+        "How much money does the teacher have left?",
     ),
     (
-        "ask/how-many-entity-common-noun-start-state",
-        "How many books does the university own to start with?",
+        "ask/how-many-passive-combined",
+        "How many pounds of paper were bought in total in the storerooms?",
     ),
     (
-        "ask/how-many-entity-possessed",
-        "How many books do Cato's guardians own?",
-    ),
-    ("ask/is-membership", "Is Dena a teacher?"),
-    ("ask/how-many-there", "How many pounds of sand are there?"),
-    (
-        "ask/how-many-combined-named-partitive",
-        "How many pounds of sand did Aven and Cato have combined?",
+        "ask/what-average-combined",
+        "What is the average number of students they teach?",
     ),
     (
-        "ask/imperative-combined-dimension",
-        "Compute combined age of the 5?",
+        "ask/how-many-plural-combined-prenominal-marker",
+        "How many combined books do the teachers have?",
     ),
     (
-        "ask/how-many-timeunit-take-span-totality-item",
-        "How many hours would it take for the teacher to have all of the animals?",
+        "ask/how-many-more-label-comparative-held",
+        "How many more cupboards than tomatoes did Dena have?",
+    ),
+    (
+        "ask/how-many-rate-span",
+        "How many apples does Dena eat in 20 minutes?",
     ),
 )
 
@@ -127,14 +112,14 @@ def test_reviewed_surfaces_are_no_longer_recognized(project, question: str) -> N
 
 
 @pytest.mark.parametrize(("ask_id", "question"), POSITIVE_ASKS)
-def test_narrowed_asks_keep_grammatical_positive_controls(
+def test_each_narrowed_ask_keeps_a_grammatical_positive_control(
     project, ask_id: str, question: str
 ) -> None:
     assert _ask_id(question, project.registry) == ask_id
 
 
 @pytest.mark.parametrize("ask_id", sorted({ask_id for ask_id, _ in POSITIVE_ASKS}))
-def test_narrowed_asks_remain_strictly_generatable(project, ask_id: str) -> None:
+def test_each_narrowed_ask_remains_strictly_generatable(project, ask_id: str) -> None:
     candidate = generate_ask_scenario(
         project,
         ask_id=ask_id,
@@ -146,22 +131,119 @@ def test_narrowed_asks_remain_strictly_generatable(project, ask_id: str) -> None
 
 
 @pytest.mark.parametrize(
-    "ask_id",
+    "question",
     (
-        "ask/how-many-combined-named-in-all",
-        "ask/how-many-combined-named-partitive",
-        "ask/how-much-combined-named",
+        "How many pounds of wool enroll there?",
+        "How many books does all boys have in total?",
+        "How many books does the three boys have?",
+        "How much does january earn in 3 businesses?",
     ),
 )
-def test_new_coordinated_ask_families_generate_plural_do_support(
-    project, ask_id: str
+def test_adjacent_legacy_ask_shapes_share_the_modern_boundaries(
+    project, question: str
 ) -> None:
-    for seed in range(8):
-        candidate = generate_ask_scenario(
+    assert _ask_id(question, project.registry) is None
+
+
+@pytest.mark.parametrize(
+    ("question", "ask_id"),
+    (
+        (
+            "How many pencils could the teacher buy with 10 dollars?",
+            "ask/how-many-capacity",
+        ),
+        (
+            "How many minutes would it take Dena to buy 3 apples?",
+            "ask/how-many-timeunit-take-span",
+        ),
+        ("How much does the envelope cost?", "ask/how-much-item-cost"),
+        ("How much do the envelopes cost?", "ask/how-much-item-cost"),
+        (
+            "How much does each head cost?",
+            "ask/how-much-each-item-cost",
+        ),
+        (
+            "Compute the age of the teacher?",
+            "ask/imperative-single-dimension",
+        ),
+        (
+            "How many fewer hamsters does Mary have than Dena?",
+            "ask/how-many-more",
+        ),
+        (
+            "How much more money does Mary have than Dena?",
+            "ask/how-much-noun-more-than",
+        ),
+    ),
+)
+def test_modernized_legacy_asks_keep_grammatical_controls(
+    project, question: str, ask_id: str
+) -> None:
+    assert _ask_id(question, project.registry) == ask_id
+
+
+@pytest.mark.parametrize(
+    "question",
+    (
+        "How many pencils should minute buy?",
+        "How many minute would it take monday to buy 3 apples?",
+        "How much do envelope cost?",
+        "How much do each heads cost?",
+        "Compute the age of the Wednesday and shopper?",
+        "How many younger hamsters does Mary have than Dena?",
+        "How much younger money does Mary have than Dena?",
+    ),
+)
+def test_modernized_legacy_asks_reject_old_broad_slot_combinations(
+    project, question: str
+) -> None:
+    assert _ask_id(question, project.registry) is None
+
+
+def test_legacy_self_comparison_still_routes_to_the_safe_consumer(project) -> None:
+    question = "How many fewer hamsters does Mary have than Mary?"
+
+    assert _ask_id(question, project.registry) == "ask/how-many-more"
+    answer = solve(question, project.registry).answer
+    assert not answer.committed
+    assert "self-comparison" in (answer.reason or "")
+
+
+def test_rejection_only_ask_slots_are_never_generated(project) -> None:
+    for ask_id, omitted_slot in (
+        ("ask/imperative-combined-dimension", "bare_n"),
+        ("ask/imperative-average-dimension", "bare_n"),
+        ("ask/imperative-single-dimension", "other"),
+    ):
+        for seed in range(12):
+            candidate = generate_ask_scenario(
+                project,
+                ask_id=ask_id,
+                seed=seed,
+                scenario_mode="ask_only",
+            )
+            assert omitted_slot not in candidate.target_bindings
+
+
+def test_rejection_only_ask_slot_cannot_be_locked(project) -> None:
+    with pytest.raises(GenerationError, match="generation-omitted"):
+        generate_ask_scenario(
             project,
-            ask_id=ask_id,
-            seed=seed,
+            ask_id="ask/imperative-single-dimension",
+            seed=53,
             scenario_mode="ask_only",
+            locked_bindings={"other": "shopper"},
         )
 
-        assert " does " not in f" {candidate.question.lower()} "
+
+def test_generation_category_keeps_the_reader_slots_plural_morphology(
+    project,
+) -> None:
+    candidate = generate_ask_scenario(
+        project,
+        ask_id="ask/how-many-capacity",
+        seed=53,
+        scenario_mode="ask_only",
+    )
+
+    assert _ask_id(candidate.question, project.registry) == "ask/how-many-capacity"

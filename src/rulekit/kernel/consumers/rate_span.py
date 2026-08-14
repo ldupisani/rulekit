@@ -18,7 +18,7 @@ from . import ConsumerContext, consumer
 def rate_span(ctx: ConsumerContext):
     from ..answer import Answer
     from ..evaluate import evaluate
-    from ..model import Quantity, Rate
+    from ..model import ActivityDuration, Quantity, Rate, RateScope
     from ..totals import _entity_total
 
     # Re-landing step 4 (docs/negative-results.md): conversion spans
@@ -26,9 +26,11 @@ def rate_span(ctx: ConsumerContext):
     # the one remaining parked piece.
     entity = ctx.query["entity"]
     measure = ctx.reg.plural_to_singular.get(ctx.query["measure"], ctx.query["measure"])
+    verb = ctx.query.get("verb")
     rates = [
         r for r in ctx.store.by_kind(Rate)
         if r.entity == entity
+        and (verb is None or r.verb == verb)
         and (
             r.measure == measure
             or (
@@ -48,23 +50,55 @@ def rate_span(ctx: ConsumerContext):
         span_unit = ctx.reg.plural_to_singular.get(ctx.query["span_unit"], ctx.query["span_unit"])
         span_value = float(ctx.query["span_value"])
     else:
-        # the ask named no span in the QUESTION ("how much does Rob
-        # earn?") — a standalone quantity fact stated for the entity
-        # in the rate's OWN per-unit ("Rob works 8 hours") stands in
-        # for it, on the same unique-fact-or-decline discipline as
-        # the bridge lookup below: exactly one such fact, else decline.
-        spans = [
-            q for q in ctx.store.by_kind(Quantity)
-            if q.entity == entity and q.measure == rate.per
+        # A rate explicitly scoped to an activity may ONLY use elapsed time
+        # for that same participant and activity.  Do not fall back to an
+        # unqualified Quantity: doing so would let gardening time satisfy a
+        # tutoring rate (or any other unrelated duration).
+        scopes = [
+            scope for scope in ctx.store.by_kind(RateScope)
+            if scope.participant == entity and scope.verb == rate.verb
         ]
-        if len(spans) != 1:
-            return Answer(
-                "decline", None,
-                f"no unique {rate.per!r} span known for {entity!r} to "
-                "pair with the rate",
+        if scopes:
+            if len(scopes) != 1:
+                return Answer(
+                    "decline", None,
+                    f"{len(scopes)} activity scopes known for {entity!r}/"
+                    f"{rate.verb!r} — the span ask needs exactly one",
+                )
+            scope = scopes[0]
+            durations = [
+                duration for duration in ctx.store.by_kind(ActivityDuration)
+                if duration.participant == entity
+                and duration.activity == scope.activity
+            ]
+            if len(durations) != 1:
+                return Answer(
+                    "decline", None,
+                    f"no unique duration for {entity!r} doing "
+                    f"{scope.activity!r} to pair with the rate",
+                )
+            span_unit = ctx.reg.plural_to_singular.get(
+                durations[0].unit, durations[0].unit
             )
-        span_unit = rate.per
-        span_value = spans[0].value
+            span_value = durations[0].elapsed
+        else:
+            # The ask named no span in the QUESTION ("how much does Rob
+            # earn?") — a standalone quantity fact stated for the entity
+            # in the rate's OWN per-unit ("Rob works 8 hours") stands in
+            # for it, on the same unique-fact-or-decline discipline as
+            # the bridge lookup below: exactly one such fact, else decline.
+            spans = [
+                q for q in ctx.store.by_kind(Quantity)
+                if q.entity == entity and q.measure == rate.per
+            ]
+            if len(spans) != 1:
+                return Answer(
+                    "decline", None,
+                    f"no unique {rate.per!r} span known for {entity!r} to "
+                    "pair with the rate",
+                )
+            span_unit = rate.per
+            span_value = spans[0].value
     if span_unit == rate.per:
         k = span_value
     else:
@@ -92,6 +126,10 @@ def rate_span(ctx: ConsumerContext):
             )
         elif (span_unit, rate.per) in ctx.reg.conversions:
             k = span_value * ctx.reg.conversions[(span_unit, rate.per)]
+        elif (span_unit, rate.per) in ctx.reg.cadence_conversions:
+            k = span_value * ctx.reg.cadence_conversions[
+                (span_unit, rate.per)
+            ]
         else:
             return Answer(
                 "decline", None,

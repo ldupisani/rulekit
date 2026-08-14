@@ -24,8 +24,11 @@ CONTEXTUAL_RULES = {
     "arithmetic/sequential-percent-remainder-partition-completion",
 }
 SAFETY_RULES = {
+    "arithmetic/capacity-progress-anaphoric-multiplier-safety",
     "arithmetic/dangling-comparative-safety",
     "arithmetic/partition-membership-of-mass-measure-safety",
+    "arithmetic/realized-progress-anaphoric-multiplier-safety",
+    "arithmetic/realized-progress-deictic-anaphoric-multiplier-safety",
     "arithmetic/ratio-split-of-to-possession-safety",
     "logic-arithmetic/universal-all-have-incompatible-item-safety",
     "logic-arithmetic/universal-all-have-quantity-pp-incompatible-item-safety",
@@ -42,7 +45,7 @@ def test_only_safety_consumers_remain_outside_premise_generation(project) -> Non
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 130
+    assert len(availability) == 140
     assert {item.id for item in availability.values() if not item.supported} == (
         SAFETY_RULES
     )
@@ -118,8 +121,8 @@ def test_generation_api_separates_safety_consumers_from_targets() -> None:
 
     payload = endpoint()
 
-    assert payload["supported"] == payload["total"] == 125
-    assert payload["safety_total"] == 5
+    assert payload["supported"] == payload["total"] == 132
+    assert payload["safety_total"] == 8
     assert {rule["id"] for rule in payload["safety_rules"]} == SAFETY_RULES
     assert not ({rule["id"] for rule in payload["rules"]} & SAFETY_RULES)
 

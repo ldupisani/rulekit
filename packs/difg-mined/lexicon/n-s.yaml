@@ -237,9 +237,6 @@ entries:
   online:
     senses:
     - adjective
-  only:
-    senses:
-    - adverb
   open:
     senses:
     - adjective
@@ -382,10 +379,6 @@ entries:
     senses:
     - noun
     plural: pads
-  page:
-    senses:
-    - noun
-    plural: pages
   paid:
     senses:
     - verb
@@ -1236,24 +1229,10 @@ entries:
   reaches:
     senses:
     - verb
-  read:
-    senses:
-    - verb
   reader:
     senses:
     - noun
     plural: readers
-  reading:
-    senses:
-    - verb
-    - noun
-    verb:
-      lemma: read
-  reads:
-    senses:
-    - verb
-    verb:
-      lemma: read
   ready:
     senses:
     - adjective

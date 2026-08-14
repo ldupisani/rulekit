@@ -106,7 +106,7 @@ attribute_compatibility:
   marital_status_attribute: [animate]
 members:
   plural_subject_quantifier: [both]
-  transferable_quantity_object: [bar, orange, ticket]
+  transferable_quantity_object: [bar, kite, orange, ticket]
   edible_quantity_object: [berry, pie]
   finishable_quantity_object: [homework]
   # `Bill` is a common first name as well as the monetary noun owned by this
@@ -259,9 +259,11 @@ members:
   - school
   - wardrobe
   - zoo
+  - lake
   # Narrower surface/site readings extend the core pairing without making
   # every locative preposition interchangeable with every place noun.
   quantity_surface_location:
+  - beach
   - farm
   - shelf
   - side
@@ -824,8 +826,6 @@ members:
   # keeps its pre-existing lone 'pronoun' sense (n-s.yaml) unchanged; this
   # membership is what lets the category root there instead of at 'noun'.
   - ones
-  remnant_adj:
-  - remaining
   tender_verb:
   - gave
   - give

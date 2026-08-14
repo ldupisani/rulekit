@@ -72,7 +72,23 @@ def test_untagged_event_verb_bare_conjunct_still_declines(full_registry):
         full_registry,
     )
     assert r.answer.kind == "decline"
-    assert "reached no fact" in r.answer.reason
+    assert not [
+        fact
+        for fact in r.store.facts
+        if getattr(fact, "verb", None) == "keep"
+        and getattr(fact, "measure", None) == "apple"
+    ]
+
+
+def test_positive_more_conjunct_is_recovered_for_signed_event(full_registry):
+    result = solve(
+        "Bira collected 3 shells on Monday and 2 more on Tuesday. "
+        "How many shells did Bira collect?",
+        full_registry,
+    )
+
+    assert result.answer.kind == "number"
+    assert result.answer.value == 5
 
 
 def test_state_verb_bare_conjunct_is_unaffected(full_registry):
