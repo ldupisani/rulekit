@@ -510,6 +510,7 @@ entries:
     # declared separately, so adding them does not make every PP acceptable.
     pantry: {senses: [noun], plural: pantries}
     cupboard: {senses: [noun], plural: cupboards}
+    fridge: {senses: [noun], plural: fridges}
     storeroom: {senses: [noun], plural: storerooms}
     bench: {senses: [noun], plural: benches}
 

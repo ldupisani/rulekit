@@ -2474,7 +2474,7 @@ members:
     quantity_location:
         [area, bench, cupboard, garden, pantry, storeroom, tree, university]
     quantity_interior_location:
-        [area, cupboard, garden, pantry, storeroom, university]
+        [area, cupboard, fridge, garden, pantry, storeroom, university]
     quantity_location_preposition: [in]
     quantity_surface_location: [bench, tree]
     tree_quantity_surface_location: [tree]

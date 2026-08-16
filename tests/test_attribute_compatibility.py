@@ -220,8 +220,8 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
         # measured-output cadence; `last` is licensed only for duration measures.
         # Core-owned `remaining` now inherits the established remnant-noun
         # domain and additionally licenses the content-progress measure.
-    assert len(plural_nouns) == 73
-    assert {"head", "topic", "university"} <= plural_nouns
+    assert len(plural_nouns) == 74
+    assert {"fridge", "head", "topic", "university"} <= plural_nouns
     assert sum(
         registry.attribute_applies_to(attribute, noun)
         for attribute in adjectives

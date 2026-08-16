@@ -114,7 +114,7 @@ def test_each_narrowed_ask_remains_strictly_generatable(
     candidate = generate_ask_scenario(
         project,
         ask_id=ask_id,
-        seed=49,
+        seed=50,
         scenario_mode="ask_only",
     )
 

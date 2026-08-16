@@ -90,3 +90,19 @@ specimens replay exactly. No other protected generalization look was spent.
 Protected GSM8K TEST look 126 holds the previous aggregate exactly at 13
 correct, 1 wrong, 1,305 declined, and 92.9% precision; fully-read coverage
 moves from 386 to 389 without a new commitment.
+
+## Increment 133 (2026-08-17) — Refrigerated interior quantity locations
+
+The exact human-approved and machine-passed candidate
+`refrigerated-interior-quantity-location`
+(`61cf33244f46c1664d4eb779e994f0de4ad11d0f`) admits the bounded
+`fridge`/`fridges` noun family and classifies its singular lemma as an interior
+quantity location. Existing quantity facts, event folding, asks, and consumers
+remain unchanged; incomplete location evidence still declines.
+
+The integration gate passes 5,620 tests. GSM8K DEV-train gains one correct
+answer with zero breaks or new wrong commitments; the other twelve standing
+DEV diffs are neutral. Curated remains 71/71, lint reports zero errors and
+warnings, FOLIO makes zero numeric commitments, all four canonical specimens
+replay exactly, and the content-blind protected digest is unchanged. No
+protected TEST/generalization look was spent.
