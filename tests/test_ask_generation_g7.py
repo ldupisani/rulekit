@@ -39,12 +39,12 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
         "ask requires an antecedent discourse group; generate it as a "
         "contextual scenario",
     )
-    assert sum(item.supported for item in availability.values()) == 106
+    assert sum(item.supported for item in availability.values()) == 107
     assert not availability["ask/how-many-of-collection-are-label"].supported
     assert availability["ask/how-many-of-collection-are-label"].blockers == (
         "no project-backed ask filler exists for label",
     )
-    assert len(availability) == 119
+    assert len(availability) == 120
     assert {
         item.id for item in availability.values() if not item.supported
     } == {
@@ -112,9 +112,10 @@ def test_auxiliary_ask_verbs_are_generated_in_the_bare_form(curated) -> None:
             "buy",
             "cost",
             "earn",
-            "make",
-            "need",
-            "spend",
+                "make",
+                "need",
+                "require",
+                "spend",
         }
 
 

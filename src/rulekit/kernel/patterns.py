@@ -27,6 +27,7 @@ from .model import (
     ClassRefinement,
     VerbalRelation,
     Conditional,
+    Contribution,
     Discount,
     Disjunction,
     DisjunctiveConditional,
@@ -87,6 +88,7 @@ _FACT_CLASSES = {
     "quantified_quantity": QuantifiedQuantity,
     "class_refinement": ClassRefinement,
     "conditional": Conditional,
+    "contribution": Contribution,
     "disjunction": Disjunction,
     "equivalence": Equivalence,
     "disjunctive_conditional": DisjunctiveConditional,
@@ -1022,6 +1024,20 @@ def _check_where(
                 if s in slots and not isinstance(slots[s], tuple)
             }
             if len(lemmas) > 1:
+                return False
+        if pred.same_surface is not None:
+            # Surface agreement is opt-in and stronger than lemma agreement.
+            # Every slot must be present and single-unit: an absent optional
+            # or a captured span cannot provide repeated-form evidence.
+            if any(
+                s not in slots or isinstance(slots[s], tuple)
+                for s in pred.same_surface
+            ):
+                return False
+            surfaces = {
+                slots[s].surface.casefold() for s in pred.same_surface
+            }
+            if len(surfaces) > 1:
                 return False
         if pred.same_number is not None:
             numbers = []

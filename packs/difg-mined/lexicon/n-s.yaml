@@ -67,9 +67,6 @@ entries:
   never:
     senses:
     - negator
-  new:
-    senses:
-    - adjective
   newspaper:
     senses:
     - noun
@@ -1168,27 +1165,9 @@ entries:
   rainfall:
     senses:
     - noun
-  raise:
-    senses:
-    - verb
-  raised:
-    senses:
-    - verb
-    verb:
-      lemma: raise
-  raises:
-    senses:
-    - verb
-    verb:
-      lemma: raise
   raisin:
     senses:
     - noun
-  raising:
-    senses:
-    - verb
-    verb:
-      lemma: raise
   ranch:
     senses:
     - noun
@@ -1446,19 +1425,6 @@ entries:
     - verb
     verb:
       lemma: represent
-  require:
-    senses:
-    - verb
-  required:
-    senses:
-    - verb
-    verb:
-      lemma: require
-  requires:
-    senses:
-    - verb
-    verb:
-      lemma: require
   rescue:
     senses:
     - noun
@@ -1697,24 +1663,6 @@ entries:
   sauce:
     senses:
     - noun
-  save:
-    senses:
-    - verb
-  saved:
-    senses:
-    - verb
-    verb:
-      lemma: save
-  saves:
-    senses:
-    - verb
-    verb:
-      lemma: save
-  saving:
-    senses:
-    - verb
-    verb:
-      lemma: save
   savings:
     senses:
     - noun
@@ -2006,10 +1954,6 @@ entries:
     senses:
     - noun
     plural: shirts
-  shoe:
-    senses:
-    - noun
-    plural: shoes
   shoebox:
     senses:
     - noun

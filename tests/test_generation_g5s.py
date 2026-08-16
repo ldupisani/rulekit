@@ -191,8 +191,8 @@ def test_g5s_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 140
-    assert sum(item.supported for item in availability.values()) == 132
+    assert len(availability) == 143
+    assert sum(item.supported for item in availability.values()) == 135
     assert sum(not item.supported for item in availability.values()) == 8
     assert availability["arithmetic/periodic-rate-every-span"].supported
     assert all(availability[rule_id].supported for rule_id in FUTURE_RULES)
@@ -204,7 +204,7 @@ def test_g5s_unlocks_exactly_the_preregistered_frontier() -> None:
     assert availability[
         "arithmetic/anchored-relation-conjoined-anchor"
     ].supported
-    assert len(exploration_status(project)["fillers"]) == 316
+    assert len(exploration_status(project)["fillers"]) == 325
 
 
 @pytest.mark.parametrize("modal", sorted(MOVED_WORDS))
@@ -271,7 +271,7 @@ def test_numeric_round_trip_errors_resample_instead_of_crashing() -> None:
     )
 
     assert recovered.target_status == "matched"
-    assert recovered.attempts == 2
+    assert recovered.attempts == 1
     with pytest.raises(
         GenerationError,
         match="ordinary round trip rejected generated numeric values",

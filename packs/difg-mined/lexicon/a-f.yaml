@@ -827,10 +827,6 @@ entries:
   bronze:
     senses:
     - noun
-  brother:
-    senses:
-    - noun
-    plural: brothers
   brought:
     senses:
     - verb
@@ -1942,19 +1938,6 @@ entries:
   decade:
     senses:
     - noun
-  decide:
-    senses:
-    - verb
-  decided:
-    senses:
-    - verb
-    verb:
-      lemma: decide
-  decides:
-    senses:
-    - verb
-    verb:
-      lemma: decide
   deck:
     senses:
     - noun

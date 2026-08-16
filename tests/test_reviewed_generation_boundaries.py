@@ -153,6 +153,7 @@ POSITIVE_FRACTION_RULES = {
     "arithmetic/fraction-delta-relation-elided",
     "arithmetic/fraction-delta-relation-mass",
     "arithmetic/fraction-frame-relation",
+    "arithmetic/goal-progress-fraction-needed",
     "arithmetic/percent-change-event",
     "arithmetic/percent-change-event-count",
 }
@@ -1725,7 +1726,9 @@ def test_verb_role_compatibility_is_an_explicit_schema_predicate() -> None:
 
 
 def test_finite_form_is_an_explicit_scalar_verb_qualifier() -> None:
-    token = MatchToken(slot="want", cat="finite_desire", finite_form=True)
+    token = MatchToken(
+        slot="want", cat="finite_infinitival_goal_predicate", finite_form=True
+    )
     assert token.finite_form is True
 
     with pytest.raises(
@@ -1738,7 +1741,7 @@ def test_finite_form_is_an_explicit_scalar_verb_qualifier() -> None:
     ):
         MatchToken(
             slot="want",
-            cat="finite_desire",
+            cat="finite_infinitival_goal_predicate",
             finite_form=True,
             bare_form=True,
         )

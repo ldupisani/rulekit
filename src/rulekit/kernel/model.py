@@ -1455,22 +1455,62 @@ class Price(Fact):
 
 @dataclass(frozen=True)
 class Goal(Fact):
-    """'Lena wants to collect 30 stamps' — a stated TARGET quantity, not a
-    holding or an event. USE-GATED for value accounting, like Rate/Price:
+    """A stated TARGET quantity, not a holding or an event.
+
+    Surface constructions include direct requirements, infinitival intentions,
+    and resource-building activities linked to a priced purpose. They normalize
+    here because arithmetic needs the target, not a vocabulary-specific fact
+    class. USE-GATED for value accounting, like Rate/Price:
     a goal that merely EXISTS has not been read — only the deficit consumer
     actually subtracting a holding from it counts as use (a wanted purchase
     is not a purchase, the increment-14 kirsty lesson generalized to
-    desire verbs). `verb` records the stated desire verb ('want'); the
-    target action verb ('collect') is deliberately NOT captured here — the
-    goal is the quantity, not the activity."""
+    goal predicates). `verb` retains the surface predicate for traceability;
+    consumers deliberately do not use it to distinguish otherwise-compatible
+    goals. The target action verb ('collect') is not captured here — the goal
+    is the quantity, not the activity."""
 
     entity: str
     measure: str
     value: float
     verb: str = "want"
+    # Optional concrete purpose of the goal ("money for shoes"). Existing
+    # quantity goals leave this unset; purpose-qualified asks may require an
+    # exact target rather than borrowing an unrelated monetary goal.
+    target: str | None = None
 
     def key(self) -> tuple:
-        return ("goal", self.entity, self.measure)
+        return ("goal", self.entity, self.measure, self.target)
+
+    def value_part(self) -> Any:
+        return self.value
+
+
+@dataclass(frozen=True)
+class Contribution(Fact):
+    """A stated contribution toward another entity's goal.
+
+    The beneficiary owns the progress while the contributor remains explicit
+    evidence. This avoids pretending that a decision to give has already
+    changed either person's general-purpose holdings; only the deficit
+    consumer incorporates these values into the named beneficiary's goal.
+    """
+
+    beneficiary: str
+    contributor: str
+    measure: str
+    value: float
+    verb: str = "give"
+    segment: int | None = None
+
+    def key(self) -> tuple:
+        return (
+            "contribution",
+            self.beneficiary,
+            self.contributor,
+            self.measure,
+            self.verb,
+            self.segment,
+        )
 
     def value_part(self) -> Any:
         return self.value

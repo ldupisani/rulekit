@@ -593,6 +593,12 @@ categories:
             fallback would bind 'it' to a person noun. Excludes 'it' (already
             `pool_pronoun`) and every plural (`_bind_discourse` refuses plurals
             outright — group referents are unbuilt).
+    animate_object_pronoun:
+        parent: pronoun
+        notes: >
+            Objective-case animate pronouns. This stays separate from subject
+            pronouns and possessive determiners so a transfer recipient cannot
+            be generated as an invalid form such as `their` or `his`.
     non_event_verb:
         parent: verb
         notes: >
@@ -985,6 +991,21 @@ categories:
             to Kim") form. Loss, consumption, dropping, and spending remain in
             `lose` but do not acquire a recipient merely because "to NAME"
             follows them.
+    committed_transfer_decision_verb:
+        parent: verb
+        notes: >
+            Finite decision predicates that introduce an explicit infinitival
+            contribution, as in "her guardian decided to give her $40". The
+            surrounding rule preserves the beneficiary and contributor; this
+            category alone never asserts that an arbitrary decision transfers
+            anything.
+    contribution_transfer_verb:
+        parent: transfer_out
+        notes: >
+            Outgoing transfers that directly contribute the stated amount to
+            their recipient. A sale remains an outgoing transfer but is not a
+            contribution, so it deliberately stays outside this narrower
+            category.
     spend_verb:
         parent: verb
         notes: >
@@ -1528,43 +1549,37 @@ categories:
             Additive directions licensed for a declared singular mass noun.
             `fewer` remains available to count-quantity siblings but not to a
             mass frame, which requires `less` or neutral `more`.
-    desire:
+    goal_predicate:
         parent: verb
         notes: >
-            'wants/wishes to VERB N X' — a desire verb marks the stated quantity
-            as a GOAL, never an event: gates the goal-deficit Fact pattern.
-            Deliberately UNTAGGED for polarity — a wanted purchase is not a
-            purchase (the increment-14 kirsty lesson generalized): the generic
-            SVO fold's own Quantity(verb='want', ...) stays unsignable and keeps
-            declining the ordinary holdings fold.
-    finite_desire:
-        parent: desire
+            Predicates whose declared construction introduces a target quantity
+            rather than an event or current holding. This semantic parent is
+            deliberately untagged for arithmetic polarity: wanting, requiring,
+            saving, or raising a quantity toward a target does not assert that
+            the quantity was received or already exists. Child categories
+            describe complement grammar, so new vocabulary extends compatible
+            constructions without adding word-specific arithmetic rules.
+    finite_infinitival_goal_predicate:
+        parent: goal_predicate
         notes: >
-            Finite desire forms that can head "WHO wants/wanted to VERB".
-            Participial `wanting` remains in the broader semantic `desire`
-            category but cannot occupy this matrix-clause slot.
-    need_premise:
-        parent: verb
+            Finite predicates that take a controlled `to` infinitive whose
+            counted object states the goal amount: "WHO wants/hopes/intends to
+            collect N ITEMS". Participial forms remain outside this category
+            because they cannot head the finite matrix-clause slot.
+    direct_quantity_goal_predicate:
+        parent: goal_predicate
         notes: >
-            'WHO needs N X' — a stated NEED marks the quantity as a GOAL, never
-            a received event (mirrors 'desire's want/wishes rationale, but for
-            the direct-object form with no infinitive). Deliberately UNTAGGED
-            for polarity — a needed quantity is not a receipt: the generic SVO
-            fold's own Quantity(verb='need', ...) stays unsignable and declines
-            the ordinary holdings/event fold instead of silently folding +1 (the
-            increment-23 'a wanted purchase is not a purchase' lesson, same
-            invariant, applied to 'need'). Kept SEPARATE from 'desire' rather
-            than merged into it, so 'need's direct-object phrasing never widens
-            'want's own rule family.
-    need_ask_verb:
-        parent: verb
+            Predicates that take a counted quantity directly: "WHO
+            needs/requires N ITEMS". The same category licenses a matching
+            deficit ask ("how many more ITEMS does WHO need/require?"); adding a
+            compatible predicate therefore extends both sides of the contract.
+    purpose_resource_goal_activity:
+        parent: goal_predicate
         notes: >
-            the deficit ask's own verb gate ('how many more X does WHO need') —
-            kept SEPARATE from 'need_premise' (the stated-need goal gate) and
-            from the (mined) 'receive' category, so the ask stays specific to
-            the deficit phrasing and never widens via a premise/event verb's
-            own broader membership. Memberships live in difg-mined; the
-            shared `need` lexicon forms are core-owned.
+            Activities that can link a resource to an explicitly priced purpose:
+            "WHO is saving/raising money for TARGET which costs AMOUNT". The
+            price supplies the target amount; the activity itself does not state
+            an acquisition or current holding.
     span_preposition:
         parent: preposition
         notes: >
@@ -2229,7 +2244,7 @@ members:
     # must never see a member it cannot resolve.
     # Deliberate exclusions ('player', 'cook', 'king') — see the category note.
     animate:
-        [teacher, student, friend, child, gardener, guardian, librarian,
+        [teacher, student, friend, brother, child, gardener, guardian, librarian,
          shopper, violinist]
     # Animals can participate in quantity-changing events (notably eating,
     # finding, receiving, or losing items) while retaining their independent
@@ -2289,7 +2304,7 @@ members:
     transferable_quantity_object:
         [animal, alpaca, bird, can, cat, course, dog, dollar, fish, flower,
          hamster, number, rabbit, tree]
-    ownable_quantity_object: [business, money]
+    ownable_quantity_object: [business, money, shoe]
     droppable_quantity_object:
         [apple, ball, book, card, coin, cookie, drum, egg, envelope, grape,
          key, marble, apricot, paper, pencil, pear, plum, puzzle, rose, sticker,
@@ -2303,9 +2318,10 @@ members:
     linear_dimension_holder: [book, tree]
     mass_dimension_holder: [book]
     duration_total_subject: [time]
-    # 'him'/'her' are OBJECT-case and have no lexicon entry of their own;
-    # the fallback binds a SUBJECT pronoun to a prior subject anyway.
+    # Subject and object forms stay distinct so grammatical roles can require
+    # the appropriate case without hard-coding pronouns in Python.
     animate_pronoun: [he, she]
+    animate_object_pronoun: [her, him, them]
     state: [has, have, had, is, are, was, were, own, owns]
     possession_state: [has, have, had]
     ownership_state: [own, owns]
@@ -2330,7 +2346,6 @@ members:
          puzzle, rabbit, rose, sticker, student, tomato, toy]
     spend_target_prep: [for, "on"]
     start_marker_verb: [begin, start]
-    need_ask_verb: [need, needed, needs]
     find_quantity_verb: [find, finds, found]
     win_quantity_verb: [win, wins, won]
     winnable_quantity_object: [dollar, money]
@@ -2338,6 +2353,8 @@ members:
     increase_verb: [rose]
     price_relation_verb: [are, cost, costs, is, was, were]
     transfer_out: [give, gives, gave, sell, sells, sold]
+    contribution_transfer_verb: [give, gives, gave]
+    committed_transfer_decision_verb: [decide, decides, decided]
     spend_verb: [spend, spends, spent]
     age_comparative: [older, younger]
     more_dir: [more, older]
@@ -2436,9 +2453,12 @@ members:
     sequential_partition_verb: [enroll, enrolls, enrolled, enrolling]
     sequential_partition_preposition: [in]
     predeterminer_multiplier: [double, triple]
-    desire: [want, wanted, wanting, wants]
-    finite_desire: [want, wanted, wants]
-    need_premise: [need, needed, needs]
+    finite_infinitival_goal_predicate:
+        [hope, hoped, hopes, intend, intended, intends, want, wanted, wants]
+    direct_quantity_goal_predicate:
+        [need, needed, needs, require, required, requires]
+    purpose_resource_goal_activity:
+        [raise, raised, raises, raising, save, saved, saves, saving]
     duration_verb: [takes, took]
     task_completion_verb: [finish, finished, finishes]
     task_completion_faster: [faster]

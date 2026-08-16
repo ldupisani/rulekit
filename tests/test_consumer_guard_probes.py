@@ -35,6 +35,7 @@ from rulekit.kernel.evaluate import ArithmeticLog
 from rulekit.kernel.facts import FactStore
 from rulekit.kernel.model import (
     AgeAtYear,
+    Goal,
     PartitionQuantity,
     Predication,
     Provenance,
@@ -465,6 +466,41 @@ def test_deficit_ambiguous_measure(gsm8k, mixed_currency_store):
                store=mixed_currency_store)
     assert got.kind == "decline"
     assert "measure 'money' is ambiguous across the facts" in got.reason
+
+
+def test_deficit_contribution_path_requires_one_safe_current_total(gsm8k):
+    provenance = Provenance(source="synthetic", sentence=0)
+    store = FactStore(
+        facts=[
+            Goal(provenance, "tom", "dollar", 20, target="shoe"),
+            Quantity(provenance, "tom", "dollar", 5, verb="have"),
+            Quantity(
+                provenance,
+                "tom",
+                "dollar",
+                2,
+                verb="frobnicate",
+                occurrence=1,
+            ),
+        ]
+    )
+
+    got = call(
+        "deficit",
+        gsm8k,
+        {
+            "entity": "tom",
+            "measure": "dollar",
+            "target": "shoe",
+            "include_contributions": "true",
+        },
+        store=store,
+    )
+
+    assert got.kind == "decline"
+    assert "current holdings for 'tom'/'dollar' do not form one safe total" in (
+        got.reason
+    )
 
 
 def test_unique_entity_ambiguous_measure(gsm8k, mixed_currency_store):

@@ -24,8 +24,35 @@ CORE_DOMAINS = {
     "quantity_anaphor": {"amount", "number"},
     "price_anaphor": {"cost", "price"},
     "remnant": {"remainder", "rest"},
-    "desire": {"want", "wanted", "wanting", "wants"},
-    "need_premise": {"need", "needed", "needs"},
+    "finite_infinitival_goal_predicate": {
+        "hope",
+        "hoped",
+        "hopes",
+        "intend",
+        "intended",
+        "intends",
+        "want",
+        "wanted",
+        "wants",
+    },
+    "direct_quantity_goal_predicate": {
+        "need",
+        "needed",
+        "needs",
+        "require",
+        "required",
+        "requires",
+    },
+    "purpose_resource_goal_activity": {
+        "raise",
+        "raised",
+        "raises",
+        "raising",
+        "save",
+        "saved",
+        "saves",
+        "saving",
+    },
     "duration_verb": {"takes", "took"},
 }
 
@@ -57,7 +84,9 @@ def test_mining_pack_can_extend_core_words_with_independent_categories() -> None
     project = load_project(GSM8K)
 
     assert project.registry.word_in_category("take", "accompany")
-    assert project.registry.word_in_category("need", "need_ask_verb")
+    assert project.registry.word_in_category(
+        "need", "direct_quantity_goal_predicate"
+    )
     assert project.registry.word_in_category("cost", "price_verb")
     assert project.registry.word_in_category("cost", "dimension_noun")
     assert project.registry.word_in_category("cost", "currency_measure")
@@ -69,8 +98,8 @@ def test_g5h_rules_remain_exposed_after_g5j_expansion() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 140
-    assert sum(item.supported for item in availability.values()) == 132
+    assert len(availability) == 143
+    assert sum(item.supported for item in availability.values()) == 135
     assert sum(not item.supported for item in availability.values()) == 8
     assert all(availability[rule_id].supported for rule_id in NEWLY_SUPPORTED)
 

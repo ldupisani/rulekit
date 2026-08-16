@@ -6,7 +6,6 @@ entries:
   believed: {senses: [verb], verb: {lemma: believe}}
   confessed: {senses: [verb], verb: {lemma: confess}}
   dreamed: {senses: [verb], verb: {lemma: dream}}
-  hoped: {senses: [verb], verb: {lemma: hope}}
   imagined: {senses: [verb], verb: {lemma: imagine}}
 
   # Missing infinitival forms for the first subject-control xcomp class.

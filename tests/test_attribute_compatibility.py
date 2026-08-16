@@ -201,6 +201,7 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
         "large",
         "last",
         "left",
+        "new",
         "old",
         "red",
         "remaining",
@@ -219,7 +220,7 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
         # measured-output cadence; `last` is licensed only for duration measures.
         # Core-owned `remaining` now inherits the established remnant-noun
         # domain and additionally licenses the content-progress measure.
-    assert len(plural_nouns) == 71
+    assert len(plural_nouns) == 73
     assert {"head", "topic", "university"} <= plural_nouns
     assert sum(
         registry.attribute_applies_to(attribute, noun)
@@ -288,7 +289,7 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
 def test_compatibility_rule_remains_supported_after_g5j_expansion() -> None:
     availability = list_rule_availability(load_project(CURATED))
 
-    assert sum(item.supported for item in availability) == 132
+    assert sum(item.supported for item in availability) == 135
     target = next(item for item in availability if item.id == RULE_ID)
     assert target.supported
     assert target.blockers == ()

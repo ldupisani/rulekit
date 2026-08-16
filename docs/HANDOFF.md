@@ -1,7 +1,8 @@
 # rulekit handoff
 
-**Updated:** 2026-08-14
-**Runtime checkpoint:** `de6d74e` (`main`)
+**Updated:** 2026-08-15
+**Runtime checkpoint:** `2122de9` (`main`, with the savings-goal and generic
+goal-predicate increments currently uncommitted)
 **Active campaign:** GSM8K Mining v2, M7 example-led vertical mining
 **Immediate state:** all four published Mining v2 candidates are landed; no
 candidate is awaiting human or machine review
@@ -50,6 +51,24 @@ temporal event totals (130), task-completion duration gaps (131), and
 anaphoric distance chains with exact combined totals (132).
 
 ### Latest implementation checkpoint
+
+Goal vocabulary is now normalized by grammatical construction rather than by
+individual premise wording:
+
+- `goal_predicate` is the shared non-actual semantic parent. Its children
+  distinguish finite infinitival predicates (`want`, `hope`, `intend`), direct
+  quantity predicates (`need`, `require`), and priced-purpose resource
+  activities (`save`, `raise`).
+- The existing premise and ask ids remain stable for review replay, but their
+  slots use those generic categories. Extending compatible vocabulary no
+  longer requires another arithmetic rule.
+- All variants still emit the same `Goal`; the surface predicate is retained
+  only for traceability and the deficit consumer ignores it.
+- Comparative goal relations now anchor only on another compatible `Goal` and
+  derive a `Goal`. They cannot borrow an actual holding or materialize a
+  current holding from a target comparison.
+- Synthetic equivalence, negative-neighbour, inference-boundary, and strict
+  generation tests cover all three construction families.
 
 The latest consolidation moves positive lexical role knowledge out of grammar
 rules and into extensible category relationships:
@@ -141,13 +160,25 @@ questions. Declared restrictive focus markers support `only` and `just` both
 before the activity verb and before its measured duration; unrelated adverbs
 and duplicated focus positions remain outside the rule.
 
+Purpose-scoped savings questions now preserve the purchase goal, current
+progress, and committed contributions as separate evidence. A priced savings
+premise records a target-qualified `Goal`; “half the money she needs” records
+a goal-relative `Relation` that materializes one current holding only against a
+unique compatible goal; and the coordinated gift premise records one
+`Contribution` per contributor without changing general holdings. The new
+purpose-qualified deficit ask matches its purchase target and explicitly opts
+into adding those contributions. Repeated possessive/object form is expressed
+through the reusable `same_surface` predicate rather than trusting a pronoun's
+nearest resolved referent. Strict generation intersects those surface domains,
+and all three new premise rules round-trip through the ordinary matcher.
+
 ## Current measured baseline
 
 These are the gates run at the current runtime checkpoint:
 
 | Gate | Current result |
 | --- | --- |
-| full synthetic suite | 5,591 passed |
+| full synthetic suite | 5,613 passed |
 | curated suite | 71 correct, 0 wrong |
 | GSM8K DEV-train | 106 correct, 0 wrong |
 | GSM8K DEV-holdout | 43 correct, 0 wrong |
@@ -173,8 +204,8 @@ judged the resulting English or emitted fact valid.
 
 | Project | Premise rules | Independent asks |
 | --- | ---: | ---: |
-| curated | 132/132 targets (+8 safety interceptors) | 106/119 |
-| GSM8K | 127/127 targets (+6 safety interceptors) | 137/157 |
+| curated | 135/135 targets (+8 safety interceptors) | 107/120 |
+| GSM8K | 130/130 targets (+6 safety interceptors) | 138/158 |
 
 The safety interceptors are intentionally separate from premise generation
 and review. The thirteen curated ask blockers are contextual discourse-group or

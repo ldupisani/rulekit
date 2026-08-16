@@ -1,9 +1,8 @@
 """Mining candidate: stated-need premises as goals ("WHO needs N ITEM").
 
 A stated NEED ('needs N item', a direct-object form with no infinitive) is a
-GOAL, never a received event — the 'need_premise' category is untagged for
-polarity, mirroring 'desire's want/wishes rationale but for the direct-object
-phrasing (goal-need-quantity, sibling to goal-desire-quantity). This also
+GOAL, never a received event — the generic direct-quantity goal category is
+untagged for polarity and shared by compatible predicates. This also
 removes 'need'/'needed'/'needs' from the 'receive' event category (polarity
 +1): they no longer fold into the ordinary signed event total, which kills a
 latent confident-wrong where "Tom needs 30 apples. He has 12 apples." used to
@@ -54,7 +53,7 @@ def test_need_premise_does_not_fold_as_a_signed_event(full_registry):
     # The pre-existing latent-wrong: 'need' used to sit in the receive(+1)
     # event category, so the generic SVO fold summed the needed quantity
     # with the stated holding (30 + 12 = 42). Now 'need' is untagged for
-    # polarity via 'need_premise' and the plain holdings ask must still
+    # polarity via the goal-predicate hierarchy, and the holdings ask must still
     # answer from the stated holding alone, unaffected by the goal premise.
     r = solve(
         "Tom needs 30 apples. He has 12 apples. How many apples does Tom have?",

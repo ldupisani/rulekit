@@ -1204,6 +1204,12 @@ class WherePredicate(StrictModel):
     """Closed set of cross-slot constraints."""
 
     same_lemma: list[str] | None = None
+    # All named single-unit slots must expose the same written surface,
+    # case-insensitively. This deliberately differs from ``same_lemma``:
+    # pronoun lemmas follow resolved referents, while repeated possessive/
+    # object forms such as "her ... her" can themselves be the grammatical
+    # evidence that a coordinated construction shares one participant.
+    same_surface: list[str] | None = None
     # All named slots must carry the same grammatical number. Count-valued
     # units derive singular only from value 1 and plural otherwise; lexical
     # units use their pack-declared `number`. This is grammar structure, not a
@@ -1358,7 +1364,7 @@ class WherePredicate(StrictModel):
             raise ValueError("category nonoverlap repeats a slot")
         set_ = [
             v for v in (
-                self.same_lemma, self.same_number,
+                self.same_lemma, self.same_surface, self.same_number,
                 self.same_category_membership, self.number_compatible,
                 self.bound_requires_type, self.bound_requires_category,
                 self.bound_rejects_category,
@@ -1391,7 +1397,7 @@ class WherePredicate(StrictModel):
 class FactEmit(StrictModel):
     fact: Literal[
         "activity_duration", "age_at_year", "task_completion_duration",
-        "rate_scope", "quantity", "relation",
+        "rate_scope", "quantity", "relation", "contribution",
         "membership", "subset", "predication",
         "before", "fraction_quantity", "rest_quantity", "partition_quantity",
         "sequential_partition", "sequential_partition_prefix",

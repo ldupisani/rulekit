@@ -308,6 +308,7 @@ def _where_blocker(rule: PatternRule) -> list[str]:
             or pred.distinct_owner is not None
             or pred.distinct_from_owner is not None
             or pred.same_lemma is not None
+            or pred.same_surface is not None
             or pred.same_number is not None
             or pred.same_category_membership is not None
             or pred.number_compatible is not None
@@ -1949,6 +1950,7 @@ def _constraint_groups(
     list[set[str]],
     list[set[str]],
     list[set[str]],
+    list[set[str]],
     list[tuple[tuple[str, str], ...]],
     list[set[str]],
     list[set[str]],
@@ -1976,6 +1978,7 @@ def _constraint_groups(
     tuple[str, ...],
 ]:
     same: list[set[str]] = []
+    same_surface: list[set[str]] = []
     same_number: list[set[str]] = []
     number_compatible: list[set[str]] = []
     polarity_compatible: list[tuple[tuple[str, str], ...]] = []
@@ -2011,6 +2014,8 @@ def _constraint_groups(
     for pred in rule.where:
         if pred.same_lemma is not None:
             same.append(set(pred.same_lemma))
+        if pred.same_surface is not None:
+            same_surface.append(set(pred.same_surface))
         if pred.same_number is not None:
             same_number.append(set(pred.same_number))
         if pred.number_compatible is not None:
@@ -2119,6 +2124,7 @@ def _constraint_groups(
             )
     return (
         same,
+        same_surface,
         same_number,
         number_compatible,
         polarity_compatible,
@@ -2229,6 +2235,9 @@ def _allowed_fillers(
     ) = (),
     entity_owner_distinctions: tuple[tuple[str, str], ...] = (),
     domain_for: Callable[[MatchToken], list[_Filler]] | None = None,
+    same_surface_groups: (
+        list[set[str]] | tuple[set[str], ...]
+    ) = (),
 ) -> list[_Filler]:
     candidate_domain = domain_for or (
         lambda candidate: _domain(candidate, reg, fixtures)
@@ -2267,6 +2276,13 @@ def _allowed_fillers(
     required_identities = {
         chosen[name].identity
         for group in same_groups
+        if token.slot in group
+        for name in group
+        if name in chosen
+    }
+    required_surfaces = {
+        chosen[name].surface.casefold()
+        for group in same_surface_groups
         if token.slot in group
         for name in group
         if name in chosen
@@ -2368,6 +2384,39 @@ def _allowed_fillers(
                     reg,
                 )
             }
+
+        # Surface agreement must be feasible in every still-unfilled sibling
+        # domain, not merely checked after an earlier random choice. Without
+        # this forward check, a possessive slot could repeatedly select a form
+        # that has no corresponding object-pronoun surface and waste the whole
+        # deterministic attempt.
+        for group in same_surface_groups:
+            if token.slot not in group:
+                continue
+            desired = filler.surface.casefold()
+            for other_name in group - {token.slot}:
+                other = known_filler(other_name)
+                if other is not None:
+                    if other.surface.casefold() != desired:
+                        return False
+                    continue
+                other_token = tokens_by_slot.get(other_name)
+                if other_name not in active_slots or other_token is None:
+                    return False
+                if not any(
+                    candidate.surface.casefold() == desired
+                    for candidate in candidate_domain(other_token)
+                    if _outside_categories(
+                        candidate, absent_categories, reg
+                    )
+                    and _outside_slot_categories(
+                        candidate,
+                        other_name,
+                        slot_category_exclusions,
+                        reg,
+                    )
+                ):
+                    return False
 
         for entity_name, possessed_name in entity_owner_distinctions:
             if token.slot == entity_name:
@@ -2888,6 +2937,10 @@ def _allowed_fillers(
             not required_identities
             or filler.identity in required_identities
         )
+        and (
+            not required_surfaces
+            or filler.surface.casefold() in required_surfaces
+        )
         and filler.identity not in forbidden_identities
         and (not needs_number or filler.number is not None)
         and (not required_numbers or filler.number in required_numbers)
@@ -2968,6 +3021,7 @@ def _realize(
     excluded_bindings = excluded_bindings or {}
     (
         same_groups,
+        same_surface_groups,
         same_number_groups,
         number_compatible_groups,
         polarity_compatible_groups,
@@ -3245,6 +3299,7 @@ def _realize(
                 ),
                 entity_owner_distinctions=entity_owner_distinctions,
                 domain_for=domain_for,
+                same_surface_groups=same_surface_groups,
             )
             if path == structural_literal_path:
                 domain = [
@@ -4032,6 +4087,7 @@ def _token_reason(
 
 _WHERE_FIELDS = (
     "same_lemma",
+    "same_surface",
     "same_number",
     "same_category_membership",
     "number_compatible",
@@ -4580,6 +4636,7 @@ def _where_reason(
         pred.distinct
         or pred.distinct_owner
         or pred.same_lemma
+        or pred.same_surface
         or pred.same_number
         or pred.number_compatible
     )
@@ -4611,6 +4668,14 @@ def _where_reason(
             )
             for name in names
         }
+    elif pred.same_surface is not None:
+        values = {
+            name: "/".join(
+                unit.surface.casefold()
+                for unit in _slot_units(slots.get(name))
+            )
+            for name in names
+        }
     else:
         values = {
             name: "/".join(
@@ -4627,6 +4692,8 @@ def _where_reason(
         if pred.same_number is not None
         else "had compatible grammatical number"
         if pred.number_compatible is not None
+        else "shared a surface form"
+        if pred.same_surface is not None
         else "shared a lemma"
     )
     rendered = ", ".join(f"{name}={value!r}" for name, value in values.items())

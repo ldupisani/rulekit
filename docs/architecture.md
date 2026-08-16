@@ -1,6 +1,6 @@
 # RuleKit architecture
 
-**Updated:** 2026-08-12
+**Updated:** 2026-08-15
 **Status:** current implementation, not a roadmap
 
 RuleKit is a deterministic reading and reasoning engine for controlled,
@@ -106,15 +106,16 @@ that emits the same Relation with a fixed factor of 1; it does not need an
 artificial multiplier token. Existential quantity rules locally exclude
 temporal `times`; periodic rates require referential subjects, and sum-of-ages
 owns its definite,
-possessive, plural-noun, singular-copula frame. Both absolute and
-comparative stated-need goals apply ordinary subject/verb compatibility: a
-singular proper name admits `needs` or a number-neutral past form, not the
-plural/base `need`. The comparative form also applies `same_number` between
+possessive, plural-noun, singular-copula frame. Both absolute and comparative
+direct-quantity goals apply ordinary subject/verb compatibility: a singular
+proper name admits `needs`, `requires`, or a number-neutral past form, not the
+plural/base `need` or `require`. The comparative form also applies
+`same_number` between
 its standalone count and noun, admitting `1 fewer shopper` and
 `2 fewer shoppers` while rejecting both mismatches. The current curated
-project has 130 loaded reading rules and 305 reachable generated-filler
-identities. Of those rules, 125 are ordinary selectable generated premises
-and five are explicitly fact-free safety interceptors. Keeping those roles in
+project has 143 loaded reading rules and 325 reachable generated-filler
+identities. Of those rules, 135 are ordinary selectable generated premises
+and eight are explicitly fact-free safety interceptors. Keeping those roles in
 the schema prevents
 generation coverage from treating defensive recognition as authored English.
 Reading and Generate likewise keep surviving safety consumers out of their
@@ -190,6 +191,15 @@ timeperiod/timeperiod pairs without accepting a mixed pair. Matching,
 generation feasibility, compatible probes, explanations, and source links
 all read the same predicate.
 
+Exact written-form agreement is separate again. `same_surface` requires every
+named single-unit slot to expose the same case-insensitive surface. Unlike
+`same_lemma`, it does not follow a pronoun's resolved referent. This lets a
+coordinated construction use repeated grammatical form as evidence—for
+example, the same possessive/object form around parallel contributors—without
+changing the engine's general nearest-antecedent resolver. The strict generator
+intersects every participating slot domain before choosing a surface, and the
+ordinary matcher remains the round-trip oracle.
+
 Additive comparisons may omit their standard in state/ownership clauses.
 `Mary has 5 more apples` carries its measure in the Relation, while
 `Mary has 5 more` leaves it null. Both use the ordinary reserved elided-standard
@@ -201,6 +211,38 @@ an omitted cross-holder comparison. The narrower `possession_state` category
 also excludes copular generations such as `Mary is 5 more apples`. Explicit
 standards and conjoined
 comparisons remain owned by their existing rule families.
+
+Goal vocabulary is organized by complement grammar rather than by scenario.
+`goal_predicate` is the non-actual semantic parent;
+`finite_infinitival_goal_predicate` covers controlled infinitives such as
+“wants/hopes/intends to buy 30 books”;
+`direct_quantity_goal_predicate` covers direct quantities such as
+“needs/requires 30 books” and licenses the corresponding deficit asks; and
+`purpose_resource_goal_activity` covers explicitly priced purposes such as
+“saving/raising money for shoes which cost $600”. The existing rule ids remain
+stable for Designer evidence, but their slots draw from these shared domains.
+Adding a compatible predicate therefore extends a grammatical construction
+without adding another arithmetic rule. Every construction emits the same
+`Goal`; its surface verb remains trace evidence and is not a consumer switch.
+
+Comparative relations headed by any declared `goal_predicate` are likewise
+goal-scoped. The goal-relation synthesizer anchors them only on another
+compatible `Goal` and emits a derived `Goal`; ordinary relation saturation
+ignores them. Consequently “Fia requires 5 fewer pencils than Cato” can use
+Cato's stated requirement, but it cannot turn Cato's current pencil holding
+into a target or materialize a fictitious current holding for Fia.
+
+Purpose-scoped monetary goals preserve three kinds of evidence instead of
+collapsing them into one holding. A priced resource-building premise emits a
+`Goal` whose optional `target` identifies the intended purchase. A statement
+of current progress as a fraction of “the money needed” emits a `Relation` with the
+reserved goal standard; the goal-progress synthesizer materializes a state
+`Quantity` only when exactly one compatible goal exists. A committed transfer
+emits `Contribution` facts that retain both beneficiary and contributor rather
+than pretending a planned gift has already changed general holdings. Only a
+purpose-qualified deficit ask opts into adding those contributions, and its
+target must match the goal. Ordinary deficit asks retain their historical
+single-goal, single-current-holding behavior.
 
 Ask resolution fields are normally scalar templates, but may also be lists of
 scalar templates when the question itself names an exact set. A variadic
@@ -1365,8 +1407,9 @@ turning every verb slot into an unrestricted surface domain.
 A verb token may instead declare `finite_form: true`. This admits the
 registered base, finite present, and simple-past surfaces while refusing a
 productive `-ing` form whose surface differs from its lemma. It is separate
-from `bare_form`: a matrix desire verb may be finite as `wants` or `wanted`
-while its `to` complement must remain bare. Registry compilation requires
+from `bare_form`: a matrix infinitival-goal predicate may be finite as `wants`,
+`hopes`, `intends`, or their simple-past forms while its `to` complement must
+remain bare. Registry compilation requires
 both qualifiers to sit on verb-rooted scalar slots and rejects the
 contradictory combination.
 

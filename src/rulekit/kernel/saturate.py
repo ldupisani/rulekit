@@ -30,6 +30,7 @@ from .model import (
     Disjunction,
     EnumeratedDisjunction,
     Fact,
+    Goal,
     GroupTotal,
     Membership,
     Predication,
@@ -172,6 +173,121 @@ _ANAPHOR_PRICE_STANDARD = "$anaphor:price$"
 # `measure` null; that narrower shape resolves both omissions from the
 # unique prior Quantity belonging to another entity.
 _ELIDED_STANDARD = "$elided:standard$"
+
+# A goal-relative holding ("half the money she needs") names no independent
+# comparison entity. The subject's unique compatible Goal is its standard.
+_GOAL_STANDARD = "$goal:subject$"
+
+
+def _goal_relation_synth(
+    store: FactStore, reg: Registry, log: ArithmeticLog
+) -> list[Fact]:
+    """Resolve goal-scoped comparisons against other stated goals.
+
+    A relation headed by a declared ``goal_predicate`` describes target
+    quantities, not actual holdings.  It therefore anchors only on the
+    standard entity's unique compatible Goal and emits another Goal.  The
+    ordinary affine synthesizer explicitly ignores the same relation so a
+    current Quantity can never be mistaken for somebody else's target.
+    """
+
+    out: list[Fact] = []
+    for relation in store.by_kind(Relation):
+        if (
+            relation.measure is None
+            or relation.standard == _GOAL_STANDARD
+            or not reg.word_in_category(relation.verb, "goal_predicate")
+        ):
+            continue
+        goals = [
+            goal
+            for goal in store.by_kind(Goal)
+            if goal.entity == relation.standard
+            and _resolve_measure_against(
+                relation.measure,
+                {goal.measure},
+                reg,
+                journal=log.journal,
+            )
+            == goal.measure
+        ]
+        if len(goals) != 1:
+            continue
+        standard = goals[0]
+        value = evaluate(
+            f"{relation.factor} * {standard.value} + {relation.offset}",
+            {},
+            log,
+            source=f"goal-relation:{relation.provenance.source}",
+        )
+        if value < 0:
+            continue
+        out.append(
+            Goal(
+                provenance=Provenance(
+                    source="synth/goal-relation",
+                    sentence=relation.provenance.sentence,
+                ),
+                entity=relation.subject,
+                measure=standard.measure,
+                value=value,
+                verb=relation.verb,
+                target=standard.target,
+            )
+        )
+    return out
+
+
+def _goal_progress_synth(
+    store: FactStore, reg: Registry, log: ArithmeticLog
+) -> list[Fact]:
+    """Materialize current holdings stated as a fraction of a known goal."""
+
+    out: list[Fact] = []
+    for relation in store.by_kind(Relation):
+        if relation.standard != _GOAL_STANDARD or relation.measure is None:
+            continue
+        goals = [
+            goal
+            for goal in store.by_kind(Goal)
+            if goal.entity == relation.subject
+            and _resolve_measure_against(
+                relation.measure,
+                {goal.measure},
+                reg,
+                journal=log.journal,
+            )
+            == goal.measure
+        ]
+        if len(goals) != 1:
+            continue
+        goal = goals[0]
+        if any(
+            quantity.entity == relation.subject
+            and quantity.measure == goal.measure
+            and quantity.is_state
+            for quantity in store.by_kind(Quantity)
+        ):
+            continue
+        value = evaluate(
+            f"{relation.factor} * {goal.value} + {relation.offset}",
+            {},
+            log,
+            source=f"goal-progress:{relation.provenance.source}",
+        )
+        out.append(
+            Quantity(
+                provenance=Provenance(
+                    source="synth/goal-progress",
+                    sentence=relation.provenance.sentence,
+                ),
+                entity=relation.subject,
+                measure=goal.measure,
+                value=value,
+                verb=relation.verb,
+            )
+        )
+    return out
 
 
 def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> list[Fact]:
@@ -440,6 +556,17 @@ def _relations_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
         )
 
     for rel in store.by_kind(Relation):
+        # Goal predicates state target quantities. They are resolved only by
+        # `_goal_relation_synth`; borrowing a current holding here would turn
+        # "Fia needs 5 fewer than Cato" into an assertion about what Fia has.
+        if reg.word_in_category(rel.verb, "goal_predicate"):
+            continue
+        # Goal-relative relations are resolved only by `_goal_progress_synth`.
+        # Treating the reserved sentinel as an ordinary entity would let the
+        # bidirectional affine solver materialize a fictitious holder named
+        # "$goal:subject$" from the derived current quantity.
+        if rel.standard == _GOAL_STANDARD:
+            continue
         # mining candidate temporal-offset-age-recut: a genuinely SELF-
         # referential relation ("he will be 3 times as old as he was 11
         # years ago" — the SAME entity on both sides at two DIFFERENT time
@@ -2868,6 +2995,8 @@ PLUGINS: dict[str, Synthesizer] = {
     "synth/name-prefix-alias": _name_prefix_alias_synth,
     "synth/name-head-sortal": _name_head_sortal_synth,
     "synth/subject-role-derivation": _subject_role_derivation_synth,
+    "synth/goal-relation": _goal_relation_synth,
+    "synth/goal-progress": _goal_progress_synth,
     # Runs after every membership-producing plugin (notably the declared
     # refinement and subject-role bridges). A monotone materializer cannot
     # retract a prematurely emitted 25 when a second compatible baseline

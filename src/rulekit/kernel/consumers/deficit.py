@@ -18,12 +18,13 @@ from . import ConsumerContext, consumer
 def deficit(ctx: ConsumerContext):
     from ..answer import Answer
     from ..evaluate import evaluate
-    from ..model import Goal, Quantity
+    from ..model import Contribution, Goal, Quantity
     from ..measures import _resolve_measure
+    from ..totals import _entity_total
 
     # "how many more X does WHO need" — goal minus the entity's single
     # CURRENT holding (a stated STATE quantity, never the general event
-    # fold: the desire verb's own spurious event Quantity, and the
+    # fold: a goal predicate's own spurious event Quantity, and the
     # target-verb's, both sit in the store unsignable/signed by
     # whatever the generic SVO scan gave them — reading the entity's
     # raw stated holding directly sidesteps that noise rather than
@@ -34,9 +35,12 @@ def deficit(ctx: ConsumerContext):
     if singular is None:
         return Answer("decline", None,
                       f"measure {measure!r} is ambiguous across the facts")
+    target = ctx.query.get("target") or None
     goals = [
         g for g in ctx.store.by_kind(Goal)
-        if g.entity == entity and g.measure == singular
+        if g.entity == entity
+        and g.measure == singular
+        and (target is None or g.target == target)
     ]
     if len(goals) != 1:
         return Answer(
@@ -55,16 +59,49 @@ def deficit(ctx: ConsumerContext):
             f"{singular!r} — the deficit needs exactly one",
         )
     goal, holding = goals[0], holdings[0]
+    current = holding.value
+    contributions: list[Contribution] = []
+    if ctx.query.get("include_contributions") == "true":
+        folded = _entity_total(ctx.store, ctx.reg, entity, singular, ctx.log)
+        if folded is None:
+            return Answer(
+                "decline",
+                None,
+                f"current holdings for {entity!r}/{singular!r} do not form "
+                "one safe total",
+            )
+        current = folded
+        contributions = [
+            contribution
+            for contribution in ctx.store.by_kind(Contribution)
+            if contribution.beneficiary == entity
+            and _resolve_measure(
+                contribution.measure,
+                ctx.store,
+                ctx.reg,
+                journal=ctx.log.journal,
+            )
+            == singular
+        ]
+        if contributions:
+            current = evaluate(
+                " + ".join(
+                    [str(current), *(str(c.value) for c in contributions)]
+                ),
+                {},
+                ctx.log,
+                source="goal-contributions",
+            )
     deficit = evaluate(
-        f"{goal.value} - {holding.value}", {}, ctx.log, source="deficit"
+        f"{goal.value} - {current}", {}, ctx.log, source="deficit"
     )
     if deficit < 0:
         return Answer(
             "decline", None,
             f"goal {goal.value} is already met by current holding "
-            f"{holding.value} for {entity!r}/{singular!r} — not a deficit",
+            f"{current} for {entity!r}/{singular!r} — not a deficit",
         )
     return Answer(
         "number", deficit,
-        f"{goal.value} goal - {holding.value} current {singular!r}",
+        f"{goal.value} goal - {current} current/committed {singular!r}",
     )

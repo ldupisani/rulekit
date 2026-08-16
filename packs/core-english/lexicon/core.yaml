@@ -68,6 +68,7 @@ entries:
     # construction; ``last`` qualifies a named period such as "last week".
     able: {senses: [adjective]}
     last: {senses: [adjective, verb]}
+    new: {senses: [adjective]}
 
     # General English prepositions. Narrow semantic roles such as source,
     # goal, location, duration, and instrument belong in categories and rules;
@@ -306,6 +307,9 @@ entries:
     buy: {senses: [verb], number: plural, verb: {lemma: buy}}
     bought: {senses: [verb], verb: {lemma: buy}}
     buying: {senses: [verb], verb: {lemma: buy}}
+    decide: {senses: [verb], number: plural}
+    decides: {senses: [verb], number: singular, verb: {lemma: decide}}
+    decided: {senses: [verb], verb: {lemma: decide}}
     earns: {senses: [verb], number: singular, verb: {lemma: earn}}
     earn: {senses: [verb], number: plural, verb: {lemma: earn}}
     earned: {senses: [verb], verb: {lemma: earn}}
@@ -336,6 +340,10 @@ entries:
     gives: {senses: [verb], number: singular, verb: {lemma: give}}
     give: {senses: [verb], number: plural, verb: {lemma: give}}
     gave: {senses: [verb], verb: {lemma: give}}
+    save: {senses: [verb], number: plural}
+    saves: {senses: [verb], number: singular, verb: {lemma: save}}
+    saved: {senses: [verb], verb: {lemma: save}}
+    saving: {senses: [verb], verb: {lemma: save}}
     sells: {senses: [verb], number: singular, verb: {lemma: sell}}
     sell: {senses: [verb], number: plural, verb: {lemma: sell}}
     sold: {senses: [verb], verb: {lemma: sell}}
@@ -369,9 +377,25 @@ entries:
     wanted: {senses: [verb], verb: {lemma: want}}
     wanting: {senses: [verb], verb: {lemma: want}}
     wants: {senses: [verb], verb: {lemma: want}}
+    hope: {senses: [verb], number: plural}
+    hoped: {senses: [verb], verb: {lemma: hope}}
+    hoping: {senses: [verb], verb: {lemma: hope}}
+    hopes: {senses: [verb], number: singular, verb: {lemma: hope}}
+    intend: {senses: [verb], number: plural}
+    intended: {senses: [verb], verb: {lemma: intend}}
+    intending: {senses: [verb], verb: {lemma: intend}}
+    intends: {senses: [verb], number: singular, verb: {lemma: intend}}
     need: {senses: [verb], number: plural}
     needed: {senses: [verb], verb: {lemma: need}}
     needs: {senses: [verb], verb: {lemma: need}}
+    require: {senses: [verb], number: plural}
+    required: {senses: [verb], verb: {lemma: require}}
+    requiring: {senses: [verb], verb: {lemma: require}}
+    requires: {senses: [verb], number: singular, verb: {lemma: require}}
+    raise: {senses: [verb], number: plural}
+    raised: {senses: [verb], verb: {lemma: raise}}
+    raises: {senses: [verb], number: singular, verb: {lemma: raise}}
+    raising: {senses: [verb], verb: {lemma: raise}}
     begin: {senses: [verb], number: plural}
     begins: {senses: [verb], number: singular, verb: {lemma: begin}}
     began: {senses: [verb], verb: {lemma: begin}}
@@ -418,6 +442,8 @@ entries:
     plum: {senses: [noun], plural: plums}
     marble: {senses: [noun], plural: marbles}
     book: {senses: [noun], plural: books}
+    brother: {senses: [noun], plural: brothers}
+    shoe: {senses: [noun], plural: shoes}
     page: {senses: [noun], plural: pages}
     cookie: {senses: [noun], plural: cookies}
     ball: {senses: [noun], plural: balls}

@@ -548,6 +548,10 @@ _COVERED_BY_UNIT_TEST = {
     # `currency` is the ONLY interchangeable category, and no ask reaching
     # these two consumers can bind its factless member ('money'):
     ("deficit", "measure"),
+    # Contribution-aware deficits opt into the general entity fold. A direct
+    # probe supplies one state plus an unsigned event, a store shape no current
+    # ask grammar can produce without the document veto firing first.
+    ("deficit", "current holdings for"),
     ("unique-entity", "measure"),
     # the full-read contract is enforced STRUCTURALLY by the matcher —
     # a final span must run to the sentence end and may never swallow a

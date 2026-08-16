@@ -5359,10 +5359,12 @@ rules:
   - id: arithmetic/goal-desire-quantity
     phase: read
     description: >
-      "Lena wants to collect 30 stamps" / "John wanted to arrive at 19
-      gardens" — a DESIRE verb plus an infinitive introduces a stated GOAL
-      quantity, never an event. Ordinary transitive goal verbs take the count
-      directly. A declared arrival verb instead requires its declared goal
+      "Lena wants to collect 30 stamps" / "John intends to arrive at 19
+      gardens" — a finite infinitival-goal predicate plus its action introduces
+      a stated GOAL quantity, never an event. The matrix vocabulary is supplied
+      by one shared grammatical category rather than by this rule. Ordinary
+      transitive goal actions take the count directly. A declared arrival verb
+      instead requires its declared goal
       preposition and a counted spatial reference; the paired inverse
       condition prevents "arrive 19 gardens" while the existing conditional
       category checks prevent "collect at 19 stamps". A wanted purchase or
@@ -5372,7 +5374,7 @@ rules:
     match:
       sentence:
         - {slot: who, type: name}
-        - {slot: want, cat: finite_desire, finite_form: true}
+        - {slot: want, cat: finite_infinitival_goal_predicate, finite_form: true}
         - {lit: to}
         - {slot: verb, type: verb, bare_form: true}
         - opt:
@@ -5394,18 +5396,16 @@ rules:
   - id: arithmetic/goal-need-quantity
     phase: read
     description: >
-      "Tom needs 30 apples" — a stated NEED ('need_premise', a category
-      untagged for polarity like 'desire' — a needed quantity is not a
-      receipt) directly followed by a counted item is a stated GOAL,
-      never a holding/event: the direct-object counterpart to
-      goal-desire-quantity's "wants to VERB N X" infinitive form (no
-      infinitive here — 'need' takes the item directly). Emits the same
-      Goal fact the existing goal-deficit consumer already resolves against
-      the entity's single current holding of the measure.
+      "Tom needs 30 apples" / "Tom requires 30 apples" — a direct-quantity
+      goal predicate followed by a counted item states a GOAL, never a holding
+      or event. Vocabulary membership supplies that non-actual interpretation;
+      this rule exists for the direct-object grammar rather than for a
+      particular word. It emits the same Goal fact resolved by the generic
+      deficit consumer against the entity's current holding.
     match:
       sentence:
         - {slot: who, type: name}
-        - {slot: need, cat: need_premise}
+        - {slot: need, cat: direct_quantity_goal_predicate}
         - {slot: item, type: counted}
     where:
       - number_compatible: [who, need]
@@ -5420,9 +5420,10 @@ rules:
   - id: arithmetic/goal-need-comparative-quantity
     phase: read
     description: >
-      "Fia needs 20 fewer pencils than Cato" — a comparative stated NEED.
-      This is not the ordinary holdings/event relation: `need_premise` keeps
-      the subject quantity goal-scoped, while the explicit count-agreeing
+      "Fia needs 20 fewer pencils than Cato" / "Fia requires 20 fewer pencils
+      than Cato" — a comparative goal target. This is not an ordinary
+      holdings/event relation: the shared goal-predicate category keeps the
+      subject quantity goal-scoped, while the explicit count-agreeing
       measure, count-only direction, and named standard state the relative
       target. The standalone count and noun share declared grammatical
       number, so `1 fewer shopper` and `2 fewer shoppers` use the same rule
@@ -5433,7 +5434,7 @@ rules:
     match:
       sentence:
         - {slot: who, type: name}
-        - {slot: need, cat: need_premise}
+        - {slot: need, cat: direct_quantity_goal_predicate}
         - {slot: n, type: number, standalone: true}
         - {slot: dir, cat: count_quantity_delta}
         - {slot: item, cat: noun}
@@ -5453,6 +5454,118 @@ rules:
         factor: 1.0
         offset: "n * sign(dir)"
         verb: "{need}"
+
+  - id: arithmetic/savings-goal-priced-target
+    phase: read
+    description: >
+      A resource-building activity with an explicit priced target, such as
+      "Dena is saving money for new shoes which cost $600" or "Dena is raising
+      money for new shoes which cost $600". The activity is supplied by a
+      shared grammatical category. The amount is a Goal, not a holding or unit
+      Price; its target remains attached so a later purpose-qualified deficit
+      ask cannot borrow an unrelated monetary goal.
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: aux, cat: singular_copula}
+        - {slot: save, cat: purpose_resource_goal_activity, present_participle: true}
+        - {slot: measure, cat: currency}
+        - {lit: for}
+        - {slot: target, cat: ownable_quantity_object, number: plural}
+        - {lit: which}
+        - {slot: cost, cat: price_verb}
+        - {slot: amount, cat: currency, counted: true}
+    where:
+      - number_compatible: [who, aux]
+    consumes: [amount]
+    emits:
+      - fact: goal
+        entity: "{who}"
+        measure: "{amount}"
+        value: "amount"
+        verb: "{save}"
+        target: "{target}"
+
+  - id: arithmetic/goal-progress-fraction-needed
+    phase: read
+    description: >
+      "Dena has half the money she needs" states current progress relative
+      to Dena's unique compatible Goal. The reserved standard is resolved
+      by the generic goal-progress synthesizer; without exactly one goal the
+      relation remains unresolved and no holding is invented.
+    match:
+      sentence:
+        - {slot: who, type: name}
+        - {slot: have, cat: possession_state, finite_form: true}
+        - opt:
+            - {slot: focus, cat: restrictive_focus_adverb}
+        - {slot: f, type: fraction, word_fraction_within_whole: true, fraction_positive: true}
+        - {lit: the, consume_skipped: true}
+        - {slot: measure, cat: currency}
+        - {slot: pron, cat: animate_pronoun}
+        - {slot: need, cat: direct_quantity_goal_predicate, finite_form: true}
+    where:
+      - number_compatible: [who, have]
+      - number_compatible: [who, pron, need]
+    consumes: [f]
+    emits:
+      - fact: relation
+        subject: "{who}"
+        standard: "$goal:subject$"
+        measure: "{measure}"
+        factor: "f"
+        offset: 0.0
+        verb: "{have}"
+
+  - id: arithmetic/committed-transfer-conjoined-relative
+    phase: read
+    description: >
+      A committed contribution followed by an elided comparative sibling:
+      "her guardian decided to give her $40, and her brother three times as
+      much as her guardian". Both contributors, the shared beneficiary, and both
+      amounts are preserved as Contribution facts. The second amount inherits
+      only the explicitly repeated standard contributor and multiplier.
+    match:
+      sentence:
+        - {slot: poss1, cat: possessive_determiner}
+        - {slot: giver1, cat: animate}
+        - {slot: decision, cat: committed_transfer_decision_verb, finite_form: true}
+        - {lit: to}
+        - {slot: give, cat: contribution_transfer_verb, bare_form: true}
+        - {slot: recipient, cat: animate_object_pronoun}
+        - {slot: item, cat: currency, counted: true}
+        - {lit: and}
+        - {slot: poss2, cat: possessive_determiner}
+        - {slot: giver2, cat: animate}
+        - {slot: k, type: multiplier}
+        - {lit: as}
+        - {lit: much}
+        - {lit: as}
+        - {slot: poss3, cat: possessive_determiner}
+        - {slot: std, cat: animate}
+    where:
+      - number_compatible: [giver1, decision]
+      - same_surface: [poss1, recipient, poss2, poss3]
+      - same_lemma: [giver1, std]
+      - distinct: [giver2, std]
+      - verb_roles_compatible:
+          verb: give
+          roles: {actor: [giver1], theme: [item]}
+    consumes: [item, k]
+    emits:
+      - fact: contribution
+        beneficiary: "{recipient}"
+        contributor: "{giver1}"
+        measure: "{item}"
+        value: "item"
+        verb: "{give}"
+      - fact: contribution
+        beneficiary: "{recipient}"
+        contributor: "{giver2}"
+        measure: "{item}"
+        value: "k * item"
+        verb: "{give}"
+        segment: 1
 
   - id: arithmetic/activity-scoped-wage-rate
     phase: read
@@ -8181,7 +8294,7 @@ asks:
         - {slot: target_time, cat: future_day_marker}
         - {lit: if}
         - {slot: who, type: entity, common_noun_cat: quantity_event_participant, referential: true, bare_reference_category: bare_entity_reference, number: singular}
-        - {slot: want, cat: finite_desire, finite_form: true}
+        - {slot: want, cat: finite_infinitival_goal_predicate, finite_form: true}
         - {lit: to}
         - {slot: verb, cat: content_progress_quantity_verb, bare_form: true}
         - {lit: half}
@@ -8225,7 +8338,7 @@ asks:
         - {slot: target_time, cat: future_day_marker}
         - {lit: if}
         - {slot: who, type: entity, common_noun_cat: quantity_event_participant, referential: true, bare_reference_category: bare_entity_reference, number: singular}
-        - {slot: want, cat: finite_desire, finite_form: true}
+        - {slot: want, cat: finite_infinitival_goal_predicate, finite_form: true}
         - {lit: to}
         - {slot: verb, cat: content_progress_quantity_verb, bare_form: true}
         - {slot: fraction, type: fraction, fraction_within_whole: true, fraction_positive: true, generation_explicit_unit_fraction: true}
@@ -8264,7 +8377,7 @@ asks:
       question:
         - {lit: if}
         - {slot: who, type: entity, common_noun_cat: quantity_event_participant, referential: true, bare_reference_category: bare_entity_reference, number: singular}
-        - {slot: want, cat: finite_desire, finite_form: true}
+        - {slot: want, cat: finite_infinitival_goal_predicate, finite_form: true}
         - {lit: to}
         - {slot: verb, cat: content_progress_quantity_verb, bare_form: true}
         - {slot: fraction, type: fraction, fraction_within_whole: true, fraction_positive: true, generation_explicit_unit_fraction: true}
@@ -9004,7 +9117,7 @@ asks:
         - {slot: item, type: plural}
         - {slot: aux, type: future_modal}
         - {slot: who, type: name}
-        - {slot: verb, cat: need_ask_verb, bare_form: true}
+        - {slot: verb, cat: direct_quantity_goal_predicate, bare_form: true}
     where:
       - number_compatible: [who, aux]
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
@@ -9012,6 +9125,33 @@ asks:
       consumer: deficit
       entity: "{who}"
       measure: "{item}"
+
+  - id: ask/how-much-more-goal-need-purpose
+    # Monetary goal deficit with an explicit purchase purpose: "how much more
+    # money does Dena need to buy the shoes?" The target must match the
+    # target retained by the Goal fact. Committed contributions are included;
+    # unrelated gifts and unrelated savings goals are not.
+    match:
+      question:
+        - {lit: how}
+        - {lit: much}
+        - {slot: dir, cat: mass_quantity_delta}
+        - {slot: item, cat: currency}
+        - {slot: aux, type: future_modal}
+        - {slot: who, type: name}
+        - {slot: need, cat: direct_quantity_goal_predicate, bare_form: true}
+        - {lit: to}
+        - {slot: buy, cat: purchase, bare_form: true}
+        - {lit: the, consume_skipped: true}
+        - {slot: target, cat: ownable_quantity_object, number: plural}
+    where:
+      - number_compatible: [who, aux]
+    resolves:
+      consumer: deficit
+      entity: "{who}"
+      measure: "{item}"
+      target: "{target}"
+      include_contributions: "true"
 
   - id: ask/how-much-money-entity-left
     # Remaining-money question: "how much money does Ian have left?" The

@@ -130,10 +130,11 @@ def test_reviewed_answerable_seed_now_uses_direct_relevant_evidence(project) -> 
         scenario_mode="answerable",
     )
 
-    assert candidate.target_ask == "ask/what-is-the-number-of-possessed"
-    assert candidate.question == "What is the number of Cato's envelopes?"
+    assert candidate.target_ask == "ask/what-average-combined-contracted"
+    assert candidate.question == "What's the average amount of plums?"
     assert candidate.answer["committed"] is True
-    assert candidate.answer["value"] == 14
+    assert candidate.answer["value"] == 0.5
     assert [premise["sentence"] for premise in candidate.premises] == [
-        "Fia sells Cato 14 envelopes."
+        "Total of 1 plum.",
+        "John had triple Eron's plums.",
     ]
