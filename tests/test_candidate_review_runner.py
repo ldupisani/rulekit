@@ -299,6 +299,10 @@ def test_runner_owns_one_child_and_exposes_only_review_operations(
     assert status["active"] is True
     assert status["project"] == project
     assert manager.trace("holder-question", {"text": "A sentence."})["ok"]
+    assert manager.from_reading(
+        "holder-question",
+        {"rule_id": "invented/rule", "sentence": "A sentence."},
+    )["ok"]
     assert manager.read_doc("holder-question", "/candidate/rules.yaml")["ok"]
     assert manager.write_doc(
         "holder-question",
@@ -313,6 +317,7 @@ def test_runner_owns_one_child_and_exposes_only_review_operations(
     assert proxied_paths == {
         "/api/project",
         "/api/trace",
+        "/api/generation/from-reading",
         "/api/doc",
         "/api/generation/retest",
     }
@@ -509,6 +514,7 @@ def test_runner_routes_exclude_benchmarks_and_review_ledger() -> None:
         "/api/campaign/runner/stop",
         "/api/campaign/runner/{candidate_id}/project",
         "/api/campaign/runner/{candidate_id}/trace",
+        "/api/campaign/runner/{candidate_id}/generation/from-reading",
         "/api/campaign/runner/{candidate_id}/doc",
         "/api/campaign/runner/{candidate_id}/retest",
     } <= paths
@@ -524,6 +530,7 @@ def test_designer_wires_isolated_read_edit_retest_and_stop() -> None:
     assert "Start isolated review" in js
     assert "Stop isolated runner" in js
     assert 'campaignRunnerPath("/trace")' in js
+    assert 'campaignRunnerPath("/generation/from-reading")' in js
     assert 'campaignRunnerPath("/doc")' in js
     assert '"/api/generation/retest"' in js
     assert "campaign-runner-controls" in css

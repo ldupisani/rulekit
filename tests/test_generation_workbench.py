@@ -1962,6 +1962,7 @@ def test_trace_exposes_explicit_targets_and_promotes_the_selected_rule(
     assert candidate["sentence"] == sentence
     assert candidate["target_rule"] == targets[0]["rule_id"]
     assert candidate["requested_bindings"] == candidate["target_bindings"]
+    assert candidate["target_source"] == targets[0]["source_ref"]
 
 
 def test_trace_can_promote_a_sentence_without_selecting_a_rule(
@@ -2978,6 +2979,8 @@ def test_designer_exposes_the_generation_review_loop() -> None:
     assert "promoteReadingSentence" in js
     assert "Review premise" in js
     assert "Review sentence meaning" in js
+    assert "target_rule: candidate.target_rule" in js
+    assert "source_ref: candidate.target_source" in js
     assert 'review_kind: candidate.target_rule ? "premise" : "sentence"' in js
     assert 'candidate.target_rule || "Sentence-level interpretation review"' in js
     assert '"Sentence meaning review"' in js
@@ -2985,6 +2988,9 @@ def test_designer_exposes_the_generation_review_loop() -> None:
     assert "suggested_rule" in js
     assert "Open rule YAML" in js
     assert "Open ask YAML" in js
+    assert "function reviewSource(r)" in js
+    assert "state.campaignRunner.project?.sources?.[target] || r.source_ref" in js
+    assert "if (source) await openGenerationSource(source)" in js
     assert "reading-fact-head" in js
     assert "d.source_ref" in js
     assert "f.source_ref" in js

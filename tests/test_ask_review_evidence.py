@@ -271,6 +271,8 @@ def test_history_filters_action_items_and_archive_is_paginated(
     assert first_page["total"] == 2
     assert len(first_page["reviews"]) == len(second_page["reviews"]) == 1
     assert first_page["reviews"][0]["id"] != second_page["reviews"][0]["id"]
+    assert first_page["reviews"][0]["source_ref"]["kind"] == "ask"
+    assert first_page["reviews"][0]["source_ref"]["label"] == "ask/how-old-is"
 
 
 def test_valid_verdict_with_a_defect_stays_actionable_and_is_not_evidence(
