@@ -1,0 +1,402 @@
+{
+  "branch": "mining/cand-refrigerated-interior-quantity-location",
+  "candidate_id": "refrigerated-interior-quantity-location",
+  "class_evidence": {
+    "ask_mechanism": "The existing ask/how-many-entity rule already binds the named holder, plural count measure, and holding verb. The existing single-entity consumer folds the initial holding with both matching consumption events and returns the current count. No ask or consumer widening is needed. ask/how-many-in-place is included only as generated boundary evidence for the newly declared location category.",
+    "expected_solved": 1,
+    "mode": "coverage",
+    "pool_frequency": 1,
+    "premise_mechanism": "The selected item is currently declined only because fridge is unknown. Its premises already yield a complete initial Quantity for one holder and count noun plus two matching decrement events; one event also retains existing temporal and verbal-relation metadata. In-memory substitution with each existing quantity_interior_location sibling pantry, cupboard, and storeroom leaves the same facts and produces the expected numeric answer, showing that vocabulary\u2014not a missing arithmetic rule\u2014is the final blocker.",
+    "product_rationale": null,
+    "structural_summary": [
+      "The walked item has one named holder, one initial count quantity located inside a refrigerated storage noun, and two explicit decrements of the same measure.",
+      "The current fact store is sufficient for the existing entity-total fold; the final decline is the unknown-word veto for the storage noun.",
+      "Strict-positive evidence must use an invented singular fridge interior-location surface and show ordinary matcher/generation compatibility.",
+      "The invented surface paraphrase must use an existing category sibling such as cupboard, pantry, or storeroom and preserve the same fact and ask contract.",
+      "The controlled boundary must use a known noun outside quantity_interior_location and prove that it does not enter ask/how-many-in-place merely by being referential.",
+      "The complete-answerable specimen must combine an invented initial holding inside a fridge with two explicit matching decrements and an ordinary named-holder current-total ask.",
+      "The deliberate-decline specimen must prove that a locative phrase does not establish location-holder completeness or re-key a person's quantity under the fridge; missing or conflicting holder evidence remains uncommitted.",
+      "Synthetic strict-positive, paraphrase, boundary, complete-answerable, and deliberate-decline checks must pass before the implementer reloads opaque DEV id b65eaea77fac and requires decline-to-correct acceptance."
+    ],
+    "vocabulary": [
+      {
+        "bound_by": "A core-English noun identity with plural fridges, admitted only to quantity_interior_location; compatibility remains governed by the existing quantity-location preposition relationship and existing ask constraints.",
+        "collision_risk": "Material but bounded: making the word known removes the unknown-word veto on every occurrence, while quantity_interior_location also makes it eligible for existing in-location asks and generation. The implementer must run the permissive unlocked-item scan and require zero new wrong commitments; person-held quantities must not be re-keyed to the fridge.",
+        "quarantine": "clear",
+        "surface": "fridge"
+      },
+      {
+        "bound_by": "The declared regular plural of fridge; category membership is inherited through the registry's singularization path and introduces no independent semantic category.",
+        "collision_risk": "Plural recognition may clear unknown-word vetoes or enter plural noun positions outside the selected item. It must be assessed together with the singular as one tight lexical family in the permissive scan and exact standing gate.",
+        "quarantine": "clear",
+        "surface": "fridges"
+      }
+    ],
+    "walked_item_ids": [
+      "b65eaea77fac"
+    ]
+  },
+  "class_name": "Refrigerated interior locations in complete quantity-and-event questions",
+  "commit": "61cf33244f46c1664d4eb779e994f0de4ad11d0f",
+  "constitution_review": {
+    "notes": "Exact clean candidate 61cf33244f46c1664d4eb779e994f0de4ad11d0f and parent/base 601d73f9365576d4566f1cb06921b133d055ae44 verified. All 18 changed files exactly match the amended implementation contract; lexical and category facts are YAML-owned, with Python changes confined to synthetic tests and mechanically adjusted fixtures. The 15 adjacent fixture updates preserve exact domain cardinalities, deterministic generation checks, semantic outputs, and assertion strength. No benchmark sentence or lightly edited item appears in committed tests or the manifest. The runtime_project gsm8k fingerprint exactly matches 91f56e8fbbc040fd237ea3c0e8be90e032b461cfb31f6533405f61109dab1413, and all four canonical specimen traces replay exactly. DEV-train A/B evidence shows exactly one decline-to-correct transition for the walked id and zero new wrongs. Focused changed-file synthetic tests passed (301 passed); lint reported 0 errors and 1 pre-existing warning. No protected look, workflow suite-count hard-coding, quarantine violation, or undeclared scope was found.",
+    "verdict": "pass",
+    "violations": []
+  },
+  "format": "rulekit/campaign-review@2",
+  "generation_contract": {
+    "ask_rules": [
+      "ask/how-many-in-place",
+      "ask/how-many-entity"
+    ],
+    "premise_rules": [],
+    "required_specimen_kinds": [
+      "strict_positive",
+      "boundary_probe",
+      "answerable",
+      "decline"
+    ]
+  },
+  "implementation_contract": {
+    "class_justification": "This is a bounded lexical-semantic vertical increment, not a one-question parser: one ordinary storage noun family joins an existing extensible location category, while the already-general quantity fold, event inversion, named-holder ask, and single-entity consumer complete the answer. The synthetic module must first prove the invented strict-positive fridge surface, an existing-location sibling paraphrase, an outside-category lexical boundary, a complete answerable two-decrement scenario, and a location-completeness decline. Only after those synthetic checks pass may the implementer reload stable DEV-train id b65eaea77fac locally and require it to answer correctly. No corpus sentence may enter tests or evidence. Because vocabulary admissions can unlock unseen wrong commitments, the implementer must also run the methodology permissive scan over every dev-train occurrence cleared by fridge/fridges and require zero new wrongs before the ordinary exact gate. The full-suite dry run disclosed adjacent exact-domain and deterministic-generation fixtures in the listed test files; those files may change only to preserve their existing invariants under the declared one-identity filler and plural-domain expansion, with no runtime widening beyond the two YAML admissions.",
+    "files_expected": [
+      "packs/core-english/lexicon/core.yaml",
+      "packs/core-english/categories/core.yaml",
+      "tests/test_mining_refrigerated_quantity_location.py",
+      "tests/test_attribute_compatibility.py",
+      "tests/test_core_generation_vocabulary.py",
+      "tests/test_generation_g5j.py",
+      "tests/test_generation_g5k.py",
+      "tests/test_generation_g5l.py",
+      "tests/test_generation_g5m.py",
+      "tests/test_generation_g5n.py",
+      "tests/test_generation_g5o.py",
+      "tests/test_generation_g5q.py",
+      "tests/test_generation_g5r.py",
+      "tests/test_generation_g5s.py",
+      "tests/test_generation_g5t.py",
+      "tests/test_generation_g5u.py",
+      "tests/test_review_reconciliation_batch_49.py",
+      "tests/test_review_reconciliation_batch_54.py"
+    ],
+    "synthetic_tests": [
+      "tests/test_mining_refrigerated_quantity_location.py"
+    ]
+  },
+  "mechanism": "Admit the bounded fridge/fridges noun family in core English and classify its singular lemma as a quantity_interior_location. No Python, premise-rule, inference, ask-rule, or consumer change is proposed. On the walked DEV-train item, the existing fold already emits one initial holder quantity and two matching consumption-event quantities; ask/how-many-entity already binds the holder, measure, and holding verb, and the existing single-entity consumer computes the correct current total. The sole final blocker is the unknown-word veto on fridge. The interior-location category additionally gives the noun its ordinary declarative compatibility with in and the existing ask/how-many-in-place generation boundary without re-keying person-held quantities to the location.",
+  "project": "curated",
+  "published_at": "2026-08-16T10:40:36.713134+00:00",
+  "registry_fingerprint": "91f56e8fbbc040fd237ea3c0e8be90e032b461cfb31f6533405f61109dab1413",
+  "review_ids": [],
+  "risks": [
+    "Vocabulary admission removes a precision guard, not merely a parser error. The documented 12-word batch and fruit-family TEST failures require a permissive scan, one tight lexical family per increment, and the full promotion gate.",
+    "There are seven raw dev-train fridge-family surface occurrences, but only one exact end-to-end final-blocker item was walked. The raw count is not claimed as yield; pool_frequency and expected_solved remain conservatively one.",
+    "A declared interior location does not prove complete contents. The prior bare-name location failure forbids treating a locative noun as a complete-holder witness or re-keying another holder's quantities under it.",
+    "Adding quantity_interior_location broadens existing ask/how-many-in-place and generation domains. Boundary evidence must show that compatibility remains category- and preposition-gated.",
+    "The implementation must remain YAML-first. No word-specific Python branch, benchmark-shaped rule, new consumer, or retry-on-decline path is justified.",
+    "The original item may be checked only after all invented synthetic evidence passes; its prose must never be copied into tests, manifests, logs, or documentation."
+  ],
+  "runtime_project": "gsm8k",
+  "specimens": [
+    {
+      "actual_rule_ids": [],
+      "answer": {
+        "clarification": null,
+        "committed": false,
+        "kind": "decline",
+        "reason": "no quantity known for 'fridge' of 'apple' (ask ask/how-many-in-place)",
+        "shape": "decline",
+        "value": null
+      },
+      "deficiencies": [],
+      "expectation": "The existing ask/how-many-in-place matcher binds fridge as the entity and apple as the measure; without premise evidence the answer remains an ordinary decline.",
+      "facts": [],
+      "id": "strict-positive-fridge-ask",
+      "interpretation": "The singular refrigerated storage noun occupies the existing interior-location slot of an ordinary in-place quantity ask.",
+      "kind": "strict_positive",
+      "reference_year": null,
+      "retest": null,
+      "sentence": "How many apples are in the fridge?",
+      "source_ref": null,
+      "target_rule": "ask/how-many-in-place",
+      "title": "Singular refrigerated interior ask",
+      "trace": {
+        "answer": {
+          "clarification": null,
+          "committed": false,
+          "kind": "decline",
+          "reason": "no quantity known for 'fridge' of 'apple' (ask ask/how-many-in-place)",
+          "shape": "decline",
+          "value": null
+        },
+        "ask": {
+          "id": "ask/how-many-in-place",
+          "query": {
+            "consumer": "single-entity",
+            "entity": "fridge",
+            "entity_qualifier": "",
+            "measure": "apple",
+            "place_fallback_entity": "world",
+            "sum_measure_variants": "true",
+            "verb": "have"
+          }
+        },
+        "collisions": [],
+        "deficiencies": [],
+        "facts": [],
+        "matches": [],
+        "proof": null
+      }
+    },
+    {
+      "actual_rule_ids": [],
+      "answer": {
+        "clarification": null,
+        "committed": false,
+        "kind": "decline",
+        "reason": "no ask shape recognizes this question",
+        "shape": "decline",
+        "value": null
+      },
+      "deficiencies": [],
+      "expectation": "No ask shape matches, no fact is emitted, and the engine declines without commitment.",
+      "facts": [],
+      "id": "boundary-bench-ask",
+      "interpretation": "The known noun bench is referential but is not a quantity interior location, so the otherwise parallel in-place question remains outside the ask rule.",
+      "kind": "boundary_probe",
+      "reference_year": null,
+      "retest": null,
+      "sentence": "How many apples are in the bench?",
+      "source_ref": null,
+      "target_rule": "ask/how-many-in-place",
+      "title": "Known noun outside the interior-location category",
+      "trace": {
+        "answer": {
+          "clarification": null,
+          "committed": false,
+          "kind": "decline",
+          "reason": "no ask shape recognizes this question",
+          "shape": "decline",
+          "value": null
+        },
+        "ask": null,
+        "collisions": [],
+        "deficiencies": [],
+        "facts": [],
+        "matches": [],
+        "proof": null
+      }
+    },
+    {
+      "actual_rule_ids": [],
+      "answer": {
+        "clarification": null,
+        "committed": true,
+        "kind": "number",
+        "reason": "fold over 'jora'/'apple'",
+        "shape": "number",
+        "value": 9.0
+      },
+      "deficiencies": [],
+      "expectation": "The existing fold emits the initial holder quantity and two decrement events, ask/how-many-entity binds Jora and apple, and the existing consumer commits exactly 9.",
+      "facts": [
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "jora",
+            "measure": "apple",
+            "value": 18.0,
+            "verb": "have"
+          },
+          "sentence": 0,
+          "source": "fold",
+          "source_ref": null,
+          "type": "Quantity"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "jora",
+            "measure": "apple",
+            "occurrence": 1,
+            "value": 5.0,
+            "verb": "eat"
+          },
+          "sentence": 1,
+          "source": "fold",
+          "source_ref": null,
+          "type": "Quantity"
+        },
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "jora",
+            "measure": "apple",
+            "occurrence": 2,
+            "value": 4.0,
+            "verb": "eat"
+          },
+          "sentence": 2,
+          "source": "fold",
+          "source_ref": null,
+          "type": "Quantity"
+        }
+      ],
+      "id": "answerable-holder-total",
+      "interpretation": "Jora begins with eighteen apples and two matching consumption events reduce the same holder-measure total to nine; the locative phrase does not change the holder key.",
+      "kind": "answerable",
+      "reference_year": null,
+      "retest": null,
+      "sentence": "Jora has 18 apples in the fridge. Jora ate 5 apples. Jora ate 4 apples. How many apples does Jora have?",
+      "source_ref": null,
+      "target_rule": "ask/how-many-entity",
+      "title": "Named holder with two matching decrements",
+      "trace": {
+        "answer": {
+          "clarification": null,
+          "committed": true,
+          "kind": "number",
+          "reason": "fold over 'jora'/'apple'",
+          "shape": "number",
+          "value": 9.0
+        },
+        "ask": {
+          "id": "ask/how-many-entity",
+          "query": {
+            "consumer": "single-entity",
+            "entity": "jora",
+            "measure": "apple",
+            "measure_qualifier": "",
+            "sum_measure_variants": "true",
+            "verb": "have"
+          }
+        },
+        "collisions": [],
+        "deficiencies": [],
+        "facts": [
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "jora",
+              "measure": "apple",
+              "value": 18.0,
+              "verb": "have"
+            },
+            "sentence": 0,
+            "source": "fold",
+            "source_ref": null,
+            "type": "Quantity"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "jora",
+              "measure": "apple",
+              "occurrence": 1,
+              "value": 5.0,
+              "verb": "eat"
+            },
+            "sentence": 1,
+            "source": "fold",
+            "source_ref": null,
+            "type": "Quantity"
+          },
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "jora",
+              "measure": "apple",
+              "occurrence": 2,
+              "value": 4.0,
+              "verb": "eat"
+            },
+            "sentence": 2,
+            "source": "fold",
+            "source_ref": null,
+            "type": "Quantity"
+          }
+        ],
+        "matches": [],
+        "proof": null
+      }
+    },
+    {
+      "actual_rule_ids": [],
+      "answer": {
+        "clarification": null,
+        "committed": false,
+        "kind": "decline",
+        "reason": "no quantity known for 'fridge' of 'apple' (ask ask/how-many-in-place)",
+        "shape": "decline",
+        "value": null
+      },
+      "deficiencies": [],
+      "expectation": "The trace retains the quantity under Jora, matches the fridge location ask, and declines because no complete fridge-held quantity is established.",
+      "facts": [
+        {
+          "derivation": null,
+          "fields": {
+            "entity": "jora",
+            "measure": "apple",
+            "value": 18.0,
+            "verb": "have"
+          },
+          "sentence": 0,
+          "source": "fold",
+          "source_ref": null,
+          "type": "Quantity"
+        }
+      ],
+      "id": "decline-location-completeness",
+      "interpretation": "The stated quantity belongs to Jora even though it is located inside a fridge; the locative phrase neither re-keys the quantity nor proves complete fridge contents.",
+      "kind": "decline",
+      "reference_year": null,
+      "retest": null,
+      "sentence": "Jora has 18 apples in the fridge. How many apples are in the fridge?",
+      "source_ref": null,
+      "target_rule": "ask/how-many-in-place",
+      "title": "Locative phrase does not establish location ownership",
+      "trace": {
+        "answer": {
+          "clarification": null,
+          "committed": false,
+          "kind": "decline",
+          "reason": "no quantity known for 'fridge' of 'apple' (ask ask/how-many-in-place)",
+          "shape": "decline",
+          "value": null
+        },
+        "ask": {
+          "id": "ask/how-many-in-place",
+          "query": {
+            "consumer": "single-entity",
+            "entity": "fridge",
+            "entity_qualifier": "",
+            "measure": "apple",
+            "place_fallback_entity": "world",
+            "sum_measure_variants": "true",
+            "verb": "have"
+          }
+        },
+        "collisions": [],
+        "deficiencies": [],
+        "facts": [
+          {
+            "derivation": null,
+            "fields": {
+              "entity": "jora",
+              "measure": "apple",
+              "value": 18.0,
+              "verb": "have"
+            },
+            "sentence": 0,
+            "source": "fold",
+            "source_ref": null,
+            "type": "Quantity"
+          }
+        ],
+        "matches": [],
+        "proof": null
+      }
+    }
+  ]
+}
