@@ -1302,6 +1302,18 @@ def build_router(state: ServerState) -> APIRouter:
             lambda: state.candidate_runner.trace(candidate_id, body.model_dump())
         )
 
+    @router.post("/campaign/runner/{candidate_id}/generation/from-reading")
+    def campaign_runner_from_reading(
+        candidate_id: str,
+        body: GenerationReadingBody,
+    ):
+        return _runner_call(
+            lambda: state.candidate_runner.from_reading(
+                candidate_id,
+                body.model_dump(),
+            )
+        )
+
     @router.get("/campaign/runner/{candidate_id}/doc")
     def campaign_runner_read_doc(candidate_id: str, path: str):
         return _runner_call(
@@ -1622,8 +1634,19 @@ def build_router(state: ServerState) -> APIRouter:
                     or review.get("id") in regressed
                 )
             ]
+        page = history[start : start + bounded]
+        for review in page:
+            target = review.get("target_rule")
+            if target is None and isinstance(review.get("ask_scenario"), dict):
+                target = review["ask_scenario"].get("target_ask")
+            source_ref = _identifier_source_json(
+                state.project.source_index,
+                target,
+            )
+            if source_ref is not None:
+                review["source_ref"] = source_ref
         return {
-            "reviews": history[start : start + bounded],
+            "reviews": page,
             "total": len(history),
             "offset": start,
             "limit": bounded,

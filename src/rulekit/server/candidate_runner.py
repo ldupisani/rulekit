@@ -458,6 +458,20 @@ class CandidateRunnerManager:
             runner = self._require(candidate_id)
             return self._request_at(runner.port, "POST", "/api/trace", body)
 
+    def from_reading(
+        self,
+        candidate_id: str,
+        body: dict[str, Any],
+    ) -> dict[str, Any]:
+        with self._lock:
+            runner = self._require(candidate_id)
+            return self._request_at(
+                runner.port,
+                "POST",
+                "/api/generation/from-reading",
+                body,
+            )
+
     def read_doc(self, candidate_id: str, path: str) -> dict[str, Any]:
         with self._lock:
             runner = self._require(candidate_id)

@@ -663,7 +663,8 @@ async function promoteReadingSentence(sentence, ruleId, button) {
   const subject = ruleId || "sentence meaning";
   setStatus(`opening ${subject} for human review…`);
   try {
-    const candidate = await api("POST", "/api/generation/from-reading", {
+    const runnerPath = campaignRunnerPath("/generation/from-reading");
+    const candidate = await api("POST", runnerPath || "/api/generation/from-reading", {
       rule_id: ruleId,
       sentence: sentence.text,
     });
@@ -679,6 +680,13 @@ async function promoteReadingSentence(sentence, ruleId, button) {
     }
     renderGenerationCandidate(candidate);
     setView("generate");
+    const source = reviewSource({
+      target_rule: candidate.target_rule,
+      source_ref: candidate.target_source,
+    });
+    if (source) {
+      await openGenerationSource(source);
+    }
     setStatus(
       `${candidate.target_rule || "sentence meaning"}: Reading sentence ready for review · ${candidate.target_status}`,
       "ok",
@@ -1745,11 +1753,21 @@ async function deleteReview(r) {
   setStatus("review excluded from active evidence — its append-only record remains recoverable", "ok");
 }
 
-function openReviewInReader(r) {
+function reviewSource(r) {
+  const target = r.target_rule || r.ask_scenario?.target_ask;
+  if (target && activeCampaignCandidateId()) {
+    return state.campaignRunner.project?.sources?.[target] || r.source_ref;
+  }
+  return r.source_ref;
+}
+
+async function openReviewInReader(r) {
   $("trace-input").value = r.ask_scenario?.text || r.sentence;
   setView("reading");
   $("view-reading").classList.add("on");
-  runTrace();
+  const source = reviewSource(r);
+  if (source) await openGenerationSource(source);
+  await runTrace();
 }
 
 /* ---------- campaign promotion reviews ----------
