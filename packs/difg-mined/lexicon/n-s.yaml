@@ -764,26 +764,6 @@ entries:
     senses:
     - noun
     plural: plates
-  place:
-    senses:
-    - verb
-    number: plural
-  placed:
-    senses:
-    - verb
-    verb:
-      lemma: place
-  places:
-    senses:
-    - verb
-    number: singular
-    verb:
-      lemma: place
-  placing:
-    senses:
-    - verb
-    verb:
-      lemma: place
   play:
     senses:
     - verb
@@ -896,26 +876,6 @@ entries:
     senses:
     - noun
     plural: potatoes
-  pour:
-    senses:
-    - verb
-    number: plural
-  poured:
-    senses:
-    - verb
-    verb:
-      lemma: pour
-  pouring:
-    senses:
-    - verb
-    verb:
-      lemma: pour
-  pours:
-    senses:
-    - verb
-    number: singular
-    verb:
-      lemma: pour
   practice:
     senses:
     - noun
@@ -1709,10 +1669,6 @@ entries:
     senses:
     - noun
     plural: scanners
-  scale:
-    senses:
-    - noun
-    plural: scales
   school:
     senses:
     - noun
@@ -2538,9 +2494,6 @@ entries:
   sufficient:
     senses:
     - adjective
-  sugar:
-    senses:
-    - noun
   sum:
     senses:
     - noun

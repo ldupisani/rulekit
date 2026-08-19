@@ -44,10 +44,17 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
     assert availability["ask/how-many-of-collection-are-label"].blockers == (
         "no project-backed ask filler exists for label",
     )
-    assert len(availability) == 120
+    assert availability[
+        "ask/final-instrument-measurement-reading"
+    ].blockers == ("no project-backed ask filler exists for dimension",)
+    assert availability["ask/measured-content-in-container"].blockers == (
+        "ask requires embedding context; standalone realization is disabled",
+    )
+    assert len(availability) == 122
     assert {
         item.id for item in availability.values() if not item.supported
     } == {
+        "ask/final-instrument-measurement-reading",
         "ask/how-many-all-combined-discourse-group",
         "ask/how-many-combined-discourse-group",
         "ask/how-many-combined-in-all-discourse-group",
@@ -59,6 +66,7 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
         "ask/how-many-of-collection-are-label",
         "ask/how-old-discourse-group-now",
         "ask/how-much-noun-entity-uninverted",
+        "ask/measured-content-in-container",
         "ask/what-combined-age-at-year",
         "ask/which-discourse-group-at-day",
     }

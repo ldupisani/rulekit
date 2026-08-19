@@ -115,9 +115,6 @@ entries:
         senses:
             - noun
         plural: theaters
-    then:
-        senses:
-            - adverb
     thermos:
         senses:
             - noun
@@ -598,9 +595,6 @@ entries:
         senses:
             - noun
         plural: vehicles
-    vinegar:
-        senses:
-            - noun
     vending:
         senses:
             - adjective
@@ -727,9 +721,6 @@ entries:
             - verb
         verb:
             lemma: watch
-    water:
-        senses:
-            - noun
     watermelon:
         senses:
             - noun
@@ -772,26 +763,6 @@ entries:
     weekly:
         senses:
             - adjective
-    weigh:
-        senses:
-            - verb
-    weighed:
-        senses:
-            - verb
-        verb:
-            lemma: weigh
-    weighing:
-        senses:
-            - verb
-    weighs:
-        senses:
-            - verb
-        verb:
-            lemma: weigh
-    weight:
-        senses:
-            - noun
-        plural: weights
     well:
         senses:
             - noun

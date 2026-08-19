@@ -131,10 +131,13 @@ def test_reviewed_answerable_seed_now_uses_direct_relevant_evidence(project) -> 
     )
 
     assert candidate.target_ask == "ask/what-average-combined-contracted"
-    assert candidate.question == "What's the average amount of pencils?"
+    item = candidate.requested_bindings["item"]
+    measure = candidate.query["measure"]
+    assert item not in {"amounts", "numbers"}
+    assert candidate.question == f"What's the average amount of {item}?"
     assert candidate.answer["committed"] is True
     assert candidate.answer["value"] == 0.5
     assert [premise["sentence"] for premise in candidate.premises] == [
-        "Total of 1 pencil.",
-        "John had triple Eron's pencils.",
+        f"Total of 1 {measure}.",
+        f"John had triple Eron's {item}.",
     ]

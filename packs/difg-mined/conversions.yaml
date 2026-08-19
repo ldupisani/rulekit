@@ -30,9 +30,6 @@ conversions:
 - from: gallon
   to: quart
   factor: 4
-- from: kilogram
-  to: gram
-  factor: 1000.0
 - from: kilometer
   to: meter
   factor: 1000

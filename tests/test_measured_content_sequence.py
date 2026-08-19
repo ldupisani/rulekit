@@ -21,7 +21,7 @@ from rulekit.kernel.patterns import match_ask
 
 @pytest.fixture(scope="module")
 def project():
-    return load_project(Path("projects/gsm8k"))
+    return load_project(Path("projects/curated"))
 
 
 @pytest.fixture(scope="module")
@@ -33,9 +33,9 @@ def _story(*, include_placement: bool = True, added_unit: str = "kilograms") -> 
     placement = "She placed a box on a scale, and " if include_placement else "She "
     return (
         "Mira is conducting an experiment. "
-        f"{placement}poured enough milk into the box to bring the weight to 4 kg. "
-        "Then she added enough sand to triple the weight. "
-        f"Finally, she added 2 {added_unit} of flour. "
+        f"{placement}poured enough water into the box to bring the weight to 4 kg. "
+        "Then she added enough clay to triple the weight. "
+        f"Finally, she added 2 {added_unit} of sugar. "
         "What is the final weight measured on the scale?"
     )
 
@@ -60,10 +60,10 @@ def test_ordered_content_changes_derive_the_final_instrument_reading(registry) -
         )
         for fact in result.store.by_kind(MeasuredContentChange)
     ] == [
-        ("box", "milk", "set_total", 4.0, "weight", "kilogram", 1),
+        ("box", "water", "set_total", 4.0, "weight", "kilogram", 1),
         (
             "$active:measured-container$",
-            "sand",
+            "clay",
             "multiply_total",
             3.0,
             "weight",
@@ -72,7 +72,7 @@ def test_ordered_content_changes_derive_the_final_instrument_reading(registry) -
         ),
         (
             "$active:measured-container$",
-            "flour",
+            "sugar",
             "add_quantity",
             2.0,
             None,
@@ -84,9 +84,9 @@ def test_ordered_content_changes_derive_the_final_instrument_reading(registry) -
         (fact.container, fact.content, fact.operation, fact.occurrence)
         for fact in result.store.by_kind(ContainerContent)
     ] == [
-        ("box", "milk", "set_total", 1),
-        ("box", "sand", "multiply_total", 2),
-        ("box", "flour", "add_quantity", 3),
+        ("box", "water", "set_total", 1),
+        ("box", "clay", "multiply_total", 2),
+        ("box", "sugar", "add_quantity", 3),
     ]
 
 
@@ -95,7 +95,7 @@ def test_resulting_total_is_not_misattributed_to_content_or_instrument(registry)
     quantities = result.store.by_kind(Quantity)
 
     assert not any(
-        fact.entity in {"milk", "sand", "flour", "scale"}
+        fact.entity in {"water", "clay", "sugar", "scale"}
         for fact in quantities
     )
     assert not any(
@@ -146,7 +146,7 @@ def test_narration_order_is_multiply_then_add_not_add_then_multiply(registry) ->
 def test_two_prior_measurement_streams_make_an_elided_update_ambiguous(registry) -> None:
     result = solve(
         "Nia placed a bucket on a scale, and poured enough water into the bucket "
-        "to bring the weight to 5 kilograms. Mira poured enough milk into a box "
+        "to bring the weight to 5 kilograms. Mira poured enough water into a box "
         "to bring the weight to 4 kilograms. Nia added enough clay to double "
         "the weight. What is the final weight measured on the scale?",
         registry,
@@ -165,3 +165,55 @@ def test_specific_measurement_ask_outranks_the_generic_physics_prefix(registry) 
     assert matched is not None
     assert matched[0].id == "ask/final-instrument-measurement-reading"
     assert matched[1]["consumer"] == "measurement-reading"
+
+
+def _content_amount_story(*, tare: str = "500 grams", content: str = "water") -> str:
+    return (
+        "Rina placed a box on a scale, and poured enough water into the box "
+        "to bring the weight to 4 kilograms. Rina added enough clay to double "
+        "the weight. Rina added 2 kilograms of sugar. "
+        f"If the box weighs {tare}, how much {content} is in the box?"
+    )
+
+
+def test_initial_content_amount_subtracts_the_container_tare(registry) -> None:
+    result = solve(_content_amount_story(), registry)
+
+    assert (result.answer.kind, result.answer.value) == ("number", 3.5)
+    assert result.answer.reason == (
+        "'water' in 'box': 4 kilogram − 0.5 kilogram"
+    )
+    assert any(
+        fact.entity == "box"
+        and fact.measure == "gram"
+        and fact.value == 500
+        and fact.verb == "weigh"
+        for fact in result.store.by_kind(Quantity)
+    )
+
+
+def test_later_content_has_no_resulting_total_from_which_to_remove_tare(registry) -> None:
+    result = solve(_content_amount_story(content="sugar"), registry)
+
+    assert not result.answer.committed
+    assert "resulting-total anchor" in result.answer.reason
+
+
+def test_container_mass_needs_a_declared_conversion_to_the_anchor_unit(registry) -> None:
+    result = solve(_content_amount_story(tare="2 pounds"), registry)
+
+    assert not result.answer.committed
+    assert "no known conversion" in result.answer.reason
+
+
+def test_misspelled_mass_verb_does_not_create_a_tare_fact(registry) -> None:
+    result = solve(
+        _content_amount_story().replace("box weighs", "box weights"),
+        registry,
+    )
+
+    assert not result.answer.committed
+    assert not any(
+        fact.entity == "box" and fact.measure == "gram"
+        for fact in result.store.by_kind(Quantity)
+    )

@@ -183,3 +183,19 @@ asks:
       instrument: "{instrument}"
       dimension: "{dimension}"
       relation: "{prep}"
+
+  - id: ask/measured-content-in-container
+    match:
+      question:
+        - {lit: how}
+        - {lit: much}
+        - {slot: content, cat: measured_content_substance}
+        - {slot: copula, cat: singular_copula}
+        - {lit: in}
+        - {slot: container, cat: measurement_container, referential: true}
+    resolves:
+      consumer: measurement-content-amount
+      content: "{content}"
+      container: "{container}"
+    generation:
+      context_required: true

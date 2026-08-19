@@ -1295,6 +1295,57 @@ categories:
             elsewhere in this file; the two categories are consulted by
             entirely separate resolution paths (`interchangeable_categories`
             vs `dimension_categories`) and never interact.
+    measurement_container:
+        parent: noun
+        notes: >
+            Containers whose aggregate contents can be observed by a
+            measurement instrument. Membership does not assign a mass to the
+            empty container; a premise must state a total-reading anchor.
+    measurement_instrument:
+        parent: noun
+        notes: >
+            Instruments that observe an aggregate physical dimension without
+            acquiring that dimension as an intrinsic property.
+    measured_content_substance:
+        parent: noun
+        notes: >
+            Substances introduced into a measured container. An update keeps
+            the substance identity even when only its effect on the aggregate,
+            rather than its independent amount, is stated.
+    measurement_placement_verb:
+        parent: verb
+        notes: "Predicates that position a measured container on an instrument."
+    measured_content_transfer_verb:
+        parent: verb
+        notes: "Predicates that introduce content into an explicit container."
+    measured_content_adjustment_verb:
+        parent: verb
+        notes: "Predicates that add content to the active measured container."
+    measurement_target_verb:
+        parent: verb
+        notes: "Predicates whose complement states a resulting aggregate reading."
+    measurement_observation_verb:
+        parent: verb
+        notes: "Predicates that name an instrument's observed reading."
+    measurement_mass_verb:
+        parent: verb
+        notes: "Predicates that state an entity's intrinsic measured mass."
+    measurement_sufficiency_marker:
+        parent: adjective
+        notes: >
+            Markers saying an unspecified content amount is sufficient to
+            produce the separately stated aggregate effect.
+    measurement_container_entry_preposition:
+        parent: spatial_goal_preposition
+        notes: "Goal markers that place introduced content inside a container."
+    final_measurement_attribute:
+        parent: adjective
+        notes: "Attributes that explicitly request the terminal observed reading."
+    mass_dimension_noun:
+        parent: dimension_noun
+        notes: >
+            Dimension nouns that name an aggregate mass reading rather than a
+            concrete unit.
     time_measure:
         parent: noun
         dimension: true
@@ -2056,8 +2107,8 @@ members:
     conjunct_comparison_incompatible_noun: [time]
     existential_incompatible_noun: [time]
     non_quantity_holder:
-        [amount, clay, cost, dollar, inch, money, number, paper, pound, price,
-         remainder, rest, sand, time, wool, year]
+        [amount, clay, cost, dollar, gram, inch, kilogram, money, number, paper,
+         pound, price, remainder, rest, sand, time, wool, year]
     mass_quantity_noun: [clay, litter, money, paper, rest, sand, wool]
     partitive_weight_measure: [pound]
     weighable_partitive_substance: [clay, paper, sand, wool]
@@ -2418,7 +2469,7 @@ members:
     age_noun: [age]
     dimension_noun: [age] # other dimension nouns extend this from difg-mined
     length_measure: [inch] # other concrete units extend this from packs/difg-mined
-    mass_measure: [pound] # other concrete units extend this from packs/difg-mined
+    mass_measure: [gram, kilogram, pound, weight] # other measures extend this from packs/difg-mined
     currency_measure: [dollar] # 'cent'/'balance'/'earnings'/'cost' extend this from packs/difg-mined
     time_measure: [year, age] # generic age forms; other units extend this from difg-mined
     duration_measure: [year, week, minute, hour]
@@ -2453,6 +2504,19 @@ members:
     sequential_partition_verb: [enroll, enrolls, enrolled, enrolling]
     sequential_partition_preposition: [in]
     predeterminer_multiplier: [double, triple]
+    measurement_container: [box, bucket]
+    measurement_instrument: [scale]
+    measured_content_substance: [clay, sand, sugar, vinegar, water]
+    measurement_placement_verb: [place, placed, places, placing]
+    measured_content_transfer_verb: [pour, poured, pouring, pours]
+    measured_content_adjustment_verb: [add, added, adding, adds]
+    measurement_target_verb: [bring, bringing, brings, brought]
+    measurement_observation_verb: [measure, measured, measures]
+    measurement_mass_verb: [weigh, weighed, weighing, weighs]
+    measurement_sufficiency_marker: [enough]
+    measurement_container_entry_preposition: [into]
+    final_measurement_attribute: [final]
+    mass_dimension_noun: [weight]
     finite_infinitival_goal_predicate:
         [hope, hoped, hopes, intend, intended, intends, want, wanted, wants]
     direct_quantity_goal_predicate:
@@ -2535,6 +2599,7 @@ members:
     purpose_compatible_verb: [jumped, ran, travel, traveled, travels, walked]
     membership_collection_noun: [animal]
 attribute_compatibility:
+    measurement_sufficiency_marker: [measured_content_substance]
     academic_course_modifier: [sequential_partition_destination]
     color_attribute: [colorable_noun]
     # Multiple compatible noun categories are intentional. Either category

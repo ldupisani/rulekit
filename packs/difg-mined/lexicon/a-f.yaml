@@ -60,29 +60,9 @@ entries:
   activity:
     senses:
     - noun
-  add:
-    senses:
-    - verb
-    number: plural
-  added:
-    senses:
-    - verb
-    verb:
-      lemma: add
-  adding:
-    senses:
-    - verb
-    verb:
-      lemma: add
   additional:
     senses:
     - adjective
-  adds:
-    senses:
-    - verb
-    number: singular
-    verb:
-      lemma: add
   administration:
     senses:
     - noun
@@ -767,10 +747,6 @@ entries:
     senses:
     - adjective
     - noun
-  box:
-    senses:
-    - noun
-    plural: boxes
   boxer:
     senses:
     - noun
@@ -806,19 +782,6 @@ entries:
   brew:
     senses:
     - verb
-  bring:
-    senses:
-    - verb
-  bringing:
-    senses:
-    - verb
-    verb:
-      lemma: bring
-  brings:
-    senses:
-    - verb
-    verb:
-      lemma: bring
   brochure:
     senses:
     - noun
@@ -829,11 +792,6 @@ entries:
   bronze:
     senses:
     - noun
-  brought:
-    senses:
-    - verb
-    verb:
-      lemma: bring
   brown:
     senses:
     - adjective
@@ -854,10 +812,6 @@ entries:
   brushing:
     senses:
     - verb
-  bucket:
-    senses:
-    - noun
-    plural: buckets
   budget:
     senses:
     - noun
@@ -1524,24 +1478,6 @@ entries:
   concrete:
     senses:
     - adjective
-  conduct:
-    senses:
-    - verb
-  conducted:
-    senses:
-    - verb
-    verb:
-      lemma: conduct
-  conducting:
-    senses:
-    - verb
-    verb:
-      lemma: conduct
-  conducts:
-    senses:
-    - verb
-    verb:
-      lemma: conduct
   conditioner:
     senses:
     - noun
@@ -2455,9 +2391,6 @@ entries:
   enlarge:
     senses:
     - verb
-  enough:
-    senses:
-    - adjective
   entered:
     senses:
     - verb
@@ -2571,10 +2504,6 @@ entries:
     senses:
     - noun
     plural: experiences
-  experiment:
-    senses:
-    - noun
-    plural: experiments
   expired:
     senses:
     - adjective
@@ -2747,12 +2676,6 @@ entries:
     senses:
     - noun
     plural: films
-  final:
-    senses:
-    - adjective
-  finally:
-    senses:
-    - adverb
   finance:
     senses:
     - noun

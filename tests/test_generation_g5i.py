@@ -78,9 +78,9 @@ def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
         for item in list_rule_availability(load_project(CURATED))
     }
 
-    assert len(availability) == 143
-    assert sum(item.supported for item in availability.values()) == 135
-    assert sum(not item.supported for item in availability.values()) == 8
+    assert len(availability) == 148
+    assert sum(item.supported for item in availability.values()) == 139
+    assert sum(not item.supported for item in availability.values()) == 9
     assert all(availability[rule_id].supported for rule_id in NEWLY_SUPPORTED)
     assert all(
         "optional groups have no current realizer" not in item.blockers

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import Counter
+from dataclasses import replace
 import math
 
 from . import ConsumerContext, consumer
@@ -64,6 +65,8 @@ def measurement_reading(ctx: ConsumerContext):
         captured_by_sentence.setdefault(
             change.provenance.sentence, Counter()
         )[float(change.value)] += 1
+    for sentence, value in ctx.query.get("_additional_measured_values", ()):
+        captured_by_sentence.setdefault(int(sentence), Counter())[float(value)] += 1
     for reading in ctx.premises:
         captured = captured_by_sentence.get(reading.sentence_index, Counter())
         for unit in reading.units:
@@ -225,4 +228,129 @@ def measurement_reading(ctx: ConsumerContext):
         "number",
         float(total),
         f"{anchor.container!r} on {instrument!r}: " + " ".join(steps),
+    )
+
+
+@consumer("measurement-content-amount")
+def measurement_content_amount(ctx: ConsumerContext):
+    """Recover an anchor content amount by subtracting the container tare.
+
+    A resulting-total anchor states the container-plus-content mass.  The
+    named content can be isolated only when that content established the
+    anchor, the same container has one declared intrinsic mass, and the whole
+    later measurement stream remains valid.  Later additions are replayed for
+    accounting but never subtracted from the earlier content amount.
+    """
+
+    from ..answer import Answer
+    from ..evaluate import evaluate
+    from ..model import MeasuredContentChange, Quantity, SpatialPlacement
+
+    content = str(ctx.query.get("content", "")).strip()
+    container = str(ctx.query.get("container", "")).strip()
+    if not content or not container:
+        return Answer(
+            "decline", None, "a content amount needs one content and container"
+        )
+
+    anchors = [
+        change
+        for change in ctx.store.by_kind(MeasuredContentChange)
+        if change.operation == "set_total"
+        and change.container == container
+        and change.content == content
+    ]
+    if len(anchors) != 1:
+        return Answer(
+            "decline",
+            None,
+            "the requested content needs one resulting-total anchor in its container",
+        )
+    anchor = anchors[0]
+
+    placements = [
+        placement
+        for placement in ctx.store.by_kind(SpatialPlacement)
+        if placement.entity == container
+        and placement.occurrence is not None
+        and anchor.occurrence is not None
+        and placement.occurrence <= anchor.occurrence
+    ]
+    if len(placements) != 1:
+        return Answer(
+            "decline",
+            None,
+            "the content anchor needs one prior container/instrument placement",
+        )
+    placement = placements[0]
+
+    anchor_families = _dimension_families(anchor.measure, ctx)
+    tares = [
+        quantity
+        for quantity in ctx.store.by_kind(Quantity)
+        if quantity.entity == container
+        and ctx.reg.word_in_category(quantity.verb, "measurement_mass_verb")
+        and (_dimension_families(quantity.measure, ctx) & anchor_families)
+    ]
+    if len(tares) != 1:
+        return Answer(
+            "decline",
+            None,
+            "the requested content needs one compatible intrinsic container mass",
+        )
+    tare = tares[0]
+
+    # Reuse the final-reading consumer to validate and account for every later
+    # aggregate update. The tare is an additional, independently stated value,
+    # so admit exactly that one mention into its premise audit.
+    validated = measurement_reading(
+        replace(
+            ctx,
+            query={
+                "instrument": placement.reference,
+                "dimension": anchor.dimension or "",
+                "relation": placement.relation,
+                "_additional_measured_values": (
+                    (tare.provenance.sentence, tare.value),
+                ),
+            },
+        )
+    )
+    if not validated.committed:
+        return validated
+
+    assert anchor.measure is not None
+    factor = (
+        1.0
+        if tare.measure == anchor.measure
+        else ctx.reg.conversions.get((tare.measure, anchor.measure))
+    )
+    if factor is None:
+        return Answer(
+            "decline",
+            None,
+            f"no known conversion from {tare.measure!r} to {anchor.measure!r}",
+        )
+    tare_value = evaluate(
+        f"{tare.value} * {factor}",
+        {},
+        ctx.log,
+        source="measurement-content-tare-conversion",
+    )
+    amount = evaluate(
+        f"{anchor.value} - {tare_value}",
+        {},
+        ctx.log,
+        source="measurement-content-tare-subtraction",
+    )
+    if not math.isfinite(amount) or amount <= 0:
+        return Answer(
+            "decline", None, "the container tare leaves no positive content amount"
+        )
+
+    return Answer(
+        "number",
+        float(amount),
+        f"{content!r} in {container!r}: {anchor.value:g} {anchor.measure} "
+        f"− {tare_value:g} {anchor.measure}",
     )

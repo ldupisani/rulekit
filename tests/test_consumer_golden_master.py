@@ -467,7 +467,7 @@ def test_the_guards_are_the_bulk_of_the_coverage():
 
 # --- the coverage of this file, measured and enforced ----------------------
 
-_GUARD_FLOOR = 137  # guards WITH a probe: raise as probes are added, never lower
+_GUARD_FLOOR = 142  # guards WITH a probe: raise as probes are added, never lower
 _GAP_CEILING = 0    # guards WITHOUT one: lower as probes are added, never raise
 
 # The denominator is 91, and it was 92 until the boundary bug above was fixed:
@@ -595,6 +595,14 @@ _COVERED_BY_UNIT_TEST = {
     ("measurement-reading", "the added measure"),
     ("measurement-reading", "no known conversion from"),
     ("measurement-reading", "unsupported aggregate operation"),
+    # Content recovery asks bind both nouns and public rules emit the anchor,
+    # placement, and tare shapes. Direct stores probe the defensive restatement
+    # and the physically impossible nonpositive remainder.
+    ("measurement-reading", "a content amount needs one content and c"),
+    ("measurement-reading", "the requested content needs one resultin"),
+    ("measurement-reading", "the content anchor needs one prior conta"),
+    ("measurement-reading", "the requested content needs one compatib"),
+    ("measurement-reading", "the container tare leaves no positive co"),
 }
 
 

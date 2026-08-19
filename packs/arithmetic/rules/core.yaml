@@ -9365,6 +9365,7 @@ asks:
     where:
       - number_compatible: [who, verb]
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - slot_not_category: {slot: item, cat: aggregate_noun}
       - verb_roles_compatible:
           verb: verb
           roles: {theme: [item]}
@@ -9396,6 +9397,7 @@ asks:
     where:
       - number_compatible: [who, verb]
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - slot_not_category: {slot: item, cat: aggregate_noun}
       - verb_roles_compatible:
           verb: verb
           roles: {theme: [item]}

@@ -1,5 +1,8 @@
 format: rulekit/conversions@1
 conversions:
+- from: kilogram
+  to: gram
+  factor: 1000
 - from: hour
   to: minute
   factor: 60

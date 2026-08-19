@@ -58,9 +58,11 @@ entries:
 
     # core temporal/adverbial grammar
     currently: {senses: [adverb]}
+    finally: {senses: [adverb]}
     just: {senses: [adverb]}
     only: {senses: [adverb]}
     far: {senses: [adverb]}
+    then: {senses: [adverb]}
     ago: {senses: [adverb]}
     individually: {senses: [adverb]}
 
@@ -519,6 +521,50 @@ entries:
     clay: {senses: [noun]}
     wool: {senses: [noun]}
     paper: {senses: [noun], plural: papers}
+
+    # Aggregate measurement language. These are ordinary English words used
+    # by the arithmetic pack's container/instrument construction; keeping the
+    # essential vocabulary in core makes that general rule available without
+    # loading the much broader corpus-mined lexicon.
+    box: {senses: [noun], plural: boxes}
+    bucket: {senses: [noun], plural: buckets}
+    scale: {senses: [noun], plural: scales}
+    water: {senses: [noun]}
+    sugar: {senses: [noun]}
+    vinegar: {senses: [noun]}
+    weight: {senses: [noun], plural: weights}
+    experiment: {senses: [noun], plural: experiments}
+    gram: {senses: [noun], plural: grams}
+    kilogram: {senses: [noun], plural: [kg, kilograms]}
+    enough: {senses: [adjective]}
+    final: {senses: [adjective]}
+    add: {senses: [verb], number: plural}
+    added: {senses: [verb], verb: {lemma: add}}
+    adding: {senses: [verb], verb: {lemma: add}}
+    adds: {senses: [verb], number: singular, verb: {lemma: add}}
+    bring: {senses: [verb]}
+    bringing: {senses: [verb], verb: {lemma: bring}}
+    brings: {senses: [verb], verb: {lemma: bring}}
+    brought: {senses: [verb], verb: {lemma: bring}}
+    conduct: {senses: [verb]}
+    conducted: {senses: [verb], verb: {lemma: conduct}}
+    conducting: {senses: [verb], verb: {lemma: conduct}}
+    conducts: {senses: [verb], verb: {lemma: conduct}}
+    measure: {senses: [verb], number: plural}
+    measured: {senses: [verb], verb: {lemma: measure}}
+    measures: {senses: [verb], number: singular, verb: {lemma: measure}}
+    weigh: {senses: [verb], number: plural}
+    weighed: {senses: [verb], verb: {lemma: weigh}}
+    weighing: {senses: [verb], verb: {lemma: weigh}}
+    weighs: {senses: [verb], number: singular, verb: {lemma: weigh}}
+    place: {senses: [verb], number: plural}
+    placed: {senses: [verb], verb: {lemma: place}}
+    places: {senses: [verb], number: singular, verb: {lemma: place}}
+    placing: {senses: [verb], verb: {lemma: place}}
+    pour: {senses: [verb], number: plural}
+    poured: {senses: [verb], verb: {lemma: pour}}
+    pouring: {senses: [verb], verb: {lemma: pour}}
+    pours: {senses: [verb], number: singular, verb: {lemma: pour}}
 
     # adjectives
     red: {senses: [adjective]}

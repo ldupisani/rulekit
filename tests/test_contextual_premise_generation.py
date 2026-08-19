@@ -40,14 +40,14 @@ def project():
     return load_project(CURATED)
 
 
-def test_only_safety_consumers_remain_outside_premise_generation(project) -> None:
+def test_only_declared_non_generative_rules_remain_outside_generation(project) -> None:
     availability = {
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 143
+    assert len(availability) == 148
     assert {item.id for item in availability.values() if not item.supported} == (
-        SAFETY_RULES
+        SAFETY_RULES | {"arithmetic/measured-content-resulting-total-gapped"}
     )
     assert all(
         availability[rule_id].generation == "contextual"
@@ -121,7 +121,8 @@ def test_generation_api_separates_safety_consumers_from_targets() -> None:
 
     payload = endpoint()
 
-    assert payload["supported"] == payload["total"] == 135
+    assert payload["supported"] == 139
+    assert payload["total"] == 140
     assert payload["safety_total"] == 8
     assert {rule["id"] for rule in payload["safety_rules"]} == SAFETY_RULES
     assert not ({rule["id"] for rule in payload["rules"]} & SAFETY_RULES)

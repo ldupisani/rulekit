@@ -997,3 +997,65 @@ def test_measurement_rejects_an_unknown_aggregate_operation(gsm8k):
     )
     assert got.kind == "decline"
     assert "unsupported aggregate operation" in got.reason
+
+
+def _measurement_tare(**updates):
+    fields = {
+        "entity": "box",
+        "measure": "kilogram",
+        "value": 0.5,
+        "verb": "weigh",
+        "occurrence": 2,
+    }
+    fields.update(updates)
+    return Quantity(
+        provenance=Provenance(source="synthetic", sentence=2), **fields
+    )
+
+
+def _measurement_content_call(gsm8k, facts=(), query=None):
+    return call(
+        "measurement-content-amount",
+        gsm8k,
+        query or {"content": "water", "container": "box"},
+        store=FactStore(facts=list(facts)),
+    )
+
+
+def test_measurement_content_needs_content_and_container(gsm8k):
+    got = _measurement_content_call(gsm8k, query={"content": "water"})
+    assert got.kind == "decline"
+    assert "needs one content and container" in got.reason
+
+
+def test_measurement_content_needs_one_matching_anchor(gsm8k):
+    got = _measurement_content_call(gsm8k)
+    assert got.kind == "decline"
+    assert "needs one resulting-total anchor" in got.reason
+
+
+def test_measurement_content_needs_one_prior_placement(gsm8k):
+    got = _measurement_content_call(gsm8k, (_measurement_anchor(),))
+    assert got.kind == "decline"
+    assert "needs one prior container/instrument placement" in got.reason
+
+
+def test_measurement_content_needs_one_compatible_tare(gsm8k):
+    got = _measurement_content_call(
+        gsm8k, (_measurement_anchor(), _measurement_placement())
+    )
+    assert got.kind == "decline"
+    assert "needs one compatible intrinsic container mass" in got.reason
+
+
+def test_measurement_content_tare_must_leave_a_positive_amount(gsm8k):
+    got = _measurement_content_call(
+        gsm8k,
+        (
+            _measurement_anchor(),
+            _measurement_placement(),
+            _measurement_tare(value=4.0),
+        ),
+    )
+    assert got.kind == "decline"
+    assert "tare leaves no positive content amount" in got.reason

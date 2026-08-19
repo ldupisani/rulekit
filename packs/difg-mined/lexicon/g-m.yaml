@@ -155,10 +155,6 @@ entries:
   graduated:
     senses:
     - verb
-  gram:
-    senses:
-    - noun
-    plural: grams
   grandchildren:
     senses:
     - noun
@@ -829,12 +825,6 @@ entries:
     senses:
     - noun
     plural: kids
-  kilogram:
-    senses:
-    - noun
-    plural:
-    - kg
-    - kilograms
   # scibench: 'kJ' is the SYMBOL (a number-form of its unit, folded to 'kj' —
   # the 'kg' precedent above); the physics consumer scales it to the canonical
   # 'joule' through the conversions table at bind time
@@ -1404,21 +1394,6 @@ entries:
     senses:
     - noun
     plural: meals
-  measure:
-    senses:
-    - verb
-    number: plural
-  measured:
-    senses:
-    - verb
-    verb:
-      lemma: measure
-  measures:
-    senses:
-    - verb
-    number: singular
-    verb:
-      lemma: measure
   meat:
     senses:
     - noun
