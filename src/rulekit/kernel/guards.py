@@ -86,11 +86,30 @@ def _fact_values_by_sentence(store: FactStore) -> dict[int, "Counter[float]"]:
     ignores the percent change. Their values count as read only when the
     arithmetic consumed them (the caller checks the log for rate/price/
     goal/group-total/discount/percent-change values)."""
-    from .model import Discount, Goal, GroupTotal, PercentChange, Price, Rate
+    from .model import (
+        Discount,
+        Goal,
+        GroupTotal,
+        MeasuredContentChange,
+        PercentChange,
+        Price,
+        Rate,
+    )
 
     out: dict[int, "Counter[float]"] = {}
     for fact in store.facts:
-        if isinstance(fact, (Rate, Price, Goal, GroupTotal, Discount, PercentChange)):
+        if isinstance(
+            fact,
+            (
+                Rate,
+                Price,
+                Goal,
+                GroupTotal,
+                Discount,
+                PercentChange,
+                MeasuredContentChange,
+            ),
+        ):
             continue
         values = out.setdefault(fact.provenance.sentence, Counter())
         for field_name in _NUMERIC_FACT_FIELDS:
@@ -238,7 +257,15 @@ def _check_number(
         # "half as many", "twice", "40% more" or the question's "in 10
         # years" is exactly the confident-wrong this guard exists to stop.
         fact_values = _fact_values_by_sentence(store) if store is not None else {}
-        from .model import Discount, Goal, GroupTotal, PercentChange, Price, Rate
+        from .model import (
+            Discount,
+            Goal,
+            GroupTotal,
+            MeasuredContentChange,
+            PercentChange,
+            Price,
+            Rate,
+        )
 
         # values from USE-GATED fact kinds (Rate, Price, Goal, GroupTotal,
         # Discount, PercentChange): existence alone doesn't count as read,
@@ -258,6 +285,7 @@ def _check_number(
             | {float(t.value) for t in store.by_kind(GroupTotal)}
             | {float(d.value) for d in store.by_kind(Discount)}
             | {float(pc.value) for pc in store.by_kind(PercentChange)}
+            | {float(change.value) for change in store.by_kind(MeasuredContentChange)}
             if store is not None else set()
         )
         # A consumer that reads the WHOLE question number list by construction

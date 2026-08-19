@@ -1663,6 +1663,101 @@ class PercentChange(Fact):
 
 
 @dataclass(frozen=True)
+class SpatialPlacement(Fact):
+    """One entity positioned relative to a supporting reference object.
+
+    This is deliberately not a property of the reference object.  Placing a
+    vessel on an instrument changes the spatial relation between them; it does
+    not make the vessel's mass an intrinsic property of the instrument.  The
+    relation is retained explicitly so a later consumer can distinguish
+    ``on`` from another supported spatial configuration.
+    """
+
+    entity: str
+    reference: str
+    relation: str
+    occurrence: int | None = None
+
+    def key(self) -> tuple:
+        return ("spatial-placement", self.entity, self.occurrence)
+
+    def value_part(self) -> Any:
+        return (self.reference, self.relation)
+
+
+@dataclass(frozen=True)
+class MeasuredContentChange(Fact):
+    """One ordered change to the contents of a measured container.
+
+    ``operation`` describes the effect on the aggregate reading, not an
+    invented quantity for the added substance:
+
+    - ``set_total`` records a stated resulting total;
+    - ``multiply_total`` scales the prior total; and
+    - ``add_quantity`` adds a stated amount in ``measure`` units.
+
+    The content remains explicit even when its own amount is unknown.  Thus
+    "enough brine to bring the weight to 4 kg" does not falsely assert that
+    the brine itself weighs 4 kg.  ``container`` may carry the reserved
+    discourse sentinel used by a rule whose surface omits the already-active
+    measured container; the consumer resolves that sentinel only against one
+    unique prior measurement stream.
+
+    Numeric values are use-gated by ``guards.py``: merely extracting an update
+    cannot account for a number.  A committing consumer must actually apply
+    every update in narration order.
+    """
+
+    container: str
+    content: str
+    operation: str
+    value: float
+    dimension: str | None = None
+    measure: str | None = None
+    occurrence: int | None = None
+
+    def key(self) -> tuple:
+        return ("measured-content-change", self.container, self.occurrence)
+
+    def value_part(self) -> Any:
+        return (
+            self.content,
+            self.operation,
+            self.value,
+            self.dimension,
+            self.measure,
+        )
+
+
+@dataclass(frozen=True)
+class ContainerContent(Fact):
+    """A named content introduced into a resolved container at one event.
+
+    This is the inspectable container/content projection of a
+    :class:`MeasuredContentChange`.  It carries no invented amount: the event
+    may state only its effect on an aggregate reading.  Later containment
+    reasoning can use the ordered events without reverse-engineering an
+    internal active-stream sentinel.
+    """
+
+    container: str
+    content: str
+    operation: str
+    occurrence: int
+
+    def key(self) -> tuple:
+        return (
+            "container-content",
+            self.container,
+            self.content,
+            self.occurrence,
+        )
+
+    def value_part(self) -> Any:
+        return self.operation
+
+
+@dataclass(frozen=True)
 class Before(Fact):
     """A strict ordering between two event identities.
 

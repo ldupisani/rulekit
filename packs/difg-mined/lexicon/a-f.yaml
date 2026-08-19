@@ -63,6 +63,7 @@ entries:
   add:
     senses:
     - verb
+    number: plural
   added:
     senses:
     - verb
@@ -79,6 +80,7 @@ entries:
   adds:
     senses:
     - verb
+    number: singular
     verb:
       lemma: add
   administration:
@@ -1522,6 +1524,24 @@ entries:
   concrete:
     senses:
     - adjective
+  conduct:
+    senses:
+    - verb
+  conducted:
+    senses:
+    - verb
+    verb:
+      lemma: conduct
+  conducting:
+    senses:
+    - verb
+    verb:
+      lemma: conduct
+  conducts:
+    senses:
+    - verb
+    verb:
+      lemma: conduct
   conditioner:
     senses:
     - noun
@@ -2551,6 +2571,10 @@ entries:
     senses:
     - noun
     plural: experiences
+  experiment:
+    senses:
+    - noun
+    plural: experiments
   expired:
     senses:
     - adjective

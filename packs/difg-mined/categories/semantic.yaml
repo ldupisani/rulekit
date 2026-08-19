@@ -100,11 +100,70 @@ categories:
       `currency` — an ordinary "gives 3 apples" never qualifies.
   vehicle:
     parent: motion_participant
+  measurement_container:
+    parent: noun
+    notes: >
+      Containers whose aggregate contents can be observed by a measurement
+      instrument. Membership does not assign a mass to the empty container;
+      a premise must state a total-reading anchor.
+  measurement_instrument:
+    parent: noun
+    notes: >
+      Instruments that can observe an aggregate physical dimension without
+      acquiring that dimension as an intrinsic property.
+  measured_content_substance:
+    parent: noun
+    notes: >
+      Substances that may be introduced into a measured container. A content
+      update preserves the substance even when only its effect on the aggregate
+      reading, rather than its independent amount, is stated.
+  measurement_placement_verb:
+    parent: verb
+    notes: "Predicates that position a measured container on an instrument."
+  measured_content_transfer_verb:
+    parent: verb
+    notes: "Predicates that introduce content into an explicit container."
+  measured_content_adjustment_verb:
+    parent: verb
+    notes: "Predicates that add content to the active measured container."
+  measurement_target_verb:
+    parent: verb
+    notes: "Predicates whose complement states a resulting aggregate reading."
+  measurement_observation_verb:
+    parent: verb
+    notes: "Predicates that name an instrument's observed reading."
+  measurement_sufficiency_marker:
+    parent: adjective
+    notes: >
+      Markers saying an unspecified content amount is sufficient to produce
+      the separately stated aggregate effect.
+  measurement_container_entry_preposition:
+    parent: spatial_goal_preposition
+    notes: "Goal markers that place introduced content inside a container."
+  final_measurement_attribute:
+    parent: adjective
+    notes: "Attributes that explicitly request the terminal observed reading."
+  mass_dimension_noun:
+    parent: dimension_noun
+    notes: "Dimension nouns that name an aggregate mass reading rather than a unit."
 attribute_compatibility:
+  measurement_sufficiency_marker: [measured_content_substance]
   capacity_attribute: [capacity_noun]
   quality_attribute: [quality_bearer_noun, animate]
   marital_status_attribute: [animate]
 members:
+  measurement_container: [box, bucket, container, tray]
+  measurement_instrument: [scale]
+  measured_content_substance: [clay, flour, milk, rice, sand, sugar, vinegar, water]
+  measurement_placement_verb: [place, placed, places, placing]
+  measured_content_transfer_verb: [pour, poured]
+  measured_content_adjustment_verb: [add, added, adding]
+  measurement_target_verb: [bring, bringing, brings, brought]
+  measurement_observation_verb: [measure, measured, measures]
+  measurement_sufficiency_marker: [enough]
+  measurement_container_entry_preposition: [into]
+  final_measurement_attribute: [final]
+  mass_dimension_noun: [weight]
   plural_subject_quantifier: [both]
   transferable_quantity_object: [bar, kite, orange, ticket]
   edible_quantity_object: [berry, pie]

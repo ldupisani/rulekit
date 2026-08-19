@@ -764,6 +764,26 @@ entries:
     senses:
     - noun
     plural: plates
+  place:
+    senses:
+    - verb
+    number: plural
+  placed:
+    senses:
+    - verb
+    verb:
+      lemma: place
+  places:
+    senses:
+    - verb
+    number: singular
+    verb:
+      lemma: place
+  placing:
+    senses:
+    - verb
+    verb:
+      lemma: place
   play:
     senses:
     - verb
@@ -879,6 +899,7 @@ entries:
   pour:
     senses:
     - verb
+    number: plural
   poured:
     senses:
     - verb
@@ -892,6 +913,7 @@ entries:
   pours:
     senses:
     - verb
+    number: singular
     verb:
       lemma: pour
   practice:
@@ -1687,6 +1709,10 @@ entries:
     senses:
     - noun
     plural: scanners
+  scale:
+    senses:
+    - noun
+    plural: scales
   school:
     senses:
     - noun

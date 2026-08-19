@@ -27,11 +27,13 @@ from .model import (
     Atom,
     ClassRefinement,
     Conditional,
+    ContainerContent,
     Disjunction,
     EnumeratedDisjunction,
     Fact,
     Goal,
     GroupTotal,
+    MeasuredContentChange,
     Membership,
     Predication,
     Price,
@@ -177,6 +179,52 @@ _ELIDED_STANDARD = "$elided:standard$"
 # A goal-relative holding ("half the money she needs") names no independent
 # comparison entity. The subject's unique compatible Goal is its standard.
 _GOAL_STANDARD = "$goal:subject$"
+
+_ACTIVE_MEASURED_CONTAINER = "$active:measured-container$"
+
+
+def _measured_container_content_synth(
+    store: FactStore, reg: Registry, log: ArithmeticLog
+) -> list[Fact]:
+    """Resolve elided measured updates into inspectable content events.
+
+    The content amount is intentionally absent.  The source fact may state a
+    resulting total or multiplier without stating that substance's own mass.
+    An elided container resolves only when one prior aggregate anchor exists.
+    """
+
+    del reg, log
+    changes = list(store.by_kind(MeasuredContentChange))
+    anchors = [change for change in changes if change.operation == "set_total"]
+    out: list[Fact] = []
+    for change in changes:
+        if change.occurrence is None:
+            continue
+        container = change.container
+        if container == _ACTIVE_MEASURED_CONTAINER:
+            prior = [
+                anchor
+                for anchor in anchors
+                if anchor.occurrence is not None
+                and anchor.occurrence < change.occurrence
+            ]
+            if len(prior) != 1:
+                continue
+            container = prior[0].container
+        out.append(
+            ContainerContent(
+                provenance=Provenance(
+                    source="synth/measured-container-content",
+                    sentence=change.provenance.sentence,
+                    assumption=change.provenance.assumption,
+                ),
+                container=container,
+                content=change.content,
+                operation=change.operation,
+                occurrence=change.occurrence,
+            )
+        )
+    return out
 
 
 def _goal_relation_synth(
@@ -2994,6 +3042,7 @@ PLUGINS: dict[str, Synthesizer] = {
     "synth/enumeration-elimination": _enumeration_elimination_synth,
     "synth/name-prefix-alias": _name_prefix_alias_synth,
     "synth/name-head-sortal": _name_head_sortal_synth,
+    "synth/measured-container-content": _measured_container_content_synth,
     "synth/subject-role-derivation": _subject_role_derivation_synth,
     "synth/goal-relation": _goal_relation_synth,
     "synth/goal-progress": _goal_progress_synth,

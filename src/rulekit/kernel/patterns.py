@@ -27,6 +27,7 @@ from .model import (
     ClassRefinement,
     VerbalRelation,
     Conditional,
+    ContainerContent,
     Contribution,
     Discount,
     Disjunction,
@@ -44,6 +45,7 @@ from .model import (
     LocationConstraint,
     LocationEvent,
     LocationTransitionAbsence,
+    MeasuredContentChange,
     Membership,
     PartitionQuantity,
     PositiveGroundConditional,
@@ -68,6 +70,7 @@ from .model import (
     SequentialPartitionPrefix,
     SequentialPartitionRemainingShare,
     SequentialPartitionRemainder,
+    SpatialPlacement,
     Subset,
     TaskCompletionDuration,
     Unit,
@@ -120,6 +123,9 @@ _FACT_CLASSES = {
     "location_event": LocationEvent,
     "location_constraint": LocationConstraint,
     "location_transition_absence": LocationTransitionAbsence,
+    "spatial_placement": SpatialPlacement,
+    "measured_content_change": MeasuredContentChange,
+    "container_content": ContainerContent,
     "semantic_graph_node": SemanticGraphNode,
     "semantic_graph_edge": SemanticGraphEdge,
 }
@@ -2128,14 +2134,11 @@ def _build_fact(
         verb = kwargs.get("verb", "have")
         if not reg.word_in_category(verb, "state") and verb not in ("have", "be"):
             kwargs["occurrence"] = provenance.sentence
-    elif cls is PercentChange and "occurrence" not in kwargs:
-        # mining candidate percent-change-values: a percent-change is
-        # ALWAYS an event (never a state, unlike Quantity/FractionQuantity/
-        # RestQuantity above, which branch on verb category) — this is
-        # what lets two percent-change events on the SAME entity in two
-        # DIFFERENT sentences key apart (PercentChange.key() includes
-        # `occurrence`) so `_entity_total` (answer.py) can chain them in
-        # ascending sentence order instead of colliding.
+    elif cls in (PercentChange, SpatialPlacement, MeasuredContentChange) and "occurrence" not in kwargs:
+        # These are ALWAYS events (never states, unlike Quantity/
+        # FractionQuantity/RestQuantity above, which branch on verb
+        # category). Their occurrence is the narration coordinate that keeps
+        # repeated changes distinct and lets consumers apply them in order.
         kwargs["occurrence"] = provenance.sentence
     return cls(provenance=provenance, **kwargs)
 

@@ -1,0 +1,185 @@
+format: rulekit/rules@1
+# Ordered aggregate measurement.
+#
+# These rules keep spatial support, changing contents, and the instrument's
+# derived reading separate.  A resulting total is not assigned to the added
+# substance, and the instrument does not acquire the measured dimension as an
+# intrinsic property.  The consumer links them only through one unique stream.
+rules:
+  - id: arithmetic/measurement-container-on-instrument
+    phase: read
+    description: >
+      A measured container is positioned on a supporting instrument. This
+      records the spatial relation only; it does not assert a reading.
+    match:
+      sentence:
+        - {slot: actor, type: entity, common_noun_cat: quantity_event_participant, referential: true}
+        - {slot: verb, cat: measurement_placement_verb, finite_form: true}
+        - {slot: container, cat: measurement_container, referential: true}
+        - {slot: prep, cat: quantity_surface_preposition}
+        - {slot: instrument, cat: measurement_instrument, referential: true}
+    where:
+      - number_compatible: [actor, verb]
+    emits:
+      - fact: spatial_placement
+        entity: "{container}"
+        reference: "{instrument}"
+        relation: "{prep}"
+
+  - id: arithmetic/measured-content-resulting-total
+    phase: read
+    description: >
+      An unspecified amount of named content is introduced into an explicit
+      container until a stated dimension reaches a stated total. The total is
+      the container-plus-contents reading, not the content's own amount.
+    match:
+      sentence:
+        - {slot: actor, type: entity, common_noun_cat: quantity_event_participant, referential: true}
+        - {slot: verb, cat: measured_content_transfer_verb, finite_form: true}
+        - {slot: content, cat: measured_content_substance, qualified: true, qualifier_cat: measurement_sufficiency_marker}
+        - {slot: into, cat: measurement_container_entry_preposition}
+        - {slot: container, cat: measurement_container, referential: true}
+        - {lit: to}
+        - {slot: target, cat: measurement_target_verb, bare_form: true}
+        - {slot: dimension, cat: mass_dimension_noun, referential: true}
+        - {lit: to}
+        - {slot: amount, cat: mass_measure, counted: true}
+    where:
+      - number_compatible: [actor, verb]
+    consumes: [amount]
+    emits:
+      - fact: measured_content_change
+        container: "{container}"
+        content: "{content}"
+        operation: set_total
+        value: amount
+        dimension: "{dimension}"
+        measure: "{amount}"
+
+  - id: arithmetic/measured-content-resulting-total-gapped
+    phase: read
+    generation: reader-only
+    description: >
+      The coordinated-clause sibling of the resulting-total premise. Its
+      actor is inherited grammatically from a preceding conjunct, while the
+      content, container, dimension, and resulting total remain explicit.
+    match:
+      sentence:
+        - {slot: verb, cat: measured_content_transfer_verb, finite_form: true}
+        - {slot: content, cat: measured_content_substance, qualified: true, qualifier_cat: measurement_sufficiency_marker}
+        - {slot: into, cat: measurement_container_entry_preposition}
+        - {slot: container, cat: measurement_container, referential: true}
+        - {lit: to}
+        - {slot: target, cat: measurement_target_verb, bare_form: true}
+        - {slot: dimension, cat: mass_dimension_noun, referential: true}
+        - {lit: to}
+        - {slot: amount, cat: mass_measure, counted: true}
+    consumes: [amount]
+    emits:
+      - fact: measured_content_change
+        container: "{container}"
+        content: "{content}"
+        operation: set_total
+        value: amount
+        dimension: "{dimension}"
+        measure: "{amount}"
+
+  - id: arithmetic/measured-content-multiply-total
+    phase: read
+    generation: contextual
+    generation_context:
+      before:
+        - sentence:
+            - {slot: support_actor, type: entity, common_noun_cat: quantity_event_participant, referential: true}
+            - {slot: support_verb, cat: measured_content_transfer_verb, finite_form: true}
+            - {slot: support_content, cat: measured_content_substance, qualified: true, qualifier_cat: measurement_sufficiency_marker}
+            - {slot: support_into, cat: measurement_container_entry_preposition}
+            - {slot: support_container, cat: measurement_container, referential: true}
+            - {lit: to}
+            - {slot: support_target, cat: measurement_target_verb, bare_form: true}
+            - {slot: support_dimension, cat: mass_dimension_noun, referential: true}
+            - {lit: to}
+            - {slot: support_amount, cat: mass_measure, counted: true}
+          where:
+            - number_compatible: [support_actor, support_verb]
+      required_fact_counts: {measured_content_change: 2}
+    description: >
+      An added substance has an explicitly stated multiplicative effect on the
+      active aggregate dimension. The omitted container resolves only against
+      one unique prior resulting-total stream.
+    match:
+      sentence:
+        - {slot: actor, type: entity, common_noun_cat: quantity_event_participant, referential: true}
+        - {slot: verb, cat: measured_content_adjustment_verb, finite_form: true}
+        - {slot: content, cat: measured_content_substance, qualified: true, qualifier_cat: measurement_sufficiency_marker}
+        - {lit: to}
+        - {slot: factor, type: multiplier}
+        - {slot: dimension, cat: mass_dimension_noun, referential: true}
+    where:
+      - number_compatible: [actor, verb]
+      - bound_requires_category: {bound: factor, slot: factor, cat: predeterminer_multiplier}
+    consumes: [factor]
+    emits:
+      - fact: measured_content_change
+        container: "$active:measured-container$"
+        content: "{content}"
+        operation: multiply_total
+        value: factor
+        dimension: "{dimension}"
+
+  - id: arithmetic/measured-content-add-quantity
+    phase: read
+    generation: contextual
+    generation_context:
+      before:
+        - sentence:
+            - {slot: support_actor, type: entity, common_noun_cat: quantity_event_participant, referential: true}
+            - {slot: support_verb, cat: measured_content_transfer_verb, finite_form: true}
+            - {slot: support_content, cat: measured_content_substance, qualified: true, qualifier_cat: measurement_sufficiency_marker}
+            - {slot: support_into, cat: measurement_container_entry_preposition}
+            - {slot: support_container, cat: measurement_container, referential: true}
+            - {lit: to}
+            - {slot: support_target, cat: measurement_target_verb, bare_form: true}
+            - {slot: support_dimension, cat: mass_dimension_noun, referential: true}
+            - {lit: to}
+            - {slot: support_amount, cat: mass_measure, counted: true}
+          where:
+            - number_compatible: [support_actor, support_verb]
+      required_fact_counts: {measured_content_change: 2}
+    description: >
+      A stated amount of content is added to the active measured container.
+      Its unit remains explicit so the consumer can require a declared
+      same-dimension conversion before changing the aggregate reading.
+    match:
+      sentence:
+        - {slot: actor, type: entity, common_noun_cat: quantity_event_participant, referential: true}
+        - {slot: verb, cat: measured_content_adjustment_verb, finite_form: true}
+        - {slot: amount, cat: mass_measure, counted: true}
+        - {lit: of}
+        - {slot: content, cat: measured_content_substance}
+    where:
+      - number_compatible: [actor, verb]
+    consumes: [amount]
+    emits:
+      - fact: measured_content_change
+        container: "$active:measured-container$"
+        content: "{content}"
+        operation: add_quantity
+        value: amount
+        measure: "{amount}"
+
+asks:
+  - id: ask/final-instrument-measurement-reading
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {slot: dimension, cat: mass_dimension_noun, qualified: true, qualifier_cat: final_measurement_attribute}
+        - {slot: observed, cat: measurement_observation_verb}
+        - {slot: prep, cat: quantity_surface_preposition}
+        - {slot: instrument, cat: measurement_instrument, referential: true}
+    resolves:
+      consumer: measurement-reading
+      instrument: "{instrument}"
+      dimension: "{dimension}"
+      relation: "{prep}"

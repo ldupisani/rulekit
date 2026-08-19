@@ -467,7 +467,7 @@ def test_the_guards_are_the_bulk_of_the_coverage():
 
 # --- the coverage of this file, measured and enforced ----------------------
 
-_GUARD_FLOOR = 122  # guards WITH a probe: raise as probes are added, never lower
+_GUARD_FLOOR = 137  # guards WITH a probe: raise as probes are added, never lower
 _GAP_CEILING = 0    # guards WITHOUT one: lower as probes are added, never raise
 
 # The denominator is 91, and it was 92 until the boundary bug above was fixed:
@@ -577,6 +577,24 @@ _COVERED_BY_UNIT_TEST = {
     # Direct stores probe the consumer's defensive restatement of both facts.
     ("partition-percentage", "partition total needs exactly one holder"),
     ("partition-percentage", "partition value"),
+    # Aggregate-measurement asks bind their query fields and the public rules
+    # emit ordered, nonnegative, mass-compatible changes. Direct malformed
+    # stores exercise every defensive restatement in the consumer.
+    ("measurement-reading", "a measurement reading needs an instrumen"),
+    ("measurement-reading", "the asked dimension"),
+    ("measurement-reading", "stated value"),
+    ("measurement-reading", "the reading needs one"),
+    ("measurement-reading", "a measured update has no narration order"),
+    ("measurement-reading", "an elided measured-content update does n"),
+    ("measurement-reading", "the document contains measured changes o"),
+    ("measurement-reading", "two aggregate measurement effects have n"),
+    ("measurement-reading", "the aggregate measurement anchor is inva"),
+    ("measurement-reading", "a measured-content update is invalid"),
+    ("measurement-reading", "the scaled dimension"),
+    ("measurement-reading", "a total multiplier must be positive"),
+    ("measurement-reading", "the added measure"),
+    ("measurement-reading", "no known conversion from"),
+    ("measurement-reading", "unsupported aggregate operation"),
 }
 
 

@@ -683,6 +683,21 @@ changes and constraints, dated ages, and explicit
 their own identity keys and value parts; the store does not flatten all
 meaning into generic triples.
 
+Aggregate instrument readings keep three representations distinct.
+`SpatialPlacement` records that a measured container is supported by an
+instrument, including the spatial relation; it does not assign the
+container's dimension to the instrument. `MeasuredContentChange` records an
+ordered content event as a resulting-total anchor, a total multiplier, or a
+measured addition. The named content is retained even when its independent
+amount is unknown, so “enough material to bring the weight to N” never becomes
+a false claim that the material itself weighs N. A saturation step resolves a
+uniquely active stream into `ContainerContent` events with the concrete
+container and narration coordinate. The `measurement-reading` consumer then
+selects one container/instrument/anchor chain and applies every compatible
+change in sentence order, converting units only through pack data. Multiple
+active streams, missing placement, incompatible dimensions, unordered
+updates, or any stated number outside the selected stream decline.
+
 `AgeAtYear` records one entity's age at an integral absolute calendar-year
 coordinate. It is intentionally separate from `Quantity.time`: a dated age
 may be projected one-for-one with elapsed years, while an arbitrary dated

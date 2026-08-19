@@ -1410,6 +1410,7 @@ class FactEmit(StrictModel):
         "disjunction", "equivalence", "quantified_disjunction", "existential",
         "verbal_relation", "location_event", "location_constraint",
         "location_transition_absence",
+        "spatial_placement", "measured_content_change", "container_content",
         "semantic_graph_node", "semantic_graph_edge",
         "alias", "enumerated_disjunction",
         "disjunctive_conditional", "ground_conditional",

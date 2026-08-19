@@ -30,16 +30,18 @@ import pytest
 
 from rulekit.data.project import load_project
 from rulekit.kernel.consumers import CONSUMERS, ConsumerContext
-from rulekit.kernel.engine import solve
+from rulekit.kernel.engine import analyze, solve
 from rulekit.kernel.evaluate import ArithmeticLog
 from rulekit.kernel.facts import FactStore
 from rulekit.kernel.model import (
     AgeAtYear,
     Goal,
+    MeasuredContentChange,
     PartitionQuantity,
     Predication,
     Provenance,
     Quantity,
+    SpatialPlacement,
 )
 from rulekit.kernel.patterns import SKIPPABLE_SENSES, match_ask
 
@@ -70,6 +72,7 @@ def call(
     match=None,
     ask=None,
     reference_year=None,
+    premises=(),
 ):
     """Invoke a consumer directly. Fields default to None so a consumer that
     starts reading state its guard never needed fails loudly here rather than
@@ -78,6 +81,7 @@ def call(
         query=query, question=question, store=store, reg=reg,
         log=ArithmeticLog(), match=match, ask=ask,
         reference_year=reference_year,
+        premises=tuple(premises),
     ))
 
 
@@ -725,3 +729,271 @@ def test_partition_percentage_refuses_a_part_larger_than_the_total(curated):
     )
     assert got.kind == "decline"
     assert "partition value 120" in got.reason
+
+
+# --- aggregate measurement: the public grammar supplies a mass dimension,
+# narration coordinates, positive multipliers, and one selected stream. These
+# direct stores probe the consumer's defensive restatement of those contracts.
+
+
+def _measurement_change(
+    operation,
+    value,
+    *,
+    container="box",
+    content="water",
+    dimension=None,
+    measure=None,
+    occurrence=0,
+    sentence=0,
+):
+    return MeasuredContentChange(
+        provenance=Provenance(source="synthetic", sentence=sentence),
+        container=container,
+        content=content,
+        operation=operation,
+        value=value,
+        dimension=dimension,
+        measure=measure,
+        occurrence=occurrence,
+    )
+
+
+def _measurement_anchor(**updates):
+    fields = {
+        "operation": "set_total",
+        "value": 4.0,
+        "container": "box",
+        "content": "water",
+        "dimension": "weight",
+        "measure": "kilogram",
+        "occurrence": 0,
+        "sentence": 0,
+    }
+    fields.update(updates)
+    return _measurement_change(**fields)
+
+
+def _measurement_placement(**updates):
+    fields = {
+        "entity": "box",
+        "reference": "scale",
+        "relation": "on",
+        "occurrence": 0,
+    }
+    fields.update(updates)
+    return SpatialPlacement(
+        provenance=Provenance(source="synthetic", sentence=0), **fields
+    )
+
+
+def _measurement_call(gsm8k, facts=(), query=None, premises=()):
+    return call(
+        "measurement-reading",
+        gsm8k,
+        query
+        or {"instrument": "scale", "dimension": "weight", "relation": "on"},
+        store=FactStore(facts=list(facts)),
+        premises=premises,
+    )
+
+
+@pytest.mark.parametrize(
+    ("query", "reason"),
+    (
+        ({"dimension": "weight", "relation": "on"}, "needs an instrument"),
+        (
+            {"instrument": "scale", "dimension": "apple", "relation": "on"},
+            "names no declared measurement dimension",
+        ),
+    ),
+)
+def test_measurement_query_defensive_contracts(gsm8k, query, reason):
+    got = _measurement_call(gsm8k, query=query)
+    assert got.kind == "decline"
+    assert reason in got.reason
+
+
+def test_measurement_rejects_a_stated_value_outside_its_stream(gsm8k):
+    reading = analyze("Nia found 3 coins.", gsm8k, sentence_index=0)
+    got = _measurement_call(gsm8k, premises=(reading,))
+    assert got.kind == "decline"
+    assert "stated value" in got.reason
+
+
+def test_measurement_needs_one_placed_total_anchor(gsm8k):
+    got = _measurement_call(gsm8k)
+    assert got.kind == "decline"
+    assert "the reading needs one" in got.reason
+
+
+def test_measurement_update_needs_a_narration_coordinate(gsm8k):
+    update = _measurement_change(
+        "multiply_total",
+        2.0,
+        container="$active:measured-container$",
+        content="clay",
+        dimension="weight",
+        occurrence=None,
+        sentence=1,
+    )
+    got = _measurement_call(
+        gsm8k, (_measurement_anchor(), _measurement_placement(), update)
+    )
+    assert got.kind == "decline"
+    assert "no narration order" in got.reason
+
+
+def test_measurement_elision_needs_one_prior_stream(gsm8k):
+    other = _measurement_anchor(container="bucket", content="milk")
+    update = _measurement_change(
+        "multiply_total",
+        2.0,
+        container="$active:measured-container$",
+        content="clay",
+        dimension="weight",
+        occurrence=1,
+        sentence=1,
+    )
+    got = _measurement_call(
+        gsm8k,
+        (_measurement_anchor(), other, _measurement_placement(), update),
+    )
+    assert got.kind == "decline"
+    assert "one unique prior stream" in got.reason
+
+
+def test_measurement_refuses_changes_outside_the_selected_stream(gsm8k):
+    other = _measurement_change(
+        "add_quantity",
+        2.0,
+        container="bucket",
+        content="clay",
+        measure="kilogram",
+        occurrence=1,
+        sentence=1,
+    )
+    got = _measurement_call(
+        gsm8k, (_measurement_anchor(), _measurement_placement(), other)
+    )
+    assert got.kind == "decline"
+    assert "outside the selected stream" in got.reason
+
+
+def test_measurement_effects_need_a_strict_order(gsm8k):
+    update = _measurement_change(
+        "add_quantity",
+        2.0,
+        content="clay",
+        measure="kilogram",
+        occurrence=0,
+    )
+    got = _measurement_call(
+        gsm8k, (_measurement_anchor(), _measurement_placement(), update)
+    )
+    assert got.kind == "decline"
+    assert "no strict order" in got.reason
+
+
+@pytest.mark.parametrize("value", (-1.0, float("nan")))
+def test_measurement_anchor_must_be_finite_and_nonnegative(gsm8k, value):
+    got = _measurement_call(
+        gsm8k, (_measurement_anchor(value=value), _measurement_placement())
+    )
+    assert got.kind == "decline"
+    assert "anchor is invalid" in got.reason
+
+
+def test_measurement_update_must_be_finite_and_nonnegative(gsm8k):
+    update = _measurement_change(
+        "add_quantity",
+        -1.0,
+        content="clay",
+        measure="kilogram",
+        occurrence=1,
+        sentence=1,
+    )
+    got = _measurement_call(
+        gsm8k, (_measurement_anchor(), _measurement_placement(), update)
+    )
+    assert got.kind == "decline"
+    assert "update is invalid" in got.reason
+
+
+def test_measurement_multiplier_dimension_must_match(gsm8k):
+    update = _measurement_change(
+        "multiply_total",
+        2.0,
+        content="clay",
+        dimension="distance",
+        occurrence=1,
+        sentence=1,
+    )
+    got = _measurement_call(
+        gsm8k, (_measurement_anchor(), _measurement_placement(), update)
+    )
+    assert got.kind == "decline"
+    assert "scaled dimension" in got.reason
+
+
+def test_measurement_multiplier_must_be_positive(gsm8k):
+    update = _measurement_change(
+        "multiply_total",
+        0.0,
+        content="clay",
+        dimension="weight",
+        occurrence=1,
+        sentence=1,
+    )
+    got = _measurement_call(
+        gsm8k, (_measurement_anchor(), _measurement_placement(), update)
+    )
+    assert got.kind == "decline"
+    assert "multiplier must be positive" in got.reason
+
+
+def test_measurement_added_unit_must_match_the_dimension(gsm8k):
+    update = _measurement_change(
+        "add_quantity",
+        2.0,
+        content="milk",
+        measure="liter",
+        occurrence=1,
+        sentence=1,
+    )
+    got = _measurement_call(
+        gsm8k, (_measurement_anchor(), _measurement_placement(), update)
+    )
+    assert got.kind == "decline"
+    assert "added measure" in got.reason
+
+
+def test_measurement_added_unit_needs_a_conversion(gsm8k):
+    update = _measurement_change(
+        "add_quantity",
+        2.0,
+        content="clay",
+        measure="weight",
+        occurrence=1,
+        sentence=1,
+    )
+    got = _measurement_call(
+        gsm8k, (_measurement_anchor(), _measurement_placement(), update)
+    )
+    assert got.kind == "decline"
+    assert "no known conversion" in got.reason
+
+
+def test_measurement_rejects_an_unknown_aggregate_operation(gsm8k):
+    update = _measurement_change(
+        "divide_total",
+        2.0,
+        content="clay",
+        occurrence=1,
+        sentence=1,
+    )
+    got = _measurement_call(
+        gsm8k, (_measurement_anchor(), _measurement_placement(), update)
+    )
+    assert got.kind == "decline"
+    assert "unsupported aggregate operation" in got.reason
