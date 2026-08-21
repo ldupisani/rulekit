@@ -1064,9 +1064,6 @@ entries:
     - verb
     verb:
       lemma: purchase
-  purple:
-    senses:
-    - adjective
   purpose:
     senses:
     - noun

@@ -507,6 +507,12 @@ categories:
             Remnant nouns that support the plural subset construction "the
             rest are ...". Singular `remainder` remains available to other
             remnant rules but is not interchangeable with this construction.
+    partition_attribute_preposition:
+        parent: preposition
+        notes: >
+            Prepositions that realize an attribute as a subgroup label in a
+            partition comparison, as in "more of them in purple". This is
+            separate from spatial uses of the same preposition.
     sequential_partition_context:
         parent: noun
         notes: >
@@ -2159,7 +2165,7 @@ members:
     plural_object_pronoun: [them]
     remnant_adj: [left]
     prenominal_remnant_adj: [remaining]
-    color_attribute: [beige, blue, green, red, turquoise, violet]
+    color_attribute: [beige, blue, green, purple, red, turquoise, violet, yellow]
     size_attribute: [small, large]
     linear_unit_dimension_adjective: [tall]
     colorable_noun:
@@ -2511,6 +2517,7 @@ members:
     price_anaphor: [price, cost]
     remnant: [remainder, rest]
     partition_remnant: [rest]
+    partition_attribute_preposition: [in]
     sequential_partition_context: [university]
     sequential_partition_population: [student]
     sequential_partition_destination: [course]

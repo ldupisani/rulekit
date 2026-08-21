@@ -4788,6 +4788,138 @@ rules:
         entity: "{who}"
         verb: "{verb}"
 
+  - id: arithmetic/possessed-location-collection-context
+    phase: read
+    description: >
+      "Mira has a pantry with marbles" introduces an uncounted collection
+      inside an owned location. The collection context records the location,
+      its owner, and the plural measure without inventing a zero total. Later
+      partition anaphors can therefore resolve "them" to marbles, while asks
+      about another owner's pantry remain distinct.
+    match:
+      sentence:
+        - {slot: owner, type: entity, referential: true, bare_reference_category: bare_entity_reference}
+        - {slot: verb, cat: possession_state, finite_form: true}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: place, cat: quantity_location, number: singular}
+        - {lit: with}
+        - {slot: item, type: plural}
+    where:
+      - number_compatible: [owner, verb]
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+    emits:
+      - fact: collection_context
+        holder: "{place}"
+        holder_owner: "{owner}"
+        collection: "{item}"
+        verb: have
+
+  - id: arithmetic/partition-cardinal-proportional-delta
+    phase: read
+    generation: contextual
+    generation_context:
+      before:
+        - sentence:
+            - {slot: context_owner, type: entity, referential: true, bare_reference_category: bare_entity_reference}
+            - {slot: context_verb, cat: possession_state, finite_form: true}
+            - {lit: a, consume_skipped: true}
+            - {slot: context_place, cat: quantity_location, number: singular}
+            - {lit: with}
+            - {slot: context_item, type: plural}
+          where:
+            - number_compatible: [context_owner, context_verb]
+      required_fact_counts: {partition_quantity: 2}
+      target_commas_after: [first_attr]
+    description: >
+      "Sixteen of them are red, and there are 25% more of them in blue"
+      states two sibling partitions of one prior collection. The first count
+      is explicit; the second is the stated proportional increase or decrease
+      from that count. Both become ordinary PartitionQuantity facts, so the
+      existing collection resolver and qualified-measure machinery own the
+      downstream arithmetic.
+    match:
+      sentence:
+        - {slot: n, type: number, at_start: true}
+        - {lit: of}
+        - {slot: coll, cat: plural_object_pronoun}
+        - {slot: first_verb, cat: copula}
+        - {slot: first_attr, cat: color_attribute}
+        - {lit: and}
+        - {lit: there}
+        - {slot: second_verb, cat: copula}
+        - {slot: f, type: fraction, fraction_positive: true}
+        - {slot: dir, cat: count_quantity_delta}
+        - {lit: of}
+        - {slot: coll_again, cat: plural_object_pronoun}
+        - {slot: attr_prep, cat: partition_attribute_preposition}
+        - {slot: second_attr, cat: color_attribute}
+    where:
+      - same_lemma: [coll, coll_again]
+      - same_lemma: [first_verb, second_verb]
+      - same_number: [n, first_verb]
+      - proportional_delta_compatible: {fraction: f, direction: dir, direction_cat: delta}
+      - distinct: [first_attr, second_attr]
+    satisfies:
+      n: [quantifies]
+      coll: [refers]
+      coll_again: [refers]
+      dir: [standard]
+      attr_prep: [object]
+    consumes: [n, f]
+    emits:
+      - fact: partition_quantity
+        collection: "{coll}"
+        attribute: "{first_attr}"
+        value: n
+        verb: "{first_verb}"
+      - fact: partition_quantity
+        collection: "{coll}"
+        attribute: "{second_attr}"
+        value: "n * (1 + f * sign(dir))"
+        verb: "{first_verb}"
+
+  - id: arithmetic/partition-aggregate-share
+    phase: read
+    description: >
+      "There are 25% as many green marbles as there are red and blue
+      marbles" sizes one attributed subgroup from the explicit sum of two
+      named sibling partitions. The unresolved fact commits nothing until
+      both distinct standards are known for one prior collection; its generic
+      synthesizer then emits the usual PartitionQuantity.
+    match:
+      sentence:
+        - {lit: there, at_start: true}
+        - {slot: verb, cat: copula}
+        - opt:
+            - {slot: focus, cat: restrictive_focus_adverb}
+        - {slot: f, type: fraction, fraction_positive: true}
+        - {lit: as}
+        - {lit: many}
+        - {slot: target, type: qualified, qualifier_cat: color_attribute, number: plural}
+        - {lit: as}
+        - {lit: there}
+        - {slot: standard_verb, cat: copula}
+        - {slot: first_attr, cat: color_attribute}
+        - {lit: and}
+        - {slot: second_standard, type: qualified, qualifier_cat: color_attribute, number: plural}
+    where:
+      - same_lemma: [verb, standard_verb]
+      - same_lemma: [target, second_standard]
+      - distinct_measure: [target, second_standard]
+      - attribute_compatible: {attribute: first_attr, noun: target}
+    satisfies:
+      verb: [subject]
+      standard_verb: [subject]
+    consumes: [f]
+    emits:
+      - fact: partition_aggregate_share
+        collection: "{target}"
+        attribute: "{target.qualifier}"
+        first_attribute: "{first_attr}"
+        second_attribute: "{second_standard.qualifier}"
+        fraction: f
+        verb: "{verb}"
+
   - id: arithmetic/partition-attribute
     phase: read
     description: >
@@ -6407,6 +6539,32 @@ asks:
       entity_qualifier: "{place.qualifier}"
     generation:
       omit_slots: [start_marker]
+
+  - id: ask/how-many-in-owned-place
+    # "How many marbles are in Mira's pantry?" names both a location and
+    # its owner. Preserve the owner so facts about another person's same-
+    # headed location cannot answer. The extra agreement predicate makes this
+    # rule strictly more specific than the bare in-place sibling whenever the
+    # complete possessed phrase is present.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: plural}
+        - {slot: verb, cat: plural_copula}
+        - {slot: prep, cat: preposition}
+        - {slot: place, cat: quantity_location, possessed: true, number: singular}
+    where:
+      - number_compatible: [item, verb]
+      - attribute_compatible: {attribute: prep, noun: place}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+    resolves:
+      consumer: single-entity
+      entity: "{place}"
+      entity_owner: "{place.owner}"
+      measure: "{item}"
+      verb: have
+      sum_measure_variants: "true"
 
   - id: ask/how-many-in-place-partitive
     # Handles a qualified measure in a location question, such as "how many

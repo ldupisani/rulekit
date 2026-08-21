@@ -195,6 +195,7 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
         "beige",
         "blue",
         "business",
+        "different",
         "enough",
         "final",
         "following",
@@ -205,6 +206,7 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
         "left",
         "new",
         "old",
+        "purple",
         "red",
         "remaining",
         "science",
@@ -212,23 +214,24 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
         "tall",
         "turquoise",
         "violet",
+        "yellow",
     }
-    # The core generation vocabulary adds ordinary count nouns and three
-    # explicitly colour-compatible adjectives. Core-owned literal adjective
-    # `old` also remains outside every descriptor category. Compatibility
-    # still comes from category membership, never broader lexical senses.
+    # The core generation vocabulary adds ordinary count nouns and the
+    # reviewed descriptor vocabulary. Core-owned literal adjectives such as
+    # `old` and `different` remain outside descriptor compatibility categories.
+    # Compatibility still comes from category membership, never broader senses.
     # `head` and `university` are core-owned for the logic bridge, while
     # `topic` supports reviewed topical quantities. `page` and `week` support
-        # measured-output cadence; `last` is licensed only for duration measures.
-        # Core-owned `remaining` now inherits the established remnant-noun
-        # domain and additionally licenses the content-progress measure.
-    assert len(plural_nouns) == 94
+    # measured-output cadence; `last` is licensed only for duration measures.
+    # Core-owned `remaining` now inherits the established remnant-noun domain
+    # and additionally licenses the content-progress measure.
+    assert len(plural_nouns) == 95
     assert {"fridge", "head", "topic", "university"} <= plural_nouns
     assert sum(
         registry.attribute_applies_to(attribute, noun)
         for attribute in adjectives
         for noun in plural_nouns
-    ) == 424
+    ) == 496
 
 
 def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> None:
@@ -271,6 +274,7 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
         "arithmetic/fraction-as-much-elided-standard",
         "arithmetic/fraction-delta-relation",
         "arithmetic/fraction-delta-relation-mass",
+        "arithmetic/partition-aggregate-share",
         "arithmetic/partition-rest-attribute",
         "arithmetic/times-as-many",
         "arithmetic/times-as-many-conjunct",
@@ -291,7 +295,7 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
 def test_compatibility_rule_remains_supported_after_g5j_expansion() -> None:
     availability = list_rule_availability(load_project(CURATED))
 
-    assert sum(item.supported for item in availability) == 139
+    assert sum(item.supported for item in availability) == 142
     target = next(item for item in availability if item.id == RULE_ID)
     assert target.supported
     assert target.blockers == ()

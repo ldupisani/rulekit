@@ -560,8 +560,10 @@ def _check_number(
         from .model import (
             AnchorQuantity,
             Atom,
+            CollectionContext,
             FractionQuantity,
             Membership,
+            PartitionAggregateShare,
             PartitionQuantity,
             Quantity,
             QuantifiedAdjustment,
@@ -677,7 +679,12 @@ def _check_number(
         # measure, nothing to resolve) — a declared fact-store property,
         # never a rule-identity check, so it applies uniformly to whichever
         # rule produced the fact.
-        known_measures = {q.measure for q in store.by_kind(Quantity)}
+        known_measures = {
+            q.measure.split("[", 1)[0] for q in store.by_kind(Quantity)
+        } | {
+            context.collection
+            for context in store.by_kind(CollectionContext)
+        }
         resolved_by_value = {
             (p.attribute, p.value, p.verb, p.provenance.sentence)
             for p in store.by_kind(PartitionQuantity)
@@ -703,6 +710,23 @@ def _check_number(
                     "unresolved-derivation",
                     f"'{what} are {p.attribute}' never resolved "
                     "against a unique prior collection",
+                )
+        resolved_aggregate_shares = {
+            (partition.provenance.sentence, partition.attribute)
+            for partition in store.by_kind(PartitionQuantity)
+            if partition.provenance.source
+            == "synth/partition-aggregate-share"
+        }
+        for share in store.by_kind(PartitionAggregateShare):
+            if (
+                share.provenance.sentence,
+                share.attribute,
+            ) not in resolved_aggregate_shares:
+                return GuardVeto(
+                    "unresolved-derivation",
+                    f"the {share.fraction:g} share for "
+                    f"{share.attribute!r} never resolved against the two "
+                    "named prior partitions",
                 )
         sequential_resolutions = {
             (p.provenance.sentence, p.attribute, p.verb)

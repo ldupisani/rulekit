@@ -1115,6 +1115,36 @@ class RestQuantity(Fact):
 
 
 @dataclass(frozen=True)
+class CollectionContext(Fact):
+    """An explicitly introduced, but not yet counted, collection.
+
+    ``"Mira has a pantry with marbles"`` establishes both where later
+    partitions belong and what plural an anaphor such as ``them`` denotes.
+    It does *not* assert a zero quantity. Keeping that discourse evidence in
+    its own fact prevents unknown cardinality from leaking into arithmetic.
+
+    ``holder_owner`` preserves possessive identity for locations introduced
+    through their owner (Mira's pantry versus Tova's pantry). The holder
+    remains the ordinary noun lemma so existing in-place asks keep their
+    established lookup shape.
+    """
+
+    holder: str
+    collection: str
+    verb: str = "have"
+    holder_owner: str | None = None
+
+    def key(self) -> tuple:
+        return (
+            "collection_context",
+            self.holder,
+            self.holder_owner,
+            self.collection,
+            self.verb,
+        )
+
+
+@dataclass(frozen=True)
 class SequentialPartition(Fact):
     """A complete three-way allocation anchored by prior discourse.
 
@@ -1293,6 +1323,38 @@ class PartitionQuantity(Fact):
 
     def value_part(self) -> Any:
         return (self.value, self.polarity)
+
+
+@dataclass(frozen=True)
+class PartitionAggregateShare(Fact):
+    """A subgroup sized from an explicitly coordinated sibling total.
+
+    For example, ``"25% as many green marbles as red and blue marbles"``
+    states ``green = .25 * (red + blue)``. The fact remains unresolved until
+    both named sibling partitions belong to one earlier collection; the
+    synthesizer then emits an ordinary :class:`PartitionQuantity` so existing
+    partition and qualified-measure consumers can reuse it.
+    """
+
+    collection: str
+    attribute: str
+    first_attribute: str
+    second_attribute: str
+    fraction: float
+    verb: str = "be"
+
+    def key(self) -> tuple:
+        return (
+            "partition_aggregate_share",
+            self.collection,
+            self.attribute,
+            self.first_attribute,
+            self.second_attribute,
+            self.verb,
+        )
+
+    def value_part(self) -> Any:
+        return self.fraction
 
 
 @dataclass(frozen=True)

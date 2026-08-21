@@ -26,6 +26,7 @@ from .model import (
     AnchorQuantity,
     Atom,
     ClassRefinement,
+    CollectionContext,
     Conditional,
     ContainerContent,
     Disjunction,
@@ -35,6 +36,8 @@ from .model import (
     GroupTotal,
     MeasuredContentChange,
     Membership,
+    PartitionAggregateShare,
+    PartitionQuantity,
     Predication,
     Price,
     Provenance,
@@ -1545,10 +1548,8 @@ def _partition_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
     below by source, mirroring `_pool_before`'s existing exclusion of
     `synth/rest` for the identical reason: a derived fact must never count
     as evidence for what the document's own collection measure is."""
-    from .model import PartitionQuantity
-
     out: list[Fact] = []
-    known_measures = {q.measure for q in store.by_kind(Quantity)}
+    known_measures = _known_collection_measures(store)
 
     def _candidate_measure(sentence: int) -> str | None:
         # "Ten of THEM" — a PLURAL pronoun, deliberately routed around _bind_discourse
@@ -1557,22 +1558,12 @@ def _partition_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
         # aimed at. The old `next(iter(candidates))` was safe ONLY because it was gated
         # on len == 1; deixis.resolve sorts first, so the set's iteration order can
         # never decide a binding even once a real metric lands.
-        winner = deixis.resolve(
-            [
-                deixis.Referent(dimension=deixis.DISCOURSE, key=m)
-                for m in sorted({
-                    q.measure for q in store.by_kind(Quantity)
-                    if q.provenance.sentence < sentence
-                    and q.provenance.source != "synth/partition-membership"
-                })
-            ],
-            deixis.Origo(sentence=sentence),
-            deixis.constant,
-            dimension=deixis.DISCOURSE,
-            journal=log.journal,
+        return _resolve_collection_measure(
+            store,
+            sentence,
+            log,
             source="synth/partition",
         )
-        return winner.key if winner is not None else None
 
     for pq in store.by_kind(PartitionQuantity):
         if pq.collection in known_measures:
@@ -1659,6 +1650,240 @@ def _partition_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> lis
                 collection=measure, attribute=pq.attribute, value=value,
                 verb=pq.verb, polarity=pq.polarity, kind=pq.kind,
                 is_fraction=False,
+            )
+        )
+    return out
+
+
+def _base_collection_measure(measure: str) -> str:
+    """Return the collection head behind an attribute-qualified key."""
+
+    return measure.split("[", 1)[0]
+
+
+def _known_collection_measures(store: FactStore) -> set[str]:
+    """All explicitly counted or discourse-introduced collection heads."""
+
+    return {
+        _base_collection_measure(quantity.measure)
+        for quantity in store.by_kind(Quantity)
+    } | {
+        context.collection for context in store.by_kind(CollectionContext)
+    }
+
+
+def _resolve_collection_measure(
+    store: FactStore,
+    sentence: int,
+    log: ArithmeticLog,
+    *,
+    source: str,
+    declared: str | None = None,
+) -> str | None:
+    """Resolve one prior collection without inventing a cardinality.
+
+    Existing quantity anchors retain their historical role. A
+    :class:`CollectionContext` adds only a measure candidate, allowing a
+    plural anaphor to resolve after prose such as ``a pantry with marbles``
+    even though the total is not known yet. Zero or several candidates still
+    decline through the same discourse-deixis boundary.
+    """
+
+    known = _known_collection_measures(store)
+    if declared in known:
+        return declared
+    candidates = {
+        _base_collection_measure(quantity.measure)
+        for quantity in store.by_kind(Quantity)
+        if quantity.provenance.sentence < sentence
+        and quantity.provenance.source != "synth/partition-membership"
+    } | {
+        context.collection
+        for context in store.by_kind(CollectionContext)
+        if context.provenance.sentence < sentence
+    }
+    winner = deixis.resolve(
+        [
+            deixis.Referent(dimension=deixis.DISCOURSE, key=measure)
+            for measure in sorted(candidates)
+        ],
+        deixis.Origo(sentence=sentence),
+        deixis.constant,
+        dimension=deixis.DISCOURSE,
+        journal=log.journal,
+        source=source,
+    )
+    return winner.key if winner is not None else None
+
+
+def _unqualified_entity(entity: str, owner: str | None) -> str:
+    if owner and entity.endswith(f"[{owner}]"):
+        return entity[: -(len(owner) + 2)]
+    return entity
+
+
+def _resolve_collection_holder(
+    store: FactStore,
+    collection: str,
+    sentence: int,
+    log: ArithmeticLog,
+    *,
+    source: str,
+) -> tuple[str, str | None] | None:
+    """Resolve the unique holder/owner identity for one collection."""
+
+    identities = {
+        (
+            _unqualified_entity(quantity.entity, quantity.owner),
+            quantity.owner,
+        )
+        for quantity in store.by_kind(Quantity)
+        if _base_collection_measure(quantity.measure) == collection
+        and quantity.provenance.sentence <= sentence
+    } | {
+        (context.holder, context.holder_owner)
+        for context in store.by_kind(CollectionContext)
+        if context.collection == collection
+        and context.provenance.sentence < sentence
+    }
+    keyed = {
+        f"{holder}\N{UNIT SEPARATOR}{owner or ''}": (holder, owner)
+        for holder, owner in identities
+    }
+    winner = deixis.resolve(
+        [
+            deixis.Referent(dimension=deixis.PERSON, key=key)
+            for key in sorted(keyed)
+        ],
+        deixis.Origo(sentence=sentence),
+        deixis.constant,
+        dimension=deixis.PERSON,
+        journal=log.journal,
+        source=source,
+    )
+    return keyed[winner.key] if winner is not None else None
+
+
+def _partition_aggregate_share_synth(
+    store: FactStore, reg: Registry, log: ArithmeticLog
+) -> list[Fact]:
+    """Materialize ``target = fraction * (named sibling A + sibling B)``."""
+
+    out: list[Fact] = []
+    for share in store.by_kind(PartitionAggregateShare):
+        attributes = {
+            share.attribute,
+            share.first_attribute,
+            share.second_attribute,
+        }
+        if len(attributes) != 3:
+            continue
+        collection = _resolve_collection_measure(
+            store,
+            share.provenance.sentence,
+            log,
+            source="synth/partition-aggregate-share",
+            declared=share.collection,
+        )
+        if collection is None:
+            continue
+        by_attribute: dict[str, list[PartitionQuantity]] = {}
+        for partition in store.by_kind(PartitionQuantity):
+            if (
+                partition.collection != collection
+                or partition.provenance.sentence >= share.provenance.sentence
+                or partition.is_fraction
+                or partition.is_rest
+                or not partition.polarity
+            ):
+                continue
+            by_attribute.setdefault(partition.attribute, []).append(partition)
+        first = by_attribute.get(share.first_attribute, [])
+        second = by_attribute.get(share.second_attribute, [])
+        if len(first) != 1 or len(second) != 1:
+            continue
+        value = evaluate(
+            "fraction * (first + second)",
+            {
+                "fraction": share.fraction,
+                "first": first[0].value,
+                "second": second[0].value,
+            },
+            log,
+            source="synth/partition-aggregate-share",
+        )
+        if value < 0:
+            continue
+        out.append(
+            PartitionQuantity(
+                provenance=Provenance(
+                    source="synth/partition-aggregate-share",
+                    sentence=share.provenance.sentence,
+                ),
+                collection=collection,
+                attribute=share.attribute,
+                value=value,
+                verb=share.verb,
+            )
+        )
+    return out
+
+
+def _partition_attribute_quantity_synth(
+    store: FactStore, reg: Registry, log: ArithmeticLog
+) -> list[Fact]:
+    """Project contextual adjective partitions into qualified quantities.
+
+    A counted collection already has a whole-measure quantity, so projecting
+    each of its partitions beside that total would manufacture competing
+    part/whole quantities.  This bridge is intentionally limited to the
+    explicitly uncounted collections introduced by ``CollectionContext``.
+    """
+
+    out: list[Fact] = []
+    known_collections = _known_collection_measures(store)
+    contextual_collections = {
+        context.collection for context in store.by_kind(CollectionContext)
+    }
+    collections_with_explicit_totals = {
+        quantity.measure
+        for quantity in store.by_kind(Quantity)
+        if "[" not in quantity.measure and quantity.measure_qualifier is None
+    }
+    for partition in store.by_kind(PartitionQuantity):
+        if (
+            partition.kind != "adjective"
+            or partition.is_fraction
+            or partition.is_rest
+            or not partition.polarity
+            or partition.collection not in known_collections
+            or partition.collection not in contextual_collections
+            or partition.collection in collections_with_explicit_totals
+            or not reg.word_in_category(partition.attribute, "adjective")
+        ):
+            continue
+        identity = _resolve_collection_holder(
+            store,
+            partition.collection,
+            partition.provenance.sentence,
+            log,
+            source="synth/partition-attribute-quantity",
+        )
+        if identity is None:
+            continue
+        holder, owner = identity
+        out.append(
+            Quantity(
+                provenance=Provenance(
+                    source="synth/partition-attribute-quantity",
+                    sentence=partition.provenance.sentence,
+                ),
+                entity=holder,
+                owner=owner,
+                measure=partition.collection,
+                measure_qualifier=partition.attribute,
+                value=partition.value,
+                verb="have",
             )
         )
     return out
@@ -3057,6 +3282,8 @@ PLUGINS: dict[str, Synthesizer] = {
     "synth/fraction-of-pool": _fraction_synth,
     "synth/rest-of-pool": _rest_synth,
     "synth/partition-of-collection": _partition_synth,
+    "synth/partition-aggregate-share": _partition_aggregate_share_synth,
+    "synth/partition-attribute-quantity": _partition_attribute_quantity_synth,
     "synth/sequential-partition-complement": _sequential_partition_complement_synth,
     "synth/sequential-partition-join": _sequential_partition_join_synth,
     "synth/sequential-partition-prefix-join": _sequential_partition_prefix_join_synth,

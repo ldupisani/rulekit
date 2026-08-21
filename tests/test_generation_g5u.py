@@ -116,6 +116,11 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
             "sequence",
             ((1,),),
         ),
+        "arithmetic/partition-aggregate-share": (
+            (2, 0),
+            "focus",
+            ((2,),),
+        ),
         TARGET_RULE: ((10, 0), "trailing_adv", ((10,),)),
     }
     assert MOVED_WORD in core.lexicon
@@ -188,8 +193,8 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
     project = load_project(CURATED)
     availability = list_rule_availability(project)
 
-    assert len(availability) == 148
-    assert sum(item.supported for item in availability) == 139
+    assert len(availability) == 151
+    assert sum(item.supported for item in availability) == 142
     assert sum(not item.supported for item in availability) == 9
     assert all(
         not item.blockers
@@ -207,7 +212,7 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
             }
         for item in availability
     )
-    assert len(exploration_status(project)["fillers"]) == 361
+    assert len(exploration_status(project)["fillers"]) == 365
 
 
 def test_currently_generates_a_matcher_confirmed_anchor() -> None:

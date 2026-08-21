@@ -191,8 +191,8 @@ def test_g5s_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 148
-    assert sum(item.supported for item in availability.values()) == 139
+    assert len(availability) == 151
+    assert sum(item.supported for item in availability.values()) == 142
     assert sum(not item.supported for item in availability.values()) == 9
     assert availability["arithmetic/periodic-rate-every-span"].supported
     assert all(availability[rule_id].supported for rule_id in FUTURE_RULES)
@@ -204,7 +204,7 @@ def test_g5s_unlocks_exactly_the_preregistered_frontier() -> None:
     assert availability[
         "arithmetic/anchored-relation-conjoined-anchor"
     ].supported
-    assert len(exploration_status(project)["fillers"]) == 361
+    assert len(exploration_status(project)["fillers"]) == 365
 
 
 @pytest.mark.parametrize("modal", sorted(MOVED_WORDS))

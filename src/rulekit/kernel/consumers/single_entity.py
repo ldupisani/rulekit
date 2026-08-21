@@ -296,7 +296,16 @@ def single_entity(ctx: ConsumerContext):
         # consumer) and only for a BARE ask (`not measure_qualifier`):
         # a question naming one SPECIFIC variant must never silently
         # roll up every colour instead.
-        total = _qualified_variant_total(ctx.store, ctx.reg, entity, singular, ctx.log)
+        variant_store = (
+            owner_store
+            if owner
+            else qualifier_store
+            if qualifier
+            else ctx.store
+        )
+        total = _qualified_variant_total(
+            variant_store, ctx.reg, entity, singular, ctx.log
+        )
     fallback_entity = ctx.query.get("place_fallback_entity")
     # `not invert` mirrors the superordinate fallback below, and it is a
     # MECHANISM rather than a note because the failure is silent: this branch

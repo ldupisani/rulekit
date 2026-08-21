@@ -454,6 +454,7 @@ entries:
     sticker: {senses: [noun], plural: stickers}
     card: {senses: [noun], plural: cards}
     coin: {senses: [noun], plural: coins}
+    color: {senses: [noun], plural: colors}
     dollar: {senses: [noun], plural: dollars}
     egg: {senses: [noun], plural: eggs}
     flower: {senses: [noun], plural: flowers}
@@ -586,6 +587,9 @@ entries:
     red: {senses: [adjective]}
     green: {senses: [adjective]}
     blue: {senses: [adjective]}
+    different: {senses: [adjective]}
+    purple: {senses: [adjective]}
+    yellow: {senses: [adjective]}
     beige: {senses: [adjective]}
     turquoise: {senses: [adjective]}
     violet: {senses: [adjective]}

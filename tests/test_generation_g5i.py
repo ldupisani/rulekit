@@ -66,10 +66,10 @@ def _optional_profile(project) -> tuple[int, int, int, int]:
 def test_g5i_profiles_the_complete_recursive_optional_class() -> None:
     project = load_project(CURATED)
 
-    # The five measurement-event shapes now admit a clause-medial narration
-    # marker. Each contributes one top-level optional group; nesting and the
-    # established maximum depth stay unchanged.
-    assert _optional_profile(project) == (74, 156, 38, 3)
+    # The measurement-event shapes and the partition aggregate share admit
+    # their scoped optional modifiers. Each contributes one top-level optional
+    # group; nesting and the established maximum depth stay unchanged.
+    assert _optional_profile(project) == (75, 157, 38, 3)
 
 
 def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
@@ -78,8 +78,8 @@ def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
         for item in list_rule_availability(load_project(CURATED))
     }
 
-    assert len(availability) == 148
-    assert sum(item.supported for item in availability.values()) == 139
+    assert len(availability) == 151
+    assert sum(item.supported for item in availability.values()) == 142
     assert sum(not item.supported for item in availability.values()) == 9
     assert all(availability[rule_id].supported for rule_id in NEWLY_SUPPORTED)
     assert all(

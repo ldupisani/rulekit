@@ -1398,8 +1398,9 @@ class FactEmit(StrictModel):
     fact: Literal[
         "activity_duration", "age_at_year", "task_completion_duration",
         "rate_scope", "quantity", "relation", "contribution",
-        "membership", "subset", "predication",
+        "membership", "subset", "predication", "collection_context",
         "before", "fraction_quantity", "rest_quantity", "partition_quantity",
+        "partition_aggregate_share",
         "sequential_partition", "sequential_partition_prefix",
         "sequential_partition_remainder", "sequential_partition_initial_share",
         "sequential_partition_remaining_share", "ratio_quantity", "goal",
