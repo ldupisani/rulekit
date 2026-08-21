@@ -148,6 +148,7 @@ class Registry:
     attrs: Mapping[str, Mapping[str, float]]
     part_counts: Mapping[str, str]
     conversions: Mapping[tuple[str, str], float]
+    substance_conversions: Mapping[tuple[str, str, str], float]
     cadence_conversions: Mapping[tuple[str, str], float]
     geometry_formulas: Mapping[tuple[str, str], str]  # (shape, quantity) -> expr
     quantity_formulas: Mapping[str, str]  # quantity -> expr over dimension names
@@ -885,10 +886,34 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
     # scoped pairs are separate so conventional word-problem annualization
     # cannot leak into exact elapsed-time comparisons.
     conversions: dict[tuple[str, str], float] = {}
+    substance_conversions: dict[tuple[str, str, str], float] = {}
     cadence_conversions: dict[tuple[str, str], float] = {}
     for pack in packs:
         for doc in pack.conversions:
             for c in doc.conversions:
+                if c.factor == 0:
+                    raise CompileError(
+                        f"conversion {c.from_!r}->{c.to!r} has a zero factor"
+                    )
+                if c.substance is not None:
+                    if c.scope != "general":
+                        raise CompileError(
+                            "substance-scoped conversions cannot use cadence scope"
+                        )
+                    for pair, factor in (
+                        ((c.substance, c.from_, c.to), c.factor),
+                        ((c.substance, c.to, c.from_), 1.0 / c.factor),
+                    ):
+                        if (
+                            pair in substance_conversions
+                            and abs(substance_conversions[pair] - factor) > 1e-9
+                        ):
+                            raise CompileError(
+                                f"substance conversion {pair} declared twice with "
+                                "different factors"
+                            )
+                        substance_conversions[pair] = factor
+                    continue
                 target = (
                     cadence_conversions if c.scope == "cadence" else conversions
                 )
@@ -1990,6 +2015,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
         attrs=_freeze({k: _freeze(v) for k, v in attrs.items()}),
         part_counts=_freeze(part_counts),
         conversions=_freeze(conversions),
+        substance_conversions=_freeze(substance_conversions),
         cadence_conversions=_freeze(cadence_conversions),
         calendar_span_days=_freeze(calendar_span_days),
         month_numbers=_freeze(month_numbers),

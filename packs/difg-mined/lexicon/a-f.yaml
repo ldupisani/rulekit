@@ -729,20 +729,12 @@ entries:
   both:
     senses:
     - quantifier
-  bottle:
-    senses:
-    - noun
-    plural: bottles
   bottom:
     senses:
     - noun
   bouquet:
     senses:
     - noun
-  bowl:
-    senses:
-    - noun
-    plural: bowls
   bowling:
     senses:
     - adjective
@@ -1524,10 +1516,6 @@ entries:
     - verb
     verb:
       lemma: contain
-  container:
-    senses:
-    - noun
-    plural: containers
   containing:
     senses:
     - verb

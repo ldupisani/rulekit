@@ -28,6 +28,48 @@ def _dimension_families(word: str | None, ctx: ConsumerContext) -> set[str]:
     return families
 
 
+def _substance_conversion_factor(
+    ctx: ConsumerContext,
+    substance: str,
+    source: str,
+    target: str,
+) -> float | None:
+    """Compose one substance bridge with direct same-dimension unit edges.
+
+    The ordinary conversion table contains homographs such as mass ``ounce``
+    and fluid ``ounce``. Treating that table as one transitive graph would
+    accidentally connect every mass to every volume through the shared word.
+    A substance bridge therefore permits at most one direct ordinary edge on
+    either side. Longer paths need an explicit scoped row rather than a guess.
+    """
+
+    if source == target:
+        return 1.0
+    candidates: list[float] = []
+    for (owner, bridge_from, bridge_to), bridge_factor in (
+        ctx.reg.substance_conversions.items()
+    ):
+        if owner != substance:
+            continue
+        before = (
+            1.0
+            if source == bridge_from
+            else ctx.reg.conversions.get((source, bridge_from))
+        )
+        after = (
+            1.0
+            if target == bridge_to
+            else ctx.reg.conversions.get((bridge_to, target))
+        )
+        if before is not None and after is not None:
+            candidates.append(before * bridge_factor * after)
+    if not candidates or any(
+        abs(candidate - candidates[0]) > 1e-9 for candidate in candidates[1:]
+    ):
+        return None
+    return candidates[0]
+
+
 @consumer("measurement-reading")
 def measurement_reading(ctx: ConsumerContext):
     """Apply all changes to one container whose support is the instrument.
@@ -233,13 +275,14 @@ def measurement_reading(ctx: ConsumerContext):
 
 @consumer("measurement-content-amount")
 def measurement_content_amount(ctx: ConsumerContext):
-    """Recover an anchor content amount by subtracting the container tare.
+    """Recover one content's contribution to a measured container.
 
     A resulting-total anchor states the container-plus-content mass.  The
-    named content can be isolated only when that content established the
-    anchor, the same container has one declared intrinsic mass, and the whole
-    later measurement stream remains valid.  Later additions are replayed for
-    accounting but never subtracted from the earlier content amount.
+    anchor content needs a declared container tare. Later content is recovered
+    from the change it caused in the validated aggregate stream: a multiplier
+    contributes the before/after difference and a direct addition contributes
+    its converted stated amount. Repeated additions of the requested content
+    accumulate; unrelated later additions never alter its recovered amount.
     """
 
     from ..answer import Answer
@@ -253,18 +296,18 @@ def measurement_content_amount(ctx: ConsumerContext):
             "decline", None, "a content amount needs one content and container"
         )
 
+    changes = list(ctx.store.by_kind(MeasuredContentChange))
     anchors = [
         change
-        for change in ctx.store.by_kind(MeasuredContentChange)
+        for change in changes
         if change.operation == "set_total"
         and change.container == container
-        and change.content == content
     ]
     if len(anchors) != 1:
         return Answer(
             "decline",
             None,
-            "the requested content needs one resulting-total anchor in its container",
+            "the requested container needs one resulting-total anchor",
         )
     anchor = anchors[0]
 
@@ -292,17 +335,18 @@ def measurement_content_amount(ctx: ConsumerContext):
         and ctx.reg.word_in_category(quantity.verb, "measurement_mass_verb")
         and (_dimension_families(quantity.measure, ctx) & anchor_families)
     ]
-    if len(tares) != 1:
+    if len(tares) > 1 or (content == anchor.content and len(tares) != 1):
         return Answer(
             "decline",
             None,
             "the requested content needs one compatible intrinsic container mass",
         )
-    tare = tares[0]
 
     # Reuse the final-reading consumer to validate and account for every later
-    # aggregate update. The tare is an additional, independently stated value,
-    # so admit exactly that one mention into its premise audit.
+    # aggregate update. A tare, when stated, is an additional independent
+    # value, so admit exactly that mention into the premise audit. Later
+    # content remains answerable without a tare because its contribution is an
+    # observed change in the aggregate rather than a share of the anchor.
     validated = measurement_reading(
         replace(
             ctx,
@@ -310,8 +354,8 @@ def measurement_content_amount(ctx: ConsumerContext):
                 "instrument": placement.reference,
                 "dimension": anchor.dimension or "",
                 "relation": placement.relation,
-                "_additional_measured_values": (
-                    (tare.provenance.sentence, tare.value),
+                "_additional_measured_values": tuple(
+                    (tare.provenance.sentence, tare.value) for tare in tares
                 ),
             },
         )
@@ -320,37 +364,148 @@ def measurement_content_amount(ctx: ConsumerContext):
         return validated
 
     assert anchor.measure is not None
-    factor = (
-        1.0
-        if tare.measure == anchor.measure
-        else ctx.reg.conversions.get((tare.measure, anchor.measure))
-    )
-    if factor is None:
-        return Answer(
-            "decline",
-            None,
-            f"no known conversion from {tare.measure!r} to {anchor.measure!r}",
+    amount = 0.0
+    derivations: list[str] = []
+    found = False
+
+    if content == anchor.content:
+        tare = tares[0]  # required by the cardinality guard above
+        factor = (
+            1.0
+            if tare.measure == anchor.measure
+            else ctx.reg.conversions.get((tare.measure, anchor.measure))
         )
-    tare_value = evaluate(
-        f"{tare.value} * {factor}",
-        {},
-        ctx.log,
-        source="measurement-content-tare-conversion",
+        if factor is None:
+            return Answer(
+                "decline",
+                None,
+                f"no known conversion from {tare.measure!r} to {anchor.measure!r}",
+            )
+        tare_value = evaluate(
+            f"{tare.value} * {factor}",
+            {},
+            ctx.log,
+            source="measurement-content-tare-conversion",
+        )
+        amount = evaluate(
+            f"{anchor.value} - {tare_value}",
+            {},
+            ctx.log,
+            source="measurement-content-tare-subtraction",
+        )
+        if not math.isfinite(amount) or amount <= 0:
+            return Answer(
+                "decline", None, "the container tare leaves no positive content amount"
+            )
+        derivations.append(
+            f"{anchor.value:g} {anchor.measure} − {tare_value:g} {anchor.measure}"
+        )
+        found = True
+
+    total = float(anchor.value)
+    later = sorted(
+        (
+            change
+            for change in changes
+            if change is not anchor
+            and change.occurrence is not None
+            and anchor.occurrence is not None
+            and change.occurrence > anchor.occurrence
+        ),
+        key=lambda change: change.occurrence or -1,
     )
-    amount = evaluate(
-        f"{anchor.value} - {tare_value}",
-        {},
-        ctx.log,
-        source="measurement-content-tare-subtraction",
-    )
-    if not math.isfinite(amount) or amount <= 0:
+    for change in later:
+        before = total
+        if change.operation == "multiply_total":
+            total = evaluate(
+                f"{before} * {change.value}",
+                {},
+                ctx.log,
+                source="measurement-content-replay-multiply",
+            )
+            contribution = evaluate(
+                f"{total} - {before}",
+                {},
+                ctx.log,
+                source="measurement-content-multiplier-contribution",
+            )
+            derivation = (
+                f"{total:g} {anchor.measure} − {before:g} {anchor.measure}"
+            )
+        elif change.operation == "add_quantity":
+            assert change.measure is not None  # validated by measurement_reading
+            factor = (
+                1.0
+                if change.measure == anchor.measure
+                else ctx.reg.conversions[(change.measure, anchor.measure)]
+            )
+            contribution = evaluate(
+                f"{change.value} * {factor}",
+                {},
+                ctx.log,
+                source="measurement-content-direct-contribution",
+            )
+            total = evaluate(
+                f"{before} + {contribution}",
+                {},
+                ctx.log,
+                source="measurement-content-replay-addition",
+            )
+            derivation = f"+ {contribution:g} {anchor.measure}"
+        else:
+            # The validating consumer rejects this branch first. Keeping the
+            # replay exhaustive makes that dependency explicit to type checkers.
+            continue
+
+        if change.content != content:
+            continue
+        if not math.isfinite(contribution) or contribution <= 0:
+            return Answer(
+                "decline", None, "a measured addition leaves no positive content amount"
+            )
+        amount = evaluate(
+            f"{amount} + {contribution}",
+            {},
+            ctx.log,
+            source="measurement-content-accumulation",
+        )
+        derivations.append(derivation)
+        found = True
+
+    if not found:
         return Answer(
-            "decline", None, "the container tare leaves no positive content amount"
+            "decline", None, "the requested content has no recoverable measured addition"
+        )
+
+    target_measure = str(ctx.query.get("target_measure", "")).strip()
+    conversion_note = ""
+    if target_measure:
+        factor = _substance_conversion_factor(
+            ctx, content, anchor.measure, target_measure
+        )
+        if factor is None:
+            return Answer(
+                "decline",
+                None,
+                f"no known {content!r} conversion from {anchor.measure!r} "
+                f"to {target_measure!r}",
+            )
+        source_amount = amount
+        amount = evaluate(
+            f"{amount} * {factor}",
+            {},
+            ctx.log,
+            source="measurement-content-substance-conversion",
+        )
+        conversion_note = (
+            f"; {source_amount:g} {anchor.measure} → "
+            f"{amount:g} {target_measure}"
         )
 
     return Answer(
         "number",
         float(amount),
-        f"{content!r} in {container!r}: {anchor.value:g} {anchor.measure} "
-        f"− {tare_value:g} {anchor.measure}",
+        f"{content!r} in {container!r}: "
+        + " + ".join(derivations)
+        + conversion_note,
     )

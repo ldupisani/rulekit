@@ -1721,6 +1721,11 @@ class ConversionDef(StrictModel):
     from_: str = Field(alias="from")
     to: str
     factor: float
+    # A cross-dimension factor may be valid only for one substance. Water's
+    # mass/volume relation, for example, must never make kilograms globally
+    # interchangeable with litres. The registry stores these rows separately
+    # and only a consumer carrying the matching substance may traverse them.
+    substance: str | None = None
     # Some conventional period factors are valid for projecting a cadence but
     # not for exact elapsed-time comparison (a year is treated as 52 weeks in
     # elementary word problems, while calendar duration is not exactly 364

@@ -1078,14 +1078,6 @@ entries:
   pushups:
     senses:
     - noun
-  put:
-    senses:
-    - verb
-  puts:
-    senses:
-    - verb
-    verb:
-      lemma: put
   pyramid:
     senses:
     - noun

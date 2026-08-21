@@ -1295,6 +1295,13 @@ categories:
             elsewhere in this file; the two categories are consulted by
             entirely separate resolution paths (`interchangeable_categories`
             vs `dimension_categories`) and never interact.
+    volume_measure:
+        parent: noun
+        dimension: true
+        notes: >
+            Concrete volume units. A mass-to-volume answer may cross into this
+            family only through a substance-scoped conversion; membership
+            alone never relates mass and volume.
     measurement_container:
         parent: noun
         notes: >
@@ -1431,6 +1438,11 @@ categories:
             Temporal or aspectual adverbs that can naturally appear before a
             stative holding verb in a conjoined quantity anchor ("and still
             had 5 hats"). Directional adverbs such as "off" do not belong.
+    narration_sequence_adverb:
+        parent: adverb
+        notes: >
+            Clause-medial markers that order successive narrated events. They
+            do not change the event's participants or quantitative effect.
     restrictive_focus_adverb:
         parent: adverb
         notes: >
@@ -2107,10 +2119,11 @@ members:
     conjunct_comparison_incompatible_noun: [time]
     existential_incompatible_noun: [time]
     non_quantity_holder:
-        [amount, clay, cost, dollar, gram, inch, kilogram, money, number, paper,
-         pound, price, remainder, rest, sand, time, wool, year]
+        [amount, clay, cost, dollar, gram, inch, kilogram, liter, money, number,
+         paper, pound, price, remainder, rest, sand, time, wool, year]
     mass_quantity_noun: [clay, litter, money, paper, rest, sand, wool]
     partitive_weight_measure: [pound]
+    partitive_volume_measure: [liter]
     weighable_partitive_substance: [clay, paper, sand, wool]
     volume_partitive_substance: [sand]
     piecewise_partitive_substance: [litter, paper]
@@ -2470,6 +2483,7 @@ members:
     dimension_noun: [age] # other dimension nouns extend this from difg-mined
     length_measure: [inch] # other concrete units extend this from packs/difg-mined
     mass_measure: [gram, kilogram, pound, weight] # other measures extend this from packs/difg-mined
+    volume_measure: [liter]
     currency_measure: [dollar] # 'cent'/'balance'/'earnings'/'cost' extend this from packs/difg-mined
     time_measure: [year, age] # generic age forms; other units extend this from difg-mined
     duration_measure: [year, week, minute, hour]
@@ -2479,6 +2493,7 @@ members:
     postpositive_distributive_quantifier: [each]
     individualizing_adverb: [individually]
     holding_anchor_adverb: [currently]
+    narration_sequence_adverb: [finally, then]
     restrictive_focus_adverb: [just, only]
     age_measure: [year]
     aggregate_noun: [amount, number]
@@ -2504,11 +2519,13 @@ members:
     sequential_partition_verb: [enroll, enrolls, enrolled, enrolling]
     sequential_partition_preposition: [in]
     predeterminer_multiplier: [double, triple]
-    measurement_container: [box, bucket]
+    measurement_container:
+        [barrel, beaker, bottle, bowl, box, bucket, canister, container, drum,
+         flask, jar, jug, tank, vessel, vial]
     measurement_instrument: [scale]
     measured_content_substance: [clay, sand, sugar, vinegar, water]
     measurement_placement_verb: [place, placed, places, placing]
-    measured_content_transfer_verb: [pour, poured, pouring, pours]
+    measured_content_transfer_verb: [pour, poured, pouring, pours, put, puts, putting]
     measured_content_adjustment_verb: [add, added, adding, adds]
     measurement_target_verb: [bring, bringing, brings, brought]
     measurement_observation_verb: [measure, measured, measures]

@@ -91,12 +91,43 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
             "focus",
             ((2,),),
         ),
+        "arithmetic/measured-content-add-quantity": (
+            (1, 0),
+            "sequence",
+            ((1,),),
+        ),
+        "arithmetic/measured-content-multiply-total": (
+            (1, 0),
+            "sequence",
+            ((1,),),
+        ),
+        "arithmetic/measured-content-resulting-total": (
+            (1, 0),
+            "sequence",
+            ((1,),),
+        ),
+        "arithmetic/measured-content-resulting-total-gapped": (
+            (0, 0),
+            "sequence",
+            ((0,),),
+        ),
+        "arithmetic/measurement-container-on-instrument": (
+            (1, 0),
+            "sequence",
+            ((1,),),
+        ),
         TARGET_RULE: ((10, 0), "trailing_adv", ((10,),)),
     }
     assert MOVED_WORD in core.lexicon
     assert set(project.registry.lexicon[MOVED_WORD].senses) == {"adverb"}
     assert project.registry.word_categories.get(MOVED_WORD, ()) == (
         "holding_anchor_adverb",
+    )
+    assert project.registry.word_categories.get("then", ()) == (
+        "narration_sequence_adverb",
+    )
+    assert project.registry.word_categories.get("finally", ()) == (
+        "narration_sequence_adverb",
     )
     assert (
         project.source_index.lexicon[MOVED_WORD].path.resolve()
@@ -176,7 +207,7 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
             }
         for item in availability
     )
-    assert len(exploration_status(project)["fillers"]) == 347
+    assert len(exploration_status(project)["fillers"]) == 361
 
 
 def test_currently_generates_a_matcher_confirmed_anchor() -> None:

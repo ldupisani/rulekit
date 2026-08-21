@@ -1059,3 +1059,53 @@ def test_measurement_content_tare_must_leave_a_positive_amount(gsm8k):
     )
     assert got.kind == "decline"
     assert "tare leaves no positive content amount" in got.reason
+
+
+def test_measurement_content_needs_a_recoverable_change_for_later_content(gsm8k):
+    got = _measurement_content_call(
+        gsm8k,
+        (_measurement_anchor(), _measurement_placement()),
+        query={"content": "clay", "container": "box"},
+    )
+    assert got.kind == "decline"
+    assert "has no recoverable measured addition" in got.reason
+
+
+def test_measurement_content_addition_must_increase_the_total(gsm8k):
+    reduction = _measurement_change(
+        "multiply_total",
+        0.5,
+        content="clay",
+        dimension="weight",
+        occurrence=1,
+        sentence=1,
+    )
+    got = _measurement_content_call(
+        gsm8k,
+        (_measurement_anchor(), _measurement_placement(), reduction),
+        query={"content": "clay", "container": "box"},
+    )
+    assert got.kind == "decline"
+    assert "addition leaves no positive content amount" in got.reason
+
+
+def test_measurement_content_conversion_is_scoped_to_the_substance(gsm8k):
+    addition = _measurement_change(
+        "multiply_total",
+        2.0,
+        content="clay",
+        dimension="weight",
+        occurrence=1,
+        sentence=1,
+    )
+    got = _measurement_content_call(
+        gsm8k,
+        (_measurement_anchor(), _measurement_placement(), addition),
+        query={
+            "content": "clay",
+            "container": "box",
+            "target_measure": "liter",
+        },
+    )
+    assert got.kind == "decline"
+    assert "no known 'clay' conversion" in got.reason

@@ -50,7 +50,10 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
     assert availability["ask/measured-content-in-container"].blockers == (
         "ask requires embedding context; standalone realization is disabled",
     )
-    assert len(availability) == 122
+    assert availability["ask/measured-content-in-container-unit"].blockers == (
+        "ask requires embedding context; standalone realization is disabled",
+    )
+    assert len(availability) == 123
     assert {
         item.id for item in availability.values() if not item.supported
     } == {
@@ -67,6 +70,7 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
         "ask/how-old-discourse-group-now",
         "ask/how-much-noun-entity-uninverted",
         "ask/measured-content-in-container",
+        "ask/measured-content-in-container-unit",
         "ask/what-combined-age-at-year",
         "ask/which-discourse-group-at-day",
     }

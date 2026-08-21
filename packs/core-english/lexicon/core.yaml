@@ -528,6 +528,18 @@ entries:
     # loading the much broader corpus-mined lexicon.
     box: {senses: [noun], plural: boxes}
     bucket: {senses: [noun], plural: buckets}
+    barrel: {senses: [noun], plural: barrels}
+    beaker: {senses: [noun], plural: beakers}
+    bottle: {senses: [noun], plural: bottles}
+    bowl: {senses: [noun], plural: bowls}
+    canister: {senses: [noun], plural: canisters}
+    container: {senses: [noun], plural: containers}
+    flask: {senses: [noun], plural: flasks}
+    jar: {senses: [noun], plural: jars}
+    jug: {senses: [noun], plural: jugs}
+    tank: {senses: [noun], plural: tanks}
+    vessel: {senses: [noun], plural: vessels}
+    vial: {senses: [noun], plural: vials}
     scale: {senses: [noun], plural: scales}
     water: {senses: [noun]}
     sugar: {senses: [noun]}
@@ -536,6 +548,7 @@ entries:
     experiment: {senses: [noun], plural: experiments}
     gram: {senses: [noun], plural: grams}
     kilogram: {senses: [noun], plural: [kg, kilograms]}
+    liter: {senses: [noun], plural: [liters, litres]}
     enough: {senses: [adjective]}
     final: {senses: [adjective]}
     add: {senses: [verb], number: plural}
@@ -565,6 +578,9 @@ entries:
     poured: {senses: [verb], verb: {lemma: pour}}
     pouring: {senses: [verb], verb: {lemma: pour}}
     pours: {senses: [verb], number: singular, verb: {lemma: pour}}
+    put: {senses: [verb], verb: {lemma: put}}
+    puts: {senses: [verb], number: singular, verb: {lemma: put}}
+    putting: {senses: [verb], verb: {lemma: put}}
 
     # adjectives
     red: {senses: [adjective]}

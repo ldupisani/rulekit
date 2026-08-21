@@ -90,6 +90,63 @@ def test_ordered_content_changes_derive_the_final_instrument_reading(registry) -
     ]
 
 
+def test_put_is_a_measured_content_transfer_paraphrase(registry) -> None:
+    result = solve(_story().replace("poured enough", "put enough"), registry)
+
+    assert (result.answer.kind, result.answer.value) == ("number", 14.0)
+    assert any(
+        fact.operation == "set_total"
+        and fact.container == "box"
+        and fact.content == "water"
+        for fact in result.store.by_kind(MeasuredContentChange)
+    )
+
+
+def test_clause_medial_sequence_marker_preserves_the_update(registry) -> None:
+    result = solve(
+        _story().replace("Finally, she added", "She then added"), registry
+    )
+
+    assert (result.answer.kind, result.answer.value) == ("number", 14.0)
+    assert any(
+        fact.operation == "add_quantity"
+        and fact.content == "sugar"
+        and fact.value == 2
+        for fact in result.store.by_kind(MeasuredContentChange)
+    )
+
+
+@pytest.mark.parametrize(
+    "container",
+    [
+        "barrel",
+        "beaker",
+        "bottle",
+        "bowl",
+        "bucket",
+        "canister",
+        "container",
+        "drum",
+        "flask",
+        "jar",
+        "jug",
+        "tank",
+        "vessel",
+        "vial",
+    ],
+)
+def test_declared_measurement_containers_share_the_same_rules(
+    registry, container
+) -> None:
+    result = solve(_story().replace("box", container), registry)
+
+    assert (result.answer.kind, result.answer.value) == ("number", 14.0)
+    assert any(
+        fact.entity == container and fact.reference == "scale"
+        for fact in result.store.by_kind(SpatialPlacement)
+    )
+
+
 def test_resulting_total_is_not_misattributed_to_content_or_instrument(registry) -> None:
     result = solve(_story(), registry)
     quantities = result.store.by_kind(Quantity)
@@ -192,11 +249,72 @@ def test_initial_content_amount_subtracts_the_container_tare(registry) -> None:
     )
 
 
-def test_later_content_has_no_resulting_total_from_which_to_remove_tare(registry) -> None:
+def test_multiplicative_content_is_the_change_in_the_aggregate(registry) -> None:
+    result = solve(_content_amount_story(content="clay"), registry)
+
+    assert (result.answer.kind, result.answer.value) == ("number", 4.0)
+    assert result.answer.reason == (
+        "'clay' in 'box': 8 kilogram − 4 kilogram"
+    )
+
+
+def test_directly_added_content_preserves_its_stated_amount(registry) -> None:
     result = solve(_content_amount_story(content="sugar"), registry)
 
+    assert (result.answer.kind, result.answer.value) == ("number", 2.0)
+    assert result.answer.reason == "'sugar' in 'box': + 2 kilogram"
+
+
+def test_later_content_does_not_need_the_container_tare(registry) -> None:
+    result = solve(
+        _content_amount_story(content="clay").replace(
+            "If the box weighs 500 grams, ", ""
+        ),
+        registry,
+    )
+
+    assert (result.answer.kind, result.answer.value) == ("number", 4.0)
+
+
+@pytest.mark.parametrize("surface", ["liters", "litres"])
+def test_content_amount_uses_a_substance_scoped_volume_conversion(
+    registry, surface
+) -> None:
+    result = solve(
+        _content_amount_story().replace(
+            "how much water is", f"how many {surface} of water are"
+        ),
+        registry,
+    )
+
+    assert (result.answer.kind, result.answer.value) == ("number", 3.5)
+    assert result.answer.reason.endswith("3.5 kilogram → 3.5 liter")
+
+
+def test_substance_conversion_can_follow_an_ordinary_unit_conversion(registry) -> None:
+    result = solve(
+        _content_amount_story()
+        .replace("4 kilograms", "4000 grams")
+        .replace("how much water is", "how many litres of water are"),
+        registry,
+    )
+
+    assert (result.answer.kind, result.answer.value) == ("number", 3.5)
+    assert result.answer.reason.endswith("3500 gram → 3.5 liter")
+
+
+def test_water_density_does_not_convert_an_unrelated_substance(registry) -> None:
+    result = solve(
+        _content_amount_story(content="clay").replace(
+            "how much clay is", "how many litres of clay are"
+        ),
+        registry,
+    )
+
     assert not result.answer.committed
-    assert "resulting-total anchor" in result.answer.reason
+    assert "no known 'clay' conversion" in result.answer.reason
+    assert ("kilogram", "liter") not in registry.conversions
+    assert registry.substance_conversions[("water", "kilogram", "liter")] == 1
 
 
 def test_container_mass_needs_a_declared_conversion_to_the_anchor_unit(registry) -> None:

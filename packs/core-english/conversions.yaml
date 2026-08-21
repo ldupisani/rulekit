@@ -3,6 +3,13 @@ conversions:
 - from: kilogram
   to: gram
   factor: 1000
+# Substance-scoped density bridge. This is deliberately absent from the
+# global conversion graph: kilograms and litres are not interchangeable
+# without knowing what material is being measured.
+- from: kilogram
+  to: liter
+  factor: 1
+  substance: water
 - from: hour
   to: minute
   factor: 60

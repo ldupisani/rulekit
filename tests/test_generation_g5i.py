@@ -66,10 +66,10 @@ def _optional_profile(project) -> tuple[int, int, int, int]:
 def test_g5i_profiles_the_complete_recursive_optional_class() -> None:
     project = load_project(CURATED)
 
-    # The governed arrival-goal surface and the anchored-relation conjunction
-    # sentinel add top-level groups; the latter has one nested optional anchor
-    # adverb. The established maximum depth stays unchanged.
-    assert _optional_profile(project) == (69, 151, 38, 3)
+    # The five measurement-event shapes now admit a clause-medial narration
+    # marker. Each contributes one top-level optional group; nesting and the
+    # established maximum depth stay unchanged.
+    assert _optional_profile(project) == (74, 156, 38, 3)
 
 
 def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:

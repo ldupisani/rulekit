@@ -14,6 +14,8 @@ rules:
     match:
       sentence:
         - {slot: actor, type: entity, common_noun_cat: quantity_event_participant, referential: true}
+        - opt:
+            - {slot: sequence, cat: narration_sequence_adverb}
         - {slot: verb, cat: measurement_placement_verb, finite_form: true}
         - {slot: container, cat: measurement_container, referential: true}
         - {slot: prep, cat: quantity_surface_preposition}
@@ -35,6 +37,8 @@ rules:
     match:
       sentence:
         - {slot: actor, type: entity, common_noun_cat: quantity_event_participant, referential: true}
+        - opt:
+            - {slot: sequence, cat: narration_sequence_adverb}
         - {slot: verb, cat: measured_content_transfer_verb, finite_form: true}
         - {slot: content, cat: measured_content_substance, qualified: true, qualifier_cat: measurement_sufficiency_marker}
         - {slot: into, cat: measurement_container_entry_preposition}
@@ -65,6 +69,8 @@ rules:
       content, container, dimension, and resulting total remain explicit.
     match:
       sentence:
+        - opt:
+            - {slot: sequence, cat: narration_sequence_adverb}
         - {slot: verb, cat: measured_content_transfer_verb, finite_form: true}
         - {slot: content, cat: measured_content_substance, qualified: true, qualifier_cat: measurement_sufficiency_marker}
         - {slot: into, cat: measurement_container_entry_preposition}
@@ -110,6 +116,8 @@ rules:
     match:
       sentence:
         - {slot: actor, type: entity, common_noun_cat: quantity_event_participant, referential: true}
+        - opt:
+            - {slot: sequence, cat: narration_sequence_adverb}
         - {slot: verb, cat: measured_content_adjustment_verb, finite_form: true}
         - {slot: content, cat: measured_content_substance, qualified: true, qualifier_cat: measurement_sufficiency_marker}
         - {lit: to}
@@ -153,6 +161,8 @@ rules:
     match:
       sentence:
         - {slot: actor, type: entity, common_noun_cat: quantity_event_participant, referential: true}
+        - opt:
+            - {slot: sequence, cat: narration_sequence_adverb}
         - {slot: verb, cat: measured_content_adjustment_verb, finite_form: true}
         - {slot: amount, cat: mass_measure, counted: true}
         - {lit: of}
@@ -197,5 +207,27 @@ asks:
       consumer: measurement-content-amount
       content: "{content}"
       container: "{container}"
+    generation:
+      context_required: true
+
+  - id: ask/measured-content-in-container-unit
+    # Requests a measured content amount in an explicit unit. Cross-dimension
+    # answers remain possible only when pack data declares a conversion for
+    # this exact substance; the unit categories alone authorize nothing.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: unit, cat: volume_measure, number: plural}
+        - {lit: of}
+        - {slot: content, cat: measured_content_substance}
+        - {slot: copula, cat: plural_copula}
+        - {lit: in}
+        - {slot: container, cat: measurement_container, referential: true}
+    resolves:
+      consumer: measurement-content-amount
+      content: "{content}"
+      container: "{container}"
+      target_measure: "{unit}"
     generation:
       context_required: true

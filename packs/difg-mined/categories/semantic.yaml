@@ -119,7 +119,7 @@ members:
   increase_verb: [increase, increased, increases, rise]
   decrease_verb: [decrease, decreased, decreases, fall, fell]
   mass_quantity_noun: [chicken, coffee, flour, food, milk, money, rice, sugar]
-  partitive_volume_measure: [bottle, cup, liter, quart, sack]
+  partitive_volume_measure: [bottle, cup, quart, sack]
   partitive_pair_measure: [pair]
   partitive_piece_measure: [piece]
   weighable_partitive_substance: [chicken, coffee, flour, food, rice, sugar]
