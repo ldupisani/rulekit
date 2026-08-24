@@ -467,7 +467,7 @@ def test_the_guards_are_the_bulk_of_the_coverage():
 
 # --- the coverage of this file, measured and enforced ----------------------
 
-_GUARD_FLOOR = 145  # guards WITH a probe: raise as probes are added, never lower
+_GUARD_FLOOR = 149  # guards WITH a probe: raise as probes are added, never lower
 _GAP_CEILING = 0    # guards WITHOUT one: lower as probes are added, never raise
 
 # The denominator is 91, and it was 92 until the boundary bug above was fixed:
@@ -553,6 +553,13 @@ _COVERED_BY_UNIT_TEST = {
     # ask grammar can produce without the document veto firing first.
     ("deficit", "current holdings for"),
     ("unique-entity", "measure"),
+    # Exact period-list event totals bind their query fields through required,
+    # category-gated slots, and public premise rules emit event rather than
+    # state quantities. Direct stores exercise every defensive restatement.
+    ("event-period-total", "an event-period total needs two or more "),
+    ("event-period-total", "measure"),
+    ("event-period-total", "a period activity total requires event e"),
+    ("event-period-total", "no direct event evidence for requested p"),
     # the full-read contract is enforced STRUCTURALLY by the matcher —
     # a final span must run to the sentence end and may never swallow a
     # span_blocks word, and every verdict ask anchors `at_start` — so a

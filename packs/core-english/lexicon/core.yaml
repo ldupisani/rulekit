@@ -20,7 +20,7 @@ entries:
     # modal auxiliaries
     can: {senses: [modal, noun], plural: cans}
     could: {senses: [modal]}
-    may: {senses: [modal]}
+    may: {senses: [modal, noun]}
     might: {senses: [modal]}
     must: {senses: [modal]}
     should: {senses: [modal]}
@@ -35,8 +35,9 @@ entries:
 
     # Calendar-point nouns are ordinary core English. Their membership in
     # `timeperiod` does not by itself assign an event time; only a licensed
-    # temporal-point construction may do that. `may` stays modal-only because
-    # its month reading is genuinely ambiguous.
+    # temporal-point construction may do that. `may` is lexically ambiguous;
+    # only an explicit calendar category inside a licensed temporal phrase
+    # selects its month reading, while ordinary modal syntax remains modal.
     monday: {senses: [noun]}
     tuesday: {senses: [noun]}
     wednesday: {senses: [noun]}
@@ -453,6 +454,7 @@ entries:
     pencil: {senses: [noun], plural: pencils}
     sticker: {senses: [noun], plural: stickers}
     card: {senses: [noun], plural: cards}
+    clip: {senses: [noun], plural: clips}
     coin: {senses: [noun], plural: coins}
     color: {senses: [noun], plural: colors}
     dollar: {senses: [noun], plural: dollars}

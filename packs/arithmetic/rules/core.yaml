@@ -6065,6 +6065,142 @@ rules:
         value: "product"
         verb: have
 
+  - id: arithmetic/recipient-count-transfer-proportional-periods
+    phase: read
+    description: >
+      A unit-recipient outbound transfer followed by a proportional transfer
+      in another named calendar period: "Mira sold stickers to 32 of her
+      students in March, and then she sold one fourth as many stickers in
+      April." In this narrow word-problem construction, the counted recipient
+      set supplies the first item count (one item per counted recipient); the
+      explicitly repeated item and compatible transfer verb license the second
+      count. The vocabulary-owned `unit_recipient_transfer_verb` category
+      controls which transfer predicates may use this convention. General
+      transfers, uncounted recipient sets, mismatched items or verbs, and
+      repeated periods remain outside the rule.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: quantity_event_participant, referential: true, bare_reference_category: bare_entity_reference}
+        - {slot: first_verb, cat: unit_recipient_transfer_verb, finite_form: true}
+        - {slot: item, cat: transferable_quantity_object, number: plural}
+        - {slot: recipient_prep, cat: destination_preposition}
+        - {slot: recipient_count, type: number}
+        - {lit: of}
+        - {slot: possessor, cat: third_person_animate_possessive_determiner}
+        - {slot: recipients, cat: animate, number: plural}
+        - {slot: first_time_prep, cat: temporal_in_point_preposition}
+        - {slot: first_period, cat: named_month}
+        - {lit: and}
+        - {slot: sequence, cat: narration_sequence_adverb}
+        - {slot: subject_echo, cat: animate_pronoun}
+        - {slot: second_verb, cat: unit_recipient_transfer_verb, finite_form: true}
+        - {slot: share, type: fraction, word_fraction_within_whole: true, fraction_positive: true}
+        - {lit: as}
+        - {lit: many}
+        - {slot: second_item, cat: transferable_quantity_object, number: plural}
+        - {slot: second_time_prep, cat: temporal_in_point_preposition}
+        - {slot: second_period, cat: named_month}
+    where:
+      - same_lemma: [first_verb, second_verb]
+      - same_lemma: [item, second_item]
+      - same_lemma: [first_time_prep, second_time_prep]
+      - number_compatible: [who, first_verb]
+      - number_compatible: [subject_echo, second_verb]
+      - distinct: [first_period, second_period]
+      - attribute_compatible: {attribute: first_time_prep, noun: first_period}
+      - attribute_compatible: {attribute: second_time_prep, noun: second_period}
+      - verb_roles_compatible:
+          verb: first_verb
+          roles:
+            actor: [who]
+            theme: [item]
+            recipient: [recipients]
+          allow_proper_name: [who]
+    satisfies:
+      recipient_count: [quantifies]
+      possessor: [refers]
+      subject_echo: [refers]
+    consumes: [recipient_count, share]
+    emits:
+      - fact: quantity
+        entity: "{who}"
+        measure: "{item}"
+        measure_qualifier: "{item.qualifier}"
+        value: recipient_count
+        verb: "{first_verb}"
+        time: "{first_period}"
+      - fact: quantity
+        entity: "{who}"
+        measure: "{second_item}"
+        measure_qualifier: "{second_item.qualifier}"
+        value: "recipient_count * share"
+        verb: "{second_verb}"
+        time: "{second_period}"
+
+  - id: arithmetic/recipient-counted-transfer-proportional-periods
+    phase: read
+    description: >
+      The direct counted-recipient sibling of
+      arithmetic/recipient-count-transfer-proportional-periods: "Mira sold
+      stickers to 32 students in March, and then she sold one fourth as many
+      stickers in April." The counted destination must be animate, so this
+      does not reinterpret arbitrary destinations such as "32 books" as a
+      transfer count. The same narrow unit-recipient word-problem convention,
+      repeated verb/item boundary, and distinct named-period boundary apply.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: quantity_event_participant, referential: true, bare_reference_category: bare_entity_reference}
+        - {slot: first_verb, cat: unit_recipient_transfer_verb, finite_form: true}
+        - {slot: item, cat: transferable_quantity_object, number: plural}
+        - {slot: recipient_prep, cat: destination_preposition}
+        - {slot: recipients, cat: animate, counted: true, number: plural}
+        - {slot: first_time_prep, cat: temporal_in_point_preposition}
+        - {slot: first_period, cat: named_month}
+        - {lit: and}
+        - {slot: sequence, cat: narration_sequence_adverb}
+        - {slot: subject_echo, cat: animate_pronoun}
+        - {slot: second_verb, cat: unit_recipient_transfer_verb, finite_form: true}
+        - {slot: share, type: fraction, word_fraction_within_whole: true, fraction_positive: true}
+        - {lit: as}
+        - {lit: many}
+        - {slot: second_item, cat: transferable_quantity_object, number: plural}
+        - {slot: second_time_prep, cat: temporal_in_point_preposition}
+        - {slot: second_period, cat: named_month}
+    where:
+      - same_lemma: [first_verb, second_verb]
+      - same_lemma: [item, second_item]
+      - same_lemma: [first_time_prep, second_time_prep]
+      - number_compatible: [who, first_verb]
+      - number_compatible: [subject_echo, second_verb]
+      - distinct: [first_period, second_period]
+      - attribute_compatible: {attribute: first_time_prep, noun: first_period}
+      - attribute_compatible: {attribute: second_time_prep, noun: second_period}
+      - verb_roles_compatible:
+          verb: first_verb
+          roles:
+            actor: [who]
+            theme: [item]
+            recipient: [recipients]
+          allow_proper_name: [who]
+    satisfies:
+      subject_echo: [refers]
+    consumes: [recipients, share]
+    emits:
+      - fact: quantity
+        entity: "{who}"
+        measure: "{item}"
+        measure_qualifier: "{item.qualifier}"
+        value: recipients
+        verb: "{first_verb}"
+        time: "{first_period}"
+      - fact: quantity
+        entity: "{who}"
+        measure: "{second_item}"
+        measure_qualifier: "{second_item.qualifier}"
+        value: "recipients * share"
+        verb: "{second_verb}"
+        time: "{second_period}"
+
   - id: arithmetic/realized-progress-anaphoric-multiplier
     phase: read
     description: >
@@ -7268,6 +7404,40 @@ asks:
            earning_quantity_verb, enrollment_quantity_verb,
            find_quantity_verb, production_quantity_verb,
            teaching_quantity_verb, initiation_quantity_verb, transfer_out]
+
+  - id: ask/how-many-entity-event-period-total
+    # An exact activity total over two explicitly coordinated named periods:
+    # "How many stickers did Mira sell altogether in March and April?" The
+    # period slots are consumed by this ask rather than left for single-time
+    # arbitration. The consumer requires direct event evidence for both and
+    # excludes events from every unlisted period.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: plural}
+        - {slot: aux, type: future_modal}
+        - {slot: who, type: name}
+        - {slot: verb, cat: unit_recipient_transfer_verb, bare_form: true}
+        - {slot: aggregate, cat: group_total_marker}
+        - {slot: period_prep, cat: temporal_in_point_preposition}
+        - {slot: first_period, cat: named_month}
+        - {slot: conjunction, cat: holder_list_conjunction}
+        - {slot: second_period, cat: named_month}
+    where:
+      - number_compatible: [who, aux]
+      - distinct: [first_period, second_period]
+      - attribute_compatible: {attribute: period_prep, noun: first_period}
+      - verb_roles_compatible:
+          verb: verb
+          roles: {actor: [who], theme: [item]}
+          allow_proper_name: [who]
+    resolves:
+      consumer: event-period-total
+      entity: "{who}"
+      measure: "{item}"
+      verb: "{verb}"
+      periods: ["{first_period}", "{second_period}"]
 
   - id: ask/how-many-entity
     # Keep `who` restricted to a name. A general entity would overlap the

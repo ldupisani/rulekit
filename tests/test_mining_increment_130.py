@@ -234,9 +234,12 @@ def test_calendar_vocabulary_is_not_quarantined_or_multiply_owned() -> None:
     assert CALENDAR_POINTS <= set(core.lexicon)
     assert CALENDAR_POINTS.isdisjoint(mined.lexicon)
     assert CALENDAR_POINTS.isdisjoint(project.registry.quarantine)
+    # May was admitted later as a context-disambiguated modal/month surface;
+    # it is deliberately outside this increment's legacy ownership comparison.
     assert "may" not in CALENDAR_POINTS
-    assert project.registry.lexicon["may"].senses == ["modal"]
-    assert not project.registry.word_in_category("may", "timeperiod")
+    assert set(project.registry.lexicon["may"].senses) == {"modal", "noun"}
+    assert project.registry.word_in_category("may", "timeperiod")
+    assert project.registry.word_in_category("may", "named_month")
 
 
 def test_combined_registry_semantics_match_the_legacy_mined_ownership() -> None:

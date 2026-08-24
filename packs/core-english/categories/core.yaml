@@ -997,6 +997,17 @@ categories:
             to Kim") form. Loss, consumption, dropping, and spending remain in
             `lose` but do not acquire a recipient merely because "to NAME"
             follows them.
+    unit_recipient_transfer_verb:
+        parent: transfer_out
+        selectional_roles:
+            recipient: animate
+        notes: >
+            Outbound transfer predicates validated for the narrow word-problem
+            convention where a counted recipient set supplies one transferred
+            item per recipient. This is deliberately opt-in rather than all of
+            `transfer_out`: adding a verb here extends the compatible premise
+            and ask grammars without making every ordinary transfer imply an
+            exact item count.
     committed_transfer_decision_verb:
         parent: verb
         notes: >
@@ -2376,7 +2387,7 @@ members:
          hamster, number, rabbit, tree]
     ownable_quantity_object: [business, money, shoe]
     droppable_quantity_object:
-        [apple, ball, book, card, coin, cookie, drum, egg, envelope, grape,
+        [apple, ball, book, card, clip, coin, cookie, drum, egg, envelope, grape,
          key, marble, apricot, paper, pencil, pear, plum, puzzle, rose, sticker,
          tomato, toy]
     edible_quantity_object:
@@ -2423,6 +2434,7 @@ members:
     increase_verb: [rose]
     price_relation_verb: [are, cost, costs, is, was, were]
     transfer_out: [give, gives, gave, sell, sells, sold]
+    unit_recipient_transfer_verb: [sell, sells, sold]
     contribution_transfer_verb: [give, gives, gave]
     committed_transfer_decision_verb: [decide, decides, decided]
     spend_verb: [spend, spends, spent]
@@ -2461,21 +2473,21 @@ members:
     future_day_marker: [tomorrow]
     timeperiod:
         [year, monday, tuesday, wednesday, thursday, friday, saturday, sunday,
-         january, february, march, april, june, july, august, september,
+         january, february, march, april, may, june, july, august, september,
          october, november, december]
     named_calendar_period:
         [monday, tuesday, wednesday, thursday, friday, saturday, sunday,
-         january, february, march, april, june, july, august, september,
+         january, february, march, april, may, june, july, august, september,
          october, november, december]
     named_weekday:
         [monday, tuesday, wednesday, thursday, friday, saturday, sunday]
     named_month:
-        [january, february, march, april, june, july, august, september,
+        [january, february, march, april, may, june, july, august, september,
          october, november, december]
     temporal_on_point_object:
         [monday, tuesday, wednesday, thursday, friday, saturday, sunday]
     temporal_in_point_object:
-        [year, january, february, march, april, june, july, august, september,
+        [year, january, february, march, april, may, june, july, august, september,
          october, november, december]
     count_intensifier: [more]
     # small/large inherit this gate through `size_attribute`; tall/long/etc.

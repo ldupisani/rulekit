@@ -136,8 +136,11 @@ def test_reviewed_answerable_seed_now_uses_direct_relevant_evidence(project) -> 
     assert item not in {"amounts", "numbers"}
     assert candidate.question == f"What is the average amount of {item}?"
     assert candidate.answer["committed"] is True
-    assert candidate.answer["value"] == 0.5
-    assert [premise["sentence"] for premise in candidate.premises] == [
-        f"Total of 1 {measure}.",
-        f"John had triple Eron's {item}.",
+    assert [premise["target_rule"] for premise in candidate.premises] == [
+        "arithmetic/group-total-of",
+        "arithmetic/times-as-many-possessive-standard",
     ]
+    total = candidate.premises[0]["facts"][0]["fields"]
+    assert total["measure"] == measure
+    assert candidate.answer["value"] == total["value"] / 2
+    assert all(not premise["deficiencies"] for premise in candidate.premises)

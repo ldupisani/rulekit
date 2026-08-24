@@ -201,12 +201,18 @@ def test_a_month_is_no_longer_a_rival_person(reg):
     assert obs.winner == "sam"
 
 
-def test_may_stays_out_of_timeperiod(reg):
-    """`may` is genuinely modal/month ambiguous. A second sense would trigger the
-    obligations.disambiguate() race registry.py documents for 'ones' — so it is
-    DELIBERATELY not retagged, and that must not silently change."""
-    assert not reg.word_in_category("may", "timeperiod")
-    assert "modal" in reg.lexicon["may"].senses
+def test_may_selects_modal_or_month_from_licensed_context(reg):
+    """The ambiguous surface keeps both lexical uses, while the surrounding
+    grammar commits exactly one: auxiliary syntax selects the modal and an
+    explicit temporal ``in`` phrase selects the calendar noun."""
+    assert reg.word_in_category("may", "timeperiod")
+    assert set(reg.lexicon["may"].senses) == {"modal", "noun"}
+
+    modal = analyze("Mira may sell stickers.", reg)
+    month = analyze("Mira sold 4 stickers in May.", reg)
+
+    assert next(unit for unit in modal.units if unit.surface == "may").sense() == "modal"
+    assert next(unit for unit in month.units if unit.surface == "May").sense() == "noun"
 
 
 def test_every_other_month_joined_the_category(reg):

@@ -247,6 +247,82 @@ def test_progress_remainder_rejects_progress_beyond_capacity(curated):
     assert "completed progress 12" in got.reason
 
 
+def _event_period_query(**updates):
+    query = {
+        "entity": "cato",
+        "measure": "page",
+        "verb": "read",
+        "periods": ["march", "april"],
+    }
+    query.update(updates)
+    return query
+
+
+def test_event_period_total_needs_two_distinct_periods(curated):
+    got = call(
+        "event-period-total",
+        curated,
+        _event_period_query(periods=["march"]),
+        store=FactStore(),
+    )
+    assert got.kind == "decline"
+    assert "needs two or more distinct named periods" in got.reason
+
+
+def test_event_period_total_rejects_an_ambiguous_measure(gsm8k):
+    provenance = Provenance(source="synthetic", sentence=0)
+    store = FactStore(facts=[
+        Quantity(provenance, "cato", "dollar", 3, verb="read", time="march"),
+        Quantity(provenance, "cato", "pound", 4, verb="read", time="march"),
+    ])
+    got = call(
+        "event-period-total",
+        gsm8k,
+        _event_period_query(measure="money"),
+        store=store,
+    )
+    assert got.kind == "decline"
+    assert "measure 'money' is ambiguous" in got.reason
+
+
+def test_event_period_total_rejects_state_evidence(curated):
+    provenance = Provenance(source="synthetic", sentence=0)
+    store = FactStore(facts=[
+        Quantity(provenance, "cato", "page", 3, verb="read", time="march"),
+    ])
+    got = call(
+        "event-period-total",
+        curated,
+        _event_period_query(),
+        store=store,
+    )
+    assert got.kind == "decline"
+    assert "requires event evidence, not snapshots" in got.reason
+
+
+def test_event_period_total_requires_each_requested_period(curated):
+    provenance = Provenance(source="synthetic", sentence=0)
+    store = FactStore(facts=[
+        Quantity(
+            provenance,
+            "cato",
+            "page",
+            3,
+            verb="read",
+            time="march",
+            occurrence=0,
+        ),
+    ])
+    got = call(
+        "event-period-total",
+        curated,
+        _event_period_query(),
+        store=store,
+    )
+    assert got.kind == "decline"
+    assert "no direct event evidence for requested period(s): april" in got.reason
+
+
 def test_arithmetic_unsupported_operation(gsm8k):
     got = call("arithmetic", gsm8k, {"op": "frobnicate", "x": "1", "y": "2"})
     assert got.kind == "decline"

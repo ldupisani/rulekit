@@ -49,6 +49,12 @@ _WHOLE_LIST_CONSUMERS = (
 # question. Membership is safe only while the consumer scans every reading and
 # declines on any value its expression cannot use; `physics` owns that contract.
 _WHOLE_DOCUMENT_CONSUMERS = ("physics",)
+# Consumers whose query explicitly enumerates every period in answer scope.
+# These consumers still undergo answer accounting, but same-holder facts from
+# periods outside the list are intentionally out of scope rather than ignored.
+# Membership is a contract: the consumer must require direct evidence for every
+# listed period and account for every matching fact inside those periods.
+_EXPLICIT_PERIOD_LIST_CONSUMERS = ("event-period-total",)
 
 
 @dataclass
@@ -414,6 +420,13 @@ def _check_number(
         matched = match_ask(question, reg)
         if matched is not None:
             _ask, query, _m = matched
+            explicit_periods = None
+            if query.get("consumer") in _EXPLICIT_PERIOD_LIST_CONSUMERS:
+                raw_periods = query.get("periods")
+                if isinstance(raw_periods, list) and all(
+                    isinstance(period, str) and period for period in raw_periods
+                ):
+                    explicit_periods = set(raw_periods)
             reference_time = None
             time_candidates = _question_reference_time(question, reg, _m)
             if time_candidates:
@@ -458,6 +471,16 @@ def _check_number(
                 asked_verb = query.get("verb")
                 unused: list[str] = []
                 for fact in store.by_kind(Quantity):
+                    # An explicit period-list consumer asks for a bounded event
+                    # set (for example, March AND April). Facts from June are
+                    # not ignored operands; they are outside the question. The
+                    # consumer owns all evidence inside the requested periods,
+                    # so those facts remain subject to the checks below.
+                    if (
+                        explicit_periods is not None
+                        and fact.time not in explicit_periods
+                    ):
+                        continue
                     # The consumer already ran below the shared temporal
                     # origo. Answer accounting must inspect that same evidence
                     # scope rather than vetoing a correct period-specific
