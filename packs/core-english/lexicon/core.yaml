@@ -560,14 +560,14 @@ entries:
     added: {senses: [verb], verb: {lemma: add}}
     adding: {senses: [verb], verb: {lemma: add}}
     adds: {senses: [verb], number: singular, verb: {lemma: add}}
-    bring: {senses: [verb]}
+    bring: {senses: [verb], number: plural}
     bringing: {senses: [verb], verb: {lemma: bring}}
-    brings: {senses: [verb], verb: {lemma: bring}}
+    brings: {senses: [verb], number: singular, verb: {lemma: bring}}
     brought: {senses: [verb], verb: {lemma: bring}}
-    conduct: {senses: [verb]}
+    conduct: {senses: [verb], number: plural}
     conducted: {senses: [verb], verb: {lemma: conduct}}
     conducting: {senses: [verb], verb: {lemma: conduct}}
-    conducts: {senses: [verb], verb: {lemma: conduct}}
+    conducts: {senses: [verb], number: singular, verb: {lemma: conduct}}
     measure: {senses: [verb], number: plural}
     measured: {senses: [verb], verb: {lemma: measure}}
     measures: {senses: [verb], number: singular, verb: {lemma: measure}}

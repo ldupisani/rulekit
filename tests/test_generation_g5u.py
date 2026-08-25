@@ -136,7 +136,7 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
     assert MOVED_WORD in core.lexicon
     assert set(project.registry.lexicon[MOVED_WORD].senses) == {"adverb"}
     assert project.registry.word_categories.get(MOVED_WORD, ()) == (
-        "holding_anchor_adverb",
+        "current_holding_anchor_adverb",
     )
     assert project.registry.word_categories.get("then", ()) == (
         "narration_sequence_adverb",
@@ -242,6 +242,7 @@ def test_currently_generates_a_matcher_confirmed_anchor() -> None:
     assert premise.status == "passed"
     assert premise.category_path == (
         MOVED_WORD,
+        "current_holding_anchor_adverb",
         "holding_anchor_adverb",
         "adverb",
     )

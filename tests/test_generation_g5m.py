@@ -262,6 +262,7 @@ def test_qualifier_and_label_are_parts_of_the_measure_key(
         distinct_owner_groups=[],
         distinct_measure_groups=(("left", "right"),),
         attribute_pairs=[],
+        adverb_verb_pairs=[],
         tokens_by_slot={},
         active_slots=set(),
         slot_category_exclusions=[],

@@ -167,6 +167,15 @@ tightened the original anchored-relation rule to finite, role-compatible,
 non-goal predicates; made elided-measure asks count unresolved Relation
 measures when testing ambiguity; and made possessed-place asks require an
 owner-scoped place quantity rather than treating the owner as the place.
+The conjoined same-holder anchor now has the corresponding complete boundary:
+both clauses use the same finite possession surface, plural counts use a
+count-compatible additive direction, and an explicit trailing adverb must be
+compatible with that verb's surface tense. The relationship is declared in
+category data and shared by matching and generation, so `currently` selects a
+present holding while flexible anchors such as `still` may retain a past
+holding. Event quantities and unrelated states can no longer borrow a
+possession anchor. Core `bring` and `conduct` paradigms also expose their
+singular/plural agreement explicitly.
 Optional interpretation, result, and naturalness judgments keep grammatical
 acceptance distinct from semantic and stylistic preference. This index remains
 strictly authoring-only and does not enter the Registry or runtime inference.
@@ -244,11 +253,11 @@ These are the gates run at the current runtime checkpoint:
 
 | Gate | Current result |
 | --- | --- |
-| full synthetic suite | 5,757 passed |
+| full synthetic suite | 5,772 passed |
 | curated suite | 71 correct, 0 wrong |
 | GSM8K DEV-train | 106 correct, 0 wrong |
 | GSM8K DEV-holdout | 44 correct, 0 wrong |
-| ASDiv DEV | 45 correct, 0 wrong |
+| ASDiv DEV | 46 correct, 0 wrong |
 | SVAMP DEV | 24 correct, 0 wrong |
 | MAWPS DEV | 11 correct, 0 wrong |
 | SciBench DEV | 6 correct, 0 wrong |

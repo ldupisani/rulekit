@@ -172,8 +172,10 @@ members:
   - met
   animate_subject_verb: [cough, coughed, coughs, know, knew, knowing, knows]
   animate_object_verb: [meet, meets, met]
-  holding_anchor_adverb:
+  flexible_holding_anchor_adverb:
     [already, also, always, initially, later, originally, recently, still, then]
+  ownership_state: [owned]
+  past_possession_state: [owned]
   shucking_verb: [shuck, shucked, shucking, shucks]
   shuckable_item: [corn, ear, oyster, peas]
   # extends core-english's `animate` (see its note there): these 43

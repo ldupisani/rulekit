@@ -631,6 +631,17 @@ categories:
             holding relation. Copulas remain in sibling `copula`: they state
             quantities in other grammatical frames but cannot connect a
             subject directly to a possessive quantity standard.
+    present_possession_state:
+        parent: possession_state
+        notes: >
+            Present-tense possession forms. This grammatical subtype lets
+            temporal/aspectual adverbs declare which holding perspective they
+            can modify without putting individual words in a grammar rule.
+    past_possession_state:
+        parent: possession_state
+        notes: >
+            Past-tense possession forms. Number-neutral past morphology stays
+            separate from the present agreement categories.
     plain_have_state:
         parent: possession_state
         notes: >
@@ -1478,6 +1489,17 @@ categories:
             Temporal or aspectual adverbs that can naturally appear before a
             stative holding verb in a conjoined quantity anchor ("and still
             had 5 hats"). Directional adverbs such as "off" do not belong.
+    current_holding_anchor_adverb:
+        parent: holding_anchor_adverb
+        notes: >
+            Holding anchors tied to the current discourse perspective. They
+            require a present possession form through the declared
+            adverb/verb compatibility relation.
+    flexible_holding_anchor_adverb:
+        parent: holding_anchor_adverb
+        notes: >
+            Holding anchors that can modify either a present or past
+            possession form. Their lexical membership remains pack-owned.
     narration_sequence_adverb:
         parent: adverb
         notes: >
@@ -2429,6 +2451,8 @@ members:
     possession_state: [has, have, had]
     plain_have_state: [has, have, had]
     ownership_state: [own, owns]
+    present_possession_state: [has, have, own, owns]
+    past_possession_state: [had]
     population_total_verb: [has, have, had]
     copula: [is, are, was, were]
     plural_copula: [are, were]
@@ -2534,7 +2558,7 @@ members:
     distributive_quantifier: [each, every]
     postpositive_distributive_quantifier: [each]
     individualizing_adverb: [individually]
-    holding_anchor_adverb: [currently]
+    current_holding_anchor_adverb: [currently]
     narration_sequence_adverb: [finally, then]
     restrictive_focus_adverb: [just, only]
     age_measure: [year]
@@ -2689,6 +2713,9 @@ attribute_compatibility:
     temporal_deadline_preposition: [timeperiod]
 modifier_host_compatibility:
     quantity_topic_preposition: [topical_quantity_host]
+adverb_verb_compatibility:
+    current_holding_anchor_adverb: [present_possession_state]
+    flexible_holding_anchor_adverb: [possession_state]
 modifier_attachment_compatibility:
     - preposition_category: quantity_surface_preposition
       object_category: tree_quantity_surface_location

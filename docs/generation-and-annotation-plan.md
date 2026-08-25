@@ -9,7 +9,7 @@ reviews share the append-only edit/resolve/tombstone lifecycle. Strict and
 one-slot lexical-boundary generation, recursive realization, structural
 coverage, category/fact/slot filters, source navigation, pinned edit/retest,
 and generation-health diagnostics are implemented. G5v remains the name of
-the ongoing human review loop; reconciliations are complete through batch 62.
+the ongoing human review loop; reconciliations are complete through batch 63.
 Mining v2 now uses this workbench as its human promotion surface.
 
 Point-in-time counts in the milestone sections below are historical results.
@@ -32,6 +32,17 @@ unsupported past “did” ask. Ask records preserve
 aligned canonical premise-review ids. “Smallest answerable” exposes an
 explicit unchecked control for validating each generated premise as reusable
 evidence; approving an ask alone does not promote those premises.
+
+The latest premise-review reconciliation gives conjoined same-holder quantity
+anchors one coherent possession frame. Both clauses must use the same finite
+verb surface, plural counts require a count-compatible additive direction,
+and explicit trailing adverbs use a pack-declared adverb/verb compatibility
+relation. That relation is surface-tense aware and shared by the matcher,
+availability analysis, strict generation, and source evidence. Consequently a
+current anchor cannot silently modify a past holding, while a deliberately
+flexible anchor can; event quantities and unrelated states do not enter this
+construction. Core `bring` and `conduct` forms now carry explicit number so
+ordinary agreement checks apply independently of this rule.
 
 G1 shipped the first complete generate/review/next loop, G2 made its
 mechanical result directly inspectable, G3 closed the edit/retest loop, and G4
@@ -156,13 +167,14 @@ added bounded hypothesis and minimal-pair exploration:
 - fraction-valued comparisons and changes require a strictly positive
   magnitude, while pool and partition facts retain zero as a meaningful value.
 
-The current gate is green: all 5,358 repository tests pass in four-worker
+The current gate is green: all 5,772 repository tests pass in four-worker
 mode, curated remains deterministic at 71/71 and 100% precision, GSM8K
-DEV-train is 108/0 and DEV-holdout is 42/0, every standing answer and
-projection gate retains zero wrong or incorrect commitments, and lint has
-zero errors with one known warning. The protected aggregate remains recorded
-in the handoff and campaign ledgers; this documentation reconciliation spends
-no protected look.
+DEV-train is 106/0 and DEV-holdout is 44/0, and ASDiv improves to 46/0 without
+a wrong commitment. SVAMP, MAWPS, SciBench, DIFG, and FOLIO retain zero wrong
+commitments; COGS and PMB retain zero incorrect projections; and lint has zero
+errors with one known warning. The protected aggregate remains recorded in
+the handoff and campaign ledgers; this reconciliation spends no protected
+look.
 G6 live validation selected untouched `rabbit`, opened its declaration, and
 generated matched `Eron gives 18 rabbits to Aven.` for
 `arithmetic/transfer-prepositional`. The rule moved from untouched to
@@ -3932,6 +3944,28 @@ group and qualified-measure path adding one SVAMP correct answer (31/0); COGS
 DEV-train/holdout remain 1,771/1,693 exact with zero incorrect projections;
 and PMB train/development remain 117/4 exact with zero incorrect projections.
 Lint has zero errors and one pre-existing warning. No protected look was spent.
+
+#### Sixty-third review reconciliation — complete
+
+Two generated conjoined-anchor reviews exposed one shared grammatical and
+semantic leak: an event predicate in the first clause could be anchored by an
+unrelated possession state in the second, and a present adverb could modify a
+past holding. The repaired rule is deliberately a same-holder possession
+construction. Its two finite verb slots must have the same surface, its count
+comparison uses `count_quantity_delta`, and its optional adverb is checked
+through the category-owned `adverb_verb_compatibility` relation. Optional
+absence remains neutral, and flexible adverbs may still pair with compatible
+past possession surfaces.
+
+The relation is a general registry, schema, source-index, matcher, and
+generator capability rather than a word check in Python. Exact tests pin both
+review records, negative temporal and event-frame neighbours, positive
+present and past anchors, strict generation, source evidence, and the repaired
+`bring`/`conduct` number paradigms. The complete gate is 5,772 tests. Curated
+is 71/71; GSM8K DEV-train/holdout are 106/0 and 44/0; ASDiv is 46/0; SVAMP,
+MAWPS, SciBench, DIFG, and FOLIO retain zero wrong commitments; COGS and PMB
+retain zero incorrect projections; and lint has zero errors with one known
+warning. No protected look was spent.
 
 ## G1 implementation brief
 

@@ -1028,7 +1028,8 @@ at-most-one constraint instead of relying on seeded luck.
 Realization prunes a candidate filler when the Ask's already-bound slots make
 a shared `where` predicate decidable. This covers exclusions, agreement,
 distinctness, conditional categories, attribute/noun compatibility,
-measure/holder roles, verb/object roles, and partitive pairs. Undecidable
+measure/holder roles, verb/object roles, adverb/verb compatibility, and
+partitive pairs. Undecidable
 predicates remain untouched until their other slot is chosen. A possessive
 determiner similarly selects the bare rendering of its following referential
 common noun, preventing surfaces such as `his the book`. Without such a
@@ -1812,6 +1813,18 @@ predicate is neutral: it constrains an explicit descriptor/noun pair rather
 than making optional syntax mandatory. This lets `Rest were small` remain
 discourse-backed while `Rest of the ages were small` is rejected.
 
+Temporal and aspectual adverbs use the parallel category-owned
+`adverb_verb_compatibility` relation and the rule predicate
+`adverb_verb_compatible`. The relation maps an adverb category to compatible
+verb categories and is inherited on both sides, so packs can distinguish a
+present-only anchor from an adverb that applies to a broader state family.
+Compatibility is checked against the finite verb's analyzed surface, not only
+its lemma: otherwise `has` and `had` would both collapse to `have` and erase
+the tense boundary. An omitted optional adverb is neutral. Matching,
+availability, strict realization, locked fillers, and source evidence all use
+the same registry relation; generation therefore cannot manufacture a pair
+that the ordinary matcher would reject.
+
 A rule may declare
 `slot_not_category: {slot: SLOT, cat: CATEGORY}` to subtract a semantic
 category from an otherwise broad slot. The matcher, availability analysis, and
@@ -1916,10 +1929,11 @@ counts never enter candidate retesting or hypothesis evidence.
 
 Pack loading also retains an authoring-only `SourceIndex` on `Project`. It maps
 rules, asks, premise tokens and predicates, lexicon entries, category
-definitions and memberships, adjective/noun compatibility pairs, morphology
-declarations, contraction declarations, and numeric declarations to exact
-file/line coordinates from ruamel's round-trip YAML nodes. It does not enter
-`Registry`, its fingerprint, or inference. Generate mode turns those
+definitions and memberships, attribute/noun and adverb/verb compatibility
+pairs, morphology declarations, contraction declarations, and numeric
+declarations to exact file/line coordinates from ruamel's round-trip YAML
+nodes. It does not enter `Registry`, its fingerprint, or inference. Generate
+mode turns those
 coordinates into source controls only when the path appears in the existing
 editable pack-document allowlist; a control opens the document and selects
 the declaration line in the editor.

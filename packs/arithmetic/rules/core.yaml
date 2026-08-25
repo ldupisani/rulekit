@@ -340,12 +340,15 @@ rules:
       is independently skippable and uses the narrow
       `holding_anchor_adverb` category, so temporal/aspectual forms such as
       "currently" and "still" remain available without admitting a
-      directional adverb such as "off". A bare "...and has 5 hats" also
-      matches. The standard must be a complete reference, so a bare plural
-      such as "hats" is valid while bare singular "egg" is not.
-      `trailing_verb, cat: state`: only a
-      STATIVE echo (have/own/be) anchors a holding this way — an event
-      verb conjunct is a different, unbuilt shape and stays declined.
+      directional adverb such as "off". Pack data relates those adverb
+      categories to compatible possession tenses: "currently has" is valid,
+      while "currently had" is not. A bare "...and has 5 hats" also matches.
+      Both predicates must be the same finite possession surface. This keeps
+      the relation and its anchor in one temporal and semantic frame instead
+      of using a current holding to resolve an unrelated event count. The
+      standard must be a complete reference, so a bare plural such as "hats"
+      is valid while bare singular "egg" is not. Count nouns use the
+      count-compatible direction family (`fewer`/`more`, never `less`).
       Byte-identical to plain anchored-relation when no conjoined tail
       follows 'than STD': the mandatory 'and' literal simply fails to
       match there, so only the unmodified anchored-relation rule (still
@@ -353,9 +356,9 @@ rules:
     match:
       sentence:
         - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true, bare_reference_category: bare_entity_reference}
-        - {slot: verb, type: verb}
+        - {slot: verb, cat: possession_state, finite_form: true}
         - {slot: n, type: number}
-        - {slot: dir, cat: delta}
+        - {slot: dir, cat: count_quantity_delta}
         - {slot: item, type: plural}
         - opt:
             - {slot: pp_prep, cat: preposition}
@@ -370,25 +373,21 @@ rules:
         - {lit: and}
         - opt:
             - {slot: trailing_adv, cat: holding_anchor_adverb}
-        - {slot: trailing_verb, cat: state}
+        - {slot: trailing_verb, cat: possession_state, finite_form: true}
         - {slot: std_echo, type: counted}
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - number_compatible: [who, verb]
       - number_compatible: [who, trailing_verb]
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: animate_object_verb, role_cat: quantity_event_participant}
       - verb_roles_compatible:
           verb: verb
           roles:
             actor: [who]
             theme: [item]
           allow_proper_name: [who]
-      - verb_role_compatible: {verb: verb, roles: [who], verb_cat: past_departure_quantity_verb, role_cat: quantity_event_participant}
-      - verb_role_compatible: {verb: verb, roles: [item], verb_cat: past_departure_quantity_verb, role_cat: transferable_quantity_object}
       - measure_holder_compatible: {measure: item, holders: [who], allow_proper_name: true, when_declared: true}
-      - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - same_surface: [verb, trailing_verb]
+      - adverb_verb_compatible: {adverb: trailing_adv, verb: trailing_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: std, cat: non_quantity_holder}
       - slot_not_category: {slot: item, cat: many_incompatible_noun}

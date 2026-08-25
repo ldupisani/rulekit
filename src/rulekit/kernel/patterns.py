@@ -1528,6 +1528,24 @@ def _check_where(
                     modifier_lemma, _lemma_of(object_), host_lemma
                 ):
                     return False
+        if pred.adverb_verb_compatible is not None:
+            adverb_name = pred.adverb_verb_compatible.adverb
+            verb_name = pred.adverb_verb_compatible.verb
+            adverb = slots.get(adverb_name)
+            verb = slots.get(verb_name)
+            if adverb is None:
+                # Optional adverb omitted: there is no modifier relation to
+                # validate, so the predicate is deliberately neutral.
+                continue
+            if (
+                verb is None
+                or isinstance(adverb, tuple)
+                or isinstance(verb, tuple)
+                or not reg.adverb_applies_to_verb(
+                    adverb.surface.casefold(), verb.surface.casefold()
+                )
+            ):
+                return False
         if pred.distinct_measure is not None:
             # mining candidate qualified-measure-keys: the (lemma, label)
             # pair from `distinct` above, PLUS each slot's own `qualifier`

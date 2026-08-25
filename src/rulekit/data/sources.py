@@ -62,6 +62,9 @@ class SourceIndex:
     modifier_host_compatibility: dict[tuple[str, str], SourceRef] = field(
         default_factory=dict
     )
+    adverb_verb_compatibility: dict[tuple[str, str], SourceRef] = field(
+        default_factory=dict
+    )
     modifier_attachment_compatibility: dict[
         tuple[str, str, str], SourceRef
     ] = field(default_factory=dict)
@@ -94,6 +97,7 @@ class SourceIndex:
             "category_members",
             "attribute_compatibility",
             "modifier_host_compatibility",
+            "adverb_verb_compatibility",
             "modifier_attachment_compatibility",
             "measure_holder_compatibility",
             "partitive_measure_compatibility",
@@ -289,6 +293,20 @@ def _index_categories(
                 kind="modifier-host-compatibility",
                 label=f"{modifier} → {host}",
                 item=host_no,
+            )
+
+    raw_adverb_verbs = raw.get("adverb_verb_compatibility", {})
+    for adverb, verbs in doc.adverb_verb_compatibility.items():
+        raw_values = raw_adverb_verbs.get(adverb, [])
+        for verb_no, verb in enumerate(verbs):
+            if verb_no >= len(raw_values):
+                continue
+            index.adverb_verb_compatibility[(adverb, verb)] = _ref(
+                path,
+                raw_values,
+                kind="adverb-verb-compatibility",
+                label=f"{adverb} → {verb}",
+                item=verb_no,
             )
 
     raw_attachments = raw.get("modifier_attachment_compatibility", [])

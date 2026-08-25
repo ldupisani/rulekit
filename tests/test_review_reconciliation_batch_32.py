@@ -146,14 +146,14 @@ def test_conjoined_anchor_scopes_adverbs_and_complete_standards(registry) -> Non
     rule_id = "arithmetic/anchored-relation-conjoined-anchor"
 
     assert rule_id in _matched_rules(
-        "The cat lost 2 more dollars than eggs and currently had 20 eggs.",
+        "The cat has 2 more dollars than eggs and currently has 20 eggs.",
         registry,
     )
     assert rule_id not in _matched_rules(
-        "The cat lost 2 more dollars than eggs and off had 20 eggs.",
+        "The cat has 2 more dollars than eggs and off has 20 eggs.",
         registry,
     )
     assert rule_id not in _matched_rules(
-        "The cat lost 2 more dollars than egg and currently had 20 eggs.",
+        "The cat has 2 more dollars than egg and currently has 20 eggs.",
         registry,
     )

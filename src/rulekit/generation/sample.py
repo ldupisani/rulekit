@@ -19,6 +19,7 @@ from ruamel.yaml import YAML
 from ..data.project import Project
 from ..data.registry import Registry
 from ..data.schemas import (
+    AdverbVerbCompatibilityPredicate,
     AttributeCompatibilityPredicate,
     MatchToken,
     PatternRule,
@@ -421,6 +422,7 @@ def _where_blocker(rule: PatternRule) -> list[str]:
             or pred.measure_holder_compatible is not None
             or pred.attribute_compatible is not None
             or pred.modifier_host_compatible is not None
+            or pred.adverb_verb_compatible is not None
             or pred.slot_not_category is not None
             or pred.absent is not None
             or pred.unbound is not None
@@ -1776,6 +1778,28 @@ def _rule_blockers(
                     f"for {modifier_name}/{host_name}"
                 )
         for pred in rule.where:
+            if pred.adverb_verb_compatible is None:
+                continue
+            adverb_name = pred.adverb_verb_compatible.adverb
+            verb_name = pred.adverb_verb_compatible.verb
+            adverb_token = tokens_by_slot.get(adverb_name)
+            verb_token = tokens_by_slot.get(verb_name)
+            if (
+                adverb_token is None
+                or verb_token is None
+                or not any(
+                    reg.adverb_applies_to_verb(
+                        adverb.surface.casefold(), verb.surface.casefold()
+                    )
+                    for adverb in safe_domain(adverb_token)
+                    for verb in safe_domain(verb_token)
+                )
+            ):
+                blockers.append(
+                    "no project-backed adverb/verb compatibility exists "
+                    f"for {adverb_name}/{verb_name}"
+                )
+        for pred in rule.where:
             if pred.polarity_compatible is None:
                 continue
             pairs = tuple(
@@ -2144,6 +2168,7 @@ def _constraint_groups(
     bound_form_requirements: list[tuple[str, str, str]] = []
     same_presence: list[set[str]] = []
     attribute_pairs: list[tuple[str, str]] = []
+    adverb_verb_pairs: list[tuple[str, str]] = []
     modifier_host_pairs: list[tuple[str, str, str | None]] = []
     verb_role_requirements: list[
         tuple[
@@ -2245,6 +2270,13 @@ def _constraint_groups(
                     pred.attribute_compatible.noun,
                 )
             )
+        if pred.adverb_verb_compatible is not None:
+            adverb_verb_pairs.append(
+                (
+                    pred.adverb_verb_compatible.adverb,
+                    pred.adverb_verb_compatible.verb,
+                )
+            )
         if pred.modifier_host_compatible is not None:
             modifier_host_pairs.append(
                 (
@@ -2299,6 +2331,7 @@ def _constraint_groups(
         same_presence,
         _distinct_measure_groups(rule),
         attribute_pairs,
+        adverb_verb_pairs,
         modifier_host_pairs,
         verb_role_requirements,
         verb_selectional_requirements,
@@ -2324,6 +2357,7 @@ def _allowed_fillers(
     distinct_owner_groups: list[set[str]],
     distinct_measure_groups: tuple[tuple[str, ...], ...],
     attribute_pairs: list[tuple[str, str]],
+    adverb_verb_pairs: list[tuple[str, str]],
     tokens_by_slot: dict[str, MatchToken],
     active_slots: set[str],
     slot_category_exclusions: list[tuple[str, str]],
@@ -2730,6 +2764,43 @@ def _allowed_fillers(
                 and not any(
                     reg.attribute_applies_to(candidate, filler.identity)
                     for candidate in possible_identities(attribute_name)
+                )
+            ):
+                return False
+        for adverb_name, verb_name in adverb_verb_pairs:
+            adverb = known_filler(adverb_name)
+            verb = known_filler(verb_name)
+            if token.slot == adverb_name and verb is not None:
+                if not reg.adverb_applies_to_verb(
+                    filler.surface.casefold(), verb.surface.casefold()
+                ):
+                    return False
+            if (
+                token.slot == adverb_name
+                and verb is None
+                and verb_name in active_slots
+                and not any(
+                    reg.adverb_applies_to_verb(
+                        filler.surface.casefold(), candidate.surface.casefold()
+                    )
+                    for candidate in candidate_domain(tokens_by_slot[verb_name])
+                )
+            ):
+                return False
+            if token.slot == verb_name and adverb is not None:
+                if not reg.adverb_applies_to_verb(
+                    adverb.surface.casefold(), filler.surface.casefold()
+                ):
+                    return False
+            if (
+                token.slot == verb_name
+                and adverb is None
+                and adverb_name in active_slots
+                and not any(
+                    reg.adverb_applies_to_verb(
+                        candidate.surface.casefold(), filler.surface.casefold()
+                    )
+                    for candidate in candidate_domain(tokens_by_slot[adverb_name])
                 )
             ):
                 return False
@@ -3252,6 +3323,7 @@ def _realize(
         same_presence_groups,
         distinct_measure_groups,
         attribute_pairs,
+        adverb_verb_pairs,
         modifier_host_pairs,
         verb_role_requirements,
         verb_selectional_requirements,
@@ -3526,6 +3598,7 @@ def _realize(
                 distinct_owner_groups,
                 distinct_measure_groups,
                 attribute_pairs,
+                adverb_verb_pairs,
                 tokens_by_slot,
                 active_slots,
                 slot_category_exclusions,
@@ -4080,6 +4153,43 @@ def _attribute_compatibility_evidence(
     return refs
 
 
+def _adverb_verb_compatibility_evidence(
+    project: Project,
+    predicate: AdverbVerbCompatibilityPredicate,
+    slots: dict[str, Unit | tuple[Unit, ...]],
+) -> list[SourceRef | None]:
+    """Locate the category pair and memberships licensing an adverb/verb."""
+
+    adverb_units = _slot_units(slots.get(predicate.adverb))
+    verb_units = _slot_units(slots.get(predicate.verb))
+    if not adverb_units or not verb_units:
+        return []
+    reg = project.registry
+    index = project.source_index
+    adverb = adverb_units[0].surface.casefold()
+    verb = verb_units[0].surface.casefold()
+    refs: list[SourceRef | None] = []
+    for adverb_category, verb_category in (
+        reg.adverb_verb_compatibility_pairs(adverb, verb)
+    ):
+        refs.extend(
+            (
+                index.adverb_verb_compatibility.get(
+                    (adverb_category, verb_category)
+                ),
+                index.categories.get(adverb_category),
+                index.categories.get(verb_category),
+            )
+        )
+        for direct in reg.word_categories.get(adverb, ()):
+            if adverb_category in reg.cat_ancestors(direct):
+                refs.append(index.category_members.get((direct, adverb)))
+        for direct in reg.word_categories.get(verb, ()):
+            if verb_category in reg.cat_ancestors(direct):
+                refs.append(index.category_members.get((direct, verb)))
+    return refs
+
+
 def _measure_holder_compatibility_evidence(
     project: Project,
     measure_slot: str,
@@ -4367,6 +4477,7 @@ _WHERE_FIELDS = (
     "distinct_from_owner",
     "attribute_compatible",
     "modifier_host_compatible",
+    "adverb_verb_compatible",
     "distinct_measure",
     "name_count",
     "absent",
@@ -4401,6 +4512,9 @@ def _where_expression(rule: PatternRule, index: int) -> tuple[str, tuple[str, ..
         rendered = f"modifier={value.modifier!r}, host={value.host!r}"
         if value.object is not None:
             rendered += f", object={value.object!r}"
+    elif kind == "adverb_verb_compatible":
+        names = (value.adverb, value.verb)
+        rendered = f"adverb={value.adverb!r}, verb={value.verb!r}"
     elif kind == "bound_requires_type":
         names = (value.bound, value.slot)
         rendered = (
@@ -4810,6 +4924,26 @@ def _where_reason(
         )
         return (
             f"{attribute_name}={attribute!r}, {noun_name}={noun!r} matched "
+            f"{rendered}"
+        )
+    if pred.adverb_verb_compatible is not None:
+        adverb_name = pred.adverb_verb_compatible.adverb
+        verb_name = pred.adverb_verb_compatible.verb
+        adverb_units = _slot_units(slots.get(adverb_name))
+        verb_units = _slot_units(slots.get(verb_name))
+        if not adverb_units:
+            return "the optional adverb was absent"
+        if not verb_units:
+            return "the target match did not expose the modified verb"
+        adverb = adverb_units[0].surface.casefold()
+        verb = verb_units[0].surface.casefold()
+        pairs = reg.adverb_verb_compatibility_pairs(adverb, verb)
+        rendered = ", ".join(
+            f"{adverb_category} → {verb_category}"
+            for adverb_category, verb_category in pairs
+        )
+        return (
+            f"{adverb_name}={adverb!r}, {verb_name}={verb!r} matched "
             f"{rendered}"
         )
     if pred.modifier_host_compatible is not None:
@@ -5246,6 +5380,15 @@ def _explain_candidate(
             where_sources.extend(
                 _attribute_compatibility_evidence(
                     project, predicate.attribute_compatible, slots
+                )
+            )
+        if (
+            target is not None
+            and predicate.adverb_verb_compatible is not None
+        ):
+            where_sources.extend(
+                _adverb_verb_compatibility_evidence(
+                    project, predicate.adverb_verb_compatible, slots
                 )
             )
         if (

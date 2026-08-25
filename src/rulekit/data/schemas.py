@@ -224,6 +224,13 @@ class CategoriesDoc(StrictModel):
     modifier_host_compatibility: dict[str, list[str]] = Field(
         default_factory=dict
     )
+    # Adverb category -> verb categories whose temporal/aspectual form it may
+    # modify.  This keeps tense-sensitive lexical knowledge in pack data: a
+    # rule names the two grammatical slots, while categories decide that
+    # e.g. ``currently`` can modify a present holding but not a past one.
+    adverb_verb_compatibility: dict[str, list[str]] = Field(
+        default_factory=dict
+    )
     # Object-sensitive nominal attachment frames. A frame becomes restrictive
     # only when its preposition and object categories both match; otherwise
     # the construction retains the ordinary open modifier behaviour.
@@ -273,6 +280,7 @@ class CategoriesDoc(StrictModel):
         for family, compatibility in (
             ("attribute", self.attribute_compatibility),
             ("modifier-host", self.modifier_host_compatibility),
+            ("adverb-verb", self.adverb_verb_compatibility),
             ("measure-holder", self.measure_holder_compatibility),
             ("partitive-measure", self.partitive_measure_compatibility),
         ):
@@ -893,6 +901,21 @@ class ModifierHostCompatibilityPredicate(StrictModel):
         return self
 
 
+class AdverbVerbCompatibilityPredicate(StrictModel):
+    """Relate an optional adverb to the finite verb it modifies."""
+
+    adverb: str
+    verb: str
+
+    @model_validator(mode="after")
+    def _different_slots(self) -> "AdverbVerbCompatibilityPredicate":
+        if self.adverb == self.verb:
+            raise ValueError(
+                "adverb-verb compatibility needs distinct role slots"
+            )
+        return self
+
+
 class BoundRequiresTypePredicate(StrictModel):
     """Require one slot type only when another optional slot was bound."""
 
@@ -1338,6 +1361,9 @@ class WherePredicate(StrictModel):
     # a declared host boundary, its head noun must belong to one of the
     # corresponding host categories. Undeclared prepositions remain open.
     modifier_host_compatible: ModifierHostCompatibilityPredicate | None = None
+    # When the adverb is present, its pack-declared category must license the
+    # bound verb category. An omitted optional adverb is neutral.
+    adverb_verb_compatible: AdverbVerbCompatibilityPredicate | None = None
     # mining candidate qualified-measure-keys: the SAME self-reference
     # guard as `distinct` (lemma, label), plus each slot's own `qualifier`
     # feature (condense.py merge-attribute/merge-compound) — "12 more
@@ -1407,6 +1433,7 @@ class WherePredicate(StrictModel):
                 self.distinct_owner, self.distinct_from_owner,
                 self.attribute_compatible,
                 self.modifier_host_compatible,
+                self.adverb_verb_compatible,
                 self.distinct_measure,
                 self.name_count, self.absent, self.unbound,
                 self.slot_not_category,

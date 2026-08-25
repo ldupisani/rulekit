@@ -136,6 +136,7 @@ class Registry:
     dimension_categories: frozenset[str]
     attribute_compatibility: Mapping[str, tuple[str, ...]]
     modifier_host_compatibility: Mapping[str, tuple[str, ...]]
+    adverb_verb_compatibility: Mapping[str, tuple[str, ...]]
     modifier_attachment_compatibility: tuple[tuple[str, str, str], ...]
     measure_holder_compatibility: Mapping[str, tuple[str, ...]]
     partitive_measure_compatibility: Mapping[str, tuple[str, ...]]
@@ -315,6 +316,24 @@ class Registry:
                         pairs.add((modifier_category, host_category))
         return tuple(sorted(pairs))
 
+    def adverb_verb_compatibility_pairs(
+        self, adverb: str, verb: str
+    ) -> tuple[tuple[str, str], ...]:
+        """Every declared adverb-category/verb-category licence."""
+
+        pairs: set[tuple[str, str]] = set()
+        for direct in self.word_categories.get(adverb, ()):
+            for adverb_category in self.cat_ancestors(direct):
+                for verb_category in self.adverb_verb_compatibility.get(
+                    adverb_category, ()
+                ):
+                    if self.word_in_category(verb, verb_category):
+                        pairs.add((adverb_category, verb_category))
+        return tuple(sorted(pairs))
+
+    def adverb_applies_to_verb(self, adverb: str, verb: str) -> bool:
+        return bool(self.adverb_verb_compatibility_pairs(adverb, verb))
+
     def modifier_has_host_boundary(self, modifier: str) -> bool:
         return any(
             category in self.modifier_host_compatibility
@@ -490,6 +509,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
     dimension_categories: set[str] = set()
     attribute_compatibility: dict[str, list[str]] = {}
     modifier_host_compatibility: dict[str, list[str]] = {}
+    adverb_verb_compatibility: dict[str, list[str]] = {}
     modifier_attachment_compatibility: list[tuple[str, str, str]] = []
     measure_holder_compatibility: dict[str, list[str]] = {}
     partitive_measure_compatibility: dict[str, list[str]] = {}
@@ -531,6 +551,8 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                 attribute_compatibility.setdefault(attribute, []).extend(nouns)
             for modifier, hosts in doc.modifier_host_compatibility.items():
                 modifier_host_compatibility.setdefault(modifier, []).extend(hosts)
+            for adverb, verbs in doc.adverb_verb_compatibility.items():
+                adverb_verb_compatibility.setdefault(adverb, []).extend(verbs)
             modifier_attachment_compatibility.extend(
                 (
                     frame.preposition_category,
@@ -784,6 +806,28 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                 raise CompileError(
                     f"modifier-host compatibility target {host!r} is not "
                     "noun-rooted"
+                )
+
+    for adverb, verbs in sorted(adverb_verb_compatibility.items()):
+        if adverb not in category_parents:
+            raise CompileError(
+                f"adverb-verb compatibility names unknown category {adverb!r}"
+            )
+        if _category_root(adverb) != "adverb":
+            raise CompileError(
+                f"adverb-verb compatibility key {adverb!r} is not "
+                "adverb-rooted"
+            )
+        for verb in verbs:
+            if verb not in category_parents:
+                raise CompileError(
+                    f"adverb-verb compatibility {adverb!r} names unknown "
+                    f"verb category {verb!r}"
+                )
+            if _category_root(verb) != "verb":
+                raise CompileError(
+                    f"adverb-verb compatibility target {verb!r} is not "
+                    "verb-rooted"
                 )
 
     for preposition, object_, host in modifier_attachment_compatibility:
@@ -1368,6 +1412,31 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                             f"rule {rule.id!r} modifier-host object slot "
                             f"{modifier_compatibility.object!r} is not noun-rooted"
                         )
+            adverb_compatibility = predicate.adverb_verb_compatible
+            if adverb_compatibility is not None:
+                adverb = slots.get(adverb_compatibility.adverb)
+                verb = slots.get(adverb_compatibility.verb)
+                if adverb is None or verb is None:
+                    missing = (
+                        adverb_compatibility.adverb
+                        if adverb is None
+                        else adverb_compatibility.verb
+                    )
+                    raise CompileError(
+                        f"rule {rule.id!r} adverb-verb compatibility names "
+                        f"unknown slot {missing!r}"
+                    )
+                if _slot_root(adverb) != "adverb":
+                    raise CompileError(
+                        f"rule {rule.id!r} adverb-verb compatibility adverb "
+                        f"slot {adverb_compatibility.adverb!r} is not "
+                        "adverb-rooted"
+                    )
+                if _slot_root(verb) != "verb":
+                    raise CompileError(
+                        f"rule {rule.id!r} adverb-verb compatibility verb "
+                        f"slot {adverb_compatibility.verb!r} is not verb-rooted"
+                    )
             conditional = predicate.bound_requires_category
             if conditional is not None:
                 for slot_name in (conditional.bound, conditional.slot):
@@ -1789,6 +1858,32 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                         f"ask {ask.id!r} compatibility noun slot "
                         f"{ask_attribute_compatibility.noun!r} is not noun-rooted"
                     )
+            ask_adverb_compatibility = predicate.adverb_verb_compatible
+            if ask_adverb_compatibility is not None:
+                adverb = ask_slots.get(ask_adverb_compatibility.adverb)
+                verb = ask_slots.get(ask_adverb_compatibility.verb)
+                if adverb is None or verb is None:
+                    missing = (
+                        ask_adverb_compatibility.adverb
+                        if adverb is None
+                        else ask_adverb_compatibility.verb
+                    )
+                    raise CompileError(
+                        f"ask {ask.id!r} adverb-verb compatibility names "
+                        f"unknown slot {missing!r}"
+                    )
+                if _slot_root(adverb) != "adverb":
+                    raise CompileError(
+                        f"ask {ask.id!r} adverb-verb compatibility adverb "
+                        f"slot {ask_adverb_compatibility.adverb!r} is not "
+                        "adverb-rooted"
+                    )
+                if _slot_root(verb) != "verb":
+                    raise CompileError(
+                        f"ask {ask.id!r} adverb-verb compatibility verb "
+                        f"slot {ask_adverb_compatibility.verb!r} is not "
+                        "verb-rooted"
+                    )
             role_compatibility = predicate.verb_role_compatible
             if role_compatibility is not None:
                 for slot_name in (
@@ -2015,6 +2110,12 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
             {
                 key: tuple(sorted(set(values)))
                 for key, values in modifier_host_compatibility.items()
+            }
+        ),
+        adverb_verb_compatibility=_freeze(
+            {
+                key: tuple(sorted(set(values)))
+                for key, values in adverb_verb_compatibility.items()
             }
         ),
         modifier_attachment_compatibility=tuple(

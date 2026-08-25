@@ -163,7 +163,6 @@ def test_quantitative_left_has_construction_owned_actor_and_theme_maps(
     for rule_id in {
         "arithmetic/anchored-relation",
         "arithmetic/anchored-relation-possessive-kinship-standard",
-        "arithmetic/anchored-relation-conjoined-anchor",
     }:
         mappings = {
             (

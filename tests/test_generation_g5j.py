@@ -99,9 +99,9 @@ def test_g5j_profiles_the_complete_comparative_category_class() -> None:
     )
 
     assert occurrences == {
-        "delta": 7,
+            "delta": 6,
         "quantity_delta": 3,
-        "count_quantity_delta": 11,
+            "count_quantity_delta": 12,
         "mass_quantity_delta": 6,
         "age_comparative": 3,
         "count_intensifier": 1,
