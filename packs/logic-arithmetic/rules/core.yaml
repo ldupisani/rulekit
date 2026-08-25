@@ -192,6 +192,23 @@ rules:
         scope: narrative-through-reference
         subject_class: person
 
+  - id: logic-arithmetic/dated-location-arrival
+    phase: read
+    description: >
+      A named arrival at one declared place and day, such as "Aven arrived at
+      the garden yesterday". The generic spatial and temporal learners retain
+      the event facts; this exact grammar gives contextual ask generation a
+      reviewable premise target.
+    match:
+      sentence:
+        - {slot: who, type: name, at_start: true}
+        - {slot: verb, cat: location_initiating_past_verb, finite_form: true}
+        - {slot: prep, cat: arrival_goal_preposition}
+        - {lit: the, consume_skipped: true}
+        - {slot: place, cat: spatial_reference_noun}
+        - {slot: when, cat: day_deictic_marker}
+        - {lit: ".", consume_skipped: true}
+
 asks:
   # Finite-domain temporal location selection. `them` must already denote one
   # conservative prior named-subject group; the ask never enumerates every
@@ -213,3 +230,13 @@ asks:
       candidates: "{group.group_members}"
       place: "{place}"
       when: "{when}"
+    generation:
+      context_required: true
+      context_strategy: evidence
+      slot_categories:
+        prep: [arrival_goal_preposition]
+      evidence_rules:
+        - rule: logic-arithmetic/dated-location-arrival
+          bindings: {who: candidates.0, place: place, when: when}
+        - rule: logic-arithmetic/dated-location-arrival
+          bindings: {who: candidates.1, place: place, when: when}

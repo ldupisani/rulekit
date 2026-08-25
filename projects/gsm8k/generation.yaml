@@ -11,3 +11,11 @@ names:
   - Fia
   - John
   - Mary
+# Structural, generation-only witnesses for matcher token types that are not
+# lexical words. The ordinary reader still validates every realized surface
+# against the loaded calendar, coordinate, or chemistry data before an ask is
+# offered for review.
+structural_values:
+  date: ["2024-01-01", "2024-03-01"]
+  point: ["(0,0)", "(3,4)"]
+  formula: [H2O, NaCl]

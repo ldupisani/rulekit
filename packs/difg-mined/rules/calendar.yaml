@@ -21,7 +21,7 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: unit, cat: calendar_span_unit}
+        - {slot: unit, cat: calendar_span_unit, number: plural}
         - {lit: are}
         - {lit: between}
         - {slot: d1, type: date}
@@ -42,8 +42,10 @@ asks:
       question:
         - {lit: what}
         - {lit: is}
+        - {lit: the, consume_skipped: true}
         - {lit: day}
         - {lit: of}
+        - {lit: the, consume_skipped: true}
         - {lit: year}
         - {lit: for}
         - {slot: d1, type: date}

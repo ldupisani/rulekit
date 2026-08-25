@@ -126,6 +126,7 @@ def test_relation_saturation_never_materializes_a_negative_count(project) -> Non
 def test_reviewed_answerable_seed_now_uses_direct_relevant_evidence(project) -> None:
     candidate = generate_ask_scenario(
         project,
+        ask_id="ask/what-average-combined",
         seed=4716671778855412,
         scenario_mode="answerable",
     )

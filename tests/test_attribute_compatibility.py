@@ -224,14 +224,17 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
     # `topic` supports reviewed topical quantities. `page` and `week` support
     # measured-output cadence; `last` is licensed only for duration measures.
     # Core-owned `remaining` now inherits the established remnant-noun domain
-    # and additionally licenses the content-progress measure.
-    assert len(plural_nouns) == 96
-    assert {"fridge", "head", "topic", "university"} <= plural_nouns
+    # and additionally licenses the content-progress measure. The terminal
+    # measurement construction declares exactly one further pair: final weight.
+    # `boy` and `girl` are now shared core complement-label vocabulary.
+    assert len(plural_nouns) == 98
+    assert {"boy", "fridge", "girl", "head", "topic", "university"} <= plural_nouns
+    assert registry.attribute_applies_to("final", "weight")
     assert sum(
         registry.attribute_applies_to(attribute, noun)
         for attribute in adjectives
         for noun in plural_nouns
-    ) == 496
+    ) == 497
 
 
 def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> None:
@@ -297,7 +300,7 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
 def test_compatibility_rule_remains_supported_after_g5j_expansion() -> None:
     availability = list_rule_availability(load_project(CURATED))
 
-    assert sum(item.supported for item in availability) == 144
+    assert sum(item.supported for item in availability) == 147
     target = next(item for item in availability if item.id == RULE_ID)
     assert target.supported
     assert target.blockers == ()

@@ -345,6 +345,8 @@ members:
   - kilogram
   - gram
   - weight
+  mass_unit:
+  - ounce
   time_measure:
   - minute
   - hour
@@ -565,10 +567,6 @@ members:
   - nickel
   - penny
   - quarter
-  complement_boy:
-  - boy
-  complement_girl:
-  - girl
   contribute:
   - contribute
   - contributed

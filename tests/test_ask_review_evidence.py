@@ -6,6 +6,7 @@ from shutil import copy2
 
 import pytest
 
+import rulekit.generation.ask_generation as ask_generation
 from rulekit.data.project import load_project
 from rulekit.generation import (
     choose_exploration_target,
@@ -457,6 +458,51 @@ def test_validated_premise_mode_prefers_dimension_specific_age_ask(
     assert scenario.answer["committed"] is True
     assert scenario.premises[0]["validated_review_id"] == review["id"]
     assert scenario.premises[0]["sentence"] == candidate["text"]
+
+
+def test_validated_premise_mode_ranks_relevant_evidence_before_pool_bound(
+    curated, tmp_path: Path, monkeypatch
+) -> None:
+    project, _candidate, review = _validated_premise_project(curated, tmp_path)
+    relevant = validated_premise_candidates(project)[0]
+    decoys = [
+        {
+            **relevant,
+            "validated_review_id": f"decoy-{index:02d}",
+            "sentence": f"Decoy {index}.",
+            "text": f"Decoy {index}.",
+            "facts": [
+                {
+                    "kind": "Relation",
+                    "fields": {
+                        "subject": f"decoy-{index}",
+                        "standard": "other",
+                        "measure": "year",
+                        "verb": "be",
+                        "factor": 1.0,
+                        "offset": 2.0,
+                    },
+                }
+            ],
+        }
+        for index in range(24)
+    ]
+    monkeypatch.setattr(
+        ask_generation,
+        "validated_premise_candidates",
+        lambda _project: [*decoys, relevant],
+    )
+
+    scenario = generate_ask_scenario(
+        project,
+        ask_id="ask/how-old-is",
+        seed=1,
+        scenario_mode="validated_premises",
+        max_search_attempts=1,
+    )
+
+    assert scenario.search_attempts == 1
+    assert scenario.premises[0]["validated_review_id"] == review["id"]
 
 
 def test_premise_generation_can_prioritize_the_least_validated_rule(

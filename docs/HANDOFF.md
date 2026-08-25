@@ -1,8 +1,8 @@
 # rulekit handoff
 
-**Updated:** 2026-08-15
-**Runtime checkpoint:** `2122de9` (`main`, with the savings-goal and generic
-goal-predicate increments currently uncommitted)
+**Updated:** 2026-08-24
+**Runtime checkpoint:** `main` (ask-generation structural and contextual
+scenario increments implemented and gated)
 **Active campaign:** GSM8K Mining v2, M7 example-led vertical mining
 **Immediate state:** all four published Mining v2 candidates are landed; no
 candidate is awaiting human or machine review
@@ -51,6 +51,38 @@ temporal event totals (130), task-completion duration gaps (131), and
 anaphoric distance chains with exact combined totals (132).
 
 ### Latest implementation checkpoint
+
+Independent ask generation now covers every currently safe standalone token
+domain. Project generation fixtures can declare bounded ISO dates, coordinate
+points, and chemical formulae; each witness is validated by the ordinary
+reader before it enters a slot domain. This makes nine previously blocked
+GSM8K calendar, coordinate, and chemistry asks reviewable without putting
+example values or corpus text in Python. The terminal measurement ask is also
+generatable after declaring `final` compatible with the mass dimension and
+requiring the natural definite noun phrase.
+
+Generation exposed loose legacy chemistry and calendar contracts at the same
+time. Calendar spans now require plural units. Molar calculations distinguish
+counted amount-of-substance units, counted base-mass inputs, currency rates,
+and the declared base mass unit instead of accepting any conversion unit in
+any position. Nominal calendar, chemistry, and coordinate asks generate their
+required definite articles. The standalone blockers are now deliberate
+context boundaries rather than missing ordinary token domains. Scenario-aware
+availability reports those asks as unavailable in `ask_only` while allowing
+modes that can provide their required evidence.
+
+Contextual ask generation is data-planned rather than consumer-specific. An
+ask can declare either an `evidence` strategy with ordinary premise rules and
+query-to-premise slot bindings, or a `conditional` strategy that embeds one
+ordinary generated premise before an otherwise invalid uninverted question.
+The normal reader and solver remain the only acceptance oracle, and the final
+document must activate the exact target ask after ordinary discourse
+resolution. This covers all fourteen curated context-only asks: discourse
+group totals and per-holder answers, product-progress planning, measured
+container contents, present and historical age groups, finite temporal
+location witnesses, and the indirect conditional currency form. Complement
+labels `boy` and `girl` now live in core English with their declared closed
+pair, making that ask independently generatable outside the mined pack.
 
 Goal vocabulary is now normalized by grammatical construction rather than by
 individual premise wording:
@@ -113,6 +145,12 @@ and generates a declared ask that the normal solver can answer from them.
 Optional interpretation, result, and naturalness judgments keep grammatical
 acceptance distinct from semantic and stylistic preference. This index remains
 strictly authoring-only and does not enter the Registry or runtime inference.
+Validated-premise search ranks all current exemplars for the selected ask
+before bounding the premise pool, caps random asks and per-plan surface retries
+separately, and caches `generation.yaml` by exact file revision. A 39-exemplar
+curated request that previously exceeded 50 seconds now completes in about 4.3
+seconds cold and 0.4 seconds warm on the development machine; ordinary solve,
+exact winning-ask, replay, and minimality checks remain unchanged.
 
 Temporal age asks now require evidence from their declared perspective.
 Direct present/past age premises and relations retain their finite surface in
@@ -144,8 +182,9 @@ paraphrase ("If ... tomorrow, how many ...?") remains one complete ask only
 when its declared grammar consumes the whole sentence; otherwise the ordinary
 leading-conditional premise split remains in force. All three require the same
 participant, activity, measure, one linked product capacity, and a declared
-future day marker. These asks are contextual and therefore remain outside
-standalone ask generation until a scenario supplies their evidence.
+future day marker. They remain unavailable as standalone asks, while the
+answerable scenario now generates the required measured product and progress
+history through those premise rules.
 
 Activity-scoped wages now preserve why an elapsed duration is relevant.
 `Natalia earns $12 an hour for gardening` records both the ordinary hourly
@@ -178,10 +217,10 @@ These are the gates run at the current runtime checkpoint:
 
 | Gate | Current result |
 | --- | --- |
-| full synthetic suite | 5,613 passed |
+| full synthetic suite | 5,739 passed |
 | curated suite | 71 correct, 0 wrong |
-| GSM8K DEV-train | 106 correct, 0 wrong |
-| GSM8K DEV-holdout | 43 correct, 0 wrong |
+| GSM8K DEV-train | 107 correct, 0 wrong |
+| GSM8K DEV-holdout | 44 correct, 0 wrong |
 | ASDiv DEV | 45 correct, 0 wrong |
 | SVAMP DEV | 24 correct, 0 wrong |
 | MAWPS DEV | 11 correct, 0 wrong |
@@ -202,25 +241,26 @@ Availability means “the authoring layer can realize the declared contract and
 round-trip it through the ordinary matcher.” It does not mean that a human has
 judged the resulting English or emitted fact valid.
 
-| Project | Premise rules | Independent asks |
-| --- | ---: | ---: |
-| curated | 135/135 targets (+8 safety interceptors) | 107/120 |
-| GSM8K | 130/130 targets (+6 safety interceptors) | 138/158 |
+| Project | Premise rules | Independent asks | Answerable asks |
+| --- | ---: | ---: | ---: |
+| curated | 147/147 targets (+8 safety, +1 reader-only) | 111/125 | 125/125 |
+| GSM8K | 141/141 targets (+6 safety, +1 reader-only) | 150/163 | 163/163 |
 
 The safety interceptors are intentionally separate from premise generation
-and review. The thirteen curated ask blockers are contextual discourse-group or
-measured-progress asks, one ontology-dependent membership ask, and one embedded
-uninverted form. Contextual ask generation must synthesize the required
-antecedent and evidence rather than pretending the question is independently
-realizable.
+and review. The fourteen curated and thirteen GSM8K independent-ask blockers
+require an antecedent discourse group, measured-content or progress evidence,
+or embedded indirect-question syntax. Every one is now available to the
+answerable mode, which must synthesize the required antecedent and evidence
+rather than pretending the question is independently realizable.
 
 ## Designer and promotion workflow
 
 The Designer currently provides:
 
 - strict-positive and controlled one-slot lexical-boundary premise generation;
-- independent ask generation, bounded answerable-scenario search, and
-  deliberate missing-evidence scenarios;
+- per-mode ask availability, independent ask generation, declared contextual
+  evidence plans, bounded answerable-scenario search, and deliberate
+  missing-evidence scenarios;
 - seeded reproduction, structural coverage objectives, compatible category
   filters, and terminal-blocker health;
 - Reading-origin targeted reviews and targetless interpretation or

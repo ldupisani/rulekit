@@ -268,13 +268,13 @@ def test_progress_generation_contracts_are_explicit(project) -> None:
     assert not asks[REMAINDER_OF_ASK_ID].supported
     assert not asks[REMAINDER_CONDITIONAL_FIRST_ASK_ID].supported
     assert asks[REMAINDER_ASK_ID].blockers == (
-        "ask requires embedding context; standalone realization is disabled",
+        "ask requires generated premise evidence; standalone realization is disabled",
     )
     assert asks[REMAINDER_OF_ASK_ID].blockers == (
-        "ask requires embedding context; standalone realization is disabled",
+        "ask requires generated premise evidence; standalone realization is disabled",
     )
     assert asks[REMAINDER_CONDITIONAL_FIRST_ASK_ID].blockers == (
-        "ask requires embedding context; standalone realization is disabled",
+        "ask requires generated premise evidence; standalone realization is disabled",
     )
 
     product = generate_candidate(project, rule_id=PRODUCT_RULE, seed=7)

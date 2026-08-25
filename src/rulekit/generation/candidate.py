@@ -65,6 +65,10 @@ class AskAvailability:
     consumer: str | None
     supported: bool
     blockers: tuple[str, ...] = ()
+    supported_modes: tuple[AskScenarioMode, ...] = ()
+
+    def supports(self, mode: AskScenarioMode) -> bool:
+        return mode in self.supported_modes
 
     def to_json(self) -> dict[str, Any]:
         return {
@@ -72,6 +76,7 @@ class AskAvailability:
             "consumer": self.consumer,
             "supported": self.supported,
             "blockers": list(self.blockers),
+            "supported_modes": list(self.supported_modes),
         }
 
 
@@ -170,6 +175,7 @@ class AskScenarioCandidate:
     generator_version: str
     scenario_mode: AskScenarioMode
     seed: int
+    reference_year: int | None
     target_ask: str
     consumer: str | None
     question: str

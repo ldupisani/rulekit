@@ -88,7 +88,8 @@ def test_name_vs_known_word(registry):
 def test_facts_carry_provenance(registry):
     r = solve("Tom has 3 apples. How many apples does Tom have?", registry)
     quantities = [f for f in r.store.facts if isinstance(f, Quantity)]
-    assert quantities and quantities[0].provenance.source == "fold"
+    assert quantities
+    assert quantities[0].provenance.source == "arithmetic/stated-count-holding"
 
 
 def test_pattern_rule_attribution(registry):

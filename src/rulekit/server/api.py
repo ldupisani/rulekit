@@ -109,6 +109,7 @@ class AskGenerationBody(BaseModel):
     ask_id: str | None = Field(default=None, max_length=256)
     seed: int | None = None
     scenario_mode: AskScenarioMode = "ask_only"
+    reference_year: int | None = Field(default=None, ge=1, le=9999)
     locked_bindings: dict[str, str] = Field(
         default_factory=dict,
         max_length=64,
@@ -1391,6 +1392,7 @@ def build_router(state: ServerState) -> APIRouter:
                     ask_id=body.ask_id,
                     seed=seed,
                     scenario_mode=body.scenario_mode,
+                    reference_year=body.reference_year,
                     locked_bindings=body.locked_bindings,
                 )
             except GenerationError as exc:

@@ -6,6 +6,7 @@ import pytest
 from pydantic import ValidationError
 
 from rulekit.data.project import load_project
+from rulekit.data.schemas import AskGenerationDef
 from rulekit.generation import (
     GenerationError,
     generate_ask_scenario,
@@ -17,12 +18,18 @@ from rulekit.server.api import AskGenerationBody, ServerState, build_router
 
 
 CURATED = Path("projects/curated")
+GSM8K = Path("projects/gsm8k")
 SCRATCH = Path("projects/scratch")
 
 
 @pytest.fixture(scope="module")
 def curated():
     return load_project(CURATED)
+
+
+@pytest.fixture(scope="module")
+def gsm8k():
+    return load_project(GSM8K)
 
 
 def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
@@ -35,29 +42,39 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
     assert availability["ask/how-many-each-named-list"].supported
     contextual = availability["ask/which-discourse-group-at-day"]
     assert not contextual.supported
-    assert contextual.blockers == (
-        "ask requires an antecedent discourse group; generate it as a "
-        "contextual scenario",
+    assert contextual.supported_modes == (
+        "answerable",
+        "validated_premises",
     )
-    assert sum(item.supported for item in availability.values()) == 109
-    assert not availability["ask/how-many-of-collection-are-label"].supported
-    assert availability["ask/how-many-of-collection-are-label"].blockers == (
-        "no project-backed ask filler exists for label",
+    assert any("antecedent discourse group" in blocker for blocker in contextual.blockers)
+    assert sum(item.supported for item in availability.values()) == 111
+    assert availability["ask/how-many-of-collection-are-label"].supported
+    assert availability["ask/how-many-of-collection-are-label"].supported_modes == (
+        "ask_only",
+        "answerable",
+        "validated_premises",
+        "missing_evidence",
     )
     assert availability[
         "ask/final-instrument-measurement-reading"
-    ].blockers == ("no project-backed ask filler exists for dimension",)
+    ].supported
     assert availability["ask/measured-content-in-container"].blockers == (
-        "ask requires embedding context; standalone realization is disabled",
+        "ask requires generated premise evidence; standalone realization is disabled",
+    )
+    assert availability[
+        "ask/measured-content-in-container"
+    ].supported_modes == (
+        "answerable",
+        "validated_premises",
+        "missing_evidence",
     )
     assert availability["ask/measured-content-in-container-unit"].blockers == (
-        "ask requires embedding context; standalone realization is disabled",
+        "ask requires generated premise evidence; standalone realization is disabled",
     )
     assert len(availability) == 125
     assert {
         item.id for item in availability.values() if not item.supported
     } == {
-        "ask/final-instrument-measurement-reading",
         "ask/how-many-all-combined-discourse-group",
         "ask/how-many-combined-discourse-group",
         "ask/how-many-combined-in-all-discourse-group",
@@ -66,7 +83,6 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
         "ask/if-content-progress-fraction-of-remainder-how-many",
         "ask/how-many-individually-discourse-group",
         "ask/how-many-individually-discourse-group-postverbal",
-        "ask/how-many-of-collection-are-label",
         "ask/how-old-discourse-group-now",
         "ask/how-much-noun-entity-uninverted",
         "ask/measured-content-in-container",
@@ -74,6 +90,220 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
         "ask/what-combined-age-at-year",
         "ask/which-discourse-group-at-day",
     }
+    assert all(
+        "answerable" in item.supported_modes
+        for item in availability.values()
+        if not item.supported
+    )
+
+
+def test_core_complement_label_ask_is_independently_generatable(curated) -> None:
+    candidate = generate_ask_scenario(
+        curated,
+        ask_id="ask/how-many-of-collection-are-label",
+        seed=8242026,
+        scenario_mode="ask_only",
+    )
+
+    assert candidate.target_ask == "ask/how-many-of-collection-are-label"
+    assert candidate.target_bindings["label"] in {"boys", "girls"}
+
+
+def test_discourse_group_ask_generation_uses_real_antecedent_evidence(curated) -> None:
+    candidate = generate_ask_scenario(
+        curated,
+        ask_id="ask/how-many-combined-discourse-group",
+        seed=8242026,
+        scenario_mode="answerable",
+        locked_bindings={
+            "item": "apples",
+            "aux": "do",
+            "who": "they",
+            "verb": "have",
+            "agg": "combined",
+        },
+        max_search_attempts=160,
+    )
+
+    assert candidate.target_ask == "ask/how-many-combined-discourse-group"
+    assert len(candidate.query["holders"]) >= 2
+    assert candidate.answer["committed"]
+    assert candidate.premises
+
+
+@pytest.mark.parametrize(
+    ("ask_id", "locks"),
+    [
+        (
+            "ask/measured-content-in-container",
+            {
+                "content": "sugar",
+                "copula": "is",
+                "container": "the bucket",
+            },
+        ),
+        (
+            "ask/how-many-content-progress-fraction-of-remainder",
+            {
+                "item": "pages",
+                "aux": "should",
+                "who": "Aven",
+                "verb": "read",
+                "target_time": "tomorrow",
+                "want": "wants",
+                "goal_item": "remaining pages",
+            },
+        ),
+    ],
+)
+def test_evidence_required_asks_generate_answerable_context(
+    curated, ask_id: str, locks: dict[str, str]
+) -> None:
+    candidate = generate_ask_scenario(
+        curated,
+        ask_id=ask_id,
+        seed=8242026,
+        scenario_mode="answerable",
+        locked_bindings=locks,
+        max_search_attempts=192,
+    )
+
+    assert candidate.target_ask == ask_id
+    assert candidate.answer["committed"]
+    assert candidate.premises
+
+
+def test_uninverted_ask_is_generated_inside_a_conditional_clause(curated) -> None:
+    candidate = generate_ask_scenario(
+        curated,
+        ask_id="ask/how-much-noun-entity-uninverted",
+        seed=8242026,
+        scenario_mode="answerable",
+        locked_bindings={
+            "item": "money",
+            "who": "Aven",
+            "aux": "will",
+            "verb": "have",
+        },
+        max_search_attempts=128,
+    )
+
+    assert candidate.target_ask == "ask/how-much-noun-entity-uninverted"
+    assert candidate.text.startswith("If ")
+    assert ", how much money Aven will have?" in candidate.text
+    assert candidate.answer["committed"]
+
+
+@pytest.mark.parametrize(
+    "ask_id",
+    [
+        "ask/how-many-all-combined-discourse-group",
+        "ask/how-many-combined-in-all-discourse-group",
+        "ask/how-many-individually-discourse-group",
+        "ask/how-many-individually-discourse-group-postverbal",
+        "ask/how-many-content-progress-fraction-of-remainder-with-of",
+        "ask/if-content-progress-fraction-of-remainder-how-many",
+        "ask/measured-content-in-container-unit",
+        "ask/how-old-discourse-group-now",
+        "ask/what-combined-age-at-year",
+        "ask/which-discourse-group-at-day",
+    ],
+)
+def test_contextual_ask_families_round_trip_through_ordinary_documents(
+    curated, ask_id: str
+) -> None:
+    candidate = generate_ask_scenario(
+        curated,
+        ask_id=ask_id,
+        seed=8242026,
+        scenario_mode="answerable",
+        reference_year=2026,
+        max_search_attempts=192,
+    )
+
+    assert candidate.target_ask == ask_id
+    assert candidate.reference_year == 2026
+    assert candidate.answer["committed"]
+    assert len(candidate.premises) >= 2
+    if ask_id == "ask/which-discourse-group-at-day":
+        assert all(
+            row["status"] != "unknown" for row in candidate.answer["value"]
+        )
+
+
+def test_qualified_measurement_dimension_ask_round_trips(curated) -> None:
+    candidate = generate_ask_scenario(
+        curated,
+        ask_id="ask/final-instrument-measurement-reading",
+        seed=8242026,
+        scenario_mode="ask_only",
+        locked_bindings={
+            "dimension": "the final weight",
+            "observed": "measured",
+            "prep": "on",
+            "instrument": "the scale",
+        },
+    )
+
+    assert candidate.question == "What is the final weight measured on the scale?"
+    assert candidate.target_ask == "ask/final-instrument-measurement-reading"
+    assert candidate.query == {
+        "consumer": "measurement-reading",
+        "dimension": "weight",
+        "instrument": "scale",
+        "relation": "on",
+    }
+
+
+@pytest.mark.parametrize(
+    "ask_id",
+    [
+        "ask/calendar-day-of-year",
+        "ask/calendar-span-between",
+        "ask/chem-cost-of-moles",
+        "ask/chem-molar-mass",
+        "ask/chem-moles-from-grams",
+        "ask/chem-weight-of-moles",
+        "ask/coord-distance-between",
+        "ask/coord-distance-from",
+        "ask/coord-slope-between",
+    ],
+)
+def test_project_declared_structural_ask_values_round_trip(
+    gsm8k, ask_id: str
+) -> None:
+    availability = {item.id: item for item in list_ask_availability(gsm8k)}
+    assert availability[ask_id].supported
+
+    candidate = generate_ask_scenario(
+        gsm8k,
+        ask_id=ask_id,
+        seed=8242026,
+        scenario_mode="ask_only",
+    )
+
+    assert candidate.target_ask == ask_id
+    assert candidate.question.endswith("?")
+    assert candidate.target_bindings.keys() >= {
+        slot
+        for slot in ("d1", "f", "p1")
+        if slot in candidate.requested_bindings
+    }
+    if ask_id == "ask/calendar-span-between":
+        assert candidate.target_bindings["unit"].endswith("s")
+    if ask_id == "ask/calendar-day-of-year":
+        assert candidate.question.startswith("What is the day of the year")
+    if ask_id.startswith("ask/coord-"):
+        assert candidate.question.startswith("What is the ")
+    if ask_id in {
+        "ask/chem-cost-of-moles",
+        "ask/chem-weight-of-moles",
+    }:
+        assert " moles of " in candidate.question
+        assert candidate.query["amount"]
+    if ask_id == "ask/chem-moles-from-grams":
+        assert " grams of " in candidate.question
+        assert candidate.query["amount"]
 
 
 @pytest.mark.parametrize(
@@ -354,11 +584,13 @@ def test_designer_exposes_separate_ask_routes_and_controls(curated) -> None:
             ask_id="ask/how-old-is",
             seed=997,
             scenario_mode="missing_evidence",
+            reference_year=2026,
             locked_bindings={"verb": "is", "who": "Cato"},
         )
     )
     assert payload["target_ask"] == "ask/how-old-is"
     assert payload["scenario_mode"] == "missing_evidence"
+    assert payload["reference_year"] == 2026
 
     html = Path("src/rulekit/server/static/index.html").read_text()
     script = Path("src/rulekit/server/static/app.js").read_text()
@@ -379,6 +611,8 @@ def test_designer_exposes_separate_ask_routes_and_controls(curated) -> None:
     assert '"/api/generation/ask"' in script
     assert 'review_kind: "ask"' in script
     assert "ask_scenario:" in script
+    assert "supported_modes" in script
+    assert "reference_year: new Date().getFullYear()" in script
 
 
 def test_ask_request_rejects_unknown_fields() -> None:
@@ -386,3 +620,27 @@ def test_ask_request_rejects_unknown_fields() -> None:
         AskGenerationBody.model_validate(
             {"ask_id": "ask/how-old-is", "benchmark_answer": 8}
         )
+
+
+def test_contextual_ask_generation_contract_requires_an_explicit_strategy() -> None:
+    with pytest.raises(ValidationError, match="must be declared together"):
+        AskGenerationDef(context_required=True)
+    with pytest.raises(ValidationError, match="must be declared together"):
+        AskGenerationDef(context_strategy="evidence")
+    with pytest.raises(ValidationError, match="at least one evidence rule"):
+        AskGenerationDef(
+            context_required=True,
+            context_strategy="evidence",
+        )
+
+    contract = AskGenerationDef(
+        context_required=True,
+        context_strategy="evidence",
+        evidence_rules=[
+            {
+                "rule": "invented/support",
+                "bindings": {"who": "holders.0"},
+            }
+        ],
+    )
+    assert contract.evidence_rules[0].bindings == {"who": "holders.0"}

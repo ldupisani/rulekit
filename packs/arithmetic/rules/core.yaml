@@ -5288,6 +5288,58 @@ rules:
         - {slot: n, type: number}
     emits: []
 
+  - id: arithmetic/stated-currency-holding
+    phase: read
+    description: >
+      A direct currency holding such as "Aven has 20 dollars". This explicit
+      rule gives the Designer a bounded premise target for building answerable
+      currency asks without copying a question or benchmark example into the
+      generator. It is deliberately limited to one complete, unqualified,
+      proper-name sentence; the generic learner retains ownership of richer
+      common-noun, qualified, partitive, temporal, and coordinated readings.
+    match:
+      sentence:
+        - {slot: who, type: name, at_start: true}
+        - {slot: verb, cat: plain_have_state, finite_form: true}
+        - {slot: amount, cat: currency, counted: true, bare: true}
+        - {lit: ".", consume_skipped: true}
+    where:
+      - number_compatible: [who, verb]
+    consumes: [amount]
+    emits:
+      - fact: quantity
+        entity: "{who}"
+        measure: "{amount}"
+        value: amount
+        verb: "{verb}"
+
+  - id: arithmetic/stated-count-holding
+    phase: read
+    description: >
+      A direct counted holding such as "Aven has 12 apples". This explicit
+      target lets the Designer create exact multi-holder evidence without
+      inventing a sentence template. It is deliberately limited to one
+      complete, unqualified, proper-name sentence; the generic learner retains
+      ownership of richer common-noun, qualified, partitive, temporal, and
+      coordinated readings.
+    match:
+      sentence:
+        - {slot: who, type: name, at_start: true}
+        - {slot: verb, cat: plain_have_state, finite_form: true}
+        - {slot: amount, type: counted, bare: true}
+        - {lit: ".", consume_skipped: true}
+    where:
+      - number_compatible: [who, verb]
+      - slot_not_category: {slot: amount, cat: many_incompatible_noun}
+      - slot_not_category: {slot: amount, cat: mass_quantity_noun}
+    consumes: [amount]
+    emits:
+      - fact: quantity
+        entity: "{who}"
+        measure: "{amount}"
+        value: amount
+        verb: "{verb}"
+
   - id: arithmetic/stated-age-at-year
     phase: read
     generation: premise
@@ -6805,8 +6857,17 @@ asks:
       measure_qualifier: "{item.qualifier}"
       verb: "{verb}"
     generation:
+      context_required: true
+      context_strategy: evidence
       slot_categories:
         aux: [plural_auxiliary]
+        item: [transferable_quantity_object]
+        verb: [plain_have_state]
+      evidence_rules:
+        - rule: arithmetic/stated-count-holding
+          bindings: {who: holders.0, amount: measure, verb: verb}
+        - rule: arithmetic/stated-count-holding
+          bindings: {who: holders.1, amount: measure, verb: verb}
 
   - id: ask/how-many-combined-in-all
     # Handles the two-word total marker "in all". It needs its own rule
@@ -6851,6 +6912,18 @@ asks:
       measure: "{item}"
       measure_qualifier: "{item.qualifier}"
       verb: "{verb}"
+    generation:
+      context_required: true
+      context_strategy: evidence
+      slot_categories:
+        aux: [plural_auxiliary]
+        item: [transferable_quantity_object]
+        verb: [plain_have_state]
+      evidence_rules:
+        - rule: arithmetic/stated-count-holding
+          bindings: {who: holders.0, amount: measure, verb: verb}
+        - rule: arithmetic/stated-count-holding
+          bindings: {who: holders.1, amount: measure, verb: verb}
 
   - id: ask/how-many-combined-named
     # Handles totals for two named holders, such as "how many books do Ana
@@ -7050,6 +7123,18 @@ asks:
       measure_qualifier: "{item.qualifier}"
       measure_surface: "{item.surface}"
       verb: "{verb}"
+    generation:
+      context_required: true
+      context_strategy: evidence
+      slot_categories:
+        aux: [plural_auxiliary]
+        item: [transferable_quantity_object]
+        verb: [plain_have_state]
+      evidence_rules:
+        - rule: arithmetic/stated-count-holding
+          bindings: {who: holders.0, amount: measure, verb: verb}
+        - rule: arithmetic/stated-count-holding
+          bindings: {who: holders.1, amount: measure, verb: verb}
 
   - id: ask/how-many-individually-discourse-group-postverbal
     # Postverbal sibling: "How many apples do they receive individually?"
@@ -7073,6 +7158,18 @@ asks:
       measure_qualifier: "{item.qualifier}"
       measure_surface: "{item.surface}"
       verb: "{verb}"
+    generation:
+      context_required: true
+      context_strategy: evidence
+      slot_categories:
+        aux: [plural_auxiliary]
+        item: [transferable_quantity_object]
+        verb: [plain_have_state]
+      evidence_rules:
+        - rule: arithmetic/stated-count-holding
+          bindings: {who: holders.0, amount: measure, verb: verb}
+        - rule: arithmetic/stated-count-holding
+          bindings: {who: holders.1, amount: measure, verb: verb}
 
   - id: ask/how-many-combined-named-list-all-together
     # Two-token aggregate-marker sibling of the exact named-list ask:
@@ -7895,8 +7992,17 @@ asks:
       measure_qualifier: "{item.qualifier}"
       verb: "{verb}"
     generation:
+      context_required: true
+      context_strategy: evidence
       slot_categories:
         aux: [plural_auxiliary]
+        item: [transferable_quantity_object]
+        verb: [plain_have_state]
+      evidence_rules:
+        - rule: arithmetic/stated-count-holding
+          bindings: {who: holders.0, amount: measure, verb: verb}
+        - rule: arithmetic/stated-count-holding
+          bindings: {who: holders.1, amount: measure, verb: verb}
 
   - id: ask/how-many-plural-combined-prenominal-marker
     # Handles the aggregate marker before the measure: "how many total toys
@@ -8125,6 +8231,14 @@ asks:
       verb: "{verb}"
     generation:
       context_required: true
+      context_strategy: conditional
+      slot_categories:
+        item: [mass_currency_noun]
+        aux: [future_modal]
+        verb: [plain_have_state]
+      evidence_rules:
+        - rule: arithmetic/stated-currency-holding
+          bindings: {who: entity, verb: verb}
 
   - id: ask/how-much-combined
     # Combined "how much" form, such as "how much money do they have in
@@ -8488,6 +8602,10 @@ asks:
       measure: "{item}"
       verb: "{aux}"
       fold_units: "true"
+    generation:
+      slot_categories:
+        dir: [linear_dimension_comparative]
+        item: [length_measure]
 
   - id: ask/how-much-age-comparative-than
     # Age form of the dimensional comparison: "how much older is Andy than
@@ -8649,6 +8767,12 @@ asks:
       capacity_verb: have
     generation:
       context_required: true
+      context_strategy: evidence
+      evidence_rules:
+        - rule: arithmetic/content-progress-measured-product
+          bindings: {who: entity, verb: verb}
+        - rule: arithmetic/realized-progress-anaphoric-multiplier
+          bindings: {who_a: entity, item_a: measure, verb_a: verb}
 
   - id: ask/how-many-content-progress-fraction-of-remainder-with-of
     # Productive fraction sibling: non-half fractions require the explicit
@@ -8694,6 +8818,12 @@ asks:
       capacity_verb: have
     generation:
       context_required: true
+      context_strategy: evidence
+      evidence_rules:
+        - rule: arithmetic/content-progress-measured-product
+          bindings: {who: entity, verb: verb}
+        - rule: arithmetic/realized-progress-anaphoric-multiplier
+          bindings: {who_a: entity, item_a: measure, verb_a: verb}
 
   - id: ask/if-content-progress-fraction-of-remainder-how-many
     # Conditional-first planning sibling: "If Aven wants to read one third
@@ -8740,6 +8870,12 @@ asks:
       capacity_verb: have
     generation:
       context_required: true
+      context_strategy: evidence
+      evidence_rules:
+        - rule: arithmetic/content-progress-measured-product
+          bindings: {who: entity, verb: verb}
+        - rule: arithmetic/realized-progress-anaphoric-multiplier
+          bindings: {who_a: entity, item_a: measure, verb_a: verb}
 
   - id: ask/how-much-rate-span
     match:
@@ -9082,6 +9218,14 @@ asks:
       holders: "{group.group_members}"
       measure: year
       target_marker: "{when}"
+    generation:
+      context_required: true
+      context_strategy: evidence
+      evidence_rules:
+        - rule: arithmetic/stated-age-at-year
+          bindings: {who: holders.0, calendar_year: reference_year}
+        - rule: arithmetic/stated-age-at-year
+          bindings: {who: holders.1, calendar_year: reference_year}
 
   - id: ask/what-combined-age-at-year
     # "What was their combined age in 2020?" binds the possessive to the
@@ -9097,13 +9241,21 @@ asks:
         - {slot: agg, cat: prenominal_group_total_marker}
         - {slot: noun, cat: age_noun}
         - {lit: in}
-        - {slot: target_year, type: number, standalone: true, integer: true}
+        - {slot: target_year, type: number, standalone: true, integer: true, value_min: 1000, value_max: 9999}
     resolves:
       consumer: age-at-year
       holders: "{group.group_members}"
       measure: year
       target_year: "{target_year.value}"
       aggregate: sum
+    generation:
+      context_required: true
+      context_strategy: evidence
+      evidence_rules:
+        - rule: arithmetic/stated-age-at-year
+          bindings: {who: holders.0, calendar_year: target_year}
+        - rule: arithmetic/stated-age-at-year
+          bindings: {who: holders.1, calendar_year: target_year}
 
   - id: ask/how-old-is-possessed
     # "How old is her child?" and "How old is Mary's child?" query the

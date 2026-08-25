@@ -1552,6 +1552,18 @@ class AskInterpretation(StrictModel):
     resolves: dict[str, str | list[str]]
 
 
+class AskEvidenceRule(StrictModel):
+    """One ordinary premise rule required by an answerable ask scenario.
+
+    ``bindings`` maps a premise-rule slot to a normalized query field. The
+    generator still realizes the premise through that rule and the ordinary
+    document solver remains the only proof that the resulting set suffices.
+    """
+
+    rule: str
+    bindings: dict[str, str] = Field(default_factory=dict)
+
+
 class AskGenerationDef(StrictModel):
     """Declarative constraints that apply only to ask realization.
 
@@ -1562,6 +1574,13 @@ class AskGenerationDef(StrictModel):
     """
 
     context_required: bool = False
+    # A context-required ask must declare what kind of ordinary document
+    # context makes it valid. ``evidence`` keeps the question intact and
+    # searches generated premise evidence; ``conditional`` embeds one
+    # generated premise as an ``If ..., <question>`` frame so uninverted
+    # indirect-question order is never offered as a standalone sentence.
+    context_strategy: Literal["evidence", "conditional"] | None = None
+    evidence_rules: list[AskEvidenceRule] = Field(default_factory=list)
     slot_sources: dict[
         str, Literal["reference_group", "reference_year"]
     ] = Field(default_factory=dict)
@@ -1571,6 +1590,25 @@ class AskGenerationDef(StrictModel):
     # prefix. Ask generation must never realize those capture-only branches.
     omit_slots: list[str] = Field(default_factory=list)
     requires_committed_answer: bool = False
+
+    @model_validator(mode="after")
+    def _context_strategy_is_explicit(self) -> "AskGenerationDef":
+        if self.context_required != (self.context_strategy is not None):
+            raise ValueError(
+                "context_required and context_strategy must be declared together"
+            )
+        if self.evidence_rules and self.context_strategy not in {
+            "evidence",
+            "conditional",
+        }:
+            raise ValueError(
+                "evidence_rules require a generated context strategy"
+            )
+        if self.context_strategy is not None and not self.evidence_rules:
+            raise ValueError(
+                "a generated context strategy requires at least one evidence rule"
+            )
+        return self
 
 
 class AskRule(StrictModel):

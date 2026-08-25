@@ -40,6 +40,7 @@ from rulekit.generation import (
 )
 from rulekit.generation.exploration import exploration_path
 from rulekit.generation.reviews import _raw_reviews, review_path
+from rulekit.generation.sample import _load_fixtures
 from rulekit.kernel.engine import analyze
 from rulekit.server.api import (
     DocBody,
@@ -284,6 +285,25 @@ rules:
     )
 
 
+def test_generation_fixtures_are_cached_per_file_revision(tmp_path: Path) -> None:
+    _write_project(tmp_path)
+
+    first = _load_fixtures(tmp_path)
+    second = _load_fixtures(tmp_path)
+
+    assert second is first
+    generation = tmp_path / "generation.yaml"
+    generation.write_text(
+        """\
+format: rulekit/generation@1
+names: [Luma, Navo, Pera, Sora]
+"""
+    )
+    refreshed = _load_fixtures(tmp_path)
+    assert refreshed is not first
+    assert refreshed.names == ("Luma", "Navo", "Pera", "Sora")
+
+
 def test_same_seed_is_identical_across_fresh_project_loads(tmp_path: Path) -> None:
     _write_project(tmp_path)
 
@@ -493,7 +513,7 @@ def test_boundary_mode_survives_retest_and_review_without_counting_coverage(
 def test_gsm8k_generation_fixtures_make_every_premise_rule_available() -> None:
     availability = list_rule_availability(load_project(Path("projects/gsm8k")))
 
-    assert len(availability) == 146
+    assert len(availability) == 148
     blocked = {
         rule.id: rule for rule in availability if not rule.supported
     }

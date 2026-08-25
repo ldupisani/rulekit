@@ -26,6 +26,7 @@ asks:
       question:
         - {lit: what}
         - {lit: is}
+        - {lit: the, consume_skipped: true}
         - {lit: molar mass}
         - {lit: of}
         - {slot: f, type: formula}
@@ -52,7 +53,7 @@ asks:
         - {lit: moles}
         - {lit: are}
         - {lit: in}
-        - {slot: g, cat: measure_unit}
+        - {slot: g, cat: molar_mass_base_unit, counted: true}
         - {lit: of}
         - {slot: f, type: formula}
     resolves:
@@ -68,15 +69,16 @@ asks:
       question:
         - {lit: what}
         - {lit: is}
+        - {lit: the, consume_skipped: true}
         - {lit: cost}
         - {lit: of}
-        - {slot: n, cat: measure_unit}
+        - {slot: n, cat: amount_of_substance_unit, counted: true, number: plural}
         - {lit: of}
         - {slot: f, type: formula}
         - {lit: at}
-        - {slot: rate, type: counted}
+        - {slot: rate, cat: currency, counted: true}
         - {lit: per}
-        - {slot: runit, cat: measure_unit}
+        - {slot: runit, cat: molar_mass_base_unit}
     resolves:
       consumer: molar-mass
       op: cost_of_moles
@@ -90,9 +92,10 @@ asks:
       question:
         - {lit: what}
         - {lit: is}
+        - {lit: the, consume_skipped: true}
         - {lit: weight}
         - {lit: of}
-        - {slot: n, cat: measure_unit}
+        - {slot: n, cat: amount_of_substance_unit, counted: true, number: plural}
         - {lit: of}
         - {slot: f, type: formula}
     resolves:

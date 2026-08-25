@@ -47,7 +47,7 @@ rules:
         - {slot: target, cat: measurement_target_verb, bare_form: true}
         - {slot: dimension, cat: mass_dimension_noun, referential: true}
         - {lit: to}
-        - {slot: amount, cat: mass_measure, counted: true}
+        - {slot: amount, cat: mass_unit, counted: true}
     where:
       - number_compatible: [actor, verb]
     consumes: [amount]
@@ -79,7 +79,7 @@ rules:
         - {slot: target, cat: measurement_target_verb, bare_form: true}
         - {slot: dimension, cat: mass_dimension_noun, referential: true}
         - {lit: to}
-        - {slot: amount, cat: mass_measure, counted: true}
+        - {slot: amount, cat: mass_unit, counted: true}
     consumes: [amount]
     emits:
       - fact: measured_content_change
@@ -105,7 +105,7 @@ rules:
             - {slot: support_target, cat: measurement_target_verb, bare_form: true}
             - {slot: support_dimension, cat: mass_dimension_noun, referential: true}
             - {lit: to}
-            - {slot: support_amount, cat: mass_measure, counted: true}
+            - {slot: support_amount, cat: mass_unit, counted: true}
           where:
             - number_compatible: [support_actor, support_verb]
       required_fact_counts: {measured_content_change: 2}
@@ -150,7 +150,7 @@ rules:
             - {slot: support_target, cat: measurement_target_verb, bare_form: true}
             - {slot: support_dimension, cat: mass_dimension_noun, referential: true}
             - {lit: to}
-            - {slot: support_amount, cat: mass_measure, counted: true}
+            - {slot: support_amount, cat: mass_unit, counted: true}
           where:
             - number_compatible: [support_actor, support_verb]
       required_fact_counts: {measured_content_change: 2}
@@ -164,7 +164,7 @@ rules:
         - opt:
             - {slot: sequence, cat: narration_sequence_adverb}
         - {slot: verb, cat: measured_content_adjustment_verb, finite_form: true}
-        - {slot: amount, cat: mass_measure, counted: true}
+        - {slot: amount, cat: mass_unit, counted: true}
         - {lit: of}
         - {slot: content, cat: measured_content_substance}
     where:
@@ -184,7 +184,7 @@ asks:
       question:
         - {lit: what}
         - {lit: is}
-        - {slot: dimension, cat: mass_dimension_noun, qualified: true, qualifier_cat: final_measurement_attribute}
+        - {slot: dimension, cat: mass_dimension_noun, qualified: true, qualifier_cat: final_measurement_attribute, referential: true}
         - {slot: observed, cat: measurement_observation_verb}
         - {slot: prep, cat: quantity_surface_preposition}
         - {slot: instrument, cat: measurement_instrument, referential: true}
@@ -209,6 +209,12 @@ asks:
       container: "{container}"
     generation:
       context_required: true
+      context_strategy: evidence
+      evidence_rules:
+        - rule: arithmetic/measurement-container-on-instrument
+          bindings: {container: container}
+        - rule: arithmetic/measured-content-add-quantity
+          bindings: {content: content, support_container: container}
 
   - id: ask/measured-content-in-container-unit
     # Requests a measured content amount in an explicit unit. Cross-dimension
@@ -231,3 +237,11 @@ asks:
       target_measure: "{unit}"
     generation:
       context_required: true
+      context_strategy: evidence
+      slot_categories:
+        content: [volume_convertible_measured_content]
+      evidence_rules:
+        - rule: arithmetic/measurement-container-on-instrument
+          bindings: {container: container}
+        - rule: arithmetic/measured-content-add-quantity
+          bindings: {content: content, support_container: container}

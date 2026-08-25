@@ -31,9 +31,11 @@ asks:
       question:
         - {lit: what}
         - {lit: is}
+        - {lit: the, consume_skipped: true}
         - {lit: distance}
         - {lit: between}
         - opt:
+            - {lit: the, consume_skipped: true}
             - {lit: points}
         - {slot: p1, type: point}
         - {lit: and}
@@ -51,6 +53,7 @@ asks:
       question:
         - {lit: what}
         - {lit: is}
+        - {lit: the, consume_skipped: true}
         - {lit: distance}
         - {lit: from}
         - {slot: p1, type: point}
@@ -68,9 +71,11 @@ asks:
       question:
         - {lit: what}
         - {lit: is}
+        - {lit: the, consume_skipped: true}
         - {lit: slope}
         - {lit: between}
         - opt:
+            - {lit: the, consume_skipped: true}
             - {lit: points}
         - {slot: p1, type: point}
         - {lit: and}

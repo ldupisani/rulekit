@@ -929,17 +929,21 @@ before/after behavior diff
 
 loaded ask contracts + the same project-backed lexical domains
         ↓
-independent supported/blocker status per ask
+supported/blocker status per ask and scenario mode
         ↓
 seeded question realization → ordinary analyze() + match_ask()
         ↓
 ask only or deliberate missing evidence
         OR
 generic emit-field inversion → supported premise generation
+        OR
+declared evidence rules + query-field-to-premise-slot bindings
+        OR
+one ordinary premise embedded as a conditional clause
         ↓
 ordinary solve() as the sole answer oracle
         ↓
-one-to-three-premise bounded search + removal minimality
+exact target-ask recheck + bounded search + removal minimality
         ↓
 question + normalized query + generated evidence + answer shape
         ↓
@@ -961,14 +965,35 @@ scoped, or the emitted facts are useful; those are the human review questions.
 This separation lets missing definiteness, agreement, and other bad
 commitments become inspectable evidence instead of hidden prerequisites.
 
-Ask availability is a separate contract. A supported independent ask must
-have a project-backed realizer for every token and must win the ordinary
-ask-specificity comparison after round-trip analysis. Declared plural noun
-surfaces and the matcher's factual-auxiliary/future-modal union are both
-visible. Bounded name-list spans are composed from project fixtures and the
-pack-declared holder conjunction. Discourse-group captures and arbitrary
-spans remain blocked because an independent question cannot truthfully invent
-their antecedent.
+Ask availability is a separate, scenario-aware contract. `supported` retains
+its strict historical meaning: the ask can be realized independently, with a
+project-backed value for every token, and wins the ordinary ask-specificity
+comparison after round-trip analysis. `supported_modes` additionally reports
+whether answerable, validated-premise, or missing-evidence generation can
+supply the declared context. Declared plural noun surfaces and the matcher's
+factual-auxiliary/future-modal union are both visible. Bounded name-list spans
+are composed from project fixtures and the pack-declared holder conjunction.
+A discourse-group ask therefore remains blocked independently, but can be
+available to a scenario that establishes its antecedent in real premises.
+
+Context requirements are pack data. `generation.context_strategy: evidence`
+keeps the question intact and uses `evidence_rules` to name ordinary premise
+rules; each binding maps a premise slot to a scalar normalized query path,
+including indexed paths such as `holders.0`. `conditional` embeds one
+independently generated premise as `If <premise>, <question>` so uninverted
+indirect syntax is never emitted as a standalone question. Evidence plans
+contain no sentence templates or expected answers. Numeric query locks, such
+as a caller-supplied reference year, still pass through the premise slot's
+ordinary range and integer constraints. The candidate records that reference
+year so replay remains explicit.
+
+Discourse-group asks need a group merely to plan their query-bound evidence.
+The generator may provisionally attach two project fixture identities during
+surface search, but that mutation is never evidence and is never returned.
+The composed document must rebuild the group through ordinary discourse
+resolution, commit through `solve()`, and activate the exact intended ask id;
+otherwise the branch is rejected. This final target check also protects
+conditional and measurement scenarios from committing through a nearby ask.
 
 Reader acceptance and generated vocabulary deliberately have different
 widths. Some established ask rules are recognition interceptors: they retain
@@ -1060,7 +1085,12 @@ query, then realizes the ask through its normal data-backed generator. The
 normal solver must commit on those exact reviewed premise sentences, and
 premise removal proves the returned evidence set minimal. It neither treats a
 valid rule id as permission to generate arbitrary fresh evidence nor bypasses
-the ordinary answer consumer.
+the ordinary answer consumer. Search ranks the complete replay-valid pool for
+the selected ask before applying its fixed premise bound; ledger order cannot
+hide relevant later evidence. Random selection, premise combinations, and ask
+surface retries each have separate fixed caps. Generation fixtures are parsed
+once per exact file revision and reused across those retries, while an on-disk
+edit changes the revision key and is visible without a server restart.
 
 Question structure that carries semantic scope stays in the query. A
 partitive membership ask therefore carries both its complement label and its
@@ -1086,6 +1116,15 @@ Designer exploration endpoint omits per-filler placement expansions that the
 UI does not consume; direct authoring callers can still request the complete
 catalog. These indexes affect only generation latency and never the runtime
 reader, matcher, or benchmark path.
+
+Project `generation.yaml` files may also declare bounded
+`structural_values` for non-lexical matcher types such as ISO dates,
+coordinate points, and chemical formulae. These are authoring witnesses, not
+runtime vocabulary. The generator sends each value through the ordinary
+reader and keeps it only when the resulting unit has the value kind required
+by the ask slot; an invalid or unavailable structural value therefore cannot
+make an ask appear supported. Keeping the values in the project fixture lets
+different projects expose only the structural domains they intend to review.
 
 The current realization boundary covers literals, project-fixture names,
 simple nouns/verbs/adjectives/prepositions/words, declared multiword
@@ -1625,8 +1664,14 @@ all decline. The common no-partitive idiom is deliberately limited to `half
 the remaining measure`; other fractions require `of`, keeping generated
 surfaces grammatical. A conditional-first sibling uses the productive
 partitive form and is retained intact by the complete-ask routing proof. All
-three asks declare embedding context, so standalone ask generation reports
+three asks declare evidence context, so standalone ask generation reports
 them as contextual blockers rather than fabricating an answerless question.
+Answerable generation follows their declared measured-product and progress
+premise plan, retries bounded independently sampled values when the history is
+inconsistent, and accepts only the ordinary solver's result. The same boundary
+applies to asks whose normalized query depends on an exact antecedent discourse
+group or a measured-container history: they are context-only surfaces even
+though an answerable scenario can now synthesize and replay that context.
 
 The predicate is strict by default: a measure without a declared relationship
 fails. A broad grammar containing both relationship-sensitive measures and

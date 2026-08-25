@@ -116,8 +116,8 @@ def test_g5j_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 153
-    assert sum(item.supported for item in availability.values()) == 144
+    assert len(availability) == 156
+    assert sum(item.supported for item in availability.values()) == 147
     assert sum(not item.supported for item in availability.values()) == 9
     assert availability[
         "arithmetic/dangling-comparative-safety"
@@ -131,7 +131,7 @@ def test_g5j_unlocks_exactly_the_preregistered_frontier() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 366
+    assert len(exploration_status(project)["fillers"]) == 368
 
 
 def test_owned_comparative_categories_have_project_backed_fillers() -> None:

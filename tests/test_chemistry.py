@@ -153,6 +153,19 @@ def test_weight_of_moles(reg):
     )
 
 
+@pytest.mark.parametrize(
+    "question",
+    [
+        "How many moles are in 5 minutes of H2O?",
+        "What is the weight of 5 minutes of H2O?",
+        "What is the cost of 5 moles of H2O at 2 apples per gram?",
+        "What is the cost of 5 moles of H2O at $2 per kilogram?",
+    ],
+)
+def test_molar_mass_asks_reject_dimensionally_wrong_amounts(reg, question):
+    assert solve(question, reg).answer.kind == "decline"
+
+
 def test_no_constant_lives_in_the_consumer(reg):
     # THE contract for the weight op: the gram->kilogram factor and g both come
     # from pack tables the engine already had. If either moved into Python this

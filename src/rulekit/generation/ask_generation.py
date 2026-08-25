@@ -20,7 +20,7 @@ from ..data.project import Project
 from ..data.schemas import AskRule, MatchToken, PatternRule
 from ..kernel.engine import analyze, solve
 from ..kernel.model import Unit, _jsonable
-from ..kernel.patterns import match_ask
+from ..kernel.patterns import _check_where, match_ask, match_sequence
 from .candidate import (
     AskAvailability,
     AskScenarioCandidate,
@@ -45,10 +45,18 @@ from .sample import (
     list_rule_availability,
 )
 
-ASK_GENERATOR_VERSION = f"{GENERATOR_VERSION}+g7-asks-data-domains"
+ASK_GENERATOR_VERSION = f"{GENERATOR_VERSION}+g7-context-scenarios"
 _MAX_RANDOM_ANSWERABLE_ASKS = 8
-_MAX_RANDOM_VALIDATED_ASKS = 48
+_MAX_RANDOM_VALIDATED_ASKS = 8
+_MAX_VALIDATED_PREMISE_POOL = 16
+_MAX_VALIDATED_SURFACE_ATTEMPTS = 16
 _SCENARIO_PREMISE_ATTEMPTS = 4
+_ASK_SCENARIO_MODES: tuple[AskScenarioMode, ...] = (
+    "ask_only",
+    "answerable",
+    "validated_premises",
+    "missing_evidence",
+)
 _PUNCTUATION = frozenset({".", ",", "!", "?", ";", ":"})
 _WHOLE_TEMPLATE = re.compile(r"^\{([A-Za-z_][A-Za-z0-9_]*)(?:\.([^}]+))?\}$")
 _NON_IDENTITY_QUERY_FIELDS = frozenset(
@@ -62,6 +70,21 @@ _NON_IDENTITY_QUERY_FIELDS = frozenset(
         "polarity",
     }
 )
+
+
+def _query_field_value(query: dict[str, Any], path: str) -> Any:
+    """Resolve a declared scalar query path such as ``holders.1``."""
+
+    value: Any = query
+    for part in path.split("."):
+        if isinstance(value, dict):
+            value = value.get(part)
+        elif isinstance(value, list) and part.isdigit():
+            index = int(part)
+            value = value[index] if index < len(value) else None
+        else:
+            return None
+    return value
 
 
 def _iter_resolution_values(ask: AskRule) -> Iterable[str]:
@@ -86,6 +109,12 @@ def _span_contracts(ask: AskRule) -> dict[str, str]:
         }:
             contracts[match.group(1)] = match.group(2)
     return contracts
+
+
+def _context_required_blocker(ask: AskRule) -> str:
+    if ask.generation.context_strategy == "evidence":
+        return "ask requires generated premise evidence; standalone realization is disabled"
+    return "ask requires embedding context; standalone realization is disabled"
 
 
 def _name_list_fillers(project: Project) -> list[_Filler]:
@@ -210,9 +239,7 @@ def _ask_token_domain(
 def _ask_blockers(project: Project, ask: AskRule) -> tuple[str, ...]:
     blockers: list[str] = []
     if ask.generation.context_required:
-        blockers.append(
-            "ask requires embedding context; standalone realization is disabled"
-        )
+        blockers.append(_context_required_blocker(ask))
     contracts = _span_contracts(ask)
     if "group_members" in contracts.values():
         blockers.append(
@@ -228,7 +255,52 @@ def _ask_blockers(project: Project, ask: AskRule) -> tuple[str, ...]:
             continue
         if not _ask_token_domain(project, ask, token):
             blockers.append(f"no project-backed ask filler exists for {label}")
+    if ask.generation.evidence_rules:
+        rule_availability = {
+            item.id: item for item in list_rule_availability(project)
+        }
+        blockers.extend(
+            f"declared evidence rule {step.rule!r} is not generatable"
+            for step in ask.generation.evidence_rules
+            if step.rule not in rule_availability
+            or not rule_availability[step.rule].supported
+        )
     return tuple(dict.fromkeys(blockers))
+
+
+def _ask_mode_blockers(
+    project: Project,
+    ask: AskRule,
+    scenario_mode: AskScenarioMode,
+) -> tuple[str, ...]:
+    """Return only blockers that apply to one requested scenario mode.
+
+    Independent support remains deliberately stricter than contextual
+    support. A generated document may establish a discourse antecedent or
+    premise evidence, but ask-only generation must not fabricate either by
+    mutating a standalone reading.
+    """
+
+    blockers = list(_ask_blockers(project, ask))
+    contracts = _span_contracts(ask)
+    group_blocker = (
+        "ask requires an antecedent discourse group; generate it as a "
+        "contextual scenario"
+    )
+    context_blocker = _context_required_blocker(ask)
+    if (
+        "group_members" in contracts.values()
+        and scenario_mode in {"answerable", "validated_premises"}
+    ):
+        blockers = [blocker for blocker in blockers if blocker != group_blocker]
+    strategy = ask.generation.context_strategy
+    allowed_context_modes = {
+        "evidence": {"answerable", "validated_premises", "missing_evidence"},
+        "conditional": {"answerable", "validated_premises"},
+    }
+    if strategy is not None and scenario_mode in allowed_context_modes[strategy]:
+        blockers = [blocker for blocker in blockers if blocker != context_blocker]
+    return tuple(blockers)
 
 
 def _ask_filler_satisfies_known_where(
@@ -474,19 +546,28 @@ def _ask_filler_satisfies_known_where(
 def list_ask_availability(project: Project) -> list[AskAvailability]:
     """Report ask-surface support without executing a generated question."""
 
-    return [
-        AskAvailability(
-            id=ask.id,
-            consumer=(
-                str(ask.resolves.get("consumer"))
-                if ask.resolves.get("consumer") is not None
-                else None
-            ),
-            supported=not (blockers := _ask_blockers(project, ask)),
-            blockers=blockers,
+    availability: list[AskAvailability] = []
+    for ask in project.registry.asks:
+        blockers = _ask_blockers(project, ask)
+        supported_modes = tuple(
+            mode
+            for mode in _ASK_SCENARIO_MODES
+            if not _ask_mode_blockers(project, ask, mode)
         )
-        for ask in project.registry.asks
-    ]
+        availability.append(
+            AskAvailability(
+                id=ask.id,
+                consumer=(
+                    str(ask.resolves.get("consumer"))
+                    if ask.resolves.get("consumer") is not None
+                    else None
+                ),
+                supported="ask_only" in supported_modes,
+                blockers=blockers,
+                supported_modes=supported_modes,
+            )
+        )
+    return availability
 
 
 def _optional_choices(
@@ -711,6 +792,62 @@ def _answer_json(answer) -> tuple[dict[str, Any], str]:
     )
 
 
+def _match_generated_ask(
+    project: Project,
+    ask: AskRule,
+    question: str,
+    *,
+    scenario_mode: AskScenarioMode,
+):
+    """Match a realized ask, provisionally seeding only group discovery.
+
+    A discourse-group ask cannot resolve its ``{slot.group_members}``
+    template until it appears after real premises. For search planning only,
+    bind two project-declared fixture names to that exact matched group slot.
+    The returned scenario is still accepted solely after ``solve`` rebuilds
+    the group from its generated document and the target ask wins normally.
+    """
+
+    reading = analyze(question, project.registry, tracing=True)
+    matched = match_ask(reading, project.registry)
+    contracts = _span_contracts(ask)
+    if (
+        (matched is not None and matched[0].id == ask.id)
+        or "group_members" not in contracts.values()
+        or scenario_mode not in {"answerable", "validated_premises"}
+    ):
+        return matched
+    provisional = match_sequence(
+        reading,
+        ask.match["question"],
+        project.registry,
+    )
+    if provisional is None or not _check_where(
+        ask,
+        provisional.slots,
+        reading,
+        project.registry,
+    ):
+        return None
+    fixtures = _load_fixtures(project.root)
+    if len(fixtures.names) < 2:
+        return None
+    members = tuple(name.casefold() for name in fixtures.names[:2])
+    for slot, contract in contracts.items():
+        if contract != "group_members":
+            continue
+        unit = provisional.slots.get(slot)
+        if not isinstance(unit, Unit):
+            return None
+        reading.record(
+            "generation-provisional-group",
+            unit,
+            {"referent_group": members},
+            "seed an exact group only to plan generated antecedent evidence",
+        )
+    return match_ask(reading, project.registry)
+
+
 def _generate_ask_surface(
     project: Project,
     ask: AskRule,
@@ -721,7 +858,7 @@ def _generate_ask_surface(
     scenario_mode: AskScenarioMode,
     reviewed_surfaces: dict[str, int],
 ) -> tuple[str, dict[str, str], dict[str, str], dict[str, Any], int]:
-    blockers = _ask_blockers(project, ask)
+    blockers = _ask_mode_blockers(project, ask, scenario_mode)
     if blockers:
         raise GenerationError(f"{ask.id} is blocked: {'; '.join(blockers)}")
     rng = random.Random(seed)
@@ -743,8 +880,12 @@ def _generate_ask_surface(
         except GenerationError as exc:
             last_error = str(exc)
             continue
-        reading = analyze(question, project.registry, tracing=True)
-        matched = match_ask(reading, project.registry)
+        matched = _match_generated_ask(
+            project,
+            ask,
+            question,
+            scenario_mode=scenario_mode,
+        )
         if matched is None:
             last_error = "no declared ask matched the realized surface"
             continue
@@ -879,22 +1020,75 @@ def _emit_lock_variants(
     )
 
 
-def _solve_text(project: Project, premises: list[dict[str, Any]], question: str):
-    text = " ".join(
-        [*(premise["sentence"] for premise in premises), question]
+def _compose_scenario_text(
+    premises: list[dict[str, Any]],
+    question: str,
+    *,
+    conditional_embedding: bool = False,
+) -> str:
+    premise_texts = [
+        str(premise.get("text") or premise["sentence"]).strip()
+        for premise in premises
+    ]
+    if not conditional_embedding or not premise_texts:
+        return " ".join([*premise_texts, question])
+    # The embedded order belongs after a subordinate introducer. Use the last
+    # ordinary generated premise as that clause and leave any earlier evidence
+    # as ordinary sentences. Contextual multi-sentence premise candidates are
+    # intentionally ineligible here: embedding only their final surface would
+    # detach the context that made them valid.
+    embedded = premises[-1]
+    if embedded.get("context_before") or embedded.get("context_after"):
+        raise GenerationError(
+            "conditional ask embedding needs an independent premise candidate"
+        )
+    clause = str(embedded["sentence"]).strip().rstrip(".?!")
+    for article in ("The ", "A ", "An "):
+        if clause.startswith(article):
+            clause = article.lower() + clause[len(article) :]
+            break
+    tail = question[0].lower() + question[1:] if question else question
+    return " ".join([*premise_texts[:-1], f"If {clause}, {tail}"])
+
+
+def _solve_text(
+    project: Project,
+    premises: list[dict[str, Any]],
+    question: str,
+    *,
+    conditional_embedding: bool = False,
+    reference_year: int | None = None,
+):
+    text = _compose_scenario_text(
+        premises,
+        question,
+        conditional_embedding=conditional_embedding,
     )
-    return text, solve(text, project.registry)
+    return text, solve(
+        text,
+        project.registry,
+        reference_year=reference_year,
+    )
 
 
 def _try_solve_text(
     project: Project,
     premises: list[dict[str, Any]],
     question: str,
+    *,
+    conditional_embedding: bool = False,
+    reference_year: int | None = None,
 ):
     """Treat a pathological generated combination as a failed search branch."""
 
     try:
-        return _solve_text(project, premises, question)
+        return _solve_text(
+            project,
+            premises,
+            question,
+            conditional_embedding=conditional_embedding,
+            reference_year=reference_year,
+        )
     except ArithmeticError:
         return None
     except RuntimeError as exc:
@@ -907,6 +1101,9 @@ def _minimal_committed_premises(
     project: Project,
     premises: list[dict[str, Any]],
     question: str,
+    *,
+    conditional_embedding: bool = False,
+    reference_year: int | None = None,
 ) -> tuple[list[dict[str, Any]], Any, str]:
     selected = list(premises)
     changed = True
@@ -914,7 +1111,13 @@ def _minimal_committed_premises(
         changed = False
         for index in range(len(selected)):
             trial = selected[:index] + selected[index + 1 :]
-            solved = _try_solve_text(project, trial, question)
+            solved = _try_solve_text(
+                project,
+                trial,
+                question,
+                conditional_embedding=conditional_embedding,
+                reference_year=reference_year,
+            )
             if solved is None:
                 continue
             text, result = solved
@@ -922,7 +1125,13 @@ def _minimal_committed_premises(
                 selected = trial
                 changed = True
                 break
-    text, result = _solve_text(project, selected, question)
+    text, result = _solve_text(
+        project,
+        selected,
+        question,
+        conditional_embedding=conditional_embedding,
+        reference_year=reference_year,
+    )
     return selected, result, text
 
 
@@ -930,12 +1139,19 @@ def _premise_set_is_minimal(
     project: Project,
     premises: list[dict[str, Any]],
     question: str,
+    *,
+    conditional_embedding: bool = False,
+    reference_year: int | None = None,
 ) -> bool:
     """Prove no generated premise can be removed while retaining an answer."""
 
     return all(
         (solved := _try_solve_text(
-            project, premises[:index] + premises[index + 1 :], question
+            project,
+            premises[:index] + premises[index + 1 :],
+            question,
+            conditional_embedding=conditional_embedding,
+            reference_year=reference_year,
         )) is None
         or not solved[1].answer.committed
         for index in range(len(premises))
@@ -944,13 +1160,23 @@ def _premise_set_is_minimal(
 
 def _search_answerable_scenario(
     project: Project,
+    ask: AskRule,
     question: str,
     query: dict[str, Any],
     *,
     rng: random.Random,
     max_search_attempts: int,
+    reference_year: int | None = None,
 ) -> tuple[list[dict[str, Any]], Any, str, int]:
-    ask_only = solve(question, project.registry)
+    conditional_embedding = ask.generation.context_strategy == "conditional"
+    evidence_query = dict(query)
+    if reference_year is not None:
+        evidence_query["reference_year"] = reference_year
+    ask_only = solve(
+        question,
+        project.registry,
+        reference_year=reference_year,
+    )
     if ask_only.answer.committed:
         return [], ask_only, question, 0
     supported = {
@@ -958,6 +1184,83 @@ def _search_answerable_scenario(
         for item in list_rule_availability(project)
         if item.supported
     }
+    premise_rules = {rule.id: rule for rule in project.registry.rules}
+    generated: list[dict[str, Any]] = []
+    seen_sentences: set[str] = set()
+    search_attempts = 0
+
+    # Some consumers need a complete fact family rather than one arbitrary
+    # quantity. The owning ask can preregister ordinary premise rules and map
+    # their slots to query fields. This is still grammar-driven generation:
+    # no sentence template or expected answer appears here, and ``solve`` is
+    # the sole oracle for whether the realized evidence actually suffices.
+    for _plan_attempt in range(12 if ask.generation.evidence_rules else 0):
+        planned: list[dict[str, Any]] = []
+        for step in ask.generation.evidence_rules:
+            if step.rule not in supported:
+                raise GenerationError(
+                    f"ask evidence rule {step.rule!r} is not generatable"
+                )
+            identity_bindings: dict[str, str] = {}
+            surface_bindings: dict[str, str] = {}
+            rule = premise_rules[step.rule]
+            tokens_by_slot = {
+                token.slot: token
+                for _, token, _ in _leaf_tokens(rule.match["sentence"])
+                if token.slot is not None
+            }
+            for slot, field in step.bindings.items():
+                value = _query_field_value(evidence_query, field)
+                if not isinstance(value, (str, int, float)):
+                    raise GenerationError(
+                        f"ask evidence binding {slot!r} needs scalar query field "
+                        f"{field!r}"
+                    )
+                token = tokens_by_slot.get(slot)
+                if token is not None and token.type == "number":
+                    try:
+                        numeric = float(value)
+                    except (TypeError, ValueError) as exc:
+                        raise GenerationError(
+                            f"ask evidence binding {slot!r} needs numeric query "
+                            f"field {field!r}"
+                        ) from exc
+                    if numeric.is_integer():
+                        surface_bindings[slot] = str(int(numeric))
+                    else:
+                        surface_bindings[slot] = str(numeric)
+                else:
+                    identity_bindings[slot] = str(value)
+            search_attempts += 1
+            candidate = generate_candidate(
+                project,
+                rule_id=step.rule,
+                seed=rng.getrandbits(63),
+                max_attempts=max(16, _SCENARIO_PREMISE_ATTEMPTS),
+                locked_bindings=surface_bindings,
+                identity_bindings=identity_bindings,
+            ).to_json()
+            planned.append(candidate)
+            if candidate["sentence"] not in seen_sentences:
+                seen_sentences.add(candidate["sentence"])
+                generated.append(candidate)
+        solved = _try_solve_text(
+            project,
+            planned,
+            question,
+            conditional_embedding=conditional_embedding,
+            reference_year=reference_year,
+        )
+        if solved is not None and solved[1].answer.committed:
+            minimal, result, text = _minimal_committed_premises(
+                project,
+                planned,
+                question,
+                conditional_embedding=conditional_embedding,
+                reference_year=reference_year,
+            )
+            return minimal, result, text, search_attempts
+
     plans = [
         (
             score,
@@ -979,9 +1282,6 @@ def _search_answerable_scenario(
             tuple(sorted(item[4].items())),
         )
     )
-    generated: list[dict[str, Any]] = []
-    seen_sentences: set[str] = set()
-    search_attempts = 0
     for _, _, _, rule_id, identity_locks in plans:
         if search_attempts >= max_search_attempts:
             break
@@ -1000,7 +1300,13 @@ def _search_answerable_scenario(
             continue
         seen_sentences.add(candidate["sentence"])
         generated.append(candidate)
-        solved = _try_solve_text(project, [candidate], question)
+        solved = _try_solve_text(
+            project,
+            [candidate],
+            question,
+            conditional_embedding=conditional_embedding,
+            reference_year=reference_year,
+        )
         if solved is None:
             continue
         text, result = solved
@@ -1014,7 +1320,13 @@ def _search_answerable_scenario(
     for size in (2, 3):
         for group in combinations(pool, size):
             search_attempts += 1
-            solved = _try_solve_text(project, list(group), question)
+            solved = _try_solve_text(
+                project,
+                list(group),
+                question,
+                conditional_embedding=conditional_embedding,
+                reference_year=reference_year,
+            )
             if solved is None:
                 continue
             text, result = solved
@@ -1024,6 +1336,8 @@ def _search_answerable_scenario(
                 project,
                 list(group),
                 question,
+                conditional_embedding=conditional_embedding,
+                reference_year=reference_year,
             )
             return minimal, result, text, search_attempts
     raise GenerationError(
@@ -1155,6 +1469,7 @@ def _search_validated_premise_scenario(
     max_search_attempts: int,
     reviewed_surfaces: dict[str, int],
     premise_pool: list[dict[str, Any]],
+    reference_year: int | None = None,
 ) -> tuple[
     str,
     dict[str, str],
@@ -1168,11 +1483,31 @@ def _search_validated_premise_scenario(
 ]:
     """Generate an ask whose only evidence is replay-valid human review."""
 
-    pool = premise_pool
-    if not pool:
+    if not premise_pool:
         raise GenerationError("this project has no replay-valid premise reviews")
+    # Reviews are grouped in rule-id order, which has no bearing on whether a
+    # premise can support this ask.  Rank the complete pool for the selected
+    # ask before bounding combination search.  The old ``pool[:24]`` silently
+    # excluded useful later evidence and then spent the whole budget replaying
+    # irrelevant early reviews.
+    ranked_pool: list[tuple[int, int, dict[str, Any]]] = []
+    for index, premise in enumerate(premise_pool):
+        score = max(
+            (
+                variant_score
+                for variant_score, _locks in _validated_ask_lock_variants(
+                    ask, (premise,)
+                )
+            ),
+            default=0,
+        )
+        ranked_pool.append((score, index, premise))
+    ranked_pool.sort(key=lambda item: (-item[0], item[1]))
     plans: list[tuple[int, int, tuple[str, ...], tuple[dict[str, Any], ...], dict[str, str]]] = []
-    bounded_pool = pool[:24]
+    bounded_pool = [
+        premise
+        for _score, _index, premise in ranked_pool[:_MAX_VALIDATED_PREMISE_POOL]
+    ]
     for size in (1, 2, 3):
         for group in combinations(bounded_pool, size):
             ids = tuple(str(item.get("validated_review_id") or "") for item in group)
@@ -1193,20 +1528,41 @@ def _search_validated_premise_scenario(
                 ask,
                 seed=rng.getrandbits(63),
                 locked_bindings=locks,
-                max_attempts=max_attempts,
+                max_attempts=min(
+                    max_attempts,
+                    _MAX_VALIDATED_SURFACE_ATTEMPTS,
+                ),
                 scenario_mode="validated_premises",
                 reviewed_surfaces=reviewed_surfaces,
             )
         except GenerationError as exc:
             last_error = exc
             continue
-        if solve(question, project.registry, tracing=False).answer.committed:
+        if solve(
+            question,
+            project.registry,
+            tracing=False,
+            reference_year=reference_year,
+        ).answer.committed:
             continue
-        solved = _try_solve_text(project, list(group), question)
+        conditional_embedding = (
+            ask.generation.context_strategy == "conditional"
+        )
+        solved = _try_solve_text(
+            project,
+            list(group),
+            question,
+            conditional_embedding=conditional_embedding,
+            reference_year=reference_year,
+        )
         if solved is None or not solved[1].answer.committed:
             continue
         minimal, result, text = _minimal_committed_premises(
-            project, list(group), question
+            project,
+            list(group),
+            question,
+            conditional_embedding=conditional_embedding,
+            reference_year=reference_year,
         )
         # Minimization can remove the premise that licensed a generated slot.
         # Recheck against the evidence that will actually be shown and saved;
@@ -1241,6 +1597,7 @@ def generate_ask_scenario(
     ask_id: str | None = None,
     seed: int | None = None,
     scenario_mode: AskScenarioMode = "ask_only",
+    reference_year: int | None = None,
     locked_bindings: dict[str, str] | None = None,
     max_attempts: int = 64,
     max_search_attempts: int = 48,
@@ -1267,7 +1624,9 @@ def generate_ask_scenario(
         raise GenerationError("this project has no replay-valid premise reviews")
     if ask_id is None:
         supported = [
-            asks[item.id] for item in availability.values() if item.supported
+            asks[item.id]
+            for item in availability.values()
+            if item.supports(scenario_mode)
         ]
         if not supported:
             raise GenerationError("this project has no supported ask surfaces")
@@ -1310,9 +1669,11 @@ def generate_ask_scenario(
         if ask is None:
             raise GenerationError(f"unknown ask rule {ask_id!r}")
         item = availability[ask.id]
-        if not item.supported:
+        if not item.supports(scenario_mode):
+            mode_blockers = _ask_mode_blockers(project, ask, scenario_mode)
             raise GenerationError(
-                f"{ask.id} is blocked: {'; '.join(item.blockers)}"
+                f"{ask.id} is blocked in {scenario_mode}: "
+                f"{'; '.join(mode_blockers or item.blockers)}"
             )
         ask_candidates = [ask]
 
@@ -1339,8 +1700,13 @@ def generate_ask_scenario(
                     max_search_attempts=max_search_attempts,
                     reviewed_surfaces=reviewed_surfaces,
                     premise_pool=validated_pool,
+                    reference_year=reference_year,
                 )
-                ask_only = solve(question, project.registry)
+                ask_only = solve(
+                    question,
+                    project.registry,
+                    reference_year=reference_year,
+                )
             else:
                 question, requested, actual, query, attempts = _generate_ask_surface(
                     project,
@@ -1351,7 +1717,11 @@ def generate_ask_scenario(
                     scenario_mode=scenario_mode,
                     reviewed_surfaces=reviewed_surfaces,
                 )
-                ask_only = solve(question, project.registry)
+                ask_only = solve(
+                    question,
+                    project.registry,
+                    reference_year=reference_year,
+                )
                 premises = []
                 result = ask_only
                 text = question
@@ -1360,10 +1730,12 @@ def generate_ask_scenario(
                 premises, result, text, search_attempts = (
                     _search_answerable_scenario(
                         project,
+                        ask,
                         question,
                         query,
                         rng=rng,
                         max_search_attempts=max_search_attempts,
+                        reference_year=reference_year,
                     )
                 )
                 if not result.answer.committed:  # pragma: no cover
@@ -1375,6 +1747,21 @@ def generate_ask_scenario(
                     "the generated ask committed without premises, so it is not a "
                     "missing-evidence scenario"
                 )
+            if scenario_mode in {"answerable", "validated_premises"}:
+                if result.question is None:
+                    raise GenerationError(
+                        "generated contextual scenario lost its question"
+                    )
+                final_match = match_ask(result.question, project.registry)
+                if final_match is None or final_match[0].id != ask.id:
+                    winner = None if final_match is None else final_match[0].id
+                    raise GenerationError(
+                        f"generated context did not activate {ask.id}; "
+                        f"winner was {winner or 'none'}"
+                    )
+                _actual_ask, final_query, final_binding = final_match
+                query = _json_value(final_query)
+                actual = _match_bindings(final_binding)
         except (GenerationError, ArithmeticError) as exc:
             last_error = exc
             if ask_id is not None or scenario_mode not in {
@@ -1389,7 +1776,7 @@ def generate_ask_scenario(
         digest = hashlib.sha256(
             (
                 f"{project.registry.fingerprint}\0{scenario_mode}\0{seed}\0"
-                f"{ask.id}\0{text}"
+                f"{reference_year}\0{ask.id}\0{text}"
             ).encode()
         ).hexdigest()[:20]
         source = project.source_index.asks.get(ask.id)
@@ -1400,6 +1787,7 @@ def generate_ask_scenario(
             generator_version=ASK_GENERATOR_VERSION,
             scenario_mode=scenario_mode,
             seed=seed,
+            reference_year=reference_year,
             target_ask=ask.id,
             consumer=(
                 str(query.get("consumer"))
@@ -1415,7 +1803,15 @@ def generate_ask_scenario(
             premises=tuple(premises),
             answer=answer,
             answer_shape=answer_shape,
-            minimal=_premise_set_is_minimal(project, premises, question),
+            minimal=_premise_set_is_minimal(
+                project,
+                premises,
+                question,
+                conditional_embedding=(
+                    ask.generation.context_strategy == "conditional"
+                ),
+                reference_year=reference_year,
+            ),
             attempts=attempts,
             search_attempts=search_attempts,
         )

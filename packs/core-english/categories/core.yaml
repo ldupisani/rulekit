@@ -314,6 +314,11 @@ categories:
         notes: >
             Predicates whose licensed spatial goal initiates a location fluent.
             The kernel reasons over this semantic category, never a word list.
+    location_initiating_past_verb:
+        parent: location_initiating_verb
+        notes: >
+            Past arrival forms compatible with a preceding or trailing past-day
+            marker in a generated dated-location premise.
     location_terminating_verb:
         parent: verb
         notes: >
@@ -626,6 +631,12 @@ categories:
             holding relation. Copulas remain in sibling `copula`: they state
             quantities in other grammatical frames but cannot connect a
             subject directly to a possessive quantity standard.
+    plain_have_state:
+        parent: possession_state
+        notes: >
+            The ordinary have/has/had possession family. Narrow generated
+            holding targets use this category so they do not intercept richer
+            ownership or activity-specific possession readings.
     ownership_state:
         parent: possession_state
         selectional_roles:
@@ -1312,6 +1323,12 @@ categories:
             elsewhere in this file; the two categories are consulted by
             entirely separate resolution paths (`interchangeable_categories`
             vs `dimension_categories`) and never interact.
+    mass_unit:
+        parent: mass_measure
+        notes: >
+            Concrete mass units. Dimension nouns such as `weight` remain in
+            `mass_measure` for queries and comparisons but cannot fill a
+            counted physical amount such as "3 kilograms".
     volume_measure:
         parent: noun
         dimension: true
@@ -1336,6 +1353,12 @@ categories:
             Substances introduced into a measured container. An update keeps
             the substance identity even when only its effect on the aggregate,
             rather than its independent amount, is stated.
+    volume_convertible_measured_content:
+        parent: measured_content_substance
+        notes: >
+            Measured substances with an explicitly declared mass-to-volume
+            conversion. This generation boundary keeps explicit-volume asks
+            from sampling a substance for which no conversion evidence exists.
     measurement_placement_verb:
         parent: verb
         notes: "Predicates that position a measured container on an instrument."
@@ -1957,12 +1980,9 @@ categories:
             pairing is not a signed direction, just two singleton categories so
             saturate.py's `_complement_word` can look up 'the other label' by
             category-antonym instead of a hardcoded word pair (constitution
-            rule 1). 'boy'/'girl' are difg-mined-only words — no core-english
-            word carries either sense — so, mirroring 'temporal_marker'/
-            'age_measure's sibling pattern above, this category has NO members
-            here; they live in packs/difg-mined/categories/semantic.yaml. A
-            core-english-only registry (no difg-mined) compiles with both
-            categories simply empty (the synth then never fires, decline-safe).
+            rule 1). `boy` and `girl` are ordinary English vocabulary and the
+            closed pair is useful outside the mined corpus, so both words and
+            their memberships live in this shared pack.
     complement_girl:
         parent: complement_membership_label
         antonym: complement_boy
@@ -2171,6 +2191,8 @@ members:
         - wants
         - wilted
     currency: [dollar, money]
+    complement_boy: [boy]
+    complement_girl: [girl]
     partitive: [of]
     pool_pronoun: [it, them]
     plural_object_pronoun: [them]
@@ -2405,6 +2427,7 @@ members:
     animate_object_pronoun: [her, him, them]
     state: [has, have, had, is, are, was, were, own, owns]
     possession_state: [has, have, had]
+    plain_have_state: [has, have, had]
     ownership_state: [own, owns]
     population_total_verb: [has, have, had]
     copula: [is, are, was, were]
@@ -2501,6 +2524,7 @@ members:
     dimension_noun: [age] # other dimension nouns extend this from difg-mined
     length_measure: [inch] # other concrete units extend this from packs/difg-mined
     mass_measure: [gram, kilogram, pound, weight] # other measures extend this from packs/difg-mined
+    mass_unit: [gram, kilogram, pound]
     volume_measure: [liter]
     currency_measure: [dollar] # 'cent'/'balance'/'earnings'/'cost' extend this from packs/difg-mined
     time_measure: [year, age] # generic age forms; other units extend this from difg-mined
@@ -2543,6 +2567,7 @@ members:
          flask, jar, jug, tank, vessel, vial]
     measurement_instrument: [scale]
     measured_content_substance: [clay, sand, sugar, vinegar, water]
+    volume_convertible_measured_content: [water]
     measurement_placement_verb: [place, placed, places, placing]
     measured_content_transfer_verb: [pour, poured, pouring, pours, put, puts, putting]
     measured_content_adjustment_verb: [add, added, adding, adds]
@@ -2603,6 +2628,7 @@ members:
     arrival_motion_verb: [arrive, arrived, arrives]
     location_state_verb: [be]
     location_initiating_verb: [arrive, arrived, arrives]
+    location_initiating_past_verb: [arrived]
     location_terminating_verb: [leave, leaves, leaving, left]
     location_terminating_past_verb: [left]
     location_impossibility_modal: [can]
@@ -2636,6 +2662,7 @@ members:
     membership_collection_noun: [animal]
 attribute_compatibility:
     measurement_sufficiency_marker: [measured_content_substance]
+    final_measurement_attribute: [mass_dimension_noun]
     academic_course_modifier: [sequential_partition_destination]
     color_attribute: [colorable_noun]
     # Multiple compatible noun categories are intentional. Either category

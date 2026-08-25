@@ -465,6 +465,8 @@ entries:
     tutoring: {senses: [noun]}
     teacher: {senses: [noun], plural: teachers}
     student: {senses: [noun], plural: students}
+    boy: {senses: [noun], plural: boys}
+    girl: {senses: [noun], plural: girls}
     head: {senses: [noun], plural: heads}
     university: {senses: [noun], plural: universities}
     course: {senses: [noun], plural: courses}

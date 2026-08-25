@@ -2658,14 +2658,22 @@ function selectedGenerationAsk() {
   return state.generationAsks.find((ask) => ask.id === id) || null;
 }
 
+function generationAskSupportsSelectedMode(ask) {
+  if (!ask) return true;
+  const mode = $("generation-ask-mode").value || "ask_only";
+  return (ask.supported_modes || []).includes(mode);
+}
+
 function updateAskGenerationState() {
   const ask = selectedGenerationAsk();
+  const modeSupported = generationAskSupportsSelectedMode(ask);
   const blocker = $("generation-ask-blocker");
-  blocker.classList.toggle("hidden", !ask || ask.supported);
-  blocker.textContent = ask && !ask.supported
-    ? ask.blockers.join(" · ")
+  blocker.classList.toggle("hidden", !ask || modeSupported);
+  blocker.textContent = ask && !modeSupported
+    ? `Unavailable in ${$("generation-ask-mode").selectedOptions[0].text}: ` +
+      ask.blockers.join(" · ")
     : "";
-  $("generation-ask-next").disabled = Boolean(ask && !ask.supported);
+  $("generation-ask-next").disabled = Boolean(ask && !modeSupported);
 }
 
 function renderAskGenerationCandidate(candidate) {
@@ -2700,6 +2708,7 @@ function renderAskGenerationCandidate(candidate) {
   $("generation-ask-meta").textContent =
     `${candidate.scenario_mode.replaceAll("_", " ")} · ` +
     `${candidate.generator_version} · seed ${candidate.seed} · ` +
+    `${candidate.reference_year ? `reference year ${candidate.reference_year} · ` : ""}` +
     `${candidate.attempts} ask attempt(s) · ` +
     `${candidate.search_attempts} evidence check(s) · ` +
     `${candidate.minimal ? "removal-minimal" : "not proven minimal"}`;
@@ -2785,7 +2794,7 @@ function renderAskGenerationCandidate(candidate) {
 
 async function generateAskScenario() {
   const selected = selectedGenerationAsk();
-  if (selected && !selected.supported) return;
+  if (selected && !generationAskSupportsSelectedMode(selected)) return;
   const seedInput = $("generation-ask-seed");
   const prior = Number(seedInput.value);
   const seed = Number.isSafeInteger(prior) && seedInput.value !== ""
@@ -2799,6 +2808,7 @@ async function generateAskScenario() {
     const candidate = await api("POST", "/api/generation/ask", {
       ask_id: selected?.id || null,
       scenario_mode: $("generation-ask-mode").value || "ask_only",
+      reference_year: new Date().getFullYear(),
       seed,
       locked_bindings: {},
     });
@@ -4236,6 +4246,7 @@ $("view-proof").onclick = () => setView("proof");
 $("generation-next").onclick = generateNext;
 $("generation-ask-next").onclick = generateAskScenario;
 $("generation-ask-reading").onclick = inspectAskGenerationReading;
+$("generation-ask-mode").onchange = updateAskGenerationState;
 $("generation-ask-save-review").onclick = saveAskGenerationReview;
 $("generation-ask-seed").addEventListener("input", () => {
   state.lastAskGenerationSeed = null;

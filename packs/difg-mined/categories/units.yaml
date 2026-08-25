@@ -16,6 +16,17 @@ format: rulekit/categories@1
 # ask/how-many-in-place keeps the question unchanged.
 categories:
   measure_unit: {parent: noun}
+  amount_of_substance_unit:
+    parent: measure_unit
+    notes: >
+      Units that count chemical amount for molar-mass calculations. This is
+      narrower than the general conversion-unit inventory.
+  molar_mass_base_unit:
+    parent: measure_unit
+    notes: >
+      Mass units whose numeric value is already in the base unit expected by
+      the molar-mass consumer. Other convertible mass units are not silently
+      treated as base-unit values.
   calendar_span_unit: {parent: noun}
   # RELATIVE CHANGE (rules/arithmetic-ops.yaml): English spells the same
   # computation four ways ('percent'/'percentage' x 'increase'/'decrease').
@@ -26,6 +37,8 @@ categories:
   area_measure: {parent: noun}
   perimeter_measure: {parent: noun}
 members:
+  amount_of_substance_unit: [moles]
+  molar_mass_base_unit: [gram]
   measure_unit:
     # 'moles' is an AMOUNT-OF-SUBSTANCE unit, so the chemistry asks can gate on
     # it the same way every other quantity slot does. Plural form only -- see

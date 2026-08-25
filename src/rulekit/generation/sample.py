@@ -8,6 +8,7 @@ import re
 import secrets
 from collections import Counter, OrderedDict
 from dataclasses import dataclass
+from functools import lru_cache
 from itertools import product
 from pathlib import Path
 from threading import RLock
@@ -73,6 +74,9 @@ _SUPPORTED_SLOT_TYPES = frozenset(
         "pronoun",
         "modal",
         "future_modal",
+        "date",
+        "point",
+        "formula",
     }
 )
 _SUPPORTED_CATEGORY_ROOTS = frozenset(
@@ -96,15 +100,17 @@ _SUPPORTED_CATEGORY_ROOTS = frozenset(
 _PUNCTUATION = frozenset({".", ",", "!", "?", ";", ":"})
 _yaml = YAML(typ="rt")
 _CACHE_LOCK = RLock()
+_StructuralValues = tuple[tuple[str, tuple[str, ...]], ...]
+_FixtureCacheKey = tuple[tuple[str, ...], _StructuralValues]
 _DOMAIN_CACHE: OrderedDict[
-    tuple[str, tuple[str, ...], str], list["_Filler"]
+    tuple[str, _FixtureCacheKey, str], list["_Filler"]
 ] = OrderedDict()
 _BOUNDARY_DOMAIN_CACHE: OrderedDict[
-    tuple[str, tuple[str, ...], str],
+    tuple[str, _FixtureCacheKey, str],
     tuple[list["_Filler"], str, str] | None,
 ] = OrderedDict()
 _AVAILABILITY_CACHE: OrderedDict[
-    tuple[str, tuple[str, ...]], tuple[RuleAvailability, ...]
+    tuple[str, _FixtureCacheKey], tuple[RuleAvailability, ...]
 ] = OrderedDict()
 _MAX_DOMAIN_CACHE_ENTRIES = 4096
 _MAX_AVAILABILITY_CACHE_ENTRIES = 32
@@ -196,12 +202,44 @@ def _filler_categories_overlap(
 class _Fixtures:
     names: tuple[str, ...]
     sources: dict[str, SourceRef]
+    structural_values: _StructuralValues = ()
+
+    def values_for(self, slot_type: str | None) -> tuple[str, ...]:
+        if slot_type is None:
+            return ()
+        return dict(self.structural_values).get(slot_type, ())
+
+    @property
+    def cache_key(self) -> _FixtureCacheKey:
+        return self.names, self.structural_values
 
 
 def _load_fixtures(project_root: Path) -> _Fixtures:
+    """Load generation fixtures once per exact on-disk revision.
+
+    Ask realization consults the fixture domains for several tokens on every
+    deterministic attempt.  Reparsing the same YAML at each lookup made a
+    bounded scenario search behave like an unbounded request.  The file
+    revision remains part of the key so Designer edits become visible without
+    restarting the server.
+    """
+
     path = project_root / "generation.yaml"
-    if not path.exists():
-        return _Fixtures(names=(), sources={})
+    try:
+        stat = path.stat()
+    except FileNotFoundError:
+        return _Fixtures(names=(), sources={}, structural_values=())
+    return _load_fixtures_revision(path, stat.st_mtime_ns, stat.st_size)
+
+
+@lru_cache(maxsize=32)
+def _load_fixtures_revision(
+    path: Path,
+    _mtime_ns: int,
+    _size: int,
+) -> _Fixtures:
+    """Parse one immutable fixture-file revision."""
+
     raw = _yaml.load(path.read_text(encoding="utf-8"))
     if not isinstance(raw, dict) or raw.get("format") != "rulekit/generation@1":
         raise GenerationError(
@@ -222,6 +260,40 @@ def _load_fixtures(project_root: Path) -> _Fixtures:
         )
     if len(set(names)) != len(names):
         raise GenerationError(f"{path}: names must be unique")
+    raw_structural_values = raw.get("structural_values", {})
+    if not isinstance(raw_structural_values, dict):
+        raise GenerationError(f"{path}: structural_values must be a mapping")
+    supported_structural_types = {"date", "point", "formula"}
+    unknown_structural_types = (
+        set(raw_structural_values) - supported_structural_types
+    )
+    if unknown_structural_types:
+        raise GenerationError(
+            f"{path}: unsupported structural value types: "
+            + ", ".join(sorted(unknown_structural_types))
+        )
+    structural_values: list[tuple[str, tuple[str, ...]]] = []
+    for slot_type, values in sorted(raw_structural_values.items()):
+        if (
+            not isinstance(values, list)
+            or not values
+            or any(
+                not isinstance(value, str)
+                or not value
+                or value.strip() != value
+                or any(ch.isspace() for ch in value)
+                for value in values
+            )
+        ):
+            raise GenerationError(
+                f"{path}: structural_values.{slot_type} must be a non-empty "
+                "list of single-token strings"
+            )
+        if len(set(values)) != len(values):
+            raise GenerationError(
+                f"{path}: structural_values.{slot_type} must be unique"
+            )
+        structural_values.append((slot_type, tuple(values)))
     sources: dict[str, SourceRef] = {}
     for index, name in enumerate(names):
         try:
@@ -235,7 +307,11 @@ def _load_fixtures(project_root: Path) -> _Fixtures:
             kind="generation-fixture",
             label=name,
         )
-    return _Fixtures(names=tuple(names), sources=sources)
+    return _Fixtures(
+        names=tuple(names),
+        sources=sources,
+        structural_values=tuple(structural_values),
+    )
 
 
 def _flat_sentence(rule: PatternRule) -> list[MatchToken] | None:
@@ -815,6 +891,32 @@ def _raw_domain(
             _Filler(f"{filler.surface}%", f"{filler.identity}%")
             for filler in _number_fillers(reg)
         ]
+    expected_value_kind = {
+        "date": "date",
+        "point": "tuple",
+        "formula": "formula",
+    }.get(slot_type)
+    if expected_value_kind is not None:
+        fillers: list[_Filler] = []
+        for surface in fixtures.values_for(slot_type):
+            reading = analyze(surface, reg, tracing=False)
+            if len(reading.units) != 1:
+                continue
+            unit = reading.units[0]
+            if unit.features.get("value_kind") != expected_value_kind:
+                continue
+            fillers.append(
+                _Filler(
+                    surface=surface,
+                    identity=str(
+                        unit.features.get("components")
+                        or unit.features.get("fold")
+                        or surface.casefold()
+                    ),
+                    kind=slot_type,
+                )
+            )
+        return fillers
     return []
 
 
@@ -968,7 +1070,7 @@ def _domain(
 ) -> list[_Filler]:
     key = (
         reg.fingerprint,
-        fixtures.names,
+        fixtures.cache_key,
         token.model_dump_json(exclude_none=True),
     )
     with _CACHE_LOCK:
@@ -1001,7 +1103,7 @@ def _broader_lexical_domain(
 
     key = (
         reg.fingerprint,
-        fixtures.names,
+        fixtures.cache_key,
         token.model_dump_json(exclude_none=True),
     )
     with _CACHE_LOCK:
@@ -1920,7 +2022,7 @@ def list_rule_availability(project: Project) -> list[RuleAvailability]:
     """List every premise rule, including every unsupported one."""
 
     fixtures = _load_fixtures(project.root)
-    key = (project.registry.fingerprint, fixtures.names)
+    key = (project.registry.fingerprint, fixtures.cache_key)
     with _CACHE_LOCK:
         cached = _AVAILABILITY_CACHE.get(key)
         if cached is not None:
@@ -3247,6 +3349,38 @@ def _realize(
             domain = boundary_domains[boundary_slot][0]
         else:
             domain = _domain(token, reg, fixtures)
+        # Exact numeric locks are structural values, not lexicon entries. Add
+        # the requested scalar to the ordinary bounded domain and let the same
+        # token qualifier enforce integer/range/fraction constraints. This is
+        # needed for replaying a caller-supplied calendar reference year; it
+        # does not widen unlocked random generation beyond declared values.
+        locked_number = locked_bindings.get(token.slot or "")
+        if token.type == "number" and locked_number is not None:
+            try:
+                value = float(locked_number)
+            except ValueError:
+                pass
+            else:
+                rendered = (
+                    str(int(value)) if value.is_integer() else str(value)
+                )
+                domain = [
+                    *domain,
+                    *_qualify_domain(
+                        token,
+                        [
+                            _Filler(
+                                rendered,
+                                rendered,
+                                number=(
+                                    "singular" if value == 1.0 else "plural"
+                                ),
+                                value=value,
+                            )
+                        ],
+                        reg,
+                    ),
+                ]
         if token.slot in name_required_before_count:
             return [filler for filler in domain if filler.kind == "name"]
         return domain
@@ -3376,6 +3510,9 @@ def _realize_context(
     reg: Registry,
     fixtures: _Fixtures,
     rng: random.Random,
+    *,
+    locked_bindings: dict[str, str] | None = None,
+    identity_bindings: dict[str, str] | None = None,
 ) -> tuple[tuple[str, ...], tuple[str, ...]]:
     """Realize pack-declared adjacent discourse without linguistic literals."""
 
@@ -3396,6 +3533,8 @@ def _realize_context(
                 reg,
                 fixtures,
                 rng,
+                locked_bindings=locked_bindings,
+                identity_bindings=identity_bindings,
             )
             realized.append(surface)
         return tuple(realized)
@@ -5591,6 +5730,8 @@ def generate_candidate(
                 project.registry,
                 fixtures,
                 rng,
+                locked_bindings=locked_bindings,
+                identity_bindings=identity_bindings,
             )
         except GenerationError as exc:
             last_realization_error = exc

@@ -74,10 +74,6 @@ entries:
   giraffes:
     senses:
     - noun
-  girl:
-    senses:
-    - noun
-    plural: girls
   given:
     senses:
     - verb
@@ -1573,6 +1569,10 @@ entries:
   moles:
     senses:
     - noun
+    # The lemma itself is plural-only. A self plural keeps the forbidden
+    # animal singular out of the registry while making grammatical number
+    # available to counted ask generation ("5 moles").
+    plural: moles
   # ADJECTIVE, not noun, and the choice is load-bearing. As a noun it would
   # merge with the following noun into ONE compound ("molar mass" -> a single
   # unit whose fold is 'molar mass'), which the two-literal ask cannot match --
