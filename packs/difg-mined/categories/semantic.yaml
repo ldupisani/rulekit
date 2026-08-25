@@ -111,7 +111,10 @@ members:
   plural_subject_quantifier: [both]
   transferable_quantity_object: [bar, kite, orange, ticket]
   edible_quantity_object: [berry, pie]
-  finishable_quantity_object: [homework]
+  # `project` is lexically owned here and is a conventional finishable task.
+  # Extending the core role category here keeps minimal core-only registries
+  # valid while allowing the generic task-completion frame to retain it.
+  finishable_quantity_object: [homework, project]
   # `Bill` is a common first name as well as the monetary noun owned by this
   # pack. Sentence-initial sense selection retains the noun reading, so the
   # entity-role exception must stay lexical and explicit.

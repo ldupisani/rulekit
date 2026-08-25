@@ -2375,7 +2375,7 @@ members:
     production_quantity_participant:
         [gardener, guardian, librarian, shopper, student, teacher, university,
          violinist]
-    producible_quantity_object: [book, business, cookie, pencil, toy]
+    producible_quantity_object: [book, business, coin, cookie, pencil, toy]
     output_quantity_verb: [write, writes, wrote]
     output_quantity_measure: [page]
     output_quantity_product: [book]

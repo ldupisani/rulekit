@@ -266,17 +266,21 @@ class Registry:
         right = self.plural_to_singular.get(right, right)
         if left == right:
             return True
+        return self.category_term_contains(
+            left, right
+        ) or self.category_term_contains(right, left)
 
+    def category_term_contains(self, collection: str, member: str) -> bool:
+        """Whether COLLECTION names a declared noun category containing MEMBER."""
+
+        collection = self.plural_to_singular.get(collection, collection)
+        member = self.plural_to_singular.get(member, member)
         categories = set(self.category_parents) | set(self.category_members)
-
-        def contains(category_term: str, member_term: str) -> bool:
-            return (
-                category_term in categories
-                and self.root_sense(category_term) == "noun"
-                and self.word_in_category(member_term, category_term)
-            )
-
-        return contains(left, right) or contains(right, left)
+        return (
+            collection in categories
+            and self.root_sense(collection) == "noun"
+            and self.word_in_category(member, collection)
+        )
 
     def attribute_compatibility_pairs(
         self, attribute: str, noun: str
@@ -1644,6 +1648,26 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                     ):
                         raise CompileError(
                             f"rule {rule.id!r} category nonoverlap slot "
+                            f"{slot_name!r} is not entity/noun-rooted"
+                        )
+            category_contains = predicate.category_contains
+            if category_contains is not None:
+                for slot_name in (
+                    category_contains.collection,
+                    *category_contains.members,
+                ):
+                    token = slots.get(slot_name)
+                    if token is None:
+                        raise CompileError(
+                            f"rule {rule.id!r} category containment names "
+                            f"unknown slot {slot_name!r}"
+                        )
+                    if not (
+                        token.type in {"entity", "name", "proper_name"}
+                        or _slot_root(token) == "noun"
+                    ):
+                        raise CompileError(
+                            f"rule {rule.id!r} category containment slot "
                             f"{slot_name!r} is not entity/noun-rooted"
                         )
             owner_distinction = predicate.distinct_from_owner

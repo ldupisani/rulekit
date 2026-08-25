@@ -680,6 +680,10 @@ body.impact-busy #impact-btn {
 }
 .ask-generation-premise .mono,
 #generation-ask-answer { overflow-wrap: anywhere; }
+.ask-premise-validation {
+  display: flex; align-items: center; gap: 6px; margin-top: 7px;
+}
+.ask-premise-validation input { margin: 0; }
 .ask-generation-answer-value { color: var(--accent); margin-top: 5px; }
 .ask-generation-answer-reason { color: var(--dim); margin-top: 5px; }
 @media (max-width: 1100px) {

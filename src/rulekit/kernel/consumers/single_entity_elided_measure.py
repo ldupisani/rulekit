@@ -17,7 +17,7 @@ from . import ConsumerContext, consumer
 @consumer("single-entity-elided-measure", time_scoped=True)
 def single_entity_elided_measure(ctx: ConsumerContext):
     from ..answer import Answer
-    from ..model import Quantity
+    from ..model import Quantity, Relation
     from ..totals import _entity_total, _verb_total
 
     # mining candidate elided-measure-entity-asks: the question has NO
@@ -32,8 +32,21 @@ def single_entity_elided_measure(ctx: ConsumerContext):
     # pencils. How many does Tom have?") and must decline, never guess
     # document-level.
     entity = ctx.query["entity"]
+    # The question omits its measure, so ambiguity is determined by every
+    # measure the discourse puts in play for this entity—not only by already
+    # resolved Quantity facts.  An unresolved Relation still names a distinct
+    # measure ("Eron sold 3 eggs and twice as many teachers as ..."). Ignoring
+    # it lets the one direct Quantity masquerade as the only possible object
+    # and produces a confident partial answer.
     candidates = sorted(
         {q.measure for q in ctx.store.by_kind(Quantity) if q.entity == entity}
+        | {
+            relation.measure
+            for relation in ctx.store.by_kind(Relation)
+            if relation.subject == entity
+            and isinstance(relation.measure, str)
+            and relation.measure
+        }
     )
     if len(candidates) != 1:
         return Answer(

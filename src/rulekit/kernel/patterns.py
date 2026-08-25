@@ -1322,6 +1322,26 @@ def _check_where(
                 for right in roles[index + 1:]
             ):
                 return False
+        if pred.category_contains is not None:
+            containment = pred.category_contains
+            collection = slots.get(containment.collection)
+            members = [slots.get(name) for name in containment.members]
+            if (
+                collection is None
+                or isinstance(collection, tuple)
+                or any(
+                    member is None or isinstance(member, tuple)
+                    for member in members
+                )
+                or any(
+                    not reg.category_term_contains(
+                        _lemma_of(collection), _lemma_of(member)
+                    )
+                    for member in members
+                    if member is not None and not isinstance(member, tuple)
+                )
+            ):
+                return False
         if pred.bound_requires_type is not None:
             requirement = pred.bound_requires_type
             if requirement.bound not in slots:

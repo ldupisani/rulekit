@@ -2546,6 +2546,9 @@ function updateAskGenerationReviewState() {
   document.querySelectorAll("#generation-ask-defects input").forEach(
     (input) => { input.disabled = unavailable; },
   );
+  document.querySelectorAll(".ask-premise-validation input").forEach(
+    (input) => { input.disabled = unavailable; },
+  );
   for (const id of [
     "generation-ask-interpretation-judgment",
     "generation-ask-result-judgment",
@@ -2572,6 +2575,58 @@ async function saveAskGenerationReview() {
   const premiseSentences = (candidate.premises || []).map(
     (premise) => premise.sentence,
   );
+  const premiseSelections = new Set(
+    Array.from(
+      document.querySelectorAll(".ask-premise-validation input:checked"),
+    ).map((input) => Number(input.dataset.premiseIndex)),
+  );
+  const premiseReviewIds = Array(premiseSentences.length).fill(null);
+  const recordedPremises = [];
+  const premiseFailures = [];
+  for (const [premiseIndex, premise] of (candidate.premises || []).entries()) {
+    if (premise.validated_review_id) {
+      premiseReviewIds[premiseIndex] = premise.validated_review_id;
+      continue;
+    }
+    if (!premiseSelections.has(premiseIndex)) continue;
+    const premisePayload = await api("POST", "/api/generation/review", {
+      candidate_id: premise.id,
+      origin: premise.origin || "generated",
+      generation_mode: premise.generation_mode || "strict",
+      lexical_relaxations: premise.lexical_relaxations || [],
+      review_kind: "premise",
+      sentence: premise.sentence,
+      context_before: premise.context_before || [],
+      context_after: premise.context_after || [],
+      target_rule: premise.target_rule,
+      premise_evidence: {
+        target_status: premise.target_status,
+        target_bindings: premise.target_bindings,
+        actual_rule_ids: premise.actual_rule_ids,
+        facts: premise.facts,
+        collisions: premise.collisions,
+        deficiencies: premise.deficiencies,
+      },
+      seed: premise.seed,
+      registry_fingerprint: premise.registry_fingerprint,
+      verdict: "valid",
+      interpretation_judgment: "correct",
+      result_judgment: "correct_facts",
+      naturalness: null,
+      requested_bindings: premise.requested_bindings,
+      defects: [],
+      hypotheses: [],
+      interpretation: "",
+      suggested_rule: "",
+      note: `Validated while reviewing ask ${candidate.target_ask}.`,
+    });
+    if (premisePayload.ok) {
+      premiseReviewIds[premiseIndex] = premisePayload.review.id;
+      recordedPremises.push(premise.target_rule);
+    } else {
+      premiseFailures.push(premise.target_rule);
+    }
+  }
   const payload = await api("POST", "/api/generation/review", {
     candidate_id: candidate.id,
     origin: "generated",
@@ -2593,6 +2648,9 @@ async function saveAskGenerationReview() {
       premise_rules: (candidate.premises || []).map(
         (premise) => premise.target_rule,
       ),
+      premise_review_ids: premiseReviewIds.some(Boolean)
+        ? premiseReviewIds
+        : [],
       answer: candidate.answer,
       answer_shape: candidate.answer_shape,
       minimal: candidate.minimal,
@@ -2618,7 +2676,13 @@ async function saveAskGenerationReview() {
   }
   state.askReviewRecorded = true;
   $("generation-ask-review-result").textContent =
-    `recorded ${state.askReviewVerdict} · ${payload.review.timestamp}`;
+    `recorded ${state.askReviewVerdict} · ${payload.review.timestamp}` +
+    (recordedPremises.length
+      ? ` · validated ${recordedPremises.length} premise(s)`
+      : "") +
+    (premiseFailures.length
+      ? ` · ${premiseFailures.length} premise validation(s) failed`
+      : "");
   updateAskGenerationReviewState();
   setStatus("ask scenario review recorded in project generation history", "ok");
 }
@@ -2723,7 +2787,7 @@ function renderAskGenerationCandidate(candidate) {
 
   const premises = $("generation-ask-premises");
   premises.replaceChildren();
-  for (const premise of candidate.premises || []) {
+  (candidate.premises || []).forEach((premise, premiseIndex) => {
     const card = el("div", "ask-generation-premise");
     card.append(
       el("div", "mono", premise.target_rule),
@@ -2732,8 +2796,30 @@ function renderAskGenerationCandidate(candidate) {
     if (premise.target_source) {
       card.append(generationSourceControl(premise.target_source, "Open premise YAML"));
     }
+    if (premise.validated_review_id) {
+      card.append(
+        el(
+          "div",
+          "ask-premise-validation dim mono",
+          `validated evidence · ${premise.validated_review_id}`,
+        ),
+      );
+    } else if (candidate.scenario_mode === "answerable") {
+      const validation = el("label", "ask-premise-validation");
+      validation.title =
+        "Explicitly record this generated premise as valid reusable evidence. " +
+        "It will only enter the validated-premise pool after this confirmation.";
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.dataset.premiseIndex = String(premiseIndex);
+      validation.append(
+        input,
+        document.createTextNode(" Validate as reusable premise evidence"),
+      );
+      card.append(validation);
+    }
     premises.append(card);
-  }
+  });
   if (!(candidate.premises || []).length) {
     premises.append(
       el(

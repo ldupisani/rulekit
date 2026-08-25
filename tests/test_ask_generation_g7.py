@@ -611,6 +611,9 @@ def test_designer_exposes_separate_ask_routes_and_controls(curated) -> None:
     assert '"/api/generation/ask"' in script
     assert 'review_kind: "ask"' in script
     assert "ask_scenario:" in script
+    assert "premise_review_ids:" in script
+    assert "Validate as reusable premise evidence" in script
+    assert 'review_kind: "premise"' in script
     assert "supported_modes" in script
     assert "reference_year: new Date().getFullYear()" in script
 
@@ -623,6 +626,15 @@ def test_ask_request_rejects_unknown_fields() -> None:
 
 
 def test_contextual_ask_generation_contract_requires_an_explicit_strategy() -> None:
+    aligned = AskGenerationDef(
+        validated_slot_bindings={
+            "span": {"identity_field": "per", "value_field": "denominator"}
+        },
+        validated_source_bindings={"aux": "premise_aux"},
+    )
+    assert aligned.validated_slot_bindings["span"].identity_field == "per"
+    assert aligned.validated_source_bindings == {"aux": "premise_aux"}
+
     with pytest.raises(ValidationError, match="must be declared together"):
         AskGenerationDef(context_required=True)
     with pytest.raises(ValidationError, match="must be declared together"):

@@ -2,14 +2,14 @@
 
 **Status:** implemented product contract; ongoing review-led refinement
 **Accepted:** 2026-07-25
-**Updated:** 2026-08-12
+**Updated:** 2026-08-25
 **Implementation:** G1–G7 and G6b are complete. Premise, Reading-origin,
 targetless, fact-level, ask-only, answerable-scenario, and deliberate-decline
 reviews share the append-only edit/resolve/tombstone lifecycle. Strict and
 one-slot lexical-boundary generation, recursive realization, structural
 coverage, category/fact/slot filters, source navigation, pinned edit/retest,
 and generation-health diagnostics are implemented. G5v remains the name of
-the ongoing human review loop; reconciliations are complete through batch 54.
+the ongoing human review loop; reconciliations are complete through batch 62.
 Mining v2 now uses this workbench as its human promotion surface.
 
 Point-in-time counts in the milestone sections below are historical results.
@@ -17,6 +17,21 @@ Only “Current checkpoint” and [`HANDOFF.md`](HANDOFF.md) describe the live
 frontier.
 
 ## Current checkpoint
+
+Validated-premise ask generation now has its own coverage frontier rather
+than inheriting ask-only review counts. It advances least-used reviewed
+premise-rule families, semantic consumers, and ask targets before using
+fact/query overlap as a tie-breaker, and its broader target frontier uses a
+small per-target evidence budget. Pack-declared `validated_slot_bindings` can
+align a generated counted slot with identity and value fields on reviewed
+facts; the first use keeps a rate question on its reviewed duration
+denominator and therefore produces an integral count. Pack-declared
+`validated_source_bindings` additionally preserve derivation-only surfaces
+such as a modal auxiliary, so reviewed “should” evidence cannot generate an
+unsupported past “did” ask. Ask records preserve
+aligned canonical premise-review ids. “Smallest answerable” exposes an
+explicit unchecked control for validating each generated premise as reusable
+evidence; approving an ask alone does not promote those premises.
 
 G1 shipped the first complete generate/review/next loop, G2 made its
 mechanical result directly inspectable, G3 closed the edit/retest loop, and G4

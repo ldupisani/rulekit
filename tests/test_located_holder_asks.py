@@ -4,11 +4,11 @@ Synthetic only.  These tests specify the reusable question class rather than
 copying either benchmark item that exposed it.
 
 The trailing location is referential, not decorative.  A possessed,
-pack-declared location names its explicit owner as the holder.  This stays
-separate from the older entity-less ``how many ... are there`` ask, which must
-still decline when several holders exist and no supported location identifies
-one.  A bare proper-name location remains unsupported: capitalization alone
-does not prove that a named place denotes the requested holder total.
+pack-declared location names an owner-qualified PLACE; it does not turn its
+owner into that place.  The question can therefore use only evidence scoped to
+the exact possessed place.  A bare proper-name location remains unsupported:
+capitalization alone does not prove that a named place denotes the requested
+holder total.
 """
 
 from pathlib import Path
@@ -43,7 +43,7 @@ def test_bare_named_location_remains_entityless_and_declines(reg):
     assert "2 entities hold 'apple'" in result.answer.reason
 
 
-def test_possessed_location_selects_its_explicit_owner(reg):
+def test_possessed_location_does_not_relocate_its_owners_holdings(reg):
     result, ask_id = _solve_with_ask(
         "Mira has 11 pens. Tova has 19 pens. "
         "How many pens are there in Mira's box?",
@@ -51,12 +51,13 @@ def test_possessed_location_selects_its_explicit_owner(reg):
     )
 
     assert ask_id == "ask/how-many-there-in-possessed-place"
-    assert result.answer.value == 11.0
+    assert not result.answer.committed
+    assert "no quantity known for 'box'" in result.answer.reason
 
 
-def test_possessed_location_consumes_a_derived_relation_total(reg):
+def test_possessed_location_reads_exact_owner_scoped_evidence(reg):
     result, ask_id = _solve_with_ask(
-        "Mira has 4 times as many pens as Tova. Tova has 6 pens. "
+        "Mira's box has 24 pens. Tova's box has 6 pens. "
         "How many pens are there in Mira's box?",
         reg,
     )
@@ -74,7 +75,7 @@ def test_possessed_location_never_falls_back_to_another_holder(reg):
 
     assert ask_id == "ask/how-many-there-in-possessed-place"
     assert not result.answer.committed
-    assert "no quantity known for 'sela'" in result.answer.reason
+    assert "no quantity known for 'box'" in result.answer.reason
 
 
 @pytest.mark.parametrize(
@@ -109,7 +110,8 @@ def test_nonstate_verb_does_not_turn_location_into_a_holder(reg):
 
 def test_possessed_location_preserves_measure_qualifiers(reg):
     result, ask_id = _solve_with_ask(
-        "Mira has 4 red apples. Mira has 7 green apples. Tova has 9 apples. "
+        "Mira's garden has 4 red apples. Mira's garden has 7 green apples. "
+        "Tova's garden has 9 apples. "
         "How many red apples are there in Mira's garden?",
         reg,
     )
@@ -120,7 +122,8 @@ def test_possessed_location_preserves_measure_qualifiers(reg):
 
 def test_bare_measure_can_sum_compatible_variants_for_possessed_location(reg):
     result, ask_id = _solve_with_ask(
-        "Mira has 4 red apples. Mira has 7 green apples. Tova has 9 apples. "
+        "Mira's garden has 4 red apples. Mira's garden has 7 green apples. "
+        "Tova's garden has 9 apples. "
         "How many apples are there in Mira's garden?",
         reg,
     )

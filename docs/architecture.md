@@ -279,12 +279,14 @@ units.
 A located-holder ask may use a possessed, pack-declared quantitative location:
 `how many ITEM are there in OWNER's PLACE?`. The place head must belong to
 `quantity_location`, the preposition to `quantity_location_preposition`, and
-the question verb to `state`. The ask then routes the explicit possessive owner
-to the ordinary `single-entity` consumer; unsupported heads, prepositions,
-verbs, or missing owner totals decline. A bare proper name after `in` is not
-enough evidence: capitalization identifies a name, not whether that name's
-stored quantity is the complete located total, so bare-name locations remain
-on the entity-less safe-decline path.
+the question verb to `state`. The place remains the query entity and its owner
+is retained as an exact qualification. Only a quantity explicitly scoped to
+that possessed place may answer: “Mira has 11 pens” does not entail that those
+pens are in Mira's box, while “Mira's box has 11 pens” does. Unsupported heads,
+prepositions, verbs, or missing owner-qualified place totals decline. A bare
+proper name after `in` is not enough evidence: capitalization identifies a
+name, not whether that name's stored quantity is the complete located total,
+so bare-name locations remain on the entity-less safe-decline path.
 
 Superclass totals have two explicit completeness contracts. A category marked
 `superordinate: true` is a closed, author-vetted subtype family such as
@@ -536,6 +538,14 @@ Contracts inherit through the category hierarchy; a child may add a role or
 narrow an inherited target to one of its descendants, but compilation rejects
 an unrelated or broader replacement. The resulting mappings and rule
 sequences are sorted and frozen.
+
+`category_contains` is the directional noun-taxonomy predicate. Its
+`collection` slot must resolve to a declared noun category and every named
+member slot must belong to that category. This is intentionally stronger than
+the symmetric category-overlap test: it licenses a partition such as “some of
+the animals are dogs”, while refusing unrelated nouns and the reversed “some
+of the dogs are animals” shape. Matching, availability, strict realization,
+locked probes, and Designer explanations all use the same registry lookup.
 
 Ask rules use the same closed, schema-validated `where` predicate model as
 premise rules. In particular, `partitive_compatible` checks an overt measure
@@ -1021,10 +1031,15 @@ distinctness, conditional categories, attribute/noun compatibility,
 measure/holder roles, verb/object roles, and partitive pairs. Undecidable
 predicates remain untouched until their other slot is chosen. A possessive
 determiner similarly selects the bare rendering of its following referential
-common noun, preventing surfaces such as `his the book`. This is only bounded
-search pruning: every completed surface still passes the ordinary analyzer,
-`match_ask`, predicate checks, and specificity comparison, so generation does
-not acquire a parallel grammar.
+common noun, preventing surfaces such as `his the book`. Without such a
+determiner, ask realization removes that generation-only bare alternative and
+retains a definite rendering unless the pack explicitly licenses the noun as
+a bare reference. A normalized identity lock such as `guardian` can therefore
+realize as `the guardian` instead of exhausting the retry budget on a surface
+the referential matcher must reject. This is only bounded search pruning:
+every completed surface still passes the ordinary analyzer, `match_ask`,
+predicate checks, and specificity comparison, so generation does not acquire
+a parallel grammar.
 
 An answerable ask scenario never uses a consumer-specific sentence template.
 The authoring layer compares normalized query fields with whole-slot emitted
@@ -1068,6 +1083,14 @@ older registry fingerprint that still passes is machine-reconfirmed; a
 mismatch becomes a visible regression requiring attention. Replay is
 Designer evidence only and does not authorize a runtime commitment.
 
+Ask replay uses the scenario's complete reviewed text, not an isolated
+re-analysis of its final question. The ordinary document loop therefore
+reconstructs discourse-bound features—especially an exact pronoun
+`referent_group`—before `match_ask` checks the pinned target and normalized
+query. Independent asks behave identically because their complete text is the
+question itself. The same solved result supplies the answer contract, avoiding
+two divergent replay paths.
+
 The Reviews view separates unresolved invalid/unclear judgments,
 defect-bearing valid judgments, and regressed positive premise or ask evidence
 from a grouped Validated Coverage view and a paginated Evidence Archive.
@@ -1085,12 +1108,39 @@ query, then realizes the ask through its normal data-backed generator. The
 normal solver must commit on those exact reviewed premise sentences, and
 premise removal proves the returned evidence set minimal. It neither treats a
 valid rule id as permission to generate arbitrary fresh evidence nor bypasses
-the ordinary answer consumer. Search ranks the complete replay-valid pool for
+the ordinary answer consumer. A pack may additionally declare a
+`validated_slot_bindings` identity field and optional numeric value field for
+one ask slot. This lets a counted duration reuse a reviewed rate's `per` and
+`denominator` fields, for example, rather than sampling a projection that
+would produce a fractional count. The binding still selects one ordinary
+project-backed slot filler and the completed ask must pass normal matching and
+solving. A pack may separately declare `validated_source_bindings` when an ask
+slot must preserve a surface carried only by the reviewed rule derivation,
+rather than a normalized fact field. This is used for modality: a reviewed
+“should” rate can generate a matching “should” ask, but cannot silently become
+a past “did” question. An incompatible source/ask pairing is removed from the
+search rather than weakened. Search ranks the complete replay-valid pool for
 the selected ask before applying its fixed premise bound; ledger order cannot
-hide relevant later evidence. Random selection, premise combinations, and ask
-surface retries each have separate fixed caps. Generation fixtures are parsed
-once per exact file revision and reused across those retries, while an on-disk
-edit changes the revision key and is visible without a server restart.
+hide relevant later evidence. Its random frontier is independently counted by
+scenario mode and advances the least-used validated premise-rule family, then
+the least-reviewed semantic consumer and ask target; fact/query overlap breaks
+only the remaining ties and never acts as proof. This prevents one
+well-supported age family from hiding a reviewed rate, partition, or relation
+premise. The frontier considers up to 32 ask targets with eight evidence plans
+each, while an explicitly selected ask retains the full search budget. Random
+selection, premise combinations, and ask-surface retries therefore remain
+separately bounded. Generation fixtures are parsed once per exact file
+revision and reused across those retries, while an on-disk edit changes the
+revision key and is visible without a server restart.
+
+Ask evidence preserves the aligned premise rule ids and, where available, the
+exact canonical premise-review ids. In the Designer's generated-answerable
+mode, each generated premise has an explicit, initially unchecked “Validate
+as reusable premise evidence” control. Selecting it writes an ordinary clean
+premise review through the same append-only endpoint and links that new review
+back into the ask record; simply approving an ask never silently promotes its
+premises. This supplies compatible evidence bundles incrementally without
+turning ask judgments into implicit training labels.
 
 Question structure that carries semantic scope stays in the query. A
 partitive membership ask therefore carries both its complement label and its
@@ -1558,6 +1608,15 @@ Frame lookup starts from the bound surface form and lets the registry follow
 its declared lemma. This matters when a category deliberately owns only
 finite forms such as `drops`/`dropped`; reducing the bound unit to the bare
 lemma before lookup would silently make that category contract disappear.
+
+Task-completion duration rules use this same frame rather than admitting any
+referential actor and task noun. Both the single and coordinated constructions
+map their subject to the completion frame's actor and their repeated object to
+its theme. Proper names remain a construction-level actor exception; common
+nouns must be quantity-event participants and the theme must descend from
+`finishable_quantity_object`. Packs extend that object class with their own
+lexically owned nouns, so adding `project` does not require another grammar
+rule.
 
 The arithmetic migration deliberately leaves two kinds of positive
 `verb_role_compatible` clauses behind. Generic facets such as

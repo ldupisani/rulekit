@@ -83,6 +83,7 @@ from .reviews import (
     PremiseAttachment,
     ReviewRecord,
     ReviewDefect,
+    ask_review_consumer_counts,
     ask_review_evidence,
     ask_review_signature,
     ask_review_surface_counts,
@@ -99,6 +100,7 @@ from .reviews import (
     resolve_review,
     update_review,
     validated_premise_candidates,
+    validated_premise_rule_usage_counts,
 )
 from .sample import (
     GenerationError,
@@ -113,6 +115,7 @@ from .sample import (
 __all__ = [
     "AskAvailability",
     "AskScenarioCandidate",
+    "ask_review_consumer_counts",
     "AskScenarioMode",
     "AskScenarioReviewEvidence",
     "GenerationCandidate",
@@ -203,4 +206,5 @@ __all__ = [
     "resolve_review",
     "update_review",
     "validated_premise_candidates",
+    "validated_premise_rule_usage_counts",
 ]

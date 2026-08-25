@@ -52,7 +52,7 @@ rules:
     match:
       sentence:
         - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true, bare_reference_category: bare_entity_reference}
-        - {slot: verb, type: verb}
+        - {slot: verb, type: verb, finite_form: true}
         - {slot: n, type: number}
         - {slot: dir, cat: delta}
         - {slot: item, type: plural}
@@ -78,6 +78,18 @@ rules:
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - number_compatible: [who, verb]
+      - verb_roles_compatible:
+          verb: verb
+          roles:
+            actor: [who, std]
+            theme: [item]
+          # The legacy rule already carries construction-local guards for its
+          # other verb families. Opt this complete category-owned frame into
+          # the one reviewed gap without replacing teaching's deliberately
+          # broader animate-object contract.
+          frame_categories: [initiation_quantity_verb]
+          allow_proper_name: [who, std]
+          allow_plural_class: [std]
       - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: animate_object_verb, role_cat: quantity_event_participant}
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: find_quantity_verb, role_cat: findable_quantity_object}
@@ -88,8 +100,10 @@ rules:
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: past_departure_quantity_verb, role_cat: transferable_quantity_object}
       - measure_holder_compatible: {measure: item, holders: [who], allow_proper_name: true, when_declared: true}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: verb, cat: goal_predicate}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: std, cat: non_quantity_holder}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - slot_not_category: {slot: dir, cat: age_comparative}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - modifier_host_compatible: {modifier: pp_prep, host: item, object: pp_obj}
@@ -99,6 +113,8 @@ rules:
       # a TIME PERIOD is not a holder — see slot_not_category in schemas.py
       - slot_not_category: {slot: std, cat: timeperiod}
       - unbound: [conjunction_seen]
+    satisfies:
+      n: [quantifies]
     consumes: [n]
     emits:
       - fact: relation
@@ -5098,6 +5114,10 @@ rules:
     where:
       - same_number: [n, verb, attr]
       - slot_not_category: {slot: coll, cat: mass_measure}
+      # Predicate-noun membership needs an authored ontology, not merely two
+      # plural nouns. `animal` is a declared category containing dog/rabbit;
+      # unrelated pairs such as student/course therefore remain unread.
+      - category_contains: {collection: coll, members: [attr]}
     consumes: [n]
     emits:
       - fact: partition_quantity
@@ -5906,6 +5926,11 @@ rules:
         - {slot: task, type: noun, referential: true}
     where:
       - number_compatible: [who, took]
+      - verb_roles_compatible:
+          verb: verb
+          roles: {actor: [who], theme: [task]}
+          frame_categories: [task_completion_verb]
+          allow_proper_name: [who]
     consumes: [span]
     emits:
       - fact: task_completion_duration
@@ -5945,6 +5970,11 @@ rules:
       - number_compatible: [b, took_b]
       - same_lemma: [verb_a, verb_b]
       - distinct: [a, b]
+      - verb_roles_compatible:
+          verb: verb_a
+          roles: {actor: [a, b], theme: [task_a]}
+          frame_categories: [task_completion_verb]
+          allow_proper_name: [a, b]
     satisfies:
       took_b: [subject]
       task_ref: [refers]
@@ -6750,6 +6780,7 @@ asks:
       consumer: single-entity
       entity: "{place}"
       entity_owner: "{place.owner}"
+      require_entity_owner_evidence: "true"
       measure: "{item}"
       verb: have
       sum_measure_variants: "true"
@@ -6783,11 +6814,15 @@ asks:
 
   - id: ask/how-many-there-in-possessed-place
     # The possessed-container sibling: "how many trees are there in Mira's
-    # garden?" explicitly names Mira as the holder through the possessive.
+    # garden?" names an owner-qualified LOCATION, not Mira herself. A premise
+    # must therefore state a quantity on that exact possessed place (for
+    # example "Mira's garden has 8 trees"). Mere ownership of the place does
+    # not move every quantity Mira holds into it.
     # Requiring a pack-declared `quantity_location` head prevents arbitrary
     # possessions ("Mira's idea", "Mira's dog") from being reinterpreted as
-    # locations. The owner is the query entity; the container noun is the
-    # grammatical location that licenses this indirect holder reference.
+    # locations. The place head remains the query entity and its possessor is
+    # preserved as ``entity_owner`` for the consumer's exact owner-scoped
+    # lookup.
     match:
       question:
         - {lit: how}
@@ -6799,7 +6834,8 @@ asks:
         - {slot: place, cat: quantity_location, possessed: true, number: singular}
     resolves:
       consumer: single-entity
-      entity: "{place.owner}"
+      entity: "{place}"
+      entity_owner: "{place.owner}"
       measure: "{item}"
       verb: have
       measure_qualifier: "{item.qualifier}"
@@ -8642,17 +8678,23 @@ asks:
         - {lit: many}
         - {slot: item, type: plural}
         - {slot: aux, type: auxiliary}
-        - {slot: who, type: entity}
+        - {slot: who, type: entity, referential: true, bare_reference_category: bare_entity_reference}
         - {slot: verb, type: verb, bare_form: true}
         - {lit: in}
-        - {slot: span, type: counted}
+        - {slot: span, type: counted, value_min: 1}
     where:
+      - number_compatible: [who, aux]
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - verb_roles_compatible:
+          verb: verb
+          roles: {actor: [who], theme: [item]}
+          allow_proper_name: [who]
     resolves:
       consumer: rate-span
       entity: "{who}"
       measure: "{item}"
+      verb: "{verb}"
       span_unit: "{span}"
       span_value: "{span.value}"
     generation:
@@ -8664,6 +8706,10 @@ asks:
            enrollment_quantity_verb, find_quantity_verb,
            task_completion_verb, production_quantity_verb,
            teaching_quantity_verb, initiation_quantity_verb, transfer_out]
+      validated_slot_bindings:
+        span: {identity_field: per, value_field: denominator}
+      validated_source_bindings:
+        aux: aux
 
   - id: ask/how-many-output-rate-span-one
     # Project a measured production cadence across one named duration unit.
@@ -8886,15 +8932,21 @@ asks:
         - {slot: who, type: entity, common_noun_cat: earning_quantity_participant, referential: true, bare_reference_category: bare_entity_reference}
         - {slot: verb, cat: spend_verb, bare_form: true}
         - {lit: in}
-        - {slot: span, cat: duration_measure, counted: true}
+        - {slot: span, cat: duration_measure, counted: true, value_min: 1}
     where:
       - number_compatible: [who, aux]
     resolves:
       consumer: rate-span
       entity: "{who}"
       measure: currency
+      verb: "{verb}"
       span_unit: "{span}"
       span_value: "{span.value}"
+    generation:
+      validated_slot_bindings:
+        span: {identity_field: per, value_field: denominator}
+      validated_source_bindings:
+        aux: aux
 
   - id: ask/how-many-rate-span-modal
     # Modal rate question: "how many apples can he eat in 2 hours?"
@@ -8911,7 +8963,7 @@ asks:
         - {slot: who, type: entity, common_noun_cat: quantity_event_participant, referential: true, bare_reference_category: bare_entity_reference}
         - {slot: verb, type: verb, bare_form: true}
         - {lit: in}
-        - {slot: span, type: counted}
+        - {slot: span, type: counted, value_min: 1}
     where:
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
@@ -8929,6 +8981,7 @@ asks:
       consumer: rate-span
       entity: "{who}"
       measure: "{item}"
+      verb: "{verb}"
       span_unit: "{span}"
       span_value: "{span.value}"
     generation:
@@ -8940,6 +8993,10 @@ asks:
            enrollment_quantity_verb, find_quantity_verb,
            task_completion_verb, production_quantity_verb,
            teaching_quantity_verb, initiation_quantity_verb, transfer_out]
+      validated_slot_bindings:
+        span: {identity_field: per, value_field: denominator}
+      validated_source_bindings:
+        aux: aux
 
   - id: ask/how-much-rate-span-modal
     # Modal currency-rate question. As in the "how many" form, the required
@@ -8952,13 +9009,19 @@ asks:
         - {slot: who, type: entity, common_noun_cat: earning_quantity_participant, referential: true, bare_reference_category: bare_entity_reference}
         - {slot: verb, cat: wage_verb, bare_form: true}
         - {lit: in}
-        - {slot: span, cat: duration_measure, counted: true}
+        - {slot: span, cat: duration_measure, counted: true, value_min: 1}
     resolves:
       consumer: rate-span
       entity: "{who}"
       measure: currency
+      verb: "{verb}"
       span_unit: "{span}"
       span_value: "{span.value}"
+    generation:
+      validated_slot_bindings:
+        span: {identity_field: per, value_field: denominator}
+      validated_source_bindings:
+        aux: aux
 
   - id: ask/earn-span
     # Wage question: "how much does Rob earn in 8 hours?" The narrow
@@ -9485,7 +9548,7 @@ asks:
         - {slot: collection, cat: sequential_partition_population, number: plural}
         - {slot: verb, cat: sequential_partition_verb}
         - {slot: prep, cat: sequential_partition_preposition}
-        - {slot: destination, cat: sequential_partition_destination}
+        - {slot: destination, cat: sequential_partition_destination, number: plural, qualified: true}
     resolves:
       consumer: partition-percentage
       collection: "{collection}"

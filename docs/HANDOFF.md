@@ -1,8 +1,8 @@
 # rulekit handoff
 
-**Updated:** 2026-08-24
-**Runtime checkpoint:** `main` (ask-generation structural and contextual
-scenario increments implemented and gated)
+**Updated:** 2026-08-25
+**Runtime checkpoint:** `main` (contextual ask replay and reviewed
+semantic-boundary reconciliation implemented and gated)
 **Active campaign:** GSM8K Mining v2, M7 example-led vertical mining
 **Immediate state:** all four published Mining v2 candidates are landed; no
 candidate is awaiting human or machine review
@@ -84,6 +84,18 @@ location witnesses, and the indirect conditional currency form. Complement
 labels `boy` and `girl` now live in core English with their declared closed
 pair, making that ask independently generatable outside the mined pack.
 
+The latest review reconciliation tightened three semantic boundaries exposed
+by generated examples. Predicate-noun partitions now use the directional
+`category_contains` predicate: a declared superclass may contain a subtype,
+but unrelated nouns and reversed superclass claims do not match or generate.
+Task-completion durations now use the completion verb category's inherited
+actor/theme frame, while pack-owned `homework` and `project` extend the
+finishable-object vocabulary. Sequential-partition percentage asks require a
+qualified plural destination such as `science courses`. Contextual ask replay
+now rebuilds the complete reviewed document before checking the winning ask,
+so a discourse-group pronoun retains its exact antecedent group instead of
+spuriously regressing to the generic combined ask.
+
 Goal vocabulary is now normalized by grammatical construction rather than by
 individual premise wording:
 
@@ -141,16 +153,31 @@ preserves evidence; tombstoning explicitly excludes it. Premise generation
 can target the least human-validated rule. Random ask generation advances the
 least human-validated target and then an unseen surface branch, while the new
 validated-premises scenario starts from exact replay-valid reviewed premises
-and generates a declared ask that the normal solver can answer from them.
+and generates a declared ask that the normal solver can answer from them. Its
+own frontier is counted separately: it advances unused reviewed premise-rule
+families, semantic consumers, and ask targets before using fact/query overlap
+as a tie-breaker. This stops already reviewed age questions from monopolizing
+the pool when compatible rate evidence is available. Pack-declared validated
+slot bindings align a counted ask span with the reviewed rate's unit and
+denominator, so that evidence now yields a natural integral projection rather
+than an arbitrary fractional count. Derivation-backed validated source
+bindings preserve modality as well: reviewed “should” rate evidence can feed a
+“should” ask but is not silently rewritten as past “did”. Review batch 62 also
+tightened the original anchored-relation rule to finite, role-compatible,
+non-goal predicates; made elided-measure asks count unresolved Relation
+measures when testing ambiguity; and made possessed-place asks require an
+owner-scoped place quantity rather than treating the owner as the place.
 Optional interpretation, result, and naturalness judgments keep grammatical
 acceptance distinct from semantic and stylistic preference. This index remains
 strictly authoring-only and does not enter the Registry or runtime inference.
 Validated-premise search ranks all current exemplars for the selected ask
-before bounding the premise pool, caps random asks and per-plan surface retries
-separately, and caches `generation.yaml` by exact file revision. A 39-exemplar
-curated request that previously exceeded 50 seconds now completes in about 4.3
-seconds cold and 0.4 seconds warm on the development machine; ordinary solve,
-exact winning-ask, replay, and minimality checks remain unchanged.
+before bounding the premise pool, considers up to 32 random targets with eight
+evidence checks each, and caches `generation.yaml` by exact file revision. Ask
+reviews preserve aligned canonical premise-review ids. “Smallest answerable”
+shows an explicit unchecked control for recording any generated companion
+premise as clean reusable evidence; approving the ask alone never promotes it.
+Ordinary solve, exact winning-ask, replay, and minimality checks remain
+unchanged.
 
 Temporal age asks now require evidence from their declared perspective.
 Direct present/past age premises and relations retain their finite surface in
@@ -217,9 +244,9 @@ These are the gates run at the current runtime checkpoint:
 
 | Gate | Current result |
 | --- | --- |
-| full synthetic suite | 5,739 passed |
+| full synthetic suite | 5,757 passed |
 | curated suite | 71 correct, 0 wrong |
-| GSM8K DEV-train | 107 correct, 0 wrong |
+| GSM8K DEV-train | 106 correct, 0 wrong |
 | GSM8K DEV-holdout | 44 correct, 0 wrong |
 | ASDiv DEV | 45 correct, 0 wrong |
 | SVAMP DEV | 24 correct, 0 wrong |
@@ -230,6 +257,13 @@ These are the gates run at the current runtime checkpoint:
 | COGS DEV-train / holdout | 1,771 / 1,693 exact, 0 incorrect |
 | PMB train / development | 117 / 4 exact, 0 incorrect |
 | lint | 0 errors, 1 known warning |
+
+Review batch 62 deliberately retired one DEV-train commitment that happened
+to agree with its numeric gold while relying on an unsupported inference from
+an owner's quantity to the contents of that owner's named container. The same
+shortcut produced the human-rejected institution example. DEV-train therefore
+moved from 107 to 106 correct with zero wrongs; explicit owner-qualified place
+evidence still answers, while ownership alone now declines.
 
 The latest protected GSM8K TEST look is look 126: 13 correct, 1 persistent
 wrong, and 1,305 declined. Increment 132 made no new protected commitment.
@@ -243,11 +277,12 @@ judged the resulting English or emitted fact valid.
 
 | Project | Premise rules | Independent asks | Answerable asks |
 | --- | ---: | ---: | ---: |
-| curated | 147/147 targets (+8 safety, +1 reader-only) | 111/125 | 125/125 |
-| GSM8K | 141/141 targets (+6 safety, +1 reader-only) | 150/163 | 163/163 |
+| curated | 147/156 | 111/125 | 125/125 |
+| GSM8K | 141/148 | 150/163 | 163/163 |
 
-The safety interceptors are intentionally separate from premise generation
-and review. The fourteen curated and thirteen GSM8K independent-ask blockers
+The unsupported premise rows are deliberate safety interceptors or reader-only
+rules, not ordinary generation targets. The fourteen curated and thirteen
+GSM8K independent-ask blockers
 require an antecedent discourse group, measured-content or progress evidence,
 or embedded indirect-question syntax. Every one is now available to the
 answerable mode, which must synthesize the required antecedent and evidence
@@ -260,7 +295,8 @@ The Designer currently provides:
 - strict-positive and controlled one-slot lexical-boundary premise generation;
 - per-mode ask availability, independent ask generation, declared contextual
   evidence plans, bounded answerable-scenario search, and deliberate
-  missing-evidence scenarios;
+  missing-evidence scenarios, plus explicit promotion of reviewed generated
+  premises into reusable validated evidence;
 - seeded reproduction, structural coverage objectives, compatible category
   filters, and terminal-blocker health;
 - Reading-origin targeted reviews and targetless interpretation or

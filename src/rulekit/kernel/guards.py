@@ -440,6 +440,10 @@ def _check_number(
                     reference_time = origo.key
             asked = query.get("measure")
             holder = query.get("entity")
+            holder_owner = query.get("entity_owner")
+            require_holder_owner = (
+                query.get("require_entity_owner_evidence") == "true"
+            )
             qualifier = query.get("measure_qualifier")
             # ONLY a BARE (unqualified) ask can be partially read.
             #
@@ -491,6 +495,11 @@ def _check_number(
                     ):
                         continue
                     if fact.entity != holder:
+                        continue
+                    if holder_owner and (
+                        fact.owner != holder_owner
+                        and (fact.owner is not None or require_holder_owner)
+                    ):
                         continue
                     if base(fact.measure) != target:
                         continue

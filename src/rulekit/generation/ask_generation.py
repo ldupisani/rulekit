@@ -27,16 +27,19 @@ from .candidate import (
     AskScenarioMode,
 )
 from .reviews import (
+    ask_review_consumer_counts,
     ask_review_surface_counts,
     ask_review_surface_signature,
     ask_review_target_counts,
     validated_premise_candidates,
+    validated_premise_rule_usage_counts,
 )
 from .sample import (
     GENERATOR_VERSION,
     GenerationError,
     _Filler,
     _domain,
+    _filler_category_term_contains,
     _filler_in_category,
     _leaf_tokens,
     _load_fixtures,
@@ -45,9 +48,12 @@ from .sample import (
     list_rule_availability,
 )
 
-ASK_GENERATOR_VERSION = f"{GENERATOR_VERSION}+g7-context-scenarios"
+ASK_GENERATOR_VERSION = (
+    f"{GENERATOR_VERSION}+g7-validated-evidence-frontier-source-alignment"
+)
 _MAX_RANDOM_ANSWERABLE_ASKS = 8
-_MAX_RANDOM_VALIDATED_ASKS = 8
+_MAX_RANDOM_VALIDATED_ASKS = 32
+_MAX_RANDOM_VALIDATED_SEARCH_ATTEMPTS = 8
 _MAX_VALIDATED_PREMISE_POOL = 16
 _MAX_VALIDATED_SURFACE_ATTEMPTS = 16
 _SCENARIO_PREMISE_ATTEMPTS = 4
@@ -363,6 +369,19 @@ def _ask_filler_satisfies_known_where(
                 and (known := value(other)) is not None
                 and known.identity == filler.identity
                 for other in predicate.distinct
+            ):
+                return False
+
+        containment = predicate.category_contains
+        if containment is not None:
+            collection = value(containment.collection)
+            members = [value(name) for name in containment.members]
+            if collection is not None and any(
+                member is not None
+                and not _filler_category_term_contains(
+                    collection, member, reg
+                )
+                for member in members
             ):
                 return False
 
@@ -693,6 +712,27 @@ def _realize_ask(
                     filler
                     for filler in domain
                     if filler.reference_form == "bare"
+                ]
+            elif token.referential and not token.generation_bare_reference:
+                # `_domain` exposes a bare common-noun alternative because a
+                # preceding possessive may license it.  Once the surrounding
+                # branch is known not to contain that determiner, keep only a
+                # definite rendering (or an independently declared bare
+                # reference).  Besides avoiding wasted retries, this lets a
+                # semantic identity lock such as `guardian` realize as `the
+                # guardian` instead of forcing an invalid bare surface.
+                domain = [
+                    filler
+                    for filler in domain
+                    if filler.reference_form != "bare"
+                    or (
+                        token.bare_reference_category is not None
+                        and _filler_in_category(
+                            filler,
+                            token.bare_reference_category,
+                            project.registry,
+                        )
+                    )
                 ]
             domain = [
                 candidate
@@ -1347,6 +1387,7 @@ def _search_answerable_scenario(
 
 
 def _validated_ask_lock_variants(
+    project: Project,
     ask: AskRule,
     premises: tuple[dict[str, Any], ...],
 ) -> list[tuple[int, dict[str, str]]]:
@@ -1360,10 +1401,42 @@ def _validated_ask_lock_variants(
     """
 
     facts = [fact for premise in premises for fact in premise.get("facts", [])]
+    tokens = {
+        token.slot: token
+        for _, token, _parent in _leaf_tokens(ask.match["question"])
+        if token.slot is not None
+    }
+    source_locks: dict[str, str] = {}
+    source_bindings_compatible = True
+    for ask_slot, premise_slot in ask.generation.validated_source_bindings.items():
+        source_surfaces = {
+            str(fact["derivation"]["bindings"][premise_slot])
+            for fact in facts
+            if isinstance(fact.get("derivation"), dict)
+            and isinstance(fact["derivation"].get("bindings"), dict)
+            and fact["derivation"]["bindings"].get(premise_slot)
+        }
+        if not source_surfaces:
+            continue
+        if len(source_surfaces) != 1:
+            source_bindings_compatible = False
+            break
+        source_surface = next(iter(source_surfaces))
+        compatible_surfaces = {
+            filler.surface
+            for filler in _ask_token_domain(project, ask, tokens[ask_slot])
+            if filler.surface.casefold() == source_surface.casefold()
+        }
+        if len(compatible_surfaces) != 1:
+            source_bindings_compatible = False
+            break
+        source_locks[ask_slot] = next(iter(compatible_surfaces))
+    if not source_bindings_compatible:
+        return []
     mappings = [ask.resolves, *(choice.resolves for choice in ask.interpretations)]
     variants: list[tuple[int, dict[str, str]]] = []
     for mapping in mappings:
-        locks: dict[str, str] = {}
+        locks: dict[str, str] = dict(source_locks)
         literal_matches = 0
         for field, raw in mapping.items():
             if not isinstance(raw, str):
@@ -1400,6 +1473,34 @@ def _validated_ask_lock_variants(
                 continue
             if len(values) == 1:
                 locks[match.group(1)] = next(iter(values))
+        for slot, binding in ask.generation.validated_slot_bindings.items():
+            token = tokens[slot]
+            surfaces: set[str] = set()
+            for fact in facts:
+                fields = fact.get("fields")
+                if not isinstance(fields, dict):
+                    continue
+                identity = fields.get(binding.identity_field)
+                requested_value = (
+                    fields.get(binding.value_field)
+                    if binding.value_field is not None
+                    else None
+                )
+                if not isinstance(identity, str) or not identity:
+                    continue
+                for filler in _ask_token_domain(project, ask, token):
+                    if filler.identity.casefold() != identity.casefold():
+                        continue
+                    if binding.value_field is not None:
+                        if not isinstance(
+                            filler.value, (int, float)
+                        ) or not isinstance(requested_value, (int, float)):
+                            continue
+                        if float(filler.value) != float(requested_value):
+                            continue
+                    surfaces.add(filler.surface)
+            if len(surfaces) == 1:
+                locks[slot] = next(iter(surfaces))
         matched_fields = len(locks) + literal_matches
         variants.append((2 * matched_fields + literal_matches, locks))
     unique: dict[tuple[tuple[str, str], ...], int] = {}
@@ -1496,7 +1597,7 @@ def _search_validated_premise_scenario(
             (
                 variant_score
                 for variant_score, _locks in _validated_ask_lock_variants(
-                    ask, (premise,)
+                    project, ask, (premise,)
                 )
             ),
             default=0,
@@ -1511,7 +1612,9 @@ def _search_validated_premise_scenario(
     for size in (1, 2, 3):
         for group in combinations(bounded_pool, size):
             ids = tuple(str(item.get("validated_review_id") or "") for item in group)
-            for score, locks in _validated_ask_lock_variants(ask, group):
+            for score, locks in _validated_ask_lock_variants(
+                project, ask, group
+            ):
                 plans.append((score, size, ids, group, locks))
     plans.sort(key=lambda item: (-item[0], item[1], item[2]))
     rng = random.Random(seed)
@@ -1591,6 +1694,80 @@ def _search_validated_premise_scenario(
     )
 
 
+def _validated_ask_frontier(
+    project: Project,
+    asks: list[AskRule],
+    premise_pool: list[dict[str, Any]],
+    *,
+    target_counts: dict[str, int],
+    consumer_counts: dict[str, int],
+    premise_rule_usage: dict[str, int],
+) -> list[AskRule]:
+    """Order asks by unexplored evidence, consumer/target novelty, then coherence.
+
+    Field overlap is useful for locating possible evidence, but it is not a
+    semantic proof: a ``Rate`` and a ``Quantity`` can expose the same entity,
+    measure, and verb fields while supporting different consumers.  The old
+    compatibility-first sort consequently kept returning age surfaces and
+    hid every candidate below an eight-ask cutoff.  Human-confirmed use of a
+    premise rule is the stronger authoring signal.  We therefore advance the
+    least-used evidence family first, then the least-reviewed semantic
+    consumer and ask target, and use overlap only to rank otherwise equal
+    possibilities. Ordinary ``solve`` remains the sole acceptance oracle.
+    """
+
+    ranked: list[tuple[int, int, int, int, int, AskRule]] = []
+    for position, ask in enumerate(asks):
+        possibilities: list[tuple[int, int, int]] = []
+        for premise_position, premise in enumerate(premise_pool):
+            score = max(
+                (
+                    variant_score
+                    for variant_score, _locks in _validated_ask_lock_variants(
+                        project, ask, (premise,)
+                    )
+                ),
+                default=0,
+            )
+            if score <= 0:
+                continue
+            rule_id = str(premise.get("target_rule") or "")
+            possibilities.append(
+                (
+                    premise_rule_usage.get(rule_id, 0),
+                    -score,
+                    premise_position,
+                )
+            )
+        best = min(possibilities, default=(10**9, 0, 10**9))
+        mappings = [
+            ask.resolves,
+            *(choice.resolves for choice in ask.interpretations),
+        ]
+        consumers = {
+            mapping.get("consumer")
+            for mapping in mappings
+            if isinstance(mapping.get("consumer"), str)
+            and not str(mapping["consumer"]).startswith("{")
+        }
+        consumer_count = min(
+            (consumer_counts.get(str(consumer), 0) for consumer in consumers),
+            default=10**9,
+        )
+        ranked.append(
+            (
+                best[0],
+                consumer_count,
+                target_counts.get(ask.id, 0),
+                best[1],
+                position,
+                ask,
+            )
+        )
+    ranked.sort(key=lambda item: item[:4])
+    return [item[-1] for item in ranked]
+
+
 def generate_ask_scenario(
     project: Project,
     *,
@@ -1630,7 +1807,14 @@ def generate_ask_scenario(
         ]
         if not supported:
             raise GenerationError("this project has no supported ask surfaces")
-        review_counts = ask_review_target_counts(project)
+        review_counts = (
+            ask_review_target_counts(
+                project,
+                scenario_mode="validated_premises",
+            )
+            if scenario_mode == "validated_premises"
+            else ask_review_target_counts(project)
+        )
         # Human-confirmed asks stay available, but random generation advances
         # the least validated target frontier first. Seeded rotation only
         # breaks ties, retaining exact reproducibility without allowing the
@@ -1639,20 +1823,17 @@ def generate_ask_scenario(
         rotated = supported[start:] + supported[:start]
         ordered = sorted(rotated, key=lambda ask: review_counts.get(ask.id, 0))
         if scenario_mode == "validated_premises" and validated_pool:
-            compatibility = {
-                ask.id: max(
-                    (
-                        score
-                        for premise in validated_pool
-                        for score, _locks in _validated_ask_lock_variants(
-                            ask, (premise,)
-                        )
-                    ),
-                    default=0,
-                )
-                for ask in ordered
-            }
-            ordered.sort(key=lambda ask: -compatibility[ask.id])
+            ordered = _validated_ask_frontier(
+                project,
+                ordered,
+                validated_pool,
+                target_counts=review_counts,
+                consumer_counts=ask_review_consumer_counts(
+                    project,
+                    scenario_mode="validated_premises",
+                ),
+                premise_rule_usage=validated_premise_rule_usage_counts(project),
+            )
         ask_candidates = (
             ordered[
                 :(
@@ -1697,7 +1878,14 @@ def generate_ask_scenario(
                     seed=seed,
                     locked_bindings=dict(locked_bindings or {}),
                     max_attempts=max_attempts,
-                    max_search_attempts=max_search_attempts,
+                    max_search_attempts=(
+                        max_search_attempts
+                        if ask_id is not None
+                        else min(
+                            max_search_attempts,
+                            _MAX_RANDOM_VALIDATED_SEARCH_ATTEMPTS,
+                        )
+                    ),
                     reviewed_surfaces=reviewed_surfaces,
                     premise_pool=validated_pool,
                     reference_year=reference_year,

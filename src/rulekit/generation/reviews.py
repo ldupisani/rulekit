@@ -187,6 +187,10 @@ class AskScenarioReviewEvidence(BaseModel):
     query: dict[str, Any] = Field(default_factory=dict, max_length=64)
     premises: list[str] = Field(default_factory=list, max_length=8)
     premise_rules: list[str] = Field(default_factory=list, max_length=8)
+    premise_review_ids: list[str | None] = Field(
+        default_factory=list,
+        max_length=8,
+    )
     answer: dict[str, Any] = Field(default_factory=dict, max_length=64)
     answer_shape: str = Field(min_length=1, max_length=128)
     minimal: bool
@@ -198,6 +202,12 @@ class AskScenarioReviewEvidence(BaseModel):
         if len(self.premises) != len(self.premise_rules):
             raise ValueError(
                 "ask scenario premise sentences and rule ids must align"
+            )
+        if self.premise_review_ids and len(self.premises) != len(
+            self.premise_review_ids
+        ):
+            raise ValueError(
+                "ask scenario premise sentences and review ids must align"
             )
         return self
 
@@ -893,17 +903,79 @@ def ask_review_surface_signature(
     return "asksurf-" + hashlib.sha256(encoded.encode("utf-8")).hexdigest()[:16]
 
 
-def ask_review_target_counts(project: Project) -> dict[str, int]:
-    """Count live positive ask evidence without performing replay work."""
+def ask_review_target_counts(
+    project: Project,
+    *,
+    scenario_mode: str | None = None,
+) -> dict[str, int]:
+    """Count live positive ask evidence without performing replay work.
+
+    A target reviewed as a deliberately unanswered standalone question is not
+    evidence that its validated-premise scenario has been explored.  Callers
+    may therefore keep each generation frontier independent while the default
+    remains the historical all-mode count used by ordinary ask generation.
+    """
 
     counts: dict[str, int] = {}
     for review in _live_ask_reviews(project):
         scenario = review.get("ask_scenario")
         if not _is_clean_valid_review(review):
             continue
+        if (
+            scenario_mode is not None
+            and scenario.get("scenario_mode") != scenario_mode
+        ):
+            continue
         target = scenario.get("target_ask")
         if isinstance(target, str):
             counts[target] = counts.get(target, 0) + 1
+    return counts
+
+
+def validated_premise_rule_usage_counts(project: Project) -> dict[str, int]:
+    """Count which premise-rule families have supported validated asks.
+
+    The count is authoring coverage only.  It never changes runtime matching
+    or inference.  Older ask reviews already pin their premise rule ids, so
+    the frontier can diversify immediately without rewriting the append-only
+    ledger or depending on vocabulary-specific sentence text.
+    """
+
+    counts: dict[str, int] = {}
+    for review in _live_ask_reviews(project):
+        scenario = review.get("ask_scenario")
+        if (
+            not _is_clean_valid_review(review)
+            or not isinstance(scenario, dict)
+            or scenario.get("scenario_mode") != "validated_premises"
+        ):
+            continue
+        for rule_id in set(scenario.get("premise_rules") or []):
+            if isinstance(rule_id, str) and rule_id:
+                counts[rule_id] = counts.get(rule_id, 0) + 1
+    return counts
+
+
+def ask_review_consumer_counts(
+    project: Project,
+    *,
+    scenario_mode: str | None = None,
+) -> dict[str, int]:
+    """Count clean positive reviews by semantic answer consumer."""
+
+    counts: dict[str, int] = {}
+    for review in _live_ask_reviews(project):
+        scenario = review.get("ask_scenario")
+        if not _is_clean_valid_review(review) or not isinstance(scenario, dict):
+            continue
+        if (
+            scenario_mode is not None
+            and scenario.get("scenario_mode") != scenario_mode
+        ):
+            continue
+        consumer = scenario.get("consumer")
+        if isinstance(consumer, str) and consumer:
+            counts[consumer] = counts.get(consumer, 0) + 1
     return counts
 
 
@@ -979,8 +1051,15 @@ def replay_ask_review(project: Project, review: dict) -> dict[str, str]:
     if not isinstance(scenario, dict):
         return {"status": "not_applicable", "detail": "not an ask review"}
     question = str(scenario.get("question") or review.get("sentence") or "")
+    text = str(scenario.get("text") or question)
     try:
-        matched = match_ask(analyze(question, project.registry), project.registry)
+        # Context-dependent asks must be replayed after the ordinary document
+        # loop has rebuilt their discourse features. Analyzing the isolated
+        # question drops a pronoun's referent group and can make a generic ask
+        # appear to supersede the reviewed discourse-specific rule.
+        result = solve(text, project.registry, tracing=False)
+        reading = result.question or analyze(question, project.registry)
+        matched = match_ask(reading, project.registry)
         if matched is None:
             return {
                 "status": "regressed",
@@ -999,7 +1078,6 @@ def replay_ask_review(project: Project, review: dict) -> dict[str, str]:
                 "status": "regressed",
                 "detail": "the normalized query changed",
             }
-        result = solve(str(scenario.get("text") or question), project.registry, tracing=False)
         if _answer_contract(result.answer) != _expected_answer_contract(scenario):
             return {
                 "status": "regressed",

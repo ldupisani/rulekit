@@ -147,8 +147,13 @@ def single_entity(ctx: ConsumerContext):
             )
     owner_store = ctx.store
     if owner:
+        require_owner_evidence = (
+            ctx.query.get("require_entity_owner_evidence") == "true"
+        )
         owner_store = FactStore(facts=[
-            q for q in ctx.store.by_kind(Quantity) if q.owner is None or q.owner == owner
+            q
+            for q in ctx.store.by_kind(Quantity)
+            if q.owner == owner or (q.owner is None and not require_owner_evidence)
         ])
     qualifier_store = ctx.store
     if qualifier:

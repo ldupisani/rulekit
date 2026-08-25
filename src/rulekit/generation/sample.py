@@ -198,6 +198,24 @@ def _filler_categories_overlap(
     return reg.category_terms_overlap(left.identity, right.identity)
 
 
+def _filler_category_term_contains(
+    collection: _Filler, member: _Filler, reg: Registry
+) -> bool:
+    """Whether a generated collection term contains a generated member.
+
+    Plural and category-gated noun domains do not need the ``kind='noun'``
+    marker used by open entity domains. Positive membership nevertheless
+    needs the same registry taxonomy check, while independently labelled or
+    owned referents must remain distinct.
+    """
+
+    if collection.label and member.label and collection.label != member.label:
+        return False
+    if collection.owner and member.owner and collection.owner != member.owner:
+        return False
+    return reg.category_term_contains(collection.identity, member.identity)
+
+
 @dataclass(frozen=True)
 class _Fixtures:
     names: tuple[str, ...]
@@ -381,6 +399,7 @@ def _where_blocker(rule: PatternRule) -> list[str]:
         if (
             pred.distinct is not None
             or pred.category_nonoverlap is not None
+            or pred.category_contains is not None
             or pred.distinct_owner is not None
             or pred.distinct_from_owner is not None
             or pred.same_lemma is not None
@@ -1657,6 +1676,36 @@ def _rule_blockers(
                     f"exists for {rendered}"
                 )
         for pred in rule.where:
+            if pred.category_contains is None:
+                continue
+            containment = pred.category_contains
+            role_names = (containment.collection, *containment.members)
+            role_tokens = [tokens_by_slot.get(name) for name in role_names]
+            if any(token is None for token in role_tokens):
+                blockers.append(
+                    "category-containment slots are not declared by the pattern: "
+                    + ", ".join(repr(name) for name in role_names)
+                )
+                continue
+            role_domains = [
+                safe_domain(token)
+                for token in role_tokens
+                if token is not None
+            ]
+            if not any(
+                all(
+                    _filler_category_term_contains(
+                        assignment[0], member, reg
+                    )
+                    for member in assignment[1:]
+                )
+                for assignment in product(*role_domains)
+            ):
+                blockers.append(
+                    "no project-backed category/member assignment exists "
+                    f"for {'/'.join(role_names)}"
+                )
+        for pred in rule.where:
             if pred.attribute_compatible is None:
                 continue
             attribute_name = pred.attribute_compatible.attribute
@@ -2086,6 +2135,7 @@ def _constraint_groups(
     polarity_compatible: list[tuple[tuple[str, str], ...]] = []
     distinct: list[set[str]] = []
     category_nonoverlap: list[set[str]] = []
+    category_containment: list[tuple[str, tuple[str, ...]]] = []
     distinct_owner: list[set[str]] = []
     bound_type_requirements: list[tuple[str, str, str]] = []
     bound_category_requirements: list[tuple[str, str, str, bool]] = []
@@ -2136,6 +2186,13 @@ def _constraint_groups(
             distinct.append(set(pred.distinct))
         if pred.category_nonoverlap is not None:
             category_nonoverlap.append(set(pred.category_nonoverlap))
+        if pred.category_contains is not None:
+            category_containment.append(
+                (
+                    pred.category_contains.collection,
+                    tuple(pred.category_contains.members),
+                )
+            )
         if pred.distinct_owner is not None:
             distinct_owner.append(set(pred.distinct_owner))
         if pred.bound_requires_type is not None:
@@ -2232,6 +2289,7 @@ def _constraint_groups(
         polarity_compatible,
         distinct,
         category_nonoverlap,
+        category_containment,
         distinct_owner,
         bound_type_requirements,
         bound_category_requirements,
@@ -2339,6 +2397,10 @@ def _allowed_fillers(
     domain_for: Callable[[MatchToken], list[_Filler]] | None = None,
     same_surface_groups: (
         list[set[str]] | tuple[set[str], ...]
+    ) = (),
+    category_containment_requirements: (
+        list[tuple[str, tuple[str, ...]]]
+        | tuple[tuple[str, tuple[str, ...]], ...]
     ) = (),
 ) -> list[_Filler]:
     candidate_domain = domain_for or (
@@ -2556,6 +2618,57 @@ def _allowed_fillers(
                     and _filler_categories_overlap(filler, other, reg)
                 ):
                     return False
+
+        for collection_name, member_names in category_containment_requirements:
+            if token.slot not in {collection_name, *member_names}:
+                continue
+            if token.slot == collection_name:
+                for member_name in member_names:
+                    member = known_filler(member_name)
+                    if member is not None:
+                        if not _filler_category_term_contains(
+                            filler, member, reg
+                        ):
+                            return False
+                        continue
+                    if member_name not in active_slots:
+                        return False
+                    member_token = tokens_by_slot.get(member_name)
+                    if member_token is None or not any(
+                        _filler_category_term_contains(filler, candidate, reg)
+                        for candidate in candidate_domain(member_token)
+                        if _outside_categories(
+                            candidate, absent_categories, reg
+                        )
+                        and _outside_slot_categories(
+                            candidate,
+                            member_name,
+                            slot_category_exclusions,
+                            reg,
+                        )
+                    ):
+                        return False
+                continue
+            collection = known_filler(collection_name)
+            if collection is not None:
+                if not _filler_category_term_contains(collection, filler, reg):
+                    return False
+                continue
+            if collection_name not in active_slots:
+                return False
+            collection_token = tokens_by_slot.get(collection_name)
+            if collection_token is None or not any(
+                _filler_category_term_contains(candidate, filler, reg)
+                for candidate in candidate_domain(collection_token)
+                if _outside_categories(candidate, absent_categories, reg)
+                and _outside_slot_categories(
+                    candidate,
+                    collection_name,
+                    slot_category_exclusions,
+                    reg,
+                )
+            ):
+                return False
 
         for group, category in category_membership_requirements:
             if token.slot not in group:
@@ -3129,6 +3242,7 @@ def _realize(
         polarity_compatible_groups,
         distinct_groups,
         category_nonoverlap_groups,
+        category_containment_requirements,
         distinct_owner_groups,
         bound_type_requirements,
         bound_category_requirements,
@@ -3428,6 +3542,9 @@ def _realize(
                 verb_role_requirements,
                 verb_selectional_requirements,
                 measure_holder_requirements,
+                category_containment_requirements=(
+                    category_containment_requirements
+                ),
                 category_membership_requirements=(
                     category_membership_requirements
                 ),
@@ -4245,6 +4362,7 @@ _WHERE_FIELDS = (
     "same_phrase",
     "distinct",
     "category_nonoverlap",
+    "category_contains",
     "distinct_owner",
     "distinct_from_owner",
     "attribute_compatible",
@@ -4545,6 +4663,21 @@ def _where_reason(
         return (
             ", ".join(rendered)
             + " had no unresolved declared category/member containment"
+        )
+    if pred.category_contains is not None:
+        containment = pred.category_contains
+        rendered = []
+        for role_name in (containment.collection, *containment.members):
+            units = _slot_units(slots.get(role_name))
+            if not units:
+                rendered.append(f"{role_name}=unbound")
+                continue
+            rendered.append(
+                f"{role_name}={_unit_lemma(units[0], reg)!r}"
+            )
+        return (
+            ", ".join(rendered)
+            + " had directional declared category/member containment"
         )
     if pred.verb_role_compatible is not None:
         compatibility = pred.verb_role_compatible
@@ -5203,6 +5336,16 @@ def _explain_candidate(
             )
         if predicate.category_nonoverlap is not None and target is not None:
             for role_name in predicate.category_nonoverlap:
+                role_units = _slot_units(slots.get(role_name))
+                if role_units:
+                    where_sources.append(
+                        project.source_index.categories.get(
+                            _unit_lemma(role_units[0], project.registry)
+                        )
+                    )
+        if predicate.category_contains is not None and target is not None:
+            containment = predicate.category_contains
+            for role_name in (containment.collection, *containment.members):
                 role_units = _slot_units(slots.get(role_name))
                 if role_units:
                     where_sources.append(

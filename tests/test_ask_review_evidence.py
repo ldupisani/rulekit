@@ -22,10 +22,14 @@ from rulekit.generation.reviews import (
     ReviewDefect,
     PremiseAttachment,
     append_review,
+    ask_review_consumer_counts,
     ask_review_evidence,
+    ask_review_target_counts,
     premise_review_evidence,
     validated_premise_candidates,
+    validated_premise_rule_usage_counts,
 )
+from rulekit.generation.sample import GenerationError
 from rulekit.server.api import ServerState, build_router
 
 
@@ -49,6 +53,17 @@ def _review(candidate, *, fingerprint: str, naturalness=None, query=None):
         premise_rules=[
             premise["target_rule"] for premise in candidate.premises
         ],
+        premise_review_ids=(
+            [
+                premise.get("validated_review_id")
+                for premise in candidate.premises
+            ]
+            if any(
+                premise.get("validated_review_id")
+                for premise in candidate.premises
+            )
+            else []
+        ),
         answer=candidate.answer,
         answer_shape=candidate.answer_shape,
         minimal=candidate.minimal,
@@ -118,6 +133,27 @@ def test_valid_ask_reviews_collapse_into_one_replayed_coverage_group(
         "acceptable": 0,
         "marginal": 1,
     }
+
+
+def test_contextual_ask_replay_rebuilds_its_discourse_group(
+    curated, tmp_path: Path
+) -> None:
+    candidate = generate_ask_scenario(
+        curated,
+        ask_id="ask/how-many-combined-discourse-group",
+        seed=16956212447195,
+        scenario_mode="answerable",
+    )
+    project = replace(curated, root=tmp_path)
+    append_review(
+        project,
+        _review(candidate, fingerprint=project.registry.fingerprint),
+    )
+
+    group = ask_review_evidence(project)["groups"][0]
+
+    assert group["target_ask"] == "ask/how-many-combined-discourse-group"
+    assert group["replay_status"] == "current"
 
 
 def test_live_curated_valid_ask_contracts_have_no_regressions(curated) -> None:
@@ -356,6 +392,34 @@ def _validated_premise_project(curated, tmp_path: Path, *, defects=None):
     return project, candidate, review
 
 
+def _append_valid_premise(project, candidate):
+    evidence = PremiseReviewEvidence(
+        target_status=candidate["target_status"],
+        target_bindings=candidate["target_bindings"],
+        actual_rule_ids=candidate["actual_rule_ids"],
+        facts=candidate["facts"],
+        collisions=candidate["collisions"],
+        deficiencies=candidate["deficiencies"],
+    )
+    return append_review(
+        project,
+        ReviewRecord(
+            candidate_id=candidate["id"],
+            review_kind="premise",
+            sentence=candidate["sentence"],
+            target_rule=candidate["target_rule"],
+            premise_evidence=evidence,
+            seed=candidate["seed"],
+            registry_fingerprint=project.registry.fingerprint,
+            verdict="valid",
+            requested_bindings=candidate["requested_bindings"],
+            interpretation_judgment="correct",
+            result_judgment="correct_facts",
+            naturalness="preferred",
+        ),
+    )
+
+
 def test_defective_valid_premise_is_not_replayed_or_reused(
     curated, tmp_path: Path
 ) -> None:
@@ -428,6 +492,88 @@ def test_validated_premise_mode_generates_an_answered_ask(
     assert scenario.answer["value"] == 2.0
     assert scenario.premises[0]["validated_review_id"] == review["id"]
     assert scenario.premises[0]["sentence"] == candidate["text"]
+
+
+def test_validated_rate_premise_preserves_modal_verb_and_duration(
+    curated, tmp_path: Path
+) -> None:
+    copy2(CURATED / "generation.yaml", tmp_path / "generation.yaml")
+    project = replace(curated, root=tmp_path)
+    candidate = generate_candidate(
+        curated,
+        rule_id="arithmetic/periodic-rate-every-span",
+        seed=101,
+        locked_bindings={
+            "who": "the guardian",
+            "aux": "should",
+            "verb": "buy",
+            "item": "8 pears",
+            "freq": "every",
+            "span": "90 years",
+        },
+    ).to_json()
+    review = _append_valid_premise(project, candidate)
+
+    # A prescriptive premise cannot silently become a past factual question.
+    # The ordinary do-support ask has no compatible surface for `should`, so
+    # this evidence/ask pairing is unavailable rather than sampling `did`.
+    with pytest.raises(GenerationError, match="after 0 deterministic checks"):
+        generate_ask_scenario(
+            project,
+            ask_id="ask/how-many-rate-span",
+            seed=2,
+            scenario_mode="validated_premises",
+        )
+
+    scenario = generate_ask_scenario(
+        project,
+        ask_id="ask/how-many-rate-span-modal",
+        seed=2,
+        scenario_mode="validated_premises",
+    )
+
+    assert scenario.query["entity"] == "guardian"
+    assert scenario.query["measure"] == "pear"
+    assert scenario.query["verb"] == "buy"
+    assert scenario.query["span_unit"] == "year"
+    assert float(scenario.query["span_value"]) == 90
+    assert scenario.question == "How many pears should the guardian buy in 90 years?"
+    assert scenario.answer["committed"] is True
+    assert scenario.answer["value"] == 8
+    assert scenario.premises[0]["validated_review_id"] == review["id"]
+
+
+def test_validated_frontier_counts_targets_consumers_and_premise_families(
+    curated, tmp_path: Path
+) -> None:
+    project, _candidate, _premise_review = _validated_premise_project(
+        curated, tmp_path
+    )
+    scenario = generate_ask_scenario(
+        project,
+        ask_id="ask/how-old-is",
+        seed=1,
+        scenario_mode="validated_premises",
+    )
+    ask_review = _review(scenario, fingerprint=project.registry.fingerprint)
+    append_review(project, ask_review)
+
+    assert ask_review_target_counts(
+        project, scenario_mode="ask_only"
+    ) == {}
+    assert ask_review_target_counts(
+        project, scenario_mode="validated_premises"
+    ) == {"ask/how-old-is": 1}
+    assert ask_review_consumer_counts(
+        project, scenario_mode="validated_premises"
+    ) == {"single-entity": 1}
+    assert validated_premise_rule_usage_counts(project) == {
+        "arithmetic/stated-age": 1
+    }
+    assert ask_review.ask_scenario is not None
+    assert ask_review.ask_scenario.premise_review_ids == [
+        scenario.premises[0]["validated_review_id"]
+    ]
 
 
 def test_validated_premise_mode_prefers_dimension_specific_age_ask(

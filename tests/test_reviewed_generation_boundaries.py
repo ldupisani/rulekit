@@ -432,7 +432,7 @@ def test_fraction_of_whole_requires_subject_verb_agreement(
             "arithmetic/partition-membership-fraction",
         ),
         (
-            "6 of the marbles are dogs.",
+            "6 of the animals are dogs.",
             "arithmetic/partition-membership-of-noun",
         ),
     ],
@@ -873,6 +873,21 @@ def test_integer_only_qualifies_number_slots() -> None:
         MatchToken(slot="item", type="counted", integer=True)
 
 
+def test_numeric_bounds_qualify_scalar_and_counted_slots() -> None:
+    assert MatchToken(
+        slot="span", type="counted", value_min=1
+    ).value_min == 1
+    assert MatchToken(
+        slot="span", cat="duration_measure", counted=True, value_min=1
+    ).value_min == 1
+
+    with pytest.raises(
+        ValidationError,
+        match="only qualify a `type: number` or counted slot",
+    ):
+        MatchToken(slot="item", type="noun", value_min=1)
+
+
 def test_postfix_counted_relation_does_not_double_fire_as_elided(
     registry,
 ) -> None:
@@ -1207,6 +1222,27 @@ def test_category_nonoverlap_is_an_explicit_schema_predicate() -> None:
     assert predicate.category_nonoverlap == ["who", "std"]
     with pytest.raises(ValidationError, match="repeats a slot"):
         WherePredicate(category_nonoverlap=["who", "who"])
+
+
+def test_category_containment_is_an_explicit_directional_predicate() -> None:
+    predicate = WherePredicate(
+        category_contains={"collection": "coll", "members": ["attr"]}
+    )
+
+    assert predicate.category_contains is not None
+    assert predicate.category_contains.collection == "coll"
+    assert predicate.category_contains.members == ["attr"]
+    with pytest.raises(ValidationError, match="repeats a member slot"):
+        WherePredicate(
+            category_contains={
+                "collection": "coll",
+                "members": ["attr", "attr"],
+            }
+        )
+    with pytest.raises(ValidationError, match="reuse its collection"):
+        WherePredicate(
+            category_contains={"collection": "coll", "members": ["coll"]}
+        )
 
 
 def test_every_common_noun_comparison_declares_nonoverlap() -> None:

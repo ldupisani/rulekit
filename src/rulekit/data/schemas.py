@@ -787,10 +787,10 @@ class MatchToken(StrictModel):
             raise ValueError("`integer` only qualifies a `type: number` slot")
         if (
             self.value_min is not None or self.value_max is not None
-        ) and self.type != "number" and not self.counted:
+        ) and self.type not in {"number", "counted"} and not self.counted:
             raise ValueError(
                 "`value_min`/`value_max` only qualify a `type: number` "
-                "or category-gated counted slot"
+                "or counted slot"
             )
         if (
             self.value_min is not None
@@ -1200,6 +1200,23 @@ class SameCategoryMembershipPredicate(StrictModel):
         return self
 
 
+class CategoryContainsPredicate(StrictModel):
+    """Require a collection slot to name a category containing member slots."""
+
+    collection: str
+    members: list[str] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _distinct_roles(self) -> "CategoryContainsPredicate":
+        if len(self.members) != len(set(self.members)):
+            raise ValueError("category containment repeats a member slot")
+        if self.collection in self.members:
+            raise ValueError(
+                "category containment cannot reuse its collection as a member"
+            )
+        return self
+
+
 class WherePredicate(StrictModel):
     """Closed set of cross-slot constraints."""
 
@@ -1296,6 +1313,11 @@ class WherePredicate(StrictModel):
     category_nonoverlap: list[str] | None = Field(
         default=None, min_length=2
     )
+    # Directional category/member containment. The collection role must name
+    # a noun category and every member role must belong to it. This licenses
+    # "animals are dogs" partitions while refusing both unrelated pairs and
+    # the reversed, uninformative "dogs are animals" partition shape.
+    category_contains: CategoryContainsPredicate | None = None
     # Every named slot must carry a non-empty possessive owner, and those
     # owners must be distinct. The noun lemmas may intentionally be identical
     # ("Aven's age ... Bira's age"); ordinary `distinct` compares lemmas and
@@ -1379,7 +1401,9 @@ class WherePredicate(StrictModel):
                 self.measure_holder_compatible,
                 self.partitive_compatible,
                 self.same_phrase,
-                self.distinct, self.category_nonoverlap,
+                self.distinct,
+                self.category_nonoverlap,
+                self.category_contains,
                 self.distinct_owner, self.distinct_from_owner,
                 self.attribute_compatible,
                 self.modifier_host_compatible,
@@ -1564,6 +1588,19 @@ class AskEvidenceRule(StrictModel):
     bindings: dict[str, str] = Field(default_factory=dict)
 
 
+class AskValidatedSlotBinding(StrictModel):
+    """Map one generated ask slot to typed fields on reviewed facts.
+
+    A counted slot needs both its lexical identity and numeric value. Keeping
+    those field names in pack data lets, for example, a duration span align
+    with a reviewed rate denominator without teaching the authoring runtime a
+    specific consumer or sentence shape.
+    """
+
+    identity_field: str = Field(min_length=1)
+    value_field: str | None = Field(default=None, min_length=1)
+
+
 class AskGenerationDef(StrictModel):
     """Declarative constraints that apply only to ask realization.
 
@@ -1585,6 +1622,18 @@ class AskGenerationDef(StrictModel):
         str, Literal["reference_group", "reference_year"]
     ] = Field(default_factory=dict)
     slot_categories: dict[str, str | list[str]] = Field(default_factory=dict)
+    validated_slot_bindings: dict[str, AskValidatedSlotBinding] = Field(
+        default_factory=dict
+    )
+    # Preserve a surface explicitly bound by the reviewed premise rule when
+    # the generated ask has a corresponding slot.  This is intentionally
+    # separate from ``validated_slot_bindings``: those read normalized FACT
+    # fields (for example Rate.per/denominator), while these read the pinned
+    # rule derivation (for example the modal auxiliary that licensed that
+    # Rate).  If reviewed evidence binds the source slot but its surface is
+    # incompatible with the ask slot, that premise/ask pairing is rejected;
+    # silently choosing another surface would change tense or modality.
+    validated_source_bindings: dict[str, str] = Field(default_factory=dict)
     # Slots in rejection-only optional branches remain part of the reader
     # grammar so a malformed continuation cannot be ignored as an accepted
     # prefix. Ask generation must never realize those capture-only branches.
@@ -1666,6 +1715,8 @@ class AskRule(StrictModel):
         unknown_generation_slots = (
             set(self.generation.slot_sources)
             | set(self.generation.slot_categories)
+            | set(self.generation.validated_slot_bindings)
+            | set(self.generation.validated_source_bindings)
             | set(self.generation.omit_slots)
         ) - declared_slots
         if unknown_generation_slots:
@@ -1682,12 +1733,22 @@ class AskRule(StrictModel):
         locked_generation_slots = (
             set(self.generation.slot_sources)
             | set(self.generation.slot_categories)
+            | set(self.generation.validated_slot_bindings)
+            | set(self.generation.validated_source_bindings)
         ) & set(self.generation.omit_slots)
         if locked_generation_slots:
             raise ValueError(
                 f"ask {self.id!r}: omitted generation slots also have "
-                "generation sources/categories: "
+                "generation sources/categories/validated bindings: "
                 + ", ".join(sorted(locked_generation_slots))
+            )
+        if any(
+            not source_slot
+            for source_slot in self.generation.validated_source_bindings.values()
+        ):
+            raise ValueError(
+                f"ask {self.id!r}: validated source bindings need a "
+                "non-empty premise slot"
             )
         for slot, categories in self.generation.slot_categories.items():
             declared = categories if isinstance(categories, list) else [categories]
