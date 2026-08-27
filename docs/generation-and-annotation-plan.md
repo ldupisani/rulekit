@@ -2,14 +2,14 @@
 
 **Status:** implemented product contract; ongoing review-led refinement
 **Accepted:** 2026-07-25
-**Updated:** 2026-08-25
+**Updated:** 2026-08-26
 **Implementation:** G1–G7 and G6b are complete. Premise, Reading-origin,
 targetless, fact-level, ask-only, answerable-scenario, and deliberate-decline
 reviews share the append-only edit/resolve/tombstone lifecycle. Strict and
 one-slot lexical-boundary generation, recursive realization, structural
 coverage, category/fact/slot filters, source navigation, pinned edit/retest,
 and generation-health diagnostics are implemented. G5v remains the name of
-the ongoing human review loop; reconciliations are complete through batch 63.
+the ongoing human review loop; reconciliations are complete through batch 65.
 Mining v2 now uses this workbench as its human promotion surface.
 
 Point-in-time counts in the milestone sections below are historical results.
@@ -43,6 +43,16 @@ current anchor cannot silently modify a past holding, while a deliberately
 flexible anchor can; event quantities and unrelated states do not enter this
 construction. Core `bring` and `conduct` forms now carry explicit number so
 ordinary agreement checks apply independently of this rule.
+
+Definite-pool fractions now map their subject and object onto the governing
+verb's complete category-owned frame. Selectional roles can additionally own
+an inherited singular/plural requirement, which lets collection addition and
+livestock raising require plural themes while mass, edible-material, and
+currency senses remain independent sibling frames. Initiation and content-
+progress verbs reuse their existing targets. Strict generation expands a
+bare unit share to `one ninth`, but this is intentionally authoring-only: the
+reader keeps the historical bare-unit surface until evidence justifies a
+breaking grammar change.
 
 G1 shipped the first complete generate/review/next loop, G2 made its
 mechanical result directly inspectable, G3 closed the edit/retest loop, and G4
@@ -167,9 +177,9 @@ added bounded hypothesis and minimal-pair exploration:
 - fraction-valued comparisons and changes require a strictly positive
   magnitude, while pool and partition facts retain zero as a meaningful value.
 
-The current gate is green: all 5,772 repository tests pass in four-worker
+The current gate is green: all 5,806 repository tests pass in four-worker
 mode, curated remains deterministic at 71/71 and 100% precision, GSM8K
-DEV-train is 106/0 and DEV-holdout is 44/0, and ASDiv improves to 46/0 without
+DEV-train is 106/0 and DEV-holdout is 46/0, and ASDiv remains 46/0 without
 a wrong commitment. SVAMP, MAWPS, SciBench, DIFG, and FOLIO retain zero wrong
 commitments; COGS and PMB retain zero incorrect projections; and lint has zero
 errors with one known warning. The protected aggregate remains recorded in
@@ -3966,6 +3976,100 @@ is 71/71; GSM8K DEV-train/holdout are 106/0 and 44/0; ASDiv is 46/0; SVAMP,
 MAWPS, SciBench, DIFG, and FOLIO retain zero wrong commitments; COGS and PMB
 retain zero incorrect projections; and lint has zero errors with one known
 warning. No protected look was spent.
+
+#### Sixty-fourth review reconciliation — complete
+
+Five reviews of `arithmetic/fraction-of-pool` separated two independent
+boundaries. The premise now invokes the same category-owned actor/theme frames
+as other quantitative constructions. Initiation and content-progress verbs
+therefore reject incompatible calendar and food objects. New alternative
+addition and raising frames distinguish plural collections from mass,
+currency, and edible divisible objects. Their grammatical-number requirement
+is inherited category data through `selectional_role_numbers`, not a noun or
+verb list in the matcher.
+
+Strict generation uses the existing explicit-unit fraction qualifier, so a
+unit share is emitted as `one ninth` rather than bare `ninth`; reading remains
+permissive as requested. Applying the complete transfer frame exposed one
+independent vocabulary omission, and the mined pack now declares its own
+`seashell` noun transferable. The complete gate is 5,789 tests. Curated is
+71/71; GSM8K DEV-train/holdout are 106/0 and 44/0; ASDiv is 46/0; SVAMP,
+MAWPS, SciBench, DIFG, and FOLIO retain zero wrong commitments; COGS and PMB
+retain zero incorrect projections; and lint has zero errors with one known
+warning. No protected look was spent.
+
+#### Sixty-fifth review reconciliation — complete
+
+Three invalid strict generations exposed one shared hierarchy omission:
+finite-infinitival, direct-quantity, and purpose-resource goal predicates were
+children of `goal_predicate`, but that parent did not itself inherit the
+general non-quantity-object exclusion. `hope`, `save`, and `require` could
+therefore leak into ordinary as-many and fraction comparison rules. The
+semantic parent now owns the exclusion, so current and future goal vocabulary
+remains available to dedicated goal grammar without being interpreted as an
+actual event quantity.
+
+The complete times-as-many conjunct also gains a positive common-noun standard
+and both measure/holder checks. Category-owned theme checking is scoped to the
+unambiguous consumption family. The first full-gate pass demonstrated why that
+scope matters: two older clean-valid transfer/winning exemplars and the
+established motion-distance construction would regress under a blanket theme
+mapping because the compared surface noun is not always the verb's theme.
+Length measure compatibility now targets the general motion-participant class,
+retaining people and animals while the independent actor frame still rejects
+non-movers.
+
+All three invalid reviews are now unmatched; compatible holding, consumption,
+and motion conjuncts remain matched and generatable; and all clean-valid review
+groups replay. The complete gate is 5,802 tests. Curated is 71/71; GSM8K
+DEV-train/holdout are 106/0 and 44/0; ASDiv is 46/0; SVAMP is 24/0; MAWPS is
+11/0; SciBench is 6/0; DIFG is 75/0; and FOLIO retains zero commitments. COGS
+DEV-train/holdout remain 1,771/1,693 exact with zero incorrect projections;
+PMB train/development remain 117/4 exact with zero incorrect projections; and
+lint has zero errors with one known warning. No protected look was spent.
+
+#### Core compensated-activity vocabulary extension — complete
+
+The existing scoped-wage path already handled the requested hourly rate,
+restrictive `just` duration, pronoun continuity, minute-to-hour conversion, and
+earnings ask. The remaining word, `babysitting`, existed only in the mined
+lexicon, so curated could not read either scoped premise. Its noun declaration
+now belongs to core English and it extends the existing
+`compensated_activity` category; the duplicate mined declaration is removed.
+An invented babysitting wage analogue pins the reusable construction without
+committing the motivating corpus prose, and the corpus-string firewall remains
+green. The reachable core filler frontier advances from 368 to 369.
+
+The exact local check answers 10. The complete gate is 5,803 tests. Curated is
+71/71; GSM8K DEV-train remains 106/0 and DEV-holdout improves from 44/0 to
+45/0; every other arithmetic, logic, and semantic-projection gate is neutral
+with zero wrong or incorrect commitments. Lint has zero errors and one known
+warning. No protected look was spent.
+
+#### Singular purpose-goal closure — complete
+
+The purpose-goal family now covers singular as well as plural priced targets,
+the productive optional partitive marker in “half of the money”, and the
+bounded “for that purpose” adjunct on a committed transfer. Purpose attachment
+uses the declared purpose-preposition and purpose-noun categories; an unrelated
+object does not activate the contribution rule. Target/cost number agreement
+is explicit, and `wallet`, `parent`, `grandparent`, and `purpose` are shared
+core English rather than project-mined vocabulary.
+
+Number-neutral noun-category slots may declare `generation_all_numbers` when
+both grammatical numbers are part of the construction under review. Strict
+generation then includes the canonical singular entries and all declared
+plural surfaces, while ordinary matching remains number-neutral and authored
+agreement predicates continue to choose compatible verbs. This makes both
+singular and plural priced targets inspectable without duplicating the rule.
+
+An invented end-to-end analogue and a negative purpose-object neighbour pin
+the reusable class; the motivating prose is not committed. The exact curated
+check answers 5. The complete gate is 5,806 tests. Curated is 71/71; GSM8K
+DEV-train remains 106/0 and DEV-holdout improves from 45/0 to 46/0; every
+cross-corpus, logic, and semantic-projection gate remains at zero wrong or
+incorrect commitments. Lint has zero errors and one known warning. No
+protected look was spent.
 
 ## G1 implementation brief
 

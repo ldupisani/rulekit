@@ -130,6 +130,8 @@ class Registry:
     # Effective inherited role contracts by verb category. Each inner mapping
     # is semantic role -> noun category.
     selectional_roles: Mapping[str, Mapping[str, str]]
+    # Optional inherited grammatical-number requirements for the same roles.
+    selectional_role_numbers: Mapping[str, Mapping[str, str]]
     interchangeable_categories: frozenset[str]
     superordinate_categories: frozenset[str]
     coordinated_superordinate_categories: frozenset[str]
@@ -252,6 +254,13 @@ class Registry:
             (category, self.selectional_roles[category])
             for category in most_specific
         )
+
+    def selectional_role_number(
+        self, category: str, role: str
+    ) -> str | None:
+        """Return one category frame's inherited role-number requirement."""
+
+        return self.selectional_role_numbers.get(category, {}).get(role)
 
     def category_terms_overlap(self, left: str, right: str) -> bool:
         """Whether two noun terms are identical or one subsumes the other.
@@ -503,6 +512,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
     category_antonyms: dict[str, str] = {}
     category_polarity: dict[str, int] = {}
     declared_selectional_roles: dict[str, dict[str, str]] = {}
+    declared_selectional_role_numbers: dict[str, dict[str, str]] = {}
     interchangeable_categories: set[str] = set()
     superordinate_categories: set[str] = set()
     coordinated_superordinate_categories: set[str] = set()
@@ -536,6 +546,10 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                 if cdef.selectional_roles:
                     declared_selectional_roles[name] = dict(
                         cdef.selectional_roles
+                    )
+                if cdef.selectional_role_numbers:
+                    declared_selectional_role_numbers[name] = dict(
+                        cdef.selectional_role_numbers
                     )
                 if cdef.interchangeable:
                     interchangeable_categories.add(name)
@@ -659,6 +673,10 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
     # or broader target: doing so would make the category hierarchy lie about
     # the lexical boundary it is meant to carry.
     selectional_roles: dict[str, dict[str, str]] = {}
+    selectional_role_numbers: dict[str, dict[str, str]] = {}
+    selectional_contracts: dict[
+        str, tuple[dict[str, str], dict[str, str]]
+    ] = {}
 
     def _category_root(category: str) -> str:
         root = category
@@ -666,16 +684,20 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
             root = category_parents[root]
         return root
 
-    def _effective_selectional_roles(category: str) -> dict[str, str]:
-        cached = selectional_roles.get(category)
+    def _effective_selectional_contract(
+        category: str,
+    ) -> tuple[dict[str, str], dict[str, str]]:
+        cached = selectional_contracts.get(category)
         if cached is not None:
             return cached
         parent = category_parents[category]
-        effective = (
-            dict(_effective_selectional_roles(parent))
+        inherited_roles, inherited_numbers = (
+            _effective_selectional_contract(parent)
             if parent in category_parents
-            else {}
+            else ({}, {})
         )
+        effective = dict(inherited_roles)
+        effective_numbers = dict(inherited_numbers)
         for role, target in declared_selectional_roles.get(category, {}).items():
             inherited = effective.get(role)
             target_chain = [target]
@@ -688,16 +710,40 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                     f"category {inherited!r}"
                 )
             effective[role] = target
+        for role, number in declared_selectional_role_numbers.get(
+            category, {}
+        ).items():
+            if role not in effective:
+                raise CompileError(
+                    f"category {category!r} selectional role number names "
+                    f"undeclared role {role!r}"
+                )
+            inherited = effective_numbers.get(role)
+            if inherited is not None and inherited != number:
+                raise CompileError(
+                    f"category {category!r} selectional role {role!r} "
+                    f"number {number!r} conflicts with inherited "
+                    f"number {inherited!r}"
+                )
+            effective_numbers[role] = number
         if effective:
             selectional_roles[category] = effective
-        return effective
+        if effective_numbers:
+            selectional_role_numbers[category] = effective_numbers
+        contract = (effective, effective_numbers)
+        selectional_contracts[category] = contract
+        return contract
 
-    for category, roles in sorted(declared_selectional_roles.items()):
+    for category in sorted(
+        set(declared_selectional_roles)
+        | set(declared_selectional_role_numbers)
+    ):
         if _category_root(category) != "verb":
             raise CompileError(
-                f"category {category!r} declares selectional roles but is "
-                "not verb-rooted"
+                f"category {category!r} declares a selectional contract but "
+                "is not verb-rooted"
             )
+        roles = declared_selectional_roles.get(category, {})
         for role, target in sorted(roles.items()):
             if target not in category_parents and target != "noun":
                 raise CompileError(
@@ -712,7 +758,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
 
     for category in sorted(category_parents):
         if _category_root(category) == "verb":
-            _effective_selectional_roles(category)
+            _effective_selectional_contract(category)
     selectional_role_names = frozenset(
         role for frame in selectional_roles.values() for role in frame
     )
@@ -2092,6 +2138,12 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
             {
                 category: _freeze(roles)
                 for category, roles in selectional_roles.items()
+            }
+        ),
+        selectional_role_numbers=_freeze(
+            {
+                category: _freeze(numbers)
+                for category, numbers in selectional_role_numbers.items()
             }
         ),
         interchangeable_categories=frozenset(interchangeable_categories),

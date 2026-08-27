@@ -109,7 +109,7 @@ members:
   measurement_container: [container, tray]
   measured_content_substance: [flour, milk, rice]
   plural_subject_quantifier: [both]
-  transferable_quantity_object: [bar, kite, orange, ticket]
+  transferable_quantity_object: [bar, kite, orange, seashell, ticket]
   edible_quantity_object: [berry, pie]
   # `project` is lexically owned here and is a conventional finishable task.
   # Extending the core role category here keeps minimal core-only registries
@@ -121,7 +121,7 @@ members:
   bare_entity_reference: [bill, mark]
   increase_verb: [increase, increased, increases, rise]
   decrease_verb: [decrease, decreased, decreases, fall, fell]
-  mass_quantity_noun: [chicken, coffee, flour, food, milk, money, rice, sugar]
+  mass_quantity_noun: [chicken, coffee, flour, food, milk, money, rice]
   partitive_volume_measure: [bottle, cup, quart, sack]
   partitive_pair_measure: [pair]
   partitive_piece_measure: [piece]
@@ -178,7 +178,7 @@ members:
   past_possession_state: [owned]
   shucking_verb: [shuck, shucked, shucking, shucks]
   shuckable_item: [corn, ear, oyster, peas]
-  # extends core-english's `animate` (see its note there): these 43
+  # extends core-english's `animate` (see its note there): these remaining
   # person-denoting nouns are lexically defined in THIS pack, so their
   # membership must be declared here — a member absent from the loading
   # project's lexicon is a CompileError, and core-english alone has only
@@ -187,7 +187,7 @@ members:
             sister, brother, kid, doctor, nurse, worker, painter, chef,
             driver, dancer, seller, buyer, customer, neighbor, cousin,
             aunt, uncle, grandmother, grandfather, son, daughter, baby,
-            parent, person, clerk, manager, guest, captain, shopkeeper,
+            person, clerk, manager, guest, captain, shopkeeper,
             carpenter, tailor, fisherman, hunter, artist, writer,
             soldier]
   # Generic unit nouns are measures rather than bare quantity holders. The
@@ -904,7 +904,6 @@ members:
   means_noun: [boat, bus, car, train, vehicle]
   manner_noun: [speed]
   cause_noun: [accident]
-  purpose_noun: [purpose]
   accompaniment_compatible_verb: [help, helped, helps, work, worked, works]
   instrument_compatible_verb: [cut, cuts, use, used, uses, write, writes, wrote]
   manner_compatible_verb: [work, worked, works]

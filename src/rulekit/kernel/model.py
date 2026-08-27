@@ -1820,6 +1820,33 @@ class ContainerContent(Fact):
 
 
 @dataclass(frozen=True)
+class TotalityTransfer(Fact):
+    """A complete anaphoric collection placed into one destination.
+
+    The surface may leave the collection's measure implicit ("put them all
+    in the jar").  The source and destination remain explicit so saturation
+    can resolve the transfer only when the source has one unambiguous
+    non-container content total.  No amount is invented by this fact itself.
+    """
+
+    source: str
+    destination: str
+    verb: str
+    occurrence: int
+
+    def key(self) -> tuple:
+        return (
+            "totality-transfer",
+            self.source,
+            self.destination,
+            self.occurrence,
+        )
+
+    def value_part(self) -> Any:
+        return self.verb
+
+
+@dataclass(frozen=True)
 class Before(Fact):
     """A strict ordering between two event identities.
 

@@ -147,10 +147,13 @@ def _filler_in_category(
 def _filler_satisfies_selectional_role(
     filler: _Filler,
     category: str,
+    number: str | None,
     slot: str,
     compatibility: VerbRolesCompatibilityPredicate,
     reg: Registry,
 ) -> bool:
+    if number is not None and filler.number != number:
+        return False
     return (
         slot in compatibility.allow_proper_name and filler.kind == "name"
     ) or (
@@ -170,12 +173,17 @@ def _selectional_assignment_compatible(
     frames = reg.selectional_frames(verb.identity)
     if not frames:
         return True
-    for _category, frame in frames:
+    for frame_category, frame in frames:
         if not set(compatibility.roles) <= set(frame):
             continue
         if all(
             _filler_satisfies_selectional_role(
-                assignments[slot], frame[semantic_role], slot, compatibility, reg
+                assignments[slot],
+                frame[semantic_role],
+                reg.selectional_role_number(frame_category, semantic_role),
+                slot,
+                compatibility,
+                reg,
             )
             for semantic_role, slots in compatibility.roles.items()
             for slot in slots
@@ -762,8 +770,10 @@ def _raw_domain(
                 if reg.word_in_category(filler.identity, token.cat)
             ]
         root = reg.root_sense(token.cat)
-        if root == "noun" and token.number == "plural":
-            return [
+        if root == "noun" and (
+            token.number == "plural" or token.generation_all_numbers
+        ):
+            plural_fillers = [
                 _Filler(
                     surface=surface,
                     identity=singular,
@@ -776,6 +786,20 @@ def _raw_domain(
                 and not any(ch.isspace() for ch in surface)
                 and reg.word_in_category(singular, token.cat)
             ]
+            if token.generation_all_numbers:
+                return [
+                    *_lexical_fillers(
+                        reg,
+                        sense=root,
+                        category=token.cat,
+                        bare_form=token.bare_form,
+                        finite_form=token.finite_form,
+                        present_participle=token.present_participle,
+                        past_participle=token.past_participle,
+                    ),
+                    *plural_fillers,
+                ]
+            return plural_fillers
         return _lexical_fillers(
             reg,
             sense=root,
@@ -1946,7 +1970,7 @@ def _rule_blockers(
                 frames = reg.selectional_frames(verb.identity)
                 if not frames:
                     return True
-                for _category, frame in frames:
+                for frame_category, frame in frames:
                     if not set(compatibility.roles) <= set(frame):
                         continue
                     if all(
@@ -1955,6 +1979,9 @@ def _rule_blockers(
                             _filler_satisfies_selectional_role(
                                 role,
                                 frame[semantic_role],
+                                reg.selectional_role_number(
+                                    frame_category, semantic_role
+                                ),
                                 slot,
                                 compatibility,
                                 reg,
@@ -6082,6 +6109,15 @@ def generate_candidate(
         target_results = [
             result for result in results if result.match.rule.id == rule.id
         ]
+        safety_boundary_is_clean = (
+            generation_mode != "safety_boundary"
+            or not _premise_match_results(results)
+        )
+        if not safety_boundary_is_clean:
+            last_realization_error = GenerationError(
+                "safety boundary also matched a fact-emitting premise rule"
+            )
+            failure_causes[str(last_realization_error)] += 1
         target_structure_realized = True
         if structural_target is not None:
             kind, _, value = structural_target.partition(":")
@@ -6094,7 +6130,7 @@ def generate_candidate(
                 )
             elif kind == "surface":
                 target_structure_realized = bool(target_results)
-        if target_structure_realized and (
+        if safety_boundary_is_clean and target_structure_realized and (
             generation_mode == "lexical_boundary" or any(
                 result.match.rule.id == rule.id
                 and _strict_round_trip_result(

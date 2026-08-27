@@ -323,6 +323,17 @@ entries:
     writes: {senses: [verb], number: singular, verb: {lemma: write}}
     write: {senses: [verb], number: plural, verb: {lemma: write}}
     wrote: {senses: [verb], verb: {lemma: write}}
+    know: {senses: [verb], number: plural}
+    knows: {senses: [verb], number: singular, verb: {lemma: know}}
+    knew: {senses: [verb], verb: {lemma: know}}
+    knowing: {senses: [verb], verb: {lemma: know}}
+    fit: {senses: [verb], number: plural}
+    fits: {senses: [verb], number: singular, verb: {lemma: fit}}
+    fitting: {senses: [verb], verb: {lemma: fit}}
+    contain: {senses: [verb], number: plural}
+    contains: {senses: [verb], number: singular, verb: {lemma: contain}}
+    contained: {senses: [verb], verb: {lemma: contain}}
+    containing: {senses: [verb], verb: {lemma: contain}}
     reads: {senses: [verb], number: singular, verb: {lemma: read}}
     read: {senses: [verb]}
     reading: {senses: [verb], verb: {lemma: read}}
@@ -428,6 +439,10 @@ entries:
     # narrower financial heads.
     money: {senses: [noun]}
     cost: {senses: [noun, verb], plural: costs}
+    # `costs` is both the plural noun and the third-person verb. Its noun
+    # number still comes from `cost.plural`; the verb lemma lets generated
+    # singular priced targets realize the finite surface.
+    costs: {senses: [noun, verb], verb: {lemma: cost}}
     remainder: {senses: [noun]}
     rest: {senses: [noun]}
     topic: {senses: [noun], plural: topics}
@@ -444,9 +459,15 @@ entries:
     area: {senses: [noun], plural: areas}
     plum: {senses: [noun], plural: plums}
     marble: {senses: [noun], plural: marbles}
+    bag: {senses: [noun], plural: bags}
     book: {senses: [noun], plural: books}
+    letter: {senses: [noun], plural: letters}
     brother: {senses: [noun], plural: brothers}
+    parent: {senses: [noun], plural: parents}
+    grandparent: {senses: [noun], plural: grandparents}
     shoe: {senses: [noun], plural: shoes}
+    wallet: {senses: [noun], plural: wallets}
+    purpose: {senses: [noun], plural: purposes}
     page: {senses: [noun], plural: pages}
     cookie: {senses: [noun], plural: cookies}
     ball: {senses: [noun], plural: balls}
@@ -461,6 +482,7 @@ entries:
     egg: {senses: [noun], plural: eggs}
     flower: {senses: [noun], plural: flowers}
     garden: {senses: [noun], plural: gardens}
+    babysitting: {senses: [noun]}
     gardening: {senses: [noun]}
     tutoring: {senses: [noun]}
     teacher: {senses: [noun], plural: teachers}

@@ -67,9 +67,11 @@ def test_g5i_profiles_the_complete_recursive_optional_class() -> None:
     project = load_project(CURATED)
 
     # The measurement-event shapes and the partition aggregate share admit
-    # their scoped optional modifiers. Each contributes one top-level optional
-    # group; nesting and the established maximum depth stay unchanged.
-    assert _optional_profile(project) == (75, 157, 38, 3)
+    # their scoped optional modifiers. Goal progress additionally admits the
+    # explicit fraction marker in "one third of the money", while committed
+    # transfers admit the bounded "for that purpose" adjunct. Nesting and the
+    # established maximum depth stay unchanged.
+    assert _optional_profile(project) == (76, 159, 38, 3)
 
 
 def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
@@ -78,9 +80,9 @@ def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
         for item in list_rule_availability(load_project(CURATED))
     }
 
-    assert len(availability) == 156
-    assert sum(item.supported for item in availability.values()) == 147
-    assert sum(not item.supported for item in availability.values()) == 9
+    assert len(availability) == 160
+    assert sum(item.supported for item in availability.values()) == 150
+    assert sum(not item.supported for item in availability.values()) == 10
     assert all(availability[rule_id].supported for rule_id in NEWLY_SUPPORTED)
     assert all(
         "optional groups have no current realizer" not in item.blockers

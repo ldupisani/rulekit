@@ -47,7 +47,7 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
         "validated_premises",
     )
     assert any("antecedent discourse group" in blocker for blocker in contextual.blockers)
-    assert sum(item.supported for item in availability.values()) == 111
+    assert sum(item.supported for item in availability.values()) == 112
     assert availability["ask/how-many-of-collection-are-label"].supported
     assert availability["ask/how-many-of-collection-are-label"].supported_modes == (
         "ask_only",
@@ -71,7 +71,7 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
     assert availability["ask/measured-content-in-container-unit"].blockers == (
         "ask requires generated premise evidence; standalone realization is disabled",
     )
-    assert len(availability) == 125
+    assert len(availability) == 126
     assert {
         item.id for item in availability.values() if not item.supported
     } == {

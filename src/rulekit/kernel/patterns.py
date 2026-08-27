@@ -65,6 +65,7 @@ from .model import (
     Relation,
     RatioQuantity,
     RestQuantity,
+    TotalityTransfer,
     SemanticGraphEdge,
     SemanticGraphNode,
     SequentialPartition,
@@ -130,6 +131,7 @@ _FACT_CLASSES = {
     "spatial_placement": SpatialPlacement,
     "measured_content_change": MeasuredContentChange,
     "container_content": ContainerContent,
+    "totality_transfer": TotalityTransfer,
     "semantic_graph_node": SemanticGraphNode,
     "semantic_graph_edge": SemanticGraphEdge,
 }
@@ -1229,9 +1231,18 @@ def _check_where(
                         compatibility.roles.items()
                     ):
                         role_category = frame[semantic_role]
+                        role_number = reg.selectional_role_number(
+                            _category, semantic_role
+                        )
                         for role_name in role_names:
                             role = slots.get(role_name)
                             if role is None or isinstance(role, tuple):
+                                frame_ok = False
+                                break
+                            if (
+                                role_number is not None
+                                and role.features.get("number") != role_number
+                            ):
                                 frame_ok = False
                                 break
                             if (
@@ -2176,7 +2187,12 @@ def _build_fact(
         verb = kwargs.get("verb", "have")
         if not reg.word_in_category(verb, "state") and verb not in ("have", "be"):
             kwargs["occurrence"] = provenance.sentence
-    elif cls in (PercentChange, SpatialPlacement, MeasuredContentChange) and "occurrence" not in kwargs:
+    elif cls in (
+        PercentChange,
+        SpatialPlacement,
+        MeasuredContentChange,
+        TotalityTransfer,
+    ) and "occurrence" not in kwargs:
         # These are ALWAYS events (never states, unlike Quantity/
         # FractionQuantity/RestQuantity above, which branch on verb
         # category). Their occurrence is the narration coordinate that keeps
@@ -2267,6 +2283,9 @@ def run_rules(
             )
             facts = []
             for e in rule.emits:
+                emit_provenance = replace(
+                    provenance, distributive=e.distributive
+                )
                 if e.options_from is not None:
                     # Stage 9h: whole-list emission (schemas.FactEmit
                     # .options_from) — ONE EnumeratedDisjunction over every
@@ -2299,7 +2318,7 @@ def run_rules(
                         e.fields["cls"], m.slots, reg, False, log, rule.id,
                     )
                     facts.append(EnumeratedDisjunction(
-                        provenance=provenance, cls=cls_key, options=options,
+                        provenance=emit_provenance, cls=cls_key, options=options,
                     ))
                     continue
                 if e.each is not None:
@@ -2317,7 +2336,7 @@ def run_rules(
                         sub_slots = dict(m.slots)
                         sub_slots["item"] = seg
                         fact = _build_fact(
-                            e.fields, e.fact, sub_slots, reg, provenance,
+                            e.fields, e.fact, sub_slots, reg, emit_provenance,
                             log, rule.id, reading=reading,
                             temporal_perspective=e.temporal_perspective,
                         )
@@ -2325,7 +2344,7 @@ def run_rules(
                         facts.extend(atom_variants(fact, e.fields, sub_slots, reg))
                     continue
                 fact = _build_fact(
-                    e.fields, e.fact, m.slots, reg, provenance, log, rule.id,
+                    e.fields, e.fact, m.slots, reg, emit_provenance, log, rule.id,
                     reading=reading,
                     temporal_perspective=e.temporal_perspective,
                 )

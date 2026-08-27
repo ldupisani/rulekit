@@ -1,6 +1,6 @@
 # rulekit handoff
 
-**Updated:** 2026-08-25
+**Updated:** 2026-08-27
 **Runtime checkpoint:** `main` (contextual ask replay and reviewed
 semantic-boundary reconciliation implemented and gated)
 **Active campaign:** GSM8K Mining v2, M7 example-led vertical mining
@@ -176,6 +176,29 @@ present holding while flexible anchors such as `still` may retain a past
 holding. Event quantities and unrelated states can no longer borrow a
 possession anchor. Core `bring` and `conduct` paradigms also expose their
 singular/plural agreement explicitly.
+Definite-pool fractions now use the governing verb's complete category-owned
+actor/theme frame. Selectional roles may carry an inherited grammatical-number
+constraint, allowing alternative senses such as plural collection addition,
+mass or edible-material addition, plural livestock raising, and currency
+raising without a rule-local word list. This rejects incompatible initiation
+and reading objects and numeric parts of one shopper or living rabbit while
+retaining plural collections, divisible materials, and edible portions.
+Strict generation spells a unit share as `one ninth`; the reader deliberately
+retains its older bare-unit compatibility. Extension-owned `seashell` is now a
+declared transferable object, preserving the established sale-of-a-fraction
+DEV class.
+Goal predicates now inherit the general non-quantity-object exclusion as a
+category relationship. Dedicated goal rules may still read `hope`, `require`,
+`save`, and future vocabulary according to their declared complement grammar,
+but ordinary ratio/event rules cannot reinterpret those non-actual targets as
+actual quantities. The full times-as-many conjunct now requires a positive
+common-noun standard and applies both declared measure/holder compatibility
+and category-scoped theme frames. Theme mapping is deliberately scoped to
+unambiguous consumption frames: established motion comparisons use the noun as
+a distance measure rather than a verb theme, and existing human-validated
+transfer/winning examples remain evidence. Length measures consequently apply
+to the general `motion_participant` holder category, retaining person and
+animal distance events without admitting non-moving actors.
 Optional interpretation, result, and naturalness judgments keep grammatical
 acceptance distinct from semantic and stylistic preference. This index remains
 strictly authoring-only and does not enter the Registry or runtime inference.
@@ -234,18 +257,38 @@ rooted categories are now a supported generic premise-generation domain;
 questions. Declared restrictive focus markers support `only` and `just` both
 before the activity verb and before its measured duration; unrelated adverbs
 and duplicated focus positions remain outside the rule.
+`babysitting` is now core-owned compensated-activity vocabulary rather than a
+mined-pack-only noun. Curated therefore reads the same hourly-wage, focused
+duration, and earnings ask without a new arithmetic rule; the exact DEV check
+answers 10 and adds one safe GSM8K holdout commit (45 correct, zero wrong).
 
 Purpose-scoped savings questions now preserve the purchase goal, current
 progress, and committed contributions as separate evidence. A priced savings
-premise records a target-qualified `Goal`; “half the money she needs” records
-a goal-relative `Relation` that materializes one current holding only against a
-unique compatible goal; and the coordinated gift premise records one
-`Contribution` per contributor without changing general holdings. The new
-purpose-qualified deficit ask matches its purchase target and explicitly opts
-into adding those contributions. Repeated possessive/object form is expressed
-through the reusable `same_surface` predicate rather than trusting a pronoun's
-nearest resolved referent. Strict generation intersects those surface domains,
-and all three new premise rules round-trip through the ordinary matcher.
+premise records a target-qualified `Goal` for singular or plural purchase
+objects; fraction progress admits both “half the money” and “half of the
+money”; and the coordinated gift premise records one `Contribution` per
+contributor without changing general holdings. The bounded “for that purpose”
+adjunct is accepted only through the declared purpose preposition and noun.
+The purpose-qualified deficit ask matches its purchase target and explicitly
+opts into adding those contributions. Repeated possessive/object form is
+expressed through the reusable `same_surface` predicate rather than trusting a
+pronoun's nearest resolved referent. `wallet`, `parent`, `grandparent`, and
+`purpose` are ordinary core-owned words with their semantic roles declared
+separately. Strict generation can exercise both numbers in the otherwise
+number-neutral target slot, while target/cost agreement remains enforced. The
+new curated path answers the intended deficit and adds one safe GSM8K holdout
+commit (46 correct, zero wrong).
+
+Periodic measured output now has an opt-in counted-recipient cadence. A
+declared unit-recipient output such as “Tova writes a 5-page letter to 3
+friends twice a week” composes pages per product, recipient count, and
+occurrences into one `Rate` (`30 pages/week`); the existing `rate-span`
+consumer then performs the annual projection. `letter` opts into this frame,
+while an ordinary book or an uncounted audience does not acquire a hidden
+one-product-per-recipient assumption. The output-rate ask accepts both “in a
+year” and the idiomatic bare span “a year”. The intended curated reading
+answers 624, and the GSM8K DEV-holdout gate gains one correct commitment with
+zero wrongs.
 
 ## Current measured baseline
 
@@ -253,10 +296,10 @@ These are the gates run at the current runtime checkpoint:
 
 | Gate | Current result |
 | --- | --- |
-| full synthetic suite | 5,772 passed |
+| full synthetic suite | 5,819 passed |
 | curated suite | 71 correct, 0 wrong |
 | GSM8K DEV-train | 106 correct, 0 wrong |
-| GSM8K DEV-holdout | 44 correct, 0 wrong |
+| GSM8K DEV-holdout | 47 correct, 0 wrong |
 | ASDiv DEV | 46 correct, 0 wrong |
 | SVAMP DEV | 24 correct, 0 wrong |
 | MAWPS DEV | 11 correct, 0 wrong |
@@ -265,7 +308,7 @@ These are the gates run at the current runtime checkpoint:
 | FOLIO DEV | 0 numeric commitments |
 | COGS DEV-train / holdout | 1,771 / 1,693 exact, 0 incorrect |
 | PMB train / development | 117 / 4 exact, 0 incorrect |
-| lint | 0 errors, 1 known warning |
+| lint | 0 errors, 0 warnings |
 
 Review batch 62 deliberately retired one DEV-train commitment that happened
 to agree with its numeric gold while relying on an unsupported inference from
@@ -286,8 +329,8 @@ judged the resulting English or emitted fact valid.
 
 | Project | Premise rules | Independent asks | Answerable asks |
 | --- | ---: | ---: | ---: |
-| curated | 147/156 | 111/125 | 125/125 |
-| GSM8K | 141/148 | 150/163 | 163/163 |
+| curated | 150/160 | 112/126 | 126/126 |
+| GSM8K | 144/152 | 151/164 | 164/164 |
 
 The unsupported premise rows are deliberate safety interceptors or reader-only
 rules, not ordinary generation targets. The fourteen curated and thirteen
@@ -296,6 +339,18 @@ require an antecedent discourse group, measured-content or progress evidence,
 or embedded indirect-question syntax. Every one is now available to the
 answerable mode, which must synthesize the required antecedent and evidence
 rather than pretending the question is independently realizable.
+
+Qualified package totals and complete transfers into containers now close one
+more end-to-end arithmetic class. Indefinite size-qualified package statements
+are explicit distributive rates; several package sizes may contribute to one
+holder total. A contextual premise rule records an exact `TotalityTransfer`
+only for an explicit “them all” placement into a declared interior location,
+and saturation transfers a quantity only when the source content measure is
+unique. The destination receives an inspectable content event plus a stative
+quantity, which the generic definite container-content ask reads. Definite
+single-package statements, mixed source contents, missing totality, and
+non-container destinations remain decline boundaries. The motivating prose is
+not retained; invented analogues pin the mechanism and its negative neighbours.
 
 ## Designer and promotion workflow
 

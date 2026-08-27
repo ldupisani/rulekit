@@ -226,15 +226,29 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
     # Core-owned `remaining` now inherits the established remnant-noun domain
     # and additionally licenses the content-progress measure. The terminal
     # measurement construction declares exactly one further pair: final weight.
-    # `boy` and `girl` are now shared core complement-label vocabulary.
-    assert len(plural_nouns) == 98
-    assert {"boy", "fridge", "girl", "head", "topic", "university"} <= plural_nouns
+    # `boy` and `girl` are now shared core complement-label vocabulary. Parent,
+    # grandparent, purpose, and wallet likewise belong to ordinary core English;
+    # their semantic roles remain separately declared by categories. A bag is
+    # the one qualified package head, adding the reviewed small/large pairs.
+    assert len(plural_nouns) == 104
+    assert {
+        "boy",
+        "fridge",
+        "girl",
+        "grandparent",
+        "head",
+        "parent",
+        "purpose",
+        "topic",
+        "university",
+        "wallet",
+    } <= plural_nouns
     assert registry.attribute_applies_to("final", "weight")
     assert sum(
         registry.attribute_applies_to(attribute, noun)
         for attribute in adjectives
         for noun in plural_nouns
-    ) == 497
+    ) == 499
 
 
 def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> None:
@@ -268,6 +282,7 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
         "arithmetic/anchored-relation-elided-standard",
         "arithmetic/anchored-relation-possessive-kinship-standard",
         "arithmetic/anchored-relation-postfix-dimension",
+        "arithmetic/container-capacity-inquiry-frame",
         "arithmetic/dangling-comparative-relation",
         "arithmetic/existential-premise",
         "arithmetic/existential-premise-distributive",
@@ -300,7 +315,7 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
 def test_compatibility_rule_remains_supported_after_g5j_expansion() -> None:
     availability = list_rule_availability(load_project(CURATED))
 
-    assert sum(item.supported for item in availability) == 147
+    assert sum(item.supported for item in availability) == 150
     target = next(item for item in availability if item.id == RULE_ID)
     assert target.supported
     assert target.blockers == ()

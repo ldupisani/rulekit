@@ -16,6 +16,7 @@ from rulekit.kernel.model import Contribution, Goal, Quantity
 
 ROOT = Path(__file__).resolve().parents[1]
 GSM8K = ROOT / "projects" / "gsm8k"
+CURATED = ROOT / "projects" / "curated"
 
 TEXT = (
     "Dena is saving money for new shoes which cost $600. "
@@ -68,6 +69,51 @@ def test_savings_goal_progress_and_contributions_answer_the_deficit() -> None:
     }
 
 
+def test_singular_goal_optional_of_and_purpose_reference_answer_in_curated() -> None:
+    registry = load_project(CURATED).registry
+    text = (
+        "Aven is raising money for a new wallet which costs $300. "
+        "Aven has one third of the money she needs. "
+        "Her grandparents decided to give her $20 for that purpose, and her "
+        "parents twice as much as her grandparents. "
+        "How much more money does Aven need to buy the wallet?"
+    )
+    result = solve(text, registry)
+
+    assert result.answer.kind == "number"
+    assert result.answer.value == 140
+    assert [
+        (goal.entity, goal.measure, goal.value, goal.verb, goal.target)
+        for goal in result.store.by_kind(Goal)
+    ] == [("aven", "dollar", 300, "raise", "wallet")]
+    assert [
+        (quantity.entity, quantity.measure, quantity.value, quantity.verb)
+        for quantity in result.store.by_kind(Quantity)
+    ] == [("aven", "dollar", 100, "have")]
+    assert {
+        (fact.beneficiary, fact.contributor, fact.measure, fact.value)
+        for fact in result.store.by_kind(Contribution)
+    } == {
+        ("aven", "grandparent", "dollar", 20),
+        ("aven", "parent", "dollar", 40),
+    }
+    assert not result.deficiencies()
+
+
+def test_contribution_purpose_reference_rejects_an_unlicensed_object() -> None:
+    registry = load_project(CURATED).registry
+    text = (
+        "Her grandparents decided to give her $20 for that garden, and her "
+        "parents twice as much as her grandparents."
+    )
+    result = solve(text, registry)
+
+    assert "arithmetic/committed-transfer-conjoined-relative" not in (
+        _matched_rules(text, registry)
+    )
+    assert list(result.store.by_kind(Contribution)) == []
+
+
 def test_contribution_coordination_requires_repeated_pronoun_surface() -> None:
     registry = load_project(GSM8K).registry
     text = (
@@ -89,6 +135,30 @@ def test_purpose_qualified_deficit_does_not_borrow_another_target() -> None:
 
     assert result.answer.kind == "decline"
     assert "0 goal facts" in result.answer.reason
+
+
+def test_singular_goal_target_strictly_generates_and_round_trips() -> None:
+    project = load_project(CURATED)
+    candidate = generate_candidate(
+        project,
+        rule_id="arithmetic/savings-goal-priced-target",
+        seed=7412,
+        locked_bindings={
+            "who": "Aven",
+            "aux": "is",
+            "save": "raising",
+            "measure": "money",
+            "target": "wallet",
+            "cost": "costs",
+            "amount": "$90",
+        },
+    )
+
+    assert candidate.target_status in {"matched", "shadowed"}
+    assert candidate.target_bindings["target"] == "wallet"
+    assert "arithmetic/savings-goal-priced-target" in _matched_rules(
+        candidate.sentence, project.registry
+    )
 
 
 def test_new_premise_rules_are_available_and_round_trip() -> None:

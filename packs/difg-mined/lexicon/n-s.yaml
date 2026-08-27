@@ -449,10 +449,6 @@ entries:
   pants:
     senses:
     - noun
-  parent:
-    senses:
-    - noun
-    plural: parents
   park:
     senses:
     - noun
@@ -1064,10 +1060,6 @@ entries:
     - verb
     verb:
       lemma: purchase
-  purpose:
-    senses:
-    - noun
-    plural: purposes
   purse:
     senses:
     - noun

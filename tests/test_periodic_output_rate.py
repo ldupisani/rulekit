@@ -17,6 +17,7 @@ from rulekit.kernel.model import Quantity, Rate
 
 CURATED = Path("projects/curated")
 RULE_ID = "arithmetic/periodic-output-per-unit"
+RECIPIENT_RULE_ID = "arithmetic/periodic-output-per-recipient-frequency"
 
 
 @pytest.fixture(scope="module")
@@ -48,13 +49,61 @@ def test_measured_product_cadence_projects_across_converted_year(project):
 
 
 def test_output_rate_ask_resolves_subject_pronoun(project):
+    for question in (
+        "How many pages does she write in a year?",
+        "How many pages does she write a year?",
+    ):
+        result = solve(
+            "Dena writes a 25-page book every week. " + question,
+            project.registry,
+        )
+
+        assert result.answer.value == 1300
+
+
+@pytest.mark.parametrize(
+    "recipient_surface",
+    ["3 friends", "3 different friends"],
+)
+def test_measured_output_per_counted_recipient_and_frequency_projects_year(
+    project, recipient_surface
+):
     result = solve(
-        "Dena writes a 25-page book every week. "
+        f"Tova writes a 5-page letter to {recipient_surface} twice a week. "
         "How many pages does she write in a year?",
         project.registry,
     )
 
-    assert result.answer.value == 1300
+    assert result.answer.value == 1560
+    rates = [fact for fact in result.facts() if isinstance(fact, Rate)]
+    assert len(rates) == 1
+    assert (
+        rates[0].entity,
+        rates[0].measure,
+        rates[0].per,
+        rates[0].value,
+        rates[0].verb,
+    ) == ("tova", "page", "week", 30, "write")
+
+
+@pytest.mark.parametrize(
+    "premise",
+    [
+        # A book has not opted into the one-product-per-recipient convention.
+        "Tova writes a 5-page book to 3 friends twice a week.",
+        # No recipient count means there is no recipient multiplier to apply.
+        "Tova writes a 5-page letter to friends twice a week.",
+    ],
+)
+def test_recipient_frequency_output_requires_complete_opt_in_frame(
+    project, premise
+):
+    result = solve(
+        premise + " How many pages does Tova write in a year?",
+        project.registry,
+    )
+
+    assert result.answer.kind == "decline"
 
 
 @pytest.mark.parametrize(
@@ -105,7 +154,18 @@ def test_periodic_output_rule_is_generator_supported(project):
 
     candidate = generate_candidate(project, rule_id=RULE_ID, seed=7)
     assert candidate.target_status == "matched"
-    assert "-page book every " in candidate.sentence
+    assert "-page " in candidate.sentence
+    assert " every " in candidate.sentence
+    assert candidate.facts[0]["fields"]["measure"] == "page"
+
+
+def test_recipient_frequency_output_rule_is_generator_supported(project):
+    availability = {item.id: item for item in list_rule_availability(project)}
+    assert availability[RECIPIENT_RULE_ID].supported
+
+    candidate = generate_candidate(project, rule_id=RECIPIENT_RULE_ID, seed=7)
+    assert candidate.target_status == "matched"
+    assert "-page letter to " in candidate.sentence
     assert candidate.facts[0]["fields"]["measure"] == "page"
 
 

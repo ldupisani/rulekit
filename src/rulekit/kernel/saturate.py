@@ -46,6 +46,7 @@ from .model import (
     QuantifiedAdjustment,
     QuantifiedQuantity,
     Relation,
+    TotalityTransfer,
     VerbalRelation,
 )
 
@@ -2546,7 +2547,7 @@ def _distributive_rate_source(q: Quantity) -> bool:
     p = q.provenance
     if p.source == "arithmetic/existential-premise-distributive":
         return True
-    return p.source == "fold" and p.distributive
+    return p.distributive
 
 
 def _container_contents_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> list[Fact]:
@@ -2565,12 +2566,12 @@ def _container_contents_synth(store: FactStore, reg: Registry, log: ArithmeticLo
     emit Quantity(entity=H.entity, measure=I, value=H.value*CR.value,
     verb=H.verb) — the holder's derived content total.
 
-    Restricted to RAW-FOLD facts only (`provenance.source == "fold"`) for
-    both CR and H — never another synth plugin's own output — so this stays
-    a single-hop composition over the two facts the kernel already folds
-    correctly, with a trivially stable fixpoint (raw fold facts never
-    change across rounds; the 'already known' gate below stops the second
-    round from re-deriving the same fact and colliding with it).
+    Restricted to direct premise facts — never another synth plugin's own
+    output. Holder counts remain raw folds; a per-container rate may also be
+    emitted by a grammar rule whose provenance explicitly marks it
+    distributive. This admits an indefinite class statement such as "a large
+    crate has 80 beads" without treating a definite individual crate as a
+    rate.
 
     Decline-safe gates, all measured against dev-train (0 BROKE, 0 new
     wrong on the full 3772-item dev-train + dev-holdout diff):
@@ -2608,6 +2609,10 @@ def _container_contents_synth(store: FactStore, reg: Registry, log: ArithmeticLo
     SOLVES 0 dev-train items on its own. Its payoff (container-content
     totality asks) is a separate, later increment, built on this branch."""
     out: list[Fact] = []
+    direct_quantities = [
+        q for q in store.by_kind(Quantity)
+        if not q.provenance.source.startswith("synth/")
+    ]
     fold_quantities = [
         q for q in store.by_kind(Quantity) if q.provenance.source == "fold"
     ]
@@ -2623,11 +2628,15 @@ def _container_contents_synth(store: FactStore, reg: Registry, log: ArithmeticLo
     # beside the genuinely stated one. Filtered BEFORE the uniqueness
     # check, so a specific instance's fact never blocks a real rate either.
     rates_by_pair: dict[tuple[str, str], list[Quantity]] = {}
-    for q in fold_quantities:
+    for q in direct_quantities:
         if not _distributive_rate_source(q):
             continue
         rates_by_pair.setdefault((q.entity, q.measure), []).append(q)
 
+    contributions: dict[
+        tuple[str, str, str, int | None, str | None, str | None, str | None, str | None],
+        tuple[Quantity, str, float],
+    ] = {}
     for (container, content), rates in rates_by_pair.items():
         if len(rates) != 1:
             continue  # ambiguous per-container rate — decline rather than guess
@@ -2643,13 +2652,23 @@ def _container_contents_synth(store: FactStore, reg: Registry, log: ArithmeticLo
                 f"{holder.value} * {rate.value}", {}, log,
                 source="synth/container-contents",
             )
-            out.append(
-                Quantity(
-                    provenance=Provenance(source="synth/container-contents", sentence=-1),
-                    entity=holder.entity, measure=content, value=value,
-                    verb=holder.verb, occurrence=holder.occurrence, time=holder.time,
-                )
+            key = (
+                holder.entity,
+                content,
+                holder.verb,
+                holder.occurrence,
+                holder.time,
+                holder.owner,
+                holder.qualifier,
+                holder.label,
             )
+            previous = contributions.get(key)
+            if previous is not None:
+                value = evaluate(
+                    f"{previous[2]} + {value}", {}, log,
+                    source="synth/container-contents-sum",
+                )
+            contributions[key] = (holder, content, value)
             # mining candidate distributive-holder-enum: `rate` (CR) just
             # got composed into `holder`'s own bridged total above — its
             # (entity, measure) key is a per-unit RATE, not an independent
@@ -2657,6 +2676,90 @@ def _container_contents_synth(store: FactStore, reg: Registry, log: ArithmeticLo
             # sum it ALONGSIDE the bridged total it was consumed to derive
             # (see ArithmeticLog.consumed_rate_keys's own docstring).
             log.consumed_rate_keys.add((rate.entity, rate.measure))
+    for holder, content, value in contributions.values():
+        out.append(
+            Quantity(
+                provenance=Provenance(
+                    source="synth/container-contents", sentence=-1
+                ),
+                entity=holder.entity,
+                measure=content,
+                value=value,
+                verb=holder.verb,
+                occurrence=holder.occurrence,
+                time=holder.time,
+                owner=holder.owner,
+                qualifier=holder.qualifier,
+                label=holder.label,
+            )
+        )
+    return out
+
+
+def _container_totality_transfer_synth(
+    store: FactStore,
+    reg: Registry,
+    log: ArithmeticLog,
+) -> list[Fact]:
+    """Move one source's unambiguous complete quantity into a container.
+
+    ``TotalityTransfer`` deliberately carries no measure: a surface such as
+    "she puts them all in the bin" leaves that information anaphoric.  The
+    transfer becomes quantitative only when the resolved source has exactly
+    one non-container measure. Package counts are excluded because they name
+    the means of carrying the contents, not additional contents to place in
+    the destination. Multiple candidate content measures or multiple complete
+    transfers from the same source decline rather than guessing.
+    """
+    out: list[Fact] = []
+    transfers = list(store.by_kind(TotalityTransfer))
+    for transfer in transfers:
+        if sum(
+            candidate.source == transfer.source
+            for candidate in transfers
+        ) != 1:
+            continue
+
+        measures = {
+            quantity.measure.split("[", 1)[0]
+            for quantity in store.by_kind(Quantity)
+            if quantity.entity == transfer.source
+            and not _distributive_rate_source(quantity)
+            and not reg.word_in_category(
+                quantity.measure.split("[", 1)[0],
+                "quantity_container",
+            )
+        }
+        if len(measures) != 1:
+            continue
+        (measure,) = measures
+        value = _entity_total(store, reg, transfer.source, measure, log)
+        if value is None:
+            continue
+
+        provenance = Provenance(
+            source="synth/container-totality-transfer",
+            sentence=-1,
+            assumption=transfer.provenance.assumption,
+        )
+        out.append(
+            Quantity(
+                provenance=provenance,
+                entity=transfer.destination,
+                measure=measure,
+                value=value,
+                verb="have",
+            )
+        )
+        out.append(
+            ContainerContent(
+                provenance=provenance,
+                container=transfer.destination,
+                content=measure,
+                operation="transfer_all",
+                occurrence=transfer.occurrence,
+            )
+        )
     return out
 
 
@@ -2766,6 +2869,7 @@ def _distributive_container_total_synth(store: FactStore, reg: Registry, log: Ar
     for gt in store.by_kind(GroupTotal):
         counts_by_container.setdefault(gt.measure, []).append(gt.value)
 
+    totals_by_content: dict[str, tuple[float, str]] = {}
     for (container, content), rates in rates_by_pair.items():
         if len(rates) != 1:
             continue  # ambiguous per-container rate — decline rather than guess
@@ -2780,14 +2884,13 @@ def _distributive_container_total_synth(store: FactStore, reg: Registry, log: Ar
             f"{count} * {rate.value}", {}, log,
             source="synth/distributive-container-total",
         )
-        out.append(
-            GroupTotal(
-                provenance=Provenance(
-                    source="synth/distributive-container-total", sentence=-1
-                ),
-                measure=content, value=value, verb=rate.verb,
+        previous = totals_by_content.get(content)
+        if previous is not None:
+            value = evaluate(
+                f"{previous[0]} + {value}", {}, log,
+                source="synth/distributive-container-total-sum",
             )
-        )
+        totals_by_content[content] = (value, rate.verb)
         # NOTE (mining candidate distributive-holder-enum): deliberately
         # NOT marking `rate` in `log.consumed_rate_keys` here, unlike
         # synth/container-contents below. This synth's `container`
@@ -2803,6 +2906,15 @@ def _distributive_container_total_synth(store: FactStore, reg: Registry, log: Ar
         # (BROKE on dev-train: 9a46ef7a9e2e, af2909139386, f325779c365e)
         # the moment `_combined_holder_totals` started consuming the set.
         # Left as a documented non-fix, not silently dropped.
+    for content, (value, verb) in totals_by_content.items():
+        out.append(
+            GroupTotal(
+                provenance=Provenance(
+                    source="synth/distributive-container-total", sentence=-1
+                ),
+                measure=content, value=value, verb=verb,
+            )
+        )
     return out
 
 
@@ -3293,6 +3405,7 @@ PLUGINS: dict[str, Synthesizer] = {
     "synth/ratio-split-quantity": _ratio_split_synth,
     "synth/sum-constraint": _sum_constraint_synth,
     "synth/container-contents": _container_contents_synth,
+    "synth/container-totality-transfer": _container_totality_transfer_synth,
     "synth/distributive-container-total": _distributive_container_total_synth,
 }
 

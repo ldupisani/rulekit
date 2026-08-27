@@ -193,6 +193,34 @@ categories:
             tail in a bare existential ("30 boxes of apples"). This is narrower
             than `quantity_location`: a place can hold a quantity without its
             own counted instances licensing a container-content partitive.
+    sized_quantity_container:
+        parent: quantity_container
+        notes: >
+            Enumerable package/container heads whose declared size qualifier
+            can distinguish independent per-container content rates.
+    container_content_state_verb:
+        parent: state
+        notes: >
+            Stative predicates that report the contents of an interior
+            location. Their actor must be a declared container/location rather
+            than an arbitrary entity.
+    container_totality_transfer_verb:
+        parent: verb
+        notes: >
+            Placement predicates licensed when an explicit totality marker
+            transfers the complete anaphoric collection into a container.
+    container_capacity_placement_verb:
+        parent: verb
+        selectional_roles:
+            actor: quantity_event_participant
+            theme: noun
+            destination: quantity_interior_location
+        notes: >
+            Placement predicates used inside a non-assertive capacity inquiry;
+            membership does not assert that the placement occurred.
+    inquiry_cognition_verb:
+        parent: verb
+        notes: "Cognitive predicates that introduce an embedded inquiry."
     quantity_location_preposition:
         parent: preposition
         notes: >
@@ -763,6 +791,54 @@ categories:
             theme: edible_quantity_object
         notes: >
             Eating predicates whose compared object must be declared edible.
+    collection_addition_quantity_verb:
+        parent: quantity_event_verb
+        selectional_roles:
+            actor: quantity_event_participant
+            theme: noun
+        selectional_role_numbers:
+            theme: plural
+        notes: >
+            Addition predicates in their collection-member sense. A fraction
+            may select part of a plural collection ("a third of the students")
+            but not a numeric part of one indivisible count member.
+    material_addition_quantity_verb:
+        parent: quantity_event_verb
+        selectional_roles:
+            actor: quantity_event_participant
+            theme: mass_quantity_noun
+        notes: >
+            Addition predicates in their material/mass sense. This is an
+            alternative to the plural collection frame, not an exception to
+            its number contract.
+    food_addition_quantity_verb:
+        parent: quantity_event_verb
+        selectional_roles:
+            actor: quantity_event_participant
+            theme: edible_quantity_object
+        notes: >
+            Addition predicates taking a divisible food object. It preserves
+            ordinary phrases such as adding half of an apple without making
+            every singular count noun fractionally divisible.
+    livestock_raising_quantity_verb:
+        parent: quantity_event_verb
+        selectional_roles:
+            actor: quantity_event_participant
+            theme: animal
+        selectional_role_numbers:
+            theme: plural
+        notes: >
+            Raising/rearing predicates whose fractional object is a plural
+            animal collection, never a numeric part of one living animal.
+    resource_raising_quantity_verb:
+        parent: quantity_event_verb
+        selectional_roles:
+            actor: quantity_event_participant
+            theme: currency
+        notes: >
+            Fundraising predicates whose divisible object is a declared
+            currency resource. This remains a lexical event sense distinct
+            from the non-actual purpose-goal construction.
     past_departure_quantity_verb:
         parent: verb
         notes: >
@@ -905,6 +981,22 @@ categories:
         parent: noun
     output_quantity_product:
         parent: producible_quantity_object
+    unit_recipient_output_verb:
+        parent: quantity_ask_verb
+        selectional_roles:
+            actor: production_quantity_participant
+            theme: unit_recipient_output_product
+            recipient: animate
+        notes: >
+            Productive predicates licensed for the narrow word-problem
+            convention in which one measured product is made for every member
+            of a counted recipient set. This is opt-in: writing a book or
+            naming an uncounted audience does not imply a product count.
+    unit_recipient_output_product:
+        parent: output_quantity_product
+        notes: >
+            Measured products that can be distributed one per explicitly
+            counted recipient in a unit-recipient output construction.
     content_progress_quantity_verb:
         parent: quantity_event_verb
         selectional_roles:
@@ -1675,7 +1767,7 @@ categories:
             `fewer` remains available to count-quantity siblings but not to a
             mass frame, which requires `less` or neutral `more`.
     goal_predicate:
-        parent: verb
+        parent: non_quantity_object_verb
         notes: >
             Predicates whose declared construction introduces a target quantity
             rather than an event or current holding. This semantic parent is
@@ -1683,7 +1775,11 @@ categories:
             saving, or raising a quantity toward a target does not assert that
             the quantity was received or already exists. Child categories
             describe complement grammar, so new vocabulary extends compatible
-            constructions without adding word-specific arithmetic rules.
+            constructions without adding word-specific arithmetic rules. Goal
+            predicates also inherit the general quantitative-object exclusion:
+            their dedicated goal constructions may consume a quantity, but an
+            ordinary event/comparison reader must not reinterpret that target
+            as an actual holding or quantity-changing event.
     finite_infinitival_goal_predicate:
         parent: goal_predicate
         notes: >
@@ -2180,7 +2276,8 @@ members:
     non_quantity_holder:
         [amount, clay, cost, dollar, gram, inch, kilogram, liter, money, number,
          paper, pound, price, remainder, rest, sand, time, wool, year]
-    mass_quantity_noun: [clay, litter, money, paper, rest, sand, wool]
+    mass_quantity_noun:
+        [clay, litter, money, paper, rest, sand, sugar, vinegar, water, wool]
     partitive_weight_measure: [pound]
     partitive_volume_measure: [liter]
     weighable_partitive_substance: [clay, paper, sand, wool]
@@ -2261,6 +2358,7 @@ members:
         - tomato
         - toy
     physical_size_noun:
+        - bag
         - animal
         - apple
         - ball
@@ -2369,8 +2467,8 @@ members:
     # must never see a member it cannot resolve.
     # Deliberate exclusions ('player', 'cook', 'king') — see the category note.
     animate:
-        [teacher, student, friend, brother, child, gardener, guardian, librarian,
-         shopper, violinist]
+        [teacher, student, friend, brother, parent, grandparent, child, gardener,
+         guardian, librarian, shopper, violinist]
     # Animals can participate in quantity-changing events (notably eating,
     # finding, receiving, or losing items) while retaining their independent
     # membership ontology under `animal`. The generic head `animal` is also a
@@ -2401,6 +2499,8 @@ members:
     output_quantity_verb: [write, writes, wrote]
     output_quantity_measure: [page]
     output_quantity_product: [book]
+    unit_recipient_output_verb: [write, writes, wrote]
+    unit_recipient_output_product: [letter]
     content_progress_quantity_verb: [reading, reads]
     content_progress_perfect_participle: [read]
     content_progress_measure: [page]
@@ -2416,6 +2516,11 @@ members:
     enrollment_quantity_verb: [enroll, enrolled, enrolling, enrolls]
     drop_quantity_verb: [dropped, drops]
     eating_quantity_verb: [ate, eat, eats]
+    collection_addition_quantity_verb: [add, added, adding, adds]
+    material_addition_quantity_verb: [add, added, adding, adds]
+    food_addition_quantity_verb: [add, added, adding, adds]
+    livestock_raising_quantity_verb: [raise, raised, raises, raising]
+    resource_raising_quantity_verb: [raise, raised, raises, raising]
     past_departure_quantity_verb: [left]
     finishable_quantity_object: [course, puzzle, task]
     student_quantity_measure: [student]
@@ -2429,13 +2534,14 @@ members:
     transferable_quantity_object:
         [animal, alpaca, bird, can, cat, course, dog, dollar, fish, flower,
          hamster, number, rabbit, tree]
-    ownable_quantity_object: [business, money, shoe]
+    ownable_quantity_object: [business, money, shoe, wallet]
     droppable_quantity_object:
         [apple, ball, book, card, clip, coin, cookie, drum, egg, envelope, grape,
          key, marble, apricot, paper, pencil, pear, plum, puzzle, rose, sticker,
          tomato, toy]
     edible_quantity_object:
-        [apple, cookie, grape, apricot, pear, plum, tomato]
+        [apple, bird, cookie, egg, fish, grape, apricot, pear, plum, rabbit,
+         tomato]
     # A book can hold a page/count quantity even though it is neither animate
     # nor a location. Other common nouns enter this positive role only beside
     # evidence for their own ordinary holder reading.
@@ -2464,7 +2570,7 @@ members:
     purchase: [buy, buys, bought, buying]
     wage_verb: [earn, earns, earned, make, makes, made]
     activity_duration_verb: [did]
-    compensated_activity: [gardening, tutoring]
+    compensated_activity: [babysitting, gardening, tutoring]
     price_verb: [cost, costs]
     passive_quantity_participle: [bought, sold]
     passive_quantity_object:
@@ -2623,7 +2729,15 @@ members:
     quantity_location:
         [area, bench, cupboard, garden, pantry, storeroom, tree, university]
     quantity_interior_location:
-        [area, cupboard, fridge, garden, pantry, storeroom, university]
+        [area, barrel, beaker, bottle, bowl, box, bucket, canister, container,
+         cupboard, flask, fridge, garden, jar, jug, pantry, storeroom, tank,
+         university, vessel, vial]
+    sized_quantity_container: [bag]
+    container_content_state_verb:
+        [contain, contained, containing, contains, had, has, have]
+    container_totality_transfer_verb: [put, puts, putting]
+    container_capacity_placement_verb: [fit, fits, fitting]
+    inquiry_cognition_verb: [know, knowing, knows, knew]
     quantity_location_preposition: [in]
     quantity_surface_location: [bench, tree]
     tree_quantity_surface_location: [tree]
@@ -2677,6 +2791,7 @@ members:
     manner_preposition: [in, with, without]
     cause_preposition: ["because of", "due to", from, through]
     purpose_preposition: [for]
+    purpose_noun: [purpose]
     instrument_noun: [key, pencil]
     accompaniment_compatible_verb:
         [jumped, ran, teach, teaches, taught, travel, traveled, travels, walked]
@@ -2812,7 +2927,7 @@ measure_holder_compatibility:
     student_quantity_measure: [student_quantity_holder]
     institution_quantity_measure: [institution_quantity_holder]
     output_quantity_measure: [output_quantity_product]
-    length_measure: [linear_dimension_holder, animate]
+    length_measure: [linear_dimension_holder, motion_participant]
     mass_measure: [mass_dimension_holder, animate]
     duration_measure: [duration_holder]
     age_measure: [quantity_event_participant, bare_entity_reference]

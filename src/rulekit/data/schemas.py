@@ -117,6 +117,14 @@ class CategoryDef(StrictModel):
     # grammar maps its structural slots onto the semantic role names, while
     # the vocabulary-owning category declares which nouns can fill them.
     selectional_roles: dict[str, str] = Field(default_factory=dict)
+    # Optional grammatical-number refinements for those semantic roles. A
+    # lexical frame may therefore distinguish a plural collection theme from
+    # a singular/mass material theme without putting either vocabulary or
+    # surface-form exceptions in a grammar rule. These constraints inherit
+    # with the role contract and may only be added or retained by children.
+    selectional_role_numbers: dict[
+        str, Literal["singular", "plural"]
+    ] = Field(default_factory=dict)
     notes: str | None = None
 
     @model_validator(mode="after")
@@ -138,6 +146,11 @@ class CategoryDef(StrictModel):
             if not category or category.strip() != category:
                 raise ValueError(
                     "selectional role categories must be non-empty and trimmed"
+                )
+        for role in self.selectional_role_numbers:
+            if not role or role.strip() != role:
+                raise ValueError(
+                    "selectional role number names must be non-empty and trimmed"
                 )
         return self
 
@@ -541,6 +554,12 @@ class MatchToken(StrictModel):
     # contexts where an explicit numerator is clearer ("one third" rather
     # than bare "third"). Matcher acceptance remains unchanged.
     generation_explicit_unit_fraction: bool = False
+    # GENERATION-ONLY: expose both the singular lexicon entry and its declared
+    # plural surfaces for an otherwise number-neutral noun category slot.
+    # Matcher acceptance remains unchanged. This is for constructions whose
+    # grammar genuinely admits either number while deterministic generation
+    # should exercise both (for example, a singular wallet or plural shoes).
+    generation_all_numbers: bool = False
     # OPT-IN: a common-noun slot must be a complete argument, not a floating
     # bare singular. Names, resolved pronouns, counted nouns, possessed nouns,
     # and bare plurals are already complete; another common noun needs a
@@ -736,6 +755,7 @@ class MatchToken(StrictModel):
                 or self.word_fraction_within_whole
                 or self.fraction_positive
                 or self.generation_explicit_unit_fraction
+                or self.generation_all_numbers
                 or self.referential
                 or self.generation_bare_reference
                 or self.bare_reference_category is not None
@@ -749,6 +769,7 @@ class MatchToken(StrictModel):
                     "qualifier_cat/number/standalone/integer/value bounds/"
                     "fraction_within_whole/word_fraction_within_whole/"
                     "fraction_positive/generation_explicit_unit_fraction/"
+                    "generation_all_numbers/"
                     "referential/generation_bare_reference/"
                     "determinerless_category/"
                     "common_noun_cat/bare_form/finite_form"
@@ -823,6 +844,13 @@ class MatchToken(StrictModel):
             raise ValueError(
                 "`generation_explicit_unit_fraction` only qualifies a "
                 "`type: fraction` slot"
+            )
+        if self.generation_all_numbers and (
+            self.cat is None or self.number is not None
+        ):
+            raise ValueError(
+                "`generation_all_numbers` requires a number-neutral "
+                "category-gated slot"
             )
         if self.referential and self.slot is None:
             raise ValueError("`referential` only qualifies a slot")
@@ -1463,6 +1491,7 @@ class FactEmit(StrictModel):
         "verbal_relation", "location_event", "location_constraint",
         "location_transition_absence",
         "spatial_placement", "measured_content_change", "container_content",
+        "totality_transfer",
         "semantic_graph_node", "semantic_graph_edge",
         "alias", "enumerated_disjunction",
         "disjunctive_conditional", "ground_conditional",
@@ -1491,11 +1520,18 @@ class FactEmit(StrictModel):
     # ``{verb.surface}``; it belongs to Provenance rather than the emitted
     # Fact's semantic fields and therefore never changes fact identity.
     temporal_perspective: str | None = None
+    # Optional evidence-shape metadata for a stated per-member quantity.
+    # This is deliberately provenance rather than a Quantity field: the
+    # amount remains an ordinary quantity, while container composition can
+    # distinguish a generic/distributive rate from one specific instance.
+    distributive: bool = False
 
     model_config = ConfigDict(extra="allow")
 
     @model_validator(mode="after")
     def _collect_extra(self) -> "FactEmit":
+        if self.distributive and self.fact != "quantity":
+            raise ValueError("distributive provenance is valid only for quantity facts")
         if self.model_extra:
             self.fields = {**self.fields, **self.model_extra}
         return self

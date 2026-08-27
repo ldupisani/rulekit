@@ -174,10 +174,6 @@ entries:
   grandpa:
     senses:
     - noun
-  grandparent:
-    senses:
-    - noun
-    plural: grandparents
   grapes:
     senses:
     - noun
@@ -880,11 +876,6 @@ entries:
   kneading:
     senses:
     - verb
-  knew:
-    senses:
-    - verb
-    verb:
-      lemma: know
   knife:
     senses:
     - noun
@@ -895,19 +886,6 @@ entries:
   knocked:
     senses:
     - verb
-  know:
-    senses:
-    - verb
-  knowing:
-    senses:
-    - verb
-    verb:
-      lemma: know
-  knows:
-    senses:
-    - verb
-    verb:
-      lemma: know
   koala:
     senses:
     - noun

@@ -1544,7 +1544,7 @@ rules:
         - opt:
             - {slot: appos_det, cat: possessive_determiner}
             - {slot: appos_role, cat: animate}
-        - {slot: std, type: entity, referential: true}
+        - {slot: std, type: entity, common_noun_cat: quantity_holder, referential: true}
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - bound_requires_category: {bound: appos_role, slot: who, cat: quantity_event_participant, allow_proper_name: true}
@@ -1557,11 +1557,18 @@ rules:
           roles:
             actor: [who, std]
           allow_proper_name: [who, std]
+      - verb_roles_compatible:
+          verb: verb
+          frame_categories: [consumption_quantity_verb]
+          roles:
+            theme: [item1, item2]
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: std, cat: non_quantity_holder}
       - slot_not_category: {slot: item1, cat: many_incompatible_noun}
       - slot_not_category: {slot: item2, cat: many_incompatible_noun}
+      - measure_holder_compatible: {measure: item1, holders: [who], allow_proper_name: true, when_declared: true}
+      - measure_holder_compatible: {measure: item2, holders: [who, std], allow_proper_name: true, when_declared: true}
       - same_category_membership: {slots: [item1, item2], cat: timeperiod}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - distinct: [who, std]
@@ -3816,6 +3823,110 @@ rules:
         offset: "n * sign(dir)"
         verb: "{verb}"
 
+  - id: arithmetic/qualified-container-content-per-unit
+    phase: read
+    description: >
+      An indefinite qualified package class can state its content per package:
+      "A large crate has 80 beads." The size qualifier remains part of the
+      container identity, and distributive provenance distinguishes this
+      generic class rate from a statement about one definite crate. Multiple
+      compatible qualified package counts may therefore compose without
+      treating their different rates as a conflict.
+    match:
+      sentence:
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: container, cat: sized_quantity_container, qualified: true, qualifier_cat: size_attribute, number: singular}
+        - {slot: verb, cat: container_content_state_verb, finite_form: true}
+        - {slot: item, type: counted}
+    where:
+      - number_compatible: [container, verb]
+    consumes: [item]
+    emits:
+      - fact: quantity
+        entity: "{container}"
+        qualifier: "{container.qualifier}"
+        measure: "{item}"
+        measure_qualifier: "{item.qualifier}"
+        value: "item"
+        verb: "{verb}"
+        distributive: true
+
+  - id: arithmetic/container-capacity-inquiry-frame
+    phase: read
+    generation: safety
+    description: >
+      A person's stated wish to discover a container's capacity is framing,
+      not evidence that any placement occurred: "Mira wants to know how many
+      beads she can fit in a bin." The complete construction is recognized so
+      its local subject pronoun is licensed, while emitting no quantity.
+    match:
+      sentence:
+        - {slot: seeker, type: entity, referential: true, bare_reference_category: bare_entity_reference, at_start: true}
+        - {slot: goal_verb, cat: finite_infinitival_goal_predicate, finite_form: true}
+        - {lit: to}
+        - {slot: cognition, cat: inquiry_cognition_verb, bare_form: true}
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: plural}
+        - {slot: who, cat: animate_pronoun}
+        - {slot: modal, cat: capacity_modal}
+        - {slot: placement, cat: container_capacity_placement_verb, bare_form: true}
+        - {slot: prep, cat: quantity_location_preposition}
+        - {lit: [a, the], consume_skipped: true}
+        - {slot: destination, cat: quantity_interior_location, number: singular}
+        - {lit: ".", consume_skipped: true}
+    where:
+      - number_compatible: [seeker, goal_verb]
+      - attribute_compatible: {attribute: prep, noun: destination}
+      - verb_roles_compatible:
+          verb: placement
+          roles:
+            theme: [item]
+            destination: [destination]
+          frame_categories: [container_capacity_placement_verb]
+    satisfies:
+      who: [refers]
+    emits: []
+
+  - id: arithmetic/container-totality-transfer
+    phase: read
+    generation: contextual
+    generation_context:
+      before:
+        - sentence:
+            - {slot: context_holder, type: name}
+            - {slot: context_verb, cat: possession_state, finite_form: true}
+            - {slot: context_item, type: counted}
+          where:
+            - number_compatible: [context_holder, context_verb]
+      required_fact_counts: {quantity: 1}
+    question_assumption: true
+    description: >
+      A resolved holder places the whole previously mentioned collection in
+      one declared container: "She puts them all in the bin." This records
+      the source and destination without guessing what the plural pronoun
+      denotes. Saturation transfers a quantity only when the source has one
+      unambiguous non-container measure.
+    match:
+      sentence:
+        - {slot: who, cat: animate_pronoun, at_start: true}
+        - {slot: verb, cat: container_totality_transfer_verb, finite_form: true}
+        - {slot: collection, cat: plural_object_pronoun}
+        - {slot: totality, cat: group_total_quantifier}
+        - {slot: prep, cat: quantity_location_preposition}
+        - {lit: the, consume_skipped: true}
+        - {slot: destination, cat: quantity_interior_location, number: singular}
+        - {lit: ".", consume_skipped: true}
+    where:
+      - number_compatible: [who, verb]
+    satisfies:
+      collection: [refers]
+    emits:
+      - fact: totality_transfer
+        source: "{who}"
+        destination: "{destination}"
+        verb: "{verb}"
+
   - id: arithmetic/existential-premise
     phase: read
     description: >
@@ -4367,12 +4478,18 @@ rules:
       sentence:
         - {slot: who, type: name}
         - {slot: verb, type: verb, finite_form: true}
-        - {slot: f, type: fraction, fraction_within_whole: true}
+        - {slot: f, type: fraction, fraction_within_whole: true, generation_explicit_unit_fraction: true}
         - {lit: of}
         - {lit: the, consume_skipped: true}
         - {slot: item, type: noun}
     where:
       - number_compatible: [who, verb]
+      - verb_roles_compatible:
+          verb: verb
+          roles:
+            actor: [who]
+            theme: [item]
+          allow_proper_name: [who]
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: animate_object_verb, role_cat: quantity_event_participant}
     consumes: [f]
     emits:
@@ -5662,11 +5779,13 @@ rules:
     phase: read
     description: >
       A resource-building activity with an explicit priced target, such as
-      "Dena is saving money for new shoes which cost $600" or "Dena is raising
-      money for new shoes which cost $600". The activity is supplied by a
-      shared grammatical category. The amount is a Goal, not a holding or unit
-      Price; its target remains attached so a later purpose-qualified deficit
-      ask cannot borrow an unrelated monetary goal.
+      "Dena is saving money for new shoes which cost $600" or "Aven is raising
+      money for a new wallet which costs $300". The target may be singular or
+      plural; ordinary determiners and modifiers are handled by the reader.
+      The activity is supplied by a shared grammatical category. The amount is
+      a Goal, not a holding or unit Price; its target remains attached so a
+      later purpose-qualified deficit ask cannot borrow an unrelated monetary
+      goal.
     match:
       sentence:
         - {slot: who, type: name}
@@ -5674,12 +5793,13 @@ rules:
         - {slot: save, cat: purpose_resource_goal_activity, present_participle: true}
         - {slot: measure, cat: currency}
         - {lit: for}
-        - {slot: target, cat: ownable_quantity_object, number: plural}
+        - {slot: target, cat: ownable_quantity_object, generation_all_numbers: true}
         - {lit: which}
         - {slot: cost, cat: price_verb}
         - {slot: amount, cat: currency, counted: true}
     where:
       - number_compatible: [who, aux]
+      - number_compatible: [target, cost]
     consumes: [amount]
     emits:
       - fact: goal
@@ -5692,10 +5812,12 @@ rules:
   - id: arithmetic/goal-progress-fraction-needed
     phase: read
     description: >
-      "Dena has half the money she needs" states current progress relative
-      to Dena's unique compatible Goal. The reserved standard is resolved
-      by the generic goal-progress synthesizer; without exactly one goal the
-      relation remains unresolved and no holding is invented.
+      "Dena has half the money she needs" and "Aven has one third of the money
+      she needs" state current progress relative to the subject's unique
+      compatible Goal. The optional `of` belongs to the fraction-of-a-whole
+      construction. The reserved standard is resolved by the generic
+      goal-progress synthesizer; without exactly one goal the relation remains
+      unresolved and no holding is invented.
     match:
       sentence:
         - {slot: who, type: name}
@@ -5703,6 +5825,8 @@ rules:
         - opt:
             - {slot: focus, cat: restrictive_focus_adverb}
         - {slot: f, type: fraction, word_fraction_within_whole: true, fraction_positive: true}
+        - opt:
+            - {lit: of}
         - {lit: the, consume_skipped: true}
         - {slot: measure, cat: currency}
         - {slot: pron, cat: animate_pronoun}
@@ -5725,9 +5849,13 @@ rules:
     description: >
       A committed contribution followed by an elided comparative sibling:
       "her guardian decided to give her $40, and her brother three times as
-      much as her guardian". Both contributors, the shared beneficiary, and both
-      amounts are preserved as Contribution facts. The second amount inherits
-      only the explicitly repeated standard contributor and multiplier.
+      much as her guardian". An explicit purpose-reference adjunct such as
+      "for that purpose" may follow the first amount. It licenses only the
+      declared purpose preposition and purpose noun; it does not turn arbitrary
+      trailing material into part of the transfer. Both contributors, the
+      shared beneficiary, and both amounts are preserved as Contribution facts.
+      The second amount inherits only the explicitly repeated standard
+      contributor and multiplier.
     match:
       sentence:
         - {slot: poss1, cat: possessive_determiner}
@@ -5737,6 +5865,10 @@ rules:
         - {slot: give, cat: contribution_transfer_verb, bare_form: true}
         - {slot: recipient, cat: animate_object_pronoun}
         - {slot: item, cat: currency, counted: true}
+        - opt:
+            - {slot: purpose_prep, cat: purpose_preposition}
+            - {lit: that, consume_skipped: true}
+            - {slot: contribution_purpose, cat: purpose_noun}
         - {lit: and}
         - {slot: poss2, cat: possessive_determiner}
         - {slot: giver2, cat: animate}
@@ -5754,6 +5886,11 @@ rules:
       - verb_roles_compatible:
           verb: give
           roles: {actor: [giver1], theme: [item]}
+    satisfies:
+      poss1: [refers]
+      poss2: [refers]
+      poss3: [refers]
+      purpose_prep: [object]
     consumes: [item, k]
     emits:
       - fact: contribution
@@ -6109,6 +6246,45 @@ rules:
         measure: "{product.qualifier}"
         per: "{span}"
         value: "product"
+        verb: "{verb}"
+
+  - id: arithmetic/periodic-output-per-recipient-frequency
+    phase: read
+    description: >
+      A measured product can be made once for each explicitly counted
+      recipient, several times per cadence unit: "Tova writes a 5-page letter
+      to 3 friends twice a week." The resulting page rate is pages per letter
+      multiplied by recipients and occurrences. Both the governing verb and
+      product opt into the unit-recipient frame; this does not make ordinary
+      books one-per-reader, and an uncounted audience supplies no multiplier.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: production_quantity_participant, referential: true, bare_reference_category: bare_entity_reference}
+        - {slot: verb, cat: unit_recipient_output_verb, finite_form: true}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: product, cat: unit_recipient_output_product, qualified: true, attributive_counted: true, qualifier_cat: output_quantity_measure}
+        - {slot: recipient_prep, cat: destination_preposition}
+        - {slot: recipients, cat: animate, counted: true, number: plural}
+        - {slot: frequency, type: multiplier}
+        - {lit: [a, an], consume_skipped: true}
+        - {slot: span, cat: duration_measure, number: singular}
+    where:
+      - number_compatible: [who, verb]
+      - verb_roles_compatible:
+          verb: verb
+          roles:
+            actor: [who]
+            theme: [product]
+            recipient: [recipients]
+          frame_categories: [unit_recipient_output_verb]
+          allow_proper_name: [who]
+    consumes: [product, recipients, frequency]
+    emits:
+      - fact: rate
+        entity: "{who}"
+        measure: "{product.qualifier}"
+        per: "{span}"
+        value: "product * recipients * frequency"
         verb: "{verb}"
 
   - id: arithmetic/content-progress-measured-product
@@ -6756,6 +6932,31 @@ asks:
       entity_qualifier: "{place.qualifier}"
     generation:
       omit_slots: [start_marker]
+
+  - id: ask/how-many-container-content-state
+    # "How many beads does the bin contain?" asks for the current contents
+    # of a declared interior location. A generic entity cannot fill the
+    # container slot, and the stative content frame keeps arbitrary
+    # transitive verbs out of this construction.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: plural}
+        - {slot: aux, type: auxiliary}
+        - {lit: the, consume_skipped: true}
+        - {slot: container, cat: quantity_interior_location, referential: true, number: singular}
+        - {slot: verb, cat: container_content_state_verb, bare_form: true}
+    where:
+      - number_compatible: [container, aux]
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+    resolves:
+      consumer: single-entity
+      entity: "{container}"
+      measure: "{item}"
+      measure_qualifier: "{item.qualifier}"
+      verb: "{verb}"
+      sum_measure_variants: "true"
 
   - id: ask/how-many-in-owned-place
     # "How many marbles are in Mira's pantry?" names both a location and
@@ -8714,6 +8915,9 @@ asks:
     # Project a measured production cadence across one named duration unit.
     # The governing verb and output measure must satisfy the same declared
     # role frame as the premise; rate-span performs the duration conversion.
+    # English permits both "write in a year" and the bare-span "write a
+    # year" in this rate-total question, so the structural preposition is
+    # optional without changing the query semantics.
     match:
       question:
         - {lit: how}
@@ -8722,7 +8926,8 @@ asks:
         - {slot: aux, type: auxiliary}
         - {slot: who, type: entity}
         - {slot: verb, cat: output_quantity_verb, bare_form: true}
-        - {lit: in}
+        - opt:
+            - {lit: in}
         - {lit: [a, an], consume_skipped: true}
         - {slot: span, cat: duration_measure, number: singular}
     where:
@@ -9685,7 +9890,7 @@ asks:
         - {lit: to}
         - {slot: buy, cat: purchase, bare_form: true}
         - {lit: the, consume_skipped: true}
-        - {slot: target, cat: ownable_quantity_object, number: plural}
+        - {slot: target, cat: ownable_quantity_object, generation_all_numbers: true}
     where:
       - number_compatible: [who, aux]
     resolves:

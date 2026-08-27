@@ -367,9 +367,6 @@ entries:
     senses:
     - noun
     plural: babysitters
-  babysitting:
-    senses:
-    - noun
   back:
     senses:
     - adverb
@@ -389,10 +386,6 @@ entries:
     senses:
     - noun
     plural: badges
-  bag:
-    senses:
-    - noun
-    plural: bags
   bagel:
     senses:
     - noun
@@ -1496,24 +1489,6 @@ entries:
   contact:
     senses:
     - noun
-  contain:
-    senses:
-    - verb
-  contained:
-    senses:
-    - verb
-    verb:
-      lemma: contain
-  containing:
-    senses:
-    - verb
-    verb:
-      lemma: contain
-  contains:
-    senses:
-    - verb
-    verb:
-      lemma: contain
   contest:
     senses:
     - noun

@@ -117,6 +117,26 @@ def test_another_declared_activity_uses_the_same_construction(registry):
     assert result.answer.value == pytest.approx(12.0)
 
 
+def test_core_babysitting_activity_uses_the_same_scoped_wage_path(registry):
+    result = solve(
+        "Lena earns $15 an hour for babysitting. "
+        "Yesterday she just did 24 minutes of babysitting. "
+        "How much did she earn?",
+        registry,
+    )
+
+    assert result.answer.kind == "number"
+    assert result.answer.value == pytest.approx(6.0)
+    assert [
+        (fact.participant, fact.activity)
+        for fact in result.store.by_kind(RateScope)
+    ] == [("lena", "babysitting")]
+    assert [
+        (fact.participant, fact.activity, fact.elapsed, fact.unit)
+        for fact in result.store.by_kind(ActivityDuration)
+    ] == [("lena", "babysitting", 24.0, "minute")]
+
+
 def test_existing_unscoped_wage_span_path_is_unchanged(registry):
     result = solve(
         "Rob earns 10 dollars an hour. Rob has 8 hours. "

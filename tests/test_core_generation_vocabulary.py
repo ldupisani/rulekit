@@ -108,7 +108,8 @@ def test_new_core_words_are_reachable_generator_fillers() -> None:
     status = exploration_status(project)
     identities = {item["identity"] for item in status["fillers"]}
 
-    assert len(identities) == 368
+    assert len(identities) == 378
+    assert "letter" in identities
     assert {
         "ago",
         "able",
@@ -154,6 +155,10 @@ def test_new_core_words_are_reachable_generator_fillers() -> None:
         "turquoise",
         "old",
         "head",
+        "parent",
+        "grandparent",
+        "purpose",
+        "wallet",
         "topic",
         "university",
         "teach",
@@ -176,6 +181,7 @@ def test_new_core_words_are_reachable_generator_fillers() -> None:
         "make",
         "just",
         "only",
+        "babysitting",
         "gardening",
         "tutoring",
         "read",

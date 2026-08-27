@@ -113,10 +113,10 @@ plural/base `need` or `require`. The comparative form also applies
 `same_number` between
 its standalone count and noun, admitting `1 fewer shopper` and
 `2 fewer shoppers` while rejecting both mismatches. The current curated
-project has 143 loaded reading rules and 325 reachable generated-filler
-identities. Of those rules, 135 are ordinary selectable generated premises
-and eight are explicitly fact-free safety interceptors. Keeping those roles in
-the schema prevents
+project has 160 loaded reading rules and 378 reachable generated-filler
+identities. Of those rules, 150 are ordinary selectable generated premises,
+nine are explicitly fact-free safety interceptors, and one is a declared
+reader-only gapped construction. Keeping those roles in the schema prevents
 generation coverage from treating defensive recognition as authored English.
 Reading and Generate likewise keep surviving safety consumers out of their
 premise-match lists. A safety rule remains active inside the document matcher
@@ -224,6 +224,11 @@ stable for Designer evidence, but their slots draw from these shared domains.
 Adding a compatible predicate therefore extends a grammatical construction
 without adding another arithmetic rule. Every construction emits the same
 `Goal`; its surface verb remains trace evidence and is not a consumer switch.
+The shared parent inherits `non_quantity_object_verb`: a dedicated goal rule
+can consume its declared quantity complement, but an ordinary event or ratio
+reader cannot reinterpret a desired, required, or saved target as an actual
+quantity. This inheritance makes new goal vocabulary safe by default instead
+of requiring another exclusion entry beside every new surface.
 
 Comparative relations headed by any declared `goal_predicate` are likewise
 goal-scoped. The goal-relation synthesizer anchors them only on another
@@ -235,14 +240,19 @@ into a target or materialize a fictitious current holding for Fia.
 Purpose-scoped monetary goals preserve three kinds of evidence instead of
 collapsing them into one holding. A priced resource-building premise emits a
 `Goal` whose optional `target` identifies the intended purchase. A statement
-of current progress as a fraction of “the money needed” emits a `Relation` with the
-reserved goal standard; the goal-progress synthesizer materializes a state
-`Quantity` only when exactly one compatible goal exists. A committed transfer
-emits `Contribution` facts that retain both beneficiary and contributor rather
-than pretending a planned gift has already changed general holdings. Only a
-purpose-qualified deficit ask opts into adding those contributions, and its
-target must match the goal. Ordinary deficit asks retain their historical
-single-goal, single-current-holding behavior.
+of current progress as a fraction of “the money needed” emits a `Relation` with
+the reserved goal standard; the surface may include the productive partitive
+marker in “half of the money”. The goal-progress synthesizer materializes a
+state `Quantity` only when exactly one compatible goal exists. A committed
+transfer emits `Contribution` facts that retain both beneficiary and
+contributor rather than pretending a planned gift has already changed general
+holdings. Its optional “for that purpose” tail is a bounded grammatical adjunct
+licensed by declared purpose-preposition and purpose-noun categories; it does
+not admit arbitrary trailing objects. Priced targets and target-qualified asks
+admit singular and plural purchase objects while enforcing target/cost number
+agreement. Only a purpose-qualified deficit ask opts into adding the
+contributions, and its target must match the goal. Ordinary deficit asks retain
+their historical single-goal, single-current-holding behavior.
 
 Ask resolution fields are normally scalar templates, but may also be lists of
 scalar templates when the question itself names an exact set. A variadic
@@ -693,6 +703,24 @@ changes and constraints, dated ages, and explicit
 their own identity keys and value parts; the store does not flatten all
 meaning into generic triples.
 
+Qualified package contents stay inside the ordinary quantity model. A generic
+class statement such as “a large crate has 40 beads” emits a size-qualified
+`Quantity` whose provenance explicitly marks it distributive; a definite
+individual crate emits no such rate. The container-content synthesizer may
+therefore multiply and sum several compatible qualified package counts for
+one holder without treating distinct package sizes as conflicting rates.
+
+Moving the complete previously mentioned collection into a destination is a
+separate commitment. `TotalityTransfer` records the resolved source,
+destination, placement verb, and occurrence without guessing a measure from
+the pronoun itself. Saturation acts only when that source has exactly one
+non-package content measure, then emits a stative destination `Quantity` and
+an inspectable `ContainerContent(operation="transfer_all")`. Multiple content
+measures, multiple total transfers, a missing totality marker, or a
+non-container destination decline. The normal `single-entity` consumer then
+answers a definite container-content ask; no container-specific arithmetic
+consumer is needed.
+
 Aggregate instrument readings keep three representations distinct.
 `SpatialPlacement` records that a measured container is supported by an
 instrument, including the spatial relation; it does not assign the
@@ -1015,6 +1043,15 @@ uses plausible vocabulary without rewriting what the reader recognizes.
 Category overrides preserve structural morphology from the reader slot—such
 as plural, counted, possessed, or qualified form—rather than replacing it
 with an uninflected category member.
+
+A number-neutral noun-category slot normally generates its canonical lexicon
+entries, even though the reader may also accept declared plurals. A rule whose
+construction genuinely supports both numbers can opt into
+`generation_all_numbers`; realization then exposes both singular and declared
+plural surfaces without adding a matching restriction. Agreement predicates
+still prune incompatible surrounding verbs. This keeps authoring coverage
+complete for constructions such as singular priced targets and plural priced
+targets without duplicating the grammar rule.
 
 Optional branches may exist solely to prevent prefix acceptance. For example,
 an imperative single-holder ask captures a coordinated second holder so the
@@ -1595,6 +1632,15 @@ verb_roles_compatible:
   allow_plural_class: [std]
 ```
 
+A frame may also refine one of its roles with
+`selectional_role_numbers: {ROLE: singular|plural}`. The number requirement is
+category-owned lexical grammar, inherited beside the role target, and cannot
+be replaced by a conflicting child requirement. It is checked before the
+construction's proper-name or plural-class permissions. Sibling frames remain
+alternatives, so one surface verb can expose a plural collection sense and a
+separate mass-material sense without weakening either. The matcher,
+availability analysis, and realizer all consult the same role-number table.
+
 The registry selects the most-specific applicable verb category. Sibling
 categories are alternative complete frames for polysemous verbs: one frame
 must accept every mapped role, so the actor constraint from one sense cannot
@@ -1658,6 +1704,17 @@ measure and child holder inherit the relationship, while another pack can add
 members to either category without editing the rule. Multiple packs may also
 add independent target categories to the same source relationship.
 
+Constructions apply these relationships according to the semantic role played
+by a surface slot. The full times-as-many conjunct, for example, maps its two
+count nouns through measure/holder compatibility and requires a positive
+common-noun comparison standard. It maps those nouns to a verb `theme` only
+for an explicitly selected frame family such as consumption. In a motion
+comparison, `inches` is the event's distance measure rather than its theme; a
+blanket theme mapping would therefore reject a valid distance clause. Length
+measures apply to `motion_participant` as well as intrinsic linear-dimension
+holders, while the independent actor frame still rejects an entity that
+cannot perform the motion.
+
 The same relationship licenses measured products such as `page -> book`.
 `arithmetic/periodic-output-per-unit` converts a singular product made every
 bare duration unit into an ordinary `Rate`; the matching ask then reuses the
@@ -1665,6 +1722,18 @@ generic `rate-span` consumer. Conventional annualization is authored as a
 `scope: cadence` conversion. Cadence-scoped pairs are visible only to that
 rate projection path, so the elementary convention `year -> 52 weeks` cannot
 silently become an exact elapsed-time conversion in duration comparisons.
+
+Counted-recipient output is a separate opt-in frame rather than a general
+property of production verbs. `unit_recipient_output_verb` declares actor,
+product theme, and animate recipient roles, while
+`unit_recipient_output_product` identifies products for which an explicitly
+counted audience means one product per recipient. The periodic recipient rule
+multiplies the measured product extent, recipient count, and stated frequency
+into the same ordinary `Rate`. Thus adding a compatible correspondence product
+extends the construction through category data, while books and uncounted
+audiences remain outside it. The annual output ask permits an optional
+structural `in` before its single duration span; both surfaces resolve through
+the same `rate-span` consumer.
 
 Activity-scoped wages preserve one more boundary than an ordinary rate.
 `arithmetic/activity-scoped-wage-rate` emits the numeric `Rate` and a separate
@@ -1675,6 +1744,9 @@ an ordinary quantity holding. When an earnings ask names no span, `rate-span`
 uses this duration only when exactly one rate scope and exactly one matching
 participant/activity duration exist. A scoped rate never falls back to an
 unqualified time quantity, so tutoring time cannot satisfy a gardening wage.
+Ordinary compensated activity vocabulary is core-owned and extensible through
+`compensated_activity`; gardening, tutoring, and babysitting all use this one
+construction and consumer without activity-specific arithmetic rules.
 The pack-declared restrictive focus adverbs may appear immediately before the
 activity verb or its measured duration (`only/just did 50 minutes` / `did
 only/just 50 minutes`); they preserve the stated duration and do not widen the
