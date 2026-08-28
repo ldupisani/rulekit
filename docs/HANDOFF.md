@@ -55,12 +55,15 @@ anaphoric distance chains with exact combined totals (132).
 Qualified-package container questions now cover both separated per-package
 statements and inline `N large bags with M items` / `N small bags of M items`
 pairs. Explicit `them all`, `both bags`, and `the contents of both bags`
-transfers resolve through the same quantity and totality facts. Capacity is a
-separate evidence path: progressive wondering, checking, measuring, and
-studying frames establish inquiry context; complete-fit evidence proves only a
-safe lower bound, while a remainder left after an explicitly full container
-establishes an exact capacity. The generator now realizes counted-qualified
-noun slots directly, so the inline package rule is selectable and strict
+transfers resolve through the same quantity and totality facts. Portable
+physical containers can reverse source-package and destination roles when the
+surface explicitly states their size and contents. Capacity is a
+separate evidence path: progressive wondering, checking, examining,
+measuring, and studying frames establish inquiry context; complete-fit
+evidence proves only a safe lower bound, while a remainder left after an
+explicitly full container establishes an exact capacity. The generator now
+realizes counted-qualified noun slots directly, so the inline package rule is
+selectable and strict
 round-trips instead of being reader-only. Core English owns the ordinary
 vocabulary used by these reusable frames; malformed doubled prepositions stay
 unread and decline.
@@ -309,7 +312,7 @@ These are the gates run at the current runtime checkpoint:
 
 | Gate | Current result |
 | --- | --- |
-| full synthetic suite | 5,840 passed |
+| full synthetic suite | 5,842 passed |
 | curated suite | 71 correct, 0 wrong |
 | GSM8K DEV-train | 106 correct, 0 wrong |
 | GSM8K DEV-holdout | 47 correct, 0 wrong |

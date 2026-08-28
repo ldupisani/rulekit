@@ -131,7 +131,7 @@ def test_g5j_unlocks_exactly_the_preregistered_frontier() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 391
+    assert len(exploration_status(project)["fillers"]) == 392
 
 
 def test_owned_comparative_categories_have_project_backed_fillers() -> None:

@@ -252,6 +252,7 @@ def test_all_available_fit_supports_only_the_confirmed_amount_ask(reg):
         "Bira is wondering how many coins she can fit in a jar.",
         "Bira is checking to see how many coins can fit in a jar.",
         "Bira is checking to see how many coins can go into a jar.",
+        "Bira is examining the capacity of a jar.",
         "Bira is measuring the capacity of a jar.",
         "Bira is studying the capacity of a jar.",
     ],
@@ -271,7 +272,33 @@ def test_full_container_remainder_determines_exact_capacity(reg, opener):
     assert result.deficiencies() == []
 
 
+def test_physical_containers_can_reverse_package_and_destination_roles(reg):
+    result = solve(
+        "Aven is studying the capacity of a bag. "
+        "Aven buys 4 large jars with 25 coins, and 3 small jars of 10 coins. "
+        "If there are still 5 coins left after the bag is filled, "
+        "how many coins can fit in the bag?",
+        reg,
+        tracing=False,
+    )
+
+    assert result.answer.committed, result.answer.reason
+    assert result.answer.value == 125.0
+    assert result.deficiencies() == []
+    assert reg.word_in_category("jar", "sized_quantity_container")
+    assert reg.word_in_category("bag", "quantity_interior_location")
+    assert not reg.word_in_category("fridge", "sized_quantity_container")
+
+
 def test_capacity_observation_boundaries_decline(reg):
+    wrong_dimension = analyze(
+        "Bira is examining the weight of a jar.", reg, tracing=False
+    )
+    assert not any(
+        isinstance(fact, ContainerCapacityInquiry)
+        for fact in wrong_dimension.facts
+    )
+
     overlarge_remainder = solve(
         "Bira is measuring the capacity of a jar. "
         "Bira buys 2 large bags with 20 coins, and 2 small bags of 5 coins. "

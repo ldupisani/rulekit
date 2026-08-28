@@ -343,6 +343,10 @@ entries:
     checks: {senses: [verb], number: singular, verb: {lemma: check}}
     checked: {senses: [verb], verb: {lemma: check}}
     checking: {senses: [verb], verb: {lemma: check}}
+    examine: {senses: [verb], number: plural}
+    examines: {senses: [verb], number: singular, verb: {lemma: examine}}
+    examined: {senses: [verb], verb: {lemma: examine}}
+    examining: {senses: [verb], verb: {lemma: examine}}
     study: {senses: [verb], number: plural}
     studies: {senses: [verb], number: singular, verb: {lemma: study}}
     studied: {senses: [verb], verb: {lemma: study}}

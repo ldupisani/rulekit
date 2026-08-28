@@ -29,7 +29,6 @@ entries:
   disintegrated: {senses: [verb], verb: {lemma: disintegrate}}
   dusted: {senses: [verb], verb: {lemma: dust}}
   enlarged: {senses: [verb], verb: {lemma: enlarge}}
-  examined: {senses: [verb], verb: {lemma: examine}}
   floated: {senses: [verb], verb: {lemma: float}}
   froze: {senses: [verb], verb: {lemma: freeze}}
   heard: {senses: [verb], verb: {lemma: hear}}

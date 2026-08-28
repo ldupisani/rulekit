@@ -2794,10 +2794,12 @@ members:
     quantity_location:
         [area, bench, cupboard, garden, pantry, storeroom, tree, university]
     quantity_interior_location:
-        [area, barrel, beaker, bottle, bowl, box, bucket, canister, container,
+        [area, bag, barrel, beaker, bottle, bowl, box, bucket, canister, container,
          cupboard, flask, fridge, garden, jar, jug, pantry, storeroom, tank,
          university, vessel, vial]
-    sized_quantity_container: [bag]
+    sized_quantity_container:
+        [bag, barrel, beaker, bottle, bowl, box, bucket, canister, container,
+         flask, jar, jug, tank, vessel, vial]
     package_content_preposition: [of, with]
     package_group_total_quantifier: [both]
     container_contents_noun: [content, contents]
@@ -2812,7 +2814,8 @@ members:
         [wonder, wondered, wondering, wonders]
     capacity_inquiry_activity: [check, checked, checking, checks]
     capacity_assessment_activity:
-        [measure, measured, measuring, measures, studied, studies, study, studying]
+        [examine, examined, examines, examining, measure, measured, measuring,
+         measures, studied, studies, study, studying]
     container_capacity_noun: [capacity]
     container_fill_participle: [fill, filled, filling, fills]
     capacity_residual_adverb: [still]
@@ -2887,7 +2890,8 @@ attribute_compatibility:
     color_attribute: [colorable_noun]
     # Multiple compatible noun categories are intentional. Either category
     # licenses a pair; noun membership is not forced into one artificial class.
-    size_attribute: [physical_size_noun, magnitude_noun]
+    size_attribute:
+        [physical_size_noun, magnitude_noun, sized_quantity_container]
     linear_unit_dimension_adjective: [length_measure]
     mass_unit_dimension_adjective: [mass_measure]
     remnant_adj: [remainder_collection_noun, content_progress_measure]

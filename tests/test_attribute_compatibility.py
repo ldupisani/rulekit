@@ -228,8 +228,9 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
     # measurement construction declares exactly one further pair: final weight.
     # `boy` and `girl` are now shared core complement-label vocabulary. Parent,
     # grandparent, purpose, and wallet likewise belong to ordinary core English;
-    # their semantic roles remain separately declared by categories. A bag is
-    # the one qualified package head, adding the reviewed small/large pairs.
+    # their semantic roles remain separately declared by categories. Portable
+    # physical containers share the qualified-package role and therefore the
+    # reviewed small/large pairs; large appliances remain outside that class.
     # Capacity and content are ordinary core nouns used by the container
     # inquiry frames; neither broadens descriptor compatibility.
     assert len(plural_nouns) == 106
@@ -250,7 +251,7 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
         registry.attribute_applies_to(attribute, noun)
         for attribute in adjectives
         for noun in plural_nouns
-    ) == 499
+    ) == 527
 
 
 def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> None:
