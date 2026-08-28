@@ -113,6 +113,7 @@ from . import (  # noqa: E402,F401  (import registers each handler)
     rate_span as _rate_span,
     rate_span_inverse as _rate_span_inverse,
     capacity as _capacity,
+    container_capacity_observation as _container_capacity_observation,
     difference as _difference,
     completion_duration_difference as _completion_duration_difference,
     content_progress_remainder_fraction as _content_progress_remainder_fraction,

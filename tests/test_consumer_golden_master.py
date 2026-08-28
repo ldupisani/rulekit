@@ -467,7 +467,7 @@ def test_the_guards_are_the_bulk_of_the_coverage():
 
 # --- the coverage of this file, measured and enforced ----------------------
 
-_GUARD_FLOOR = 149  # guards WITH a probe: raise as probes are added, never lower
+_GUARD_FLOOR = 156  # guards WITH a probe: raise as probes are added, never lower
 _GAP_CEILING = 0    # guards WITHOUT one: lower as probes are added, never raise
 
 # The denominator is 91, and it was 92 until the boundary bug above was fixed:
@@ -483,6 +483,31 @@ _GAP_CEILING = 0    # guards WITHOUT one: lower as probes are added, never raise
 # coverage figure honest in both directions: they are not gaps, and they are
 # not silently absent either.
 _COVERED_BY_UNIT_TEST = {
+    # Capacity inquiry/observation facts are emitted with fixed modes and
+    # structurally complete fields. Direct malformed stores exercise all seven
+    # defensive restatements in tests/test_consumer_guard_probes.py.
+    (
+        "container-capacity-observation",
+        "all-fit evidence establishes a confirmed",
+    ),
+    ("container-capacity-observation", "capacity arithmetic failed"),
+    (
+        "container-capacity-observation",
+        "capacity needs one compatible fill obser",
+    ),
+    (
+        "container-capacity-observation",
+        "capacity needs one compatible inquiry co",
+    ),
+    (
+        "container-capacity-observation",
+        "no complete available total for",
+    ),
+    ("container-capacity-observation", "remainder"),
+    (
+        "container-capacity-observation",
+        "unsupported capacity observation",
+    ),
     ("content-progress-remainder-fraction", ""),
     ("content-progress-remainder-fraction", "completed"),
     ("content-progress-remainder-fraction", "completed progress"),

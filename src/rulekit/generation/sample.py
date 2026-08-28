@@ -711,6 +711,44 @@ def _qualified_fillers(reg: Registry) -> list[_Filler]:
     ]
 
 
+def _counted_qualified_fillers(reg: Registry) -> list[_Filler]:
+    """Compose a positive count with one declared qualified noun class."""
+
+    counts = [
+        int(filler.value)
+        for filler in _number_fillers(reg)
+        if isinstance(filler.value, (int, float)) and filler.value > 0
+    ]
+    classes = sorted(
+        {
+            (filler.qualifier, filler.identity)
+            for filler in _qualified_fillers(reg)
+            if filler.qualifier is not None
+        }
+    )
+    out: list[_Filler] = []
+    for count in counts:
+        for qualifier, identity in classes:
+            surface = (
+                identity
+                if count == 1
+                else reg.singular_to_plural.get(identity)
+            )
+            if not surface or any(ch.isspace() for ch in surface):
+                continue
+            out.append(
+                _Filler(
+                    surface=f"{count} {qualifier} {surface}",
+                    identity=identity,
+                    qualifier=qualifier,
+                    number="singular" if count == 1 else "plural",
+                    kind="noun",
+                    value=float(count),
+                )
+            )
+    return out
+
+
 def _attributive_counted_fillers(reg: Registry) -> list[_Filler]:
     """Compose numeric hyphen modifiers from declared measure/holder pairs."""
 
@@ -749,6 +787,12 @@ def _raw_domain(
             return [
                 filler
                 for filler in _attributive_counted_fillers(reg)
+                if reg.word_in_category(filler.identity, token.cat)
+            ]
+        if token.counted and token.qualified:
+            return [
+                filler
+                for filler in _counted_qualified_fillers(reg)
                 if reg.word_in_category(filler.identity, token.cat)
             ]
         if token.counted:
@@ -1170,6 +1214,8 @@ def _broader_lexical_domain(
         broader_domain = f"root sense {root!r}"
         if token.attributive_counted:
             fillers = _attributive_counted_fillers(reg)
+        elif token.counted and token.qualified:
+            fillers = _counted_qualified_fillers(reg)
         elif token.counted:
             fillers = _counted_fillers(reg)
         elif token.possessed:

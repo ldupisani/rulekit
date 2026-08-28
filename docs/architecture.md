@@ -1,6 +1,6 @@
 # RuleKit architecture
 
-**Updated:** 2026-08-15
+**Updated:** 2026-08-27
 **Status:** current implementation, not a roadmap
 
 RuleKit is a deterministic reading and reasoning engine for controlled,
@@ -113,9 +113,9 @@ plural/base `need` or `require`. The comparative form also applies
 `same_number` between
 its standalone count and noun, admitting `1 fewer shopper` and
 `2 fewer shoppers` while rejecting both mismatches. The current curated
-project has 160 loaded reading rules and 378 reachable generated-filler
-identities. Of those rules, 150 are ordinary selectable generated premises,
-nine are explicitly fact-free safety interceptors, and one is a declared
+project has 168 loaded reading rules and 391 reachable generated-filler
+identities. Of those rules, 159 are ordinary selectable generated premises,
+eight are explicitly fact-free safety interceptors, and one is a declared
 reader-only gapped construction. Keeping those roles in the schema prevents
 generation coverage from treating defensive recognition as authored English.
 Reading and Generate likewise keep surviving safety consumers out of their
@@ -344,6 +344,12 @@ synthesizer contains no lexical examples: with the current pack data,
 `satisfies` contract marks the finite verb's subject obligation as structurally
 met by the complete coordination without binding either named conjunct as the
 sole grammatical subject.
+
+Ask rules use the same explicit `satisfies` contract when their complete
+surface discharges an analyzer obligation without supplying a discourse
+referent. This is used, for example, by generic first-person-plural reporting
+in a conservative inference question; it does not create an entity fact or
+widen ordinary pronoun resolution.
 
 Declared subsective class relations use a separate `ClassRefinement` fact. A
 pack category names which leading modifiers may create that edge; the generic
@@ -708,18 +714,37 @@ class statement such as “a large crate has 40 beads” emits a size-qualified
 `Quantity` whose provenance explicitly marks it distributive; a definite
 individual crate emits no such rate. The container-content synthesizer may
 therefore multiply and sum several compatible qualified package counts for
-one holder without treating distinct package sizes as conflicting rates.
+one holder without treating distinct package sizes as conflicting rates. The
+same facts can be read from an inline pair such as a counted qualified package
+followed by `with` or `of` and its per-package content count; the two package
+qualifiers must be distinct and both branches must agree on package and
+content lemmas.
 
 Moving the complete previously mentioned collection into a destination is a
 separate commitment. `TotalityTransfer` records the resolved source,
-destination, placement verb, and occurrence without guessing a measure from
-the pronoun itself. Saturation acts only when that source has exactly one
+destination, placement verb, occurrence, and—when the surface says `both`
+package groups—the required number of distinct qualified package classes,
+without guessing a measure from the pronoun itself. Saturation acts only when
+that source has exactly one
 non-package content measure, then emits a stative destination `Quantity` and
 an inspectable `ContainerContent(operation="transfer_all")`. Multiple content
 measures, multiple total transfers, a missing totality marker, or a
 non-container destination decline. The normal `single-entity` consumer then
 answers a definite container-content ask; no container-specific arithmetic
 consumer is needed.
+
+Container capacity is kept separate from container contents.
+`ContainerCapacityInquiry` records who is assessing one container and may
+retain the named content; assessment-only frames can leave the content open
+for a later compatible observation. `ContainerCapacityObservation` records
+either that all available content fitted or that a stated remainder stayed
+outside after the container was explicitly full. The former proves only a
+confirmed lower bound and answers only an ask that says so; the latter proves
+the exact capacity as `available - remainder`. The capacity consumer requires
+one compatible inquiry, one compatible observation, and one complete total
+for the inquirer's content. It declines missing, competing, impossible, or
+semantically weaker evidence instead of treating an ordinary contents total
+as the container's maximum capacity.
 
 Aggregate instrument readings keep three representations distinct.
 `SpatialPlacement` records that a measured container is supported by an
@@ -1239,7 +1264,10 @@ Plural and counted fillers come
 only from loaded numeric and singular/plural declarations. Count
 `1` selects the singular noun surface and every other admitted non-negative
 integer selects the declared plural; both retain the singular noun lemma as
-identity. A composed count is not advertised when its selected noun surface is
+identity. A slot may require both `counted` and `qualified`; realization then
+builds one number plus one compatible attributive descriptor plus the
+number-agreeing noun, preserving the same lemma/qualifier identity the matcher
+uses. A composed count is not advertised when its selected noun surface is
 also the declared multiplication operator marker: the ordinary number pass
 folds that complete surface into one multiplier unit, so it cannot satisfy a
 `counted` slot. The number pass derives that marker from the registry's

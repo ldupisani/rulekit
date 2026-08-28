@@ -15,13 +15,19 @@ from ..data.registry import Registry
 from . import deixis
 from .answer import Answer, answer as run_answer
 from .condense import condense, condense_multiword_adpositions
-from .document import Document, _bind_discourse, run_document
+from .document import (
+    Document,
+    _bind_discourse,
+    _satisfy_pattern_obligations,
+    run_document,
+)
 from .evaluate import ArithmeticLog
 from .facts import FactStore
 from .guards import GuardVeto, check as run_guards
 from .learn import _has_event_polarity
 from .mathtext import normalize_math
 from .model import Fact, Obligation, Reading, Relation, Unit
+from .patterns import RuleMatchResult
 from .numbers import annotate_numbers
 from .obligations import attach_obligations, bind, disambiguate
 from .senses import annotate_senses
@@ -818,6 +824,10 @@ def solve(
 
     matched_ask = _match_ask(question, reg)
     if matched_ask is not None:
+        _satisfy_pattern_obligations(
+            question,
+            RuleMatchResult(match=matched_ask[2]),
+        )
         import re as _re
 
         resolve_templates = list(

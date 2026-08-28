@@ -81,6 +81,11 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
             "conjunction_adv",
             ((9,), (9, 1)),
         ),
+        "arithmetic/container-remainder-after-fill-observation": (
+            (2,),
+            "continuation",
+            (),
+        ),
         "arithmetic/performed-activity-duration": (
             (4, 0),
             "focus_after",
@@ -154,7 +159,7 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
         if "adverb" in entry.senses
     ] == [
         "ago", MOVED_WORD, "down", "far", "finally", "individually",
-        "just", "off", "only", "outside", "then",
+        "just", "off", "only", "outside", "safely", "still", "then",
     ]
 
 
@@ -203,9 +208,9 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
     project = load_project(CURATED)
     availability = list_rule_availability(project)
 
-    assert len(availability) == 160
-    assert sum(item.supported for item in availability) == 150
-    assert sum(not item.supported for item in availability) == 10
+    assert len(availability) == 168
+    assert sum(item.supported for item in availability) == 159
+    assert sum(not item.supported for item in availability) == 9
     assert all(
         not item.blockers
         or item.id
@@ -213,7 +218,6 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
                 "arithmetic/dangling-comparative-safety",
                 "arithmetic/measured-content-resulting-total-gapped",
                 "arithmetic/capacity-progress-anaphoric-multiplier-safety",
-                "arithmetic/container-capacity-inquiry-frame",
                 "arithmetic/partition-membership-of-mass-measure-safety",
                 "arithmetic/realized-progress-anaphoric-multiplier-safety",
                 "arithmetic/realized-progress-deictic-anaphoric-multiplier-safety",
@@ -223,7 +227,7 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
             }
         for item in availability
     )
-    assert len(exploration_status(project)["fillers"]) == 378
+    assert len(exploration_status(project)["fillers"]) == 391
 
 
 def test_currently_generates_a_matcher_confirmed_anchor() -> None:

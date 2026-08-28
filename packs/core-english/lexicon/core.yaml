@@ -15,6 +15,7 @@ entries:
     every: {senses: [quantifier]}
     some: {senses: [quantifier]}
     all: {senses: [quantifier]}
+    both: {senses: [quantifier]}
     no: {senses: [quantifier]}
 
     # modal auxiliaries
@@ -62,6 +63,8 @@ entries:
     finally: {senses: [adverb]}
     just: {senses: [adverb]}
     only: {senses: [adverb]}
+    safely: {senses: [adverb]}
+    still: {senses: [adverb]}
     far: {senses: [adverb]}
     then: {senses: [adverb]}
     ago: {senses: [adverb]}
@@ -169,6 +172,7 @@ entries:
     he: {senses: [pronoun], number: singular}
     she: {senses: [pronoun], number: singular}
     they: {senses: [pronoun], number: plural}
+    we: {senses: [pronoun], number: plural}
     it: {senses: [pronoun], number: singular}
     someone: {senses: [pronoun]}
     somebody: {senses: [pronoun]}
@@ -327,6 +331,31 @@ entries:
     knows: {senses: [verb], number: singular, verb: {lemma: know}}
     knew: {senses: [verb], verb: {lemma: know}}
     knowing: {senses: [verb], verb: {lemma: know}}
+    see: {senses: [verb], number: plural}
+    sees: {senses: [verb], number: singular, verb: {lemma: see}}
+    saw: {senses: [verb], verb: {lemma: see}}
+    seeing: {senses: [verb], verb: {lemma: see}}
+    wonder: {senses: [verb], number: plural}
+    wonders: {senses: [verb], number: singular, verb: {lemma: wonder}}
+    wondered: {senses: [verb], verb: {lemma: wonder}}
+    wondering: {senses: [verb], verb: {lemma: wonder}}
+    check: {senses: [verb], number: plural}
+    checks: {senses: [verb], number: singular, verb: {lemma: check}}
+    checked: {senses: [verb], verb: {lemma: check}}
+    checking: {senses: [verb], verb: {lemma: check}}
+    study: {senses: [verb], number: plural}
+    studies: {senses: [verb], number: singular, verb: {lemma: study}}
+    studied: {senses: [verb], verb: {lemma: study}}
+    studying: {senses: [noun, verb], verb: {lemma: study}}
+    say: {senses: [verb], number: plural}
+    says: {senses: [verb], number: singular, verb: {lemma: say}}
+    said: {senses: [verb], verb: {lemma: say}}
+    saying: {senses: [verb], verb: {lemma: say}}
+    go: {senses: [verb], number: plural}
+    goes: {senses: [verb], number: singular, verb: {lemma: go}}
+    went: {senses: [verb], verb: {lemma: go}}
+    gone: {senses: [verb], verb: {lemma: go}}
+    going: {senses: [verb], verb: {lemma: go}}
     fit: {senses: [verb], number: plural}
     fits: {senses: [verb], number: singular, verb: {lemma: fit}}
     fitting: {senses: [verb], verb: {lemma: fit}}
@@ -334,6 +363,10 @@ entries:
     contains: {senses: [verb], number: singular, verb: {lemma: contain}}
     contained: {senses: [verb], verb: {lemma: contain}}
     containing: {senses: [verb], verb: {lemma: contain}}
+    fill: {senses: [verb], number: plural}
+    fills: {senses: [verb], number: singular, verb: {lemma: fill}}
+    filled: {senses: [verb], verb: {lemma: fill}}
+    filling: {senses: [verb], verb: {lemma: fill}}
     reads: {senses: [verb], number: singular, verb: {lemma: read}}
     read: {senses: [verb]}
     reading: {senses: [verb], verb: {lemma: read}}
@@ -561,6 +594,8 @@ entries:
     bowl: {senses: [noun], plural: bowls}
     canister: {senses: [noun], plural: canisters}
     container: {senses: [noun], plural: containers}
+    capacity: {senses: [noun], plural: capacities}
+    content: {senses: [noun], plural: contents}
     flask: {senses: [noun], plural: flasks}
     jar: {senses: [noun], plural: jars}
     jug: {senses: [noun], plural: jugs}
@@ -592,6 +627,7 @@ entries:
     conducts: {senses: [verb], number: singular, verb: {lemma: conduct}}
     measure: {senses: [verb], number: plural}
     measured: {senses: [verb], verb: {lemma: measure}}
+    measuring: {senses: [verb], verb: {lemma: measure}}
     measures: {senses: [verb], number: singular, verb: {lemma: measure}}
     weigh: {senses: [verb], number: plural}
     weighed: {senses: [verb], verb: {lemma: weigh}}

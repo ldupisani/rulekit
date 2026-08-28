@@ -758,11 +758,6 @@ entries:
     well:
         senses:
             - noun
-    went:
-        senses:
-            - verb
-        verb:
-            lemma: go
     west:
         senses:
             - noun
@@ -854,22 +849,9 @@ entries:
         senses:
             - noun
         plural: women
-    wonder:
-        senses:
-            - verb
     wonderful:
         senses:
             - adjective
-    wondering:
-        senses:
-            - verb
-        verb:
-            lemma: wonder
-    wonders:
-        senses:
-            - verb
-        verb:
-            lemma: wonder
     wood:
         senses:
             - noun

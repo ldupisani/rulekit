@@ -35,6 +35,8 @@ from rulekit.kernel.evaluate import ArithmeticLog
 from rulekit.kernel.facts import FactStore
 from rulekit.kernel.model import (
     AgeAtYear,
+    ContainerCapacityInquiry,
+    ContainerCapacityObservation,
     Goal,
     MeasuredContentChange,
     PartitionQuantity,
@@ -83,6 +85,96 @@ def call(
         reference_year=reference_year,
         premises=tuple(premises),
     ))
+
+
+def _capacity_store(*facts):
+    return FactStore(facts=list(facts))
+
+
+def _capacity_context(reg, *facts, allow_confirmed_fit=False):
+    query = {"container": "jar", "measure": "coin"}
+    if allow_confirmed_fit:
+        query["allow_confirmed_fit"] = "true"
+    return call(
+        "container-capacity-observation",
+        reg,
+        query,
+        store=_capacity_store(*facts),
+    )
+
+
+# Capacity asks reach only well-formed inquiry/observation facts through text.
+# Direct stores probe the consumer's defensive cardinality, mode, arithmetic,
+# and evidence-strength restatements without inventing public grammar for
+# malformed facts.
+
+
+def test_capacity_needs_one_inquiry_context(curated):
+    got = _capacity_context(curated)
+    assert got.kind == "decline"
+    assert "one compatible inquiry context; found 0" in got.reason
+
+
+def test_capacity_needs_one_fill_observation(curated):
+    provenance = Provenance(source="synthetic", sentence=0)
+    got = _capacity_context(
+        curated,
+        ContainerCapacityInquiry(provenance, "bira", "jar", "coin"),
+    )
+    assert got.kind == "decline"
+    assert "one compatible fill observation; found 0" in got.reason
+
+
+def test_capacity_needs_a_complete_available_total(curated):
+    provenance = Provenance(source="synthetic", sentence=0)
+    got = _capacity_context(
+        curated,
+        ContainerCapacityInquiry(provenance, "bira", "jar", "coin"),
+        ContainerCapacityObservation(
+            provenance, "coin", "all_available_fit", 0, "jar"
+        ),
+    )
+    assert got.kind == "decline"
+    assert "no complete available total" in got.reason
+
+
+def _complete_capacity_store(mode, value=0):
+    provenance = Provenance(source="synthetic", sentence=0)
+    return (
+        ContainerCapacityInquiry(provenance, "bira", "jar", "coin"),
+        ContainerCapacityObservation(provenance, "coin", mode, value, "jar"),
+        Quantity(provenance, "bira", "coin", 10),
+    )
+
+
+def test_all_fit_is_not_exact_capacity_evidence(curated):
+    got = _capacity_context(
+        curated, *_complete_capacity_store("all_available_fit")
+    )
+    assert got.kind == "decline"
+    assert "confirmed amount, not exact capacity" in got.reason
+
+
+def test_capacity_remainder_must_be_within_the_available_total(curated):
+    got = _capacity_context(
+        curated, *_complete_capacity_store("remainder_after_fill", 11)
+    )
+    assert got.kind == "decline"
+    assert "remainder 11 is outside available total 10" in got.reason
+
+
+def test_capacity_rejects_an_unknown_observation_mode(curated):
+    got = _capacity_context(curated, *_complete_capacity_store("estimated"))
+    assert got.kind == "decline"
+    assert "unsupported capacity observation 'estimated'" in got.reason
+
+
+def test_capacity_arithmetic_failure_declines(curated):
+    got = _capacity_context(
+        curated, *_complete_capacity_store("remainder_after_fill", float("nan"))
+    )
+    assert got.kind == "decline"
+    assert "capacity arithmetic failed" in got.reason
 
 
 # --- typed/category-gated slots: a non-numeric value or unknown op word ----

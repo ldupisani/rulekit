@@ -28,6 +28,8 @@ from .model import (
     CollectionContext,
     VerbalRelation,
     Conditional,
+    ContainerCapacityInquiry,
+    ContainerCapacityObservation,
     ContainerContent,
     Contribution,
     Discount,
@@ -131,6 +133,8 @@ _FACT_CLASSES = {
     "spatial_placement": SpatialPlacement,
     "measured_content_change": MeasuredContentChange,
     "container_content": ContainerContent,
+    "container_capacity_inquiry": ContainerCapacityInquiry,
+    "container_capacity_observation": ContainerCapacityObservation,
     "totality_transfer": TotalityTransfer,
     "semantic_graph_node": SemanticGraphNode,
     "semantic_graph_edge": SemanticGraphEdge,
@@ -2284,7 +2288,9 @@ def run_rules(
             facts = []
             for e in rule.emits:
                 emit_provenance = replace(
-                    provenance, distributive=e.distributive
+                    provenance,
+                    distributive=e.distributive,
+                    container_count=e.container_count,
                 )
                 if e.options_from is not None:
                     # Stage 9h: whole-list emission (schemas.FactEmit
@@ -2438,6 +2444,10 @@ def match_ask(
         m = match_sequence(reading, seq, reg)
         if m is None:
             continue
+        # Keep the winning ask attached to the ordinary Match just as premise
+        # matching attaches its PatternRule.  Ask-level structural obligation
+        # satisfaction uses this shared match contract after discourse binding.
+        m.rule = ask  # type: ignore[assignment]
         if not _check_where(ask, m.slots, reading, reg):
             continue
         try:

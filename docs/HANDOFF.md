@@ -52,6 +52,19 @@ anaphoric distance chains with exact combined totals (132).
 
 ### Latest implementation checkpoint
 
+Qualified-package container questions now cover both separated per-package
+statements and inline `N large bags with M items` / `N small bags of M items`
+pairs. Explicit `them all`, `both bags`, and `the contents of both bags`
+transfers resolve through the same quantity and totality facts. Capacity is a
+separate evidence path: progressive wondering, checking, measuring, and
+studying frames establish inquiry context; complete-fit evidence proves only a
+safe lower bound, while a remainder left after an explicitly full container
+establishes an exact capacity. The generator now realizes counted-qualified
+noun slots directly, so the inline package rule is selectable and strict
+round-trips instead of being reader-only. Core English owns the ordinary
+vocabulary used by these reusable frames; malformed doubled prepositions stay
+unread and decline.
+
 Independent ask generation now covers every currently safe standalone token
 domain. Project generation fixtures can declare bounded ISO dates, coordinate
 points, and chemical formulae; each witness is validated by the ordinary
@@ -296,7 +309,7 @@ These are the gates run at the current runtime checkpoint:
 
 | Gate | Current result |
 | --- | --- |
-| full synthetic suite | 5,819 passed |
+| full synthetic suite | 5,840 passed |
 | curated suite | 71 correct, 0 wrong |
 | GSM8K DEV-train | 106 correct, 0 wrong |
 | GSM8K DEV-holdout | 47 correct, 0 wrong |
@@ -308,7 +321,7 @@ These are the gates run at the current runtime checkpoint:
 | FOLIO DEV | 0 numeric commitments |
 | COGS DEV-train / holdout | 1,771 / 1,693 exact, 0 incorrect |
 | PMB train / development | 117 / 4 exact, 0 incorrect |
-| lint | 0 errors, 0 warnings |
+| lint | 0 errors, 1 pre-existing warning (`ask/trig-sine` alternation) |
 
 Review batch 62 deliberately retired one DEV-train commitment that happened
 to agree with its numeric gold while relying on an unsupported inference from

@@ -230,7 +230,9 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
     # grandparent, purpose, and wallet likewise belong to ordinary core English;
     # their semantic roles remain separately declared by categories. A bag is
     # the one qualified package head, adding the reviewed small/large pairs.
-    assert len(plural_nouns) == 104
+    # Capacity and content are ordinary core nouns used by the container
+    # inquiry frames; neither broadens descriptor compatibility.
+    assert len(plural_nouns) == 106
     assert {
         "boy",
         "fridge",
@@ -283,6 +285,10 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
         "arithmetic/anchored-relation-possessive-kinship-standard",
         "arithmetic/anchored-relation-postfix-dimension",
         "arithmetic/container-capacity-inquiry-frame",
+        "arithmetic/container-capacity-progressive-inquiry-frame",
+        "arithmetic/container-capacity-checking-inquiry-frame",
+        "arithmetic/container-package-groups-totality-transfer",
+        "arithmetic/container-package-contents-totality-transfer",
         "arithmetic/dangling-comparative-relation",
         "arithmetic/existential-premise",
         "arithmetic/existential-premise-distributive",
@@ -315,7 +321,7 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
 def test_compatibility_rule_remains_supported_after_g5j_expansion() -> None:
     availability = list_rule_availability(load_project(CURATED))
 
-    assert sum(item.supported for item in availability) == 150
+    assert sum(item.supported for item in availability) == 159
     target = next(item for item in availability if item.id == RULE_ID)
     assert target.supported
     assert target.blockers == ()

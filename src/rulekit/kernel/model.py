@@ -160,6 +160,13 @@ class Provenance:
     # the conflation that produced garbage group totals (bucket seed=90,
     # warehouse box=800). Defaulted False: every non-fold provenance is unchanged.
     distributive: bool = False
+    # True when a grammar rule explicitly emits a holder's count of
+    # containers/packages. Ordinary folds remain eligible through their
+    # historical source marker; rule-emitted quantities must opt in so a
+    # rate-defining holder such as a video section cannot accidentally become
+    # a package count merely because its measure belongs to a broad container
+    # category.
+    container_count: bool = False
     # True only when this fact depends on a clause promoted from the current
     # question's conditional frame ("If X, how many ...?"). Metadata only,
     # never part of a Fact.key(); omitted from repr so ordinary fact snapshots
@@ -1833,6 +1840,10 @@ class TotalityTransfer(Fact):
     destination: str
     verb: str
     occurrence: int
+    # An explicit "both PACKAGE" surface selects two previously introduced
+    # qualified package classes.  The ordinary anaphoric "them all" form
+    # leaves this unset and retains its established unique-content contract.
+    package_class_count: int | None = None
 
     def key(self) -> tuple:
         return (
@@ -1843,7 +1854,67 @@ class TotalityTransfer(Fact):
         )
 
     def value_part(self) -> Any:
-        return self.verb
+        return (self.verb, self.package_class_count)
+
+
+@dataclass(frozen=True)
+class ContainerCapacityInquiry(Fact):
+    """A person's explicitly framed question about one container's capacity.
+
+    This is discourse context, not evidence that the container has any
+    particular capacity.  ``content`` is optional because ordinary assessment
+    frames such as "measuring the capacity of a jar" name the container before
+    a later clause identifies what is being counted.
+    """
+
+    seeker: str
+    container: str
+    content: str | None = None
+
+    def __post_init__(self) -> None:
+        if self.content == "":
+            object.__setattr__(self, "content", None)
+
+    def key(self) -> tuple:
+        return (
+            "container-capacity-inquiry",
+            self.seeker,
+            self.container,
+            self.content,
+        )
+
+
+@dataclass(frozen=True)
+class ContainerCapacityObservation(Fact):
+    """Evidence constraining how much of one content a container can hold.
+
+    ``all_available_fit`` establishes only a confirmed lower bound: every
+    available item fitted, but a larger amount might also fit.
+    ``remainder_after_fill`` is exact when the container is explicitly full:
+    capacity is the available amount minus the stated remainder.  A missing
+    container is resolved only through one compatible capacity inquiry.
+    """
+
+    content: str
+    mode: str
+    value: float = 0.0
+    container: str | None = None
+
+    def __post_init__(self) -> None:
+        if self.container == "":
+            object.__setattr__(self, "container", None)
+
+    def key(self) -> tuple:
+        return (
+            "container-capacity-observation",
+            self.provenance.sentence,
+            self.container,
+            self.content,
+            self.mode,
+        )
+
+    def value_part(self) -> Any:
+        return self.value
 
 
 @dataclass(frozen=True)

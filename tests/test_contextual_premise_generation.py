@@ -25,7 +25,6 @@ CONTEXTUAL_RULES = {
 }
 SAFETY_RULES = {
     "arithmetic/capacity-progress-anaphoric-multiplier-safety",
-    "arithmetic/container-capacity-inquiry-frame",
     "arithmetic/dangling-comparative-safety",
     "arithmetic/partition-membership-of-mass-measure-safety",
     "arithmetic/realized-progress-anaphoric-multiplier-safety",
@@ -46,7 +45,7 @@ def test_only_declared_non_generative_rules_remain_outside_generation(project) -
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 160
+    assert len(availability) == 168
     assert {item.id for item in availability.values() if not item.supported} == (
         SAFETY_RULES | {"arithmetic/measured-content-resulting-total-gapped"}
     )
@@ -122,9 +121,9 @@ def test_generation_api_separates_safety_consumers_from_targets() -> None:
 
     payload = endpoint()
 
-    assert payload["supported"] == 150
-    assert payload["total"] == 151
-    assert payload["safety_total"] == 9
+    assert payload["supported"] == 159
+    assert payload["total"] == 160
+    assert payload["safety_total"] == 8
     assert {rule["id"] for rule in payload["safety_rules"]} == SAFETY_RULES
     assert not ({rule["id"] for rule in payload["rules"]} & SAFETY_RULES)
 

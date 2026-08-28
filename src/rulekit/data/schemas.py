@@ -788,8 +788,9 @@ class MatchToken(StrictModel):
             )
         if self.counted and self.possessed:
             raise ValueError("a category slot cannot be both counted and possessed")
-        if self.counted and self.qualified:
-            raise ValueError("a category slot cannot be both counted and qualified")
+        # Counted qualified nominals are a genuine composed form ("3 large
+        # bags"). The analyzer already preserves both the scalar and the
+        # qualifier on one condensed unit; generation now mirrors that form.
         if self.attributive_counted and not (
             self.qualified or self.type == "qualified"
         ):
@@ -1491,6 +1492,7 @@ class FactEmit(StrictModel):
         "verbal_relation", "location_event", "location_constraint",
         "location_transition_absence",
         "spatial_placement", "measured_content_change", "container_content",
+        "container_capacity_inquiry", "container_capacity_observation",
         "totality_transfer",
         "semantic_graph_node", "semantic_graph_edge",
         "alias", "enumerated_disjunction",
@@ -1525,6 +1527,9 @@ class FactEmit(StrictModel):
     # amount remains an ordinary quantity, while container composition can
     # distinguish a generic/distributive rate from one specific instance.
     distributive: bool = False
+    # Optional evidence-shape marker for a rule-emitted count of packages.
+    # It is provenance rather than quantity identity, like `distributive`.
+    container_count: bool = False
 
     model_config = ConfigDict(extra="allow")
 
@@ -1532,6 +1537,8 @@ class FactEmit(StrictModel):
     def _collect_extra(self) -> "FactEmit":
         if self.distributive and self.fact != "quantity":
             raise ValueError("distributive provenance is valid only for quantity facts")
+        if self.container_count and self.fact != "quantity":
+            raise ValueError("container_count provenance is valid only for quantity facts")
         if self.model_extra:
             self.fields = {**self.fields, **self.model_extra}
         return self
@@ -1727,6 +1734,12 @@ class AskRule(StrictModel):
     id: str
     match: dict[Literal["question"], list[MatchToken]]
     where: list[WherePredicate] = Field(default_factory=list)
+    # Ask-only grammatical material may discharge an obligation without a
+    # discourse antecedent.  The first use is deictic speaker ``we`` inside
+    # "can we safely say ...": it denotes the current reasoners rather than a
+    # previously mentioned plural group.  This mirrors PatternRule.satisfies
+    # and remains explicit per slot/need pair.
+    satisfies: dict[str, list[str]] = Field(default_factory=dict)
     resolves: dict[str, str | list[str]] = Field(default_factory=dict)
     clarification: str | None = None
     interpretations: list[AskInterpretation] = Field(default_factory=list)
@@ -1775,6 +1788,19 @@ class AskRule(StrictModel):
                     collect(token.opt)
 
         collect(self.match["question"])
+        for slot, needs in self.satisfies.items():
+            if slot not in declared_slots:
+                raise ValueError(
+                    f"ask {self.id!r}: pattern satisfaction names unknown "
+                    f"slot {slot!r}"
+                )
+            if not needs or len(needs) != len(set(needs)) or any(
+                not need for need in needs
+            ):
+                raise ValueError(
+                    f"ask {self.id!r}: pattern satisfaction obligations "
+                    "must be non-empty and unique"
+                )
         unknown_generation_slots = (
             set(self.generation.slot_sources)
             | set(self.generation.slot_categories)

@@ -37,6 +37,9 @@ EXPECTED_GROUPS = {
     "arithmetic/partition-aggregate-share": (
         ("target", "second_standard"),
     ),
+    "arithmetic/qualified-package-contents-inline-pair": (
+        ("package_a", "package_b"),
+    ),
     "arithmetic/sequential-percent-remainder-partition": (
         ("first_destination", "second_destination", "rest_destination"),
     ),
@@ -150,7 +153,7 @@ def test_g5m_profiles_the_complete_distinct_measure_class() -> None:
     }
 
     assert set(rules) == set(EXPECTED_GROUPS)
-    assert sum(len(groups) for groups in EXPECTED_GROUPS.values()) == 9
+    assert sum(len(groups) for groups in EXPECTED_GROUPS.values()) == 10
     assert {
         rule_id: _distinct_measure_groups(rule)
         for rule_id, rule in rules.items()
@@ -163,9 +166,9 @@ def test_g5m_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 160
-    assert sum(item.supported for item in availability.values()) == 150
-    assert sum(not item.supported for item in availability.values()) == 10
+    assert len(availability) == 168
+    assert sum(item.supported for item in availability.values()) == 159
+    assert sum(not item.supported for item in availability.values()) == 9
     assert all(
         availability[rule_id].supported for rule_id in GENERATIVE_GROUPS
     )
@@ -190,7 +193,7 @@ def test_g5m_unlocks_exactly_the_preregistered_frontier() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 378
+    assert len(exploration_status(project)["fillers"]) == 391
 
 
 @pytest.mark.parametrize("rule_id", sorted(GENERATIVE_GROUPS))

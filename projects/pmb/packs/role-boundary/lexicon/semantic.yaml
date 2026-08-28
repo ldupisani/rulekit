@@ -9,7 +9,6 @@ entries:
   neris: {senses: [noun]}
   sita: {senses: [noun]}
   tom: {senses: [noun]}
-  we: {senses: [pronoun], number: plural}
   me: {senses: [pronoun]}
   accelerated: {senses: [verb], verb: {lemma: accelerate}}
   apologized: {senses: [verb], verb: {lemma: apologize}}

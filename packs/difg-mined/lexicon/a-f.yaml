@@ -719,9 +719,6 @@ entries:
   botanical:
     senses:
     - adjective
-  both:
-    senses:
-    - quantifier
   bottom:
     senses:
     - noun
@@ -968,9 +965,6 @@ entries:
     senses:
     - noun
     plural: caps
-  capacity:
-    senses:
-    - noun
   captain:
     senses:
     - noun
@@ -1159,16 +1153,6 @@ entries:
   cheapest:
     senses:
     - adjective
-  checked:
-    senses:
-    - verb
-    verb:
-      lemma: check
-  checks:
-    senses:
-    - verb
-    verb:
-      lemma: check
   cheese:
     senses:
     - noun
@@ -2602,24 +2586,6 @@ entries:
   figure:
     senses:
     - verb
-  fill:
-    senses:
-    - verb
-  filled:
-    senses:
-    - verb
-    verb:
-      lemma: fill
-  filling:
-    senses:
-    - verb
-    verb:
-      lemma: fill
-  fills:
-    senses:
-    - verb
-    verb:
-      lemma: fill
   film:
     senses:
     - noun

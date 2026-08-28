@@ -198,6 +198,21 @@ categories:
         notes: >
             Enumerable package/container heads whose declared size qualifier
             can distinguish independent per-container content rates.
+    package_content_preposition:
+        parent: preposition
+        notes: >
+            Adpositions linking a counted, size-qualified package to its
+            stated per-package contents inside one acquisition clause.
+    package_group_total_quantifier:
+        parent: quantifier
+        notes: >
+            Quantifiers explicitly selecting every one of two previously
+            coordinated package classes. This never supplies a package count.
+    container_contents_noun:
+        parent: noun
+        notes: >
+            Nouns denoting what is inside a package or container, rather than
+            the container instance itself.
     container_content_state_verb:
         parent: state
         notes: >
@@ -211,6 +226,11 @@ categories:
             transfers the complete anaphoric collection into a container.
     container_capacity_placement_verb:
         parent: verb
+        notes: >
+            Broad capacity-placement predicates. Transitive inquiry frames
+            and intransitive fit questions use narrower children.
+    container_capacity_transitive_placement_verb:
+        parent: container_capacity_placement_verb
         selectional_roles:
             actor: quantity_event_participant
             theme: noun
@@ -218,9 +238,54 @@ categories:
         notes: >
             Placement predicates used inside a non-assertive capacity inquiry;
             membership does not assert that the placement occurred.
+    container_capacity_intransitive_placement_verb:
+        parent: container_capacity_placement_verb
+        selectional_roles:
+            theme: noun
+            destination: quantity_interior_location
+        notes: >
+            Predicates whose subject is the item whose ability to enter a
+            container is being assessed ("how many beads can fit").
     inquiry_cognition_verb:
         parent: verb
         notes: "Cognitive predicates that introduce an embedded inquiry."
+    progressive_inquiry_cognition_verb:
+        parent: verb
+        notes: >
+            Present-participle cognition predicates that directly introduce
+            an embedded quantity inquiry after a copula.
+    capacity_inquiry_activity:
+        parent: verb
+        notes: >
+            Progressive activities introducing an infinitival inquiry such as
+            checking to see how many items fit.
+    capacity_assessment_activity:
+        parent: verb
+        notes: >
+            Progressive activities explicitly assessing a named container's
+            capacity without asserting its value.
+    container_capacity_noun:
+        parent: noun
+        notes: "The measured ability of a container to hold some content."
+    container_fill_participle:
+        parent: verb
+        notes: "Participles stating that a container has reached its filled state."
+    capacity_residual_adverb:
+        parent: adverb
+        notes: "Continuative markers inside an explicit leftover observation."
+    conservative_inference_adverb:
+        parent: adverb
+        notes: >
+            Markers requesting only an amount directly warranted by
+            lower-bound evidence.
+    epistemic_report_verb:
+        parent: verb
+        notes: "Predicates introducing a conservatively warranted claim."
+    first_person_plural_pronoun:
+        parent: pronoun
+        notes: >
+            Speaker-inclusive pronouns whose deictic reference can be
+            satisfied by ask grammar rather than prior story discourse.
     quantity_location_preposition:
         parent: preposition
         notes: >
@@ -2673,7 +2738,7 @@ members:
     group_total_marker: [altogether, combined, together, total]
     prenominal_group_total_marker: [combined, total]
     group_total_quantifier: [all]
-    plural_subject_quantifier: [all]
+    plural_subject_quantifier: [all, both]
     quantified_group_total_marker: [together]
     prepositional_group_total_marker: [total]
     group_total_preposition: [in]
@@ -2733,12 +2798,28 @@ members:
          cupboard, flask, fridge, garden, jar, jug, pantry, storeroom, tank,
          university, vessel, vial]
     sized_quantity_container: [bag]
+    package_content_preposition: [of, with]
+    package_group_total_quantifier: [both]
+    container_contents_noun: [content, contents]
     container_content_state_verb:
         [contain, contained, containing, contains, had, has, have]
     container_totality_transfer_verb: [put, puts, putting]
-    container_capacity_placement_verb: [fit, fits, fitting]
-    inquiry_cognition_verb: [know, knowing, knows, knew]
-    quantity_location_preposition: [in]
+    container_capacity_transitive_placement_verb: [fit, fits, fitting]
+    container_capacity_intransitive_placement_verb:
+        [fit, fits, fitting, go, goes, going, gone, went]
+    inquiry_cognition_verb: [know, knowing, knows, knew, see, seeing, sees, saw]
+    progressive_inquiry_cognition_verb:
+        [wonder, wondered, wondering, wonders]
+    capacity_inquiry_activity: [check, checked, checking, checks]
+    capacity_assessment_activity:
+        [measure, measured, measuring, measures, studied, studies, study, studying]
+    container_capacity_noun: [capacity]
+    container_fill_participle: [fill, filled, filling, fills]
+    capacity_residual_adverb: [still]
+    conservative_inference_adverb: [safely]
+    epistemic_report_verb: [said, say, saying, says]
+    first_person_plural_pronoun: [we]
+    quantity_location_preposition: [in, into]
     quantity_surface_location: [bench, tree]
     tree_quantity_surface_location: [tree]
     quantity_surface_preposition: [on]

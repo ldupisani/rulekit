@@ -3823,6 +3823,67 @@ rules:
         offset: "n * sign(dir)"
         verb: "{verb}"
 
+  - id: arithmetic/qualified-package-contents-inline-pair
+    phase: read
+    description: >
+      Two coordinated, size-qualified package purchases may state their
+      per-package contents inline: "Aven buys 4 large crates with 25 coins and
+      3 small crates of 10 coins." The complete rule records the two package
+      acquisitions and their two distributive content rates. Both package
+      heads and both content heads must agree, so
+      unlike packages or mixed contents do not become one total.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: quantity_event_participant, referential: true, bare_reference_category: bare_entity_reference, at_start: true}
+        - {slot: verb, cat: acquire, finite_form: true}
+        - {slot: package_a, cat: sized_quantity_container, counted: true, qualified: true, qualifier_cat: size_attribute}
+        - {slot: prep_a, cat: package_content_preposition}
+        - {slot: content_a, type: counted}
+        - {lit: and}
+        - {slot: package_b, cat: sized_quantity_container, counted: true, qualified: true, qualifier_cat: size_attribute}
+        - {slot: prep_b, cat: package_content_preposition}
+        - {slot: content_b, type: counted}
+        - {lit: ".", consume_skipped: true}
+    where:
+      - number_compatible: [who, verb]
+      - same_lemma: [package_a, package_b]
+      - distinct_measure: [package_a, package_b]
+      - same_lemma: [content_a, content_b]
+    consumes: [package_a, content_a, package_b, content_b]
+    emits:
+      - fact: quantity
+        container_count: true
+        entity: "{who}"
+        measure: "{package_a}"
+        measure_qualifier: "{package_a.qualifier}"
+        value: package_a
+        verb: "{verb}"
+        segment: 0
+      - fact: quantity
+        container_count: true
+        entity: "{who}"
+        measure: "{package_b}"
+        measure_qualifier: "{package_b.qualifier}"
+        value: package_b
+        verb: "{verb}"
+        segment: 1
+      - fact: quantity
+        entity: "{package_a}"
+        qualifier: "{package_a.qualifier}"
+        measure: "{content_a}"
+        measure_qualifier: "{content_a.qualifier}"
+        value: content_a
+        verb: have
+        distributive: true
+      - fact: quantity
+        entity: "{package_b}"
+        qualifier: "{package_b.qualifier}"
+        measure: "{content_b}"
+        measure_qualifier: "{content_b.qualifier}"
+        value: content_b
+        verb: have
+        distributive: true
+
   - id: arithmetic/qualified-container-content-per-unit
     phase: read
     description: >
@@ -3853,7 +3914,6 @@ rules:
 
   - id: arithmetic/container-capacity-inquiry-frame
     phase: read
-    generation: safety
     description: >
       A person's stated wish to discover a container's capacity is framing,
       not evidence that any placement occurred: "Mira wants to know how many
@@ -3870,7 +3930,7 @@ rules:
         - {slot: item, type: plural}
         - {slot: who, cat: animate_pronoun}
         - {slot: modal, cat: capacity_modal}
-        - {slot: placement, cat: container_capacity_placement_verb, bare_form: true}
+        - {slot: placement, cat: container_capacity_transitive_placement_verb, bare_form: true}
         - {slot: prep, cat: quantity_location_preposition}
         - {lit: [a, the], consume_skipped: true}
         - {slot: destination, cat: quantity_interior_location, number: singular}
@@ -3883,10 +3943,118 @@ rules:
           roles:
             theme: [item]
             destination: [destination]
-          frame_categories: [container_capacity_placement_verb]
+          frame_categories: [container_capacity_transitive_placement_verb]
     satisfies:
       who: [refers]
-    emits: []
+    emits:
+      - fact: container_capacity_inquiry
+        seeker: "{seeker}"
+        content: "{item}"
+        container: "{destination}"
+
+  - id: arithmetic/container-capacity-progressive-inquiry-frame
+    phase: read
+    description: >
+      A progressive cognition frame can introduce the same non-assertive
+      capacity inquiry: "Aven is wondering how many coins he can fit in a
+      jar." It records the seeker, content, and container as discourse context,
+      but no capacity value.
+    match:
+      sentence:
+        - {slot: seeker, type: entity, referential: true, bare_reference_category: bare_entity_reference, at_start: true}
+        - {slot: aux, cat: singular_copula}
+        - {slot: cognition, cat: progressive_inquiry_cognition_verb, present_participle: true}
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: plural}
+        - {slot: who, cat: animate_pronoun}
+        - {slot: modal, cat: capacity_modal}
+        - {slot: placement, cat: container_capacity_transitive_placement_verb, bare_form: true}
+        - {slot: prep, cat: quantity_location_preposition}
+        - {lit: [a, the], consume_skipped: true}
+        - {slot: destination, cat: quantity_interior_location, number: singular}
+        - {lit: ".", consume_skipped: true}
+    where:
+      - number_compatible: [seeker, aux]
+      - attribute_compatible: {attribute: prep, noun: destination}
+      - verb_roles_compatible:
+          verb: placement
+          roles:
+            actor: [seeker]
+            theme: [item]
+            destination: [destination]
+          allow_proper_name: [seeker]
+          frame_categories: [container_capacity_transitive_placement_verb]
+    satisfies:
+      who: [refers]
+    emits:
+      - fact: container_capacity_inquiry
+        seeker: "{seeker}"
+        content: "{item}"
+        container: "{destination}"
+
+  - id: arithmetic/container-capacity-checking-inquiry-frame
+    phase: read
+    description: >
+      A progressive checking frame may introduce an intransitive fit inquiry:
+      "Aven is checking to see how many coins can go into a jar." The inquiry
+      context is recorded without treating checking or possible placement as
+      a quantity event.
+    match:
+      sentence:
+        - {slot: seeker, type: entity, referential: true, bare_reference_category: bare_entity_reference, at_start: true}
+        - {slot: aux, cat: singular_copula}
+        - {slot: activity, cat: capacity_inquiry_activity, present_participle: true}
+        - {lit: to}
+        - {slot: cognition, cat: inquiry_cognition_verb, bare_form: true}
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: plural}
+        - {slot: modal, cat: capacity_modal}
+        - {slot: placement, cat: container_capacity_intransitive_placement_verb, bare_form: true}
+        - {slot: prep, cat: quantity_location_preposition}
+        - {lit: [a, the], consume_skipped: true}
+        - {slot: destination, cat: quantity_interior_location, number: singular}
+        - {lit: ".", consume_skipped: true}
+    where:
+      - number_compatible: [seeker, aux]
+      - attribute_compatible: {attribute: prep, noun: destination}
+      - verb_roles_compatible:
+          verb: placement
+          roles:
+            theme: [item]
+            destination: [destination]
+          frame_categories: [container_capacity_intransitive_placement_verb]
+    emits:
+      - fact: container_capacity_inquiry
+        seeker: "{seeker}"
+        content: "{item}"
+        container: "{destination}"
+
+  - id: arithmetic/container-capacity-assessment-frame
+    phase: read
+    description: >
+      A person may explicitly assess a container's capacity without naming the
+      content yet: "Aven is measuring the capacity of a jar." Later evidence
+      and the ask must uniquely identify the compatible content.
+    match:
+      sentence:
+        - {slot: seeker, type: entity, referential: true, bare_reference_category: bare_entity_reference, at_start: true}
+        - {slot: aux, cat: singular_copula}
+        - {slot: activity, cat: capacity_assessment_activity, present_participle: true}
+        - {lit: the, consume_skipped: true}
+        - {slot: dimension, cat: container_capacity_noun, number: singular}
+        - {lit: of}
+        - {lit: [a, the], consume_skipped: true}
+        - {slot: destination, cat: quantity_interior_location, number: singular}
+        - {lit: ".", consume_skipped: true}
+    where:
+      - number_compatible: [seeker, aux]
+    emits:
+      - fact: container_capacity_inquiry
+        seeker: "{seeker}"
+        content: ""
+        container: "{destination}"
 
   - id: arithmetic/container-totality-transfer
     phase: read
@@ -3926,6 +4094,124 @@ rules:
         source: "{who}"
         destination: "{destination}"
         verb: "{verb}"
+
+  - id: arithmetic/container-package-groups-totality-transfer
+    phase: read
+    question_assumption: true
+    description: >
+      A resolved holder may explicitly place both previously introduced
+      size-qualified package groups into one container: "He puts both bags of
+      coins in the jar." The transfer fires only when saturation finds exactly
+      two qualified package classes and one unambiguous content measure.
+    match:
+      sentence:
+        - {slot: who, cat: animate_pronoun, at_start: true}
+        - {slot: verb, cat: container_totality_transfer_verb, finite_form: true}
+        - {slot: totality, cat: package_group_total_quantifier}
+        - {slot: packages, cat: sized_quantity_container, number: plural}
+        - {lit: of}
+        - {slot: item, type: plural}
+        - {slot: prep, cat: quantity_location_preposition}
+        - {lit: the, consume_skipped: true}
+        - {slot: destination, cat: quantity_interior_location, number: singular}
+        - {lit: ".", consume_skipped: true}
+    where:
+      - number_compatible: [who, verb]
+      - attribute_compatible: {attribute: prep, noun: destination}
+    emits:
+      - fact: totality_transfer
+        source: "{who}"
+        destination: "{destination}"
+        verb: "{verb}"
+        package_class_count: 2
+
+  - id: arithmetic/container-package-contents-totality-transfer
+    phase: read
+    question_assumption: true
+    description: >
+      The explicit-content paraphrase selects the same two package groups:
+      "He puts the contents of both bags in the jar." The contents noun does
+      not itself supply a measure; the source must still have one unambiguous
+      content total derived from exactly two qualified package classes.
+    match:
+      sentence:
+        - {slot: who, cat: animate_pronoun, at_start: true}
+        - {slot: verb, cat: container_totality_transfer_verb, finite_form: true}
+        - {lit: the, consume_skipped: true}
+        - {slot: contents, cat: container_contents_noun, number: plural}
+        - {lit: of}
+        - {slot: totality, cat: package_group_total_quantifier}
+        - {slot: packages, cat: sized_quantity_container, number: plural}
+        - {slot: prep, cat: quantity_location_preposition}
+        - {lit: the, consume_skipped: true}
+        - {slot: destination, cat: quantity_interior_location, number: singular}
+        - {lit: ".", consume_skipped: true}
+    where:
+      - number_compatible: [who, verb]
+      - attribute_compatible: {attribute: prep, noun: destination}
+    emits:
+      - fact: totality_transfer
+        source: "{who}"
+        destination: "{destination}"
+        verb: "{verb}"
+        package_class_count: 2
+
+  - id: arithmetic/container-all-available-fit-observation
+    phase: read
+    question_assumption: true
+    description: >
+      "All the coins fit" confirms that the complete available amount fits,
+      but does not claim that amount is the container's maximum capacity. The
+      compatible inquiry context supplies the otherwise elided container and
+      source holder.
+    match:
+      sentence:
+        - {slot: totality, cat: group_total_quantifier, at_start: true}
+        - {lit: the, consume_skipped: true}
+        - {slot: item, type: plural}
+        - {slot: verb, cat: container_capacity_intransitive_placement_verb, finite_form: true}
+        - {lit: ".", consume_skipped: true}
+    where:
+      - number_compatible: [item, verb]
+    emits:
+      - fact: container_capacity_observation
+        content: "{item}"
+        container: ""
+        mode: all_available_fit
+        value: 0
+
+  - id: arithmetic/container-remainder-after-fill-observation
+    phase: read
+    question_assumption: true
+    description: >
+      A full container plus an explicit outside remainder determines exact
+      capacity: "There are still 8 coins left after the jar is filled." The
+      available total remains attached to the seeker by the inquiry context;
+      this rule records only the observed remainder and filled container.
+    match:
+      sentence:
+        - {lit: there, consume_skipped: true}
+        - {slot: copula, cat: plural_copula}
+        - {slot: continuation, cat: capacity_residual_adverb}
+        - {slot: remainder, type: counted}
+        - {slot: remnant, cat: remnant_adj}
+        - {lit: after}
+        - {lit: the, consume_skipped: true}
+        - {slot: container, cat: quantity_interior_location, number: singular}
+        - {slot: aux, cat: singular_copula}
+        - {slot: filled, cat: container_fill_participle, past_participle: true}
+        - {lit: ".", consume_skipped: true}
+    where:
+      - number_compatible: [remainder, copula]
+    satisfies:
+      copula: [subject]
+    consumes: [remainder]
+    emits:
+      - fact: container_capacity_observation
+        content: "{remainder}"
+        container: "{container}"
+        mode: remainder_after_fill
+        value: remainder
 
   - id: arithmetic/existential-premise
     phase: read
@@ -6957,6 +7243,57 @@ asks:
       measure_qualifier: "{item.qualifier}"
       verb: "{verb}"
       sum_measure_variants: "true"
+
+  - id: ask/how-many-container-observed-capacity
+    # "How many coins can fit in the jar?" asks for capacity established by
+    # an explicit filled-container remainder observation. It is deliberately
+    # separate from purchase capacity (budget / unit price) and from current
+    # container contents.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: plural}
+        - {slot: modal, cat: capacity_modal}
+        - {slot: placement, cat: container_capacity_intransitive_placement_verb, bare_form: true}
+        - {slot: prep, cat: quantity_location_preposition}
+        - {lit: the, consume_skipped: true}
+        - {slot: container, cat: quantity_interior_location, referential: true, number: singular}
+    where:
+      - attribute_compatible: {attribute: prep, noun: container}
+    resolves:
+      consumer: container-capacity-observation
+      container: "{container}"
+      measure: "{item}"
+
+  - id: ask/how-many-container-confirmed-fit
+    # "How many coins can we safely say will fit in the jar?" explicitly asks
+    # only for the amount warranted by an all-fit lower bound. Deictic "we"
+    # denotes the current reasoners and is structurally satisfied here rather
+    # than resolved to a story entity.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: plural}
+        - {slot: modal, cat: capacity_modal}
+        - {slot: speaker, cat: first_person_plural_pronoun}
+        - {slot: warrant, cat: conservative_inference_adverb}
+        - {slot: report, cat: epistemic_report_verb, bare_form: true}
+        - {slot: future, cat: future_modal}
+        - {slot: placement, cat: container_capacity_intransitive_placement_verb, bare_form: true}
+        - {slot: prep, cat: quantity_location_preposition}
+        - {lit: the, consume_skipped: true}
+        - {slot: container, cat: quantity_interior_location, referential: true, number: singular}
+    where:
+      - attribute_compatible: {attribute: prep, noun: container}
+    satisfies:
+      speaker: [refers]
+    resolves:
+      consumer: container-capacity-observation
+      container: "{container}"
+      measure: "{item}"
+      allow_confirmed_fit: "true"
 
   - id: ask/how-many-in-owned-place
     # "How many marbles are in Mira's pantry?" names both a location and

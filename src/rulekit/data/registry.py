@@ -1835,6 +1835,18 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
             for token in _walk_match_tokens(ask.match["question"])
             if token.slot is not None
         }
+        for slot_name in ask.satisfies:
+            token = ask_slots.get(slot_name)
+            if token is None:
+                raise CompileError(
+                    f"ask {ask.id!r} pattern satisfaction names unknown "
+                    f"slot {slot_name!r}"
+                )
+            if token.span:
+                raise CompileError(
+                    f"ask {ask.id!r} pattern satisfaction slot "
+                    f"{slot_name!r} is a span, not one obligation-bearing unit"
+                )
         for predicate in ask.where:
             if predicate.number_compatible is not None:
                 for slot_name in predicate.number_compatible:

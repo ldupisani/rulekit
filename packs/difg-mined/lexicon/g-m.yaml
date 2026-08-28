@@ -92,9 +92,6 @@ entries:
   gluten-free:
     senses:
     - noun
-  go:
-    senses:
-    - verb
   goal:
     senses:
     - noun
@@ -106,16 +103,6 @@ entries:
     senses:
     - noun
     plural: goats
-  goes:
-    senses:
-    - verb
-    verb:
-      lemma: go
-  going:
-    senses:
-    - verb
-    verb:
-      lemma: go
   gold:
     senses:
     - adjective
@@ -123,11 +110,6 @@ entries:
     senses:
     - noun
     plural: goldfish
-  gone:
-    senses:
-    - verb
-    verb:
-      lemma: go
   good:
     senses:
     - adjective

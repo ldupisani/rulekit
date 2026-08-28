@@ -1572,12 +1572,6 @@ entries:
     senses:
     - noun
     plural: sacks
-  safely:
-    senses:
-    - adverb
-  said:
-    senses:
-    - verb
   salad:
     senses:
     - noun
@@ -1629,11 +1623,6 @@ entries:
   savings:
     senses:
     - noun
-  saw:
-    senses:
-    - verb
-    verb:
-      lemma: see
   saw-mill:
     senses:
     - noun
@@ -1733,18 +1722,10 @@ entries:
     senses:
     - noun
     plural: sedans
-  see:
-    senses:
-    - verb
   seed:
     senses:
     - noun
     plural: seeds
-  sees:
-    senses:
-    - verb
-    verb:
-      lemma: see
   seller:
     senses:
     - noun
@@ -2374,9 +2355,6 @@ entries:
     senses:
     - noun
     plural: sticks
-  still:
-    senses:
-    - adverb
   stone:
     senses:
     - noun
@@ -2427,23 +2405,7 @@ entries:
     senses:
     - noun
     plural: stripes
-  studied:
-    senses:
-    - verb
-    verb:
-      lemma: study
-  studies:
-    senses:
-    - verb
-    verb:
-      lemma: study
   studio:
-    senses:
-    - noun
-  study:
-    senses:
-    - verb
-  studying:
     senses:
     - noun
   stuffed:

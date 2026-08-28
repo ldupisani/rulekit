@@ -2567,11 +2567,13 @@ def _container_contents_synth(store: FactStore, reg: Registry, log: ArithmeticLo
     verb=H.verb) — the holder's derived content total.
 
     Restricted to direct premise facts — never another synth plugin's own
-    output. Holder counts remain raw folds; a per-container rate may also be
-    emitted by a grammar rule whose provenance explicitly marks it
-    distributive. This admits an indefinite class statement such as "a large
-    crate has 80 beads" without treating a definite individual crate as a
-    rate.
+    output. Holder counts are either historical raw folds or grammar-rule
+    quantities whose provenance explicitly marks them `container_count`; a
+    per-container rate may likewise be emitted by a rule whose provenance
+    marks it distributive. This admits inline qualified package counts and an
+    indefinite class statement such as "a large crate has 80 beads" without
+    treating arbitrary rule-emitted quantities or a definite individual crate
+    as package evidence.
 
     Decline-safe gates, all measured against dev-train (0 BROKE, 0 new
     wrong on the full 3772-item dev-train + dev-holdout diff):
@@ -2613,8 +2615,13 @@ def _container_contents_synth(store: FactStore, reg: Registry, log: ArithmeticLo
         q for q in store.by_kind(Quantity)
         if not q.provenance.source.startswith("synth/")
     ]
-    fold_quantities = [
-        q for q in store.by_kind(Quantity) if q.provenance.source == "fold"
+    holder_quantities = [
+        q
+        for q in direct_quantities
+        if (
+            q.provenance.source == "fold"
+            or q.provenance.container_count
+        )
     ]
     known_measures_by_entity: dict[str, set[str]] = {}
     for q in store.by_kind(Quantity):
@@ -2641,7 +2648,7 @@ def _container_contents_synth(store: FactStore, reg: Registry, log: ArithmeticLo
         if len(rates) != 1:
             continue  # ambiguous per-container rate — decline rather than guess
         (rate,) = rates
-        for holder in fold_quantities:
+        for holder in holder_quantities:
             if holder.measure != container or holder.entity == container:
                 continue
             if content in known_measures_by_entity.get(holder.entity, ()):
@@ -2719,6 +2726,20 @@ def _container_totality_transfer_synth(
             for candidate in transfers
         ) != 1:
             continue
+
+        if transfer.package_class_count is not None:
+            package_classes = {
+                quantity.measure
+                for quantity in store.by_kind(Quantity)
+                if quantity.entity == transfer.source
+                and quantity.measure_qualifier is not None
+                and reg.word_in_category(
+                    quantity.measure.split("[", 1)[0],
+                    "sized_quantity_container",
+                )
+            }
+            if len(package_classes) != transfer.package_class_count:
+                continue
 
         measures = {
             quantity.measure.split("[", 1)[0]

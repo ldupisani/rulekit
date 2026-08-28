@@ -483,6 +483,43 @@ def _state_licenses_terminal_remnant_adjective(
     )
 
 
+def _nominal_subject_licenses_modal(reading: Reading, unit: Unit) -> bool:
+    """Resolve a modal/noun homograph in ordinary subject-modal-verb order.
+
+    The decision is purely grammatical: a nominal immediately to the left and
+    a verb immediately to the right make this the modal position.  An article
+    to the left ("the can fell") therefore retains the noun reading.
+    """
+
+    index = reading.units.index(unit)
+    if index == 0 or index + 1 >= len(reading.units):
+        return False
+    left = reading.units[index - 1]
+    right = reading.units[index + 1]
+    return left.sense() in ("noun", "name", "pronoun") and "verb" in right.senses()
+
+
+def _copular_progressive_licenses_verb(
+    reading: Reading, unit: Unit, reg: Registry
+) -> bool:
+    """Resolve a noun/verb ``-ing`` homograph after a copular auxiliary."""
+
+    fold = unit.features.get("fold", "")
+    lemma = unit.features.get("lemma", fold)
+    if not fold.endswith("ing") or fold == lemma:
+        return False
+    index = reading.units.index(unit)
+    for previous in reversed(reading.units[:index]):
+        if previous.sense() in ("adverb", "punct"):
+            continue
+        previous_fold = previous.features.get("fold", "")
+        previous_lemma = previous.features.get("lemma", previous_fold)
+        return reg.word_in_category(
+            previous_fold, "copula"
+        ) or reg.word_in_category(previous_lemma, "copula")
+    return False
+
+
 def disambiguate(reading: Reading, reg: Registry) -> Reading:
     """Commit one sense per multi-sense unit: the assignment with the best
     obligation coverage wins, and only a unique winner commits."""
@@ -500,6 +537,14 @@ def disambiguate(reading: Reading, reg: Registry) -> Reading:
     options = []
     for u in ambiguous:
         senses = u.senses()
+        if "modal" in senses and _nominal_subject_licenses_modal(reading, u):
+            options.append(["modal"])
+            continue
+        if "verb" in senses and _copular_progressive_licenses_verb(
+            reading, u, reg
+        ):
+            options.append(["verb"])
+            continue
         if "adjective" in senses and _compatible_head_licenses_adjective(
             reading, u, reg
         ):
