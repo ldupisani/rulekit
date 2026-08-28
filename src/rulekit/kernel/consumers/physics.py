@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import re
 
+from ..dimensions import bind_count_to_dimension
 from ..evaluate import evaluate
 from . import ConsumerContext, consumer
 
@@ -79,49 +80,23 @@ def physics(ctx: ConsumerContext):
                 f"{quantity!r} cannot read the stated {u.surface!r}",
             )
         value = float(u.features["value"])
-        dim = None
-        for word in (u.features.get("lemma"), u.features.get("qualifier")):
-            d = ctx.reg.unit_dimension.get(word or "")
-            # A dimension the FORMULA does not reference is not a reading of
-            # this value — it is a quantity the answer would ignore. Treating
-            # it as unbound routes it to the decline below, which is the whole
-            # point: bindable != read.
-            if d is not None and d in read_names:
-                dim = d
-                break
-        if dim is None:
-            # SCALE-TO-CANONICAL. A stated unit that is not a dimension's
-            # canonical unit can still REACH one through the conversion
-            # tables — "25 kJ" reaches 'joule' by linear factor, "100 degrees
-            # C" reaches 'kelvin' by the affine pair keyed on the merged
-            # LABEL. Both lookups are pure data (conversions@1 /
-            # affine-conversions@1); no unit, scale or factor is named here.
-            # A word or label that reaches the canonical units of TWO read
-            # dimensions is ambiguous and binds nothing — the decline below
-            # is the safe outcome, exactly as for an unknown unit.
-            canon_units = {
-                d: unit
-                for unit, d in ctx.reg.unit_dimension.items()
-                if d in read_names
-            }
-            reachable: list[tuple[str, float]] = []
-            for word in (u.features.get("lemma"), u.features.get("qualifier")):
-                if not word:
-                    continue
-                for d, canon in sorted(canon_units.items()):
-                    factor = ctx.reg.conversions.get((word, canon))
-                    if factor is not None:
-                        reachable.append((d, value * factor))
-            label = u.features.get("label")
-            if label:
-                for d, canon in sorted(canon_units.items()):
-                    pair = ctx.reg.affine_scales.get((label.lower(), canon))
-                    if pair is not None:
-                        offset, factor = pair
-                        reachable.append((d, (value + offset) * factor))
-            if len(reachable) == 1:
-                dim, value = reachable[0]
-        if dim is None:
+        # BIND BY THE DIMENSION OF THE UNIT'S OWN DIMENSION-ALGEBRA MODULE.
+        # The resolution order (direct unit_dimension hit on lemma or
+        # qualifier; scale-to-canonical through conversions@1 and the affine
+        # table keyed on the merged LABEL; ambiguity or no-reach -> None) is
+        # the shared `dimensions.bind_count_to_dimension` — one contract for
+        # every consumer that binds a number by its own unit's dimension.
+        # None here means unbound or ambiguous; the decline below is the
+        # safe outcome, exactly as for an unknown unit.
+        bound = bind_count_to_dimension(
+            ctx.reg,
+            value=value,
+            lemma=u.features.get("lemma"),
+            qualifier=u.features.get("qualifier"),
+            label=u.features.get("label"),
+            read_names=read_names,
+        )
+        if bound is None:
             # AN UNREAD COUNT IS A DECLINE. This branch takes the guards.py
             # value-accounting exemption (_WHOLE_LIST_CONSUMERS), so nothing
             # downstream will catch a number the formula silently ignored:
@@ -134,6 +109,7 @@ def physics(ctx: ConsumerContext):
                 "decline", None,
                 f"{quantity!r} cannot read the stated {u.surface!r}",
             )
+        dim, value = bound
         if dim in env:
             # ANY second value for a dimension, not just a DIFFERENT one:
             # "60 meters then 60 meters" is as unreadable as "60 then 50"

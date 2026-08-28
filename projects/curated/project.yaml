@@ -3,5 +3,5 @@ name: curated
 # reference: the curated real-world lookup pack (B1) — this suite carries its
 # buyer items, so the pack loads here first; benchmark projects adopt it only
 # when a corpus buys it
-packs: [core-english, arithmetic, reference, logic-arithmetic]
+packs: [core-english, arithmetic, physics, chemistry, reference, logic-arithmetic]
 suite: suite.yaml

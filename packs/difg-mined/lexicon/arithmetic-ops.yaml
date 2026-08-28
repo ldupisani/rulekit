@@ -7,5 +7,4 @@ format: rulekit/lexicon@1
 # operations themselves live in answer.py's `arithmetic` consumer, keyed by a
 # structural opcode — no word-specific arithmetic fact in Python.
 entries:
-  power: {senses: [noun]}
   root: {senses: [noun]}

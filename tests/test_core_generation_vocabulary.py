@@ -108,7 +108,7 @@ def test_new_core_words_are_reachable_generator_fillers() -> None:
     status = exploration_status(project)
     identities = {item["identity"] for item in status["fillers"]}
 
-    assert len(identities) == 392
+    assert len(identities) == 410
     assert "letter" in identities
     assert {
         "ago",
@@ -216,7 +216,7 @@ def test_required_age_literals_are_owned_by_core_english() -> None:
 
 def test_combined_pack_semantics_preserve_the_legacy_literal_ownership() -> None:
     project = load_project(GSM8K)
-    core, arithmetic, mined = project.packs
+    core, arithmetic, physics, chemistry, mined = project.packs
     legacy_core = replace(
         core,
         lexicon={
@@ -270,7 +270,9 @@ def test_combined_pack_semantics_preserve_the_legacy_literal_ownership() -> None
             ),
         ],
     )
-    legacy = compile_registry([legacy_core, arithmetic, legacy_mined])
+    legacy = compile_registry(
+        [legacy_core, arithmetic, physics, chemistry, legacy_mined]
+    )
     compared_fields = {
         field.name
         for field in fields(project.registry)

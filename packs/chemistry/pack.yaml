@@ -1,0 +1,7 @@
+format: rulekit/pack@1
+name: chemistry
+version: 0.1.0
+requires: [core-english, physics]
+description: >
+  Reusable formula-based chemistry questions backed by declarative atomic
+  masses, ordinary mass conversion, and the physics weight formula.

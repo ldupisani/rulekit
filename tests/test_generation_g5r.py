@@ -71,7 +71,7 @@ def test_dimension_comparatives_and_signed_memberships_share_ownership() -> None
 
 def test_combined_pack_semantics_are_identical_to_legacy_ownership() -> None:
     project = load_project(GSM8K)
-    core, arithmetic, mined = project.packs
+    core, arithmetic, physics, chemistry, mined = project.packs
     legacy_core = replace(
         core,
         lexicon={
@@ -111,7 +111,9 @@ def test_combined_pack_semantics_are_identical_to_legacy_ownership() -> None:
             ),
         ],
     )
-    legacy = compile_registry([legacy_core, arithmetic, legacy_mined])
+    legacy = compile_registry(
+        [legacy_core, arithmetic, physics, chemistry, legacy_mined]
+    )
     compared_fields = {
         field.name
         for field in fields(project.registry)
@@ -151,7 +153,7 @@ def test_g5r_unlocks_exactly_the_preregistered_rule() -> None:
     assert availability[
         "arithmetic/anchored-relation-conjoined-anchor"
     ].supported
-    assert len(exploration_status(project)["fillers"]) == 392
+    assert len(exploration_status(project)["fillers"]) == 410
 
 
 @pytest.mark.parametrize("comparative", sorted(MOVED_WORDS))

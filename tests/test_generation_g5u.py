@@ -165,7 +165,7 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
 
 def test_combined_pack_semantics_are_identical_to_legacy_ownership() -> None:
     project = load_project(GSM8K)
-    core, arithmetic, mined = project.packs
+    core, arithmetic, physics, chemistry, mined = project.packs
     legacy_core = replace(
         core,
         lexicon={
@@ -190,7 +190,9 @@ def test_combined_pack_semantics_are_identical_to_legacy_ownership() -> None:
             MOVED_WORD: core.lexicon_sources[MOVED_WORD],
         },
     )
-    legacy = compile_registry([legacy_core, arithmetic, legacy_mined])
+    legacy = compile_registry(
+        [legacy_core, arithmetic, physics, chemistry, legacy_mined]
+    )
     compared_fields = {
         field.name
         for field in fields(project.registry)
@@ -227,7 +229,7 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
             }
         for item in availability
     )
-    assert len(exploration_status(project)["fillers"]) == 392
+    assert len(exploration_status(project)["fillers"]) == 410
 
 
 def test_currently_generates_a_matcher_confirmed_anchor() -> None:

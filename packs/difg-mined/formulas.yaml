@@ -1,9 +1,8 @@
 format: rulekit/formulas@1
-# The difg `physics` domain: a NAMED physical quantity computed from the
-# parameters the question states. Same template as geometry.yaml — declarative
-# formulas as DATA, ONE general ask family and ONE general consumer, no
-# per-domain Python (constitution rule 1). This table is the geometry table with
-# the SHAPE dropped: a physical quantity names its formula on its own.
+# Advanced extensions of the reusable physics pack. The base pack owns the
+# generic ask family, category, distance/time/mass dimensions, and ordinary
+# speed/weight formulas. This table adds only independently gated quantities
+# and dimensions used by the broader DIFG/SciBench projects.
 #
 # THE DIMENSIONS MAP IS THE POINT. It binds each number by the DIMENSION OF ITS
 # OWN UNIT, so binding is ORDER-INDEPENDENT. The cheap alternative — fill the
@@ -21,34 +20,17 @@ format: rulekit/formulas@1
 # we refuse to guess with. (The registry also ERRORS if one unit is mapped to two
 # dimensions — that would make binding order-dependent again.)
 dimensions:
-  # The unit as it reaches the consumer: the counted unit's LEMMA ("100 meters"
-  # -> 'meter'), or its QUALIFIER when the noun itself is not a unit ("a 2 kg
-  # object" -> lemma 'object', qualifier 'kilogram').
-  distance: [meter]
   # scibench thermo: the stated units are symbols ('25 kJ') and labeled degrees
   # ('100 degrees C'); the consumer scales them to these canonical units through
   # the conversions / affine-scales tables at bind time — one canonical unit per
   # dimension still holds, non-canonical units REACH it by table or decline
-  energy: [joule]
   temperature: [kelvin]
   # Projectile formulas consume angular measures in radians. Degree-bearing
   # inputs reach this canonical unit through conversions@1 before evaluation.
   angle: [radian]
-  # 'seconds', not 'second': in the lexicon 'second' is an ADJECTIVE (the
-  # ordinal), so the time unit's only noun form is the plural. Forcing a noun
-  # sense onto it is the trap that broke the `average` consumer.
-  time: [seconds]
-  mass: [kilogram]
   resistance: [ohm]
   current: [amp]
-  # Compound symbol `m/s` is a number-form of this one canonical unit. The
-  # tokenizer preserves the symbol whole; the lexicon canonicalizes it here.
-  velocity: [meter_per_second]
 formulas:
-  - {quantity: speed, expr: "distance / time"}
-  # g = 9.8 m/s^2 is a CONSTANT of the formula, so it lives in the expression
-  # (data) exactly as `pi` does for geometry — not in the consumer.
-  - {quantity: weight, expr: "mass * 9.8"}
   - {quantity: voltage, expr: "resistance * current"}
   # ΔS = q/T (reversible isothermal transfer). The key is 'entropy change', NOT
   # 'entropy': only ask/physics-quantity-change resolves "{q} change", so the
@@ -85,21 +67,6 @@ formulas:
   - quantity: maximum wavelength
     expr: "289.7771955 / temperature"
     scope: document
-  # Average power from stated work/energy over a duration. The `if` clause in
-  # the buyer is split into a premise, so document scope is load-bearing; both
-  # operands still bind by their unit dimensions, never by position.
-  - quantity: power
-    expr: "energy / time"
-    scope: document
-  # Near-Earth gravitational potential energy. The complete three-word key is
-  # preserved by `{q.qualified}`; kinetic, rotational kinetic, and bare
-  # potential energy therefore cannot borrow this mass/height formula.
-  - quantity: gravitational potential energy
-    expr: "mass * 9.8 * distance"
-  # Linear momentum from a stated mass and velocity. Both operands bind by
-  # their unit dimensions, never by position; extra values still decline under
-  # the consumer's whole-list accounting contract.
-  - {quantity: momentum, expr: "mass * velocity"}
   # Translational kinetic energy when velocity is stated directly. The exact
   # qualified key prevents bare, gravitational, rotational, and relativistic
   # energy asks from borrowing this formula. A distance/time operand shape is

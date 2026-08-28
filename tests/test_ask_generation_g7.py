@@ -47,7 +47,9 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
         "validated_premises",
     )
     assert any("antecedent discourse group" in blocker for blocker in contextual.blockers)
-    assert sum(item.supported for item in availability.values()) == 114
+    # The reusable physics pack adds the independently generatable
+    # ask/physics-quantity surface to curated.
+    assert sum(item.supported for item in availability.values()) == 115
     assert availability["ask/how-many-of-collection-are-label"].supported
     assert availability["ask/how-many-of-collection-are-label"].supported_modes == (
         "ask_only",
@@ -71,10 +73,14 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
     assert availability["ask/measured-content-in-container-unit"].blockers == (
         "ask requires generated premise evidence; standalone realization is disabled",
     )
-    assert len(availability) == 128
+    assert len(availability) == 133
     assert {
         item.id for item in availability.values() if not item.supported
     } == {
+        "ask/chem-cost-of-moles",
+        "ask/chem-molar-mass",
+        "ask/chem-moles-from-grams",
+        "ask/chem-weight-of-moles",
         "ask/how-many-all-combined-discourse-group",
         "ask/how-many-combined-discourse-group",
         "ask/how-many-combined-in-all-discourse-group",
@@ -93,7 +99,13 @@ def test_ask_availability_keeps_independent_and_contextual_contracts_explicit(
     assert all(
         "answerable" in item.supported_modes
         for item in availability.values()
-        if not item.supported
+        if not item.supported and not item.id.startswith("ask/chem-")
+    )
+    assert all(
+        item.supported_modes == ()
+        and item.blockers == ("no project-backed ask filler exists for f",)
+        for item in availability.values()
+        if item.id.startswith("ask/chem-")
     )
 
 

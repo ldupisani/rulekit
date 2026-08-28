@@ -1,0 +1,20 @@
+format: rulekit/formulas@1
+# Values bind by the dimension of their own unit, never by textual position.
+# One canonical unit per dimension keeps scaling explicit and deterministic.
+dimensions:
+  distance: [meter]
+  time: [seconds]
+  mass: [kilogram]
+  energy: [joule]
+  # Compound symbol `m/s` is a number-form of this canonical velocity unit.
+  velocity: [meter_per_second]
+formulas:
+  - {quantity: speed, expr: "distance / time"}
+  # Near-Earth gravitational acceleration remains declarative formula data.
+  - {quantity: weight, expr: "mass * 9.8"}
+  # Linear momentum binds mass and velocity from their units, not word order.
+  - {quantity: momentum, expr: "mass * velocity"}
+  # The qualified key prevents bare or kinetic energy asks from borrowing it.
+  - {quantity: gravitational potential energy, expr: "mass * 9.8 * distance"}
+  # Document scope permits the conditional premise before the final ask.
+  - {quantity: power, expr: "energy / time", scope: document}

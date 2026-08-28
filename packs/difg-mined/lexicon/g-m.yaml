@@ -327,10 +327,6 @@ entries:
   heavy:
     senses:
     - adjective
-  height:
-    senses:
-    - noun
-    plural: heights
   held:
     senses:
     - verb
@@ -1308,9 +1304,6 @@ entries:
   mason:
     senses:
     - noun
-  mass:
-    senses:
-    - noun
   massive:
     senses:
     - adjective
@@ -1399,14 +1392,6 @@ entries:
     - verb
     verb:
       lemma: meet
-  meter:
-    senses:
-    - noun
-    plural:
-    # Unit symbols are number-forms of their units, the same declarative
-    # mechanism already used by km/kilometer and rad/radian.
-    - m
-    - meters
   metro:
     senses:
     - noun
@@ -1519,33 +1504,6 @@ entries:
   models:
     senses:
     - noun
-  # PLURAL FORM ONLY, and deliberately no `mole` singular entry: 'mole' the
-  # ANIMAL appears in 2 ASDiv items, and admitting the singular (or a plural
-  # map pointing at it) would change how those read. 'moles' occurs nowhere in
-  # gsm8k, asdiv, svamp, mawps or folio — only in SciBench, the out-of-domain
-  # gate that must hold 0 commits. Measured before admitting; re-measured at
-  # 0/0 after. The chemistry asks all say "moles", so the singular buys
-  # nothing and costs exposure.
-  moles:
-    senses:
-    - noun
-    # The lemma itself is plural-only. A self plural keeps the forbidden
-    # animal singular out of the registry while making grammatical number
-    # available to counted ask generation ("5 moles").
-    plural: moles
-  # ADJECTIVE, not noun, and the choice is load-bearing. As a noun it would
-  # merge with the following noun into ONE compound ("molar mass" -> a single
-  # unit whose fold is 'molar mass'), which the two-literal ask cannot match --
-  # the 'square root' gotcha. Admitted only so the unknown-word guard stops
-  # blocking; the ask matches it as grammatical skeleton either way, since a
-  # literal matches on fold regardless of sense.
-  #
-  # Zero occurrences in gsm8k (TEST included), asdiv, svamp, mawps and folio;
-  # 28 in SciBench dev, which is the out-of-domain gate that must hold 0
-  # commits -- re-measured at 0/0 after this landed.
-  molar:
-    senses:
-    - adjective
   mom:
     senses:
     - noun

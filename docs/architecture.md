@@ -1,6 +1,6 @@
 # RuleKit architecture
 
-**Updated:** 2026-08-27
+**Updated:** 2026-08-28
 **Status:** current implementation, not a roadmap
 
 RuleKit is a deterministic reading and reasoning engine for controlled,
@@ -113,7 +113,7 @@ plural/base `need` or `require`. The comparative form also applies
 `same_number` between
 its standalone count and noun, admitting `1 fewer shopper` and
 `2 fewer shoppers` while rejecting both mismatches. The current curated
-project has 168 loaded reading rules and 392 reachable generated-filler
+project has 168 loaded reading rules and 410 reachable generated-filler
 identities. Of those rules, 159 are ordinary selectable generated premises,
 eight are explicitly fact-free safety interceptors, and one is a declared
 reader-only gapped construction. Keeping those roles in the schema prevents
@@ -499,6 +499,38 @@ in-place fact repair. When a pronoun or measure anaphor becomes resolvable, the
 affected sentence's rules are rerun and the complete premise store is rebuilt
 and saturated from source readings.
 
+### Shared dimensional algebra
+
+`kernel/dimensions.py` is the dependency-light home of ordinary multi-hop
+conversion lookup, scoped substance conversion, measure-unit recognition, and
+binding a counted value to the unique dimension read by a formula. It depends
+only on the compiled `Registry`; totals, learning, and consumers delegate to
+it rather than maintaining local copies.
+
+The operations retain separate evidence boundaries. Ordinary conversion can
+follow declared linear pairs. A substance conversion composes exactly one
+substance-scoped bridge row with at most one direct ordinary edge on either
+side; multiple complete candidates must agree. Dimension binding accepts only
+one reachable formula dimension and otherwise fails closed. Callers that need
+stronger evidence keep it explicitly: the molar-mass weight calculation still
+requires the directly declared base-mass conversion rather than treating an
+arbitrary transitive graph path as chemistry evidence.
+
+The reusable `physics` pack sits above that algebra. It owns the generic
+physical-quantity ask family, the `physics_quantity` category, and the
+ordinary speed, weight, momentum, gravitational-potential-energy, and power
+formulas. `difg-mined` requires that pack and extends the same category and
+formula registry with its advanced physics domains; it no longer carries a
+second copy of the asks.
+
+Formula chemistry is separated into the reusable `chemistry` pack. It owns
+the declarative atomic-mass table, plural-only amount-of-substance vocabulary,
+exact molar-mass ask shapes, and the categories needed by those asks. It
+depends on `physics` for the declared weight formula and on `core-english` for
+the direct gram/kilogram conversion. Both `curated` and `difg-mined` load these
+packs through manifest dependencies, so the general science mechanisms are
+available without importing unrelated corpus-mined vocabulary.
+
 ## Configuration and compilation
 
 ### Projects
@@ -508,7 +540,8 @@ A project directory contains `project.yaml`. Loading it:
 1. validates the document with `ProjectDoc`;
 2. resolves pack names against the nearest repository-level `packs/`
    directory, while `./` and `../` entries resolve relative to the project;
-3. loads packs in declared order and checks `requires`;
+3. loads explicit packs and recursively resolves manifest `requires` from
+   sibling pack directories in dependency order;
 4. compiles the loaded data into one immutable `Registry`; and
 5. computes a SHA-256 fingerprint from the exact pack bytes.
 
@@ -2260,6 +2293,8 @@ src/rulekit/
 packs/
   core-english/     base language data
   arithmetic/       general word-problem rules, asks, and synth rules
+  physics/          reusable dimension-bound physical quantities and asks
+  chemistry/        reusable formula chemistry and atomic-mass data
   logic/            opt-in phrase-keyed first-order logic reading
   logic-arithmetic/ narrow quantified-quantity and class-refinement bridge
   difg-mined/       migrated vocabulary and domain knowledge, including quarantine

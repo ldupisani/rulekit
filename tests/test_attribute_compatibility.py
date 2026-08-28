@@ -196,17 +196,21 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
         "blue",
         "business",
         "different",
+        "done",
         "enough",
         "final",
         "following",
+        "gravitational",
         "green",
         "humanities",
         "large",
         "last",
         "left",
+        "molar",
         "new",
         "old",
         "purple",
+        "potential",
         "red",
         "remaining",
         "science",
@@ -233,7 +237,10 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
     # reviewed small/large pairs; large appliances remain outside that class.
     # Capacity and content are ordinary core nouns used by the container
     # inquiry frames; neither broadens descriptor compatibility.
-    assert len(plural_nouns) == 106
+    # The reusable science packs contribute meter, object, speed, height,
+    # joule, moles, and the compound velocity unit as pluralizable nouns;
+    # seconds and moles are deliberately plural-only identities.
+    assert len(plural_nouns) == 113
     assert {
         "boy",
         "fridge",

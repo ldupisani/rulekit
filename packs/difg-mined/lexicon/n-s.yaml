@@ -143,10 +143,6 @@ entries:
   oatmeal:
     senses:
     - noun
-  object:
-    senses:
-    - noun
-    plural: objects
   occasions:
     senses:
     - noun
@@ -1711,9 +1707,6 @@ entries:
   second:
     senses:
     - adjective
-  seconds:
-    senses:
-    - noun
   section:
     senses:
     - noun
@@ -2198,10 +2191,6 @@ entries:
   speech:
     senses:
     - noun
-  speed:
-    senses:
-    - noun
-    plural: speeds
   spelling:
     senses:
     - noun

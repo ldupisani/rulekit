@@ -66,6 +66,8 @@ uv run rulekit --project projects/gsm8k serve                          # visual 
 
 - `src/rulekit/kernel/` — the frozen general machinery (pipeline, facts, guards, document loop)
 - `packs/core-english/` — lexicon, obligations, numbers, base categories (hand-curated)
+- `packs/physics/` — reusable dimension-bound physical quantities and ask shapes
+- `packs/chemistry/` — reusable formula chemistry, atomic masses, and chemistry asks
 - `packs/difg-mined/` — vocabulary mined from difg; `quarantine.yaml` lists words difg
   deliberately withheld (holdout poison) — CHECK IT before admitting new vocabulary
 - `packs/arithmetic/` — pattern rules, ask shapes, synthesizers (the general solver families)

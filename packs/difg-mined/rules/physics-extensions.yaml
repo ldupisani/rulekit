@@ -1,0 +1,46 @@
+format: rulekit/rules@1
+# Advanced surfaces extending the reusable physics pack. They remain here
+# because their answerable formulas and vocabulary are supplied by this pack;
+# the ordinary "What is <quantity>" ask is owned once by packs/physics.
+rules: []
+asks:
+  - id: ask/physics-quantity-change
+    match:
+      question:
+        - {lit: calculate}
+        - {lit: change}
+        - {lit: in}
+        - {slot: q, cat: physics_quantity}
+    resolves:
+      consumer: physics
+      quantity: "{q} change"
+
+  - id: ask/physics-quantity-imperative
+    match:
+      question:
+        - {lit: calculate}
+        - {slot: q, cat: physics_quantity}
+    resolves:
+      consumer: physics
+      quantity: "{q.qualified}"
+
+  - id: ask/physics-eponymic-quantity
+    match:
+      question:
+        - {lit: calculate}
+        - {slot: particle, type: preposition}
+        - {slot: eponym, type: proper_name}
+        - {slot: q, cat: physics_quantity}
+    resolves:
+      consumer: physics
+      quantity: "{particle} {eponym} {q}"
+
+  - id: ask/physics-qualified-quantity-past
+    match:
+      question:
+        - {lit: what}
+        - {lit: was}
+        - {slot: q, cat: physics_quantity}
+    resolves:
+      consumer: physics
+      quantity: "{q.qualified}"

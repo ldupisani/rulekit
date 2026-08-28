@@ -545,32 +545,16 @@ def _entity_total(
 
 
 def _conversion_factor(reg: Registry, from_unit: str, to_unit: str) -> float | None:
-    """mining candidate dimension-difference-asks: a MULTI-HOP factor
-    from_unit -> to_unit over the `reg.conversions` graph (BFS; the table
-    itself is small — a handful of declared pairs, both directions already
-    stored by the registry build). Handles chains reg.conversions never
-    states directly ("yard" -> "foot" -> "inch": the pack declares
-    yard/foot and foot/inch, never yard/inch) without inventing a second
-    conversions table. Returns None when NO declared path connects the two
-    units at all (e.g. 'dog' has no relationship to 'inch') — the caller's
-    signal that the units are simply unrelated, not that a conversion is
-    missing."""
-    if from_unit == to_unit:
-        return 1.0
-    seen = {from_unit}
-    frontier = [(from_unit, 1.0)]
-    while frontier:
-        next_frontier = []
-        for unit, factor in frontier:
-            for (a, b), f in reg.conversions.items():
-                if a == unit and b not in seen:
-                    total = factor * f
-                    if b == to_unit:
-                        return total
-                    seen.add(b)
-                    next_frontier.append((b, total))
-        frontier = next_frontier
-    return None
+    """The multi-hop conversion factor, DELEGATED to the shared dimensional
+    algebra (`dimensions.conversion_factor`) — this module keeps the alias
+    its existing callers (`_entity_total_convertible`, the
+    completion-duration consumer) already import, so the extraction
+    increment touches no call site. The implementation, and the contract
+    (BFS over the declared pairs; None when no path connects the units), is
+    owned in ONE place now."""
+    from .dimensions import conversion_factor
+
+    return conversion_factor(reg, from_unit, to_unit)
 
 
 def _entity_total_convertible(

@@ -205,9 +205,12 @@ def _is_measure_unit(noun: Unit, reg: Registry) -> bool:
     `reg.conversions` pair (pound, gallon, ounce, ...; both directions are
     stored, so membership on either side is enough). Data-driven — never a
     Python word list; a made-up container noun ('box', 'bag') is never a
-    member and stays out of scope for `_measure_partitive_anchor`."""
-    lemma = _lemma(noun)
-    return any(lemma in pair for pair in reg.conversions)
+    member and stays out of scope for `_measure_partitive_anchor`.
+    DELEGATED to the shared dimensional algebra (`dimensions.is_measure_unit`);
+    this wrapper keeps the Unit-shaped signature its two call sites use."""
+    from .dimensions import is_measure_unit
+
+    return is_measure_unit(reg, _lemma(noun))
 
 
 def _measure_partitive_anchor(reading: Reading, subject: Unit, reg: Registry) -> Unit | None:

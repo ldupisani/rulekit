@@ -1,0 +1,16 @@
+format: rulekit/rules@1
+# One general ask family selects a named physical quantity. Operands are not
+# bound positionally here: the physics consumer reads every stated value by
+# its declared unit dimension and fails closed on missing, duplicate, unread,
+# or ambiguous dimensions.
+rules: []
+asks:
+  - id: ask/physics-quantity
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {slot: q, cat: physics_quantity}
+    resolves:
+      consumer: physics
+      quantity: "{q.qualified}"

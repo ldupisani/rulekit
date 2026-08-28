@@ -3,5 +3,7 @@ name: difg-mined
 version: 0.1.0
 requires:
 - core-english
+- physics
+- chemistry
 description: Lexical data mined from difg's runtime tables by tools/migrate_difg.py. Edit freely — 
   this is data, not a build artifact.

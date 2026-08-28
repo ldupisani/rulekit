@@ -1,0 +1,8 @@
+format: rulekit/pack@1
+name: physics
+version: 0.1.0
+requires: [core-english]
+description: >
+  Reusable physical-quantity questions and dimension-bound formulas. The base
+  pack owns ordinary mechanics calculations; domain packs may extend the
+  physics_quantity category and formula table without copying the asks.

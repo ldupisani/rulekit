@@ -151,12 +151,66 @@ def load_pack(root: Path) -> LoadedPack:
 
 
 def load_packs(roots: list[Path]) -> list[LoadedPack]:
-    """Load several packs, checking requires-ordering."""
-    packs = [load_pack(r) for r in roots]
-    seen: set[str] = set()
-    for p in packs:
-        missing = [req for req in p.manifest.requires if req not in seen]
-        if missing:
-            raise PackError(f"pack {p.name!r} requires {missing} loaded before it")
-        seen.add(p.name)
-    return packs
+    """Load explicit packs and their sibling-declared dependencies.
+
+    A manifest names dependencies by pack name. Repository packs live as
+    sibling directories, so callers should not have to reproduce the complete
+    transitive order in every project and test fixture. Explicit roots still
+    win when a dependency is supplied from another location (for example a
+    project-local pack); unresolved names are looked up beside the requiring
+    pack. Cycles, missing packs, and two roots claiming one name fail closed.
+    """
+
+    explicit = [load_pack(root) for root in roots]
+    available: dict[str, LoadedPack] = {}
+    for pack in explicit:
+        prior = available.get(pack.name)
+        if prior is not None and prior.root != pack.root:
+            raise PackError(
+                f"pack name {pack.name!r} resolves to both {prior.root} "
+                f"and {pack.root}"
+            )
+        available[pack.name] = pack
+
+    ordered: list[LoadedPack] = []
+    loaded: dict[str, LoadedPack] = {}
+    visiting: list[str] = []
+
+    def visit(pack: LoadedPack) -> None:
+        prior = loaded.get(pack.name)
+        if prior is not None:
+            if prior.root != pack.root:
+                raise PackError(
+                    f"pack name {pack.name!r} resolves to both {prior.root} "
+                    f"and {pack.root}"
+                )
+            return
+        if pack.name in visiting:
+            cycle = " -> ".join((*visiting, pack.name))
+            raise PackError(f"pack dependency cycle: {cycle}")
+
+        visiting.append(pack.name)
+        for required_name in pack.manifest.requires:
+            required = available.get(required_name)
+            if required is None:
+                required_root = pack.root.parent / required_name
+                if not (required_root / "pack.yaml").exists():
+                    raise PackError(
+                        f"pack {pack.name!r} requires {required_name!r}, "
+                        f"but {required_root} is not a pack"
+                    )
+                required = load_pack(required_root)
+                if required.name != required_name:
+                    raise PackError(
+                        f"pack {pack.name!r} requires {required_name!r}, but "
+                        f"{required_root} declares name {required.name!r}"
+                    )
+                available[required_name] = required
+            visit(required)
+        visiting.pop()
+        loaded[pack.name] = pack
+        ordered.append(pack)
+
+    for pack in explicit:
+        visit(pack)
+    return ordered

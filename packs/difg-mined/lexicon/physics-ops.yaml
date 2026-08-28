@@ -27,7 +27,6 @@ entries:
   # C"). Collision-grepped 2026-07-20: reversibly/isothermally 0 everywhere;
   # transferred gsm8k-train 4 + folio 3; heat gsm8k 3+3, folio 8; iron gsm8k
   # 9+2, folio 2. The unknown-word guard is what these lift — gated on all six.
-  energy: {senses: [noun]}
   transferred: {senses: [verb], verb: {lemma: transfer}}
   reversibly: {senses: [adverb]}
   isothermally: {senses: [adverb]}
@@ -36,20 +35,5 @@ entries:
   # Wien buyer: declarative vocabulary only. `blackbody` modifies the emitted
   # radiation; Earth is noun-sensed so the ordinary possessive compound reader
   # can resolve "Earth's ..." without a word-specific kernel branch.
-  earth: {senses: [noun]}
   blackbody: {senses: [adjective]}
   radiation: {senses: [noun]}
-  # Canonical energy unit for the document-scoped power formula. The plural and
-  # singular are one identity, following kilogram/kilograms and kilojoule/kJ.
-  joule: {senses: [noun], plural: joules}
-  # Exact output-quantity modifiers for the gravitational-potential formula.
-  # They remain data; the ask routes the complete qualified phrase generically.
-  gravitational: {senses: [adjective]}
-  potential: {senses: [adjective]}
-  # Momentum buyer: `m/s` is a number-form of one semantic velocity unit, just
-  # as `kg` is a number-form of kilogram. `moving` is ordinary verbal syntax;
-  # admitting it removes the unknown-word guard without giving the kernel a
-  # word-specific branch. GSM8K exposure is gated explicitly for this change.
-  momentum: {senses: [noun]}
-  moving: {senses: [verb], verb: {lemma: move}}
-  meter_per_second: {senses: [noun], plural: [m/s]}

@@ -1,0 +1,7 @@
+format: rulekit/categories@1
+categories:
+  amount_of_substance_unit: {parent: noun}
+  molar_mass_base_unit: {parent: noun}
+members:
+  amount_of_substance_unit: [moles]
+  molar_mass_base_unit: [gram]

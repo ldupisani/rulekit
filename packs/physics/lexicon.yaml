@@ -1,0 +1,22 @@
+format: rulekit/lexicon@1
+entries:
+  # Ordinary vocabulary required by the reusable base formulas. These words
+  # previously lived in difg-mined even though neither their meaning nor the
+  # supported questions are corpus-specific.
+  done: {senses: [adjective]}
+  earth: {senses: [noun]}
+  energy: {senses: [noun]}
+  gravitational: {senses: [adjective]}
+  height: {senses: [noun], plural: heights}
+  joule: {senses: [noun], plural: joules}
+  mass: {senses: [noun]}
+  meter: {senses: [noun], plural: [m, meters]}
+  meter_per_second: {senses: [noun], plural: [m/s]}
+  momentum: {senses: [noun]}
+  moving: {senses: [verb], verb: {lemma: move}}
+  object: {senses: [noun], plural: objects}
+  power: {senses: [noun]}
+  potential: {senses: [adjective]}
+  seconds: {senses: [noun]}
+  speed: {senses: [noun], plural: speeds}
+  work: {senses: [verb, noun]}

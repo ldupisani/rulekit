@@ -1,8 +1,8 @@
 # rulekit handoff
 
-**Updated:** 2026-08-27
-**Runtime checkpoint:** `main` (contextual ask replay and reviewed
-semantic-boundary reconciliation implemented and gated)
+**Updated:** 2026-08-28
+**Runtime checkpoint:** `main` (shared dimensional algebra and reusable
+physics/chemistry pack consolidation implemented and gated)
 **Active campaign:** GSM8K Mining v2, M7 example-led vertical mining
 **Immediate state:** all four published Mining v2 candidates are landed; no
 candidate is awaiting human or machine review
@@ -51,6 +51,20 @@ temporal event totals (130), task-completion duration gaps (131), and
 anaphoric distance chains with exact combined totals (132).
 
 ### Latest implementation checkpoint
+
+General physical-quantity support is no longer owned by the corpus-mined
+pack. The reusable `physics` pack owns the generic ask family, the
+`physics_quantity` category, ordinary speed, weight, momentum,
+gravitational-potential-energy, and power formulas, and their minimal
+vocabulary. The reusable `chemistry` pack owns atomic-mass data and the exact
+molar-mass, moles-from-grams, cost-of-moles, and weight-of-moles asks; its
+weight calculation reuses the physics formula and core mass conversion.
+`curated` loads both directly, while `difg-mined` declares them as dependencies
+and contributes only advanced extensions. Pack loading resolves manifest
+dependencies transitively from sibling packs, so projects and tests do not
+repeat the dependency graph. The physics consumer binds operands by their
+declared dimensions through the shared `kernel/dimensions.py` algebra and
+still declines on ambiguous, unread, or multiply stated values.
 
 Qualified-package container questions now cover both separated per-package
 statements and inline `N large bags with M items` / `N small bags of M items`

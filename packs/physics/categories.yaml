@@ -1,0 +1,7 @@
+format: rulekit/categories@1
+categories:
+  # The generic asks select a physical quantity by category, then the consumer
+  # looks up its complete qualified name in the formula table.
+  physics_quantity: {parent: noun}
+members:
+  physics_quantity: [speed, weight, momentum, energy, power]

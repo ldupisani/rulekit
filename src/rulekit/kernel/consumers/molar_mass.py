@@ -67,7 +67,10 @@ def molar_mass(ctx: ConsumerContext):
         # NO CONSTANT HERE. The gram->kilogram factor is in the conversions
         # table and g lives inside `rulekit/formulas@1`'s `weight`
         # expression, exactly as it does for the physics consumer — so this
-        # branch names neither a unit nor 9.8.
+        # branch names neither a unit nor 9.8. This consumer deliberately
+        # requires the direct declared pair: a transitive path through the
+        # ordinary conversion graph is not dimension-scoped evidence for the
+        # chemistry calculation.
         factor = ctx.reg.conversions.get(("gram", "kilogram"))
         expr = ctx.reg.quantity_formulas.get("weight")
         if factor is None or expr is None:

@@ -34,40 +34,14 @@ def _substance_conversion_factor(
     source: str,
     target: str,
 ) -> float | None:
-    """Compose one substance bridge with direct same-dimension unit edges.
+    """DELEGATED to the shared dimensional algebra
+    (`dimensions.substance_conversion_factor`) — the substance-bridge
+    contract (one bridge composition per row, at most one direct ordinary
+    edge on either side, disagreement -> None) is owned in ONE place now.
+    This module keeps the ctx-shaped wrapper its call site uses."""
+    from ..dimensions import substance_conversion_factor
 
-    The ordinary conversion table contains homographs such as mass ``ounce``
-    and fluid ``ounce``. Treating that table as one transitive graph would
-    accidentally connect every mass to every volume through the shared word.
-    A substance bridge therefore permits at most one direct ordinary edge on
-    either side. Longer paths need an explicit scoped row rather than a guess.
-    """
-
-    if source == target:
-        return 1.0
-    candidates: list[float] = []
-    for (owner, bridge_from, bridge_to), bridge_factor in (
-        ctx.reg.substance_conversions.items()
-    ):
-        if owner != substance:
-            continue
-        before = (
-            1.0
-            if source == bridge_from
-            else ctx.reg.conversions.get((source, bridge_from))
-        )
-        after = (
-            1.0
-            if target == bridge_to
-            else ctx.reg.conversions.get((bridge_to, target))
-        )
-        if before is not None and after is not None:
-            candidates.append(before * bridge_factor * after)
-    if not candidates or any(
-        abs(candidate - candidates[0]) > 1e-9 for candidate in candidates[1:]
-    ):
-        return None
-    return candidates[0]
+    return substance_conversion_factor(ctx.reg, substance, source, target)
 
 
 @consumer("measurement-reading")

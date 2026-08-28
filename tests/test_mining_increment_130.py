@@ -229,7 +229,7 @@ def test_calendar_vocabulary_and_membership_are_core_owned(curated_project) -> N
 
 def test_calendar_vocabulary_is_not_quarantined_or_multiply_owned() -> None:
     project = load_project(GSM8K)
-    core, _arithmetic, mined = project.packs
+    core, _arithmetic, _physics, _chemistry, mined = project.packs
 
     assert CALENDAR_POINTS <= set(core.lexicon)
     assert CALENDAR_POINTS.isdisjoint(mined.lexicon)
@@ -244,7 +244,7 @@ def test_calendar_vocabulary_is_not_quarantined_or_multiply_owned() -> None:
 
 def test_combined_registry_semantics_match_the_legacy_mined_ownership() -> None:
     project = load_project(GSM8K)
-    core, arithmetic, mined = project.packs
+    core, arithmetic, physics, chemistry, mined = project.packs
     legacy_core = replace(
         core,
         lexicon={
@@ -296,7 +296,9 @@ def test_combined_registry_semantics_match_the_legacy_mined_ownership() -> None:
             ),
         ],
     )
-    legacy = compile_registry([legacy_core, arithmetic, legacy_mined])
+    legacy = compile_registry(
+        [legacy_core, arithmetic, physics, chemistry, legacy_mined]
+    )
     compared_fields = {
         field.name for field in fields(project.registry) if field.name != "fingerprint"
     }

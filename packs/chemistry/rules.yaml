@@ -1,0 +1,74 @@
+format: rulekit/rules@1
+# Chemical formulas are one typed unit validated against elements.yaml. Exact
+# ask skeletons prevent acronym-shaped ordinary words from reaching the
+# molar-mass consumer merely because their letters are element symbols.
+rules: []
+asks:
+  - id: ask/chem-molar-mass
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {lit: the, consume_skipped: true}
+        - {lit: molar mass}
+        - {lit: of}
+        - {slot: f, type: formula}
+    resolves:
+      consumer: molar-mass
+      formula: "{f.components}"
+
+  - id: ask/chem-moles-from-grams
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {lit: moles}
+        - {lit: are}
+        - {lit: in}
+        - {slot: g, cat: molar_mass_base_unit, counted: true}
+        - {lit: of}
+        - {slot: f, type: formula}
+    resolves:
+      consumer: molar-mass
+      op: moles_from_grams
+      formula: "{f.components}"
+      amount: "{g.value}"
+
+  - id: ask/chem-cost-of-moles
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {lit: the, consume_skipped: true}
+        - {lit: cost}
+        - {lit: of}
+        - {slot: n, cat: amount_of_substance_unit, counted: true, number: plural}
+        - {lit: of}
+        - {slot: f, type: formula}
+        - {lit: at}
+        - {slot: rate, cat: currency, counted: true}
+        - {lit: per}
+        - {slot: runit, cat: molar_mass_base_unit}
+    resolves:
+      consumer: molar-mass
+      op: cost_of_moles
+      formula: "{f.components}"
+      amount: "{n.value}"
+      rate: "{rate.value}"
+
+  - id: ask/chem-weight-of-moles
+    match:
+      question:
+        - {lit: what}
+        - {lit: is}
+        - {lit: the, consume_skipped: true}
+        - {lit: weight}
+        - {lit: of}
+        - {slot: n, cat: amount_of_substance_unit, counted: true, number: plural}
+        - {lit: of}
+        - {slot: f, type: formula}
+    resolves:
+      consumer: molar-mass
+      op: weight_of_moles
+      formula: "{f.components}"
+      amount: "{n.value}"
