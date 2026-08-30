@@ -374,16 +374,48 @@ class Registry:
             for _, _, host_category in frames
         )
 
+    def category_routes_overlap(self, left: str, right: str) -> bool:
+        """Whether two declared categories are on one inheritance route."""
+
+        return (
+            left in self.cat_ancestors(right)
+            or right in self.cat_ancestors(left)
+        )
+
     def measure_holder_compatibility_pairs(
-        self, measure: str, holder: str
+        self, measure: str, holder: str, attribute: str | None = None
     ) -> tuple[tuple[str, str], ...]:
-        """Every declared measure-category/holder-category licence."""
+        """Every declared measure-category/holder-category licence.
+
+        An optional descriptor keeps a polysemous measure on the noun-category
+        route selected by ``attribute_compatibility``.  The registry still
+        owns every lexical fact; this merely composes two declarations.
+        """
 
         pairs: set[tuple[str, str]] = set()
         measure = self.plural_to_singular.get(measure, measure)
         holder = self.plural_to_singular.get(holder, holder)
+        route_categories = (
+            {
+                noun_category
+                for _, noun_category in self.attribute_compatibility_pairs(
+                    attribute, measure
+                )
+            }
+            if attribute is not None
+            else set()
+        )
+        if attribute is not None and not route_categories:
+            return ()
         for direct in self.word_categories.get(measure, ()):
             for measure_category in self.cat_ancestors(direct):
+                if route_categories and not any(
+                    self.category_routes_overlap(
+                        measure_category, route_category
+                    )
+                    for route_category in route_categories
+                ):
+                    continue
                 for holder_category in self.measure_holder_compatibility.get(
                     measure_category, ()
                 ):
@@ -401,8 +433,14 @@ class Registry:
             for measure_category in self.cat_ancestors(direct)
         )
 
-    def measure_applies_to_holder(self, measure: str, holder: str) -> bool:
-        return bool(self.measure_holder_compatibility_pairs(measure, holder))
+    def measure_applies_to_holder(
+        self, measure: str, holder: str, attribute: str | None = None
+    ) -> bool:
+        return bool(
+            self.measure_holder_compatibility_pairs(
+                measure, holder, attribute
+            )
+        )
 
     def partitive_compatibility_pairs(
         self, measure: str, substance: str
@@ -1364,7 +1402,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                         f"{category!r} is {root!r}-rooted, not "
                         f"{expected_root!r}-rooted"
                     )
-        for predicate in rule.where:
+        for predicate in (*rule.where, *rule.generation_where):
             membership = predicate.same_category_membership
             if membership is not None:
                 # Like the long-standing slot_not_category predicate, this
@@ -1709,6 +1747,11 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
             if measure_compatibility is not None:
                 for slot_name in (
                     measure_compatibility.measure,
+                    *(
+                        (measure_compatibility.attribute,)
+                        if measure_compatibility.attribute is not None
+                        else ()
+                    ),
                     *measure_compatibility.holders,
                 ):
                     if slot_name not in slots:
@@ -1720,6 +1763,17 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                     raise CompileError(
                         f"rule {rule.id!r} measure-holder compatibility measure "
                         f"{measure_compatibility.measure!r} is not noun-rooted"
+                    )
+                if (
+                    measure_compatibility.attribute is not None
+                    and _slot_root(
+                        slots[measure_compatibility.attribute]
+                    ) not in {"adjective", "comparative", "preposition"}
+                ):
+                    raise CompileError(
+                        f"rule {rule.id!r} measure-holder compatibility "
+                        f"attribute {measure_compatibility.attribute!r} is not "
+                        "descriptor-rooted"
                     )
                 for holder_name in measure_compatibility.holders:
                     holder = slots[holder_name]
@@ -2034,6 +2088,11 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
             if measure_compatibility is not None:
                 for slot_name in (
                     measure_compatibility.measure,
+                    *(
+                        (measure_compatibility.attribute,)
+                        if measure_compatibility.attribute is not None
+                        else ()
+                    ),
                     *measure_compatibility.holders,
                 ):
                     if slot_name not in ask_slots:
@@ -2047,6 +2106,17 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                     raise CompileError(
                         f"ask {ask.id!r} measure-holder compatibility measure "
                         f"{measure_compatibility.measure!r} is not noun-rooted"
+                    )
+                if (
+                    measure_compatibility.attribute is not None
+                    and _slot_root(
+                        ask_slots[measure_compatibility.attribute]
+                    ) not in {"adjective", "comparative", "preposition"}
+                ):
+                    raise CompileError(
+                        f"ask {ask.id!r} measure-holder compatibility "
+                        f"attribute {measure_compatibility.attribute!r} is not "
+                        "descriptor-rooted"
                     )
                 for holder_name in measure_compatibility.holders:
                     holder = ask_slots[holder_name]

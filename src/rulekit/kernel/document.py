@@ -387,6 +387,45 @@ def _bind_discourse(
             # Premise pronouns retain the established definitive-or-decline
             # behavior.
             lemma = unit.features.get("lemma", unit.features["fold"])
+            # First-/second-person possessive determiners are anchored by the
+            # speech situation, not by an earlier noun phrase.  Their governed
+            # noun deliberately retains the surface owner (``my task``), while
+            # the pronoun's ordinary ``refers`` obligation becomes optional so
+            # a valid deictic phrase is not reported as a discourse defect.
+            # It deliberately remains UNBOUND: ``my`` must not thereby become
+            # a resolved entity slot and let a prefix rule ignore its noun.
+            if (
+                reg is not None
+                and reg.word_in_category(
+                    lemma, "externally_deictic_possessive_determiner"
+                )
+            ):
+                obligations = unit.obligations()
+                updated = list(obligations)
+                deictic_changed = False
+                for index, obligation in enumerate(obligations):
+                    if (
+                        obligation.need != "refers"
+                        or obligation.met
+                        or obligation.optional
+                    ):
+                        continue
+                    updated[index] = Obligation(
+                        obligation.role,
+                        obligation.need,
+                        target=None,
+                        optional=True,
+                    )
+                    deictic_changed = True
+                if deictic_changed:
+                    reading.record(
+                        "bind-deictic-possessive",
+                        unit,
+                        {"obligations": updated},
+                        f"{unit.surface!r} is anchored by the speech situation",
+                    )
+                    changed.add(reading.sentence_index)
+                continue
             group_reference = reg is not None and (
                 (
                     unit.features.get("number") == "plural"

@@ -1225,6 +1225,8 @@ def _check_where(
             # declared lexical frame remain open. Once a verb category owns a
             # contract, one complete most-specific frame must accept every
             # mapped role; sibling senses are alternatives, never a mix.
+            if not frames and compatibility.require_declared_frame:
+                return False
             if frames:
                 accepted = False
                 for _category, frame in frames:
@@ -1277,6 +1279,16 @@ def _check_where(
             if measure is None or isinstance(measure, tuple):
                 return False
             measure_lemma = _lemma_of(measure)
+            attribute = (
+                slots.get(compatibility.attribute)
+                if compatibility.attribute is not None
+                else None
+            )
+            if attribute is not None and isinstance(attribute, tuple):
+                return False
+            attribute_lemma = (
+                _lemma_of(attribute) if attribute is not None else None
+            )
             if (
                 compatibility.when_declared
                 and not reg.measure_has_holder_boundary(measure_lemma)
@@ -1292,7 +1304,25 @@ def _check_where(
                     and (
                         not compatibility.proper_name_measure_categories
                         or any(
-                            reg.word_in_category(measure_lemma, category)
+                            (
+                                attribute_lemma is None
+                                and reg.word_in_category(
+                                    measure_lemma, category
+                                )
+                            )
+                            or (
+                                attribute_lemma is not None
+                                and any(
+                                    reg.category_routes_overlap(
+                                        route_category, category
+                                    )
+                                    for _, route_category in (
+                                        reg.attribute_compatibility_pairs(
+                                            attribute_lemma, measure_lemma
+                                        )
+                                    )
+                                )
+                            )
                             for category in (
                                 compatibility.proper_name_measure_categories
                             )
@@ -1301,7 +1331,9 @@ def _check_where(
                 ):
                     continue
                 if not reg.measure_applies_to_holder(
-                    measure_lemma, _lemma_of(holder)
+                    measure_lemma,
+                    _lemma_of(holder),
+                    attribute_lemma,
                 ):
                     return False
         if pred.partitive_compatible is not None:

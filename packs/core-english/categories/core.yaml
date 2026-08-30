@@ -3,6 +3,17 @@ format: rulekit/categories@1
 # Polarity is declared HERE and only here — every consumer (signed folds,
 # sign() in rule expressions) derives from it (the difg LOSS_VERBS lesson).
 categories:
+    indefinite_an_exception:
+        parent: noun
+        notes: >
+            Noun heads whose spoken onset takes `an` despite a consonant
+            spelling. Reading remains permissive; generation uses this only
+            to choose the natural indefinite-article allomorph.
+    indefinite_a_exception:
+        parent: noun
+        notes: >
+            Noun heads whose spoken onset takes `a` despite a vowel spelling.
+            This is pronunciation data, not a reader-side rejection boundary.
     membership_member_noun:
         parent: noun
         notes: >
@@ -97,6 +108,13 @@ categories:
             cousin", "their garden"). This is narrower than `pronoun`: subject,
             object, reflexive, and standalone possessive forms do not license a
             noun merely by preceding it.
+    externally_deictic_possessive_determiner:
+        parent: possessive_determiner
+        notes: >
+            First- and second-person possessive determiners whose owner is the
+            speech situation rather than a prior textual antecedent. They keep
+            their explicit surface owner on the governed noun but do not
+            report a missing discourse referent.
     plural_possessive_determiner:
         parent: possessive_determiner
         notes: >
@@ -951,9 +969,10 @@ categories:
     transferable_quantity_object:
         parent: ownable_quantity_object
         notes: >
-            Counted objects that can ordinarily be given or sold without an
-            omitted measure or special interpretation. Extension packs add
-            their own concrete transfer objects to this shared role.
+            Counted objects and non-count resources that can ordinarily be
+            given or sold as a stated quantity without a special
+            interpretation. Extension packs add their own concrete transfer
+            objects or materials to this shared role.
     droppable_quantity_object:
         parent: transferable_quantity_object
         notes: "Portable counted objects that can ordinarily be dropped."
@@ -1605,8 +1624,16 @@ categories:
             Concrete elapsed-time units accepted by duration-rate premises.
             This is narrower than `time_measure`, which also contains the
             abstract dimension noun `age`; "70 ages" is not a duration span.
-    dimension_difference_measure:
+    measured_comparative_offset_measure:
         parent: noun
+        notes: >
+            Concrete counted units that may precede a dangling measured
+            comparative. This excludes abstract dimension nouns such as
+            `weight` while retaining ordinary elapsed-time units; the
+            descriptor still selects the exact age, duration, length, or mass
+            route through `attribute_compatibility`.
+    dimension_difference_measure:
+        parent: measured_comparative_offset_measure
         notes: >
             Concrete units licensed by "how many UNIT taller/lighter/..."
             questions. Dimension nouns such as cost, height, and weight stay
@@ -1785,8 +1812,14 @@ categories:
             Prepositions licensed between a ratio-frame verb and multiplier.
             A bound member conditionally requires a declared frame-
             prepositional verb; direct heads remain unaffected.
-    motion_comparison_verb:
+    quantity_comparison_verb:
         parent: verb
+        notes: >
+            Positive verb boundary for explicit quantitative comparisons. It
+            unites ordinary quantity predicates and narrowly licensed motion
+            comparisons without admitting motion into general quantity asks.
+    motion_comparison_verb:
+        parent: quantity_comparison_verb
         selectional_roles:
             actor: motion_participant
             theme: motion_comparison_measure
@@ -1931,7 +1964,7 @@ categories:
             This is narrower than general acquisition: buying, finding, or
             winning money does not describe receiving change.
     quantity_ask_verb:
-        parent: verb
+        parent: quantity_comparison_verb
         notes: >
             Bare transitive or possessive verbs that can head a general
             quantity question. This is an explicit union for ask grammar, not
@@ -2325,10 +2358,13 @@ categories:
             summing the qualified variants it produces is the conjunct-
             comparative class's job, built on top of this.
 members:
+    indefinite_an_exception: [hour]
+    indefinite_a_exception: [university]
     non_event_verb: [be]
     holder_list_conjunction: [and]
     definite_article: [the]
     possessive_determiner: [her, his, its, my, their, your]
+    externally_deictic_possessive_determiner: [my, your]
     third_person_animate_possessive_determiner: [her, his]
     plural_possessive_determiner: [their]
     clause_subject_possessive_determiner: [her, his, its, their]
@@ -2597,8 +2633,9 @@ members:
     enrollment_quantity_object: [course, student]
     teaching_quantity_object: [course, puzzle, student]
     transferable_quantity_object:
-        [animal, alpaca, bird, can, cat, course, dog, dollar, fish, flower,
-         hamster, number, rabbit, tree]
+        [animal, alpaca, bird, can, cat, clay, course, dog, dollar, fish,
+         flower, hamster, litter, money, number, paper, rabbit, sand, sugar,
+         tree, vinegar, water, wool]
     ownable_quantity_object: [business, money, shoe, wallet]
     droppable_quantity_object:
         [apple, ball, book, card, clip, coin, cookie, drum, egg, envelope, grape,
@@ -2606,7 +2643,7 @@ members:
          tomato, toy]
     edible_quantity_object:
         [apple, bird, cookie, egg, fish, grape, apricot, pear, plum, rabbit,
-         tomato]
+         sugar, tomato]
     # A book can hold a page/count quantity even though it is neither animate
     # nor a location. Other common nouns enter this positive role only beside
     # evidence for their own ordinary holder reading.
@@ -2724,6 +2761,8 @@ members:
     currency_measure: [dollar] # 'cent'/'balance'/'earnings'/'cost' extend this from packs/difg-mined
     time_measure: [year, age] # generic age forms; other units extend this from difg-mined
     duration_measure: [year, week, minute, hour]
+    measured_comparative_offset_measure:
+        [gram, kilogram, pound, year, week, minute, hour]
     dimension_difference_measure: [inch, pound]
     frequency_quantifier: [every]
     distributive_quantifier: [each, every]
@@ -3013,10 +3052,12 @@ measure_holder_compatibility:
     institution_quantity_measure: [institution_quantity_holder]
     output_quantity_measure: [output_quantity_product]
     length_measure: [linear_dimension_holder, motion_participant]
-    mass_measure: [mass_dimension_holder, animate]
+    mass_measure:
+        [mass_dimension_holder, animate, physical_size_noun, measurement_container]
     duration_measure: [duration_holder]
     age_measure: [quantity_event_participant, bare_entity_reference]
 partitive_measure_compatibility:
+    quantity_container: [transferable_quantity_object, quantity_container]
     partitive_weight_measure: [weighable_partitive_substance]
     partitive_volume_measure: [volume_partitive_substance]
     partitive_pair_measure: [pairable_partitive_substance]

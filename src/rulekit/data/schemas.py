@@ -1116,6 +1116,11 @@ class VerbRolesCompatibilityPredicate(StrictModel):
     verb: str
     roles: dict[str, list[str]]
     frame_categories: list[str] = Field(default_factory=list)
+    # Historical role predicates deliberately leave verbs without a declared
+    # lexical frame open. A construction that claims a semantically complete
+    # direct relation can opt into a positive contract instead: at least one
+    # applicable category-owned frame must exist and accept every mapped role.
+    require_declared_frame: bool = False
     allow_proper_name: list[str] = Field(default_factory=list)
     allow_plural_class: list[str] = Field(default_factory=list)
     allow_unbound_trigger: bool = False
@@ -1172,6 +1177,12 @@ class MeasureHolderCompatibilityPredicate(StrictModel):
     """
 
     measure: str
+    # When present, the measure/holder licence must use the noun category
+    # selected by this descriptor's declared attribute compatibility.  This
+    # matters for genuinely polysemous measures such as ``year``: it can name
+    # either age or duration, but ``older`` and ``longer`` select different
+    # routes through those memberships.
+    attribute: str | None = None
     holders: list[str] = Field(min_length=1)
     allow_proper_name: bool = False
     proper_name_measure_categories: list[str] = Field(default_factory=list)
@@ -1189,6 +1200,13 @@ class MeasureHolderCompatibilityPredicate(StrictModel):
         if self.measure in self.holders:
             raise ValueError(
                 "measure-holder compatibility cannot reuse the measure as a holder"
+            )
+        if self.attribute is not None and self.attribute in {
+            self.measure,
+            *self.holders,
+        }:
+            raise ValueError(
+                "measure-holder compatibility cannot reuse its attribute slot"
             )
         if self.proper_name_measure_categories and not self.allow_proper_name:
             raise ValueError(
@@ -1557,6 +1575,11 @@ class GenerationContextDef(StrictModel):
     before: list[GenerationContextSentence] = Field(default_factory=list)
     after: list[GenerationContextSentence] = Field(default_factory=list)
     required_fact_counts: dict[str, int] = Field(default_factory=dict)
+    # Context fillers may need the same lexical identity as a target slot while
+    # realizing a different surface shape.  For example, target `bags` links
+    # to contextual counted `3 large bags`; a surface lock would be impossible,
+    # but an identity lock preserves the shared package head generically.
+    target_identity_links: dict[str, str] = Field(default_factory=dict)
     target_commas_after: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
@@ -1565,6 +1588,11 @@ class GenerationContextDef(StrictModel):
             raise ValueError("generation context needs a before or after sentence")
         if any(count < 1 for count in self.required_fact_counts.values()):
             raise ValueError("required contextual fact counts must be positive")
+        if any(
+            not context_slot or not target_slot
+            for context_slot, target_slot in self.target_identity_links.items()
+        ):
+            raise ValueError("context identity links need non-empty slot names")
         return self
 
 
@@ -1594,6 +1622,12 @@ class PatternRule(StrictModel):
     overlapping: bool = False
     match: dict[Literal["sentence", "sentences", "question"], list[MatchToken] | list[list[MatchToken]]]
     where: list[WherePredicate] = Field(default_factory=list)
+    # Constraints that shape authored generation without narrowing historical
+    # reader acceptance. This is appropriate for surface-quality contracts
+    # such as agreement when a human has validated the interpretation of a
+    # marginal form. The generator applies the same declarative predicate
+    # vocabulary as `where`; the runtime matcher deliberately does not.
+    generation_where: list[WherePredicate] = Field(default_factory=list)
     consumes: list[str] = Field(default_factory=list)  # value-accounting slots
     # A pattern may structurally discharge an obligation that cannot bind to
     # one ordinary Unit. Coordinated subjects are the first case: the verb's

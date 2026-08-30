@@ -818,11 +818,12 @@ rules:
       sentence:
         - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true, bare_reference_category: bare_entity_reference}
         - {slot: verb, cat: copula}
-        - {slot: n, type: counted}
+        - {slot: n, cat: measured_comparative_offset_measure, counted: true}
         - {slot: dir, cat: measured_comparative}
     where:
       - number_compatible: [who, verb]
       - attribute_compatible: {attribute: dir, noun: n}
+      - measure_holder_compatible: {attribute: dir, measure: n, holders: [who], allow_proper_name: true, proper_name_measure_categories: [age_measure]}
       - absent: {cat: relational_marker}
     emits: []
 
@@ -1841,7 +1842,7 @@ rules:
     match:
       sentence:
         - {slot: who, type: name}
-        - {slot: verb, type: verb}
+        - {slot: verb, cat: quantity_comparison_verb, finite_form: true}
         - {slot: k, type: nonunit_multiplier}
         - {lit: as}
         - {lit: much}
@@ -1860,13 +1861,20 @@ rules:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - number_compatible: [who, verb]
       - slot_not_category: {slot: k, cat: predeterminer_multiplier}
+      - verb_roles_compatible:
+          verb: verb
+          roles: {actor: [who, std], theme: [item]}
+          allow_proper_name: [who, std]
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: transfer_out, excluded_role_cat: remnant}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: verb, cat: frame_prepositional_verb}
+      - slot_not_category: {slot: verb, cat: container_capacity_placement_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: pp_prep, cat: quantity_remainder_preposition}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - distinct: [who, std]
+    generation_where:
+      - bound_rejects_category: {bound: pp_det, slot: pp_obj, cat: timeperiod}
     emits:
       - fact: relation
         subject: "{who}"
@@ -1890,7 +1898,7 @@ rules:
     match:
       sentence:
         - {slot: who, type: name}
-        - {slot: verb, type: verb}
+        - {slot: verb, cat: quantity_comparison_verb, finite_form: true}
         - {slot: k, type: nonunit_multiplier}
         - {lit: as}
         - {lit: much}
@@ -1903,7 +1911,12 @@ rules:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - number_compatible: [who, verb]
       - slot_not_category: {slot: k, cat: predeterminer_multiplier}
+      - verb_roles_compatible:
+          verb: verb
+          roles: {actor: [who, std]}
+          allow_proper_name: [who, std]
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: verb, cat: container_capacity_placement_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - distinct: [who, std]
     emits:
@@ -1933,7 +1946,7 @@ rules:
     match:
       sentence:
         - {slot: who, type: name}
-        - {slot: verb, type: verb}
+        - {slot: verb, cat: quantity_comparison_verb, finite_form: true}
         - {slot: k, type: nonunit_multiplier}
         - {lit: as}
         - {lit: much}
@@ -1953,14 +1966,21 @@ rules:
       - bound_requires_type: {bound: appos_role, slot: std_seen, type: proper_name}
       - number_compatible: [who, verb]
       - slot_not_category: {slot: k, cat: predeterminer_multiplier}
+      - verb_roles_compatible:
+          verb: verb
+          roles: {actor: [who], theme: [item]}
+          allow_proper_name: [who]
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: transfer_out, excluded_role_cat: remnant}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
       - slot_not_category: {slot: verb, cat: frame_prepositional_verb}
+      - slot_not_category: {slot: verb, cat: container_capacity_placement_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: pp_prep, cat: quantity_remainder_preposition}
       - slot_not_category: {slot: pp_prep, cat: quantity_surface_preposition}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - unbound: [std_seen]
+    generation_where:
+      - bound_rejects_category: {bound: pp_det, slot: pp_obj, cat: timeperiod}
     emits:
       - fact: relation
         subject: "{who}"
@@ -2404,7 +2424,7 @@ rules:
     match:
       sentence:
         - {slot: who, type: entity}
-        - {slot: verb, type: verb, finite_form: true}
+        - {slot: verb, cat: quantity_comparison_verb, finite_form: true}
         - opt:
             - {slot: verb_prep, cat: frame_head_preposition}
         - {slot: k, type: nonunit_multiplier}
@@ -2933,7 +2953,7 @@ rules:
     match:
       sentence:
         - {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true}
-        - {slot: verb, type: verb}
+        - {slot: verb, cat: quantity_comparison_verb, finite_form: true}
         - {slot: f, type: fraction, word_fraction_within_whole: true, fraction_positive: true}
         - {lit: as}
         - {lit: many}
@@ -3147,7 +3167,7 @@ rules:
     match:
       sentence:
         - {slot: who, type: name}
-        - {slot: verb, type: verb}
+        - {slot: verb, cat: quantity_comparison_verb, finite_form: true}
         - {slot: f, type: fraction, word_fraction_within_whole: true, fraction_positive: true}
         - {lit: as}
         - {lit: much}
@@ -3165,12 +3185,19 @@ rules:
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - number_compatible: [who, verb]
+      - verb_roles_compatible:
+          verb: verb
+          roles: {actor: [who, std], theme: [item]}
+          allow_proper_name: [who, std]
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: transfer_out, excluded_role_cat: remnant}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: verb, cat: container_capacity_placement_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: pp_prep, cat: quantity_remainder_preposition}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - distinct: [who, std]
+    generation_where:
+      - bound_rejects_category: {bound: pp_det, slot: pp_obj, cat: timeperiod}
     consumes: [f]
     emits:
       - fact: relation
@@ -3194,7 +3221,7 @@ rules:
     match:
       sentence:
         - {slot: who, type: name}
-        - {slot: verb, type: verb}
+        - {slot: verb, cat: quantity_comparison_verb, finite_form: true}
         - {slot: f, type: fraction, word_fraction_within_whole: true, fraction_positive: true}
         - {lit: as}
         - {lit: much}
@@ -3206,7 +3233,12 @@ rules:
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - number_compatible: [who, verb]
+      - verb_roles_compatible:
+          verb: verb
+          roles: {actor: [who, std]}
+          allow_proper_name: [who, std]
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: verb, cat: container_capacity_placement_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - distinct: [who, std]
     consumes: [f]
@@ -3234,7 +3266,7 @@ rules:
     match:
       sentence:
         - {slot: who, type: name}
-        - {slot: verb, type: verb}
+        - {slot: verb, cat: quantity_comparison_verb, finite_form: true}
         - {slot: f, type: fraction, word_fraction_within_whole: true, fraction_positive: true}
         - {lit: as}
         - {lit: much}
@@ -3253,12 +3285,19 @@ rules:
     where:
       - bound_requires_type: {bound: appos_role, slot: std_seen, type: proper_name}
       - number_compatible: [who, verb]
+      - verb_roles_compatible:
+          verb: verb
+          roles: {actor: [who], theme: [item]}
+          allow_proper_name: [who]
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: transfer_out, excluded_role_cat: remnant}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: verb, cat: container_capacity_placement_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: pp_prep, cat: quantity_remainder_preposition}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - unbound: [std_seen]
+    generation_where:
+      - bound_rejects_category: {bound: pp_det, slot: pp_obj, cat: timeperiod}
     consumes: [f]
     emits:
       - fact: relation
@@ -3531,6 +3570,8 @@ rules:
         - {slot: k, type: multiplier}
         - {lit: [that, this, the], consume_skipped: true}
         - {slot: head, cat: price_anaphor}
+    generation_where:
+      - number_compatible: [who, verb]
     where:
       - absent: {cat: partitive}
     emits:
@@ -3717,7 +3758,7 @@ rules:
     match:
       sentence:
         - {slot: who, type: name}
-        - {slot: verb, type: verb, finite_form: true}
+        - {slot: verb, cat: quantity_comparison_verb, finite_form: true}
         - {slot: n, type: number}
         - {slot: dir, cat: mass_quantity_delta}
         - {lit: than}
@@ -3749,12 +3790,15 @@ rules:
           allow_proper_name: [who, std]
       - verb_role_compatible: {verb: verb, roles: [item], verb_cat: transfer_out, excluded_role_cat: remnant}
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: verb, cat: container_capacity_placement_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: pp_prep, cat: quantity_remainder_preposition}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - modifier_host_compatible: {modifier: pp_prep, host: item, object: pp_obj}
       - distinct: [who, pp_obj]
       - distinct: [who, std]
+    generation_where:
+      - bound_rejects_category: {bound: pp_det, slot: pp_obj, cat: timeperiod}
     consumes: [n]
     emits:
       - fact: relation
@@ -3794,7 +3838,7 @@ rules:
     match:
       sentence:
         - {slot: who, type: name}
-        - {slot: verb, type: verb}
+        - {slot: verb, cat: quantity_comparison_verb, finite_form: true}
         - {slot: n, type: number}
         - {slot: dir, cat: mass_quantity_delta}
         - {lit: than}
@@ -3810,7 +3854,12 @@ rules:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - number_compatible: [who, verb]
       - slot_not_category: {slot: k, cat: predeterminer_multiplier}
+      - verb_roles_compatible:
+          verb: verb
+          roles: {actor: [who, std]}
+          allow_proper_name: [who, std]
       - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      - slot_not_category: {slot: verb, cat: container_capacity_placement_verb}
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - distinct: [who, std]
     consumes: [n]
@@ -3921,7 +3970,7 @@ rules:
       its local subject pronoun is licensed, while emitting no quantity.
     match:
       sentence:
-        - {slot: seeker, type: entity, referential: true, bare_reference_category: bare_entity_reference, at_start: true}
+        - {slot: seeker, type: entity, common_noun_cat: animate, referential: true, bare_reference_category: bare_entity_reference, at_start: true}
         - {slot: goal_verb, cat: finite_infinitival_goal_predicate, finite_form: true}
         - {lit: to}
         - {slot: cognition, cat: inquiry_cognition_verb, bare_form: true}
@@ -4097,6 +4146,31 @@ rules:
 
   - id: arithmetic/container-package-groups-totality-transfer
     phase: read
+    generation: contextual
+    generation_context:
+      before:
+        - sentence:
+            - {slot: context_holder, type: name, at_start: true}
+            - {slot: context_verb, cat: acquire, finite_form: true}
+            - {slot: context_package_a, cat: sized_quantity_container, counted: true, qualified: true, qualifier_cat: size_attribute}
+            - {slot: context_prep_a, cat: package_content_preposition}
+            - {slot: context_content_a, type: counted}
+            - {lit: and}
+            - {slot: context_package_b, cat: sized_quantity_container, counted: true, qualified: true, qualifier_cat: size_attribute}
+            - {slot: context_prep_b, cat: package_content_preposition}
+            - {slot: context_content_b, type: counted}
+            - {lit: ".", consume_skipped: true}
+          where:
+            - number_compatible: [context_holder, context_verb]
+            - same_lemma: [context_package_a, context_package_b]
+            - distinct_measure: [context_package_a, context_package_b]
+            - same_lemma: [context_content_a, context_content_b]
+      target_identity_links:
+        context_package_a: packages
+        context_package_b: packages
+        context_content_a: item
+        context_content_b: item
+      required_fact_counts: {quantity: 5}
     question_assumption: true
     description: >
       A resolved holder may explicitly place both previously introduced
@@ -4124,9 +4198,34 @@ rules:
         destination: "{destination}"
         verb: "{verb}"
         package_class_count: 2
+        package: "{packages}"
+        content: "{item}"
 
   - id: arithmetic/container-package-contents-totality-transfer
     phase: read
+    generation: contextual
+    generation_context:
+      before:
+        - sentence:
+            - {slot: context_holder, type: name, at_start: true}
+            - {slot: context_verb, cat: acquire, finite_form: true}
+            - {slot: context_package_a, cat: sized_quantity_container, counted: true, qualified: true, qualifier_cat: size_attribute}
+            - {slot: context_prep_a, cat: package_content_preposition}
+            - {slot: context_content_a, type: counted}
+            - {lit: and}
+            - {slot: context_package_b, cat: sized_quantity_container, counted: true, qualified: true, qualifier_cat: size_attribute}
+            - {slot: context_prep_b, cat: package_content_preposition}
+            - {slot: context_content_b, type: counted}
+            - {lit: ".", consume_skipped: true}
+          where:
+            - number_compatible: [context_holder, context_verb]
+            - same_lemma: [context_package_a, context_package_b]
+            - distinct_measure: [context_package_a, context_package_b]
+            - same_lemma: [context_content_a, context_content_b]
+      target_identity_links:
+        context_package_a: packages
+        context_package_b: packages
+      required_fact_counts: {quantity: 5}
     question_assumption: true
     description: >
       The explicit-content paraphrase selects the same two package groups:
@@ -4155,6 +4254,7 @@ rules:
         destination: "{destination}"
         verb: "{verb}"
         package_class_count: 2
+        package: "{packages}"
 
   - id: arithmetic/container-all-available-fit-observation
     phase: read
@@ -4242,7 +4342,10 @@ rules:
       - absent: {cat: aggregate}
       - number_compatible: [item, verb]
       - slot_not_category: {slot: item, cat: existential_incompatible_noun}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - slot_not_category: {slot: prep, cat: spatial_goal_preposition}
       - attribute_compatible: {attribute: prep, noun: place}
+      - modifier_host_compatible: {modifier: prep, host: item}
     consumes: [item]
     emits:
       - fact: quantity
@@ -4288,7 +4391,10 @@ rules:
       - absent: {cat: aggregate}
       - number_compatible: [item, verb]
       - slot_not_category: {slot: item, cat: existential_incompatible_noun}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - slot_not_category: {slot: prep, cat: spatial_goal_preposition}
       - attribute_compatible: {attribute: prep, noun: place}
+      - modifier_host_compatible: {modifier: prep, host: item}
     consumes: [item]
     emits:
       - fact: quantity
@@ -4329,7 +4435,9 @@ rules:
       - absent: {cat: aggregate}
       - number_compatible: [item, verb]
       - slot_not_category: {slot: item, cat: existential_incompatible_noun}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - bound_requires_category: {bound: tail_partitive, slot: item, cat: quantity_container}
+      - partitive_compatible: {measure: item, substance: tail_content}
       - unbound: [tail_prep_seen, item2_seen]
     consumes: [item]
     emits:
@@ -4380,6 +4488,8 @@ rules:
       - number_compatible: [item, verb]
       - slot_not_category: {slot: item, cat: existential_incompatible_noun}
       - slot_not_category: {slot: item2, cat: existential_incompatible_noun}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - slot_not_category: {slot: item2, cat: many_incompatible_noun}
       - slot_not_category: {slot: item, cat: mass_measure}
       - slot_not_category: {slot: item2, cat: mass_measure}
     consumes: [item, item2]
@@ -4423,6 +4533,7 @@ rules:
     where:
       - number_compatible: [item, verb]
       - slot_not_category: {slot: item, cat: existential_incompatible_noun}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
       - bound_requires_category: {bound: p, slot: agg, cat: prepositional_group_total_marker}
     consumes: [item]
     emits:

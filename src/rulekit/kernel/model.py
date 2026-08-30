@@ -1844,6 +1844,11 @@ class TotalityTransfer(Fact):
     # qualified package classes.  The ordinary anaphoric "them all" form
     # leaves this unset and retains its established unique-content contract.
     package_class_count: int | None = None
+    # Explicit package-group surfaces retain their package and content heads.
+    # They constrain which prior package quantities may satisfy the transfer;
+    # neither field supplies an amount by itself.
+    package: str | None = None
+    content: str | None = None
 
     def key(self) -> tuple:
         return (
@@ -1854,7 +1859,12 @@ class TotalityTransfer(Fact):
         )
 
     def value_part(self) -> Any:
-        return (self.verb, self.package_class_count)
+        return (
+            self.verb,
+            self.package_class_count,
+            self.package,
+            self.content,
+        )
 
 
 @dataclass(frozen=True)

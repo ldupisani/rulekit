@@ -2733,6 +2733,10 @@ def _container_totality_transfer_synth(
                 for quantity in store.by_kind(Quantity)
                 if quantity.entity == transfer.source
                 and quantity.measure_qualifier is not None
+                and (
+                    transfer.package is None
+                    or quantity.measure.split("[", 1)[0] == transfer.package
+                )
                 and reg.word_in_category(
                     quantity.measure.split("[", 1)[0],
                     "sized_quantity_container",
@@ -2746,6 +2750,10 @@ def _container_totality_transfer_synth(
             for quantity in store.by_kind(Quantity)
             if quantity.entity == transfer.source
             and not _distributive_rate_source(quantity)
+            and (
+                transfer.content is None
+                or quantity.measure.split("[", 1)[0] == transfer.content
+            )
             and not reg.word_in_category(
                 quantity.measure.split("[", 1)[0],
                 "quantity_container",

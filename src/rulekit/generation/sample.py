@@ -24,6 +24,7 @@ from ..data.schemas import (
     MatchToken,
     PatternRule,
     VerbRolesCompatibilityPredicate,
+    WherePredicate,
 )
 from ..data.sources import SourceRef
 from ..kernel.document import run_document
@@ -171,8 +172,17 @@ def _selectional_assignment_compatible(
     """Whether one complete lexical frame accepts all currently known roles."""
 
     frames = reg.selectional_frames(verb.identity)
+    if compatibility.frame_categories:
+        frames = tuple(
+            (category, frame)
+            for category, frame in frames
+            if any(
+                trigger in reg.cat_ancestors(category)
+                for trigger in compatibility.frame_categories
+            )
+        )
     if not frames:
-        return True
+        return not compatibility.require_declared_frame
     for frame_category, frame in frames:
         if not set(compatibility.roles) <= set(frame):
             continue
@@ -402,9 +412,15 @@ def _token_blockers(token: MatchToken, reg: Registry) -> list[str]:
     return blockers
 
 
+def _generation_predicates(rule: PatternRule) -> tuple[WherePredicate, ...]:
+    """Reader predicates plus generator-only surface-quality constraints."""
+
+    return (*rule.where, *rule.generation_where)
+
+
 def _where_blocker(rule: PatternRule) -> list[str]:
     blockers: list[str] = []
-    for pred in rule.where:
+    for pred in _generation_predicates(rule):
         if (
             pred.distinct is not None
             or pred.category_nonoverlap is not None
@@ -428,6 +444,7 @@ def _where_blocker(rule: PatternRule) -> list[str]:
             or pred.verb_role_compatible is not None
             or pred.verb_roles_compatible is not None
             or pred.measure_holder_compatible is not None
+            or pred.partitive_compatible is not None
             or pred.attribute_compatible is not None
             or pred.modifier_host_compatible is not None
             or pred.adverb_verb_compatible is not None
@@ -1009,6 +1026,30 @@ def _raw_domain(
     return []
 
 
+def _expected_indefinite_article(
+    following: _Filler,
+    reg: Registry,
+) -> str | None:
+    """Choose the English indefinite allomorph for one generated surface.
+
+    The ordinary spelling heuristic is grammar, while pronunciation exceptions
+    remain pack data.  Returning ``None`` leaves non-alphabetic surfaces alone
+    rather than pretending their spoken form is known.
+    """
+
+    if _filler_in_category(following, "indefinite_an_exception", reg):
+        return "an"
+    if _filler_in_category(following, "indefinite_a_exception", reg):
+        return "a"
+    initial = next(
+        (char.casefold() for char in following.surface if char.isalpha()),
+        None,
+    )
+    if initial is None:
+        return None
+    return "an" if initial in "aeiou" else "a"
+
+
 def _qualify_domain(
     token: MatchToken,
     fillers: list[_Filler],
@@ -1290,7 +1331,7 @@ def _absent_categories(rule: PatternRule) -> tuple[str, ...]:
     return tuple(
         dict.fromkeys(
             pred.absent["cat"]
-            for pred in rule.where
+            for pred in _generation_predicates(rule)
             if pred.absent is not None
         )
     )
@@ -1315,7 +1356,7 @@ def _slot_category_exclusions(
     """Return the per-slot category refusals declared by one rule."""
 
     exclusions: list[tuple[str, str]] = []
-    for pred in rule.where:
+    for pred in _generation_predicates(rule):
         if pred.slot_not_category is None:
             continue
         slot = pred.slot_not_category.get("slot")
@@ -1335,7 +1376,7 @@ def _entity_owner_distinctions(
             pred.distinct_from_owner.entity,
             pred.distinct_from_owner.possessed,
         )
-        for pred in rule.where
+        for pred in _generation_predicates(rule)
         if pred.distinct_from_owner is not None
     )
 
@@ -1366,7 +1407,7 @@ def _unbound_optional_paths(
 
     names = {
         name
-        for pred in rule.where
+        for pred in _generation_predicates(rule)
         for name in (pred.unbound or ())
     }
     grouped: dict[tuple[int, ...], list[str]] = {}
@@ -1392,18 +1433,30 @@ def _measure_key(
 def _proper_name_measure_allowed(
     measure: _Filler,
     *,
+    attribute: _Filler | None = None,
     allow_proper_name: bool,
     measure_categories: tuple[str, ...],
     reg: Registry,
 ) -> bool:
     """Whether a declared measure permits the proper-name holder shortcut."""
 
-    return allow_proper_name and (
-        not measure_categories
-        or any(
+    if not allow_proper_name or not measure_categories:
+        return allow_proper_name
+    if attribute is None:
+        return any(
             _filler_in_category(measure, category, reg)
             for category in measure_categories
         )
+    route_categories = {
+        noun_category
+        for _, noun_category in reg.attribute_compatibility_pairs(
+            attribute.identity, measure.identity
+        )
+    }
+    return any(
+        reg.category_routes_overlap(route_category, permitted_category)
+        for route_category in route_categories
+        for permitted_category in measure_categories
     )
 
 
@@ -1439,7 +1492,7 @@ def _proportional_delta_requirements(
             pred.proportional_delta_compatible.direction,
             pred.proportional_delta_compatible.direction_cat,
         )
-        for pred in rule.where
+        for pred in _generation_predicates(rule)
         if pred.proportional_delta_compatible is not None
     )
 
@@ -1447,7 +1500,7 @@ def _proportional_delta_requirements(
 def _distinct_measure_groups(rule: PatternRule) -> tuple[tuple[str, ...], ...]:
     return tuple(
         tuple(pred.distinct_measure)
-        for pred in rule.where
+        for pred in _generation_predicates(rule)
         if pred.distinct_measure is not None
     )
 
@@ -1460,7 +1513,7 @@ def _category_membership_requirements(
     return tuple(
         (tuple(pred.same_category_membership.slots),
          pred.same_category_membership.cat)
-        for pred in rule.where
+        for pred in _generation_predicates(rule)
         if pred.same_category_membership is not None
     )
 
@@ -1600,6 +1653,12 @@ def _resolve_locked_fillers(
             continue
         keys = {_measure_key(filler) for filler in matches}
         if len(keys) != 1:
+            # An identity-only link may intentionally leave count, qualifier,
+            # owner, or label open for this realization. The ordinary domain
+            # filter below will still enforce the identity when the slot is
+            # chosen; it simply cannot be treated as one pre-resolved filler.
+            if surface is None and identity is not None:
+                continue
             raise GenerationError(
                 f"locked binding {slot_name!r}={surface!r} has ambiguous "
                 "measure metadata"
@@ -1676,7 +1735,7 @@ def _rule_blockers(
                 slot_occurrences.setdefault(token.slot, []).append(
                     (path, optional_ancestors)
                 )
-        for pred in rule.where:
+        for pred in _generation_predicates(rule):
             if pred.unbound is None:
                 continue
             for slot_name in pred.unbound:
@@ -1747,7 +1806,7 @@ def _rule_blockers(
                     "no project-backed category-membership assignment "
                     f"exists for {rendered}"
                 )
-        for pred in rule.where:
+        for pred in _generation_predicates(rule):
             if pred.category_contains is None:
                 continue
             containment = pred.category_contains
@@ -1777,7 +1836,7 @@ def _rule_blockers(
                     "no project-backed category/member assignment exists "
                     f"for {'/'.join(role_names)}"
                 )
-        for pred in rule.where:
+        for pred in _generation_predicates(rule):
             if pred.attribute_compatible is None:
                 continue
             attribute_name = pred.attribute_compatible.attribute
@@ -1797,7 +1856,7 @@ def _rule_blockers(
                     "no project-backed adjective/noun compatibility exists "
                     f"for {attribute_name}/{noun_name}"
                 )
-        for pred in rule.where:
+        for pred in _generation_predicates(rule):
             if pred.modifier_host_compatible is None:
                 continue
             modifier_name = pred.modifier_host_compatible.modifier
@@ -1847,7 +1906,7 @@ def _rule_blockers(
                     "no project-backed modifier/host compatibility exists "
                     f"for {modifier_name}/{host_name}"
                 )
-        for pred in rule.where:
+        for pred in _generation_predicates(rule):
             if pred.adverb_verb_compatible is None:
                 continue
             adverb_name = pred.adverb_verb_compatible.adverb
@@ -1869,7 +1928,7 @@ def _rule_blockers(
                     "no project-backed adverb/verb compatibility exists "
                     f"for {adverb_name}/{verb_name}"
                 )
-        for pred in rule.where:
+        for pred in _generation_predicates(rule):
             if pred.polarity_compatible is None:
                 continue
             pairs = tuple(
@@ -1921,7 +1980,7 @@ def _rule_blockers(
                     "no project-backed scoped polarity assignment exists "
                     f"for {'/'.join(slot for slot, _ in pairs)}"
                 )
-        for pred in rule.where:
+        for pred in _generation_predicates(rule):
             if pred.proportional_delta_compatible is None:
                 continue
             compatibility = pred.proportional_delta_compatible
@@ -1950,7 +2009,7 @@ def _rule_blockers(
                     f"for {compatibility.fraction}/"
                     f"{compatibility.direction}"
                 )
-        for pred in rule.where:
+        for pred in _generation_predicates(rule):
             if pred.verb_role_compatible is None:
                 continue
             compatibility = pred.verb_role_compatible
@@ -2001,7 +2060,7 @@ def _rule_blockers(
                     f"{compatibility.verb}/"
                     f"{'/'.join(compatibility.roles)}"
                 )
-        for pred in rule.where:
+        for pred in _generation_predicates(rule):
             if pred.verb_roles_compatible is None:
                 continue
             compatibility = pred.verb_roles_compatible
@@ -2014,8 +2073,17 @@ def _rule_blockers(
 
             def verb_has_possible_frame(verb: _Filler) -> bool:
                 frames = reg.selectional_frames(verb.identity)
+                if compatibility.frame_categories:
+                    frames = tuple(
+                        (category, frame)
+                        for category, frame in frames
+                        if any(
+                            trigger in reg.cat_ancestors(category)
+                            for trigger in compatibility.frame_categories
+                        )
+                    )
                 if not frames:
-                    return True
+                    return not compatibility.require_declared_frame
                 for frame_category, frame in frames:
                     if not set(compatibility.roles) <= set(frame):
                         continue
@@ -2054,17 +2122,26 @@ def _rule_blockers(
                     f"for {compatibility.verb}/"
                     f"{'/'.join(role_tokens)}"
                 )
-        for pred in rule.where:
+        for pred in _generation_predicates(rule):
             if pred.measure_holder_compatible is None:
                 continue
             compatibility = pred.measure_holder_compatible
             measure_token = tokens_by_slot.get(compatibility.measure)
+            attribute_token = (
+                tokens_by_slot.get(compatibility.attribute)
+                if compatibility.attribute is not None
+                else None
+            )
             holder_tokens = [
                 tokens_by_slot.get(holder)
                 for holder in compatibility.holders
             ]
 
-            def holder_ok(measure: _Filler, holder: _Filler) -> bool:
+            def holder_ok(
+                measure: _Filler,
+                holder: _Filler,
+                attribute: _Filler | None,
+            ) -> bool:
                 if (
                     compatibility.when_declared
                     and not reg.measure_has_holder_boundary(measure.identity)
@@ -2074,6 +2151,7 @@ def _rule_blockers(
                     holder.kind == "name"
                     and _proper_name_measure_allowed(
                         measure,
+                        attribute=attribute,
                         allow_proper_name=compatibility.allow_proper_name,
                         measure_categories=tuple(
                             compatibility.proper_name_measure_categories
@@ -2081,22 +2159,33 @@ def _rule_blockers(
                         reg=reg,
                     )
                 ) or reg.measure_applies_to_holder(
-                    measure.identity, holder.identity
+                    measure.identity,
+                    holder.identity,
+                    attribute.identity if attribute is not None else None,
                 )
 
             if (
                 measure_token is None
+                or (
+                    compatibility.attribute is not None
+                    and attribute_token is None
+                )
                 or any(token is None for token in holder_tokens)
                 or not any(
                     all(
                         any(
-                            holder_ok(measure, holder)
+                            holder_ok(measure, holder, attribute)
                             for holder in safe_domain(holder_token)
                         )
                         for holder_token in holder_tokens
                         if holder_token is not None
                     )
                     for measure in safe_domain(measure_token)
+                    for attribute in (
+                        safe_domain(attribute_token)
+                        if attribute_token is not None
+                        else [None]
+                    )
                 )
             ):
                 blockers.append(
@@ -2104,7 +2193,7 @@ def _rule_blockers(
                     f"for {compatibility.measure}/"
                     f"{'/'.join(compatibility.holders)}"
                 )
-        for pred in rule.where:
+        for pred in _generation_predicates(rule):
             if pred.distinct_from_owner is None:
                 continue
             entity_name = pred.distinct_from_owner.entity
@@ -2124,7 +2213,7 @@ def _rule_blockers(
                     "no project-backed distinct entity/owner assignment "
                     f"exists for {entity_name}/{possessed_name}"
                 )
-        for pred in rule.where:
+        for pred in _generation_predicates(rule):
             if pred.slot_not_category is None:
                 continue
             slot_name = pred.slot_not_category.get("slot")
@@ -2258,10 +2347,17 @@ def _constraint_groups(
         VerbRolesCompatibilityPredicate
     ] = []
     measure_holder_requirements: list[
-        tuple[str, tuple[str, ...], bool, tuple[str, ...], bool]
+        tuple[
+            str | None,
+            str,
+            tuple[str, ...],
+            bool,
+            tuple[str, ...],
+            bool,
+        ]
     ] = []
     slot_category_exclusions = list(_slot_category_exclusions(rule))
-    for pred in rule.where:
+    for pred in _generation_predicates(rule):
         if pred.same_lemma is not None:
             same.append(set(pred.same_lemma))
         if pred.same_surface is not None:
@@ -2377,6 +2473,7 @@ def _constraint_groups(
         if pred.measure_holder_compatible is not None:
             measure_holder_requirements.append(
                 (
+                    pred.measure_holder_compatible.attribute,
                     pred.measure_holder_compatible.measure,
                     tuple(pred.measure_holder_compatible.holders),
                     pred.measure_holder_compatible.allow_proper_name,
@@ -2491,9 +2588,26 @@ def _allowed_fillers(
         | tuple[VerbRolesCompatibilityPredicate, ...]
     ) = (),
     measure_holder_requirements: (
-        list[tuple[str, tuple[str, ...], bool, tuple[str, ...], bool]]
+        list[
+            tuple[
+                str | None,
+                str,
+                tuple[str, ...],
+                bool,
+                tuple[str, ...],
+                bool,
+            ]
+        ]
         | tuple[
-            tuple[str, tuple[str, ...], bool, tuple[str, ...], bool], ...
+            tuple[
+                str | None,
+                str,
+                tuple[str, ...],
+                bool,
+                tuple[str, ...],
+                bool,
+            ],
+            ...,
         ]
     ) = (),
     category_membership_requirements: (
@@ -3091,13 +3205,18 @@ def _allowed_fillers(
             ):
                 return False
         for (
+            attribute_name,
             measure_name,
             holder_names,
             allow_proper_name,
             proper_name_measure_categories,
             when_declared,
         ) in measure_holder_requirements:
-            def holder_ok(measure: _Filler, holder: _Filler) -> bool:
+            def holder_ok(
+                measure: _Filler,
+                holder: _Filler,
+                attribute: _Filler | None,
+            ) -> bool:
                 if (
                     when_declared
                     and not reg.measure_has_holder_boundary(measure.identity)
@@ -3107,24 +3226,67 @@ def _allowed_fillers(
                     holder.kind == "name"
                     and _proper_name_measure_allowed(
                         measure,
+                        attribute=attribute,
                         allow_proper_name=allow_proper_name,
                         measure_categories=proper_name_measure_categories,
                         reg=reg,
                     )
                 ) or reg.measure_applies_to_holder(
-                    measure.identity, holder.identity
+                    measure.identity,
+                    holder.identity,
+                    attribute.identity if attribute is not None else None,
+                )
+
+            def possible_attributes(
+                current: _Filler | None = None,
+            ) -> list[_Filler | None]:
+                if attribute_name is None:
+                    return [None]
+                if token.slot == attribute_name and current is not None:
+                    return [current]
+                known = known_filler(attribute_name)
+                if known is not None:
+                    return [known]
+                if attribute_name not in active_slots:
+                    return []
+                return [
+                    candidate
+                    for candidate in candidate_domain(
+                        tokens_by_slot[attribute_name]
+                    )
+                    if _outside_categories(
+                        candidate, absent_categories, reg
+                    )
+                    and _outside_slot_categories(
+                        candidate,
+                        attribute_name,
+                        slot_category_exclusions,
+                        reg,
+                    )
+                ]
+
+            def compatible_with_any_attribute(
+                measure: _Filler,
+                holder: _Filler,
+                current: _Filler | None = None,
+            ) -> bool:
+                return any(
+                    holder_ok(measure, holder, attribute)
+                    for attribute in possible_attributes(current)
                 )
 
             if token.slot == measure_name:
                 for holder_name in holder_names:
                     holder = known_filler(holder_name)
-                    if holder is not None and not holder_ok(filler, holder):
+                    if holder is not None and not compatible_with_any_attribute(
+                        filler, holder
+                    ):
                         return False
                     if (
                         holder is None
                         and holder_name in active_slots
                         and not any(
-                            holder_ok(filler, candidate)
+                            compatible_with_any_attribute(filler, candidate)
                             for candidate in candidate_domain(
                                 tokens_by_slot[holder_name]
                             )
@@ -3142,13 +3304,15 @@ def _allowed_fillers(
                         return False
             if token.slot in holder_names:
                 measure = known_filler(measure_name)
-                if measure is not None and not holder_ok(measure, filler):
+                if measure is not None and not compatible_with_any_attribute(
+                    measure, filler
+                ):
                     return False
                 if (
                     measure is None
                     and measure_name in active_slots
                     and not any(
-                        holder_ok(candidate, filler)
+                        compatible_with_any_attribute(candidate, filler)
                         for candidate in candidate_domain(
                             tokens_by_slot[measure_name]
                         )
@@ -3164,6 +3328,54 @@ def _allowed_fillers(
                     )
                 ):
                     return False
+            if token.slot == attribute_name:
+                measures = (
+                    [known_filler(measure_name)]
+                    if known_filler(measure_name) is not None
+                    else [
+                        candidate
+                        for candidate in candidate_domain(
+                            tokens_by_slot[measure_name]
+                        )
+                        if _outside_categories(
+                            candidate, absent_categories, reg
+                        )
+                        and _outside_slot_categories(
+                            candidate,
+                            measure_name,
+                            slot_category_exclusions,
+                            reg,
+                        )
+                    ]
+                )
+                for holder_name in holder_names:
+                    holder = known_filler(holder_name)
+                    holders = (
+                        [holder]
+                        if holder is not None
+                        else [
+                            candidate
+                            for candidate in candidate_domain(
+                                tokens_by_slot[holder_name]
+                            )
+                            if _outside_categories(
+                                candidate, absent_categories, reg
+                            )
+                            and _outside_slot_categories(
+                                candidate,
+                                holder_name,
+                                slot_category_exclusions,
+                                reg,
+                            )
+                        ]
+                    )
+                    if not any(
+                        holder_ok(measure, holder, filler)
+                        for measure in measures
+                        if measure is not None
+                        for holder in holders
+                    ):
+                        return False
         return True
 
     def satisfies_conditional_categories(filler: _Filler) -> bool:
@@ -3415,6 +3627,7 @@ def _realize(
     entity_owner_distinctions = _entity_owner_distinctions(rule)
     chosen: dict[str, _Filler] = {}
     surfaces: list[str] = []
+    realized: list[tuple[MatchToken, _Filler]] = []
     optional_choices: dict[tuple[int, ...], bool] = {}
     token_nodes = list(_token_nodes(seq))
     structural_optional_path: tuple[int, ...] | None = None
@@ -3745,8 +3958,25 @@ def _realize(
                         broader_domain=broader_domain,
                     )
             surfaces.append(filler.surface)
+            realized.append((token, filler))
 
     realize_tokens(seq)
+
+    for (token, article), (_, following) in zip(
+        realized,
+        realized[1:],
+        strict=False,
+    ):
+        if {
+            option.casefold() for option in token.lit_options
+        } != {"a", "an"}:
+            continue
+        expected = _expected_indefinite_article(following, reg)
+        if expected is not None and article.surface.casefold() != expected:
+            raise GenerationError(
+                f"indefinite article {article.surface!r} is incompatible "
+                f"with following surface {following.surface!r}"
+            )
 
     sentence = " ".join(surfaces)
     sentence = re.sub(r"\s+([,.;:!?])", r"\1", sentence)
@@ -3776,12 +4006,36 @@ def _realize_context(
     *,
     locked_bindings: dict[str, str] | None = None,
     identity_bindings: dict[str, str] | None = None,
+    target_bindings: dict[str, str] | None = None,
 ) -> tuple[tuple[str, ...], tuple[str, ...]]:
     """Realize pack-declared adjacent discourse without linguistic literals."""
 
     context = rule.generation_context
     if context is None:
         return (), ()
+
+    contextual_identities = dict(identity_bindings or {})
+    target_bindings = target_bindings or {}
+    for context_slot, target_slot in context.target_identity_links.items():
+        surface = target_bindings.get(target_slot)
+        if surface is None:
+            raise GenerationError(
+                f"context identity link {context_slot!r} needs target slot "
+                f"{target_slot!r}"
+            )
+        key = _binding_key(surface, reg)
+        if not key:
+            raise GenerationError(
+                f"context identity link could not resolve {surface!r}"
+            )
+        identity = key[-1]
+        existing = contextual_identities.get(context_slot)
+        if existing is not None and existing.casefold() != identity:
+            raise GenerationError(
+                f"context identity link for {context_slot!r} conflicts with "
+                f"requested identity {existing!r}"
+            )
+        contextual_identities[context_slot] = identity
 
     def realize_all(position: str, sentences: list[Any]) -> tuple[str, ...]:
         realized: list[str] = []
@@ -3797,7 +4051,7 @@ def _realize_context(
                 fixtures,
                 rng,
                 locked_bindings=locked_bindings,
-                identity_bindings=identity_bindings,
+                identity_bindings=contextual_identities,
             )
             realized.append(surface)
         return tuple(realized)
@@ -4265,6 +4519,7 @@ def _adverb_verb_compatibility_evidence(
 
 def _measure_holder_compatibility_evidence(
     project: Project,
+    attribute_slot: str | None,
     measure_slot: str,
     holder_slots: tuple[str, ...],
     slots: dict[str, Unit | tuple[Unit, ...]],
@@ -4277,6 +4532,14 @@ def _measure_holder_compatibility_evidence(
     reg = project.registry
     index = project.source_index
     measure = _unit_lemma(measure_units[0], reg)
+    attribute_units = (
+        _slot_units(slots.get(attribute_slot))
+        if attribute_slot is not None
+        else ()
+    )
+    attribute = (
+        _unit_lemma(attribute_units[0], reg) if attribute_units else None
+    )
     refs: list[SourceRef | None] = []
     for holder_slot in holder_slots:
         holder_units = _slot_units(slots.get(holder_slot))
@@ -4284,7 +4547,9 @@ def _measure_holder_compatibility_evidence(
             continue
         holder = _unit_lemma(holder_units[0], reg)
         for measure_category, holder_category in (
-            reg.measure_holder_compatibility_pairs(measure, holder)
+            reg.measure_holder_compatibility_pairs(
+                measure, holder, attribute
+            )
         ):
             refs.extend(
                 (
@@ -4542,6 +4807,7 @@ _WHERE_FIELDS = (
     "verb_role_compatible",
     "verb_roles_compatible",
     "measure_holder_compatible",
+    "partitive_compatible",
     "same_phrase",
     "distinct",
     "category_nonoverlap",
@@ -4588,6 +4854,11 @@ def _where_expression(rule: PatternRule, index: int) -> tuple[str, tuple[str, ..
     elif kind == "adverb_verb_compatible":
         names = (value.adverb, value.verb)
         rendered = f"adverb={value.adverb!r}, verb={value.verb!r}"
+    elif kind == "partitive_compatible":
+        names = (value.measure, value.substance)
+        rendered = (
+            f"measure={value.measure!r}, substance={value.substance!r}"
+        )
     elif kind == "bound_requires_type":
         names = (value.bound, value.slot)
         rendered = (
@@ -4911,7 +5182,15 @@ def _where_reason(
         verb = _unit_lemma(verb_units[0], reg)
         frames = reg.selectional_frames(verb)
         if not frames:
-            return f"{compatibility.verb}={verb!r} had no declared role frame"
+            if compatibility.require_declared_frame:
+                return (
+                    f"{compatibility.verb}={verb!r} required a declared "
+                    "role frame"
+                )
+            return (
+                f"{compatibility.verb}={verb!r} had no declared role frame; "
+                "the compatibility boundary remained open"
+            )
         rendered_roles = []
         for semantic_role, role_names in compatibility.roles.items():
             values = []
@@ -4935,6 +5214,16 @@ def _where_reason(
         if not measure_units:
             return "the target match did not expose the governing measure"
         measure = _unit_lemma(measure_units[0], reg)
+        attribute_units = (
+            _slot_units(slots.get(compatibility.attribute))
+            if compatibility.attribute is not None
+            else ()
+        )
+        attribute = (
+            _unit_lemma(attribute_units[0], reg)
+            if attribute_units
+            else None
+        )
         if (
             compatibility.when_declared
             and not reg.measure_has_holder_boundary(measure)
@@ -4959,7 +5248,23 @@ def _where_reason(
                     compatibility.proper_name_measure_categories
                 )
                 permitted = not categories or any(
-                    reg.word_in_category(measure, category)
+                    (
+                        attribute is None
+                        and reg.word_in_category(measure, category)
+                    )
+                    or (
+                        attribute is not None
+                        and any(
+                            reg.category_routes_overlap(
+                                route_category, category
+                            )
+                            for _, route_category in (
+                                reg.attribute_compatibility_pairs(
+                                    attribute, measure
+                                )
+                            )
+                        )
+                    )
                     for category in categories
                 )
                 rendered.append(
@@ -4969,7 +5274,7 @@ def _where_reason(
                 )
                 continue
             pairs = reg.measure_holder_compatibility_pairs(
-                measure, holder_lemma
+                measure, holder_lemma, attribute
             )
             licences = ", ".join(
                 f"{measure_category} → {holder_category}"
@@ -5506,6 +5811,7 @@ def _explain_candidate(
             where_sources.extend(
                 _measure_holder_compatibility_evidence(
                     project,
+                    predicate.measure_holder_compatible.attribute,
                     predicate.measure_holder_compatible.measure,
                     tuple(predicate.measure_holder_compatible.holders),
                     slots,
@@ -6091,6 +6397,7 @@ def generate_candidate(
                 rng,
                 locked_bindings=locked_bindings,
                 identity_bindings=identity_bindings,
+                target_bindings=requested,
             )
         except GenerationError as exc:
             last_realization_error = exc

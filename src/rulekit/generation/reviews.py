@@ -726,7 +726,6 @@ def replay_premise_review(
             ("co-firing rules", actual["actual_rule_ids"], evidence.get("actual_rule_ids")),
             ("facts", _fact_contract(actual["facts"]), _fact_contract(evidence.get("facts") or [])),
             ("collisions", list(actual["collisions"]), evidence.get("collisions") or []),
-            ("deficiencies", list(actual["deficiencies"]), evidence.get("deficiencies") or []),
         ]
         for label, current, expected in comparisons:
             if current != expected:
@@ -734,6 +733,17 @@ def replay_premise_review(
                     "status": "regressed",
                     "detail": f"the premise {label} changed",
                 }
+        # A positive exemplar regresses when replay GAINS a grammatical gap.
+        # Removing an old deficiency is a monotone improvement: the reviewed
+        # target, bindings, co-firing rules, and fact contract remain exact,
+        # while a newly anchored construction no longer reports a false gap.
+        current_deficiencies = set(actual["deficiencies"])
+        expected_deficiencies = set(evidence.get("deficiencies") or [])
+        if not current_deficiencies <= expected_deficiencies:
+            return {
+                "status": "regressed",
+                "detail": "the premise gained deficiencies",
+            }
     status = (
         "current"
         if review.get("registry_fingerprint") == project.registry.fingerprint

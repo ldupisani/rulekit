@@ -361,6 +361,9 @@ members:
   - day
   - week
   - month
+  measured_comparative_offset_measure:
+  - day
+  - month
   dimension_difference_measure:
   - centimeter
   - foot
@@ -415,6 +418,9 @@ members:
   - bring
   - brings
   - brought
+  - catch
+  - catches
+  - caught
   - pick
   - picked
   - picks

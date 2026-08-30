@@ -1,8 +1,8 @@
 # rulekit handoff
 
-**Updated:** 2026-08-28
-**Runtime checkpoint:** `main` (shared dimensional algebra and reusable
-physics/chemistry pack consolidation implemented and gated)
+**Updated:** 2026-08-30
+**Runtime checkpoint:** working tree on `main` (review batches 66–68
+implemented; full synthetic and curated gates clean)
 **Active campaign:** GSM8K Mining v2, M7 example-led vertical mining
 **Immediate state:** all four published Mining v2 candidates are landed; no
 candidate is awaiting human or machine review
@@ -320,16 +320,70 @@ year” and the idiomatic bare span “a year”. The intended curated reading
 answers 624, and the GSM8K DEV-holdout gate gains one correct commitment with
 zero wrongs.
 
+Review batch 66 separates authored surface quality from reader acceptance.
+Premise rules can apply ordinary declarative predicates through
+`generation_where`; this now makes the price-anaphor generator select
+subject–verb agreement while preserving a human-validated marginal reading.
+Indefinite articles choose `a` or `an` from the following generated surface,
+with pronunciation exceptions owned by core category data. Explicit ratio
+rules use the positive `quantity_comparison_verb` hierarchy, rejecting
+unrelated speech, cognition, and generic activity verbs while retaining
+quantity predicates, motion comparisons, and acquisition verbs such as
+`catch`.
+
+The same batch closes contextual generation for both explicit package-totality
+transfer paraphrases. Context slots can share the target package/content
+identity while independently choosing counts and distinct qualifiers.
+`TotalityTransfer` now preserves explicit package and content heads, and
+saturation refuses prior quantities whose package or content does not match.
+Common-noun capacity inquirers are animate-gated; proper names remain valid.
+The complete gate adds one net GSM8K DEV-train answer with no regression and
+keeps every precision gate at zero wrong or incorrect commitments.
+
+Review batch 67 closes the direct mass-comparison verb boundary across all
+eight `as much` ratio and affine siblings. Their finite verb slots reuse the
+positive `quantity_comparison_verb` hierarchy, so unrelated cognition,
+containment, capacity, and enrollment predicates no longer become arithmetic
+relations. Existing category-owned frames still apply their own object
+constraints: edible sugar is valid for eating, money is not; transferable
+materials and resources are valid transfer objects, while `rest` is not.
+Elided contextual completion remains supported without admitting a direct
+“finished ... water” object. Generator-only PP constraints also stop authored
+possessive calendar phrases such as “during your year” without narrowing the
+reader. The generic frame predicate now has an explicit
+`require_declared_frame` option for constructions that must reject the
+historical zero-frame open case; common verbs must not gain artificial child
+frames merely to use it, because frame specificity affects every construction.
+
+Review batch 68 joins descriptor, measure, and holder evidence into one
+comparative route. A polysemous unit such as `year` is age-compatible under
+`older` but duration-compatible under `longer`; proper-name permissions now
+apply to the selected route rather than any unrelated membership. Dangling
+comparatives also require a concrete counted offset unit, excluding abstract
+dimension nouns such as `weight`, while valid mass comparisons of gardens and
+measurement containers remain generatable.
+
+Existential quantities now reject abstract/mass population heads, directional
+goal prepositions, and topical modifiers whose counted host is not declared
+topical. Optional `container of content` tails use the shared partitive
+relationship: valid transferable contents and nested containers preserve the
+container count, while an arbitrary tail such as `vessels of cost` cannot be
+silently discarded. First- and second-person possessive determiners are
+speech-anchored diagnostics rather than unresolved discourse defects, but
+remain unbound so they cannot masquerade as entity slots. Positive review
+replay treats removal of an old deficiency as monotone improvement and still
+flags every newly introduced deficiency.
+
 ## Current measured baseline
 
 These are the gates run at the current runtime checkpoint:
 
 | Gate | Current result |
 | --- | --- |
-| full synthetic suite | 5,842 passed |
+| full synthetic suite | 5,946 passed |
 | curated suite | 71 correct, 0 wrong |
-| GSM8K DEV-train | 106 correct, 0 wrong |
-| GSM8K DEV-holdout | 47 correct, 0 wrong |
+| GSM8K DEV-train | 107 correct, 0 wrong |
+| GSM8K DEV-holdout | 46 correct, 0 wrong |
 | ASDiv DEV | 46 correct, 0 wrong |
 | SVAMP DEV | 24 correct, 0 wrong |
 | MAWPS DEV | 11 correct, 0 wrong |
@@ -338,7 +392,7 @@ These are the gates run at the current runtime checkpoint:
 | FOLIO DEV | 0 numeric commitments |
 | COGS DEV-train / holdout | 1,771 / 1,693 exact, 0 incorrect |
 | PMB train / development | 117 / 4 exact, 0 incorrect |
-| lint | 0 errors, 1 pre-existing warning (`ask/trig-sine` alternation) |
+| lint | 0 errors, 0 warnings |
 
 Review batch 62 deliberately retired one DEV-train commitment that happened
 to agree with its numeric gold while relying on an unsupported inference from
@@ -346,6 +400,8 @@ an owner's quantity to the contents of that owner's named container. The same
 shortcut produced the human-rejected institution example. DEV-train therefore
 moved from 107 to 106 correct with zero wrongs; explicit owner-qualified place
 evidence still answers, while ownership alone now declines.
+Review batch 66 later added one independent correct commitment, returning the
+current total to 107 without weakening that owner/place boundary.
 
 The latest protected GSM8K TEST look is look 126: 13 correct, 1 persistent
 wrong, and 1,305 declined. Increment 132 made no new protected commitment.
@@ -359,28 +415,30 @@ judged the resulting English or emitted fact valid.
 
 | Project | Premise rules | Independent asks | Answerable asks |
 | --- | ---: | ---: | ---: |
-| curated | 150/160 | 112/126 | 126/126 |
-| GSM8K | 144/152 | 151/164 | 164/164 |
+| curated | 159/168 | 115/133 | 129/133 |
+| GSM8K | 153/160 | 153/166 | 166/166 |
 
 The unsupported premise rows are deliberate safety interceptors or reader-only
-rules, not ordinary generation targets. The fourteen curated and thirteen
-GSM8K independent-ask blockers
-require an antecedent discourse group, measured-content or progress evidence,
-or embedded indirect-question syntax. Every one is now available to the
-answerable mode, which must synthesize the required antecedent and evidence
-rather than pretending the question is independently realizable.
+rules, not ordinary generation targets. Fourteen curated and all thirteen
+GSM8K independent-ask blockers require an antecedent discourse group,
+measured-content or progress evidence, or embedded indirect-question syntax;
+they become available only when answerable generation supplies that context.
+The remaining four curated blockers are chemistry formula asks whose structural
+formula fixture exists in the GSM8K project but is intentionally absent from
+curated generation data.
 
 Qualified package totals and complete transfers into containers now close one
 more end-to-end arithmetic class. Indefinite size-qualified package statements
 are explicit distributive rates; several package sizes may contribute to one
-holder total. A contextual premise rule records an exact `TotalityTransfer`
-only for an explicit “them all” placement into a declared interior location,
-and saturation transfers a quantity only when the source content measure is
-unique. The destination receives an inspectable content event plus a stative
-quantity, which the generic definite container-content ask reads. Definite
-single-package statements, mixed source contents, missing totality, and
-non-container destinations remain decline boundaries. The motivating prose is
-not retained; invented analogues pin the mechanism and its negative neighbours.
+holder total. Contextual premise rules cover the pronoun form and both explicit
+“both packages” paraphrases. Explicit package/content heads stay on
+`TotalityTransfer`, so saturation requires the matching source package classes
+and the one compatible content measure. The destination receives an inspectable
+content event plus a stative quantity, which the generic definite
+container-content ask reads. Definite single-package statements, mismatched or
+mixed source contents, missing totality, and non-container destinations remain
+decline boundaries. The motivating prose is not retained; invented analogues
+pin the mechanism and its negative neighbours.
 
 ## Designer and promotion workflow
 

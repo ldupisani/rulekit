@@ -658,9 +658,13 @@ non-termination into an error.
 
 ### 4. Resolve document context
 
-The document loop currently resolves three cross-sentence phenomena:
+The document loop currently resolves four contextual phenomena:
 
 - personal discourse reference against prior compatible referents; and
+- externally deictic possessive determiners such as `my` and `your`, whose
+  owner comes from the speech situation rather than an earlier noun phrase;
+  their `refers` obligation becomes optional but deliberately stays unbound,
+  so the form cannot satisfy an ordinary entity slot; and
 - measure anaphora such as a later “ones” referring to one prior counted noun
   lemma; and
 - an exact plural subject group for aggregate, per-holder, age, and
@@ -760,10 +764,12 @@ from the other.
 Moving the complete previously mentioned collection into a destination is a
 separate commitment. `TotalityTransfer` records the resolved source,
 destination, placement verb, occurrence, and—when the surface says `both`
-package groups—the required number of distinct qualified package classes,
-without guessing a measure from the pronoun itself. Saturation acts only when
-that source has exactly one
-non-package content measure, then emits a stative destination `Quantity` and
+package groups—the required number of distinct qualified package classes.
+An explicit package or content head is retained separately and filters the
+eligible source facts; neither field invents an amount. A pronoun-only form
+leaves those fields open rather than guessing its measure. Saturation acts
+only when that source has exactly one compatible non-package content measure,
+then emits a stative destination `Quantity` and
 an inspectable `ContainerContent(operation="transfer_all")`. Multiple content
 measures, multiple total transfers, a missing totality marker, or a
 non-container destination decline. The normal `single-entity` consumer then
@@ -839,6 +845,14 @@ Leading existential totals are also unscoped: their literal `there` is a
 construction marker rather than an entity. They require an agreeing copula
 and normalize to holding semantics; arbitrary verbs on an existential surface
 do not emit a total.
+Located existential quantities additionally distinguish state locations from
+directional goals, and reuse modifier-host compatibility for scoped modifiers
+such as `about`: a topical preposition requires a declared topical counted
+host. Abstract and mass nouns that cannot be enumerated stay outside the
+counted population route. In a bare `N containers of CONTENT` form, the
+optional tail activates ordinary partitive compatibility. Transferable
+contents and nested containers preserve the stated container count; an
+unrelated tail cannot disappear while the prefix still emits a fact.
 Same-scope disagreement still quarantines both facts. Entity-aware consumers
 accept only unscoped or exact-scope-compatible totals; entity-less consumers
 cannot silently widen a named group into a scene-wide total.
@@ -1087,6 +1101,15 @@ as a caller-supplied reference year, still pass through the premise slot's
 ordinary range and integer constraints. The candidate records that reference
 year so replay remains explicit.
 
+Premise generation can likewise declare `generation: contextual` and provide
+ordinary tokenized `before` or `after` sentences. A `target_identity_links`
+mapping links a context slot to the semantic identity of an already realized
+target slot while leaving count, qualifier, ownership, and surface morphology
+for the context realizer to choose. This is how a target referring to “both
+bags” can generate two distinct size-qualified bag groups without copying the
+target surface or hard-coding a noun. The composed text must still produce the
+declared fact counts and round-trip through the ordinary reader.
+
 Discourse-group asks need a group merely to plan their query-bound evidence.
 The generator may provisionally attach two project fixture identities during
 surface search, but that mutation is never evidence and is never returned.
@@ -1105,6 +1128,12 @@ uses plausible vocabulary without rewriting what the reader recognizes.
 Category overrides preserve structural morphology from the reader slot—such
 as plural, counted, possessed, or qualified form—rather than replacing it
 with an uninflected category member.
+
+Premise rules have the same separation through `generation_where`. These
+predicates use the ordinary declarative constraint vocabulary to shape authored
+surfaces, but are not matcher predicates. They are reserved for generation
+quality such as agreement when a reviewed marginal surface must remain
+readable; semantic acceptance boundaries still belong in ordinary `where`.
 
 A number-neutral noun-category slot normally generates its canonical lexicon
 entries, even though the reader may also accept declared plurals. A rule whose
@@ -1169,7 +1198,9 @@ context shape, and emitted fact types. Ask rows are grouped by target ask,
 scenario mode, consumer, answer shape, query/binding field shape, and generated
 premise rules; exact filler words do not create new structural coverage. New
 premise reviews pin target status and bindings, co-firing rules, facts,
-collisions, and deficiencies. Legacy premise reviews replay the target and its
+collisions, and deficiencies. Replay rejects any newly introduced deficiency;
+removing a previously recorded deficiency is a monotone diagnostic improvement
+rather than a regression. Legacy premise reviews replay the target and its
 collision-free fact production without inventing a historical snapshot that
 was never recorded. Every row remains in the append-only ledger. A valid
 verdict with an attached defect or an incorrect/unclear interpretation or
@@ -1297,6 +1328,10 @@ that position. Arbitrarily nested optional groups compose those same token
 realizers. Each active group makes a seeded include/omit choice; all descendants
 must be supported before the containing rule is available. Locked or excluded
 child bindings force their ancestor groups to be included.
+Generated `a`/`an` literals agree with the following realized word using the
+ordinary initial-letter rule plus pack-declared pronunciation exceptions.
+This allomorph check shapes authored English only; the reader remains able to
+expose and review a mismatched article.
 Plural and counted fillers come
 only from loaded numeric and singular/plural declarations. Count
 `1` selects the singular noun surface and every other admitted non-negative
@@ -1721,6 +1756,26 @@ its declared lemma. This matters when a category deliberately owns only
 finite forms such as `drops`/`dropped`; reducing the bound unit to the bare
 lemma before lookup would silently make that category contract disappear.
 
+A construction that is genuinely complete only with lexical role evidence may
+set `require_declared_frame: true` on `verb_roles_compatible`. Zero applicable
+frames then reject instead of taking the historical open path. Optional
+`frame_categories` can restrict that requirement to one named family. This is
+an opt-in construction contract; it is not a reason to add artificial child
+frames to common verbs, because frame specificity is global lexical meaning
+and would narrow unrelated constructions too.
+
+Positive construction vocabulary remains a separate tool. The `as many` and
+`as much` relation families gate their finite verb through the shared
+`quantity_comparison_verb` hierarchy, excluding unrelated cognition and
+generic activity predicates before role checking. Existing complete frames
+then narrow only the senses that need object evidence: eating selects edible
+objects, enrollment selects enrollable objects, completion selects finishable
+tasks, and transfer selects declared transferable objects. Transferable
+materials and resources extend that object category alongside counted items;
+the abstract remnant `rest` remains outside it. Elided amount constructions
+can therefore retain a contextual completion reading without licensing the
+direct nonsense “finished half as much water.”
+
 Task-completion duration rules use this same frame rather than admitting any
 referential actor and task noun. Both the single and coordinated constructions
 map their subject to the completion frame's actor and their repeated object to
@@ -1768,6 +1823,15 @@ against the declared target including its descendants. Consequently a child
 measure and child holder inherit the relationship, while another pack can add
 members to either category without editing the rule. Multiple packs may also
 add independent target categories to the same source relationship.
+
+The predicate may also name an `attribute` slot. In that form, its
+measure-category licence is restricted to the noun category selected by the
+ordinary `attribute_compatibility` pair. This is required for polysemous
+measures: `year` belongs to both age and duration, but `older` selects
+`age_measure` while `longer` selects `duration_measure`. Proper-name exceptions
+are checked against that selected route, so an age licence cannot leak into a
+duration comparison. Matching, availability, realization, and Designer source
+explanations all use the same composed relationship.
 
 Constructions apply these relationships according to the semantic role played
 by a surface slot. The full times-as-many conjunct, for example, maps its two

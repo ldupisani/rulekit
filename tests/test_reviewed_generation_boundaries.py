@@ -763,7 +763,7 @@ def test_new_live_review_failures_now_retest_absent(
         ),
         (
             "arithmetic/fraction-as-much-elided-standard",
-            "Aven wins seven tenths as much rest.",
+            "Aven has seven tenths as much rest.",
         ),
         (
             "arithmetic/anchored-relation-elided",
@@ -3126,14 +3126,14 @@ def test_fraction_much_optional_context_uses_declared_compatibility(
 
     assert rule_id in _matched_rules(
         (
-            "Dena ate three fifths as much money in the garden "
+            "Dena had three fifths as much money in the garden "
             "as her teacher Fia."
         ),
         registry,
     )
     assert rule_id not in _matched_rules(
         (
-            "Dena ate three fifths as much money to the plum "
+            "Dena had three fifths as much money to the plum "
             "as her teacher Fia."
         ),
         registry,
