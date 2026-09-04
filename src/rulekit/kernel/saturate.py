@@ -25,6 +25,7 @@ from .model import (
     Alias,
     AnchorQuantity,
     Atom,
+    BoundedActivityInquiry,
     ClassRefinement,
     CollectionContext,
     Conditional,
@@ -47,6 +48,7 @@ from .model import (
     QuantifiedQuantity,
     Relation,
     TotalityTransfer,
+    TotalityEvent,
     VerbalRelation,
 )
 
@@ -2792,6 +2794,132 @@ def _container_totality_transfer_synth(
     return out
 
 
+def _totality_event_synth(
+    store: FactStore,
+    reg: Registry,
+    log: ArithmeticLog,
+) -> list[Fact]:
+    """Materialize an explicitly complete activity from compatible holdings.
+
+    A totality surface such as ``she eats it all`` states no number.  It may
+    borrow an amount only from one earlier :class:`BoundedActivityInquiry`
+    for the same participant and activity.  The inquiry's content head names
+    the whole; distributive per-whole rates also expose compatible measured
+    contents (for example pizzas -> slices).  This preserves both legitimate
+    units without making ``piece`` and ``slice`` global synonyms.
+
+    Existing events under the target verb make the remaining amount
+    underdetermined, so the synth declines instead of treating "all" as an
+    additional copy.  Derived facts are excluded from their own source store,
+    keeping saturation monotone and idempotent.
+    """
+
+    out: list[Fact] = []
+    inquiries = list(store.by_kind(BoundedActivityInquiry))
+    derived_source = "synth/totality-event"
+    source_store = FactStore(
+        facts=[
+            fact
+            for fact in store.facts
+            if not (
+                isinstance(fact, Quantity)
+                and fact.provenance.source == derived_source
+            )
+        ]
+    )
+
+    for event in store.by_kind(TotalityEvent):
+        matching = [
+            inquiry
+            for inquiry in inquiries
+            if inquiry.seeker == event.entity
+            and inquiry.activity == event.verb
+        ]
+        if len(matching) != 1:
+            continue
+        (inquiry,) = matching
+        root = inquiry.content.split("[", 1)[0]
+
+        related_measures = {root}
+        for rate in source_store.by_kind(Quantity):
+            if not _distributive_rate_source(rate):
+                continue
+            if rate.entity.split("[", 1)[0] == root:
+                related_measures.add(rate.measure.split("[", 1)[0])
+
+        theme_categories = {
+            frame["theme"]
+            for _category, frame in reg.selectional_frames(event.verb)
+            if "theme" in frame
+        }
+        eligible = sorted(
+            measure
+            for measure in related_measures
+            if any(
+                reg.word_in_category(measure, category)
+                for category in theme_categories
+            )
+        )
+        if not eligible:
+            continue
+
+        # A prior event under the same activity means "all" could denote the
+        # original or the remaining pool. Remaining-state reasoning is a
+        # different contract, so this route refuses the ambiguity.
+        if any(
+            quantity.entity == event.entity
+            and quantity.verb == event.verb
+            and quantity.measure.split("[", 1)[0] in eligible
+            for quantity in source_store.by_kind(Quantity)
+        ):
+            continue
+
+        totals: dict[str, float] = {}
+        for measure in eligible:
+            value = _entity_total(
+                source_store, reg, event.entity, measure, log
+            )
+            if value is None or value < 0:
+                totals = {}
+                break
+            totals[measure] = value
+        if not totals:
+            continue
+
+        for quantity in source_store.by_kind(Quantity):
+            if (
+                quantity.entity == event.entity
+                and quantity.measure.split("[", 1)[0] in totals
+            ):
+                log.consumed_totality_source_keys.add(
+                    (
+                        quantity.entity,
+                        quantity.measure,
+                        quantity.verb,
+                        quantity.time,
+                        quantity.occurrence,
+                    )
+                )
+
+        for measure, value in totals.items():
+            out.append(
+                Quantity(
+                    provenance=Provenance(
+                        source=derived_source,
+                        sentence=-1,
+                        assumption=event.provenance.assumption,
+                    ),
+                    entity=event.entity,
+                    measure=measure,
+                    value=value,
+                    verb=event.verb,
+                    time=inquiry.unit,
+                    occurrence=event.occurrence,
+                )
+            )
+    return out
+
+
 def _distributive_container_total_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> list[Fact]:
     """Distributive 'each' container totals (mining candidate distributive-
     each-totals): 'There are 40 rows of chairs. There are 20 chairs in each
@@ -3435,6 +3563,7 @@ PLUGINS: dict[str, Synthesizer] = {
     "synth/sum-constraint": _sum_constraint_synth,
     "synth/container-contents": _container_contents_synth,
     "synth/container-totality-transfer": _container_totality_transfer_synth,
+    "synth/totality-event": _totality_event_synth,
     "synth/distributive-container-total": _distributive_container_total_synth,
 }
 

@@ -1494,7 +1494,8 @@ class WherePredicate(StrictModel):
 
 class FactEmit(StrictModel):
     fact: Literal[
-        "activity_duration", "age_at_year", "task_completion_duration",
+        "activity_duration", "bounded_activity_inquiry", "age_at_year",
+        "task_completion_duration",
         "rate_scope", "quantity", "relation", "contribution",
         "membership", "subset", "predication", "collection_context",
         "before", "fraction_quantity", "rest_quantity", "partition_quantity",
@@ -1511,7 +1512,7 @@ class FactEmit(StrictModel):
         "location_transition_absence",
         "spatial_placement", "measured_content_change", "container_content",
         "container_capacity_inquiry", "container_capacity_observation",
-        "totality_transfer",
+        "totality_transfer", "totality_event",
         "semantic_graph_node", "semantic_graph_edge",
         "alias", "enumerated_disjunction",
         "disjunctive_conditional", "ground_conditional",

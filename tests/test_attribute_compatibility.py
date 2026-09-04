@@ -237,18 +237,25 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
     # reviewed small/large pairs; large appliances remain outside that class.
     # Capacity and content are ordinary core nouns used by the container
     # inquiry frames; neither broadens descriptor compatibility.
+    # Day, pizza, slice, and piece are shared vocabulary for bounded
+    # portioned-food events; day accepts `last`, while only pizza joins the
+    # small/large whole domain.
     # The reusable science packs contribute meter, object, speed, height,
     # joule, moles, and the compound velocity unit as pluralizable nouns;
     # seconds and moles are deliberately plural-only identities.
-    assert len(plural_nouns) == 113
+    assert len(plural_nouns) == 117
     assert {
         "boy",
+        "day",
         "fridge",
         "girl",
         "grandparent",
         "head",
         "parent",
         "purpose",
+        "pizza",
+        "piece",
+        "slice",
         "topic",
         "university",
         "wallet",
@@ -258,7 +265,7 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
         registry.attribute_applies_to(attribute, noun)
         for attribute in adjectives
         for noun in plural_nouns
-    ) == 527
+    ) == 530
 
 
 def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> None:
@@ -329,7 +336,7 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
 def test_compatibility_rule_remains_supported_after_g5j_expansion() -> None:
     availability = list_rule_availability(load_project(CURATED))
 
-    assert sum(item.supported for item in availability) == 159
+    assert sum(item.supported for item in availability) == 161
     target = next(item for item in availability if item.id == RULE_ID)
     assert target.supported
     assert target.blockers == ()

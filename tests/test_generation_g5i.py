@@ -80,8 +80,8 @@ def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
         for item in list_rule_availability(load_project(CURATED))
     }
 
-    assert len(availability) == 168
-    assert sum(item.supported for item in availability.values()) == 159
+    assert len(availability) == 170
+    assert sum(item.supported for item in availability.values()) == 161
     assert sum(not item.supported for item in availability.values()) == 9
     assert all(availability[rule_id].supported for rule_id in NEWLY_SUPPORTED)
     assert all(

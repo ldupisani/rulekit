@@ -216,6 +216,13 @@ categories:
         notes: >
             Enumerable package/container heads whose declared size qualifier
             can distinguish independent per-container content rates.
+    sized_content_bearing_whole:
+        parent: noun
+        notes: >
+            Enumerable wholes whose size qualifier distinguishes independent
+            per-whole content rates. This includes physical packages and
+            portioned wholes such as pizzas without claiming that food is a
+            container or an interior location.
     package_content_preposition:
         parent: preposition
         notes: >
@@ -982,6 +989,21 @@ categories:
     edible_quantity_object:
         parent: consumable_quantity_object
         notes: "Counted objects that can ordinarily be eaten."
+    component_quantity_measure:
+        parent: noun
+        notes: >
+            Count nouns that can measure the components of a decomposable
+            whole. A category-scoped ask may resolve only the unique compatible
+            component measure present in its event evidence; members do not
+            become global synonyms or acquire any activity-specific meaning.
+    decomposable_quantity_whole:
+        parent: sized_content_bearing_whole
+        notes: >
+            Enumerable wholes whose declared per-whole rate exposes a counted
+            component measure. Membership licenses only this structural
+            arithmetic relationship. Category-owned verb roles independently
+            decide whether a particular activity can act on the whole and its
+            components.
     shucking_verb:
         parent: quantity_event_verb
         selectional_roles:
@@ -2375,15 +2397,16 @@ members:
     conjunct_comparison_incompatible_noun: [time]
     existential_incompatible_noun: [time]
     non_quantity_holder:
-        [amount, clay, cost, dollar, gram, inch, kilogram, liter, money, number,
+        [amount, clay, cost, day, dollar, gram, inch, kilogram, liter, money, number,
          paper, pound, price, remainder, rest, sand, time, wool, year]
     mass_quantity_noun:
         [clay, litter, money, paper, rest, sand, sugar, vinegar, water, wool]
     partitive_weight_measure: [pound]
     partitive_volume_measure: [liter]
+    partitive_piece_measure: [piece]
     weighable_partitive_substance: [clay, paper, sand, wool]
     volume_partitive_substance: [sand]
-    piecewise_partitive_substance: [litter, paper]
+    piecewise_partitive_substance: [litter, paper, pizza]
     mass_currency_noun: [money]
     non_quantity_object_verb:
         - be
@@ -2642,8 +2665,10 @@ members:
          key, marble, apricot, paper, pencil, pear, plum, puzzle, rose, sticker,
          tomato, toy]
     edible_quantity_object:
-        [apple, bird, cookie, egg, fish, grape, apricot, pear, plum, rabbit,
-         sugar, tomato]
+        [apple, bird, cookie, egg, fish, grape, apricot, pear, piece, pizza,
+         plum, rabbit, slice, sugar, tomato]
+    component_quantity_measure: [piece, slice]
+    decomposable_quantity_whole: [pizza]
     # A book can hold a page/count quantity even though it is neither animate
     # nor a location. Other common nouns enter this positive role only beside
     # evidence for their own ordinary holder reading.
@@ -2727,7 +2752,7 @@ members:
     past_day_marker: [yesterday]
     future_day_marker: [tomorrow]
     timeperiod:
-        [year, monday, tuesday, wednesday, thursday, friday, saturday, sunday,
+        [year, day, monday, tuesday, wednesday, thursday, friday, saturday, sunday,
          january, february, march, april, may, june, july, august, september,
          october, november, december]
     named_calendar_period:
@@ -2740,9 +2765,9 @@ members:
         [january, february, march, april, may, june, july, august, september,
          october, november, december]
     temporal_on_point_object:
-        [monday, tuesday, wednesday, thursday, friday, saturday, sunday]
+        [day, monday, tuesday, wednesday, thursday, friday, saturday, sunday]
     temporal_in_point_object:
-        [year, january, february, march, april, may, june, july, august, september,
+        [year, day, january, february, march, april, may, june, july, august, september,
          october, november, december]
     count_intensifier: [more]
     # small/large inherit this gate through `size_attribute`; tall/long/etc.
@@ -2759,10 +2784,10 @@ members:
     mass_unit: [gram, kilogram, pound]
     volume_measure: [liter]
     currency_measure: [dollar] # 'cent'/'balance'/'earnings'/'cost' extend this from packs/difg-mined
-    time_measure: [year, age] # generic age forms; other units extend this from difg-mined
-    duration_measure: [year, week, minute, hour]
+    time_measure: [year, day, age] # generic age forms; other units extend this from difg-mined
+    duration_measure: [year, day, week, minute, hour]
     measured_comparative_offset_measure:
-        [gram, kilogram, pound, year, week, minute, hour]
+        [gram, kilogram, pound, year, day, week, minute, hour]
     dimension_difference_measure: [inch, pound]
     frequency_quantifier: [every]
     distributive_quantifier: [each, every]
@@ -2837,6 +2862,9 @@ members:
          cupboard, flask, fridge, garden, jar, jug, pantry, storeroom, tank,
          university, vessel, vial]
     sized_quantity_container:
+        [bag, barrel, beaker, bottle, bowl, box, bucket, canister, container,
+         flask, jar, jug, tank, vessel, vial]
+    sized_content_bearing_whole:
         [bag, barrel, beaker, bottle, bowl, box, bucket, canister, container,
          flask, jar, jug, tank, vessel, vial]
     package_content_preposition: [of, with]
@@ -2930,7 +2958,7 @@ attribute_compatibility:
     # Multiple compatible noun categories are intentional. Either category
     # licenses a pair; noun membership is not forced into one artificial class.
     size_attribute:
-        [physical_size_noun, magnitude_noun, sized_quantity_container]
+        [physical_size_noun, magnitude_noun, sized_content_bearing_whole]
     linear_unit_dimension_adjective: [length_measure]
     mass_unit_dimension_adjective: [mass_measure]
     remnant_adj: [remainder_collection_noun, content_progress_measure]

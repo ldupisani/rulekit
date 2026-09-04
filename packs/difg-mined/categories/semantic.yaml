@@ -123,7 +123,6 @@ members:
   mass_quantity_noun: [chicken, coffee, flour, food, milk, money, rice]
   partitive_volume_measure: [bottle, cup, quart, sack]
   partitive_pair_measure: [pair]
-  partitive_piece_measure: [piece]
   weighable_partitive_substance: [chicken, coffee, flour, food, rice, sugar]
   volume_partitive_substance: [coffee, flour, milk, oil, rice, sugar]
   pairable_partitive_substance: [shoe]
@@ -205,7 +204,6 @@ members:
   - gram
   - minute
   - hour
-  - day
   - week
   - month
   - quart
@@ -354,15 +352,12 @@ members:
   time_measure:
   - minute
   - hour
-  - day
   - week
   - month
   duration_measure:
-  - day
   - week
   - month
   measured_comparative_offset_measure:
-  - day
   - month
   dimension_difference_measure:
   - centimeter
@@ -846,7 +841,6 @@ members:
   - pays
   timeperiod:
   - afternoon
-  - day
   - decade
   - evening
   - month
@@ -857,11 +851,9 @@ members:
   - week
   - weekend
   temporal_on_point_object:
-  - day
   - weekend
   temporal_in_point_object:
   - afternoon
-  - day
   - decade
   - evening
   - month

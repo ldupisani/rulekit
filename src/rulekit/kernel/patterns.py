@@ -21,6 +21,7 @@ from ..data.schemas import AskRule, MatchToken, PatternRule
 from .evaluate import ArithmeticLog, EvaluationError, evaluate
 from .model import (
     ActivityDuration,
+    BoundedActivityInquiry,
     AgeAtYear,
     Alias,
     Before,
@@ -68,6 +69,7 @@ from .model import (
     RatioQuantity,
     RestQuantity,
     TotalityTransfer,
+    TotalityEvent,
     SemanticGraphEdge,
     SemanticGraphNode,
     SequentialPartition,
@@ -85,6 +87,7 @@ SKIPPABLE_SENSES = {"article", "punct"}
 
 _FACT_CLASSES = {
     "activity_duration": ActivityDuration,
+    "bounded_activity_inquiry": BoundedActivityInquiry,
     "age_at_year": AgeAtYear,
     "task_completion_duration": TaskCompletionDuration,
     "quantity": Quantity,
@@ -136,6 +139,7 @@ _FACT_CLASSES = {
     "container_capacity_inquiry": ContainerCapacityInquiry,
     "container_capacity_observation": ContainerCapacityObservation,
     "totality_transfer": TotalityTransfer,
+    "totality_event": TotalityEvent,
     "semantic_graph_node": SemanticGraphNode,
     "semantic_graph_edge": SemanticGraphEdge,
 }
@@ -2228,6 +2232,8 @@ def _build_fact(
         SpatialPlacement,
         MeasuredContentChange,
         TotalityTransfer,
+        TotalityEvent,
+        BoundedActivityInquiry,
     ) and "occurrence" not in kwargs:
         # These are ALWAYS events (never states, unlike Quantity/
         # FractionQuantity/RestQuantity above, which branch on verb

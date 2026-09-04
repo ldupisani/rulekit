@@ -1805,10 +1805,6 @@ entries:
     senses:
     - noun
     plural: daughters
-  day:
-    senses:
-    - noun
-    plural: days
   # scibench: the proper-name particle in "de Broglie wavelength". It is
   # matched structurally as a preposition by the eponymic-quantity ask; the
   # physicist's name and the quantity stay separate slots.

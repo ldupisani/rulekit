@@ -83,6 +83,51 @@ def _resolve_measure(
     return _resolve_measure_against(measure, in_store, reg, journal=journal)
 
 
+def _resolve_category_measure(
+    category: str,
+    store: FactStore,
+    reg: Registry,
+    *,
+    entities: list[str] | None = None,
+    verb: str | None = None,
+    journal=None,
+) -> str | None:
+    """Resolve one explicitly category-scoped ask to one in-play measure.
+
+    This is deliberately opt-in and asymmetric.  An activity ask may declare
+    that ``pieces`` requests the unique ``component_quantity_measure`` present
+    in its matching event evidence, while an ordinary holdings ask still
+    treats ``piece`` and ``slice`` as distinct nouns. Zero or several members
+    decline; the resolver never turns category siblings into global synonyms.
+    """
+
+    candidates = sorted(
+        {
+            quantity.measure.split("[", 1)[0]
+            for quantity in store.by_kind(Quantity)
+            if (
+                entities is None or quantity.entity in entities
+            )
+            and (verb is None or quantity.verb == verb)
+            and reg.word_in_category(
+                quantity.measure.split("[", 1)[0], category
+            )
+        }
+    )
+    winner = deixis.resolve(
+        [
+            deixis.Referent(dimension=deixis.DISCOURSE, key=measure)
+            for measure in candidates
+        ],
+        deixis.Origo(),
+        deixis.constant,
+        dimension=deixis.DISCOURSE,
+        journal=journal,
+        source="answer/resolve-category-measure",
+    )
+    return winner.key if winner is not None else None
+
+
 def _resolve_dimension_measure(
     measure: str,
     store: FactStore,
@@ -222,4 +267,3 @@ def _measure_substance_guard(
             f"no {substance!r} facts known for measure {measure!r}",
         )
     return None
-

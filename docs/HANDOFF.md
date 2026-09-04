@@ -1,8 +1,8 @@
 # rulekit handoff
 
-**Updated:** 2026-08-30
-**Runtime checkpoint:** working tree on `main` (review batches 66–68
-implemented; full synthetic and curated gates clean)
+**Updated:** 2026-09-01
+**Runtime checkpoint:** working tree on `main` (review batches 66–68 and the
+portioned-whole totality increment implemented; gates listed below are clean)
 **Active campaign:** GSM8K Mining v2, M7 example-led vertical mining
 **Immediate state:** all four published Mining v2 candidates are landed; no
 candidate is awaiting human or machine review
@@ -81,6 +81,18 @@ selectable and strict
 round-trips instead of being reader-only. Core English owns the ordinary
 vocabulary used by these reusable frames; malformed doubled prepositions stay
 unread and decline.
+
+The same size-qualified arithmetic now applies to decomposable wholes without
+classifying them as containers or binding the construction to eating. A
+bounded inquiry records the actor, activity, whole, and interval without
+asserting an amount. The activity is a generic quantity event, but it must own
+a complete category-level actor/theme frame that accepts the chosen whole. An
+explicit later totality event may then project the uniquely compatible
+acquired whole and its per-whole component totals into that activity.
+Category-scoped component asks resolve only the one compatible in-play measure,
+so ordinary `piece`/`slice` questions remain distinct. Missing totality, a
+mismatched period, an undeclared verb frame, a previous same-activity event, or
+ambiguous component evidence still declines.
 
 Independent ask generation now covers every currently safe standalone token
 domain. Project generation fixtures can declare bounded ISO dates, coordinate
@@ -380,10 +392,10 @@ These are the gates run at the current runtime checkpoint:
 
 | Gate | Current result |
 | --- | --- |
-| full synthetic suite | 5,946 passed |
+| full synthetic suite | 5,953 passed |
 | curated suite | 71 correct, 0 wrong |
 | GSM8K DEV-train | 107 correct, 0 wrong |
-| GSM8K DEV-holdout | 46 correct, 0 wrong |
+| GSM8K DEV-holdout | 47 correct, 0 wrong |
 | ASDiv DEV | 46 correct, 0 wrong |
 | SVAMP DEV | 24 correct, 0 wrong |
 | MAWPS DEV | 11 correct, 0 wrong |
@@ -415,7 +427,7 @@ judged the resulting English or emitted fact valid.
 
 | Project | Premise rules | Independent asks | Answerable asks |
 | --- | ---: | ---: | ---: |
-| curated | 159/168 | 115/133 | 129/133 |
+| curated | 161/170 | 116/134 | 130/134 |
 | GSM8K | 153/160 | 153/166 | 166/166 |
 
 The unsupported premise rows are deliberate safety interceptors or reader-only

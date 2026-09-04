@@ -485,6 +485,7 @@ entries:
     topic: {senses: [noun], plural: topics}
     task: {senses: [noun]}
     year: {senses: [noun], plural: years}
+    day: {senses: [noun], plural: days}
     week: {senses: [noun], plural: weeks}
     hour: {senses: [noun], plural: hours}
     minute: {senses: [noun], plural: minutes}
@@ -507,6 +508,9 @@ entries:
     purpose: {senses: [noun], plural: purposes}
     page: {senses: [noun], plural: pages}
     cookie: {senses: [noun], plural: cookies}
+    pizza: {senses: [noun], plural: pizzas}
+    piece: {senses: [noun], plural: pieces}
+    slice: {senses: [noun], plural: slices}
     ball: {senses: [noun], plural: balls}
     toy: {senses: [noun], plural: toys}
     pencil: {senses: [noun], plural: pencils}

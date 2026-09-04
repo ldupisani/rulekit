@@ -22,6 +22,7 @@ def single_entity(ctx: ConsumerContext):
     from ..model import GroupTotal, Quantity
     from ..measures import (
         _check_req_unit,
+        _resolve_category_measure,
         _measure_substance_guard,
         _resolve_dimension_measure,
         _resolve_measure,
@@ -63,7 +64,18 @@ def single_entity(ctx: ConsumerContext):
     # `measure_qualifier: "{item.qualifier}"` — a no-op empty string
     # everywhere else), never the entity-level `entity_qualifier`.
     measure_qualifier = ctx.query.get("measure_qualifier")
-    if ctx.query.get("dimension_measure"):
+    ask_verb = ctx.query.get("verb", "have")
+    measure_category = ctx.query.get("measure_category")
+    if measure_category:
+        singular = _resolve_category_measure(
+            measure_category,
+            ctx.store,
+            ctx.reg,
+            entities=[entity],
+            verb=ask_verb,
+            journal=ctx.log.journal,
+        )
+    elif ctx.query.get("dimension_measure"):
         singular = _resolve_dimension_measure(
             measure,
             ctx.store,
@@ -175,7 +187,6 @@ def single_entity(ctx: ConsumerContext):
             or q.measure_qualifier is None
             or q.measure_qualifier == measure_qualifier
         ])
-    ask_verb = ctx.query.get("verb", "have")
     is_state_ask = ask_verb in ("have", "be") or ctx.reg.word_in_category(ask_verb, "state")
     if not is_state_ask:
         # An EVENT ask ("how many apples did Mary EAT?") sums only that

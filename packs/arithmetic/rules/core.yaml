@@ -3885,11 +3885,11 @@ rules:
       sentence:
         - {slot: who, type: entity, common_noun_cat: quantity_event_participant, referential: true, bare_reference_category: bare_entity_reference, at_start: true}
         - {slot: verb, cat: acquire, finite_form: true}
-        - {slot: package_a, cat: sized_quantity_container, counted: true, qualified: true, qualifier_cat: size_attribute}
+        - {slot: package_a, cat: sized_content_bearing_whole, counted: true, qualified: true, qualifier_cat: size_attribute}
         - {slot: prep_a, cat: package_content_preposition}
         - {slot: content_a, type: counted}
         - {lit: and}
-        - {slot: package_b, cat: sized_quantity_container, counted: true, qualified: true, qualifier_cat: size_attribute}
+        - {slot: package_b, cat: sized_content_bearing_whole, counted: true, qualified: true, qualifier_cat: size_attribute}
         - {slot: prep_b, cat: package_content_preposition}
         - {slot: content_b, type: counted}
         - {lit: ".", consume_skipped: true}
@@ -3945,7 +3945,7 @@ rules:
     match:
       sentence:
         - {lit: [a, an], consume_skipped: true}
-        - {slot: container, cat: sized_quantity_container, qualified: true, qualifier_cat: size_attribute, number: singular}
+        - {slot: container, cat: sized_content_bearing_whole, qualified: true, qualifier_cat: size_attribute, number: singular}
         - {slot: verb, cat: container_content_state_verb, finite_form: true}
         - {slot: item, type: counted}
     where:
@@ -3960,6 +3960,51 @@ rules:
         value: "item"
         verb: "{verb}"
         distributive: true
+
+  - id: arithmetic/bounded-activity-inquiry-frame
+    phase: read
+    description: >
+      A progressive cognition frame may ask non-assertively about one
+      participant's possible quantity activity over a stated duration. The
+      content must be a decomposable whole, while the activity's category-owned
+      frame decides whether that verb accepts the participant and content.
+      This records only the actor, activity, content, and interval. It does not
+      invent a rate or amount, and consuming the complete embedded question
+      prevents generic folds from turning it into a false membership or
+      holding.
+    match:
+      sentence:
+        - {slot: seeker, type: entity, common_noun_cat: quantity_event_participant, referential: true, bare_reference_category: bare_entity_reference, at_start: true}
+        - {slot: aux, cat: singular_copula}
+        - {slot: cognition, cat: progressive_inquiry_cognition_verb, present_participle: true}
+        - {lit: how}
+        - {lit: much}
+        - {slot: item, cat: decomposable_quantity_whole, number: singular}
+        - {slot: who, cat: animate_pronoun}
+        - {slot: modal, cat: capacity_modal}
+        - {slot: activity, cat: quantity_event_verb, bare_form: true}
+        - {slot: prep, cat: span_preposition}
+        - {slot: span, cat: duration_measure, counted: true}
+        - {lit: ".", consume_skipped: true}
+    where:
+      - number_compatible: [seeker, aux]
+      - verb_roles_compatible:
+          verb: activity
+          roles:
+            actor: [seeker]
+            theme: [item]
+          allow_proper_name: [seeker]
+          require_declared_frame: true
+    satisfies:
+      who: [refers]
+    consumes: [span]
+    emits:
+      - fact: bounded_activity_inquiry
+        seeker: "{seeker}"
+        activity: "{activity}"
+        content: "{item}"
+        elapsed: "span"
+        unit: "{span}"
 
   - id: arithmetic/container-capacity-inquiry-frame
     phase: read
@@ -4143,6 +4188,67 @@ rules:
         source: "{who}"
         destination: "{destination}"
         verb: "{verb}"
+
+  - id: arithmetic/totality-activity-event
+    phase: read
+    generation: contextual
+    generation_context:
+      before:
+        - sentence:
+            - {slot: context_seeker, type: name, at_start: true}
+            - {slot: context_aux, cat: singular_copula}
+            - {slot: context_cognition, cat: progressive_inquiry_cognition_verb, present_participle: true}
+            - {lit: how}
+            - {lit: much}
+            - {slot: context_item, cat: decomposable_quantity_whole, number: singular}
+            - {slot: context_who, cat: animate_pronoun}
+            - {slot: context_modal, cat: capacity_modal}
+            - {slot: context_activity, cat: quantity_event_verb, bare_form: true}
+            - {slot: context_prep, cat: span_preposition}
+            - {slot: context_span, cat: duration_measure, counted: true}
+            - {lit: ".", consume_skipped: true}
+          where:
+            - number_compatible: [context_seeker, context_aux]
+            - verb_roles_compatible:
+                verb: context_activity
+                roles:
+                  actor: [context_seeker]
+                  theme: [context_item]
+                allow_proper_name: [context_seeker]
+                require_declared_frame: true
+      target_identity_links:
+        context_seeker: who
+        context_activity: verb
+      required_fact_counts: {bounded_activity_inquiry: 1}
+    question_assumption: true
+    description: >
+      A resolved participant explicitly performs a quantity activity on the
+      complete previously framed pool. The sentence states
+      totality but no amount. Saturation may copy only the uniquely compatible
+      held/acquired whole and its declared per-whole content measures into
+      event quantities; absent or ambiguous inquiry context remains a decline.
+    match:
+      sentence:
+        - {slot: who, type: name, at_start: true}
+        - {slot: verb, cat: quantity_event_verb, finite_form: true}
+        - {slot: collection, cat: pool_pronoun}
+        - {slot: totality, cat: group_total_quantifier}
+        - {lit: ".", consume_skipped: true}
+    where:
+      - number_compatible: [who, verb]
+      - verb_roles_compatible:
+          verb: verb
+          roles: {actor: [who]}
+          allow_proper_name: [who]
+          require_declared_frame: true
+    emits:
+      - fact: totality_event
+        entity: "{who}"
+        verb: "{verb}"
+    satisfies:
+      who: [refers]
+      collection: [refers]
+      totality: [collection]
 
   - id: arithmetic/container-package-groups-totality-transfer
     phase: read
@@ -8264,6 +8370,39 @@ asks:
            earning_quantity_verb, enrollment_quantity_verb,
            find_quantity_verb, production_quantity_verb,
            teaching_quantity_verb, initiation_quantity_verb, transfer_out]
+
+  - id: ask/how-many-components-entity-period
+    # A category-scoped quantity-activity ask for a stated discourse interval.
+    # The surface component word and activity must satisfy the verb's declared
+    # role frame, while `measure_category` resolves only the unique compatible
+    # event component measure. This opt-in route does not make category
+    # siblings global synonyms.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, cat: component_quantity_measure, number: plural}
+        - {slot: aux, type: future_modal}
+        - {slot: who, type: name}
+        - {slot: verb, cat: quantity_event_verb, bare_form: true}
+        - {lit: that, consume_skipped: true}
+        - {slot: period, cat: duration_measure, number: singular}
+    where:
+      - number_compatible: [who, aux]
+      - verb_roles_compatible:
+          verb: verb
+          roles:
+            actor: [who]
+            theme: [item]
+          allow_proper_name: [who]
+          require_declared_frame: true
+    resolves:
+      consumer: single-entity
+      entity: "{who}"
+      measure: component_quantity_measure
+      measure_category: component_quantity_measure
+      verb: "{verb}"
+      reference_time: "{period}"
 
   - id: ask/how-many-entity-prenominal-marker
     # Handles an aggregate marker before the measure, such as "how many total

@@ -340,6 +340,15 @@ def answer(
     # that a timed event modifies ("Sam has 10 apples. In March he ate 3.").
     # ------------------------------------------------------------------
     time_candidates = _question_reference_time(question, reg, _match)
+    explicit_reference_time = query.get("reference_time")
+    if explicit_reference_time:
+        time_candidates.append(
+            deixis.Referent(
+                dimension=deixis.TIME,
+                key=explicit_reference_time,
+                sentence=question.sentence_index,
+            )
+        )
     if time_candidates:
         origo = deixis.resolve(
             time_candidates,

@@ -67,6 +67,14 @@ class ArithmeticLog:
     # this object is already threaded to every synth call and every
     # answer.py consumer, so no new parameter needs to be added anywhere.
     consumed_rate_keys: set[tuple[str, str]] = field(default_factory=set)
+    # Source quantity facts that an explicit totality event consumed to
+    # materialize the same amount under a new activity verb.  `_verb_total`
+    # excludes these cross-verb views only when answering the derived event;
+    # asking about their own original verb still sees them.  Recording use at
+    # the synth site avoids guessing from provenance or sentence wording.
+    consumed_totality_source_keys: set[
+        tuple[str, str, str, str | None, int | None]
+    ] = field(default_factory=set)
 
     def uses_value(self, value: float, tol: float = 1e-9) -> bool:
         """Did any logged expression literally contain this value (as a

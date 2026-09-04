@@ -1,6 +1,6 @@
 # RuleKit architecture
 
-**Updated:** 2026-08-28
+**Updated:** 2026-09-01
 **Status:** current implementation, not a roadmap
 
 RuleKit is a deterministic reading and reasoning engine for controlled,
@@ -113,8 +113,8 @@ plural/base `need` or `require`. The comparative form also applies
 `same_number` between
 its standalone count and noun, admitting `1 fewer shopper` and
 `2 fewer shoppers` while rejecting both mismatches. The current curated
-project has 168 loaded reading rules and 410 reachable generated-filler
-identities. Of those rules, 159 are ordinary selectable generated premises,
+project has 170 loaded reading rules and 414 reachable generated-filler
+identities. Of those rules, 161 are ordinary selectable generated premises,
 eight are explicitly fact-free safety interceptors, and one is a declared
 reader-only gapped construction. Keeping those roles in the schema prevents
 generation coverage from treating defensive recognition as authored English.
@@ -755,11 +755,24 @@ one holder without treating distinct package sizes as conflicting rates. The
 same facts can be read from an inline pair such as a counted qualified package
 followed by `with` or `of` and its per-package content count; the two package
 qualifiers must be distinct and both branches must agree on package and
-content lemmas. `sized_quantity_container` owns the reusable portable physical
-container class, so a jar, bottle, or bag may be a counted source package when
-explicitly size-qualified. `quantity_interior_location` independently controls
-which of those nouns may be the destination; neither role is inferred merely
-from the other.
+content lemmas. `sized_content_bearing_whole` owns this reusable arithmetic
+shape: portable containers and portioned wholes may both carry size-qualified
+per-whole rates without claiming that food is a container. The narrower
+`sized_quantity_container` and `quantity_interior_location` categories still
+control physical package and destination roles independently.
+
+A bounded activity inquiry is also distinct from an asserted quantity.
+`BoundedActivityInquiry` records the participant, activity, decomposable
+content whole, and stated interval; it does not invent a rate or amount. The
+grammar accepts any quantity-event verb whose most-specific category-owned
+frame accepts both participant and whole, rather than naming an activity
+family in the rule. A later explicit `TotalityEvent` may materialize the one
+uniquely compatible held/acquired whole total and its declared per-whole
+component totals under that activity and interval. Prior same-activity events,
+missing inquiry context, undeclared frames, or ambiguous compatible measures
+decline. A category-scoped ask resolves the one compatible component measure
+in that event, so “pieces” may read a stated slice total when the verb accepts
+both while `piece` and `slice` remain distinct in ordinary questions.
 
 Moving the complete previously mentioned collection into a destination is a
 separate commitment. `TotalityTransfer` records the resolved source,

@@ -873,6 +873,38 @@ class ActivityDuration(Fact):
 
 
 @dataclass(frozen=True)
+class BoundedActivityInquiry(Fact):
+    """A non-assertive inquiry about one activity over a stated duration.
+
+    ``Aven is wondering how much bread she can eat in one day`` does not
+    state an eating rate or amount.  It does, however, establish the actor,
+    theme, activity, and discourse interval that a later explicit totality
+    event (``she eats it all``) may refer back to.  Keeping that frame as its
+    own fact prevents the embedded question from folding into bogus
+    membership or holding facts.
+    """
+
+    seeker: str
+    activity: str
+    content: str
+    elapsed: float
+    unit: str
+    occurrence: int
+
+    def key(self) -> tuple:
+        return (
+            "bounded-activity-inquiry",
+            self.seeker,
+            self.activity,
+            self.content,
+            self.occurrence,
+        )
+
+    def value_part(self) -> Any:
+        return (self.elapsed, self.unit)
+
+
+@dataclass(frozen=True)
 class Quantity(Fact):
     entity: str
     measure: str  # what is counted/measured (noun lemma)
@@ -1865,6 +1897,26 @@ class TotalityTransfer(Fact):
             self.package,
             self.content,
         )
+
+
+@dataclass(frozen=True)
+class TotalityEvent(Fact):
+    """A participant performs an activity on one complete anaphoric pool.
+
+    The surface deliberately carries no amount (``she eats it all``).  A
+    synthesizer may materialize event quantities only when one compatible
+    bounded inquiry and its acquired/held content totals identify the pool.
+    """
+
+    entity: str
+    verb: str
+    occurrence: int
+
+    def key(self) -> tuple:
+        return ("totality-event", self.entity, self.verb, self.occurrence)
+
+    def value_part(self) -> Any:
+        return True
 
 
 @dataclass(frozen=True)

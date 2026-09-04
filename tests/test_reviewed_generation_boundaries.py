@@ -1858,7 +1858,10 @@ def test_modal_periodic_generation_uses_bare_form_and_declared_frequency() -> No
     )
     assert bindings["freq"] == "every"
     assert bindings["span"].endswith(
-        (" minute", " minutes", " hour", " hours", " year", " years")
+        (
+            " minute", " minutes", " hour", " hours", " day", " days",
+            " week", " weeks", " year", " years",
+        )
     )
 
 

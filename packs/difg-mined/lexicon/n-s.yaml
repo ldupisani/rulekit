@@ -643,10 +643,6 @@ entries:
     senses:
     - noun
     plural: pies
-  piece:
-    senses:
-    - noun
-    plural: pieces
   pig:
     senses:
     - noun
@@ -710,10 +706,6 @@ entries:
   pixels:
     senses:
     - noun
-  pizza:
-    senses:
-    - noun
-    plural: pizzas
   plan:
     senses:
     - noun
@@ -2073,10 +2065,6 @@ entries:
     - verb
     verb:
       lemma: sleep
-  slice:
-    senses:
-    - noun
-    plural: slices
   smallest:
     senses:
     - adjective

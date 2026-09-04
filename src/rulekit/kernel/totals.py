@@ -63,6 +63,16 @@ def _verb_total(
     scoped = [
         q for q in store.by_kind(Quantity)
         if q.entity == entity and q.measure == measure
+        and (
+            q.verb == verb
+            or (
+                q.entity,
+                q.measure,
+                q.verb,
+                q.time,
+                q.occurrence,
+            ) not in log.consumed_totality_source_keys
+        )
     ]
     matching = [q for q in scoped if q.verb == verb]
     if not matching:
