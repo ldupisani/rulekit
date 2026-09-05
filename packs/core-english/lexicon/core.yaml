@@ -1,6 +1,30 @@
 format: rulekit/lexicon@1
 # Definitive dictionary, never heuristics: absent = unknown = reportable.
 entries:
+    # Atomic lexical phrases keep their full identity, including plural forms.
+    jelly bean: {senses: [noun], plural: jelly beans, lexical_phrase: true}
+    gummy worm: {senses: [noun], plural: gummy worms, lexical_phrase: true}
+    care package: {senses: [noun], plural: care packages, lexical_phrase: true}
+    boarding school: {senses: [noun], plural: boarding schools, lexical_phrase: true}
+    once again: {senses: [adverb], lexical_phrase: true}
+    brownie: {senses: [noun], plural: brownies}
+    goodie: {senses: [noun], plural: goodies}
+    create: {senses: [verb]}
+    created: {senses: [verb], verb: {lemma: create}}
+    creates: {senses: [verb], verb: {lemma: create}}
+    creating: {senses: [verb], verb: {lemma: create}}
+    send: {senses: [verb]}
+    sends: {senses: [verb], verb: {lemma: send}}
+    sending: {senses: [verb], verb: {lemma: send}}
+    sent: {senses: [verb], verb: {lemma: send}}
+    cause: {senses: [verb]}
+    causes: {senses: [verb], verb: {lemma: cause}}
+    caused: {senses: [verb], verb: {lemma: cause}}
+    causing: {senses: [verb], verb: {lemma: cause}}
+    away: {senses: [adverb]}
+    again: {senses: [adverb]}
+    next: {senses: [adjective, adverb]}
+    another: {senses: [article]}
     # articles (skippable structure words)
     the: {senses: [article]}
     a: {senses: [article]}
@@ -206,6 +230,10 @@ entries:
     theirs: {senses: [pronoun]}
     them: {senses: [pronoun], number: plural}
     themselves: {senses: [pronoun]}
+    # Demonstrative determiner ("those flowers") or a plural collection
+    # anaphor ("ten of those"). Grammar categories decide which reading a
+    # construction licenses; the dictionary does not choose one globally.
+    those: {senses: [article, pronoun], number: plural}
     you: {senses: [pronoun]}
     your: {senses: [pronoun]}
 
@@ -523,6 +551,10 @@ entries:
     egg: {senses: [noun], plural: eggs}
     flower: {senses: [noun], plural: flowers}
     garden: {senses: [noun], plural: gardens}
+    plant: {senses: [noun, verb], plural: plants}
+    planted: {senses: [verb], verb: {lemma: plant}}
+    planting: {senses: [verb], verb: {lemma: plant}}
+    plants: {senses: [noun, verb], verb: {lemma: plant}}
     babysitting: {senses: [noun]}
     gardening: {senses: [noun]}
     tutoring: {senses: [noun]}

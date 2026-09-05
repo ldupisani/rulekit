@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 from ..data.registry import Registry
 from . import deixis
 from .answer import Answer, answer as run_answer
-from .condense import condense, condense_multiword_adpositions
+from .condense import condense, condense_lexical_phrases
 from .document import (
     Document,
     _bind_discourse,
@@ -84,7 +84,7 @@ def analyze(
     )
     annotate_numbers(reading, reg)
     annotate_senses(reading, reg)
-    condense_multiword_adpositions(reading, reg)
+    condense_lexical_phrases(reading, reg)
     disambiguate(reading, reg)
     attach_obligations(reading, reg)
     condense(reading, reg)

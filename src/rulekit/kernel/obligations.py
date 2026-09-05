@@ -424,6 +424,36 @@ def _partitive_licenses_noun(reading: Reading, unit: Unit, reg: Registry) -> boo
     return False
 
 
+def _finite_verb_licenses_nonbare_noun_object(
+    reading: Reading, unit: Unit
+) -> bool:
+    """Select a noun reading after a complete finite predicate.
+
+    English cannot place a second non-bare finite verb directly after a
+    finite verb (``she planted plants``). When that second surface is a
+    declared noun/verb homograph, its noun reading is therefore structural,
+    not a lexical preference. Bare complements remain untouched because
+    constructions such as ``help work`` can legitimately contain adjacent
+    verbs.
+    """
+
+    from .patterns import is_bare_verb_form, is_finite_verb_form
+
+    index = reading.units.index(unit)
+    if index == 0:
+        return False
+    previous = reading.units[index - 1]
+    if previous.senses() != ["verb"]:
+        return False
+    current_fold = unit.features.get("fold", "")
+    current_lemma = unit.features.get("lemma", current_fold)
+    if is_bare_verb_form(current_fold, current_lemma):
+        return False
+    previous_fold = previous.features.get("fold", "")
+    previous_lemma = previous.features.get("lemma", previous_fold)
+    return is_finite_verb_form(previous_fold, previous_lemma)
+
+
 def _compatible_head_licenses_adjective(
     reading: Reading, unit: Unit, reg: Registry
 ) -> bool:
@@ -537,6 +567,54 @@ def disambiguate(reading: Reading, reg: Registry) -> Reading:
     options = []
     for u in ambiguous:
         senses = u.senses()
+        if "adverb" in senses and reg.word_in_category(
+            u.features.get("lemma", u.features.get("fold", "")),
+            "narration_sequence_adverb",
+        ):
+            index = reading.units.index(u)
+            following = reading.units[index + 1:index + 2]
+            preceding = reading.units[:index]
+            if (
+                "adjective" in senses and following
+                and "noun" in following[0].senses()
+            ):
+                options.append(["adjective"])
+                continue
+            # An introductory sequencing adjunct, set off by punctuation,
+            # is not a prenominal adjective. Leave nominal uses to the
+            # ordinary adjective arbitration below.
+            if (
+                following and following[0].sense() == "punct"
+                and all(p.sense() in ("conjunction", "adverb", "punct") for p in preceding)
+            ):
+                options.append(["adverb"])
+                continue
+            # A sequence marker between a subject and a verb is also an
+            # adjunct. A leading marker can precede a pronominal/proper
+            # subject, but never steals an adjective from a common noun.
+            clause_leading = all(
+                p.sense() in ("conjunction", "adverb", "punct") for p in preceding
+            )
+            if following and (
+                (
+                    following[0].sense() == "verb"
+                    and preceding
+                    and preceding[-1].sense() in ("name", "noun", "pronoun")
+                )
+                or (
+                    clause_leading
+                    and following[0].sense() in ("name", "pronoun")
+                    and index + 2 < len(reading.units)
+                    and reading.units[index + 2].sense() == "verb"
+                )
+            ):
+                options.append(["adverb"])
+                continue
+        if "noun" in senses and "verb" in senses and (
+            _finite_verb_licenses_nonbare_noun_object(reading, u)
+        ):
+            options.append(["noun"])
+            continue
         if "modal" in senses and _nominal_subject_licenses_modal(reading, u):
             options.append(["modal"])
             continue

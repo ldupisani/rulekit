@@ -466,6 +466,17 @@ def _where_blocker(rule: PatternRule) -> list[str]:
     return blockers
 
 
+def _is_atomic_noun_surface(surface: str, reg: Registry) -> bool:
+    """Single words or noun phrases explicitly supported by the reader."""
+    if not surface:
+        return False
+    if not any(ch.isspace() for ch in surface):
+        return True
+    lemma = reg.plural_to_singular.get(surface, surface)
+    entry = reg.lexicon.get(lemma)
+    return bool(entry and entry.lexical_phrase and entry.senses == ["noun"])
+
+
 def _lexical_fillers(
     reg: Registry,
     *,
@@ -481,11 +492,10 @@ def _lexical_fillers(
         if not surface:
             continue
         if any(ch.isspace() for ch in surface) and not (
-            sense == "preposition" and "preposition" in entry.senses
+            (sense == "preposition" and "preposition" in entry.senses)
+            or entry.lexical_phrase
         ):
-            # Multiword adpositions now round-trip through the analyzer's
-            # declared phrase merge. Other multiword lexicon keys still have
-            # no generic realization contract and remain excluded.
+            # Only declared atomic phrases have a reader round-trip contract.
             continue
         if sense is not None and (
             surface in reg.numbers
@@ -608,8 +618,8 @@ def _counted_fillers(reg: Registry) -> list[_Filler]:
         if (
             singular
             and plural
-            and not any(ch.isspace() for ch in singular)
-            and not any(ch.isspace() for ch in plural)
+            and _is_atomic_noun_surface(singular, reg)
+            and _is_atomic_noun_surface(plural, reg)
             and (entry := reg.lexicon.get(singular)) is not None
             and "noun" in entry.senses
         )
@@ -666,14 +676,14 @@ def _possessed_fillers(reg: Registry, fixtures: _Fixtures) -> list[_Filler]:
     for singular, entry in sorted(reg.lexicon.items()):
         if (
             not singular
-            or any(ch.isspace() for ch in singular)
+            or not _is_atomic_noun_surface(singular, reg)
             or set(entry.senses) != {"noun"}
             or reg.plural_to_singular.get(singular, singular) != singular
         ):
             continue
         heads[singular] = singular
         plural = reg.singular_to_plural.get(singular)
-        if plural and not any(ch.isspace() for ch in plural):
+        if plural and _is_atomic_noun_surface(plural, reg):
             heads[plural] = singular
     return [
         _Filler(
@@ -710,7 +720,7 @@ def _qualified_fillers(reg: Registry) -> list[_Filler]:
                 kind="noun",
             )
             for surface, singular in sorted(reg.plural_to_singular.items())
-            if surface and not any(ch.isspace() for ch in surface)
+            if _is_atomic_noun_surface(surface, reg)
         ],
     ]
     return [
@@ -751,7 +761,7 @@ def _counted_qualified_fillers(reg: Registry) -> list[_Filler]:
                 if count == 1
                 else reg.singular_to_plural.get(identity)
             )
-            if not surface or any(ch.isspace() for ch in surface):
+            if not surface or not _is_atomic_noun_surface(surface, reg):
                 continue
             out.append(
                 _Filler(
@@ -844,7 +854,7 @@ def _raw_domain(
                     reg.plural_to_singular.items()
                 )
                 if surface
-                and not any(ch.isspace() for ch in surface)
+                and _is_atomic_noun_surface(surface, reg)
                 and reg.word_in_category(singular, token.cat)
             ]
             if token.generation_all_numbers:
@@ -899,7 +909,7 @@ def _raw_domain(
                 number="plural",
             )
             for surface, singular in sorted(reg.plural_to_singular.items())
-            if surface and not any(ch.isspace() for ch in surface)
+            if _is_atomic_noun_surface(surface, reg)
         ]
     if slot_type == "counted":
         return _counted_fillers(reg)
@@ -1273,7 +1283,7 @@ def _broader_lexical_domain(
                 for surface, singular in sorted(
                     reg.plural_to_singular.items()
                 )
-                if surface and not any(ch.isspace() for ch in surface)
+                if _is_atomic_noun_surface(surface, reg)
             ]
         else:
             fillers = _lexical_fillers(

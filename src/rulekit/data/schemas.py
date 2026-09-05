@@ -31,6 +31,9 @@ class LexiconEntry(StrictModel):
     plural: str | list[str] | None = None  # noun senses: plural surface(s)
     number: Literal["singular", "plural"] | None = None  # grammatical number (pronouns)
     verb: VerbInfo | None = None  # for verb senses: irregular lemma etc.
+    # An explicitly indivisible multiword noun/adverb. Unlike an ordinary
+    # compositional compound, this phrase owns its full lexical identity.
+    lexical_phrase: bool = False
     notes: str | None = None
 
     def plurals(self) -> list[str]:
@@ -44,6 +47,8 @@ class LexiconEntry(StrictModel):
             raise ValueError("verb info on an entry without a verb sense")
         if self.plural is not None and "noun" not in self.senses:
             raise ValueError("plural on an entry without a noun sense")
+        if self.lexical_phrase and self.senses not in (["noun"], ["adverb"]):
+            raise ValueError("lexical phrases require one noun or adverb sense")
         return self
 
 

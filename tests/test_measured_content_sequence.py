@@ -9,6 +9,8 @@ from pathlib import Path
 import pytest
 
 from rulekit.data.project import load_project
+from rulekit.generation import generate_candidate
+from rulekit.generation.ask_generation import generate_ask_scenario
 from rulekit.kernel.engine import analyze, solve
 from rulekit.kernel.model import (
     ContainerContent,
@@ -38,6 +40,110 @@ def _story(*, include_placement: bool = True, added_unit: str = "kilograms") -> 
         f"Finally, she added 2 {added_unit} of sugar. "
         "What is the final weight measured on the scale?"
     )
+
+
+def _paraphrased_story() -> str:
+    return (
+        "Mira created a care package to send to her brother, who was away at boarding school. "
+        "Mira placed a jar on a scale, and then she poured into the jar enough "
+        "jelly beans to bring the weight to 5 pounds. "
+        "Then, she added enough brownies to cause the weight to triple. "
+        "Next, she added another 4 pounds of jelly beans. "
+        "And finally, she added enough gummy worms to double the weight once again. "
+        "What was the final weight of the jar of goodies, in pounds?"
+    )
+
+
+def test_moved_goal_causative_and_repetition_keep_one_ordered_stream(registry):
+    result = solve(_paraphrased_story(), registry)
+    assert (result.answer.kind, result.answer.value) == ("number", 38.0)
+    assert [
+        (fact.content, fact.operation, fact.value)
+        for fact in result.store.by_kind(MeasuredContentChange)
+    ] == [
+        ("jelly bean", "set_total", 5.0),
+        ("brownie", "multiply_total", 3.0),
+        ("jelly bean", "add_quantity", 4.0),
+        ("gummy worm", "multiply_total", 2.0),
+    ]
+    assert not any(p.deficiencies() for p in result.premises[1:])
+
+
+@pytest.mark.parametrize("ending", [
+    "What is the final weight of the jar?",
+    "What was the final weight of the jar in pounds?",
+    "What was the final weight of the jar of contents, in pounds?",
+    "What is the final weight measured on the scale?",
+])
+def test_container_and_instrument_asks_select_the_same_stream(registry, ending):
+    text = _paraphrased_story().rsplit("What", 1)[0] + ending
+    result = solve(text, registry)
+    assert (result.answer.kind, result.answer.value) == ("number", 38.0)
+
+
+@pytest.mark.parametrize("ending", [
+    "What was the final weight of the bucket in pounds?",
+    "What was the final weight of the jar in kilograms?",
+    "What was the final weight of the jar in liters?",
+    "What was the final weight of the jar of brownies in pounds?",
+])
+def test_container_ask_does_not_ignore_identity_contents_or_output_unit(registry, ending):
+    text = _paraphrased_story().rsplit("What", 1)[0] + ending
+    assert not solve(text, registry).answer.committed
+
+
+def test_explicit_output_unit_uses_declared_mass_conversion(registry):
+    text = _story().rsplit("What", 1)[0] + "What is the final weight of the box in grams?"
+    assert solve(text, registry).answer.value == 14000.0
+
+
+@pytest.mark.parametrize("old,new", [
+    ("Mira placed a jar on a scale, and then she ", "Mira "),
+    ("cause the weight to triple", "cause the weight to halve"),
+    ("another 4 pounds", "another 4 liters"),
+])
+def test_unread_or_unanchored_updates_do_not_return_a_partial_total(registry, old, new):
+    assert not solve(_paraphrased_story().replace(old, new), registry).answer.committed
+
+
+@pytest.mark.parametrize("content,expected", [("clay", 10.0), ("sugar", 19.0)])
+def test_causative_and_repeated_scalings_retain_content_contributions(registry, content, expected):
+    text = _paraphrased_story().rsplit("What", 1)[0].replace(
+        "brownies", "clay"
+    ).replace("gummy worms", "sugar")
+    result = solve(text + f"How much {content} is in the jar?", registry)
+    assert result.answer.value == expected
+
+
+def test_repeated_material_needs_tare_and_accumulates_later_additions(registry):
+    text = _paraphrased_story().rsplit("What", 1)[0].replace("jelly beans", "water")
+    ask = "How much water is in the jar?"
+    assert not solve(text + ask, registry).answer.committed
+    result = solve(text + "The jar weighs 1 pound. " + ask, registry)
+    assert result.answer.value == 8.0
+
+
+@pytest.mark.parametrize("rule_id", [
+    "arithmetic/measured-content-resulting-total-preposed-goal",
+    "arithmetic/measured-content-causative-multiply-total",
+])
+def test_measurement_paraphrases_generate_and_round_trip(project, rule_id):
+    candidate = generate_candidate(
+        project, rule_id=rule_id, seed=281,
+        locked_bindings={"content": "enough jelly beans"},
+    )
+    assert candidate.target_status == "matched"
+    assert "jelly beans" in candidate.sentence
+
+
+def test_generated_container_ask_preserves_singular_dimension(project):
+    candidate = generate_ask_scenario(
+        project, ask_id="ask/final-container-measurement-reading", seed=281,
+    )
+    assert candidate.target_ask == "ask/final-container-measurement-reading"
+    assert "final weight " in candidate.question
+    assert "final weights" not in candidate.question
+    assert match_ask(analyze(candidate.question, project.registry), project.registry)[0].id == candidate.target_ask
 
 
 def test_ordered_content_changes_derive_the_final_instrument_reading(registry) -> None:

@@ -31,7 +31,7 @@ import pytest
 
 from rulekit.data.packs import load_packs
 from rulekit.data.registry import compile_registry
-from rulekit.kernel.engine import solve
+from rulekit.kernel.engine import analyze, solve
 
 REPO = Path(__file__).resolve().parent.parent
 
@@ -76,3 +76,19 @@ def test_a_priced_noun_reading_no_longer_commits_a_partial_total(full_registry):
         full_registry,
     )
     assert not r.answer.committed, r.answer.value
+
+
+def test_nonbare_homograph_after_finite_verb_is_an_object_noun(full_registry):
+    reading = analyze(
+        "Mira planted plants of three different colors.", full_registry
+    )
+    plants = next(unit for unit in reading.units if unit.surface == "plants")
+
+    assert plants.senses() == ["noun"]
+
+
+def test_nonbare_homograph_remains_a_verb_in_predicate_position(full_registry):
+    reading = analyze("Mira plants flowers.", full_registry)
+    plants = next(unit for unit in reading.units if unit.surface == "plants")
+
+    assert plants.senses() == ["verb"]

@@ -201,10 +201,10 @@ class Predication(Fact):
     verb: str
     polarity: bool = True
     dobj: str | None = None
-    # the dobj was bound by a quantifier-sensed determiner with no numeral
-    # ("has SOME blocks") — the object is STATED to exist in unknown
-    # quantity, which is evidence the anchorless-fold guard reads
-    # (totals._entity_total). Deliberately NOT part of key(): quantifiedness
+    # The object exists in an unstated quantity: either a bare quantifier
+    # ("has SOME blocks") or a declarative rule that explicitly preserves an
+    # unquantified object. Total folds must not silently omit its unknown
+    # amount. Deliberately NOT part of key(): quantifiedness
     # is evidence ABOUT the same predication, not a different fact — two
     # mints differing only here must still dedupe, never quarantine.
     dobj_unquantified: bool = False

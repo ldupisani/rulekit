@@ -111,9 +111,6 @@ entries:
   afterward:
     senses:
     - adverb
-  again:
-    senses:
-    - adverb
   agree:
     senses:
     - verb
@@ -212,9 +209,6 @@ entries:
   annually:
     senses:
     - noun
-  another:
-    senses:
-    - article
   answer:
     senses:
     - verb
@@ -344,9 +338,6 @@ entries:
   awarded:
     senses:
     - verb
-  away:
-    senses:
-    - adverb
   baby:
     senses:
     - noun
@@ -773,10 +764,6 @@ entries:
   brown:
     senses:
     - adjective
-  brownie:
-    senses:
-    - noun
-    plural: brownies
   brunette:
     senses:
     - noun
@@ -1679,24 +1666,6 @@ entries:
   creams:
     senses:
     - noun
-  create:
-    senses:
-    - verb
-  created:
-    senses:
-    - verb
-    verb:
-      lemma: create
-  creates:
-    senses:
-    - verb
-    verb:
-      lemma: create
-  creating:
-    senses:
-    - verb
-    verb:
-      lemma: create
   credit:
     senses:
     - noun

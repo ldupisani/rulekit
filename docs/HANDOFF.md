@@ -1,8 +1,8 @@
 # rulekit handoff
 
-**Updated:** 2026-09-01
-**Runtime checkpoint:** working tree on `main` (review batches 66–68 and the
-portioned-whole totality increment implemented; gates listed below are clean)
+**Updated:** 2026-09-05
+**Runtime checkpoint:** working tree on `main` (owned attributed-collection
+totals, generic attribute-class predicates, and ordered-measurement paraphrases)
 **Active campaign:** GSM8K Mining v2, M7 example-led vertical mining
 **Immediate state:** all four published Mining v2 candidates are landed; no
 candidate is awaiting human or machine review
@@ -94,6 +94,24 @@ so ordinary `piece`/`slice` questions remain distinct. Missing totality, a
 mismatched period, an undeclared verb frame, a previous same-activity event, or
 ambiguous component evidence still declines.
 
+Owned attributed collections now close end to end. An uncounted collection
+inside an owned location supplies the unique discourse pool; a cardinal
+subgroup and proportional sibling may use different valid plural anaphors
+(`them` / `those`), and an aggregate-share premise can size a third subgroup
+from two named siblings. The full ask “How many items does the owner have in
+their location?” queries the owner-qualified location first. Only when that
+representation has no usable quantity does it fall back to older subject-held
+locative facts; actual location evidence always wins. A counted phrase such as
+“plants of three different colors” is a descriptive attribute-class frame,
+not a three-item production fact. The same grammar accepts finite quantity
+predicates through their declared actor/theme frames; cultivation-specific
+restrictions live only in category data, and generated context reuses the
+target object's identity. The rule preserves an unquantified `Predication`,
+so holding and same-activity totals cannot silently omit an unknown amount.
+`plant` and demonstrative/anaphoric `those` are
+shared core vocabulary. Location-object anaphors resolve only to one unique
+prior declared location rather than to an unrelated proper name.
+
 Independent ask generation now covers every currently safe standalone token
 domain. Project generation fixtures can declare bounded ISO dates, coordinate
 points, and chemical formulae; each witness is validated by the ordinary
@@ -102,6 +120,18 @@ GSM8K calendar, coordinate, and chemistry asks reviewable without putting
 example values or corpus text in Python. The terminal measurement ask is also
 generatable after declaring `final` compatible with the mass dimension and
 requiring the natural definite noun phrase.
+
+Ordered measured-content stories now also accept a destination before the
+content, causative scaling (`cause the weight to ...`), and explicit repetition
+markers. The final aggregate ask can name the container and request a mass
+unit; placement, unique-stream, complete-update, and conversion checks remain
+mandatory. Core owns atomic noun/adverb phrases with `lexical_phrase: true`,
+including compound content names and the nonnumeric idiom `once again`.
+The generator shares that phrase contract, and both new premise shapes
+round-trip. Compound ingredients retain separate identities throughout the
+ordered content history. The nonnumeric introductory possessive reference
+in the motivating example remains an honest unresolved diagnostic; it is not
+used to infer any measured amount.
 
 Generation exposed loose legacy chemistry and calendar contracts at the same
 time. Calendar spans now require plural units. Molar calculations distinguish
@@ -392,10 +422,10 @@ These are the gates run at the current runtime checkpoint:
 
 | Gate | Current result |
 | --- | --- |
-| full synthetic suite | 5,953 passed |
+| full synthetic suite | 6,020 verified (full run + focused reruns) |
 | curated suite | 71 correct, 0 wrong |
 | GSM8K DEV-train | 107 correct, 0 wrong |
-| GSM8K DEV-holdout | 47 correct, 0 wrong |
+| GSM8K DEV-holdout | 48 correct, 0 wrong |
 | ASDiv DEV | 46 correct, 0 wrong |
 | SVAMP DEV | 24 correct, 0 wrong |
 | MAWPS DEV | 11 correct, 0 wrong |
@@ -406,6 +436,14 @@ These are the gates run at the current runtime checkpoint:
 | PMB train / development | 117 / 4 exact, 0 incorrect |
 | lint | 0 errors, 0 warnings |
 
+The latest full run passed 6,011 of 6,018 tests. Its seven failures were stale
+vocabulary/shape inventories and guard-message coverage expectations; these
+were corrected without further runtime changes and passed focused reruns.
+Two added direct-unit probes bring the verified total to 6,020. The affected
+323-test group and 235-test consumer/guard rerun cover those corrections,
+including an explicitly withheld conversion edge rather than assuming that
+all projects expose the same conversions.
+
 Review batch 62 deliberately retired one DEV-train commitment that happened
 to agree with its numeric gold while relying on an unsupported inference from
 an owner's quantity to the contents of that owner's named container. The same
@@ -414,6 +452,12 @@ moved from 107 to 106 correct with zero wrongs; explicit owner-qualified place
 evidence still answers, while ownership alone now declines.
 Review batch 66 later added one independent correct commitment, returning the
 current total to 107 without weakening that owner/place boundary.
+
+The ordered-measurement paraphrases add one correct DEV-holdout result
+(`2633a86a16ae`), with zero broken answers or new wrongs in either DEV slice.
+The user supplied that example directly; it is exposed calibration evidence,
+not an independent generalization result. Synthetic tests use an invented
+analogue and adversarial neighbours, never the corpus prose.
 
 The latest protected GSM8K TEST look is look 126: 13 correct, 1 persistent
 wrong, and 1,305 declined. Increment 132 made no new protected commitment.
@@ -427,8 +471,8 @@ judged the resulting English or emitted fact valid.
 
 | Project | Premise rules | Independent asks | Answerable asks |
 | --- | ---: | ---: | ---: |
-| curated | 161/170 | 116/134 | 130/134 |
-| GSM8K | 153/160 | 153/166 | 166/166 |
+| curated | 164/173 | 118/136 | 132/136 |
+| GSM8K | 158/165 | 156/169 | 169/169 |
 
 The unsupported premise rows are deliberate safety interceptors or reader-only
 rules, not ordinary generation targets. Fourteen curated and all thirteen

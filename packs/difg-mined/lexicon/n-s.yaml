@@ -70,9 +70,6 @@ entries:
   newspaper:
     senses:
     - noun
-  next:
-    senses:
-    - adjective
   nice:
     senses:
     - adjective
@@ -720,30 +717,9 @@ entries:
   planned:
     senses:
     - verb
-  plant:
-    senses:
-    - noun
-    - verb
-    plural: plants
   plantation:
     senses:
     - noun
-  planted:
-    senses:
-    - verb
-    verb:
-      lemma: plant
-  planting:
-    senses:
-    - verb
-    verb:
-      lemma: plant
-  plants:
-    senses:
-    - noun
-    - verb
-    verb:
-      lemma: plant
   plate:
     senses:
     - noun
@@ -1726,28 +1702,10 @@ entries:
   semi:
     senses:
     - noun
-  send:
-    senses:
-    - verb
-  sending:
-    senses:
-    - verb
-    verb:
-      lemma: send
-  sends:
-    senses:
-    - verb
-    verb:
-      lemma: send
   senior:
     senses:
     - noun
     plural: seniors
-  sent:
-    senses:
-    - verb
-    verb:
-      lemma: send
   separate:
     senses:
     - adjective

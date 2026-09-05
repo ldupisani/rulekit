@@ -1,8 +1,10 @@
 """Conflict adjudication: disagreement declines, agreement dedupes,
 subsumption lets the strictly-narrower rule win."""
 
+import pytest
+
 from rulekit.kernel.facts import FactStore
-from rulekit.kernel.model import Provenance, Quantity
+from rulekit.kernel.model import Predication, Provenance, Quantity
 
 
 def _q(value, source="a", entity="tom", measure="apple"):
@@ -17,6 +19,22 @@ def test_agreement_dedupes():
     assert store.admit(_q(3, "rule-a"))
     assert store.admit(_q(3, "rule-b"))
     assert len(store.facts) == 1
+    assert store.clean
+
+
+@pytest.mark.parametrize("flags", [(False, True), (True, False)])
+def test_agreement_preserves_explicit_amount_uncertainty(flags):
+    store = FactStore()
+    for sentence, flag in enumerate(flags):
+        assert store.admit(Predication(
+            provenance=Provenance(source="test", sentence=sentence),
+            subject="mira", verb="eat", dobj="cookie", dobj_unquantified=flag,
+        ))
+
+    predicates = store.by_kind(Predication)
+    assert len(predicates) == 1
+    assert predicates[0].dobj_unquantified
+    assert predicates[0].provenance.sentence == 0
     assert store.clean
 
 

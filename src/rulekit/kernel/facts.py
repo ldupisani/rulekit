@@ -11,7 +11,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field, replace
 
 from ..data.registry import Registry
-from .model import Fact, Price, Provenance, Quantity
+from .model import Fact, Predication, Price, Provenance, Quantity
 from .patterns import RuleMatchResult, subsumes
 
 
@@ -245,6 +245,17 @@ class FactStore:
                     and not owner_split
                 ):
                     self._record_agreement(existing, fact)
+                    if (
+                        isinstance(existing, Predication)
+                        and isinstance(fact, Predication)
+                        and fact.dobj_unquantified
+                        and not existing.dobj_unquantified
+                    ):
+                        # Agreement about the predicate cannot erase newly
+                        # stated uncertainty about its object's amount.
+                        self.facts[self.facts.index(existing)] = replace(
+                            existing, dobj_unquantified=True
+                        )
                     return True  # agreement: dedupe
                 if (
                     isinstance(existing, Quantity)

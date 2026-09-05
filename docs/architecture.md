@@ -113,8 +113,8 @@ plural/base `need` or `require`. The comparative form also applies
 `same_number` between
 its standalone count and noun, admitting `1 fewer shopper` and
 `2 fewer shoppers` while rejecting both mismatches. The current curated
-project has 170 loaded reading rules and 414 reachable generated-filler
-identities. Of those rules, 161 are ordinary selectable generated premises,
+project has 171 loaded reading rules and 416 reachable generated-filler
+identities. Of those rules, 162 are ordinary selectable generated premises,
 eight are explicitly fact-free safety interceptors, and one is a declared
 reader-only gapped construction. Keeping those roles in the schema prevents
 generation coverage from treating defensive recognition as authored English.
@@ -139,6 +139,17 @@ multiword preposition before sense disambiguation and obligation attachment,
 so `next to`, `out of`, `because of`, and `due to` each behave as one relation
 marker. The generator admits these phrases only to preposition slots; they do
 not widen unconstrained word domains.
+
+The same early merge supports noun and adverb entries explicitly marked
+`lexical_phrase: true`. Their normalized multiword key owns the whole lexical
+identity; declared noun plurals preserve that identity and grammatical number.
+An idiom receives fresh features, so `once again` does not retain the numeric
+value of `once`, and `gummy worm` never becomes an ordinary `worm` quantity.
+The generator uses the same opt-in contract in noun, plural, counted,
+possessed, and qualified domains. Compositional compounds remain on the
+ordinary modifier path. Quantity-determining attributes also preserve a noun
+phrase boundary, preventing a destination noun from absorbing the following
+`enough ...` content phrase.
 
 Semantic interpretation is narrower than recognition. A frozen,
 source-indexed `adposition_roles` table joins three pack-declared categories:
@@ -816,6 +827,14 @@ selects one container/instrument/anchor chain and applies every compatible
 change in sentence order, converting units only through pack data. Multiple
 active streams, missing placement, incompatible dimensions, unordered
 updates, or any stated number outside the selected stream decline.
+The resulting-total grammar permits destination-before-content order, and a
+causative infinitive can state a multiplicative result. A repetition adverb
+marks the one narrated update, never an extra multiplication. Final-reading
+asks may identify the measured container instead of the instrument; the same
+unique placement/anchor proof is still required. A collective contents label
+does not select an ingredient, and an explicit output unit requires a declared
+same-dimension conversion. The container ask must reach the question boundary
+so an unsupported unit or contents restriction cannot be silently dropped.
 
 `AgeAtYear` records one entity's age at an integral absolute calendar-year
 coordinate. It is intentionally separate from `Quantity.time`: a dated age
@@ -1322,9 +1341,9 @@ different projects expose only the structural domains they intend to review.
 
 The current realization boundary covers literals, project-fixture names,
 simple nouns/verbs/adjectives/prepositions/words, declared multiword
-prepositions, shared finite-versus-bare verb morphology, opt-in present- and
+prepositions and explicitly atomic noun/adverb phrases, shared finite-versus-bare verb morphology, opt-in present- and
 past-participle surface morphology over pack-declared lemmas, scalar number forms,
-compatible category gates, declared single-token plural nouns, declared
+compatible category gates, declared single-token or atomic plural nouns, declared
 integer-count-plus-noun compositions, bounded proper-name possessive noun
 phrases, declared single-token generic pronouns, loaded direct-modal,
 future-modal, direct-adverb, and time-rooted category domains, and the
@@ -1389,8 +1408,8 @@ source evidence.
 
 The possessed domain is exactly `OWNER's HEAD`, where `OWNER` is a declared
 single-token project generation fixture and `HEAD` is a canonical
-single-token lexicon entry with the sole sense `noun`, optionally using its
-declared single-token plural. Admission also requires the loaded contraction
+single-token or explicitly atomic phrase entry with the sole sense `noun`,
+optionally using its declared plural. Admission also requires the loaded contraction
 mapping to preserve `'s` and the lexicon to declare its possessive sense.
 Filler identity remains the singular head lemma; the owner fixture,
 contraction, possessive declaration, noun declaration, and conditional plural
@@ -1417,6 +1436,36 @@ uses an exact `(entity, owner, measure)` index and will not borrow another
 owner's same-headed quantity. Owner-aware asks route the same owner field to
 the ordinary single-entity consumer. Unowned and single-owner legacy facts
 retain their bare entity key, preserving established cross-mention folding.
+
+An owner-plus-owned-location count ask keeps both identities. It first queries
+facts keyed to the exact owner-qualified place, so quantities from another
+person's same-headed location or from the owner's holdings elsewhere cannot be
+added. If that location representation has no usable quantity, one explicit
+fallback reads the grammatical subject's older locative holding facts; this
+retains established readings whose premise PP predates location-keyed facts.
+The fallback never runs when exact place evidence exists.
+
+Plural collection anaphors are a category-owned pool surface rather than one
+fixed word. `them` and demonstrative `those` can occupy the two mentions in a
+single proportional-partition clause because both are resolved through the
+same unique prior collection context. Singular anaphors governed by a declared
+location preposition use a separate place dimension: one prior
+`quantity_location` binds, while zero or several locations decline instead of
+falling through to the proper-name pool. Counted attribute-class descriptions
+such as “three different colors” are consumed without inventing an object
+quantity. The rule retains a `Predication` with `dobj_unquantified: true`:
+the activity occurred, but its amount is unknown. Entity and same-activity
+total folds decline instead of treating that missing amount as zero; unrelated
+holders, measures, and separately asked activities remain independent.
+Agreement deduplication preserves the uncertainty flag even when an earlier
+mention of the same predicate did not carry it.
+This construction uses a finite
+quantity predicate and plural objects, requiring one declared actor/theme
+frame to accept both roles. Generation reuses the target object's identity in
+its collection context. Verb-specific restrictions remain in Core English:
+the cultivation child frame links planting predicates to plantable themes,
+while production, transfer, consumption, and finding use their own frames
+without separate versions of this grammar.
 
 A category-gated noun slot may additionally declare `possessed: true`. This
 does not create a second possessive representation: it filters the same

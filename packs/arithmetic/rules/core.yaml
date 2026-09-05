@@ -5449,6 +5449,58 @@ rules:
         collection: "{item}"
         verb: have
 
+  - id: arithmetic/collection-attribute-class-frame
+    phase: read
+    generation: contextual
+    generation_context:
+      before:
+        - sentence:
+            - {slot: context_owner, type: name}
+            - {slot: context_verb, cat: possession_state, finite_form: true}
+            - {lit: a, consume_skipped: true}
+            - {slot: context_place, cat: owned_collection_location, number: singular}
+            - {lit: with}
+            - {slot: context_item, type: plural}
+          where:
+            - number_compatible: [context_owner, context_verb]
+      target_identity_links:
+        context_owner: who
+        context_item: item
+      required_fact_counts: {collection_context: 1, predication: 1}
+    description: >
+      A finite quantity predicate can describe plural objects through a count
+      of their attribute classes: "She made toys of three different colors in
+      it." The chosen verb's declared actor/theme frame decides which subjects
+      and objects are compatible. The class count describes diversity, not
+      the number of objects or the amount produced, transferred, or consumed.
+      Consume that count without emitting an item total, and preserve the
+      predicate with an explicitly unquantified object. A total cannot silently
+      ignore an activity whose amount is unknown. Generated context reuses the
+      target's object identity and does not add an independent semantic filter.
+    match:
+      sentence:
+        - {slot: who, type: entity, referential: true, bare_reference_category: bare_entity_reference}
+        - {slot: verb, cat: quantity_ask_verb, finite_form: true}
+        - {slot: item, type: plural}
+        - {lit: of}
+        - {slot: classes, cat: attribute_class_noun, counted: true, qualified: true, qualifier_cat: attribute_class_diversity_adjective}
+        - {lit: in}
+        - {slot: place, cat: singular_location_anaphor}
+    where:
+      - number_compatible: [who, verb]
+      - verb_roles_compatible:
+          verb: verb
+          roles: {actor: [who], theme: [item]}
+          allow_proper_name: [who]
+          require_declared_frame: true
+    consumes: [classes]
+    emits:
+      - fact: predication
+        subject: "{who}"
+        verb: "{verb}"
+        dobj: "{item}"
+        dobj_unquantified: true
+
   - id: arithmetic/partition-cardinal-proportional-delta
     phase: read
     generation: contextual
@@ -5489,7 +5541,6 @@ rules:
         - {slot: attr_prep, cat: partition_attribute_preposition}
         - {slot: second_attr, cat: color_attribute}
     where:
-      - same_lemma: [coll, coll_again]
       - same_lemma: [first_verb, second_verb]
       - same_number: [n, first_verb]
       - proportional_delta_compatible: {fraction: f, direction: dir, direction_cat: delta}
@@ -7537,6 +7588,44 @@ asks:
       require_entity_owner_evidence: "true"
       measure: "{item}"
       verb: have
+      sum_measure_variants: "true"
+
+  - id: ask/how-many-owner-has-in-owned-place
+    # "How many marbles does Mira have in her pantry?" asks about the
+    # contents of the named location, not every marble Mira may own. The
+    # possessive determiner must resolve to the grammatical subject, and its
+    # governed location must retain that same owner. This keeps another
+    # person's same-headed location outside the lookup.
+    match:
+      question:
+        - {lit: how}
+        - {lit: many}
+        - {slot: item, type: plural}
+        - {slot: aux, type: future_modal}
+        - {slot: owner, type: name}
+        - {slot: verb, cat: possession_state, bare_form: true}
+        - {slot: prep, cat: quantity_location_preposition}
+        - {slot: poss_det, cat: possessive_determiner}
+        - {slot: place, cat: quantity_location, possessed: true, number: singular}
+    where:
+      - number_compatible: [owner, aux]
+      - same_lemma: [owner, poss_det]
+      - owner_matches: {owner: poss_det, possessed: place}
+      - attribute_compatible: {attribute: prep, noun: place}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - verb_roles_compatible:
+          verb: verb
+          roles: {actor: [owner], theme: [item]}
+          frame_categories: [ownership_state]
+          allow_proper_name: [owner]
+    resolves:
+      consumer: single-entity
+      entity: "{place}"
+      entity_owner: "{place.owner}"
+      require_entity_owner_evidence: "true"
+      owned_place_holder_fallback: "{owner}"
+      measure: "{item}"
+      verb: "{verb}"
       sum_measure_variants: "true"
 
   - id: ask/how-many-in-place-partitive

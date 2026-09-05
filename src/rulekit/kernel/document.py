@@ -157,6 +157,56 @@ def _animate_candidates(
     return out
 
 
+def _prior_location_anaphor_candidates(
+    readings: list[Reading], reading: Reading, unit: Unit, reg: Registry
+) -> dict[tuple[int, int], tuple[int, Unit]] | None:
+    """Prior locations for a pronoun governed by a location preposition.
+
+    ``None`` means the pronoun is not in this grammatical position; an empty
+    dictionary means that it is, but no compatible antecedent exists. Keeping
+    those cases distinct prevents a location ``it`` from falling through to
+    the ordinary proper-name candidate pool.
+    """
+
+    lemma = unit.features.get("lemma", unit.features.get("fold", ""))
+    if not reg.word_in_category(lemma, "singular_location_anaphor"):
+        return None
+    governed = any(
+        predicate.sense() == "preposition"
+        and reg.word_in_category(
+            predicate.features.get(
+                "lemma", predicate.features.get("fold", "")
+            ),
+            "quantity_location_preposition",
+        )
+        and any(
+            obligation.need == "object"
+            and obligation.met
+            and obligation.target is unit
+            for obligation in predicate.obligations()
+        )
+        for predicate in reading.units
+    )
+    if not governed:
+        return None
+    return {
+        (candidate_reading.sentence_index, candidate.uid): (
+            candidate_reading.sentence_index,
+            candidate,
+        )
+        for candidate_reading in readings
+        if candidate_reading.sentence_index < reading.sentence_index
+        for candidate in candidate_reading.units
+        if candidate.sense() == "noun"
+        and reg.word_in_category(
+            candidate.features.get(
+                "lemma", candidate.features.get("fold", "")
+            ),
+            "quantity_location",
+        )
+    }
+
+
 def _local_possessive_subject_candidates(
     reading: Reading, determiner: Unit, reg: Registry
 ) -> dict[str, tuple[int, Unit]]:
@@ -493,19 +543,27 @@ def _bind_discourse(
                 # the missing scope boundary: only then does sentence recency become
                 # meaningful, and the shared strict-dominance rule still declines a
                 # same-sentence tie.
-                local_subjects = _local_possessive_subject_candidates(
-                    reading, unit, reg
+                location_candidates = _prior_location_anaphor_candidates(
+                    readings, reading, unit, reg
                 )
-                prior_owner = _prior_possessive_owner_candidates(
-                    readings, reading, unit
-                )
-                candidates = (
-                    local_subjects
-                    or prior_owner
-                    or _discourse_candidates(
-                        readings, reading.sentence_index
+                dimension = deixis.PERSON
+                if location_candidates is not None:
+                    candidates = location_candidates
+                    dimension = deixis.PLACE
+                else:
+                    local_subjects = _local_possessive_subject_candidates(
+                        reading, unit, reg
                     )
-                )
+                    prior_owner = _prior_possessive_owner_candidates(
+                        readings, reading, unit
+                    )
+                    candidates = (
+                        local_subjects
+                        or prior_owner
+                        or _discourse_candidates(
+                            readings, reading.sentence_index
+                        )
+                    )
                 # THE ZERO-NAME FALLBACK. Common nouns are considered ONLY
                 # when no name candidate exists, which is provably
                 # byte-identical wherever any name is in play. That ordering
@@ -541,7 +599,7 @@ def _bind_discourse(
                     }
                 referents = [
                     deixis.Referent(
-                        dimension=deixis.PERSON,
+                        dimension=dimension,
                         key=lemma,
                         payload=target,
                         sentence=sentence,
@@ -566,12 +624,15 @@ def _bind_discourse(
                     referents,
                     deixis.Origo(sentence=reading.sentence_index, span=unit.span),
                     metric,
-                    dimension=deixis.PERSON,
+                    dimension=dimension,
                     journal=journal,
                     source="bind-discourse",
                 )
                 if winner is not None:
-                    lemma, target = winner.key, winner.payload
+                    target = winner.payload
+                    lemma = target.features.get(
+                        "lemma", target.features.get("fold", "")
+                    )
                     new = list(obligations)
                     new[i] = Obligation(ob.role, ob.need, target=target, optional=ob.optional)
                     reading.record(

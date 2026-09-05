@@ -969,7 +969,7 @@ def _measurement_call(gsm8k, facts=(), query=None, premises=()):
 @pytest.mark.parametrize(
     ("query", "reason"),
     (
-        ({"dimension": "weight", "relation": "on"}, "needs an instrument"),
+        ({"dimension": "weight", "relation": "on"}, "needs a dimension and a container or instrument"),
         (
             {"instrument": "scale", "dimension": "apple", "relation": "on"},
             "names no declared measurement dimension",
@@ -993,6 +993,29 @@ def test_measurement_needs_one_placed_total_anchor(gsm8k):
     got = _measurement_call(gsm8k)
     assert got.kind == "decline"
     assert "the reading needs one" in got.reason
+
+
+@pytest.mark.parametrize("unit,reason", [
+    ("liter", "requested unit has an incompatible dimension"),
+    ("pound", "no known conversion from"),
+])
+def test_container_measurement_ask_requires_a_compatible_convertible_unit(gsm8k, unit, reason):
+    # The mined project declares more conversions than curated. Explicitly
+    # withhold this edge to test the missing-conversion guard, rather than
+    # depending on either project's changing vocabulary/conversion inventory.
+    from dataclasses import replace
+
+    registry = replace(gsm8k, conversions={
+        pair: factor for pair, factor in gsm8k.conversions.items()
+        if pair != ("kilogram", "pound")
+    })
+    got = _measurement_call(
+        registry,
+        (_measurement_anchor(), _measurement_placement()),
+        query={"container": "box", "dimension": "weight", "target_measure": unit},
+    )
+    assert got.kind == "decline"
+    assert reason in got.reason
 
 
 def test_measurement_update_needs_a_narration_coordinate(gsm8k):

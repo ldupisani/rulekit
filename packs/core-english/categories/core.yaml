@@ -197,6 +197,12 @@ categories:
             optional quantitative locative adjunct. Referentiality alone makes
             "in the dog" syntactically complete but does not make it a useful
             holder context.
+    owned_collection_location:
+        parent: quantity_location
+        notes: >
+            An ownable interior or site that naturally introduces an
+            uncounted collection with ``with``. This narrower generation
+            domain avoids treating arbitrary sites as collection containers.
     quantity_interior_location:
         parent: quantity_location
         notes: >
@@ -1073,6 +1079,17 @@ categories:
         parent: noun
     producible_quantity_object:
         parent: noun
+    cultivation_quantity_verb:
+        parent: production_quantity_verb
+        selectional_roles:
+            theme: plantable_quantity_object
+        notes: >
+            Production predicates whose direct object is vegetation being
+            established. The child frame keeps their plantable themes apart
+            from written or manufactured products while preserving the common
+            production relationship.
+    plantable_quantity_object:
+        parent: producible_quantity_object
     output_quantity_verb:
         parent: quantity_ask_verb
         selectional_roles:
@@ -1417,6 +1434,24 @@ categories:
             narrower than `pool_pronoun`: "it" can denote a fraction's source pool,
             but singular "of it/he/she/I" is not the partition surface these rules
             describe.
+    singular_location_anaphor:
+        parent: pronoun
+        notes: >
+            A singular pronoun used as the location complement of a complete
+            descriptive frame ("plants of three different colors in it"). The
+            frame may satisfy the grammatical reference without claiming that
+            the description itself establishes a new quantity at that location.
+    attribute_class_noun:
+        parent: noun
+        notes: >
+            Names a kind of attribute whose distinct labels may be counted.
+            "Three different colors" counts attribute classes, not three
+            flowers or three production events.
+    attribute_class_diversity_adjective:
+        parent: adjective
+        notes: >
+            Marks that a counted attribute-class phrase denotes distinct
+            labels rather than a quantity of the described collection.
     currency:
         parent: noun
         interchangeable: true
@@ -1580,14 +1615,30 @@ categories:
     measurement_target_verb:
         parent: verb
         notes: "Predicates whose complement states a resulting aggregate reading."
+    causative_result_verb:
+        parent: verb
+        notes: "Causatives taking a result subject followed by an infinitive."
+    event_repetition_adverb:
+        parent: adverb
+        notes: "Marks a further occurrence, not an additional numeric multiplier."
+    aggregate_contents_label:
+        parent: noun
+        notes: >
+            General labels for a container's collective contents. Unlike a
+            named substance, these do not select one ingredient's contribution.
     measurement_observation_verb:
         parent: verb
         notes: "Predicates that name an instrument's observed reading."
     measurement_mass_verb:
         parent: verb
         notes: "Predicates that state an entity's intrinsic measured mass."
-    measurement_sufficiency_marker:
+    quantity_determiner_attribute:
         parent: adjective
+        notes: >
+            Quantity-like modifiers that begin a separate noun phrase. A noun
+            before one cannot become a compound modifier of that phrase.
+    measurement_sufficiency_marker:
+        parent: quantity_determiner_attribute
         notes: >
             Markers saying an unspecified content amount is sufficient to
             produce the separately stated aggregate effect.
@@ -2437,8 +2488,11 @@ members:
     complement_boy: [boy]
     complement_girl: [girl]
     partitive: [of]
-    pool_pronoun: [it, them]
-    plural_object_pronoun: [them]
+    pool_pronoun: [it, them, those]
+    plural_object_pronoun: [them, those]
+    singular_location_anaphor: [it]
+    attribute_class_noun: [color]
+    attribute_class_diversity_adjective: [different]
     remnant_adj: [left]
     prenominal_remnant_adj: [remaining]
     color_attribute: [beige, blue, green, purple, red, turquoise, violet, yellow]
@@ -2620,6 +2674,8 @@ members:
         [gardener, guardian, librarian, shopper, student, teacher, university,
          violinist]
     producible_quantity_object: [book, business, coin, cookie, pencil, toy]
+    cultivation_quantity_verb: [plant, planted, planting, plants]
+    plantable_quantity_object: [flower, plant]
     output_quantity_verb: [write, writes, wrote]
     output_quantity_measure: [page]
     output_quantity_product: [book]
@@ -2794,7 +2850,7 @@ members:
     postpositive_distributive_quantifier: [each]
     individualizing_adverb: [individually]
     current_holding_anchor_adverb: [currently]
-    narration_sequence_adverb: [finally, then]
+    narration_sequence_adverb: [finally, next, then]
     restrictive_focus_adverb: [just, only]
     age_measure: [year]
     aggregate_noun: [amount, number]
@@ -2825,12 +2881,15 @@ members:
         [barrel, beaker, bottle, bowl, box, bucket, canister, container, drum,
          flask, jar, jug, tank, vessel, vial]
     measurement_instrument: [scale]
-    measured_content_substance: [clay, sand, sugar, vinegar, water]
+    measured_content_substance: [brownie, clay, gummy worm, jelly bean, sand, sugar, vinegar, water]
     volume_convertible_measured_content: [water]
     measurement_placement_verb: [place, placed, places, placing]
     measured_content_transfer_verb: [pour, poured, pouring, pours, put, puts, putting]
     measured_content_adjustment_verb: [add, added, adding, adds]
     measurement_target_verb: [bring, bringing, brings, brought]
+    causative_result_verb: [cause, caused, causes, causing]
+    event_repetition_adverb: [again, once again]
+    aggregate_contents_label: [content, contents, goodie]
     measurement_observation_verb: [measure, measured, measures]
     measurement_mass_verb: [weigh, weighed, weighing, weighs]
     measurement_sufficiency_marker: [enough]
@@ -2857,6 +2916,7 @@ members:
     destination_preposition: [to]
     quantity_location:
         [area, bench, cupboard, garden, pantry, storeroom, tree, university]
+    owned_collection_location: [cupboard, garden, pantry, storeroom]
     quantity_interior_location:
         [area, bag, barrel, beaker, bottle, bowl, box, bucket, canister, container,
          cupboard, flask, fridge, garden, jar, jug, pantry, storeroom, tank,
@@ -2954,6 +3014,7 @@ attribute_compatibility:
     measurement_sufficiency_marker: [measured_content_substance]
     final_measurement_attribute: [mass_dimension_noun]
     academic_course_modifier: [sequential_partition_destination]
+    attribute_class_diversity_adjective: [attribute_class_noun]
     color_attribute: [colorable_noun]
     # Multiple compatible noun categories are intentional. Either category
     # licenses a pair; noun membership is not forced into one artificial class.

@@ -60,6 +60,16 @@ def _verb_total(
     ("how many did X sell"). Derived relation facts carry the verb too, so
     they participate; the by-verb resolution block prevents an event and
     its own re-derivation from both existing."""
+    if any(
+        p.dobj_unquantified and p.polarity
+        and p.subject == entity and p.verb == verb
+        and str(p.dobj).split("[")[0] == str(measure).split("[")[0]
+        for p in store.by_kind(Predication)
+    ):
+        # A counted event cannot stand in for another same-activity event
+        # whose object amount was explicitly left unknown. Compare base
+        # measures so a qualified subtotal cannot bypass this uncertainty.
+        return None
     scoped = [
         q for q in store.by_kind(Quantity)
         if q.entity == entity and q.measure == measure
@@ -353,6 +363,17 @@ def _entity_total(
     (quarantined) — checked here exactly like Discount's own compounding
     guard, so an unmodeled same-sentence pair declines rather than
     silently picking one."""
+    if any(
+        p.dobj_unquantified and p.polarity
+        and p.subject == entity
+        and str(p.dobj).split("[")[0] == str(measure).split("[")[0]
+        and not reg.word_in_category(p.verb, "state")
+        for p in store.by_kind(Predication)
+    ):
+        # An unknown activity amount cannot be treated as a zero delta to
+        # a holding, even when an earlier numeric anchor exists. Stative
+        # unknowns retain the separate anchorless-fold contract below.
+        return None
     state: list[Quantity] = []
     events: list[Quantity] = []
     for q in store.by_kind(Quantity):

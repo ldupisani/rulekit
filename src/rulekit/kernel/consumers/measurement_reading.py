@@ -58,13 +58,14 @@ def measurement_reading(ctx: ConsumerContext):
     from ..model import MeasuredContentChange, SpatialPlacement
 
     instrument = str(ctx.query.get("instrument", "")).strip()
+    container = str(ctx.query.get("container", "")).strip()
     dimension = str(ctx.query.get("dimension", "")).strip()
     relation = str(ctx.query.get("relation", "")).strip()
-    if not instrument or not dimension or not relation:
+    if not dimension or not (container or (instrument and relation)):
         return Answer(
             "decline",
             None,
-            "a measurement reading needs an instrument, dimension, and spatial relation",
+            "a measurement reading needs a dimension and a container or instrument placement",
         )
 
     asked_families = _dimension_families(dimension, ctx)
@@ -111,8 +112,9 @@ def measurement_reading(ctx: ConsumerContext):
         for placement in placements:
             if (
                 placement.entity == anchor.container
-                and placement.reference == instrument
-                and placement.relation == relation
+                and (not container or placement.entity == container)
+                and (not instrument or placement.reference == instrument)
+                and (not relation or placement.relation == relation)
                 and placement.occurrence is not None
                 and placement.occurrence <= anchor.occurrence
             ):
@@ -122,11 +124,11 @@ def measurement_reading(ctx: ConsumerContext):
         return Answer(
             "decline",
             None,
-            f"the reading needs one {relation!r} placement and compatible total anchor; "
+            "the reading needs one matching placement and compatible total anchor; "
             f"found {len(candidates)}",
         )
 
-    _placement, anchor, families = candidates[0]
+    placement, anchor, families = candidates[0]
     assert anchor.measure is not None  # proved by the family intersection
 
     # Resolve every implicit update at its own narration coordinate.  A later
@@ -240,10 +242,32 @@ def measurement_reading(ctx: ConsumerContext):
             "decline", None, f"unsupported aggregate operation {change.operation!r}"
         )
 
+    target_measure = str(ctx.query.get("target_measure", "")).strip()
+    if target_measure:
+        if not (_dimension_families(target_measure, ctx) & families):
+            return Answer(
+                "decline", None, "the requested unit has an incompatible dimension"
+            )
+        factor = (
+            1.0 if target_measure == anchor.measure
+            else ctx.reg.conversions.get((anchor.measure, target_measure))
+        )
+        if factor is None:
+            return Answer(
+                "decline", None,
+                f"no known conversion from {anchor.measure!r} to {target_measure!r}",
+            )
+        total = evaluate(
+            f"{total} * {factor}", {}, ctx.log,
+            source="measurement-reading-requested-unit",
+        )
+        steps.append(f"= {total:g} {target_measure}")
+
     return Answer(
         "number",
         float(total),
-        f"{anchor.container!r} on {instrument!r}: " + " ".join(steps),
+        f"{anchor.container!r} {placement.relation!r} {placement.reference!r}: "
+        + " ".join(steps),
     )
 
 

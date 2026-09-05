@@ -612,10 +612,10 @@ _COVERED_BY_UNIT_TEST = {
     # Aggregate-measurement asks bind their query fields and the public rules
     # emit ordered, nonnegative, mass-compatible changes. Direct malformed
     # stores exercise every defensive restatement in the consumer.
-    ("measurement-reading", "a measurement reading needs an instrumen"),
+    ("measurement-reading", "a measurement reading needs a dimension "),
     ("measurement-reading", "the asked dimension"),
     ("measurement-reading", "stated value"),
-    ("measurement-reading", "the reading needs one"),
+    ("measurement-reading", "the reading needs one matching placement"),
     ("measurement-reading", "a measured update has no narration order"),
     ("measurement-reading", "an elided measured-content update does n"),
     ("measurement-reading", "the document contains measured changes o"),
@@ -627,6 +627,9 @@ _COVERED_BY_UNIT_TEST = {
     ("measurement-reading", "the added measure"),
     ("measurement-reading", "no known conversion from"),
     ("measurement-reading", "unsupported aggregate operation"),
+    # Explicit-unit queries must stay in the anchored dimension; the public
+    # grammar excludes the malformed unit, so a direct query probes this.
+    ("measurement-reading", "the requested unit has an incompatible d"),
     # Content recovery asks bind both nouns and public rules emit the anchor,
     # placement, and tare shapes. Direct stores probe the defensive restatement
     # and the physically impossible nonpositive remainder.

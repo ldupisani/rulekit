@@ -371,6 +371,31 @@ def single_entity(ctx: ConsumerContext):
         # rules/start-state.yaml. Threading the inversion through here
         # first is what it would take to widen this.
         total = _superordinate_total(ctx.store, ctx.reg, entity, singular, ctx.log)
+    # A subject-owned location ask has two established fact
+    # representations. Newer location-aware premises key quantities to the
+    # owned place and reach the primary fold above. Older locative holding
+    # premises key them to the grammatical subject while preserving the PP
+    # only as sentence structure. One ask opts into this fallback explicitly:
+    # it is reached only when the exact owner-qualified place has no usable
+    # total, so real place evidence always wins and holdings elsewhere are
+    # never added to it.
+    holder_fallback = ctx.query.get("owned_place_holder_fallback")
+    if total is None and holder_fallback and not invert:
+        total = _entity_total(
+            ctx.store, ctx.reg, holder_fallback, singular, ctx.log
+        )
+        if (
+            total is None
+            and ctx.query.get("sum_measure_variants")
+            and not measure_qualifier
+        ):
+            total = _qualified_variant_total(
+                ctx.store, ctx.reg, holder_fallback, singular, ctx.log
+            )
+        if total is None:
+            total = _superordinate_total(
+                ctx.store, ctx.reg, holder_fallback, singular, ctx.log
+            )
     if total is None:
         return Answer(
             "decline", None,

@@ -18,31 +18,39 @@ from .learn import _has_event_polarity
 from .model import Reading, Unit
 
 
-def condense_multiword_adpositions(reading: Reading, reg: Registry) -> Reading:
-    """Merge a declared multiword preposition before role disambiguation.
+def condense_lexical_phrases(reading: Reading, reg: Registry) -> Reading:
+    """Merge declared atomic phrases before role disambiguation.
 
     Phrase vocabulary lives in the lexicon, exactly like single-token
     vocabulary.  This pass supplies only the generic structural operation:
-    longest matching lexicon phrase wins, and only entries carrying the
-    preposition sense are eligible.  Running before ordinary obligations are
-    attached means the merged phrase receives one preposition obligation set;
-    its component words never leave stale obligations behind.
+    longest matching phrase wins. Prepositions retain their existing contract;
+    other entries must explicitly opt in, including their declared plurals.
+    Fresh features ensure an idiomatic phrase cannot inherit a component's
+    numeric value, unknown status, or obligations.
     """
-    phrases = sorted(
-        (
-            (tuple(phrase.split()), phrase, entry)
-            for phrase, entry in reg.lexicon.items()
-            if " " in phrase and "preposition" in entry.senses
-        ),
-        key=lambda item: (-len(item[0]), item[1]),
-    )
+    phrases = []
+    for phrase, entry in reg.lexicon.items():
+        if " " not in phrase or not (
+            "preposition" in entry.senses or entry.lexical_phrase
+        ):
+            continue
+        phrases.append(
+            (tuple(phrase.split()), phrase, phrase, entry.number or "singular", entry)
+        )
+        if entry.lexical_phrase:
+            phrases.extend(
+                (tuple(plural.split()), plural, phrase, "plural", entry)
+                for plural in entry.plurals()
+                if " " in plural
+            )
+    phrases.sort(key=lambda item: (-len(item[0]), item[1]))
     if not phrases:
         return reading
 
     i = 0
     while i < len(reading.units):
         matched = False
-        for words, phrase, entry in phrases:
+        for words, phrase, lemma, number, entry in phrases:
             end = i + len(words)
             if end > len(reading.units):
                 continue
@@ -56,15 +64,16 @@ def condense_multiword_adpositions(reading: Reading, reg: Registry) -> Reading:
             reading.units[i:end] = [merged]
             changes: dict[str, object] = {
                 "fold": phrase,
-                "lemma": phrase,
+                "lemma": lemma,
                 "senses": list(entry.senses),
-                "number": entry.number or "singular",
+                "number": number,
             }
             reading.record(
-                "merge-multiword-preposition",
+                "merge-multiword-preposition" if "preposition" in entry.senses
+                else "merge-lexical-phrase",
                 merged,
                 changes,
-                f"declared multiword preposition {phrase!r} is one relation marker",
+                f"declared lexical phrase {phrase!r} has identity {lemma!r}",
             )
             matched = True
             break
@@ -359,6 +368,13 @@ def _nominal_pass(reading: Reading, reg: Registry) -> bool:
             # months.  The two category declarations are pack-owned, so new
             # relative attributes and period nouns inherit the boundary.
             and not _is_relative_period(b, reg)
+            # A quantity determiner starts a new NP, even after it has
+            # merged with its head. Do not absorb the preceding PP object
+            # into that phrase (destination NP + quantified content NP).
+            and not any(
+                reg.word_in_category(attribute, "quantity_determiner_attribute")
+                for attribute in b.features.get("attributes", ())
+            )
         ):
             attrs = list(b.features.get("attributes", []))
             attrs.append(a.features.get("lemma", a.features["fold"]))
