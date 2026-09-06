@@ -30,6 +30,13 @@ def condense_lexical_phrases(reading: Reading, reg: Registry) -> Reading:
     """
     phrases = []
     for phrase, entry in reg.lexicon.items():
+        # A declared hyphenated lexeme is one dictionary word. Tokenization
+        # keeps hyphen boundaries for productive measured compounds; merge
+        # only this exact declared spelling, never its space-separated form.
+        if "-" in phrase and " " not in phrase and not any(c.isdigit() for c in phrase):
+            words = tuple(phrase.split("-"))
+            if all(words):
+                phrases.append((words, phrase, phrase, entry.number or "singular", entry))
         if " " not in phrase or not (
             "preposition" in entry.senses or entry.lexical_phrase
         ):
@@ -56,6 +63,9 @@ def condense_lexical_phrases(reading: Reading, reg: Registry) -> Reading:
                 continue
             span = reading.units[i:end]
             if tuple(unit.features.get("fold", "") for unit in span) != words:
+                continue
+            hyphenated = "-" in phrase and " " not in phrase
+            if hyphenated != all(u.features.get("joined_left_by_hyphen") for u in span[1:]):
                 continue
             merged = reading.new_unit(
                 tuple(word for unit in span for word in unit.words),

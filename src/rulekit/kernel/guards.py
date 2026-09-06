@@ -94,6 +94,8 @@ def _fact_values_by_sentence(store: FactStore) -> dict[int, "Counter[float]"]:
     goal/group-total/discount/percent-change values)."""
     from .model import (
         Discount,
+        Expenditure,
+        ResourceAllocation,
         Goal,
         GroupTotal,
         MeasuredContentChange,
@@ -114,6 +116,8 @@ def _fact_values_by_sentence(store: FactStore) -> dict[int, "Counter[float]"]:
                 Discount,
                 PercentChange,
                 MeasuredContentChange,
+                Expenditure,
+                ResourceAllocation,
             ),
         ):
             continue
@@ -243,7 +247,14 @@ def _check_number(
     premises: list[Reading],
     proposed: Answer | None = None,
 ) -> GuardVeto | None:
-    """The pre-existing numeric guard chain, byte-identical."""
+    """Numeric guards, including explicit use of allocation endpoints."""
+
+    if _enabled(reg, "answer-accounting") and store is not None:
+        from .model import ResourceAllocation, ResourceBalance
+
+        if any(b.key() not in log.consumed_resource_balance_keys
+               for b in (*store.by_kind(ResourceBalance), *store.by_kind(ResourceAllocation))):
+            return GuardVeto("answer-accounting", "a stated budget balance was not used as allocation evidence")
 
     if _enabled(reg, "unknown-word"):
         for reading in readings:
@@ -263,6 +274,13 @@ def _check_number(
         # "half as many", "twice", "40% more" or the question's "in 10
         # years" is exactly the confident-wrong this guard exists to stop.
         fact_values = _fact_values_by_sentence(store) if store is not None else {}
+        from .model import Expenditure
+
+        used_cost_mentions = {
+            (e.provenance.sentence, e.position): e.value
+            for e in store.by_kind(Expenditure)
+            if e.value is not None and e.key() in log.consumed_expenditure_keys
+        } if store is not None else {}
         from .model import (
             Discount,
             Goal,
@@ -349,6 +367,8 @@ def _check_number(
                 # only honest evidence. Independently-accounted mentions (a
                 # consumed uid, a pattern-consumed unit) never claim a fact slot.
                 if unit.uid in used or unit.features.get("pattern_consumed"):
+                    continue
+                if used_cost_mentions.get((reading.sentence_index, unit.uid)) == value:
                     continue
                 if own_values.get(value, 0) > 0:
                     own_values[value] -= 1

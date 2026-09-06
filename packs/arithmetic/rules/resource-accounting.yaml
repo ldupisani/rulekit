@@ -1,0 +1,99 @@
+format: rulekit/rules@1
+rules:
+  - id: arithmetic/resource-budget-opening
+    phase: read
+    description: >
+      "A budget of $150" records an allocation phrase, independently of
+      shopping, movement, or a separately stated holding. Grammatical
+      attachment must establish the participant before accounting can use it.
+    match:
+      sentence:
+        - {slot: account, cat: resource_budget_noun, referential: true}
+        - {lit: of}
+        - {slot: amount, cat: currency_measure, counted: true}
+    consumes: [amount]
+    emits:
+      - fact: resource_allocation
+        account: "{account}"
+        owner: "{account.owner}"
+        qualifier: "{account.qualifier}"
+        head_span: "{account.span_start}"
+        amount_span: "{amount.span_start}"
+        measure: "{amount}"
+        value: amount
+
+  - id: arithmetic/resource-budget-amount-first
+    phase: read
+    description: >
+      An amount before its account head, as in "a $150 budget", names the
+      same allocation as "a budget of $150". Ownership and activity are
+      attached separately; this phrase does not imply a purchase or payment.
+    match:
+      sentence:
+        - {slot: amount, cat: currency_measure, counted: true}
+        - {slot: account, cat: resource_budget_noun, uncounted: true}
+    consumes: [amount]
+    emits:
+      - fact: resource_allocation
+        account: "{account}"
+        owner: "{account.owner}"
+        amount_owner: "{amount.owner}"
+        qualifier: "{account.qualifier}"
+        head_span: "{account.span_start}"
+        amount_span: "{amount.span_start}"
+        measure: "{amount}"
+        value: amount
+
+  - id: arithmetic/resource-budget-remainder
+    phase: read
+    description: >
+      A stated amount left from a budget closes that allocation. The account
+      owner is preserved so another person's budget cannot be borrowed.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true}
+        - {slot: verb, cat: remaining_balance_state, finite_form: true}
+        - {slot: amount, cat: currency_measure, counted: true}
+        - {lit: left}
+        - {lit: from}
+        - opt:
+            - {slot: possessor, cat: possessive_determiner}
+        - {slot: account, cat: resource_budget_noun, referential: true}
+        - {lit: ".", consume_skipped: true}
+    where:
+      - number_compatible: [who, verb]
+    consumes: [amount, verb]
+    emits:
+      - fact: resource_balance
+        entity: "{who}"
+        account: "{account}"
+        owner: "{account.owner}"
+        qualifier: "{account.qualifier}"
+        stage: closing
+        measure: "{amount}"
+        value: amount
+
+asks:
+  - id: ask/how-much-pay-for-item
+    # Total purchase cost, not unit price. The budget residual requires one
+    # opening, one closing balance, and exactly one unknown purchase cost.
+    match:
+      question:
+        - {lit: how}
+        - {lit: much}
+        - {slot: aux, type: auxiliary}
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true}
+        - {slot: verb, cat: spend_verb, bare_form: true}
+        - {slot: prep, cat: spend_target_prep}
+        - {slot: item, type: noun, referential: true, uncounted: true}
+        - {lit: "?", consume_skipped: true}
+    where:
+      - number_compatible: [who, aux]
+    resolves:
+      consumer: budget-item-cost
+      entity: "{who}"
+      item: "{item}"
+      qualifier: "{item.qualifier}"
+    generation:
+      slot_categories:
+        item: [transferable_quantity_object]

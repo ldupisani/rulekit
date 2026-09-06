@@ -785,6 +785,17 @@ def _attributive_counted_fillers(reg: Registry) -> list[_Filler]:
         if isinstance(filler.value, (int, float)) and filler.value > 0
     ]
     nouns = _lexical_fillers(reg, sense="noun")
+    # Compatibility does not depend on the sampled count. Resolve the
+    # declared noun pairs once, retaining their original ordering, rather
+    # than repeating an all-noun cross product for every numeric filler.
+    pairs = [
+        (measure, holder)
+        for measure in nouns
+        if reg.measure_has_holder_boundary(measure.identity)
+        for holder in nouns
+        if measure.identity != holder.identity
+        and reg.measure_applies_to_holder(measure.identity, holder.identity)
+    ]
     return [
         _Filler(
             surface=f"{count}-{measure.surface} {holder.surface}",
@@ -795,10 +806,7 @@ def _attributive_counted_fillers(reg: Registry) -> list[_Filler]:
             value=float(count),
         )
         for count in counts
-        for measure in nouns
-        for holder in nouns
-        if measure.identity != holder.identity
-        and reg.measure_applies_to_holder(measure.identity, holder.identity)
+        for measure, holder in pairs
     ]
 
 
@@ -4197,10 +4205,21 @@ def _strict_round_trip_result(
 ) -> bool:
     """Whether TARGET preserved every generated role and all content units."""
 
-    actual = _bindings(result)
+    # Compare the bound content units themselves. Unit.surface is a display
+    # join of input words and deliberately does not retain punctuation such
+    # as the internal hyphen of an atomic dictionary word. Re-reading that
+    # display string can split a correctly bound lexeme into different units.
+    actual = {
+        slot: tuple(
+            _unit_lemma(unit, reg).casefold()
+            for unit in _slot_units(value)
+            if unit.sense() not in SKIPPABLE_SENSES
+        )
+        for slot, value in result.match.slots.items()
+    }
     if any(
         slot not in actual
-        or _binding_key(surface, reg) != _binding_key(actual[slot], reg)
+        or _binding_key(surface, reg) != actual[slot]
         for slot, surface in requested_bindings.items()
     ):
         return False

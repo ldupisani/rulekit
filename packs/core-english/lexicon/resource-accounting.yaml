@@ -1,0 +1,112 @@
+format: rulekit/lexicon@1
+# Ordinary shopping and resource-accounting vocabulary, shared by all projects.
+entries:
+  also:
+    senses:
+    - adverb
+  belt:
+    senses:
+    - noun
+    plural: belts
+  budget:
+    senses:
+    - noun
+  online: {senses: [adverb, adjective]}
+  clothing: {senses: [noun]}
+  retailer: {senses: [noun], plural: retailers}
+  shop: {senses: [noun, verb], plural: shops}
+  shopped: {senses: [verb], verb: {lemma: shop}}
+  shopping: {senses: [verb], verb: {lemma: shop}}
+  order: {senses: [verb]}
+  ordered: {senses: [verb], verb: {lemma: order}}
+  orders: {senses: [verb], verb: {lemma: order}}
+  ordering: {senses: [verb], verb: {lemma: order}}
+  but:
+    senses:
+    - conjunction
+  clothes:
+    senses:
+    - noun
+  coat:
+    senses:
+    - noun
+    plural: coats
+  department:
+    senses:
+    - noun
+  hat:
+    senses:
+    - noun
+    plural: hats
+  job:
+    senses:
+    - noun
+    plural: jobs
+  paid:
+    senses:
+    - verb
+    verb:
+      lemma: pay
+  pair:
+    senses:
+    - noun
+    plural: pairs
+  pants:
+    senses:
+    - noun
+  pay:
+    senses:
+    - verb
+  paying:
+    senses:
+    - verb
+    verb:
+      lemma: pay
+  pays:
+    senses:
+    - verb
+    verb:
+      lemma: pay
+  purchase:
+    senses:
+    - verb
+  purchased:
+    senses:
+    - verb
+    verb:
+      lemma: purchase
+  purchases:
+    senses:
+    - verb
+    verb:
+      lemma: purchase
+  purchasing:
+    senses:
+    - verb
+    verb:
+      lemma: purchase
+  set:
+    senses:
+    - noun
+    plural: sets
+  shirt:
+    senses:
+    - noun
+    plural: shirts
+  store:
+    senses:
+    - noun
+    plural: stores
+  receipt: {senses: [noun], plural: receipts}
+  sock: {senses: [noun], plural: socks}
+  suit: {senses: [noun], plural: suits}
+  button-up: {senses: [adjective]}
+  interview: {senses: [noun], plural: interviews}
+  apply: {senses: [verb]}
+  applies: {senses: [verb], verb: {lemma: apply}}
+  applied: {senses: [verb], verb: {lemma: apply}}
+  applying: {senses: [verb], verb: {lemma: apply}}
+  wear: {senses: [verb]}
+  wears: {senses: [verb], verb: {lemma: wear}}
+  wore: {senses: [verb], verb: {lemma: wear}}
+  wearing: {senses: [verb], verb: {lemma: wear}}

@@ -873,6 +873,109 @@ class ActivityDuration(Fact):
 
 
 @dataclass(frozen=True)
+class ResourceAllocation(Fact):
+    """An amount-bearing account phrase, before it has an event or owner.
+
+    Source spans identify the exact grammatical head and amount. Recognizing
+    this phrase alone does not establish whose allocation it is.
+    """
+
+    account: str
+    measure: str
+    value: float
+    head_span: str
+    amount_span: str
+    owner: str = ""
+    qualifier: str = ""
+    amount_owner: str = ""
+
+    def key(self) -> tuple:
+        return ("resource-allocation", self.provenance.sentence, self.head_span)
+
+    def value_part(self) -> Any:
+        return (self.account, self.owner, self.amount_owner, self.qualifier, self.measure, self.value, self.amount_span)
+
+
+@dataclass(frozen=True)
+class ResourceBalance(Fact):
+    """An explicit opening allocation or its closing remainder.
+
+    The account label and participant must agree before a consumer may use
+    these as the two endpoints of a conservation equation.
+    """
+
+    entity: str
+    account: str
+    stage: str
+    measure: str
+    value: float
+    owner: str = ""
+    qualifier: str = ""
+    allocation_span: str = ""
+    event: int = -1
+
+    def key(self) -> tuple:
+        return ("resource-balance", self.entity, self.account, self.qualifier, self.owner, self.stage,
+                self.provenance.sentence)
+
+    def value_part(self) -> Any:
+        return (self.measure, self.value, self.allocation_span, self.event)
+
+
+@dataclass(frozen=True)
+class Expenditure(Fact):
+    """A total resource cost tied to a purchase target, never a unit price.
+
+    An actual purchase may leave its cost unstated (value and measure None).
+    Position distinguishes repeated costs even within the same sentence.
+    """
+
+    entity: str
+    item: str
+    verb: str
+    value: float | None = None
+    measure: str | None = None
+    qualifier: str = ""
+    position: int = 0
+    event: int = 0
+    basis: str = "purchase"
+    supplier: str = ""
+    supplier_qualifier: str = ""
+    channel: str = ""
+    account: str = ""
+    account_qualifier: str = ""
+    account_owner: str = ""
+    account_span: str = ""
+
+    def key(self) -> tuple:
+        return ("expenditure", self.entity, self.provenance.sentence,
+                self.position, self.item, self.qualifier)
+
+    def value_part(self) -> Any:
+        return (self.verb, self.measure, self.value, self.basis, self.supplier,
+                self.supplier_qualifier, self.channel, self.account,
+                self.account_qualifier, self.account_owner, self.account_span)
+
+
+@dataclass(frozen=True)
+class ResourceAccountingIssue(Fact):
+    """Inspectable evidence that a resource interval is not closed/read.
+
+    Consumers use these shared reading results; they do not reinterpret verbs
+    or decide grammatical completeness themselves.
+    """
+
+    position: int
+    reason: str
+
+    def key(self) -> tuple:
+        return ("resource-accounting-issue", self.provenance.sentence, self.position, self.reason)
+
+    def value_part(self) -> Any:
+        return self.reason
+
+
+@dataclass(frozen=True)
 class BoundedActivityInquiry(Fact):
     """A non-assertive inquiry about one activity over a stated duration.
 

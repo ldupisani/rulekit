@@ -1,6 +1,6 @@
 # RuleKit architecture
 
-**Updated:** 2026-09-01
+**Updated:** 2026-09-06
 **Status:** current implementation, not a roadmap
 
 RuleKit is a deterministic reading and reasoning engine for controlled,
@@ -151,6 +151,16 @@ ordinary modifier path. Quantity-determining attributes also preserve a noun
 phrase boundary, preventing a destination noun from absorbing the following
 `enough ...` content phrase.
 
+An explicitly declared nonnumeric hyphenated lexeme also retains one lexical
+identity, without admitting its space-separated spelling. Numeric hyphens
+remain on the productive measured-compound path. Strict generation compares
+the bound content units against the requested filler; it does not re-read a
+display string that has lost the internal hyphen. Partial head matches still
+fail that complete-binding check.
+Measured-compound generation resolves declared measure/holder compatibility
+once per noun pair before expanding numeric fillers. Changing the number does
+not re-run the same compatibility scan, and the domain's order is unchanged.
+
 Semantic interpretation is narrower than recognition. A frozen,
 source-indexed `adposition_roles` table joins three pack-declared categories:
 the preposition, its object, and the governing verb. A semantic role may
@@ -264,6 +274,69 @@ admit singular and plural purchase objects while enforcing target/cost number
 agreement. Only a purpose-qualified deficit ask opts into adding the
 contributions, and its target must match the goal. Ordinary deficit asks retain
 their historical single-goal, single-current-holding behavior.
+
+Closed budget allocations are distinct from purchase goals and current
+holdings. `ResourceAllocation` first records the reusable account phrase:
+`a budget of $180` and `a $180 budget` have the same meaning. Its source spans
+identify the precise account head and amount. This local grammar neither
+asserts an owner nor consumes the surrounding activity. The former
+motion-specific budget rule is retired. Generation can inspect each allocation
+phrase independently; a phrase alone does not establish an opening balance.
+Possessive ownership on an amount-first currency compound is retained as well
+as ownership on the account head. Conflicting owners cannot yield a balance,
+and a non-personal possessive cannot establish this personal-account class.
+
+The document's resource-accounting composition step attaches the phrase to
+direct possession or a uniquely governed `allocation-context` adjunct. The
+latter is licensed by the existing category-level `adposition_roles` table,
+not by a motion/shopping word list. A preceding or following adjunct can thus
+accompany an independently read activity. Attachment must follow the bound
+predicate/object structure or an exact source-linked transaction; it never
+borrows the nearest person or retailer. `ResourceBalance` preserves the
+participant, account head, account qualifier, explicit owner, currency, and
+opening event. A closing remainder retains the same account qualifiers.
+
+`Expenditure` records an item-qualified total cost, with an event/position
+identity that distinguishes equal-valued costs in a coordinated list. Its
+evidence basis distinguishes a purchase from a payment. Optional fields retain
+the supplier/payee, supplier qualifier, transaction channel, and explicit
+account reference. `from an online retailer` qualifies the supplier; `bought
+online` names a channel. Neither implies a physical destination. Supplier and
+price complements may appear in either order, and payments may place the payee
+before the amount. An actual unpriced purchase keeps an unknown cost; an order
+or modal future purchase supplies no actual expenditure. Potentially repeated
+purchase/payment descriptions are not silently debited twice.
+The request exclusion remains authoritative even when a legacy pack also
+classifies the same verb under acquisition or purchase.
+
+Payments retain ordinary currency events for existing consumers. Purchase
+prices remain on the existing item/`Price` path: they must never become cash
+acquisitions with `Quantity(verb=buy)`. A resource consumer explicitly logs the
+expenditure keys it uses, licensing only those exact source numeric mentions.
+Mere existence of a supplemental cost record does not bypass value accounting.
+
+The `budget-item-cost` consumer implements the bounded conservation class:
+opening allocation minus closing remainder minus all stated item costs.
+It requires one matching pair of endpoints and exactly one unpriced purchase
+matching the ask's item and qualifier. Every original numeric mention is
+accounted for with sentence-local multiplicity. Grammatical completeness is
+reported by shared `ResourceAccountingIssue` facts, not by rescanning purchase
+verbs inside the arithmetic consumer. Unpriced list tails, extra resource
+changes, conflicting owners/accounts/currencies, conditional purchases,
+multiple unknown costs, ambiguous purchase/payment identity, and negative
+residuals decline. Multiple accounts remain outside this single-account
+calculation even though their labels are preserved. Other consumers cannot
+silently drop an allocation phrase or endpoint. Participial `using` supplements
+and cross-sentence transaction settlement links are not yet supported here.
+The total-cost ask uses `uncounted: true`
+to distinguish an item reference from a counted purchase or a per-item price;
+the schema rejects contradictory counted/uncounted slots.
+
+Related reader boundaries prevent a progressive auxiliary from asserting
+membership in its main verb's object class, and prevent a qualified subset
+ask from borrowing an unconverted partitive count as item-level evidence.
+Both remain structural checks; lexical identities, morphology, partitive
+relationships, and budget categories live in core-English YAML.
 
 Ask resolution fields are normally scalar templates, but may also be lists of
 scalar templates when the question itself names an exact set. A variadic

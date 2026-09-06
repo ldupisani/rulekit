@@ -60,11 +60,6 @@ words:
     - currency
     reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
       Re-admit only through the firewall.'
-  clothing:
-    tags:
-    - clothing
-    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
-      Re-admit only through the firewall.'
   commute:
     tags:
     - journey
@@ -445,16 +440,6 @@ words:
   skyscrapers:
     tags:
     - building
-    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
-      Re-admit only through the firewall.'
-  sock:
-    tags:
-    - clothing
-    reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
-      Re-admit only through the firewall.'
-  socks:
-    tags:
-    - clothing
     reason: 'difg mask-known: category-tagged but deliberately withheld from LEXICON (holdout-poison avoidance).
       Re-admit only through the firewall.'
   spouse:

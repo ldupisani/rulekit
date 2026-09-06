@@ -479,6 +479,25 @@ def _compatible_head_licenses_adjective(
     return reg.attribute_applies_to(modifier, head_word)
 
 
+def _compatible_predicate_licenses_adverb(reading: Reading, unit: Unit, reg: Registry) -> bool:
+    """A declared adverb/verb relationship resolves a non-prenominal adjunct.
+
+    This is the predicate-side counterpart of adjective/head compatibility.
+    Multiple possible predicates or a following noun retain the ambiguity.
+    """
+    index = reading.units.index(unit)
+    if index + 1 < len(reading.units) and "noun" in reading.units[index + 1].senses():
+        return False
+    predicates = [
+        v for v in reading.units if v.sense() == "verb"
+        and not _crosses_clause_boundary(reading, unit, v)
+    ]
+    return len(predicates) == 1 and reg.adverb_applies_to_verb(
+        unit.features.get("lemma", unit.features.get("fold", "")),
+        predicates[0].features.get("fold", ""),
+    )
+
+
 def _state_licenses_terminal_remnant_adjective(
     reading: Reading, unit: Unit, reg: Registry
 ) -> bool:
@@ -627,6 +646,9 @@ def disambiguate(reading: Reading, reg: Registry) -> Reading:
             reading, u, reg
         ):
             options.append(["adjective"])
+            continue
+        if "adverb" in senses and _compatible_predicate_licenses_adverb(reading, u, reg):
+            options.append(["adverb"])
             continue
         if "adjective" in senses and _state_licenses_terminal_remnant_adjective(
             reading, u, reg

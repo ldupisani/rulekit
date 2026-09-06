@@ -224,9 +224,6 @@ entries:
   one-way:
     senses:
     - adjective
-  online:
-    senses:
-    - adjective
   open:
     senses:
     - adjective
@@ -265,24 +262,6 @@ entries:
   orchard:
     senses:
     - noun
-  order:
-    senses:
-    - verb
-  ordered:
-    senses:
-    - verb
-    verb:
-      lemma: order
-  ordering:
-    senses:
-    - verb
-    verb:
-      lemma: order
-  orders:
-    senses:
-    - verb
-    verb:
-      lemma: order
   oregano:
     senses:
     - noun
@@ -369,11 +348,6 @@ entries:
     senses:
     - noun
     plural: pads
-  paid:
-    senses:
-    - verb
-    verb:
-      lemma: pay
   pail:
     senses:
     - noun
@@ -407,10 +381,6 @@ entries:
     - verb
     verb:
       lemma: paint
-  pair:
-    senses:
-    - noun
-    plural: pairs
   pakora:
     senses:
     - noun
@@ -437,9 +407,6 @@ entries:
     - noun
     plural: pandas
   panels:
-    senses:
-    - noun
-  pants:
     senses:
     - noun
   park:
@@ -495,26 +462,13 @@ entries:
   patisserie:
     senses:
     - noun
-  pay:
-    senses:
-    - verb
   payday:
     senses:
     - noun
-  paying:
-    senses:
-    - verb
-    verb:
-      lemma: pay
   payment:
     senses:
     - noun
     plural: payments
-  pays:
-    senses:
-    - verb
-    verb:
-      lemma: pay
   peach:
     senses:
     - noun
@@ -1006,24 +960,6 @@ entries:
     senses:
     - noun
     plural: puppies
-  purchase:
-    senses:
-    - verb
-  purchased:
-    senses:
-    - verb
-    verb:
-      lemma: purchase
-  purchases:
-    senses:
-    - verb
-    verb:
-      lemma: purchase
-  purchasing:
-    senses:
-    - verb
-    verb:
-      lemma: purchase
   purse:
     senses:
     - noun
@@ -1371,9 +1307,6 @@ entries:
   rests:
     senses:
     - verb
-  retailer:
-    senses:
-    - noun
   return:
     senses:
     - verb
@@ -1742,10 +1675,6 @@ entries:
     senses:
     - noun
     plural: sessions
-  set:
-    senses:
-    - noun
-    plural: sets
   settle:
     senses:
     - verb
@@ -1837,10 +1766,6 @@ entries:
   ship:
     senses:
     - verb
-  shirt:
-    senses:
-    - noun
-    plural: shirts
   shoebox:
     senses:
     - noun
@@ -1850,18 +1775,9 @@ entries:
   shoots:
     senses:
     - verb
-  shop:
-    senses:
-    - noun
-    plural: shops
   shopkeeper:
     senses:
     - noun
-  shopping:
-    senses:
-    - verb
-    verb:
-      lemma: shop
   short:
     senses:
     - adjective
@@ -2310,10 +2226,6 @@ entries:
   storage:
     senses:
     - noun
-  store:
-    senses:
-    - noun
-    plural: stores
   story:
     senses:
     - noun

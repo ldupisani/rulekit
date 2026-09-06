@@ -1450,7 +1450,10 @@ def _circumstantial_verbal_relations(
 
 
 def learn(reading: Reading, reg: Registry) -> list[Fact]:
-    facts: list[Fact] = []
+    from .expense_learning import learn_expenditures
+
+    expenses = learn_expenditures(reading, reg)
+    facts: list[Fact] = list(expenses)
     base_prov = Provenance(
         source="fold",
         sentence=reading.sentence_index,
@@ -1482,6 +1485,18 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
     for verb in reading.units:
         if verb.sense() != "verb":
             continue
+        if reg.word_in_category(verb.features.get("fold", ""), "copula"):
+            # A copula immediately supporting a progressive verb is an
+            # auxiliary, not a claim that its subject belongs to that verb's
+            # object class ("is examining a jar" is not "is a jar").
+            from .patterns import is_finite_verb_form
+            i = reading.units.index(verb)
+            if i + 1 < len(reading.units):
+                following = reading.units[i + 1]
+                if following.sense() == "verb" and not is_finite_verb_form(
+                    following.features.get("fold", ""), _lemma(following)
+                ):
+                    continue
         subject = _bound(verb, "subject")
         dobj = _bound(verb, "dobj")
         if subject is None:
@@ -1510,6 +1525,20 @@ def learn(reading: Reading, reg: Registry) -> list[Fact]:
             dobj is not None and dobj.features.get("pattern_consumed")
         )
         if consumed:
+            continue
+        targeted = [e for e in expenses if e.event == verb.uid and e.value is not None
+                    and e.basis == "payment"]
+        if targeted:
+            # Coordinated resource costs are currency events, not one unit
+            # of each target noun. Preserve every cost in the ordinary fold
+            # as well as its item-scoped expenditure record. A purchase's
+            # stated price is NOT a currency acquisition: it stays on the
+            # existing purchase/Price path below, never Quantity(verb=buy).
+            facts.extend(Quantity(
+                provenance=prov, entity=e.entity, measure=e.measure,
+                value=e.value, verb=e.verb, occurrence=reading.sentence_index,
+                segment=e.position,
+            ) for e in targeted)
             continue
         is_state = reg.word_in_category(verb.features.get("fold", ""), "state")
         has_event_polarity = _has_event_polarity(verb_lemma, reg)

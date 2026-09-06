@@ -729,15 +729,6 @@ entries:
     way:
         senses:
             - noun
-    wear:
-        senses:
-            - verb
-    wearing:
-        senses:
-            - verb
-    wears:
-        senses:
-            - verb
     wedding:
         senses:
             - noun
@@ -863,9 +854,6 @@ entries:
         senses:
             - noun
         plural: words
-    wore:
-        senses:
-            - verb
     workday:
         senses:
             - noun

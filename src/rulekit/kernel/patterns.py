@@ -21,6 +21,9 @@ from ..data.schemas import AskRule, MatchToken, PatternRule
 from .evaluate import ArithmeticLog, EvaluationError, evaluate
 from .model import (
     ActivityDuration,
+    ResourceAllocation,
+    ResourceBalance,
+    Expenditure,
     BoundedActivityInquiry,
     AgeAtYear,
     Alias,
@@ -86,6 +89,9 @@ from .model import (
 SKIPPABLE_SENSES = {"article", "punct"}
 
 _FACT_CLASSES = {
+    "resource_allocation": ResourceAllocation,
+    "resource_balance": ResourceBalance,
+    "expenditure": Expenditure,
     "activity_duration": ActivityDuration,
     "bounded_activity_inquiry": BoundedActivityInquiry,
     "age_at_year": AgeAtYear,
@@ -273,6 +279,8 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
         # slot is byte-identical): a compound noun keeps its HEAD's lemma, so a
         # category gate cannot tell "the dot product" from "the product". An
         # operation-naming slot sets `bare: true` to demand the head itself.
+        return False
+    if token.uncounted and unit.features.get("value_kind") is not None:
         return False
     if token.counted and not (
         unit.sense() == "noun"

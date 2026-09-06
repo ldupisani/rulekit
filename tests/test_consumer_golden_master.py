@@ -58,6 +58,20 @@ def registries():
 
 # (registry, question, expected consumer, kind, value, reason prefix)
 GOLDEN = [
+    ('curated',
+     'Mira has a budget of $90. Mira spent $15 on a book. '
+     'Mira bought a hat. Mira has $20 left from her budget. '
+     'How much did Mira pay for the hat?',
+     'budget-item-cost', 'number', 55.0,
+     '90 dollar budget − 20 remaining − 15 known costs = 5'),
+    ('curated', 'Mira bought a hat. How much did Mira pay for the hat?',
+     'budget-item-cost', 'decline', None,
+     'a residual cost needs one opening and one closing bu'),
+    ('curated',
+     'Mira has a budget of $90. Mira bought a hat and a book. '
+     'Mira has $20 left from her budget. How much did Mira pay for the hat?',
+     'budget-item-cost', 'decline', None,
+     'the requested item must be the one unknown purchase '),
     ('gsm8k', 'Convert 0 degrees Celsius to Fahrenheit.',
      'affine-convert', 'number', 32.0, 'affine-convert'),
     ('gsm8k', 'Convert 100 degrees Fahrenheit to Kelvin.',
@@ -483,6 +497,26 @@ _GAP_CEILING = 0    # guards WITHOUT one: lower as probes are added, never raise
 # coverage figure honest in both directions: they are not gaps, and they are
 # not silently absent either.
 _COVERED_BY_UNIT_TEST = {
+    ("single-entity", "a qualified subset needs item-level evid"),
+    # Each branch is invoked directly by test_budget_defensive_guards.
+    ("budget-item-cost", "a residual cost needs one opening and on"),
+    ("budget-item-cost", "budget endpoints disagree on participant"),
+    ("budget-item-cost", "a later purchase is outside the closed b"),
+    ("budget-item-cost", "budget evidence must be asserted rather "),
+    ("budget-item-cost", "all costs must belong to the same partic"),
+    ("budget-item-cost", "a transaction names a different resource"),
+    ("budget-item-cost", "a purchase and payment may describe the "),
+    ("budget-item-cost", "an allocation phrase has no unique parti"),
+    ("budget-item-cost", "the requested item must be the one unkno"),
+    ("budget-item-cost", "the requested item also has a separate s"),
+    ("budget-item-cost", "budget amounts must be finite and non-ne"),
+    ("budget-item-cost", "a stated value lies outside the complete"),
+    ("budget-item-cost", "budget evidence repeats a numeric mentio"),
+    ("budget-item-cost", "budget events must be actual and affirma"),
+    ("budget-item-cost", "an alternative event cannot close a defi"),
+    ("budget-item-cost", "a purchase or spending event has no comp"),
+    ("budget-item-cost", "an additional resource change is outside"),
+    ("budget-item-cost", "known spending and remainder exceed the "),
     # Capacity inquiry/observation facts are emitted with fixed modes and
     # structurally complete fields. Direct malformed stores exercise all seven
     # defensive restatements in tests/test_consumer_guard_probes.py.

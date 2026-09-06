@@ -177,9 +177,6 @@ entries:
   already:
     senses:
     - adverb
-  also:
-    senses:
-    - adverb
   aluminum:
     senses:
     - adjective
@@ -543,10 +540,6 @@ entries:
   being:
     senses:
     - verb
-  belt:
-    senses:
-    - noun
-    plural: belts
   berry:
     senses:
     - noun
@@ -777,9 +770,6 @@ entries:
   brushing:
     senses:
     - verb
-  budget:
-    senses:
-    - noun
   build:
     senses:
     - verb
@@ -838,9 +828,6 @@ entries:
     senses:
     - noun
     plural: bushes
-  but:
-    senses:
-    - conjunction
   butter:
     senses:
     - noun
@@ -1268,9 +1255,6 @@ entries:
   closet:
     senses:
     - noun
-  clothes:
-    senses:
-    - noun
   clowns:
     senses:
     - noun
@@ -1278,10 +1262,6 @@ entries:
     senses:
     - noun
     plural: clubs
-  coat:
-    senses:
-    - noun
-    plural: coats
   cobbler:
     senses:
     - noun
@@ -1850,9 +1830,6 @@ entries:
     senses:
     - noun
     plural: denominations
-  department:
-    senses:
-    - noun
   depends:
     senses:
     - verb

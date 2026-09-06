@@ -118,6 +118,7 @@ from . import (  # noqa: E402,F401  (import registers each handler)
     completion_duration_difference as _completion_duration_difference,
     content_progress_remainder_fraction as _content_progress_remainder_fraction,
     change as _change,
+    budget_item_cost as _budget_item_cost,
     unique_entity as _unique_entity,
     money_left as _money_left,
     single_entity_elided_measure as _single_entity_elided_measure,

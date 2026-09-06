@@ -67,6 +67,12 @@ class ArithmeticLog:
     # this object is already threaded to every synth call and every
     # answer.py consumer, so no new parameter needs to be added anywhere.
     consumed_rate_keys: set[tuple[str, str]] = field(default_factory=set)
+    # Closed allocation endpoints must be consumed as balances, never as
+    # ordinary holdings or silently discarded context.
+    consumed_resource_balance_keys: set[tuple] = field(default_factory=set)
+    # Exact line items used by a resource consumer. This licenses their own
+    # numeric mentions only; a same-valued cost elsewhere is not evidence.
+    consumed_expenditure_keys: set[tuple] = field(default_factory=set)
     # Source quantity facts that an explicit totality event consumed to
     # materialize the same amount under a new activity verb.  `_verb_total`
     # excludes these cross-verb views only when answering the derived event;

@@ -1,8 +1,8 @@
 # rulekit handoff
 
-**Updated:** 2026-09-05
-**Runtime checkpoint:** working tree on `main` (owned attributed-collection
-totals, generic attribute-class predicates, and ordered-measurement paraphrases)
+**Updated:** 2026-09-06
+**Runtime checkpoint:** working tree on `main` (activity-independent budget
+phrases, supplier-aware transactions, and closed-account residual costs)
 **Active campaign:** GSM8K Mining v2, M7 example-led vertical mining
 **Immediate state:** all four published Mining v2 candidates are landed; no
 candidate is awaiting human or machine review
@@ -51,6 +51,33 @@ temporal event totals (130), task-completion duration gaps (131), and
 anaphoric distance chains with exact combined totals (132).
 
 ### Latest implementation checkpoint
+
+Closed-budget item costs now work through separate allocation endpoints and
+item-qualified expenditures. One unpriced purchase can receive the residual
+after all known costs and the stated remainder are deducted. The consumer
+checks participant/account/currency agreement, actual purchase evidence,
+every numeric mention, complete cost lists, and intervening resource changes.
+It declines rather than allocating a missing cost across several purchases.
+Core English owns the ordinary shopping vocabulary and category relationships;
+generic coordinated costs remain available to existing spending consumers.
+Allocation recognition now belongs to local amount-bearing account phrases,
+not a complete motion sentence. A separate grammatical attachment step derives
+the opening balance for a unique participant. Account qualifiers survive, and
+purchase/payment records retain supplier, channel, and explicit account links.
+Payments and purchase prices remain distinct; a purchase price must never be
+projected as a cash acquisition. Shared completeness issues are visible facts,
+and the arithmetic consumer no longer reparses purchase verbs. Supported
+surfaces include independent budget statements, leading/trailing `with`
+adjuncts, supplier-first payments, and either supplier/price complement order.
+Multiple budgets, ambiguous purchase/payment identity, and participial `using`
+supplements remain outside the closed-account calculation.
+Hyphenated dictionary words round-trip without admitting their spaced form,
+progressive auxiliaries no longer create false object-class memberships, and
+qualified subset asks cannot substitute an unconverted partitive count.
+The existing Designer server has not been stopped or restarted; a normal
+operator restart is needed to load changed Python code.
+The receipt clause's object pronoun remains an unresolved reading diagnostic;
+it supplies no amount and is not used to infer the purchase cost.
 
 General physical-quantity support is no longer owned by the corpus-mined
 pack. The reusable `physics` pack owns the generic ask family, the
@@ -422,11 +449,11 @@ These are the gates run at the current runtime checkpoint:
 
 | Gate | Current result |
 | --- | --- |
-| full synthetic suite | 6,020 verified (full run + focused reruns) |
+| full synthetic suite | 6,177 verified (full run + affected rerun) |
 | curated suite | 71 correct, 0 wrong |
 | GSM8K DEV-train | 107 correct, 0 wrong |
-| GSM8K DEV-holdout | 48 correct, 0 wrong |
-| ASDiv DEV | 46 correct, 0 wrong |
+| GSM8K DEV-holdout | 49 correct, 0 wrong |
+| ASDiv DEV | 47 correct, 0 wrong |
 | SVAMP DEV | 24 correct, 0 wrong |
 | MAWPS DEV | 11 correct, 0 wrong |
 | SciBench DEV | 6 correct, 0 wrong |
@@ -434,15 +461,18 @@ These are the gates run at the current runtime checkpoint:
 | FOLIO DEV | 0 numeric commitments |
 | COGS DEV-train / holdout | 1,771 / 1,693 exact, 0 incorrect |
 | PMB train / development | 117 / 4 exact, 0 incorrect |
-| lint | 0 errors, 0 warnings |
+| curated lint | 0 errors, 0 warnings |
+| GSM8K lint | 0 errors, 1 previously documented trig-alternation warning |
 
-The latest full run passed 6,011 of 6,018 tests. Its seven failures were stale
-vocabulary/shape inventories and guard-message coverage expectations; these
-were corrected without further runtime changes and passed focused reruns.
-Two added direct-unit probes bring the verified total to 6,020. The affected
-323-test group and 235-test consumer/guard rerun cover those corrections,
-including an explicitly withheld conversion edge rather than assuming that
-all projects expose the same conversions.
+The full account-composition run passed all 6,174 tests in 476 seconds,
+including every supported GSM8K premise's strict round trip. A final explicit
+request-over-acquisition exclusion for legacy pack composition and three new
+project-composition probes then passed the 362-test affected set. The current
+collection contains 6,177 tests. All eight numeric DEV snapshot diffs were
+rerun after that final change and remain neutral. The source price/holding
+boundary is covered explicitly: buying an item for a stated price cannot
+mint a currency acquisition. No server restart or protected TEST look was
+performed.
 
 Review batch 62 deliberately retired one DEV-train commitment that happened
 to agree with its numeric gold while relying on an unsupported inference from
@@ -459,6 +489,22 @@ The user supplied that example directly; it is exposed calibration evidence,
 not an independent generalization result. Synthetic tests use an invented
 analogue and adversarial neighbours, never the corpus prose.
 
+The closed-budget increment adds one correct DEV-holdout result
+(`80e4995b99c5`), likewise supplied directly by the user and treated as exposed
+calibration rather than independent generalization. It also adds one ASDiv
+DEV result (`7975a95fe544`) through complete coordinated currency events. Both
+DEV slices and all six cross-corpus gates retain zero broken answers and zero
+new wrongs. Historical mask-known `sock`/`socks` vocabulary was re-admitted
+after a synthetic partitive-subset safety test and the complete DEV gate;
+no protected TEST look was spent.
+
+The subsequent account-composition refactor keeps all eight numeric DEV
+baselines unchanged. `clothing`, another historical mask-known word, is now a
+core noun for qualified accounts, with a synthetic subset/count safety probe.
+Ordinary retailer, order, and online vocabulary is also core-owned; an order
+does not supply an actual expenditure. The semantic-projection baselines are
+unchanged, and no protected look was spent.
+
 The latest protected GSM8K TEST look is look 126: 13 correct, 1 persistent
 wrong, and 1,305 declined. Increment 132 made no new protected commitment.
 Do not spend another protected look merely to refresh these numbers.
@@ -468,11 +514,13 @@ Do not spend another protected look merely to refresh these numbers.
 Availability means “the authoring layer can realize the declared contract and
 round-trip it through the ordinary matcher.” It does not mean that a human has
 judged the resulting English or emitted fact valid.
+The curated reachable filler inventory is 458; local allocation rules expose
+account phrases, whose ownership is deliberately not inferred in isolation.
 
 | Project | Premise rules | Independent asks | Answerable asks |
 | --- | ---: | ---: | ---: |
-| curated | 164/173 | 118/136 | 132/136 |
-| GSM8K | 158/165 | 156/169 | 169/169 |
+| curated | 167/176 | 119/137 | 133/137 |
+| GSM8K | 161/168 | 157/170 | 170/170 |
 
 The unsupported premise rows are deliberate safety interceptors or reader-only
 rules, not ordinary generation targets. Fourteen curated and all thirteen

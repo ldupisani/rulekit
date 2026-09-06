@@ -767,6 +767,9 @@ def run_document(
             store.admit_rule_results(doc.rule_results.get(reading.sentence_index, []), reg)
             for fact in learn(reading, reg):
                 store.admit(fact)
+        from .resource_accounting import compose_resource_accounts
+
+        compose_resource_accounts(store, premises, reg)
         event_times = sorted(
             store.by_kind(EventTime),
             key=lambda fact: (fact.offset, fact.event),

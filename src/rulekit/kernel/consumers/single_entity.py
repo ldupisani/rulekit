@@ -90,6 +90,16 @@ def single_entity(ctx: ConsumerContext):
     if singular is None:
         return Answer("decline", None,
                       f"measure {measure!r} is ambiguous across the facts")
+    if measure_qualifier and any(
+        q.entity == entity and q.measure_qualifier == singular
+        and ctx.reg.partitive_applies_to(q.measure.split("[", 1)[0], singular)
+        for q in ctx.store.by_kind(Quantity)
+    ):
+        # A count of grouped/substance units is not a sized attribute subset.
+        # The bare total cannot answer a qualified subset ask while the only
+        # breakdown is stated in another unit (pairs versus items, for
+        # example). That needs an explicit conversion and partition proof.
+        return Answer("decline", None, "a qualified subset needs item-level evidence, not an unconverted partitive count")
     req_unit = ctx.query.get("req_unit")
     if not _check_req_unit(req_unit, singular, ctx.store, ctx.reg, journal=ctx.log.journal):
         return Answer(

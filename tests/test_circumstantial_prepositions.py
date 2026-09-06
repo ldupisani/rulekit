@@ -28,6 +28,7 @@ def test_adposition_role_table_is_declarative_and_source_indexed() -> None:
 
     assert set(project.registry.adposition_roles) == {
         "accompaniment",
+        "allocation-context",
         "cause",
         "instrument",
         "manner",
@@ -37,6 +38,7 @@ def test_adposition_role_table_is_declarative_and_source_indexed() -> None:
         "spatial-location",
         "spatial-path",
         "spatial-source",
+        "supplier",
         "temporal-after",
         "temporal-approximate",
         "temporal-before",
@@ -48,7 +50,7 @@ def test_adposition_role_table_is_declarative_and_source_indexed() -> None:
     }
     assert {
         ref.path.resolve() for ref in project.source_index.adposition_roles.values()
-    } == {source}
+    } == {source, (ROOT / "packs/core-english/categories/resource-accounting.yaml").resolve()}
 
 
 @pytest.mark.parametrize(

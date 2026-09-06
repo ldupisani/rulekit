@@ -109,18 +109,32 @@ def test_chained_two_hop_distributive_total(full_registry):
 
 
 def test_ambiguous_container_count_declines(full_registry):
-    # two INDEPENDENT groups both counted in the same container noun ('bin')
+    # two INDEPENDENT groups both counted in the same container noun ('bag')
     # — the container count is ambiguous, so the plugin must not guess
     # which one the per-bin rate belongs to (and the ordinary fold below
     # must not commit a wrong number either).
+    r = solve(
+        "There are 10 bags in the garden. There are 20 bags in the "
+        "store. Each bag holds 5 crayons. How many crayons are there?",
+        full_registry,
+    )
+    # Both places must actually be read as quantity locations. Otherwise this
+    # test only checks missing evidence, not ambiguity between two counts.
+    assert {(q.entity, q.value) for q in r.store.by_kind(Quantity)
+            if q.measure == "bag"} == {("garden", 10), ("store", 20)}
+    assert r.answer.kind != "number"
+    crayon_totals = [gt for gt in r.store.by_kind(GroupTotal) if gt.measure == "crayon"]
+    assert crayon_totals == []
+
+
+def test_unread_container_location_cannot_launder_an_incomplete_total(full_registry):
     r = solve(
         "There are 10 bags in the warehouse. There are 20 bags in the "
         "store. Each bag holds 5 crayons. How many crayons are there?",
         full_registry,
     )
     assert r.answer.kind != "number"
-    crayon_totals = [gt for gt in r.store.by_kind(GroupTotal) if gt.measure == "crayon"]
-    assert crayon_totals == []
+    assert "value-accounting" in r.answer.reason
 
 
 def test_distributive_event_recipient_count_multiplies(full_registry):

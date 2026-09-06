@@ -334,7 +334,7 @@ def test_strict_round_trip_rejects_a_partial_requested_binding(
             (
                 "  jel: {senses: [adjective]}\n"
                 "  hand: {senses: [noun]}\n"
-                "  hand-written: {senses: [noun]}\n"
+                "  hand-2: {senses: [noun]}\n"
             ),
         )
     )
@@ -348,7 +348,7 @@ def test_strict_round_trip_rejects_a_partial_requested_binding(
         locked_bindings={
             "who": "Luma",
             "verb": "dax",
-            "item": "hand-written",
+            "item": "hand-2",
         },
     )
     complete = generate_candidate(
@@ -364,13 +364,57 @@ def test_strict_round_trip_rejects_a_partial_requested_binding(
     )
 
     assert partial.target_status == "absent"
-    assert partial.requested_bindings["item"] == "hand-written"
+    assert partial.requested_bindings["item"] == "hand-2"
     assert any(
         match.rule_id == "invented/simple"
+        and match.bindings["item"] == "hand"
         for match in partial.actual_matches
     )
-    assert "written" in " ".join(partial.deficiencies)
+    # A rule matching only the head cannot validate the extra numeric unit,
+    # even in this tiny fixture with no numeric-obligation diagnostic.
     assert complete.target_status == "matched"
+
+
+def test_atomic_hyphenated_binding_has_an_exact_generation_round_trip(tmp_path):
+    _write_project(tmp_path)
+    lexicon = tmp_path / "pack" / "lexicon.yaml"
+    lexicon.write_text(lexicon.read_text().replace(
+        "  jel: {senses: [adjective]}",
+        "  jel: {senses: [adjective]}\n  hand-written: {senses: [noun]}",
+    ))
+    project = load_project(tmp_path)
+    candidate = generate_candidate(
+        project, rule_id="invented/simple", seed=0,
+        locked_bindings={"item": "hand-written"},
+    )
+    assert candidate.target_status == "matched"
+    assert not candidate.deficiencies
+
+
+def test_measured_compound_domain_checks_compatibility_once_per_pair(monkeypatch):
+    from rulekit.generation import sample
+
+    class RegistryProbe:
+        calls = []
+
+        def measure_has_holder_boundary(self, measure):
+            return measure == "unit"
+
+        def measure_applies_to_holder(self, measure, holder):
+            self.calls.append((measure, holder))
+            return holder == "object"
+
+    numbers = [sample._Filler(str(n), str(n), value=n) for n in (2, 3, 4)]
+    nouns = [sample._Filler(word, word, kind="noun", number="singular")
+             for word in ("unit", "object", "unrelated")]
+    monkeypatch.setattr(sample, "_number_fillers", lambda reg: numbers)
+    monkeypatch.setattr(sample, "_lexical_fillers", lambda reg, **kwargs: nouns)
+    registry = RegistryProbe()
+    result = sample._attributive_counted_fillers(registry)
+    assert [filler.surface for filler in result] == [
+        "2-unit object", "3-unit object", "4-unit object",
+    ]
+    assert registry.calls == [("unit", "object"), ("unit", "unrelated")]
 
 
 def test_lexical_boundary_mode_widens_one_gate_without_claiming_a_match(
@@ -513,7 +557,7 @@ def test_boundary_mode_survives_retest_and_review_without_counting_coverage(
 def test_gsm8k_generation_fixtures_make_every_premise_rule_available() -> None:
     availability = list_rule_availability(load_project(Path("projects/gsm8k")))
 
-    assert len(availability) == 165
+    assert len(availability) == 168
     blocked = {
         rule.id: rule for rule in availability if not rule.supported
     }

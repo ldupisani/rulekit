@@ -602,6 +602,8 @@ class MatchToken(StrictModel):
     # identical (the "opt-in parameter, defaulted to old behavior" rule for any
     # change to a shared matcher).
     bare: bool = False
+    # The noun names an item but states no numeric count or measured extent.
+    uncounted: bool = False
     # OPT-IN phrase capture: this slot binds a RUN of units (greedy-longest,
     # backtracking against the rest of the sequence; a FINAL span must reach
     # the sentence end). Its value is the canonical phrase — per-token lemma
@@ -746,6 +748,7 @@ class MatchToken(StrictModel):
                 or self.cat is not None
                 or self.common_noun_cat is not None
                 or self.bare
+                or self.uncounted
                 or self.counted
                 or self.possessed
                 or self.qualified
@@ -783,6 +786,8 @@ class MatchToken(StrictModel):
             raise ValueError("a slot needs exactly one of type/cat")
         if self.counted and self.cat is None:
             raise ValueError("`counted` only qualifies a category-gated slot")
+        if self.uncounted and (self.counted or self.type == "counted" or self.attributive_counted):
+            raise ValueError("`uncounted` contradicts a counted slot")
         if self.possessed and self.cat is None:
             raise ValueError("`possessed` only qualifies a category-gated slot")
         if self.qualified and self.cat is None:
@@ -1499,7 +1504,7 @@ class WherePredicate(StrictModel):
 
 class FactEmit(StrictModel):
     fact: Literal[
-        "activity_duration", "bounded_activity_inquiry", "age_at_year",
+        "resource_allocation", "resource_balance", "expenditure", "activity_duration", "bounded_activity_inquiry", "age_at_year",
         "task_completion_duration",
         "rate_scope", "quantity", "relation", "contribution",
         "membership", "subset", "predication", "collection_context",

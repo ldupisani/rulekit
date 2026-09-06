@@ -129,6 +129,8 @@ def test_reviewed_answerable_seed_now_uses_direct_relevant_evidence(project) -> 
         ask_id="ask/what-average-combined",
         seed=4716671778855412,
         scenario_mode="answerable",
+        # Pin the reviewed structural class while core vocabulary grows.
+        locked_bindings={"item": "apples"},
     )
 
     assert candidate.target_ask == "ask/what-average-combined"
