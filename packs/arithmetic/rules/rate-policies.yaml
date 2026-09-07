@@ -1,0 +1,141 @@
+format: rulekit/rules@1
+rules:
+  - id: arithmetic/repeated-scoped-activity-duration
+    phase: read
+    description: >
+      "Mira does 3 hours of tutoring every day for 4 days" records the
+      named activity, duration per period, and repeat count. It reuses the
+      activity-duration frame and repeated schedule facts. A scoped rate
+      must name this same activity; a generic work policy does not silently
+      become an activity-specific threshold.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: earning_quantity_participant, referential: true, bare_reference_category: bare_entity_reference, at_start: true}
+        - {slot: action, cat: repeated_activity_duration_auxiliary}
+        - {slot: duration, cat: duration_measure, counted: true, value_min: 0}
+        - {lit: of}
+        - {slot: activity, cat: compensated_activity}
+        - {lit: every}
+        - {slot: period, cat: activity_recurrence_unit, number: singular}
+        - {lit: for}
+        - {slot: repeats, cat: activity_recurrence_unit, counted: true, value_min: 1}
+        - {lit: '.', consume_skipped: true}
+    where:
+      - same_lemma: [period, repeats]
+      - number_compatible: [who, action]
+    consumes: [duration, repeats]
+    emits:
+      - fact: repeated_activity_duration
+        entity: '{who}'
+        activity: '{activity}'
+        elapsed: duration
+        unit: '{duration}'
+        period: '{period}'
+        value: repeats
+
+  - id: arithmetic/activity-threshold-eligibility
+    phase: read
+    description: >
+      A conditional duration threshold qualifies a participant for a named
+      rate tier. It states a policy, not hours already worked. The tier's
+      rate definition is separate evidence; eligibility alone never implies
+      a premium or changes an ordinary rate.
+    match:
+      sentence:
+        - {lit: if, at_start: true}
+        - {slot: who, type: entity, common_noun_cat: earning_quantity_participant, referential: true, bare_reference_category: bare_entity_reference}
+        - {slot: activity, cat: scheduled_activity_verb, finite_form: true}
+        - {lit: more}
+        - {lit: than}
+        - {slot: threshold, cat: duration_measure, counted: true, value_min: 0}
+        - {lit: per}
+        - {slot: period, cat: activity_session_unit, number: singular}
+        - {lit: ',', consume_skipped: true}
+        - {slot: subject, type: entity, common_noun_cat: earning_quantity_participant, referential: true, bare_reference_category: bare_entity_reference}
+        - {slot: copula, cat: singular_copula}
+        - {slot: eligibility, cat: rate_eligibility_adjective}
+        - {lit: for}
+        - {slot: tier, cat: rate_tier_noun}
+    where:
+      - same_lemma: [who, subject]
+      - number_compatible: [who, activity]
+      - number_compatible: [subject, copula]
+    consumes: [threshold]
+    emits:
+      - fact: rate_threshold
+        entity: '{who}'
+        activity: '{activity}'
+        unit: '{threshold}'
+        value: threshold
+        period: '{period}'
+        tier: '{tier}'
+
+  - id: arithmetic/relative-additive-rate-premium
+    phase: read
+    description: >
+      A named tier's relative clause defines its rate as the base rate plus
+      a stated fraction of that same base. Both rate nouns, modifiers, and
+      generic possessives must agree. Generic "your" is local definition
+      syntax, not evidence that the reader owns the wage. The policy must
+      separately link this tier to a participant and duration threshold.
+    match:
+      sentence:
+        - {slot: tier, cat: rate_tier_noun}
+        - {lit: ',', consume_skipped: true}
+        - {lit: which}
+        - {slot: copula, cat: singular_copula}
+        - {slot: payment, cat: passive_payment_form}
+        - {slot: prep, cat: rate_definition_preposition}
+        - {slot: poss1, cat: rate_definition_possessive}
+        - {slot: basis1, cat: rate_basis_noun, qualified: true, qualifier_cat: rate_unit_descriptor, uncounted: true}
+        - {slot: op, cat: rate_addition_operator}
+        - {slot: premium, type: fraction}
+        - opt:
+            - {lit: of}
+        - {slot: poss2, cat: rate_definition_possessive}
+        - {slot: basis2, cat: rate_basis_noun, qualified: true, qualifier_cat: rate_unit_descriptor, uncounted: true}
+        - {lit: '.', consume_skipped: true}
+    where:
+      - same_surface: [basis1, basis2]
+      - same_surface: [poss1, poss2]
+    satisfies:
+      poss1: [refers]
+      poss2: [refers]
+      prep: [object]
+    consumes: [premium]
+    emits:
+      - fact: rate_premium
+        tier: '{tier}'
+        basis: '{basis1}'
+        descriptor: '{basis1.qualifier}'
+        fraction: premium
+
+  - id: arithmetic/repeated-activity-duration
+    phase: read
+    description: >
+      A participant performs an activity for a stated duration every period,
+      for an explicit number of those periods. The per-period duration is
+      kept separate from the repeat count, so a per-session threshold resets
+      before each repetition instead of applying once to the grand total.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: earning_quantity_participant, referential: true, bare_reference_category: bare_entity_reference, at_start: true}
+        - {slot: activity, cat: scheduled_activity_verb, finite_form: true}
+        - {slot: duration, cat: duration_measure, counted: true, value_min: 0}
+        - {lit: every}
+        - {slot: period, cat: activity_recurrence_unit, number: singular}
+        - {lit: for}
+        - {slot: repeats, cat: activity_recurrence_unit, counted: true, value_min: 1}
+        - {lit: '.', consume_skipped: true}
+    where:
+      - same_lemma: [period, repeats]
+      - number_compatible: [who, activity]
+    consumes: [duration, repeats]
+    emits:
+      - fact: repeated_activity_duration
+        entity: '{who}'
+        activity: '{activity}'
+        elapsed: duration
+        unit: '{duration}'
+        period: '{period}'
+        value: repeats

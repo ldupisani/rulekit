@@ -30,6 +30,15 @@ def single_entity(ctx: ConsumerContext):
     from ..totals import _entity_total, _purchase_total, _qualified_variant_total, _revenue_total, _superordinate_total, _verb_total
 
     entity, measure = ctx.query["entity"], ctx.query["measure"]
+    # Structured work schedules can answer an ordinary named-currency ask.
+    # Keep the existing event-total route when no such evidence is present.
+    from dataclasses import replace
+    from ..repeated_rates import has_rate_structure
+    if (has_rate_structure(ctx.store)
+            and ctx.reg.word_in_category(ctx.query.get("verb", ""), "wage_verb")
+            and (measure == "currency" or ctx.reg.word_in_category(measure, "currency"))):
+        from .rate_span import rate_span
+        return rate_span(replace(ctx, query={**ctx.query, "measure": "currency"}))
     if ctx.query.get("other_entity"):
         return Answer(
             "decline",

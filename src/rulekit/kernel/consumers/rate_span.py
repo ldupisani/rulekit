@@ -20,6 +20,7 @@ def rate_span(ctx: ConsumerContext):
     from ..evaluate import evaluate
     from ..model import ActivityDuration, Quantity, Rate, RateScope
     from ..totals import _entity_total
+    from ..rate_calculation import activity_scope_matches, apply_rate, convert_duration
 
     # Re-landing step 4 (docs/negative-results.md): conversion spans
     # and rate x population are both live. The entity slot type is
@@ -46,6 +47,10 @@ def rate_span(ctx: ConsumerContext):
             "the span ask needs exactly one",
         )
     rate = rates[0]
+    from ..repeated_rates import repeated_rate_total
+    repeated = repeated_rate_total(ctx, rate)
+    if repeated is not None:
+        return repeated
     if "span_unit" in ctx.query:
         span_unit = ctx.reg.plural_to_singular.get(ctx.query["span_unit"], ctx.query["span_unit"])
         span_value = float(ctx.query["span_value"])
@@ -68,8 +73,7 @@ def rate_span(ctx: ConsumerContext):
             scope = scopes[0]
             durations = [
                 duration for duration in ctx.store.by_kind(ActivityDuration)
-                if duration.participant == entity
-                and duration.activity == scope.activity
+                if activity_scope_matches(scope, rate, duration.participant, duration.activity)
             ]
             if len(durations) != 1:
                 return Answer(
@@ -125,11 +129,11 @@ def rate_span(ctx: ConsumerContext):
                 f"{span_value} * {bridge.value}", {}, ctx.log, source="rate-span-bridge"
             )
         elif (span_unit, rate.per) in ctx.reg.conversions:
-            k = span_value * ctx.reg.conversions[(span_unit, rate.per)]
+            k = convert_duration(span_value, span_unit, rate.per, ctx.reg, ctx.log,
+                                 source="rate-span-unit", record=False)
         elif (span_unit, rate.per) in ctx.reg.cadence_conversions:
-            k = span_value * ctx.reg.cadence_conversions[
-                (span_unit, rate.per)
-            ]
+            k = convert_duration(span_value, span_unit, rate.per, ctx.reg, ctx.log,
+                                 source="rate-span-cadence", allow_cadence=True, record=False)
         else:
             return Answer(
                 "decline", None,
@@ -162,18 +166,7 @@ def rate_span(ctx: ConsumerContext):
             f"{rate.value}/{rate.per} × {population} {rate.entity} × "
             f"{k} {rate.per}",
         )
-    if rate.numerator is not None and rate.denominator is not None:
-        # a COMPOUND rate ("8 pages in 20 minutes") — multiply through
-        # the raw stated numerator/denominator directly so value-
-        # accounting (guards.py) credits the text's own two numbers as
-        # read; using the derived `value` quotient here would leave
-        # them unaccounted (see Rate's docstring).
-        total = evaluate(
-            f"{rate.numerator} * {k} / {rate.denominator}", {}, ctx.log,
-            source="rate-span",
-        )
-    else:
-        total = evaluate(f"{rate.value} * {k}", {}, ctx.log, source="rate-span")
+    total = apply_rate(rate, k, ctx.log, source="rate-span")
     return Answer(
         "number", total,
         f"{rate.value}/{rate.per} × {k} {rate.per} for {entity!r}",

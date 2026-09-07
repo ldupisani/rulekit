@@ -822,6 +822,59 @@ class TaskCompletionDuration(Fact):
 
 
 @dataclass(frozen=True)
+class RateThreshold(Fact):
+    """A policy boundary per session, never a performed duration."""
+
+    entity: str
+    activity: str
+    unit: str
+    value: float
+    period: str
+    tier: str
+
+    def key(self) -> tuple:
+        return ("rate-threshold", self.entity, self.tier, self.provenance.sentence)
+
+    def value_part(self) -> Any:
+        return (self.activity, self.unit, self.value, self.period)
+
+
+@dataclass(frozen=True)
+class RatePremium(Fact):
+    """A tier's additive fraction of a described base rate."""
+
+    tier: str
+    basis: str
+    descriptor: str
+    fraction: float
+
+    def key(self) -> tuple:
+        return ("rate-premium", self.tier, self.provenance.sentence)
+
+    def value_part(self) -> Any:
+        return (self.basis, self.descriptor, self.fraction)
+
+
+@dataclass(frozen=True)
+class RepeatedActivityDuration(Fact):
+    """Per-period activity duration and a separate explicit repeat count."""
+
+    entity: str
+    activity: str
+    elapsed: float
+    unit: str
+    period: str
+    value: float
+
+    def key(self) -> tuple:
+        return ("repeated-activity-duration", self.entity, self.activity,
+                self.provenance.sentence)
+
+    def value_part(self) -> Any:
+        return (self.elapsed, self.unit, self.period, self.value)
+
+
+@dataclass(frozen=True)
 class RateScope(Fact):
     """The activity to which one participant's stated rate applies.
 
@@ -946,6 +999,11 @@ class Expenditure(Fact):
     account_qualifier: str = ""
     account_owner: str = ""
     account_span: str = ""
+    # A counted purchase with an explicit per-unit price is not a stated
+    # total. Keep both operands and their source positions until used.
+    quantity: float | None = None
+    unit_price: float | None = None
+    quantity_position: int = -1
 
     def key(self) -> tuple:
         return ("expenditure", self.entity, self.provenance.sentence,
@@ -954,7 +1012,8 @@ class Expenditure(Fact):
     def value_part(self) -> Any:
         return (self.verb, self.measure, self.value, self.basis, self.supplier,
                 self.supplier_qualifier, self.channel, self.account,
-                self.account_qualifier, self.account_owner, self.account_span)
+                self.account_qualifier, self.account_owner, self.account_span,
+                self.quantity, self.unit_price, self.quantity_position)
 
 
 @dataclass(frozen=True)

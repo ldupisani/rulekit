@@ -401,6 +401,61 @@ def _rate_unit(reading: Reading, counted: Unit) -> Unit | None:
     return None
 
 
+def simple_rate_evidence_units(reading: Reading, rate: Rate, reg: Registry) -> frozenset[int]:
+    """Recover one folded rate's exact grammatical footprint.
+
+    Reuse the ordinary subject/object bindings and rate-unit attachment;
+    this is evidence about an existing fact, not a second sentence parser.
+    Extra conditions or complements are deliberately outside the footprint.
+    """
+    candidates = []
+    for verb in reading.units:
+        if verb.sense() != "verb" or _lemma(verb) != rate.verb:
+            continue
+        subject, obj = _bound(verb, "subject"), _bound(verb, "dobj")
+        if subject is None or obj is None:
+            continue
+        compound = rate.numerator is not None and rate.denominator is not None
+        unit = _compound_rate_span(reading, obj, reg) if compound else _rate_unit(reading, obj)
+        if (unit is None or _lemma(subject) != rate.entity or _lemma(obj) != rate.measure
+                or _lemma(unit) != rate.per
+                or obj.features.get("value") != (rate.numerator if compound else rate.value)
+                or (compound and unit.features.get("value") != rate.denominator)):
+            continue
+        ids = {verb.uid, subject.uid, obj.uid, unit.uid}
+        ids.update(u.uid for u in reading.units
+                   if obj.span[1] < u.span[0] < unit.span[0] and (
+                       u.sense() == "rate" or (compound and u.sense() == "preposition"
+                                              and reg.word_in_category(_lemma(u), "span_preposition"))))
+        candidates.append(frozenset(ids))
+    return candidates[0] if len(candidates) == 1 else frozenset()
+
+
+def price_quote_evidence(reading: Reading, price: Price, reg: Registry):
+    """The currency and exact footprint of one independently stated unit price.
+
+    A previous purchase's total is not a reusable offer. Require a price
+    predicate with its own bound item and currency, and retain any unread
+    complement for the caller's completeness check.
+    """
+    candidates = []
+    for verb in reading.units:
+        if verb.sense() != "verb" or not reg.word_in_category(_lemma(verb), "price_verb"):
+            continue
+        subject, obj = _bound(verb, "subject"), _bound(verb, "dobj")
+        if (subject is None or obj is None or _lemma(subject) != price.item
+                or obj.features.get("value") != price.value
+                or not reg.word_in_category(_lemma(obj), "currency_measure")
+                or subject.features.get("value_kind")):
+            continue
+        ids = {verb.uid, subject.uid, obj.uid}
+        after = reading.units.index(obj) + 1
+        if after < len(reading.units) and reading.units[after].sense() == "quantifier":
+            ids.add(reading.units[after].uid)
+        candidates.append((_lemma(obj), frozenset(ids)))
+    return candidates[0] if len(candidates) == 1 else None
+
+
 def _compound_rate_span(reading: Reading, counted: Unit, reg: Registry) -> Unit | None:
     """'reads 8 pages in 20 minutes' — a COMPOUND rate stated as two
     numbers (an amount and an elapsed span) rather than the simple 'N ITEM

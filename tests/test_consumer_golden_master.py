@@ -510,6 +510,17 @@ _COVERED_BY_UNIT_TEST = {
     ("budget-item-cost", "the requested item must be the one unkno"),
     ("budget-item-cost", "the requested item also has a separate s"),
     ("budget-item-cost", "budget amounts must be finite and non-ne"),
+    ("budget-item-cost", "a priced purchase needs a nonnegative co"),
+    # Account reuse neighbours in test_account_rate_reuse.py exercise these
+    # same shared guards through money-left and capacity.
+    ("budget-item-cost", "an unpriced purchase leaves the availabl"),
+    ("budget-item-cost", "the account ask has an unread condition "),
+    ("budget-item-cost", "the stated remainder disagrees with the "),
+    ("capacity", "affordability needs one complete unquali"),
+    ("capacity", "an account purchase needs a positive fin"),
+    ("capacity", "an additional asked budget cannot replac"),
+    ("capacity", "the unit price and resource account use "),
+    ("money-left", "the requested currency differs from the "),
     ("budget-item-cost", "a stated value lies outside the complete"),
     ("budget-item-cost", "budget evidence repeats a numeric mentio"),
     ("budget-item-cost", "budget events must be actual and affirma"),
@@ -700,6 +711,9 @@ def _declared_guards() -> dict[str, set[str]]:
             m = re.search(r'@consumer\("([a-z-]+)"', body)  # may carry time_scoped=
             if not m:
                 continue
+            if m.group(1) == "budget-item-cost":
+                # Shared guards stay counted after extraction.
+                body += (consumers_dir.parent / "account_totals.py").read_text()
             msgs = re.findall(r'"decline",\s*None,\s*\n?\s*f?"([^"]{6,70})', body)
             extracted[m.group(1)] = {x.split("{")[0].split(":")[0].strip()[:40] for x in msgs}
 

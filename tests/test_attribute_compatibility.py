@@ -198,12 +198,14 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
         "button-up",
         "different",
         "done",
+        "eligible",
         "enough",
         "final",
         "following",
         "gravitational",
         "green",
         "humanities",
+        "hourly",
         "large",
         "last",
         "left",
@@ -246,7 +248,8 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
     # The reusable science packs contribute meter, object, speed, height,
     # joule, moles, and the compound velocity unit as pluralizable nouns;
     # seconds and moles are deliberately plural-only identities.
-    assert len(plural_nouns) == 138
+    # Rate policies add shift/wage and license hourly for hour/wage.
+    assert len(plural_nouns) == 140
     assert {
         "boy",
         "day",
@@ -268,7 +271,7 @@ def test_curated_compatibility_domain_is_the_current_complete_domain() -> None:
         registry.attribute_applies_to(attribute, noun)
         for attribute in adjectives
         for noun in plural_nouns
-    ) == 537
+    ) == 539
 
 
 def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> None:
@@ -339,7 +342,7 @@ def test_only_reviewed_descriptor_or_pp_rules_have_compatibility_premises() -> N
 def test_compatibility_rule_remains_supported_after_g5j_expansion() -> None:
     availability = list_rule_availability(load_project(CURATED))
 
-    assert sum(item.supported for item in availability) == 167
+    assert sum(item.supported for item in availability) == 171
     target = next(item for item in availability if item.id == RULE_ID)
     assert target.supported
     assert target.blockers == ()

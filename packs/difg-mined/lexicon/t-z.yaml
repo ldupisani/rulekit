@@ -634,10 +634,6 @@ entries:
     volunteers:
         senses:
             - verb
-    wage:
-        senses:
-            - noun
-        plural: wages
     wagon:
         senses:
             - noun
@@ -860,28 +856,13 @@ entries:
     workdays:
         senses:
             - noun
-    worked:
-        senses:
-            - verb
-        verb:
-            lemma: work
     worker:
         senses:
             - noun
         plural: workers
-    working:
-        senses:
-            - verb
-        verb:
-            lemma: work
     workplace:
         senses:
             - noun
-    works:
-        senses:
-            - verb
-        verb:
-            lemma: work
     workweek:
         senses:
             - noun

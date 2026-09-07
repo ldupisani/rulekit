@@ -19,6 +19,7 @@ def rate_span_inverse(ctx: ConsumerContext):
     from ..answer import Answer
     from ..evaluate import evaluate
     from ..model import Quantity, Rate
+    from ..rate_calculation import apply_rate, convert_duration
 
     # the INVERSE of 'rate-span' above ('how long does it take WHO to
     # VERB N ITEM?' / 'how many TIMEUNIT does it take...?'): an ASKED
@@ -83,20 +84,7 @@ def rate_span_inverse(ctx: ConsumerContext):
                 f"{entity!r} — the totality item needs exactly one",
             )
         item_value = totals[0].value
-    if rate.numerator is not None and rate.denominator is not None:
-        # a COMPOUND rate ("8 pages in 20 minutes") — invert through
-        # the raw stated numerator/denominator directly (same
-        # numerator/denominator-not-`value` discipline as the forward
-        # consumer's compound branch, Rate's docstring) so value-
-        # accounting credits the text's own two numbers as read.
-        span = evaluate(
-            f"{item_value} * {rate.denominator} / {rate.numerator}", {}, ctx.log,
-            source="rate-span-inverse",
-        )
-    else:
-        span = evaluate(
-            f"{item_value} / {rate.value}", {}, ctx.log, source="rate-span-inverse"
-        )
+    span = apply_rate(rate, item_value, ctx.log, source="rate-span-inverse", inverse=True)
     span_unit = rate.per
     if "span_unit" in ctx.query:
         asked_unit = ctx.reg.plural_to_singular.get(ctx.query["span_unit"], ctx.query["span_unit"])
@@ -115,10 +103,8 @@ def rate_span_inverse(ctx: ConsumerContext):
                     f"no conversion from the rate's {rate.per!r} to "
                     f"asked time unit {asked_unit!r} — cannot invert",
                 )
-            span = evaluate(
-                f"{span} * {ctx.reg.conversions[(rate.per, asked_unit)]}", {}, ctx.log,
-                source="rate-span-inverse",
-            )
+            span = convert_duration(span, rate.per, asked_unit, ctx.reg, ctx.log,
+                                    source="rate-span-inverse")
             span_unit = asked_unit
     return Answer(
         "number", span,

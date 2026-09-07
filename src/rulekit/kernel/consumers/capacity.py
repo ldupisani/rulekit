@@ -41,6 +41,31 @@ def capacity(ctx: ConsumerContext):
             "ask needs exactly one",
         )
     price = prices[0]
+    from ..account_totals import AccountTotal, has_resource_account, resolve_account
+    if has_resource_account(ctx.store):
+        from ..learn import price_quote_evidence
+        from math import isfinite
+        if ctx.query.get("budget_value") is not None:
+            return Answer("decline", None, "an additional asked budget cannot replace the stated account")
+        if not isfinite(price.value) or price.value <= 0:
+            return Answer("decline", None, "an account purchase needs a positive finite unit price")
+        readings = [r for r in ctx.premises if r.sentence_index == price.provenance.sentence]
+        quote = price_quote_evidence(readings[0], price, ctx.reg) if len(readings) == 1 else None
+        if quote is None or price.qualifier or any(
+            u.uid not in quote[1] and u.sense() not in {"article", "punct"}
+            for u in readings[0].units
+        ):
+            return Answer("decline", None, "affordability needs one complete unqualified unit-price statement")
+        account = resolve_account(ctx, extra_evidence=(price,))
+        if not isinstance(account, AccountTotal):
+            return account
+        if quote[0] != account.opening.measure:
+            return Answer("decline", None, "the unit price and resource account use different currencies")
+        count = evaluate(f"round({account.value} / {price.value}, 6) // 1", {}, ctx.log,
+                         source="account-capacity")
+        return Answer("number", count,
+                      f"floor({account.value:g} remaining in {account.opening.account} / "
+                      f"{price.value:g} per {item})")
     budget_raw = ctx.query.get("budget_value")
     if budget_raw is not None:
         budget = evaluate(str(budget_raw), {}, ctx.log, source="capacity-budget")

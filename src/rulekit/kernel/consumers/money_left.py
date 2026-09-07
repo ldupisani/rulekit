@@ -38,6 +38,18 @@ def money_left(ctx: ConsumerContext):
     # invisible to _entity_total's currency fold and only ever
     # appears once, here.
     entity = ctx.query["entity"]
+    from ..account_totals import AccountTotal, has_resource_account, resolve_account
+    if has_resource_account(ctx.store):
+        result = resolve_account(ctx)
+        if not isinstance(result, AccountTotal):
+            return result
+        requested = ctx.query.get("req_unit")
+        if requested and ctx.reg.plural_to_singular.get(requested, requested) != result.opening.measure:
+            return Answer("decline", None, "the requested currency differs from the resource account")
+        return Answer("number", result.value,
+                      f"{result.value:g} {result.opening.measure} remains in the "
+                      f"{result.opening.qualifier + ' ' if result.opening.qualifier else ''}"
+                      f"{result.opening.account}; this is not a total cash holding")
     measure = ctx.query.get("measure", "currency")
     singular = _resolve_measure(measure, ctx.store, ctx.reg, journal=ctx.log.journal)
     if singular is None:

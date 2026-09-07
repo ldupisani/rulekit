@@ -28,7 +28,7 @@ _TOKEN = re.compile(
     r"\d{4}-\d{2}-\d{2}(?!\d)"                   # ISO date ("2024-01-01")
     r"|\d+/\d+"                                 # slash fraction ("1/4")
     r"|\d[\d,]*(?:st|nd|rd|th)(?![^\W\d_])"     # fused ordinal ("5th", "21st")
-    r"|\$?\d[\d,]*(?:\.\d+)?%?"                 # numbers/currency/percent
+    r"|(?:(?<!\w)-)?\$?\d[\d,]*(?:\.\d+)?%?"  # signed numbers/currency/percent
     # A compound scientific unit is ONE token. This alternative must precede
     # the ordinary word branch: otherwise "m/s^2" becomes 'm', 's', '2' and
     # the exponent masquerades as a stated scalar. Requiring either an
@@ -47,6 +47,9 @@ _TOKEN = re.compile(
     r"|[^\W\d_]+(?:['’][^\W\d_]+)?"              # words (with contractions)
     r"|['’]s"                                    # bare possessive clitic
     r"|[.,!?;:]"
+    # Arithmetic signs are semantic boundaries, not disposable whitespace.
+    # Keep isolated minus too, without splitting lexical/numeric hyphens.
+    r"|[+*=×÷−]|(?<!\w)-"
 )
 
 # fold-layer normalization (with .lower()): the typographic apostrophe reads

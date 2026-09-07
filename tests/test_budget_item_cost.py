@@ -166,6 +166,8 @@ BUDGET_GUARD_CASES = [
     ("two_unknowns", "the requested item must be the one unknown purchase cost"),
     ("known_target", "the requested item also has a separate stated cost"),
     ("invalid_amount", "budget amounts must be finite and non-negative"),
+    ("invalid_unit_price", "a priced purchase needs a nonnegative count and unit price"),
+    ("unread_ask", "the account ask has an unread condition or qualifier"),
     ("missing_cost", "a stated value lies outside the complete budget equation"),
     ("duplicate_cost", "budget evidence repeats a numeric mention"),
     ("nonactual", "budget events must be actual and affirmative"),
@@ -221,6 +223,10 @@ def test_budget_defensive_guards(registry, case, reason):
         exchange(known, replace(known, item="shoe"))
     elif case == "invalid_amount":
         exchange(known, replace(known, value=float("nan")))
+    elif case == "invalid_unit_price":
+        exchange(known, replace(known, value=None, quantity=3, unit_price=-10))
+    elif case == "unread_ask":
+        pass  # remove a required ask token from the claimed footprint below
     elif case == "missing_cost":
         facts.remove(known)
     elif case == "duplicate_cost":
@@ -251,6 +257,9 @@ def test_budget_defensive_guards(registry, case, reason):
         facts = evidence_store.facts
 
     ask, query, match = match_ask(baseline.question, registry)
+    if case == "unread_ask":
+        verb = next(u for u in baseline.question.units if u.sense() == "verb")
+        match = replace(match, consumed=tuple(uid for uid in match.consumed if uid != verb.uid))
     got = budget_item_cost(ConsumerContext(
         query, baseline.question, FactStore(facts=facts), registry,
         ArithmeticLog(), match, ask, tuple(premises),

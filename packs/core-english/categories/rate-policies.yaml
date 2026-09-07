@@ -1,0 +1,40 @@
+format: rulekit/categories@1
+categories:
+  scheduled_activity_verb:
+    parent: verb
+    notes: "An activity whose stated repeated duration describes one work session per period."
+  activity_session_unit: {parent: noun}
+  repeated_activity_duration_auxiliary: {parent: auxiliary}
+  activity_recurrence_unit: {parent: noun}
+  session_recurrence_period:
+    parent: duration_measure
+    notes: "A daily schedule may stand for one session each day, with that assumption reported."
+  rate_tier_noun: {parent: noun}
+  rate_eligibility_adjective: {parent: adjective}
+  rate_basis_noun: {parent: noun}
+  rate_unit_descriptor: {parent: adjective}
+  hourly_rate_descriptor: {parent: rate_unit_descriptor}
+  rate_hour_unit: {parent: duration_measure}
+  rate_definition_preposition: {parent: preposition}
+  rate_addition_operator: {parent: operator}
+  passive_payment_form: {parent: payment_verb}
+  rate_definition_possessive:
+    parent: pronoun
+    notes: "Generic second-person ownership inside a rate definition, not a discourse referent."
+members:
+  scheduled_activity_verb: [work, works, worked, working]
+  activity_session_unit: [shift]
+  repeated_activity_duration_auxiliary: [do, does, did]
+  activity_recurrence_unit: [day, shift]
+  session_recurrence_period: [day]
+  rate_tier_noun: [overtime]
+  rate_eligibility_adjective: [eligible]
+  rate_basis_noun: [wage]
+  hourly_rate_descriptor: [hourly]
+  rate_hour_unit: [hour]
+  rate_definition_preposition: [at, by]
+  rate_addition_operator: ['+', plus]
+  passive_payment_form: [paid]
+  rate_definition_possessive: [your]
+attribute_compatibility:
+  hourly_rate_descriptor: [rate_basis_noun, rate_hour_unit]

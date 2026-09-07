@@ -296,7 +296,7 @@ borrows the nearest person or retailer. `ResourceBalance` preserves the
 participant, account head, account qualifier, explicit owner, currency, and
 opening event. A closing remainder retains the same account qualifiers.
 
-`Expenditure` records an item-qualified total cost, with an event/position
+`Expenditure` records an item-qualified cost, with an event/position
 identity that distinguishes equal-valued costs in a coordinated list. Its
 evidence basis distinguishes a purchase from a payment. Optional fields retain
 the supplier/payee, supplier qualifier, transaction channel, and explicit
@@ -309,13 +309,25 @@ purchase/payment descriptions are not silently debited twice.
 The request exclusion remains authoritative even when a legacy pack also
 classifies the same verb under acquisition or purchase.
 
+Counted purchases may instead retain `quantity`, `unit_price`, and the count's
+source position. These are source operands, not a stated total: `3 toys at
+$10 each` keeps both 3 and 10, with `value` unset until the account resolver
+uses them. The reader reuses ordinary per-unit price recognition, requires a
+complete local price complement, and retains supplier and account scope.
+`pricing.purchase_total_expression()` supplies the same price arithmetic to
+the older purchase-total path and the account calculation. Discount arithmetic
+is shared, but account discounts still need an explicit transaction-scope
+contract before they can be applied; an unlinked discount remains a decline.
+
 Payments retain ordinary currency events for existing consumers. Purchase
 prices remain on the existing item/`Price` path: they must never become cash
 acquisitions with `Quantity(verb=buy)`. A resource consumer explicitly logs the
 expenditure keys it uses, licensing only those exact source numeric mentions.
 Mere existence of a supplemental cost record does not bypass value accounting.
 
-The `budget-item-cost` consumer implements the bounded conservation class:
+`account_totals.resolve_account()` supplies a scoped, evidence-checked result
+to the missing-cost, money-left, and affordability consumers. An account is
+not projected into an ordinary cash holding. The bounded missing-cost class is
 opening allocation minus closing remainder minus all stated item costs.
 It requires one matching pair of endpoints and exactly one unpriced purchase
 matching the ask's item and qualifier. Every original numeric mention is
@@ -328,6 +340,14 @@ residuals decline. Multiple accounts remain outside this single-account
 calculation even though their labels are preserved. Other consumers cannot
 silently drop an allocation phrase or endpoint. Participial `using` supplements
 and cross-sentence transaction settlement links are not yet supported here.
+For a remainder or affordability query, all purchases must have known costs.
+A separately stated closing balance must agree with the calculated remainder.
+Affordability additionally requires one complete independent unit-price
+statement in the account's currency; an earlier purchase total is not a price
+offer. These consumers reuse the existing ask shapes. Bare money-holding asks
+still cannot treat an allocation as cash owned.
+`numeric_evidence` checks source-local multiplicity for account calculations
+and supplies the same numeric-mention representation to repeated rates.
 The total-cost ask uses `uncounted: true`
 to distinguish an item reference from a counted purchase or a per-item price;
 the schema rejects contradictory counted/uncounted slots.
@@ -2018,6 +2038,46 @@ slot to ordinary manner or temporal adverbs. Both focus positions at once are
 rejected.
 The existing unscoped `Rate` plus standalone duration-quantity path remains
 unchanged. Unit normalization still comes from the pack conversion graph.
+
+Repeated work periods preserve the threshold-reset boundary. `RateThreshold`
+records a participant's duration limit per session and the named excess tier;
+`RatePremium` records that tier's explicit additive fraction of the base rate.
+Neither is performed work. `RepeatedActivityDuration` separately records the
+duration per period and the number of periods. The shared repeated-rate
+calculation splits each period into regular and excess duration before
+multiplying by the repeat count. It never applies a per-session limit once to
+the grand total. Ordinary earnings asks reuse this path only when structured
+rate evidence exists; ordinary earned-event totals keep their previous route.
+
+`rate_calculation` shares forward/inverse rate arithmetic, duration conversion,
+and activity identity between ordinary and repeated rate consumers. Compound
+rates keep their original numerator and denominator in the arithmetic trace.
+The repeated path now accepts such rates, including an explicit excess tier.
+`arithmetic/repeated-scoped-activity-duration` also reads a named activity's
+repeated duration, such as `does 3 hours of tutoring every day for 4 days`.
+It emits the existing `RepeatedActivityDuration`; a `RateScope` must name that
+same activity. Generic working time cannot satisfy a different activity's
+rate, and a work-session policy is not silently rebound to a named activity.
+Calendar cadence conventions remain opt-in to the existing projection path,
+never exact conversions in the repeated-duration calculation.
+
+The first supported policy grammar links eligibility to a relative rate
+definition in the same sentence. A generic second-person possessive inside
+that definition is template syntax, not a discourse owner. Unit-descriptor
+compatibility is category data, and arithmetic operators remain visible
+tokens; a missing plus or a different operator cannot mean addition. The
+generator can realize operator-rooted categories and all three fact shapes.
+
+An explicit repeated shift needs no calendar inference. The daily work
+schedule also permits the declared one-session-per-day interpretation, which
+is reported in the answer explanation; this is not a conversion equating a
+shift to a calendar day. Multiple sessions per day, weekly thresholds,
+multiple tiers, and separately stated policy definitions remain unsupported.
+The consumer requires one participant, one base rate, a complete matching
+policy, compatible units, and integral repetitions. It audits every numeric
+mention by source sentence and refuses extra facts or unread conditions.
+All three structured fact kinds require explicit use in answer accounting, so
+an unrelated consumer cannot silently ignore a policy and return flat pay.
 
 Measured content progress keeps a product's extent separate from completed
 events. `arithmetic/content-progress-measured-product` reads a numeric hyphen

@@ -97,6 +97,7 @@ from .schemas import (
 # rooting a category here only permits pack-owned semantic subsets such as
 # sum markers without adding a second ambiguous sense to any word.
 ROOT_SENSES = (
+    "operator",
     "noun", "verb", "adjective", "quantifier", "preposition", "comparative",
     "negator", "conjunction", "modal", "particle", "adverb", "time",
     "article", "pronoun", "auxiliary", "imperative", "aggregate",

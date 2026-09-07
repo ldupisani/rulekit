@@ -188,31 +188,21 @@ def _purchase_total(
     ):
         return None
     prices = {p.item: p for p in store.by_kind(Price)}
-    parts: list[str] = []
+    lines: list[tuple[float, float]] = []
     for q in buys:
         price = prices.get(q.measure)
         if price is None:
             return None
-        parts.append(f"{q.value} * {price.value}")
-    base_expr = " + ".join(parts)
+        lines.append((q.value, price.value))
     if any(isinstance(f, Discount) for f in store.quarantined):
         return None  # two or more stated discounts — ambiguous, decline
     discounts = store.by_kind(Discount)
     if len(discounts) > 1:
         return None
-    if not discounts:
-        return evaluate(base_expr, {}, log, source="purchase-total")
-    discount = discounts[0]
-    if discount.scope == "total":
-        expr = (
-            f"({base_expr}) * (1 - {discount.value})" if discount.percent
-            else f"({base_expr}) - {discount.value}"
-        )
-    elif discount.scope == "per_unit" and not discount.percent:
-        qty_expr = " + ".join(str(q.value) for q in buys)
-        expr = f"({base_expr}) - ({qty_expr}) * {discount.value}"
-    else:
-        return None  # an unmodeled scope/percent combination — decline
+    from .pricing import purchase_total_expression
+    expr = purchase_total_expression(lines, discounts[0] if discounts else None)
+    if expr is None:
+        return None
     return evaluate(expr, {}, log, source="purchase-total")
 
 

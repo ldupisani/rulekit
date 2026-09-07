@@ -23,6 +23,8 @@ categories:
     parent: verb
   transaction_price_preposition:
     parent: preposition
+  transaction_unit_price_preposition:
+    parent: preposition
   transaction_account_preposition:
     parent: preposition
   payment_verb:
@@ -48,6 +50,7 @@ members:
   transaction_channel_descriptor: [online]
   shopping_activity: [shop, shopped, shopping]
   transaction_price_preposition: [for]
+  transaction_unit_price_preposition: [at, for]
   transaction_account_preposition: [with, from]
   payment_verb: [pay, paid, pays, paying]
   purchase_request: [order, ordered, orders, ordering]

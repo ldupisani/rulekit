@@ -67,6 +67,9 @@ from .model import (
     Quantity,
     Rate,
     RateScope,
+    RateThreshold,
+    RatePremium,
+    RepeatedActivityDuration,
     Reading,
     Relation,
     RatioQuantity,
@@ -89,6 +92,9 @@ from .model import (
 SKIPPABLE_SENSES = {"article", "punct"}
 
 _FACT_CLASSES = {
+    "rate_threshold": RateThreshold,
+    "rate_premium": RatePremium,
+    "repeated_activity_duration": RepeatedActivityDuration,
     "resource_allocation": ResourceAllocation,
     "resource_balance": ResourceBalance,
     "expenditure": Expenditure,

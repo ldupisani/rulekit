@@ -250,6 +250,13 @@ def _check_number(
     """Numeric guards, including explicit use of allocation endpoints."""
 
     if _enabled(reg, "answer-accounting") and store is not None:
+        from .repeated_rates import RATE_STRUCTURE_KINDS
+
+        if any(f.key() not in log.consumed_rate_structure_keys
+               for kind in RATE_STRUCTURE_KINDS
+               for f in store.by_kind(kind)):
+            return GuardVeto("answer-accounting", "a stated rate policy or repeated schedule was not used")
+
         from .model import ResourceAllocation, ResourceBalance
 
         if any(b.key() not in log.consumed_resource_balance_keys

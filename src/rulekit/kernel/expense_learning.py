@@ -11,13 +11,13 @@ from ..data.registry import Registry
 from .model import Expenditure, Provenance, Reading
 
 
-def _transaction_tail(reading, verb, index, reg, *, priced=False):
+def _transaction_tail(reading, verb, index, reg, *, priced=False, counted=None):
     """Read complete, category-licensed transaction complements in either order.
 
     The same routine handles an unpriced purchase and an explicit cost. No
     unrecognized PP is thrown away, including a unit-price or purpose tail.
     """
-    from .learn import _bound, _lemma, _matching_adposition_roles
+    from .learn import _bound, _lemma, _matching_adposition_roles, _price_each_value
     from .resource_accounting import account_complement
 
     units = reading.units
@@ -59,12 +59,25 @@ def _transaction_tail(reading, verb, index, reg, *, priced=False):
                 return None
             fields.update(supplier=_lemma(obj), supplier_qualifier=obj.features.get("qualifier") or "")
         elif (not priced and reg.word_in_category(_lemma(verb), "purchase")
-              and reg.word_in_category(_lemma(marker), "transaction_price_preposition")
+              and (reg.word_in_category(_lemma(marker), "transaction_price_preposition")
+                   or (counted is not None and reg.word_in_category(
+                       _lemma(marker), "transaction_unit_price_preposition")))
               and obj.features.get("value_kind") == "count"
               and reg.word_in_category(_lemma(obj), "currency_measure")):
-            if "value" in fields:
+            if "value" in fields or "unit_price" in fields:
                 return None
-            fields.update(value=float(obj.features["value"]), measure=_lemma(obj), position=obj.uid)
+            if counted is not None:
+                # Reuse the ordinary purchase reader's unit-price recognition,
+                # but require its quantifier to close THIS price complement.
+                price = _price_each_value(reading, counted, reg, stop_at_list_boundary=True)
+                if (j + 1 >= len(units) or units[j + 1].sense() != "quantifier"
+                        or price != float(obj.features["value"])):
+                    return None
+                fields.update(unit_price=price, quantity=float(counted.features["value"]),
+                              quantity_position=counted.uid, measure=_lemma(obj), position=obj.uid)
+                j += 1
+            else:
+                fields.update(value=float(obj.features["value"]), measure=_lemma(obj), position=obj.uid)
         else:
             return None
         index = j + 1
@@ -108,10 +121,13 @@ def learn_expenditures(reading: Reading, reg: Registry) -> list[Expenditure]:
             # uncertainty record for a later closed-account calculation.
             while i < len(units):
                 target = units[i]
-                if target.sense() != "noun" or target.features.get("value_kind"):
+                if target.sense() != "noun" or target.features.get("value_kind") not in (None, "count"):
                     break
+                counted = target if target.features.get("value_kind") == "count" else None
                 j = i + 1
                 if reg.word_in_category(_lemma(target), "partitive_pair_measure"):
+                    if counted is not None:
+                        break  # a counted partitive needs its own item/unit mapping
                     if j >= len(units) or not reg.word_in_category(_lemma(units[j]), "partitive"):
                         break
                     complement = _bound(units[j], "object")
@@ -119,10 +135,12 @@ def learn_expenditures(reading: Reading, reg: Registry) -> list[Expenditure]:
                         break
                     target = complement
                     j = units.index(target) + 1
-                tail = _transaction_tail(reading, verb, j, reg)
+                tail = _transaction_tail(reading, verb, j, reg, counted=counted)
                 if tail is None:
                     break
                 j, fields = tail
+                if counted is not None and "unit_price" not in fields:
+                    break  # do not lose the purchase count in an unpriced record
                 out.append(Expenditure(
                     provenance=Provenance(source="fold:purchase-target", sentence=reading.sentence_index,
                                           assumption=reading.assumption),

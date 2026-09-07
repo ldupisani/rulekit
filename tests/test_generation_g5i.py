@@ -70,8 +70,9 @@ def test_g5i_profiles_the_complete_recursive_optional_class() -> None:
     # their scoped optional modifiers. Goal progress additionally admits the
     # explicit fraction marker in "one third of the money", while committed
     # transfers admit the bounded "for that purpose" adjunct. Nesting and the
-    # established maximum depth stay unchanged.
-    assert _optional_profile(project) == (79, 164, 38, 3)
+    # established maximum depth stay unchanged. The rate-premium definition
+    # adds one optional fraction-of marker.
+    assert _optional_profile(project) == (80, 165, 38, 3)
 
 
 def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
@@ -80,8 +81,8 @@ def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
         for item in list_rule_availability(load_project(CURATED))
     }
 
-    assert len(availability) == 176
-    assert sum(item.supported for item in availability.values()) == 167
+    assert len(availability) == 180
+    assert sum(item.supported for item in availability.values()) == 171
     assert sum(not item.supported for item in availability.values()) == 9
     assert all(availability[rule_id].supported for rule_id in NEWLY_SUPPORTED)
     assert all(

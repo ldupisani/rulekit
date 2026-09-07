@@ -83,6 +83,7 @@ _SUPPORTED_SLOT_TYPES = frozenset(
 )
 _SUPPORTED_CATEGORY_ROOTS = frozenset(
     {
+        "operator",
         "noun",
         "verb",
         "adjective",

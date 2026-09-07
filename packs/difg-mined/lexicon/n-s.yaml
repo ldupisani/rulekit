@@ -309,9 +309,6 @@ entries:
   oversized:
     senses:
     - adjective
-  overtime:
-    senses:
-    - noun
   owe:
     senses:
     - verb
@@ -503,9 +500,6 @@ entries:
     senses:
     - noun
     plural: peppers
-  per:
-    senses:
-    - rate
   percent:
     senses:
     - noun
@@ -717,9 +711,6 @@ entries:
   plugs:
     senses:
     - noun
-  plus:
-    senses:
-    - operator
   pocket:
     senses:
     - noun
@@ -1755,12 +1746,6 @@ entries:
     senses:
     - noun
   shepherd:
-    senses:
-    - noun
-  shift:
-    senses:
-    - noun
-  shifts:
     senses:
     - noun
   ship:

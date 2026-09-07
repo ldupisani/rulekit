@@ -155,6 +155,7 @@ def allocation_attachments(reading, allocations, reg, expenses=()):
 def compose_resource_accounts(store, premises, reg):
     """Build balances, then materialize shared completeness diagnostics."""
     from .learn import _bound, _lemma
+    from .model import Price
 
     allocations = list(store.by_kind(ResourceAllocation))
     expenses = list(store.by_kind(Expenditure))
@@ -219,5 +220,8 @@ def compose_resource_accounts(store, premises, reg):
             if reg.word_in_category(lemma, "divide") or (
                 not event and obj is not None and reg.word_in_category(_lemma(obj), "currency")
                 and not balance_verb and not allocation_verb
+                and not (reg.word_in_category(lemma, "price_verb") and any(
+                    p.provenance.sentence == reading.sentence_index for p in store.by_kind(Price)
+                ))
             ):
                 issue(unit, "additional-change")

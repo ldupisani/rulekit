@@ -34,7 +34,7 @@ from .model import Reading, Word
 # comma on the fold ("12,"), and the old permissive pattern absorbed it by
 # accident. Dropping it broke three list_statistic items — the difg gate caught
 # it (0 BROKE is the gate, and it earned its keep here).
-_DIGIT = re.compile(r"^\$?(\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?)(%?),?$")
+_DIGIT = re.compile(r"^(-?)\$?(\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?)(%?),?$")
 # A COORDINATE TUPLE: comma-separated numbers that are NOT a valid thousands
 # grouping — "0,0", "3,4", "1,2". Structural (digit morphology), never a lexicon
 # fact, exactly like _DIGIT and _ORDINAL. The surrounding parens are already
@@ -95,12 +95,12 @@ def annotate_numbers(reading: Reading, reg: Registry) -> Reading:
             continue
         m = _DIGIT.match(fold)
         if m:
-            value = float(m.group(1).replace(",", ""))
+            value = float(m.group(2).replace(",", "")) * (-1 if m.group(1) else 1)
             kind = "count"
             changes: dict = {"value": value, "value_kind": kind}
-            if m.group(2) == "%":
+            if m.group(3) == "%":
                 changes = {"value": value / 100.0, "value_kind": "fraction", "percent": True}
-            if fold.startswith("$"):
+            if fold.lstrip("-").startswith("$"):
                 changes["currency"] = True
             reading.record("annotate-number", unit, changes, f"digit token {unit.surface!r}")
         elif _TUPLE.match(fold):

@@ -1,8 +1,8 @@
 # rulekit handoff
 
-**Updated:** 2026-09-06
-**Runtime checkpoint:** working tree on `main` (activity-independent budget
-phrases, supplier-aware transactions, and closed-account residual costs)
+**Updated:** 2026-09-07
+**Runtime checkpoint:** shared account and rate consolidation on `main`
+(following resource-accounting commit `89f241e`)
 **Active campaign:** GSM8K Mining v2, M7 example-led vertical mining
 **Immediate state:** all four published Mining v2 candidates are landed; no
 candidate is awaiting human or machine review
@@ -51,6 +51,38 @@ temporal event totals (130), task-completion duration gaps (131), and
 anaphoric distance chains with exact combined totals (132).
 
 ### Latest implementation checkpoint
+
+Resource and rate reuse now connects previously separate calculation paths.
+Unit-priced purchases retain their count and per-unit price as source evidence;
+the shared pricing expression feeds both older purchase totals and scoped
+accounts. One account resolver now serves missing purchase costs, remaining
+budgets, and affordability. It preserves ownership, currency, complete-event
+checks, and purchase/payment identity, and never turns an allocation into cash
+owned. Affordability requires an independent compatible unit-price statement.
+Discount arithmetic is shared, but unlinked account discounts still decline.
+Ordinary forward/inverse rates and repeated earnings share arithmetic and
+conversion helpers. Repeated schedules now accept compound base rates and
+explicitly matching activity-scoped durations; the additional premise shape
+is generator-supported. Numeric source multiplicity remains checked.
+The next composition boundary is explicit discount/settlement scope and
+derived earnings linked to a goal or account, not automatic cash projection.
+
+Repeated work schedules now compose with an explicit base wage and a
+threshold-linked fractional premium. `RateThreshold` is a policy, not hours
+already worked; `RatePremium` preserves the named tier's additive base-rate
+fraction; `RepeatedActivityDuration` keeps duration per period separate from
+the repeat count. The calculation resets the threshold for every session.
+The daily form reports its one-session-per-day interpretation in the answer;
+explicit shift repetition needs no such assumption. Missing policies,
+competing schedules/rates, incompatible units or participants, unread
+conditions, and additional amounts decline. All structured rate evidence is
+use-gated, so flat-rate or event-total consumers cannot silently discard it.
+The rate definition's generic second-person possessive is template syntax,
+not a discourse owner. Core owns the work/rate vocabulary; extending the
+activity, tier name, or rate noun through categories needs no Python change.
+Arithmetic signs remain visible, while adjacent negative signs stay attached
+to their numeric operands. Formula digits and lexical hyphens retain their
+previous tokenization. The Designer server has not been restarted.
 
 Closed-budget item costs now work through separate allocation endpoints and
 item-qualified expenditures. One unpriced purchase can receive the residual
@@ -449,9 +481,9 @@ These are the gates run at the current runtime checkpoint:
 
 | Gate | Current result |
 | --- | --- |
-| full synthetic suite | 6,177 verified (full run + affected rerun) |
+| full synthetic suite | 6,419 passed |
 | curated suite | 71 correct, 0 wrong |
-| GSM8K DEV-train | 107 correct, 0 wrong |
+| GSM8K DEV-train | 108 correct, 0 wrong |
 | GSM8K DEV-holdout | 49 correct, 0 wrong |
 | ASDiv DEV | 47 correct, 0 wrong |
 | SVAMP DEV | 24 correct, 0 wrong |
@@ -464,15 +496,23 @@ These are the gates run at the current runtime checkpoint:
 | curated lint | 0 errors, 0 warnings |
 | GSM8K lint | 0 errors, 1 previously documented trig-alternation warning |
 
-The full account-composition run passed all 6,174 tests in 476 seconds,
-including every supported GSM8K premise's strict round trip. A final explicit
-request-over-acquisition exclusion for legacy pack composition and three new
-project-composition probes then passed the 362-test affected set. The current
-collection contains 6,177 tests. All eight numeric DEV snapshot diffs were
-rerun after that final change and remain neutral. The source price/holding
-boundary is covered explicitly: buying an item for a stated price cannot
-mint a currency acquisition. No server restart or protected TEST look was
+The final account/rate reuse run passed all 6,419 tests in 366 seconds,
+including every supported GSM8K premise's strict round trip. This adds 106
+synthetic cases to the preceding checkpoint. All eight numeric DEV snapshot
+diffs are neutral, with zero broken answers and zero new wrongs; COGS and PMB
+DEV scores are also unchanged. Evidence is in
+`/tmp/rulekit-account-rate-reuse.InUjrf/` (`full-final.log` and the per-slice
+snapshot/diff logs). The initial full run exposed inventory assertions and
+one test-helper error, all corrected before the clean full rerun. No runtime
+changes followed the DEV gates. No server restart or protected TEST look was
 performed.
+
+The preceding repeated-rate increment added one correct GSM8K DEV-train
+answer (`d0e9ac73409c`). Its motivating text was user-supplied calibration,
+not independent evidence; tests retain invented analogues and negative
+neighbours only. Signed operands, chemistry formula digits, lexical hyphens,
+and the price/holding boundary remain covered: buying an item for a stated
+price cannot mint a currency acquisition.
 
 Review batch 62 deliberately retired one DEV-train commitment that happened
 to agree with its numeric gold while relying on an unsupported inference from
@@ -481,7 +521,7 @@ shortcut produced the human-rejected institution example. DEV-train therefore
 moved from 107 to 106 correct with zero wrongs; explicit owner-qualified place
 evidence still answers, while ownership alone now declines.
 Review batch 66 later added one independent correct commitment, returning the
-current total to 107 without weakening that owner/place boundary.
+then-current total to 107 without weakening that owner/place boundary.
 
 The ordered-measurement paraphrases add one correct DEV-holdout result
 (`2633a86a16ae`), with zero broken answers or new wrongs in either DEV slice.
@@ -514,13 +554,13 @@ Do not spend another protected look merely to refresh these numbers.
 Availability means “the authoring layer can realize the declared contract and
 round-trip it through the ordinary matcher.” It does not mean that a human has
 judged the resulting English or emitted fact valid.
-The curated reachable filler inventory is 458; local allocation rules expose
+The curated reachable filler inventory is 466; local allocation rules expose
 account phrases, whose ownership is deliberately not inferred in isolation.
 
 | Project | Premise rules | Independent asks | Answerable asks |
 | --- | ---: | ---: | ---: |
-| curated | 167/176 | 119/137 | 133/137 |
-| GSM8K | 161/168 | 157/170 | 170/170 |
+| curated | 171/180 | 119/137 | 133/137 |
+| GSM8K | 165/172 | 157/170 | 170/170 |
 
 The unsupported premise rows are deliberate safety interceptors or reader-only
 rules, not ordinary generation targets. Fourteen curated and all thirteen
