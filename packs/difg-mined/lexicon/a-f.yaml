@@ -1069,9 +1069,6 @@ entries:
   cheapest:
     senses:
     - adjective
-  cheese:
-    senses:
-    - noun
   chef:
     senses:
     - noun
@@ -1207,10 +1204,6 @@ entries:
   cobbler:
     senses:
     - noun
-  coconut:
-    senses:
-    - noun
-    plural: coconuts
   coffee:
     senses:
     - noun
@@ -1819,10 +1812,6 @@ entries:
     senses:
     - noun
     plural: dimes
-  dinner:
-    senses:
-    - noun
-    plural: dinners
   dinosaur:
     senses:
     - noun
@@ -2359,10 +2348,6 @@ entries:
   fancy:
     senses:
     - adjective
-  farm:
-    senses:
-    - noun
-    plural: farms
   farmer:
     senses:
     - noun

@@ -577,10 +577,6 @@ entries:
   inflating:
     senses:
     - verb
-  ingredient:
-    senses:
-    - noun
-    plural: ingredients
   initial:
     senses:
     - adjective
@@ -1253,12 +1249,6 @@ entries:
     - verb
     verb:
       lemma: manage
-  mango:
-    senses:
-    - noun
-    plural:
-    - mangoes
-    - mangos
   manufacturing:
     senses:
     - noun

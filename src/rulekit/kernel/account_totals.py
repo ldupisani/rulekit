@@ -3,7 +3,7 @@
 from collections import Counter
 import math
 
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 from .model import Expenditure, ResourceBalance
 
 
@@ -61,18 +61,10 @@ def resolve_account(ctx, *, residual_item=None, extra_evidence=()):
         or (e.account_owner and e.account_owner != entity)
     ) for e in expenses):
         return Answer("decline", None, "a transaction names a different resource account")
-    from .pricing import purchase_total_expression
-    resolved = []
-    for expense in expenses:
-        if expense.unit_price is not None or expense.quantity is not None:
-            if (expense.value is not None or expense.unit_price is None or expense.quantity is None
-                    or not all(math.isfinite(v) and v >= 0 for v in (expense.unit_price, expense.quantity))):
-                return Answer("decline", None, "a priced purchase needs a nonnegative count and unit price")
-            value = evaluate(purchase_total_expression([(expense.quantity, expense.unit_price)]),
-                             {}, ctx.log, source="expenditure-unit-price")
-            expense = replace(expense, value=value)
-        resolved.append(expense)
-    expenses = resolved
+    from .pricing import expenditure_mentions, resolve_expenditure_prices
+    expenses, error = resolve_expenditure_prices(expenses, ctx.log)
+    if error:
+        return Answer("decline", None, error)
     unknown = [e for e in expenses if e.value is None]
     if residual_item and (len(unknown) != 1 or (unknown[0].item, unknown[0].qualifier) != (item, qualifier)):
         return Answer("decline", None, "the requested item must be the one unknown purchase cost")
@@ -95,8 +87,7 @@ def resolve_account(ctx, *, residual_item=None, extra_evidence=()):
     # equal-valued mentions that a global set or arithmetic log would conceal.
     captured = {}
     for fact in evidence:
-        amounts = ((fact.quantity, fact.unit_price) if isinstance(fact, Expenditure)
-                   and fact.unit_price is not None else (fact.value,))
+        amounts = expenditure_mentions(fact).values() if isinstance(fact, Expenditure) else (fact.value,)
         captured.setdefault(fact.provenance.sentence, Counter()).update(amounts)
     from .numeric_evidence import audit_numeric_mentions
     error = audit_numeric_mentions(ctx.premises, captured,

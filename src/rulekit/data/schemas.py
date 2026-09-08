@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, model_validator
 
 
 class StrictModel(BaseModel):
@@ -593,14 +593,9 @@ class MatchToken(StrictModel):
     # does — and answers 720 (the product of all six components) for a dot
     # product whose answer is 32.
     #
-    # This is deliberately NOT the default, because for most categories a
-    # compound IS its head: a "guard dog" is a dog, a "school bus" is a bus, and
-    # every entity/superordinate gate depends on that staying true. It is only
-    # the OPERATION-NAMING categories where the head is a false friend — a dot
-    # product is not a product, a cross product is not a product. Set it there
-    # and nowhere else; defaulting to False keeps every existing slot byte-
-    # identical (the "opt-in parameter, defaulted to old behavior" rule for any
-    # change to a shared matcher).
+    # This is not the default: many compounds can validly fill a head-noun
+    # category. Use it when a construction cannot preserve the distinction.
+    # The restriction follows resolved pronouns and excludes instance labels.
     bare: bool = False
     # The noun names an item but states no numeric count or measured extent.
     uncounted: bool = False
@@ -1906,10 +1901,75 @@ class AskRule(StrictModel):
         return self
 
 
+class RuleTemplate(StrictModel):
+    """Local, data-only defaults and a premise or ask body with parameters."""
+
+    parameters: dict[str, object] = Field(default_factory=dict)
+    rule: dict[str, object]
+
+
+class TemplateVariant(StrictModel):
+    """A stable public identity instantiated from one local template."""
+
+    id: str
+    template: str
+    arguments: dict[str, object] = Field(default_factory=dict)
+
+
+class RuleVariant(TemplateVariant):
+    """Premise variants may also override their author-facing description."""
+
+    description: str | None = None
+
+
 class RulesDoc(StrictModel):
     format: Literal["rulekit/rules@1"]
     rules: list[PatternRule] = Field(default_factory=list)
     asks: list[AskRule] = Field(default_factory=list)
+    templates: dict[str, RuleTemplate] = Field(default_factory=dict)
+    variants: list[RuleVariant] = Field(default_factory=list)
+    ask_variants: list[TemplateVariant] = Field(default_factory=list)
+    _expanded_variants: list[PatternRule] = PrivateAttr(default_factory=list)
+    _expanded_ask_variants: list[AskRule] = PrivateAttr(default_factory=list)
+
+    @model_validator(mode="after")
+    def _expand_variants(self):
+        from .rule_templates import expand_rule_template
+
+        ids: set[str] = set()
+        for rule in [*self.rules, *self.asks]:
+            if rule.id in ids:
+                raise ValueError(f"rule id {rule.id!r} defined twice")
+            ids.add(rule.id)
+
+        def expand(variants, model):
+            expanded = []
+            for variant in variants:
+                if variant.template not in self.templates:
+                    raise ValueError(f"rule {variant.id!r}: unknown template {variant.template!r}")
+                if variant.id in ids:
+                    raise ValueError(f"rule id {variant.id!r} defined twice")
+                try:
+                    raw, _ = expand_rule_template(self.templates[variant.template], variant)
+                    expanded.append(model.model_validate(raw))
+                except ValueError as error:
+                    raise ValueError(
+                        f"rule {variant.id!r} from template {variant.template!r}: {error}"
+                    ) from error
+                ids.add(variant.id)
+            return expanded
+
+        self._expanded_variants = expand(self.variants, PatternRule)
+        self._expanded_ask_variants = expand(self.ask_variants, AskRule)
+        return self
+
+    @property
+    def compiled_rules(self) -> list[PatternRule]:
+        return [*self.rules, *self._expanded_variants]
+
+    @property
+    def compiled_asks(self) -> list[AskRule]:
+        return [*self.asks, *self._expanded_ask_variants]
 
 
 # ---------------------------------------------------------------------------

@@ -333,10 +333,6 @@ entries:
   pace:
     senses:
     - noun
-  pack:
-    senses:
-    - noun
-    plural: packs
   packet:
     senses:
     - noun
@@ -420,10 +416,6 @@ entries:
     senses:
     - noun
     plural: partners
-  party:
-    senses:
-    - noun
-    plural: parties
   pass:
     senses:
     - verb
@@ -1606,19 +1598,6 @@ entries:
   series:
     senses:
     - noun
-  serve:
-    senses:
-    - verb
-  served:
-    senses:
-    - verb
-    verb:
-      lemma: serve
-  serves:
-    senses:
-    - verb
-    verb:
-      lemma: serve
   service:
     senses:
     - adjective

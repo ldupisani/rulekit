@@ -1,11 +1,11 @@
 format: rulekit/rules@1
 rules:
+
   - id: arithmetic/carrier-event-cadence
     phase: read
     description: >
-      "Mira delivers a box once every two days" states a carrier-event
-      cadence. The number of contents per carrier is deliberately unknown.
-      A later total and adjacent-term relation may determine those amounts.
+      "Mira delivers a box once every two days" states a carrier-event cadence. The number of contents per carrier is deliberately
+      unknown. A later total and adjacent-term relation may determine those amounts.
     match:
       sentence:
         - {slot: who, type: entity, common_noun_cat: quantity_event_participant, at_start: true}
@@ -15,7 +15,7 @@ rules:
         - {slot: frequency, type: multiplier}
         - {lit: every}
         - {slot: interval, cat: duration_measure, counted: true, value_min: 1}
-        - {lit: '.', consume_skipped: true}
+        - {lit: ., consume_skipped: true}
     where:
       - number_compatible: [who, verb]
       - slot_not_category: {slot: frequency, cat: predeterminer_multiplier}
@@ -33,11 +33,9 @@ rules:
   - id: arithmetic/purpose-carrier-event-cadence
     phase: read
     description: >
-      A recurring departure or return may name the carrier event as its
-      purpose. This preserves cadence and the named event separately from
-      motion and an optional nonnumeric motive. Interpreting the event as
-      covering one whole carrier is a reported assumption of the sequence
-      consumer, not a general fact about motion or consumption.
+      A recurring departure or return may name the carrier event as its purpose. This preserves cadence and the named event
+      separately from motion and an optional nonnumeric motive. Interpreting the event as covering one whole carrier is a
+      reported assumption of the sequence consumer, not a general fact about motion or consumption.
     match:
       sentence:
         - {slot: who, type: entity, common_noun_cat: quantity_event_participant, at_start: true}
@@ -59,7 +57,7 @@ rules:
             - {slot: motive_verb, cat: sequence_motive_verb, bare_form: true}
             - {slot: poss, cat: possessive_determiner}
             - {slot: motive, cat: sequence_motive_noun, uncounted: true}
-        - {lit: '.', consume_skipped: true}
+        - {lit: ., consume_skipped: true}
     where:
       - number_compatible: [who, motion]
       - slot_not_category: {slot: frequency, cat: predeterminer_multiplier}
@@ -79,19 +77,19 @@ rules:
   - id: arithmetic/bounded-sequence-event-total
     phase: read
     description: >
-      "Over six days, Mira has delivered seventy toys" preserves a total
-      and its duration. It does not assert seventy toys per delivery.
-      A neutral subject pronoun stays symbolic until the consumer can bind
-      it to one preceding cadence with a compatible event.
+      "Over six days, Mira has delivered seventy toys" preserves a total and its duration. It does not assert seventy toys
+      per delivery. A neutral subject pronoun stays symbolic until the consumer can bind it to one preceding cadence with
+      a compatible event.
     match:
       sentence:
         - {slot: prep, cat: sequence_elapsed_preposition, at_start: true}
         - {slot: span, cat: duration_measure, counted: true, value_min: 1}
         - {lit: ',', consume_skipped: true}
-        - {slot: who, type: entity, common_noun_cat: quantity_event_participant, referential: true, bare_reference_category: bare_entity_reference}
+        - {slot: who, type: entity, common_noun_cat: quantity_event_participant, referential: true,
+            bare_reference_category: bare_entity_reference}
         - {slot: verb, cat: carrier_transitive_event_verb, past_participle: true}
         - {slot: amount, type: counted}
-        - {lit: '.', consume_skipped: true}
+        - {lit: ., consume_skipped: true}
     where:
       - number_compatible: [who, verb]
       - slot_not_category: {slot: amount, cat: many_incompatible_noun}
@@ -122,10 +120,9 @@ rules:
       target_identity_links: {context_event: verb}
       required_fact_counts: {event_cadence: 1}
     description: >
-      A neutral pronoun can name the cadence actor in a bounded event total.
-      The fact preserves the pronoun unless ordinary discourse has already
-      resolved it. Only one preceding compatible cadence can resolve a
-      remaining symbolic subject; this rule never invents a global referent.
+      A neutral pronoun can name the cadence actor in a bounded event total. The fact preserves the pronoun unless ordinary
+      discourse has already resolved it. Only one preceding compatible cadence can resolve a remaining symbolic subject; this
+      rule never invents a global referent.
     match:
       sentence:
         - {slot: prep, cat: sequence_elapsed_preposition, at_start: true}
@@ -134,7 +131,7 @@ rules:
         - {slot: who, cat: sequence_singular_anaphor}
         - {slot: verb, cat: carrier_transitive_event_verb, past_participle: true}
         - {slot: amount, type: counted}
-        - {lit: '.', consume_skipped: true}
+        - {lit: ., consume_skipped: true}
     consumes: [span, amount]
     where:
       - slot_not_category: {slot: amount, cat: many_incompatible_noun}
@@ -147,133 +144,8 @@ rules:
         elapsed: span
         unit: '{span}'
 
-  - id: arithmetic/adjacent-carrier-multiplier
-    phase: read
-    description: >
-      Each new carrier has a stated multiple of the previous carrier's
-      contents. The two carrier mentions denote distinct occurrences, not
-      a self-relation on one holder. An optional qualitative construction
-      background supplies no arithmetic amount.
-    match:
-      sentence:
-        - opt:
-            - {slot: background, cat: sequence_carrier, number: plural, at_start: true}
-            - {slot: passive, cat: sequence_passive_auxiliary}
-            - {slot: creation, cat: sequence_creation_verb}
-            - {slot: growth, cat: sequence_growth_descriptor}
-            - {slot: elapsed_prep, cat: sequence_elapsed_preposition}
-            - {slot: time, cat: abstract_time_noun, uncounted: true}
-            - {lit: ',', consume_skipped: true}
-            - {slot: result, cat: sequence_result_conjunction}
-        - {lit: each}
-        - {slot: series, cat: sequence_carrier, qualified: true, qualifier_cat: sequence_current_descriptor, number: singular}
-        - {slot: verb, cat: container_content_state_verb, finite_form: true}
-        - {slot: factor, type: nonunit_multiplier}
-        - {lit: as}
-        - {lit: many}
-        - {slot: item, type: plural}
-        - {lit: as}
-        - {slot: previous, cat: sequence_carrier, qualified: true, qualifier_cat: sequence_previous_descriptor, number: singular, referential: true}
-        - {lit: '.', consume_skipped: true}
-    where:
-      - same_lemma: [series, previous]
-      - same_lemma: [background, series]
-      - number_compatible: [background, passive]
-      - number_compatible: [series, verb]
-      - slot_not_category: {slot: factor, cat: predeterminer_multiplier}
-      - slot_not_category: {slot: item, cat: many_incompatible_noun}
-    consumes: [factor]
-    emits:
-      - fact: sequence_step
-        series: '{series}'
-        measure: '{item}'
-        factor: factor
-
-  - id: arithmetic/adjacent-carrier-equative
-    phase: read
-    description: >
-      Each new carrier has as many items as the previous carrier. The plain
-      equative fixes the adjacent factor at one; a frequency adverb is not
-      a valid substitute for this comparison.
-    match:
-      sentence:
-        - {lit: each, at_start: true}
-        - {slot: series, cat: sequence_carrier, qualified: true, qualifier_cat: sequence_current_descriptor, number: singular}
-        - {slot: verb, cat: container_content_state_verb, finite_form: true}
-        - {lit: as}
-        - {lit: many}
-        - {slot: item, type: plural}
-        - {lit: as}
-        - {slot: previous, cat: sequence_carrier, qualified: true, qualifier_cat: sequence_previous_descriptor, number: singular, referential: true}
-        - {lit: '.', consume_skipped: true}
-    where:
-      - same_lemma: [series, previous]
-      - number_compatible: [series, verb]
-      - slot_not_category: {slot: item, cat: many_incompatible_noun}
-    emits:
-      - fact: sequence_step
-        series: '{series}'
-        measure: '{item}'
-        factor: 1
-
-  - id: arithmetic/adjacent-carrier-offset
-    phase: read
-    description: >
-      "Each new box has five more toys than the last box" records an
-      additive step using the same affine relation as multiplicative series.
-      Positive and negative steps retain their declared direction.
-    match:
-      sentence:
-        - {lit: each, at_start: true}
-        - {slot: series, cat: sequence_carrier, qualified: true, qualifier_cat: sequence_current_descriptor, number: singular}
-        - {slot: verb, cat: container_content_state_verb, finite_form: true}
-        - {slot: amount, type: number, standalone: true}
-        - {slot: dir, cat: count_quantity_delta}
-        - {slot: item, type: plural}
-        - {lit: than}
-        - {slot: previous, cat: sequence_carrier, qualified: true, qualifier_cat: sequence_previous_descriptor, number: singular, referential: true}
-        - {lit: '.', consume_skipped: true}
-    where:
-      - same_lemma: [series, previous]
-      - number_compatible: [series, verb]
-      - slot_not_category: {slot: item, cat: many_incompatible_noun}
-    consumes: [amount]
-    emits:
-      - fact: sequence_step
-        series: '{series}'
-        measure: '{item}'
-        offset: amount * sign(dir)
-
-  - id: arithmetic/adjacent-carrier-fraction
-    phase: read
-    description: >
-      A fractional adjacent-term comparison shares the multiplicative
-      sequence fact. This includes decreasing sequences without rewriting
-      the fraction into a percentage or a rounded count.
-    match:
-      sentence:
-        - {lit: each, at_start: true}
-        - {slot: series, cat: sequence_carrier, qualified: true, qualifier_cat: sequence_current_descriptor, number: singular}
-        - {slot: verb, cat: container_content_state_verb, finite_form: true}
-        - {slot: factor, type: fraction, fraction_positive: true}
-        - {lit: as}
-        - {lit: many}
-        - {slot: item, type: plural}
-        - {lit: as}
-        - {slot: previous, cat: sequence_carrier, qualified: true, qualifier_cat: sequence_previous_descriptor, number: singular, referential: true}
-        - {lit: '.', consume_skipped: true}
-    where:
-      - same_lemma: [series, previous]
-      - number_compatible: [series, verb]
-      - slot_not_category: {slot: item, cat: many_incompatible_noun}
-    consumes: [factor]
-    emits:
-      - fact: sequence_step
-        series: '{series}'
-        measure: '{item}'
-        factor: factor
-
 asks:
+
   - id: ask/ordered-carrier-contents
     # Contents of an explicitly indexed carrier in one bounded series.
     match:
@@ -283,7 +155,8 @@ asks:
         - {slot: item, type: plural}
         - {slot: copula, cat: plural_copula}
         - {slot: prep, cat: sequence_location_preposition}
-        - {slot: series, cat: sequence_carrier, qualified: true, qualifier_cat: sequence_index_descriptor, number: singular, referential: true}
+        - {slot: series, cat: sequence_carrier, qualified: true, qualifier_cat: sequence_index_descriptor, number:
+            singular, referential: true}
         - {lit: '?', consume_skipped: true}
     where:
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
@@ -320,3 +193,130 @@ asks:
       index: '{period.qualifier}'
       period: '{period.value}'
       unit: '{period}'
+
+templates:
+
+  adjacent-carrier:
+    parameters:
+      opening:
+        tokens:
+          - {lit: each, at_start: true}
+        guards: []
+      comparison:
+        tokens:
+          - {lit: as}
+          - {lit: many}
+        join: {lit: as}
+        guards: []
+        consumes: []
+        emits:
+          - fact: sequence_step
+            series: '{series}'
+            measure: '{item}'
+            factor: 1
+    rule:
+      phase: read
+      match:
+        sentence:
+          - {parameter: opening.tokens}
+          - {slot: series, cat: sequence_carrier, qualified: true, qualifier_cat: sequence_current_descriptor, number:
+              singular}
+          - {slot: verb, cat: container_content_state_verb, finite_form: true}
+          - {parameter: comparison.tokens}
+          - {slot: item, type: plural}
+          - {parameter: comparison.join}
+          - {slot: previous, cat: sequence_carrier, qualified: true, qualifier_cat: sequence_previous_descriptor, number:
+              singular, referential: true}
+          - {lit: ., consume_skipped: true}
+      where:
+        - {same_lemma: [series, previous]}
+        - {parameter: opening.guards}
+        - {number_compatible: [series, verb]}
+        - {parameter: comparison.guards}
+        - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      emits: {parameter: comparison.emits}
+      consumes: {parameter: comparison.consumes}
+
+variants:
+
+  - id: arithmetic/adjacent-carrier-multiplier
+    template: adjacent-carrier
+    description: >
+      Each new carrier has a stated multiple of the previous carrier's contents. The two carrier mentions denote distinct
+      occurrences, not a self-relation on one holder. An optional qualitative construction background supplies no arithmetic
+      amount.
+    arguments:
+      opening:
+        tokens:
+          - opt:
+              - {slot: background, cat: sequence_carrier, number: plural, at_start: true}
+              - {slot: passive, cat: sequence_passive_auxiliary}
+              - {slot: creation, cat: sequence_creation_verb}
+              - {slot: growth, cat: sequence_growth_descriptor}
+              - {slot: elapsed_prep, cat: sequence_elapsed_preposition}
+              - {slot: time, cat: abstract_time_noun, uncounted: true}
+              - {lit: ',', consume_skipped: true}
+              - {slot: result, cat: sequence_result_conjunction}
+          - {lit: each}
+        guards:
+          - {same_lemma: [background, series]}
+          - {number_compatible: [background, passive]}
+      comparison:
+        tokens:
+          - {slot: factor, type: nonunit_multiplier}
+          - {lit: as}
+          - {lit: many}
+        join: {lit: as}
+        guards:
+          - slot_not_category: {slot: factor, cat: predeterminer_multiplier}
+        consumes: [factor]
+        emits:
+          - fact: sequence_step
+            series: '{series}'
+            measure: '{item}'
+            factor: factor
+
+  - id: arithmetic/adjacent-carrier-equative
+    template: adjacent-carrier
+    description: >
+      Each new carrier has as many items as the previous carrier. The plain equative fixes the adjacent factor at one; a frequency
+      adverb is not a valid substitute for this comparison.
+
+  - id: arithmetic/adjacent-carrier-offset
+    template: adjacent-carrier
+    description: >
+      "Each new box has five more toys than the last box" records an additive step using the same affine relation as multiplicative
+      series. Positive and negative steps retain their declared direction.
+    arguments:
+      comparison:
+        tokens:
+          - {slot: amount, type: number, standalone: true}
+          - {slot: dir, cat: count_quantity_delta}
+        join: {lit: than}
+        guards: []
+        consumes: [amount]
+        emits:
+          - fact: sequence_step
+            series: '{series}'
+            measure: '{item}'
+            offset: amount * sign(dir)
+
+  - id: arithmetic/adjacent-carrier-fraction
+    template: adjacent-carrier
+    description: >
+      A fractional adjacent-term comparison shares the multiplicative sequence fact. This includes decreasing sequences without
+      rewriting the fraction into a percentage or a rounded count.
+    arguments:
+      comparison:
+        tokens:
+          - {slot: factor, type: fraction, fraction_positive: true}
+          - {lit: as}
+          - {lit: many}
+        join: {lit: as}
+        guards: []
+        consumes: [factor]
+        emits:
+          - fact: sequence_step
+            series: '{series}'
+            measure: '{item}'
+            factor: factor

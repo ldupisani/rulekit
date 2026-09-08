@@ -73,7 +73,9 @@ def test_g5i_profiles_the_complete_recursive_optional_class() -> None:
     # established maximum depth stay unchanged. The rate-premium definition
     # adds one optional fraction-of marker. Carrier sequences add optional
     # origin, event preposition, motive, and construction background groups.
-    assert _optional_profile(project) == (84, 172, 38, 3)
+    # The shared comparison family adds four item-layout variants and nine
+    # additive-discourse positions; it does not add nesting depth.
+    assert _optional_profile(project) == (89, 182, 38, 3)
 
 
 def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
@@ -82,8 +84,8 @@ def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
         for item in list_rule_availability(load_project(CURATED))
     }
 
-    assert len(availability) == 199
-    assert sum(item.supported for item in availability.values()) == 190
+    assert len(availability) == 204
+    assert sum(item.supported for item in availability.values()) == 195
     assert sum(not item.supported for item in availability.values()) == 9
     assert all(availability[rule_id].supported for rule_id in NEWLY_SUPPORTED)
     assert all(
@@ -168,7 +170,7 @@ def test_nested_omission_is_distinct_from_an_inactive_child_group() -> None:
     candidate = generate_candidate(
         load_project(CURATED),
         rule_id="arithmetic/times-as-many",
-        seed=2,
+        seed=1,
     )
     choices = [
         row.binding

@@ -121,17 +121,23 @@ def test_explicit_standard_still_resolves_unaffected(full_registry):
     assert r.answer.value == 24
 
 
-def test_qualifier_collision_still_declines_not_wrong(full_registry):
-    # "K times as many QUALIFIED-X as OTHER-QUALIFIED-X" -- the standard IS
-    # named in the text ("red marbles"), so this must NOT be read as an
-    # elided-standard shape at all; the whole clause stays declined exactly
-    # as it did before this candidate existed (a pre-existing, separate gap
-    # in the qualifier-awareness of the mandatory-standard sibling, not
-    # something this candidate may paper over with a guess)
+def test_qualified_chain_uses_the_explicit_standard_not_an_elided_guess(full_registry):
+    # The mandatory-standard family now preserves both item qualifiers.
+    # This closes the old coverage gap without using an elided-standard rule.
     r = solve(
-        "Wanjiru has 10 blue marbles. She has 9 fewer green marbles than "
-        "blue marbles. She has 4 times as many red marbles as green "
-        "marbles. How many marbles does Wanjiru have in all?",
+        "Cato has 18 blue marbles. He has 5 fewer green marbles than "
+        "blue marbles. He has 3 times as many red marbles as green "
+        "marbles. How many marbles does Cato have in all?",
         full_registry,
     )
-    assert r.answer.kind == "decline"
+    assert r.answer.value == 70
+    from rulekit.kernel.model import Quantity, Relation
+
+    assert {q.measure_qualifier: q.value for q in r.store.by_kind(Quantity)} == {
+        "blue": 18, "green": 13, "red": 39,
+    }
+    assert any(
+        rel.provenance.source == "arithmetic/times-as-many-qualified-measures"
+        for rel in r.store.by_kind(Relation)
+    )
+    assert not any("elided" in rel.provenance.source for rel in r.store.by_kind(Relation))

@@ -296,10 +296,12 @@ def _check_number(
         fact_values = _fact_values_by_sentence(store) if store is not None else {}
         from .model import Expenditure
 
+        from .pricing import expenditure_mentions
         used_cost_mentions = {
-            (e.provenance.sentence, e.position): e.value
+            (e.provenance.sentence, position): value
             for e in store.by_kind(Expenditure)
-            if e.value is not None and e.key() in log.consumed_expenditure_keys
+            if e.key() in log.consumed_expenditure_keys
+            for position, value in expenditure_mentions(e).items()
         } if store is not None else {}
         from .model import (
             Discount,

@@ -309,6 +309,23 @@ def _revenue_total(
     return evaluate(" + ".join(parts), {}, log, source="revenue-total")
 
 
+def _qualified_relations_resolved(store: FactStore, entity: str, measure: str) -> bool:
+    """A whole-item total cannot omit an unresolved attribute comparison."""
+    qualifiers = {
+        q.measure_qualifier for q in store.by_kind(Quantity)
+        if q.entity == entity and q.measure.split("[", 1)[0] == measure
+    }
+    return all(
+        {relation.measure_qualifier, relation.standard_qualifier} <= qualifiers
+        for relation in store.by_kind(Relation)
+        if relation.subject == entity
+        and relation.measure == measure
+        and relation.standard == measure
+        and relation.measure_qualifier
+        and relation.standard_qualifier
+    )
+
+
 def _entity_total(
     store: FactStore, reg: Registry, entity: str, measure: str, log: ArithmeticLog,
     invert_events: bool = False,
@@ -353,6 +370,8 @@ def _entity_total(
     (quarantined) — checked here exactly like Discount's own compounding
     guard, so an unmodeled same-sentence pair declines rather than
     silently picking one."""
+    if not _qualified_relations_resolved(store, entity, measure):
+        return None
     if any(
         p.dobj_unquantified and p.polarity
         and p.subject == entity
@@ -739,6 +758,8 @@ def _qualified_variant_total(
     risk double-counting against it, so this declines instead. A total
     explicitly scoped to another entity is not compatible and cannot block
     this entity's roll-up."""
+    if not _qualified_relations_resolved(store, entity, measure):
+        return None
     if any(
         g.measure == measure and (g.scope is None or g.scope == entity)
         for g in store.by_kind(GroupTotal)

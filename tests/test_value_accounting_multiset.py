@@ -22,6 +22,7 @@ import pytest
 
 from rulekit.data.project import load_project
 from rulekit.kernel.engine import solve
+from rulekit.kernel.model import Quantity
 
 
 @pytest.fixture(scope="module")
@@ -41,16 +42,20 @@ def test_repeated_value_elided_second_mention_declines(reg):
     assert "value-accounting" in (r.answer.reason or "")
 
 
-def test_same_value_dropped_conjunct_declines(reg):
-    """Same blind spot, a different root cause: a same-value second conjunct that
-    never became a fact. Before the multiset fix this silently committed the lone
-    fact (a confident wrong); now it declines."""
+def test_same_value_qualified_conjuncts_are_both_accounted(reg):
+    """Distinct item types now survive equal-value admission as two facts.
+
+    The accounting guard therefore has evidence for both numeric mentions;
+    the unresolved-mention test above still protects genuinely missing facts.
+    """
     r = solve(
         "Sam has three red pens and three blue pens. How many pens does Sam have?",
         reg, tracing=False,
     )
-    assert not r.answer.committed, f"committed {r.answer.value!r} — a masked dropped conjunct"
-    assert "value-accounting" in (r.answer.reason or "")
+    assert r.answer.value == 6
+    assert {q.measure_qualifier: q.value for q in r.store.by_kind(Quantity)} == {
+        "red": 3, "blue": 3,
+    }
 
 
 def test_distinct_values_both_resolved_still_commit(reg):

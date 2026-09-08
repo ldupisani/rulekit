@@ -70,9 +70,8 @@ def test_noun_membership_requires_directional_category_containment(project) -> N
     for seed in range(8):
         candidate = generate_candidate(project, rule_id=rule_id, seed=seed)
         assert candidate.target_status == "matched"
-        assert candidate.target_bindings["coll"] == "animals"
         assert project.registry.category_term_contains(
-            "animal", candidate.target_bindings["attr"]
+            candidate.target_bindings["coll"], candidate.target_bindings["attr"]
         )
 
 

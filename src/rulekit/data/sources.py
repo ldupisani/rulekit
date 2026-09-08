@@ -46,6 +46,7 @@ class SourceIndex:
 
     rules: dict[str, SourceRef] = field(default_factory=dict)
     asks: dict[str, SourceRef] = field(default_factory=dict)
+    # Both premise and ask IDs use the token/predicate lookup tables.
     rule_tokens: dict[tuple[str, int], SourceRef] = field(default_factory=dict)
     rule_token_paths: dict[tuple[str, tuple[int, ...]], SourceRef] = field(
         default_factory=dict
@@ -150,6 +151,7 @@ def _index_rules(index: SourceIndex, path: Path, raw: Any, doc: RulesDoc) -> Non
         rule_id: str,
         raw_tokens: Any,
         token_path: tuple[int, ...] = (),
+        kind: str = "rule",
     ) -> None:
         if not isinstance(raw_tokens, list):
             return
@@ -158,7 +160,7 @@ def _index_rules(index: SourceIndex, path: Path, raw: Any, doc: RulesDoc) -> Non
             ref = _ref(
                 path,
                 raw_tokens,
-                kind="rule-token",
+                kind=f"{kind}-token",
                 label=(
                     f"{rule_id} token "
                     + ".".join(str(part + 1) for part in current_path)
@@ -169,7 +171,15 @@ def _index_rules(index: SourceIndex, path: Path, raw: Any, doc: RulesDoc) -> Non
             if len(current_path) == 1:
                 index.rule_tokens[(rule_id, token_no)] = ref
             if isinstance(raw_token, dict):
-                index_tokens(rule_id, raw_token.get("opt"), current_path)
+                index_tokens(rule_id, raw_token.get("opt"), current_path, kind)
+
+    def index_where(rule_id: str, raw_where: Any, kind: str = "rule") -> None:
+        if isinstance(raw_where, list):
+            for where_no in range(len(raw_where)):
+                index.rule_where[(rule_id, where_no)] = _ref(
+                    path, raw_where, kind=f"{kind}-where",
+                    label=f"{rule_id} where {where_no + 1}", item=where_no,
+                )
 
     raw_rules = raw.get("rules", [])
     for rule_no, rule in enumerate(doc.rules):
@@ -181,16 +191,7 @@ def _index_rules(index: SourceIndex, path: Path, raw: Any, doc: RulesDoc) -> Non
         )
         raw_sentence = raw_rule.get("match", {}).get("sentence")
         index_tokens(rule.id, raw_sentence)
-        raw_where = raw_rule.get("where", [])
-        if isinstance(raw_where, list):
-            for where_no in range(len(raw_where)):
-                index.rule_where[(rule.id, where_no)] = _ref(
-                    path,
-                    raw_where,
-                    kind="rule-where",
-                    label=f"{rule.id} where {where_no + 1}",
-                    item=where_no,
-                )
+        index_where(rule.id, raw_rule.get("where", []))
 
     raw_asks = raw.get("asks", [])
     for ask_no, ask in enumerate(doc.asks):
@@ -199,6 +200,48 @@ def _index_rules(index: SourceIndex, path: Path, raw: Any, doc: RulesDoc) -> Non
         index.asks[ask.id] = _ref(
             path, raw_asks, kind="ask", label=ask.id, item=ask_no
         )
+        raw_ask = raw_asks[ask_no]
+        index_tokens(ask.id, raw_ask.get("match", {}).get("question"), kind="ask")
+        index_where(ask.id, raw_ask.get("where", []), kind="ask")
+
+    # Expanded rules keep their variant's public identity, while token and
+    # predicate links open the actual shared template or argument declaration.
+    from .rule_templates import expand_rule_template
+    from .schemas import RuleTemplate, RuleVariant, TemplateVariant
+
+    def index_variant(raw_variant, *, kind, variant_model, sequence):
+        variant = variant_model.model_validate(raw_variant)
+        template = RuleTemplate.model_validate(raw["templates"][variant.template])
+        expanded, origins = expand_rule_template(template, variant)
+        rule_id = variant.id
+        declarations = index.asks if kind == "ask" else index.rules
+        declarations[rule_id] = _ref(path, raw_variant, kind=kind, label=rule_id)
+
+        def expanded_tokens(tokens, token_path=(), raw_path=None):
+            if raw_path is None:
+                raw_path = ("match", sequence)
+            for number, token in enumerate(tokens):
+                current = (*token_path, number)
+                origin_path = (*raw_path, number)
+                ref = _ref(path, origins[origin_path], kind=f"{kind}-token",
+                           label=f"{rule_id} token " + ".".join(str(i + 1) for i in current))
+                index.rule_token_paths[(rule_id, current)] = ref
+                if len(current) == 1:
+                    index.rule_tokens[(rule_id, number)] = ref
+                if isinstance(token, dict) and "opt" in token:
+                    expanded_tokens(token["opt"], current, (*origin_path, "opt"))
+
+        expanded_tokens(expanded.get("match", {}).get(sequence, []))
+        for number, _ in enumerate(expanded.get("where", [])):
+            index.rule_where[(rule_id, number)] = _ref(
+                path, origins[("where", number)], kind=f"{kind}-where",
+                label=f"{rule_id} where {number + 1}",
+            )
+
+    for raw_variant in raw.get("variants", []):
+        index_variant(raw_variant, kind="rule", variant_model=RuleVariant, sequence="sentence")
+    for raw_variant in raw.get("ask_variants", []):
+        index_variant(raw_variant, kind="ask", variant_model=TemplateVariant, sequence="question")
 
 
 def _index_lexicon(

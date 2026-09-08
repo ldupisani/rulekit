@@ -25,6 +25,11 @@ ROOT = Path(__file__).resolve().parents[1]
 CURATED = ROOT / "projects" / "curated"
 
 EXPECTED_GROUPS = {
+    "arithmetic/as-many-qualified-measures": (("item", "standard"),),
+    "arithmetic/times-as-many-qualified-measures": (("item", "standard"),),
+    "arithmetic/fraction-as-many-qualified-measures": (("item", "standard"),),
+    "arithmetic/affine-times-as-many-qualified-measures": (("item", "standard"),),
+    "arithmetic/affine-fraction-qualified-measures": (("item", "standard"),),
     "arithmetic/anchored-relation": (("item", "std"),),
     "arithmetic/anchored-relation-conjoined-measures": (
         ("item", "std"),
@@ -153,7 +158,7 @@ def test_g5m_profiles_the_complete_distinct_measure_class() -> None:
     }
 
     assert set(rules) == set(EXPECTED_GROUPS)
-    assert sum(len(groups) for groups in EXPECTED_GROUPS.values()) == 10
+    assert sum(len(groups) for groups in EXPECTED_GROUPS.values()) == 15
     assert {
         rule_id: _distinct_measure_groups(rule)
         for rule_id, rule in rules.items()
@@ -166,8 +171,8 @@ def test_g5m_unlocks_exactly_the_preregistered_frontier() -> None:
         item.id: item for item in list_rule_availability(project)
     }
 
-    assert len(availability) == 199
-    assert sum(item.supported for item in availability.values()) == 190
+    assert len(availability) == 204
+    assert sum(item.supported for item in availability.values()) == 195
     assert sum(not item.supported for item in availability.values()) == 9
     assert all(
         availability[rule_id].supported for rule_id in GENERATIVE_GROUPS
@@ -193,7 +198,7 @@ def test_g5m_unlocks_exactly_the_preregistered_frontier() -> None:
         for item in availability.values()
         for blocker in item.blockers
     )
-    assert len(exploration_status(project)["fillers"]) == 503
+    assert len(exploration_status(project)["fillers"]) == 516
 
 
 @pytest.mark.parametrize("rule_id", sorted(GENERATIVE_GROUPS))

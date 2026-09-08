@@ -309,6 +309,26 @@ purchase/payment descriptions are not silently debited twice.
 The request exclusion remains authoritative even when a legacy pack also
 classifies the same verb under acquisition or purchase.
 
+Whole-lot prices are separate from unit prices. A measured or packaged
+purchase retains its `lot_measure`, explicit `lot_quantity`, and source
+position, but its stated cost already prices the complete lot. Local relative
+price clauses retain an exact item/qualifier reference and a fractional or
+multiplicative factor. `pricing.resolve_expenditure_prices()` resolves those
+references only within the same buyer's purchases, supports anchored chains,
+and declines on missing, repeated, or cyclic references. It is shared by the
+budget account and the complete purchase-total consumer; neither promotes a
+lot cost to a generic per-unit `Price`.
+
+Purchase-list completeness is retained on the expenditure records, including
+unpriced or unread continuations. The purchase-total consumer requires every
+line to have a known compatible-currency cost, checks shared resource issues,
+and audits the original numeric mentions with multiplicity. A collective ask
+such as an ingredient total needs a pack-declared collection category that
+contains every purchased item. It cannot silently omit an unrelated purchase.
+Nonnumeric background plans do not make an independent actual purchase
+nonactual. The answer states that relative prices refer to whole purchased
+lots, making this interpretation inspectable.
+
 Counted purchases may instead retain `quantity`, `unit_price`, and the count's
 source position. These are source operands, not a stated total: `3 toys at
 $10 each` keeps both 3 and 10, with `value` unset until the account resolver
@@ -324,6 +344,9 @@ prices remain on the existing item/`Price` path: they must never become cash
 acquisitions with `Quantity(verb=buy)`. A resource consumer explicitly logs the
 expenditure keys it uses, licensing only those exact source numeric mentions.
 Mere existence of a supplemental cost record does not bypass value accounting.
+`pricing.expenditure_mentions()` is the common source-operand contract for
+numeric auditing and the use gate: derived costs do not replace the original
+counts, stated costs, or comparison factors.
 
 `account_totals.resolve_account()` supplies a scoped, evidence-checked result
 to the missing-cost, money-left, and affordability consumers. An account is
@@ -679,6 +702,66 @@ The implemented document families are:
 | domain knowledge | conversions, affine conversions, geometry, formulas, calendar, elements, reference |
 | governance | quarantine, requirements, pack, project |
 
+Rule documents can also declare local `templates`, premise `variants`, and
+`ask_variants`. Both variant lists use the same data-only expansion mechanism.
+A template has literal YAML `parameters` and one ordinary `rule` body;
+`{parameter: name.path}` replaces a complete value, and a list parameter
+inside a list inserts its elements. A variant supplies a stable rule `id`,
+the template name and optional argument overrides. Premise variants can also
+override their description. The containing list determines the validation
+contract: `variants` expand to `PatternRule`, while `ask_variants` expand to
+`AskRule`, including its resolution/interpretation and generation requirements.
+An ask template therefore has `match.question` and `resolves` or
+`interpretations` inside its `rule` body, not premise `emits`.
+Expansion happens during document validation, followed by normal schema and
+registry checks. Unknown or unused top-level parameters, unresolved
+paths, references inside argument values and duplicate rule identities fail
+loading. There is no string evaluation, recursive template inheritance or
+separate matching implementation. Original declarations remain the saved
+document; `compiled_rules` and `compiled_asks` expose the ordinary executable
+definitions without copying expansions back into the authored lists. Public
+IDs remain unique across explicit and expanded premise/ask declarations, both
+within a document and across loaded packs. Registry ordering is still by ID.
+
+The `as-many` family uses this mechanism to share its sentence structure,
+optional additive discourse, factor, signed offset and Relation emission.
+Its two explicit endpoint layouts compare holders of one item, or two
+qualified item types under one bare holder. Equality, multiplier, fraction
+and their offset forms share the structure without erasing the older forms'
+individual acceptance boundaries. Same-holder comparisons retain both item
+qualifiers and reject owned/modified holders that subtype inference cannot
+yet identify safely. Equal-valued qualified holdings remain distinct in the
+fact store; repeating the same subtype still deduplicates.
+
+Further families reuse these local templates:
+
+- `transfer.yaml`: two object orders share participant checks and both signed
+  quantity emissions.
+- `percent-change.yaml`: mass/count direction and noun slots form one bundle;
+  comparative lookahead, polarity and decrease limits are shared.
+- `measurement.yaml`: resulting-total and scaling word orders remain separate
+  operations. The gapped form stays reader-only. Scaling and explicit addition
+  share one anchored generation context through a local YAML alias.
+- `as-much.yaml`: four endpoint contracts keep explicit, omitted-measure,
+  omitted-standard and possessive comparisons separate. Each shares its ratio
+  and offset machinery without changing historical role or PP restrictions.
+- `sequences.yaml`: adjacent-carrier comparisons share their structure but
+  still emit `SequenceStep`, never an ordinary holder `Relation`.
+- `per-holder-asks.yaml`: named-list and discourse-group templates each share
+  marker-position variants. The discourse forms retain their evidence plan;
+  named forms retain standalone generation. Existing `each`/`individually`
+  guard differences are explicit and were not changed by consolidation.
+
+Stable variant IDs keep Designer reviews and generation targets linked.
+Source indexing maps each compiled token and predicate to the shared template
+or argument declaration that supplied it, while the rule/ask link opens its
+variant. Token and predicate lookups accept both premise and ask IDs.
+Generation, round-trip matching, specificity and inference all use the same
+compiled definitions; template expansion is not performed per sentence.
+Consolidation reduces authoring duplication, not the number of executable
+rules or the evidence needed to answer a question. No rule-family-specific
+runtime matching or generation branch is introduced.
+
 Compilation rejects duplicate vocabulary across packs, duplicate rule ids,
 category cycles, dangling category roots, incompatible antonyms, invalid
 category members, conflicting conversions or reference values, and rule gates
@@ -859,6 +942,19 @@ changes and constraints, dated ages, and explicit
 `SemanticGraphNode`/`SemanticGraphEdge` facts. Specialized fact classes keep
 their own identity keys and value parts; the store does not flatten all
 meaning into generic triples.
+
+Same-holder subtype comparisons retain `Relation.measure_qualifier` and
+`standard_qualifier`, including a fractional factor plus a signed offset. The
+head measures must agree while the qualifiers differ. Existing relation
+synthesis supplies the missing subtype quantity. Both ordinary holder totals
+and qualified-variant totals require every declared sibling relation to be
+resolved: a missing anchor or an impossible negative result cannot yield a
+misleading sum of only the known subset.
+This new shape requires a bare holder identity. The `bare` slot contract also
+checks a pronoun's resolved antecedent and excludes owners, modifiers, and
+instance labels; they cannot disappear merely because a pronoun was used.
+The purchase ledger likewise refuses to calculate across buyer identities
+that its bare participant key cannot distinguish.
 
 Qualified package contents stay inside the ordinary quantity model. A generic
 class statement such as “a large crate has 40 beads” emits a size-qualified

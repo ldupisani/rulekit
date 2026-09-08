@@ -159,7 +159,8 @@ def compose_resource_accounts(store, premises, reg):
 
     allocations = list(store.by_kind(ResourceAllocation))
     expenses = list(store.by_kind(Expenditure))
-    if not allocations and not list(store.by_kind(ResourceBalance)):
+    closed_account = bool(allocations or list(store.by_kind(ResourceBalance)))
+    if not closed_account and not any(e.cost_reference for e in expenses):
         return
     for reading in premises:
         phrases = [a for a in allocations if a.provenance.sentence == reading.sentence_index]
@@ -177,6 +178,9 @@ def compose_resource_accounts(store, premises, reg):
     balances = list(store.by_kind(ResourceBalance))
     events = {(e.provenance.sentence, e.event) for e in expenses}
     for reading in premises:
+        transaction_sentence = closed_account or any(
+            e.provenance.sentence == reading.sentence_index for e in expenses
+        )
         def issue(unit, reason):
             store.admit(ResourceAccountingIssue(
                 provenance=Provenance(source="inference/resource-completeness",
@@ -188,9 +192,9 @@ def compose_resource_accounts(store, premises, reg):
             lemma = _lemma(unit)
             if reg.word_in_category(lemma, "resource_budget_noun") and not _participant_account_owner(unit, reading, reg):
                 issue(unit, "owner-reference")
-            if unit.sense() in ("negator", "modal") or reg.word_in_category(lemma, "negation"):
+            if transaction_sentence and (unit.sense() in ("negator", "modal") or reg.word_in_category(lemma, "negation")):
                 issue(unit, "nonactual")
-            if unit.sense() == "conjunction" and not any(
+            if transaction_sentence and unit.sense() == "conjunction" and not any(
                 reg.word_in_category(lemma, cat)
                 for cat in ("holder_list_conjunction", "contrastive_conjunction")
             ):

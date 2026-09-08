@@ -1260,12 +1260,16 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
     rule_ids: set[str] = set()
     for pack in packs:
         for doc in pack.rules:
-            for rule in doc.rules:
+            for rule in doc.compiled_rules:
                 if rule.id in rule_ids:
                     raise CompileError(f"rule id {rule.id!r} defined twice")
                 rule_ids.add(rule.id)
                 rules.append(rule)
-            asks.extend(doc.asks)
+            for ask in doc.compiled_asks:
+                if ask.id in rule_ids:
+                    raise CompileError(f"ask id {ask.id!r} defined twice")
+                rule_ids.add(ask.id)
+                asks.append(ask)
         for doc in pack.synth:
             synth_rules.extend(doc.rules)
         for doc in pack.requirements:

@@ -1,0 +1,11 @@
+format: rulekit/categories@1
+categories:
+  additive_discourse_adverb:
+    parent: adverb
+    notes: "Adds a parallel assertion without changing its amount or temporal perspective."
+members:
+  additive_discourse_adverb: [also]
+  quantity_location: [farm]
+  quantity_surface_location: [farm]
+  quantity_site_location: [farm]
+  group_total_scope: [farm]

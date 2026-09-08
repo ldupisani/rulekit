@@ -1,0 +1,17 @@
+format: rulekit/categories@1
+categories:
+  purchase_lot_measure:
+    parent: noun
+    notes: A measured or packaged purchase can have one price for the whole lot.
+  purchase_collection_noun:
+    parent: noun
+    notes: A collective ask names a declared category containing every purchased item.
+  ingredient:
+    parent: noun
+    notes: Purchased food inputs, not a license to include unrelated purchases.
+members:
+  purchase_lot_measure: [pound, kilogram, gram, pack, box, bottle]
+  purchase_collection_noun: [ingredient]
+  ingredient: [cheese, cheddar cheese, cream cheese, cold cut, charcuterie, sugar, apple]
+  edible_quantity_object: [cheese, cheddar cheese, cream cheese, cold cut, charcuterie]
+  droppable_quantity_object: [cheese, cheddar cheese, cream cheese, cold cut, charcuterie, pack]

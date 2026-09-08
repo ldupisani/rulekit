@@ -1,0 +1,111 @@
+format: rulekit/rules@1
+
+# Labelled answers share one contract per endpoint source. Named lists
+# are explicit; pronouns require a resolved discourse group and evidence.
+# Marker position varies without changing holder scope or answer shape.
+# Historical each/individually guards remain explicit, not silently widened.
+templates:
+
+  named-per-holder:
+    parameters:
+      ending:
+        - {slot: q, cat: postpositive_distributive_quantifier}
+        - {slot: verb, type: verb, bare_form: true}
+      marker_guards:
+        - slot_not_category: {slot: item, cat: many_incompatible_noun}
+        - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+      generation:
+        slot_categories: {aux: [plural_auxiliary]}
+    rule:
+      match:
+        question:
+          - {lit: how}
+          - {lit: many}
+          - {slot: item, type: plural}
+          - {slot: aux, type: auxiliary}
+          - {slot: holders, span: true}
+          - {parameter: ending}
+      where:
+        - slot_not_category: {slot: item, cat: mass_quantity_noun}
+        - {parameter: marker_guards}
+      resolves:
+        consumer: per-holder
+        holders: '{holders.name_list}'
+        measure: '{item}'
+        measure_surface: '{item.surface}'
+        verb: '{verb}'
+      generation: {parameter: generation}
+
+  discourse-per-holder:
+    parameters:
+      ending:
+        - {slot: marker, cat: individualizing_adverb}
+        - {slot: verb, type: verb, bare_form: true}
+    rule:
+      match:
+        question:
+          - {lit: how}
+          - {lit: many}
+          - {slot: item, type: plural}
+          - {slot: aux, type: auxiliary}
+          - {slot: who, cat: discourse_subject_group_pronoun}
+          - {parameter: ending}
+      where:
+        - slot_not_category: {slot: item, cat: mass_quantity_noun}
+        - {number_compatible: [who, aux]}
+      resolves:
+        consumer: per-holder
+        holders: '{who.group_members}'
+        measure: '{item}'
+        measure_qualifier: '{item.qualifier}'
+        measure_surface: '{item.surface}'
+        verb: '{verb}'
+      generation:
+        context_required: true
+        context_strategy: evidence
+        slot_categories: {aux: [plural_auxiliary], item: [transferable_quantity_object], verb: [plain_have_state]}
+        evidence_rules:
+          - rule: arithmetic/stated-count-holding
+            bindings: {who: holders.0, amount: measure, verb: verb}
+          - rule: arithmetic/stated-count-holding
+            bindings: {who: holders.1, amount: measure, verb: verb}
+
+ask_variants:
+
+  - id: ask/how-many-each-named-list
+    template: named-per-holder
+
+  - id: ask/how-many-each-named-list-postverbal
+    template: named-per-holder
+    arguments:
+      ending:
+        - {slot: verb, type: verb, bare_form: true}
+        - {slot: q, cat: postpositive_distributive_quantifier}
+
+  - id: ask/how-many-individually-named-list
+    template: named-per-holder
+    arguments:
+      ending:
+        - {slot: marker, cat: individualizing_adverb}
+        - {slot: verb, type: verb, bare_form: true}
+      marker_guards: []
+      generation: {}
+
+  - id: ask/how-many-individually-named-list-postverbal
+    template: named-per-holder
+    arguments:
+      ending:
+        - {slot: verb, type: verb, bare_form: true}
+        - {slot: marker, cat: individualizing_adverb}
+      marker_guards: []
+      generation: {}
+
+  - id: ask/how-many-individually-discourse-group
+    template: discourse-per-holder
+
+  - id: ask/how-many-individually-discourse-group-postverbal
+    template: discourse-per-holder
+    arguments:
+      ending:
+        - {slot: verb, type: verb, bare_form: true}
+        - {slot: marker, cat: individualizing_adverb}

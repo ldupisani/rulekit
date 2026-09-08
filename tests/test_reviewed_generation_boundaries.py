@@ -144,6 +144,7 @@ POSITIVE_FRACTION_RULES = {
     "arithmetic/affine-fraction-as-many",
     "arithmetic/fraction-as-far",
     "arithmetic/fraction-as-many",
+    "arithmetic/fraction-as-many-qualified-measures",
     "arithmetic/fraction-as-many-elided",
     "arithmetic/fraction-as-many-elided-standard",
     "arithmetic/fraction-as-much",

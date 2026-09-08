@@ -1,0 +1,72 @@
+format: rulekit/rules@1
+
+# Count/mass direction and noun slots travel as one compatible bundle.
+# Both variants share polarity, lookahead and proportional-decrease guards.
+templates:
+
+  percent-change:
+    parameters:
+      quantity:
+        - {slot: dir, cat: mass_quantity_delta}
+        - {slot: item, cat: mass_currency_noun, number: singular}
+    rule:
+      phase: read
+      match:
+        sentence:
+          - {slot: who, type: entity, common_noun_cat: quantity_holder}
+          - {slot: verb, type: verb, finite_form: true}
+          - {slot: f, type: fraction, word_fraction_within_whole: true, fraction_positive: true}
+          - {parameter: quantity}
+          - opt:
+              - opt:
+                  - {slot: pp_prep, cat: preposition}
+                  - opt:
+                      - {slot: pp_det, cat: possessive_determiner}
+                  - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object,
+                      determinerless_category: named_calendar_period}
+              - {lit: than}
+              - opt:
+                  - {slot: appos_det, cat: possessive_determiner}
+                  - {slot: appos_role, cat: animate}
+              - {slot: std_seen, type: name}
+      where:
+        - bound_requires_type: {bound: appos_role, slot: std_seen, type: proper_name}
+        - {number_compatible: [who, verb]}
+        - slot_not_category: {slot: who, cat: non_quantity_holder}
+        - verb_roles_compatible:
+            verb: verb
+            roles: {actor: [who], theme: [item]}
+            allow_proper_name: [who]
+        - {unbound: [std_seen]}
+        - polarity_compatible: {slots: [verb, dir], categories: [directional_change_verb, delta]}
+        - proportional_delta_compatible: {fraction: f, direction: dir, direction_cat: delta}
+      consumes: [f]
+      emits:
+        - fact: percent_change
+          entity: '{who}'
+          value: f
+          sign: sign(dir)
+          measure: currency
+          verb: '{verb}'
+
+variants:
+
+  - id: arithmetic/percent-change-event
+    template: percent-change
+    description: >
+      "Susie has 20% more money" — a proportional change to the subject's own currency holding. This mass-noun form accepts
+      `less/more money`. The count sibling below accepts `fewer/more dollars`; keeping the two forms separate prevents count/mass
+      agreement errors. A decrease cannot exceed 100%, and an explicit increase/decrease verb must agree with the direction.
+      A trailing `than STANDARD` belongs to the comparative relation rules, so the optional lookahead binds it and `unbound`
+      rejects this self-change reading whenever such a standard is present.
+
+  - id: arithmetic/percent-change-event-count
+    template: percent-change
+    description: >
+      "Susie has 20% fewer dollars" — the plural denomination sibling of arithmetic/percent-change-event. It requires a declared
+      plural currency noun and the count-compatible directions `fewer/more`. Agreement, comparative lookahead, polarity, and
+      proportional-decrease safety are identical to the mass form.
+    arguments:
+      quantity:
+        - {slot: dir, cat: count_quantity_delta}
+        - {slot: item, cat: currency, number: plural}

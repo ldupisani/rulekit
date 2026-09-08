@@ -108,7 +108,9 @@ class FactStore:
         to item='shirt'. When both sides carry a non-null
         `measure_qualifier` (Quantity) or `qualifier` (Price) and they
         DIFFER, re-key `measure`/`item` to `bare[qualifier]` and admit
-        both instead of quarantining. A null-vs-non-null pairing (the
+        both instead of quarantining. Quantity measure qualifiers split
+        before agreement deduplication, including equal-valued subtypes.
+        A null-vs-non-null pairing (the
         collection total vs. one named subset, e.g. "20 marbles" then "12
         white marbles") is NOT a naming collision — it is a genuine
         part/whole relation and must keep declining, exactly like the
@@ -239,10 +241,28 @@ class FactStore:
                     and bool(fact.owner)
                     and existing.owner != fact.owner
                 )
+                # Equal amounts do not make explicitly different item types
+                # the same holding. Use the same part/whole boundary as the
+                # ordinary qualifier split, before agreement can erase one.
+                measure_split = (
+                    isinstance(existing, Quantity)
+                    and isinstance(fact, Quantity)
+                    and bool(existing.measure_qualifier)
+                    and bool(fact.measure_qualifier)
+                    and existing.measure_qualifier != fact.measure_qualifier
+                    and not any(
+                        isinstance(other, Quantity)
+                        and other.entity == fact.entity
+                        and other.measure == fact.measure
+                        and other.measure_qualifier is None
+                        for other in self.facts
+                    )
+                )
                 if (
                     existing.value_part() == fact.value_part()
                     and not conjunct_split
                     and not owner_split
+                    and not measure_split
                 ):
                     self._record_agreement(existing, fact)
                     if (
@@ -285,20 +305,7 @@ class FactStore:
                         replace(fact, entity=f"{fact.entity}[{fact.qualifier}]")
                     )
                     return True
-                if (
-                    isinstance(existing, Quantity)
-                    and isinstance(fact, Quantity)
-                    and existing.measure_qualifier
-                    and fact.measure_qualifier
-                    and existing.measure_qualifier != fact.measure_qualifier
-                    and not any(
-                        isinstance(other, Quantity)
-                        and other.entity == fact.entity
-                        and other.measure == fact.measure
-                        and other.measure_qualifier is None
-                        for other in self.facts
-                    )
-                ):
+                if measure_split:
                     self.facts.remove(existing)
                     self.facts.append(
                         replace(

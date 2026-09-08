@@ -77,6 +77,8 @@ asks:
   - id: ask/how-much-pay-for-item
     # Total purchase cost, not unit price. The budget residual requires one
     # opening, one closing balance, and exactly one unknown purchase cost.
+    # A declared collective target can also total a complete purchase basket
+    # with relative lot prices, without assuming an unstated budget.
     match:
       question:
         - {lit: how}

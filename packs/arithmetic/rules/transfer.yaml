@@ -5,66 +5,53 @@ format: rulekit/rules@1
 # transfer_out ⊂ lose → −), the recipient's side carries `receive`
 # (∈ acquire → +). No arithmetic lives in the rule; tagging a new verb in
 # transfer_out is the only change "handed"/"donated" would ever need.
-rules:
-  - id: arithmetic/transfer-ditransitive
-    phase: read
-    description: '"Tom gave Mary 3 apples" — giver loses, recipient gains.'
-    match:
-      sentence:
-        - {slot: giver, type: name}
-        - {slot: verb, cat: transfer_out, finite_form: true}
+templates:
+
+  transfer:
+    parameters:
+      complements:
         - {slot: recipient, type: name}
         - {slot: item, type: counted}
-    where:
-      - distinct: [giver, recipient]
-      - number_compatible: [giver, verb]
-      - verb_roles_compatible:
-          verb: verb
-          roles:
-            actor: [giver]
-            theme: [item]
-          allow_proper_name: [giver]
-    consumes: [item]
-    emits:
-      - fact: quantity
-        entity: "{giver}"
-        measure: "{item}"
-        value: "item"
-        verb: "{verb}"
-      - fact: quantity
-        entity: "{recipient}"
-        measure: "{item}"
-        value: "item"
-        verb: receive
+    rule:
+      phase: read
+      match:
+        sentence:
+          - {slot: giver, type: name}
+          - {slot: verb, cat: transfer_out, finite_form: true}
+          - {parameter: complements}
+      where:
+        - {distinct: [giver, recipient]}
+        - {number_compatible: [giver, verb]}
+        - verb_roles_compatible:
+            verb: verb
+            roles: {actor: [giver], theme: [item]}
+            allow_proper_name: [giver]
+      consumes: [item]
+      emits:
+        - fact: quantity
+          entity: '{giver}'
+          measure: '{item}'
+          value: item
+          verb: '{verb}'
+        - fact: quantity
+          entity: '{recipient}'
+          measure: '{item}'
+          value: item
+          verb: receive
+
+variants:
+
+  - id: arithmetic/transfer-ditransitive
+    template: transfer
+    description: >-
+      "Tom gave Mary 3 apples" — giver loses, recipient gains.
 
   - id: arithmetic/transfer-prepositional
-    phase: read
-    description: '"Tom gave 3 apples to Mary" — same transfer, object first.'
-    match:
-      sentence:
-        - {slot: giver, type: name}
-        - {slot: verb, cat: transfer_out, finite_form: true}
+    template: transfer
+    description: >-
+      "Tom gave 3 apples to Mary" — same transfer, object first.
+    arguments:
+      complements:
         - {slot: item, type: counted}
         - {lit: to}
         - {slot: recipient, type: name}
-    where:
-      - distinct: [giver, recipient]
-      - number_compatible: [giver, verb]
-      - verb_roles_compatible:
-          verb: verb
-          roles:
-            actor: [giver]
-            theme: [item]
-          allow_proper_name: [giver]
-    consumes: [item]
-    emits:
-      - fact: quantity
-        entity: "{giver}"
-        measure: "{item}"
-        value: "item"
-        verb: "{verb}"
-      - fact: quantity
-        entity: "{recipient}"
-        measure: "{item}"
-        value: "item"
-        verb: receive

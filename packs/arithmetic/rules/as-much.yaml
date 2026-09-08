@@ -1,0 +1,380 @@
+format: rulekit/rules@1
+
+# Mass comparisons retain four distinct endpoint contracts: explicit,
+# omitted measure, omitted standard, and possessive standard.
+# Ratio and signed-offset bundles share syntax with their fact values.
+# Legacy role/PP differences remain explicit; this migration widens nothing.
+templates:
+
+  explicit-mass-comparison:
+    parameters:
+      ratio:
+        token: {slot: k, type: nonunit_multiplier}
+        value: k
+        guards:
+          - slot_not_category: {slot: k, cat: predeterminer_multiplier}
+        consumes: []
+      offset: {tokens: [], value: 0.0, consumes: []}
+      possessive_category: possessive_determiner
+      actor_guards: []
+      verb_guards:
+        - slot_not_category: {slot: verb, cat: frame_prepositional_verb}
+      pp_guards: []
+    rule:
+      phase: read
+      match:
+        sentence:
+          - {slot: who, type: name}
+          - {slot: verb, cat: quantity_comparison_verb, finite_form: true}
+          - {parameter: offset.tokens}
+          - {parameter: ratio.token}
+          - {lit: as}
+          - {lit: much}
+          - {slot: item, cat: mass_quantity_noun}
+          - opt:
+              - {slot: pp_prep, cat: preposition}
+              - opt:
+                  - slot: pp_det
+                    cat: {parameter: possessive_category}
+              - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object,
+                  determinerless_category: named_calendar_period}
+          - {lit: as}
+          - opt:
+              - slot: appos_det
+                cat: {parameter: possessive_category}
+              - {slot: appos_role, cat: animate}
+          - {slot: std, type: name}
+      where:
+        - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+        - {number_compatible: [who, verb]}
+        - {parameter: ratio.guards}
+        - {parameter: actor_guards}
+        - verb_roles_compatible:
+            verb: verb
+            roles: {actor: [who, std], theme: [item]}
+            allow_proper_name: [who, std]
+        - verb_role_compatible: {verb: verb, roles: [item], verb_cat: transfer_out, excluded_role_cat: remnant}
+        - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+        - {parameter: verb_guards}
+        - slot_not_category: {slot: verb, cat: container_capacity_placement_verb}
+        - slot_not_category: {slot: who, cat: non_quantity_holder}
+        - slot_not_category: {slot: pp_prep, cat: quantity_remainder_preposition}
+        - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
+        - {parameter: pp_guards}
+        - {distinct: [who, std]}
+      generation_where:
+        - bound_rejects_category: {bound: pp_det, slot: pp_obj, cat: timeperiod}
+      emits:
+        - fact: relation
+          subject: '{who}'
+          standard: '{std}'
+          measure: '{item}'
+          factor: {parameter: ratio.value}
+          offset: {parameter: offset.value}
+          verb: '{verb}'
+      consumes:
+        - {parameter: offset.consumes}
+        - {parameter: ratio.consumes}
+
+  elided-mass-measure:
+    parameters:
+      ratio:
+        token: {slot: k, type: nonunit_multiplier}
+        value: k
+        guards:
+          - slot_not_category: {slot: k, cat: predeterminer_multiplier}
+        consumes: []
+      offset: {tokens: [], value: 0.0, consumes: []}
+      possessive_category: possessive_determiner
+    rule:
+      phase: read
+      match:
+        sentence:
+          - {slot: who, type: name}
+          - {slot: verb, cat: quantity_comparison_verb, finite_form: true}
+          - {parameter: offset.tokens}
+          - {parameter: ratio.token}
+          - {lit: as}
+          - {lit: much}
+          - {lit: as}
+          - opt:
+              - slot: appos_det
+                cat: {parameter: possessive_category}
+              - {slot: appos_role, cat: animate}
+          - {slot: std, type: name}
+      where:
+        - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+        - {number_compatible: [who, verb]}
+        - {parameter: ratio.guards}
+        - verb_roles_compatible:
+            verb: verb
+            roles: {actor: [who, std]}
+            allow_proper_name: [who, std]
+        - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+        - slot_not_category: {slot: verb, cat: container_capacity_placement_verb}
+        - slot_not_category: {slot: who, cat: non_quantity_holder}
+        - {distinct: [who, std]}
+      emits:
+        - fact: relation
+          subject: '{who}'
+          standard: '{std}'
+          measure:
+          factor: {parameter: ratio.value}
+          offset: {parameter: offset.value}
+          verb: '{verb}'
+      consumes:
+        - {parameter: offset.consumes}
+        - {parameter: ratio.consumes}
+
+  elided-mass-standard:
+    parameters:
+      ratio:
+        token: {slot: k, type: nonunit_multiplier}
+        value: k
+        guards:
+          - slot_not_category: {slot: k, cat: predeterminer_multiplier}
+        consumes: []
+      offset: {tokens: [], value: 0.0, consumes: []}
+      possessive_category: possessive_determiner
+      verb_guards:
+        - slot_not_category: {slot: verb, cat: frame_prepositional_verb}
+      pp_guards:
+        - slot_not_category: {slot: pp_prep, cat: quantity_surface_preposition}
+    rule:
+      phase: read
+      match:
+        sentence:
+          - {slot: who, type: name}
+          - {slot: verb, cat: quantity_comparison_verb, finite_form: true}
+          - {parameter: offset.tokens}
+          - {parameter: ratio.token}
+          - {lit: as}
+          - {lit: much}
+          - {slot: item, cat: mass_quantity_noun}
+          - opt:
+              - {slot: pp_prep, cat: preposition}
+              - opt:
+                  - slot: pp_det
+                    cat: {parameter: possessive_category}
+              - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object,
+                  determinerless_category: named_calendar_period}
+          - opt:
+              - {lit: as}
+              - opt:
+                  - slot: appos_det
+                    cat: {parameter: possessive_category}
+                  - {slot: appos_role, cat: animate}
+              - {slot: std_seen, type: name}
+      where:
+        - bound_requires_type: {bound: appos_role, slot: std_seen, type: proper_name}
+        - {number_compatible: [who, verb]}
+        - {parameter: ratio.guards}
+        - verb_roles_compatible:
+            verb: verb
+            roles: {actor: [who], theme: [item]}
+            allow_proper_name: [who]
+        - verb_role_compatible: {verb: verb, roles: [item], verb_cat: transfer_out, excluded_role_cat: remnant}
+        - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+        - {parameter: verb_guards}
+        - slot_not_category: {slot: verb, cat: container_capacity_placement_verb}
+        - slot_not_category: {slot: who, cat: non_quantity_holder}
+        - slot_not_category: {slot: pp_prep, cat: quantity_remainder_preposition}
+        - {parameter: pp_guards}
+        - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
+        - {unbound: [std_seen]}
+      generation_where:
+        - bound_rejects_category: {bound: pp_det, slot: pp_obj, cat: timeperiod}
+      emits:
+        - fact: relation
+          subject: '{who}'
+          standard: $elided:standard$
+          measure: '{item}'
+          factor: {parameter: ratio.value}
+          offset: {parameter: offset.value}
+          verb: '{verb}'
+      consumes:
+        - {parameter: offset.consumes}
+        - {parameter: ratio.consumes}
+
+  possessive-mass-standard:
+    parameters:
+      offset: {tokens: [], value: 0.0, consumes: []}
+    rule:
+      phase: read
+      match:
+        sentence:
+          - {slot: who, type: name}
+          - {slot: verb, cat: possession_state}
+          - {parameter: offset.tokens}
+          - {slot: k, type: nonunit_multiplier}
+          - {slot: std, cat: mass_quantity_noun, possessed: true, number: singular}
+      where:
+        - {number_compatible: [who, verb]}
+        - distinct_from_owner: {entity: who, possessed: std}
+      emits:
+        - fact: relation
+          subject: '{who}'
+          standard: '{std.owner}'
+          measure: '{std}'
+          factor: k
+          offset: {parameter: offset.value}
+          verb: '{verb}'
+      consumes: {parameter: offset.consumes}
+
+variants:
+
+  - id: arithmetic/times-as-much
+    template: explicit-mass-comparison
+    description: >
+      "Catherine has twice as much money as Cecil" — times-as-many's MASS-NOUN counterpart: 'much' in place of 'many', and
+      the item slot is the declared `mass_quantity_noun` class rather than `type: plural`, since a mass noun never carries
+      plural morphology. The optional PP reuses declared preposition/noun compatibility but excludes remnant adjuncts, which
+      belong to explicit conjunct rules. Outbound transfers also refuse a declared `remnant` object: "sells/gives ... rest"
+      is not a transferred arithmetic quantity, while other verbs and transferable mass nouns remain open. Same Relation fact
+      and downstream resolution as times-as-many; the anchor- measure resolver (saturate.py) is what lets a 'money'-measured
+      relation resolve against an anchor's own currency holding ('dollar').
+
+  - id: arithmetic/fraction-as-much
+    template: explicit-mass-comparison
+    description: >
+      "Ian has half as much money as Jessica" — fraction-as-many's MASS-NOUN counterpart, exactly mirroring how times-as-much
+      relates to times-as-many: 'much' in place of 'many', with a declared `mass_quantity_noun` item. Outbound transfers reject
+      remnant objects, and optional PPs are ordinary compatible locations rather than remnant adjuncts owned by conjunct rules.
+    arguments:
+      ratio:
+        token: {slot: f, type: fraction, word_fraction_within_whole: true, fraction_positive: true}
+        value: f
+        guards: []
+        consumes: [f]
+      verb_guards: []
+
+  - id: arithmetic/affine-times-as-much
+    template: explicit-mass-comparison
+    description: >
+      mining candidate relation-standard-frames: "Alexa has $250 less than twice as much money as Cecil" — the MASS-NOUN sibling
+      of arithmetic/ affine-times-as-many, one field over exactly like arithmetic/times- as-much sits beside arithmetic/times-as-many
+      ('much'/`item, type: noun` in place of 'many'/`type: plural`, since a mass noun never carries plural morphology). Same
+      AFFINE shape: subject = k·standard + n·sign(dir). `who`/`std, type: name`: unwidened, matching times- as-much's own
+      (not-yet-widened) slot type. Increment 46 (affine- relations-recut) only ever built the affine-offset prefix onto the
+      COUNT/'as many' form; this closes the MASS/'as much' gap the relation-standard-frames candidate's own structural sample
+      names directly. PROVEN minimal pair on unmodified main: "250 less than twice as many dollars as Cecil" commits while
+      "250 less than twice as much money as Cecil" declines outright. As in the non-affine mass siblings, outbound transfers
+      reject remnant objects and optional PPs exclude remnant-only adjuncts. The direction is mass-specific, so `less`/`more`
+      are licensed here and count-only `fewer` is not.
+    arguments:
+      offset:
+        tokens:
+          - {slot: n, type: number}
+          - {slot: dir, cat: mass_quantity_delta}
+          - {lit: than}
+        value: n * sign(dir)
+        consumes: [n]
+      possessive_category: animate_possessive_determiner
+      actor_guards:
+        - verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: animate_subject_verb, role_cat:
+              quantity_event_participant}
+        - verb_role_compatible: {verb: verb, roles: [item], verb_cat: animate_object_verb, role_cat:
+              teaching_quantity_object}
+      verb_guards: []
+      pp_guards:
+        - modifier_host_compatible: {modifier: pp_prep, host: item, object: pp_obj}
+        - {distinct: [who, pp_obj]}
+
+  - id: arithmetic/times-as-much-elided
+    template: elided-mass-measure
+    description: >
+      mining candidate elided-measure-relations: "Catherine has twice as much as Cecil" — times-as-much's elided-item sibling
+      (no noun between 'much' and 'as'), exactly the additive-elision pairing arithmetic/anchored-relation-elided provides
+      for arithmetic/ anchored-relation. Same `measure: null` UNRESOLVED-sentinel emission and standard-anchored recovery
+      — see that rule's comment. `who`/ `std, type: name`: unwidened, matching times-as-much's own (not-yet-widened) slot
+      types.
+
+  - id: arithmetic/fraction-as-much-elided
+    template: elided-mass-measure
+    description: >
+      mining candidate elided-measure-relations: "Catherine has half as much as Cecil" — fraction-as-much with the item elided
+      entirely (no noun between 'much' and 'as'), mirroring times-as-much-elided with a FRACTION ratio. Same `measure: null`
+      UNRESOLVED-sentinel emission and standard-anchored recovery as arithmetic/anchored-relation-elided — see its comment.
+      `who`/`std, type: name`: unwidened, matching fraction-as-much's own slot types.
+    arguments:
+      ratio:
+        token: {slot: f, type: fraction, word_fraction_within_whole: true, fraction_positive: true}
+        value: f
+        guards: []
+        consumes: [f]
+      possessive_category: animate_possessive_determiner
+
+  - id: arithmetic/affine-times-as-much-elided
+    template: elided-mass-measure
+    description: >
+      mining candidate affine-nominal-relations: "Ben has 250 dollars less than twice as much as Ana" — the ELIDED-ITEM sibling
+      of arithmetic/ affine-times-as-much (no noun between 'much' and 'as'), exactly the additive-elision pairing arithmetic/times-as-much-elided
+      provides for arithmetic/times-as-much, one offset field over. Same `measure: null` UNRESOLVED-sentinel emission and
+      standard-anchored recovery — see arithmetic/anchored-relation-elided's comment. Structurally disjoint from arithmetic/affine-times-as-much:
+      that rule's `item, type: noun` slot sits directly after 'much' and 'as' is lexiconed sense `particle` (never noun-sensed),
+      so an elided-item text ("...twice as much as Ana") fails that rule's own `item` slot and only this rule survives; conversely,
+      a text WITH an item noun present ("...twice as much MONEY as Ana") satisfies affine-times- as-much's `item` slot with
+      'money' and this rule's own trailing `{lit: as}` would then have to match the token 'money' itself, which fails ('money'
+      is noun-sensed, never the particle 'as') — the two spans never tie. `who`/`std, type: name`: unwidened, matching arithmetic/times-as-much-elided's
+      own (not-yet-widened) slot type. PROVEN minimal pair on unmodified main: "Ben has 250 dollars less than twice as much
+      as Ana. Ana has 600 dollars. How much money does Ben have?" declines outright even though the identical AFFINE ratio
+      under the count-noun 'as many' frame (arithmetic/affine-times-as- many) already answers correctly on a parallel text.
+    arguments:
+      offset:
+        tokens:
+          - {slot: n, type: number}
+          - {slot: dir, cat: mass_quantity_delta}
+          - {lit: than}
+        value: n * sign(dir)
+        consumes: [n]
+
+  - id: arithmetic/times-as-much-elided-standard
+    template: elided-mass-standard
+    description: >
+      mining candidate elided-comparative-standards: "He gave $8 to Meg and thrice as much to Bianca" — times-as-much's STANDARD-elided
+      sibling, exactly mirroring arithmetic/times-as-many-elided-standard one field over ('much'/mass-noun `item` in place
+      of 'many'/plural). See that rule's comment for the full mechanism (the reserved `$elided:standard$` sentinel, its saturate.py
+      recovery, and the `where: unbound: [std_seen]` self-decline guard on the trailing `opt` block, which rejects this match
+      outright whenever an "as Y" continuation is grammatically present — even one the FULLER rule itself would go on to reject
+      for an unrelated reason). `who, type: name`: unwidened, matching times-as-much's own (not-yet-widened) slot type.
+
+  - id: arithmetic/fraction-as-much-elided-standard
+    template: elided-mass-standard
+    description: >
+      mining candidate elided-comparative-standards: fraction-as-much's STANDARD-elided sibling, exactly mirroring arithmetic/times-as-much-
+      elided-standard one field over (FRACTION ratio in place of the multiplier) — see arithmetic/times-as-many-elided-standard's
+      comment for the full mechanism, including the `where: unbound: [std_seen]` self-decline guard on the trailing `opt`
+      block. `who, type: name`: unwidened, matching fraction-as-much's own (not-yet-widened) slot type. It inherits the full
+      sibling's transfer- object and optional-PP boundaries.
+    arguments:
+      ratio:
+        token: {slot: f, type: fraction, word_fraction_within_whole: true, fraction_positive: true}
+        value: f
+        guards: []
+        consumes: [f]
+      verb_guards: []
+      pp_guards: []
+
+  - id: arithmetic/times-as-much-possessive-standard
+    template: possessive-mass-standard
+    description: >
+      "Carmela has twice Cecil's money" — the singular mass-noun sibling of times-as-many-possessive-standard. It requires
+      a possession-state verb, non-unit multiplier, declared singular `mass_quantity_noun`, and a standard owner distinct
+      from the subject. Count possessive standards remain the plural sibling's territory.
+
+  - id: arithmetic/affine-times-as-much-possessive-standard
+    template: possessive-mass-standard
+    description: >
+      "Ben has 50 less than twice Ana's money" — the singular mass-noun sibling of affine-times-as-many-possessive-standard.
+      The two rules are disjoint on declared noun countability and morphology: this rule requires a possessed `mass_quantity_noun`
+      head in singular form and a mass-compatible additive direction, while the count sibling requires a non-mass plural head
+      and `count_quantity_delta`. Both retain the same possession-state, non-unit multiplier, owner/measure projection, and
+      affine Relation semantics.
+    arguments:
+      offset:
+        tokens:
+          - {slot: n, type: number}
+          - {slot: dir, cat: mass_quantity_delta}
+          - {lit: than}
+        value: n * sign(dir)
+        consumes: [n]

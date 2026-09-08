@@ -1,0 +1,14 @@
+format: rulekit/lexicon@1
+entries:
+  cheese: {senses: [noun]}
+  cheddar cheese: {senses: [noun], lexical_phrase: true}
+  cream cheese: {senses: [noun], lexical_phrase: true}
+  cold cut: {senses: [noun], plural: cold cuts, lexical_phrase: true}
+  charcuterie: {senses: [noun]}
+  ingredient: {senses: [noun], plural: ingredients}
+  pack: {senses: [noun], plural: packs}
+  dinner: {senses: [noun], plural: dinners}
+  party: {senses: [noun], plural: parties}
+  serve: {senses: [verb]}
+  served: {senses: [verb], verb: {lemma: serve}}
+  serves: {senses: [verb], verb: {lemma: serve}}

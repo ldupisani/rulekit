@@ -1152,6 +1152,17 @@ class Expenditure(Fact):
     quantity: float | None = None
     unit_price: float | None = None
     quantity_position: int = -1
+    # A whole-lot price does not multiply by its descriptive mass/count.
+    lot_measure: str = ""
+    lot_quantity: float | None = None
+    lot_position: int = -1
+    # A relative price points to one other purchase by this participant.
+    cost_reference: str = ""
+    cost_reference_qualifier: str = ""
+    cost_factor: float | None = None
+    cost_factor_position: int = -1
+    # False when the list or buyer identity is not fully represented.
+    complete: bool = True
 
     def key(self) -> tuple:
         return ("expenditure", self.entity, self.provenance.sentence,
@@ -1161,7 +1172,10 @@ class Expenditure(Fact):
         return (self.verb, self.measure, self.value, self.basis, self.supplier,
                 self.supplier_qualifier, self.channel, self.account,
                 self.account_qualifier, self.account_owner, self.account_span,
-                self.quantity, self.unit_price, self.quantity_position)
+                self.quantity, self.unit_price, self.quantity_position,
+                self.lot_measure, self.lot_quantity, self.lot_position,
+                self.cost_reference, self.cost_reference_qualifier,
+                self.cost_factor, self.cost_factor_position, self.complete)
 
 
 @dataclass(frozen=True)

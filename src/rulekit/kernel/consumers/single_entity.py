@@ -30,6 +30,11 @@ def single_entity(ctx: ConsumerContext):
     from ..totals import _entity_total, _purchase_total, _qualified_variant_total, _revenue_total, _superordinate_total, _verb_total
 
     entity, measure = ctx.query["entity"], ctx.query["measure"]
+    from ..purchase_totals import has_relative_purchase_prices, relative_purchase_total
+    if (has_relative_purchase_prices(ctx.store)
+            and ctx.reg.word_in_category(ctx.query.get("verb", ""), "spend_verb")
+            and (measure == "currency" or ctx.reg.word_in_category(measure, "currency"))):
+        return relative_purchase_total(ctx)
     from ..model import AccumulationWindow
     if ctx.store.by_kind(AccumulationWindow):
         from .earnings_account import earnings_account

@@ -250,6 +250,27 @@ def proportional_delta_is_compatible(
     )
 
 
+def is_bare_referent(unit: Unit) -> bool:
+    """No owner, modifier or instance label, including through a pronoun.
+
+    A reference does not erase the identity restrictions on its antecedent.
+    Cyclic or unresolved references cannot establish a bare individual.
+    """
+    seen = set()
+    while id(unit) not in seen:
+        seen.add(id(unit))
+        if any(unit.features.get(key) is not None for key in ("qualifier", "owner", "label")):
+            return False
+        if unit.sense() != "pronoun":
+            return True
+        targets = [ob.target for ob in unit.obligations()
+                   if ob.need == "refers" and ob.met and isinstance(ob.target, Unit)]
+        if len(targets) != 1:
+            return False
+        unit = targets[0]
+    return False
+
+
 def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
     if (
         token.common_noun_cat is not None
@@ -292,9 +313,7 @@ def _slot_ok(unit: Unit, token: MatchToken, reg: Registry) -> bool:
         _lemma_of(unit),
     ):
         return False
-    if token.bare and (
-        unit.features.get("qualifier") is not None or unit.features.get("owner") is not None
-    ):
+    if token.bare and not is_bare_referent(unit):
         # OPT-IN (schemas.MatchToken.bare, default False — every pre-existing
         # slot is byte-identical): a compound noun keeps its HEAD's lemma, so a
         # category gate cannot tell "the dot product" from "the product". An

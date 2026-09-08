@@ -1,7 +1,7 @@
 # rulekit handoff
 
 **Updated:** 2026-09-08
-**Runtime checkpoint:** reviewed role and location contracts (following bounded savings)
+**Runtime checkpoint:** local premise and ask templates
 **Active campaign:** GSM8K Mining v2, M7 example-led vertical mining
 **Immediate state:** all four published Mining v2 candidates are landed; no
 candidate is awaiting human or machine review
@@ -50,6 +50,53 @@ temporal event totals (130), task-completion duration gaps (131), and
 anaphoric distance chains with exact combined totals (132).
 
 ### Latest implementation checkpoint
+
+Local template consolidation now covers another 23 premise rules and six
+per-holder asks, preserving their public IDs and complete compiled definitions.
+The sequence is transfers, count/mass percentage changes, measured-content
+updates, mass/adjacent-sequence comparisons, then ask support. Eleven local
+templates replace these repeated declarations. Measurement operations,
+omitted/possessive comparison endpoints and discourse-group evidence remain
+separate contracts; the gapped measurement rule stays reader-only. Scaling
+and explicit addition share one YAML-anchored generation context.
+`ask_variants` use the same parameter expansion as premise `variants` but
+validate as ordinary `AskRule` objects. The registry and Designer consume
+`compiled_asks`, with stable variant links and shared-token/predicate sources.
+This is authoring consolidation, not new language coverage or faster matching.
+Existing named-list `each`/`individually` guard differences remain unchanged;
+their review is a separate safety task. The running server is untouched.
+
+The core `as-many` forms now share one local parameterized rule template in
+`packs/arithmetic/rules/as-many.yaml`. Equality, multipliers, fractions and
+signed offsets compose with explicit holder-oriented or qualified-item
+layouts. Existing rule IDs remain stable; four additional qualified-item
+variants reuse the same structure. All ten variants generate and round-trip.
+Expansion happens at pack loading, followed by ordinary rule validation;
+matching and generation need no template-specific runtime branch. Designer
+rule links open the variant, while slot and predicate links open the actual
+shared declaration. The family shares optional additive discourse without
+silently widening its older role boundaries. Equal-valued item subtypes now
+remain separate facts instead of being deduplicated into one holding.
+
+Qualified same-holder comparisons now combine a fractional factor with a
+positive or negative offset while retaining both subtype qualifiers. They
+reuse `Relation`, existing synthesis, and qualified totals. A bare total must
+not return only its known subset when another declared subtype relation is
+unresolved or would derive a negative amount. Neutral additive discourse and
+ordinary collection/location vocabulary are core-owned.
+The new comparison and purchase-cost paths do not discard owned, qualified,
+or labelled holder identities. The shared `bare` slot contract follows a
+pronoun to its antecedent before checking those restrictions.
+
+Coordinated purchases now distinguish whole-lot costs from explicit unit
+prices. Relative price clauses identify another purchased item by its exact
+head and qualifier, and shared price resolution serves both complete purchase
+totals and budget accounts. Missing/ambiguous/cyclic references, unread list
+tails, unknown costs, mixed currencies and mismatched collective asks decline.
+Source-local numeric accounting retains package counts and comparison factors
+without multiplying a whole-lot price by its descriptive quantity. Existing
+compound-rate inversion already handles reading durations in another time
+unit; this received regression coverage, not a duplicate solver.
 
 The September review batch tightens role contracts and location evidence.
 Written production narrows general production to written products; inquiry
@@ -528,11 +575,11 @@ These are the gates run at the current runtime checkpoint:
 
 | Gate | Current result |
 | --- | --- |
-| full synthetic suite | 6,680 passed |
+| full synthetic suite | 6,914 passed |
 | curated suite | 71 correct, 0 wrong |
-| GSM8K DEV-train | 109 correct, 0 wrong |
+| GSM8K DEV-train | 112 correct, 0 wrong |
 | GSM8K DEV-holdout | 52 correct, 0 wrong |
-| ASDiv DEV | 47 correct, 0 wrong |
+| ASDiv DEV | 48 correct, 0 wrong |
 | SVAMP DEV | 24 correct, 0 wrong |
 | MAWPS DEV | 11 correct, 0 wrong |
 | SciBench DEV | 6 correct, 0 wrong |
@@ -543,20 +590,41 @@ These are the gates run at the current runtime checkpoint:
 | curated lint | 0 errors, 0 warnings |
 | GSM8K lint | 0 errors, 1 previously documented trig-alternation warning |
 
-The final review-contract run passed all 6,680 tests in 255 seconds,
-including 48 new role/location regressions and every supported GSM8K premise's
-strict round trip. All DEV snapshot diffs are neutral: zero broken answers,
-zero new wrongs and unchanged graph scores. The six invalid reviewed examples
-now reject their faulty interpretations; both original valid reviews and the
-valid inquiry review added during the work still replay successfully. Human
-review records remain unchanged by this implementation.
+The template-consolidation run passed all 6,914 tests in 268 seconds, plus
+98 focused schema/source/ask checks. All 204 curated premise definitions and
+139 ask definitions compare identically with the pre-refactor compiled
+snapshot, including descriptions, guards, emissions and generation contracts.
+Every standing DEV diff is neutral, with zero broken answers, new wrongs or
+changed correct answers/graphs. The baseline snapshots below were reused only
+after verifying each current registry/projection fingerprint. Tests also cover
+all 29 migrated variant source links, normal ask validation, duplicate IDs,
+fingerprint invalidation and generation's existing context boundaries.
 
-Evidence is in `/tmp/rulekit-review-contracts.1a5C3y/`
-(`full-verified.log`, `gates-verified.log` and per-slice snapshot/diff logs),
-compared with `/tmp/rulekit-savings-income.zoNncX/`. The final gate used frozen
-runtime files: editing a pack while the parallel-snapshot test runs causes
-its worker fingerprint guard to reject the mixed revision. No runtime changes
-followed the final gates. No server restart or protected TEST look was performed.
+Current evidence is in `/tmp/rulekit-template-families.GMysyp/`: `full.log`,
+`gates.log`, `compiled-before.json`, `compiled-comparison.log`, and per-slice
+before/after snapshots and diff logs. No review data, server process or
+protected TEST artifact was changed. Runtime files stayed frozen throughout
+the full synthetic and standing gates.
+
+The preceding comparison-family run passed all 6,857 tests in 241 seconds, plus 715
+focused checks. It adds one correct GSM8K DEV-train answer (`7fc8fb0445e6`)
+and one ASDiv DEV answer (`6883de1c8b4c`), both manually checked qualified
+comparison chains. Every other DEV diff is neutral: zero broken answers,
+zero new wrongs and unchanged graph scores. Tests cover template validation,
+fingerprint invalidation, editable source locations, both endpoint layouts,
+all ratio/offset forms, strict generation and equal-valued subtype identity.
+Human review records remain unchanged.
+
+Evidence is in `/tmp/rulekit-comparison-family.e2n2R7/`: `full-final.log`,
+`focused-final.log`, `gates.log`, `new-solves-audit.md`, and `checked/`
+snapshots/diffs. The comparison baseline is the preceding qualified-comparison
+and purchase-price run at `/tmp/rulekit-three-questions.M4IVpQ/final-checked/`.
+Runtime files stayed frozen during the full gates; only test expectations and
+documentation changed after the DEV snapshots. Editing a pack while the
+parallel-snapshot test runs can reject the mixed revision and strand workers.
+No protected TEST look or server restart was performed. The currently running
+Designer needs a restart before it can load the new template-capable schema;
+an old process keeps its previous registry when reloading the new file fails.
 
 The preceding savings-account increment added one correct GSM8K training
 answer (`510ea32cccdc`) and one holdout answer (`6e00ca56d098`), with other
@@ -613,13 +681,13 @@ Do not spend another protected look merely to refresh these numbers.
 Availability means “the authoring layer can realize the declared contract and
 round-trip it through the ordinary matcher.” It does not mean that a human has
 judged the resulting English or emitted fact valid.
-The curated reachable filler inventory is 503; local allocation rules expose
+The curated reachable filler inventory is 516; local allocation rules expose
 account phrases, whose ownership is deliberately not inferred in isolation.
 
 | Project | Premise rules | Independent asks | Answerable asks |
 | --- | ---: | ---: | ---: |
-| curated | 190/199 | 121/139 | 135/139 |
-| GSM8K | 184/191 | 159/172 | 172/172 |
+| curated | 195/204 | 121/139 | 135/139 |
+| GSM8K | 189/196 | 159/172 | 172/172 |
 
 The unsupported premise rows are deliberate safety interceptors or reader-only
 rules, not ordinary generation targets. Fourteen curated and all thirteen

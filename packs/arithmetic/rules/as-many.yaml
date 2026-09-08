@@ -1,0 +1,306 @@
+format: rulekit/rules@1
+
+# One sentence structure, with two explicit choices of comparison endpoints.
+# Parameters replace whole YAML values; lists are inserted into the surrounding
+# list. Variants keep their public rule IDs for reviews and generated examples.
+templates:
+  as-many:
+    parameters:
+      subject: &holder
+        {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true, bare_reference_category: bare_entity_reference}
+      verb: {slot: verb, type: verb}
+      ratio:
+        tokens: []
+        factor: 1.0
+        guards: []
+        consumes: []
+      offset:
+        tokens: []
+        value: 0.0
+        consumes: []
+      layout:
+        item: {slot: item, type: plural}
+        item_tail:
+          - opt:
+              - {slot: pp_prep, cat: preposition}
+              - opt:
+                  - {slot: pp_det, cat: possessive_determiner}
+              - {slot: pp_obj, type: noun, referential: true, bare_reference_category: bare_pp_object, determinerless_category: named_calendar_period}
+        ending: []
+        actors: [who, std]
+        themes: [item]
+        proper_names: [who, std]
+        standard_value: "{std}"
+        subject_label: "{who.label}"
+        standard_label: "{std.label}"
+        measure_qualifier: null
+        standard_qualifier: null
+        guards:
+          - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
+          - verb_role_compatible: {verb: verb, roles: [who], verb_cat: quantity_event_verb, role_cat: quantity_event_participant}
+          - verb_role_compatible: {verb: verb, roles: [std], verb_cat: quantity_event_verb, role_cat: quantity_event_participant, allow_plural_class: true}
+          - slot_not_category: {slot: verb, cat: non_quantity_object_verb}
+          - slot_not_category: {slot: std, cat: non_quantity_holder}
+          - measure_holder_compatible: {measure: item, holders: [who, std], allow_proper_name: true, when_declared: true}
+          - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
+          - distinct: [who, std]
+          - category_nonoverlap: [who, std]
+          - distinct: [item, std]
+      # Some older holder forms admit a narrower standard or apposition.
+      # These remain explicit rather than silently widening their boundaries.
+      standard: [{slot: std, type: entity, referential: true}]
+      apposition:
+        - opt:
+            - {slot: appos_det, cat: possessive_determiner}
+            - {slot: appos_role, cat: animate}
+      plural_classes: []
+      extra_guards: []
+    rule:
+      phase: read
+      match:
+        sentence:
+          - {parameter: subject}
+          - opt:
+              - {slot: addition, cat: additive_discourse_adverb}
+          - {parameter: verb}
+          - {parameter: offset.tokens}
+          - {parameter: ratio.tokens}
+          - {lit: as}
+          - {lit: many}
+          - {parameter: layout.item}
+          - {parameter: layout.item_tail}
+          - {lit: as}
+          - {parameter: apposition}
+          - {parameter: standard}
+          - {parameter: layout.ending}
+      where:
+        - number_compatible: [who, verb]
+        - slot_not_category: {slot: who, cat: non_quantity_holder}
+        - slot_not_category: {slot: item, cat: many_incompatible_noun}
+        - verb_roles_compatible:
+            verb: verb
+            roles:
+              actor: {parameter: layout.actors}
+              theme: {parameter: layout.themes}
+            allow_proper_name: {parameter: layout.proper_names}
+            allow_plural_class: {parameter: plural_classes}
+        - {parameter: layout.guards}
+        - {parameter: ratio.guards}
+        - {parameter: extra_guards}
+      consumes:
+        - {parameter: offset.consumes}
+        - {parameter: ratio.consumes}
+      emits:
+        - fact: relation
+          subject: "{who}"
+          standard: {parameter: layout.standard_value}
+          measure: "{item}"
+          factor: {parameter: ratio.factor}
+          offset: {parameter: offset.value}
+          verb: "{verb}"
+          subject_label: {parameter: layout.subject_label}
+          standard_label: {parameter: layout.standard_label}
+          measure_qualifier: {parameter: layout.measure_qualifier}
+          standard_qualifier: {parameter: layout.standard_qualifier}
+
+variants:
+  # Two holders, one item. Each variant changes only its ratio/offset syntax
+  # and the acceptance boundaries established for that older form.
+  - id: arithmetic/as-many
+    template: as-many
+    description: Two holders have equal counts of the same item.
+    arguments:
+      extra_guards: &apposition_actor
+        - bound_requires_category: {bound: appos_role, slot: who, cat: quantity_event_participant, allow_proper_name: true}
+
+  - id: arithmetic/times-as-many
+    template: as-many
+    description: >
+      Two holders compare counts using an adverbial multiplier, such as
+      twice or three times. Predeterminers belong before noun phrases.
+    arguments:
+      ratio: &adverbial_ratio
+        tokens: [{slot: k, type: nonunit_multiplier}]
+        factor: k
+        guards:
+          - slot_not_category: {slot: k, cat: predeterminer_multiplier}
+        consumes: []
+      extra_guards: *apposition_actor
+
+  - id: arithmetic/fraction-as-many
+    template: as-many
+    description: >
+      Two holders compare counts using a positive fraction within one whole.
+      Both common-noun holders need positive quantity-holder evidence.
+    arguments:
+      subject: &referential_holder
+        {slot: who, type: entity, common_noun_cat: quantity_holder, referential: true}
+      verb: {slot: verb, cat: quantity_comparison_verb, finite_form: true}
+      ratio: &fraction_ratio
+        tokens: [{slot: f, type: fraction, word_fraction_within_whole: true, fraction_positive: true}]
+        factor: f
+        guards: []
+        consumes: [f]
+      standard: &holder_standard
+        [{slot: std, type: entity, common_noun_cat: quantity_holder, referential: true}]
+      apposition: &animate_apposition
+        - opt:
+            - {slot: appos_det, cat: animate_possessive_determiner}
+            - {slot: appos_role, cat: animate}
+      extra_guards:
+        - verb_role_compatible: {verb: verb, roles: [who], verb_cat: spend_verb, role_cat: animate}
+        - verb_role_compatible: {verb: verb, roles: [std], verb_cat: spend_verb, role_cat: animate, allow_plural_class: true}
+        - slot_not_category: {slot: pp_prep, cat: quantity_remainder_preposition}
+
+  - id: arithmetic/affine-times-as-many
+    template: as-many
+    description: >
+      Two holders compare counts with an offset after multiplication.
+      This older form retains its established double/triple compatibility.
+    arguments:
+      subject: *referential_holder
+      verb: &finite_verb {slot: verb, type: verb, finite_form: true}
+      offset: &signed_offset
+        tokens:
+          - {slot: n, type: number}
+          - {slot: dir, cat: quantity_delta}
+          - {lit: than}
+        value: n * sign(dir)
+        consumes: [n]
+      ratio:
+        tokens: [{slot: k, type: multiplier}]
+        factor: k
+        guards: []
+        consumes: []
+      standard: *holder_standard
+      plural_classes: [std]
+      extra_guards:
+        - &animate_actor
+          verb_role_compatible: {verb: verb, roles: [who, std], verb_cat: animate_subject_verb, role_cat: quantity_event_participant}
+        - &animate_theme
+          verb_role_compatible: {verb: verb, roles: [item], verb_cat: animate_object_verb, role_cat: teaching_quantity_object}
+        - &state_measure
+          verb_role_compatible: {verb: verb, roles: [item], verb_cat: state, excluded_role_cat: motion_comparison_measure}
+        - &possession_measure
+          verb_role_compatible: {verb: verb, roles: [item], verb_cat: possession_state, excluded_role_cat: bare_possession_incompatible_noun}
+        - &departure_actor
+          verb_role_compatible: {verb: verb, roles: [who], verb_cat: past_departure_quantity_verb, role_cat: quantity_event_participant}
+        - &complete_pp
+          slot_not_category: {slot: pp_prep, cat: quantity_remainder_preposition}
+        - &compatible_pp
+          modifier_host_compatible: {modifier: pp_prep, host: item, object: pp_obj}
+        - bound_rejects_category: {bound: pp_det, slot: pp_obj, cat: named_calendar_period}
+        - &distinct_pp
+          distinct: [who, pp_obj]
+
+  - id: arithmetic/affine-fraction-as-many
+    template: as-many
+    description: Two holders compare counts with an offset after a fractional factor.
+    arguments:
+      subject: *referential_holder
+      verb: *finite_verb
+      offset: *signed_offset
+      ratio:
+        <<: *fraction_ratio
+        consumes: []
+      standard: *holder_standard
+      apposition: *animate_apposition
+      plural_classes: [std]
+      extra_guards:
+        - *animate_actor
+        - *animate_theme
+        - *state_measure
+        - *possession_measure
+        - *departure_actor
+        - *complete_pp
+        - *compatible_pp
+        - *distinct_pp
+        - slot_not_category: {slot: verb, cat: frame_prepositional_verb}
+
+  # One holder, two item types. Both modifiers must be explicit, different,
+  # and attached to the same noun. No other owner's quantity may be borrowed.
+  - id: arithmetic/as-many-qualified-measures
+    template: as-many
+    description: A holder has equal counts of two explicitly different item types.
+    arguments:
+      subject: &bare_holder {<<: *holder, bare: true}
+      verb: &holding_verb {slot: verb, cat: plain_have_state, finite_form: true}
+      layout: &item_layout
+        item: {slot: item, type: qualified, number: plural, uncounted: true}
+        item_tail: []
+        ending: [{lit: ".", consume_skipped: true}]
+        actors: [who]
+        themes: [item, standard]
+        proper_names: [who]
+        standard_value: "{standard}"
+        subject_label: null
+        standard_label: null
+        measure_qualifier: "{item.qualifier}"
+        standard_qualifier: "{standard.qualifier}"
+        guards:
+          - same_lemma: [item, standard]
+          - distinct_measure: [item, standard]
+          - bound_requires_type: {bound: item, slot: item, type: generic_plural}
+          - bound_requires_type: {bound: standard, slot: standard, type: generic_plural}
+          - measure_holder_compatible: {measure: item, holders: [who], allow_proper_name: true, when_declared: true}
+      standard: &item_standard
+        [{slot: standard, type: qualified, number: plural, uncounted: true}]
+      apposition: []
+
+  - id: arithmetic/times-as-many-qualified-measures
+    template: as-many
+    description: A holder compares two item types using an adverbial multiplier.
+    arguments:
+      subject: *bare_holder
+      verb: *holding_verb
+      layout: *item_layout
+      standard: *item_standard
+      apposition: []
+      ratio: *adverbial_ratio
+
+  - id: arithmetic/fraction-as-many-qualified-measures
+    template: as-many
+    description: A holder compares two item types using a positive fraction within one whole.
+    arguments:
+      subject: *bare_holder
+      verb: *holding_verb
+      layout: *item_layout
+      standard: *item_standard
+      apposition: []
+      ratio: *fraction_ratio
+
+  - id: arithmetic/affine-times-as-many-qualified-measures
+    template: as-many
+    description: A holder compares two item types with an offset after an adverbial multiplier.
+    arguments:
+      subject: *bare_holder
+      verb: *holding_verb
+      layout: *item_layout
+      standard: *item_standard
+      apposition: []
+      ratio: *adverbial_ratio
+      offset: &nonnegative_offset
+        tokens:
+          - {slot: n, type: number, value_min: 0}
+          - {slot: dir, cat: quantity_delta}
+          - {lit: than}
+        value: n * sign(dir)
+        consumes: [n]
+
+  - id: arithmetic/affine-fraction-qualified-measures
+    template: as-many
+    description: >
+      A holder compares two item types with an offset after a fractional
+      factor. Both item modifiers survive in the ordinary Relation.
+    arguments:
+      subject: *bare_holder
+      verb: *holding_verb
+      layout: *item_layout
+      standard: *item_standard
+      apposition: []
+      ratio:
+        tokens: [{slot: fraction, type: fraction, word_fraction_within_whole: true, fraction_positive: true}]
+        factor: fraction
+        guards: []
+        consumes: []
+      offset: *nonnegative_offset

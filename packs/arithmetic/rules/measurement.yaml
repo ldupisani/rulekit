@@ -5,12 +5,151 @@ format: rulekit/rules@1
 # derived reading separate.  A resulting total is not assigned to the added
 # substance, and the instrument does not acquire the measured dimension as an
 # intrinsic property.  The consumer links them only through one unique stream.
+
+templates:
+
+  resulting-total:
+    parameters:
+      actor:
+        tokens:
+          - {slot: actor, type: entity, common_noun_cat: quantity_event_participant, referential: true}
+        guards:
+          - {number_compatible: [actor, verb]}
+        generation: premise
+      complements:
+        - {slot: content, cat: measured_content_substance, qualified: true, qualifier_cat:
+            measurement_sufficiency_marker}
+        - {slot: into, cat: measurement_container_entry_preposition}
+        - {slot: container, cat: measurement_container, referential: true}
+    rule:
+      phase: read
+      match:
+        sentence:
+          - {parameter: actor.tokens}
+          - opt:
+              - {slot: sequence, cat: narration_sequence_adverb}
+          - {slot: verb, cat: measured_content_transfer_verb, finite_form: true}
+          - {parameter: complements}
+          - {lit: to}
+          - {slot: target, cat: measurement_target_verb, bare_form: true}
+          - {slot: dimension, cat: mass_dimension_noun, referential: true}
+          - {lit: to}
+          - {slot: amount, cat: mass_unit, counted: true}
+      where: {parameter: actor.guards}
+      consumes: [amount]
+      emits:
+        - fact: measured_content_change
+          container: '{container}'
+          content: '{content}'
+          operation: set_total
+          value: amount
+          dimension: '{dimension}'
+          measure: '{amount}'
+      generation: {parameter: actor.generation}
+
+  multiply-total:
+    parameters:
+      effect:
+        - {slot: factor, type: multiplier}
+        - {slot: dimension, cat: mass_dimension_noun, referential: true}
+    rule:
+      phase: read
+      generation: contextual
+      generation_context: &measured_stream
+        before:
+          - sentence:
+              - {slot: support_actor, type: entity, common_noun_cat: quantity_event_participant, referential: true}
+              - {slot: support_verb, cat: measured_content_transfer_verb, finite_form: true}
+              - {slot: support_content, cat: measured_content_substance, qualified: true, qualifier_cat:
+                  measurement_sufficiency_marker}
+              - {slot: support_into, cat: measurement_container_entry_preposition}
+              - {slot: support_container, cat: measurement_container, referential: true}
+              - {lit: to}
+              - {slot: support_target, cat: measurement_target_verb, bare_form: true}
+              - {slot: support_dimension, cat: mass_dimension_noun, referential: true}
+              - {lit: to}
+              - {slot: support_amount, cat: mass_unit, counted: true}
+            where:
+              - {number_compatible: [support_actor, support_verb]}
+        required_fact_counts: {measured_content_change: 2}
+      match:
+        sentence:
+          - {slot: actor, type: entity, common_noun_cat: quantity_event_participant, referential: true}
+          - opt:
+              - {slot: sequence, cat: narration_sequence_adverb}
+          - {slot: verb, cat: measured_content_adjustment_verb, finite_form: true}
+          - {slot: content, cat: measured_content_substance, qualified: true, qualifier_cat:
+              measurement_sufficiency_marker}
+          - {lit: to}
+          - {parameter: effect}
+          - opt:
+              - {slot: repetition, cat: event_repetition_adverb}
+      where:
+        - {number_compatible: [actor, verb]}
+        - bound_requires_category: {bound: factor, slot: factor, cat: predeterminer_multiplier}
+      consumes: [factor]
+      emits:
+        - fact: measured_content_change
+          container: $active:measured-container$
+          content: '{content}'
+          operation: multiply_total
+          value: factor
+          dimension: '{dimension}'
+
+variants:
+
+  - id: arithmetic/measured-content-resulting-total
+    template: resulting-total
+    description: >
+      An unspecified amount of named content is introduced into an explicit container until a stated dimension reaches a stated
+      total. The total is the container-plus-contents reading, not the content's own amount.
+
+  - id: arithmetic/measured-content-resulting-total-preposed-goal
+    template: resulting-total
+    description: >
+      A transfer may name its destination before its content: "She poured into the jar enough sand to bring the weight to
+      5 pounds." The goal order changes, but the stated number is still an aggregate total.
+    arguments:
+      complements:
+        - {slot: into, cat: measurement_container_entry_preposition}
+        - {slot: container, cat: measurement_container, referential: true}
+        - {slot: content, cat: measured_content_substance, qualified: true, qualifier_cat:
+            measurement_sufficiency_marker}
+
+  - id: arithmetic/measured-content-resulting-total-gapped
+    template: resulting-total
+    description: >
+      The coordinated-clause sibling of the resulting-total premise. Its actor is inherited grammatically from a preceding
+      conjunct, while the content, container, dimension, and resulting total remain explicit.
+    arguments:
+      actor: {tokens: [], guards: [], generation: reader-only}
+
+  - id: arithmetic/measured-content-multiply-total
+    template: multiply-total
+    description: >
+      An added substance has an explicitly stated multiplicative effect on the active aggregate dimension. The omitted container
+      resolves only against one unique prior resulting-total stream.
+
+  - id: arithmetic/measured-content-causative-multiply-total
+    template: multiply-total
+    description: >
+      A causative infinitive can state the effect of added content: "She added enough clay to cause the weight to double."
+      This states one scaling event, including when a repetition adverb marks it as another step. The active container must
+      still be uniquely established.
+    arguments:
+      effect:
+        - {slot: cause, cat: causative_result_verb, bare_form: true}
+        - {slot: dimension, cat: mass_dimension_noun, referential: true}
+        - {lit: to}
+        - {slot: factor, type: multiplier}
+
 rules:
+
   - id: arithmetic/measurement-container-on-instrument
     phase: read
     description: >
-      A measured container is positioned on a supporting instrument. This
-      records the spatial relation only; it does not assert a reading.
+      A measured container is positioned on a supporting instrument. This records the spatial relation only; it does not assert
+      a reading.
     match:
       sentence:
         - {slot: actor, type: entity, common_noun_cat: quantity_event_participant, referential: true}
@@ -24,224 +163,17 @@ rules:
       - number_compatible: [actor, verb]
     emits:
       - fact: spatial_placement
-        entity: "{container}"
-        reference: "{instrument}"
-        relation: "{prep}"
-
-  - id: arithmetic/measured-content-resulting-total
-    phase: read
-    description: >
-      An unspecified amount of named content is introduced into an explicit
-      container until a stated dimension reaches a stated total. The total is
-      the container-plus-contents reading, not the content's own amount.
-    match:
-      sentence:
-        - {slot: actor, type: entity, common_noun_cat: quantity_event_participant, referential: true}
-        - opt:
-            - {slot: sequence, cat: narration_sequence_adverb}
-        - {slot: verb, cat: measured_content_transfer_verb, finite_form: true}
-        - {slot: content, cat: measured_content_substance, qualified: true, qualifier_cat: measurement_sufficiency_marker}
-        - {slot: into, cat: measurement_container_entry_preposition}
-        - {slot: container, cat: measurement_container, referential: true}
-        - {lit: to}
-        - {slot: target, cat: measurement_target_verb, bare_form: true}
-        - {slot: dimension, cat: mass_dimension_noun, referential: true}
-        - {lit: to}
-        - {slot: amount, cat: mass_unit, counted: true}
-    where:
-      - number_compatible: [actor, verb]
-    consumes: [amount]
-    emits:
-      - fact: measured_content_change
-        container: "{container}"
-        content: "{content}"
-        operation: set_total
-        value: amount
-        dimension: "{dimension}"
-        measure: "{amount}"
-
-  - id: arithmetic/measured-content-resulting-total-preposed-goal
-    phase: read
-    description: >
-      A transfer may name its destination before its content: "She poured
-      into the jar enough sand to bring the weight to 5 pounds." The goal
-      order changes, but the stated number is still an aggregate total.
-    match:
-      sentence:
-        - {slot: actor, type: entity, common_noun_cat: quantity_event_participant, referential: true}
-        - opt:
-            - {slot: sequence, cat: narration_sequence_adverb}
-        - {slot: verb, cat: measured_content_transfer_verb, finite_form: true}
-        - {slot: into, cat: measurement_container_entry_preposition}
-        - {slot: container, cat: measurement_container, referential: true}
-        - {slot: content, cat: measured_content_substance, qualified: true, qualifier_cat: measurement_sufficiency_marker}
-        - {lit: to}
-        - {slot: target, cat: measurement_target_verb, bare_form: true}
-        - {slot: dimension, cat: mass_dimension_noun, referential: true}
-        - {lit: to}
-        - {slot: amount, cat: mass_unit, counted: true}
-    where:
-      - number_compatible: [actor, verb]
-    consumes: [amount]
-    emits:
-      - fact: measured_content_change
-        container: "{container}"
-        content: "{content}"
-        operation: set_total
-        value: amount
-        dimension: "{dimension}"
-        measure: "{amount}"
-
-  - id: arithmetic/measured-content-resulting-total-gapped
-    phase: read
-    generation: reader-only
-    description: >
-      The coordinated-clause sibling of the resulting-total premise. Its
-      actor is inherited grammatically from a preceding conjunct, while the
-      content, container, dimension, and resulting total remain explicit.
-    match:
-      sentence:
-        - opt:
-            - {slot: sequence, cat: narration_sequence_adverb}
-        - {slot: verb, cat: measured_content_transfer_verb, finite_form: true}
-        - {slot: content, cat: measured_content_substance, qualified: true, qualifier_cat: measurement_sufficiency_marker}
-        - {slot: into, cat: measurement_container_entry_preposition}
-        - {slot: container, cat: measurement_container, referential: true}
-        - {lit: to}
-        - {slot: target, cat: measurement_target_verb, bare_form: true}
-        - {slot: dimension, cat: mass_dimension_noun, referential: true}
-        - {lit: to}
-        - {slot: amount, cat: mass_unit, counted: true}
-    consumes: [amount]
-    emits:
-      - fact: measured_content_change
-        container: "{container}"
-        content: "{content}"
-        operation: set_total
-        value: amount
-        dimension: "{dimension}"
-        measure: "{amount}"
-
-  - id: arithmetic/measured-content-multiply-total
-    phase: read
-    generation: contextual
-    generation_context:
-      before:
-        - sentence:
-            - {slot: support_actor, type: entity, common_noun_cat: quantity_event_participant, referential: true}
-            - {slot: support_verb, cat: measured_content_transfer_verb, finite_form: true}
-            - {slot: support_content, cat: measured_content_substance, qualified: true, qualifier_cat: measurement_sufficiency_marker}
-            - {slot: support_into, cat: measurement_container_entry_preposition}
-            - {slot: support_container, cat: measurement_container, referential: true}
-            - {lit: to}
-            - {slot: support_target, cat: measurement_target_verb, bare_form: true}
-            - {slot: support_dimension, cat: mass_dimension_noun, referential: true}
-            - {lit: to}
-            - {slot: support_amount, cat: mass_unit, counted: true}
-          where:
-            - number_compatible: [support_actor, support_verb]
-      required_fact_counts: {measured_content_change: 2}
-    description: >
-      An added substance has an explicitly stated multiplicative effect on the
-      active aggregate dimension. The omitted container resolves only against
-      one unique prior resulting-total stream.
-    match:
-      sentence:
-        - {slot: actor, type: entity, common_noun_cat: quantity_event_participant, referential: true}
-        - opt:
-            - {slot: sequence, cat: narration_sequence_adverb}
-        - {slot: verb, cat: measured_content_adjustment_verb, finite_form: true}
-        - {slot: content, cat: measured_content_substance, qualified: true, qualifier_cat: measurement_sufficiency_marker}
-        - {lit: to}
-        - {slot: factor, type: multiplier}
-        - {slot: dimension, cat: mass_dimension_noun, referential: true}
-        - opt:
-            - {slot: repetition, cat: event_repetition_adverb}
-    where:
-      - number_compatible: [actor, verb]
-      - bound_requires_category: {bound: factor, slot: factor, cat: predeterminer_multiplier}
-    consumes: [factor]
-    emits:
-      - fact: measured_content_change
-        container: "$active:measured-container$"
-        content: "{content}"
-        operation: multiply_total
-        value: factor
-        dimension: "{dimension}"
-
-  - id: arithmetic/measured-content-causative-multiply-total
-    phase: read
-    generation: contextual
-    generation_context:
-      before:
-        - sentence:
-            - {slot: support_actor, type: entity, common_noun_cat: quantity_event_participant, referential: true}
-            - {slot: support_verb, cat: measured_content_transfer_verb, finite_form: true}
-            - {slot: support_content, cat: measured_content_substance, qualified: true, qualifier_cat: measurement_sufficiency_marker}
-            - {slot: support_into, cat: measurement_container_entry_preposition}
-            - {slot: support_container, cat: measurement_container, referential: true}
-            - {lit: to}
-            - {slot: support_target, cat: measurement_target_verb, bare_form: true}
-            - {slot: support_dimension, cat: mass_dimension_noun, referential: true}
-            - {lit: to}
-            - {slot: support_amount, cat: mass_unit, counted: true}
-          where:
-            - number_compatible: [support_actor, support_verb]
-      required_fact_counts: {measured_content_change: 2}
-    description: >
-      A causative infinitive can state the effect of added content: "She
-      added enough clay to cause the weight to double." This states one
-      scaling event, including when a repetition adverb marks it as another
-      step. The active container must still be uniquely established.
-    match:
-      sentence:
-        - {slot: actor, type: entity, common_noun_cat: quantity_event_participant, referential: true}
-        - opt:
-            - {slot: sequence, cat: narration_sequence_adverb}
-        - {slot: verb, cat: measured_content_adjustment_verb, finite_form: true}
-        - {slot: content, cat: measured_content_substance, qualified: true, qualifier_cat: measurement_sufficiency_marker}
-        - {lit: to}
-        - {slot: cause, cat: causative_result_verb, bare_form: true}
-        - {slot: dimension, cat: mass_dimension_noun, referential: true}
-        - {lit: to}
-        - {slot: factor, type: multiplier}
-        - opt:
-            - {slot: repetition, cat: event_repetition_adverb}
-    where:
-      - number_compatible: [actor, verb]
-      - bound_requires_category: {bound: factor, slot: factor, cat: predeterminer_multiplier}
-    consumes: [factor]
-    emits:
-      - fact: measured_content_change
-        container: "$active:measured-container$"
-        content: "{content}"
-        operation: multiply_total
-        value: factor
-        dimension: "{dimension}"
+        entity: '{container}'
+        reference: '{instrument}'
+        relation: '{prep}'
 
   - id: arithmetic/measured-content-add-quantity
     phase: read
     generation: contextual
-    generation_context:
-      before:
-        - sentence:
-            - {slot: support_actor, type: entity, common_noun_cat: quantity_event_participant, referential: true}
-            - {slot: support_verb, cat: measured_content_transfer_verb, finite_form: true}
-            - {slot: support_content, cat: measured_content_substance, qualified: true, qualifier_cat: measurement_sufficiency_marker}
-            - {slot: support_into, cat: measurement_container_entry_preposition}
-            - {slot: support_container, cat: measurement_container, referential: true}
-            - {lit: to}
-            - {slot: support_target, cat: measurement_target_verb, bare_form: true}
-            - {slot: support_dimension, cat: mass_dimension_noun, referential: true}
-            - {lit: to}
-            - {slot: support_amount, cat: mass_unit, counted: true}
-          where:
-            - number_compatible: [support_actor, support_verb]
-      required_fact_counts: {measured_content_change: 2}
+    generation_context: *measured_stream
     description: >
-      A stated amount of content is added to the active measured container.
-      Its unit remains explicit so the consumer can require a declared
-      same-dimension conversion before changing the aggregate reading.
+      A stated amount of content is added to the active measured container. Its unit remains explicit so the consumer can
+      require a declared same-dimension conversion before changing the aggregate reading.
     match:
       sentence:
         - {slot: actor, type: entity, common_noun_cat: quantity_event_participant, referential: true}
@@ -256,19 +188,21 @@ rules:
     consumes: [amount]
     emits:
       - fact: measured_content_change
-        container: "$active:measured-container$"
-        content: "{content}"
+        container: $active:measured-container$
+        content: '{content}'
         operation: add_quantity
         value: amount
-        measure: "{amount}"
+        measure: '{amount}'
 
 asks:
+
   - id: ask/final-container-measurement-reading
     match:
       question:
         - {lit: what}
         - {slot: copula, cat: singular_copula}
-        - {slot: dimension, cat: mass_dimension_noun, number: singular, qualified: true, qualifier_cat: final_measurement_attribute, referential: true}
+        - {slot: dimension, cat: mass_dimension_noun, number: singular, qualified: true, qualifier_cat:
+            final_measurement_attribute, referential: true}
         - {lit: of}
         - {slot: container, cat: measurement_container, referential: true}
         - opt:
@@ -277,12 +211,12 @@ asks:
         - opt:
             - {lit: in}
             - {slot: unit, cat: mass_unit, number: plural}
-        - {lit: "?", consume_skipped: true}
+        - {lit: '?', consume_skipped: true}
     resolves:
       consumer: measurement-reading
-      container: "{container}"
-      dimension: "{dimension}"
-      target_measure: "{unit}"
+      container: '{container}'
+      dimension: '{dimension}'
+      target_measure: '{unit}'
     satisfies:
       copula: [subject]
 
@@ -291,15 +225,16 @@ asks:
       question:
         - {lit: what}
         - {lit: is}
-        - {slot: dimension, cat: mass_dimension_noun, qualified: true, qualifier_cat: final_measurement_attribute, referential: true}
+        - {slot: dimension, cat: mass_dimension_noun, qualified: true, qualifier_cat: final_measurement_attribute,
+            referential: true}
         - {slot: observed, cat: measurement_observation_verb}
         - {slot: prep, cat: quantity_surface_preposition}
         - {slot: instrument, cat: measurement_instrument, referential: true}
     resolves:
       consumer: measurement-reading
-      instrument: "{instrument}"
-      dimension: "{dimension}"
-      relation: "{prep}"
+      instrument: '{instrument}'
+      dimension: '{dimension}'
+      relation: '{prep}'
 
   - id: ask/measured-content-in-container
     match:
@@ -312,8 +247,8 @@ asks:
         - {slot: container, cat: measurement_container, referential: true}
     resolves:
       consumer: measurement-content-amount
-      content: "{content}"
-      container: "{container}"
+      content: '{content}'
+      container: '{container}'
     generation:
       context_required: true
       context_strategy: evidence
@@ -339,9 +274,9 @@ asks:
         - {slot: container, cat: measurement_container, referential: true}
     resolves:
       consumer: measurement-content-amount
-      content: "{content}"
-      container: "{container}"
-      target_measure: "{unit}"
+      content: '{content}'
+      container: '{container}'
+      target_measure: '{unit}'
     generation:
       context_required: true
       context_strategy: evidence
