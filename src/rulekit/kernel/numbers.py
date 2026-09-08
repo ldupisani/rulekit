@@ -168,6 +168,14 @@ def annotate_numbers(reading: Reading, reg: Registry) -> Reading:
                 f"scale word {unit.surface!r} applied to {prev.surface!r}",
             )
             i -= 1
+        elif fold in reg.scales:
+            # A bare scale denotes one scale ("hundred years", "dozen eggs").
+            # Explicit preceding operands took the multiplication branch above.
+            reading.record(
+                "annotate-number", unit,
+                {"value": reg.scales[fold], "value_kind": "count"},
+                f"bare scale word {unit.surface!r}",
+            )
         # "a" as the count 1 before a scale/fraction handled in senses stage
         i += 1
 

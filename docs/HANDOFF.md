@@ -1,8 +1,7 @@
 # rulekit handoff
 
-**Updated:** 2026-09-07
-**Runtime checkpoint:** shared account and rate consolidation on `main`
-(following resource-accounting commit `89f241e`)
+**Updated:** 2026-09-08
+**Runtime checkpoint:** bounded ordered sequences on `main` (following `f876539`)
 **Active campaign:** GSM8K Mining v2, M7 example-led vertical mining
 **Immediate state:** all four published Mining v2 candidates are landed; no
 candidate is awaiting human or machine review
@@ -51,6 +50,22 @@ temporal event totals (130), task-completion duration gaps (131), and
 anaphoric distance chains with exact combined totals (132).
 
 ### Latest implementation checkpoint
+
+Recurring carrier events now support an indexed content amount from a bounded
+total and an adjacent-term relation. Cadence, observation total, and affine
+step are separate typed facts; they reuse duration conversion, source-local
+numeric auditing, logged arithmetic, and proof presentation. Multiplicative,
+fractional, and additive steps share one calculation. First/last asks require
+complete intervals and consistent discrete contents. The answer explicitly
+reports its whole-carrier/complete-total interpretation. Missing or competing
+evidence, extra events, partial intervals, and unrelated flat-total asks
+decline. Vocabulary and category-scoped event synonyms live in core English.
+All eight premise shapes generate in curated and GSM8K; explicit compound
+verb entries round-trip through the ordinary auxiliary reader. Bare declared
+number scales and determined noun/verb homographs reuse structural reading
+machinery, with a regression protecting floating-quantifier predicates.
+Generation's repeated verb-frame lookups use a bounded fingerprint-scoped
+cache; role checks and edited-project invalidation remain explicit.
 
 Resource and rate reuse now connects previously separate calculation paths.
 Unit-priced purchases retain their count and per-unit price as source evidence;
@@ -481,31 +496,40 @@ These are the gates run at the current runtime checkpoint:
 
 | Gate | Current result |
 | --- | --- |
-| full synthetic suite | 6,419 passed |
+| full synthetic suite | 6,571 passed |
 | curated suite | 71 correct, 0 wrong |
 | GSM8K DEV-train | 108 correct, 0 wrong |
-| GSM8K DEV-holdout | 49 correct, 0 wrong |
+| GSM8K DEV-holdout | 51 correct, 0 wrong |
 | ASDiv DEV | 47 correct, 0 wrong |
 | SVAMP DEV | 24 correct, 0 wrong |
 | MAWPS DEV | 11 correct, 0 wrong |
 | SciBench DEV | 6 correct, 0 wrong |
 | DIFG DEV | 75 correct, 0 wrong |
 | FOLIO DEV | 0 numeric commitments |
-| COGS DEV-train / holdout | 1,771 / 1,693 exact, 0 incorrect |
+| COGS DEV-train / holdout | 1,773 / 1,695 exact, 0 incorrect |
 | PMB train / development | 117 / 4 exact, 0 incorrect |
 | curated lint | 0 errors, 0 warnings |
 | GSM8K lint | 0 errors, 1 previously documented trig-alternation warning |
 
-The final account/rate reuse run passed all 6,419 tests in 366 seconds,
-including every supported GSM8K premise's strict round trip. This adds 106
-synthetic cases to the preceding checkpoint. All eight numeric DEV snapshot
-diffs are neutral, with zero broken answers and zero new wrongs; COGS and PMB
-DEV scores are also unchanged. Evidence is in
-`/tmp/rulekit-account-rate-reuse.InUjrf/` (`full-final.log` and the per-slice
-snapshot/diff logs). The initial full run exposed inventory assertions and
-one test-helper error, all corrected before the clean full rerun. No runtime
-changes followed the DEV gates. No server restart or protected TEST look was
-performed.
+The final ordered-sequence run passed all 6,571 tests in 268 seconds,
+including every supported GSM8K premise's strict round trip. This adds 151
+sequence cases and one generation-cache regression to the 6,419-test account
+and rate checkpoint. All eight numeric DEV snapshot diffs retain zero broken
+answers and zero new wrongs. GSM8K holdout gains two correct answers
+(`2ca37a674312`, `99c3df277cd7`); COGS gains two exact graphs in each DEV slice,
+with zero incorrect graphs; PMB is neutral. The directly supplied motivating
+question is exposed calibration, not independent generalization evidence.
+No corpus question prose was added to the repository.
+
+Evidence is in `/tmp/rulekit-ordered-sequences.ECQOnf/` (`full-verified.log`
+and the per-slice snapshot/diff logs), compared with the preceding snapshots
+in `/tmp/rulekit-account-rate-reuse.InUjrf/`. An initial noun-disambiguation
+regression was repaired and pinned by a floating-quantifier synthetic test.
+The final exhaustive generation check also exposed repeated immutable
+verb-frame lookup work; a bounded fingerprint cache preserves every role
+check and has explicit edited-project invalidation coverage. No runtime
+changes followed the final gates. No server restart or protected TEST look
+was performed.
 
 The preceding repeated-rate increment added one correct GSM8K DEV-train
 answer (`d0e9ac73409c`). Its motivating text was user-supplied calibration,
@@ -554,13 +578,13 @@ Do not spend another protected look merely to refresh these numbers.
 Availability means “the authoring layer can realize the declared contract and
 round-trip it through the ordinary matcher.” It does not mean that a human has
 judged the resulting English or emitted fact valid.
-The curated reachable filler inventory is 466; local allocation rules expose
+The curated reachable filler inventory is 490; local allocation rules expose
 account phrases, whose ownership is deliberately not inferred in isolation.
 
 | Project | Premise rules | Independent asks | Answerable asks |
 | --- | ---: | ---: | ---: |
-| curated | 171/180 | 119/137 | 133/137 |
-| GSM8K | 165/172 | 157/170 | 170/170 |
+| curated | 179/188 | 121/139 | 135/139 |
+| GSM8K | 173/180 | 159/172 | 172/172 |
 
 The unsupported premise rows are deliberate safety interceptors or reader-only
 rules, not ordinary generation targets. Fourteen curated and all thirteen
@@ -640,6 +664,9 @@ not directory names.
   answers and zero incorrect projected graphs across the standing gates.
 
 ## Next safe action
+
+A normal operator restart is needed to load the changed Python code; do not
+interrupt the live reviewer automatically.
 
 For another capability increment, run the M7 mining workflow on one new
 inspectable GSM8K `dev-train` decline. Before publishing a candidate:

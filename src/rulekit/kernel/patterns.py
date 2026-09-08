@@ -70,6 +70,9 @@ from .model import (
     RateThreshold,
     RatePremium,
     RepeatedActivityDuration,
+    EventCadence,
+    SequenceTotal,
+    SequenceStep,
     Reading,
     Relation,
     RatioQuantity,
@@ -92,6 +95,9 @@ from .model import (
 SKIPPABLE_SENSES = {"article", "punct"}
 
 _FACT_CLASSES = {
+    "event_cadence": EventCadence,
+    "sequence_total": SequenceTotal,
+    "sequence_step": SequenceStep,
     "rate_threshold": RateThreshold,
     "rate_premium": RatePremium,
     "repeated_activity_duration": RepeatedActivityDuration,

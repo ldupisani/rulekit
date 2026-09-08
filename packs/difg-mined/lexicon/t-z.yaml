@@ -395,10 +395,6 @@ entries:
             - verb
         verb:
             lemma: triple
-    truck:
-        senses:
-            - noun
-        plural: trucks
     trying:
         senses:
             - verb

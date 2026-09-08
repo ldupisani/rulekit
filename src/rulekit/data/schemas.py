@@ -1504,6 +1504,7 @@ class WherePredicate(StrictModel):
 
 class FactEmit(StrictModel):
     fact: Literal[
+        "event_cadence", "sequence_total", "sequence_step",
         "rate_threshold", "rate_premium", "repeated_activity_duration",
         "resource_allocation", "resource_balance", "expenditure", "activity_duration", "bounded_activity_inquiry", "age_at_year",
         "task_completion_duration",

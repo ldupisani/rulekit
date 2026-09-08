@@ -116,6 +116,9 @@ _AVAILABILITY_CACHE: OrderedDict[
     tuple[str, _FixtureCacheKey], tuple[RuleAvailability, ...]
 ] = OrderedDict()
 _MAX_DOMAIN_CACHE_ENTRIES = 4096
+_SELECTIONAL_FRAME_CACHE: OrderedDict[
+    tuple[str, str, tuple[str, ...]], tuple
+] = OrderedDict()
 _MAX_AVAILABILITY_CACHE_ENTRIES = 32
 
 
@@ -172,16 +175,30 @@ def _selectional_assignment_compatible(
 ) -> bool:
     """Whether one complete lexical frame accepts all currently known roles."""
 
-    frames = reg.selectional_frames(verb.identity)
-    if compatibility.frame_categories:
-        frames = tuple(
-            (category, frame)
-            for category, frame in frames
-            if any(
-                trigger in reg.cat_ancestors(category)
-                for trigger in compatibility.frame_categories
+    # A domain probe can test thousands of fillers against the same verb.
+    # Only role assignments vary: the most-specific frames and their declared
+    # category restriction are immutable for one registry fingerprint.
+    key = (reg.fingerprint, verb.identity, tuple(compatibility.frame_categories))
+    with _CACHE_LOCK:
+        frames = _SELECTIONAL_FRAME_CACHE.get(key)
+        if frames is not None:
+            _SELECTIONAL_FRAME_CACHE.move_to_end(key)
+    if frames is None:
+        frames = reg.selectional_frames(verb.identity)
+        if compatibility.frame_categories:
+            frames = tuple(
+                (category, frame)
+                for category, frame in frames
+                if any(
+                    trigger in reg.cat_ancestors(category)
+                    for trigger in compatibility.frame_categories
+                )
             )
-        )
+        with _CACHE_LOCK:
+            _SELECTIONAL_FRAME_CACHE[key] = frames
+            _SELECTIONAL_FRAME_CACHE.move_to_end(key)
+            while len(_SELECTIONAL_FRAME_CACHE) > _MAX_DOMAIN_CACHE_ENTRIES:
+                _SELECTIONAL_FRAME_CACHE.popitem(last=False)
     if not frames:
         return not compatibility.require_declared_frame
     for frame_category, frame in frames:
@@ -492,12 +509,22 @@ def _lexical_fillers(
     for surface, entry in sorted(reg.lexicon.items()):
         if not surface:
             continue
+        if category is not None and not reg.word_in_category(surface, category):
+            continue
+        if sense is not None and sense not in entry.senses:
+            continue
         if any(ch.isspace() for ch in surface) and not (
             (sense == "preposition" and "preposition" in entry.senses)
             or entry.lexical_phrase
         ):
-            # Only declared atomic phrases have a reader round-trip contract.
-            continue
+            # Explicit compound verb entries may use the ordinary auxiliary
+            # condenser. Admit only forms that actually read as one verb;
+            # an arbitrary multiword lexicon entry is not an atomic phrase.
+            if entry.senses != ["verb"] or sense not in (None, "verb"):
+                continue
+            reading = analyze(surface, reg, tracing=False)
+            if len(reading.units) != 1 or reading.units[0].sense() != "verb":
+                continue
         if sense is not None and (
             surface in reg.numbers
             or surface in reg.fractions
@@ -509,10 +536,6 @@ def _lexical_fillers(
             # sense-specific lexical slot as that verb.  Keep it available to
             # broad `word` exploration, but do not advertise an unreachable
             # lexical reading that every generated candidate must reject.
-            continue
-        if category is not None and not reg.word_in_category(surface, category):
-            continue
-        if sense is not None and sense not in entry.senses:
             continue
         if sense == "noun" and surface in reg.plural_to_singular:
             continue

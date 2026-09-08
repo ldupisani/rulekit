@@ -141,7 +141,7 @@ def _nominal_pass(reading: Reading, reg: Registry) -> bool:
             merged.features["fold"] = f"{a.features['fold']} {b.features['fold']}"
             units[i : i + 2] = [merged]
             reading.record(
-                "merge-perfect", merged, {},
+                "merge-perfect", merged, {"number": a.features.get("number")},
                 f"perfect tense {merged.surface!r} — one verb, lemma "
                 f"{b.features.get('lemma', b.features['fold'])!r}",
             )

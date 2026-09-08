@@ -110,6 +110,7 @@ def consumer(name: str, *, time_scoped: bool = False):
 from . import (  # noqa: E402,F401  (import registers each handler)
     single_entity as _single_entity,
     event_period_total as _event_period_total,
+    ordered_sequence as _ordered_sequence,
     rate_span as _rate_span,
     rate_span_inverse as _rate_span_inverse,
     capacity as _capacity,

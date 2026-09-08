@@ -6,7 +6,12 @@ import pytest
 
 from rulekit.data.project import load_project
 from rulekit.data.registry import CompileError
+from rulekit.data.registry import Registry
+from rulekit.data.schemas import VerbRolesCompatibilityPredicate
 from rulekit.generation import GenerationError, generate_candidate
+from rulekit.generation.sample import (
+    _Filler, _SELECTIONAL_FRAME_CACHE, _selectional_assignment_compatible,
+)
 from rulekit.kernel.engine import solve
 from rulekit.kernel.patterns import match_ask
 
@@ -122,6 +127,39 @@ members:
   edible_object: [cake]
 """
     )
+
+
+def test_generation_frame_cache_keeps_role_checks_and_revision_boundaries(tmp_path, monkeypatch):
+    _write_project(tmp_path)
+    reg = load_project(tmp_path).registry
+    _SELECTIONAL_FRAME_CACHE.clear()
+    calls = []
+    original = Registry.selectional_frames
+
+    def counted(self, word):
+        calls.append((self.fingerprint, word))
+        return original(self, word)
+
+    monkeypatch.setattr(Registry, "selectional_frames", counted)
+    requirement = VerbRolesCompatibilityPredicate(
+        verb="verb", roles={"theme": ["item"]}, require_declared_frame=True,
+    )
+    verb = _Filler("eat", "eat")
+    assert _selectional_assignment_compatible(verb, {"item": _Filler("apple", "apple")}, requirement, reg)
+    assert not _selectional_assignment_compatible(verb, {"item": _Filler("stone", "stone")}, requirement, reg)
+    assert len(calls) == 1
+    restricted = requirement.model_copy(update={"frame_categories": ["stone_object"]})
+    assert not _selectional_assignment_compatible(verb, {}, restricted, reg)
+    assert not _selectional_assignment_compatible(verb, {}, restricted, reg)
+    assert len(calls) == 2  # Empty frames are cached too, separately by restriction.
+
+    # A normal project edit yields a fresh fingerprint, not stale role data.
+    categories = tmp_path / "extension" / "categories.yaml"
+    categories.write_text(categories.read_text().replace("[cake]", "[cake, stone]"))
+    revised = load_project(tmp_path).registry
+    assert revised.fingerprint != reg.fingerprint
+    assert _selectional_assignment_compatible(verb, {"item": _Filler("stone", "stone")}, requirement, revised)
+    assert len(calls) == 3
 
 
 def test_curated_conjoined_rule_reads_category_owned_frames() -> None:

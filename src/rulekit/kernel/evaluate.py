@@ -73,6 +73,8 @@ class ArithmeticLog:
     # A rate policy or repeated schedule cannot disappear into a flat-rate
     # answer merely because its numbers were successfully recognized.
     consumed_rate_structure_keys: set[tuple] = field(default_factory=set)
+    # A bounded event series cannot be treated as a flat quantity or rate.
+    consumed_sequence_keys: set[tuple] = field(default_factory=set)
     # Exact line items used by a resource consumer. This licenses their own
     # numeric mentions only; a same-valued cost elsewhere is not evidence.
     consumed_expenditure_keys: set[tuple] = field(default_factory=set)

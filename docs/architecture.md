@@ -113,8 +113,8 @@ plural/base `need` or `require`. The comparative form also applies
 `same_number` between
 its standalone count and noun, admitting `1 fewer shopper` and
 `2 fewer shoppers` while rejecting both mismatches. The current curated
-project has 171 loaded reading rules and 416 reachable generated-filler
-identities. Of those rules, 162 are ordinary selectable generated premises,
+project has 188 loaded reading rules and 490 reachable generated-filler
+identities. Of those rules, 179 are ordinary selectable generated premises,
 eight are explicitly fact-free safety interceptors, and one is a declared
 reader-only gapped construction. Keeping those roles in the schema prevents
 generation coverage from treating defensive recognition as authored English.
@@ -1489,6 +1489,20 @@ conflicting verb, noun, or category-rooted lexical placement. Broad `word`
 exploration and the explicit numeric slot domains remain unchanged, so the
 entry is still inspectable wherever the runtime can actually realize it.
 
+Explicit multiword verb entries can also enter lexical domains when the
+ordinary analyzer condenses their complete surface into exactly one verb.
+This reuses the auxiliary/perfect reader rather than adding a parallel phrase
+parser. Arbitrary multiword entries remain excluded. The merged verb retains
+the auxiliary's agreement; a plural auxiliary must not inherit a participle's
+default singular feature.
+
+Generation also caches the most-specific verb frames by registry fingerprint,
+verb identity, and requested frame-category restriction. The cache is bounded
+and follows the existing authoring cache pattern. It avoids repeating the same
+category traversal for every candidate noun, but never caches away the role
+assignment checks: changed fillers are still checked, and project edits select
+a new fingerprint.
+
 Fraction fillers also follow declared morphology. `fraction_plurals` maps a
 count-requiring plural surface to its singular fraction lemma. A bare mapped
 surface such as `fifths` is annotated but cannot satisfy `type: fraction`;
@@ -2078,6 +2092,43 @@ policy, compatible units, and integral repetitions. It audits every numeric
 mention by source sentence and refuses extra facts or unread conditions.
 All three structured fact kinds require explicit use in answer accounting, so
 an unrelated consumer cannot silently ignore a policy and return flat pay.
+
+### Bounded ordered carrier sequences
+
+Variable amounts across recurring events are not constant rates.
+`EventCadence` records the participant, event, carrier class, and interval;
+`SequenceTotal` records the same event's measured total over an observation
+span; `SequenceStep` relates adjacent, distinct occurrences through
+`next = factor * previous + offset`. No anonymous holders or self-relations
+are inserted into the ordinary quantity/relation solver.
+
+The `ordered-sequence` consumer reuses duration conversion, source-local
+numeric auditing, logged arithmetic, and structured answer proofs. It
+represents each term as `a*x+b`, sums the coefficients and offsets, and solves
+for the unknown first term. Growing or shrinking ratios, fixed increases or
+decreases, and constant sequences share that calculation. Current asks select
+the first or last carrier, optionally identifying the matching event and
+cadence interval. Ordinal meanings and category-gated event synonyms are YAML
+data; consumption synonyms never globally rewrite event predicates.
+
+The current class requires one carrier event per complete interval, one
+cadence, total, and adjacent-term relation, matching participants and content
+measures, and at most 1,000 terms. Discrete contents must remain nonnegative
+integers. Extra events, unread conditions, partial intervals, conflicting
+facts, and mismatched asked periods decline. A unique preceding cadence may
+resolve a category-declared neutral subject locally; it does not turn an
+unresolved pronoun into a global discourse fact. Participant qualifiers remain
+part of the check.
+
+The proof explicitly reports the bounded interpretation: each event covers
+one whole carrier, and the observed total covers those carriers' contents.
+This is not a general claim that consuming from a carrier consumes everything
+inside it. Structured sequence facts are use-gated, so unrelated flat-total
+consumers cannot silently discard the recurrence or observation span.
+All eight premise shapes generate through the existing authoring machinery;
+the neutral-subject total uses its declarative preceding-cadence context.
+The number reader also accepts bare declared scales through the existing
+scale table, preserving explicit count-times-scale behavior.
 
 Measured content progress keeps a product's extent separate from completed
 events. `arithmetic/content-progress-measured-product` reads a numeric hyphen

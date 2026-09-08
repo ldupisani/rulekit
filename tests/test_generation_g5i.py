@@ -71,8 +71,9 @@ def test_g5i_profiles_the_complete_recursive_optional_class() -> None:
     # explicit fraction marker in "one third of the money", while committed
     # transfers admit the bounded "for that purpose" adjunct. Nesting and the
     # established maximum depth stay unchanged. The rate-premium definition
-    # adds one optional fraction-of marker.
-    assert _optional_profile(project) == (80, 165, 38, 3)
+    # adds one optional fraction-of marker. Carrier sequences add optional
+    # origin, event preposition, motive, and construction background groups.
+    assert _optional_profile(project) == (82, 169, 38, 3)
 
 
 def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
@@ -81,8 +82,8 @@ def test_g5i_rules_remain_supported_after_g5j_expansion() -> None:
         for item in list_rule_availability(load_project(CURATED))
     }
 
-    assert len(availability) == 180
-    assert sum(item.supported for item in availability.values()) == 171
+    assert len(availability) == 188
+    assert sum(item.supported for item in availability.values()) == 179
     assert sum(not item.supported for item in availability.values()) == 9
     assert all(availability[rule_id].supported for rule_id in NEWLY_SUPPORTED)
     assert all(
@@ -167,7 +168,7 @@ def test_nested_omission_is_distinct_from_an_inactive_child_group() -> None:
     candidate = generate_candidate(
         load_project(CURATED),
         rule_id="arithmetic/times-as-many",
-        seed=1,
+        seed=2,
     )
     choices = [
         row.binding

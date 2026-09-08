@@ -1,0 +1,64 @@
+format: rulekit/categories@1
+categories:
+  sequence_carrier:
+    parent: noun
+    notes: Distinct carriers or batches whose contents can form an ordered series.
+  sequence_event_verb:
+    parent: verb
+    notes: Actual carrier events; purpose and quantity summaries must name the same event family.
+  carrier_transitive_event_verb: {parent: sequence_event_verb}
+  carrier_prepositional_event_verb: {parent: sequence_event_verb}
+  sequence_singular_anaphor:
+    parent: pronoun
+    notes: An unresolved neutral subject may refer to the unique compatible cadence actor.
+  sequence_current_descriptor: {parent: adjective}
+  sequence_previous_descriptor: {parent: adjective}
+  sequence_index_descriptor: {parent: adjective}
+  sequence_location_preposition: {parent: preposition}
+  carrier_event_object_preposition: {parent: preposition}
+  sequence_motion_verb: {parent: verb}
+  sequence_origin_preposition: {parent: preposition}
+  sequence_motive_verb: {parent: verb}
+  sequence_motive_noun: {parent: noun}
+  sequence_creation_verb: {parent: verb}
+  sequence_growth_descriptor: {parent: comparative}
+  sequence_elapsed_preposition: {parent: preposition}
+  sequence_result_conjunction: {parent: conjunction}
+  sequence_passive_auxiliary: {parent: verb}
+  abstract_time_noun: {parent: noun}
+members:
+  sequence_carrier: [ship, box, batch, delivery, truck, basket, bag]
+  sequence_event_verb: [eat, eats, ate, feast, feasts, feasted, consume, consumes, consumed, deliver, delivers, delivered, send, sends, sent, receive, receives, received]
+  carrier_transitive_event_verb: [eat, eats, ate, consume, consumes, consumed, deliver, delivers, delivered, send, sends, sent, receive, receives, received]
+  carrier_prepositional_event_verb: [feast, feasts, feasted]
+  sequence_singular_anaphor: [it]
+  sequence_current_descriptor: [new, next]
+  sequence_previous_descriptor: [last, previous]
+  sequence_index_descriptor: [first, final, last]
+  sequence_location_preposition: [in, on]
+  carrier_event_object_preposition: [on]
+  sequence_motion_verb: [rise, rises, rose, return, returns, returned]
+  sequence_origin_preposition: [from]
+  sequence_motive_verb: [sate, satisfy]
+  sequence_motive_noun: [hunger, appetite]
+  sequence_creation_verb: [built, made, produced]
+  sequence_growth_descriptor: [larger, bigger]
+  sequence_elapsed_preposition: [over]
+  sequence_result_conjunction: [so]
+  sequence_passive_auxiliary: [have been, has been, had been]
+  abstract_time_noun: [time]
+  quantity_event_participant: [monster, dragon]
+  animate: [person]
+  quantity_location: [sea, waters]
+attribute_compatibility:
+  sequence_previous_descriptor: [sequence_carrier]
+  sequence_current_descriptor: [sequence_carrier]
+  sequence_index_descriptor: [sequence_carrier, duration_measure]
+context_synonyms:
+  carrier_consumption:
+    gate: sequence_carrier
+    forms: [eat, consume, feast]
+attrs:
+  first: {sequence_index: 1}
+  final: {sequence_index: -1}
+  last: {sequence_index: -1}

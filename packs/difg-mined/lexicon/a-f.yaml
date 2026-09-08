@@ -450,10 +450,6 @@ entries:
   basil:
     senses:
     - noun
-  basket:
-    senses:
-    - noun
-    plural: baskets
   basketball:
     senses:
     - noun
@@ -461,10 +457,6 @@ entries:
   bass:
     senses:
     - noun
-  batch:
-    senses:
-    - noun
-    plural: batches
   bathroom:
     senses:
     - noun
@@ -522,11 +514,6 @@ entries:
   beef:
     senses:
     - noun
-  been:
-    senses:
-    - verb
-    verb:
-      lemma: be
   beeswax:
     senses:
     - noun
@@ -554,9 +541,6 @@ entries:
   big:
     senses:
     - adjective
-  bigger:
-    senses:
-    - comparative
   bike:
     senses:
     - verb
@@ -778,11 +762,6 @@ entries:
     verb:
       lemma: build
   builds:
-    senses:
-    - verb
-    verb:
-      lemma: build
-  built:
     senses:
     - verb
     verb:
@@ -1425,12 +1404,6 @@ entries:
   construction:
     senses:
     - noun
-  consume:
-    senses:
-    - verb
-  consumed:
-    senses:
-    - verb
   consumption:
     senses:
     - noun
@@ -1813,16 +1786,6 @@ entries:
   delicious:
     senses:
     - adjective
-  delivered:
-    senses:
-    - verb
-  delivers:
-    senses:
-    - verb
-  delivery:
-    senses:
-    - noun
-    plural: deliveries
   denomination:
     senses:
     - noun
@@ -2532,9 +2495,6 @@ entries:
   fire:
     senses:
     - noun
-  first:
-    senses:
-    - adjective
   fish-eater:
     senses:
     - noun

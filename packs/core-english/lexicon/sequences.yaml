@@ -1,0 +1,41 @@
+format: rulekit/lexicon@1
+entries:
+  deep-sea: {senses: [adjective]}
+  monster: {senses: [noun], plural: monsters}
+  dragon: {senses: [noun], plural: dragons}
+  sea: {senses: [noun], plural: seas}
+  waters: {senses: [noun], number: plural}
+  rise: {senses: [verb]}
+  rises: {senses: [verb], number: singular, verb: {lemma: rise}}
+  feast: {senses: [verb]}
+  feasts: {senses: [verb], number: singular, verb: {lemma: feast}}
+  feasted: {senses: [verb], verb: {lemma: feast}}
+  consume: {senses: [verb]}
+  consumes: {senses: [verb], number: singular, verb: {lemma: consume}}
+  consumed: {senses: [verb], verb: {lemma: consume}}
+  sate: {senses: [verb]}
+  satisfy: {senses: [verb]}
+  hunger: {senses: [noun]}
+  appetite: {senses: [noun]}
+  ship: {senses: [noun, verb], plural: ships}
+  batch: {senses: [noun], plural: batches}
+  delivery: {senses: [noun], plural: deliveries}
+  truck: {senses: [noun], plural: trucks}
+  basket: {senses: [noun], plural: baskets}
+  bigger: {senses: [comparative]}
+  deliver: {senses: [verb]}
+  delivers: {senses: [verb], number: singular, verb: {lemma: deliver}}
+  delivered: {senses: [verb], verb: {lemma: deliver}}
+  return: {senses: [verb]}
+  returns: {senses: [verb], number: singular, verb: {lemma: return}}
+  returned: {senses: [verb], verb: {lemma: return}}
+  produced: {senses: [verb], verb: {lemma: produce}}
+  person: {senses: [noun], plural: [people, persons]}
+  first: {senses: [adjective]}
+  previous: {senses: [adjective]}
+  been: {senses: [verb], verb: {lemma: be}}
+  have been: {senses: [verb], number: plural, verb: {lemma: be}}
+  has been: {senses: [verb], number: singular, verb: {lemma: be}}
+  had been: {senses: [verb], verb: {lemma: be}}
+  built: {senses: [verb], verb: {lemma: build}}
+  so: {senses: [conjunction]}

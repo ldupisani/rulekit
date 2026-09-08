@@ -390,17 +390,30 @@ def _coverage_score(reading: Reading, reg: Registry) -> tuple[int, int]:
     return (unmet, disconnected)
 
 
-def _article_licenses_noun(reading: Reading, unit: Unit) -> bool:
+def _article_licenses_noun(reading: Reading, unit: Unit, reg: Registry | None = None) -> bool:
     """An article immediately to the left (crossing only adjectives) DETERMINES
     this unit: 'A can…'/'the can…' is a nominal, never an auxiliary or modal.
     Pure grammatical skeleton — articles introduce noun phrases; no auxiliary
     or modal can head one."""
     idx = reading.units.index(unit)
+    crossed_modifier = False
     for prev in reversed(reading.units[:idx]):
         sense = prev.sense()
-        if sense == "adjective":
+        if sense == "adjective" or (
+            reg is not None and "adjective" in prev.senses()
+            and reg.attribute_applies_to(
+                prev.features.get("lemma", prev.features.get("fold", "")),
+                unit.features.get("lemma", unit.features.get("fold", "")),
+            )
+        ):
+            crossed_modifier = True
             continue
-        return sense == "article"
+        # A bare quantifier can itself be a subject ("toys that each cost
+        # ..."). Only its explicit adjective makes this a determined noun
+        # phrase; do not turn the following finite predicate into a noun.
+        return sense == "article" or (
+            reg is not None and sense == "quantifier" and crossed_modifier
+        )
     return False
 
 
@@ -631,6 +644,7 @@ def disambiguate(reading: Reading, reg: Registry) -> Reading:
                 continue
         if "noun" in senses and "verb" in senses and (
             _finite_verb_licenses_nonbare_noun_object(reading, u)
+            or _article_licenses_noun(reading, u, reg)
         ):
             options.append(["noun"])
             continue

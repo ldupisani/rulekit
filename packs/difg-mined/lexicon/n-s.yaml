@@ -523,12 +523,6 @@ entries:
     senses:
     - noun
     plural: periods
-  person:
-    senses:
-    - noun
-    plural:
-    - people
-    - persons
   personal:
     senses:
     - adjective
@@ -831,9 +825,6 @@ entries:
     senses:
     - noun
     plural: pretzels
-  previous:
-    senses:
-    - adjective
   priced:
     senses:
     - verb
@@ -864,11 +855,6 @@ entries:
   produce:
     senses:
     - verb
-  produced:
-    senses:
-    - verb
-    verb:
-      lemma: produce
   produces:
     senses:
     - verb
@@ -1298,12 +1284,6 @@ entries:
   rests:
     senses:
     - verb
-  return:
-    senses:
-    - verb
-  returns:
-    senses:
-    - verb
   reunion:
     senses:
     - noun
@@ -1349,9 +1329,6 @@ entries:
   ripe:
     senses:
     - adjective
-  rise:
-    senses:
-    - verb
   river:
     senses:
     - noun
@@ -1748,9 +1725,6 @@ entries:
   shepherd:
     senses:
     - noun
-  ship:
-    senses:
-    - verb
   shoebox:
     senses:
     - noun
@@ -1964,9 +1938,6 @@ entries:
     senses:
     - noun
     plural: snowballs
-  so:
-    senses:
-    - conjunction
   soccer:
     senses:
     - noun

@@ -875,6 +875,67 @@ class RepeatedActivityDuration(Fact):
 
 
 @dataclass(frozen=True)
+class EventCadence(Fact):
+    """One carrier event per interval, not a constant quantity rate."""
+
+    entity: str
+    verb: str
+    series: str
+    value: float
+    elapsed: float
+    unit: str
+    entity_qualifier: str = ""
+
+    def key(self) -> tuple:
+        return ("event-cadence", self.entity, self.series, self.provenance.sentence)
+
+    def value_part(self) -> Any:
+        return (self.verb, self.value, self.elapsed, self.unit, self.entity_qualifier)
+
+
+@dataclass(frozen=True)
+class SequenceTotal(Fact):
+    """An event amount over a bounded interval, never a per-event holding."""
+
+    entity: str
+    verb: str
+    measure: str
+    value: float
+    elapsed: float
+    unit: str
+    entity_qualifier: str = ""
+
+    def key(self) -> tuple:
+        return ("sequence-total", self.entity, self.measure, self.provenance.sentence)
+
+    def value_part(self) -> Any:
+        return (self.verb, self.value, self.elapsed, self.unit, self.entity_qualifier)
+
+
+@dataclass(frozen=True)
+class SequenceStep(Fact):
+    """Adjacent terms obey next = factor * previous + offset.
+
+    The series is a class of distinct occurrences, not one self-related
+    holder. It must never enter the ordinary two-holder Relation solver.
+    """
+
+    series: str
+    measure: str
+    factor: float = 1.0
+    offset: float = 0.0
+
+    def key(self) -> tuple:
+        return ("sequence-step", self.series, self.measure, self.provenance.sentence)
+
+    def value_part(self) -> Any:
+        return (self.factor, self.offset)
+
+
+ORDERED_SEQUENCE_KINDS = (EventCadence, SequenceTotal, SequenceStep)
+
+
+@dataclass(frozen=True)
 class RateScope(Fact):
     """The activity to which one participant's stated rate applies.
 

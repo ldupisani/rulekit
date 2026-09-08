@@ -250,6 +250,13 @@ def _check_number(
     """Numeric guards, including explicit use of allocation endpoints."""
 
     if _enabled(reg, "answer-accounting") and store is not None:
+        from .model import ORDERED_SEQUENCE_KINDS
+
+        if any(f.key() not in log.consumed_sequence_keys
+               for kind in ORDERED_SEQUENCE_KINDS
+               for f in store.by_kind(kind)):
+            return GuardVeto("answer-accounting", "a stated ordered sequence was not used")
+
         from .repeated_rates import RATE_STRUCTURE_KINDS
 
         if any(f.key() not in log.consumed_rate_structure_keys
