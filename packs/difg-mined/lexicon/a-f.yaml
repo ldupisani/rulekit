@@ -161,10 +161,6 @@ entries:
   allotment:
     senses:
     - noun
-  allowance:
-    senses:
-    - noun
-    plural: allowances
   allowed:
     senses:
     - verb
@@ -1043,18 +1039,6 @@ entries:
   chalkboard:
     senses:
     - noun
-  change:
-    # mining candidate change-asks: 'change' also has a NOUN sense (the
-    # cash-change one gets back from a tender, "how much change...") —
-    # mirrors 'cost' below, another noun+verb dual-sense word. Uncountable
-    # (like 'money'), no plural. disambiguate()'s general obligation-
-    # coverage arbitration (obligations.py) picks NOUN here: as a bare
-    # verb mid-question ("how much change did WHO verb") it would need an
-    # unmet subject obligation, while the noun reading leaves nothing
-    # unmet — the same mechanism 'cost' already relies on.
-    senses:
-    - noun
-    - verb
   changed:
     senses:
     - verb
@@ -1072,24 +1056,6 @@ entries:
   charcoal:
     senses:
     - noun
-  charge:
-    senses:
-    - verb
-  charged:
-    senses:
-    - verb
-    verb:
-      lemma: charge
-  charges:
-    senses:
-    - verb
-    verb:
-      lemma: charge
-  charging:
-    senses:
-    - verb
-    verb:
-      lemma: charge
   charm:
     senses:
     - noun

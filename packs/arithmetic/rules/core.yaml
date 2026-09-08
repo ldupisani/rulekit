@@ -2423,7 +2423,7 @@ rules:
       is non-unit because equality already has the ordinary `as many` form.
     match:
       sentence:
-        - {slot: who, type: entity}
+        - {slot: who, type: entity, common_noun_cat: quantity_holder}
         - {slot: verb, cat: quantity_comparison_verb, finite_form: true}
         - opt:
             - {slot: verb_prep, cat: frame_head_preposition}
@@ -2441,7 +2441,7 @@ rules:
         - opt:
             - {slot: appos_det, cat: animate_possessive_determiner}
             - {slot: appos_role, cat: animate}
-        - {slot: std, type: entity}
+        - {slot: std, type: entity, common_noun_cat: quantity_holder}
     where:
       - bound_requires_type: {bound: appos_role, slot: std, type: proper_name}
       - bound_requires_category: {bound: verb_prep, slot: verb, cat: ratio_particle_verb}
@@ -2458,6 +2458,7 @@ rules:
       - slot_not_category: {slot: who, cat: non_quantity_holder}
       - slot_not_category: {slot: std, cat: non_quantity_holder}
       - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - measure_holder_compatible: {measure: item, holders: [who, std], allow_proper_name: true, when_declared: true}
       - attribute_compatible: {attribute: pp_prep, noun: pp_obj}
       - distinct: [who, std]
       - category_nonoverlap: [who, std]
@@ -3989,6 +3990,10 @@ rules:
     where:
       - number_compatible: [seeker, aux]
       - verb_roles_compatible:
+          verb: cognition
+          roles: {actor: [seeker]}
+          allow_proper_name: [seeker]
+      - verb_roles_compatible:
           verb: activity
           roles:
             actor: [seeker]
@@ -4031,6 +4036,10 @@ rules:
         - {lit: ".", consume_skipped: true}
     where:
       - number_compatible: [seeker, goal_verb]
+      - verb_roles_compatible:
+          verb: cognition
+          roles: {actor: [seeker]}
+          allow_proper_name: [seeker]
       - attribute_compatible: {attribute: prep, noun: destination}
       - verb_roles_compatible:
           verb: placement
@@ -4070,6 +4079,10 @@ rules:
         - {lit: ".", consume_skipped: true}
     where:
       - number_compatible: [seeker, aux]
+      - verb_roles_compatible:
+          verb: cognition
+          roles: {actor: [seeker]}
+          allow_proper_name: [seeker]
       - attribute_compatible: {attribute: prep, noun: destination}
       - verb_roles_compatible:
           verb: placement
@@ -4112,6 +4125,14 @@ rules:
         - {lit: ".", consume_skipped: true}
     where:
       - number_compatible: [seeker, aux]
+      - verb_roles_compatible:
+          verb: activity
+          roles: {actor: [seeker]}
+          allow_proper_name: [seeker]
+      - verb_roles_compatible:
+          verb: cognition
+          roles: {actor: [seeker]}
+          allow_proper_name: [seeker]
       - attribute_compatible: {attribute: prep, noun: destination}
       - verb_roles_compatible:
           verb: placement
@@ -4144,6 +4165,10 @@ rules:
         - {lit: ".", consume_skipped: true}
     where:
       - number_compatible: [seeker, aux]
+      - verb_roles_compatible:
+          verb: activity
+          roles: {actor: [seeker]}
+          allow_proper_name: [seeker]
     emits:
       - fact: container_capacity_inquiry
         seeker: "{seeker}"
@@ -4598,6 +4623,7 @@ rules:
       - slot_not_category: {slot: item2, cat: many_incompatible_noun}
       - slot_not_category: {slot: item, cat: mass_measure}
       - slot_not_category: {slot: item2, cat: mass_measure}
+    satisfies: {verb: [subject]}
     consumes: [item, item2]
     emits:
       - fact: quantity
@@ -4781,7 +4807,10 @@ rules:
       - verb_roles_compatible:
           verb: verb
           roles:
+            actor: [who]
             theme: [item]
+          allow_proper_name: [who]
+          allow_plural_pronoun: [who]
     consumes: [item]
     emits:
       - fact: group_total
@@ -4825,7 +4854,10 @@ rules:
       - verb_roles_compatible:
           verb: verb
           roles:
+            actor: [who]
             theme: [item]
+          allow_proper_name: [who]
+          allow_plural_pronoun: [who]
     consumes: [item]
     emits:
       - fact: group_total
@@ -6028,6 +6060,33 @@ rules:
         entity: "{who}"
         measure: "{amount}"
         value: amount
+        verb: "{verb}"
+
+  - id: arithmetic/stated-possessed-location-content
+    phase: read
+    description: >
+      A complete owned-location holding: "Dena's bowl has 7 marbles."
+      The owner and any location qualifier belong to this exact instance,
+      not a generic per-container class. Richer temporal and coordinated
+      sentences remain with the ordinary learner.
+    match:
+      sentence:
+        - {slot: place, cat: quantity_location, possessed: true, number: singular, at_start: true}
+        - {slot: verb, cat: plain_have_state, finite_form: true}
+        - {slot: item, type: counted, bare: true}
+        - {lit: ".", consume_skipped: true}
+    where:
+      - number_compatible: [place, verb]
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
+      - slot_not_category: {slot: item, cat: mass_quantity_noun}
+    consumes: [item]
+    emits:
+      - fact: quantity
+        entity: "{place}"
+        owner: "{place.owner}"
+        qualifier: "{place.qualifier}"
+        measure: "{item}"
+        value: item
         verb: "{verb}"
 
   - id: arithmetic/stated-age-at-year
@@ -7460,9 +7519,11 @@ asks:
       question:
         - {lit: how}
         - {lit: many}
-        - {slot: item, type: plural}
+        # Qualified subsets belong to the partition sibling. Never silently
+        # strip a colour/attribute when a more specific ask rejects its tail.
+        - {slot: item, type: plural, bare: true}
         - {slot: verb, cat: plural_copula}
-        - {slot: prep, cat: preposition}
+        - {slot: prep, cat: spatial_location_preposition}
         - {slot: place, cat: quantity_location, referential: true}
         - opt:
             - {lit: to}
@@ -7484,6 +7545,7 @@ asks:
       # Preserve a place qualifier so "the first chapter" cannot resolve to
       # facts about another chapter.
       entity_qualifier: "{place.qualifier}"
+      evidence_reference_time_required: "true"
     generation:
       omit_slots: [start_marker]
 
@@ -7511,6 +7573,7 @@ asks:
       measure_qualifier: "{item.qualifier}"
       verb: "{verb}"
       sum_measure_variants: "true"
+      evidence_reference_time_required: "true"
 
   - id: ask/how-many-container-observed-capacity
     # "How many coins can fit in the jar?" asks for capacity established by
@@ -7575,7 +7638,7 @@ asks:
         - {lit: many}
         - {slot: item, type: plural}
         - {slot: verb, cat: plural_copula}
-        - {slot: prep, cat: preposition}
+        - {slot: prep, cat: spatial_location_preposition}
         - {slot: place, cat: quantity_location, possessed: true, number: singular}
     where:
       - number_compatible: [item, verb]
@@ -7586,7 +7649,10 @@ asks:
       entity: "{place}"
       entity_owner: "{place.owner}"
       require_entity_owner_evidence: "true"
+      entity_qualifier: "{place.qualifier}"
+      evidence_reference_time_required: "true"
       measure: "{item}"
+      measure_qualifier: "{item.qualifier}"
       verb: have
       sum_measure_variants: "true"
 
@@ -7604,7 +7670,7 @@ asks:
         - {slot: aux, type: future_modal}
         - {slot: owner, type: name}
         - {slot: verb, cat: possession_state, bare_form: true}
-        - {slot: prep, cat: quantity_location_preposition}
+        - {slot: prep, cat: spatial_location_preposition}
         - {slot: poss_det, cat: possessive_determiner}
         - {slot: place, cat: quantity_location, possessed: true, number: singular}
     where:
@@ -7623,8 +7689,11 @@ asks:
       entity: "{place}"
       entity_owner: "{place.owner}"
       require_entity_owner_evidence: "true"
+      entity_qualifier: "{place.qualifier}"
+      evidence_reference_time_required: "true"
       owned_place_holder_fallback: "{owner}"
       measure: "{item}"
+      measure_qualifier: "{item.qualifier}"
       verb: "{verb}"
       sum_measure_variants: "true"
 
@@ -7642,7 +7711,7 @@ asks:
         - {lit: of}
         - {slot: qual, type: noun, number: singular}
         - {slot: verb, cat: plural_copula}
-        - {slot: prep, cat: quantity_location_preposition}
+        - {slot: prep, cat: spatial_location_preposition}
         - {slot: place, cat: quantity_location, referential: true}
     where:
       - partitive_compatible: {measure: item, substance: qual}
@@ -7654,6 +7723,7 @@ asks:
       measure_qualifier: "{qual}"
       verb: have
       place_fallback_entity: world
+      evidence_reference_time_required: "true"
 
   - id: ask/how-many-there-in-possessed-place
     # The possessed-container sibling: "how many trees are there in Mira's
@@ -7673,12 +7743,19 @@ asks:
         - {slot: item, type: plural}
         - {slot: verb, cat: plural_copula}
         - {lit: there}
-        - {slot: prep, cat: quantity_location_preposition}
+        - {slot: prep, cat: spatial_location_preposition}
         - {slot: place, cat: quantity_location, possessed: true, number: singular}
+    where:
+      - number_compatible: [item, verb]
+      - attribute_compatible: {attribute: prep, noun: place}
+      - slot_not_category: {slot: item, cat: many_incompatible_noun}
     resolves:
       consumer: single-entity
       entity: "{place}"
       entity_owner: "{place.owner}"
+      entity_qualifier: "{place.qualifier}"
+      require_entity_owner_evidence: "true"
+      evidence_reference_time_required: "true"
       measure: "{item}"
       verb: have
       measure_qualifier: "{item.qualifier}"
@@ -8435,7 +8512,7 @@ asks:
       - verb_roles_compatible:
           verb: verb
           roles: {actor: [who], theme: [item]}
-          frame_categories: [ownership_state]
+          frame_categories: [ownership_state, service_activity_verb]
           allow_proper_name: [who]
     resolves:
       consumer: single-entity
@@ -8701,6 +8778,9 @@ asks:
         - {lit: there}
     where:
       - partitive_compatible: {measure: item, substance: substance}
+      # A directional adjunct needs its own event-bearing ask. The bare
+      # existential must not accept the prefix of a rejected location ask.
+      - absent: {cat: spatial_goal_preposition}
       - slot_not_category: {slot: verb, cat: possession_state}
       - slot_not_category: {slot: verb, cat: enrollment_quantity_verb}
     resolves:
@@ -10485,10 +10565,11 @@ asks:
         - {lit: many}
         - {slot: item, type: qualified}
         - {slot: verb, cat: plural_copula}
-        - {slot: prep, cat: preposition}
+        - {slot: prep, cat: spatial_location_preposition}
         - {slot: place, cat: quantity_location, referential: true}
     where:
       - attribute_compatible: {attribute: prep, noun: place}
+      - absent: {cat: deictic_temporal_marker}
     resolves:
       consumer: partition-complement
       item: "{item}"
@@ -10506,6 +10587,8 @@ asks:
         - {slot: item, type: qualified}
         - {slot: verb, cat: plural_copula}
         - {lit: there}
+    where:
+      - absent: {cat: spatial_goal_preposition}
     resolves:
       consumer: partition-complement
       item: "{item}"

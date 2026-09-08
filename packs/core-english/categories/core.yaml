@@ -251,7 +251,7 @@ categories:
             location. Their actor must be a declared container/location rather
             than an arbitrary entity.
     container_totality_transfer_verb:
-        parent: verb
+        parent: placement_quantity_verb
         notes: >
             Placement predicates licensed when an explicit totality marker
             transfers the complete anaphoric collection into a container.
@@ -277,21 +277,26 @@ categories:
         notes: >
             Predicates whose subject is the item whose ability to enter a
             container is being assessed ("how many beads can fit").
-    inquiry_cognition_verb:
+    intentional_inquiry_verb:
         parent: verb
+        selectional_roles:
+            actor: quantity_event_participant
+        notes: "Inquiry predicates require a participant capable of investigating or knowing."
+    inquiry_cognition_verb:
+        parent: intentional_inquiry_verb
         notes: "Cognitive predicates that introduce an embedded inquiry."
     progressive_inquiry_cognition_verb:
-        parent: verb
+        parent: intentional_inquiry_verb
         notes: >
             Present-participle cognition predicates that directly introduce
             an embedded quantity inquiry after a copula.
     capacity_inquiry_activity:
-        parent: verb
+        parent: intentional_inquiry_verb
         notes: >
             Progressive activities introducing an infinitival inquiry such as
             checking to see how many items fit.
     capacity_assessment_activity:
-        parent: verb
+        parent: intentional_inquiry_verb
         notes: >
             Progressive activities explicitly assessing a named container's
             capacity without asserting its value.
@@ -825,6 +830,16 @@ categories:
             Quantity-changing event verbs whose common-noun subjects and
             comparison standards must be declared plausible event
             participants. Stative possession verbs remain outside this class.
+    placement_quantity_verb:
+        parent: quantity_event_verb
+        selectional_roles:
+            actor: quantity_event_participant
+            theme: transferable_quantity_object
+            destination: quantity_location
+        notes: >
+            Intentional placement of portable objects. Complete placement rules
+            retain a destination; a bare object-only arithmetic comparison is
+            not a complete use of this predicate.
     animate_subject_verb:
         parent: quantity_ask_verb
         notes: >
@@ -1077,6 +1092,13 @@ categories:
             explicit in premise rules.
     production_quantity_participant:
         parent: noun
+    written_production_verb:
+        parent: production_quantity_verb
+        selectional_roles:
+            theme: output_quantity_product
+        notes: >
+            Creation of written products, rather than arbitrary manufactured
+            objects. Output-unit questions use the sibling output frame.
     producible_quantity_object:
         parent: noun
     cultivation_quantity_verb:
@@ -2471,6 +2493,9 @@ members:
         - need
         - needed
         - needs
+        - put
+        - puts
+        - putting
         - ran
         - rose
         - take
@@ -2670,6 +2695,7 @@ members:
          violinist]
     earnable_quantity_object: [dollar, money]
     production_quantity_verb: [make, makes, made, write, writes, wrote]
+    written_production_verb: [write, writes, wrote]
     production_quantity_participant:
         [gardener, guardian, librarian, shopper, student, teacher, university,
          violinist]

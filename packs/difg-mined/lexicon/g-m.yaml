@@ -922,10 +922,6 @@ entries:
   laundry:
     senses:
     - noun
-  lawn:
-    senses:
-    - noun
-    plural: lawns
   lawnmower:
     senses:
     - noun
@@ -1507,10 +1503,6 @@ entries:
     senses:
     - noun
     plural: monkeys
-  month:
-    senses:
-    - noun
-    plural: months
   monthly:
     senses:
     - adjective
@@ -1535,27 +1527,9 @@ entries:
     senses:
     - noun
     plural: movies
-  mow:
-    senses:
-    - verb
-  mowed:
-    senses:
-    - verb
-    verb:
-      lemma: mow
   mower:
     senses:
     - noun
-  mowing:
-    senses:
-    - verb
-    verb:
-      lemma: mow
-  mows:
-    senses:
-    - verb
-    verb:
-      lemma: mow
   mpg:
     senses:
     - noun

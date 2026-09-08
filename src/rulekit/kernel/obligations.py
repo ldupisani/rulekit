@@ -390,6 +390,23 @@ def _coverage_score(reading: Reading, reg: Registry) -> tuple[int, int]:
     return (unmet, disconnected)
 
 
+def _relative_marker_licenses_finite_verb(reading: Reading, unit: Unit) -> bool:
+    """An adjacent nominal relative antecedent supplies the finite subject.
+
+    Do not prefer an inflected noun homograph in ``a coat that costs ...``.
+    A subordinate clause with its own subject does not have this adjacency.
+    """
+    from .patterns import is_finite_verb_form
+
+    index = reading.units.index(unit)
+    if index < 2:
+        return False
+    marker, antecedent = reading.units[index - 1], reading.units[index - 2]
+    return (marker.sense() == "complementizer" and antecedent.sense() == "noun"
+            and is_finite_verb_form(unit.features.get("fold", ""),
+                                    unit.features.get("lemma", "")))
+
+
 def _article_licenses_noun(reading: Reading, unit: Unit, reg: Registry | None = None) -> bool:
     """An article immediately to the left (crossing only adjectives) DETERMINES
     this unit: 'A can…'/'the can…' is a nominal, never an auxiliary or modal.
@@ -642,6 +659,9 @@ def disambiguate(reading: Reading, reg: Registry) -> Reading:
             ):
                 options.append(["adverb"])
                 continue
+        if "noun" in senses and "verb" in senses and _relative_marker_licenses_finite_verb(reading, u):
+            options.append(["verb"])
+            continue
         if "noun" in senses and "verb" in senses and (
             _finite_verb_licenses_nonbare_noun_object(reading, u)
             or _article_licenses_noun(reading, u, reg)

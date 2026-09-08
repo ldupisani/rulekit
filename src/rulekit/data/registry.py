@@ -29,6 +29,12 @@ from .schemas import (
     SynthRule,
 )
 
+# A generic group-label slot may be narrowed by a lexical role contract.
+# The same structural permission applies to premise and ask slots.
+_SELECTIONAL_ROLE_SLOT_ROOTS = frozenset({
+    "noun", "entity", "name", "proper_name", "word",
+})
+
 # Senses that can root a category hierarchy. 'conjunction' was added so a
 # clause-marker category (packs/difg-mined/categories/clauses.yaml) can name
 # specific subordinators like 'when' -- purely additive: 'conjunction' was
@@ -1738,12 +1744,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                                 f"rule {rule.id!r} verb roles compatibility "
                                 f"names unknown slot {slot_name!r}"
                             )
-                        if _slot_root(token) not in {
-                            "noun",
-                            "entity",
-                            "name",
-                            "proper_name",
-                        }:
+                        if _slot_root(token) not in _SELECTIONAL_ROLE_SLOT_ROOTS:
                             raise CompileError(
                                 f"rule {rule.id!r} verb role slot "
                                 f"{slot_name!r} is not noun/entity-rooted"
@@ -2079,12 +2080,7 @@ def compile_registry(packs: list[LoadedPack]) -> Registry:
                                 f"ask {ask.id!r} verb roles compatibility "
                                 f"names unknown slot {slot_name!r}"
                             )
-                        if _slot_root(token) not in {
-                            "noun",
-                            "entity",
-                            "name",
-                            "proper_name",
-                        }:
+                        if _slot_root(token) not in _SELECTIONAL_ROLE_SLOT_ROOTS:
                             raise CompileError(
                                 f"ask {ask.id!r} verb role slot "
                                 f"{slot_name!r} is not noun/entity-rooted"

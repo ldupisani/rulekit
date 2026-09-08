@@ -348,9 +348,6 @@ entries:
   pail:
     senses:
     - noun
-  paint:
-    senses:
-    - verb
   paintball:
     senses:
     - noun
@@ -361,11 +358,6 @@ entries:
     senses:
     - noun
     plural: paintbrushes
-  painted:
-    senses:
-    - verb
-    verb:
-      lemma: paint
   painter:
     senses:
     - noun
@@ -373,11 +365,6 @@ entries:
     senses:
     - noun
     plural: paintings
-  paints:
-    senses:
-    - verb
-    verb:
-      lemma: paint
   pakora:
     senses:
     - noun

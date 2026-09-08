@@ -72,6 +72,8 @@ _NON_IDENTITY_QUERY_FIELDS = frozenset(
         "dimension_measure",
         "sum_measure_variants",
         "reference_time",
+        "evidence_reference_time_required",
+        "require_entity_owner_evidence",
         "op",
         "polarity",
     }
@@ -1013,10 +1015,15 @@ def _emit_lock_variants(
     query_values = _query_identity_values(query)
     variants: list[tuple[int, dict[str, str]]] = []
     for emit in rule.emits:
+        emit_values = dict(query_values)
+        if emit.fact == "quantity":
+            for attribute in ("owner", "qualifier"):
+                if query_values.get(f"entity_{attribute}"):
+                    emit_values[attribute] = query_values[f"entity_{attribute}"]
         options: list[list[tuple[str, str] | None]] = []
         score = 0
         for field, raw in emit.fields.items():
-            expected = query_values.get(field)
+            expected = emit_values.get(field)
             if expected is None:
                 continue
             if isinstance(raw, str) and (match := _WHOLE_TEMPLATE.fullmatch(raw)):
@@ -1024,6 +1031,10 @@ def _emit_lock_variants(
                     options.append(
                         [(match.group(1), value) for value in expected]
                     )
+                    score += 1
+                elif match.group(2) in {"owner", "qualifier", "label"}:
+                    # Exact feature constraints are realized from ordinary
+                    # filler metadata below, not guessed from a head lemma.
                     score += 1
                 continue
             if isinstance(raw, (str, int, float, bool)) and any(
@@ -1058,6 +1069,58 @@ def _emit_lock_variants(
         ((score, dict(key)) for key, score in unique.items()),
         key=lambda item: (-item[0], tuple(sorted(item[1].items()))),
     )
+
+
+def _emit_feature_surface_locks(
+    project: Project,
+    rule: PatternRule,
+    query: dict[str, Any],
+    identities: dict[str, str],
+    rng: random.Random,
+) -> dict[str, str]:
+    """Invert declared quantity scope attributes into ordinary surface locks.
+
+    An entity identity alone deliberately leaves its owner/qualifier open.
+    Where the ask and emission both name those attributes, constrain them
+    together before realization rather than hoping a random owner matches.
+    """
+    requirements: dict[str, dict[str, str]] = {}
+    for emit in rule.emits:
+        if emit.fact != "quantity":
+            continue
+        entity_template = emit.fields.get("entity")
+        entity_match = (
+            _WHOLE_TEMPLATE.fullmatch(entity_template)
+            if isinstance(entity_template, str) else None
+        )
+        if entity_match is None or entity_match.group(2) is not None:
+            continue
+        slot = entity_match.group(1)
+        for attribute in ("owner", "qualifier"):
+            expected = query.get(f"entity_{attribute}")
+            if expected and emit.fields.get(attribute) == f"{{{slot}.{attribute}}}":
+                requirements.setdefault(slot, {})[attribute] = str(expected).casefold()
+    locked: dict[str, str] = {}
+    fixtures = _load_fixtures(project.root)
+    for slot, attributes in requirements.items():
+        token = next(
+            token for _, token, _ in _leaf_tokens(rule.match["sentence"])
+            if token.slot == slot
+        )
+        domain = [
+            filler for filler in _domain(token, project.registry, fixtures)
+            if (slot not in identities or filler.identity == identities[slot])
+            and all(
+                getattr(filler, attr, None) == value
+                for attr, value in attributes.items()
+            )
+        ]
+        if not domain:
+            raise GenerationError(
+                f"no premise filler preserves the requested scope of {slot!r}"
+            )
+        locked[slot] = rng.choice(domain).surface
+    return locked
 
 
 def _compose_scenario_text(
@@ -1327,12 +1390,16 @@ def _search_answerable_scenario(
             break
         search_attempts += 1
         try:
+            surface_locks = _emit_feature_surface_locks(
+                project, premise_rules[rule_id], query, identity_locks, rng,
+            )
             candidate = generate_candidate(
                 project,
                 rule_id=rule_id,
                 seed=rng.getrandbits(63),
                 max_attempts=_SCENARIO_PREMISE_ATTEMPTS,
                 identity_bindings=identity_locks,
+                locked_bindings=surface_locks,
             ).to_json()
         except GenerationError:
             continue

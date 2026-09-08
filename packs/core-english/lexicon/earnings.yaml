@@ -1,0 +1,28 @@
+format: rulekit/lexicon@1
+entries:
+  allowance: {senses: [noun], plural: allowances}
+  month: {senses: [noun], plural: months}
+  change: {senses: [noun, verb]}
+  charge: {senses: [verb]}
+  charged: {senses: [verb], verb: {lemma: charge}}
+  charges: {senses: [verb], number: singular, verb: {lemma: charge}}
+  charging: {senses: [verb], verb: {lemma: charge}}
+  lawn: {senses: [noun], plural: lawns}
+  driveway: {senses: [noun], plural: driveways}
+  window: {senses: [noun], plural: windows}
+  gate: {senses: [noun], plural: gates}
+  mow: {senses: [verb]}
+  mows: {senses: [verb], number: singular, verb: {lemma: mow}}
+  mowed: {senses: [verb], verb: {lemma: mow}}
+  mowing: {senses: [verb], verb: {lemma: mow}}
+  shovel: {senses: [verb]}
+  shovels: {senses: [verb], number: singular, verb: {lemma: shovel}}
+  shoveled: {senses: [verb], verb: {lemma: shovel}}
+  shovelled: {senses: [verb], verb: {lemma: shovel}}
+  wash: {senses: [verb]}
+  washes: {senses: [verb], number: singular, verb: {lemma: wash}}
+  washed: {senses: [verb], verb: {lemma: wash}}
+  paint: {senses: [verb]}
+  paints: {senses: [verb], number: singular, verb: {lemma: paint}}
+  painted: {senses: [verb], verb: {lemma: paint}}
+  up: {senses: [adverb]}

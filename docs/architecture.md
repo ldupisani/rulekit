@@ -692,6 +692,16 @@ narrow an inherited target to one of its descendants, but compilation rejects
 an unrelated or broader replacement. The resulting mappings and rule
 sequences are sorted and frozen.
 
+Written production narrows the general production frame to written products;
+the separate output frame still permits counts of their component pages.
+Inquiry and assessment predicates share an inherited participant contract.
+Leading aggregate rules check the actor as well as the counted theme, even
+when the surface actor slot is a generic group label. Their explicit
+`allow_plural_pronoun` permission preserves a group reference without granting
+all plural common nouns a role exemption. Premise and ask compilation share
+the same permitted role-slot roots, and generation enforces the same role
+permissions as reading.
+
 `category_contains` is the directional noun-taxonomy predicate. Its
 `collection` slot must resolve to a declared noun category and every named
 member slot must belong to that category. This is intentionally stronger than
@@ -961,6 +971,24 @@ age evidence, projected “will … after N years” requires a present base, an
 future-offset premise that derives a present age cannot answer an unanchored
 past ask. This mechanism compares perspectives only; elapsed time still
 requires an explicit offset rule or `AgeAtYear` coordinate.
+
+Static location asks use static prepositions, not directional goals. Owned
+locations require exact owner evidence; owner, location qualifier and content
+qualifier restrictions intersect. A generic small-container rate cannot prove
+the contents of a named person's container. The existing explicit
+subject-owned-location fallback remains a separate opt-in path and does not
+apply to a question naming only the container.
+
+These asks also declare `evidence_reference_time_required`. If the question
+names a time, the shared temporal lookup excludes undated quantities. A
+relative marker may reuse an existing `EventTime` only through an exact
+same-sentence actor/predicate/object match. This proves equality at the stated
+moment, not persistence of container contents. Unsupported temporal partition
+questions decline; they cannot fall through to an unqualified location total.
+The complete possessed-location holding premise exposes this existing fact
+shape to generation. Evidence search inverts its owner and qualifier templates
+into ordinary filler surface locks, so an answerable ask gets the right
+instance rather than a randomly owned or generic class premise.
 
 `GroupTotal` has an optional exact `scope`. A leading total construction that
 binds a subject retains its normalized identity, so blue and red totals for
@@ -2092,6 +2120,39 @@ policy, compatible units, and integral repetitions. It audits every numeric
 mention by source sentence and refuses extra facts or unread conditions.
 All three structured fact kinds require explicit use in answer accounting, so
 an unrelated consumer cannot silently ignore a policy and return flat pay.
+
+### Bounded savings and piece-rate work
+
+`AccumulationWindow` records a participant's saving interval and cadence,
+without inventing a starting balance. `EarningRate` distinguishes periodic
+income from per-object service quotes; neither is cash already earned.
+`ServiceScope` links an offered activity to its object, allowing an omitted
+tariff object to resolve only from one compatible declaration. Actor/theme
+compatibility belongs to category-owned frames, not activity-specific rules.
+These declarations are habitual present predicates; uncounted past work is
+not reclassified as a service offer. Category matching accepts lemmas as well
+as surfaces, so explicit past-form exclusions enforce that boundary rather
+than relying on a positive present-form category alone.
+`PurchaseEndpoint` keeps a quoted whole-target cost separate from cash left
+after that target's completed purchase. A pair price retains its source unit
+and is never doubled into two purchases.
+
+The ordinary single-entity count ask can use this evidence to recover one
+unknown service count. Forward rates, exact duration conversion and inverse
+rates reuse `rate_calculation`; `resource_equations.resource_residual` is
+shared with existing budget accounting. The consumer requires one participant,
+currency, saving window and completed purchase, complete source-local numeric
+and linguistic coverage, and exactly one unknown work amount. Independent
+service declarations and quotes support more than two activities. Extra
+income/spending, competing quotes, ambiguous elision, fractional service
+counts, or unsupported qualified scopes decline.
+
+The answer explicitly states its closed-savings interpretation: the named
+income is all money saved, with no initial savings or other income or spending.
+This is an interpretation of the bounded word problem, not a general rule
+that people start with no money. Conditional work counts remain question-local;
+the saving interval, tariffs and purchase must be asserted. All four structured
+fact kinds are use-gated so unrelated consumers cannot discard them.
 
 ### Bounded ordered carrier sequences
 

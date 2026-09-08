@@ -1,0 +1,224 @@
+format: rulekit/rules@1
+rules:
+  - id: arithmetic/purchase-intent-priced-target
+    phase: read
+    description: >
+      A progressive purchase with a relative price quotes the whole target's
+      cost. It is not an actual expense until a later settlement names it.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
+        - {slot: aux, cat: singular_copula}
+        - {slot: verb, cat: purchase, present_participle: true}
+        - {slot: item, cat: ownable_quantity_object, referential: true, uncounted: true}
+        - {lit: that}
+        - {slot: cost, cat: price_verb, finite_form: true}
+        - {slot: amount, cat: currency_measure, counted: true}
+        - {lit: '.', consume_skipped: true}
+    where:
+      - number_compatible: [who, aux]
+      - number_compatible: [item, cost]
+    consumes: [amount, verb]
+    emits:
+      - {fact: purchase_endpoint, entity: '{who}', item: '{item}', qualifier: '{item.qualifier}', owner: '{item.owner}', stage: quoted, measure: '{amount}', value: amount}
+
+  - id: arithmetic/purchase-intent-priced-pair
+    phase: read
+    description: >
+      A quoted pair price belongs to that whole pair, not each member.
+      The paired item and the source unit both survive for settlement.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
+        - {slot: aux, cat: singular_copula}
+        - {slot: verb, cat: purchase, present_participle: true}
+        - {slot: pair, cat: partitive_pair_measure, number: singular, referential: true, uncounted: true}
+        - {lit: of}
+        - {slot: item, cat: pairable_partitive_substance, number: plural, uncounted: true}
+        - {lit: that}
+        - {slot: cost, cat: price_verb, finite_form: true}
+        - {slot: amount, cat: currency_measure, counted: true}
+        - {lit: '.', consume_skipped: true}
+    where:
+      - number_compatible: [who, aux]
+      - number_compatible: [pair, cost]
+    consumes: [amount, verb]
+    emits:
+      - {fact: purchase_endpoint, entity: '{who}', item: '{item}', qualifier: '{item.qualifier}', owner: '{item.owner}', unit: '{pair}', unit_qualifier: '{pair.qualifier}', stage: quoted, measure: '{amount}', value: amount}
+
+  - id: arithmetic/resource-accumulation-window
+    phase: read
+    description: >
+      Saving a participant's own money at a stated cadence over a bounded
+      period defines an accumulation window. No starting balance is asserted.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
+        - {slot: aux, cat: sequence_passive_auxiliary}
+        - {slot: verb, cat: resource_accumulation_verb, present_participle: true}
+        - opt: [{slot: particle, cat: accumulation_particle}]
+        - opt: [{slot: possessive, cat: possessive_determiner}]
+        - {slot: resource, cat: currency, uncounted: true}
+        - {lit: each}
+        - {slot: cadence, cat: duration_measure, uncounted: true}
+        - {lit: for}
+        - {lit: the, consume_skipped: true}
+        - {slot: past, cat: accumulation_period_descriptor}
+        - {slot: span, cat: duration_measure, counted: true}
+        - {lit: '.', consume_skipped: true}
+    where:
+      - number_compatible: [who, aux]
+    consumes: [span, verb]
+    emits:
+      - {fact: accumulation_window, entity: '{who}', measure: '{resource}', owner: '{resource.owner}', elapsed: span, unit: '{span}', cadence: '{cadence}'}
+
+  - id: arithmetic/periodic-income-source
+    phase: read
+    description: >
+      A currency amount attached to a named income source and a period is a
+      periodic income quote, not a one-time holding.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
+        - {slot: verb, cat: periodic_income_verb, finite_form: true}
+        - {slot: amount, cat: currency_measure, counted: true}
+        - {slot: source, cat: periodic_income_noun, uncounted: true}
+        - {lit: a, consume_skipped: true}
+        - {slot: period, cat: duration_measure, uncounted: true}
+        - {lit: '.', consume_skipped: true}
+    where:
+      - number_compatible: [who, verb]
+    consumes: [amount, verb]
+    emits:
+      - {fact: earning_rate, entity: '{who}', measure: '{amount}', per: '{period}', value: amount, verb: '{verb}', basis: periodic, source: '{source}'}
+
+  - id: arithmetic/service-declaration
+    phase: read
+    description: A habitual service and its object, with no completed work count.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
+        - {slot: verb, cat: habitual_service_predicate, finite_form: true}
+        - {slot: item, cat: service_object, bare: true, number: plural, uncounted: true}
+        - {lit: '.', consume_skipped: true}
+    where:
+      - number_compatible: [who, verb]
+      - slot_not_category: {slot: verb, cat: past_service_predicate}
+      - verb_roles_compatible: {verb: verb, roles: {actor: [who], theme: [item]}, allow_proper_name: [who], frame_categories: [service_activity_verb], require_declared_frame: true}
+    consumes: [verb]
+    emits:
+      - {fact: service_scope, entity: '{who}', verb: '{verb}', item: '{item}'}
+
+  - id: arithmetic/service-tariff
+    phase: read
+    description: An explicit unit price for one activity on one service object.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
+        - {slot: quote, cat: service_tariff_verb, finite_form: true}
+        - {slot: amount, cat: currency_measure, counted: true}
+        - {lit: to}
+        - {slot: verb, cat: service_activity_verb, bare_form: true}
+        - {lit: a, consume_skipped: true}
+        - {slot: item, cat: service_object, bare: true, number: singular, uncounted: true}
+        - {lit: '.', consume_skipped: true}
+    where:
+      - number_compatible: [who, quote]
+      - verb_roles_compatible: {verb: verb, roles: {actor: [who], theme: [item]}, allow_proper_name: [who], frame_categories: [service_activity_verb], require_declared_frame: true}
+    consumes: [amount, quote, verb]
+    emits:
+      - {fact: earning_rate, entity: '{who}', measure: '{amount}', per: '{item}', value: amount, verb: '{verb}', basis: service}
+
+  - id: arithmetic/coordinated-service-declaration
+    phase: read
+    description: >
+      Two habitual activities name the objects of offered services. These
+      declarations can resolve an omitted tariff object but assert no work count.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
+        - opt: [{lit: also}]
+        - {slot: first, cat: habitual_service_predicate, finite_form: true}
+        - {slot: item, cat: service_object, bare: true, number: plural, uncounted: true}
+        - {lit: and}
+        - {slot: second, cat: habitual_service_predicate, finite_form: true}
+        - {slot: other, cat: service_object, bare: true, number: plural, uncounted: true}
+        - {lit: '.', consume_skipped: true}
+    where:
+      - number_compatible: [who, first]
+      - number_compatible: [who, second]
+      - slot_not_category: {slot: first, cat: past_service_predicate}
+      - slot_not_category: {slot: second, cat: past_service_predicate}
+      - verb_roles_compatible: {verb: first, roles: {actor: [who], theme: [item]}, allow_proper_name: [who], frame_categories: [service_activity_verb], require_declared_frame: true}
+      - verb_roles_compatible: {verb: second, roles: {actor: [who], theme: [other]}, allow_proper_name: [who], frame_categories: [service_activity_verb], require_declared_frame: true}
+    consumes: [first, second]
+    emits:
+      - {fact: service_scope, entity: '{who}', verb: '{first}', item: '{item}'}
+      - {fact: service_scope, entity: '{who}', verb: '{second}', item: '{other}'}
+
+  - id: arithmetic/coordinated-service-tariffs
+    phase: read
+    description: >
+      Coordinated per-object service prices retain both activities. A missing
+      second object is unresolved evidence, never a guessed rate denominator.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
+        - {slot: quote, cat: service_tariff_verb, finite_form: true}
+        - {slot: amount, cat: currency_measure, counted: true}
+        - {lit: to}
+        - {slot: first, cat: service_activity_verb, bare_form: true}
+        - {lit: a, consume_skipped: true}
+        - {slot: item, cat: service_object, bare: true, number: singular, uncounted: true}
+        - {lit: and}
+        - {slot: other_amount, cat: currency_measure, counted: true}
+        - {lit: to}
+        - {slot: second, cat: service_activity_verb, bare_form: true}
+        - {lit: '.', consume_skipped: true}
+    where:
+      - number_compatible: [who, quote]
+      - verb_roles_compatible: {verb: first, roles: {actor: [who], theme: [item]}, allow_proper_name: [who], frame_categories: [service_activity_verb], require_declared_frame: true}
+      - verb_roles_compatible: {verb: second, roles: {actor: [who]}, allow_proper_name: [who], frame_categories: [service_activity_verb], require_declared_frame: true}
+    consumes: [amount, other_amount, quote, first, second]
+    emits:
+      - {fact: earning_rate, entity: '{who}', measure: '{amount}', per: '{item}', value: amount, verb: '{first}', basis: service, position: 0}
+      - {fact: earning_rate, entity: '{who}', measure: '{other_amount}', per: '', value: other_amount, verb: '{second}', basis: service, position: 1}
+
+  - id: arithmetic/purchase-cash-remainder
+    phase: read
+    description: >
+      Cash remaining after buying a named target establishes its completion.
+      It can close a quoted purchase only when participant and target agree.
+    match:
+      sentence:
+        - {lit: after, at_start: true}
+        - {slot: purchase, cat: purchase, present_participle: true}
+        - {slot: item, cat: ownable_quantity_object, referential: true, uncounted: true}
+        - {lit: ',', consume_skipped: true}
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true}
+        - {slot: verb, cat: remaining_balance_state, finite_form: true}
+        - {slot: amount, cat: currency_measure, counted: true}
+        - {lit: in}
+        - {slot: remainder, cat: cash_remainder_noun}
+        - {lit: '.', consume_skipped: true}
+    where:
+      - number_compatible: [who, verb]
+    consumes: [amount, verb, purchase]
+    emits:
+      - {fact: purchase_endpoint, entity: '{who}', item: '{item}', qualifier: '{item.qualifier}', owner: '{item.owner}', stage: completed, measure: '{amount}', value: amount}
+
+  - id: arithmetic/counted-service-activity
+    phase: read
+    description: An affirmative count of work on one object, retaining its activity.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
+        - {slot: verb, cat: service_activity_verb, finite_form: true}
+        - {slot: item, cat: service_object, bare: true, counted: true}
+        - {lit: '.', consume_skipped: true}
+    where:
+      - number_compatible: [who, verb]
+      - verb_roles_compatible: {verb: verb, roles: {actor: [who], theme: [item]}, allow_proper_name: [who], frame_categories: [service_activity_verb], require_declared_frame: true}
+    consumes: [item, verb]
+    emits:
+      - {fact: quantity, entity: '{who}', measure: '{item}', value: item, verb: '{verb}'}

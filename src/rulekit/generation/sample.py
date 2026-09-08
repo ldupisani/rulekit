@@ -162,6 +162,18 @@ def _filler_satisfies_selectional_role(
     return (
         slot in compatibility.allow_proper_name and filler.kind == "name"
     ) or (
+        slot in compatibility.allow_plural_pronoun
+        and (
+            filler.kind == "pronoun"
+            # Open word slots have no selected sense yet. Preserve their
+            # lexical pronoun option; the normal round trip checks the read.
+            or (
+                filler.kind is None
+                and _filler_in_category(filler, "pronoun", reg)
+            )
+        )
+        and filler.number == "plural"
+    ) or (
         slot in compatibility.allow_plural_class
         and filler.number == "plural"
     ) or _filler_in_category(filler, category, reg)

@@ -250,6 +250,12 @@ def _check_number(
     """Numeric guards, including explicit use of allocation endpoints."""
 
     if _enabled(reg, "answer-accounting") and store is not None:
+        from .model import EARNINGS_ACCOUNT_KINDS
+
+        if any(f.key() not in log.consumed_earnings_account_keys
+               for kind in EARNINGS_ACCOUNT_KINDS for f in store.by_kind(kind)):
+            return GuardVeto("answer-accounting", "a stated earnings account was not used")
+
         from .model import ORDERED_SEQUENCE_KINDS
 
         if any(f.key() not in log.consumed_sequence_keys

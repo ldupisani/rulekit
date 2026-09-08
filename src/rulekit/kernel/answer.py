@@ -116,7 +116,9 @@ class Answer:
         )
 
 
-def _question_reference_time(question: Reading, reg: Registry, match) -> list:
+def _question_reference_time(
+    question: Reading, reg: Registry, match, *, include_deictic: bool = False,
+) -> list:
     """The moment the QUESTION asks about — the ask's origo on the TIME dimension.
 
     docs/deixis.md §4 proved this field's absence is a confident-wrong factory: with
@@ -147,9 +149,19 @@ def _question_reference_time(question: Reading, reg: Registry, match) -> list:
     for i, unit in enumerate(question.units):
         if unit.uid in taken:
             continue
+        lemma = unit.features.get("lemma", unit.features.get("fold", ""))
+        if (
+            include_deictic
+            and unit.sense() == "time"
+            and reg.word_in_category(lemma, "deictic_temporal_marker")
+        ):
+            out.append(deixis.Referent(
+                dimension=deixis.TIME, key=lemma, payload=unit,
+                sentence=question.sentence_index, span=unit.span,
+            ))
+            continue
         if unit.sense() != "noun" or "value" in unit.features:
             continue
-        lemma = unit.features.get("lemma", unit.features.get("fold", ""))
         if not reg.word_in_category(lemma, "timeperiod"):
             continue
         prev = question.units[i - 1] if i > 0 else None
@@ -165,6 +177,39 @@ def _question_reference_time(question: Reading, reg: Registry, match) -> list:
             )
         )
     return out
+
+
+def _explicit_time_evidence_store(
+    store: FactStore, reference_time: str,
+) -> FactStore:
+    """A point-in-time lookup needs a dated fact, not merely a timeless one.
+
+    Reuse an existing EventTime only when its source, actor, predicate and
+    object identify this exact quantity assertion. This is an equality
+    lookup, never an assumption that a container's contents persist.
+    """
+    from .model import EventTime, Quantity
+
+    times = store.by_kind(EventTime)
+    scoped = []
+    for fact in store.facts:
+        if not hasattr(fact, "measure"):
+            scoped.append(fact)
+            continue
+        label = getattr(fact, "time", None)
+        if label is None and isinstance(fact, Quantity):
+            markers = {
+                event.marker for event in times
+                if event.provenance.sentence == fact.provenance.sentence
+                and event.entity == fact.entity
+                and event.verb == fact.verb
+                and event.obj == fact.measure
+            }
+            if len(markers) == 1:
+                label = next(iter(markers))
+        if label == reference_time:
+            scoped.append(fact)
+    return FactStore(facts=scoped)
 
 
 def _temporal_evidence_store(
@@ -339,7 +384,10 @@ def answer(
     # when, so it is not contrary evidence, and dropping it would lose the base state
     # that a timed event modifies ("Sam has 10 apples. In March he ate 3.").
     # ------------------------------------------------------------------
-    time_candidates = _question_reference_time(question, reg, _match)
+    strict_time = query.get("evidence_reference_time_required") == "true"
+    time_candidates = _question_reference_time(
+        question, reg, _match, include_deictic=strict_time,
+    )
     explicit_reference_time = query.get("reference_time")
     if explicit_reference_time:
         time_candidates.append(
@@ -367,6 +415,8 @@ def answer(
                 "the question names more than one time, and time arbitration is unbuilt",
             ))
         reference_time = origo.key
+        if strict_time:
+            store = _explicit_time_evidence_store(store, reference_time)
         store = FactStore(facts=[
             f for f in store.facts
             if getattr(f, "time", None) in (None, reference_time)

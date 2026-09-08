@@ -30,6 +30,10 @@ def single_entity(ctx: ConsumerContext):
     from ..totals import _entity_total, _purchase_total, _qualified_variant_total, _revenue_total, _superordinate_total, _verb_total
 
     entity, measure = ctx.query["entity"], ctx.query["measure"]
+    from ..model import AccumulationWindow
+    if ctx.store.by_kind(AccumulationWindow):
+        from .earnings_account import earnings_account
+        return earnings_account(ctx)
     # Structured work schedules can answer an ordinary named-currency ask.
     # Keep the existing event-total route when no such evidence is present.
     from dataclasses import replace
@@ -64,6 +68,25 @@ def single_entity(ctx: ConsumerContext):
     # `entity_owner`/`entity_qualifier` (each comes from a distinct ask
     # id), so the two never compete for the same query.
     qualifier = ctx.query.get("entity_qualifier")
+    location_source_store = ctx.store
+    if owner and ctx.query.get("require_entity_owner_evidence") == "true":
+        # Scope every path, including exact-key and aggregate fallbacks, to
+        # this owner. A generic per-container class rate proves nothing about
+        # a possessed instance. Owner and attribute restrictions intersect;
+        # they are not alternative lookups when both occur in the question.
+        ctx = replace(ctx, store=FactStore(facts=[
+            fact for fact in ctx.store.facts
+            if (
+                isinstance(fact, Quantity)
+                and fact.owner == owner
+                and (not qualifier or fact.qualifier == qualifier)
+                and (
+                    not ctx.query.get("measure_qualifier")
+                    or fact.measure.split("[", 1)[0] != measure
+                    or fact.measure_qualifier == ctx.query["measure_qualifier"]
+                )
+            ) or not isinstance(fact, (Quantity, GroupTotal))
+        ]))
     # mining candidate qualified-measure-keys: the MEASURE-side mirror
     # of `qualifier` above, one field over — "how many GREEN apples
     # does Sam have?" resolves the bare measure ("apple") the same way
@@ -399,9 +422,10 @@ def single_entity(ctx: ConsumerContext):
     # total, so real place evidence always wins and holdings elsewhere are
     # never added to it.
     holder_fallback = ctx.query.get("owned_place_holder_fallback")
-    if total is None and holder_fallback and not invert:
+    if (total is None and holder_fallback and not invert
+            and not qualifier and not measure_qualifier):
         total = _entity_total(
-            ctx.store, ctx.reg, holder_fallback, singular, ctx.log
+            location_source_store, ctx.reg, holder_fallback, singular, ctx.log
         )
         if (
             total is None
@@ -409,11 +433,11 @@ def single_entity(ctx: ConsumerContext):
             and not measure_qualifier
         ):
             total = _qualified_variant_total(
-                ctx.store, ctx.reg, holder_fallback, singular, ctx.log
+                location_source_store, ctx.reg, holder_fallback, singular, ctx.log
             )
         if total is None:
             total = _superordinate_total(
-                ctx.store, ctx.reg, holder_fallback, singular, ctx.log
+                location_source_store, ctx.reg, holder_fallback, singular, ctx.log
             )
     if total is None:
         return Answer(

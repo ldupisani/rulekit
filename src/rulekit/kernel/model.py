@@ -936,6 +936,93 @@ ORDERED_SEQUENCE_KINDS = (EventCadence, SequenceTotal, SequenceStep)
 
 
 @dataclass(frozen=True)
+class AccumulationWindow(Fact):
+    """A resource-saving interval, not a holding or an initial balance."""
+
+    entity: str
+    measure: str
+    elapsed: float
+    unit: str
+    cadence: str
+    owner: str = ""
+
+    def key(self):
+        return ("accumulation-window", self.entity, self.provenance.sentence)
+
+    def value_part(self):
+        return (self.measure, self.elapsed, self.unit, self.cadence, self.owner)
+
+
+@dataclass(frozen=True)
+class EarningRate(Fact):
+    """A quoted periodic income or per-service tariff, never earned cash.
+
+    The Rate arithmetic protocol is shared; the distinct fact kind prevents
+    ordinary holding/rate consumers from discarding its settlement scope.
+    A missing service object remains unresolved until a unique declaration
+    links the same actor and activity to an object.
+    """
+
+    entity: str
+    measure: str
+    per: str
+    value: float
+    verb: str
+    basis: str
+    source: str = ""
+    position: int = 0
+    numerator: float | None = None
+    denominator: float | None = None
+
+    def key(self):
+        return ("earning-rate", self.entity, self.provenance.sentence, self.position)
+
+    def value_part(self):
+        return (self.measure, self.per, self.value, self.verb, self.basis, self.source)
+
+
+@dataclass(frozen=True)
+class ServiceScope(Fact):
+    """A participant offers an activity on an object; no count is asserted."""
+
+    entity: str
+    verb: str
+    item: str
+
+    def key(self):
+        return ("service-scope", self.entity, self.verb, self.item, self.provenance.sentence)
+
+
+@dataclass(frozen=True)
+class PurchaseEndpoint(Fact):
+    """A quoted whole-target cost or cash remaining after its purchase.
+
+    Target units and qualifiers stay separate: a pair is not one shoe.
+    The quoted stage alone never establishes that a purchase took place.
+    """
+
+    entity: str
+    item: str
+    qualifier: str
+    stage: str
+    measure: str
+    value: float
+    unit: str = ""
+    owner: str = ""
+    unit_qualifier: str = ""
+
+    def key(self):
+        return ("purchase-endpoint", self.entity, self.stage, self.provenance.sentence)
+
+    def value_part(self):
+        return (self.item, self.qualifier, self.measure, self.value, self.unit,
+                self.owner, self.unit_qualifier)
+
+
+EARNINGS_ACCOUNT_KINDS = (AccumulationWindow, EarningRate, ServiceScope, PurchaseEndpoint)
+
+
+@dataclass(frozen=True)
 class RateScope(Fact):
     """The activity to which one participant's stated rate applies.
 

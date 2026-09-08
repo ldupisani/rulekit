@@ -1,0 +1,59 @@
+format: rulekit/categories@1
+categories:
+  service_activity_verb:
+    parent: quantity_event_verb
+    notes: Countable work on an object; a tariff is still required to infer earnings.
+  service_object: {parent: noun}
+  habitual_service_predicate:
+    parent: service_activity_verb
+    notes: Present habitual declarations offer a service; past work is a separate, counted event.
+  past_service_predicate:
+    parent: service_activity_verb
+    notes: >
+      Overt past forms excluded from habitual declarations. Category slots
+      accept lemmas too, so the positive present-form category alone does
+      not establish tense; the surface exclusion is independently required.
+  cuttable_ground: {parent: service_object}
+  clearable_surface: {parent: service_object}
+  washable_surface: {parent: service_object}
+  coatable_surface: {parent: service_object}
+  ground_cutting_service:
+    parent: service_activity_verb
+    selectional_roles: {actor: animate, theme: cuttable_ground}
+  surface_clearing_service:
+    parent: service_activity_verb
+    selectional_roles: {actor: animate, theme: clearable_surface}
+  surface_washing_service:
+    parent: service_activity_verb
+    selectional_roles: {actor: animate, theme: washable_surface}
+  surface_coating_service:
+    parent: service_activity_verb
+    selectional_roles: {actor: animate, theme: coatable_surface}
+  service_tariff_verb: {parent: verb}
+  periodic_income_verb: {parent: acquire}
+  resource_accumulation_verb: {parent: purpose_resource_goal_activity}
+  periodic_income_noun: {parent: noun}
+  accumulation_particle: {parent: adverb}
+  accumulation_period_descriptor: {parent: preposition}
+  cash_remainder_noun: {parent: noun}
+members:
+  service_activity_verb: [mow, mows, mowed, mowing, shovel, shovels, shoveled, shovelled, wash, washes, washed, paint, paints, painted]
+  habitual_service_predicate: [mow, mows, shovel, shovels, wash, washes, paint, paints]
+  past_service_predicate: [mowed, shoveled, shovelled, washed, painted]
+  ground_cutting_service: [mow, mows, mowed, mowing]
+  surface_clearing_service: [shovel, shovels, shoveled, shovelled]
+  surface_washing_service: [wash, washes, washed]
+  surface_coating_service: [paint, paints, painted]
+  cuttable_ground: [lawn]
+  clearable_surface: [driveway]
+  washable_surface: [window, gate, driveway]
+  coatable_surface: [window, gate]
+  service_object: [lawn, driveway, window, gate]
+  service_tariff_verb: [charge, charges, charged]
+  periodic_income_verb: [get, gets, got, receive, receives, received, earn, earns, earned]
+  resource_accumulation_verb: [save, saves, saved, saving]
+  periodic_income_noun: [allowance]
+  accumulation_particle: [up]
+  accumulation_period_descriptor: [past]
+  cash_remainder_noun: [change]
+  duration_measure: [month]

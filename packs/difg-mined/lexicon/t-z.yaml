@@ -501,9 +501,6 @@ entries:
     unusual:
         senses:
             - adjective
-    up:
-        senses:
-            - adverb
     upcoming:
         senses:
             - adjective
@@ -667,17 +664,6 @@ entries:
         senses:
             - noun
         plural: warehouses
-    wash:
-        senses:
-            - verb
-    washed:
-        senses:
-            - verb
-    washes:
-        senses:
-            - verb
-        verb:
-            lemma: wash
     washing:
         senses:
             - noun
@@ -793,10 +779,6 @@ entries:
     winding:
         senses:
             - verb
-    window:
-        senses:
-            - noun
-        plural: windows
     winner:
         senses:
             - noun

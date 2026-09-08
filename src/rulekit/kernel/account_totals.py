@@ -121,8 +121,9 @@ def resolve_account(ctx, *, residual_item=None, extra_evidence=()):
         for a in allocations
     ):
         return Answer("decline", None, "an allocation phrase has no unique participant and account")
-    parts = " + ".join(str(e.value) for e in known) or "0"
-    result = evaluate(f"{start.value} - ({parts})", {}, ctx.log, source="account-remainder")
+    from .resource_equations import resource_residual
+    result = resource_residual([start.value], [e.value for e in known],
+                               ctx.log, source="account-remainder")
     if residual_item:
         result = evaluate(f"{result} - {end.value}", {}, ctx.log, source="budget-item-cost")
     elif end and not math.isclose(result, end.value, rel_tol=1e-9, abs_tol=1e-9):

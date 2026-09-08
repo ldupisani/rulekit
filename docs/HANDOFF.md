@@ -1,7 +1,7 @@
 # rulekit handoff
 
 **Updated:** 2026-09-08
-**Runtime checkpoint:** bounded ordered sequences on `main` (following `f876539`)
+**Runtime checkpoint:** reviewed role and location contracts (following bounded savings)
 **Active campaign:** GSM8K Mining v2, M7 example-led vertical mining
 **Immediate state:** all four published Mining v2 candidates are landed; no
 candidate is awaiting human or machine review
@@ -50,6 +50,38 @@ temporal event totals (130), task-completion duration gaps (131), and
 anaphoric distance chains with exact combined totals (132).
 
 ### Latest implementation checkpoint
+
+The September review batch tightens role contracts and location evidence.
+Written production narrows general production to written products; inquiry
+predicates share a participant contract; aggregate actors use complete verb
+roles, with a distinct permission for plural group pronouns rather than any
+plural noun. Placement predicates cannot enter incomplete object-only
+comparisons, and the count-frame comparison uses positive common-noun holder
+gates. Static location asks reject directional prepositions, retain subset
+specificity, intersect owner/size/content restrictions and require dated
+evidence for an explicit time. Existing relative `EventTime` evidence can
+prove a matching assertion, but does not imply persistence. The explicit
+person-owned-location fallback remains separate from container-only queries.
+A new possessed-location holding premise lets answerable generation supply
+the exact owned instance; emitted scope templates constrain filler selection.
+The reviewed conjoined existential keeps both quantities without the false
+missing-subject warning. Reviews and the running server remain untouched.
+
+Bounded savings now links periodic income and piece-rate work to one priced,
+completed purchase and its remaining cash. Separate typed facts preserve the
+saving interval, quoted income, service-object scope and purchase endpoints;
+they never become ordinary cash holdings. The existing single-entity count
+ask recovers one unknown service count through shared rate arithmetic,
+duration conversion and the budget account's residual equation. Independent
+service declarations and tariffs allow additional activities without new
+consumer branches. An omitted tariff object needs one matching declaration;
+a whole-pair price retains its unit. Category-owned actor/theme frames govern
+service vocabulary, and an adjacent relative marker licenses a finite
+predicate rather than its competing noun sense. Complete numeric and language
+coverage rejects other money changes, competing evidence and fractional work
+counts. The proof explicitly reports the closed-savings interpretation
+(no initial savings or other income/spending). All ten new premise shapes
+generate and round-trip; no new ask shape is needed. The server is untouched.
 
 Recurring carrier events now support an indexed content amount from a bounded
 total and an adjacent-term relation. Cadence, observation total, and affine
@@ -496,10 +528,10 @@ These are the gates run at the current runtime checkpoint:
 
 | Gate | Current result |
 | --- | --- |
-| full synthetic suite | 6,571 passed |
+| full synthetic suite | 6,680 passed |
 | curated suite | 71 correct, 0 wrong |
-| GSM8K DEV-train | 108 correct, 0 wrong |
-| GSM8K DEV-holdout | 51 correct, 0 wrong |
+| GSM8K DEV-train | 109 correct, 0 wrong |
+| GSM8K DEV-holdout | 52 correct, 0 wrong |
 | ASDiv DEV | 47 correct, 0 wrong |
 | SVAMP DEV | 24 correct, 0 wrong |
 | MAWPS DEV | 11 correct, 0 wrong |
@@ -511,25 +543,28 @@ These are the gates run at the current runtime checkpoint:
 | curated lint | 0 errors, 0 warnings |
 | GSM8K lint | 0 errors, 1 previously documented trig-alternation warning |
 
-The final ordered-sequence run passed all 6,571 tests in 268 seconds,
-including every supported GSM8K premise's strict round trip. This adds 151
-sequence cases and one generation-cache regression to the 6,419-test account
-and rate checkpoint. All eight numeric DEV snapshot diffs retain zero broken
-answers and zero new wrongs. GSM8K holdout gains two correct answers
-(`2ca37a674312`, `99c3df277cd7`); COGS gains two exact graphs in each DEV slice,
-with zero incorrect graphs; PMB is neutral. The directly supplied motivating
+The final review-contract run passed all 6,680 tests in 255 seconds,
+including 48 new role/location regressions and every supported GSM8K premise's
+strict round trip. All DEV snapshot diffs are neutral: zero broken answers,
+zero new wrongs and unchanged graph scores. The six invalid reviewed examples
+now reject their faulty interpretations; both original valid reviews and the
+valid inquiry review added during the work still replay successfully. Human
+review records remain unchanged by this implementation.
+
+Evidence is in `/tmp/rulekit-review-contracts.1a5C3y/`
+(`full-verified.log`, `gates-verified.log` and per-slice snapshot/diff logs),
+compared with `/tmp/rulekit-savings-income.zoNncX/`. The final gate used frozen
+runtime files: editing a pack while the parallel-snapshot test runs causes
+its worker fingerprint guard to reject the mixed revision. No runtime changes
+followed the final gates. No server restart or protected TEST look was performed.
+
+The preceding savings-account increment added one correct GSM8K training
+answer (`510ea32cccdc`) and one holdout answer (`6e00ca56d098`), with other
+arithmetic, logic and graph gates neutral. Its 6,632-test evidence is in
+`/tmp/rulekit-savings-income.zoNncX/`, compared with
+`/tmp/rulekit-ordered-sequences.ECQOnf/`. The directly supplied motivating
 question is exposed calibration, not independent generalization evidence.
 No corpus question prose was added to the repository.
-
-Evidence is in `/tmp/rulekit-ordered-sequences.ECQOnf/` (`full-verified.log`
-and the per-slice snapshot/diff logs), compared with the preceding snapshots
-in `/tmp/rulekit-account-rate-reuse.InUjrf/`. An initial noun-disambiguation
-regression was repaired and pinned by a floating-quantifier synthetic test.
-The final exhaustive generation check also exposed repeated immutable
-verb-frame lookup work; a bounded fingerprint cache preserves every role
-check and has explicit edited-project invalidation coverage. No runtime
-changes followed the final gates. No server restart or protected TEST look
-was performed.
 
 The preceding repeated-rate increment added one correct GSM8K DEV-train
 answer (`d0e9ac73409c`). Its motivating text was user-supplied calibration,
@@ -578,13 +613,13 @@ Do not spend another protected look merely to refresh these numbers.
 Availability means “the authoring layer can realize the declared contract and
 round-trip it through the ordinary matcher.” It does not mean that a human has
 judged the resulting English or emitted fact valid.
-The curated reachable filler inventory is 490; local allocation rules expose
+The curated reachable filler inventory is 503; local allocation rules expose
 account phrases, whose ownership is deliberately not inferred in isolation.
 
 | Project | Premise rules | Independent asks | Answerable asks |
 | --- | ---: | ---: | ---: |
-| curated | 179/188 | 121/139 | 135/139 |
-| GSM8K | 173/180 | 159/172 | 172/172 |
+| curated | 190/199 | 121/139 | 135/139 |
+| GSM8K | 184/191 | 159/172 | 172/172 |
 
 The unsupported premise rows are deliberate safety interceptors or reader-only
 rules, not ordinary generation targets. Fourteen curated and all thirteen

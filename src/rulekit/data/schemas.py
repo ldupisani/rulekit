@@ -1133,6 +1133,10 @@ class VerbRolesCompatibilityPredicate(StrictModel):
     require_declared_frame: bool = False
     allow_proper_name: list[str] = Field(default_factory=list)
     allow_plural_class: list[str] = Field(default_factory=list)
+    # A surface group pronoun may name an as-yet unresolved participant
+    # group. Unlike plural-class permission, this never licenses arbitrary
+    # plural common nouns to bypass their actor category.
+    allow_plural_pronoun: list[str] = Field(default_factory=list)
     allow_unbound_trigger: bool = False
 
     @model_validator(mode="after")
@@ -1164,6 +1168,7 @@ class VerbRolesCompatibilityPredicate(StrictModel):
         for permission, declared in (
             ("proper-name", self.allow_proper_name),
             ("plural-class", self.allow_plural_class),
+            ("plural-pronoun", self.allow_plural_pronoun),
         ):
             if len(declared) != len(set(declared)):
                 raise ValueError(
@@ -1504,6 +1509,7 @@ class WherePredicate(StrictModel):
 
 class FactEmit(StrictModel):
     fact: Literal[
+        "accumulation_window", "earning_rate", "service_scope", "purchase_endpoint",
         "event_cadence", "sequence_total", "sequence_step",
         "rate_threshold", "rate_premium", "repeated_activity_duration",
         "resource_allocation", "resource_balance", "expenditure", "activity_duration", "bounded_activity_inquiry", "age_at_year",

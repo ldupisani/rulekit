@@ -73,6 +73,10 @@ from .model import (
     EventCadence,
     SequenceTotal,
     SequenceStep,
+    AccumulationWindow,
+    EarningRate,
+    ServiceScope,
+    PurchaseEndpoint,
     Reading,
     Relation,
     RatioQuantity,
@@ -95,6 +99,10 @@ from .model import (
 SKIPPABLE_SENSES = {"article", "punct"}
 
 _FACT_CLASSES = {
+    "accumulation_window": AccumulationWindow,
+    "earning_rate": EarningRate,
+    "service_scope": ServiceScope,
+    "purchase_endpoint": PurchaseEndpoint,
     "event_cadence": EventCadence,
     "sequence_total": SequenceTotal,
     "sequence_step": SequenceStep,
@@ -1278,6 +1286,12 @@ def _check_where(
                             if (
                                 role_name in compatibility.allow_proper_name
                                 and _role_is_proper_name(role, reg)
+                            ):
+                                continue
+                            if (
+                                role_name in compatibility.allow_plural_pronoun
+                                and role.sense() == "pronoun"
+                                and role.features.get("number") == "plural"
                             ):
                                 continue
                             if (

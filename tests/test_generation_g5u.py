@@ -147,6 +147,7 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
             (),
         ),
         TARGET_RULE: ((10, 0), "trailing_adv", ((10,),)),
+        "arithmetic/resource-accumulation-window": ((3, 0), "particle", ((3,),)),
     }
     assert MOVED_WORD in core.lexicon
     assert set(project.registry.lexicon[MOVED_WORD].senses) == {"adverb"}
@@ -169,7 +170,7 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
         if "adverb" in entry.senses
     ] == [
         "again", "ago", "also", "away", MOVED_WORD, "down", "far", "finally", "individually",
-        "just", "next", "off", "once again", "online", "only", "outside", "safely", "still", "then",
+        "just", "next", "off", "once again", "online", "only", "outside", "safely", "still", "then", "up",
     ]
 
 
@@ -220,8 +221,8 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
     project = load_project(CURATED)
     availability = list_rule_availability(project)
 
-    assert len(availability) == 188
-    assert sum(item.supported for item in availability) == 179
+    assert len(availability) == 199
+    assert sum(item.supported for item in availability) == 190
     assert sum(not item.supported for item in availability) == 9
     assert all(
         not item.blockers
@@ -239,7 +240,7 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
             }
         for item in availability
     )
-    assert len(exploration_status(project)["fillers"]) == 490
+    assert len(exploration_status(project)["fillers"]) == 503
 
 
 def test_currently_generates_a_matcher_confirmed_anchor() -> None:

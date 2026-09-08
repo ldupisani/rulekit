@@ -24,7 +24,9 @@ def _facts(text: str) -> list[Existential]:
 def test_preserves_modal_and_complete_passive_property() -> None:
     facts = _facts("Some cards can be used near gates.")
     assert [(f.cls, f.pred, f.polarity) for f in facts] == [
-        ("card", "can be use near gates", True),
+        # The core-owned noun now has a known singular lemma; the complete
+        # modal/passive/prepositional property is still preserved.
+        ("card", "can be use near gate", True),
     ]
 
 
