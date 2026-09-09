@@ -250,6 +250,30 @@ def _check_number(
     """Numeric guards, including explicit use of allocation endpoints."""
 
     if _enabled(reg, "answer-accounting") and store is not None:
+        from .model import JOURNEY_KINDS
+
+        if any(f.key() not in log.consumed_journey_keys
+               for kind in JOURNEY_KINDS for f in store.by_kind(kind)):
+            return GuardVeto("answer-accounting", "a stated journey or schedule was not used")
+
+        from .model import InventoryScope, InventoryWithdrawal
+
+        if any(f.key() not in log.consumed_inventory_keys
+               for kind in (InventoryScope, InventoryWithdrawal) for f in store.by_kind(kind)):
+            return GuardVeto("answer-accounting", "a stated inventory or withdrawal was not used")
+
+        from .model import AllocationRatio
+
+        if any(f.key() not in log.consumed_allocation_ratio_keys
+               for f in store.by_kind(AllocationRatio)):
+            return GuardVeto("answer-accounting", "a stated allocation ratio was not used")
+
+        from .model import CommercialTerm
+
+        if any(f.key() not in log.consumed_commercial_term_keys
+               for f in store.by_kind(CommercialTerm)):
+            return GuardVeto("answer-accounting", "a stated production cost or sale quote was not used")
+
         from .model import EARNINGS_ACCOUNT_KINDS
 
         if any(f.key() not in log.consumed_earnings_account_keys

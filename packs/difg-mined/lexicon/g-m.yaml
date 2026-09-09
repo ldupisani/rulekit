@@ -785,19 +785,6 @@ entries:
     plural:
     - kj
     - kilojoules
-  kilometer:
-    senses:
-    - noun
-    plural:
-    # 'km' is the SYMBOL, and a symbol is a number-form of its unit exactly as
-    # 'kg' already is for kilogram two entries up — that entry is the precedent,
-    # this one just lacked the mirror. Without it 'km' keeps its own standalone
-    # lemma and no conversion keyed on 'kilometer' can ever be reached from it
-    # ("How many km is 5 miles?"). The plural map canonicalizes even when the
-    # surface has its own entry (senses.py), which is why 'km' can stay listed
-    # elsewhere without conflicting.
-    - km
-    - kilometers
   kilowatts:
     senses:
     - noun
@@ -1379,10 +1366,6 @@ entries:
   migrated:
     senses:
     - verb
-  mile:
-    senses:
-    - noun
-    plural: miles
   mileage:
     senses:
     - noun
@@ -1513,17 +1496,10 @@ entries:
     senses:
     - noun
     plural: mice
-  movie:
-    senses:
-    - noun
-    plural: movies
   mower:
     senses:
     - noun
   mpg:
-    senses:
-    - noun
-  mph:
     senses:
     - noun
   mr:

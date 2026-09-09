@@ -1,0 +1,48 @@
+format: rulekit/categories@1
+categories:
+  journey_activity_verb: {parent: spatial_motion_verb}
+  nominal_object_verb:
+    parent: verb
+    notes: "Takes a nominal theme here, not an object followed by a bare verbal complement."
+  journey_vehicle_verb:
+    parent: nominal_object_verb
+    selectional_roles: {actor: animate, theme: journey_vehicle}
+  journey_vehicle: {parent: noun}
+  journey_destination: {parent: noun}
+  journey_expletive: {parent: pronoun}
+  journey_duration_ask_verb: {parent: verb}
+  journey_goal_verb: {parent: verb}
+  nominal_location: {parent: noun}
+  locative_source_preposition: {parent: preposition}
+  locative_goal_preposition: {parent: preposition}
+  journey_mode_list_preposition: {parent: preposition}
+  return_direction_adverb: {parent: adverb}
+  working_day_unit: {parent: noun}
+  weekly_leisure_period: {parent: adjective}
+  cycling_journey_noun: {parent: noun}
+  journey_distance_measure: {parent: noun}
+  distance_separation_adverb: {parent: adverb}
+  miles_per_hour_unit: {parent: noun}
+  journey_start_verb: {parent: spatial_motion_verb}
+members:
+  journey_activity_verb: [walk, walks, walking, walked, bike, bikes, biking]
+  journey_vehicle_verb: [ride, rides]
+  journey_vehicle: [bike]
+  journey_destination: [work, school, office]
+  nominal_location: [work, school, office]
+  locative_source_preposition: [from]
+  locative_goal_preposition: [to]
+  journey_expletive: [it]
+  journey_duration_ask_verb: [take]
+  journey_goal_verb: [get]
+  journey_mode_list_preposition: [with]
+  return_direction_adverb: [back and forth]
+  working_day_unit: [workday]
+  weekly_leisure_period: [weekend]
+  cycling_journey_noun: [bike ride]
+  journey_distance_measure: [mile, kilometer]
+  distance_separation_adverb: [away]
+  miles_per_hour_unit: [mph]
+  journey_start_verb: [go, goes, went, going]
+attribute_compatibility:
+  weekly_leisure_period: [cycling_journey_noun]

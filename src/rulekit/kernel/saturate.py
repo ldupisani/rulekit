@@ -1391,6 +1391,14 @@ def _fraction_synth(store: FactStore, reg: Registry, log: ArithmeticLog) -> list
         measure = _resolve_measure(fq.measure, store, reg, journal=log.journal)
         if measure is None:
             continue
+        if (not reg.word_in_category(fq.pool_qualifier, "remnant_adj")
+                and any(other.provenance.sentence < fq.provenance.sentence
+                        and _resolve_measure(other.measure, store, reg) == measure
+                        for other in store.by_kind(FractionQuantity))):
+            # Two unqualified fractions need not share a changing base.
+            # Preserve the unresolved claim rather than silently choosing
+            # the depleted pool over the original allocation.
+            continue
         base = _pool_before(store, reg, fq.provenance.sentence, measure, log, "synth/fraction")
         if base is None:
             # "half OF IT": the measure word has no facts of its own — the

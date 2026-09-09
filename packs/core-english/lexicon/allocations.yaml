@@ -1,0 +1,10 @@
+format: rulekit/lexicon@1
+entries:
+  transaction: {senses: [noun], plural: transactions}
+  partner: {senses: [noun], plural: partners}
+  ratio: {senses: [noun], plural: ratios}
+  respectively: {senses: [adverb]}
+  share: {senses: [noun, verb]}
+  shared: {senses: [verb], verb: {lemma: share}}
+  prize: {senses: [noun], plural: prizes}
+  spending: {senses: [verb], verb: {lemma: spend}}

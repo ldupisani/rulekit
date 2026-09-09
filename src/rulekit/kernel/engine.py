@@ -136,6 +136,30 @@ class Result:
         return events
 
 
+def _probe_unresolved_references(reading: Reading) -> None:
+    """Disposable grammatical targets for routing, never solving evidence."""
+    for unit in reading.units:
+        if unit.sense() != "pronoun":
+            continue
+        probe_antecedent = Unit(-1, unit.words, {
+            "fold": unit.features.get("fold", unit.surface.casefold()),
+            "lemma": unit.features.get("lemma", unit.surface.casefold()),
+            "senses": ["name"],
+            "number": unit.features.get("number", "singular"),
+        })
+        updated = list(unit.obligations())
+        changed = False
+        for index, obligation in enumerate(updated):
+            if obligation.need != "refers" or obligation.met:
+                continue
+            updated[index] = Obligation(obligation.role, obligation.need,
+                                        target=probe_antecedent, optional=obligation.optional)
+            changed = True
+        if changed:
+            reading.record("ask-routing-probe", unit, {"obligations": updated},
+                           "temporarily admit unresolved pronoun for complete-grammar routing")
+
+
 def _is_complete_declared_ask(question: str, reg: Registry) -> bool:
     """Whether one ask grammar consumes all meaningful question units.
 
@@ -155,39 +179,7 @@ def _is_complete_declared_ask(question: str, reg: Registry) -> bool:
         # repeated slots and selectional roles). This probe never enters solve
         # state; the real question is re-analyzed and must still bind
         # definitively to an actual antecedent before it can answer.
-        for unit in reading.units:
-            if unit.sense() != "pronoun":
-                continue
-            probe_antecedent = Unit(
-                -1,
-                unit.words,
-                {
-                    "fold": unit.features.get("fold", unit.surface.casefold()),
-                    "lemma": unit.features.get("lemma", unit.surface.casefold()),
-                    "senses": ["name"],
-                    "number": unit.features.get("number", "singular"),
-                },
-            )
-            obligations = unit.obligations()
-            updated = list(obligations)
-            changed = False
-            for index, obligation in enumerate(obligations):
-                if obligation.need != "refers" or obligation.met:
-                    continue
-                updated[index] = Obligation(
-                    obligation.role,
-                    obligation.need,
-                    target=probe_antecedent,
-                    optional=obligation.optional,
-                )
-                changed = True
-            if changed:
-                reading.record(
-                    "ask-routing-probe",
-                    unit,
-                    {"obligations": updated},
-                    "temporarily admit unresolved pronoun for complete-ask routing",
-                )
+        _probe_unresolved_references(reading)
         matched = match_ask(reading, reg)
     if matched is None:
         return False
@@ -212,7 +204,14 @@ def _split_leading_clause(question: str, reg: Registry) -> tuple[str | None, str
     for i in range(len(parts) - 1):
         rest = ",".join(parts[i + 1 :]).strip()
         first = rest.split()[0] if rest.split() else ""
-        if _has_ask_cue_sense(first, reg):
+        # A declared consequent marker may precede an imperative ask. Keep
+        # the marker in the question so its complete grammar must consume it;
+        # narrative sequencing alone is not a new question boundary.
+        marked_ask = (reg.word_in_category(first.casefold(), "conditional_consequent_marker")
+                      and len(rest.split()) > 1
+                      and _has_ask_cue_sense(rest.split()[1], reg)
+                      and _is_complete_declared_ask(rest, reg))
+        if _has_ask_cue_sense(first, reg) or marked_ask:
             clause = ",".join(parts[: i + 1])[2:].strip().lstrip()
             return clause.rstrip(".") + ".", rest
     return _split_leading_clause_commaless(question, reg)
@@ -231,8 +230,9 @@ def _split_leading_clause_commaless(
 
     THE CAPITAL DOES THE COMMA'S JOB: the cue is a MID-SENTENCE CAPITALIZED
     ask-cue token. `_has_ask_cue_sense` lowercases internally, so the
-    capitalisation test is separate and load-bearing — a lowercase embedded
-    cue must never split.
+    capitalization test remains the default boundary. A lowercase cue needs
+    two complete declared grammars and explicit question-assumption permission;
+    an ordinary embedded question is not enough.
 
     THE FIRST QUALIFYING BOUNDARY WINS, deliberately NOT the trailing form's
     LAST: the errors are ASYMMETRIC. An early split leaves junk on the
@@ -248,6 +248,18 @@ def _split_leading_clause_commaless(
     for i in range(1, len(tokens)):
         token = tokens[i]
         if not token[:1].isupper():
+            # Lowercase fused asks need stronger evidence than the legacy
+            # capitalization boundary: both halves must have complete,
+            # declared grammars and the premise must opt into assumption
+            # scope. The real document still resolves every reference.
+            if not _has_ask_cue_sense(token, reg):
+                continue
+            clause = " ".join(tokens[1:i]).strip().rstrip(",.")
+            rest = " ".join(tokens[i:]).strip()
+            if (any(ch.isdigit() for ch in clause)
+                    and _is_complete_declared_ask(rest, reg)
+                    and _is_declared_question_assumption(clause + ".", reg, probe_references=True)):
+                return clause + ".", rest
             continue
         if not _has_ask_cue_sense(token, reg):
             continue
@@ -650,6 +662,8 @@ def _split_fused_premise_question(
 def _is_declared_question_assumption(
     sentence: str,
     reg: Registry | None,
+    *,
+    probe_references: bool = False,
 ) -> bool:
     """Whether one complete read rule licenses detached question scope."""
     if reg is None:
@@ -658,6 +672,8 @@ def _is_declared_question_assumption(
     from .patterns import SKIPPABLE_SENSES, run_rules
 
     reading = analyze(sentence, reg, tracing=False)
+    if probe_references:
+        _probe_unresolved_references(reading)
     meaningful = {
         unit.uid
         for unit in reading.units

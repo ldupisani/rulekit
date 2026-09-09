@@ -136,10 +136,6 @@ entries:
   aisle:
     senses:
     - noun
-  album:
-    senses:
-    - noun
-    plural: albums
   alien:
     senses:
     - noun
@@ -537,20 +533,7 @@ entries:
   big:
     senses:
     - adjective
-  bike:
-    senses:
-    - verb
   biked:
-    senses:
-    - verb
-    verb:
-      lemma: bike
-  bikes:
-    senses:
-    - verb
-    verb:
-      lemma: bike
-  biking:
     senses:
     - verb
     verb:
@@ -841,10 +824,6 @@ entries:
     senses:
     - noun
     plural: cakes
-  calculate:
-    senses:
-    - verb
-    - imperative
   calculated:
     senses:
     - verb
@@ -1285,10 +1264,6 @@ entries:
   compacted:
     senses:
     - verb
-  company:
-    senses:
-    - noun
-    plural: companies
   compare:
     senses:
     - verb
@@ -2436,10 +2411,6 @@ entries:
   figure:
     senses:
     - verb
-  film:
-    senses:
-    - noun
-    plural: films
   finance:
     senses:
     - noun

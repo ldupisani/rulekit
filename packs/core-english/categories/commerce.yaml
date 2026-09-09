@@ -1,0 +1,24 @@
+format: rulekit/categories@1
+categories:
+  commercial_product: {parent: ownable_quantity_object}
+  commercial_product_family:
+    parent: commercial_product
+    notes: >
+      Children group a reproducible work and its saleable representation.
+      These are not synonyms. A profit account may link them only within
+      one explicitly costed, otherwise unambiguous production stream.
+  audiovisual_product: {parent: commercial_product_family}
+  audio_product: {parent: commercial_product_family}
+  publication_product: {parent: commercial_product_family}
+  commercial_production_verb: {parent: verb}
+  commercial_organization: {parent: noun}
+  profit_measure: {parent: noun}
+  infinitival_marker: {parent: preposition}
+members:
+  audiovisual_product: [movie, film, dvd]
+  audio_product: [album, cd]
+  publication_product: [book, paperback]
+  commercial_production_verb: [create, creates, created, make, makes, made, produce, produces, produced]
+  commercial_organization: [empire, business, company]
+  profit_measure: [profit]
+  infinitival_marker: [to]

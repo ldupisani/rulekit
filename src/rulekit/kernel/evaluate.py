@@ -41,6 +41,10 @@ class LogEntry:
 @dataclass
 class ArithmeticLog:
     entries: list[LogEntry] = field(default_factory=list)
+    consumed_commercial_term_keys: set[tuple] = field(default_factory=set)
+    consumed_allocation_ratio_keys: set[tuple] = field(default_factory=set)
+    consumed_inventory_keys: set[tuple] = field(default_factory=set)
+    consumed_journey_keys: set[tuple] = field(default_factory=set)
     # The deictic journal (kernel.deixis.Journal), or None when tracing is off.
     #
     # It rides HERE rather than on its own parameter because this object is already

@@ -434,6 +434,49 @@ def _article_licenses_noun(reading: Reading, unit: Unit, reg: Registry | None = 
     return False
 
 
+def _nominal_role_licenses_noun(reading: Reading, unit: Unit, reg: Registry) -> bool:
+    """A nominal object frame or a motion endpoint selects an existing noun.
+
+    Possessive-looking pronouns alone are not enough: they can also be the
+    subject of a bare verbal complement. A declared nominal theme frame is
+    required. Endpoint nouns likewise need a source preposition or an actual
+    motion/vehicle predicate before the goal preposition.
+    """
+    i = reading.units.index(unit)
+    word = unit.features.get("lemma", unit.features.get("fold", ""))
+    previous = reading.units[:i]
+    if not previous:
+        return False
+    prev = previous[-1]
+    prev_word = prev.features.get("lemma", prev.features.get("fold", ""))
+    if i >= 2 and reg.word_in_category(prev_word, "possessive_determiner"):
+        verb = previous[-2]
+        verb_word = verb.features.get("lemma", verb.features.get("fold", ""))
+        if "verb" in verb.senses() and reg.word_in_category(verb_word, "nominal_object_verb"):
+            return any("theme" in roles and reg.word_in_category(word, roles["theme"])
+                       for _, roles in reg.selectional_frames(verb_word))
+    if not reg.word_in_category(word, "nominal_location"):
+        return False
+    if (reg.word_in_category(prev_word, "possessive_determiner")
+            and i + 1 < len(reading.units)
+            and reg.word_in_category(reading.units[i + 1].features.get("fold", ""), "copula")):
+        return True
+    if reg.word_in_category(prev_word, "locative_source_preposition"):
+        return True
+    if not reg.word_in_category(prev_word, "locative_goal_preposition"):
+        return False
+    for candidate in reversed(previous[:-1]):
+        lemma = candidate.features.get("lemma", candidate.features.get("fold", ""))
+        if (reg.word_in_category(lemma, "journey_vehicle")
+                or reg.word_in_category(lemma, "possessive_determiner")
+                or reg.word_in_category(lemma, "return_direction_adverb")):
+            continue
+        return "verb" in candidate.senses() and (
+            reg.word_in_category(lemma, "spatial_motion_verb")
+            or reg.word_in_category(lemma, "journey_vehicle_verb"))
+    return False
+
+
 def _partitive_licenses_noun(reading: Reading, unit: Unit, reg: Registry) -> bool:
     """A noun governed by the pack's partitive preposition is nominal.
 
@@ -441,12 +484,18 @@ def _partitive_licenses_noun(reading: Reading, unit: Unit, reg: Registry) -> boo
     spuriously borrow the measured quantity as its subject and a later duration
     as its object. The governing word is DATA (`partitive` currently contains
     English `of`), while this function states only the grammatical structure.
-    Articles/adjectives may intervene inside the governed noun phrase.
+    Articles/adjectives and one possessive determiner may intervene inside
+    the governed noun phrase; a finite predicate cannot follow that partitive.
     """
     idx = reading.units.index(unit)
+    crossed_possessive = False
     for prev in reversed(reading.units[:idx]):
         sense = prev.sense()
         if sense in ("article", "adjective"):
+            continue
+        if (not crossed_possessive and reg.word_in_category(
+                prev.features.get("fold", ""), "possessive_determiner")):
+            crossed_possessive = True
             continue
         return sense == "preposition" and reg.word_in_category(
             prev.features.get("fold", ""), "partitive"
@@ -578,6 +627,41 @@ def _nominal_subject_licenses_modal(reading: Reading, unit: Unit) -> bool:
     return left.sense() in ("noun", "name", "pronoun") and "verb" in right.senses()
 
 
+def _priced_subject_licenses_verb(reading: Reading, unit: Unit, reg: Registry) -> bool:
+    """A nominal subject, price predicate, currency amount and infinitive.
+
+    The adjective/article boundary still keeps nominal cost phrases nominal.
+    This only selects an existing verb sense; vocabulary stays pack-owned.
+    """
+    index = reading.units.index(unit)
+    if index == 0 or index + 3 >= len(reading.units):
+        return False
+    left, right = reading.units[index - 1], reading.units[index + 1]
+    marker, activity = reading.units[index + 2:index + 4]
+    from .patterns import is_bare_verb_form
+
+    return (left.sense() in ("noun", "name", "pronoun")
+            and reg.word_in_category(unit.features.get("lemma", ""), "price_verb")
+            and reg.word_in_category(right.features.get("lemma", ""), "currency_measure")
+            and "value" in right.features
+            and reg.word_in_category(marker.features.get("lemma", ""), "infinitival_marker")
+            and "verb" in activity.senses()
+            and is_bare_verb_form(activity.features.get("fold", ""),
+                                  activity.features.get("lemma", "")))
+
+
+def _infinitive_licenses_count_homograph(reading: Reading, unit: Unit, reg: Registry) -> bool:
+    """A bare infinitive is not an undetermined singular count-noun use."""
+    from .patterns import is_bare_verb_form
+
+    index = reading.units.index(unit)
+    lemma = unit.features.get("lemma", "")
+    return (index > 0 and reg.word_in_category(lemma, "determiner_required_noun")
+            and reg.word_in_category(reading.units[index - 1].features.get("lemma", ""),
+                                     "infinitival_marker")
+            and is_bare_verb_form(unit.features.get("fold", ""), lemma))
+
+
 def _copular_progressive_licenses_verb(
     reading: Reading, unit: Unit, reg: Registry
 ) -> bool:
@@ -612,7 +696,6 @@ def disambiguate(reading: Reading, reg: Registry) -> Reading:
                 f"{len(ambiguous)} ambiguous units exceeds trial cap",
             )
         return reading
-
     options = []
     for u in ambiguous:
         senses = u.senses()
@@ -662,6 +745,12 @@ def disambiguate(reading: Reading, reg: Registry) -> Reading:
         if "noun" in senses and "verb" in senses and _relative_marker_licenses_finite_verb(reading, u):
             options.append(["verb"])
             continue
+        if "noun" in senses and "verb" in senses and _priced_subject_licenses_verb(reading, u, reg):
+            options.append(["verb"])
+            continue
+        if "noun" in senses and "verb" in senses and _infinitive_licenses_count_homograph(reading, u, reg):
+            options.append(["verb"])
+            continue
         if "noun" in senses and "verb" in senses and (
             _finite_verb_licenses_nonbare_noun_object(reading, u)
             or _article_licenses_noun(reading, u, reg)
@@ -689,7 +778,8 @@ def disambiguate(reading: Reading, reg: Registry) -> Reading:
         ):
             options.append(["adjective"])
             continue
-        if "noun" in senses and _partitive_licenses_noun(reading, u, reg):
+        if "noun" in senses and (_partitive_licenses_noun(reading, u, reg)
+                                 or _nominal_role_licenses_noun(reading, u, reg)):
             # A partitive complement is a nominal position. Restrict an
             # EXISTING noun candidate; never invent one for a verb-only word.
             options.append(["noun"])

@@ -1023,6 +1023,162 @@ EARNINGS_ACCOUNT_KINDS = (AccumulationWindow, EarningRate, ServiceScope, Purchas
 
 
 @dataclass(frozen=True)
+class CommercialTerm(Fact):
+    """A scoped quote, not cash held: setup cost, unit cost or sale price.
+
+    A relative sale quote retains its factor until one preceding unit cost
+    supplies its reference. An omitted producer or product remains unresolved.
+    """
+
+    entity: str
+    item: str
+    basis: str
+    measure: str
+    value: float
+
+    def key(self):
+        return ("commercial-term", self.entity, self.item, self.basis,
+                self.provenance.sentence)
+
+    def value_part(self):
+        return (self.measure, self.value)
+
+
+@dataclass(frozen=True)
+class AllocationRatio(Fact):
+    """Ordered participants' relative shares of one named allocation.
+
+    This is not a relation between their complete personal cash holdings.
+    Raw parts and the declared group size remain source-auditable.
+    """
+
+    resource: str
+    source: str
+    first: str
+    second: str
+    numerator: float
+    denominator: float
+    group_size: float
+
+    def key(self):
+        return ("allocation-ratio", self.resource, self.source, self.first,
+                self.second, self.provenance.sentence)
+
+    def value_part(self):
+        return (self.numerator, self.denominator, self.group_size)
+
+
+@dataclass(frozen=True)
+class InventoryScope(Fact):
+    """One explicitly enumerated opening inventory, before any withdrawals."""
+
+    container: str
+    item: str
+
+    def key(self):
+        return ("inventory-scope", self.container, self.item, self.provenance.sentence)
+
+    def value_part(self):
+        return ()
+
+
+@dataclass(frozen=True)
+class InventoryWithdrawal(Fact):
+    """An actor's absolute or explicitly anchored proportional removal."""
+
+    actor: str
+    item: str
+    qualifier: str
+    value: float | None = None
+    factor: float | None = None
+    standard_actor: str = ""
+    standard_item: str = ""
+    standard_qualifier: str = ""
+
+    def key(self):
+        return ("inventory-withdrawal", self.actor, self.item, self.qualifier,
+                self.provenance.sentence)
+
+    def value_part(self):
+        return (self.value, self.factor, self.standard_actor, self.standard_item,
+                self.standard_qualifier)
+
+
+@dataclass(frozen=True)
+class JourneyLeg(Fact):
+    """One-way cost of an actor's exact route and travel mode."""
+
+    entity: str
+    mode: str
+    destination: str
+    value: float
+    unit: str
+    destination_owner: str = ""
+
+    def key(self):
+        return ("journey-leg", self.entity, self.mode, self.destination, self.provenance.sentence)
+
+    def value_part(self):
+        return (self.value, self.unit, self.destination_owner)
+
+
+@dataclass(frozen=True)
+class JourneySchedule(Fact):
+    """Explicit repetitions per period, with directions kept separate."""
+
+    entity: str
+    mode: str
+    destination: str
+    value: float
+    period: str
+    legs: float
+
+    def key(self):
+        return ("journey-schedule", self.entity, self.mode, self.destination,
+                self.period, self.provenance.sentence)
+
+    def value_part(self):
+        return (self.value, self.legs)
+
+
+@dataclass(frozen=True)
+class JourneyExtra(Fact):
+    """A complete additional journey distance, not another one-way leg."""
+
+    entity: str
+    mode: str
+    value: float
+    unit: str
+    period: str
+
+    def key(self):
+        return ("journey-extra", self.entity, self.mode, self.period, self.provenance.sentence)
+
+    def value_part(self):
+        return (self.value, self.unit)
+
+
+@dataclass(frozen=True)
+class JourneyPace(Fact):
+    """A travel capability quote, not an asserted activity Rate."""
+
+    entity: str
+    mode: str
+    measure: str
+    per: str
+    value: float
+
+    def key(self):
+        return ("journey-pace", self.entity, self.mode, self.provenance.sentence)
+
+    def value_part(self):
+        return (self.measure, self.per, self.value)
+
+
+JOURNEY_KINDS = (JourneyLeg, JourneySchedule, JourneyExtra, JourneyPace)
+
+
+@dataclass(frozen=True)
 class RateScope(Fact):
     """The activity to which one participant's stated rate applies.
 
@@ -1454,10 +1610,11 @@ class FractionQuantity(Fact):
     verb: str = "have"
     occurrence: int | None = None
     time: str | None = None
+    pool_qualifier: str = ""
 
     def key(self) -> tuple:
         return ("fraction_quantity", self.entity, self.measure, self.verb,
-                self.occurrence, self.time)
+                self.occurrence, self.time, self.pool_qualifier)
 
     def value_part(self) -> Any:
         return self.fraction

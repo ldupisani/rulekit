@@ -319,6 +319,85 @@ and declines on missing, repeated, or cyclic references. It is shared by the
 budget account and the complete purchase-total consumer; neither promotes a
 lot cost to a generic per-unit `Price`.
 
+Production accounts keep fixed setup costs, unit production costs and quoted
+sale prices in `CommercialTerm`, never ordinary cash holdings. A relative
+sale quote preserves its raw multiplier and requires an immediately preceding
+unit-cost reference. Two ordinary `Rate` facts retain units per active period
+and active periods per enclosing period. The production-profit consumer uses
+shared rate application, duration conversion and the resource-residual equation
+to subtract unit costs and the fixed setup cost from revenue. Its first bounded
+contract requires one producer and product stream, complete source-local numeric
+accounting, one currency and no unread transactions or conditions. Losses are
+valid results; fractional unit counts and ambiguous accounts decline.
+
+A work and its saleable representation may share a declared child of
+`commercial_product_family`. This is not global noun synonymy: the link applies
+only inside the unique production account and is recorded in its answer proof.
+Unrelated products cannot borrow each other's costs. All commercial terms are
+use-gated, so a generic cash-total consumer cannot silently ignore them.
+
+`AllocationRatio` records a resource, its optional source, two ordered named
+participants, their raw ratio parts and the stated group size. It differs from
+`RatioQuantity`, which partitions an unnamed collection: a participant's share
+must not become their complete personal cash holding. The allocation-remainder
+consumer anchors the ratio to one other participant's complete receipt clause,
+uses the shared compound-rate calculation in either direction, and subtracts
+one explicitly priced expense through the resource-residual helper. Missing or
+competing receipts, different currencies, extra conditions and overspending
+decline. The answer proof names the allocation and distinguishes its remainder
+from total wealth. Allocation facts are use-gated for other numeric consumers.
+Source-qualified and unqualified declarations share one local rule template.
+
+`InventoryScope` marks one explicitly enumerated opening stock; ordinary
+`Quantity` facts retain its subtype counts. `InventoryWithdrawal` keeps the
+removing actor and either an amount or a same-actor, exact-subtype proportional
+reference. The inventory consumer uses shared numeric auditing and resource
+conservation, checks each bucket before summing, and requires one declared
+attribute family so independent facets are not silently treated as disjoint.
+Missing references, repeated competing references, extra events and overdrawn
+subtypes decline. Inventory facts are use-gated. Two local templates compose
+two/three-part opening lists and plain/particle, absolute/proportional removals.
+A declared consequent marker can precede a conditional imperative only when
+the complete suffix matches an ask; the marker remains consumed by that ask.
+
+`JourneyLeg` records a one-way duration or distance with its actor, mode,
+destination and optional destination owner. `JourneySchedule` separately
+records repetitions per period and the explicit number of directional legs.
+`JourneyExtra` records a complete additional journey, so it is never doubled
+as another one-way commute. Local templates compose individual and coordinated
+durations/schedules. The duration consumer sums exactly the requested modes;
+the distance consumer combines one route schedule and any complete additional
+journeys, then inverts a `JourneyPace` capability quote through the same rate
+helper. The quote is deliberately not an ordinary `Rate`: it cannot supply
+an actual-travel answer outside explicit question-assumption scope. Both reuse unit
+conversion, rate application, logged arithmetic and source-local numeric
+auditing. Every journey fact must be used. Competing routes, modes, owners,
+periods, speeds, or unread events decline. Proofs explicitly report using a
+stated one-way cost for both directions; the bounded workday/weekend construction
+reports its weekly interpretation and takes its working-day count from text.
+
+Lowercase comma-less conditional asks require complete declared grammars on
+both sides, with an explicit `question_assumption` permission on the premise.
+The existing disposable pronoun-routing probe is shared by those checks;
+its targets never become document evidence. Normal solving must still resolve
+real antecedents, and a travel capability is used as a speed only in question
+assumption scope, not as an assertion that any journey occurred.
+
+Count-noun/verb homographs retain both lexical senses. A possessive inside a
+partitive phrase licenses the noun; an adjacent infinitival marker licenses a
+bare verb when its singular noun homograph requires a determiner. Both decisions
+are grammatical and category-backed; the ambiguity-search cap is unchanged.
+Declared nominal-theme verb frames also resolve possessive-object homographs,
+while source/goal context and possessive copular subjects resolve nominal
+locations. A possessive-looking pronoun alone never licenses the noun, since
+it can also be the subject of a verbal complement.
+
+`FractionQuantity.pool_qualifier` retains explicit remainder wording. After a
+fraction has depleted a pool, another unqualified fraction is ambiguous between
+the original and remaining totals. It stays unresolved unless its qualifier
+declares the remainder; the ordinary unresolved-derivation guard then prevents
+a guessed answer. This does not change the first fraction of a definite pool.
+
 Purchase-list completeness is retained on the expenditure records, including
 unpriced or unread continuations. The purchase-total consumer requires every
 line to have a known compatible-currency cost, checks shared resource issues,

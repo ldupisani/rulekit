@@ -1,0 +1,131 @@
+format: rulekit/rules@1
+rules:
+  - id: arithmetic/commercial-organization-context
+    phase: read
+    description: Establishing an organization is context, not a priced product or cash holding.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
+        - {slot: verb, cat: commercial_production_verb, finite_form: true}
+        - {slot: organization, cat: commercial_organization, referential: true, uncounted: true}
+        - {lit: '.', consume_skipped: true}
+    where:
+      - number_compatible: [who, verb]
+    emits:
+      - {fact: predication, subject: '{who}', verb: '{verb}', dobj: '{organization.qualified}'}
+
+  - id: arithmetic/production-setup-cost
+    phase: read
+    description: A stated cost to create one work is a fixed setup cost, not a cost per copy.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
+        - {slot: verb, cat: commercial_production_verb, finite_form: true}
+        - {slot: item, cat: commercial_product, number: singular, referential: true, bare: true, uncounted: true}
+        - {lit: for}
+        - {slot: amount, cat: currency_measure, counted: true}
+        - {lit: '.', consume_skipped: true}
+    where:
+      - number_compatible: [who, verb]
+    consumes: [amount, verb]
+    emits:
+      - {fact: commercial_term, entity: '{who}', item: '{item}', basis: setup, measure: '{amount}', value: amount}
+
+  - id: arithmetic/unit-production-cost
+    phase: read
+    description: An explicit per-item production cost; the producer must be resolved from one compatible account.
+    match:
+      sentence:
+        - {lit: each, at_start: true}
+        - {slot: item, cat: commercial_product, number: singular, bare: true, uncounted: true}
+        - {slot: cost, cat: price_verb, finite_form: true}
+        - {slot: amount, cat: currency_measure, counted: true}
+        - {slot: infinitive, cat: infinitival_marker}
+        - {slot: verb, cat: commercial_production_verb, bare_form: true}
+        - {lit: '.', consume_skipped: true}
+    satisfies: {infinitive: [object]}
+    consumes: [amount, cost, verb]
+    emits:
+      - {fact: commercial_term, entity: '', item: '{item}', basis: unit-cost, measure: '{amount}', value: amount}
+
+  - id: arithmetic/relative-unit-sale-price
+    phase: read
+    description: >
+      A sale quote relative to the preceding unit cost. Neither the product
+      pronoun nor the amount reference is guessed by ordinary holder anaphora.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
+        - {slot: verb, cat: sell, finite_form: true}
+        - {lit: it}
+        - {lit: for}
+        - {slot: factor, type: multiplier}
+        - {lit: that}
+        - {lit: much}
+        - {lit: '.', consume_skipped: true}
+    where:
+      - number_compatible: [who, verb]
+    consumes: [factor, verb]
+    emits:
+      - {fact: commercial_term, entity: '{who}', item: '', basis: sale-factor, measure: '', value: factor}
+
+  - id: arithmetic/explicit-unit-sale-price
+    phase: read
+    description: A quoted currency price per item, not an actual sale or receipt.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
+        - {slot: verb, cat: sell, finite_form: true}
+        - {lit: each}
+        - {slot: item, cat: commercial_product, number: singular, bare: true, uncounted: true}
+        - {lit: for}
+        - {slot: amount, cat: currency_measure, counted: true}
+        - {lit: '.', consume_skipped: true}
+    where:
+      - number_compatible: [who, verb]
+    consumes: [amount, verb]
+    emits:
+      - {fact: commercial_term, entity: '{who}', item: '{item}', basis: sale-price, measure: '{amount}', value: amount}
+
+  - id: arithmetic/nested-unit-sales-cadence
+    phase: read
+    description: >
+      Units sold per active period and active periods per enclosing period
+      remain separate rates. No calendar's full period count is assumed.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
+        - {slot: verb, cat: sell, finite_form: true}
+        - {slot: item, cat: commercial_product, counted: true, bare: true}
+        - {lit: a, consume_skipped: true}
+        - {slot: per, cat: duration_measure, uncounted: true}
+        - {lit: for}
+        - {slot: active, cat: duration_measure, counted: true}
+        - {lit: a, consume_skipped: true}
+        - {slot: period, cat: duration_measure, uncounted: true}
+        - {lit: '.', consume_skipped: true}
+    where:
+      - number_compatible: [who, verb]
+      - same_lemma: [per, active]
+      - distinct: [per, period]
+    consumes: [item, active, verb]
+    emits:
+      - {fact: rate, entity: '{who}', measure: '{item}', per: '{per}', value: item, verb: '{verb}'}
+      - {fact: rate, entity: '{who}', measure: '{per}', per: '{period}', value: active, verb: '{verb}'}
+
+asks:
+  - id: ask/profit-over-duration
+    match:
+      question:
+        - {lit: how, at_start: true}
+        - {lit: much}
+        - {slot: profit, cat: profit_measure}
+        - {slot: aux, type: auxiliary}
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true}
+        - {slot: verb, cat: wage_verb, bare_form: true}
+        - {lit: in}
+        - {slot: span, cat: duration_measure, counted: true}
+        - {lit: '?', consume_skipped: true}
+    where:
+      - number_compatible: [who, aux]
+    resolves: {consumer: production-profit, entity: '{who}', elapsed: '{span.value}', unit: '{span}'}

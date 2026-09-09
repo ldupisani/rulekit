@@ -4,8 +4,10 @@ from .evaluate import evaluate
 
 
 def rate_operands(rate):
-    return ((rate.numerator, rate.denominator) if rate.numerator is not None
-            and rate.denominator is not None else (rate.value,))
+    # Scalar per-occurrence costs and frequencies share the same arithmetic
+    # protocol; only explicitly compound rates carry raw ratio operands.
+    return ((rate.numerator, rate.denominator) if getattr(rate, "numerator", None) is not None
+            and getattr(rate, "denominator", None) is not None else (rate.value,))
 
 
 def apply_rate(rate, amount, log, *, source, inverse=False):
@@ -18,7 +20,7 @@ def apply_rate(rate, amount, log, *, source, inverse=False):
     return evaluate(expression, {}, log, source=source)
 
 
-def convert_duration(value, unit, target, reg, log, *, source, allow_cadence=False, record=True):
+def convert_units(value, unit, target, reg, log, *, source, allow_cadence=False, record=True):
     if unit == target:
         return value
     factor = reg.conversions.get((unit, target))
@@ -29,6 +31,11 @@ def convert_duration(value, unit, target, reg, log, *, source, allow_cadence=Fal
     if not record:
         return value * factor
     return evaluate(f"{value} * {factor}", {}, log, source=source)
+
+
+def convert_duration(value, unit, target, reg, log, *, source, allow_cadence=False, record=True):
+    return convert_units(value, unit, target, reg, log, source=source,
+                         allow_cadence=allow_cadence, record=record)
 
 
 def activity_scope_matches(scope, rate, participant, activity):

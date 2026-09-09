@@ -484,14 +484,10 @@ def _where_blocker(rule: PatternRule) -> list[str]:
             or pred.distinct_measure is not None
         ):
             continue
-        kind = next(
-            name
-            for name in (
-                "same_phrase",
-                "name_count",
-            )
-            if getattr(pred, name) is not None
-        )
+        # The schema already guarantees one active predicate. A newly
+        # introduced reader predicate must report a blocker, not crash the
+        # availability list because a second hand-maintained list missed it.
+        kind = next(iter(pred.model_dump(exclude_none=True)))
         blockers.append(f"where predicate {kind!r} has no current realizer")
     return blockers
 

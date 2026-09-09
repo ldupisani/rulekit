@@ -1,0 +1,72 @@
+format: rulekit/rules@1
+templates:
+  ordered-allocation:
+    parameters: {source_prefix: [], source: ''}
+    rule:
+      phase: read
+      description: >
+        A resource is divided among exactly two named participants in an
+        ordered ratio. Respectively links each raw ratio part to its name.
+        The resource and source remain allocation scope, not personal wealth.
+      match:
+        sentence:
+          - {slot: resource, cat: allocatable_resource, uncounted: true, bare: true, at_start: true}
+          - {parameter: source_prefix}
+          - {slot: aux, cat: singular_copula}
+          - {slot: division, cat: allocation_verb, past_participle: true}
+          - {slot: prep, cat: allocation_distribution_preposition}
+          - {slot: group, cat: allocation_participant, counted: true, value_min: 2, value_max: 2}
+          - {slot: first, type: name}
+          - {lit: and}
+          - {slot: second, type: name}
+          - {lit: in}
+          - {slot: ratio, cat: allocation_ratio_noun}
+          - {slot: numerator, type: number, value_min: 0}
+          - {lit: ':', consume_skipped: true}
+          - {slot: denominator, type: number, value_min: 0}
+          - {slot: order, cat: allocation_order_marker}
+          - {lit: '.', consume_skipped: true}
+      where:
+        - distinct: [first, second]
+      satisfies: {numerator: [quantifies], denominator: [quantifies]}
+      consumes: [group, numerator, denominator]
+      emits:
+        - {fact: allocation_ratio, resource: '{resource}', source: {parameter: source}, first: '{first}', second: '{second}', numerator: numerator, denominator: denominator, group_size: group}
+
+variants:
+  - id: arithmetic/ordered-two-part-allocation
+    template: ordered-allocation
+    arguments:
+      source_prefix:
+        - {lit: from}
+        - {slot: source, cat: allocation_source, referential: true, uncounted: true}
+      source: '{source.qualified}'
+  - id: arithmetic/ordered-two-part-allocation-unqualified
+    template: ordered-allocation
+
+asks:
+  - id: ask/allocation-share-after-priced-spending
+    match:
+      question:
+        - {lit: how, at_start: true}
+        - {lit: much}
+        - {slot: aux, type: future_modal}
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true}
+        - {slot: state, cat: plain_have_state, bare_form: true}
+        - {lit: after}
+        - {slot: spending, cat: spend_verb, present_participle: true}
+        - {lit: some}
+        - {lit: of}
+        - {slot: owner, cat: possessive_determiner}
+        - {slot: share, cat: allocation_share_noun, uncounted: true}
+        - {slot: prep, cat: spend_target_prep}
+        - {slot: item, cat: ownable_quantity_object, referential: true, uncounted: true}
+        - {lit: that}
+        - {slot: cost, cat: price_verb, finite_form: true}
+        - {slot: amount, cat: currency_measure, counted: true}
+        - {lit: '?', consume_skipped: true}
+    where:
+      - number_compatible: [who, aux]
+      - number_compatible: [item, cost]
+    satisfies: {owner: [refers], cost: [subject]}
+    resolves: {consumer: allocation-remainder, entity: '{who}', expense: '{amount.value}', measure: '{amount}', item: '{item.qualified}'}

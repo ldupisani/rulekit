@@ -76,6 +76,11 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
     }
 
     assert occurrences == {
+        "arithmetic/additional-cycling-journey-distance": ((1, 0), "addition", ((1,),)),
+        "arithmetic/owned-destination-distance": ((4,), "away", ()),
+        "arithmetic/owned-workday-return-schedule": ((4,), "directions", ()),
+        "arithmetic/inventory-subtype-particle-withdrawal": ((3,), "particle", ()),
+        "arithmetic/inventory-subtype-particle-withdrawal-and-proportion": ((3,), "particle", ()),
         **{
             f"arithmetic/{name}": ((1, 0), "addition", ((1,),))
             for name in (
@@ -158,6 +163,8 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
         ),
         TARGET_RULE: ((10, 0), "trailing_adv", ((10,),)),
         "arithmetic/resource-accumulation-window": ((3, 0), "particle", ((3,),)),
+        "arithmetic/ordered-two-part-allocation": ((15,), "order", ()),
+        "arithmetic/ordered-two-part-allocation-unqualified": ((13,), "order", ()),
     }
     assert MOVED_WORD in core.lexicon
     assert set(project.registry.lexicon[MOVED_WORD].senses) == {"adverb"}
@@ -165,6 +172,7 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
         "current_holding_anchor_adverb",
     )
     assert project.registry.word_categories.get("then", ()) == (
+        "conditional_consequent_marker",
         "narration_sequence_adverb",
     )
     assert project.registry.word_categories.get("finally", ()) == (
@@ -179,8 +187,8 @@ def test_direct_adverb_occurrence_and_core_ownership_are_complete() -> None:
         for word, entry in sorted(project.registry.lexicon.items())
         if "adverb" in entry.senses
     ] == [
-        "again", "ago", "also", "away", MOVED_WORD, "down", "far", "finally", "individually",
-        "just", "next", "off", "once again", "online", "only", "outside", "safely", "still", "then", "up",
+        "again", "ago", "also", "away", "back and forth", MOVED_WORD, "down", "far", "finally", "individually",
+        "just", "next", "off", "once again", "online", "only", "outside", "respectively", "safely", "still", "then", "up",
     ]
 
 
@@ -231,8 +239,8 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
     project = load_project(CURATED)
     availability = list_rule_availability(project)
 
-    assert len(availability) == 204
-    assert sum(item.supported for item in availability) == 195
+    assert len(availability) == 230
+    assert sum(item.supported for item in availability) == 221
     assert sum(not item.supported for item in availability) == 9
     assert all(
         not item.blockers
@@ -250,7 +258,7 @@ def test_g5u_reaches_the_complete_premise_generation_frontier() -> None:
             }
         for item in availability
     )
-    assert len(exploration_status(project)["fillers"]) == 516
+    assert len(exploration_status(project)["fillers"]) == 550
 
 
 def test_currently_generates_a_matcher_confirmed_anchor() -> None:

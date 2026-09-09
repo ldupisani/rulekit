@@ -71,9 +71,6 @@ conversions:
 - from: pound
   to: kilogram
   factor: 0.45359237
-- from: mile
-  to: kilometer
-  factor: 1.609344
 # scibench thermo: 'kJ' (lexicon kilojoule) reaches the canonical 'joule' of
 # formulas.yaml's energy dimension through this pair at physics bind time
 - from: kilojoule

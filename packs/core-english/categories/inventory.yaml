@@ -1,0 +1,18 @@
+format: rulekit/categories@1
+categories:
+  inventory_withdrawal_verb: {parent: verb}
+  inventory_remainder_verb: {parent: verb}
+  inventory_withdrawal_particle_head: {parent: verb}
+  inventory_withdrawal_particle: {parent: adverb}
+  conditional_consequent_marker: {parent: adverb}
+members:
+  inventory_withdrawal_verb: [remove, removed, removes]
+  inventory_withdrawal_particle_head: [take, takes, took]
+  inventory_withdrawal_particle: [away]
+  conditional_consequent_marker: [then]
+  inventory_remainder_verb: [remain, remained, remains]
+  compute_verb: [calculate]
+  color_attribute: [pink]
+  colorable_noun: [hard hat, hat]
+  ownable_quantity_object: [hard hat]
+  quantity_interior_location: [truck]

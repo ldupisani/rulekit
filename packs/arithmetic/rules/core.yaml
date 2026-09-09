@@ -4068,9 +4068,11 @@ rules:
       "Tom ate half of the sandwiches" / "spent 40% of the money" — a
       fraction of the DEFINITE pool. Emits a FractionQuantity the synthesizer
       resolves against the DEFINITE POOL — the signed sum of the measure's
-      prior-sentence facts, which prior fractions deplete. That makes
-      "of the remaining pages" correct here too: the current pool IS the
-      remainder. A part of one finite pool cannot exceed the whole; improper
+      prior-sentence facts. After another fraction has depleted that pool,
+      an explicit remaining qualifier is required: an unqualified second
+      fraction might refer to the original total instead. The qualifier is
+      retained as evidence rather than silently assuming a changing base.
+      A part of one finite pool cannot exceed the whole; improper
       fractions remain available to unbounded ratio and comparison rules.
       Unresolved ones veto commits.
     match:
@@ -4097,6 +4099,7 @@ rules:
         measure: "{item}"
         fraction: "f"
         verb: "{verb}"
+        pool_qualifier: "{item.qualifier}"
 
   - id: arithmetic/sequential-percent-remainder-partition
     phase: read

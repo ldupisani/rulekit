@@ -1,0 +1,104 @@
+format: rulekit/rules@1
+rules:
+  - id: arithmetic/owned-workday-return-schedule
+    phase: read
+    description: >
+      A named participant's explicit working-day set supplies the number of
+      return journeys. This bounded weekly workday construction never inserts
+      a default working-day count. The consumer reports the weekly schedule
+      interpretation and refuses a different asked period.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
+        - {slot: action, cat: journey_vehicle_verb, finite_form: true}
+        - {slot: owner, cat: possessive_determiner}
+        - {slot: vehicle, cat: journey_vehicle, uncounted: true, number: singular}
+        - {slot: directions, cat: return_direction_adverb}
+        - {lit: to}
+        - {slot: destination, cat: journey_destination, uncounted: true, bare: true}
+        - {lit: for}
+        - {lit: each}
+        - {lit: of}
+        - {slot: day_owner, cat: possessive_determiner}
+        - {slot: days, cat: working_day_unit, counted: true, value_min: 1, value_max: 7}
+        - {lit: '.', consume_skipped: true}
+    where: [{number_compatible: [who, action]}]
+    satisfies: {owner: [refers], day_owner: [refers]}
+    consumes: [days]
+    emits:
+      - {fact: journey_schedule, entity: '{who}', mode: '{vehicle}', destination: '{destination}', value: days, period: week, legs: 2}
+
+  - id: arithmetic/owned-destination-distance
+    phase: read
+    description: >
+      An owned destination has one stated one-way distance. No mode is named;
+      it must be supplied by one unique journey schedule for this actor and
+      destination, not by proximity to an unrelated distance.
+    match:
+      sentence:
+        - {slot: owner, cat: possessive_determiner, at_start: true}
+        - {slot: destination, cat: journey_destination, number: singular, uncounted: true}
+        - {slot: aux, cat: singular_copula}
+        - {slot: distance, cat: journey_distance_measure, counted: true}
+        - {slot: away, cat: distance_separation_adverb}
+        - {lit: '.', consume_skipped: true}
+    consumes: [distance]
+    emits:
+      - {fact: journey_leg, entity: '{owner}', destination_owner: '{destination.owner}', mode: '', destination: '{destination.qualified}', value: distance, unit: '{distance}'}
+
+  - id: arithmetic/additional-cycling-journey-distance
+    phase: read
+    description: >
+      A separate within-week ride contributes its stated complete distance
+      once. The event noun declares the travel mode; it is not another
+      one-way commute and must not be doubled by a return schedule.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
+        - opt: [{slot: addition, cat: additive_discourse_adverb}]
+        - {slot: action, cat: journey_start_verb, finite_form: true}
+        - {lit: for}
+        - {slot: event, cat: cycling_journey_noun, uncounted: true, qualified: true, qualifier_cat: weekly_leisure_period}
+        - {lit: of}
+        - {slot: distance, cat: journey_distance_measure, counted: true}
+        - {lit: '.', consume_skipped: true}
+    where: [{number_compatible: [who, action]}]
+    consumes: [distance]
+    emits:
+      - {fact: journey_extra, entity: '{who}', mode: bike, value: distance, unit: '{distance}', period: week}
+
+  - id: arithmetic/assumed-travel-speed-mph
+    phase: read
+    question_assumption: true
+    description: >
+      A conditional travel capability supplies an assumed constant speed.
+      The unit abbreviation is decomposed declaratively into a scoped
+      distance-per-duration quote. It is not evidence that a trip occurred,
+      and the journey consumer requires explicit question-assumption scope.
+    match:
+      sentence:
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
+        - {slot: modal, cat: capacity_modal}
+        - {slot: action, cat: journey_activity_verb, bare_form: true}
+        - {lit: at}
+        - {slot: speed, cat: miles_per_hour_unit, counted: true}
+        - {lit: '.', consume_skipped: true}
+    consumes: [speed]
+    emits:
+      - {fact: journey_pace, entity: '{who}', measure: mile, per: hour, value: speed, mode: '{action}'}
+asks:
+  - id: ask/scheduled-travel-time
+    match:
+      question:
+        - {lit: how, at_start: true}
+        - {lit: much}
+        - {slot: time, cat: abstract_time_noun}
+        - {slot: aux, type: auxiliary}
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true}
+        - {slot: spend, cat: spend_verb, bare_form: true}
+        - {slot: activity, cat: journey_activity_verb, present_participle: true}
+        - {lit: a, consume_skipped: true}
+        - {slot: period, cat: duration_measure, uncounted: true, bare: true}
+        - {lit: '?', consume_skipped: true}
+    where: [{number_compatible: [who, aux]}]
+    resolves: {consumer: journey-distance-duration, entity: '{who}', mode: '{activity}', period: '{period}', unit: hour}

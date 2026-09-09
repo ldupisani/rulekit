@@ -108,6 +108,11 @@ def consumer(name: str, *, time_scoped: bool = False):
 
 
 from . import (  # noqa: E402,F401  (import registers each handler)
+    production_profit as _production_profit,
+    allocation_remainder as _allocation_remainder,
+    inventory_remainder as _inventory_remainder,
+    journey_duration as _journey_duration,
+    journey_distance as _journey_distance,
     single_entity as _single_entity,
     event_period_total as _event_period_total,
     ordered_sequence as _ordered_sequence,

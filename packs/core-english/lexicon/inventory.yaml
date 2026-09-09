@@ -1,0 +1,11 @@
+format: rulekit/lexicon@1
+entries:
+  pink: {senses: [adjective]}
+  hard hat: {senses: [noun], plural: hard hats, lexical_phrase: true}
+  calculate: {senses: [verb, imperative]}
+  remove: {senses: [verb]}
+  removed: {senses: [verb], verb: {lemma: remove}}
+  removes: {senses: [verb], verb: {lemma: remove}}
+  remain: {senses: [verb]}
+  remained: {senses: [verb], verb: {lemma: remain}}
+  remains: {senses: [verb], verb: {lemma: remain}}

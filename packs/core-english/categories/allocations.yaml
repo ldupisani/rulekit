@@ -1,0 +1,30 @@
+format: rulekit/categories@1
+categories:
+  allocatable_resource: {parent: noun}
+  allocation_source: {parent: noun}
+  allocation_participant: {parent: animate}
+  allocation_verb: {parent: verb}
+  allocation_distribution_preposition: {parent: preposition}
+  allocation_ratio_noun: {parent: noun}
+  allocation_order_marker: {parent: adverb}
+  allocation_share_noun: {parent: noun}
+  commercial_context_descriptor: {parent: adjective}
+  determiner_required_noun:
+    parent: noun
+    notes: >
+      A singular count-noun use needs a determiner or owner. After an
+      infinitival marker, a bare verb homograph is therefore the verb,
+      unlike nominal activity/location words that permit bare reference.
+members:
+  allocatable_resource: [profit, money, prize]
+  allocation_source: [transaction, business]
+  allocation_participant: [partner, friend, teacher]
+  allocation_verb: [share, shared]
+  allocation_distribution_preposition: [among, between]
+  allocation_ratio_noun: [ratio]
+  allocation_order_marker: [respectively]
+  allocation_share_noun: [share]
+  commercial_context_descriptor: [business]
+  determiner_required_noun: [share]
+attribute_compatibility:
+  commercial_context_descriptor: [allocation_source, allocation_participant]

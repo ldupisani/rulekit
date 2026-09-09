@@ -77,6 +77,14 @@ from .model import (
     EarningRate,
     ServiceScope,
     PurchaseEndpoint,
+    CommercialTerm,
+    AllocationRatio,
+    InventoryScope,
+    InventoryWithdrawal,
+    JourneyLeg,
+    JourneySchedule,
+    JourneyExtra,
+    JourneyPace,
     Reading,
     Relation,
     RatioQuantity,
@@ -99,6 +107,14 @@ from .model import (
 SKIPPABLE_SENSES = {"article", "punct"}
 
 _FACT_CLASSES = {
+    "commercial_term": CommercialTerm,
+    "allocation_ratio": AllocationRatio,
+    "inventory_scope": InventoryScope,
+    "inventory_withdrawal": InventoryWithdrawal,
+    "journey_leg": JourneyLeg,
+    "journey_schedule": JourneySchedule,
+    "journey_extra": JourneyExtra,
+    "journey_pace": JourneyPace,
     "accumulation_window": AccumulationWindow,
     "earning_rate": EarningRate,
     "service_scope": ServiceScope,
@@ -2226,6 +2242,7 @@ def _resolve_field(
 
 
 _NUMERIC_FIELDS = {
+    "group_size",
     "value", "year", "factor", "offset", "fraction", "numerator", "denominator",
     "elapsed",
     "first_fraction", "second_fraction",

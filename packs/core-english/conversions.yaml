@@ -1,5 +1,8 @@
 format: rulekit/conversions@1
 conversions:
+- from: mile
+  to: kilometer
+  factor: 1.609344
 - from: kilogram
   to: gram
   factor: 1000

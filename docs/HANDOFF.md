@@ -1,7 +1,7 @@
 # rulekit handoff
 
-**Updated:** 2026-09-08
-**Runtime checkpoint:** local premise and ask templates
+**Updated:** 2026-09-09
+**Runtime checkpoint:** five supplied structural classes implemented and verified
 **Active campaign:** GSM8K Mining v2, M7 example-led vertical mining
 **Immediate state:** all four published Mining v2 candidates are landed; no
 candidate is awaiting human or machine review
@@ -50,6 +50,48 @@ temporal event totals (130), task-completion duration gaps (131), and
 anaphoric distance chains with exact combined totals (132).
 
 ### Latest implementation checkpoint
+
+Five user-supplied structural examples are now supported in curated. A bounded
+production-profit account separates one fixed setup cost, one unit production cost,
+one explicit/relative sale price, and nested active-period sales rates.
+`CommercialTerm` separates quotes from cash holdings; shared rate arithmetic,
+duration conversion and resource conservation produce the result. Work/copy
+identity is a local, declared product-family relationship, not noun synonymy.
+Every quoted cost must be used, and incomplete or competing accounts decline.
+Ordered two-part allocations preserve the named participants and raw ratio
+parts separately from personal cash holdings. One received share anchors the
+other share; an explicit expense is subtracted through the shared resource
+equation. Missing or competing anchors decline.
+
+Scoped inventory preserves a complete opening list and actor-specific
+absolute/proportional withdrawals. A proportional removal needs one absolute
+reference for the same actor and exact subtype. Each subtype must conserve
+its stock independently; mixed attribute families and overdrawn buckets
+decline. Local templates compose the list and withdrawal variants.
+
+Repeated journeys retain the actor, mode, destination, explicit repetition
+count and return legs. One-way durations can be summed across modes; one-way
+distances can instead be repeated, combined with complete additional journeys,
+and divided by an assumed speed through ordinary rate arithmetic. Destination
+ownership is retained and checked. Proofs state the symmetric-return and bounded
+weekly-schedule interpretations; no working-day count is invented. Lowercase
+fused conditional asks split only when both halves have complete declared
+grammars and the premise explicitly permits question-assumption scope.
+All five increments pass the standing DEV gates, with no broken answers,
+new wrongs or changed correct answers/graphs. The supplied examples are
+exposed calibration, not independent generalization evidence. No server
+restart or protected TEST look has been performed.
+
+Vocabulary expansion exposed a legacy repeated-fraction ambiguity. A second
+fraction of an already depleted pool now needs explicit remainder wording;
+`FractionQuantity.pool_qualifier` preserves that evidence. The unqualified
+case declines instead of assuming either the original or remaining base.
+GSM8K gains two DEV-train and five DEV-holdout correct answers over the prior
+checkpoint. All 147 new focused tests pass. The full suite passed 7,060 tests;
+its one stale vocabulary-inventory expectation was refreshed and passed on
+rerun. Generation also now
+reports an unsupported predicate as a blocker rather than crashing the entire
+availability list.
 
 Local template consolidation now covers another 23 premise rules and six
 per-holder asks, preserving their public IDs and complete compiled definitions.
@@ -575,22 +617,34 @@ These are the gates run at the current runtime checkpoint:
 
 | Gate | Current result |
 | --- | --- |
-| full synthetic suite | 6,914 passed |
+| full synthetic suite | 7,060 passed + 1 refreshed inventory check passed on rerun |
 | curated suite | 71 correct, 0 wrong |
-| GSM8K DEV-train | 112 correct, 0 wrong |
-| GSM8K DEV-holdout | 52 correct, 0 wrong |
+| GSM8K DEV-train | 114 correct, 0 wrong |
+| GSM8K DEV-holdout | 57 correct, 0 wrong |
 | ASDiv DEV | 48 correct, 0 wrong |
 | SVAMP DEV | 24 correct, 0 wrong |
 | MAWPS DEV | 11 correct, 0 wrong |
 | SciBench DEV | 6 correct, 0 wrong |
-| DIFG DEV | 75 correct, 0 wrong |
+| DIFG DEV | 74 correct, 0 wrong |
 | FOLIO DEV | 0 numeric commitments |
 | COGS DEV-train / holdout | 1,773 / 1,695 exact, 0 incorrect |
 | PMB train / development | 117 / 4 exact, 0 incorrect |
 | curated lint | 0 errors, 0 warnings |
 | GSM8K lint | 0 errors, 1 previously documented trig-alternation warning |
 
-The template-consolidation run passed all 6,914 tests in 268 seconds, plus
+Current evidence is in `/tmp/rulekit-five-questions.8fYwH0/`. Each of the five
+increments has a focused test log and a complete standing DEV diff. The final
+runtime snapshots are in `final-gates/`, compared against `journey-gates/`;
+earlier per-increment baselines remain alongside them. Full-suite results are
+in `final-full-2.log`; its sole failure used the previously loaded adverb
+inventory expectation. The updated check passed in `final-inventory-recheck.log`.
+All 147 new family tests passed in `final-focused.log`, and all five supplied
+examples returned their expected results in `final-originals.log`. No corpus
+prose was added to tracked files, and no review, server process or protected
+TEST artifact was changed. Runtime files stayed frozen throughout each gate
+run.
+
+The preceding template-consolidation run passed all 6,914 tests in 268 seconds, plus
 98 focused schema/source/ask checks. All 204 curated premise definitions and
 139 ask definitions compare identically with the pre-refactor compiled
 snapshot, including descriptions, guards, emissions and generation contracts.
@@ -600,7 +654,7 @@ after verifying each current registry/projection fingerprint. Tests also cover
 all 29 migrated variant source links, normal ask validation, duplicate IDs,
 fingerprint invalidation and generation's existing context boundaries.
 
-Current evidence is in `/tmp/rulekit-template-families.GMysyp/`: `full.log`,
+That preceding evidence is in `/tmp/rulekit-template-families.GMysyp/`: `full.log`,
 `gates.log`, `compiled-before.json`, `compiled-comparison.log`, and per-slice
 before/after snapshots and diff logs. No review data, server process or
 protected TEST artifact was changed. Runtime files stayed frozen throughout
@@ -681,13 +735,13 @@ Do not spend another protected look merely to refresh these numbers.
 Availability means “the authoring layer can realize the declared contract and
 round-trip it through the ordinary matcher.” It does not mean that a human has
 judged the resulting English or emitted fact valid.
-The curated reachable filler inventory is 516; local allocation rules expose
-account phrases, whose ownership is deliberately not inferred in isolation.
+The curated reachable filler inventory is 550. The new premise families
+generate through their ordinary declared slot contracts and local templates.
 
 | Project | Premise rules | Independent asks | Answerable asks |
 | --- | ---: | ---: | ---: |
-| curated | 195/204 | 121/139 | 135/139 |
-| GSM8K | 189/196 | 159/172 | 172/172 |
+| curated | 221/230 | 126/144 | 140/144 |
+| GSM8K | 215/222 | 164/177 | 177/177 |
 
 The unsupported premise rows are deliberate safety interceptors or reader-only
 rules, not ordinary generation targets. Fourteen curated and all thirteen

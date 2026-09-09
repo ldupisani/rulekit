@@ -328,9 +328,6 @@ entries:
         senses:
             - noun
         plural: trains
-    transaction:
-        senses:
-            - noun
     transport:
         senses:
             - noun
@@ -640,19 +637,6 @@ entries:
     waitress:
         senses:
             - noun
-    walk:
-        senses:
-            - verb
-    walking:
-        senses:
-            - verb
-        verb:
-            lemma: walk
-    walks:
-        senses:
-            - verb
-        verb:
-            lemma: walk
     wall:
         senses:
             - noun
@@ -714,10 +698,6 @@ entries:
         senses:
             - noun
         plural: weekdays
-    weekend:
-        senses:
-            - noun
-        plural: weekends
     weekly:
         senses:
             - adjective
@@ -828,12 +808,6 @@ entries:
         senses:
             - noun
         plural: words
-    workday:
-        senses:
-            - noun
-    workdays:
-        senses:
-            - noun
     worker:
         senses:
             - noun

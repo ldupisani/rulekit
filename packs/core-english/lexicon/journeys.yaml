@@ -1,0 +1,19 @@
+format: rulekit/lexicon@1
+entries:
+  mile: {senses: [noun], plural: miles}
+  kilometer: {senses: [noun], plural: [km, kilometers]}
+  mph: {senses: [noun], plural: mph}
+  workday: {senses: [noun], plural: workdays}
+  weekend: {senses: [noun, adjective], plural: weekends}
+  bike ride: {senses: [noun], plural: bike rides, lexical_phrase: true}
+  back and forth: {senses: [adverb], lexical_phrase: true}
+  school: {senses: [noun], plural: schools}
+  office: {senses: [noun], plural: offices}
+  walk: {senses: [verb]}
+  walks: {senses: [verb], verb: {lemma: walk}}
+  walking: {senses: [verb], verb: {lemma: walk}}
+  ride: {senses: [verb]}
+  rides: {senses: [verb], verb: {lemma: ride}}
+  bike: {senses: [noun, verb], plural: bikes}
+  bikes: {senses: [noun, verb], verb: {lemma: bike}}
+  biking: {senses: [verb], verb: {lemma: bike}}

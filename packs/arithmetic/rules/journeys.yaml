@@ -1,0 +1,197 @@
+format: rulekit/rules@1
+templates:
+  journey-duration:
+    parameters:
+      mode_tokens: [{slot: action, cat: journey_activity_verb, bare_form: true}]
+      mode: '{action}'
+      tail: []
+      tail_emits: []
+      numeric_slots: [span]
+      extra_where: []
+      satisfaction: {dummy: [refers], infinitive: [object]}
+    rule:
+      phase: read
+      description: >
+        A participant's one-way travel duration to an exact destination, with
+        its mode preserved. A coordinated duration has the same controlling
+        participant, but its own mode, destination and unit. It is not a rate
+        of producing or acquiring the destination.
+      match:
+        sentence:
+          - {slot: dummy, cat: journey_expletive, at_start: true}
+          - {slot: took, cat: duration_verb}
+          - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true}
+          - {slot: span, cat: duration_measure, counted: true}
+          - {slot: infinitive, cat: infinitival_marker}
+          - {parameter: mode_tokens}
+          - {lit: to}
+          - {slot: destination, cat: journey_destination, uncounted: true, bare: true}
+          - {parameter: tail}
+          - {lit: '.', consume_skipped: true}
+      where: {parameter: extra_where}
+      satisfies: {parameter: satisfaction}
+      consumes: {parameter: numeric_slots}
+      emits:
+        - {fact: journey_leg, entity: '{who}', mode: {parameter: mode}, destination: '{destination}', value: span, unit: '{span}'}
+        - {parameter: tail_emits}
+  return-journey:
+    parameters:
+      mode_tokens: [{slot: action, cat: journey_activity_verb, finite_form: true}]
+      mode: '{action}'
+      tail: []
+      tail_emits: []
+      numeric_slots: [count]
+      extra_where: []
+      satisfaction: {}
+    rule:
+      phase: read
+      description: >
+        Explicit outward-and-return journeys at a stated frequency. The count
+        counts complete round trips, while legs records the two directions.
+        A coordinated mode retains its own frequency and period.
+      match:
+        sentence:
+          - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true, at_start: true}
+          - {parameter: mode_tokens}
+          - {lit: to}
+          - {lit: and}
+          - {lit: from}
+          - {slot: destination, cat: journey_destination, uncounted: true, bare: true}
+          - {slot: count, type: multiplier}
+          - {lit: a, consume_skipped: true}
+          - {slot: period, cat: duration_measure, uncounted: true, bare: true}
+          - {parameter: tail}
+          - {lit: '.', consume_skipped: true}
+      where:
+        - {number_compatible: [who, action]}
+        - {parameter: extra_where}
+      satisfies: {parameter: satisfaction}
+      consumes: {parameter: numeric_slots}
+      emits:
+        - {fact: journey_schedule, entity: '{who}', mode: {parameter: mode}, destination: '{destination}', value: count, period: '{period}', legs: 2}
+        - {parameter: tail_emits}
+variants:
+  - id: arithmetic/one-way-journey-duration
+    template: journey-duration
+  - id: arithmetic/one-way-vehicle-journey-duration
+    template: journey-duration
+    arguments:
+      mode_tokens: &vehicle_infinitive
+        - {slot: action, cat: journey_vehicle_verb, bare_form: true}
+        - {slot: owner, cat: possessive_determiner}
+        - {slot: vehicle, cat: journey_vehicle, uncounted: true, number: singular}
+      mode: '{vehicle}'
+      satisfaction: {dummy: [refers], infinitive: [object], owner: [refers]}
+  - id: arithmetic/conjoined-journey-durations
+    template: journey-duration
+    arguments:
+      extra_where: [{distinct: [action, vehicle2]}]
+      tail: &vehicle_duration_tail
+        - {lit: and}
+        - {slot: span2, cat: duration_measure, counted: true}
+        - {slot: infinitive2, cat: infinitival_marker}
+        - {slot: action2, cat: journey_vehicle_verb, bare_form: true}
+        - {slot: owner2, cat: possessive_determiner}
+        - {slot: vehicle2, cat: journey_vehicle, uncounted: true, number: singular}
+        - {lit: to}
+        - {slot: destination2, cat: journey_destination, uncounted: true, bare: true}
+      tail_emits:
+        - {fact: journey_leg, entity: '{who}', mode: '{vehicle2}', destination: '{destination2}', value: span2, unit: '{span2}'}
+      numeric_slots: [span, span2]
+      satisfaction: {dummy: [refers], infinitive: [object], infinitive2: [object], owner2: [refers]}
+  - id: arithmetic/conjoined-vehicle-journey-durations
+    template: journey-duration
+    arguments:
+      extra_where: [{distinct: [vehicle, action2]}]
+      mode_tokens: *vehicle_infinitive
+      mode: '{vehicle}'
+      tail:
+        - {lit: and}
+        - {slot: span2, cat: duration_measure, counted: true}
+        - {slot: infinitive2, cat: infinitival_marker}
+        - {slot: action2, cat: journey_activity_verb, bare_form: true}
+        - {lit: to}
+        - {slot: destination2, cat: journey_destination, uncounted: true, bare: true}
+      tail_emits:
+        - {fact: journey_leg, entity: '{who}', mode: '{action2}', destination: '{destination2}', value: span2, unit: '{span2}'}
+      numeric_slots: [span, span2]
+      satisfaction: {dummy: [refers], infinitive: [object], infinitive2: [object], owner: [refers]}
+  - id: arithmetic/return-journey-schedule
+    template: return-journey
+  - id: arithmetic/return-vehicle-journey-schedule
+    template: return-journey
+    arguments:
+      mode_tokens: &vehicle_finite
+        - {slot: action, cat: journey_vehicle_verb, finite_form: true}
+        - {slot: owner, cat: possessive_determiner}
+        - {slot: vehicle, cat: journey_vehicle, uncounted: true, number: singular}
+      mode: '{vehicle}'
+      satisfaction: {owner: [refers]}
+  - id: arithmetic/conjoined-return-journey-schedules
+    template: return-journey
+    arguments:
+      extra_where: [{distinct: [action, vehicle2]}]
+      tail:
+        - {lit: and}
+        - {slot: action2, cat: journey_vehicle_verb, finite_form: true}
+        - {slot: owner2, cat: possessive_determiner}
+        - {slot: vehicle2, cat: journey_vehicle, uncounted: true, number: singular}
+        - {lit: to}
+        - {lit: and}
+        - {lit: from}
+        - {slot: destination2, cat: journey_destination, uncounted: true, bare: true}
+        - {slot: count2, type: multiplier}
+        - {lit: a, consume_skipped: true}
+        - {slot: period2, cat: duration_measure, uncounted: true, bare: true}
+      tail_emits:
+        - {fact: journey_schedule, entity: '{who}', mode: '{vehicle2}', destination: '{destination2}', value: count2, period: '{period2}', legs: 2}
+      numeric_slots: [count, count2]
+      satisfaction: {owner2: [refers], action2: [subject]}
+  - id: arithmetic/conjoined-return-vehicle-journey-schedules
+    template: return-journey
+    arguments:
+      extra_where: [{distinct: [vehicle, action2]}]
+      mode_tokens: *vehicle_finite
+      mode: '{vehicle}'
+      tail:
+        - {lit: and}
+        - {slot: action2, cat: journey_activity_verb, finite_form: true}
+        - {lit: to}
+        - {lit: and}
+        - {lit: from}
+        - {slot: destination2, cat: journey_destination, uncounted: true, bare: true}
+        - {slot: count2, type: multiplier}
+        - {lit: a, consume_skipped: true}
+        - {slot: period2, cat: duration_measure, uncounted: true, bare: true}
+      tail_emits:
+        - {fact: journey_schedule, entity: '{who}', mode: '{action2}', destination: '{destination2}', value: count2, period: '{period2}', legs: 2}
+      numeric_slots: [count, count2]
+      satisfaction: {owner: [refers], action2: [subject]}
+asks:
+  - id: ask/return-journey-duration-two-modes
+    match:
+      question:
+        - {lit: how, at_start: true}
+        - {lit: many}
+        - {slot: unit, cat: duration_measure, number: plural, uncounted: true}
+        - {lit: in}
+        - {slot: total, cat: group_total_marker}
+        - {slot: aux, type: auxiliary}
+        - {slot: who, type: entity, common_noun_cat: animate, referential: true, bare: true}
+        - {slot: take, cat: journey_duration_ask_verb, bare_form: true}
+        - {slot: infinitive, cat: infinitival_marker}
+        - {slot: goal, cat: journey_goal_verb, bare_form: true}
+        - {lit: to}
+        - {lit: and}
+        - {lit: from}
+        - {slot: destination, cat: journey_destination, uncounted: true, bare: true}
+        - {lit: a, consume_skipped: true}
+        - {slot: period, cat: duration_measure, uncounted: true, bare: true}
+        - {slot: modes_prep, cat: journey_mode_list_preposition}
+        - {slot: first, cat: journey_activity_verb, present_participle: true}
+        - {lit: and}
+        - {slot: second, cat: journey_activity_verb, present_participle: true}
+        - {lit: '?', consume_skipped: true}
+    where: [{distinct: [first, second]}, {number_compatible: [who, aux]}]
+    satisfies: {infinitive: [object], modes_prep: [object]}
+    resolves: {consumer: journey-duration, entity: '{who}', destination: '{destination}', first_mode: '{first}', second_mode: '{second}', period: '{period}', unit: '{unit}'}

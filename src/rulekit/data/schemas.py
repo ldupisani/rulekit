@@ -1504,6 +1504,10 @@ class WherePredicate(StrictModel):
 
 class FactEmit(StrictModel):
     fact: Literal[
+        "commercial_term",
+        "allocation_ratio",
+        "inventory_scope", "inventory_withdrawal",
+        "journey_leg", "journey_schedule", "journey_extra", "journey_pace",
         "accumulation_window", "earning_rate", "service_scope", "purchase_endpoint",
         "event_cadence", "sequence_total", "sequence_step",
         "rate_threshold", "rate_premium", "repeated_activity_duration",

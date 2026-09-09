@@ -167,10 +167,6 @@ entries:
     - verb
     verb:
       lemma: offer
-  office:
-    senses:
-    - noun
-    plural: offices
   oil:
     senses:
     - noun
@@ -412,10 +408,6 @@ entries:
   particular:
     senses:
     - adjective
-  partner:
-    senses:
-    - noun
-    plural: partners
   pass:
     senses:
     - verb
@@ -603,9 +595,6 @@ entries:
   ping:
     senses:
     - noun
-  pink:
-    senses:
-    - adjective
   pint:
     senses:
     - noun
@@ -819,10 +808,6 @@ entries:
   private:
     senses:
     - adjective
-  prize:
-    senses:
-    - noun
-    plural: prizes
   proceeds:
     senses:
     - noun
@@ -831,14 +816,6 @@ entries:
     - verb
     verb:
       lemma: process
-  produce:
-    senses:
-    - verb
-  produces:
-    senses:
-    - verb
-    verb:
-      lemma: produce
   producing:
     senses:
     - verb
@@ -862,9 +839,6 @@ entries:
   professor:
     senses:
     - title
-  profit:
-    senses:
-    - noun
   profits:
     senses:
     - noun
@@ -1014,10 +988,6 @@ entries:
     senses:
     - noun
     plural: rates
-  ratio:
-    senses:
-    - noun
-    plural: ratios
   reach:
     senses:
     - verb
@@ -1134,31 +1104,9 @@ entries:
   released:
     senses:
     - verb
-  remain:
-    senses:
-    - verb
-  remained:
-    senses:
-    - verb
-  remains:
-    senses:
-    - verb
   remember:
     senses:
     - verb
-  remove:
-    senses:
-    - verb
-  removed:
-    senses:
-    - verb
-    verb:
-      lemma: remove
-  removes:
-    senses:
-    - verb
-    verb:
-      lemma: remove
   removing:
     senses:
     - verb
@@ -1250,9 +1198,6 @@ entries:
   respective:
     senses:
     - adjective
-  respectively:
-    senses:
-    - adverb
   responds:
     senses:
     - verb
@@ -1285,14 +1230,6 @@ entries:
   rid:
     senses:
     - verb
-  ride:
-    senses:
-    - verb
-  rides:
-    senses:
-    - verb
-    verb:
-      lemma: ride
   riding:
     senses:
     - noun
@@ -1483,10 +1420,6 @@ entries:
     senses:
     - noun
     plural: scanners
-  school:
-    senses:
-    - noun
-    plural: schools
   schoolyard:
     senses:
     - noun
@@ -1642,14 +1575,6 @@ entries:
   shapes:
     senses:
     - noun
-  share:
-    senses:
-    - verb
-  shared:
-    senses:
-    - verb
-    verb:
-      lemma: share
   shares:
     senses:
     - verb
@@ -1978,11 +1903,6 @@ entries:
   spelling:
     senses:
     - noun
-  spending:
-    senses:
-    - verb
-    verb:
-      lemma: spend
   spinning:
     senses:
     - noun
